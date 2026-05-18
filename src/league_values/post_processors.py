@@ -53,3 +53,21 @@ class ReplacementLevel:
             return 0.0
         idx = min(n_starters, len(pool_results) - 1)
         return pool_results[idx].total_value
+
+
+class PositionScarcity:
+    def __init__(self, multipliers: dict[str, float]) -> None:
+        self.multipliers = multipliers
+
+    def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
+        adjusted = []
+        for r in results:
+            mult = self._best_multiplier(r.player.positions)
+            adjusted.append(replace(r, total_value=r.total_value * mult))
+        return adjusted
+
+    def _best_multiplier(self, positions: tuple[str, ...]) -> float:
+        if not positions:
+            return 1.0
+        mults = [self.multipliers.get(pos, 1.0) for pos in positions]
+        return max(mults)

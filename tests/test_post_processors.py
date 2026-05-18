@@ -10,7 +10,7 @@ from league_values import (
     ValuationResult,
 )
 from league_values.models import RosterSettings
-from league_values.post_processors import PostProcessor, ReplacementLevel
+from league_values.post_processors import PostProcessor, ReplacementLevel, PositionScarcity
 
 
 class DoubleValueProcessor:
@@ -107,3 +107,59 @@ class TestReplacementLevel(unittest.TestCase):
         processor = ReplacementLevel()
         adjusted = processor.process(raw, league)
         self.assertAlmostEqual(raw[0].total_value, adjusted[0].total_value)
+
+
+class TestPositionScarcity(unittest.TestCase):
+    def test_scarce_position_gets_premium(self):
+        scarcity = PositionScarcity(multipliers={"C": 1.15, "1B": 0.90, "OF": 1.00})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        # Anchor player gives the pool non-zero spread so C/1B get non-zero raw values
+        players = [
+            {"id": "c", "name": "Catcher", "pool": "hitter", "positions": ["C"], "stats": {"HR": 25}},
+            {"id": "1b", "name": "First Base", "pool": "hitter", "positions": ["1B"], "stats": {"HR": 25}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "positions": ["OF"], "stats": {"HR": 10}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = scarcity.process(raw, league)
+        catcher = next(r for r in adjusted if r.name == "Catcher")
+        first_base = next(r for r in adjusted if r.name == "First Base")
+        self.assertGreater(catcher.total_value, first_base.total_value)
+
+    def test_multi_position_uses_best(self):
+        scarcity = PositionScarcity(multipliers={"C": 1.15, "1B": 0.90})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        players = [{"id": "dual", "name": "Dual Elig", "pool": "hitter", "positions": ["C", "1B"], "stats": {"HR": 25}}]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = scarcity.process(raw, league)
+        self.assertAlmostEqual(adjusted[0].total_value, raw[0].total_value * 1.15, places=5)
+
+    def test_pitcher_positions(self):
+        scarcity = PositionScarcity(multipliers={"SP": 1.00, "RP": 0.55})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="K", label="K", pool=PlayerPool.PITCHER, stat="K"),))
+        # Anchor player gives the pool non-zero spread so SP/RP get non-zero raw values
+        players = [
+            {"id": "sp", "name": "Starter", "pool": "pitcher", "positions": ["SP"], "stats": {"K": 200}},
+            {"id": "rp", "name": "Reliever", "pool": "pitcher", "positions": ["RP"], "stats": {"K": 200}},
+            {"id": "anchor", "name": "Anchor", "pool": "pitcher", "positions": ["SP"], "stats": {"K": 80}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = scarcity.process(raw, league)
+        sp = next(r for r in adjusted if r.name == "Starter")
+        rp = next(r for r in adjusted if r.name == "Reliever")
+        self.assertGreater(sp.total_value, rp.total_value)
+
+    def test_no_positions_uses_default_1(self):
+        scarcity = PositionScarcity(multipliers={"C": 1.15})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        players = [{"id": "np", "name": "No Pos", "pool": "hitter", "positions": [], "stats": {"HR": 25}}]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = scarcity.process(raw, league)
+        self.assertAlmostEqual(adjusted[0].total_value, raw[0].total_value)
