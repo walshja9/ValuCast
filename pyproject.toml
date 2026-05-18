@@ -1,0 +1,10 @@
+[project]
+name = "league-values"
+version = "0.1.0"
+description = "Config-driven fantasy baseball league valuation engine."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

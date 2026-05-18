@@ -1,0 +1,22 @@
+{
+  "name": "Starter points league",
+  "scoring_mode": "points",
+  "point_rules": [
+    { "pool": "hitter", "stat": "R", "points": 1 },
+    { "pool": "hitter", "stat": "RBI", "points": 1 },
+    { "pool": "hitter", "stat": "1B", "points": 1 },
+    { "pool": "hitter", "stat": "2B", "points": 2 },
+    { "pool": "hitter", "stat": "3B", "points": 3 },
+    { "pool": "hitter", "stat": "HR", "points": 4 },
+    { "pool": "hitter", "stat": "BB", "points": 1 },
+    { "pool": "hitter", "stat": "SB", "points": 2 },
+    { "pool": "hitter", "stat": "CS", "points": -1 },
+    { "pool": "pitcher", "stat": "IP", "points": 3 },
+    { "pool": "pitcher", "stat": "K", "points": 1 },
+    { "pool": "pitcher", "stat": "W", "points": 5 },
+    { "pool": "pitcher", "stat": "SV", "points": 5 },
+    { "pool": "pitcher", "stat": "ER", "points": -2 },
+    { "pool": "pitcher", "stat": "BB", "points": -0.5 },
+    { "pool": "pitcher", "stat": "H_ALLOWED", "points": -0.5 }
+  ]
+}

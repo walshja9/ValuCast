@@ -1,0 +1,38 @@
+{
+  "name": "Standard 5x5",
+  "scoring_mode": "categories",
+  "categories": [
+    { "id": "R", "label": "Runs", "pool": "hitter", "stat": "R" },
+    { "id": "HR", "label": "Home Runs", "pool": "hitter", "stat": "HR" },
+    { "id": "RBI", "label": "RBI", "pool": "hitter", "stat": "RBI" },
+    { "id": "SB", "label": "Stolen Bases", "pool": "hitter", "stat": "SB" },
+    {
+      "id": "AVG",
+      "label": "Batting Average",
+      "pool": "hitter",
+      "numerator_stats": ["H"],
+      "denominator_stats": ["AB"],
+      "direction": "higher"
+    },
+    { "id": "W", "label": "Wins", "pool": "pitcher", "stat": "W" },
+    { "id": "SV", "label": "Saves", "pool": "pitcher", "stat": "SV" },
+    { "id": "K", "label": "Strikeouts", "pool": "pitcher", "stat": "K" },
+    {
+      "id": "ERA",
+      "label": "ERA",
+      "pool": "pitcher",
+      "numerator_stats": ["ER"],
+      "denominator_stats": ["IP"],
+      "ratio_multiplier": 9,
+      "direction": "lower"
+    },
+    {
+      "id": "WHIP",
+      "label": "WHIP",
+      "pool": "pitcher",
+      "numerator_stats": ["BB", "H_ALLOWED"],
+      "denominator_stats": ["IP"],
+      "direction": "lower"
+    }
+  ]
+}
