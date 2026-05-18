@@ -13,16 +13,19 @@ from .models import (
     ScoringMode,
     ValuationResult,
 )
-from .post_processors import PostProcessor
+from .post_processors import AgeCurve, PositionScarcity, PostProcessor, ReplacementLevel
 
 __all__ = [
+    "AgeCurve",
     "CategorySpec",
     "Direction",
     "LeagueConfig",
     "PlayerPool",
     "PlayerProjection",
     "PointRule",
+    "PositionScarcity",
     "PostProcessor",
+    "ReplacementLevel",
     "RosterSettings",
     "ScoringMode",
     "ValuationEngine",
