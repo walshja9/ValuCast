@@ -9,7 +9,8 @@ from league_values import (
     ValuationEngine,
     ValuationResult,
 )
-from league_values.post_processors import PostProcessor
+from league_values.models import RosterSettings
+from league_values.post_processors import PostProcessor, ReplacementLevel
 
 
 class DoubleValueProcessor:
@@ -67,3 +68,42 @@ class TestPostProcessorPipeline(unittest.TestCase):
         engine = ValuationEngine(post_processors=[FlipProcessor()])
         results = engine.value_players(self._players(), self._league())
         self.assertEqual(results[0].name, "B")
+
+
+class TestReplacementLevel(unittest.TestCase):
+    def test_replacement_subtracts_baseline(self):
+        roster = RosterSettings(
+            teams=2, roster_size=3,
+            positions={"1B": 1, "SP": 1}, bench=1,
+        )
+        league = LeagueConfig(
+            name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),),
+            roster=roster,
+        )
+        players = [
+            {"id": "h1", "name": "Star", "pool": "hitter", "positions": ["1B"], "stats": {"HR": 40}},
+            {"id": "h2", "name": "Good", "pool": "hitter", "positions": ["1B"], "stats": {"HR": 30}},
+            {"id": "h3", "name": "Avg", "pool": "hitter", "positions": ["1B"], "stats": {"HR": 20}},
+            {"id": "h4", "name": "Scrub", "pool": "hitter", "positions": ["1B"], "stats": {"HR": 10}},
+        ]
+        engine = ValuationEngine()
+        raw_results = engine.value_players(players, league)
+        processor = ReplacementLevel()
+        adjusted = processor.process(raw_results, league)
+        star = next(r for r in adjusted if r.name == "Star")
+        scrub = next(r for r in adjusted if r.name == "Scrub")
+        self.assertGreater(star.total_value, 0)
+        self.assertLessEqual(scrub.total_value, 0.01)
+
+    def test_replacement_no_roster_returns_unchanged(self):
+        league = LeagueConfig(
+            name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),),
+        )
+        players = [{"id": "a", "name": "A", "pool": "hitter", "stats": {"HR": 30}}]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        processor = ReplacementLevel()
+        adjusted = processor.process(raw, league)
+        self.assertAlmostEqual(raw[0].total_value, adjusted[0].total_value)
