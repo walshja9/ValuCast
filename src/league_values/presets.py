@@ -79,21 +79,21 @@ def default_points() -> LeagueConfig:
 
 DD_7X7_CATEGORIES: tuple[CategorySpec, ...] = (
     # Hitting (7 cats)
+    # DD's projection blender provides AVG, OPS as pre-computed rate stats,
+    # so these are simple stat categories (not ratio). DD does NOT volume-adjust
+    # rate stats in z-scores — volume is a separate multiplier.
     CategorySpec(id="R", label="Runs", pool=PlayerPool.HITTER, stat="R", weight=0.12),
     CategorySpec(id="HR", label="Home Runs", pool=PlayerPool.HITTER, stat="HR", weight=0.16),
     CategorySpec(id="RBI", label="RBI", pool=PlayerPool.HITTER, stat="RBI", weight=0.13),
     CategorySpec(id="SB", label="Stolen Bases", pool=PlayerPool.HITTER, stat="SB", weight=0.10),
-    CategorySpec(
-        id="AVG", label="Batting Average", pool=PlayerPool.HITTER,
-        numerator_stats=("H",), denominator_stats=("AB",),
-        weight=0.14, min_denominator=50.0,
-    ),
+    CategorySpec(id="AVG", label="Batting Average", pool=PlayerPool.HITTER, stat="AVG", weight=0.14),
     CategorySpec(id="OPS", label="OPS", pool=PlayerPool.HITTER, stat="OPS", weight=0.25),
     CategorySpec(
         id="SO", label="Strikeouts", pool=PlayerPool.HITTER, stat="SO",
         direction=Direction.LOWER_IS_BETTER, weight=0.14,
     ),
     # Pitching (7 cats)
+    # Same: DD provides ERA, WHIP, K_BB as pre-computed rate stats.
     CategorySpec(id="K", label="Strikeouts", pool=PlayerPool.PITCHER, stat="K", weight=0.20),
     CategorySpec(id="QS", label="Quality Starts", pool=PlayerPool.PITCHER, stat="QS", weight=0.18),
     CategorySpec(id="SV_HLD", label="Saves + Holds", pool=PlayerPool.PITCHER, stat="SV_HLD", weight=0.18),
@@ -102,16 +102,12 @@ DD_7X7_CATEGORIES: tuple[CategorySpec, ...] = (
         direction=Direction.LOWER_IS_BETTER, weight=0.08,
     ),
     CategorySpec(
-        id="ERA", label="ERA", pool=PlayerPool.PITCHER,
-        numerator_stats=("ER",), denominator_stats=("IP",),
-        direction=Direction.LOWER_IS_BETTER, ratio_multiplier=9.0,
-        weight=0.28, min_denominator=10.0,
+        id="ERA", label="ERA", pool=PlayerPool.PITCHER, stat="ERA",
+        direction=Direction.LOWER_IS_BETTER, weight=0.28,
     ),
     CategorySpec(
-        id="WHIP", label="WHIP", pool=PlayerPool.PITCHER,
-        numerator_stats=("BB", "H_ALLOWED"), denominator_stats=("IP",),
-        direction=Direction.LOWER_IS_BETTER,
-        weight=0.25, min_denominator=10.0,
+        id="WHIP", label="WHIP", pool=PlayerPool.PITCHER, stat="WHIP",
+        direction=Direction.LOWER_IS_BETTER, weight=0.25,
     ),
     CategorySpec(id="K_BB", label="K/BB", pool=PlayerPool.PITCHER, stat="K_BB", weight=0.15),
 )

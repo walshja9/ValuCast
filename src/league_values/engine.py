@@ -84,9 +84,14 @@ class ValuationEngine:
                 for player in eligible_players
             }
 
-            # Use fixed league baselines if provided, otherwise derive from pool
+            # Use fixed league baselines if provided, otherwise derive from pool.
+            # league_baselines are in "raw stat space" — for non-ratio stats with
+            # LOWER_IS_BETTER direction, transform mean to match impact space
+            # (impacts have direction.sign applied).
             if category.id in league.league_baselines:
                 mean, stddev = league.league_baselines[category.id]
+                if not category.is_ratio:
+                    mean = category.direction.sign * mean
             else:
                 mean, stddev = _mean_stddev(list(impacts.values()))
 
