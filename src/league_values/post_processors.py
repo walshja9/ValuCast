@@ -71,3 +71,38 @@ class PositionScarcity:
             return 1.0
         mults = [self.multipliers.get(pos, 1.0) for pos in positions]
         return max(mults)
+
+
+class AgeCurve:
+    def __init__(self, hitter_curve: dict[int, float], pitcher_curve: dict[int, float]) -> None:
+        self.hitter_curve = hitter_curve
+        self.pitcher_curve = pitcher_curve
+
+    def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
+        adjusted = []
+        for r in results:
+            age = r.player.metadata.get("age")
+            if age is None:
+                adjusted.append(r)
+                continue
+            age = int(age)
+            curve = self.pitcher_curve if r.player.pool is PlayerPool.PITCHER else self.hitter_curve
+            mult = self._interpolate(curve, age)
+            adjusted.append(replace(r, total_value=r.total_value * mult))
+        return adjusted
+
+    def _interpolate(self, curve: dict[int, float], age: int) -> float:
+        if not curve:
+            return 1.0
+        ages = sorted(curve.keys())
+        if age <= ages[0]:
+            return curve[ages[0]]
+        if age >= ages[-1]:
+            return curve[ages[-1]]
+        for i in range(len(ages) - 1):
+            if ages[i] <= age <= ages[i + 1]:
+                lo_age, hi_age = ages[i], ages[i + 1]
+                lo_val, hi_val = curve[lo_age], curve[hi_age]
+                t = (age - lo_age) / (hi_age - lo_age)
+                return lo_val + t * (hi_val - lo_val)
+        return 1.0

@@ -10,7 +10,7 @@ from league_values import (
     ValuationResult,
 )
 from league_values.models import RosterSettings
-from league_values.post_processors import PostProcessor, ReplacementLevel, PositionScarcity
+from league_values.post_processors import PostProcessor, ReplacementLevel, PositionScarcity, AgeCurve
 
 
 class DoubleValueProcessor:
@@ -163,3 +163,71 @@ class TestPositionScarcity(unittest.TestCase):
         raw = engine.value_players(players, league)
         adjusted = scarcity.process(raw, league)
         self.assertAlmostEqual(adjusted[0].total_value, raw[0].total_value)
+
+
+class TestAgeCurve(unittest.TestCase):
+    def test_young_player_boosted(self):
+        curve = AgeCurve(
+            hitter_curve={22: 1.65, 27: 1.25, 32: 0.87},
+            pitcher_curve={22: 1.50, 27: 1.15, 32: 0.78},
+        )
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        # Need 3+ players for non-zero z-scores
+        players = [
+            {"id": "young", "name": "Young", "pool": "hitter", "stats": {"HR": 30}, "metadata": {"age": 22}},
+            {"id": "old", "name": "Old", "pool": "hitter", "stats": {"HR": 30}, "metadata": {"age": 32}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10}, "metadata": {"age": 27}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = curve.process(raw, league)
+        young = next(r for r in adjusted if r.name == "Young")
+        old = next(r for r in adjusted if r.name == "Old")
+        self.assertGreater(young.total_value, old.total_value)
+
+    def test_pitcher_uses_pitcher_curve(self):
+        curve = AgeCurve(hitter_curve={25: 1.50}, pitcher_curve={25: 1.30})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="K", label="K", pool=PlayerPool.PITCHER, stat="K"),))
+        players = [
+            {"id": "p1", "name": "Pitcher", "pool": "pitcher", "stats": {"K": 200}, "metadata": {"age": 25}},
+            {"id": "p2", "name": "Anchor", "pool": "pitcher", "stats": {"K": 100}, "metadata": {"age": 25}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = curve.process(raw, league)
+        pitcher_raw = next(r for r in raw if r.name == "Pitcher")
+        pitcher_adj = next(r for r in adjusted if r.name == "Pitcher")
+        self.assertAlmostEqual(pitcher_adj.total_value, pitcher_raw.total_value * 1.30, places=5)
+
+    def test_missing_age_uses_multiplier_1(self):
+        curve = AgeCurve(hitter_curve={25: 1.50}, pitcher_curve={25: 1.30})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        players = [
+            {"id": "no_age", "name": "No Age", "pool": "hitter", "stats": {"HR": 25}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = curve.process(raw, league)
+        raw_noage = next(r for r in raw if r.name == "No Age")
+        adj_noage = next(r for r in adjusted if r.name == "No Age")
+        self.assertAlmostEqual(adj_noage.total_value, raw_noage.total_value)
+
+    def test_interpolates_between_ages(self):
+        # 22→1.60, 24→1.40 → age 23 should be 1.50
+        curve = AgeCurve(hitter_curve={22: 1.60, 24: 1.40}, pitcher_curve={})
+        league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+        players = [
+            {"id": "mid", "name": "Mid", "pool": "hitter", "stats": {"HR": 30}, "metadata": {"age": 23}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10}, "metadata": {"age": 23}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = curve.process(raw, league)
+        raw_mid = next(r for r in raw if r.name == "Mid")
+        adj_mid = next(r for r in adjusted if r.name == "Mid")
+        self.assertAlmostEqual(adj_mid.total_value, raw_mid.total_value * 1.50, places=3)
