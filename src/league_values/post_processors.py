@@ -73,6 +73,45 @@ class PositionScarcity:
         return max(mults)
 
 
+class VolumeMultiplier:
+    """Scale values by playing time: (PA_or_IP / baseline)^0.75.
+
+    Full-time players (PA >= hitter_pa or IP >= sp/rp_ip) get 1.0.
+    Partial-season players get a discount. Floor is 0.20.
+    RP detection: 'RP' in positions and 'SP' not in positions.
+    """
+
+    FLOOR = 0.20
+    EXPONENT = 0.75
+
+    def __init__(self, hitter_pa: float = 550, sp_ip: float = 180, rp_ip: float = 65) -> None:
+        self.hitter_pa = hitter_pa
+        self.sp_ip = sp_ip
+        self.rp_ip = rp_ip
+
+    def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
+        return [replace(r, total_value=r.total_value * self._multiplier(r)) for r in results]
+
+    def _multiplier(self, result: ValuationResult) -> float:
+        player = result.player
+        if player.pool is PlayerPool.HITTER:
+            pa = player.stats.get("PA", 0.0) or player.stats.get("AB", 0.0)
+            return self._compute(pa, self.hitter_pa)
+        elif player.pool is PlayerPool.PITCHER:
+            ip = player.stats.get("IP", 0.0)
+            is_rp = "RP" in player.positions and "SP" not in player.positions
+            baseline = self.rp_ip if is_rp else self.sp_ip
+            return self._compute(ip, baseline)
+        return 1.0
+
+    def _compute(self, volume: float, baseline: float) -> float:
+        if volume <= 0:
+            return self.FLOOR
+        if volume >= baseline:
+            return 1.0
+        return max(self.FLOOR, (volume / baseline) ** self.EXPONENT)
+
+
 class AgeCurve:
     def __init__(self, hitter_curve: dict[int, float], pitcher_curve: dict[int, float]) -> None:
         self.hitter_curve = hitter_curve

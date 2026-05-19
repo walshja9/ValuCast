@@ -10,7 +10,7 @@ from league_values import (
     ValuationResult,
 )
 from league_values.models import RosterSettings
-from league_values.post_processors import PostProcessor, ReplacementLevel, PositionScarcity, AgeCurve
+from league_values.post_processors import PostProcessor, ReplacementLevel, PositionScarcity, AgeCurve, VolumeMultiplier
 
 
 class DoubleValueProcessor:
@@ -231,3 +231,106 @@ class TestAgeCurve(unittest.TestCase):
         raw_mid = next(r for r in raw if r.name == "Mid")
         adj_mid = next(r for r in adjusted if r.name == "Mid")
         self.assertAlmostEqual(adj_mid.total_value, raw_mid.total_value * 1.50, places=3)
+
+
+class TestVolumeMultiplier(unittest.TestCase):
+    def _league(self):
+        return LeagueConfig(
+            name="T",
+            scoring_mode=ScoringMode.CATEGORIES,
+            categories=(
+                CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),
+            ),
+        )
+
+    def test_full_time_hitter_gets_1(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = self._league()
+        players = [
+            {"id": "full", "name": "Full Time", "pool": "hitter", "stats": {"HR": 30, "PA": 600}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10, "PA": 550}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        full = next(r for r in adjusted if r.name == "Full Time")
+        full_raw = next(r for r in raw if r.name == "Full Time")
+        self.assertAlmostEqual(full.total_value, full_raw.total_value, places=5)
+
+    def test_partial_hitter_gets_discount(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = self._league()
+        players = [
+            {"id": "partial", "name": "Partial", "pool": "hitter", "stats": {"HR": 30, "PA": 200}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10, "PA": 550}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        partial_raw = next(r for r in raw if r.name == "Partial")
+        partial_adj = next(r for r in adjusted if r.name == "Partial")
+        self.assertLess(abs(partial_adj.total_value), abs(partial_raw.total_value))
+
+    def test_zero_pa_gets_floor(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = self._league()
+        players = [
+            {"id": "zero", "name": "Zero PA", "pool": "hitter", "stats": {"HR": 30, "PA": 0}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10, "PA": 550}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        zero = next(r for r in adjusted if r.name == "Zero PA")
+        zero_raw = next(r for r in raw if r.name == "Zero PA")
+        expected = zero_raw.total_value * 0.20
+        self.assertAlmostEqual(zero.total_value, expected, places=5)
+
+    def test_sp_uses_sp_baseline(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = LeagueConfig(
+            name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="K", label="K", pool=PlayerPool.PITCHER, stat="K"),),
+        )
+        players = [
+            {"id": "sp", "name": "SP", "pool": "pitcher", "positions": ["SP"], "stats": {"K": 200, "IP": 180}},
+            {"id": "anchor", "name": "Anchor", "pool": "pitcher", "positions": ["SP"], "stats": {"K": 100, "IP": 90}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        sp = next(r for r in adjusted if r.name == "SP")
+        sp_raw = next(r for r in raw if r.name == "SP")
+        self.assertAlmostEqual(sp.total_value, sp_raw.total_value, places=5)
+
+    def test_rp_uses_rp_baseline(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = LeagueConfig(
+            name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="K", label="K", pool=PlayerPool.PITCHER, stat="K"),),
+        )
+        players = [
+            {"id": "rp", "name": "RP", "pool": "pitcher", "positions": ["RP"], "stats": {"K": 80, "IP": 65}},
+            {"id": "anchor", "name": "Anchor", "pool": "pitcher", "positions": ["SP"], "stats": {"K": 100, "IP": 90}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        rp = next(r for r in adjusted if r.name == "RP")
+        rp_raw = next(r for r in raw if r.name == "RP")
+        self.assertAlmostEqual(rp.total_value, rp_raw.total_value, places=5)
+
+    def test_missing_pa_ip_gets_floor(self):
+        vol = VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65)
+        league = self._league()
+        players = [
+            {"id": "noPA", "name": "No PA", "pool": "hitter", "stats": {"HR": 30}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "stats": {"HR": 10, "PA": 550}},
+        ]
+        engine = ValuationEngine()
+        raw = engine.value_players(players, league)
+        adjusted = vol.process(raw, league)
+        noPA = next(r for r in adjusted if r.name == "No PA")
+        noPA_raw = next(r for r in raw if r.name == "No PA")
+        expected = noPA_raw.total_value * 0.20
+        self.assertAlmostEqual(noPA.total_value, expected, places=5)

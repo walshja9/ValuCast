@@ -13,7 +13,7 @@ from .models import (
     ScoringMode,
     ValuationResult,
 )
-from .post_processors import AgeCurve, PositionScarcity, PostProcessor, ReplacementLevel
+from .post_processors import AgeCurve, PositionScarcity, PostProcessor, ReplacementLevel, VolumeMultiplier
 
 __all__ = [
     "AgeCurve",
@@ -30,6 +30,7 @@ __all__ = [
     "ScoringMode",
     "ValuationEngine",
     "ValuationResult",
+    "VolumeMultiplier",
     "load_league_config",
     "value_players",
 ]
