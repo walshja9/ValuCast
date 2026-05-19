@@ -4,7 +4,7 @@ from league_values import (
     CategorySpec, Direction, LeagueConfig, PlayerPool, ScoringMode, ValuationEngine,
 )
 from league_values.models import RosterSettings
-from league_values.post_processors import AgeCurve, PositionScarcity, ReplacementLevel
+from league_values.post_processors import AgeCurve, PositionScarcity, ReplacementLevel, VolumeMultiplier
 from league_values.presets import dd_7x7
 
 
@@ -15,29 +15,29 @@ class TestFullPipeline(unittest.TestCase):
         {
             "id": "trout", "name": "Mike Trout", "pool": "hitter",
             "positions": ["OF"],
-            "stats": {"R": 90, "HR": 35, "RBI": 90, "SB": 15, "H": 160, "AB": 520, "OPS": 0.950, "AVG": 0.308, "SO": 130},
+            "stats": {"R": 90, "HR": 35, "RBI": 90, "SB": 15, "H": 160, "AB": 520, "PA": 580, "OPS": 0.950, "AVG": 0.308, "SO": 130},
             "metadata": {"age": 34},
         },
         {
             "id": "soto", "name": "Juan Soto", "pool": "hitter",
             "positions": ["OF"],
-            "stats": {"R": 100, "HR": 30, "RBI": 95, "SB": 5, "H": 155, "AB": 530, "OPS": 0.920, "AVG": 0.292, "SO": 110},
+            "stats": {"R": 100, "HR": 30, "RBI": 95, "SB": 5, "H": 155, "AB": 530, "PA": 600, "OPS": 0.920, "AVG": 0.292, "SO": 110},
             "metadata": {"age": 27},
         },
         {
             "id": "witt", "name": "Bobby Witt Jr", "pool": "hitter",
             "positions": ["SS"],
-            "stats": {"R": 105, "HR": 28, "RBI": 85, "SB": 35, "H": 180, "AB": 600, "OPS": 0.880, "AVG": 0.300, "SO": 100},
+            "stats": {"R": 105, "HR": 28, "RBI": 85, "SB": 35, "H": 180, "AB": 600, "PA": 660, "OPS": 0.880, "AVG": 0.300, "SO": 100},
             "metadata": {"age": 25},
         },
         {
-            "id": "burns", "name": "Corbin Burns", "pool": "pitcher",
+            "id": "burns", "name": "Corbin Burns", "pool": "starter",
             "positions": ["SP"],
             "stats": {"K": 210, "QS": 18, "SV_HLD": 0, "L": 6, "ER": 55, "IP": 195, "BB": 40, "H_ALLOWED": 155, "ERA": 2.54, "WHIP": 1.00, "K_BB": 5.25},
             "metadata": {"age": 31},
         },
         {
-            "id": "clase", "name": "Emmanuel Clase", "pool": "pitcher",
+            "id": "clase", "name": "Emmanuel Clase", "pool": "reliever",
             "positions": ["RP"],
             "stats": {"K": 65, "QS": 0, "SV_HLD": 38, "L": 3, "ER": 15, "IP": 65, "BB": 12, "H_ALLOWED": 42, "ERA": 2.08, "WHIP": 0.83, "K_BB": 5.42},
             "metadata": {"age": 28},
@@ -45,7 +45,7 @@ class TestFullPipeline(unittest.TestCase):
         {
             "id": "bench", "name": "Bench Bat", "pool": "hitter",
             "positions": ["1B"],
-            "stats": {"R": 40, "HR": 8, "RBI": 35, "SB": 2, "H": 75, "AB": 300, "OPS": 0.650, "AVG": 0.250, "SO": 80},
+            "stats": {"R": 40, "HR": 8, "RBI": 35, "SB": 2, "H": 75, "AB": 300, "PA": 320, "OPS": 0.650, "AVG": 0.250, "SO": 80},
             "metadata": {"age": 32},
         },
     ]
@@ -77,6 +77,7 @@ class TestFullPipeline(unittest.TestCase):
                     32: 0.78, 34: 0.65, 37: 0.33,
                 },
             ),
+            VolumeMultiplier(hitter_pa=550, sp_ip=180, rp_ip=65),
         ])
         results = engine.value_players(self.PLAYERS, config)
         self.assertEqual(len(results), 6)
@@ -85,13 +86,14 @@ class TestFullPipeline(unittest.TestCase):
         bench = next(r for r in results if r.name == "Bench Bat")
         self.assertGreater(witt.total_value, bench.total_value)
 
-        # In DD 7x7, Clase's SV_HLD (38) dominates despite the 0.55 RP scarcity
-        # multiplier. Burns lands at replacement level (0.0) because his negative
-        # raw z-scores (volume-adjusted WHIP/ERA against few pitchers) put him at
-        # the floor, while Clase retains positive value from saves+holds.
+        # Burns (STARTER pool) and Clase (RELIEVER pool) are now in separate pools.
+        # Both should have non-zero values since they score in their respective
+        # SP_* and RP_* categories. Burns's elite SP stats (K=210, ERA=2.54, QS=18)
+        # should yield positive value in the STARTER pool.
         clase = next(r for r in results if r.name == "Emmanuel Clase")
         burns = next(r for r in results if r.name == "Corbin Burns")
-        self.assertGreater(clase.total_value, burns.total_value)
+        self.assertGreater(burns.total_value, 0.0, "Burns should have positive value in STARTER pool")
+        self.assertGreater(clase.total_value, 0.0, "Clase should have positive value in RELIEVER pool")
 
         soto = next(r for r in results if r.name == "Juan Soto")
         trout = next(r for r in results if r.name == "Mike Trout")

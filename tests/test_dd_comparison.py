@@ -50,10 +50,20 @@ def load_test_players() -> list[dict]:
 
 
 def to_player_projection(p: dict) -> dict:
+    pool = p["pool"]
+    if pool == "pitcher":
+        # Map to starter or reliever based on positions.
+        # Source JSON uses pool="pitcher" for all pitchers; DD 7x7 has separate
+        # STARTER and RELIEVER pools with SP_* and RP_* category prefixes.
+        positions = p.get("positions", [])
+        if "RP" in positions and "SP" not in positions:
+            pool = "reliever"
+        else:
+            pool = "starter"
     return {
         "id": p["name"].lower().replace(" ", "_"),
         "name": p["name"],
-        "pool": p["pool"],
+        "pool": pool,
         "positions": p.get("positions", []),
         "stats": p.get("stats", {}),
         "metadata": {"age": p["age"]} if p.get("age") else {},
@@ -61,6 +71,9 @@ def to_player_projection(p: dict) -> dict:
 
 
 def is_reliever(p: dict) -> bool:
+    """Check if player is an RP. Works on raw JSON (pool='pitcher') and mapped dicts."""
+    if p.get("pool") == "reliever":
+        return True
     positions = p.get("positions", [])
     return "RP" in positions and "SP" not in positions
 
@@ -132,6 +145,11 @@ class TestHitterZScores(unittest.TestCase):
                 f"{divergences}/{total} SO direction divergences")
 
 
+# Maps DD z-score category keys (no prefix) to engine keys (SP_* / RP_* prefixed).
+SP_CAT_MAP = {"K": "SP_K", "QS": "SP_QS", "ERA": "SP_ERA", "WHIP": "SP_WHIP", "L": "SP_L", "K/BB": "SP_K_BB"}
+RP_CAT_MAP = {"K": "RP_K", "SV+HLD": "RP_SV_HLD", "ERA": "RP_ERA", "WHIP": "RP_WHIP", "L": "RP_L", "K/BB": "RP_K_BB"}
+
+
 class TestSPZScores(unittest.TestCase):
     """SP z-scores should match DD closely (same baselines)."""
 
@@ -144,7 +162,7 @@ class TestSPZScores(unittest.TestCase):
         cls.by_name = {r.name: r for r in cls.results}
 
     def test_sp_zscore_directions_match(self):
-        """SP z-score signs should match DD's."""
+        """SP z-score signs should match DD's (using SP_* engine keys)."""
         mismatches = []
         for p in self.players:
             if p["pool"] != "pitcher" or is_reliever(p) or not p.get("dd_z_scores"):
@@ -152,14 +170,17 @@ class TestSPZScores(unittest.TestCase):
             r = self.by_name.get(p["name"])
             if not r:
                 continue
-            for cat, dd_z in p["dd_z_scores"].items():
-                lv_z = r.z_scores.get(cat)
+            for dd_cat, dd_z in p["dd_z_scores"].items():
+                lv_cat = SP_CAT_MAP.get(dd_cat)
+                if lv_cat is None:
+                    continue
+                lv_z = r.z_scores.get(lv_cat)
                 if lv_z is None:
                     continue
                 if (dd_z > 0.2 and lv_z < -0.2) or (dd_z < -0.2 and lv_z > 0.2):
-                    mismatches.append(f"{p['name']}.{cat}: DD={dd_z:.3f}, LV={lv_z:.3f}")
+                    mismatches.append(f"{p['name']}.{dd_cat}: DD={dd_z:.3f}, LV={lv_z:.3f}")
 
-        self.assertEqual(mismatches, [], f"SP direction mismatches:\n" + "\n".join(mismatches))
+        self.assertEqual(mismatches, [], "SP direction mismatches:\n" + "\n".join(mismatches))
 
     def test_sp_counting_zscores_close(self):
         """SP counting stat z-scores (K, QS) should be within 0.15 of DD."""
@@ -172,16 +193,16 @@ class TestSPZScores(unittest.TestCase):
             r = self.by_name.get(p["name"])
             if not r:
                 continue
-            for cat in ("K", "QS"):
-                dd_z = p["dd_z_scores"].get(cat)
-                lv_z = r.z_scores.get(cat)
+            for dd_cat, lv_cat in (("K", "SP_K"), ("QS", "SP_QS")):
+                dd_z = p["dd_z_scores"].get(dd_cat)
+                lv_z = r.z_scores.get(lv_cat)
                 if dd_z is None or lv_z is None:
                     continue
                 diff = abs(dd_z - lv_z)
                 count += 1
                 if diff > max_diff:
                     max_diff = diff
-                    worst = f"{p['name']}.{cat}: DD={dd_z:.3f}, LV={lv_z:.3f}"
+                    worst = f"{p['name']}.{dd_cat}: DD={dd_z:.3f}, LV={lv_z:.3f}"
 
         self.assertGreater(count, 0)
         self.assertLess(max_diff, 0.15, f"SP counting z-score gap: {worst}")
@@ -199,7 +220,10 @@ class TestRPGapDocumented(unittest.TestCase):
         cls.by_name = {r.name: r for r in cls.results}
 
     def test_rp_zscores_diverge_as_expected(self):
-        """RP K z-scores should differ because DD uses RP baselines (K avg=48 vs SP avg=120)."""
+        """RP K z-scores should differ because DD uses RP baselines (K avg=48 vs SP avg=120).
+
+        DD dd_z_scores use unqualified "K"; engine produces RP_K for relievers.
+        """
         rp_diffs = []
         for p in self.players:
             if not is_reliever(p) or not p.get("dd_z_scores"):
@@ -208,7 +232,7 @@ class TestRPGapDocumented(unittest.TestCase):
             if not r:
                 continue
             dd_k = p["dd_z_scores"].get("K")
-            lv_k = r.z_scores.get("K")
+            lv_k = r.z_scores.get("RP_K")
             if dd_k is not None and lv_k is not None:
                 rp_diffs.append((p["name"], dd_k, lv_k))
 
@@ -311,18 +335,18 @@ class TestRankOrder(unittest.TestCase):
             f"Only {len(overlap)}/10 overlap. Missing: {dd_top10 - lv_top15}")
 
     def test_top_sp_overlap(self):
-        """At least 5 of DD's top 10 SPs appear in LV's top 15 pitchers."""
+        """At least 5 of DD's top 10 SPs appear in LV's top 15 starters."""
         dd_sp = sorted(
             [p for p in self.players if p["pool"] == "pitcher" and not is_reliever(p)],
             key=lambda p: p["dd_value"], reverse=True,
         )
         dd_top10 = {p["name"] for p in dd_sp[:10]}
 
-        lv_pitchers = sorted(
-            [r for r in self.lv_results if r.player.pool == PlayerPool.PITCHER],
+        lv_starters = sorted(
+            [r for r in self.lv_results if r.player.pool == PlayerPool.STARTER],
             key=lambda r: r.total_value, reverse=True,
         )
-        lv_top15 = {r.name for r in lv_pitchers[:15]}
+        lv_top15 = {r.name for r in lv_starters[:15]}
 
         overlap = dd_top10 & lv_top15
         self.assertGreaterEqual(len(overlap), 5,
