@@ -36,7 +36,7 @@ class ReplacementLevel:
         for r in results:
             if r.player.pool is PlayerPool.HITTER:
                 new_val = r.total_value - hitter_repl
-            elif r.player.pool is PlayerPool.PITCHER:
+            elif r.player.pool in (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER):
                 new_val = r.total_value - pitcher_repl
             else:
                 new_val = r.total_value
@@ -45,14 +45,17 @@ class ReplacementLevel:
 
     def _replacement_value(self, results: list[ValuationResult], pool: PlayerPool, n_starters: int) -> float:
         pool_results = sorted(
-            [r for r in results if r.player.pool is pool],
+            [r for r in results if r.player.pool is pool or (
+                pool is PlayerPool.PITCHER and r.player.pool in (PlayerPool.STARTER, PlayerPool.RELIEVER)
+            )],
             key=lambda r: r.total_value,
             reverse=True,
         )
         if not pool_results or n_starters <= 0:
             return 0.0
-        idx = min(n_starters, len(pool_results) - 1)
-        return pool_results[idx].total_value
+        if n_starters >= len(pool_results):
+            return 0.0
+        return pool_results[n_starters].total_value
 
 
 class PositionScarcity:
@@ -97,9 +100,12 @@ class VolumeMultiplier:
         if player.pool is PlayerPool.HITTER:
             pa = player.stats.get("PA", 0.0) or player.stats.get("AB", 0.0)
             return self._compute(pa, self.hitter_pa)
-        elif player.pool is PlayerPool.PITCHER:
+        elif player.pool in (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER):
             ip = player.stats.get("IP", 0.0)
-            is_rp = "RP" in player.positions and "SP" not in player.positions
+            is_rp = (
+                player.pool is PlayerPool.RELIEVER
+                or ("RP" in player.positions and "SP" not in player.positions)
+            )
             baseline = self.rp_ip if is_rp else self.sp_ip
             return self._compute(ip, baseline)
         return 1.0

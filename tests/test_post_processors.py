@@ -5,6 +5,7 @@ from league_values import (
     CategorySpec,
     LeagueConfig,
     PlayerPool,
+    PlayerProjection,
     ScoringMode,
     ValuationEngine,
     ValuationResult,
@@ -334,3 +335,42 @@ class TestVolumeMultiplier(unittest.TestCase):
         noPA_raw = next(r for r in raw if r.name == "No PA")
         expected = noPA_raw.total_value * 0.20
         self.assertAlmostEqual(noPA.total_value, expected, places=5)
+
+
+class TestVolumeMultiplierPools(unittest.TestCase):
+    """Verify VolumeMultiplier works with STARTER and RELIEVER pool types."""
+
+    def _make_result(self, pool, positions, stats):
+        player = PlayerProjection(
+            id="1", name="Test", pool=pool, positions=positions, stats=stats,
+        )
+        return ValuationResult(
+            player=player, total_value=10.0, raw_values={}, z_scores={}, category_values={},
+        )
+
+    def test_starter_pool_uses_sp_baseline(self):
+        vm = VolumeMultiplier()
+        result = self._make_result("starter", ("SP",), {"IP": 90.0})
+        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+            CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
+        )))
+        # 90/180 = 0.5, ^0.75 ≈ 0.5946
+        self.assertAlmostEqual(processed[0].total_value, 10.0 * (90 / 180) ** 0.75, places=2)
+
+    def test_reliever_pool_uses_rp_baseline(self):
+        vm = VolumeMultiplier()
+        result = self._make_result("reliever", ("RP",), {"IP": 65.0})
+        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+            CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
+        )))
+        # 65/65 = 1.0
+        self.assertAlmostEqual(processed[0].total_value, 10.0, places=2)
+
+    def test_reliever_pool_partial_ip(self):
+        vm = VolumeMultiplier()
+        result = self._make_result("reliever", ("RP",), {"IP": 30.0})
+        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+            CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
+        )))
+        # 30/65 ≈ 0.4615, ^0.75 ≈ 0.5329
+        self.assertAlmostEqual(processed[0].total_value, 10.0 * (30 / 65) ** 0.75, places=2)
