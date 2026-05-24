@@ -1,0 +1,52 @@
+<div class="results-meta">
+    <span>{{ results | length }} players{% if results | length == 200 %} (showing top 200){% endif %}</span>
+</div>
+
+{% if results %}
+<table class="rankings-table">
+    <thead>
+        <tr>
+            <th class="col-rank">#</th>
+            <th class="col-compare"></th>
+            <th class="col-name">Player</th>
+            <th class="col-pos">Pos</th>
+            <th class="col-team">Team</th>
+            <th class="col-value">Value</th>
+            {% for cat in active_categories %}
+            <th class="col-cat" title="{{ cat.label }}">{{ cat.id }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr class="player-row" onclick="toggleDetail('{{ result.player.id }}', this)">
+            <td class="col-rank">{{ loop.index }}</td>
+            <td class="col-compare">
+                <span class="compare-cb" onclick="event.stopPropagation(); toggleCompare('{{ result.player.id }}', this)" title="Compare">+</span>
+            </td>
+            <td class="col-name">
+                <strong>{{ result.player.name }}</strong>
+            </td>
+            <td class="col-pos">{{ result.player.positions | join(', ') or '&mdash;' }}</td>
+            <td class="col-team">{{ result.player.metadata.get('team', '') }}</td>
+            <td class="col-value {{ 'val-pos' if result.total_value > 0 else '' }}{{ 'val-neg' if result.total_value < 0 else '' }}">
+                {{ "%.2f" | format(result.total_value) }}
+            </td>
+            {% for cat in active_categories %}
+            {% set raw = result.raw_values.get(cat.id) %}
+            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if raw is not none and result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if raw is not none and result.category_values.get(cat.id, 0) < 0 else '' }}">
+                {% if raw is none %}&mdash;{% else %}{{ "%.1f" | format(result.category_values.get(cat.id, 0)) }}{% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        <tr id="detail-{{ result.player.id }}" class="detail-row" style="display:none;">
+            <td colspan="{{ 6 + active_categories | length }}"></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="no-results">
+    <p>No players found. Try adjusting your filters or selecting more categories.</p>
+</div>
+{% endif %}

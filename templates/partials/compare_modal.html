@@ -1,0 +1,52 @@
+<div class="compare-modal">
+    <div class="compare-header">
+        <h2>Player Comparison</h2>
+        <button onclick="closeCompare()" class="close-btn">&times;</button>
+    </div>
+
+    {% if r1 and r2 %}
+    <table class="compare-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="compare-player">
+                    <strong>{{ r1.player.name }}</strong><br>
+                    <span class="detail-meta">{{ r1.player.positions | join(', ') or 'DH' }} | {{ r1.player.metadata.get('team', '') }}</span>
+                </th>
+                <th class="compare-player">
+                    <strong>{{ r2.player.name }}</strong><br>
+                    <span class="detail-meta">{{ r2.player.positions | join(', ') or 'DH' }} | {{ r2.player.metadata.get('team', '') }}</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="compare-total">
+                <td><strong>Total Value</strong></td>
+                <td class="{{ 'val-pos' if r1.total_value >= r2.total_value else 'val-neg' }}">
+                    <strong>{{ "%.2f" | format(r1.total_value) }}</strong>
+                </td>
+                <td class="{{ 'val-pos' if r2.total_value >= r1.total_value else 'val-neg' }}">
+                    <strong>{{ "%.2f" | format(r2.total_value) }}</strong>
+                </td>
+            </tr>
+            {% for cat in active_categories %}
+            {% set v1 = r1.category_values.get(cat.id, 0) %}
+            {% set v2 = r2.category_values.get(cat.id, 0) %}
+            {% set r1_raw = r1.raw_values.get(cat.id) %}
+            {% set r2_raw = r2.raw_values.get(cat.id) %}
+            <tr>
+                <td>{{ cat.label }}</td>
+                <td class="{{ 'na' if r1_raw is none else '' }}{{ 'val-pos' if r1_raw is not none and v1 > v2 else '' }}{{ 'val-neg' if r1_raw is not none and v1 < v2 else '' }}">
+                    {% if r1_raw is none %}&mdash;{% else %}{{ "%.2f" | format(v1) }}{% endif %}
+                </td>
+                <td class="{{ 'na' if r2_raw is none else '' }}{{ 'val-pos' if r2_raw is not none and v2 > v1 else '' }}{{ 'val-neg' if r2_raw is not none and v2 < v1 else '' }}">
+                    {% if r2_raw is none %}&mdash;{% else %}{{ "%.2f" | format(v2) }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="error">One or both players not found.</p>
+    {% endif %}
+</div>

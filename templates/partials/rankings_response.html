@@ -1,0 +1,9 @@
+{% include "partials/rankings_table.html" %}
+
+<section id="setup-panel" class="setup-panel" hx-swap-oob="true">
+    {% if mode == 'points' %}
+        {% include "partials/setup_points.html" %}
+    {% else %}
+        {% include "partials/setup_categories.html" %}
+    {% endif %}
+</section>

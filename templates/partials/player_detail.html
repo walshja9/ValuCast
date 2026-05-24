@@ -1,0 +1,62 @@
+{% if result %}
+<div class="player-detail">
+    <div class="detail-header">
+        <h3>{{ player.name }}</h3>
+        <span class="detail-meta">
+            {{ player.positions | join(', ') or 'DH' }}
+            {% if player.metadata.get('team') %} | {{ player.metadata.team }}{% endif %}
+        </span>
+        <span class="detail-value {{ 'val-pos' if result.total_value > 0 else 'val-neg' }}">
+            Value: {{ "%.2f" | format(result.total_value) }}
+        </span>
+    </div>
+
+    <div class="detail-body">
+        <div class="detail-section">
+            <h4>Category Breakdown</h4>
+            <table class="detail-table">
+                <thead>
+                    <tr><th>Category</th><th>Raw</th><th>Z-Score</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {% for cat in active_categories %}
+                    {% set raw = result.raw_values.get(cat.id) %}
+                    {% if raw is not none %}
+                    <tr>
+                        <td>{{ cat.label }}</td>
+                        <td>{{ "%.2f" | format(raw) }}</td>
+                        <td class="{{ 'val-pos' if result.z_scores.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if result.z_scores.get(cat.id, 0) < 0 else '' }}">
+                            {{ "%.2f" | format(result.z_scores.get(cat.id, 0)) }}
+                        </td>
+                        <td class="{{ 'val-pos' if result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if result.category_values.get(cat.id, 0) < 0 else '' }}">
+                            {{ "%.2f" | format(result.category_values.get(cat.id, 0)) }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="detail-section">
+            <h4>Projected Stats</h4>
+            <div class="stat-grid">
+                {% for key, value in player.stats.items() %}
+                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="player-detail">
+    <p>Could not load player details.</p>
+</div>
+{% endif %}
