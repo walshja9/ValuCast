@@ -1,0 +1,31 @@
+<div class="presets">
+    {% for name, preset in category_presets.items() %}
+    <a href="/?mode={{ mode }}&cats={{ preset.cats | join(',') }}&pcats={{ preset.pcats | join(',') }}"
+       class="preset-btn {{ 'active' if cats == preset.cats and pcats == preset.pcats else '' }}">
+        {% if name == '5x5' %}Standard 5x5{% elif name == '6x6' %}6x6 (OBP/QS){% else %}{{ name }}{% endif %}
+    </a>
+    {% endfor %}
+</div>
+
+<div class="cat-grid">
+    <div class="cat-column">
+        <h3>Hitting</h3>
+        {% for cat in hitting_categories %}
+        <label class="cat-option">
+            <input type="checkbox" name="cats" value="{{ cat.id }}"
+                   {{ 'checked' if cat.id in cats else '' }}>
+            <span>{{ cat.label }}</span>
+        </label>
+        {% endfor %}
+    </div>
+    <div class="cat-column">
+        <h3>Pitching</h3>
+        {% for cat in pitching_categories %}
+        <label class="cat-option">
+            <input type="checkbox" name="pcats" value="{{ cat.id }}"
+                   {{ 'checked' if cat.id in pcats else '' }}>
+            <span>{{ cat.label }}</span>
+        </label>
+        {% endfor %}
+    </div>
+</div>

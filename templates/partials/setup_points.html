@@ -1,0 +1,43 @@
+<div class="presets">
+    <a href="/?mode=points" class="preset-btn active">Default</a>
+</div>
+
+{% set default_rules = {
+    "R": 1, "RBI": 1, "1B": 1, "2B": 2, "3B": 3,
+    "HR": 4, "BB": 1, "SB": 2, "CS": -1, "SO": 0,
+    "IP": 3, "K": 1, "W": 5, "SV": 5, "HLD": 0,
+    "QS": 0, "ER": -2, "BB_P": -0.5, "H_ALLOWED": -0.5
+} %}
+
+<div class="points-grid">
+    <div class="cat-column">
+        <h3>Hitting</h3>
+        <table class="points-table">
+            <thead><tr><th>Stat</th><th>Points</th></tr></thead>
+            <tbody>
+                {% for stat, label in [("R","Runs"),("RBI","RBI"),("1B","Singles"),("2B","Doubles"),("3B","Triples"),("HR","Home Runs"),("BB","Walks"),("SB","Stolen Bases"),("CS","Caught Stealing")] %}
+                <tr>
+                    <td>{{ label }}</td>
+                    <td><input type="number" name="pt_{{ stat }}" step="0.5"
+                               value="{{ pt_params.get(stat, default_rules.get(stat, 0)) }}"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="cat-column">
+        <h3>Pitching</h3>
+        <table class="points-table">
+            <thead><tr><th>Stat</th><th>Points</th></tr></thead>
+            <tbody>
+                {% for stat, label in [("IP","Innings"),("K","Strikeouts"),("W","Wins"),("SV","Saves"),("HLD","Holds"),("QS","Quality Starts"),("ER","Earned Runs"),("BB","Walks Allowed"),("H_ALLOWED","Hits Allowed")] %}
+                <tr>
+                    <td>{{ label }}</td>
+                    <td><input type="number" name="pt_{{ stat }}" step="0.5"
+                               value="{{ pt_params.get(stat, default_rules.get(stat, 0)) }}"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
