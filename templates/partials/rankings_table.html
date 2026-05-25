@@ -13,8 +13,8 @@
             <th class="col-team sortable" onclick="sortTable(4)">Team</th>
             <th class="col-dollars sortable" onclick="sortTable(5)">$</th>
             <th class="col-value sortable" onclick="sortTable(6)">Value</th>
-            {% for cat in active_categories %}
-            <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})" title="{{ cat.label }}">{{ cat.id }}</th>
+            {% for col in display_columns %}
+            <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})" title="{{ col.label }}">{{ col.id }}</th>
             {% endfor %}
         </tr>
     </thead>
@@ -38,15 +38,23 @@
             <td class="col-value {{ 'val-pos' if result.total_value > 0 else '' }}{{ 'val-neg' if result.total_value < 0 else '' }}">
                 {{ "%.2f" | format(result.total_value) }}
             </td>
-            {% for cat in active_categories %}
-            {% set raw = result.raw_values.get(cat.id) %}
-            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if raw is not none and result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if raw is not none and result.category_values.get(cat.id, 0) < 0 else '' }}">
-                {% if raw is none %}&mdash;{% else %}{{ "%.1f" | format(result.category_values.get(cat.id, 0)) }}{% endif %}
+            {% for col in display_columns %}
+            {% if col.split %}
+                {% set sp_raw = result.raw_values.get(col.sp_id) %}
+                {% set rp_raw = result.raw_values.get(col.rp_id) %}
+                {% set raw = sp_raw if sp_raw is not none else rp_raw %}
+                {% set val = result.category_values.get(col.sp_id, 0) + result.category_values.get(col.rp_id, 0) %}
+            {% else %}
+                {% set raw = result.raw_values.get(col.id) %}
+                {% set val = result.category_values.get(col.id, 0) %}
+            {% endif %}
+            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if raw is not none and val > 0 else '' }}{{ 'val-neg' if raw is not none and val < 0 else '' }}">
+                {% if raw is none %}&mdash;{% else %}{{ "%.1f" | format(val) }}{% endif %}
             </td>
             {% endfor %}
         </tr>
         <tr id="detail-{{ result.player.id }}" class="detail-row" style="display:none;">
-            <td colspan="{{ 7 + active_categories | length }}"></td>
+            <td colspan="{{ 7 + display_columns | length }}"></td>
         </tr>
         {% endfor %}
     </tbody>

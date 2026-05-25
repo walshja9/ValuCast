@@ -176,6 +176,35 @@ def _build_context(args):
     # Active categories for column headers
     active_categories = list(config.categories) if hasattr(config, "categories") else []
 
+    # Build display columns — collapse SP/RP pairs into single columns
+    if split_rp and mode != "points":
+        display_columns = []
+        seen_base = set()
+        for cat in active_categories:
+            if cat.id.startswith("SP_"):
+                base_id = cat.id[3:]
+                if base_id not in seen_base:
+                    seen_base.add(base_id)
+                    from web.category_registry import _ALL_CATEGORIES
+                    orig = _ALL_CATEGORIES.get(base_id)
+                    label = orig.label if orig else base_id
+                    display_columns.append({
+                        "id": base_id, "label": label,
+                        "sp_id": f"SP_{base_id}", "rp_id": f"RP_{base_id}",
+                        "split": True,
+                    })
+            elif cat.id.startswith("RP_"):
+                pass  # Handled by SP_ entry
+            else:
+                display_columns.append({
+                    "id": cat.id, "label": cat.label, "split": False,
+                })
+    else:
+        display_columns = [
+            {"id": cat.id, "label": cat.label, "split": False}
+            for cat in active_categories
+        ]
+
     # Position ranks and auction dollar values
     position_ranks = _compute_position_ranks(results)
     dollar_values = _compute_dollar_values(results)
@@ -192,6 +221,7 @@ def _build_context(args):
         "split_rp": split_rp,
         "results": results,
         "active_categories": active_categories,
+        "display_columns": display_columns,
         "hitting_categories": HITTING_CATEGORIES,
         "pitching_categories": PITCHING_CATEGORIES,
         "category_presets": CATEGORY_PRESETS,
