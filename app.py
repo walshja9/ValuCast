@@ -5,9 +5,11 @@ from pathlib import Path
 
 from flask import Flask, render_template, request, make_response
 
+from dataclasses import replace as dc_replace
+
 from league_values.engine import ValuationEngine
 from league_values.post_processors import VolumeMultiplier
-from league_values.models import PlayerPool
+from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 
 from web.projection_store import ProjectionStore
 from web.category_registry import (
@@ -28,6 +30,66 @@ store = ProjectionStore(DATA_PATH)
 
 # Engine with volume adjustment
 engine = ValuationEngine(post_processors=[VolumeMultiplier()])
+
+
+def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResult]:
+    """Merge results for two-way players (e.g. Ohtani as hitter + pitcher).
+
+    Combines total_value, category_values, raw_values, and z_scores into one entry.
+    Uses the hitter entry as the base (positions, metadata) and adds pitcher contributions.
+    """
+    by_id: dict[str, list[ValuationResult]] = {}
+    for r in results:
+        # Use base_id (from metadata) to group two-way player entries
+        base_id = r.player.metadata.get("base_id", r.player.id)
+        by_id.setdefault(base_id, []).append(r)
+
+    merged = []
+    for player_id, group in by_id.items():
+        if len(group) == 1:
+            merged.append(group[0])
+            continue
+
+        # Multiple entries for same ID — merge them
+        # Use hitter as base (or first entry if no hitter)
+        base = next((r for r in group if r.player.pool == PlayerPool.HITTER), group[0])
+        others = [r for r in group if r is not base]
+
+        total_value = base.total_value + sum(r.total_value for r in others)
+        raw_values = dict(base.raw_values)
+        z_scores = dict(base.z_scores)
+        category_values = dict(base.category_values)
+
+        for other in others:
+            for k, v in other.raw_values.items():
+                if raw_values.get(k) is None:
+                    raw_values[k] = v
+            for k, v in other.z_scores.items():
+                if z_scores.get(k, 0) == 0 and v != 0:
+                    z_scores[k] = v
+            for k, v in other.category_values.items():
+                if category_values.get(k, 0) == 0 and v != 0:
+                    category_values[k] = v
+
+        # Combine positions
+        all_positions = list(base.player.positions)
+        for other in others:
+            for pos in other.player.positions:
+                if pos not in all_positions:
+                    all_positions.append(pos)
+
+        merged_player = dc_replace(base.player, positions=tuple(all_positions))
+        merged_result = ValuationResult(
+            player=merged_player,
+            total_value=total_value,
+            raw_values=raw_values,
+            z_scores=z_scores,
+            category_values=category_values,
+            points=base.points,
+        )
+        merged.append(merged_result)
+
+    return sorted(merged, key=lambda r: r.total_value, reverse=True)
 
 
 def _build_context(args):
@@ -52,6 +114,7 @@ def _build_context(args):
         rules_str=rules_str, pt_params=pt_params if pt_params else None,
     )
     results = engine.value_players(store.get_all(), config)
+    results = _merge_two_way_players(results)
 
     # Filter results for display
     if pool:

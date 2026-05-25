@@ -18,6 +18,8 @@ class ProjectionStore:
         with path.open("r", encoding="utf-8") as f:
             raw = json.load(f)
 
+        seen_ids: set[str] = set()
+
         for entry in raw:
             meta = dict(entry.get("metadata", {}))
             meta["team"] = entry.get("team", "")
@@ -32,6 +34,16 @@ class ProjectionStore:
             entry_copy = dict(entry)
             entry_copy["metadata"] = meta
             entry_copy["stats"] = stats
+
+            # Deduplicate IDs for two-way players (e.g. Ohtani as hitter + pitcher).
+            # Suffix pitcher entry so engine can value each against the correct pool.
+            player_id = str(entry_copy.get("id", ""))
+            if player_id in seen_ids:
+                pool = entry_copy.get("pool", "")
+                suffix = "_P" if pool in ("starter", "reliever", "pitcher") else "_H"
+                entry_copy["id"] = player_id + suffix
+                meta["base_id"] = player_id
+            seen_ids.add(player_id)
 
             player = PlayerProjection.from_dict(entry_copy)
             self._players.append(player)
