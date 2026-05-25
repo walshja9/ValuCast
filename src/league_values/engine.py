@@ -79,8 +79,14 @@ class ValuationEngine:
 
         for category in league.categories:
             eligible_players = [player for player in players if category.applies_to(player.pool)]
+
+            # Pre-compute ratio baseline once per category (avoids O(n²))
+            ratio_baseline = None
+            if category.is_ratio and category.baseline is None:
+                ratio_baseline = self._ratio_baseline(category, eligible_players)
+
             impacts = {
-                player.id: self._category_impact(player, category, eligible_players)
+                player.id: self._category_impact(player, category, eligible_players, ratio_baseline)
                 for player in eligible_players
             }
 
@@ -130,8 +136,13 @@ class ValuationEngine:
 
         for category in league.categories:
             eligible = [p for p in players if category.applies_to(p.pool)]
+
+            ratio_baseline = None
+            if category.is_ratio and category.baseline is None:
+                ratio_baseline = self._ratio_baseline(category, eligible)
+
             impacts = {
-                p.id: self._category_impact(p, category, eligible)
+                p.id: self._category_impact(p, category, eligible, ratio_baseline)
                 for p in eligible
             }
 
@@ -172,6 +183,7 @@ class ValuationEngine:
         player: PlayerProjection,
         category: CategorySpec,
         pool: list[PlayerProjection],
+        precomputed_baseline: float | None = None,
     ) -> float:
         if not category.is_ratio:
             raw = self._raw_category_value(player, category)
@@ -187,7 +199,7 @@ class ValuationEngine:
 
         baseline = category.baseline
         if baseline is None:
-            baseline = self._ratio_baseline(category, pool)
+            baseline = precomputed_baseline if precomputed_baseline is not None else self._ratio_baseline(category, pool)
 
         return category.direction.sign * (raw - baseline) * denominator / category.ratio_multiplier
 
