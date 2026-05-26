@@ -405,6 +405,9 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     .col-pos::after { content: " | "; }
     .detail-body { grid-template-columns: 1fr; }
     .compare-modal { width: 95%; padding: 1rem; }
+    .config-bar { flex-direction: column; gap: 0.4rem; align-items: stretch; }
+    .customize-toggle { width: 100%; text-align: center; }
+    .export-btn { width: 100%; text-align: center; margin-left: 0; }
 }
 
 .export-btn {
