@@ -160,6 +160,21 @@ def _compute_tiers(results: list[ValuationResult], num_tiers: int = 8) -> dict[s
     return tiers
 
 
+def _config_summary(mode: str, cats: list[str], pcats: list[str], split_rp: bool) -> str:
+    """Build a human-readable summary of the active config."""
+    from web.category_registry import CATEGORY_PRESETS
+    if mode == "points":
+        return "Points League \u00b7 12 teams \u00b7 $200 budget"
+    for name, preset in CATEGORY_PRESETS.items():
+        if cats == preset["cats"] and pcats == preset["pcats"]:
+            label = "Standard 5x5" if name == "5x5" else "6x6 (OBP/QS)" if name == "6x6" else name
+            suffix = " \u00b7 SP/RP split" if split_rp else ""
+            return f"{label} \u00b7 12 teams \u00b7 $200 budget{suffix}"
+    cat_count = len(cats) + len(pcats)
+    suffix = " \u00b7 SP/RP split" if split_rp else ""
+    return f"Custom {cat_count} categories \u00b7 12 teams \u00b7 $200 budget{suffix}"
+
+
 def _build_context(args):
     """Parse request args and build template context."""
     mode = args.get("mode", "categories")
@@ -273,6 +288,7 @@ def _build_context(args):
         "position_ranks": position_ranks,
         "dollar_values": dollar_values,
         "tiers": tiers,
+        "config_summary": _config_summary(mode, cats, pcats, split_rp),
     }
 
 

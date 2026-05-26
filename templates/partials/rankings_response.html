@@ -1,6 +1,8 @@
 {% include "partials/rankings_table.html" %}
 
-<section id="setup-panel" class="setup-panel" hx-swap-oob="true">
+<span class="config-summary" hx-swap-oob="innerHTML:.config-summary">{{ config_summary }}</span>
+
+<section id="setup-panel" class="setup-panel" hx-swap-oob="innerHTML:#setup-panel">
     {% if mode == 'points' %}
         {% include "partials/setup_points.html" %}
     {% else %}

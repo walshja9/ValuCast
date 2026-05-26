@@ -37,6 +37,21 @@ class TestIndexRoute(unittest.TestCase):
         response = self.client.get("/")
         self.assertIn(b"col-value", response.data)
 
+    def test_index_contains_config_summary(self):
+        """Default page load should show the config summary line."""
+        response = self.client.get("/")
+        self.assertIn(b"config-summary", response.data)
+
+    def test_index_setup_panel_collapsed_by_default(self):
+        """Setup panel should have the collapsed class by default."""
+        response = self.client.get("/")
+        self.assertIn(b"setup-panel collapsed", response.data)
+
+    def test_index_contains_customize_button(self):
+        """Page should have a Customize toggle button."""
+        response = self.client.get("/")
+        self.assertIn(b"customize-toggle", response.data)
+
 
 class TestRankingsRoute(unittest.TestCase):
     def setUp(self):
@@ -57,7 +72,7 @@ class TestRankingsRoute(unittest.TestCase):
 
     def test_rankings_oob_setup_panel(self):
         response = self.client.get("/rankings?mode=categories&cats=R,HR&pcats=K,ERA")
-        self.assertIn(b'hx-swap-oob="true"', response.data)
+        self.assertIn(b'hx-swap-oob="innerHTML:#setup-panel"', response.data)
 
     def test_rankings_roto_mode(self):
         response = self.client.get("/rankings?mode=roto&cats=R,HR&pcats=K,ERA")

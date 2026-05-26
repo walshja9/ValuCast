@@ -25,7 +25,12 @@
         </label>
     </section>
 
-    <section id="setup-panel" class="setup-panel">
+    <div class="config-bar">
+        <span class="config-summary">{{ config_summary }}</span>
+        <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
+    </div>
+
+    <section id="setup-panel" class="setup-panel collapsed">
         {% if mode == 'points' %}
             {% include "partials/setup_points.html" %}
         {% else %}
@@ -78,6 +83,13 @@
 <div id="compare-overlay" class="compare-overlay" style="display:none;"></div>
 
 <script>
+function toggleSetup() {
+    const panel = document.getElementById('setup-panel');
+    const btn = document.querySelector('.customize-toggle');
+    panel.classList.toggle('collapsed');
+    btn.textContent = panel.classList.contains('collapsed') ? 'Customize' : 'Hide';
+}
+
 const selected = new Set();
 
 function toggleCompare(id, el) {

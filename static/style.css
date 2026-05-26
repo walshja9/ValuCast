@@ -56,6 +56,40 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     margin-bottom: 1rem;
 }
 
+.config-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    margin-bottom: 0.5rem;
+}
+.config-summary {
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+}
+.customize-toggle {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #374151;
+    transition: all 0.15s;
+}
+.customize-toggle:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+.setup-panel.collapsed {
+    display: none;
+}
+
 .presets {
     display: flex;
     gap: 0.5rem;
