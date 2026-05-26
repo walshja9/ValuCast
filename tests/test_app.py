@@ -16,9 +16,9 @@ class TestIndexRoute(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
 
-    def test_index_contains_league_values(self):
+    def test_index_contains_valucast(self):
         response = self.client.get("/")
-        self.assertIn(b"League Values", response.data)
+        self.assertIn(b"ValuCast", response.data)
 
     def test_index_contains_mode_selector(self):
         response = self.client.get("/")
