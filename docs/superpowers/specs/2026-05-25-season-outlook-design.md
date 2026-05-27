@@ -15,7 +15,7 @@ Add a season outlook pipeline that combines 2026 actual YTD stats with rest-of-s
 | Component | Definition | Source |
 |---|---|---|
 | `actuals_ytd` | Observed 2026 season stats through an as-of date, including derived QS | MLB Stats API season stats + game logs |
-| `ros_projection` | Blended Steamer + ZiPS rest-of-season projections | FanGraphs API (existing) |
+| `ros_projection` | Steamer rest-of-season projections (ZiPS ROS unavailable) | FanGraphs API (`steamerr`) |
 | `season_outlook` | Combined projected 2026 final line: `actuals_ytd + ros_projection` | Computed during refresh |
 
 These are data views, not product modes. The engine consumes `season_outlook` for redraft valuation.
@@ -47,16 +47,45 @@ These are data views, not product modes. The engine consumes `season_outlook` fo
 - `strikeOuts` normalized to `K` in adapter output
 - Player ID: `player.id` (MLBAM ID)
 
+**IP baseball notation normalization:** The MLB Stats API returns innings pitched in baseball notation where the decimal represents outs, not tenths: `4.2` means 4 innings + 2 outs = 4⅔ innings. The adapter must convert to true decimal before any arithmetic:
+
+```
+def normalize_ip(ip_baseball: float) -> float:
+    """Convert baseball IP notation (4.2 = 4⅔) to true decimal (4.667)."""
+    whole = int(ip_baseball)
+    outs = round((ip_baseball - whole) * 10)
+    return whole + outs / 3
+```
+
+This applies to both season stats and game log stats (for QS derivation: `normalize_ip(ip) >= 6.0`). FanGraphs projections already use true decimal notation and require no conversion.
+
 **QS derivation:** Per-pitcher game logs at `https://statsapi.mlb.com/api/v1/people/{id}/stats?stats=gameLog&group=pitching&season=2026&gameType=R`
 - Fetch game logs only for pitchers with `gamesStarted > 0` (257 pitchers as of spike)
 - `QS = count of starts where inningsPitched >= 6.0 and earnedRuns <= 3`
 - ~21 seconds total for full batch at current player count
 
-### FanGraphs API — ROS Projections (Existing)
+### FanGraphs API — ROS Projections
 
 **Endpoint:** `https://www.fangraphs.com/api/projections`
-- Steamer + ZiPS, hitters and pitchers (4 endpoints)
+
+**CRITICAL: The existing code fetches full-season projections (`type=steamer`, `type=zips`), not rest-of-season. These include production already accrued in 2026. Adding actuals to full-season projections would double-count completed games.**
+
+The pipeline must switch to explicit ROS endpoints:
+- `type=steamerr` — Steamer Rest-of-Season (confirmed working: 4353 hitters, 5538 pitchers)
+- `type=zipsr` — ZiPS Rest-of-Season (**currently returning 500 errors, unavailable**)
+
+**Decision: Use Steamer ROS only (`steamerr`) for the ROS component.** ZiPS ROS is unavailable. Steamer ROS alone provides sufficient coverage (4353 hitters, 5538 pitchers) and updates throughout the season. If ZiPS ROS becomes available later, the blender can be re-enabled.
+
+Spike verification (Judge, 2026):
+- Steamer full-season: PA=633 (would double-count ~241 actual PA)
+- Steamer ROS: PA=450 (correct — remaining games only)
+- MLB actuals: PA=241
+- Sum: 241 + 450 = 691 (plausible full-season projection)
+
+**Modified files:** `scraper/fangraphs.py` must change `type=steamer` → `type=steamerr` for both hitter and pitcher endpoints, and remove ZiPS endpoints until `zipsr` is available. `scraper/blend.py` receives only Steamer ROS data (no blending needed with single source, but the pipeline structure is preserved for when ZiPS ROS returns).
+
 - Player ID: `playerids` (FanGraphs ID), with `xMLBAMID`/`MLBAMID` for join
+- Field names and schema are identical to the full-season endpoints
 
 ### Identity Join
 
@@ -109,7 +138,7 @@ Players with ROS projections but no 2026 actuals (not yet debuted, injured, etc.
 
 ### Players Without ROS Projections
 
-Players with 2026 actuals but no ROS projection (call-ups, newly rostered relievers): included in season outlook as `actuals_ytd + zero ROS`. Their counting stats are their actuals to date; rate stats are calculated from actuals alone. These records are marked with `"has_ros": false` in metadata so the web app can optionally flag them as having no projection coverage. This ensures players who have already accumulated real category value are not erased from rankings.
+Players with 2026 actuals but no ROS projection (call-ups, newly rostered relievers): included in season outlook as `actuals_ytd + zero ROS`. Their counting stats are their actuals to date; rate stats are calculated from actuals alone. These records are marked with `"has_ros": false` in metadata. **The web app must display a visible "No ROS projection" indicator** on these players (e.g., a badge or dimmed row) so users understand these are partial-season lines, not projected full-season values. This is required, not optional — without it, a call-up with 30 PA appears comparable to a projected 600 PA full-season line.
 
 ## Refresh Pipeline
 
@@ -149,7 +178,7 @@ Dataset metadata is written to a **sidecar file** at `data/projections/metadata.
 {
   "as_of": "2026-05-25",
   "actuals_source": "mlb_stats_api",
-  "ros_source": "fangraphs_steamer_zips",
+  "ros_source": "fangraphs_steamer_ros",
   "actuals_hitters": 557,
   "actuals_pitchers": 638,
   "ros_players": 9366,
@@ -166,6 +195,7 @@ Dataset metadata is written to a **sidecar file** at `data/projections/metadata.
 - If any QS game log fetch fails for a starting pitcher: the entire actuals refresh aborts and retains the last complete output. QS must be complete for all starters or not included at all — partial QS data would silently produce incorrect rankings for any league using QS categories.
 - If FanGraphs fetch fails: refresh aborts, retains last valid `data/projections/ros.json`. Log the failure.
 - If both actuals and ROS exist but combine step fails: retain last valid `current.json`. Log the failure.
+- **Atomic publish:** Refresh writes output to staging files (`current.json.tmp`, `metadata.json.tmp`), then renames both atomically only after the complete refresh succeeds. This prevents a failed write from leaving mismatched files (e.g., stale rankings with a fresh `as_of` date, or fresh rankings with stale metadata).
 - The web app always reads `current.json`. It does not know or care whether it contains outlook or projection-only data.
 
 ## New Files
@@ -179,8 +209,9 @@ Dataset metadata is written to a **sidecar file** at `data/projections/metadata.
 
 | File | Change |
 |---|---|
-| `scraper/blend.py` | Add `H_ALLOWED` normalization for pitchers (rename `H` → `H_ALLOWED` in `_finalize_pitcher_stats`) |
-| `scraper/refresh.py` | Update orchestration: fetch actuals, fetch ROS, combine, write output files and metadata sidecar |
+| `scraper/fangraphs.py` | Switch from full-season (`steamer`/`zips`) to ROS (`steamerr`) endpoints. Remove ZiPS until `zipsr` is available. |
+| `scraper/blend.py` | Add `H_ALLOWED` normalization for pitchers (rename `H` → `H_ALLOWED` in `_finalize_pitcher_stats`). Handle single-source (Steamer-only) gracefully. |
+| `scraper/refresh.py` | Update orchestration: fetch actuals, fetch ROS, combine, write output files and metadata sidecar with atomic publish |
 | `src/league_values/post_processors.py` | Fix `AgeCurve` to check `STARTER`/`RELIEVER` pools, not just `PITCHER` |
 | `app.py` | Fix `_compute_tiers` to enforce minimum tier size invariant (no tier < 3 players) |
 | `web/projection_store.py` | Load `metadata.json` sidecar if present, expose `as_of` property |
@@ -239,5 +270,5 @@ Pitcher records use `H_ALLOWED` (not `H`), `K` (not `SO`/`strikeOuts`), and incl
 - Dynasty mode (DD 7x7 or General)
 - Prospect data ingestion
 - Scheduled refresh (cron/Render job)
-- Web app UI changes beyond displaying `as_of` date in the footer
+- Web app UI changes beyond: displaying `as_of` date in the footer, and "No ROS projection" indicator on actuals-only players
 - ReplacementLevel or PositionScarcity post-processor activation
