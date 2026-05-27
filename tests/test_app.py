@@ -208,3 +208,62 @@ class TestExportRoute(unittest.TestCase):
         pos_col = header.index("Positions")
         for row in reader:
             self.assertNotIn("SP", row[pos_col].split(", "))
+
+
+class TestComputeTiers(unittest.TestCase):
+    def test_single_player_tier_merges_down(self):
+        """If tier 1 has only 1 player, merge it into tier 2."""
+        from app import _compute_tiers
+        from league_values.models import PlayerProjection, ValuationResult
+
+        players = []
+        values = [20.0, 10.0, 9.5, 9.0, 8.5, 8.0, 7.5, 7.0, 6.5, 6.0]
+        for i, v in enumerate(values):
+            proj = {"id": str(i), "name": f"P{i}", "pool": "hitter", "stats": {"HR": 10}}
+            r = ValuationResult(
+                player=PlayerProjection.from_dict(proj),
+                total_value=v, raw_values={}, z_scores={}, category_values={},
+            )
+            players.append(r)
+
+        tiers = _compute_tiers(players)
+        tier_counts = {}
+        for pid, t in tiers.items():
+            tier_counts[t] = tier_counts.get(t, 0) + 1
+        for tier_num, count in tier_counts.items():
+            self.assertGreaterEqual(count, 3, f"Tier {tier_num} has only {count} players")
+
+    def test_all_same_value_single_tier(self):
+        """If all players have the same value, one tier."""
+        from app import _compute_tiers
+        from league_values.models import PlayerProjection, ValuationResult
+
+        players = []
+        for i in range(10):
+            proj = {"id": str(i), "name": f"P{i}", "pool": "hitter", "stats": {"HR": 10}}
+            r = ValuationResult(
+                player=PlayerProjection.from_dict(proj),
+                total_value=5.0, raw_values={}, z_scores={}, category_values={},
+            )
+            players.append(r)
+
+        tiers = _compute_tiers(players)
+        unique_tiers = set(tiers.values())
+        self.assertEqual(len(unique_tiers), 1)
+
+    def test_fewer_than_three_players_ok(self):
+        """With < 3 players, tiers are assigned without enforcement."""
+        from app import _compute_tiers
+        from league_values.models import PlayerProjection, ValuationResult
+
+        players = []
+        for i, v in enumerate([10.0, 5.0]):
+            proj = {"id": str(i), "name": f"P{i}", "pool": "hitter", "stats": {"HR": 10}}
+            r = ValuationResult(
+                player=PlayerProjection.from_dict(proj),
+                total_value=v, raw_values={}, z_scores={}, category_values={},
+            )
+            players.append(r)
+
+        tiers = _compute_tiers(players)
+        self.assertEqual(len(tiers), 2)

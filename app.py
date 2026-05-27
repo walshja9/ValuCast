@@ -135,31 +135,54 @@ def _compute_tiers(results: list[ValuationResult], num_tiers: int = 8) -> dict[s
     """Assign tier numbers (1 = best) based on value gaps between consecutive players.
 
     Finds the largest gaps in the value sequence and uses them as tier boundaries.
-    Returns player_id -> tier_number mapping.
+    Enforces invariant: no tier has fewer than 3 players (unless total < 3).
     """
     if len(results) < 2:
         return {r.player.id: 1 for r in results}
 
-    # Compute gaps between consecutive players
     gaps = []
     for i in range(len(results) - 1):
         gap = results[i].total_value - results[i + 1].total_value
-        gaps.append((gap, i))  # (gap_size, index after which the break occurs)
+        gaps.append((gap, i))
 
-    # Find the largest gaps to use as tier boundaries
     sorted_gaps = sorted(gaps, key=lambda x: x[0], reverse=True)
-    # Use top (num_tiers - 1) gaps as boundaries
-    break_indices = sorted([g[1] for g in sorted_gaps[:num_tiers - 1]])
+    # Only use gaps with a positive magnitude as tier boundaries
+    break_indices = sorted([g[1] for g in sorted_gaps[:num_tiers - 1] if g[0] > 0])
 
-    # Assign tier numbers
-    tiers = {}
+    tiers_list = []
     current_tier = 1
     for i, r in enumerate(results):
-        tiers[r.player.id] = current_tier
+        tiers_list.append([r.player.id, current_tier])
         if i in break_indices:
             current_tier += 1
 
-    return tiers
+    if len(results) >= 3:
+        changed = True
+        while changed:
+            changed = False
+            tier_counts: dict[int, int] = {}
+            for _, t in tiers_list:
+                tier_counts[t] = tier_counts.get(t, 0) + 1
+
+            for tier_num in sorted(tier_counts.keys()):
+                if tier_counts[tier_num] < 3:
+                    if tier_num == min(tier_counts.keys()):
+                        merge_target = tier_num + 1 if tier_num + 1 in tier_counts else tier_num
+                    else:
+                        merge_target = tier_num - 1
+                    if merge_target != tier_num:
+                        for entry in tiers_list:
+                            if entry[1] == tier_num:
+                                entry[1] = merge_target
+                        changed = True
+                        break
+
+        unique_tiers = sorted(set(t for _, t in tiers_list))
+        remap = {old: new for new, old in enumerate(unique_tiers, 1)}
+        for entry in tiers_list:
+            entry[1] = remap[entry[1]]
+
+    return {pid: t for pid, t in tiers_list}
 
 
 def _config_summary(mode: str, cats: list[str], pcats: list[str], split_rp: bool) -> str:
