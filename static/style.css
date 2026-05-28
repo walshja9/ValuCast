@@ -440,3 +440,50 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     color: #2563eb;
     text-decoration: none;
 }
+
+.mode-btn-dynasty:has(input:checked) { background: #7c3aed; color: #fff; }
+
+.config-bar-locked {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.prospect-badge {
+    display: inline-block;
+    margin-left: 0.3rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #7c3aed;
+    background: #f5f3ff;
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+    vertical-align: middle;
+}
+
+.prospect-rank-badge {
+    display: inline-block;
+    margin-left: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #059669;
+    background: #ecfdf5;
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+    vertical-align: middle;
+}
+
+.notice {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #92400e;
+}

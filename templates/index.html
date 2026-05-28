@@ -7,6 +7,10 @@
       hx-trigger="change delay:100ms, keyup changed delay:300ms from:#search-input"
       hx-sync="this:replace">
 
+    {% if notice %}
+    <div class="notice">{{ notice }}</div>
+    {% endif %}
+
     <section class="mode-selector">
         <label class="mode-btn">
             <input type="radio" name="mode" value="categories"
@@ -23,9 +27,20 @@
                    {{ 'checked' if mode == 'points' else '' }}>
             <span>Points</span>
         </label>
+        {% if dd_available is not false %}
+        <label class="mode-btn mode-btn-dynasty">
+            <input type="radio" name="mode" value="dd_dynasty"
+                   {{ 'checked' if mode == 'dd_dynasty' else '' }}>
+            <span>DD 7x7 Dynasty</span>
+        </label>
+        {% endif %}
     </section>
 
-    {% if mode != 'dd_dynasty' %}
+    {% if mode == 'dd_dynasty' %}
+    <div class="config-bar config-bar-locked">
+        <span class="config-summary">DD 7x7 Dynasty uses Diamond Dynasties' fixed categories, weights, age curves, market calibration, and prospect model. Custom category editing is disabled in this mode.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+    </div>
+    {% else %}
     <div class="config-bar">
         <span class="config-summary">{{ config_summary }}</span>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
@@ -47,6 +62,13 @@
                        {{ 'checked' if not pool else '' }}>
                 <span>All</span>
             </label>
+            {% if mode == 'dd_dynasty' %}
+            <label class="pool-btn">
+                <input type="radio" name="pool" value="mlb"
+                       {{ 'checked' if pool == 'mlb' else '' }}>
+                <span>MLB</span>
+            </label>
+            {% endif %}
             <label class="pool-btn">
                 <input type="radio" name="pool" value="hitter"
                        {{ 'checked' if pool == 'hitter' else '' }}>
@@ -57,6 +79,13 @@
                        {{ 'checked' if pool == 'pitcher' else '' }}>
                 <span>Pitchers</span>
             </label>
+            {% if mode == 'dd_dynasty' %}
+            <label class="pool-btn">
+                <input type="radio" name="pool" value="prospect"
+                       {{ 'checked' if pool == 'prospect' else '' }}>
+                <span>Prospects</span>
+            </label>
+            {% endif %}
         </div>
 
         <select name="position" class="position-select">
@@ -82,6 +111,7 @@
     {% endif %}
 </div>
 
+{% if mode != 'dd_dynasty' %}
 <div id="compare-bar" class="compare-bar" style="display:none;">
     <span id="compare-count">0 selected</span>
     <button id="compare-btn" onclick="openCompare()" disabled>Compare</button>
@@ -89,6 +119,7 @@
 </div>
 
 <div id="compare-overlay" class="compare-overlay" style="display:none;"></div>
+{% endif %}
 
 <script>
 function toggleSetup() {
