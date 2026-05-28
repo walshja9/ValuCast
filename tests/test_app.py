@@ -210,6 +210,53 @@ class TestExportRoute(unittest.TestCase):
             self.assertNotIn("SP", row[pos_col].split(", "))
 
 
+class TestDDDynastyMode(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_dd_dynasty_returns_200_if_available(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/?mode=dd_dynasty")
+        self.assertEqual(response.status_code, 200)
+
+    def test_dd_dynasty_contains_dynasty_value_header(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/?mode=dd_dynasty")
+        self.assertIn(b"Dynasty Value", response.data)
+
+    def test_dd_dynasty_rankings_returns_200(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/rankings?mode=dd_dynasty")
+        self.assertEqual(response.status_code, 200)
+
+    def test_dd_dynasty_export_csv(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/export?mode=dd_dynasty")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/csv", response.content_type)
+        self.assertIn(b"Overall Dynasty Rank", response.data)
+
+    def test_dd_dynasty_fallback_when_unavailable(self):
+        """Direct dd_dynasty URL should work even if feed unavailable — falls back to redraft."""
+        response = self.client.get("/?mode=dd_dynasty")
+        self.assertEqual(response.status_code, 200)
+
+    def test_redraft_still_works(self):
+        """Redraft modes should be completely unaffected."""
+        response = self.client.get("/?mode=categories")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"rankings-table", response.data)
+
+
 class TestNoRosBadgeCSS(unittest.TestCase):
     def test_no_ros_badge_style_exists(self):
         """Static CSS should define .no-ros-badge styles."""

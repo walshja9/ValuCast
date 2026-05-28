@@ -25,6 +25,7 @@
         </label>
     </section>
 
+    {% if mode != 'dd_dynasty' %}
     <div class="config-bar">
         <span class="config-summary">{{ config_summary }}</span>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
@@ -37,6 +38,7 @@
             {% include "partials/setup_categories.html" %}
         {% endif %}
     </section>
+    {% endif %}
 
     <section class="filter-bar">
         <div class="pool-toggle">
@@ -73,7 +75,11 @@
 </form>
 
 <div id="rankings-container">
+    {% if mode == 'dd_dynasty' %}
+    {% include "partials/rankings_table_dynasty.html" %}
+    {% else %}
     {% include "partials/rankings_table.html" %}
+    {% endif %}
 </div>
 
 <div id="compare-bar" class="compare-bar" style="display:none;">

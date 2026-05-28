@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 import sys
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from web.category_registry import (
     DEFAULT_PCATS,
 )
 from web.config_builder import build_config, build_url_params, parse_list
+from web.dd_feed_store import DDFeedStore
 
 app = Flask(__name__)
 
@@ -32,6 +34,92 @@ store = ProjectionStore(DATA_PATH)
 
 # Engine with volume adjustment
 engine = ValuationEngine(post_processors=[VolumeMultiplier()])
+
+# Load DD Dynasty feed once at startup
+DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
+                    str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
+dd_store = DDFeedStore(DD_FEED_PATH)
+
+
+def _compute_dynasty_dollars(rows, num_teams=12, budget=200):
+    """Convert dynasty values to auction dollars proportionally."""
+    positive = [r for r in rows if r.dynasty_value > 0]
+    total_positive = sum(r.dynasty_value for r in positive)
+    total_budget = budget * num_teams
+    dollars = {}
+    if total_positive > 0:
+        for r in rows:
+            if r.dynasty_value > 0:
+                dollars[r.id] = round(r.dynasty_value / total_positive * total_budget, 1)
+            else:
+                dollars[r.id] = 0.0
+    return dollars
+
+
+def _compute_dynasty_tiers(rows, num_tiers=8):
+    """Assign tiers from dynasty value gaps."""
+    if len(rows) < 2:
+        return {r.id: 1 for r in rows}
+    gaps = []
+    for i in range(len(rows) - 1):
+        gap = rows[i].dynasty_value - rows[i + 1].dynasty_value
+        if gap > 0:
+            gaps.append((gap, i))
+    sorted_gaps = sorted(gaps, key=lambda x: x[0], reverse=True)
+    break_indices = sorted([g[1] for g in sorted_gaps[:num_tiers - 1]])
+    tiers_list = []
+    current_tier = 1
+    for i, r in enumerate(rows):
+        tiers_list.append([r.id, current_tier])
+        if i in break_indices:
+            current_tier += 1
+    if len(rows) >= 3:
+        changed = True
+        while changed:
+            changed = False
+            tier_counts = {}
+            for _, t in tiers_list:
+                tier_counts[t] = tier_counts.get(t, 0) + 1
+            for tier_num in sorted(tier_counts.keys()):
+                if tier_counts[tier_num] < 3:
+                    if tier_num == min(tier_counts.keys()):
+                        merge_target = tier_num + 1 if tier_num + 1 in tier_counts else tier_num
+                    else:
+                        merge_target = tier_num - 1
+                    if merge_target != tier_num:
+                        for entry in tiers_list:
+                            if entry[1] == tier_num:
+                                entry[1] = merge_target
+                        changed = True
+                        break
+        unique_tiers = sorted(set(t for _, t in tiers_list))
+        remap = {old: new for new, old in enumerate(unique_tiers, 1)}
+        for entry in tiers_list:
+            entry[1] = remap[entry[1]]
+    return {pid: t for pid, t in tiers_list}
+
+
+def _build_dynasty_context(args):
+    """Build template context for DD Dynasty mode. Bypasses engine entirely."""
+    pool = args.get("pool", "")
+    position = args.get("position", "")
+    search = args.get("search", "")
+    rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
+    rows = rows[:200]
+    dynasty_dollars = _compute_dynasty_dollars(rows)
+    tiers = _compute_dynasty_tiers(rows)
+    return {
+        "mode": "dd_dynasty",
+        "pool": pool,
+        "position": position,
+        "search": search,
+        "dd_rows": rows,
+        "dynasty_dollars": dynasty_dollars,
+        "tiers": tiers,
+        "dd_available": dd_store.is_available,
+        "dd_generated_at": dd_store.generated_at,
+        "as_of": store.as_of,
+    }
 
 
 def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResult]:
@@ -320,13 +408,53 @@ def _build_context(args):
 
 @app.route("/")
 def index():
+    mode = request.args.get("mode", "categories")
+    if mode == "dd_dynasty":
+        if not dd_store.is_available:
+            fallback_args = request.args.to_dict(flat=False)
+            fallback_args["mode"] = ["categories"]
+            from werkzeug.datastructures import ImmutableMultiDict
+            ctx = _build_context(ImmutableMultiDict(
+                (k, v) for k, vals in fallback_args.items() for v in vals
+            ))
+            ctx["notice"] = "DD 7x7 Dynasty data is not available. Showing default rankings."
+            ctx["dd_available"] = False
+            return render_template("index.html", **ctx)
+        ctx = _build_dynasty_context(request.args)
+        return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
+    ctx["dd_available"] = dd_store.is_available
     return render_template("index.html", **ctx)
 
 
 @app.route("/rankings")
 def rankings():
+    mode = request.args.get("mode", "categories")
+    if mode == "dd_dynasty":
+        if not dd_store.is_available:
+            from werkzeug.datastructures import ImmutableMultiDict
+            fallback_args = request.args.to_dict(flat=False)
+            fallback_args["mode"] = ["categories"]
+            ctx = _build_context(ImmutableMultiDict(
+                (k, v) for k, vals in fallback_args.items() for v in vals
+            ))
+            ctx["dd_available"] = False
+        else:
+            ctx = _build_dynasty_context(request.args)
+        html = render_template("partials/rankings_response.html", **ctx)
+        response = make_response(html)
+        params = {"mode": "dd_dynasty"}
+        if ctx.get("pool"):
+            params["pool"] = ctx["pool"]
+        if ctx.get("position"):
+            params["position"] = ctx["position"]
+        if ctx.get("search"):
+            params["search"] = ctx["search"]
+        push_url = "/?" + "&".join(f"{k}={v}" for k, v in params.items() if v)
+        response.headers["HX-Replace-Url"] = push_url
+        return response
     ctx = _build_context(request.args)
+    ctx["dd_available"] = dd_store.is_available
     html = render_template("partials/rankings_response.html", **ctx)
     response = make_response(html)
     url_params = build_url_params(
@@ -342,6 +470,34 @@ def rankings():
 
 @app.route("/player/<player_id>")
 def player_detail(player_id):
+    mode = request.args.get("mode", "categories")
+
+    if mode == "dd_dynasty" and dd_store.is_available:
+        dd_row = dd_store.get_by_id(player_id)
+        if dd_row is None:
+            return "<div class='error'>Player not found</div>", 404
+
+        mlb_stats = None
+        mlb_stats_actual = None
+        mlb_stats_ros = None
+        if not dd_row.is_prospect:
+            # Try to find matching season outlook by name
+            name_lower = dd_row.name.lower()
+            for proj in store.get_all():
+                if proj.name.lower() == name_lower:
+                    mlb_stats = proj.stats
+                    mlb_stats_actual = proj.metadata.get("stats_actual")
+                    mlb_stats_ros = proj.metadata.get("stats_ros")
+                    break
+
+        return render_template(
+            "partials/player_detail_dynasty.html",
+            row=dd_row,
+            mlb_stats=mlb_stats,
+            mlb_stats_actual=mlb_stats_actual,
+            mlb_stats_ros=mlb_stats_ros,
+        )
+
     player_proj = store.get_by_id(player_id)
     if not player_proj:
         return "<div class='error'>Player not found</div>", 404
@@ -384,6 +540,30 @@ def compare():
 
 @app.route("/export")
 def export_csv():
+    mode = request.args.get("mode", "categories")
+
+    if mode == "dd_dynasty" and dd_store.is_available:
+        ctx = _build_dynasty_context(request.args)
+        rows = ctx["dd_rows"]
+        dynasty_dollars = ctx["dynasty_dollars"]
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
+                         "Age", "Dynasty Value", "Dynasty $", "Prospect Rank", "Level", "ETA"])
+        for row in rows:
+            writer.writerow([
+                row.dynasty_rank, row.name, row.player_type.upper(),
+                ", ".join(row.positions) or "", row.team, row.age or "",
+                row.dynasty_value, dynasty_dollars.get(row.id, 0),
+                row.prospect_rank or "", row.level or "", row.eta or "",
+            ])
+
+        response = make_response(output.getvalue())
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = "attachment; filename=valucast-dynasty-rankings.csv"
+        return response
+
     ctx = _build_context(request.args)
     results = ctx["results"]
     display_columns = ctx["display_columns"]

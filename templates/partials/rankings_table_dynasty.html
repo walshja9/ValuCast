@@ -1,0 +1,30 @@
+<div class="results-meta"><span>{{ dd_rows | length }} dynasty players</span></div>
+<table class="rankings-table dynasty-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Player</th>
+            <th>Type</th>
+            <th>Positions</th>
+            <th>Team</th>
+            <th>Dynasty Value</th>
+            <th>Dynasty $</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in dd_rows %}
+        <tr class="player-row" onclick="toggleDetail('{{ row.id }}', this)">
+            <td>{{ row.dynasty_rank }}</td>
+            <td><strong>{{ row.name }}</strong></td>
+            <td>{{ row.player_type.upper() }}</td>
+            <td>{{ row.positions | join(', ') or '&mdash;' }}</td>
+            <td>{{ row.team }}</td>
+            <td class="val-pos">{{ row.dynasty_value }}</td>
+            <td>{% if dynasty_dollars.get(row.id, 0) > 0 %}${{ dynasty_dollars.get(row.id, 0) | int }}{% else %}&mdash;{% endif %}</td>
+        </tr>
+        <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
+            <td colspan="7"></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
