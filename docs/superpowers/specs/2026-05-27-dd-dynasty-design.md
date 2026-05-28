@@ -95,11 +95,11 @@ Pitcher example:
 - **Reject feed** if `schema_version != "1.0"`
 - **Reject feed** if `players` is missing or empty
 - **Reject feed** if duplicate `id` values exist
-- **Skip + count** records missing `id`, `player_type`, `name`, or non-numeric `dynasty_value`
+- **Skip + count** records missing `id`, `player_type`, `name`, non-numeric `dynasty_value`, or non-numeric `dynasty_rank`
 - **Reject feed** if invalid record rate exceeds 5%
 - **Warn** if `generated_at` is older than 48 hours
 - **Warn** if any records were skipped (log count)
-- **Sort** by `dynasty_rank` if present; fallback sort by `dynasty_value` descending
+- **Sort** by `dynasty_rank` ascending (required field, no fallback — DD feed is the ranking authority)
 
 ### DD-Side Generator
 
@@ -165,6 +165,8 @@ class DynastyRankingRow:
 
 ### Changes to `app.py`
 
+**Rankings route (`/` and `/rankings`):**
+
 `_build_context` detects `mode=dd_dynasty` and branches:
 - Loads rankings from `dd_feed_store` instead of engine results
 - Builds `DynastyRankingRow` list instead of `ValuationResult` list
@@ -173,6 +175,34 @@ class DynastyRankingRow:
 - Computes auction dollars from `dynasty_value` distribution
 - Does NOT run the engine, does NOT compute tiers/position ranks from z-scores
 - Tiers can optionally be computed from `dynasty_value` gaps (same algorithm)
+
+**Player detail route (`/player/<id>`):**
+
+Must branch BEFORE `ProjectionStore` lookup. DD feed IDs (`dd_prospect_*`, `dd_mlb_*`) do not exist in `ProjectionStore` and would 404.
+
+```text
+if mode == dd_dynasty:
+    row = dd_feed_store.get_by_id(player_id)
+    if row is None: return 404
+    if row.player_type == "prospect":
+        render player_detail_dynasty.html (prospect view)
+    else:
+        join to season outlook by mlbam_id for stat display
+        render player_detail_dynasty.html (MLB view)
+else:
+    existing ProjectionStore lookup + engine path
+```
+
+**Compare route (`/compare`):**
+
+Compare is **disabled in DD Dynasty mode** for v1. The current compare modal assumes `ValuationResult` with `raw_values`, `z_scores`, and `category_values` — none of which exist for `DynastyRankingRow`. Compare checkboxes are hidden in the DD Dynasty rankings table. A dynasty-specific compare modal can be added in a future version.
+
+**URL fallback when feed is unavailable:**
+
+If `mode=dd_dynasty` is requested via URL but `dd_feed_store.is_available` is False:
+- Redirect to `/?mode=categories` (default redraft)
+- Flash a notice: "DD 7x7 Dynasty data is not available. Showing default rankings."
+- This prevents broken shared URLs and direct navigation from crashing
 
 ### URL Behavior
 
@@ -266,20 +296,20 @@ Same card layout pattern as redraft mode. Prospect badge and dynasty value visib
 | File | Responsibility |
 |---|---|
 | `web/dd_feed_store.py` | Load, validate, and serve DD dynasty feed at startup |
-| `web/models.py` (or extend existing) | `DynastyRankingRow` dataclass |
+| `web/dynasty_models.py` | `DynastyRankingRow` dataclass |
+| `templates/partials/rankings_table_dynasty.html` | Dynasty-specific rankings table (no category columns, prospect badges, dynasty value header) |
+| `templates/partials/player_detail_dynasty.html` | Dynasty-specific player detail (branches MLB vs prospect internally) |
 | DD repo: `generate_valucast_feed.py` | Generate `dd_dynasty_feed.json` from DD valuations |
 
 ## Modified Files
 
 | File | Change |
 |---|---|
-| `app.py` | DD Dynasty branch in `_build_context`, new `/player/<id>` handling for prospects, dynasty auction dollars, URL stripping |
-| `templates/index.html` | DD Dynasty mode button (conditional), locked config card, extended pool filter |
-| `templates/partials/rankings_table.html` | Dynasty column headers, prospect badges, type badges, hidden category columns |
-| `templates/partials/rankings_response.html` | OOB swap for DD Dynasty config card |
-| `templates/partials/player_detail.html` | Branch: MLB detail vs prospect detail |
-| `static/style.css` | Prospect badge, locked config card, dynasty-specific styles |
-| `web/config_builder.py` | `dd_dynasty` mode handling, URL param stripping |
+| `app.py` | DD Dynasty branch in `_build_context`, `/player/<id>` routes to `dd_feed_store` first in DD mode, compare disabled in DD mode, URL fallback when feed unavailable, dynasty auction dollars |
+| `templates/index.html` | DD Dynasty mode button (conditional on `dd_available`), locked config card, extended pool filter, compare bar hidden in DD mode |
+| `templates/partials/rankings_response.html` | Include dynasty table partial when `mode == dd_dynasty` |
+| `static/style.css` | Prospect badge, prospect-rank badge, locked config card, dynasty-specific styles |
+| `web/config_builder.py` | `dd_dynasty` mode handling, URL param stripping for `cats`/`pcats`/`w_*`/`split_rp`/`pt_*` |
 
 ## What This Spec Does NOT Include
 
