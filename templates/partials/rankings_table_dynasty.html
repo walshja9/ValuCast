@@ -1,26 +1,48 @@
-<div class="results-meta"><span>{{ dd_rows | length }} dynasty players</span></div>
-<table class="rankings-table dynasty-table">
+<div class="results-meta">
+    <span>{{ dd_rows | length }} players{% if dd_rows | length == 200 %} (showing top 200){% endif %}</span>
+</div>
+
+{% if dd_rows %}
+<table class="rankings-table">
     <thead>
         <tr>
-            <th>#</th>
-            <th>Player</th>
-            <th>Type</th>
-            <th>Positions</th>
-            <th>Team</th>
-            <th>Dynasty Value</th>
-            <th>Dynasty $</th>
+            <th class="col-rank sortable" onclick="sortTable(0)">#</th>
+            <th class="col-name sortable" onclick="sortTable(1)">Player</th>
+            <th class="col-pos">Pos</th>
+            <th class="col-team sortable" onclick="sortTable(3)">Team</th>
+            <th class="col-age sortable" onclick="sortTable(4)">Age</th>
+            <th class="col-dollars sortable" onclick="sortTable(5)">Dynasty $</th>
+            <th class="col-value sortable" onclick="sortTable(6)">Dynasty Value</th>
         </tr>
     </thead>
     <tbody>
+        {% set tier_colors = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#6b7280', '#9ca3af'] %}
         {% for row in dd_rows %}
-        <tr class="player-row" onclick="toggleDetail('{{ row.id }}', this)">
-            <td>{{ row.dynasty_rank }}</td>
-            <td><strong>{{ row.name }}</strong></td>
-            <td>{{ row.player_type.upper() }}</td>
-            <td>{{ row.positions | join(', ') or '&mdash;' }}</td>
-            <td>{{ row.team }}</td>
-            <td class="val-pos">{{ row.dynasty_value }}</td>
-            <td>{% if dynasty_dollars.get(row.id, 0) > 0 %}${{ dynasty_dollars.get(row.id, 0) | int }}{% else %}&mdash;{% endif %}</td>
+        {% set tier = tiers.get(row.id, 0) %}
+        {% set prev_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else tier %}
+        <tr class="player-row {% if tier != prev_tier %}tier-break{% endif %}" onclick="toggleDetail('{{ row.id }}', this)">
+            <td class="col-rank">{{ row.dynasty_rank }}</td>
+            <td class="col-name">
+                <strong>{{ row.name }}</strong>
+                {% if row.is_prospect %}
+                <span class="prospect-badge">Prospect</span>
+                {% if row.prospect_rank %}
+                <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
+                {% endif %}
+                {% endif %}
+                {% if tier != prev_tier or loop.index0 == 0 %}
+                <span class="tier-badge" style="background: {{ tier_colors[(tier - 1) % tier_colors|length] }}">T{{ tier }}</span>
+                {% endif %}
+            </td>
+            <td class="col-pos">{{ row.positions | join(', ') or '&mdash;' }}</td>
+            <td class="col-team">{{ row.team }}</td>
+            <td class="col-age">{{ row.age or '&mdash;' }}</td>
+            <td class="col-dollars {{ 'val-pos' if dynasty_dollars.get(row.id, 0) > 0 else '' }}">
+                {% if dynasty_dollars.get(row.id, 0) > 0 %}${{ dynasty_dollars.get(row.id, 0) | int }}{% else %}&mdash;{% endif %}
+            </td>
+            <td class="col-value val-pos">
+                {{ "%.1f" | format(row.dynasty_value) }}
+            </td>
         </tr>
         <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
             <td colspan="7"></td>
@@ -28,3 +50,8 @@
         {% endfor %}
     </tbody>
 </table>
+{% else %}
+<div class="no-results">
+    <p>No players found. Try adjusting your filters.</p>
+</div>
+{% endif %}

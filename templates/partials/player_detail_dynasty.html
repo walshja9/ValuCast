@@ -1,1 +1,144 @@
-<div class="player-detail"><h3>{{ row.name }}</h3><span>Dynasty Value: {{ row.dynasty_value }}</span></div>
+<div class="player-detail">
+    <div class="detail-header">
+        <h3>{{ row.name }}</h3>
+        <span class="detail-meta">
+            {{ row.positions | join(', ') or 'N/A' }}
+            {% if row.team %} | {{ row.team }}{% endif %}
+            {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
+        </span>
+        <span class="detail-value val-pos">
+            Dynasty Value: {{ "%.1f" | format(row.dynasty_value) }}
+        </span>
+    </div>
+
+    <div class="detail-body">
+        {% if row.is_prospect %}
+        <div class="detail-section">
+            <h4>Prospect Profile</h4>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Prospect Rank</span>
+                    <span class="stat-value">#{{ row.prospect_rank or '—' }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Level</span>
+                    <span class="stat-value">{{ row.level or '—' }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ETA</span>
+                    <span class="stat-value">{{ row.eta or '—' }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Age</span>
+                    <span class="stat-value">{{ row.age or '—' }}</span>
+                </div>
+                {% if row.breakout_label %}
+                <div class="stat-item">
+                    <span class="stat-label">Trend</span>
+                    <span class="stat-value">{{ row.breakout_label | replace('_', ' ') | title }}{% if row.breakout_rank_change %} ({{ '+' if row.breakout_rank_change > 0 else '' }}{{ row.breakout_rank_change }}){% endif %}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if row.source_ranks %}
+        <div class="detail-section">
+            <h4>Source Rankings</h4>
+            <div class="stat-grid">
+                {% for source, rank in row.source_ranks.items() %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ source | upper }}</span>
+                    <span class="stat-value">#{{ rank | int if rank is number else rank }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if row.stat_line %}
+        <div class="detail-section">
+            <h4>MiLB Stats</h4>
+            <div class="stat-grid">
+                {% for key, value in row.stat_line.items() %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key | upper }}</span>
+                    <span class="stat-value">
+                        {% if value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        {% if mlb_stats %}
+        <div class="detail-section">
+            <h4>2026 Season Outlook</h4>
+            <div class="stat-grid">
+                {% for key, value in mlb_stats.items() %}
+                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if mlb_stats_actual %}
+        <div class="detail-section">
+            <h4>2026 Actual Stats</h4>
+            <div class="stat-grid">
+                {% for key, value in mlb_stats_actual.items() %}
+                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if mlb_stats_ros %}
+        <div class="detail-section">
+            <h4>ROS Projection (Steamer)</h4>
+            <div class="stat-grid">
+                {% for key, value in mlb_stats_ros.items() %}
+                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not mlb_stats %}
+        <div class="detail-section">
+            <p>No season outlook stats available for this player.</p>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
