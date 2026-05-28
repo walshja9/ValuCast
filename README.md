@@ -1,154 +1,94 @@
-# League Values
+# ValuCast
 
-League Values is a standalone fantasy baseball valuation engine built around one idea:
-the league configuration owns the math.
+Player values tuned to your league.
 
-Instead of hardcoding one set of categories, every league declares:
+ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats with rest-of-season projections to produce season outlook rankings for any league format. Configure your scoring mode, categories, and weights — ValuCast handles the math.
 
-- scoring mode: `categories`, `roto`, or `points`
-- player pools: hitters, pitchers, or all players
-- category direction: higher is better or lower is better
-- category weight
-- ratio-stat numerator, denominator, multiplier, and optional baseline
-- points rules for points leagues
+**Live:** [valucast.onrender.com](https://valucast.onrender.com) (deployment pending)
 
-That lets one projection set produce different values for a 5x5 roto league, OBP/QS
-league, saves-plus-holds league, or points league without rewriting the valuation code.
-Post-processors (replacement level, position scarcity, age curve) apply on top of raw
-scores to reflect real roster construction constraints.
+## What It Does
+
+- **Season outlook:** 2026 YTD actuals (MLB Stats API) + Steamer ROS projections (FanGraphs) = projected full-season stat lines
+- **Any format:** H2H Categories, Roto (SGP), or Points leagues
+- **26 categories:** 13 hitting + 13 pitching, with custom weights
+- **SP/RP split:** Separate baselines for starters and relievers
+- **Instant results:** No uploads, no accounts — pick your format, see rankings
+- **CSV export:** Download filtered rankings
 
 ## Quick Start
 
-```powershell
-$env:PYTHONPATH = "src"
-python examples/run_demo.py
+```bash
+# Install
+pip install -r requirements.txt
+
+# Refresh data (fetches latest actuals + projections)
+PYTHONPATH=src:. python -c "from scraper.refresh import refresh; refresh()"
+
+# Run the web app
+PYTHONPATH=src:. python app.py
+# → http://localhost:5001
 ```
 
-```python
-from league_values import CategorySpec, LeagueConfig, PlayerPool, ScoringMode, value_players
+## Data Pipeline
 
-league = LeagueConfig(
-    name="Power league",
-    scoring_mode=ScoringMode.CATEGORIES,
-    categories=(
-        CategorySpec(id="HR", label="Home Runs", pool=PlayerPool.HITTER, stat="HR", weight=2),
-        CategorySpec(id="RBI", label="RBI", pool=PlayerPool.HITTER, stat="RBI"),
-    ),
-)
-
-players = [
-    {"id": "1", "name": "Power Bat", "pool": "hitter", "stats": {"HR": 42, "RBI": 108}},
-    {"id": "2", "name": "Speed Bat", "pool": "hitter", "stats": {"HR": 12, "RBI": 62}},
-]
-
-for result in value_players(players, league):
-    print(result.name, round(result.total_value, 2))
+```
+MLB Stats API  →  scraper/mlb_actuals.py  →  data/actuals/current.json
+                                                     ↓
+FanGraphs API  →  scraper/fangraphs.py    →  scraper/combine.py  →  data/projections/current.json
+               →  scraper/blend.py        →  data/projections/ros.json
 ```
 
-## Scoring Modes
+- **Actuals:** MLB Stats API season stats + game logs (for QS derivation)
+- **ROS:** Steamer Rest-of-Season projections via FanGraphs (`steamerr`)
+- **Combine:** Counting stats add directly. Rate stats (AVG, ERA, WHIP, etc.) recalculated from combined components — never averaged.
+- **IP normalization:** MLB API innings are in baseball notation (4.2 = 4⅔); adapter converts to decimal before arithmetic.
 
-**Categories (z-score)** — each stat is z-scored against the player pool; weights scale
-the contribution. This is the standard mode for head-to-head category leagues.
+## Engine
 
-**Roto (SGP)** — standings gain points replaces z-scores. Pass `scoring_mode=ScoringMode.ROTO`
-and set `sgp_denominator` on each `CategorySpec`. SGP measures how much one unit of a stat
-moves a team up the standings, so a 1-HR improvement in a tight HR race is worth more than
-the same HR in a blowout category.
+The valuation engine is format-agnostic. A league config declares scoring mode, categories, weights, and roster settings. The engine produces z-scores (or SGP/points) against the player pool.
 
-**Points** — define `PointRule` entries on the league config. Each stat is multiplied by
-its coefficient and summed. No pooling or z-scoring; raw point totals drive value.
+Post-processors adjust raw scores:
 
-## Post-Processors
+- **VolumeMultiplier** — discounts part-time players
+- **ReplacementLevel** — anchors replacement-level players at zero
+- **PositionScarcity** — premiums for scarce positions (C, SS)
+- **AgeCurve** — dynasty age adjustments (hitter and pitcher curves)
 
-Post-processors run after raw scores are computed and adjust values to reflect scarcity,
-roster construction, and career trajectory.
-
-```python
-from league_values import ValuationEngine
-from league_values.post_processors import AgeCurve, PositionScarcity, ReplacementLevel
-
-engine = ValuationEngine(post_processors=[
-    ReplacementLevel(),
-    PositionScarcity(multipliers={"C": 1.00, "SS": 1.05, "OF": 0.97, "SP": 1.00, "RP": 0.55}),
-    AgeCurve(
-        hitter_curve={22: 1.65, 27: 1.25, 32: 0.87},
-        pitcher_curve={22: 1.50, 27: 1.15, 32: 0.78},
-    ),
-])
-results = engine.value_players(players, league)
-```
-
-- **ReplacementLevel** — shifts the value distribution so replacement-level players anchor
-  at zero. Players below replacement go negative; stars read as surplus above zero.
-- **PositionScarcity** — multiplies each player's value by a position coefficient. Scarce
-  positions (catcher, shortstop) get a premium; deep positions (OF) get a slight discount.
-  RP are heavily discounted by default since their counting-stat volume is low.
-- **AgeCurve** — applies a multiplier based on player age and pool (hitter vs pitcher).
-  Values between curve breakpoints are linearly interpolated; values outside the range
-  clamp to the nearest endpoint.
-
-## Presets
-
-Three built-in presets cover the most common league formats:
+### Presets
 
 | Preset | Mode | Categories |
 |---|---|---|
 | `standard_5x5` | Categories | R, HR, RBI, SB, AVG / W, K, ERA, WHIP, SV |
-| `default_points` | Points | Standard ESPN/Yahoo scoring coefficients |
-| `dd_7x7` | Categories | R, HR, RBI, SB, AVG, OBP, XBH / W, K, ERA, WHIP, SV, HLD, QS |
+| `default_points` | Points | Standard scoring coefficients |
+| `dd_7x7` | Categories | 7 hitting / 6 SP / 6 RP with custom weights |
 
-```python
-from league_values.presets import standard_5x5, dd_7x7
+## Project Structure
 
-league = standard_5x5()
+```
+src/league_values/     Engine: models, scoring, post-processors, presets
+scraper/               Data pipeline: FanGraphs, MLB Stats API, combiner, refresh
+web/                   Web layer: projection store, category registry, config builder
+app.py                 Flask app (5 routes: /, /rankings, /player, /compare, /export)
+templates/             Jinja2 + htmx templates
+static/                CSS
+data/                  Projections, actuals, metadata
+tests/                 240 unit tests
 ```
 
-## Ratio Categories
+## Tests
 
-Ratio categories are volume-adjusted. A player hitting `.320` over `600 AB` can be more
-valuable than a player hitting `.350` over `100 AB` because the engine values category
-impact, not just the raw rate.
-
-For example, batting average can be configured as:
-
-```json
-{
-  "id": "AVG",
-  "label": "Batting Average",
-  "pool": "hitter",
-  "numerator_stats": ["H"],
-  "denominator_stats": ["AB"],
-  "direction": "higher"
-}
+```bash
+PYTHONPATH=src:. python -m unittest discover -s tests -v
 ```
 
-ERA can be configured as:
+## Roadmap
 
-```json
-{
-  "id": "ERA",
-  "label": "ERA",
-  "pool": "pitcher",
-  "numerator_stats": ["ER"],
-  "denominator_stats": ["IP"],
-  "ratio_multiplier": 9,
-  "direction": "lower"
-}
-```
-
-## Project Shape
-
-- `src/league_values/models.py` — league config, category specs, points rules, player projections, roster settings
-- `src/league_values/engine.py` — category z-score, roto SGP, and points league scoring
-- `src/league_values/post_processors.py` — ReplacementLevel, PositionScarcity, AgeCurve
-- `src/league_values/presets.py` — standard_5x5, default_points, dd_7x7
-- `src/league_values/config_loader.py` — JSON/dict config deserialization
-- `examples/` — sample league configs and demo input
-- `tests/` — behavior tests for all scoring modes and post-processors
-
-## Next Useful Milestones
-
-1. Add auction dollar conversion (translate surplus value to $ budget).
-2. Add keeper/dynasty modifiers (contract years, keeper cost discount).
-3. Add DD adapter (wire DD projection exports directly into this engine).
-4. Wrap with an API or app UI for league setup.
+- [x] Valuation engine with z-score, roto, and points modes
+- [x] FanGraphs data pipeline (Steamer ROS)
+- [x] Web app with category setup, rankings, player detail, compare, CSV export
+- [x] Season outlook: 2026 actuals + ROS projections
+- [x] Tier visualization, position ranks, auction dollars
+- [ ] DD 7x7 Dynasty preset with prospect data feed
+- [ ] Dynasty toggle (AgeCurve + prospect ranks)
+- [ ] Render deployment
+- [ ] Engine result caching for faster player detail loads
