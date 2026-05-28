@@ -32,6 +32,10 @@ class DynastyRankingRow:
     # Raw metadata passthrough
     metadata: dict = field(default_factory=dict)
 
+    TEAM_CODE_MAP = {
+        "KCR": "KC", "SDP": "SD", "SFG": "SF", "TBR": "TB", "WSN": "WSH",
+    }
+
     @property
     def is_prospect(self) -> bool:
         return self.player_type == "prospect"
@@ -40,12 +44,14 @@ class DynastyRankingRow:
     def from_feed(cls, record: dict) -> DynastyRankingRow:
         """Create from a DD feed record."""
         positions = record.get("positions") or []
+        raw_team = record.get("mlb_team", "")
+        team = cls.TEAM_CODE_MAP.get(raw_team, raw_team)
         return cls(
             id=record["id"],
             name=record["name"],
             player_type=record["player_type"],
             positions=tuple(positions),
-            team=record.get("mlb_team", ""),
+            team=team,
             age=record.get("age"),
             dynasty_rank=record["dynasty_rank"],
             dynasty_value=record["dynasty_value"],

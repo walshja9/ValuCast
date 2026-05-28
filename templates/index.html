@@ -31,14 +31,23 @@
         <label class="mode-btn mode-btn-dynasty">
             <input type="radio" name="mode" value="dd_dynasty"
                    {{ 'checked' if mode == 'dd_dynasty' else '' }}>
-            <span>DD 7x7 Dynasty</span>
+            <span>Dynasty</span>
+        </label>
+        <label class="mode-btn mode-btn-prospects">
+            <input type="radio" name="mode" value="prospects"
+                   {{ 'checked' if mode == 'prospects' else '' }}>
+            <span>Prospects</span>
         </label>
         {% endif %}
     </section>
 
     {% if mode == 'dd_dynasty' %}
     <div class="config-bar config-bar-locked">
-        <span class="config-summary">DD 7x7 Dynasty uses Diamond Dynasties' fixed categories, weights, age curves, market calibration, and prospect model. Custom category editing is disabled in this mode.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value. League customization is coming.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+    </div>
+    {% elif mode == 'prospects' %}
+    <div class="config-bar config-bar-locked">
+        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, MiLB stats, ETA, and level.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
     </div>
     {% else %}
     <div class="config-bar">
@@ -55,6 +64,7 @@
     </section>
     {% endif %}
 
+    {% if mode != 'prospects' %}
     <section class="filter-bar">
         <div class="pool-toggle">
             <label class="pool-btn">
@@ -101,17 +111,31 @@
 
         <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
     </section>
+    {% else %}
+    <section class="filter-bar">
+        <select name="position" class="position-select">
+            <option value="">All Positions</option>
+            {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
+            <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="search" id="search-input"
+               class="search-input" placeholder="Search prospects..."
+               value="{{ search }}">
+        <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
+    </section>
+    {% endif %}
 </form>
 
 <div id="rankings-container">
-    {% if mode == 'dd_dynasty' %}
+    {% if mode == 'dd_dynasty' or mode == 'prospects' %}
     {% include "partials/rankings_table_dynasty.html" %}
     {% else %}
     {% include "partials/rankings_table.html" %}
     {% endif %}
 </div>
 
-{% if mode != 'dd_dynasty' %}
+{% if mode != 'dd_dynasty' and mode != 'prospects' %}
 <div id="compare-bar" class="compare-bar" style="display:none;">
     <span id="compare-count">0 selected</span>
     <button id="compare-btn" onclick="openCompare()" disabled>Compare</button>

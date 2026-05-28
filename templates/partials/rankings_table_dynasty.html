@@ -11,8 +11,7 @@
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" onclick="sortTable(3)">Team</th>
             <th class="col-age sortable" onclick="sortTable(4)">Age</th>
-            <th class="col-dollars sortable" onclick="sortTable(5)">Dynasty $</th>
-            <th class="col-value sortable" onclick="sortTable(6)">Dynasty Value</th>
+            <th class="col-value sortable" onclick="sortTable(5)">Dynasty Value</th>
         </tr>
     </thead>
     <tbody>
@@ -24,28 +23,22 @@
             <td class="col-rank">{{ row.dynasty_rank }}</td>
             <td class="col-name">
                 <strong>{{ row.name }}</strong>
-                {% if row.is_prospect %}
-                <span class="prospect-badge">Prospect</span>
-                {% if row.prospect_rank %}
+                {% if row.is_prospect and row.prospect_rank %}
                 <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
-                {% endif %}
                 {% endif %}
                 {% if tier != prev_tier or loop.index0 == 0 %}
                 <span class="tier-badge" style="background: {{ tier_colors[(tier - 1) % tier_colors|length] }}">T{{ tier }}</span>
                 {% endif %}
             </td>
-            <td class="col-pos">{{ row.positions | join(', ') or '&mdash;' }}</td>
+            <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>
             <td class="col-team">{{ row.team }}</td>
-            <td class="col-age">{{ row.age or '&mdash;' }}</td>
-            <td class="col-dollars {{ 'val-pos' if dynasty_dollars.get(row.id, 0) > 0 else '' }}">
-                {% if dynasty_dollars.get(row.id, 0) > 0 %}${{ dynasty_dollars.get(row.id, 0) | int }}{% else %}&mdash;{% endif %}
-            </td>
+            <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
             <td class="col-value val-pos">
                 {{ "%.1f" | format(row.dynasty_value) }}
             </td>
         </tr>
         <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
-            <td colspan="7"></td>
+            <td colspan="6"></td>
         </tr>
         {% endfor %}
     </tbody>

@@ -409,7 +409,7 @@ def _build_context(args):
 @app.route("/")
 def index():
     mode = request.args.get("mode", "categories")
-    if mode == "dd_dynasty":
+    if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
             fallback_args = request.args.to_dict(flat=False)
             fallback_args["mode"] = ["categories"]
@@ -417,10 +417,21 @@ def index():
             ctx = _build_context(ImmutableMultiDict(
                 (k, v) for k, vals in fallback_args.items() for v in vals
             ))
-            ctx["notice"] = "DD 7x7 Dynasty data is not available. Showing default rankings."
+            ctx["notice"] = "Dynasty data is not available. Showing default rankings."
             ctx["dd_available"] = False
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
+        if mode == "prospects":
+            rows = dd_store.filter(
+                pool="prospect",
+                position=ctx.get("position") or None,
+                search=ctx.get("search") or None,
+            )
+            rows = rows[:200]
+            ctx["dd_rows"] = rows
+            ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
+            ctx["tiers"] = _compute_dynasty_tiers(rows)
+            ctx["mode"] = "prospects"
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
@@ -430,7 +441,7 @@ def index():
 @app.route("/rankings")
 def rankings():
     mode = request.args.get("mode", "categories")
-    if mode == "dd_dynasty":
+    if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
             from werkzeug.datastructures import ImmutableMultiDict
             fallback_args = request.args.to_dict(flat=False)
@@ -441,10 +452,21 @@ def rankings():
             ctx["dd_available"] = False
         else:
             ctx = _build_dynasty_context(request.args)
+            if mode == "prospects":
+                rows = dd_store.filter(
+                    pool="prospect",
+                    position=ctx.get("position") or None,
+                    search=ctx.get("search") or None,
+                )
+                rows = rows[:200]
+                ctx["dd_rows"] = rows
+                ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
+                ctx["tiers"] = _compute_dynasty_tiers(rows)
+                ctx["mode"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
         response = make_response(html)
-        params = {"mode": "dd_dynasty"}
-        if ctx.get("pool"):
+        params = {"mode": mode}
+        if ctx.get("pool") and mode != "prospects":
             params["pool"] = ctx["pool"]
         if ctx.get("position"):
             params["position"] = ctx["position"]
@@ -472,7 +494,7 @@ def rankings():
 def player_detail(player_id):
     mode = request.args.get("mode", "categories")
 
-    if mode == "dd_dynasty" and dd_store.is_available:
+    if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
         dd_row = dd_store.get_by_id(player_id)
         if dd_row is None:
             return "<div class='error'>Player not found</div>", 404
@@ -542,8 +564,17 @@ def compare():
 def export_csv():
     mode = request.args.get("mode", "categories")
 
-    if mode == "dd_dynasty" and dd_store.is_available:
+    if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
         ctx = _build_dynasty_context(request.args)
+        if mode == "prospects":
+            rows = dd_store.filter(
+                pool="prospect",
+                position=ctx.get("position") or None,
+                search=ctx.get("search") or None,
+            )
+            rows = rows[:200]
+            ctx["dd_rows"] = rows
+            ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
 
