@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from league_values.risk import (
     RiskDriver,
     RiskAssessment,
+    RiskModel,
     RISK_LEVELS,
 )
 
@@ -129,6 +130,113 @@ class TestRiskLevels(unittest.TestCase):
         self.assertIn("Moderate", names)
         self.assertIn("High", names)
         self.assertIn("Extreme", names)
+
+
+# ---------------------------------------------------------------------------
+# Task 2: _build_assessment
+# ---------------------------------------------------------------------------
+
+class TestBuildAssessment(unittest.TestCase):
+
+    def setUp(self):
+        self.model = RiskModel(current_year=2026)
+
+    def _build(self, value, drivers):
+        return self.model._build_assessment(value, drivers)
+
+    def test_empty_drivers(self):
+        ra = self._build(50.0, [])
+        self.assertEqual(ra.risk_score, 0.0)
+        self.assertEqual(ra.risk_level, "Low")
+        self.assertEqual(ra.value_low, 50.0)
+        self.assertEqual(ra.value_high, 50.0)
+
+    def test_single_driver_score(self):
+        d = RiskDriver("x", "X", 0.20, 5.0, 3.0)
+        ra = self._build(60.0, [d])
+        self.assertAlmostEqual(ra.risk_score, 0.200)
+        self.assertEqual(ra.value_low, 55.0)
+        self.assertEqual(ra.value_high, 63.0)
+
+    def test_multiple_drivers_sum(self):
+        drivers = [
+            RiskDriver("a", "A", 0.10, 4.0, 2.0),
+            RiskDriver("b", "B", 0.20, 6.0, 3.0),
+        ]
+        ra = self._build(80.0, drivers)
+        self.assertAlmostEqual(ra.risk_score, 0.300)
+        self.assertEqual(ra.value_low, 70.0)
+        self.assertEqual(ra.value_high, 85.0)
+
+    def test_score_capped_at_one(self):
+        drivers = [RiskDriver(f"d{i}", f"D{i}", 0.40, 0, 0) for i in range(4)]
+        ra = self._build(50.0, drivers)
+        self.assertEqual(ra.risk_score, 1.0)
+
+    def test_value_low_floor_at_zero(self):
+        d = RiskDriver("x", "X", 0.10, 200.0, 0.0)
+        ra = self._build(10.0, [d])
+        self.assertEqual(ra.value_low, 0.0)
+
+    def test_value_high_ceiling_at_150(self):
+        d = RiskDriver("x", "X", 0.10, 0.0, 200.0)
+        ra = self._build(140.0, [d])
+        self.assertEqual(ra.value_high, 150.0)
+
+    def test_risk_level_low(self):
+        d = RiskDriver("x", "X", 0.10, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "Low")
+
+    def test_risk_level_moderate(self):
+        d = RiskDriver("x", "X", 0.40, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "Moderate")
+
+    def test_risk_level_high(self):
+        d = RiskDriver("x", "X", 0.60, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "High")
+
+    def test_risk_level_extreme(self):
+        d = RiskDriver("x", "X", 0.90, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "Extreme")
+
+    def test_risk_level_boundary_low(self):
+        # Exactly 0.25 → Low
+        d = RiskDriver("x", "X", 0.25, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "Low")
+
+    def test_risk_level_boundary_moderate(self):
+        # Exactly 0.50 → Moderate
+        d = RiskDriver("x", "X", 0.50, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_level, "Moderate")
+
+    def test_risk_score_rounded_to_3dp(self):
+        d = RiskDriver("x", "X", 0.123456789, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertEqual(ra.risk_score, round(0.123456789, 3))
+
+    def test_drivers_tuple_in_output(self):
+        d = RiskDriver("x", "X", 0.10, 0, 0)
+        ra = self._build(50.0, [d])
+        self.assertIsInstance(ra.drivers, tuple)
+        self.assertEqual(len(ra.drivers), 1)
+
+
+class TestRiskModelConstructor(unittest.TestCase):
+
+    def test_default_year_is_current(self):
+        from datetime import date
+        model = RiskModel()
+        self.assertEqual(model.current_year, date.today().year)
+
+    def test_injected_year(self):
+        model = RiskModel(current_year=2030)
+        self.assertEqual(model.current_year, 2030)
 
 
 if __name__ == "__main__":
