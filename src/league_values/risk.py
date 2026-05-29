@@ -18,10 +18,7 @@ RISK_LEVELS: tuple[tuple[float, str], ...] = (
 
 SOURCE_RANK_MAXES: dict[str, float] = {
     "pipeline": 100,
-    "cfr": 5232,
     "hkb": 719,
-    "milb_perf": 500,
-    "milb_breakout": 205,
 }
 SOURCE_SPREAD_THRESHOLD = 0.30
 
@@ -138,7 +135,7 @@ class RiskModel:
             if len(normalized) >= 2:
                 spread = max(normalized) - min(normalized)
                 if spread > SOURCE_SPREAD_THRESHOLD:
-                    drivers.append(RiskDriver("source_spread", "High source-rank spread", 0.08, 7, 4))
+                    drivers.append(RiskDriver("source_spread", "External rank disagreement", 0.08, 7, 4))
 
         # Age: young prospect
         if is_prospect and age is not None and age <= 21:

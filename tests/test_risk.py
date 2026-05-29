@@ -740,7 +740,7 @@ class TestArchetypes(unittest.TestCase):
         row = _prospect_row(
             age=23, positions=("SP",), dynasty_value=98.2,
             eta=2028, level="AA",
-            source_ranks={"pipeline": 9, "cfr": 168.0, "hkb": 3},
+            source_ranks={"pipeline": 9, "hkb": 3},
         )
         assessment = model.evaluate_dynasty(row)
         self.assertIn(assessment.risk_level, ("Moderate", "High"))
