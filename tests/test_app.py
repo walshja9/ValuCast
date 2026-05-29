@@ -523,3 +523,19 @@ class TestPlayingTimeFilter(unittest.TestCase):
         # End-to-end sanity: a real everyday player still appears by default.
         response = self.client.get("/")
         self.assertIn(b"Ohtani", response.data)
+
+    def test_two_way_detail_value_matches_ranking(self):
+        # Ohtani (19755) is two-way; detail/compare must merge like the ranking.
+        from app import _merge_two_way_players, engine, _valuation_players
+        from web.config_builder import build_config
+        cfg = build_config(
+            mode="categories", cats=None, pcats=None, rules_str="",
+            pt_params=None, split_rp=False, weights=None,
+        )
+        ranking = _merge_two_way_players(engine.value_players(_valuation_players(), cfg))
+        rank_val = next(r.total_value for r in ranking if r.player.id == "19755")
+        detail = _merge_two_way_players(
+            engine.value_players(_valuation_players({"19755"}), cfg)
+        )
+        detail_val = next(r.total_value for r in detail if r.player.id == "19755")
+        self.assertAlmostEqual(rank_val, detail_val, places=6)

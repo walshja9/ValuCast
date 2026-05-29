@@ -569,7 +569,9 @@ def player_detail(player_id):
     config = ctx["config"]
     # Value against the filtered pool with this player force-kept, so the detail
     # value matches the ranking value whether or not the player cleared the floor.
-    detail_results = engine.value_players(_valuation_players({player_id}), config)
+    detail_results = _merge_two_way_players(
+        engine.value_players(_valuation_players({player_id}), config)
+    )
     result = next((r for r in detail_results if r.player.id == player_id), None)
 
     return render_template(
@@ -591,7 +593,9 @@ def compare():
 
     ctx = _build_context(request.args)
     config = ctx["config"]
-    all_results = engine.value_players(_valuation_players({p1_id, p2_id}), config)
+    all_results = _merge_two_way_players(
+        engine.value_players(_valuation_players({p1_id, p2_id}), config)
+    )
 
     r1 = next((r for r in all_results if r.player.id == p1_id), None)
     r2 = next((r for r in all_results if r.player.id == p2_id), None)
