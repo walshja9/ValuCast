@@ -27,6 +27,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
+from web.season_outlook import find_season_outlook
 from league_values.risk import RiskModel
 
 app = Flask(__name__)
@@ -543,14 +544,9 @@ def player_detail(player_id):
         mlb_stats_actual = None
         mlb_stats_ros = None
         if not dd_row.is_prospect:
-            # Try to find matching season outlook by name
-            name_lower = dd_row.name.lower()
-            for proj in store.get_all():
-                if proj.name.lower() == name_lower:
-                    mlb_stats = proj.stats
-                    mlb_stats_actual = proj.metadata.get("stats_actual")
-                    mlb_stats_ros = proj.metadata.get("stats_ros")
-                    break
+            outlook = find_season_outlook(dd_row, store.get_all())
+            if outlook:
+                mlb_stats, mlb_stats_actual, mlb_stats_ros = outlook
 
         return render_template(
             "partials/player_detail_dynasty.html",
