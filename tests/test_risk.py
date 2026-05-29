@@ -710,5 +710,88 @@ class TestBreakoutHeliumDriver(unittest.TestCase):
         self.assertEqual(d.ceiling_lift, 8)
 
 
+class TestArchetypes(unittest.TestCase):
+    """Full player profiles matching real dynasty archetypes."""
+
+    def _model(self):
+        return RiskModel(current_year=2026)
+
+    def test_mlb_veteran_stable(self):
+        """Aaron Judge type — 33yo OF. Baseline + age_decline -> Low."""
+        model = self._model()
+        row = _mlb_row(age=33, positions=("OF",), dynasty_value=121.5)
+        assessment = model.evaluate_dynasty(row)
+        self.assertEqual(assessment.risk_level, "Low")
+        self.assertAlmostEqual(assessment.risk_score, 0.13, places=2)
+        self.assertLessEqual(assessment.value_low, 111.0)
+        self.assertGreaterEqual(assessment.value_high, 125.0)
+
+    def test_mlb_pitcher_young(self):
+        """Paul Skenes type — 23yo SP MLB. Baseline + pitcher_type -> Low."""
+        model = self._model()
+        row = _mlb_row(age=23, positions=("SP",), dynasty_value=148.0)
+        assessment = model.evaluate_dynasty(row)
+        self.assertEqual(assessment.risk_level, "Low")
+        self.assertEqual(assessment.value_high, 150.0)
+
+    def test_prospect_pitcher_mid(self):
+        """Trey Yesavage type — 23yo SP prospect, AA, ETA 2028."""
+        model = self._model()
+        row = _prospect_row(
+            age=23, positions=("SP",), dynasty_value=98.2,
+            eta=2028, level="AA",
+            source_ranks={"pipeline": 9, "cfr": 168.0, "hkb": 3},
+        )
+        assessment = model.evaluate_dynasty(row)
+        self.assertIn(assessment.risk_level, ("Moderate", "High"))
+        self.assertLess(assessment.value_low, 65.0)
+        self.assertGreater(assessment.value_high, 120.0)
+
+    def test_prospect_complex_young(self):
+        """17yo A-ball hitter prospect. Many drivers stack -> Moderate (0.48).
+        With a pitcher position, would be High due to pitcher_type + pitcher_prospect."""
+        model = self._model()
+        row = _prospect_row(
+            age=17, positions=("SS",), dynasty_value=5.2,
+            eta=2030, level="A",
+            source_ranks=None,
+        )
+        assessment = model.evaluate_dynasty(row)
+        self.assertIn(assessment.risk_level, ("Moderate", "High"))
+        self.assertEqual(assessment.value_low, 0.0)
+
+    def test_mlb_aging_decline(self):
+        """37yo veteran hitter. Baseline + decline + deep_decline."""
+        model = self._model()
+        row = _mlb_row(age=37, positions=("1B",), dynasty_value=60.0)
+        assessment = model.evaluate_dynasty(row)
+        self.assertEqual(assessment.risk_level, "Low")
+        self.assertAlmostEqual(assessment.value_low, 44.0, places=1)
+        self.assertAlmostEqual(assessment.value_high, 64.0, places=1)
+
+    def test_evaluate_dynasty_with_explicit_value(self):
+        """Passing value kwarg overrides row.dynasty_value."""
+        model = self._model()
+        row = _mlb_row(dynasty_value=100.0)
+        a1 = model.evaluate_dynasty(row)
+        a2 = model.evaluate_dynasty(row, value=50.0)
+        self.assertAlmostEqual(a1.value_low, 97.0, places=1)
+        self.assertAlmostEqual(a2.value_low, 47.0, places=1)
+
+    def test_risk_assessments_keyed_by_row_id(self):
+        """Simulate app-level mapping pattern."""
+        model = self._model()
+        rows = [
+            _mlb_row(dynasty_value=100.0),
+            _prospect_row(dynasty_value=50.0),
+        ]
+        rows[0].id = "mlb_judge"
+        rows[1].id = "prospect_kid"
+        risk_assessments = {row.id: model.evaluate_dynasty(row) for row in rows}
+        self.assertIn("mlb_judge", risk_assessments)
+        self.assertIn("prospect_kid", risk_assessments)
+        self.assertEqual(risk_assessments["mlb_judge"].risk_level, "Low")
+
+
 if __name__ == "__main__":
     unittest.main()
