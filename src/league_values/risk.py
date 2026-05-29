@@ -16,6 +16,15 @@ RISK_LEVELS: tuple[tuple[float, str], ...] = (
     (1.00, "Extreme"),
 )
 
+SOURCE_RANK_MAXES: dict[str, float] = {
+    "pipeline": 100,
+    "cfr": 5232,
+    "hkb": 719,
+    "milb_perf": 500,
+    "milb_breakout": 205,
+}
+SOURCE_SPREAD_THRESHOLD = 0.30
+
 
 @dataclass(frozen=True)
 class RiskDriver:
@@ -75,7 +84,84 @@ class RiskModel:
         raise NotImplementedError  # v1.1
 
     def _dynasty_drivers(self, row) -> list[RiskDriver]:
-        return []  # Placeholder — implemented in Task 3
+        drivers: list[RiskDriver] = []
+        player_type = getattr(row, "player_type", "mlb")
+        positions = getattr(row, "positions", ()) or ()
+        age = getattr(row, "age", None)
+        eta = getattr(row, "eta", None)
+        level = getattr(row, "level", None)
+        source_ranks = getattr(row, "source_ranks", None)
+        breakout_label = getattr(row, "breakout_label", None)
+
+        is_prospect = player_type == "prospect"
+        is_pitcher = any(p in ("SP", "RP") for p in positions)
+
+        # Baseline — always fires
+        drivers.append(RiskDriver("baseline", "Baseline uncertainty", 0.03, 3, 3))
+
+        # Pitcher volatility
+        if is_pitcher:
+            drivers.append(RiskDriver("pitcher_type", "Pitcher volatility", 0.05, 5, 3))
+
+        # Pitcher prospect (stacks with pitcher_type)
+        if is_pitcher and is_prospect:
+            drivers.append(RiskDriver("pitcher_prospect", "Pitcher prospect", 0.08, 8, 6))
+
+        # Prospect status
+        if is_prospect:
+            drivers.append(RiskDriver("prospect_status", "Prospect", 0.10, 8, 10))
+
+        # ETA (prospects only, mutually exclusive)
+        if is_prospect and eta is not None:
+            if eta >= self.current_year + 2:
+                drivers.append(RiskDriver("eta_distant", f"ETA {eta}", 0.12, 8, 5))
+            elif eta == self.current_year + 1:
+                drivers.append(RiskDriver("eta_near", f"ETA {eta}", 0.04, 3, 3))
+
+        # Level (prospects only, mutually exclusive)
+        if is_prospect and level is not None:
+            if level in ("A", "A+", "CPX", "R"):
+                drivers.append(RiskDriver("low_minors", "Low-minors level", 0.12, 10, 8))
+            elif level == "AA":
+                drivers.append(RiskDriver("mid_minors", "Mid-minors level", 0.06, 5, 4))
+            elif level == "AAA":
+                drivers.append(RiskDriver("high_minors", "Upper-minors level", 0.03, 3, 3))
+
+        # Source rank spread (prospects only, percentile-normalized)
+        if is_prospect and source_ranks:
+            normalized = []
+            for src, rank in source_ranks.items():
+                if isinstance(rank, (int, float)):
+                    max_val = SOURCE_RANK_MAXES.get(src)
+                    if max_val and max_val > 0:
+                        normalized.append(rank / max_val)
+            if len(normalized) >= 2:
+                spread = max(normalized) - min(normalized)
+                if spread > SOURCE_SPREAD_THRESHOLD:
+                    drivers.append(RiskDriver("source_spread", "High source-rank spread", 0.08, 7, 4))
+
+        # Age: young prospect
+        if is_prospect and age is not None and age <= 21:
+            drivers.append(RiskDriver("age_young", f"Age {age} (young)", 0.06, 5, 6))
+
+        # Age: decline (any player)
+        if age is not None and age >= 33:
+            drivers.append(RiskDriver("age_decline", f"Age {age} (decline)", 0.10, 8, 1))
+
+        # Age: deep decline (stacks with age_decline)
+        if age is not None and age >= 36:
+            drivers.append(RiskDriver("age_deep_decline", f"Age {age} (deep decline)", 0.06, 5, 0))
+
+        # Incomplete profile (prospects missing key data)
+        if is_prospect:
+            if eta is None or level is None or not source_ranks:
+                drivers.append(RiskDriver("incomplete_profile", "Incomplete scouting profile", 0.05, 5, 3))
+
+        # Breakout / helium (positive labels only)
+        if breakout_label and breakout_label.lower() in self.POSITIVE_BREAKOUT_LABELS:
+            drivers.append(RiskDriver("breakout_helium", "Breakout / helium", 0.05, 3, 8))
+
+        return drivers
 
     def _build_assessment(self, value: float, drivers: list[RiskDriver]) -> RiskAssessment:
         risk_score = min(1.0, sum(d.score_delta for d in drivers))
