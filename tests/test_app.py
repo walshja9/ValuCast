@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from app import app
+from app import app, _valuation_players, store
 
 
 class TestIndexRoute(unittest.TestCase):
@@ -494,16 +494,32 @@ class TestPlayingTimeFilter(unittest.TestCase):
         self.client = app.test_client()
         app.config["TESTING"] = True
 
-    def test_subthreshold_player_absent_by_default(self):
-        # Brady Ebel = 1.0 PA in current.json; must not appear in default rankings
-        response = self.client.get("/")
-        self.assertNotIn(b"Brady Ebel", response.data)
+    def test_filter_shrinks_engine_input(self):
+        # The whole point: filler is dropped before valuation.
+        full = len(store.get_all())
+        filtered = len(_valuation_players())
+        self.assertLess(filtered, full)
+        self.assertLess(filtered, 2000)   # ~1008 real players vs ~9953 total
+        self.assertGreater(filtered, 500)
+
+    def test_subthreshold_player_excluded_from_input(self):
+        ids = {p.id for p in _valuation_players()}
+        self.assertNotIn("sa3069149", ids)  # Brady Ebel, 1 PA
+
+    def test_always_keep_readds_subthreshold_player(self):
+        ids = {p.id for p in _valuation_players({"sa3069149"})}
+        self.assertIn("sa3069149", ids)
+
+    def test_qualifying_player_in_input(self):
+        ids = {p.id for p in _valuation_players()}
+        self.assertIn("19755", ids)  # Ohtani hitter qualifies
 
     def test_subthreshold_player_present_when_searched(self):
+        # End-to-end: search bypass surfaces an otherwise-filtered player.
         response = self.client.get("/?search=Brady+Ebel")
         self.assertIn(b"Brady Ebel", response.data)
 
     def test_qualifying_player_still_shown(self):
-        # Sanity: a real everyday player still appears by default
+        # End-to-end sanity: a real everyday player still appears by default.
         response = self.client.get("/")
         self.assertIn(b"Ohtani", response.data)
