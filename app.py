@@ -26,6 +26,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
+from league_values.risk import RiskModel
 
 app = Flask(__name__)
 
@@ -40,6 +41,7 @@ engine = ValuationEngine(post_processors=[VolumeMultiplier()])
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
                     str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
 dd_store = DDFeedStore(DD_FEED_PATH)
+risk_model = RiskModel()
 
 
 def _compute_dynasty_dollars(rows, num_teams=12, budget=200):
@@ -109,6 +111,7 @@ def _build_dynasty_context(args):
     rows = rows[:200]
     dynasty_dollars = _compute_dynasty_dollars(rows)
     tiers = _compute_dynasty_tiers(rows)
+    risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -117,6 +120,7 @@ def _build_dynasty_context(args):
         "dd_rows": rows,
         "dynasty_dollars": dynasty_dollars,
         "tiers": tiers,
+        "risk_assessments": risk_assessments,
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
         "as_of": store.as_of,
@@ -432,6 +436,7 @@ def index():
             ctx["dd_rows"] = rows
             ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
             ctx["tiers"] = _compute_dynasty_tiers(rows)
+            ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
             ctx["mode"] = "prospects"
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
@@ -463,6 +468,7 @@ def rankings():
                 ctx["dd_rows"] = rows
                 ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
                 ctx["tiers"] = _compute_dynasty_tiers(rows)
+                ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
                 ctx["mode"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
         response = make_response(html)
@@ -501,6 +507,8 @@ def player_detail(player_id):
         if dd_row is None:
             return "<div class='error'>Player not found</div>", 404
 
+        risk = risk_model.evaluate_dynasty(dd_row)
+
         mlb_stats = None
         mlb_stats_actual = None
         mlb_stats_ros = None
@@ -517,6 +525,7 @@ def player_detail(player_id):
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
+            risk=risk,
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
@@ -583,16 +592,23 @@ def export_csv():
             ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
+        risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
 
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
-                         "Age", "Dynasty Value", "Dynasty $", "Prospect Rank", "Level", "ETA"])
+                         "Age", "Dynasty Value", "Dynasty $", "Risk Level", "Value Low",
+                         "Value High", "Risk Drivers", "Prospect Rank", "Level", "ETA"])
         for row in rows:
+            risk = risk_assessments.get(row.id)
             writer.writerow([
                 row.dynasty_rank, row.name, row.player_type.upper(),
                 ", ".join(row.positions) or "", row.team, row.age or "",
                 row.dynasty_value, dynasty_dollars.get(row.id, 0),
+                risk.risk_level if risk else "",
+                risk.value_low if risk else "",
+                risk.value_high if risk else "",
+                ", ".join(risk.driver_labels) if risk else "",
                 row.prospect_rank or "", row.level or "", row.eta or "",
             ])
 
