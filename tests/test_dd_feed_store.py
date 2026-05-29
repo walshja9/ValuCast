@@ -107,14 +107,20 @@ class TestDDFeedStoreValidation(unittest.TestCase):
 
     def test_skips_records_missing_required_fields(self):
         with tempfile.TemporaryDirectory() as d:
-            players = list(VALID_FEED["players"]) + [
+            players = []
+            for i in range(30):
+                record = dict(VALID_FEED["players"][0])
+                record["id"] = f"dd_mlb_valid_{i}"
+                record["dynasty_rank"] = i + 1
+                players.append(record)
+            players += [
                 {"id": "bad1", "player_type": "mlb"},
             ]
-            feed = {**VALID_FEED, "players": players, "player_count": 4}
+            feed = {**VALID_FEED, "players": players, "player_count": 31}
             path = _write_feed(d, feed)
             store = DDFeedStore(path)
             self.assertTrue(store.is_available)
-            self.assertEqual(len(store.get_all()), 3)
+            self.assertEqual(len(store.get_all()), 30)
 
     def test_rejects_high_invalid_rate(self):
         with tempfile.TemporaryDirectory() as d:

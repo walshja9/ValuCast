@@ -126,6 +126,12 @@ class TestCompareRoute(unittest.TestCase):
         response = self.client.get("/compare?p1=1&p2=2&mode=categories&cats=R,HR&pcats=K,ERA")
         self.assertEqual(response.status_code, 200)
 
+    def test_compare_disabled_for_dynasty_modes(self):
+        response = self.client.get("/compare?p1=1&p2=2&mode=dd_dynasty")
+        self.assertEqual(response.status_code, 400)
+        response = self.client.get("/compare?p1=1&p2=2&mode=prospects")
+        self.assertEqual(response.status_code, 400)
+
 
 class TestPointsMode(unittest.TestCase):
     def setUp(self):
@@ -167,6 +173,12 @@ class TestUrlSharing(unittest.TestCase):
         response = self.client.get("/rankings?mode=roto&cats=R,HR,SB&pcats=K,ERA")
         url = response.headers.get("HX-Replace-Url", "")
         self.assertIn("mode=roto", url)
+
+    def test_dynasty_replace_url_encodes_search(self):
+        response = self.client.get("/rankings?mode=dd_dynasty&search=juan soto")
+        url = response.headers.get("HX-Replace-Url", "")
+        self.assertNotIn(" ", url)
+        self.assertIn("search=juan+soto", url)
 
 
 class TestExportRoute(unittest.TestCase):

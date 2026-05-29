@@ -20,12 +20,13 @@ ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats wi
 ```bash
 # Install
 pip install -r requirements.txt
+pip install -e .
 
 # Refresh data (fetches latest actuals + projections)
-PYTHONPATH=src:. python -c "from scraper.refresh import refresh; refresh()"
+python -c "from scraper.refresh import refresh; refresh()"
 
 # Run the web app
-PYTHONPATH=src:. python app.py
+python app.py
 # → http://localhost:5001
 ```
 
@@ -72,13 +73,13 @@ app.py                 Flask app (5 routes: /, /rankings, /player, /compare, /ex
 templates/             Jinja2 + htmx templates
 static/                CSS
 data/                  Projections, actuals, metadata
-tests/                 240 unit tests
+tests/                 282 unit tests
 ```
 
 ## Tests
 
 ```bash
-PYTHONPATH=src:. python -m unittest discover -s tests -v
+python -m pytest
 ```
 
 ## Roadmap

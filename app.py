@@ -5,6 +5,7 @@ import io
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, make_response
 
@@ -472,7 +473,8 @@ def rankings():
             params["position"] = ctx["position"]
         if ctx.get("search"):
             params["search"] = ctx["search"]
-        push_url = "/?" + "&".join(f"{k}={v}" for k, v in params.items() if v)
+        url_params = urlencode({k: v for k, v in params.items() if v})
+        push_url = f"/?{url_params}" if url_params else "/"
         response.headers["HX-Replace-Url"] = push_url
         return response
     ctx = _build_context(request.args)
@@ -542,6 +544,10 @@ def player_detail(player_id):
 
 @app.route("/compare")
 def compare():
+    mode = request.args.get("mode", "categories")
+    if mode in ("dd_dynasty", "prospects"):
+        return "<div class='error'>Compare is not available in this mode.</div>", 400
+
     p1_id = request.args.get("p1", "")
     p2_id = request.args.get("p2", "")
 

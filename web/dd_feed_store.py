@@ -61,7 +61,7 @@ class DDFeedStore:
                 skipped += 1
 
         total = len(players)
-        if total > 0 and skipped / total > 0.50:
+        if total > 0 and skipped / total > 0.05:
             logger.warning("DD feed has %.1f%% invalid records (%d/%d), rejecting",
                           skipped / total * 100, skipped, total)
             return
