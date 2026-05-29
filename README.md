@@ -60,7 +60,7 @@ Post-processors adjust raw scores:
 |---|---|---|
 | `standard_5x5` | Categories | R, HR, RBI, SB, AVG / W, K, ERA, WHIP, SV |
 | `default_points` | Points | Standard scoring coefficients |
-| `dd_7x7` | Categories | 7 hitting / 6 SP / 6 RP with custom weights |
+| `dd_7x7` | Categories | 7 hitting / 6 SP / 6 RP with custom weights (internal) |
 
 ## Project Structure
 
@@ -88,7 +88,8 @@ PYTHONPATH=src:. python -m unittest discover -s tests -v
 - [x] Web app with category setup, rankings, player detail, compare, CSV export
 - [x] Season outlook: 2026 actuals + ROS projections
 - [x] Tier visualization, position ranks, auction dollars
-- [ ] DD 7x7 Dynasty preset with prospect data feed
-- [ ] Dynasty toggle (AgeCurve + prospect ranks)
+- [x] Dynasty mode (Beta) with combined MLB + prospect rankings
+- [x] Prospect board with source ranks, breakout indicators, MiLB stats
+- [ ] Dynasty league customization (scoring format, prospect depth, trade window)
 - [ ] Render deployment
 - [ ] Engine result caching for faster player detail loads
