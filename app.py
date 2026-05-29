@@ -13,6 +13,7 @@ from dataclasses import replace as dc_replace
 
 from league_values.engine import ValuationEngine
 from league_values.post_processors import VolumeMultiplier
+from league_values.playing_time import filter_by_playing_time
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 
 from web.projection_store import ProjectionStore
@@ -36,6 +37,30 @@ store = ProjectionStore(DATA_PATH)
 
 # Engine with volume adjustment
 engine = ValuationEngine(post_processors=[VolumeMultiplier()])
+
+# Playing-time floor: drop low-sample filler before valuation so category
+# baselines are computed from real players only. VolumeMultiplier still
+# discounts the partial-season players that survive these floors.
+MIN_HITTER_PA = 100
+MIN_SP_IP = 40
+MIN_RP_IP = 20
+
+
+def _valuation_players(always_keep=None):
+    """Engine input: all projections minus sub-threshold filler.
+
+    `always_keep` is a set of player ids (display id, suffixed id, or base_id)
+    that are retained regardless of playing time, with two-way siblings joined
+    on shared base_id inside filter_by_playing_time.
+    """
+    return filter_by_playing_time(
+        store.get_all(),
+        hitter_pa=MIN_HITTER_PA,
+        sp_ip=MIN_SP_IP,
+        rp_ip=MIN_RP_IP,
+        always_keep=always_keep or frozenset(),
+    )
+
 
 # Load DD Dynasty feed once at startup
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
