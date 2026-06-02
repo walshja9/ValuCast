@@ -25,7 +25,10 @@ def normalize_season_rows(players: list[dict]) -> list[dict]:
     return rows
 
 
-def content_hash(path: Path) -> str:
+def file_byte_hash(path: Path) -> str:
+    """Raw on-disk byte hash (platform newline-dependent). NOT the same as the
+    manifest's canonical-JSON content_sha256 — use this only to compare a file
+    against itself, not against the manifest hash."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 

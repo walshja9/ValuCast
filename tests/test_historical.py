@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from projections.data.historical import (
-    normalize_season_rows, store_season, load_season, content_hash,
+    normalize_season_rows, store_season, load_season, file_byte_hash,
 )
 
 
@@ -28,9 +28,9 @@ class TestHistorical(unittest.TestCase):
             data_dir = Path(d)
             rows = [{"mlbam_id": "5", "season": 2020, "PA": 100, "HR": 4}]
             store_season(2020, rows, data_dir)
-            first = content_hash(data_dir / "historical" / "hitting_2020.json")
+            first = file_byte_hash(data_dir / "historical" / "hitting_2020.json")
             store_season(2020, rows, data_dir)  # identical re-pull
-            second = content_hash(data_dir / "historical" / "hitting_2020.json")
+            second = file_byte_hash(data_dir / "historical" / "hitting_2020.json")
             self.assertEqual(first, second)
             self.assertEqual(load_season(2020, data_dir), rows)
 
