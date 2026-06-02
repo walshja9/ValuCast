@@ -15,3 +15,12 @@ class TestMarcelParams(unittest.TestCase):
         p = MarcelParams()
         with self.assertRaises(Exception):
             p.n_reg = 5.0  # type: ignore
+
+    def test_gamma_defaults_to_zero_classic(self):
+        p = MarcelParams()
+        self.assertEqual(p.gamma, 0.0)        # gamma=0 == classic Marcel
+        self.assertEqual(p.n_reg, 1200.0)     # n_reg is the base level, unchanged
+
+    def test_gamma_is_settable_via_constructor(self):
+        p = MarcelParams(gamma=0.5)
+        self.assertEqual(p.gamma, 0.5)
