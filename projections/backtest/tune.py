@@ -2,6 +2,7 @@
 (callers must keep tuning seasons disjoint from the seasons they later score)."""
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 from projections.backtest.harness import rolling_origin
@@ -30,3 +31,34 @@ def grid_search(
         if best_score is None or score < best_score:
             best_params, best_score = params, score
     return best_params, best_score
+
+
+def coordinate_descent(
+    tuning_seasons: list[int],
+    data_dir: Path,
+    identities: dict[str, dict],
+    n_reg_values: tuple[float, ...],
+    gamma_values: tuple[float, ...],
+    max_rounds: int = 3,
+) -> tuple[MarcelParams, float]:
+    """Alternately optimize gamma then n_reg_base (objective: minimize the
+    candidate's tuning-block mean_mae_ratio vs persistence). Starts from classic
+    Marcel, so it can never do worse than classic on the tuning block. Avoids the
+    combinatorial blowup of a dense per-component grid."""
+    best = MarcelParams()
+    best_score = rolling_origin(tuning_seasons, data_dir, best, identities)["mean_mae_ratio"]
+    for _ in range(max_rounds):
+        improved = False
+        for g in gamma_values:
+            cand = replace(best, gamma=g)
+            score = rolling_origin(tuning_seasons, data_dir, cand, identities)["mean_mae_ratio"]
+            if score < best_score:
+                best, best_score, improved = cand, score, True
+        for n in n_reg_values:
+            cand = replace(best, n_reg=n)
+            score = rolling_origin(tuning_seasons, data_dir, cand, identities)["mean_mae_ratio"]
+            if score < best_score:
+                best, best_score, improved = cand, score, True
+        if not improved:
+            break
+    return best, best_score

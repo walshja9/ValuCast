@@ -30,3 +30,33 @@ class TestTune(unittest.TestCase):
         grid = default_grid()
         self.assertGreater(len(grid), 1)
         self.assertIsInstance(grid[0], MarcelParams)
+
+    def test_coordinate_descent_returns_params_and_score(self):
+        from projections.backtest.tune import coordinate_descent
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in range(2018, 2024):
+                store_season(yr, [_row("5", yr, 25), _row("7", yr, 18)], data_dir)
+            idents = {"5": {"birth_date": "1992-01-01"},
+                      "7": {"birth_date": "1990-01-01"}}
+            best, score = coordinate_descent(
+                [2022, 2023], data_dir, idents,
+                n_reg_values=(900.0, 1200.0), gamma_values=(0.0, 0.5),
+            )
+            self.assertIn(best.n_reg, (900.0, 1200.0))
+            self.assertIn(best.gamma, (0.0, 0.5))
+            self.assertIsInstance(score, float)
+
+    def test_coordinate_descent_starts_from_classic(self):
+        # With a single-value grid equal to defaults, it returns classic unchanged.
+        from projections.backtest.tune import coordinate_descent
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in range(2018, 2024):
+                store_season(yr, [_row("5", yr, 25), _row("7", yr, 18)], data_dir)
+            idents = {"5": {"birth_date": "1992-01-01"}, "7": {"birth_date": "1990-01-01"}}
+            best, _ = coordinate_descent(
+                [2022, 2023], data_dir, idents,
+                n_reg_values=(1200.0,), gamma_values=(0.0,),
+            )
+            self.assertEqual((best.n_reg, best.gamma), (1200.0, 0.0))
