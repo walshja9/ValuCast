@@ -1,7 +1,9 @@
 """Player identity / age crosswalk from MLB Stats API /people."""
 from __future__ import annotations
 
+import json
 from datetime import date
+from pathlib import Path
 
 from scraper.mlb_actuals import MLB_API_BASE, _fetch_json
 
@@ -43,3 +45,28 @@ def fetch_identities(mlbam_ids: list[str]) -> dict[str, dict]:
         url = f"{MLB_API_BASE}/people?personIds={','.join(chunk)}"
         result.update(parse_people_payload(_fetch_json(url)))
     return result
+
+
+def _identity_path(data_dir: Path) -> Path:
+    return data_dir / "identity.json"
+
+
+def build_identity_store(mlbam_ids: list[str], data_dir: Path) -> dict[str, dict]:
+    """Fetch identities once for the given ids and persist to identity.json.
+
+    The spec's backbone stores identity as a fact; harness/tuning then load it
+    instead of re-fetching from the network per run.
+    """
+    idents = fetch_identities(sorted(set(mlbam_ids)))
+    path = _identity_path(data_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(idents, indent=2, sort_keys=True), encoding="utf-8")
+    return idents
+
+
+def load_identity_store(data_dir: Path) -> dict[str, dict]:
+    """Load the persisted identity crosswalk; empty dict if not yet built."""
+    path = _identity_path(data_dir)
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))

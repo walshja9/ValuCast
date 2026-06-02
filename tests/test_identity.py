@@ -1,5 +1,12 @@
+import tempfile
 import unittest
-from projections.data.identity import age_for, parse_people_payload
+from pathlib import Path
+from unittest import mock
+
+from projections.data import identity as identity_mod
+from projections.data.identity import (
+    age_for, parse_people_payload, build_identity_store, load_identity_store,
+)
 
 
 class TestIdentity(unittest.TestCase):
@@ -21,3 +28,16 @@ class TestIdentity(unittest.TestCase):
         out = parse_people_payload(payload)
         self.assertEqual(out["660271"]["birth_date"], "1994-07-05")
         self.assertEqual(out["660271"]["bats"], "L")
+
+    def test_build_then_load_identity_store(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            fake = {"5": {"mlbam_id": "5", "name": "Bat", "birth_date": "1995-01-01"}}
+            with mock.patch.object(identity_mod, "fetch_identities", return_value=fake):
+                built = build_identity_store(["5", "5"], data_dir)  # dedups
+            self.assertEqual(built, fake)
+            self.assertEqual(load_identity_store(data_dir), fake)
+
+    def test_load_identity_store_missing_returns_empty(self):
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(load_identity_store(Path(d)), {})
