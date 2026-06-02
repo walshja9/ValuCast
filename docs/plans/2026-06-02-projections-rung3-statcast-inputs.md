@@ -1,5 +1,15 @@
 # Projections Rung 3 — Statcast Input De-noising Implementation Plan
 
+> **VERDICT (2026-06-02, executed): WIN — Statcast input de-noising beats classic Marcel.**
+> First lever in the program to beat classic (Rung 1 + Rung 2 both tied). Tuned α=(contact 0.75,
+> power 0.5) on 2018–2019, scored on disjoint 2020–2025 (all targets 3/3 Statcast-covered priors):
+> mean MAE ratio vs classic **0.979**, corr-win 0.519, `beats_classic=True`, and the edge **carries**
+> (tuning 0.985 → scoring 0.979, same direction). The win is concentrated in the de-noised rate stats —
+> **AVG 0.942 (+corr .029), OBP 0.959, SLG 0.960, OPS 0.951 (+corr .048)** — i.e. 4–6% MAE improvement
+> on exactly the stats xBA/xSLG target. HR ~neutral (1.001), counting stats untouched (1.000) as
+> designed. Modest but real and interpretable. Behavior-neutral until deployed (`α=0` is the default).
+> See "Execution Verdict" at the tail.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** De-noise Marcel's historical hitting inputs toward Statcast expected stats (`xBA`/`xSLG`) before weighting, and prove on held-out 2020–2025 whether luck-stripped inputs beat classic Marcel.
@@ -962,3 +972,45 @@ git commit -m "chore: rung 3 Statcast de-noising complete — <WIN|TIE> vs class
 - **Spec coverage:** data layer with `min=1` + undercoverage guard (T2, T3, T8); immutable snapshots joined by `mlbam_id` (T3); the bridge incl. all four guard families — H* clamp, TB*≥H*, XB' clamp-coherence, zero-XBH league fallback / classic-power fallback, missing-Statcast passthrough (T5); `alpha` knobs with `α=0` nesting classic (T1); `gamma=0` isolation (enforced — `coordinate_descent_alpha` never touches gamma, T7); de-noise wired pre-weighting, league means on actual rates (T6); Statcast-aware tuning 2018–19 / scoring 2020–25 + coverage-share report (T9); barrel%/EV stored observe-only, never read by the bridge (T2/T3). All spec sections map to a task.
 - **Placeholder scan:** no TBD/TODO; every code step is complete; T9's expected output is a genuine WIN/TIE branch, not a placeholder.
 - **Type consistency:** `parse_expected_stats`/`parse_quality` → `merge_statcast` → `store/load_statcast_season` (returns `{mlbam_id: row}`) consumed by `denoise_season` (T5/T6). `denoise_components(row, statcast, alpha_contact, alpha_power, league_mix)` and `league_xbh_mix(rows) -> ((p2b,p3b,phr), m) | None` consistent across T4/T5/T6. `MarcelParams.alpha_contact/alpha_power` (T1) read in `denoise_season` via `build` (T6) and varied through `replace` in `_descend` (T7). `load_statcast_season` used in T6/T8/T9. `vs_classic`/`rolling_origin` reused from Rung 2 (T9).
+
+---
+
+## Execution Verdict (2026-06-02)
+
+**Outcome: WIN.** Statcast input de-noising beats classic Marcel on held-out data — the first
+lever in the program to do so (Rung 1 global-knob tuning and Rung 2 reliability-weighting both tied).
+
+**Setup:** tune `(alpha_contact, alpha_power)` by coordinate descent on **2018–2019**, score on the
+disjoint **2020–2025**. Every target in both blocks has 3/3 Statcast-covered prior seasons (so the
+result is not diluted by fallback-classic). Grid NOT expanded after seeing the scoring block.
+
+**Locked params:** `alpha_contact = 0.75, alpha_power = 0.5` (substantial — the model genuinely leans
+on Statcast, not a near-zero degenerate).
+
+**Held-out result (vs classic):**
+- TUNING block: mean MAE ratio 0.9845, corr-win 0.444.
+- SCORING block: mean MAE ratio **0.9792**, corr-win 0.519, `beats_classic=True`. Edge carries.
+
+**Per-stat (scoring block) — the win is where it should be:**
+| stat | MAE ratio | corr Δ |
+|------|-----------|--------|
+| AVG  | 0.9416 | +0.0292 |
+| OBP  | 0.9585 | +0.0293 |
+| SLG  | 0.9598 | +0.0450 |
+| OPS  | 0.9513 | +0.0484 |
+| HR   | 1.0014 | +0.0076 |
+| PA/R/RBI/SB | 1.0000 | +0.0000 (untouched, as designed) |
+
+**Honest read:** a **modest but real** win — 4–6% MAE reduction *plus* better correlation on the
+de-noised rate stats (AVG/OBP/SLG/OPS), exactly the stats xBA/xSLG target and where classic Marcel is
+weakest. HR is ~neutral (already a reliable stat; the bridge moves it only via mix+xSLG). Counting
+stats untouched. The aggregate 0.979 is diluted by the untouched stats — the de-noised-stat
+improvement is the real headline. Correlation-win (0.519) is marginal; the robust signal is MAE.
+
+**Consequence:** confirms the program thesis — **better inputs beat regression tuning.** Statcast is
+the lever. Natural follow-ups (future rungs): barrel%/EV-driven HR de-noising (HR was the one
+de-noised-family stat that didn't move), de-noising + reliability-weighting combined now that Statcast
+alone has earned it, and wiring a Statcast-de-noised source into the app behind the existing seam.
+
+**Production impact:** none yet. `alpha_contact=alpha_power=0` is the default; the classic path is
+byte-for-byte unchanged (backward-compat tests). Shipping a de-noised run is a deliberate later step.
