@@ -33,6 +33,31 @@ def grid_search(
     return best_params, best_score
 
 
+def _descend(
+    tuning_seasons: list[int],
+    data_dir: Path,
+    identities: dict[str, dict],
+    axes: list[tuple[str, tuple[float, ...]]],
+    max_rounds: int = 3,
+) -> tuple[MarcelParams, float]:
+    """Coordinate descent from classic Marcel over the given (field, values) axes.
+    Objective: minimize tuning-block mean_mae_ratio vs persistence. Starting at
+    classic means it can never do worse than classic on the tuning block."""
+    best = MarcelParams()
+    best_score = rolling_origin(tuning_seasons, data_dir, best, identities)["mean_mae_ratio"]
+    for _ in range(max_rounds):
+        improved = False
+        for field, values in axes:
+            for v in values:
+                cand = replace(best, **{field: v})
+                score = rolling_origin(tuning_seasons, data_dir, cand, identities)["mean_mae_ratio"]
+                if score < best_score:
+                    best, best_score, improved = cand, score, True
+        if not improved:
+            break
+    return best, best_score
+
+
 def coordinate_descent(
     tuning_seasons: list[int],
     data_dir: Path,
@@ -41,24 +66,19 @@ def coordinate_descent(
     gamma_values: tuple[float, ...],
     max_rounds: int = 3,
 ) -> tuple[MarcelParams, float]:
-    """Alternately optimize gamma then n_reg_base (objective: minimize the
-    candidate's tuning-block mean_mae_ratio vs persistence). Starts from classic
-    Marcel, so it can never do worse than classic on the tuning block. Avoids the
-    combinatorial blowup of a dense per-component grid."""
-    best = MarcelParams()
-    best_score = rolling_origin(tuning_seasons, data_dir, best, identities)["mean_mae_ratio"]
-    for _ in range(max_rounds):
-        improved = False
-        for g in gamma_values:
-            cand = replace(best, gamma=g)
-            score = rolling_origin(tuning_seasons, data_dir, cand, identities)["mean_mae_ratio"]
-            if score < best_score:
-                best, best_score, improved = cand, score, True
-        for n in n_reg_values:
-            cand = replace(best, n_reg=n)
-            score = rolling_origin(tuning_seasons, data_dir, cand, identities)["mean_mae_ratio"]
-            if score < best_score:
-                best, best_score, improved = cand, score, True
-        if not improved:
-            break
-    return best, best_score
+    """Rung 2: tune (gamma, n_reg_base)."""
+    return _descend(tuning_seasons, data_dir, identities,
+                    [("gamma", gamma_values), ("n_reg", n_reg_values)], max_rounds)
+
+
+def coordinate_descent_alpha(
+    tuning_seasons: list[int],
+    data_dir: Path,
+    identities: dict[str, dict],
+    ac_values: tuple[float, ...],
+    ap_values: tuple[float, ...],
+    max_rounds: int = 3,
+) -> tuple[MarcelParams, float]:
+    """Rung 3: tune (alpha_contact, alpha_power), gamma/n_reg held classic."""
+    return _descend(tuning_seasons, data_dir, identities,
+                    [("alpha_contact", ac_values), ("alpha_power", ap_values)], max_rounds)

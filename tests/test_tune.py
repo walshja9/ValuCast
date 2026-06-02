@@ -60,3 +60,37 @@ class TestTune(unittest.TestCase):
                 n_reg_values=(1200.0,), gamma_values=(0.0,),
             )
             self.assertEqual((best.n_reg, best.gamma), (1200.0, 0.0))
+
+    def test_coordinate_descent_alpha_returns_params_and_score(self):
+        from projections.backtest.tune import coordinate_descent_alpha
+        from projections.data.statcast import store_statcast_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in range(2018, 2024):
+                store_season(yr, [_row("5", yr, 25), _row("7", yr, 18)], data_dir)
+                store_statcast_season(yr, [
+                    {"mlbam_id": "5", "xba": 0.27, "xslg": 0.47, "xwoba": 0.34},
+                    {"mlbam_id": "7", "xba": 0.25, "xslg": 0.52, "xwoba": 0.35},
+                ], data_dir)
+            idents = {"5": {"birth_date": "1992-01-01"}, "7": {"birth_date": "1990-01-01"}}
+            best, score = coordinate_descent_alpha(
+                [2022, 2023], data_dir, idents,
+                ac_values=(0.0, 0.5), ap_values=(0.0, 0.5),
+            )
+            self.assertIn(best.alpha_contact, (0.0, 0.5))
+            self.assertIn(best.alpha_power, (0.0, 0.5))
+            self.assertEqual(best.gamma, 0.0)         # gamma stays classic (isolation)
+            self.assertIsInstance(score, float)
+
+    def test_existing_coordinate_descent_still_works(self):
+        # Refactor must not break the Rung 2 entry point.
+        from projections.backtest.tune import coordinate_descent
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in range(2018, 2024):
+                store_season(yr, [_row("5", yr, 25), _row("7", yr, 18)], data_dir)
+            idents = {"5": {"birth_date": "1992-01-01"}, "7": {"birth_date": "1990-01-01"}}
+            best, _ = coordinate_descent(
+                [2022, 2023], data_dir, idents,
+                n_reg_values=(1200.0,), gamma_values=(0.0,))
+            self.assertEqual((best.n_reg, best.gamma), (1200.0, 0.0))
