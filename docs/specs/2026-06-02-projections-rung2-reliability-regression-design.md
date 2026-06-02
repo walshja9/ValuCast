@@ -39,8 +39,11 @@ For target season `T`, using only seasons `< T`:
 **We have season-level totals only.** "Stabilization" here does **not** mean a within-season split-half PA study (Carleton-style) — that requires game-log/split data we have not pulled. It means **empirical year-to-year, PA-weighted predictive reliability** of the component's per-PA rate, computed from our historical season snapshots:
 
 - Form consecutive-season pairs `(rate_c[y], rate_c[y+1])` for players with PA ≥ `MIN_EVAL_PA` in **both** years, across all season pairs **strictly before `T`** (leakage-safe).
-- `r_c` = the **PA-weighted Pearson correlation** between the earlier-year and later-year rates (weight = min/harmonic of the two seasons' PA, so a player anchors the estimate in proportion to sample).
-- **Clamp** `r_c` to `[R_FLOOR, 1.0]` (e.g. `R_FLOOR = 0.05`) so a near-zero-reliability stat can't produce an explosive `n_reg`; **cap** `n_reg_c` at `N_REG_MAX` as a second guard.
+- `r_c` = the **PA-weighted Pearson correlation** between the earlier-year and later-year rates. Each player-pair's weight is the **harmonic mean** of its two seasons' PA (penalizes imbalance more smoothly than `min(PA_y, PA_{y+1})`):
+  ```
+  w = 2 · PA_y · PA_{y+1} / (PA_y + PA_{y+1})
+  ```
+- **Clamp** `r_c` to `[R_FLOOR, 1.0]` so a near-zero-reliability stat can't produce an explosive `n_reg`, and **clamp** the resulting `n_reg_c` to `[N_REG_MIN, N_REG_MAX]` as a second guard (`N_REG_MIN` prevents absurdly tiny shrinkage for high-correlation components). Defaults: **`R_FLOOR = 0.05`, `N_REG_MIN = 300`, `N_REG_MAX = 3000`** (all tunable, but held fixed in v1 — only `n_reg_base` and `gamma` are searched).
 
 This is a *relative reliability ordering* good enough to differentiate regression. It is explicitly an approximation of true talent reliability; literature-informed priors (HR/K/BB stabilize fast; AVG/BABIP slow) are used only as a **sanity check** on the ordering, never hard-coded into the model. If true within-season stabilization is wanted later, that is a **separate data add** (game logs / split halves) and its own rung — out of scope here.
 
@@ -57,7 +60,7 @@ The reliability map covers the projected rate components from Rung 1 (`1B, 2B, 3
 
 ## Code shape (no implementation here — for the plan)
 
-- `projections/models/reliability.py` — `compute_reliability(prior_snapshots, pa_floor) -> dict[str, float]`, leakage-safe, PA-weighted year-to-year correlation, clamped.
+- `projections/models/reliability.py` — `compute_reliability(prior_snapshots, pa_floor) -> dict[str, float]`, leakage-safe, harmonic-PA-weighted year-to-year correlation, `r_c` clamped to `[R_FLOOR, 1.0]`. Module-level constants `R_FLOOR = 0.05`, `N_REG_MIN = 300`, `N_REG_MAX = 3000` (the `n_reg_c` clamp applies in `marcel_hitter` where `n_reg_c` is computed).
 - `MarcelParams` extension — add `gamma: float = 0.0`; rename/alias the scalar to `n_reg_base` (keep `n_reg` working so Rung 1 callers/tests are untouched). `gamma = 0.0` default = classic.
 - `marcel_hitter.project_hitter(...)` — accept an optional `reliability` map; when present and `gamma > 0`, compute `n_reg_c` per component; when absent or `gamma == 0`, behave exactly as Rung 1 (the `:39` line generalizes, the default path is byte-for-byte equivalent).
 - `build_marcel_projections` — compute the reliability map once per target season (like league means) and thread it through.
