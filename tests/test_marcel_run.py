@@ -53,3 +53,23 @@ class TestMarcelRun(unittest.TestCase):
             manifest = json.loads((run_path / "run_manifest.json").read_text())
             self.assertEqual(manifest["as_of_season"], 2024)
             self.assertEqual(manifest["row_count"], 1)
+
+    def test_write_run_is_immutable(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            runs_dir = data_dir / "runs"
+            self._seed(data_dir)
+            rows = build_marcel_projections(
+                2024, data_dir, MarcelParams(),
+                identities={"5": {"name": "Test Bat", "birth_date": "1995-06-01"}},
+            )
+            run_id = write_run(rows, runs_dir, model="marcel", as_of_season=2024, version=1)
+            # Identical re-write of the same run_id is a no-op.
+            self.assertEqual(
+                write_run(rows, runs_dir, model="marcel", as_of_season=2024, version=1),
+                run_id,
+            )
+            # Different contents under the same run_id must raise (bump version instead).
+            changed = [dict(rows[0], name="Changed")]
+            with self.assertRaises(ValueError):
+                write_run(changed, runs_dir, model="marcel", as_of_season=2024, version=1)

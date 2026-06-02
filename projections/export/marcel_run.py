@@ -83,10 +83,17 @@ def write_run(
 ) -> str:
     run_id = f"{model}_{as_of_season}_v{version}"
     run_path = runs_dir / run_id
+    proj_path = run_path / "projections.json"
+    if proj_path.exists():
+        # Archived runs are immutable: identical re-write is a no-op; differing
+        # contents under the same run_id must bump the version, not overwrite.
+        if json.loads(proj_path.read_text(encoding="utf-8")) == rows:
+            return run_id
+        raise ValueError(
+            f"Refusing to overwrite archived run {run_id}: contents differ."
+        )
     run_path.mkdir(parents=True, exist_ok=True)
-    (run_path / "projections.json").write_text(
-        json.dumps(rows, indent=2), encoding="utf-8"
-    )
+    proj_path.write_text(json.dumps(rows, indent=2), encoding="utf-8")
     (run_path / "run_manifest.json").write_text(
         json.dumps({
             "run_id": run_id,
