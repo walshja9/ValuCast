@@ -68,3 +68,83 @@ def parse_quality(csv_text: str) -> dict[str, dict]:
             "launch_angle": _to_float(row.get("avg_hit_angle")),
         }
     return out
+
+
+def _fetch(url: str) -> str:
+    req = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(req, timeout=30) as resp:
+        return resp.read().decode("utf-8-sig", "replace")  # utf-8-sig strips BOM
+
+
+def merge_statcast(expected: dict[str, dict], quality: dict[str, dict]) -> list[dict]:
+    """Join expected + quality by mlbam_id. Expected stats anchor the row;
+    quality fields are added when present (observe-only)."""
+    rows = []
+    for pid, exp in expected.items():
+        q = quality.get(pid, {})
+        rows.append({"mlbam_id": pid, **exp,
+                     "barrel_pct": q.get("barrel_pct"),
+                     "avg_ev": q.get("avg_ev"),
+                     "hardhit_pct": q.get("hardhit_pct"),
+                     "launch_angle": q.get("launch_angle")})
+    return rows
+
+
+def assert_coverage(season: int, row_count: int) -> None:
+    """Fail loud on undercoverage — a silent empty/partial pull would masquerade
+    as 'classic fallback everywhere' and fake a tie."""
+    if row_count < COVERAGE_FLOOR:
+        raise ValueError(
+            f"Statcast {season}: {row_count} rows < floor {COVERAGE_FLOOR}; "
+            "refusing to store a likely broken pull."
+        )
+
+
+def _season_path(season: int, data_dir: Path) -> Path:
+    return data_dir / "statcast" / f"hitting_{season}.json"
+
+
+def store_statcast_season(season: int, rows: list[dict], data_dir: Path) -> None:
+    """Immutable per-season snapshot. Identical re-pull is a no-op; a changed
+    finalized season raises (compares parsed content, not raw bytes — Windows
+    newline-safe, same contract as the MLB backbone)."""
+    path = _season_path(season, data_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if json.loads(path.read_text(encoding="utf-8")) == rows:
+            return
+        raise ValueError(f"Refusing to overwrite Statcast season {season}: content changed.")
+    path.write_text(json.dumps(rows, indent=2, sort_keys=True), encoding="utf-8")
+    _update_manifest(season, rows, data_dir)
+
+
+def _update_manifest(season: int, rows: list[dict], data_dir: Path) -> None:
+    mpath = data_dir / "statcast" / "manifest.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8")) if mpath.exists() else {}
+    manifest[str(season)] = {
+        "season": season,
+        "row_count": len(rows),
+        "schema_version": SCHEMA_VERSION,
+        "content_sha256": hashlib.sha256(
+            json.dumps(rows, indent=2, sort_keys=True).encode("utf-8")
+        ).hexdigest(),
+    }
+    mpath.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_statcast_season(season: int, data_dir: Path) -> dict[str, dict]:
+    """{mlbam_id: statcast_row} for a season; empty dict if not pulled."""
+    path = _season_path(season, data_dir)
+    if not path.exists():
+        return {}
+    return {r["mlbam_id"]: r for r in json.loads(path.read_text(encoding="utf-8"))}
+
+
+def pull_statcast_season(season: int, data_dir: Path) -> int:
+    """Fetch both leaderboards, merge, coverage-check, store. Returns row count."""
+    expected = parse_expected_stats(_fetch(EXPECTED_URL.format(year=season)))
+    quality = parse_quality(_fetch(QUALITY_URL.format(year=season)))
+    rows = merge_statcast(expected, quality)
+    assert_coverage(season, len(rows))
+    store_statcast_season(season, rows, data_dir)
+    return len(rows)
