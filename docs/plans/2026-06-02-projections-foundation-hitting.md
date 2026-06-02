@@ -80,7 +80,7 @@ Append to `tests/test_combine.py`:
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_combine -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_combine.py" -v`
 Expected: FAIL — `KeyError: 'sources'` (matched dict has no `sources`).
 
 - [ ] **Step 3: Implement minimal fix**
@@ -105,7 +105,7 @@ Apply the identical `"sources": list(ros.get("sources", [])),` line to the `_com
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_combine -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_combine.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -147,7 +147,7 @@ class TestProjectionsConstants(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projections_constants -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projections_constants.py" -v`
 Expected: FAIL — `ModuleNotFoundError: No module named 'projections'`.
 
 - [ ] **Step 3: Create the package files**
@@ -186,7 +186,7 @@ MIN_EVAL_PA = 200  # qualified actual-PA floor for backtest eval population
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projections_constants -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projections_constants.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -228,7 +228,7 @@ class TestMarcelParams(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_params -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_params.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -256,7 +256,7 @@ class MarcelParams:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_params -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_params.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -306,7 +306,7 @@ class TestLeagueRates(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_league_rates -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_league_rates.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -348,7 +348,7 @@ def compute_league_rates(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_league_rates -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_league_rates.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -429,7 +429,7 @@ class TestMarcelHitter(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_hitter -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_hitter.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -515,7 +515,7 @@ def project_hitter(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_hitter -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_hitter.py" -v`
 Expected: PASS (all three tests).
 
 - [ ] **Step 5: Commit**
@@ -563,7 +563,7 @@ class TestIdentity(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_identity -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_identity.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -620,7 +620,7 @@ def fetch_identities(mlbam_ids: list[str]) -> dict[str, dict]:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_identity -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_identity.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -687,7 +687,7 @@ class TestHistorical(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_historical -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_historical.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -781,7 +781,7 @@ def pull_season(season: int, data_dir: Path) -> int:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_historical -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_historical.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -880,7 +880,7 @@ class TestMarcelRun(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_run -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_run.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -992,7 +992,7 @@ def write_run(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_marcel_run -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_marcel_run.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1036,7 +1036,7 @@ class TestScorecard(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_scorecard -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_scorecard.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -1078,7 +1078,7 @@ def normalized_ratio(model_mae: float, baseline_mae: float) -> float:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_scorecard -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_scorecard.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1151,7 +1151,7 @@ class TestHarness(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_harness -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_harness.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -1258,7 +1258,7 @@ def rolling_origin(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_harness -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_harness.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1345,7 +1345,7 @@ class TestTune(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_tune -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_tune.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -1389,7 +1389,7 @@ def grid_search(
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_tune -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_tune.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1476,7 +1476,7 @@ class TestProjectionCatalog(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projection_catalog -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projection_catalog.py" -v`
 Expected: FAIL — `ModuleNotFoundError`.
 
 - [ ] **Step 3: Implement**
@@ -1517,7 +1517,7 @@ class ProjectionCatalog:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projection_catalog -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projection_catalog.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1590,7 +1590,7 @@ class TestProjectionsIntegration(unittest.TestCase):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projections_integration -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projections_integration.py" -v`
 Expected: FAIL — initially `ModuleNotFoundError` for the not-yet-imported run/catalog modules if run out of order; once Tasks 8 & 12 are done it should pass without new code. If `ValuationResult` has no `.value` attribute, inspect `src/league_values/models.py` `ValuationResult` and use the correct ranked-value field name, then re-run.
 
 - [ ] **Step 3: Make it pass**
@@ -1599,7 +1599,7 @@ No new production code expected — this wires existing pieces. If it fails on t
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projections_integration -v`
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest discover -s tests -p "test_projections_integration.py" -v`
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
