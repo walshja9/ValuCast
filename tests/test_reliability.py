@@ -1,5 +1,5 @@
 import unittest
-from projections.models.reliability import compute_reliability, R_FLOOR
+from projections.models.reliability import compute_reliability, _harmonic, R_FLOOR
 
 
 def _row(pid, pa, hr, so):
@@ -30,3 +30,11 @@ class TestReliability(unittest.TestCase):
         s2021 = [_row("1", 500, 10, 100), _row("2", 50, 2, 10)]
         rel = compute_reliability({2020: s2020, 2021: s2021}, pa_floor=100)
         self.assertEqual(rel["HR"], R_FLOOR)
+
+    def test_harmonic_weight_formula_is_locked(self):
+        # Guards against a future edit silently swapping harmonic for min/arithmetic.
+        self.assertEqual(_harmonic(500, 500), 500.0)      # equal PA -> that PA
+        self.assertEqual(_harmonic(600, 300), 400.0)      # 2*600*300/900 = 400
+        self.assertNotEqual(_harmonic(600, 300), 300.0)   # NOT min(PA1, PA2)
+        self.assertNotEqual(_harmonic(600, 300), 450.0)   # NOT arithmetic mean
+        self.assertEqual(_harmonic(0, 500), 0.0)          # zero PA -> zero weight
