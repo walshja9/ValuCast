@@ -20,13 +20,14 @@ Baseball Savant public CSV endpoints, **join key `player_id` = MLBAM id** (clean
 
 | Leaderboard | Fields used | Endpoint |
 |---|---|---|
-| `expected_statistics` | `est_ba` (xBA), `est_slg` (xSLG) — **the bridge**; `est_woba` stored | `/leaderboard/expected_statistics?type=batter&year=Y&min=<low>&csv=true` |
-| `statcast` (barrels/EV) | `brl_percent`, `avg_hit_speed`, `ev95percent`, `avg_hit_angle` — **observe-only v1** | `/leaderboard/statcast?type=batter&year=Y&min=<low>&csv=true` |
+| `expected_statistics` | `est_ba` (xBA), `est_slg` (xSLG) — **the bridge**; `est_woba` stored | `/leaderboard/expected_statistics?type=batter&year=Y&min=1&filterType=bip&csv=true` |
+| `statcast` (barrels/EV) | `brl_percent`, `avg_hit_speed`, `ev95percent`, `avg_hit_angle` — **observe-only v1** | `/leaderboard/statcast?type=batter&year=Y&min=1&csv=true` |
 
 - **Coverage: 2015+** (Statcast era). The held-out block (2020–25) and the seasons it projects from (2017+) are fully covered. Pre-2015 seasons have no Statcast → classic fallback.
 - **Parsing:** UTF-8 BOM + the name column is one quoted `"last_name, first_name"` field. Use `utf-8-sig`; key off `player_id`, not name.
 - **Fragility:** scraping endpoint (can rate-limit / change params). Mitigation: pull once into immutable per-season snapshots, never scrape at projection time (mirrors the MLB historical backbone).
-- **Coverage gap:** Savant leaderboards have a minimum-sample threshold. Pull with a **low `min`** to maximize coverage; any player-season still missing Statcast falls back to classic for that season.
+- **`min` pinned to `1`** (`filterType=bip`, ≥1 batted ball). Probed coverage for 2023: `min=1`→651 rows, `min=100`→403, `min=q`→258. `min=1` is the lowest accepted threshold and gives maximum coverage (651 ≫ our ~330-player eval population). Any player-season still missing → classic fallback for that season.
+- **Undercoverage guard (fail loud):** record each season's pulled row count in the manifest and **raise** if a season returns fewer than **250 rows** (a hard floor well under the ~600 normal / shortened-2020 levels). A silent empty/partial pull would otherwise masquerade as "classic fallback everywhere" and fake a tie.
 
 ## Data layer (`projections/data/statcast.py`)
 
@@ -78,12 +79,19 @@ So **`xBA` sets total hits, `xSLG` sets total bases, the player's mix sets the s
 - De-noising is applied to the component counts of the 3 Marcel input seasons inside `build_marcel_projections`, after joining each season's Statcast snapshot; the de-noised seasons then flow through the unchanged `project_hitter`.
 - Tuning: reuse `coordinate_descent`, extended to search `(alpha_contact, alpha_power)` (gamma/n_reg held at classic). Leakage-safe: tuning seasons disjoint from scoring seasons.
 
+**Tuning & evaluation blocks (Statcast-aware — do NOT reuse Rung 2's 2014–2019):**
+A target season's de-noising only bites if its 3 prior seasons have Statcast. Statcast starts 2015, so all three priors are covered only when `T ≥ 2018` (T−3 ≥ 2015). Therefore:
+- **Tuning block: 2018–2019** — both have fully Statcast-covered priors (2018←2015/16/17, 2019←2016/17/18). Avoids tuning on mostly-fallback-classic noise.
+- **Scoring block: 2020–2025** (disjoint) — all priors ≥2017, fully covered.
+- The harness must **report the Statcast-covered prior-season share per target** (e.g. "2018: 3/3 priors covered") so undercoverage is visible, not silent.
+(2017 is available as an optional extra tuning season but its 2014 prior is fallback — include only if more tuning data is needed, with the coverage caveat noted.)
+
 ## Success criteria
 
-1. **Data layer:** immutable Savant snapshots 2015–2025, joined by `mlbam_id`, manifested; re-pull no-op verified.
+1. **Data layer:** immutable Savant snapshots 2015–2025 (`min=1`), joined by `mlbam_id`, manifested with row counts; re-pull no-op verified; undercoverage guard raises below the 250-row floor.
 2. **Bridge correctness:** unit-tested — `α=0` reproduces classic components exactly; a hand-built case verifies the redistribution hits `H*`/`TB*`; each feasibility guard has a test (H* clamp, TB*≥H*, XB' clamp-binds, XB==0 league-mix fallback, missing-Statcast α=0).
 3. **Backward compatibility:** `α=0` build == current classic build exactly; existing 478 tests stay green.
-4. **The verdict (honest either way):** on held-out 2020–2025, coordinate-descent-tuned `(α_contact, α_power)` either **beats classic** (mean MAE ratio vs classic < 1.0, correlation improvement on a majority, edge **carries** from the disjoint tuning block) — or **ties**, recorded plainly. Do not expand the grid to chase a scoring-block win (leakage).
+4. **The verdict (honest either way):** tuned on **2018–2019**, scored on disjoint **2020–2025**, `(α_contact, α_power)` either **beats classic** (mean MAE ratio vs classic < 1.0, correlation improvement on a majority, edge **carries** from the tuning block) — or **ties**, recorded plainly. Statcast-covered prior-season share reported per target. Do not expand the grid to chase a scoring-block win (leakage).
 
 ## Non-Goals
 
