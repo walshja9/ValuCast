@@ -15,3 +15,5 @@ class MarcelParams:
     pa_w2: float = 0.1             # weight on PA[T-2]
     pa_base: float = 200.0         # baseline PA added
     gamma: float = 0.0             # reliability->regression exponent; 0.0 == classic Marcel
+    alpha_contact: float = 0.0     # blend weight: actual hit rate -> xBA; 0.0 == classic
+    alpha_power: float = 0.0       # blend weight: actual TB rate -> xSLG; 0.0 == classic

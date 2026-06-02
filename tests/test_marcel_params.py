@@ -24,3 +24,12 @@ class TestMarcelParams(unittest.TestCase):
     def test_gamma_is_settable_via_constructor(self):
         p = MarcelParams(gamma=0.5)
         self.assertEqual(p.gamma, 0.5)
+
+    def test_alpha_knobs_default_to_zero(self):
+        p = MarcelParams()
+        self.assertEqual(p.alpha_contact, 0.0)   # 0 = no de-noising = classic
+        self.assertEqual(p.alpha_power, 0.0)
+
+    def test_alpha_knobs_settable(self):
+        p = MarcelParams(alpha_contact=0.4, alpha_power=0.6)
+        self.assertEqual((p.alpha_contact, p.alpha_power), (0.4, 0.6))
