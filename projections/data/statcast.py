@@ -12,7 +12,8 @@ from urllib.request import Request, urlopen
 
 USER_AGENT = "Mozilla/5.0"
 SCHEMA_VERSION = 1
-COVERAGE_FLOOR = 250  # raise if a season pull returns fewer rows than this
+COVERAGE_FLOOR = 250    # raise if a season pull returns fewer rows than this
+MIN_VALUE_SHARE = 0.8   # raise if fewer than this share of rows have usable xBA/xSLG
 
 EXPECTED_URL = (
     "https://baseballsavant.mlb.com/leaderboard/expected_statistics"
@@ -100,6 +101,26 @@ def assert_coverage(season: int, row_count: int) -> None:
         )
 
 
+def assert_value_coverage(season: int, rows: list[dict]) -> None:
+    """Fail loud on VALUE undercoverage. Row count alone misses a Savant schema
+    drift where rows parse but xBA/xSLG come back None — that would silently turn
+    the bridge into classic everywhere and fake a tie. Require enough rows with
+    usable xBA AND xSLG (the bridge fields); barrel/EV are observe-only, not checked."""
+    usable = sum(1 for r in rows
+                 if r.get("xba") is not None and r.get("xslg") is not None)
+    if usable < COVERAGE_FLOOR:
+        raise ValueError(
+            f"Statcast {season}: only {usable} rows have usable xBA/xSLG "
+            f"< floor {COVERAGE_FLOOR}; likely schema drift in est_ba/est_slg."
+        )
+    share = usable / len(rows) if rows else 0.0
+    if share < MIN_VALUE_SHARE:
+        raise ValueError(
+            f"Statcast {season}: only {share:.0%} of rows have xBA/xSLG "
+            f"(< {MIN_VALUE_SHARE:.0%}); likely schema drift."
+        )
+
+
 def _season_path(season: int, data_dir: Path) -> Path:
     return data_dir / "statcast" / f"hitting_{season}.json"
 
@@ -146,5 +167,6 @@ def pull_statcast_season(season: int, data_dir: Path) -> int:
     quality = parse_quality(_fetch(QUALITY_URL.format(year=season)))
     rows = merge_statcast(expected, quality)
     assert_coverage(season, len(rows))
+    assert_value_coverage(season, rows)
     store_statcast_season(season, rows, data_dir)
     return len(rows)

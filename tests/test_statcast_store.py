@@ -4,7 +4,7 @@ from pathlib import Path
 
 from projections.data.statcast import (
     merge_statcast, store_statcast_season, load_statcast_season,
-    assert_coverage, COVERAGE_FLOOR,
+    assert_coverage, assert_value_coverage, COVERAGE_FLOOR,
 )
 
 
@@ -46,3 +46,22 @@ class TestStatcastStore(unittest.TestCase):
     def test_load_missing_season_returns_empty(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(load_statcast_season(2099, Path(d)), {})
+
+    def test_value_coverage_passes_when_xba_xslg_present(self):
+        rows = [{"mlbam_id": str(i), "xba": 0.25, "xslg": 0.45}
+                for i in range(COVERAGE_FLOOR)]
+        assert_value_coverage(2023, rows)   # no raise
+
+    def test_value_coverage_raises_on_schema_drift_all_none(self):
+        # Rows parse fine but xBA/xSLG are None (est_ba/est_slg renamed upstream).
+        rows = [{"mlbam_id": str(i), "xba": None, "xslg": None}
+                for i in range(COVERAGE_FLOOR + 50)]
+        with self.assertRaises(ValueError):
+            assert_value_coverage(2023, rows)
+
+    def test_value_coverage_raises_on_low_share(self):
+        # Plenty of rows, plenty usable count, but < MIN_VALUE_SHARE have values.
+        good = [{"mlbam_id": str(i), "xba": 0.25, "xslg": 0.45} for i in range(COVERAGE_FLOOR)]
+        bad = [{"mlbam_id": f"b{i}", "xba": None, "xslg": None} for i in range(COVERAGE_FLOOR)]
+        with self.assertRaises(ValueError):
+            assert_value_coverage(2023, good + bad)   # 50% share < 80%
