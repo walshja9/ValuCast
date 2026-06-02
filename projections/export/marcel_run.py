@@ -7,10 +7,12 @@ from pathlib import Path
 from projections.constants import MIN_EVAL_PA
 from projections.data.historical import available_seasons, load_season
 from projections.data.identity import age_for
+from projections.data.statcast import load_statcast_season
 from projections.models.league_rates import compute_league_rates
 from projections.models.marcel_hitter import project_hitter
 from projections.models.marcel_params import MarcelParams
 from projections.models.reliability import compute_reliability
+from projections.models.statcast_denoise import denoise_season
 
 # Engine-native export contract: every stats dict carries these keys.
 EXPORT_KEYS = (
@@ -47,6 +49,15 @@ def build_marcel_projections(
     reliability = compute_reliability(
         {s: load_season(s, data_dir) for s in rel_seasons}, pa_floor=MIN_EVAL_PA,
     )
+
+    # Statcast input de-noising (Rung 3): blend each prior season's hit components
+    # toward xBA/xSLG before Marcel weights them. alpha=0 -> exact passthrough.
+    # League means (above) stay on ACTUAL rates; only the per-player inputs move.
+    snaps = [
+        denoise_season(snap, load_statcast_season(yr, data_dir),
+                       params.alpha_contact, params.alpha_power)
+        for yr, snap in zip(prior_years, snaps)
+    ]
 
     # Offset-aligned priors: index 0 = T-1, 1 = T-2, 2 = T-3. Missing = None,
     # so weights/PA roles stay pinned to the correct year (see project_hitter).

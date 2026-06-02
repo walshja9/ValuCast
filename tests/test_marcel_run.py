@@ -108,3 +108,36 @@ class TestMarcelRun(unittest.TestCase):
             a = build_marcel_projections(2024, data_dir, MarcelParams(), idents)
             b = build_marcel_projections(2024, data_dir, MarcelParams(gamma=0.0), idents)
             self.assertEqual([r["stats"] for r in a], [r["stats"] for r in b])
+
+    def _seed_statcast(self, data_dir):
+        from projections.data.statcast import store_statcast_season
+        # High xslg for player 7 so de-noising visibly moves their line.
+        for yr in (2019, 2020, 2021, 2022, 2023):
+            store_statcast_season(yr, [
+                {"mlbam_id": "5", "xba": 0.270, "xslg": 0.470, "xwoba": 0.340},
+                {"mlbam_id": "7", "xba": 0.250, "xslg": 0.520, "xwoba": 0.350},
+            ], data_dir)
+
+    def test_alpha_zero_matches_classic_build(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            self._seed_many(data_dir)
+            self._seed_statcast(data_dir)
+            idents = {"5": {"birth_date": "1994-01-01"}, "7": {"birth_date": "1994-01-01"}}
+            classic = build_marcel_projections(2024, data_dir, MarcelParams(), idents)
+            a0 = build_marcel_projections(
+                2024, data_dir, MarcelParams(alpha_contact=0.0, alpha_power=0.0), idents)
+            self.assertEqual([r["stats"] for r in classic], [r["stats"] for r in a0])
+
+    def test_alpha_positive_changes_projection(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            self._seed_many(data_dir)
+            self._seed_statcast(data_dir)
+            idents = {"5": {"birth_date": "1994-01-01"}, "7": {"birth_date": "1994-01-01"}}
+            classic = build_marcel_projections(2024, data_dir, MarcelParams(), idents)
+            tuned = build_marcel_projections(
+                2024, data_dir, MarcelParams(alpha_contact=0.5, alpha_power=0.5), idents)
+            c = {r["id"]: r["stats"]["SLG"] for r in classic}
+            t = {r["id"]: r["stats"]["SLG"] for r in tuned}
+            self.assertTrue(any(abs(c[k] - t[k]) > 1e-9 for k in c))
