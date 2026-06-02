@@ -23,7 +23,7 @@ For target season `T`, using only seasons `< T`:
    ```
    n_reg_c = n_reg_base × (r̄ / r_c) ^ gamma
    ```
-   - `r̄` = PA-weighted mean of `r_c` across projected components.
+   - `r̄` = the **unweighted mean** of `r_c` across projected components — the reference reliability level, so an average-reliability component gets `n_reg_base`. (Not PA-weighted: `r_c` are scalar correlations with no per-component PA. The harmonic-PA weighting applies *inside* each `r_c`, not across components.)
    - `(n_reg_base, gamma)` are the **only two tunable knobs**.
    - More-reliable-than-average components (`r_c > r̄`) get a *smaller* `n_reg` (shrink less); noisier components get a *larger* one.
 3. **Regression** uses `n_reg_c` in place of the scalar `n_reg`:
