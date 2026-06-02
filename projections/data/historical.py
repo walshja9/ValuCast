@@ -74,6 +74,20 @@ def load_season(season: int, data_dir: Path) -> list[dict]:
     return json.loads(_season_path(season, data_dir).read_text(encoding="utf-8"))
 
 
+def available_seasons(data_dir: Path) -> list[int]:
+    """Sorted list of seasons with a stored hitting snapshot."""
+    hist = data_dir / "historical"
+    if not hist.exists():
+        return []
+    seasons = []
+    for p in hist.glob("hitting_*.json"):
+        try:
+            seasons.append(int(p.stem.split("_")[1]))
+        except (IndexError, ValueError):
+            continue
+    return sorted(seasons)
+
+
 def pull_season(season: int, data_dir: Path) -> int:
     """Fetch one season from MLB Stats API, normalize, store. Returns row count."""
     raw = fetch_actuals(season)

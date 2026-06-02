@@ -40,3 +40,16 @@ class TestHistorical(unittest.TestCase):
             store_season(2020, [{"mlbam_id": "5", "season": 2020, "HR": 4}], data_dir)
             with self.assertRaises(ValueError):
                 store_season(2020, [{"mlbam_id": "5", "season": 2020, "HR": 99}], data_dir)
+
+    def test_available_seasons_lists_stored_years_sorted(self):
+        from projections.data.historical import available_seasons
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in (2019, 2021, 2020):
+                store_season(yr, [{"mlbam_id": "1", "season": yr, "HR": 1}], data_dir)
+            self.assertEqual(available_seasons(data_dir), [2019, 2020, 2021])
+
+    def test_available_seasons_empty_when_none(self):
+        from projections.data.historical import available_seasons
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(available_seasons(Path(d)), [])
