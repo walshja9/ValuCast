@@ -52,3 +52,26 @@ class TestMarcelHitter(unittest.TestCase):
         self.assertAlmostEqual(out["PA"], 250.0)
         # Regression is identity here, so HR = (25/500) * 250 = 12.5.
         self.assertAlmostEqual(out["HR"], 12.5)
+
+    def test_gamma_zero_with_reliability_matches_classic(self):
+        # Passing a reliability map but gamma=0 must equal the classic path exactly.
+        rel = {c: 0.5 for c in self.league}
+        classic = project_hitter(self.prior, self.league, age=29, params=MarcelParams())
+        with_rel = project_hitter(self.prior, self.league, age=29,
+                                  params=MarcelParams(gamma=0.0), reliability=rel)
+        self.assertEqual(classic, with_rel)
+
+    def test_reliability_differentiates_regression_when_gamma_positive(self):
+        # Regression only bites when the league rate DIFFERS from the player's rate.
+        # Player HR rate is .05; set league HR rate to .03 so shrinkage matters, then a
+        # different n_reg (from reliability weighting) yields a different projection.
+        league = dict(self.league)
+        league["HR"] = 0.03
+        rel = {c: 0.5 for c in league}
+        rel["HR"], rel["BB"] = 0.9, 0.1   # HR reliable (less shrink), BB noisy (more)
+        classic = project_hitter(self.prior, league, age=29, params=MarcelParams())
+        tuned = project_hitter(self.prior, league, age=29,
+                               params=MarcelParams(gamma=1.0), reliability=rel)
+        # Reliable HR regresses less toward .03 -> stays closer to the player's .05.
+        self.assertNotAlmostEqual(classic["HR"], tuned["HR"])
+        self.assertGreater(tuned["HR"], classic["HR"])

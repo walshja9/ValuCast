@@ -8,6 +8,7 @@ from projections.constants import (
     AGE_ADJUSTED_RATES, PEAK_AGE, PROJECTED_RATES,
 )
 from projections.models.marcel_params import MarcelParams
+from projections.models.reliability import N_REG_MAX, N_REG_MIN, R_FLOOR
 
 
 def _age_mult(age: int | None, params: MarcelParams) -> float:
@@ -23,6 +24,7 @@ def project_hitter(
     league_rates: dict[str, float],
     age: int | None,
     params: MarcelParams,
+    reliability: dict[str, float] | None = None,
 ) -> dict:
     """prior_seasons is OFFSET-ALIGNED: index 0 = season T-1, 1 = T-2, 2 = T-3.
     A missing season is None and KEEPS its slot, so each present season gets the
@@ -33,11 +35,23 @@ def project_hitter(
     ]
 
     weighted_pa = sum(w * float(s.get("PA", 0)) for s, w in pairs)
+
+    use_rel = reliability is not None and params.gamma != 0.0
+    if use_rel:
+        present = [reliability[c] for c in PROJECTED_RATES if c in reliability]
+        rbar = sum(present) / len(present) if present else 1.0
+
     regressed: dict[str, float] = {}
     for c in PROJECTED_RATES:
         wtot = sum(w * float(s.get(c, 0)) for s, w in pairs)
-        regressed[c] = (wtot + params.n_reg * league_rates.get(c, 0.0)) / (
-            weighted_pa + params.n_reg
+        if use_rel:
+            r = min(max(reliability.get(c, rbar), R_FLOOR), 1.0)
+            n_reg_c = params.n_reg * (rbar / r) ** params.gamma
+            n_reg_c = min(max(n_reg_c, N_REG_MIN), N_REG_MAX)
+        else:
+            n_reg_c = params.n_reg
+        regressed[c] = (wtot + n_reg_c * league_rates.get(c, 0.0)) / (
+            weighted_pa + n_reg_c
         )
 
     def _pa(i: int) -> float:
