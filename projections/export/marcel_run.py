@@ -5,11 +5,12 @@ import json
 from pathlib import Path
 
 from projections.constants import MIN_EVAL_PA
-from projections.data.historical import load_season
+from projections.data.historical import available_seasons, load_season
 from projections.data.identity import age_for
 from projections.models.league_rates import compute_league_rates
 from projections.models.marcel_hitter import project_hitter
 from projections.models.marcel_params import MarcelParams
+from projections.models.reliability import compute_reliability
 
 # Engine-native export contract: every stats dict carries these keys.
 EXPORT_KEYS = (
@@ -40,6 +41,13 @@ def build_marcel_projections(
     weights = params.season_weights[: len(snaps)]
     league = compute_league_rates(snaps, weights=weights, pa_floor=MIN_EVAL_PA)
 
+    # Reliability uses a WIDE pre-target window (all stored seasons < T), not just
+    # the 3 Marcel weight-years — it needs many consecutive pairs. Leakage-safe.
+    rel_seasons = [s for s in available_seasons(data_dir) if s < target_season]
+    reliability = compute_reliability(
+        {s: load_season(s, data_dir) for s in rel_seasons}, pa_floor=MIN_EVAL_PA,
+    )
+
     # Offset-aligned priors: index 0 = T-1, 1 = T-2, 2 = T-3. Missing = None,
     # so weights/PA roles stay pinned to the correct year (see project_hitter).
     index_maps = [{r["mlbam_id"]: r for r in snap} for snap in snaps]
@@ -52,7 +60,7 @@ def build_marcel_projections(
             continue
         ident = identities.get(mlbam_id, {})
         age = age_for(ident.get("birth_date"), target_season)
-        proj = project_hitter(prior_seasons, league, age, params)
+        proj = project_hitter(prior_seasons, league, age, params, reliability=reliability)
         stats = {k: round(float(proj.get(k, 0.0)), 4) for k in EXPORT_KEYS}
         rows.append({
             "id": f"mlbam_{mlbam_id}_H",

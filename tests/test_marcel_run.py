@@ -73,3 +73,38 @@ class TestMarcelRun(unittest.TestCase):
             changed = [dict(rows[0], name="Changed")]
             with self.assertRaises(ValueError):
                 write_run(changed, runs_dir, model="marcel", as_of_season=2024, version=1)
+
+    def _seed_many(self, data_dir):
+        # 5 consecutive seasons, two players with differing HR trajectories so
+        # reliability is computable.
+        traj = {"5": [25, 27, 24, 26, 25], "7": [10, 18, 12, 20, 9]}
+        for i, yr in enumerate((2019, 2020, 2021, 2022, 2023)):
+            rows = []
+            for pid, hrs in traj.items():
+                rows.append({"mlbam_id": pid, "season": yr, "PA": 500, "AB": 450,
+                             "H": 125, "1B": 100 - hrs[i] + 25, "2B": 0, "3B": 0,
+                             "HR": hrs[i], "R": 80, "RBI": 70, "SB": 0, "CS": 0,
+                             "BB": 50, "SO": 100, "HBP": 0, "SF": 0})
+            store_season(yr, rows, data_dir)
+
+    def test_gamma_positive_changes_projection_vs_classic(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            self._seed_many(data_dir)
+            idents = {"5": {"birth_date": "1994-01-01"},
+                      "7": {"birth_date": "1994-01-01"}}
+            classic = build_marcel_projections(2024, data_dir, MarcelParams(), idents)
+            tuned = build_marcel_projections(2024, data_dir, MarcelParams(gamma=1.0), idents)
+            c = {r["id"]: r["stats"]["HR"] for r in classic}
+            t = {r["id"]: r["stats"]["HR"] for r in tuned}
+            # At least one player's HR projection moves once reliability differentiates.
+            self.assertTrue(any(abs(c[k] - t[k]) > 1e-9 for k in c))
+
+    def test_gamma_zero_matches_prior_behavior(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            self._seed_many(data_dir)
+            idents = {"5": {"birth_date": "1994-01-01"}, "7": {"birth_date": "1994-01-01"}}
+            a = build_marcel_projections(2024, data_dir, MarcelParams(), idents)
+            b = build_marcel_projections(2024, data_dir, MarcelParams(gamma=0.0), idents)
+            self.assertEqual([r["stats"] for r in a], [r["stats"] for r in b])
