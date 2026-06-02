@@ -1,0 +1,17 @@
+import unittest
+from projections.models.marcel_params import MarcelParams
+
+
+class TestMarcelParams(unittest.TestCase):
+    def test_defaults_match_classic_marcel(self):
+        p = MarcelParams()
+        self.assertEqual(p.season_weights, (5.0, 4.0, 3.0))
+        self.assertEqual(p.n_reg, 1200.0)
+        self.assertAlmostEqual(p.k_young, 0.006)
+        self.assertAlmostEqual(p.k_old, 0.003)
+        self.assertEqual((p.pa_w1, p.pa_w2, p.pa_base), (0.5, 0.1, 200.0))
+
+    def test_is_frozen(self):
+        p = MarcelParams()
+        with self.assertRaises(Exception):
+            p.n_reg = 5.0  # type: ignore
