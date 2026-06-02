@@ -1641,3 +1641,45 @@ git commit -m "chore: projections foundation + Marcel hitting complete"
 - **Spec coverage:** identity wired into export (T6 + T8), normalized schema + immutable backbone + run archive (T7, T8), Marcel math + invariants + offset-aligned gap handling + leakage-safe league means (T4, T5), rolling-origin harness with MAE/RMSE/corr (T9, T10), leakage-safe tuning on a disjoint block (T11), full component export (T8 `EXPORT_KEYS`), source seam + naming discipline + P1 store-selector (T12), P2 provenance (T1). All spec sections map to a task.
 - **Placeholder scan:** no TBD/TODO; every code step shows complete code; the one runtime unknown (`ValuationResult` value-field name) is flagged with an explicit fallback instruction rather than left vague.
 - **Type consistency:** `MarcelParams` field names (`season_weights`, `n_reg`, `k_young`, `k_old`, `pa_w1/pa_w2/pa_base`) used identically in Tasks 3/5/8/10/11. `project_hitter` takes an **offset-aligned** `Sequence[dict | None]` in T5 and is fed offset-aligned lists in T8. `build_marcel_projections(target_season, data_dir, params, identities)` and `backtest_season(target_season, data_dir, params, identities)` both take `identities` (not `ages`) across T8/T10/T11/T13. `write_run(rows, runs_dir, model, as_of_season, version)` consistent across T8/T13. `store_season`/`load_season` consistent across T7/T8/T10/T11. `PROJECTED_RATES`/`AGE_ADJUSTED_RATES` defined once (T2), consumed everywhere.
+
+---
+
+## Execution Deltas (what shipped vs. this plan)
+
+Recorded after inline execution on 2026-06-02. The plan above is the as-designed
+spec; these are the deviations made during the build. All 14 tasks shipped; full
+suite ended at **462 tests green** (428 baseline + 34 new).
+
+**Preflight hardening (added before Task 9, at reviewer request):**
+- **`write_run` made immutable.** Original Task 8 used `mkdir(exist_ok=True)` and
+  could overwrite an archived run. Now an existing `run_id` is a no-op if contents
+  are identical and raises if they differ (bump the version instead). Mirrors
+  `store_season`. (`projections/export/marcel_run.py`, +1 test.)
+- **`identity.json` persisted, not re-fetched.** Added `build_identity_store()` /
+  `load_identity_store()` so identity is fetched once from the historical id union
+  (4366 players, 100% birth dates) and stored as a fact; harness/tuning load it
+  instead of hitting the network per run. (`projections/data/identity.py`, +2 tests.)
+- **`content_hash` → `file_byte_hash`.** Renamed with a docstring clarifying it is
+  a raw on-disk byte hash (platform-newline-dependent), distinct from the manifest's
+  canonical-JSON `content_sha256`. (`projections/data/historical.py`.)
+
+**Windows newline bug (found during Task 7):**
+- `store_season`'s immutability check originally byte-hashed the on-disk file vs the
+  in-memory payload. Text-mode writes translate `\n`→`\r\n` on Windows, so an
+  identical re-pull falsely raised "content changed." Fixed to compare **parsed
+  JSON content** — also the more correct definition of "finalized season changed."
+
+**Tuning result (Task 11 Step 6):**
+- Held-out verification (tune 2014–2019, score 2020–2025, disjoint) passed:
+  `beats_persistence=True`, mean MAE ratio **0.7729**, correlation-win **94.4%**.
+- The grid selected the **classic Marcel constants** (`n_reg=1200, pa_base=200`),
+  so **tuned == untuned** — tuning tied rather than improved on textbook Marcel.
+  Useful negative result: the 2-knob grid found no gain over Tango's constants.
+  Real edge must come from a wider/finer grid (incl. `k_young/k_old`) or the
+  Statcast inputs in later rungs — not from these two knobs.
+
+**Other:**
+- Plan test commands were corrected from `unittest tests.test_X` to
+  `unittest discover -s tests -p "test_X.py"` — `tests/` has no `__init__.py`.
+- `ValuationResult`'s ranked-value field is `total_value` (the T13 fallback note
+  resolved here); the integration test asserts on `total_value`.
