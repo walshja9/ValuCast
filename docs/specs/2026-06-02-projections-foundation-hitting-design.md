@@ -106,10 +106,21 @@ Project at the **per-PA component-rate level** (rates are more stable than ratio
 For target season `T`, using only seasons `≤ T-1`:
 
 1. **Weight** the three prior seasons `T-1, T-2, T-3` by `5 / 4 / 3`. Weighted component totals and weighted PA.
-2. **Regress to league mean** by adding `N_REG` PA of league-average component rates (classic Marcel ≈ 1200). League-average rates computed from that season's snapshot population (above the playing-time floor).
+2. **Regress to league mean** by adding `N_REG` PA of league-average component rates (classic Marcel ≈ 1200). **League means are leakage-safe:** for target `T` they are computed from the same pre-target window only — weighted `T-1/T-2/T-3` league totals (above the playing-time floor) — never from actual season `T`.
 3. **Age-adjust** around peak age 29: `mult = 1 + k_young·(29 - age)` for age < 29, `1 + k_old·(29 - age)` for age > 29 (`k_old` makes it a decline). Defaults `k_young = 0.006`, `k_old = 0.003`.
 4. **Project PA**: `PA_proj ≈ 0.5·PA[T-1] + 0.1·PA[T-2] + 200`.
-5. **Compose**: `projected_count = regressed_rate · PA_proj · age_mult`; derive `AVG/OBP/SLG/OPS/TB/NSB` from components.
+5. **Compose** (see invariants below): `projected_count = regressed_rate · PA_proj · age_mult`.
+
+### Component invariants (enforced at composition, before export)
+
+The naive "every component = rate · PA · age_mult" drifts out of internal consistency and lets the age curve quietly distort lower-is-better stats. Pin these rules:
+
+- **Age multiplier applies only to production-skill rates** — `1B, 2B, 3B, HR, BB, HBP, SB`. It does **not** touch `SO`, `CS`, or `SF`. Multiplying a decline factor into `SO`/`CS` would *reduce* old-player strikeouts/caught-stealing (wrong direction) and accidentally help them in lower-is-better categories. Those are projected from regressed rate · PA only.
+- **`AB` is derived residually**, not projected: `AB = PA_proj − BB − HBP − SF`. This makes `PA = AB + BB + HBP + SF` hold by construction.
+- **`H` is derived from its parts**, never projected directly: `H = 1B + 2B + 3B + HR`. (Enforces `1B = H − 2B − 3B − HR` automatically.)
+- **`TB = 1B + 2·2B + 3·3B + 4·HR`; `NSB = SB − CS`** — always derived, never stored or projected.
+- **Clamp every count to ≥ 0** after composition (a deep age decline must never produce negative components).
+- **Ratios derived last** from the reconciled counts: `AVG = H/AB`, `OBP = (H+BB+HBP)/(AB+BB+HBP+SF)`, `SLG = TB/AB`, `OPS = OBP + SLG`.
 
 **The constants `N_REG`, `k_young`, `k_old`, and the PA-projection coefficients are knobs, not dogma.** Plain Marcel inherits Tango's fixed numbers; we tune ours on the harness (§5). That is the first place we beat textbook Marcel — and the tuning is leakage-safe by construction.
 
@@ -157,7 +168,7 @@ Verified by feeding a run's `projections.json` through the existing engine and p
 
 1. **Backbone immutable:** 2010–2025 hitting snapshots + identity + manifest stored; re-running the pull does not mutate a finalized season's file (content-hash no-op verified).
 2. **Model correct:** Marcel projector emits schema-valid `PlayerProjection` rows; the per-PA → counting math is verified against a hand-computed example in a unit test.
-3. **Harness honest + winning:** rolling-origin scorecard over ≥10 target seasons; **tuned Marcel beats persistence** on aggregate MAE and correlation for the headline categories. Tuning seasons provably disjoint from scored seasons.
+3. **Harness honest + winning:** rolling-origin scorecard over ≥10 target seasons; tuning seasons provably disjoint from scored seasons. **Pass bar (precise, mixed-scale-safe):** the mean **normalized error ratio** `mean_over_headline_stats(marcel_MAE / persistence_MAE) < 1.0`, **and** Marcel's correlation exceeds persistence on a majority of the headline categories. (Raw MAE is not summed across mixed-scale stats — OPS and HR don't share units.)
 4. **Engine values it:** a published Marcel run produces a ranked board via `source="marcel"` end-to-end with no errors and no engine changes.
 5. **Steamer intact:** `source="steamer"` reproduces today's behavior; existing **428 tests stay green**; `combine.py` rows now carry `sources`.
 
