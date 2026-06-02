@@ -35,6 +35,7 @@ Full suite: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest disco
 - `projections/backtest/__init__.py`
 - `projections/backtest/scorecard.py` — metrics
 - `projections/backtest/harness.py` — rolling-origin replay
+- `projections/backtest/tune.py` — leakage-safe grid search (disjoint tune/score blocks)
 - `web/projection_catalog.py` — source seam
 - Tests mirror each module under `tests/`.
 
@@ -416,6 +417,14 @@ class TestMarcelHitter(unittest.TestCase):
         out = project_hitter(self.prior, self.league, age=120, params=MarcelParams())
         for key in ("HR", "1B", "BB", "AB", "H"):
             self.assertGreaterEqual(out[key], 0.0)
+
+    def test_missing_t1_uses_t2_offset_weight_and_pa(self):
+        # Offset-aligned: index 0 = T-1 (missing), index 1 = T-2 (present).
+        out = project_hitter([None, self.prior[0]], self.league, age=29, params=MarcelParams())
+        # T-2 carries its offset weight (4), not T-1's. PA_proj = 0.5*0 + 0.1*500 + 200 = 250.
+        self.assertAlmostEqual(out["PA"], 250.0)
+        # Regression is identity here, so HR = (25/500) * 250 = 12.5.
+        self.assertAlmostEqual(out["HR"], 12.5)
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -449,25 +458,33 @@ def _age_mult(age: int | None, params: MarcelParams) -> float:
 
 
 def project_hitter(
-    prior_seasons: Sequence[dict],
+    prior_seasons: Sequence[dict | None],
     league_rates: dict[str, float],
     age: int | None,
     params: MarcelParams,
 ) -> dict:
-    """prior_seasons newest-first (1-3 entries). Returns a full stat dict."""
-    weights = params.season_weights[: len(prior_seasons)]
+    """prior_seasons is OFFSET-ALIGNED: index 0 = season T-1, 1 = T-2, 2 = T-3.
+    A missing season is None and KEEPS its slot, so each present season gets the
+    weight and PA role of its true offset (a player who missed T-1 but played T-2
+    must not get T-1's weight). Returns a full stat dict."""
+    pairs = [
+        (s, w) for s, w in zip(prior_seasons, params.season_weights) if s is not None
+    ]
 
-    weighted_pa = sum(w * float(s.get("PA", 0)) for s, w in zip(prior_seasons, weights))
+    weighted_pa = sum(w * float(s.get("PA", 0)) for s, w in pairs)
     regressed: dict[str, float] = {}
     for c in PROJECTED_RATES:
-        wtot = sum(w * float(s.get(c, 0)) for s, w in zip(prior_seasons, weights))
+        wtot = sum(w * float(s.get(c, 0)) for s, w in pairs)
         regressed[c] = (wtot + params.n_reg * league_rates.get(c, 0.0)) / (
             weighted_pa + params.n_reg
         )
 
-    pa1 = float(prior_seasons[0].get("PA", 0)) if len(prior_seasons) >= 1 else 0.0
-    pa2 = float(prior_seasons[1].get("PA", 0)) if len(prior_seasons) >= 2 else 0.0
-    pa_proj = params.pa_w1 * pa1 + params.pa_w2 * pa2 + params.pa_base
+    def _pa(i: int) -> float:
+        if i < len(prior_seasons) and prior_seasons[i] is not None:
+            return float(prior_seasons[i].get("PA", 0))
+        return 0.0
+
+    pa_proj = params.pa_w1 * _pa(0) + params.pa_w2 * _pa(1) + params.pa_base
 
     mult = _age_mult(age, params)
     counts: dict[str, float] = {}
@@ -828,15 +845,18 @@ class TestMarcelRun(unittest.TestCase):
             data_dir = Path(d)
             self._seed(data_dir)
             rows = build_marcel_projections(
-                2024, data_dir, MarcelParams(), ages={"5": 29},
+                2024, data_dir, MarcelParams(),
+                identities={"5": {"name": "Test Bat", "birth_date": "1995-06-01"}},
             )
             self.assertEqual(len(rows), 1)
             r = rows[0]
             self.assertEqual(r["id"], "mlbam_5_H")
+            self.assertEqual(r["name"], "Test Bat")        # identity wired through
             self.assertEqual(r["pool"], "hitter")
             self.assertEqual(r["metadata"]["source"], "marcel")
             self.assertEqual(r["metadata"]["model"], "valucast_marcel")
             self.assertEqual(r["metadata"]["as_of_season"], 2024)
+            self.assertFalse(r["metadata"]["age_unknown"])
             self.assertIn("HR", r["stats"])
             self.assertIn("OPS", r["stats"])
 
@@ -845,7 +865,10 @@ class TestMarcelRun(unittest.TestCase):
             data_dir = Path(d)
             runs_dir = data_dir / "runs"
             self._seed(data_dir)
-            rows = build_marcel_projections(2024, data_dir, MarcelParams(), ages={"5": 29})
+            rows = build_marcel_projections(
+                2024, data_dir, MarcelParams(),
+                identities={"5": {"name": "Test Bat", "birth_date": "1995-06-01"}},
+            )
             run_id = write_run(rows, runs_dir, model="marcel", as_of_season=2024, version=1)
             self.assertEqual(run_id, "marcel_2024_v1")
             run_path = runs_dir / run_id
@@ -873,6 +896,7 @@ from pathlib import Path
 
 from projections.constants import MIN_EVAL_PA
 from projections.data.historical import load_season
+from projections.data.identity import age_for
 from projections.models.league_rates import compute_league_rates
 from projections.models.marcel_hitter import project_hitter
 from projections.models.marcel_params import MarcelParams
@@ -888,9 +912,13 @@ def build_marcel_projections(
     target_season: int,
     data_dir: Path,
     params: MarcelParams,
-    ages: dict[str, int | None],
+    identities: dict[str, dict],
 ) -> list[dict]:
-    """Project all hitters with >=1 prior season, using data < target_season."""
+    """Project all hitters with >=1 prior season, using data < target_season.
+
+    `identities` maps mlbam_id -> {name, birth_date, ...}; it supplies real
+    names and the per-target-season age (age_for resolves age as of season T).
+    """
     prior_years = [target_season - 1, target_season - 2, target_season - 3]
     snaps: list[list[dict]] = []
     for yr in prior_years:
@@ -902,18 +930,23 @@ def build_marcel_projections(
     weights = params.season_weights[: len(snaps)]
     league = compute_league_rates(snaps, weights=weights, pa_floor=MIN_EVAL_PA)
 
-    by_player: dict[str, list[dict]] = {}
-    for snap in snaps:  # newest-first preserved
-        for row in snap:
-            by_player.setdefault(row["mlbam_id"], []).append(row)
+    # Offset-aligned priors: index 0 = T-1, 1 = T-2, 2 = T-3. Missing = None,
+    # so weights/PA roles stay pinned to the correct year (see project_hitter).
+    index_maps = [{r["mlbam_id"]: r for r in snap} for snap in snaps]
+    all_ids = {pid for m in index_maps for pid in m}
 
     rows: list[dict] = []
-    for mlbam_id, prior_seasons in by_player.items():
-        proj = project_hitter(prior_seasons, league, ages.get(mlbam_id), params)
+    for mlbam_id in all_ids:
+        prior_seasons = [m.get(mlbam_id) for m in index_maps]
+        if all(s is None for s in prior_seasons):
+            continue
+        ident = identities.get(mlbam_id, {})
+        age = age_for(ident.get("birth_date"), target_season)
+        proj = project_hitter(prior_seasons, league, age, params)
         stats = {k: round(float(proj.get(k, 0.0)), 4) for k in EXPORT_KEYS}
         rows.append({
             "id": f"mlbam_{mlbam_id}_H",
-            "name": prior_seasons[0].get("name", mlbam_id),
+            "name": ident.get("name") or mlbam_id,
             "pool": "hitter",
             "positions": [],
             "stats": stats,
@@ -925,7 +958,7 @@ def build_marcel_projections(
                 "model": "valucast_marcel",
                 "model_version": 1,
                 "as_of_season": target_season,
-                "age_unknown": ages.get(mlbam_id) is None,
+                "age_unknown": age is None,
             },
         })
     return rows
@@ -1088,11 +1121,13 @@ class TestHarness(unittest.TestCase):
                     "SO": 100, "HBP": 0, "SF": 0,
                 }], data_dir)
             result = backtest_season(
-                2023, data_dir, MarcelParams(), ages={"5": 29},
+                2023, data_dir, MarcelParams(),
+                identities={"5": {"birth_date": "1994-01-01"}},
             )
             self.assertEqual(result["eval_n"], 1)
             self.assertIn("marcel_mae", result["per_stat"]["HR"])
             self.assertIn("persistence_mae", result["per_stat"]["HR"])
+            self.assertIn("marcel_rmse", result["per_stat"]["HR"])
 
     def test_low_pa_player_excluded_from_eval(self):
         with tempfile.TemporaryDirectory() as d:
@@ -1107,7 +1142,10 @@ class TestHarness(unittest.TestCase):
                 "AB": 45, "H": 12, "1B": 10, "2B": 0, "3B": 0, "HR": 2,
                 "R": 8, "RBI": 9, "SB": 0, "CS": 0, "BB": 5, "SO": 10,
                 "HBP": 0, "SF": 0}], data_dir)
-            result = backtest_season(2023, data_dir, MarcelParams(), ages={"9": 29})
+            result = backtest_season(
+                2023, data_dir, MarcelParams(),
+                identities={"9": {"birth_date": "1994-01-01"}},
+            )
             self.assertEqual(result["eval_n"], 0)
 ```
 
@@ -1131,7 +1169,7 @@ from pathlib import Path
 from projections.constants import HEADLINE_STATS, MIN_EVAL_PA
 from projections.data.historical import load_season
 from projections.export.marcel_run import build_marcel_projections
-from projections.backtest.scorecard import correlation, mae, normalized_ratio
+from projections.backtest.scorecard import correlation, mae, normalized_ratio, rmse
 from projections.models.marcel_params import MarcelParams
 
 
@@ -1153,7 +1191,7 @@ def backtest_season(
     target_season: int,
     data_dir: Path,
     params: MarcelParams,
-    ages: dict[str, int | None],
+    identities: dict[str, dict],
 ) -> dict:
     actual_rows = {r["mlbam_id"]: _rates(r) for r in load_season(target_season, data_dir)}
     try:
@@ -1163,7 +1201,7 @@ def backtest_season(
         prev_rows = {}
 
     marcel = {r["metadata"]["mlbam_id"]: r["stats"]
-              for r in build_marcel_projections(target_season, data_dir, params, ages)}
+              for r in build_marcel_projections(target_season, data_dir, params, identities)}
 
     # Eval population: qualified actual PA AND projectable AND has persistence baseline.
     eval_ids = [
@@ -1173,16 +1211,18 @@ def backtest_season(
 
     per_stat: dict[str, dict] = {}
     for stat in HEADLINE_STATS:
-        act = [actual_rows[pid][stat] for pid in eval_ids]
-        mar = [marcel[pid].get(stat, 0.0) for pid in eval_ids]
-        per = [prev_rows[pid].get(stat, 0.0) for pid in eval_ids]
         if not eval_ids:
             per_stat[stat] = {}
             continue
+        act = [actual_rows[pid][stat] for pid in eval_ids]
+        mar = [marcel[pid].get(stat, 0.0) for pid in eval_ids]
+        per = [prev_rows[pid].get(stat, 0.0) for pid in eval_ids]
         m_mae, p_mae = mae(mar, act), mae(per, act)
         per_stat[stat] = {
             "marcel_mae": m_mae,
             "persistence_mae": p_mae,
+            "marcel_rmse": rmse(mar, act),
+            "persistence_rmse": rmse(per, act),
             "mae_ratio": normalized_ratio(m_mae, p_mae),
             "marcel_corr": correlation(mar, act),
             "persistence_corr": correlation(per, act),
@@ -1194,10 +1234,10 @@ def rolling_origin(
     target_seasons: list[int],
     data_dir: Path,
     params: MarcelParams,
-    ages: dict[str, int | None],
+    identities: dict[str, dict],
 ) -> dict:
     """Run backtest_season across many targets; aggregate the pass-bar verdict."""
-    seasons = [backtest_season(t, data_dir, params, ages) for t in target_seasons]
+    seasons = [backtest_season(t, data_dir, params, identities) for t in target_seasons]
     ratios, corr_wins, corr_total = [], 0, 0
     for s in seasons:
         for stat, m in s["per_stat"].items():
@@ -1228,35 +1268,166 @@ git add projections/backtest/harness.py tests/test_harness.py
 git commit -m "feat: rolling-origin backtest harness vs persistence baseline"
 ```
 
-- [ ] **Step 6: Real backtest (manual verification of the v1 pass bar)**
+- [ ] **Step 6: Smoke run on real data (harness wiring, not the pass bar)**
 
-Run (uses the pulled 2010–2025 data; needs ages — fetched once):
+Confirms the harness runs end-to-end on the pulled snapshots and reports RMSE.
+The actual v1 pass-bar verdict (tuned vs untuned vs persistence) is Task 11.
+
+Run:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -c "
 from pathlib import Path
 from projections.data.historical import load_season
-from projections.data.identity import fetch_identities, age_for
+from projections.data.identity import fetch_identities
 from projections.backtest.harness import rolling_origin
 from projections.models.marcel_params import MarcelParams
 d = Path('projections/data')
 ids = sorted({r['mlbam_id'] for yr in range(2010,2026) for r in load_season(yr, d)})
-idents = fetch_identities(ids)
-targets = list(range(2014, 2026))
-# ages computed per target season inside? Use a flat map at mid-range for the smoke run:
-ages = {i: age_for(idents.get(i, {}).get('birth_date'), 2020) for i in ids}
-res = rolling_origin(targets, d, MarcelParams(), ages)
+idents = fetch_identities(ids)   # age_for resolves per target season inside build
+res = rolling_origin([2023, 2024, 2025], d, MarcelParams(), idents)
 print('mean_mae_ratio', round(res['mean_mae_ratio'], 4))
-print('corr_win_rate', round(res['corr_win_rate'], 4))
-print('beats_persistence', res['beats_persistence'])
+print('eval_n by season', [(s['target_season'], s['eval_n']) for s in res['seasons']])
+print('HR rmse (marcel vs persistence)',
+      round(res['seasons'][0]['per_stat']['HR']['marcel_rmse'], 2),
+      round(res['seasons'][0]['per_stat']['HR']['persistence_rmse'], 2))
 "
 ```
-Expected: `beats_persistence True` (v1 success criterion #3). If False, that is a finding to investigate before claiming the bar is met — do not paper over it.
-
-> Note: this smoke run uses a single mid-range age map for simplicity. A follow-up refinement (tracked, not in this plan) is per-target-season age. It does not change the leakage guarantee — ages are biographical, not outcome data.
+Expected: non-trivial `eval_n` per season and finite metrics. Identities now carry per-target-season ages directly — no flat-age hack.
 
 ---
 
-## Task 11: ProjectionCatalog source seam
+## Task 11: Leakage-safe parameter tuning (grid search)
+
+The spec keeps tuning in v1 and requires tuning seasons be **provably disjoint**
+from scored seasons. Design: grid-search params on an early block of targets,
+lock the winner, then report the pass bar on a later, untouched block.
+
+**Files:**
+- Create: `projections/backtest/tune.py`
+- Test: `tests/test_tune.py`
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+import tempfile
+import unittest
+from pathlib import Path
+
+from projections.data.historical import store_season
+from projections.backtest.tune import grid_search, default_grid
+from projections.models.marcel_params import MarcelParams
+
+
+def _row(pid, yr, hr):
+    return {"mlbam_id": pid, "season": yr, "PA": 500, "AB": 450, "H": 125,
+            "1B": 100, "2B": 0, "3B": 0, "HR": hr, "R": 80, "RBI": 70,
+            "SB": 0, "CS": 0, "BB": 50, "SO": 100, "HBP": 0, "SF": 0}
+
+
+class TestTune(unittest.TestCase):
+    def test_grid_search_returns_best_params_and_score(self):
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in range(2018, 2024):
+                store_season(yr, [_row("5", yr, 25), _row("7", yr, 18)], data_dir)
+            idents = {"5": {"birth_date": "1992-01-01"},
+                      "7": {"birth_date": "1990-01-01"}}
+            grid = [MarcelParams(n_reg=600.0), MarcelParams(n_reg=1500.0)]
+            best, score = grid_search([2022, 2023], data_dir, idents, grid)
+            self.assertIn(best.n_reg, (600.0, 1500.0))
+            self.assertIsInstance(score, float)
+
+    def test_default_grid_is_nonempty_marcel_params(self):
+        grid = default_grid()
+        self.assertGreater(len(grid), 1)
+        self.assertIsInstance(grid[0], MarcelParams)
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_tune -v`
+Expected: FAIL — `ModuleNotFoundError`.
+
+- [ ] **Step 3: Implement**
+
+`projections/backtest/tune.py`:
+
+```python
+"""Leakage-safe Marcel tuning. Grid search scored ONLY on the seasons passed in
+(callers must keep tuning seasons disjoint from the seasons they later score)."""
+from __future__ import annotations
+
+from pathlib import Path
+
+from projections.backtest.harness import rolling_origin
+from projections.models.marcel_params import MarcelParams
+
+
+def default_grid() -> list[MarcelParams]:
+    grid: list[MarcelParams] = []
+    for n_reg in (600.0, 900.0, 1200.0, 1500.0):
+        for pa_base in (150.0, 200.0, 250.0):
+            grid.append(MarcelParams(n_reg=n_reg, pa_base=pa_base))
+    return grid
+
+
+def grid_search(
+    tuning_seasons: list[int],
+    data_dir: Path,
+    identities: dict[str, dict],
+    grid: list[MarcelParams],
+) -> tuple[MarcelParams, float]:
+    """Return (best_params, best_mean_mae_ratio) over the tuning seasons."""
+    best_params: MarcelParams | None = None
+    best_score: float | None = None
+    for params in grid:
+        score = rolling_origin(tuning_seasons, data_dir, params, identities)["mean_mae_ratio"]
+        if best_score is None or score < best_score:
+            best_params, best_score = params, score
+    return best_params, best_score
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_tune -v`
+Expected: PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add projections/backtest/tune.py tests/test_tune.py
+git commit -m "feat: leakage-safe Marcel grid search"
+```
+
+- [ ] **Step 6: Real pass-bar verification (tuning block disjoint from scoring block)**
+
+Run:
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -c "
+from pathlib import Path
+from projections.data.historical import load_season
+from projections.data.identity import fetch_identities
+from projections.backtest.harness import rolling_origin
+from projections.backtest.tune import grid_search, default_grid
+from projections.models.marcel_params import MarcelParams
+d = Path('projections/data')
+ids = sorted({r['mlbam_id'] for yr in range(2010,2026) for r in load_season(yr, d)})
+idents = fetch_identities(ids)
+tune_targets = list(range(2014, 2020))    # tuning block
+score_targets = list(range(2020, 2026))   # held-out scoring block (disjoint)
+best, _ = grid_search(tune_targets, d, idents, default_grid())
+tuned = rolling_origin(score_targets, d, best, idents)
+untuned = rolling_origin(score_targets, d, MarcelParams(), idents)
+print('locked params: n_reg', best.n_reg, 'pa_base', best.pa_base)
+print('TUNED   beats_persistence', tuned['beats_persistence'], 'ratio', round(tuned['mean_mae_ratio'], 4))
+print('UNTUNED beats_persistence', untuned['beats_persistence'], 'ratio', round(untuned['mean_mae_ratio'], 4))
+"
+```
+Expected (v1 success criterion #3): **`TUNED beats_persistence True`**, and `tuned ratio <= untuned ratio` (tuning helped or tied). If tuned does NOT beat persistence, that is a finding to investigate — report it, do not paper over it. The 2014–2019 tuning block never overlaps the 2020–2025 scoring block, so the result is leakage-free.
+
+---
+
+## Task 12: ProjectionCatalog source seam
 
 **Files:**
 - Create: `web/projection_catalog.py`
@@ -1358,7 +1529,7 @@ git commit -m "feat: ProjectionCatalog source seam (steamer default, marcel sele
 
 ---
 
-## Task 12: End-to-end — engine values a Marcel run
+## Task 13: End-to-end — engine values a Marcel run
 
 **Files:**
 - Test: `tests/test_projections_integration.py`
@@ -1396,7 +1567,9 @@ class TestProjectionsIntegration(unittest.TestCase):
                      "SO": 110, "HBP": 3, "SF": 4},
                 ], data_dir)
             rows = build_marcel_projections(
-                2024, data_dir, MarcelParams(), ages={"5": 28, "7": 31},
+                2024, data_dir, MarcelParams(),
+                identities={"5": {"name": "Bat Five", "birth_date": "1996-01-01"},
+                            "7": {"name": "Bat Seven", "birth_date": "1993-01-01"}},
             )
             runs_dir = data_dir / "runs"
             run_id = write_run(rows, runs_dir, model="marcel", as_of_season=2024, version=1)
@@ -1418,7 +1591,7 @@ class TestProjectionsIntegration(unittest.TestCase):
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -m unittest tests.test_projections_integration -v`
-Expected: FAIL — initially `ModuleNotFoundError` for the not-yet-imported run/catalog modules if run out of order; once Tasks 8 & 11 are done it should pass without new code. If `ValuationResult` has no `.value` attribute, inspect `src/league_values/models.py` `ValuationResult` and use the correct ranked-value field name, then re-run.
+Expected: FAIL — initially `ModuleNotFoundError` for the not-yet-imported run/catalog modules if run out of order; once Tasks 8 & 12 are done it should pass without new code. If `ValuationResult` has no `.value` attribute, inspect `src/league_values/models.py` `ValuationResult` and use the correct ranked-value field name, then re-run.
 
 - [ ] **Step 3: Make it pass**
 
@@ -1438,7 +1611,7 @@ git commit -m "test: engine values a Marcel run end-to-end via ProjectionCatalog
 
 ---
 
-## Task 13: Full-suite regression + spec sign-off
+## Task 14: Full-suite regression + spec sign-off
 
 - [ ] **Step 1: Run the entire suite**
 
@@ -1450,9 +1623,9 @@ Expected: all tests pass (baseline 428 + the new tests from this plan). Steamer 
 Walk the spec's Success Criteria section and confirm each:
 1. Snapshots immutable + manifested (Task 7, re-pull no-op test).
 2. Marcel math verified by hand example (Task 5).
-3. Rolling-origin scorecard, tuned/untuned Marcel beats persistence (Task 10 Step 6 → `beats_persistence True`).
-4. Engine values `source="marcel"` end-to-end (Task 12).
-5. Steamer intact, 428 green, `sources` carried (Tasks 1 + 13 Step 1).
+3. Rolling-origin scorecard (MAE/RMSE/corr), **tuned** Marcel beats persistence on a held-out block disjoint from the tuning block (Task 11 Step 6 → `TUNED beats_persistence True`).
+4. Engine values `source="marcel"` end-to-end (Task 13).
+5. Steamer intact, 428 green, `sources` carried (Tasks 1 + 14 Step 1).
 
 - [ ] **Step 3: Commit any final docs/notes**
 
@@ -1465,6 +1638,6 @@ git commit -m "chore: projections foundation + Marcel hitting complete"
 
 ## Self-Review (completed during authoring)
 
-- **Spec coverage:** identity (T6), normalized schema + immutable backbone + run archive (T7, T8), Marcel math + invariants + leakage-safe league means (T4, T5), rolling-origin harness + precise pass bar (T9, T10), full component export (T8 `EXPORT_KEYS`), source seam + naming discipline (T11), P1 store-selector (T11), P2 provenance (T1). All spec sections map to a task.
+- **Spec coverage:** identity wired into export (T6 + T8), normalized schema + immutable backbone + run archive (T7, T8), Marcel math + invariants + offset-aligned gap handling + leakage-safe league means (T4, T5), rolling-origin harness with MAE/RMSE/corr (T9, T10), leakage-safe tuning on a disjoint block (T11), full component export (T8 `EXPORT_KEYS`), source seam + naming discipline + P1 store-selector (T12), P2 provenance (T1). All spec sections map to a task.
 - **Placeholder scan:** no TBD/TODO; every code step shows complete code; the one runtime unknown (`ValuationResult` value-field name) is flagged with an explicit fallback instruction rather than left vague.
-- **Type consistency:** `MarcelParams` field names (`season_weights`, `n_reg`, `k_young`, `k_old`, `pa_w1/pa_w2/pa_base`) used identically in Tasks 3/5/8/10. `build_marcel_projections(target_season, data_dir, params, ages)` and `write_run(rows, runs_dir, model, as_of_season, version)` signatures match across Tasks 8, 10, 12. `store_season`/`load_season` consistent across 7/8/10. `PROJECTED_RATES`/`AGE_ADJUSTED_RATES` defined once (T2), consumed everywhere.
+- **Type consistency:** `MarcelParams` field names (`season_weights`, `n_reg`, `k_young`, `k_old`, `pa_w1/pa_w2/pa_base`) used identically in Tasks 3/5/8/10/11. `project_hitter` takes an **offset-aligned** `Sequence[dict | None]` in T5 and is fed offset-aligned lists in T8. `build_marcel_projections(target_season, data_dir, params, identities)` and `backtest_season(target_season, data_dir, params, identities)` both take `identities` (not `ages`) across T8/T10/T11/T13. `write_run(rows, runs_dir, model, as_of_season, version)` consistent across T8/T13. `store_season`/`load_season` consistent across T7/T8/T10/T11. `PROJECTED_RATES`/`AGE_ADJUSTED_RATES` defined once (T2), consumed everywhere.
