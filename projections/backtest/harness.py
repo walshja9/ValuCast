@@ -93,3 +93,31 @@ def rolling_origin(
         "corr_win_rate": corr_wins / corr_total if corr_total else 0.0,
         "beats_persistence": mean_ratio < 1.0 and (corr_wins / corr_total if corr_total else 0) > 0.5,
     }
+
+
+def vs_classic(
+    candidate_seasons: list[dict],
+    classic_seasons: list[dict],
+    epsilon: float = 0.0,
+) -> dict:
+    """Compare a candidate config's per-season scorecards against classic Marcel's
+    (both from rolling_origin over the SAME target seasons). Beating classic is the
+    Rung 2 bar; persistence is only a sanity floor."""
+    ratios: list[float] = []
+    corr_wins = corr_total = 0
+    for cs, ks in zip(candidate_seasons, classic_seasons):
+        for stat, cm in cs["per_stat"].items():
+            km = ks["per_stat"].get(stat)
+            if not cm or not km or km["marcel_mae"] == 0:
+                continue
+            ratios.append(cm["marcel_mae"] / km["marcel_mae"])
+            corr_total += 1
+            if cm["marcel_corr"] > km["marcel_corr"]:
+                corr_wins += 1
+    mean_ratio = sum(ratios) / len(ratios) if ratios else float("inf")
+    cwr = corr_wins / corr_total if corr_total else 0.0
+    return {
+        "mean_ratio_vs_classic": mean_ratio,
+        "corr_win_rate": cwr,
+        "beats_classic": mean_ratio < 1.0 - epsilon and cwr > 0.5,
+    }

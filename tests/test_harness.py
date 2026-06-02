@@ -46,3 +46,20 @@ class TestHarness(unittest.TestCase):
                 identities={"9": {"birth_date": "1994-01-01"}},
             )
             self.assertEqual(result["eval_n"], 0)
+
+    def test_vs_classic_detects_a_win(self):
+        from projections.backtest.harness import vs_classic
+        # Candidate has lower marcel_mae and higher corr than classic on HR.
+        cand = [{"per_stat": {"HR": {"marcel_mae": 4.0, "marcel_corr": 0.7}}}]
+        classic = [{"per_stat": {"HR": {"marcel_mae": 5.0, "marcel_corr": 0.6}}}]
+        out = vs_classic(cand, classic)
+        self.assertAlmostEqual(out["mean_ratio_vs_classic"], 0.8)
+        self.assertEqual(out["corr_win_rate"], 1.0)
+        self.assertTrue(out["beats_classic"])
+
+    def test_vs_classic_reports_tie_when_not_better(self):
+        from projections.backtest.harness import vs_classic
+        cand = [{"per_stat": {"HR": {"marcel_mae": 5.0, "marcel_corr": 0.6}}}]
+        classic = [{"per_stat": {"HR": {"marcel_mae": 5.0, "marcel_corr": 0.6}}}]
+        out = vs_classic(cand, classic, epsilon=0.0)
+        self.assertFalse(out["beats_classic"])   # ratio 1.0 is not < 1.0
