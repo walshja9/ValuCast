@@ -1,5 +1,15 @@
 # Projections Rung 2 — Reliability-Weighted Regression Implementation Plan
 
+> **VERDICT (2026-06-02, executed): TIE — reliability-weighting does NOT beat classic Marcel.**
+> Coordinate descent on the 2014–2019 tuning block picked `n_reg_base=1500, gamma=1.5`, but the
+> edge was negligible and did not carry: held-out 2020–2025 MAE ratio vs classic = **0.9973**
+> (~0.3%, noise) and correlation **regressed** on the majority of stat-seasons (corr-win 0.426 < 0.5),
+> so `beats_classic = False` on both blocks. Per the carryover guard, the grid was NOT expanded to
+> chase a win. **Conclusion: regression tuning is a dead end for beating classic Marcel; the lever is
+> better INPUTS (Statcast, Rung 3).** All code shipped and is correct (478 tests green); `gamma=0`
+> remains the default, so production behavior is unchanged — Rung 2 is a measured negative result, not
+> a deploy. See "Execution Verdict" at the tail for detail.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace Marcel's single global `n_reg` with per-component regression derived from each hitting component's empirical year-to-year reliability, and prove on held-out seasons whether it beats classic Marcel.
@@ -739,3 +749,29 @@ git commit -m "chore: rung 2 reliability-weighted regression complete — <WIN|T
 - **Spec coverage:** reliability definition incl. harmonic-PA weight + R_FLOOR clamp (T1); wide leakage-safe lookback (T2 helper + T5 wiring); `n_reg_c = n_reg_base·(r̄/r_c)^gamma` with N_REG_MIN/MAX clamps and `gamma=0` nesting classic (T3+T4); classic-Marcel first-class metric (T6); coordinate-descent tuning, no per-stat grid (T7); carryover guard + honest win/tie verdict (T8). R/RBI noisy-context treatment is inherent (low `r_c` → heavy regression) and surfaced in the T8 per-stat output.
 - **Placeholder scan:** no TBD/TODO; every code step shows complete code; T8 expected-output is a genuine branch (win vs tie), not a placeholder.
 - **Type consistency:** `compute_reliability(season_to_rows: Mapping[int, Sequence[dict]], pa_floor)` returns `dict[str,float]`, consumed by `project_hitter(..., reliability=)` (T4) and produced in `build_marcel_projections` (T5). `R_FLOOR/N_REG_MIN/N_REG_MAX` defined once in `reliability.py` (T1), imported by `marcel_hitter` (T4). `MarcelParams.gamma` (T3) read in `project_hitter` (T4) and varied via `dataclasses.replace` in `coordinate_descent` (T7). `vs_classic(candidate_seasons, classic_seasons, epsilon)` (T6) consumes the `seasons` list shape returned by `rolling_origin` (Rung 1), used in T8.
+
+---
+
+## Execution Verdict (2026-06-02)
+
+**Outcome: TIE.** Reliability-weighted regression does not beat classic Marcel on held-out data.
+
+**Numbers (tune 2014–2019 → score disjoint 2020–2025):**
+- Locked params from coordinate descent: `n_reg_base = 1500, gamma = 1.5` (it *did* move off classic on the tuning block).
+- TUNING block vs classic: MAE ratio 0.9981, corr-win 0.463 → `beats_classic = False`.
+- SCORING block vs classic: MAE ratio 0.9973, corr-win 0.426 → `beats_classic = False`.
+- Carryover guard: not confirmed. Grid deliberately **not** expanded to chase a win (would be leakage).
+
+**Why it tied (interpretation):** the ~0.3% MAE improvement is within noise, and correlation actually
+*regressed* on most stats. Differentiating regression shrinks noisy stats (R/RBI/2B/SF) harder toward
+the league mean — that trades variance for bias but recovers no signal, and flattening them costs
+rank-order (correlation). Classic Marcel's uniform `n_reg` is already near-optimal because the stats
+that "should" shrink less already carry enough signal that moderate shrinkage barely hurts them.
+
+**Consequence:** regression tuning (Rung 1 global knobs + Rung 2 per-component) is exhausted as a lever
+for beating classic Marcel. The remaining lever is **better inputs** — Statcast expected-stats
+(xwOBA, barrel%, exit velo) as Rung 3. The reliability machinery is kept (correct, tested, `gamma=0`
+default = inert) and is reusable if/when richer inputs make differentiated regression pay off.
+
+**Production impact:** none. `gamma=0` is the default; the classic path is byte-for-byte unchanged
+(proven by the backward-compat tests). Nothing was deployed.
