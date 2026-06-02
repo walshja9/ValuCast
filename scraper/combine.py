@@ -58,6 +58,7 @@ def _combine_hitter(ros: dict, actual: dict) -> dict:
         "stats": {k: round(v, 4) if isinstance(v, float) else int(v)
                   for k, v in combined_stats.items()},
         "metadata": meta,
+        "sources": list(ros.get("sources", [])),
     }
 
 
@@ -96,6 +97,7 @@ def _combine_pitcher(ros: dict, actual: dict) -> dict:
         "stats": {k_: round(v, 4) if isinstance(v, float) else int(v)
                   for k_, v in combined_stats.items()},
         "metadata": meta,
+        "sources": list(ros.get("sources", [])),
     }
 
 

@@ -156,3 +156,24 @@ class TestCombineOutlook(unittest.TestCase):
         result = combine_outlook([], [actuals_only])
         player = next(p for p in result if p["name"] == "Call Up")
         self.assertNotIn("stats_ros", player["metadata"])
+
+    def test_matched_player_carries_sources(self):
+        ros = [{
+            "id": "mlbam_5_H", "name": "Test Bat", "pool": "hitter",
+            "positions": ["1B"], "team": "NYY",
+            "stats": {"PA": 100, "AB": 90, "H": 30, "HR": 5, "1B": 20,
+                      "2B": 4, "3B": 1, "R": 15, "RBI": 18, "SB": 2, "CS": 1,
+                      "BB": 8, "SO": 20, "HBP": 1, "SF": 1, "G": 25},
+            "metadata": {"mlbam_id": "5"},
+            "sources": ["steamer"],
+        }]
+        actual = [{
+            "id": "mlbam_5_H", "name": "Test Bat", "pool": "hitter",
+            "stats": {"PA": 50, "AB": 45, "H": 15, "HR": 2, "1B": 10,
+                      "2B": 2, "3B": 1, "R": 7, "RBI": 9, "SB": 1, "CS": 0,
+                      "BB": 4, "SO": 10, "HBP": 0, "SF": 1, "G": 12},
+            "metadata": {"mlbam_id": "5"},
+        }]
+        out = combine_outlook(ros, actual)
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0]["sources"], ["steamer"])
