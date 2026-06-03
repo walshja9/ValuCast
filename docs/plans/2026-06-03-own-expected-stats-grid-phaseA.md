@@ -384,6 +384,20 @@ class TestGridFit(unittest.TestCase):
         grid = fit_grid(self._balls())
         out = lookup(grid, None, None)   # missing-EV ball -> global fallback
         self.assertAlmostEqual(out["p_hit"], 90 / 200, places=3)
+
+    def test_store_grid_immutable(self):
+        import tempfile
+        from pathlib import Path
+        from projections.models.expected_stats_grid import store_grid, load_grid
+        grid = fit_grid(self._balls())
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "grid.json"
+            store_grid(grid, p)
+            store_grid(grid, p)                       # identical -> no-op
+            self.assertEqual(load_grid(p)["global"], grid["global"])
+            changed = fit_grid(self._balls() + [{"ev": 105.0, "la": 20.0, "events": "home_run"}])
+            with self.assertRaises(ValueError):
+                store_grid(changed, p)                # changed content -> raise
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -442,10 +456,17 @@ def lookup(grid: dict, ev: float | None, la: float | None) -> dict:
 
 
 def store_grid(grid: dict, path: Path) -> None:
+    """Immutable artifact: identical re-write is a no-op; changed content raises
+    (compare parsed JSON, not raw text — Windows newline-safe, same contract as the
+    other backbones)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     # cells keyed by tuple -> JSON-safe "ev,la" strings.
     serial = {"global": grid["global"], "ev_bin": grid["ev_bin"], "la_bin": grid["la_bin"],
               "cells": {f"{k[0]},{k[1]}": v for k, v in grid["cells"].items()}}
+    if path.exists():
+        if json.loads(path.read_text(encoding="utf-8")) == serial:
+            return
+        raise ValueError(f"Refusing to overwrite grid artifact {path.name}: content changed.")
     path.write_text(json.dumps(serial, indent=2, sort_keys=True), encoding="utf-8")
 
 
@@ -579,6 +600,13 @@ class TestFaithfulnessMetrics(unittest.TestCase):
         # mean signed error (ours - savant) = mean([0,-.05,-.10]) = -0.05
         self.assertAlmostEqual(cal["mean_signed_error"], -0.05, places=3)
         self.assertAlmostEqual(cal["mae"], 0.05, places=3)
+
+    def test_report_fails_loud_on_tiny_population(self):
+        from projections.backtest.grid_faithfulness import faithfulness_report
+        tiny = [{"our_xba": 0.25, "our_xslg": 0.45,
+                 "savant_xba": 0.25, "savant_xslg": 0.45}] * 5  # 5 << MIN_QUALIFIED_PAIRS
+        with self.assertRaises(ValueError):
+            faithfulness_report(tiny)
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -598,8 +626,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from statistics import mean, pstdev
 
-MIN_AB = 200          # qualified-population AB floor
-MIN_TRACKED_BIP = 50  # qualified-population batted-ball floor
+MIN_AB = 200            # qualified-population AB floor
+MIN_TRACKED_BIP = 50    # qualified-population batted-ball floor
+MIN_QUALIFIED_PAIRS = 100  # below this, joins likely failed -> fail loud, not a fake SHORTFALL
 
 
 def correlation(xs: Sequence[float], ys: Sequence[float]) -> float:
@@ -633,7 +662,14 @@ def qualified(ab: int, tracked_bip: int) -> bool:
 
 def faithfulness_report(paired: list[dict]) -> dict:
     """paired: [{our_xba, our_xslg, savant_xba, savant_xslg}] for the QUALIFIED pop.
-    Returns corr (gate) + calibration for xBA and xSLG."""
+    Returns corr (gate) + calibration for xBA and xSLG.
+    Fails loud below MIN_QUALIFIED_PAIRS: a join failure that pairs ~0 rows must NOT
+    silently emit a fake SHORTFALL."""
+    if len(paired) < MIN_QUALIFIED_PAIRS:
+        raise ValueError(
+            f"insufficient qualified pairs: {len(paired)} < {MIN_QUALIFIED_PAIRS} "
+            "(likely a join/data failure, not a real faithfulness shortfall)."
+        )
     out = {"n": len(paired)}
     for stat in ("xba", "xslg"):
         ours = [p[f"our_{stat}"] for p in paired]
@@ -677,7 +713,23 @@ Commit:
 git add .gitignore && git commit -m "chore: gitignore raw batted-ball chunk cache"
 ```
 
-- [ ] **Step 3: Pull 2021–2023 batted balls (network, throttled, resumable)**
+- [ ] **Step 3: Endpoint smoke (one small chunk) — BEFORE the full pull**
+
+Verify Savant's params/schema before filling the cache with junk. Fetch one 5-day 2023 chunk and assert it parses non-empty in-play balls with the fields we need:
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:. python -c "
+from projections.data.batted_balls import _fetch_chunk
+balls = _fetch_chunk('2023-07-01', '2023-07-05')
+assert len(balls) > 200, f'too few balls: {len(balls)} (schema/params changed?)'
+assert all(set(b) >= {'ev','la','events','batter','game_year'} for b in balls), 'missing fields'
+assert any(b['ev'] is not None for b in balls), 'no EV values (tracking columns changed?)'
+assert all(b['game_year']=='2023' for b in balls), 'game_year not parsed'
+print('smoke OK:', len(balls), 'in-play balls; EV present; fields intact')
+"
+```
+Expected: a few hundred in-play balls, fields intact. **If this fails, STOP** — Savant changed params/schema; fix the parser/URL before pulling 150 chunks of junk.
+
+- [ ] **Step 4: Pull 2021–2023 batted balls (network, throttled, resumable)**
 
 Run (several minutes; resumable if interrupted — just re-run):
 ```bash
@@ -695,7 +747,7 @@ print('missing-EV share:', round(sum(1 for b in balls if b['ev'] is None)/len(ba
 ```
 Expected: ~375k balls, missing-EV share low (~1–3%). If a chunk fails, re-run — cached chunks are skipped.
 
-- [ ] **Step 4: Fit + store the grid, then run the faithfulness verdict**
+- [ ] **Step 5: Fit + store the grid, then run the faithfulness verdict**
 
 Balls carry `game_year` (Task 1), so per player-season grouping is clean. Run:
 ```bash
@@ -747,7 +799,7 @@ Expected — one of:
 - **WIN:** corr ≥ 0.95 for xBA and xSLG. Report calibration: clean (slope≈1, intercept≈0, small bias) → ready for Phase B as-is; or biased → Phase B applies an affine calibration layer. Either way we've reproduced xBA from our own calculation.
 - **SHORTFALL:** corr < 0.95 → EV+LA alone isn't enough; the residual (sprint-speed-dependent) is the finding. Report plainly, do not lower the bar.
 
-- [ ] **Step 5: Commit the grid artifact + verdict**
+- [ ] **Step 6: Commit the grid artifact + verdict**
 
 ```bash
 git add projections/data/expected_grid_2021_2023.json docs/plans/2026-06-03-own-expected-stats-grid-phaseA.md
