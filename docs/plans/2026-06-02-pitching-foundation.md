@@ -436,6 +436,17 @@ class TestPitcherLeagueRates(unittest.TestCase):
         snap = [_p(800, 200, 30, 30), _p(200, 60, 0, 60)]
         f = compute_role_factors([snap], bf_floor=100)
         self.assertAlmostEqual(f["K"], 1.2, places=4)
+
+    def test_role_factor_zero_rate_neutralizes(self):
+        # SP has HR, RP has zero HR -> naive f[HR]=0 -> f^(negative) blows up. Must be 1.0.
+        import math
+        snap = [{"BF": 800, "K": 200, "HR": 20, "BB": 0, "H_ALLOWED": 0, "ER": 0, "HBP": 0,
+                 "GS": 30, "G": 30},
+                {"BF": 200, "K": 60, "HR": 0, "BB": 0, "H_ALLOWED": 0, "ER": 0, "HBP": 0,
+                 "GS": 0, "G": 60}]
+        f = compute_role_factors([snap], bf_floor=100)
+        self.assertEqual(f["HR"], 1.0)
+        self.assertTrue(math.isfinite(f["HR"] ** (0.0 - 1.0)))   # f^(neg) finite
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -506,7 +517,9 @@ def compute_role_factors(
     for c in PITCHER_SKILL_RATES:
         sp_rate = sp_tot[c] / sp_bf if sp_bf > 0 else 0.0
         rp_rate = rp_tot[c] / rp_bf if rp_bf > 0 else 0.0
-        f[c] = (rp_rate / sp_rate) if sp_rate > 0 else 1.0
+        # Guard: a zero on EITHER side makes f^(negative exponent) blow up to inf.
+        # Neutralize to 1.0 (no role-shift) when either role-rate is non-positive.
+        f[c] = (rp_rate / sp_rate) if (sp_rate > 0 and rp_rate > 0) else 1.0
     return f
 ```
 
@@ -560,6 +573,17 @@ class TestPitcherRateProjection(unittest.TestCase):
                                       params=PitcherMarcelParams())
         # pooled K/BF = 105/300 = 0.35 ; shift f^(0-1)=1/1.2 -> 0.35/1.2 = 0.29167
         self.assertAlmostEqual(rates["K"], 0.35 / 1.2, places=5)
+
+    def test_missed_t1_present_t2_offset_preserved(self):
+        # index0=T-1 (None, missed), index1=T-2 present. Must not crash; uses T-2.
+        season = {"BF": 300, "K": 105, "BB": 20, "H_ALLOWED": 50, "HR": 8,
+                  "ER": 25, "HBP": 3, "GS": 0, "G": 60}
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        rates = project_pitcher_rates([None, season], league, f, h_sp=0.0, p_sp=0.0,
+                                      params=PitcherMarcelParams(n_reg=0.0))
+        # n_reg=0 isolates the rate: 105/300 = 0.35, present-season used despite None at T-1.
+        self.assertAlmostEqual(rates["K"], 0.35, places=6)
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -580,11 +604,14 @@ def project_pitcher_rates(
 ) -> dict[str, float]:
     """Per-BF skill rates: weighted + regressed (Marcel), then role-shifted by
     f[c]^(h_sp - p_sp). Age is neutral in v1 (no curve)."""
-    weights = params.season_weights[: len(prior_seasons)]
-    weighted_bf = sum(w * float(s.get("BF", 0)) for s, w in zip(prior_seasons, weights))
+    # Offset-aligned: prior_seasons[i] may be None (missed year). zip with the full
+    # season_weights pins each PRESENT season to its true offset weight — do NOT
+    # compress (a pitcher who missed T-1 but pitched T-2 keeps the T-2 weight).
+    pairs = [(s, w) for s, w in zip(prior_seasons, params.season_weights) if s is not None]
+    weighted_bf = sum(w * float(s.get("BF", 0)) for s, w in pairs)
     out: dict[str, float] = {}
     for c in PITCHER_SKILL_RATES:
-        wtot = sum(w * float(s.get(c, 0)) for s, w in zip(prior_seasons, weights))
+        wtot = sum(w * float(s.get(c, 0)) for s, w in pairs)
         regressed = (wtot + params.n_reg * league_rates.get(c, 0.0)) / (weighted_bf + params.n_reg)
         shift = role_factors.get(c, 1.0) ** (h_sp - p_sp)
         out[c] = max(0.0, regressed * shift)
@@ -769,7 +796,8 @@ def project_pitcher(
     weights = params.season_weights[: len(prior_seasons)]
     p_sp = project_p_sp(prior_seasons, weights)
     h_sp = historical_role_mix(prior_seasons)
-    mlbam_id = prior_seasons[0].get("mlbam_id", "")
+    first = next((s for s in prior_seasons if s is not None), {})  # offset-aligned: T-1 may be None
+    mlbam_id = first.get("mlbam_id", "")
 
     sp_rates = project_pitcher_rates(prior_seasons, league_rates, role_factors, h_sp, 1.0, params)
     rp_rates = project_pitcher_rates(prior_seasons, league_rates, role_factors, h_sp, 0.0, params)
@@ -846,6 +874,37 @@ class TestBuildPitcherProjections(unittest.TestCase):
             self.assertEqual(rows[0]["id"], "mlbam_600_P")
             self.assertEqual(rows[0]["metadata"]["as_of_season"], 2024)
             self.assertIn("ERA", rows[0]["stats"])
+
+    def test_missed_t1_present_t2_still_projects(self):
+        import tempfile
+        from pathlib import Path
+        from projections.data.pitching_historical import store_pitching_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            row = {"mlbam_id": "700", "BF": 750, "IP": 180.0, "ER": 70, "H_ALLOWED": 150,
+                   "BB": 45, "HBP": 5, "K": 200, "HR": 22, "W": 14, "L": 8, "SV": 0,
+                   "HLD": 0, "GS": 30, "G": 30, "GF": 0, "QS": 18}
+            # Present in 2022 (T-2) and 2021 (T-3); MISSING 2023 (T-1).
+            store_pitching_season(2022, [dict(row, season=2022)], data_dir)
+            store_pitching_season(2021, [dict(row, season=2021)], data_dir)
+            rows = build_pitcher_projections(2024, data_dir, PitcherMarcelParams())
+            self.assertIn("700", {r["metadata"]["mlbam_id"] for r in rows})  # projected, no crash
+
+    def test_mixed_arm_positions_both(self):
+        import tempfile
+        from pathlib import Path
+        from projections.data.pitching_historical import store_pitching_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in (2021, 2022, 2023):
+                store_pitching_season(yr, [{"mlbam_id": "701", "season": yr, "BF": 400,
+                    "IP": 90.0, "ER": 35, "H_ALLOWED": 80, "BB": 25, "HBP": 3, "K": 100,
+                    "HR": 11, "W": 6, "L": 6, "SV": 2, "HLD": 8, "GS": 15, "G": 30,
+                    "GF": 5, "QS": 8}], data_dir)
+            rows = build_pitcher_projections(2024, data_dir, PitcherMarcelParams())
+            r = next(x for x in rows if x["metadata"]["mlbam_id"] == "701")
+            self.assertTrue(r["metadata"]["mixed_role"])
+            self.assertEqual(set(r["positions"]), {"SP", "RP"})
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -863,7 +922,6 @@ def build_pitcher_projections(
 ) -> list[dict]:
     """Project all pitchers with >=1 prior season (data < target). Reliability/role
     factors + league rates use the wide pre-target window; rates use the 3 weight-years."""
-    from projections.constants import MIN_RP_IP_EVAL  # bf_floor proxy below uses BF, not IP
     from projections.data.pitching_historical import (
         available_pitching_seasons, load_pitching_season,
     )
@@ -887,10 +945,17 @@ def build_pitcher_projections(
 
     rows = []
     for mlbam_id in all_ids:
-        prior_seasons = [m[mlbam_id] for m in index_maps if mlbam_id in m]  # newest-first present
+        # Offset-aligned: index 0 = T-1, 1 = T-2, 2 = T-3; None = missed year. Same
+        # no-compress rule as hitting — do NOT promote a T-2 season to the T-1 weight.
+        prior_seasons = [m.get(mlbam_id) for m in index_maps]
+        if all(s is None for s in prior_seasons):
+            continue
         proj = project_pitcher(prior_seasons, league, role_factors, params)
         proj["name"] = mlbam_id  # identity-name wiring is a follow-up; id-keyed for now
-        proj["positions"] = ["SP"] if proj["pool"] == "starter" else ["RP"]
+        if proj["metadata"]["mixed_role"]:
+            proj["positions"] = ["SP", "RP"]   # mixed arm: eligible both ways
+        else:
+            proj["positions"] = ["SP"] if proj["pool"] == "starter" else ["RP"]
         proj["metadata"]["as_of_season"] = target_season
         proj["metadata"]["model"] = "valucast_pitching_marcel"
         rows.append(proj)
@@ -1140,6 +1205,8 @@ print('VERDICT:', 'WIN' if res['beats_persistence'] else 'TIE')
 Expected — honest either way:
 - **WIN:** skill-cat mean MAE ratio < 1.0 + corr-win > 0.5 → role-routed Marcel beats persistence on ERA/WHIP/K/K9/BB9. Foundation bar met.
 - **TIE:** record plainly. W/SV/QS/HLD are reported as context cats regardless and **not** part of the bar.
+
+**Baseline honesty:** the v1 verdict is **role-routed Marcel vs persistence on skill cats** only. Pooled (no-role-split) pitcher Marcel is **not** implemented in v1, so the plan makes **no claim that the role split beats pooled Marcel** — that comparison is a noted future/secondary item, not a v1 result.
 
 - [ ] **Step 2: Record the verdict**
 
