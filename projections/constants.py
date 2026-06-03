@@ -25,3 +25,19 @@ HEADLINE_STATS: tuple[str, ...] = (
 
 PEAK_AGE = 29
 MIN_EVAL_PA = 200  # qualified actual-PA floor for backtest eval population
+
+# --- Pitching ---
+# Stored counting stats per pitcher-season (backbone).
+PITCHER_COUNTING: tuple[str, ...] = (
+    "BF", "IP", "ER", "H_ALLOWED", "BB", "HBP", "K", "HR",
+    "W", "L", "SV", "HLD", "GS", "G", "GF", "QS",
+)
+# Per-batter-faced skill components Marcel projects.
+PITCHER_SKILL_RATES: tuple[str, ...] = ("K", "BB", "H_ALLOWED", "HR", "ER", "HBP")
+# Skill categories the backtest bar is measured on.
+PITCHER_HEADLINE_SKILL: tuple[str, ...] = ("IP", "K", "ERA", "WHIP", "K_9", "BB_9")
+# Usage/team-context categories — projected, reported, NOT tuned toward.
+PITCHER_HEADLINE_CONTEXT: tuple[str, ...] = ("W", "SV", "QS", "HLD")
+# Backtest eval-population innings floors (distinct from app valuation floors).
+MIN_SP_IP_EVAL = 60
+MIN_RP_IP_EVAL = 20
