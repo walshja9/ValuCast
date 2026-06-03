@@ -118,3 +118,62 @@ def project_rp_usage(prior_seasons: Sequence[dict], weights: Sequence[float]) ->
                          lambda s: float(s.get("HLD", 0)) / s["G"] if s.get("G") else 0.0)
     return {"G": g, "BF": g * bf_per_app, "IP": g * ip_per_app,
             "SV": g * sv_per_app, "HLD": g * hld_per_app}
+
+
+def _reconstruct(rates: dict[str, float], usage: dict[str, float]) -> dict[str, float]:
+    """Counts from per-BF rates * projected BF + the usage volume/role stats."""
+    bf = usage["BF"]
+    out = {c: max(0.0, rates.get(c, 0.0) * bf) for c in PITCHER_SKILL_RATES}
+    out["BF"] = bf
+    out["IP"] = usage["IP"]
+    out["GS"] = usage.get("GS", 0.0)
+    out["G"] = usage.get("G", 0.0)
+    out["SV"] = usage.get("SV", 0.0)
+    out["HLD"] = usage.get("HLD", 0.0)
+    out["QS"] = usage.get("QS", 0.0)
+    return out
+
+
+def project_pitcher(
+    prior_seasons: Sequence[dict | None],
+    league_rates: dict[str, float],
+    role_factors: dict[str, float],
+    params: PitcherMarcelParams,
+) -> dict:
+    """Project one pitcher: SP-line and RP-line, blend by p_sp, reconstruct cats,
+    primary-pool export row. prior_seasons offset-aligned (newest-first, None gaps)."""
+    weights = params.season_weights[: len(prior_seasons)]
+    p_sp = project_p_sp(prior_seasons, weights)
+    h_sp = historical_role_mix(prior_seasons)
+    first = next((s for s in prior_seasons if s is not None), {})  # T-1 may be None
+    mlbam_id = first.get("mlbam_id", "")
+
+    sp_rates = project_pitcher_rates(prior_seasons, league_rates, role_factors, h_sp, 1.0, params)
+    rp_rates = project_pitcher_rates(prior_seasons, league_rates, role_factors, h_sp, 0.0, params)
+    sp_line = _reconstruct(sp_rates, project_sp_usage(prior_seasons, weights))
+    rp_line = _reconstruct(rp_rates, project_rp_usage(prior_seasons, weights))
+
+    # Blend the COUNTS by p_sp; derive ratios from blended counts.
+    keys = set(sp_line) | set(rp_line)
+    blended = {k: p_sp * sp_line.get(k, 0.0) + (1 - p_sp) * rp_line.get(k, 0.0) for k in keys}
+    # W is team-context; project crudely from prior W per IP, scaled to blended IP.
+    w_per_ip = _wmean(prior_seasons, weights,
+                      lambda s: float(s.get("W", 0)) / s["IP"] if s.get("IP") else 0.0)
+    blended["W"] = max(0.0, w_per_ip * blended["IP"])
+    blended["SV_HLD"] = blended.get("SV", 0.0) + blended.get("HLD", 0.0)
+
+    ip = blended["IP"]
+    blended["ERA"] = round(9 * blended["ER"] / ip, 3) if ip > 0 else 0.0
+    blended["WHIP"] = round((blended["BB"] + blended["H_ALLOWED"]) / ip, 3) if ip > 0 else 0.0
+    blended["K_9"] = round(9 * blended["K"] / ip, 3) if ip > 0 else 0.0
+    blended["BB_9"] = round(9 * blended["BB"] / ip, 3) if ip > 0 else 0.0
+    blended["K_BB"] = round(blended["K"] / blended["BB"], 3) if blended["BB"] > 0 else 0.0
+
+    return {
+        "id": f"mlbam_{mlbam_id}_P",
+        "pool": "starter" if p_sp >= 0.5 else "reliever",   # primary-pool approximation
+        "stats": {k: round(v, 4) for k, v in blended.items()},
+        "metadata": {"mlbam_id": mlbam_id, "base_id": f"mlbam_{mlbam_id}",
+                     "source": "valucast_pitching", "p_sp": round(p_sp, 4),
+                     "mixed_role": is_mixed(p_sp)},
+    }

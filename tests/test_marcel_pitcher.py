@@ -1,7 +1,7 @@
 import unittest
 from projections.models.marcel_pitcher import (
     compute_pitcher_league_rates, compute_role_factors, project_pitcher_rates,
-    project_sp_usage, project_rp_usage,
+    project_sp_usage, project_rp_usage, project_pitcher,
 )
 from projections.models.pitcher_params import PitcherMarcelParams
 
@@ -87,3 +87,32 @@ class TestPitcherUsage(unittest.TestCase):
         self.assertAlmostEqual(u["BF"], 240.0, places=2)
         self.assertAlmostEqual(u["SV"], 30.0, places=2)
         self.assertAlmostEqual(u["HLD"], 5.0, places=2)
+
+
+class TestProjectPitcher(unittest.TestCase):
+    def test_pure_sp_reconstruction(self):
+        prior = [{"mlbam_id": "600", "BF": 750, "IP": 180.0, "ER": 70, "H_ALLOWED": 150,
+                  "BB": 45, "HBP": 5, "K": 200, "HR": 22, "GS": 30, "G": 30,
+                  "SV": 0, "HLD": 0, "QS": 18, "W": 14} for _ in range(3)]
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        out = project_pitcher(prior, league, f, params=PitcherMarcelParams())
+        self.assertEqual(out["pool"], "starter")          # p_sp=1 -> starter
+        self.assertFalse(out["metadata"]["mixed_role"])
+        s = out["stats"]
+        self.assertGreater(s["IP"], 150)
+        self.assertAlmostEqual(s["ERA"], round(9 * s["ER"] / s["IP"], 3), places=3)
+        self.assertAlmostEqual(s["WHIP"], round((s["BB"] + s["H_ALLOWED"]) / s["IP"], 3), places=3)
+        self.assertGreaterEqual(s["BF"], 3 * s["IP"] - 1)  # BF >= 3*IP guard (tolerance)
+        self.assertGreater(s["QS"], 0)
+
+    def test_mixed_role_flagged_and_blended(self):
+        prior = [{"mlbam_id": "601", "BF": 400, "IP": 90.0, "ER": 35, "H_ALLOWED": 80,
+                  "BB": 25, "HBP": 3, "K": 100, "HR": 11, "GS": 15, "G": 30,
+                  "SV": 2, "HLD": 8, "QS": 8, "W": 6} for _ in range(3)]
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        out = project_pitcher(prior, league, f, params=PitcherMarcelParams())
+        self.assertTrue(out["metadata"]["mixed_role"])
+        self.assertGreater(out["stats"]["IP"], 0)
+        self.assertAlmostEqual(out["metadata"]["p_sp"], 0.5, places=2)
