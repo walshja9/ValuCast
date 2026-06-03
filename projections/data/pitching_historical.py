@@ -18,7 +18,7 @@ def normalize_pitching_rows(raw_pitchers: list[dict], qs_map: dict[str, int]) ->
     for entry in raw_pitchers:
         s = entry["stat"]
         mlbam_id = str(entry["player"]["id"])
-        rows.append({
+        row = {
             "mlbam_id": mlbam_id,
             "BF": int(s.get("battersFaced", 0)),
             "IP": round(normalize_ip(float(s.get("inningsPitched", "0") or 0)), 4),
@@ -36,7 +36,15 @@ def normalize_pitching_rows(raw_pitchers: list[dict], qs_map: dict[str, int]) ->
             "G": int(s.get("gamesPitched", 0)),
             "GF": int(s.get("gamesFinished", 0)),
             "QS": int(qs_map.get(mlbam_id, 0)),
-        })
+        }
+        # Fail loud on impossible lines: BF must be >= outs recorded (3*IP). A missing/
+        # broken battersFaced from the API would otherwise poison rate denominators.
+        if row["IP"] > 0 and row["BF"] < 3 * row["IP"] - 1.0:  # 1-batter rounding slack
+            raise ValueError(
+                f"Pitcher {mlbam_id}: impossible line BF={row['BF']} < 3*IP="
+                f"{3 * row['IP']:.1f} (likely missing/broken battersFaced)."
+            )
+        rows.append(row)
     return rows
 
 

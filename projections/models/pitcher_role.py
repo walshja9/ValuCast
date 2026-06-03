@@ -23,11 +23,13 @@ def is_mixed(p_sp: float) -> bool:
     return MIXED_LO < p_sp < MIXED_HI
 
 
-def historical_role_mix(prior_seasons: Sequence[dict]) -> float:
-    """BF-weighted role share of the seasons the pitcher's rates came from (h_SP).
-    This is the role CONTEXT of the observed rates, used by the role-shift."""
-    bf_sum = sum(float(s.get("BF", 0)) for s in prior_seasons if s is not None)
-    if bf_sum <= 0:
+def historical_role_mix(prior_seasons: Sequence[dict], weights: Sequence[float]) -> float:
+    """(season-weight x BF)-weighted role share of the seasons the pitcher's rates
+    came from (h_SP) — the role CONTEXT of the observed rates, used by the role-shift.
+    Must use the SAME offset-aligned 5/4/3 weights as project_pitcher_rates pools the
+    rates, or a role-converter's shift exponent disagrees with its actual rate context."""
+    pairs = [(s, w) for s, w in zip(prior_seasons, weights) if s is not None]
+    denom = sum(w * float(s.get("BF", 0)) for s, w in pairs)
+    if denom <= 0:
         return 0.0
-    return sum(role_share(s) * float(s.get("BF", 0))
-              for s in prior_seasons if s is not None) / bf_sum
+    return sum(w * float(s.get("BF", 0)) * role_share(s) for s, w in pairs) / denom

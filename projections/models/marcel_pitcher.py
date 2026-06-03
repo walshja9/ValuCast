@@ -144,7 +144,7 @@ def project_pitcher(
     primary-pool export row. prior_seasons offset-aligned (newest-first, None gaps)."""
     weights = params.season_weights[: len(prior_seasons)]
     p_sp = project_p_sp(prior_seasons, weights)
-    h_sp = historical_role_mix(prior_seasons)
+    h_sp = historical_role_mix(prior_seasons, weights)
     first = next((s for s in prior_seasons if s is not None), {})  # T-1 may be None
     mlbam_id = first.get("mlbam_id", "")
 

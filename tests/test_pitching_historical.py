@@ -27,6 +27,17 @@ class TestPitchingBackbone(unittest.TestCase):
         self.assertEqual(r["QS"], 18)
         self.assertEqual(r["GS"], 30)
 
+    def test_normalize_fails_loud_on_impossible_bf(self):
+        # IP>0 but BF far below 3*IP -> broken battersFaced -> raise, don't store junk.
+        raw = [{
+            "player": {"id": 601, "fullName": "Broken"},
+            "stat": {"battersFaced": 5, "inningsPitched": "180.0", "earnedRuns": 70,
+                     "hits": 160, "baseOnBalls": 50, "strikeOuts": 200, "homeRuns": 22,
+                     "gamesStarted": 30, "gamesPitched": 30},
+        }]
+        with self.assertRaises(ValueError):
+            normalize_pitching_rows(raw, qs_map={})
+
     def test_store_immutable_noop_and_change_raises(self):
         with tempfile.TemporaryDirectory() as d:
             data_dir = Path(d)
