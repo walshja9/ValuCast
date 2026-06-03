@@ -1,5 +1,15 @@
 # Pitching Foundation — Role-Routed Marcel Implementation Plan
 
+> **VERDICT (2026-06-02, executed): WIN — role-routed Marcel beats persistence on pitcher skill cats.**
+> Held-out 2020–2025, ~400 qualified pitchers/season: SKILL mean MAE ratio vs persistence **0.821**
+> (~18% better), corr-win **0.639**, `beats_persistence=True`. Win concentrated in the RATE skills —
+> ERA 0.775, WHIP 0.780, K_9 0.789, BB_9 0.721 (and K_9/BB_9 also improve correlation). IP and K
+> (raw volume) are ~neutral vs persistence (1.03 / 0.98) — volume is where last-year persistence is a
+> strong baseline. ERA/WHIP correlation is low for BOTH methods (year-to-year ERA is near-noise); the
+> ERA/WHIP MAE win is largely regression-to-mean, not better ranking — stated honestly. Context cats
+> (W/SV/QS/HLD) ~neutral (0.95–1.02), reported not tuned. First in-house pitching leg works.
+> Behavior-neutral (not yet wired into the app). See "Execution Verdict" at the tail.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build ValuCast's own pitcher projections — a historical pitcher backbone + role-routed Marcel (per-batter-faced skill rates, continuous SP/RP blend, separate usage models) reconstructed into engine pitching categories — and prove on the harness that it beats persistence on skill stats.
@@ -1223,3 +1233,40 @@ git commit -m "chore: pitching foundation complete — <WIN|TIE> vs persistence 
 - **Spec coverage:** backbone incl. BF/GF/HBP + QS for GS>0 (T2, T10); `PitcherMarcelParams` with no hitter age/alpha/gamma leak + neutral pitcher age (T1); continuous SP-probability + `mixed_role` + historical role mix (T3); per-BF league rates + leakage-safe role factors (T4); per-BF rate projection with explicit `f^(h_sp−p_sp)` no-double-apply role-shift (T5); separate SP/RP usage models (T6); blend + reconstruction + `BF≥3·IP` guard + primary-pool export with `p_sp`/`mixed_role` metadata (T7); run assembly (T8); pitcher harness with role-specific IP eval floors, skill-cat bar, W/SV/QS reported-not-tuned (T9); held-out verdict (T11). Pooled-Marcel baseline is the one spec item lightened — v1's primary bar is persistence (per spec "beat persistence first"); pooled-vs-split comparison is deferred to the verdict notes rather than a separate model, to keep the foundation lean. All other spec sections map to a task.
 - **Placeholder scan:** no TBD/TODO; every code step is complete; T11 expected output is a real WIN/TIE branch.
 - **Type consistency:** `PitcherMarcelParams(season_weights, n_reg)` used in T4/T5/T6/T7/T8/T9/T11. `project_pitcher_rates(prior, league, role_factors, h_sp, p_sp, params)`, `project_sp_usage/project_rp_usage(prior, weights)`, `project_pitcher(prior, league_rates, role_factors, params)`, `build_pitcher_projections(target_season, data_dir, params)` consistent across tasks. `role_share`/`project_p_sp`/`historical_role_mix`/`is_mixed` defined once (T3), consumed in T4/T7/T9. `PITCHER_SKILL_RATES`/`PITCHER_HEADLINE_*`/`MIN_*_IP_EVAL` defined once (T1). `load_pitching_season`/`available_pitching_seasons` consistent across T2/T8/T9/T10. Export row shape `{id, pool, stats, metadata{mlbam_id,p_sp,mixed_role,...}}` consistent T7/T8.
+
+---
+
+## Execution Verdict (2026-06-02)
+
+**Outcome: WIN.** Role-routed Marcel beats persistence on pitcher skill categories on held-out data.
+
+**Setup:** rolling-origin, held-out 2020–2025, role-specific IP eval floors (SP≥60, RP≥20). No tuned
+knobs in v1 (pitcher age neutral; alphas/gamma are hitter-only), so the verdict is a direct untuned
+comparison. Eval n by season: 2020=170 (COVID), 2021–2025 ≈ 400–426.
+
+**Result (skill bar):** mean MAE ratio vs persistence **0.821**, corr-win **0.639**, `beats_persistence=True`.
+
+**Per skill stat (2024, representative):**
+| stat | MAE ratio | corr (marcel vs persistence) |
+|------|-----------|------------------------------|
+| ERA  | 0.775 | 0.110 vs 0.118 |
+| WHIP | 0.780 | 0.144 vs 0.105 |
+| K_9  | 0.789 | 0.580 vs 0.448 |
+| BB_9 | 0.721 | 0.395 vs 0.253 |
+| K    | 0.981 | 0.646 vs 0.667 |
+| IP   | 1.026 | 0.662 vs 0.687 |
+
+**Honest read:**
+- The win is concentrated in the **rate skills** (ERA/WHIP/K_9/BB_9), 18–28% better MAE. K_9/BB_9 also
+  improve correlation clearly; ERA/WHIP correlation is **low for both methods** (year-to-year ERA is
+  near-noise) — so the ERA/WHIP MAE win is **largely regression-to-mean**, not better ranking. Stated plainly.
+- **IP and K (raw volume/counting) are ~neutral-to-slightly-worse** vs persistence (1.03 / 0.98).
+  Last-year's raw total is a strong volume baseline and Marcel's regression slightly hurts there. Expected.
+- **Context cats (W/SV/QS/HLD): ~neutral** (0.95–1.02), reported but not the bar and not tuned toward.
+
+**Consequence:** ValuCast now has an in-house pitching leg that beats persistence on the skill cats —
+the foundation bar is met. Natural follow-ups: Statcast-pitcher de-noise (xERA / xwOBA-against /
+barrel%-against), pooled-vs-split comparison, pitcher-specific age/`n_reg` tuning, and (with hitting
+already done) the complete-H+P app ship.
+
+**Production impact:** none yet — not wired into the app; `normalize_pitcher` app path untouched.
