@@ -1,7 +1,7 @@
 # Pitching Foundation — Role-Routed Marcel (per-Batter-Faced) — Design
 
 **Date:** 2026-06-02
-**Status:** Approved (design)
+**Status:** Draft / pending review (amendments incorporated 2026-06-02; awaiting sign-off)
 **Builds on:** the hitting program scaffolding (historical backbone pattern, leakage-safe rolling-origin harness, `MarcelParams`, run archive, `ProjectionCatalog`). This is the **pitching analog of hitting Rung 1** — the foundation rung. Statcast-pitcher inputs are a later rung.
 
 ## Goal
@@ -35,8 +35,16 @@ W, L, SV, HLD, GS, G, GF, QS
 ## 3. Role-routed Marcel projector (`projections/models/marcel_pitcher.py`)
 
 **Shared per-BF skill core** (rates more portable across roles than usage is):
-- Project per-BF rates for `K, BB, H, HR, ER, HBP` via the existing Marcel mechanics (weighted 5/4/3, regressed toward league means by `n_reg`, age-adjusted). Reuses `MarcelParams` (pitcher-specific constants are a tuning concern; v1 starts from the hitting mechanic with a pitcher age curve note — pitchers age differently, flagged for later tuning).
-- **Role-context rate adjustment**: relievers post better rate stats in short bursts (higher K/BF, lower ER/BF) than the same arm starting. A *league-derived* SP↔RP rate shift (computed leakage-safe from pre-target seasons) is applied when projected role differs from historical role. This is what makes the SP/RP split matter at the rate level without maintaining separate per-pitcher rate histories.
+- Project per-BF rates for `K, BB, H_ALLOWED, HR, ER, HBP` via the Marcel mechanics (weighted 5/4/3, regressed toward league means by `n_reg`). Uses a **pitcher-specific params object** `PitcherMarcelParams` (§ below) — **not** hitter `MarcelParams`.
+- **Role-context rate adjustment (explicit, leakage-safe, no double-apply):** relievers post better short-burst rates than the same arm starting. From **pre-target seasons only**, compute per-role league rates for each skill component `c` and the role factor `f[c] = league_RP_rate[c] / league_SP_rate[c]` (`>1` for K, `<1` for ER, etc.). Model a rate at role-mix `x` (fraction of BF as a starter) as `base_SP · f^(1−x)`. A pitcher's pooled observed rate `r_obs` already reflects their **historical** role mix `h_SP` (their GS-share-weighted role context). Re-express at the **projected** role `p_SP`:
+  ```
+  projected_rate[c] = pooled_rate[c] · f[c] ^ (h_SP − p_SP)
+  ```
+  When `h_SP == p_SP` (role unchanged) the exponent is 0 → **no adjustment**, so a career reliever projected as a reliever gets **no** double-applied boost; only a *change* in role (e.g. RP→SP, `h_SP=0, p_SP=1` → divide by `f`, removing the reliever boost) shifts the rate. This makes the SP/RP split matter at the rate level without per-pitcher per-role histories.
+
+**Pitcher params (`PitcherMarcelParams`, do NOT reuse hitter `MarcelParams`):**
+- Reuses `season_weights = (5,4,3)` and an `n_reg` default, but carries **no** hitter age multipliers and **no** `alpha_*`/`gamma` fields (those are hitter-modeling concerns and must not leak in).
+- **Age: neutral in v1** — pitcher skill age adjustment = 1.0 (no curve), explicitly flagged for later pitcher-specific tuning. Pitchers age differently than hitters; rather than reuse an untested hitter curve, v1 applies no age effect and a later rung fits/validates a signed pitcher age curve. (If a v1 age effect is ever added, it must be pitcher-specific and unit-tested for sign.)
 
 **Separate usage/volume models (the split):**
 - **SP usage:** project `GS`, `IP/start` (→ IP), `BF/start` (→ BF); `QS-rate-per-GS` → QS.
@@ -49,8 +57,12 @@ W, L, SV, HLD, GS, G, GF, QS
 From projected BF + per-BF rates + usage, reconstruct what `category_registry` consumes:
 - **Skill/rate:** `IP, K, BB, H_ALLOWED, ER, HR` → `ERA = 9·ER/IP`, `WHIP = (BB+H_ALLOWED)/IP`, `K_9`, `BB_9`, `K_BB`.
 - **Counting/role (flagged noisy):** `W` (from prior W-rate per IP — team-context-bound), `SV`/`HLD` (RP usage rates), `QS` (SP `GS × QS-rate`), `SV_HLD`.
-- Guards: clamp all counts ≥0; IP>0 before any ratio; `BF ≥ IP` sanity.
-- Emit engine-native pool: `starter` if `p_SP ≥ 0.5` else `reliever` (the display pool); the blended line carries both SP and RP contributions so SP/RP category valuation is coherent.
+- Guards: clamp all counts ≥0; IP>0 before any ratio; **`BF ≥ 3·IP`** within rounding tolerance (every batter faced is an out or a baserunner; IP is outs/3, so BF must be ≥ outs_recorded = 3·IP — `BF ≥ IP` is far too weak).
+
+**Mixed-role export — primary-pool approximation (Option A, explicit):**
+- For **backtesting/modeling**, the single blended full-season line is used directly.
+- For **engine export**, emit **one row** with `pool = starter if p_SP ≥ 0.5 else reliever`, positions reflecting eligibility, and metadata carrying `p_SP` and `mixed_role`. This is a **primary-pool approximation**: a mixed arm is valued entirely within its dominant pool, not split fractionally. We do **not** claim the blended line is fully coherent across SP and RP valuation — it isn't, because the engine has no fractional pool membership.
+- **Dual-row export** (Option B: separate SP and RP valuation rows sharing `base_id` with `p_SP`/`(1−p_SP)`-weighted contributions) is the more faithful treatment for mixed arms and is noted as a **future option**, explicitly out of scope for v1.
 
 ## 5. Harness (extend, don't fork)
 
