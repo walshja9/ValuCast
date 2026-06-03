@@ -92,3 +92,24 @@ def load_grid(path: Path) -> dict:
     cells = {tuple(int(x) for x in key.split(",")): v for key, v in raw["cells"].items()}
     return {"cells": cells, "global": raw["global"],
             "ev_bin": raw["ev_bin"], "la_bin": raw["la_bin"]}
+
+
+def score_player(grid: dict, balls: Sequence[dict], ab: int) -> dict:
+    """our_xBA = sum(p_hit over the player's BIP) / AB ; our_xSLG = sum(e_bases)/AB.
+    Full-AB denominator (matches Savant: strikeouts/outs in AB contribute 0).
+    Missing-EV balls are imputed at the grid's global rate (lookup handles it)."""
+    exp_hits = exp_bases = 0.0
+    missing = 0
+    for b in balls:
+        if b["ev"] is None or b["la"] is None:
+            missing += 1
+        cell = lookup(grid, b["ev"], b["la"])
+        exp_hits += cell["p_hit"]
+        exp_bases += cell["e_bases"]
+    n = len(balls)
+    return {
+        "our_xba": exp_hits / ab if ab > 0 else 0.0,
+        "our_xslg": exp_bases / ab if ab > 0 else 0.0,
+        "tracked_bip": n,
+        "missing_ev_coverage": missing / n if n else 0.0,
+    }

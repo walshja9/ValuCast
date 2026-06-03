@@ -66,3 +66,30 @@ class TestGridFit(unittest.TestCase):
             changed = fit_grid(self._balls() + [{"ev": 105.0, "la": 20.0, "events": "home_run"}])
             with self.assertRaises(ValueError):
                 store_grid(changed, p)                # changed content -> raise
+
+
+from projections.models.expected_stats_grid import score_player
+
+
+class TestScorePlayer(unittest.TestCase):
+    def test_our_xba_xslg_full_ab_denominator(self):
+        grid = {"cells": {(100, 10): {"n": 100, "hits": 80, "bases": 320}},
+                "global": {"p_hit": 0.5, "e_bases": 1.0}, "ev_bin": 2, "la_bin": 5}
+        balls = [
+            {"ev": 100.0, "la": 12.0, "events": "home_run"},  # hot cell -> .8 / 3.2
+            {"ev": 100.0, "la": 12.0, "events": "field_out"}, # hot cell -> .8 / 3.2
+            {"ev": None, "la": None, "events": "field_out"},  # missing-EV -> global .5 / 1.0
+        ]
+        res = score_player(grid, balls, ab=4)
+        # expected hits = .8 + .8 + .5 = 2.1 ; xBA = 2.1/4
+        self.assertAlmostEqual(res["our_xba"], 2.1 / 4, places=4)
+        # expected bases = 3.2 + 3.2 + 1.0 = 7.4 ; xSLG = 7.4/4
+        self.assertAlmostEqual(res["our_xslg"], 7.4 / 4, places=4)
+        self.assertEqual(res["tracked_bip"], 3)
+        self.assertAlmostEqual(res["missing_ev_coverage"], 1/3, places=4)
+
+    def test_zero_ab_safe(self):
+        grid = {"cells": {}, "global": {"p_hit": 0.5, "e_bases": 1.0}, "ev_bin": 2, "la_bin": 5}
+        res = score_player(grid, [], ab=0)
+        self.assertEqual(res["our_xba"], 0.0)
+        self.assertEqual(res["our_xslg"], 0.0)
