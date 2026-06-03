@@ -1,6 +1,7 @@
 import unittest
 from projections.models.marcel_pitcher import (
     compute_pitcher_league_rates, compute_role_factors, project_pitcher_rates,
+    project_sp_usage, project_rp_usage,
 )
 from projections.models.pitcher_params import PitcherMarcelParams
 
@@ -68,3 +69,21 @@ class TestPitcherRateProjection(unittest.TestCase):
                                       params=PitcherMarcelParams(n_reg=0.0))
         # n_reg=0 isolates the rate: 105/300 = 0.35, present season used despite None at T-1.
         self.assertAlmostEqual(rates["K"], 0.35, places=6)
+
+
+class TestPitcherUsage(unittest.TestCase):
+    def test_sp_usage_volume_and_qs(self):
+        prior = [{"GS": 30, "G": 30, "BF": 750, "IP": 180.0, "QS": 18} for _ in range(3)]
+        u = project_sp_usage(prior, (5.0, 4.0, 3.0))
+        self.assertAlmostEqual(u["GS"], 30.0, places=4)
+        self.assertAlmostEqual(u["BF"], 750.0, places=2)     # GS * BF/start
+        self.assertAlmostEqual(u["IP"], 180.0, places=2)
+        self.assertAlmostEqual(u["QS"], 18.0, places=2)
+
+    def test_rp_usage_volume_sv_hld(self):
+        prior = [{"G": 60, "GS": 0, "BF": 240, "IP": 60.0, "SV": 30, "HLD": 5} for _ in range(3)]
+        u = project_rp_usage(prior, (5.0, 4.0, 3.0))
+        self.assertAlmostEqual(u["G"], 60.0, places=4)
+        self.assertAlmostEqual(u["BF"], 240.0, places=2)
+        self.assertAlmostEqual(u["SV"], 30.0, places=2)
+        self.assertAlmostEqual(u["HLD"], 5.0, places=2)

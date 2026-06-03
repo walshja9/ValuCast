@@ -85,3 +85,36 @@ def project_pitcher_rates(
         shift = role_factors.get(c, 1.0) ** (h_sp - p_sp)
         out[c] = max(0.0, regressed * shift)
     return out
+
+
+def _wmean(prior_seasons, weights, fn):
+    pairs = [(fn(s), w) for s, w in zip(prior_seasons, weights) if s is not None]
+    wsum = sum(w for _, w in pairs)
+    return sum(v * w for v, w in pairs) / wsum if wsum > 0 else 0.0
+
+
+def project_sp_usage(prior_seasons: Sequence[dict], weights: Sequence[float]) -> dict[str, float]:
+    """Starter volume/role: GS, BF (=GS*BF/start), IP (=GS*IP/start), QS (=GS*QS/GS)."""
+    gs = _wmean(prior_seasons, weights, lambda s: float(s.get("GS", 0)))
+    bf_per_start = _wmean(prior_seasons, weights,
+                          lambda s: float(s["BF"]) / s["GS"] if s.get("GS") else 0.0)
+    ip_per_start = _wmean(prior_seasons, weights,
+                          lambda s: float(s["IP"]) / s["GS"] if s.get("GS") else 0.0)
+    qs_per_start = _wmean(prior_seasons, weights,
+                          lambda s: float(s.get("QS", 0)) / s["GS"] if s.get("GS") else 0.0)
+    return {"GS": gs, "BF": gs * bf_per_start, "IP": gs * ip_per_start, "QS": gs * qs_per_start}
+
+
+def project_rp_usage(prior_seasons: Sequence[dict], weights: Sequence[float]) -> dict[str, float]:
+    """Reliever volume/role: G, BF (=G*BF/app), IP (=G*IP/app), SV/HLD (=G*rate)."""
+    g = _wmean(prior_seasons, weights, lambda s: float(s.get("G", 0)))
+    bf_per_app = _wmean(prior_seasons, weights,
+                        lambda s: float(s["BF"]) / s["G"] if s.get("G") else 0.0)
+    ip_per_app = _wmean(prior_seasons, weights,
+                        lambda s: float(s["IP"]) / s["G"] if s.get("G") else 0.0)
+    sv_per_app = _wmean(prior_seasons, weights,
+                        lambda s: float(s.get("SV", 0)) / s["G"] if s.get("G") else 0.0)
+    hld_per_app = _wmean(prior_seasons, weights,
+                         lambda s: float(s.get("HLD", 0)) / s["G"] if s.get("G") else 0.0)
+    return {"G": g, "BF": g * bf_per_app, "IP": g * ip_per_app,
+            "SV": g * sv_per_app, "HLD": g * hld_per_app}
