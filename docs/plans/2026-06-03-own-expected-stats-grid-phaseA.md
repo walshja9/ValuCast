@@ -1,5 +1,17 @@
 # Our Own Expected Stats (EV×LA Grid) — Phase A Implementation Plan
 
+> **VERDICT (2026-06-03, executed): SHORTFALL — our EV+LA grid does NOT reproduce Savant's xBA to the 0.95 bar (yet).**
+> 428k batted balls 2021–23, 1033 qualified player-seasons. xBA **corr 0.866** (bar 0.95), slope 1.03,
+> **bias +0.031**; xSLG **corr 0.938** (close), bias +0.042. Slope ≈ 1.03 → shape is right, but a uniform
+> upward bias. Diagnosed: ~half the bias is the **missing-EV global-imputation artifact** (7.7% of balls;
+> switching missing→0 lifts xBA corr 0.866→0.886 and halves bias to +0.017) — a fixable design flaw. The
+> *remaining* gap (corr ~0.886, bias ~0.017) is the genuine **EV+LA-vs-Savant residual** (sprint speed +
+> Savant's smoothing) the spec predicted. **Conclusion: EV+LA alone is not faithful enough to call our xBA
+> "Savant's" — sprint speed (and better missing-EV handling) are required first. Phase B (swap our numbers
+> into the de-noise) stays GATED.** The calibration guard worked exactly as designed (caught the affine
+> bias corr alone would have hidden). Grid artifact committed as a recorded intermediate, not a pass.
+> See "Execution Verdict" at the tail.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build our own empirical EV×LA expected-stats grid from raw Statcast batted balls, compute our own xBA/xSLG per player-season, and prove (corr ≥ 0.95 + calibration) that it reproduces Savant's stored xBA/xSLG — the faithfulness gate before the expensive Phase B.
@@ -814,3 +826,48 @@ git commit -m "data+docs: our EV x LA expected-stats grid 2021-2023 + Phase A ve
 - **Spec coverage:** resumable/throttled/retrying pull (T2); EV×LA empirical grid + sparse-cell fallback (T3, T4); missing-EV excluded-from-fit-but-imputed-at-global, full-AB denominator, missing_ev_coverage (T4, T5); corr-led gate + calibration (slope/intercept/bias) catching affine bias (T6); qualified population AB≥200 & BIP≥50 (T6 `qualified`, T5 verdict); grid stored as immutable artifact, raw balls gitignored not committed (T4, T7); honest WIN/SHORTFALL (T7). Sprint-speed residual is characterized in the verdict notes. All spec sections map to a task.
 - **Placeholder scan:** no TBD/TODO; every code step is complete. The one flagged item is the per-season `game_year` on parsed balls — called out explicitly in T7 Step 4's note as a one-line parser addition the implementer must make so balls group by `(batter, season)`. **Fix forward:** add `"game_year": (row.get("game_date") or "")[:4]` to `parse_batted_balls`'s output dict in Task 1 and include `game_date` is in the CSV (it is). Implementer: include this in Task 1.
 - **Type consistency:** `parse_batted_balls -> [{ev,la,events,batter(,game_year)}]` consumed by `pull_window`/`fit_grid`/`score_player`. `fit_grid -> {cells,global,ev_bin,la_bin}` consumed by `lookup`/`score_player`/`store_grid`/`load_grid`. `score_player -> {our_xba,our_xslg,tracked_bip,missing_ev_coverage}` consumed in the T7 verdict + `qualified(ab,tracked_bip)`. `faithfulness_report(paired)` expects `{our_xba,our_xslg,savant_xba,savant_xslg}`. Savant snapshot keys `xba`/`xslg` and hitter row `AB`/`mlbam_id` match the existing backbones.
+
+---
+
+## Execution Verdict (2026-06-03)
+
+**Outcome: SHORTFALL.** Our own EV×LA empirical grid does not yet reproduce Savant's xBA to the
+corr ≥ 0.95 faithfulness bar. Honest finding, bar not moved.
+
+**Setup:** 428,323 balls in play 2021–23 (missing-EV 7.7%); grid = 1718 cells; global p_hit 0.327.
+Faithfulness over 1033 qualified player-seasons (AB≥200, tracked BIP≥50).
+
+| metric | xBA | xSLG |
+|--------|-----|------|
+| corr (bar 0.95) | **0.866** | **0.938** |
+| slope | 1.026 | 1.032 |
+| intercept | +0.025 | +0.029 |
+| bias (mean signed) | +0.031 | +0.042 |
+| MAE | 0.031 | 0.043 |
+
+**Diagnosis (two bias sources, separated):**
+1. **Missing-EV global-imputation artifact (~half the bias).** 7.7% of balls lack EV/LA and were
+   imputed at the global hit rate (0.327) — but untracked contact skews weak. Switching missing→0
+   lifts xBA corr 0.866→**0.886** and halves bias +0.031→**+0.017**. Fixable design flaw: impute
+   missing-EV at a low rate or use an adjusted denominator.
+2. **Genuine EV+LA-vs-Savant residual (the rest).** Even with missing-EV fixed, corr ~0.886 / bias
+   ~0.017 remain. This is the predicted gap: Savant's xBA uses **sprint speed** on weakly-hit balls
+   plus a smoothed comparable-balls model; our raw EV+LA grid omits both. Slope ≈ 1.03 confirms the
+   shape is right — it's a residual, not a wrong model.
+
+**What worked:** the **calibration guard** caught the affine bias that correlation alone would have
+passed silently — exactly its purpose. The **min-pairs guard** confirmed a real 1033-pair population
+(not a fake shortfall from join failure).
+
+**Consequence / next steps (in order):**
+1. **Fix missing-EV handling** (impute low / adjusted denominator) — banks ~half the bias and ~0.02 corr.
+2. **Add sprint speed** as a grid/scoring input (pull Savant `sprint_speed` per batter) — the named lever
+   to close the residual toward 0.95.
+3. Only once faithfulness clears the bar (or a calibration layer is justified) does **Phase B** (swap our
+   xBA/xSLG into the Rung 3 de-noise) unlock. Until then we still consume Savant's xBA there.
+
+**Honest ownership status:** we built our *own* expected-stats calculation (the grid is genuinely ours)
+and it captures the right shape — but it is **not yet faithful enough to claim parity with Savant's xBA**.
+Calling it "ours and equivalent" would require closing this gap. Reported plainly.
+
+**Production impact:** none — behavior-neutral, nothing wired in.
