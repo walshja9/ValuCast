@@ -1,7 +1,7 @@
 # Pitching Foundation — Role-Routed Marcel (per-Batter-Faced) — Design
 
 **Date:** 2026-06-02
-**Status:** Draft / pending review (amendments incorporated 2026-06-02; awaiting sign-off)
+**Status:** Implemented — WIN (held-out skill MAE ratio 0.821 vs persistence; see plan's Execution Verdict). Doc drift cleaned 2026-06-02 (normalize_pitcher left untouched; GF observe-only).
 **Builds on:** the hitting program scaffolding (historical backbone pattern, leakage-safe rolling-origin harness, `MarcelParams`, run archive, `ProjectionCatalog`). This is the **pitching analog of hitting Rung 1** — the foundation rung. Statcast-pitcher inputs are a later rung.
 
 ## Goal
@@ -16,7 +16,7 @@ Stand up ValuCast's own pitching projections: a historical pitcher backbone + a 
 
 ## 1. Historical pitcher backbone (`projections/data/pitching_historical.py`)
 
-Mirror the hitting backbone: immutable per-season snapshots `projections/data/pitching/pitching_<season>.json`, 2010–2025, keyed by `mlbam_id`, manifest with content hash, re-pull no-op, content-change raises. Reuses `scraper.mlb_actuals` (`fetch_actuals` already returns pitchers; `normalize_pitcher` already computes most of this — extend it to carry `battersFaced`, `gamesFinished`, `hitByPitch`, `intentionalWalks`).
+Mirror the hitting backbone: immutable per-season snapshots `projections/data/pitching/pitching_<season>.json`, 2010–2025, keyed by `mlbam_id`, manifest with content hash, re-pull no-op, content-change raises. The backbone **normalizes pitcher rows itself from raw MLB API records** (capturing `battersFaced`, `gamesFinished`, `hitByPitch` that the app's `normalize_pitcher` omits), reusing `fetch_actuals`, `fetch_qs`, and `normalize_ip`. **`scraper/mlb_actuals.py`'s `normalize_pitcher` is intentionally left untouched** so the app's season-outlook path is unaffected.
 
 **Stored counting row (per pitcher-season):**
 ```
@@ -48,7 +48,7 @@ W, L, SV, HLD, GS, G, GF, QS
 
 **Separate usage/volume models (the split):**
 - **SP usage:** project `GS`, `IP/start` (→ IP), `BF/start` (→ BF); `QS-rate-per-GS` → QS.
-- **RP usage:** project `G` (appearances), `IP/appearance` (→ IP), `BF/appearance` (→ BF); `SV-rate` and `HLD-rate` (per appearance, with `GF`-share as the closer signal) → SV, HLD.
+- **RP usage:** project `G` (appearances), `IP/appearance` (→ IP), `BF/appearance` (→ BF); `SV-rate` and `HLD-rate` (per appearance) → SV, HLD. **`GF` is stored observe-only in v1** — not yet wired into save/hold opportunity modeling (a future refinement; SV/HLD currently project from the pitcher's own prior SV/HLD-per-appearance).
 
 **Blend by `p_SP`:** project a full SP-line and a full RP-line for the pitcher, then `stat = p_SP·SP_stat + (1−p_SP)·RP_stat` for every output. Pure roles collapse to one line; mixed arms get the smooth blend.
 
