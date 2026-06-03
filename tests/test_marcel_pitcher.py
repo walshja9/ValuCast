@@ -1,5 +1,8 @@
 import unittest
-from projections.models.marcel_pitcher import compute_pitcher_league_rates, compute_role_factors
+from projections.models.marcel_pitcher import (
+    compute_pitcher_league_rates, compute_role_factors, project_pitcher_rates,
+)
+from projections.models.pitcher_params import PitcherMarcelParams
 
 
 def _p(bf, k, gs, g):
@@ -31,3 +34,37 @@ class TestPitcherLeagueRates(unittest.TestCase):
         f = compute_role_factors([snap], bf_floor=100)
         self.assertEqual(f["HR"], 1.0)
         self.assertTrue(math.isfinite(f["HR"] ** (0.0 - 1.0)))   # f^(neg) finite
+
+
+class TestPitcherRateProjection(unittest.TestCase):
+    def test_no_role_change_no_shift(self):
+        # Career SP (h_sp=1) projected as SP (p_sp=1): exponent 0 -> no role-shift.
+        prior = [{"BF": 800, "K": 200, "BB": 50, "H_ALLOWED": 160, "HR": 22,
+                  "ER": 70, "HBP": 6, "GS": 30, "G": 30}]
+        league = {c: prior[0][c] / 800 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.5 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}  # would matter if shifted
+        rates = project_pitcher_rates(prior, league, f, h_sp=1.0, p_sp=1.0,
+                                      params=PitcherMarcelParams())
+        self.assertAlmostEqual(rates["K"], 0.25, places=6)   # 200/800, no shift
+
+    def test_rp_to_sp_removes_reliever_boost(self):
+        # Career RP (h_sp=0) projected as SP (p_sp=1): K rate divided by f (>1).
+        prior = [{"BF": 300, "K": 105, "BB": 20, "H_ALLOWED": 50, "HR": 8,
+                  "ER": 25, "HBP": 3, "GS": 0, "G": 60}]
+        league = {c: prior[0][c] / 300 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {"K": 1.2, "BB": 1.0, "H_ALLOWED": 1.0, "HR": 1.0, "ER": 1.0, "HBP": 1.0}
+        rates = project_pitcher_rates(prior, league, f, h_sp=0.0, p_sp=1.0,
+                                      params=PitcherMarcelParams())
+        # pooled K/BF = 105/300 = 0.35 ; shift f^(0-1)=1/1.2 -> 0.35/1.2
+        self.assertAlmostEqual(rates["K"], 0.35 / 1.2, places=5)
+
+    def test_missed_t1_present_t2_offset_preserved(self):
+        # index0=T-1 (None, missed), index1=T-2 present. Must not crash; uses T-2.
+        season = {"BF": 300, "K": 105, "BB": 20, "H_ALLOWED": 50, "HR": 8,
+                  "ER": 25, "HBP": 3, "GS": 0, "G": 60}
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        rates = project_pitcher_rates([None, season], league, f, h_sp=0.0, p_sp=0.0,
+                                      params=PitcherMarcelParams(n_reg=0.0))
+        # n_reg=0 isolates the rate: 105/300 = 0.35, present season used despite None at T-1.
+        self.assertAlmostEqual(rates["K"], 0.35, places=6)

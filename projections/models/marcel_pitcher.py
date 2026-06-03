@@ -61,3 +61,27 @@ def compute_role_factors(
         rp_rate = rp_tot[c] / rp_bf if rp_bf > 0 else 0.0
         f[c] = (rp_rate / sp_rate) if (sp_rate > 0 and rp_rate > 0) else 1.0
     return f
+
+
+def project_pitcher_rates(
+    prior_seasons: Sequence[dict | None],
+    league_rates: dict[str, float],
+    role_factors: dict[str, float],
+    h_sp: float,
+    p_sp: float,
+    params: PitcherMarcelParams,
+) -> dict[str, float]:
+    """Per-BF skill rates: weighted + regressed (Marcel), then role-shifted by
+    f[c]^(h_sp - p_sp). Age is neutral in v1 (no curve)."""
+    # Offset-aligned: prior_seasons[i] may be None (missed year). zip with the full
+    # season_weights pins each PRESENT season to its true offset weight — do NOT
+    # compress (a pitcher who missed T-1 but pitched T-2 keeps the T-2 weight).
+    pairs = [(s, w) for s, w in zip(prior_seasons, params.season_weights) if s is not None]
+    weighted_bf = sum(w * float(s.get("BF", 0)) for s, w in pairs)
+    out: dict[str, float] = {}
+    for c in PITCHER_SKILL_RATES:
+        wtot = sum(w * float(s.get(c, 0)) for s, w in pairs)
+        regressed = (wtot + params.n_reg * league_rates.get(c, 0.0)) / (weighted_bf + params.n_reg)
+        shift = role_factors.get(c, 1.0) ** (h_sp - p_sp)
+        out[c] = max(0.0, regressed * shift)
+    return out
