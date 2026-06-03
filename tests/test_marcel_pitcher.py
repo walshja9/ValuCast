@@ -1,7 +1,7 @@
 import unittest
 from projections.models.marcel_pitcher import (
     compute_pitcher_league_rates, compute_role_factors, project_pitcher_rates,
-    project_sp_usage, project_rp_usage, project_pitcher,
+    project_sp_usage, project_rp_usage, project_pitcher, build_pitcher_projections,
 )
 from projections.models.pitcher_params import PitcherMarcelParams
 
@@ -116,3 +116,54 @@ class TestProjectPitcher(unittest.TestCase):
         self.assertTrue(out["metadata"]["mixed_role"])
         self.assertGreater(out["stats"]["IP"], 0)
         self.assertAlmostEqual(out["metadata"]["p_sp"], 0.5, places=2)
+
+
+class TestBuildPitcherProjections(unittest.TestCase):
+    def test_build_from_backbone(self):
+        import tempfile
+        from pathlib import Path
+        from projections.data.pitching_historical import store_pitching_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in (2021, 2022, 2023):
+                store_pitching_season(yr, [
+                    {"mlbam_id": "600", "season": yr, "BF": 750, "IP": 180.0, "ER": 70,
+                     "H_ALLOWED": 150, "BB": 45, "HBP": 5, "K": 200, "HR": 22,
+                     "W": 14, "L": 8, "SV": 0, "HLD": 0, "GS": 30, "G": 30, "GF": 0, "QS": 18},
+                ], data_dir)
+            rows = build_pitcher_projections(2024, data_dir, PitcherMarcelParams())
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["id"], "mlbam_600_P")
+            self.assertEqual(rows[0]["metadata"]["as_of_season"], 2024)
+            self.assertIn("ERA", rows[0]["stats"])
+
+    def test_missed_t1_present_t2_still_projects(self):
+        import tempfile
+        from pathlib import Path
+        from projections.data.pitching_historical import store_pitching_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            row = {"mlbam_id": "700", "BF": 750, "IP": 180.0, "ER": 70, "H_ALLOWED": 150,
+                   "BB": 45, "HBP": 5, "K": 200, "HR": 22, "W": 14, "L": 8, "SV": 0,
+                   "HLD": 0, "GS": 30, "G": 30, "GF": 0, "QS": 18}
+            # Present in 2022 (T-2) and 2021 (T-3); MISSING 2023 (T-1).
+            store_pitching_season(2022, [dict(row, season=2022)], data_dir)
+            store_pitching_season(2021, [dict(row, season=2021)], data_dir)
+            rows = build_pitcher_projections(2024, data_dir, PitcherMarcelParams())
+            self.assertIn("700", {r["metadata"]["mlbam_id"] for r in rows})  # projected, no crash
+
+    def test_mixed_arm_positions_both(self):
+        import tempfile
+        from pathlib import Path
+        from projections.data.pitching_historical import store_pitching_season
+        with tempfile.TemporaryDirectory() as d:
+            data_dir = Path(d)
+            for yr in (2021, 2022, 2023):
+                store_pitching_season(yr, [{"mlbam_id": "701", "season": yr, "BF": 400,
+                    "IP": 90.0, "ER": 35, "H_ALLOWED": 80, "BB": 25, "HBP": 3, "K": 100,
+                    "HR": 11, "W": 6, "L": 6, "SV": 2, "HLD": 8, "GS": 15, "G": 30,
+                    "GF": 5, "QS": 8}], data_dir)
+            rows = build_pitcher_projections(2024, data_dir, PitcherMarcelParams())
+            r = next(x for x in rows if x["metadata"]["mlbam_id"] == "701")
+            self.assertTrue(r["metadata"]["mixed_role"])
+            self.assertEqual(set(r["positions"]), {"SP", "RP"})

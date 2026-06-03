@@ -177,3 +177,50 @@ def project_pitcher(
                      "source": "valucast_pitching", "p_sp": round(p_sp, 4),
                      "mixed_role": is_mixed(p_sp)},
     }
+
+
+def build_pitcher_projections(
+    target_season: int,
+    data_dir,
+    params: PitcherMarcelParams,
+) -> list[dict]:
+    """Project all pitchers with >=1 prior season (data < target). League rates use
+    the 3 weight-years; role factors use the wide pre-target window. Offset-aligned."""
+    from projections.data.pitching_historical import (
+        available_pitching_seasons, load_pitching_season,
+    )
+    prior_years = [target_season - 1, target_season - 2, target_season - 3]
+    snaps = []
+    for yr in prior_years:
+        try:
+            snaps.append(load_pitching_season(yr, data_dir))
+        except FileNotFoundError:
+            snaps.append([])
+
+    BF_FLOOR = 100  # league-rate/role-factor sample floor (per-BF stability)
+    weights = params.season_weights[: len(snaps)]
+    league = compute_pitcher_league_rates(snaps, weights=weights, bf_floor=BF_FLOOR)
+    wide = [load_pitching_season(s, data_dir)
+            for s in available_pitching_seasons(data_dir) if s < target_season]
+    role_factors = compute_role_factors(wide, bf_floor=BF_FLOOR)
+
+    index_maps = [{r["mlbam_id"]: r for r in snap} for snap in snaps]
+    all_ids = {pid for m in index_maps for pid in m}
+
+    rows = []
+    for mlbam_id in all_ids:
+        # Offset-aligned: index 0 = T-1, 1 = T-2, 2 = T-3; None = missed year. Same
+        # no-compress rule as hitting — do NOT promote a T-2 season to the T-1 weight.
+        prior_seasons = [m.get(mlbam_id) for m in index_maps]
+        if all(s is None for s in prior_seasons):
+            continue
+        proj = project_pitcher(prior_seasons, league, role_factors, params)
+        proj["name"] = mlbam_id  # identity-name wiring is a follow-up; id-keyed for now
+        if proj["metadata"]["mixed_role"]:
+            proj["positions"] = ["SP", "RP"]   # mixed arm: eligible both ways
+        else:
+            proj["positions"] = ["SP"] if proj["pool"] == "starter" else ["RP"]
+        proj["metadata"]["as_of_season"] = target_season
+        proj["metadata"]["model"] = "valucast_pitching_marcel"
+        rows.append(proj)
+    return rows
