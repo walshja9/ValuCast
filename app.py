@@ -17,6 +17,7 @@ from league_values.playing_time import filter_by_playing_time
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 
 from web.projection_store import ProjectionStore
+from web.projection_catalog import ProjectionCatalog
 from web.category_registry import (
     HITTING_CATEGORIES,
     PITCHING_CATEGORIES,
@@ -32,9 +33,42 @@ from league_values.risk import RiskModel
 
 app = Flask(__name__)
 
-# Load projections once at startup
+# Projection sources. Steamer (season outlook) is the default; ValuCast H+P is the
+# opt-in combined in-house source. App only LOADS committed runs — no runtime model.
 DATA_PATH = Path(__file__).parent / "data" / "projections" / "current.json"
-store = ProjectionStore(DATA_PATH)
+VALUCAST_HP_PATH = (
+    Path(__file__).parent / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+)
+CATALOG = ProjectionCatalog(
+    {"steamer": str(DATA_PATH), "valucast": str(VALUCAST_HP_PATH)}, default="steamer")
+store = CATALOG.store_for("steamer")   # module-level default (kept for existing imports)
+
+
+class SourceError(Exception):
+    """Raised when a requested ?source= is unknown or its run is unavailable."""
+
+
+def _active_store(source):
+    """Resolve a request's projection source. None/empty/'steamer' -> default store.
+    Unknown source or a single-pool/missing valucast run -> SourceError (clean 400);
+    never a silent fallback."""
+    if not source or source == "steamer":
+        return store
+    try:
+        s = CATALOG.store_for(source)
+    except (KeyError, FileNotFoundError):
+        raise SourceError(source)
+    if source == "valucast":
+        pools = {p.pool.value for p in s.get_all()}
+        if "hitter" not in pools or not ({"starter", "reliever", "pitcher"} & pools):
+            raise SourceError(source)
+    return s
+
+
+@app.errorhandler(SourceError)
+def _handle_source_error(_e):
+    return "<div class='error'>Unknown or unavailable projection source.</div>", 400
+
 
 # Engine with volume adjustment
 engine = ValuationEngine(post_processors=[VolumeMultiplier()])
@@ -47,15 +81,16 @@ MIN_SP_IP = 40
 MIN_RP_IP = 20
 
 
-def _valuation_players(always_keep=None):
+def _valuation_players(always_keep=None, active_store=None):
     """Engine input: all projections minus sub-threshold filler.
 
     `always_keep` is a set of player ids (display id, suffixed id, or base_id)
     that are retained regardless of playing time, with two-way siblings joined
-    on shared base_id inside filter_by_playing_time.
+    on shared base_id inside filter_by_playing_time. `active_store` defaults to the
+    module Steamer store (so existing callers/imports are unchanged).
     """
     return filter_by_playing_time(
-        store.get_all(),
+        (active_store or store).get_all(),
         hitter_pa=MIN_HITTER_PA,
         sp_ip=MIN_SP_IP,
         rp_ip=MIN_RP_IP,
@@ -330,6 +365,10 @@ def _build_context(args):
     rules_str = args.get("rules", "")
     split_rp = args.get("split_rp", "") == "on"
 
+    # Resolve the projection source (default Steamer). Unknown/unavailable -> SourceError
+    # (caught by the errorhandler -> 400) before any valuation runs.
+    active = _active_store(args.get("source", ""))
+
     # Collect pt_* params for points mode
     pt_params = {}
     for key in args:
@@ -352,11 +391,11 @@ def _build_context(args):
         split_rp=split_rp, weights=weights if weights else None,
     )
     search_keep = (
-        {p.id for p in store.get_all() if search.lower() in p.name.lower()}
+        {p.id for p in active.get_all() if search.lower() in p.name.lower()}
         if search
         else frozenset()
     )
-    results = engine.value_players(_valuation_players(search_keep), config)
+    results = engine.value_players(_valuation_players(search_keep, active_store=active), config)
     results = _merge_two_way_players(results)
 
     # Filter results for display
@@ -432,13 +471,15 @@ def _build_context(args):
         "pitching_categories": PITCHING_CATEGORIES,
         "category_presets": CATEGORY_PRESETS,
         "points_presets": POINTS_PRESETS,
-        "player_count": store.player_count,
+        "player_count": active.player_count,
         "config": config,
         "position_ranks": position_ranks,
         "dollar_values": dollar_values,
         "tiers": tiers,
         "config_summary": _config_summary(mode, cats, pcats, split_rp),
-        "as_of": store.as_of,
+        "as_of": active.as_of,
+        "source": args.get("source", "") or "steamer",
+        "active_store": active,
     }
 
 
@@ -557,16 +598,19 @@ def player_detail(player_id):
             mlb_stats_ros=mlb_stats_ros,
         )
 
-    player_proj = store.get_by_id(player_id)
+    # _build_context resolves + guards the source first (SourceError -> 400), then we
+    # look the player up in the ACTIVE store so detail honors ?source=.
+    ctx = _build_context(request.args)
+    active = ctx["active_store"]
+    player_proj = active.get_by_id(player_id)
     if not player_proj:
         return "<div class='error'>Player not found</div>", 404
 
-    ctx = _build_context(request.args)
     config = ctx["config"]
     # Value against the filtered pool with this player force-kept, so the detail
     # value matches the ranking value whether or not the player cleared the floor.
     detail_results = _merge_two_way_players(
-        engine.value_players(_valuation_players({player_id}), config)
+        engine.value_players(_valuation_players({player_id}, active_store=active), config)
     )
     result = next((r for r in detail_results if r.player.id == player_id), None)
 
@@ -590,7 +634,8 @@ def compare():
     ctx = _build_context(request.args)
     config = ctx["config"]
     all_results = _merge_two_way_players(
-        engine.value_players(_valuation_players({p1_id, p2_id}), config)
+        engine.value_players(
+            _valuation_players({p1_id, p2_id}, active_store=ctx["active_store"]), config)
     )
 
     r1 = next((r for r in all_results if r.player.id == p1_id), None)
