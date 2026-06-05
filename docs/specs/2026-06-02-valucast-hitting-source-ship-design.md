@@ -1,7 +1,7 @@
 # Ship Rung 3 — ValuCast Statcast-De-noised Hitting Source (App Integration) — Design
 
 **Date:** 2026-06-02
-**Status:** Approved (design)
+**Status:** SUPERSEDED by `2026-06-04-valucast-hp-source-ship-design.md` (widened from hitter-only to H+P after the pitching foundation shipped). Kept for history.
 **Builds on:** Rung 3 (`2026-06-02-projections-rung3-statcast-inputs-design.md`, verdict: WIN) and the Rung 1 `ProjectionCatalog` seam.
 
 ## Goal
