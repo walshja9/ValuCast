@@ -1,0 +1,24 @@
+{
+  "as_of_season": 2026,
+  "components": {
+    "hitters": {
+      "alpha_contact": 0.75,
+      "alpha_power": 0.5,
+      "gamma": 0.0,
+      "inputs": "consumes Savant xBA/xSLG (not our own xBA)",
+      "model": "valucast_marcel_statcast",
+      "model_version": 1,
+      "verdict": "held-out 2020-25 mean MAE ratio 0.979; AVG/OBP/SLG/OPS 4-6% lift; HR neutral"
+    },
+    "pitchers": {
+      "inputs": "fully in-house, no Statcast",
+      "model": "valucast_pitching_marcel",
+      "model_version": 1,
+      "verdict": "held-out 2020-25 skill mean MAE ratio 0.821 vs persistence"
+    }
+  },
+  "hitter_count": 1148,
+  "pitcher_count": 1302,
+  "run_id": "valucast_hp_2026_v1",
+  "source_name": "valucast"
+}
