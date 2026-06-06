@@ -30,6 +30,7 @@ class TestEligibilityEnrich(unittest.TestCase):
         self.assertEqual(len(out), 1)
         self.assertEqual(out[0]["name"], "Real Hitter")
         self.assertEqual(out[0]["positions"], ["SS", "2B"])
+        self.assertEqual(out[0]["team"], "NYY")           # top-level (what ProjectionStore reads)
         self.assertEqual(out[0]["metadata"]["team"], "NYY")
         self.assertEqual(out[0]["stats"]["HR"], 25)   # stats untouched
 

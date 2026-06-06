@@ -33,6 +33,18 @@ class TestValucastRunQuality(unittest.TestCase):
         ss = [r for r in self.hitters if "SS" in (r.get("positions") or [])]
         self.assertGreater(len(ss), 10)   # position filters return meaningful results
 
+    def test_team_coverage_through_projection_store(self):
+        # Load the way the app does (ProjectionStore overwrites metadata.team from
+        # top-level row.team) and assert teams are not blank.
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from web.projection_store import ProjectionStore
+        players = ProjectionStore(str(RUN)).get_all()
+        with_team = sum(1 for p in players if (p.metadata.get("team") or "").strip())
+        # ~74% in practice; the rest are blank in current.json itself (FAs/unteamed) —
+        # that's the source ceiling (current.json is only ~64% teamed), not a join bug.
+        self.assertGreater(with_team / len(players), 0.7)   # meaningful, nonblank teams
+
     def test_manifest_documents_eligibility_source(self):
         man = json.loads((RUN.parent / "run_manifest.json").read_text(encoding="utf-8"))
         self.assertIn("eligibility_source", man)

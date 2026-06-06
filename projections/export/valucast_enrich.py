@@ -36,6 +36,9 @@ def enrich_rows(rows: list[dict], by_mlbam: dict[str, dict]) -> list[dict]:
         r2 = dict(r)
         r2["name"] = elig["name"] or r.get("name", "")
         r2["positions"] = elig["positions"] or list(r.get("positions") or [])
+        # ProjectionStore overwrites metadata['team'] from the TOP-LEVEL row['team'],
+        # so the team must be set there (not only in metadata) or it renders blank.
+        r2["team"] = elig["team"]
         m = dict(r2.get("metadata") or {})
         m["team"] = elig["team"]
         m["eligibility_source"] = "current.json (metadata/eligibility only, no stats)"
