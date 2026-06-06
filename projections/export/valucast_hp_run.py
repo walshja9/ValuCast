@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 AS_OF_SEASON = 2026
+_PITCHER_POOLS = {"starter", "reliever", "pitcher"}
 
 
 def write_valucast_hp_run(
@@ -23,6 +24,14 @@ def write_valucast_hp_run(
         raise ValueError("ValuCast H+P run has zero hitter rows; refusing to write.")
     if not pitcher_rows:
         raise ValueError("ValuCast H+P run has zero pitcher rows; refusing to write.")
+    # Validate ACTUAL pools, not argument names — a caller could pass hitters in both
+    # lists and write a malformed single-pool run that passes the nonempty checks.
+    bad_h = [r["id"] for r in hitter_rows if r.get("pool") != "hitter"]
+    if bad_h:
+        raise ValueError(f"hitter_rows contains non-hitter pools (e.g. {bad_h[0]}).")
+    bad_p = [r["id"] for r in pitcher_rows if r.get("pool") not in _PITCHER_POOLS]
+    if bad_p:
+        raise ValueError(f"pitcher_rows contains non-pitcher pools (e.g. {bad_p[0]}).")
 
     run_id = f"valucast_hp_{AS_OF_SEASON}_v{version}"
     run_path = runs_dir / run_id

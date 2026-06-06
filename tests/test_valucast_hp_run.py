@@ -43,3 +43,12 @@ class TestValucastHpRun(unittest.TestCase):
             with self.assertRaises(ValueError):     # no hitters -> reject
                 write_valucast_hp_run([], [_p("3")], runs, version=1,
                                       hitter_meta={}, pitcher_meta={})
+
+    def test_rejects_wrong_pool_rows(self):
+        # Hitter rows passed in the pitcher slot (same-pool malformed run) -> reject,
+        # even though both lists are nonempty.
+        with tempfile.TemporaryDirectory() as d:
+            runs = Path(d) / "runs"
+            with self.assertRaises(ValueError):
+                write_valucast_hp_run([_h("1")], [_h("2")], runs, version=1,
+                                      hitter_meta={}, pitcher_meta={})
