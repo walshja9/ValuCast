@@ -566,6 +566,9 @@ def rankings():
         weights=ctx["weights"] if ctx["weights"] else None,
     )
     push_url = f"/?{url_params}" if url_params else "/"
+    if ctx.get("source") and ctx["source"] != "steamer":
+        sep = "&" if url_params else ""
+        push_url = f"/?{url_params}{sep}source={ctx['source']}"
     response.headers["HX-Replace-Url"] = push_url
     return response
 

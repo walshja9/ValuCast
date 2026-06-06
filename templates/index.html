@@ -52,6 +52,13 @@
     {% else %}
     <div class="config-bar">
         <span class="config-summary">{{ config_summary }}</span>
+        <label class="source-selector" title="Steamer is the external benchmark; ValuCast H+P is our in-house projection (de-noised hitters + role-routed pitchers).">
+            Source:
+            <select name="source">
+                <option value="steamer" {% if (source or 'steamer') != 'valucast' %}selected{% endif %}>Steamer (default)</option>
+                <option value="valucast" {% if source == 'valucast' %}selected{% endif %}>ValuCast H+P (in-house)</option>
+            </select>
+        </label>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
 
