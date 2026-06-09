@@ -386,7 +386,7 @@ def _config_summary(mode: str, cats: list[str], pcats: list[str], split_rp: bool
     if mode == "points":
         return "Points League \u00b7 12 teams \u00b7 $200 budget"
     for name, preset in CATEGORY_PRESETS.items():
-        if cats == preset["cats"] and pcats == preset["pcats"]:
+        if set(cats) == set(preset["cats"]) and set(pcats) == set(preset["pcats"]):
             label = "Standard 5x5" if name == "5x5" else "6x6 (OBP/QS)" if name == "6x6" else name
             suffix = " \u00b7 SP/RP split" if split_rp else ""
             return f"{label} \u00b7 12 teams \u00b7 $200 budget{suffix}"
@@ -398,8 +398,9 @@ def _config_summary(mode: str, cats: list[str], pcats: list[str], split_rp: bool
 def _build_context(args):
     """Parse request args and build template context."""
     mode = args.get("mode", "categories")
-    cats = parse_list(args.getlist("cats")) or DEFAULT_CATS
-    pcats = parse_list(args.getlist("pcats")) or DEFAULT_PCATS
+    from web.category_registry import canonicalize_cats
+    cats = canonicalize_cats(parse_list(args.getlist("cats"))) or list(DEFAULT_CATS)
+    pcats = canonicalize_cats(parse_list(args.getlist("pcats"))) or list(DEFAULT_PCATS)
     pool = args.get("pool", "")
     position = args.get("position", "")
     search = args.get("search", "")

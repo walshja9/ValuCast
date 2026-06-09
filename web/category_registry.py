@@ -79,6 +79,25 @@ _ALL_CATEGORIES: dict[str, CategorySpec] = {
 }
 
 
+# Canonical ordering = registry declaration order (hitting then pitching).
+_CANONICAL_ORDER: dict[str, int] = {
+    c.id: i for i, c in enumerate(HITTING_CATEGORIES + PITCHING_CATEGORIES)
+}
+
+
+def canonicalize_cats(ids: list[str]) -> list[str]:
+    """Return the given category ids sorted into canonical registry order,
+    dropping unknowns and duplicates (first occurrence wins). Makes column order
+    and preset matching independent of form-serialization order."""
+    seen = set()
+    deduped = []
+    for cid in ids:
+        if cid in _CANONICAL_ORDER and cid not in seen:
+            seen.add(cid)
+            deduped.append(cid)
+    return sorted(deduped, key=lambda c: _CANONICAL_ORDER[c])
+
+
 # --- Category Presets ---
 
 CATEGORY_PRESETS: dict[str, dict[str, list[str]]] = {
