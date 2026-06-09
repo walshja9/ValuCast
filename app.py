@@ -256,6 +256,7 @@ def _build_dynasty_context(args):
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
         "as_of": store.as_of,
+        "horizon": "dynasty",
     }
 
 
@@ -425,6 +426,15 @@ def _config_summary(mode: str, cats: list[str], pcats: list[str], split_rp: bool
     return f"Custom {cat_count} categories \u00b7 12 teams \u00b7 $200 budget{suffix}"
 
 
+def _horizon_of(mode: str) -> str:
+    """Map a mode to its horizon tab: redraft (categories/roto/points), dynasty, prospects."""
+    if mode == "dd_dynasty":
+        return "dynasty"
+    if mode == "prospects":
+        return "prospects"
+    return "redraft"
+
+
 def _build_context(args):
     """Parse request args and build template context."""
     mode = args.get("mode", "categories")
@@ -579,6 +589,7 @@ def _build_context(args):
         "as_of": active.as_of,
         "source": args.get("source", "") or "steamer",
         "display": display,
+        "horizon": _horizon_of(mode),
         "active_store": active,
     }
 
@@ -610,6 +621,7 @@ def index():
             ctx["tiers"] = _prospect_tiers()
             ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
             ctx["mode"] = "prospects"
+            ctx["horizon"] = "prospects"
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
@@ -642,6 +654,7 @@ def rankings():
                 ctx["tiers"] = _prospect_tiers()
                 ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
                 ctx["mode"] = "prospects"
+                ctx["horizon"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
         response = make_response(html)
         params = {"mode": mode}

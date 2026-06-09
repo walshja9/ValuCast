@@ -11,35 +11,33 @@
     <div class="notice">{{ notice }}</div>
     {% endif %}
 
-    <section class="mode-selector">
-        <label class="mode-btn">
-            <input type="radio" name="mode" value="categories"
-                   {{ 'checked' if mode == 'categories' else '' }}>
+    <nav class="horizon-tabs" aria-label="Board horizon">
+        <a href="/" class="htab {{ 'on' if horizon == 'redraft' else '' }}"
+           {% if horizon == 'redraft' %}aria-current="page"{% endif %}>Redraft</a>
+        {% if dd_available is not false %}
+        <a href="/?mode=dd_dynasty" class="htab htab-dynasty {{ 'on' if horizon == 'dynasty' else '' }}"
+           {% if horizon == 'dynasty' %}aria-current="page"{% endif %}>Dynasty</a>
+        <a href="/?mode=prospects" class="htab htab-prospects {{ 'on' if horizon == 'prospects' else '' }}"
+           {% if horizon == 'prospects' %}aria-current="page"{% endif %}>Prospects</a>
+        {% endif %}
+    </nav>
+
+    {% if horizon == 'redraft' %}
+    <fieldset class="scoring-seg" aria-label="Scoring format">
+        <label class="seg-opt">
+            <input type="radio" name="mode" value="categories" {{ 'checked' if mode == 'categories' else '' }}>
             <span>H2H Categories</span>
         </label>
-        <label class="mode-btn">
-            <input type="radio" name="mode" value="roto"
-                   {{ 'checked' if mode == 'roto' else '' }}>
+        <label class="seg-opt">
+            <input type="radio" name="mode" value="roto" {{ 'checked' if mode == 'roto' else '' }}>
             <span>Roto</span>
         </label>
-        <label class="mode-btn">
-            <input type="radio" name="mode" value="points"
-                   {{ 'checked' if mode == 'points' else '' }}>
+        <label class="seg-opt">
+            <input type="radio" name="mode" value="points" {{ 'checked' if mode == 'points' else '' }}>
             <span>Points</span>
         </label>
-        {% if dd_available is not false %}
-        <label class="mode-btn mode-btn-dynasty">
-            <input type="radio" name="mode" value="dd_dynasty"
-                   {{ 'checked' if mode == 'dd_dynasty' else '' }}>
-            <span>Dynasty</span>
-        </label>
-        <label class="mode-btn mode-btn-prospects">
-            <input type="radio" name="mode" value="prospects"
-                   {{ 'checked' if mode == 'prospects' else '' }}>
-            <span>Prospects</span>
-        </label>
-        {% endif %}
-    </section>
+    </fieldset>
+    {% endif %}
 
     {% if mode == 'dd_dynasty' %}
     <div class="config-bar config-bar-locked">

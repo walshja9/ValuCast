@@ -70,6 +70,23 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .mode-btn input[type="radio"] { display: none; }
 .mode-btn:has(input:checked) { background: var(--c-blue); color: #fff; }
 
+/* Horizon tabs (nav links) + scoring segment (mode radios) */
+.horizon-tabs { display: inline-flex; border: 1px solid var(--c-border-strong); border-radius: 9px; overflow: hidden; margin-bottom: var(--space-2); }
+.htab { padding: .5rem 1rem; font-size: .9rem; font-weight: 600; color: var(--c-text); background: #fff; border-right: 1px solid var(--c-border-strong); text-decoration: none; }
+.htab:last-child { border-right: none; }
+.htab:hover { background: #f0f4ff; text-decoration: none; }
+.htab.on { background: var(--c-blue); color: #fff; }
+.htab-dynasty.on { background: var(--c-dynasty); }
+.htab-prospects.on { background: var(--c-prospect); }
+.htab:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
+.scoring-seg { display: inline-flex; border: 1px solid var(--c-border-strong); border-radius: 7px; overflow: hidden; padding: 0; margin: 0 0 var(--space-2); }
+.seg-opt { cursor: pointer; display: inline-flex; }
+.seg-opt > span { padding: .35rem .8rem; font-size: .8rem; font-weight: 600; background: #fff; color: var(--c-text); white-space: nowrap; }
+.seg-opt + .seg-opt > span { border-left: 1px solid var(--c-border-strong); }
+.seg-opt input[type="radio"] { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+.seg-opt:has(input:checked) > span { background: var(--c-blue-strong); color: #fff; }
+.seg-opt input:focus-visible + span { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
+
 .source-seg {
     display: inline-flex;
     border: 1px solid var(--c-border-strong);
