@@ -53,6 +53,46 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .mode-btn input[type="radio"] { display: none; }
 .mode-btn:has(input:checked) { background: #2563eb; color: #fff; }
 
+.source-seg {
+    display: inline-flex;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+}
+.source-opt { cursor: pointer; display: inline-flex; }
+.source-opt > span {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: #fff;
+    color: #334155;
+    white-space: nowrap;
+}
+.source-opt + .source-opt > span { border-left: 1px solid #d1d5db; }
+/* Hidden but focusable — NOT display:none (which drops it from tab order). */
+.source-opt input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+}
+/* Equal weight: whichever source is checked gets the SAME blue treatment. */
+.source-opt:has(input:checked) > span { background: #2563eb; color: #fff; }
+.source-opt input:focus-visible + span { outline: 2px solid #1e40af; outline-offset: -2px; }
+
+.source-caption:not(:empty) {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 0 0 0.6rem;
+    padding: 0 0.25rem;
+}
+.source-caption a { color: #1e40af; text-decoration: none; font-weight: 600; }
+.source-caption a:hover { text-decoration: underline; }
+
 .setup-panel {
     background: #fff;
     border: 1px solid #e5e7eb;

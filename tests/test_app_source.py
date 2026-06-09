@@ -37,9 +37,32 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn("source=valucast", r.headers.get("HX-Replace-Url", ""))
 
     def test_full_page_reflects_selected_source(self):
-        # Loading /?source=valucast renders the form with ValuCast pre-selected.
+        # Loading /?source=valucast renders the ValuCast radio pre-checked.
         r = self.client.get("/?source=valucast")
-        self.assertIn(b'value="valucast" selected', r.data)
+        self.assertIn(b'value="valucast" checked', r.data)
+
+    def test_source_control_is_segmented_radios(self):
+        # The plain <select> is gone; two name="source" radios remain.
+        r = self.client.get("/")
+        self.assertNotIn(b'<select name="source"', r.data)
+        self.assertIn(b'name="source"', r.data)
+        self.assertIn(b'type="radio"', r.data)
+        self.assertIn(b'aria-label="Projection source"', r.data)
+
+    def test_source_control_equal_weight_no_valucast_badge(self):
+        # Equal visual weight: no ValuCast-only badge/marketing class.
+        r = self.client.get("/")
+        self.assertNotIn(b'vc-badge', r.data)
+        self.assertNotIn(b'IN-HOUSE', r.data)
+
+    def test_source_radios_are_focusable_not_display_none(self):
+        # Accessibility: radios hidden via clip (focusable), with a focus ring,
+        # NOT display:none (which removes them from tab order).
+        css = self.client.get("/static/style.css").data
+        self.assertIn(b'.source-seg', css)
+        self.assertIn(b'clip-path', css)
+        self.assertIn(b':focus-visible', css)
+        self.assertNotIn(b'.source-opt input[type="radio"] { display: none', css)
 
     def test_steamer_default_no_source_in_url(self):
         r = self.client.get("/rankings")

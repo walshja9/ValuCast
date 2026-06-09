@@ -52,13 +52,16 @@
     {% else %}
     <div class="config-bar">
         <span class="config-summary">{{ config_summary }}</span>
-        <label class="source-selector" title="Steamer is the external benchmark; ValuCast H+P is our in-house projection (de-noised hitters + role-routed pitchers).">
-            Source:
-            <select name="source">
-                <option value="steamer" {% if (source or 'steamer') != 'valucast' %}selected{% endif %}>Steamer (default)</option>
-                <option value="valucast" {% if source == 'valucast' %}selected{% endif %}>ValuCast H+P (in-house)</option>
-            </select>
-        </label>
+        <fieldset class="source-seg" aria-label="Projection source">
+            <label class="source-opt">
+                <input type="radio" name="source" value="steamer" {% if (source or 'steamer') != 'valucast' %}checked{% endif %}>
+                <span>Steamer</span>
+            </label>
+            <label class="source-opt">
+                <input type="radio" name="source" value="valucast" {% if source == 'valucast' %}checked{% endif %}>
+                <span>ValuCast H+P</span>
+            </label>
+        </fieldset>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
 
