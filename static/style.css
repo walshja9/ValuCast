@@ -82,7 +82,9 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 }
 /* Equal weight: whichever source is checked gets the SAME blue treatment. */
 .source-opt:has(input:checked) > span { background: #2563eb; color: #fff; }
-.source-opt input:focus-visible + span { outline: 2px solid #1e40af; outline-offset: -2px; }
+.source-opt input:focus-visible + span { outline: 2px solid #1d4ed8; outline-offset: -2px; }
+/* On the selected (blue) pill, a white inset ring keeps the focus state visible. */
+.source-opt:has(input:checked) input:focus-visible + span { outline-color: #fff; }
 
 .source-caption:not(:empty) {
     font-size: 0.78rem;
