@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}How ValuCast Works{% endblock %}
+{% block content %}
+<article class="methodology">
+    <h2>How ValuCast Works</h2>
+    <p class="methodology-version">As of June 2026 · ValuCast H+P v1</p>
+
+    <section>
+        <h3>What ValuCast is</h3>
+        <p>ValuCast turns player projections into values tuned to <em>your</em> league's
+        categories, weights, and roster rules. You can value players from two projection
+        sources: <strong>Steamer</strong> (the external benchmark, and the default) or
+        <strong>ValuCast H+P</strong>, our own in-house projection.</p>
+    </section>
+
+    <section>
+        <h3>The two boards, distinguished</h3>
+        <p>The <strong>default board</strong> values players from current-season actual
+        stats plus Steamer rest-of-season projections. The <strong>ValuCast board</strong>
+        values players from our own full-season projection, built from prior seasons.</p>
+        <p>Because those are two different <em>kinds</em> of number, flipping the source
+        toggle is useful for eyeballing differences, but it is
+        <strong>not an apples-to-apples formal backtest</strong>. Our real check on
+        accuracy is the held-out validation described below.</p>
+    </section>
+
+    <section>
+        <h3>How hitters are projected</h3>
+        <p>A Marcel-style projection (recent seasons weighted, regressed toward league
+        average, age-adjusted), with one upgrade: we <strong>de-noise the inputs</strong>
+        toward Statcast expected stats (Savant xBA/xSLG) before projecting, which beat the
+        plain version on held-out data.</p>
+        <p>We also tested an in-house expected-stats model, but it did not clear our validation bar, so hitters continue to use Savant xBA/xSLG as inputs.</p>
+    </section>
+
+    <section>
+        <h3>How pitchers are projected</h3>
+        <p>The pitching model is fully in-house: a per-batter-faced, role-routed
+        projection that blends a pitcher's starting vs. relieving usage continuously
+        rather than forcing a starter/reliever cliff.</p>
+    </section>
+
+    <section>
+        <h3>How we validate</h3>
+        <p>Every model change has to earn its place. We hold out future seasons, project
+        forward without peeking, and only keep a change if it beats simple baselines (last
+        year's numbers, league average, a plain projection) on data the model never saw.
+        Changes that didn't clear that bar were dropped — honestly logged either way.</p>
+    </section>
+
+    <section>
+        <h3>What's ours vs. borrowed</h3>
+        <ul>
+            <li><strong>Pitching:</strong> model is fully in-house.</li>
+            <li><strong>Hitting:</strong> our projection model, using Savant xBA/xSLG as inputs.</li>
+            <li><strong>Steamer:</strong> the external benchmark and the default source.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h3>Track record</h3>
+        <p>On held-out seasons, both the hitting and pitching models beat their plain
+        baselines. A couple of tuning experiments and the in-house expected-stats model did
+        not, and were not shipped.</p>
+    </section>
+</article>
+{% endblock %}

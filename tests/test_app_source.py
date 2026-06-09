@@ -126,3 +126,28 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
         self.assertNotIn(b'pitching model is fully in-house', st)             # caption cleared
+
+    def test_methodology_page_renders_honest_statements(self):
+        r = self.client.get("/methodology")
+        self.assertEqual(r.status_code, 200)
+        body = r.data
+        self.assertIn(b'pitching model is fully in-house', body)
+        self.assertIn(b'Savant xBA/xSLG', body)
+        self.assertIn(b'did not clear our validation bar', body)
+        self.assertIn(b'ValuCast H+P v1', body)
+        self.assertIn(b'June 2026', body)
+        # The two-boards distinction (comparison, not a formal backtest).
+        self.assertIn(b'not an apples-to-apples', body)
+        # Public page must NOT leak the internal correlation figure.
+        self.assertNotIn(b'0.87', body)
+
+    def test_methodology_footer_has_no_steamer_redraft_claim(self):
+        r = self.client.get("/methodology")
+        self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
+
+    def test_internal_methodology_doc_exists(self):
+        doc = Path(__file__).parent.parent / "docs" / "valucast-methodology.md"
+        self.assertTrue(doc.exists(), "internal methodology doc missing")
+        text = doc.read_text(encoding="utf-8")
+        for marker in ("ValuCast H+P v1", "SHORTFALL", "rung", "carryover", "0.87"):
+            self.assertIn(marker, text)

@@ -573,6 +573,12 @@ def rankings():
     return response
 
 
+@app.route("/methodology")
+def methodology():
+    """Public 'How ValuCast works' page. Static render, no data/auth."""
+    return render_template("methodology.html", methodology_page=True)
+
+
 @app.route("/player/<player_id>")
 def player_detail(player_id):
     mode = request.args.get("mode", "categories")
