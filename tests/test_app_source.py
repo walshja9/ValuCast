@@ -77,3 +77,28 @@ class TestSourceSelection(unittest.TestCase):
     def test_export_honors_source(self):
         r = self.client.get("/export?source=valucast")
         self.assertEqual(r.status_code, 200)
+
+    def test_caption_present_on_valucast_response(self):
+        r = self.client.get("/rankings?source=valucast")
+        self.assertIn(b'pitching model is fully in-house', r.data)
+        self.assertIn(b'hx-swap-oob', r.data)
+        self.assertIn(b'id="source-caption"', r.data)
+        self.assertIn(b'/methodology', r.data)
+
+    def test_caption_empty_on_steamer_response(self):
+        # OOB element still ships (to clear a stale caption) but carries no text.
+        r = self.client.get("/rankings")
+        self.assertIn(b'id="source-caption"', r.data)
+        self.assertNotIn(b'pitching model is fully in-house', r.data)
+
+    def test_caption_absent_in_dynasty(self):
+        r = self.client.get("/rankings?mode=dd_dynasty")
+        self.assertNotIn(b'pitching model is fully in-house', r.data)
+
+    def test_blank_team_dash_in_html_blank_in_export(self):
+        # ~26% of ValuCast rows have no team -> HTML shows a dash in the team cell.
+        html = self.client.get("/rankings?source=valucast").data.decode("utf-8")
+        self.assertIn('class="col-team">—<', html)
+        # Export keeps the team blank, never the display dash.
+        csv = self.client.get("/export?source=valucast").data.decode("utf-8")
+        self.assertNotIn("—", csv)

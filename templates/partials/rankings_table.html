@@ -40,7 +40,7 @@
                 {% endif %}
             </td>
             <td class="col-pos">{{ result.player.positions | join(', ') or '&mdash;' }}</td>
-            <td class="col-team">{{ result.player.metadata.get('team', '') }}</td>
+            <td class="col-team">{{ result.player.metadata.get('team') or '—' }}</td>
             <td class="col-dollars {{ 'val-pos' if dollar_values.get(result.player.id, 0) > 0 else '' }}">
                 {% if dollar_values.get(result.player.id, 0) > 0 %}${{ dollar_values.get(result.player.id, 0) | int }}{% else %}&mdash;{% endif %}
             </td>
