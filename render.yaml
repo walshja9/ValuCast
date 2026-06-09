@@ -3,9 +3,13 @@ services:
     name: valucast
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt && pip install -e .
+    branch: master
+    autoDeployTrigger: commit
+    buildCommand: pip install -r requirements.txt && pip install -e . && python scripts/validate_feed.py
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --preload
-    healthCheckPath: /
+    healthCheckPath: /health/ready
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
+      - key: VALUCAST_REQUIRE_DD
+        value: "1"

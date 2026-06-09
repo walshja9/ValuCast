@@ -26,6 +26,12 @@ class TestCommittedDDFeed(unittest.TestCase):
         store = DDFeedStore(str(FEED))
         self.assertTrue(store.is_available, "DDFeedStore rejected the committed feed")
 
+    def test_shared_validator_passes(self):
+        # Same function the pre-deploy build gate (scripts/validate_feed.py) runs.
+        from web.feed_validation import validate_dd_feed
+        problems = validate_dd_feed(FEED)
+        self.assertEqual(problems, [], f"feed validation problems: {problems}")
+
     def test_ids_are_unique(self):
         dupes = [i for i, c in Counter(p["id"] for p in self.players).items() if c > 1]
         self.assertEqual(dupes, [], f"duplicate ids in committed feed: {dupes}")

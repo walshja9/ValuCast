@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from urllib.parse import urlencode
 
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, jsonify
 
 from dataclasses import replace as dc_replace
 
@@ -102,6 +102,17 @@ def _valuation_players(always_keep=None, active_store=None):
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
                     str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
 dd_store = DDFeedStore(DD_FEED_PATH)
+
+# In production (VALUCAST_REQUIRE_DD=1) treat DD as required: refuse to start if the
+# feed failed to load. With gunicorn --preload this raises in the master, so the
+# candidate deploy fails and Render keeps the prior healthy deploy live — a corrupt
+# snapshot can never replace a working deployment and blank the tabs.
+if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not dd_store.is_available:
+    raise RuntimeError(
+        f"DD feed required but unavailable: {DD_FEED_PATH}. Refusing to start so the "
+        "prior healthy Render deploy stays live."
+    )
+
 risk_model = RiskModel()
 
 
@@ -600,6 +611,31 @@ def rankings():
 def methodology():
     """Public 'How ValuCast works' page. Static render, no data/auth."""
     return render_template("methodology.html", methodology_page=True)
+
+
+@app.route("/health/ready")
+def health_ready():
+    """Readiness probe (Render healthCheckPath). 200 only when all three projection
+    stores are available, else 503 — so a deploy missing any data store is never
+    promoted over the prior healthy one. Also reports the deployed git revision."""
+    def _store_ok(source):
+        try:
+            return CATALOG.store_for(source).player_count > 0
+        except Exception:  # noqa: BLE001
+            return False
+
+    stores = {
+        "steamer": _store_ok("steamer"),
+        "valucast": _store_ok("valucast"),
+        "dd": dd_store.is_available,
+    }
+    ready = all(stores.values())
+    body = {
+        "ready": ready,
+        "stores": stores,
+        "commit": os.environ.get("RENDER_GIT_COMMIT", ""),
+    }
+    return jsonify(body), (200 if ready else 503)
 
 
 @app.route("/player/<player_id>")
