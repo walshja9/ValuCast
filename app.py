@@ -120,8 +120,31 @@ def _compute_dynasty_dollars(rows, num_teams=12, budget=200):
     return dollars
 
 
+DYNASTY_ELITE_FLOOR = 140.0
+
+
 def _compute_dynasty_tiers(rows, num_tiers=8):
-    """Assign tiers from dynasty value gaps."""
+    """Assign tiers from dynasty value gaps.
+
+    Values >= DYNASTY_ELITE_FLOOR (the 140+ band on the 0-150 scale) are always
+    tier 1 — elite is an absolute badge, never merged into the tier below by the
+    min-3 rule. Gap-based tiering applies below the floor, starting at tier 2.
+    """
+    if len(rows) < 2:
+        return {r.id: 1 for r in rows}
+    elite = [r for r in rows if r.dynasty_value >= DYNASTY_ELITE_FLOOR]
+    if not elite:
+        return _gap_tiers(rows, num_tiers)
+    tiers = {r.id: 1 for r in elite}
+    rest = [r for r in rows if r.dynasty_value < DYNASTY_ELITE_FLOOR]
+    if rest:
+        for pid, t in _gap_tiers(rest, num_tiers - 1).items():
+            tiers[pid] = t + 1
+    return tiers
+
+
+def _gap_tiers(rows, num_tiers=8):
+    """Gap-based tiering with the min-3-per-tier merge rule."""
     if len(rows) < 2:
         return {r.id: 1 for r in rows}
     gaps = []
