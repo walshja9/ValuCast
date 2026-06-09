@@ -14,7 +14,12 @@
             <th class="col-dollars sortable" onclick="sortTable(5)">$</th>
             <th class="col-value sortable" onclick="sortTable(6)">Value</th>
             {% for col in display_columns %}
+            {% if display == 'values' %}
+            <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})"
+                title="Category value: z-score contribution to total value (not a projection)">{{ col.id }} value</th>
+            {% else %}
             <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})" title="{{ col.label }}">{{ col.id }}</th>
+            {% endif %}
             {% endfor %}
         </tr>
     </thead>
@@ -57,8 +62,8 @@
                 {% set raw = result.raw_values.get(col.id) %}
                 {% set val = result.category_values.get(col.id, 0) %}
             {% endif %}
-            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if raw is not none and val > 0 else '' }}{{ 'val-neg' if raw is not none and val < 0 else '' }}">
-                {% if raw is none %}&mdash;{% else %}{{ "%.1f" | format(val) }}{% endif %}
+            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if display == 'values' and raw is not none and val > 0 else '' }}{{ 'val-neg' if display == 'values' and raw is not none and val < 0 else '' }}">
+                {% if raw is none %}&mdash;{% elif display == 'values' %}{{ "%.1f" | format(val) }}{% else %}{{ raw | format_stat(col.id) }}{% endif %}
             </td>
             {% endfor %}
         </tr>

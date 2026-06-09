@@ -33,6 +33,27 @@ from league_values.risk import RiskModel
 
 app = Flask(__name__)
 
+
+# Per-category projected-stat formatting for the rankings columns.
+_RATE_3DP = {"AVG", "OBP", "SLG", "OPS"}            # .280
+_RATE_2DP = {"ERA", "WHIP", "K_BB", "K_9", "BB_9"}  # 3.24
+_DECIMAL_1 = {"IP"}                                  # 182.1
+
+
+@app.template_filter("format_stat")
+def format_stat(value, cat_id):
+    """Format a projected stat for display, keyed by category id."""
+    if value is None:
+        return "—"  # em dash
+    if cat_id in _RATE_3DP:
+        s = f"{value:.3f}"
+        return s.replace("0.", ".", 1) if s.startswith(("0.", "-0.")) else s
+    if cat_id in _RATE_2DP:
+        return f"{value:.2f}"
+    if cat_id in _DECIMAL_1:
+        return f"{value:.1f}"
+    return f"{value:.0f}"
+
 # Projection sources. Steamer (season outlook) is the default; ValuCast H+P is the
 # opt-in combined in-house source. App only LOADS committed runs — no runtime model.
 DATA_PATH = Path(__file__).parent / "data" / "projections" / "current.json"
@@ -406,6 +427,9 @@ def _build_context(args):
     search = args.get("search", "")
     rules_str = args.get("rules", "")
     split_rp = args.get("split_rp", "") == "on"
+    display = args.get("display", "projections")
+    if display not in ("projections", "values"):
+        display = "projections"
 
     # Resolve the projection source (default Steamer). Unknown/unavailable -> SourceError
     # (caught by the errorhandler -> 400) before any valuation runs.
@@ -537,6 +561,7 @@ def _build_context(args):
         "config_summary": _config_summary(mode, cats, pcats, split_rp),
         "as_of": active.as_of,
         "source": args.get("source", "") or "steamer",
+        "display": display,
         "active_store": active,
     }
 
@@ -621,10 +646,13 @@ def rankings():
         rules_str=ctx["rules_str"], split_rp=ctx["split_rp"],
         weights=ctx["weights"] if ctx["weights"] else None,
     )
-    push_url = f"/?{url_params}" if url_params else "/"
+    extra = []
     if ctx.get("source") and ctx["source"] != "steamer":
-        sep = "&" if url_params else ""
-        push_url = f"/?{url_params}{sep}source={ctx['source']}"
+        extra.append(f"source={ctx['source']}")
+    if ctx.get("display") and ctx["display"] != "projections":
+        extra.append(f"display={ctx['display']}")
+    all_params = "&".join([p for p in [url_params] + extra if p])
+    push_url = f"/?{all_params}" if all_params else "/"
     response.headers["HX-Replace-Url"] = push_url
     return response
 
@@ -787,6 +815,7 @@ def export_csv():
     position_ranks = ctx["position_ranks"]
     dollar_values = ctx["dollar_values"]
     tiers = ctx["tiers"]
+    export_display = ctx.get("display", "projections")
 
     output = io.StringIO()
     writer = csv.writer(output)
@@ -819,12 +848,17 @@ def export_csv():
             if col.get("split"):
                 sp_raw = result.raw_values.get(col["sp_id"])
                 rp_raw = result.raw_values.get(col["rp_id"])
+                raw = sp_raw if sp_raw is not None else rp_raw
                 val = result.category_values.get(col["sp_id"], 0) + result.category_values.get(col["rp_id"], 0)
-                row.append(round(val, 1) if sp_raw is not None or rp_raw is not None else "")
             else:
                 raw = result.raw_values.get(col["id"])
                 val = result.category_values.get(col["id"], 0)
-                row.append(round(val, 1) if raw is not None else "")
+            if raw is None:
+                row.append("")
+            elif export_display == "values":
+                row.append(round(val, 1))
+            else:
+                row.append(format_stat(raw, col["id"]))
         writer.writerow(row)
 
     response = make_response(output.getvalue())
