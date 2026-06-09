@@ -112,6 +112,7 @@
             {% endif %}
         </div>
 
+        {% if mode in ['categories', 'roto'] %}
         <fieldset class="source-seg" aria-label="Column display">
             <label class="source-opt">
                 <input type="radio" name="display" value="projections" {% if (display or 'projections') != 'values' %}checked{% endif %}>
@@ -122,6 +123,7 @@
                 <span>Category value</span>
             </label>
         </fieldset>
+        {% endif %}
 
         <select name="position" class="position-select">
             <option value="">All Positions</option>

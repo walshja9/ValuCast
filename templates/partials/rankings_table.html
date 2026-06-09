@@ -16,7 +16,7 @@
             {% for col in display_columns %}
             {% if display == 'values' %}
             <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})"
-                title="Category value: z-score contribution to total value (not a projection)">{{ col.id }} value</th>
+                title="Category value: this category's contribution to total value (not a projection)">{{ col.id }} value</th>
             {% else %}
             <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})" title="{{ col.label }}">{{ col.id }}</th>
             {% endif %}
@@ -26,10 +26,11 @@
     <tbody>
         {% set tier_colors = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#6b7280', '#9ca3af'] %}
         {% for result in results %}
+        {% set below_floor = canonical_ids is defined and result.player.id not in canonical_ids %}
         {% set tier = tiers.get(result.player.id, 0) %}
         {% set prev_tier = tiers.get(results[loop.index0 - 1].player.id, 0) if loop.index0 > 0 else tier %}
         <tr class="player-row {% if tier != prev_tier %}tier-break{% endif %}" onclick="toggleDetail('{{ result.player.id }}', this)">
-            <td class="col-rank">{{ loop.index }}</td>
+            <td class="col-rank">{{ overall_ranks.get(result.player.id) or '—' }}</td>
             <td class="col-compare">
                 <span class="compare-cb" onclick="event.stopPropagation(); toggleCompare('{{ result.player.id }}', this)" title="Compare">+</span>
             </td>
@@ -37,7 +38,7 @@
                 <strong>{{ result.player.name }}</strong>
                 {% set pos_rank = position_ranks.get(result.player.id, '') %}
                 {% if pos_rank %}<span class="pos-rank">{{ pos_rank }}</span>{% endif %}
-                {% if tier != prev_tier or loop.index0 == 0 %}
+                {% if tier and (tier != prev_tier or loop.index0 == 0) %}
                 <span class="tier-badge" style="background: {{ tier_colors[(tier - 1) % tier_colors|length] }}">T{{ tier }}</span>
                 {% endif %}
                 {% if result.player.metadata.get('has_ros') == false %}
@@ -49,8 +50,8 @@
             <td class="col-dollars {{ 'val-pos' if dollar_values.get(result.player.id, 0) > 0 else '' }}">
                 {% if dollar_values.get(result.player.id, 0) > 0 %}${{ dollar_values.get(result.player.id, 0) | int }}{% else %}&mdash;{% endif %}
             </td>
-            <td class="col-value {{ 'val-pos' if result.total_value > 0 else '' }}{{ 'val-neg' if result.total_value < 0 else '' }}">
-                {{ "%.2f" | format(result.total_value) }}
+            <td class="col-value {{ '' if below_floor else ('val-pos' if result.total_value > 0 else ('val-neg' if result.total_value < 0 else '')) }}">
+                {% if below_floor %}&mdash;{% else %}{{ "%.2f" | format(result.total_value) }}{% endif %}
             </td>
             {% for col in display_columns %}
             {% if col.split %}

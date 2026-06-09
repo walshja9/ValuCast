@@ -226,6 +226,15 @@ def _dynasty_metadata():
     return _compute_dynasty_dollars(pool), _compute_dynasty_tiers(pool)
 
 
+def _prospect_tiers():
+    """Tiers for the Prospects board, computed on the prospect-ONLY universe (top 200
+    by value). The combined-universe tiers from _dynasty_metadata() collapse to ~2
+    badges across prospects because every prospect sits below the MLB cluster."""
+    pros = sorted(dd_store.filter(pool="prospect"),
+                  key=lambda r: r.dynasty_value, reverse=True)[:200]
+    return _compute_dynasty_tiers(pros)
+
+
 def _build_dynasty_context(args):
     """Build template context for DD Dynasty mode. Bypasses engine entirely."""
     pool = args.get("pool", "")
@@ -535,6 +544,12 @@ def _build_context(args):
     dollar_values = _compute_dollar_values(metadata_pool)
     tiers = _compute_tiers(metadata_pool)
 
+    # Overall rank from the canonical universe (filter-independent). Players not in the
+    # canonical universe (sub-threshold search matches) are below the valuation floor:
+    # they show a projection but no rank/value/$/tier.
+    overall_ranks = {r.player.id: i for i, r in enumerate(all_results, 1)}
+    canonical_ids = {r.player.id for r in all_results}
+
     return {
         "mode": mode,
         "cats": cats,
@@ -558,6 +573,8 @@ def _build_context(args):
         "position_ranks": position_ranks,
         "dollar_values": dollar_values,
         "tiers": tiers,
+        "overall_ranks": overall_ranks,
+        "canonical_ids": canonical_ids,
         "config_summary": _config_summary(mode, cats, pcats, split_rp),
         "as_of": active.as_of,
         "source": args.get("source", "") or "steamer",
@@ -589,7 +606,8 @@ def index():
             )
             rows = rows[:200]
             ctx["dd_rows"] = rows
-            ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
+            ctx["dynasty_dollars"], _ = _dynasty_metadata()
+            ctx["tiers"] = _prospect_tiers()
             ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
             ctx["mode"] = "prospects"
         return render_template("index.html", **ctx)
@@ -620,7 +638,8 @@ def rankings():
                 )
                 rows = rows[:200]
                 ctx["dd_rows"] = rows
-                ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
+                ctx["dynasty_dollars"], _ = _dynasty_metadata()
+                ctx["tiers"] = _prospect_tiers()
                 ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
                 ctx["mode"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
@@ -725,10 +744,11 @@ def player_detail(player_id):
         return "<div class='error'>Player not found</div>", 404
 
     config = ctx["config"]
-    # Value against the filtered pool with this player force-kept, so the detail
-    # value matches the ranking value whether or not the player cleared the floor.
+    # Value the canonical universe (no on-demand force-keep) so the detail value matches
+    # the board exactly. A below-floor player isn't in the canonical set -> result None,
+    # and the template shows the projection without a (non-canonical) value.
     detail_results = _merge_two_way_players(
-        engine.value_players(_valuation_players({player_id}, active_store=active), config)
+        engine.value_players(_valuation_players(active_store=active), config)
     )
     result = next((r for r in detail_results if r.player.id == player_id), None)
 
@@ -751,9 +771,10 @@ def compare():
 
     ctx = _build_context(request.args)
     config = ctx["config"]
+    # Use canonical results so compare matches the board (not an on-demand mini-pool).
     all_results = _merge_two_way_players(
         engine.value_players(
-            _valuation_players({p1_id, p2_id}, active_store=ctx["active_store"]), config)
+            _valuation_players(active_store=ctx["active_store"]), config)
     )
 
     r1 = next((r for r in all_results if r.player.id == p1_id), None)
@@ -781,7 +802,8 @@ def export_csv():
             )
             rows = rows[:200]
             ctx["dd_rows"] = rows
-            ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
+            ctx["dynasty_dollars"], _ = _dynasty_metadata()
+            ctx["tiers"] = _prospect_tiers()
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
         risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
@@ -815,34 +837,38 @@ def export_csv():
     position_ranks = ctx["position_ranks"]
     dollar_values = ctx["dollar_values"]
     tiers = ctx["tiers"]
+    overall_ranks = ctx["overall_ranks"]
+    canonical_ids = ctx["canonical_ids"]
     export_display = ctx.get("display", "projections")
 
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # Header row
+    # Header row — value view labels columns "<Category> value".
     header = ["Rank", "Player", "Positions", "Team", "Position Rank", "Tier", "Auction $", "Value"]
+    suffix = " value" if export_display == "values" else ""
     for col in display_columns:
-        header.append(col["label"])
+        header.append(col["label"] + suffix)
     writer.writerow(header)
 
     # Data rows
     pitcher_pos = {"SP", "RP", "P"}
-    for i, result in enumerate(results, 1):
+    for result in results:
+        below_floor = result.player.id not in canonical_ids
         # For hitter-pool results, strip pitcher positions from display
         if result.player.pool == PlayerPool.HITTER:
             display_positions = [p for p in result.player.positions if p not in pitcher_pos]
         else:
             display_positions = list(result.player.positions)
         row = [
-            i,
+            overall_ranks.get(result.player.id, ""),
             result.player.name,
             ", ".join(display_positions) or "DH",
             result.player.metadata.get("team", ""),
             position_ranks.get(result.player.id, ""),
             tiers.get(result.player.id, ""),
             dollar_values.get(result.player.id, 0),
-            round(result.total_value, 2),
+            "" if below_floor else round(result.total_value, 2),
         ]
         for col in display_columns:
             if col.get("split"):
