@@ -424,15 +424,21 @@ def _build_context(args):
         rules_str=rules_str, pt_params=pt_params if pt_params else None,
         split_rp=split_rp, weights=weights if weights else None,
     )
-    search_keep = (
-        {p.id for p in active.get_all() if search.lower() in p.name.lower()}
-        if search
-        else frozenset()
+    # Value the canonical universe (search/filter-independent) so display metadata is
+    # stable. A search may surface sub-threshold players for DISPLAY only; it must not
+    # change the pool the metadata is computed on.
+    all_results = _merge_two_way_players(
+        engine.value_players(_valuation_players(active_store=active), config)
     )
-    results = engine.value_players(_valuation_players(search_keep, active_store=active), config)
-    results = _merge_two_way_players(results)
+    all_results.sort(key=lambda r: r.total_value, reverse=True)
 
-    # Filter results for display
+    # Metadata pool = the fixed top-200-by-value of the full universe (the same set the
+    # default unfiltered board shows). Computing $/ranks/tiers here keeps the default
+    # board byte-identical AND makes filtered views show the SAME numbers.
+    metadata_pool = all_results[:200]
+
+    # Display set: filter the full universe, then surface sub-threshold search matches.
+    results = all_results
     if pool:
         if pool == "pitcher":
             results = [
@@ -446,8 +452,18 @@ def _build_context(args):
     if search:
         query = search.lower()
         results = [r for r in results if query in r.player.name.lower()]
+        if not results:
+            # Sub-threshold name match: value it on demand for display (no metadata).
+            search_keep = {p.id for p in active.get_all() if query in p.name.lower()}
+            if search_keep:
+                extra = _merge_two_way_players(
+                    engine.value_players(
+                        _valuation_players(search_keep, active_store=active), config
+                    )
+                )
+                results = [r for r in extra if query in r.player.name.lower()]
 
-    # Limit to top 200
+    # Limit to top 200 for display
     results = results[:200]
 
     # Active categories for column headers
@@ -483,9 +499,9 @@ def _build_context(args):
         ]
 
     # Position ranks, auction dollar values, and tier visualization
-    position_ranks = _compute_position_ranks(results)
-    dollar_values = _compute_dollar_values(results)
-    tiers = _compute_tiers(results)
+    position_ranks = _compute_position_ranks(metadata_pool)
+    dollar_values = _compute_dollar_values(metadata_pool)
+    tiers = _compute_tiers(metadata_pool)
 
     return {
         "mode": mode,
