@@ -2,9 +2,10 @@ services:
   - type: web
     name: valucast
     runtime: python
+    plan: starter
     buildCommand: pip install -r requirements.txt && pip install -e .
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --preload
+    healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
-    plan: free
