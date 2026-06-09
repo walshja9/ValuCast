@@ -65,6 +65,10 @@
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
 
+    <div id="source-caption" class="source-caption">
+        {% if source == 'valucast' %}{% include "partials/_source_caption.html" %}{% endif %}
+    </div>
+
     <section id="setup-panel" class="setup-panel collapsed">
         {% if mode == 'points' %}
             {% include "partials/setup_points.html" %}
