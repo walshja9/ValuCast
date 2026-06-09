@@ -197,6 +197,14 @@ def _gap_tiers(rows, num_tiers=8):
     return {pid: t for pid, t in tiers_list}
 
 
+def _dynasty_metadata():
+    """Dynasty $ and tiers computed on a fixed top-200-by-value pool of the FULL DD
+    universe, so they don't change when the displayed rows are filtered."""
+    all_rows = sorted(dd_store.get_all(), key=lambda r: r.dynasty_value, reverse=True)
+    pool = all_rows[:200]
+    return _compute_dynasty_dollars(pool), _compute_dynasty_tiers(pool)
+
+
 def _build_dynasty_context(args):
     """Build template context for DD Dynasty mode. Bypasses engine entirely."""
     pool = args.get("pool", "")
@@ -204,8 +212,7 @@ def _build_dynasty_context(args):
     search = args.get("search", "")
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
     rows = rows[:200]
-    dynasty_dollars = _compute_dynasty_dollars(rows)
-    tiers = _compute_dynasty_tiers(rows)
+    dynasty_dollars, tiers = _dynasty_metadata()
     risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
     return {
         "mode": "dd_dynasty",
@@ -556,8 +563,7 @@ def index():
             )
             rows = rows[:200]
             ctx["dd_rows"] = rows
-            ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
-            ctx["tiers"] = _compute_dynasty_tiers(rows)
+            ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
             ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
             ctx["mode"] = "prospects"
         return render_template("index.html", **ctx)
@@ -588,8 +594,7 @@ def rankings():
                 )
                 rows = rows[:200]
                 ctx["dd_rows"] = rows
-                ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
-                ctx["tiers"] = _compute_dynasty_tiers(rows)
+                ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
                 ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
                 ctx["mode"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
@@ -747,7 +752,7 @@ def export_csv():
             )
             rows = rows[:200]
             ctx["dd_rows"] = rows
-            ctx["dynasty_dollars"] = _compute_dynasty_dollars(rows)
+            ctx["dynasty_dollars"], ctx["tiers"] = _dynasty_metadata()
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
         risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
