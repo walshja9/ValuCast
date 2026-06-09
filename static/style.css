@@ -10,6 +10,7 @@
   --c-prospect: #059669;
   --c-pos: #059669;
   --c-neg: #dc2626;
+  --c-focus-ring: rgba(37, 99, 235, .13);   /* translucent blue — alpha can't suffix a var() */
   --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
   --radius-sm: 6px; --radius: 8px; --radius-lg: 10px;
 }
@@ -277,7 +278,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     width: 200px;
     background: #fff;
 }
-.search-input:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 2px var(--c-blue)22; }
+.search-input:focus { outline: none; border-color: var(--c-blue); box-shadow: 0 0 0 2px var(--c-focus-ring); }
 
 .results-meta { font-size: 0.8rem; color: var(--c-muted); margin-bottom: 0.5rem; }
 
@@ -352,7 +353,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .no-ros-badge {
     display: inline-block;
     margin-left: 0.3rem;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #d97706;
     background: #fef3c7;
@@ -403,7 +404,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .detail-section h4 { font-size: 0.8rem; text-transform: uppercase; color: var(--c-muted); margin-bottom: 0.5rem; }
 .detail-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .detail-table th, .detail-table td { padding: 0.25rem 0.5rem; text-align: right; border-bottom: 1px solid #f0f0f0; }
-.detail-table th { text-align: left; font-weight: 600; color: var(--c-muted); font-size: 0.7rem; text-transform: uppercase; }
+.detail-table th { text-align: left; font-weight: 600; color: var(--c-muted); font-size: 0.8rem; text-transform: uppercase; }
 .detail-table td:first-child { text-align: left; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; }
@@ -532,7 +533,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .prospect-badge {
     display: inline-block;
     margin-left: 0.3rem;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: #7c3aed;
     background: #f5f3ff;
