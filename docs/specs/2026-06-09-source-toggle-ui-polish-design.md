@@ -17,16 +17,18 @@ The UI is pure front-end; the methodology page is a read-only route. No projecti
 Replace the `<select name="source">` in the non-dynasty config-bar with a **segmented control of two radio pills** — `Steamer` and `ValuCast H+P` — using `name="source"` (same radio pattern as the mode selector, so the form serializes it and stickiness is unchanged; the form's `change` trigger re-renders).
 
 - **Equal visual weight (locked):** the *selected* pill is styled identically regardless of which source it is — neither Steamer nor ValuCast looks "preferred." Reuse the mode selector's active treatment (the established blue `#2563eb`) for whichever is checked; the unselected pill is the neutral default. No special color/badge for ValuCast.
-- **Accessibility (locked):** wrap the control in a `<fieldset>` with a visually-hidden `<legend>` (or `aria-label="Projection source"`), and give the pills a **visible keyboard focus** indicator (`:focus-visible` outline) — radios are keyboard-navigable, focus must show.
+- **Accessibility (locked):** wrap the control in a `<fieldset>` with a visually-hidden `<legend>` (or `aria-label="Projection source"`). **Do NOT copy the mode selector's `display:none` on the radios** — `display:none` removes them from the tab order (unfocusable). Use a **visually-hidden-but-focusable** technique (the clip/`sr-only` pattern: `position:absolute; width:1px; height:1px; clip-path:inset(50%)` — NOT `display:none`), and render a visible focus ring on the label via `input:focus-visible + span`. Keyboard users must be able to tab to and see the focused pill.
 - **Mobile (locked):** the segmented control wraps cleanly on narrow screens (the config-bar already stacks to a column on mobile; the control stays full-width and legible, no overflow).
 
 ## 2. Provenance caption
 
-A one-line caption rendered directly under the config-bar, shown **only when `source=valucast` is active**. Exact text (locked):
+A one-line caption under the config-bar, shown **only when `source=valucast` is active**. Exact text (locked, refined):
 
-> **ValuCast H+P** — full-season projections: hitters use Savant xBA/xSLG de-noising; pitchers are fully in-house. Steamer remains the default external benchmark. **[How ValuCast works →]**
+> **ValuCast H+P** — full-season projections: hitters use Savant xBA/xSLG de-noising; the **pitching model is fully in-house**. Steamer remains the default external benchmark. **[How ValuCast works →]**
 
-This is the honesty surface: it does **not** imply the hitter inputs are our own (they use Savant's expected stats), and it names Steamer as the default benchmark. The **"How ValuCast works →"** link points to the methodology page (§7).
+(Wording note: "the pitching model is fully in-house" — *model*, not raw data, so it doesn't imply proprietary Statcast.) The **"How ValuCast works →"** link points to the methodology page (§6).
+
+**HTMX freshness (P1 — required):** the caption lives **outside** `#rankings-container`, but `/rankings` only re-renders that container — so a Jinja-only caption would go **stale** when the user switches the source radio (table updates, caption doesn't). Fix with an **out-of-band swap**: a stable placeholder `<div id="source-caption">` sits in the page; `partials/rankings_response.html` emits `<div id="source-caption" hx-swap-oob="true">…</div>` whose contents are the caption when `source=valucast` and **empty** otherwise. Every `/rankings` response (any filter or source change) thus refreshes the caption out-of-band — no full reload. This is server-rendered, so it's directly testable (the response carries the right caption per source).
 
 ## 3. Scope
 
@@ -35,6 +37,15 @@ Non-dynasty modes only (categories / roto / points) — the control and caption 
 ## 4. Missing-team rendering
 
 Blank teams (~26%, the source ceiling from `current.json`) render as **`—` in the HTML UI only**. Exports (CSV) and the underlying data keep the team **blank** — the dash is a display affordance, never written into data/exports. (Implemented at the table-template render site, not in the run or the export path.)
+
+## 4b. Source-aware footer (P1)
+
+`base.html` currently always states redraft values use "actuals + Steamer ROS" — which **contradicts** the new honesty surface on the ValuCast board and reads wrong on `/methodology`. Make the footer provenance line **source/page-aware**:
+- Default board (`source` steamer / absent): unchanged — "actuals + Steamer ROS".
+- ValuCast board (`source=valucast`): "ValuCast H+P projection — hitters Savant-de-noised, pitching model in-house."
+- `/methodology` and Dynasty/Prospects: a neutral line (or omit the redraft-provenance clause) so it doesn't assert Steamer on pages where it's false.
+
+`base.html` reads `source` from context (default steamer); routes already pass it (or it defaults). Add `base.html` to scope.
 
 ## 5. Internal methodology doc (`docs/valucast-methodology.md`)
 
@@ -49,7 +60,15 @@ This is internal (repo `docs/`), not linked from the app. It's the source the us
 
 ## 6. User-facing methodology page (`/methodology`)
 
-A read-only route + template, distilled from §5 for a league audience. Sections: *What ValuCast is* · *How hitters are projected* (incl. the honest Savant note) · *How pitchers are projected (in-house)* · *How we validate* (held-out, beat-the-benchmark) · *What's ours vs borrowed* (the honesty table) · *Track record* (the verdicts in plain terms). Reachable from the provenance caption's "How ValuCast works →" link (and acceptable to also add a footer/nav link). No data/auth; static render of the methodology content.
+A read-only route + template, distilled from §5 for a league audience. Reachable from the caption's "How ValuCast works →" link (and acceptable to also add a footer/nav link). No data/auth; static render. Sections:
+- *What ValuCast is.*
+- **The two boards, distinguished (P1 — required):** state plainly that the **default board** = current-season actuals + Steamer ROS; the **ValuCast board** = a prior-year-driven full-season projection. The live source toggle is useful for **eyeball comparison, but is NOT an apples-to-apples formal backtest** (different kinds of number) — our real validation is the held-out backtest, described below.
+- *How hitters are projected* — Marcel-style, then **Statcast input de-noising** toward Savant xBA/xSLG. **Public own-xBA disclosure (P2 wording — exact):** "We tested an in-house expected-stats model, but it did not clear our validation bar, so hitters continue to use Savant xBA/xSLG as inputs." (Keep the internal `corr 0.87`/sprint-speed detail in §5 only.)
+- *How pitchers are projected* — **"the pitching model is fully in-house"** (per-batter-faced, role-routed). *Model*, not proprietary raw data.
+- *How we validate* — leakage-safe held-out backtest; beat-the-benchmark gates.
+- *What's ours vs borrowed* — the honesty table (pitching model in-house; hitter inputs from Savant; Steamer the benchmark/default).
+- *Track record* — the verdicts in plain terms (no raw correlation numbers).
+- **Version marker (P2):** a footer line "As of June 2026 · ValuCast H+P v1" to bound the claims and reduce methodology drift. Mirror the same marker at the top of the internal §5 doc.
 
 ## Non-Goals
 
@@ -62,18 +81,21 @@ A read-only route + template, distilled from §5 for a league audience. Sections
 
 1. **Segmented control:** the source control renders as two pills (not a `<select>`); the selected pill reflects the active source; selecting either re-renders that board (stickiness intact — existing source tests stay green).
 2. **Equal weight:** Steamer-selected and ValuCast-selected use the *same* active styling (assert both states produce the same active class/markup, no ValuCast-only badge/color).
-3. **Accessibility:** the control has `aria-label="Projection source"` (or fieldset/legend) and a `:focus-visible` style; assert the aria-label/fieldset is present in the markup.
-4. **Caption gating:** the provenance caption is present for `source=valucast`, and **absent** for Steamer (default), Dynasty, and Prospects.
-5. **Team dash:** the rankings HTML shows `—` for a blank-team player; `/export?source=valucast` CSV keeps that team blank (not `—`).
-6. **Methodology page:** `/methodology` returns 200 and contains the key honest statements (pitchers in-house; hitters use Savant xBA/xSLG; Steamer benchmark; own-xBA shortfall noted). The caption's "How ValuCast works →" link points to it.
-7. **Internal doc:** `docs/valucast-methodology.md` exists with the rung program, validation discipline, honesty rules, and verdict ledger.
-8. **No regressions:** full suite green; the default board unchanged.
+3. **Accessibility:** the control has `aria-label="Projection source"` (or fieldset/legend), the radios are **focusable** (visually-hidden via clip, NOT `display:none`), and there's a `input:focus-visible + span` style; assert the aria-label/fieldset + the non-`display:none` hiding in the markup/CSS.
+4. **Caption gating + HTMX freshness:** the `/rankings?source=valucast` response carries the provenance caption (via `hx-swap-oob` `#source-caption`); the `/rankings` (steamer) response's OOB caption is **empty** — so switching the source radio updates the caption without a reload. Caption absent in Dynasty/Prospects.
+5. **Source-aware footer:** the footer provenance line says Steamer-ROS on the default board, the ValuCast line on `source=valucast`, and does not assert Steamer on `/methodology`.
+6. **Team dash:** the rankings HTML shows `—` for a blank-team player; `/export?source=valucast` CSV keeps that team blank (not `—`).
+7. **Methodology page:** `/methodology` returns 200 and contains the key honest statements (pitching model in-house; hitters use Savant xBA/xSLG; Steamer benchmark; own-xBA shortfall disclosed in the public wording) + the two-boards distinction + the "As of June 2026 · ValuCast H+P v1" marker. The caption's "How ValuCast works →" link points to it.
+8. **Internal doc:** `docs/valucast-methodology.md` exists with the rung program, validation discipline, honesty rules, verdict ledger, and the v1/date marker.
+9. **No regressions:** full suite green; the default board unchanged.
 
 ## Files touched
 
 - `templates/index.html` — replace the source `<select>` with the segmented `fieldset`; add the gated provenance caption with the methodology link.
 - `static/style.css` — `.source-seg` segmented-control styles (reusing mode-btn active treatment), `:focus-visible`, mobile wrap; light methodology-page styling.
 - `templates/partials/rankings_table.html` (or wherever the team cell renders) — `team or '—'` in HTML only.
+- `templates/partials/rankings_response.html` — OOB `#source-caption` fragment (gated by source).
+- `templates/base.html` — source/page-aware footer provenance line; `#source-caption` placeholder if it lives in the layout.
 - `templates/methodology.html` — the user-facing methodology page.
 - `app.py` — `/methodology` read-only route.
 - `docs/valucast-methodology.md` — the canonical internal methodology doc.
