@@ -16,23 +16,9 @@
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
-        <div class="footer-about">
-            <p class="footer-how">
-                {% if mode == 'dd_dynasty' or mode == 'prospects' %}
-                Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Dynasty is currently a beta model — league customization is coming.
-                {% else %}
-                Redraft values use 2026 actual stats + Steamer rest-of-season projections, scored against your league's categories and weights.
-                {% endif %}
-            </p>
+        <div id="footer-provenance">
+            {% include "partials/_footer_provenance.html" %}
         </div>
-        <p>
-            {% if mode == 'dd_dynasty' or mode == 'prospects' %}
-            Data: Dynasty model + prospect feed · MLB stats from FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
-            {% else %}
-            Data: FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
-            {% endif %}
-            · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
-        </p>
     </footer>
 </body>
 </html>

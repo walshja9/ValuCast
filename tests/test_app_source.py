@@ -102,3 +102,27 @@ class TestSourceSelection(unittest.TestCase):
         # Export keeps the team blank, never the display dash.
         csv = self.client.get("/export?source=valucast").data.decode("utf-8")
         self.assertNotIn("—", csv)
+
+    def test_footer_valucast_board_no_steamer_claim(self):
+        r = self.client.get("/?source=valucast")
+        self.assertIn(b'pitching model in-house', r.data)
+        self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
+
+    def test_footer_steamer_board_unchanged(self):
+        r = self.client.get("/")
+        self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
+
+    def test_caption_and_footer_refresh_oob_on_source_switch(self):
+        # Both the caption and the footer live OUTSIDE #rankings-container, so an
+        # htmx source switch must refresh both via hx-swap-oob (no full reload).
+        vc = self.client.get("/rankings?source=valucast").data
+        self.assertIn(b'id="source-caption"', vc)
+        self.assertIn(b'id="footer-provenance"', vc)
+        self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', vc)
+        self.assertIn(b'pitching model in-house', vc)            # footer OOB content
+        self.assertIn(b'pitching model is fully in-house', vc)   # caption OOB content
+
+        st = self.client.get("/rankings").data
+        self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
+        self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
+        self.assertNotIn(b'pitching model is fully in-house', st)             # caption cleared

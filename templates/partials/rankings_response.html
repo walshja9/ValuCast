@@ -1,4 +1,5 @@
 <div id="source-caption" class="source-caption" hx-swap-oob="innerHTML:#source-caption">{% if source == 'valucast' and mode not in ['dd_dynasty', 'prospects'] %}{% include "partials/_source_caption.html" %}{% endif %}</div>
+<div id="footer-provenance" hx-swap-oob="innerHTML:#footer-provenance">{% include "partials/_footer_provenance.html" %}</div>
 {% if mode == 'dd_dynasty' or mode == 'prospects' %}
 {% include "partials/rankings_table_dynasty.html" %}
 {% else %}

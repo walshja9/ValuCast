@@ -1,0 +1,27 @@
+<div class="footer-about">
+    <p class="footer-how">
+        {% if methodology_page %}
+        ValuCast methodology — how our projections are built and validated. The projection source for player values is selectable on the main board.
+        {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
+        Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Dynasty is currently a beta model — league customization is coming.
+        {% elif source == 'valucast' %}
+        ValuCast H+P projection — hitters Savant-de-noised, pitching model in-house, scored against your league's categories and weights.
+        {% else %}
+        Redraft values use 2026 actual stats + Steamer rest-of-season projections, scored against your league's categories and weights.
+        {% endif %}
+    </p>
+</div>
+<p class="footer-data">
+    {% if methodology_page %}
+    <a href="/">Back to rankings</a> · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
+    Data: Dynasty model + prospect feed · MLB stats from FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% elif source == 'valucast' %}
+    Data: ValuCast H+P (in-house projections) + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% else %}
+    Data: FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% endif %}
+</p>
