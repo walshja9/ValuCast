@@ -31,8 +31,10 @@ We built ValuCast's projections as a ladder of rungs, each gated by held-out val
 - **Carryover guard** — a tuning-block win must replicate on a disjoint scoring block.
 - Go/no-go gating killed Rung 4 and the own-xBA Phase A.
 
-## Honesty rules (ours vs. borrowed)
-- **Pitching:** model fully in-house.
+## Honesty rules (ours vs. external)
+- **Pitching:** the projection **model** is built and validated by ValuCast using public
+  MLB historical data — it does **not** consume Steamer or any third-party pitcher
+  projection. ("ValuCast-built model," not "proprietary data.")
 - **Hitting:** our projection model, consuming **Savant xBA/xSLG** as inputs.
 - **Own-xBA grid (Phase A): SHORTFALL.** Our EV×LA empirical grid reached corr 0.87 but
   did not beat Savant (sprint-speed component needed). Savant remains the better input;

@@ -35,9 +35,16 @@
 
     <section>
         <h3>How pitchers are projected</h3>
-        <p>The pitching model is fully in-house: a per-batter-faced, role-routed
-        projection that blends a pitcher's starting vs. relieving usage continuously
-        rather than forcing a starter/reliever cliff.</p>
+        <p>ValuCast's pitching model projects skill and workload separately. It forecasts
+        strikeouts, walks, hits, home runs, and earned runs per batter faced, then
+        estimates each pitcher's probability of working as a starter or reliever. That
+        continuous role estimate adjusts both expected performance and workload without
+        forcing swingmen or converted pitchers into a hard SP/RP category.</p>
+        <p>The projection model is built and validated by ValuCast using public MLB
+        historical data. It does not consume Steamer or another third-party pitcher
+        projection. Wins, saves, and quality starts are included, but treated as
+        lower-confidence categories because they depend heavily on team decisions and
+        opportunity.</p>
     </section>
 
     <section>
@@ -49,12 +56,20 @@
     </section>
 
     <section>
-        <h3>What's ours vs. borrowed</h3>
-        <ul>
-            <li><strong>Pitching:</strong> model is fully in-house.</li>
-            <li><strong>Hitting:</strong> our projection model, using Savant xBA/xSLG as inputs.</li>
-            <li><strong>Steamer:</strong> the external benchmark and the default source.</li>
-        </ul>
+        <h3>What's ours vs. external</h3>
+        <table class="provenance-table">
+            <thead>
+                <tr><th>Component</th><th>Provenance</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hitting projection model</td><td>Built and validated by ValuCast</td></tr>
+                <tr><td>Hitting expected-stat inputs</td><td>Baseball Savant xBA/xSLG</td></tr>
+                <tr><td>Pitching projection model</td><td>Built and validated by ValuCast</td></tr>
+                <tr><td>Pitching historical inputs</td><td>Public MLB statistics</td></tr>
+                <tr><td>Steamer board</td><td>External benchmark and default current-season outlook</td></tr>
+            </tbody>
+        </table>
+        <p>No third-party pitcher projections are used anywhere in the ValuCast board.</p>
     </section>
 
     <section>

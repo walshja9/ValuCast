@@ -78,9 +78,12 @@ class TestSourceSelection(unittest.TestCase):
         r = self.client.get("/export?source=valucast")
         self.assertEqual(r.status_code, 200)
 
+    # Caption anchor: a phrase unique to the caption fragment (not the footer).
+    CAPTION_ANCHOR = b'without third-party projection inputs'
+
     def test_caption_present_on_valucast_response(self):
         r = self.client.get("/rankings?source=valucast")
-        self.assertIn(b'pitching model is fully in-house', r.data)
+        self.assertIn(self.CAPTION_ANCHOR, r.data)
         self.assertIn(b'hx-swap-oob', r.data)
         self.assertIn(b'id="source-caption"', r.data)
         self.assertIn(b'/methodology', r.data)
@@ -89,11 +92,11 @@ class TestSourceSelection(unittest.TestCase):
         # OOB element still ships (to clear a stale caption) but carries no text.
         r = self.client.get("/rankings")
         self.assertIn(b'id="source-caption"', r.data)
-        self.assertNotIn(b'pitching model is fully in-house', r.data)
+        self.assertNotIn(self.CAPTION_ANCHOR, r.data)
 
     def test_caption_absent_in_dynasty(self):
         r = self.client.get("/rankings?mode=dd_dynasty")
-        self.assertNotIn(b'pitching model is fully in-house', r.data)
+        self.assertNotIn(self.CAPTION_ANCHOR, r.data)
 
     def test_blank_team_dash_in_html_blank_in_export(self):
         # ~26% of ValuCast rows have no team -> HTML shows a dash in the team cell.
@@ -105,7 +108,7 @@ class TestSourceSelection(unittest.TestCase):
 
     def test_footer_valucast_board_no_steamer_claim(self):
         r = self.client.get("/?source=valucast")
-        self.assertIn(b'pitching model in-house', r.data)
+        self.assertIn(b'fully ValuCast-built', r.data)
         self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_footer_steamer_board_unchanged(self):
@@ -119,19 +122,23 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'id="source-caption"', vc)
         self.assertIn(b'id="footer-provenance"', vc)
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', vc)
-        self.assertIn(b'pitching model in-house', vc)            # footer OOB content
-        self.assertIn(b'pitching model is fully in-house', vc)   # caption OOB content
+        self.assertIn(b'fully ValuCast-built', vc)               # footer OOB content
+        self.assertIn(self.CAPTION_ANCHOR, vc)                   # caption OOB content
 
         st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
-        self.assertNotIn(b'pitching model is fully in-house', st)             # caption cleared
+        self.assertNotIn(self.CAPTION_ANCHOR, st)                            # caption cleared
 
     def test_methodology_page_renders_honest_statements(self):
         r = self.client.get("/methodology")
         self.assertEqual(r.status_code, 200)
         body = r.data
-        self.assertIn(b'pitching model is fully in-house', body)
+        # Precise pitching-model provenance: ValuCast-built, no third-party projection.
+        self.assertIn(b'built and validated by ValuCast', body)
+        self.assertIn(b'does not consume Steamer', body)
+        self.assertIn(b'No third-party pitcher projections', body)
+        self.assertIn(b'Public MLB statistics', body)  # provenance table row
         self.assertIn(b'Savant xBA/xSLG', body)
         self.assertIn(b'did not clear our validation bar', body)
         self.assertIn(b'ValuCast H+P v1', body)
