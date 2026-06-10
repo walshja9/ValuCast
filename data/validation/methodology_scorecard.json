@@ -1,0 +1,85 @@
+{
+  "as_of": "2026-06",
+  "version": "ValuCast H+P v1",
+  "hitting": {
+    "baseline": "classic Marcel",
+    "aggregate_mae_ratio": 0.979,
+    "per_stat_mae_ratio": {
+      "PA": 1.0,
+      "HR": 1.001,
+      "R": 1.0,
+      "RBI": 1.0,
+      "SB": 1.0,
+      "AVG": 0.942,
+      "OBP": 0.959,
+      "SLG": 0.96,
+      "OPS": 0.951
+    },
+    "concentrated_in": [
+      "AVG",
+      "OBP",
+      "SLG",
+      "OPS"
+    ],
+    "seasons": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "eligibility": "qualified hitters (>= MIN_EVAL_PA actual PA, projectable, has prior season)",
+    "sample_size": 1770,
+    "correlation_win_rate": 0.519,
+    "denoise_alphas": {
+      "alpha_contact": 0.75,
+      "alpha_power": 0.5
+    }
+  },
+  "pitching": {
+    "baseline": "persistence",
+    "aggregate_mae_ratio": 0.821,
+    "per_stat_mae_ratio": {
+      "IP": 0.981,
+      "K": 0.932,
+      "ERA": 0.713,
+      "WHIP": 0.751,
+      "K_9": 0.834,
+      "BB_9": 0.715
+    },
+    "stats": [
+      "IP",
+      "K",
+      "ERA",
+      "WHIP",
+      "K_9",
+      "BB_9"
+    ],
+    "neutral_stats": [
+      "IP",
+      "K"
+    ],
+    "seasons": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "eligibility": "qualified pitchers (role-specific IP floor, projectable, has prior season)",
+    "sample_size": 2234,
+    "correlation_win_rate": 0.639
+  },
+  "not_shipped": [
+    {
+      "name": "reliability-weighted regression",
+      "verdict": "tie"
+    },
+    {
+      "name": "in-house expected-stat model (own xBA)",
+      "verdict": "shortfall"
+    }
+  ]
+}
