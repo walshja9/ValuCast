@@ -691,8 +691,23 @@ def rankings():
 
 @app.route("/methodology")
 def methodology():
-    """Public 'How ValuCast works' page. Static render, no data/auth."""
-    return render_template("methodology.html", methodology_page=True)
+    """Public 'How ValuCast works' page. Renders validation numbers from the committed
+    scorecard artifact (drift-locked page<->artifact) and model constants from the params
+    modules (drift-locked page<->params)."""
+    import json as _json
+    from projections.models.marcel_params import MarcelParams
+    from projections.models.pitcher_params import PitcherMarcelParams
+    scorecard = _json.loads(
+        (Path(__file__).parent / "data" / "validation" / "methodology_scorecard.json")
+        .read_text(encoding="utf-8")
+    )
+    hp, pp = MarcelParams(), PitcherMarcelParams()
+    return render_template(
+        "methodology.html", methodology_page=True, scorecard=scorecard,
+        hit_weights=",".join(str(w) for w in hp.season_weights),
+        hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg),
+        pct=lambda r: round((1 - r) * 100, 1),
+    )
 
 
 @app.route("/health/ready")

@@ -131,22 +131,19 @@ class TestSourceSelection(unittest.TestCase):
         self.assertNotIn(self.CAPTION_ANCHOR, st)                            # caption cleared
 
     def test_methodology_page_renders_honest_statements(self):
+        # The full Group-E methodology page is exhaustively covered by
+        # test_methodology_validation.py; this keeps the core honesty markers in the
+        # source-feature suite, updated to the rewritten page's wording.
         r = self.client.get("/methodology")
         self.assertEqual(r.status_code, 200)
         body = r.data
-        # Precise pitching-model provenance: ValuCast-built, no third-party projection.
-        self.assertIn(b'built and validated by ValuCast', body)
-        self.assertIn(b'does not consume Steamer', body)
-        self.assertIn(b'No third-party pitcher projections', body)
-        self.assertIn(b'Public MLB statistics', body)  # provenance table row
+        self.assertIn(b'no third-party projection', body)        # pitching provenance
+        self.assertIn(b'Public MLB statistics', body)            # provenance table row
         self.assertIn(b'Savant xBA/xSLG', body)
-        self.assertIn(b'did not clear our validation bar', body)
         self.assertIn(b'ValuCast H+P v1', body)
         self.assertIn(b'June 2026', body)
-        # The two-boards distinction (comparison, not a formal backtest).
         self.assertIn(b'not an apples-to-apples', body)
-        # Public page must NOT leak the internal correlation figure.
-        self.assertNotIn(b'0.87', body)
+        self.assertNotIn(b'0.87', body)                          # no internal corr leak
 
     def test_methodology_footer_has_no_steamer_redraft_claim(self):
         r = self.client.get("/methodology")

@@ -2,81 +2,142 @@
 {% block title %}How ValuCast Works{% endblock %}
 {% block content %}
 <article class="methodology">
-    <h2>How ValuCast Works</h2>
-    <p class="methodology-version">As of June 2026 · ValuCast H+P v1</p>
+    <div class="topline">
+        <h2>How ValuCast Works</h2>
+        <a href="/" class="back">&larr; Back to rankings</a>
+    </div>
+    <p class="methodology-version">As of June 2026 · {{ scorecard.version }}</p>
+
+    <div class="ataglance">
+        <span class="label">At a glance — what's ours vs external</span>
+        <table class="provenance-table">
+            <tr><th>Component</th><th>Provenance</th></tr>
+            <tr><td>Hitting model</td><td>Built &amp; validated by ValuCast</td></tr>
+            <tr><td>Hitting inputs</td><td>Baseball Savant xBA/xSLG</td></tr>
+            <tr><td>Pitching model</td><td>Built &amp; validated by ValuCast — no third-party projections</td></tr>
+            <tr><td>Pitching inputs</td><td>Public MLB statistics</td></tr>
+            <tr><td>Steamer board</td><td>External comparison board; fair historical benchmark pending</td></tr>
+        </table>
+    </div>
 
     <section>
         <h3>What ValuCast is</h3>
         <p>ValuCast turns player projections into values tuned to <em>your</em> league's
-        categories, weights, and roster rules. You can value players from two projection
-        sources: <strong>Steamer</strong> (the external benchmark, and the default) or
+        categories, weights, and roster rules. You can value players from two sources:
+        <strong>Steamer</strong> (an external comparison board, and the default) or
         <strong>ValuCast H+P</strong>, our own in-house projection.</p>
     </section>
 
     <section>
-        <h3>The two boards, distinguished</h3>
-        <p>The <strong>default board</strong> values players from current-season actual
-        stats plus Steamer rest-of-season projections. The <strong>ValuCast board</strong>
-        values players from our own full-season projection, built from prior seasons.</p>
-        <p>Because those are two different <em>kinds</em> of number, flipping the source
-        toggle is useful for eyeballing differences, but it is
-        <strong>not an apples-to-apples formal backtest</strong>. Our real check on
-        accuracy is the held-out validation described below.</p>
+        <h3>The two boards</h3>
+        <p>The <strong>default board</strong> values current-season actuals + Steamer
+        rest-of-season. The <strong>ValuCast board</strong> values our own full-season
+        projection. Flipping the toggle is useful for eyeballing differences, but it is
+        <strong>not an apples-to-apples backtest</strong>; our real check is the held-out
+        validation below.</p>
     </section>
 
     <section>
-        <h3>How hitters are projected</h3>
-        <p>A Marcel-style projection (recent seasons weighted, regressed toward league
-        average, age-adjusted), with one upgrade: we <strong>de-noise the inputs</strong>
-        toward Statcast expected stats (Savant xBA/xSLG) before projecting, which beat the
-        plain version on held-out data.</p>
-        <p>We also tested an in-house expected-stats model, but it did not clear our validation bar, so hitters continue to use Savant xBA/xSLG as inputs.</p>
+        <h3>How the model works</h3>
+        <p>For each player we weight recent seasons, regress toward the league average
+        (more for small samples), and adjust for age. For <strong>hitters</strong> we first
+        de-noise the inputs toward Statcast expected stats (Savant xBA/xSLG) before
+        projecting. For <strong>pitchers</strong> we project per batter faced and blend a
+        pitcher's starting-vs-relieving usage continuously rather than forcing a
+        starter/reliever cliff.</p>
+
+        <details>
+            <summary>Under the hood</summary>
+            <p>A Marcel-style method: recent seasons weighted {{ hit_weights }} (most recent
+            first), regressed to the league mean, age-adjusted, with per-opportunity rate
+            components reconstructed. Hitters add <strong>Statcast input de-noising</strong>
+            (blend actual contact/power toward Savant xBA/xSLG, redistributing into
+            1B/2B/3B/HR by the player's own extra-base mix). Pitchers use a continuous
+            starter-probability blend so swingmen and converted arms aren't mis-categorised.
+            <strong>The pitching model consumes no third-party projection.</strong></p>
+        </details>
+
+        <details>
+            <summary>Model equations</summary>
+            <p><strong>Season weighting</strong> of a per-opportunity rate r over the three
+            prior seasons: weights <code>{{ hit_weights }}</code> →
+            <code>r̄ = (5·r₋₁ + 4·r₋₂ + 3·r₋₃) / (5·PA₋₁ + 4·PA₋₂ + 3·PA₋₃)</code>.</p>
+            <p><strong>Regression to the mean</strong> with a regression constant
+            <code>n_reg</code> (hitters {{ hit_n_reg }}, pitchers {{ pit_n_reg }}):
+            <code>projected = (observed·N + league·n_reg) / (N + n_reg)</code>.</p>
+            <p><strong>Age adjustment</strong> nudges the projection along an empirical
+            aging curve.</p>
+            <p><strong>Hitter de-noising</strong> (knobs α): blend the actual rate toward the
+            Savant expected rate, <code>r* = (1−α)·r + α·x</code> (x = xBA/xSLG), then
+            redistribute the extra hits/bases preserving the player's hit-type mix.</p>
+            <p><strong>Pitcher role blend</strong>: with p<sub>sp</sub> the starter
+            probability, each component is shifted continuously by
+            <code>f[c]^(h_sp − p_sp)</code> — no hard SP/RP split.</p>
+            <p><em>Worked example.</em> A hitter with AB-rate .270 / .280 / .260 over the
+            last three years (weights 5/4/3) gives a weighted .267; regressing ~600 PA of
+            signal toward a .250 league mean with <code>n_reg = {{ hit_n_reg }}</code> pulls
+            it toward ~.261; an age nudge and Statcast de-noise toward the player's xBA give
+            the final projected average.</p>
+        </details>
+
+        <details>
+            <summary>Validation details</summary>
+            <p>We hold out future seasons (<strong>{{ scorecard.hitting.seasons[0] }}–{{ scorecard.hitting.seasons[-1] }}</strong>),
+            project forward from prior seasons only (no peeking), and score against simple
+            baselines. Reported as a mean-absolute-error (MAE) ratio — below 1.0 means lower
+            error than the baseline.</p>
+            <ul>
+                <li><strong>Hitting</strong> vs classic Marcel, n = {{ scorecard.hitting.sample_size }} qualified hitter-seasons,
+                    correlation-win rate {{ scorecard.hitting.correlation_win_rate }}.
+                    {{ scorecard.hitting.eligibility }}.</li>
+                <li><strong>Pitching</strong> vs persistence (last-year carry-forward),
+                    n = {{ scorecard.pitching.sample_size }} qualified pitcher-seasons,
+                    skill correlation-win rate {{ scorecard.pitching.correlation_win_rate }}.
+                    {{ scorecard.pitching.eligibility }}.</li>
+            </ul>
+            <p>Per-stat MAE ratios:</p>
+            <p><em>Hitting (vs classic):</em>
+                {% for st in ["AVG","OBP","SLG","OPS"] %}{{ st }} {{ scorecard.hitting.per_stat_mae_ratio[st] }}{% if not loop.last %} · {% endif %}{% endfor %}
+                — counting stats ≈ 1.0 (de-noising doesn't touch them).</p>
+            <p><em>Pitching (vs persistence):</em>
+                {% for st in ["ERA","WHIP","K_9","BB_9","IP","K"] %}{{ st }} {{ scorecard.pitching.per_stat_mae_ratio[st] }}{% if not loop.last %} · {% endif %}{% endfor %}.</p>
+            <p><strong>W, SV and QS are reported separately</strong> and treated as
+            lower-confidence — they depend heavily on team decisions and opportunity, not
+            pitcher skill.</p>
+        </details>
     </section>
 
     <section>
-        <h3>How pitchers are projected</h3>
-        <p>ValuCast's pitching model projects skill and workload separately. It forecasts
-        strikeouts, walks, hits, home runs, and earned runs per batter faced, then
-        estimates each pitcher's probability of working as a starter or reliever. That
-        continuous role estimate adjusts both expected performance and workload without
-        forcing swingmen or converted pitchers into a hard SP/RP category.</p>
-        <p>The projection model is built and validated by ValuCast using public MLB
-        historical data. It does not consume Steamer or another third-party pitcher
-        projection. Wins, saves, and quality starts are included, but treated as
-        lower-confidence categories because they depend heavily on team decisions and
-        opportunity.</p>
-    </section>
-
-    <section>
-        <h3>How we validate</h3>
-        <p>Every model change has to earn its place. We hold out future seasons, project
-        forward without peeking, and only keep a change if it beats simple baselines (last
-        year's numbers, league average, a plain projection) on data the model never saw.
-        Changes that didn't clear that bar were dropped — honestly logged either way.</p>
-    </section>
-
-    <section>
-        <h3>What's ours vs. external</h3>
-        <table class="provenance-table">
-            <thead>
-                <tr><th>Component</th><th>Provenance</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>Hitting projection model</td><td>Built and validated by ValuCast</td></tr>
-                <tr><td>Hitting expected-stat inputs</td><td>Baseball Savant xBA/xSLG</td></tr>
-                <tr><td>Pitching projection model</td><td>Built and validated by ValuCast</td></tr>
-                <tr><td>Pitching historical inputs</td><td>Public MLB statistics</td></tr>
-                <tr><td>Steamer board</td><td>External benchmark and default current-season outlook</td></tr>
-            </tbody>
+        <h3>Track record — held-out scorecard</h3>
+        <p>On seasons the model never saw:</p>
+        <table class="provenance-table ledger">
+            <tr><th>Step</th><th>Held-out result</th></tr>
+            <tr>
+                <td>Pitching vs persistence (skill)</td>
+                <td><strong>{{ scorecard.pitching.aggregate_mae_ratio }}</strong> MAE ratio
+                    (~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error) —
+                    IP and K roughly <strong>neutral</strong>; the win is driven by ERA / WHIP / K-9 / BB-9.</td>
+            </tr>
+            <tr>
+                <td>Hitting vs classic Marcel</td>
+                <td><strong>{{ scorecard.hitting.aggregate_mae_ratio }}</strong> aggregate MAE ratio
+                    (~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error) — gains
+                    concentrated in <strong>AVG/OBP/SLG/OPS</strong>.</td>
+            </tr>
+            {% for row in scorecard.not_shipped %}
+            <tr><td>{{ row.name }}</td><td>{{ row.verdict }} — <strong>not shipped</strong></td></tr>
+            {% endfor %}
         </table>
-        <p>No third-party pitcher projections are used anywhere in the ValuCast board.</p>
     </section>
 
     <section>
-        <h3>Track record</h3>
-        <p>On held-out seasons, both the hitting and pitching models beat their plain
-        baselines. A couple of tuning experiments and the in-house expected-stats model did
-        not, and were not shipped.</p>
+        <h3>What we have and haven't proven</h3>
+        <p>Our validation is against internal baselines (persistence and classic Marcel),
+        which it beats on held-out data. ValuCast has <strong>not yet proven</strong> it
+        beats Steamer or ZiPS: we lack matching archived preseason projections for a fair,
+        apples-to-apples historical backtest. So Steamer is an <strong>external comparison
+        board, with a fair historical benchmark pending</strong> — not a benchmark we've
+        beaten.</p>
     </section>
 </article>
 {% endblock %}
