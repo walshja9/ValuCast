@@ -22,6 +22,13 @@
         {% endif %}
     </nav>
 
+    {# Non-redraft horizons have no mode radios, so the form MUST carry the mode
+       explicitly — htmx detail/rankings/export requests drop it otherwise and the
+       server falls back to the redraft board. #}
+    {% if horizon != 'redraft' %}
+    <input type="hidden" name="mode" value="{{ mode }}">
+    {% endif %}
+
     {% if horizon == 'redraft' %}
     <fieldset class="scoring-seg" aria-label="Scoring format">
         <label class="seg-opt">
@@ -243,7 +250,7 @@ function toggleDetail(playerId, row) {
     const detailRow = document.getElementById('detail-' + playerId);
     if (!detailRow) return;
     const btn = row && row.querySelector('.detail-toggle');
-    if (detailRow.style.display === 'table-row') {
+    if (detailRow.style.display !== 'none') {
         detailRow.style.display = 'none';
         if (btn) btn.setAttribute('aria-expanded', 'false');
         return;
@@ -256,7 +263,9 @@ function toggleDetail(playerId, row) {
         });
         detailRow.dataset.loaded = 'true';
     }
-    detailRow.style.display = 'table-row';
+    /* Clear the inline style so CSS picks the display: table-row on desktop,
+       block (card) in the mobile layout. Forcing 'table-row' broke mobile. */
+    detailRow.style.display = '';
     if (btn) btn.setAttribute('aria-expanded', 'true');
 }
 </script>
