@@ -39,16 +39,9 @@
     </fieldset>
     {% endif %}
 
-    {% if mode == 'dd_dynasty' %}
-    <div class="config-bar config-bar-locked">
-        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value. League customization is coming.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
-    </div>
-    {% elif mode == 'prospects' %}
-    <div class="config-bar config-bar-locked">
-        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, MiLB stats, ETA, and level.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
-    </div>
-    {% else %}
-    <div class="config-bar">
+    {# One consolidated, sticky toolbar with horizon-specific contents. #}
+    {% if horizon == 'redraft' %}
+    <div class="rank-toolbar" id="rank-toolbar">
         <span class="config-summary">{{ config_summary }}</span>
         <fieldset class="source-seg" aria-label="Projection source">
             <label class="source-opt">
@@ -60,6 +53,31 @@
                 <span>ValuCast H+P</span>
             </label>
         </fieldset>
+        <fieldset class="pool-toggle" aria-label="Player pool">
+            <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
+        </fieldset>
+        <select name="position" class="position-select">
+            <option value="">All Positions</option>
+            {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
+            <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
+        {% if mode in ['categories', 'roto'] %}
+        <fieldset class="source-seg" aria-label="Column display">
+            <label class="source-opt">
+                <input type="radio" name="display" value="projections" {% if (display or 'projections') != 'values' %}checked{% endif %}>
+                <span>Projections</span>
+            </label>
+            <label class="source-opt">
+                <input type="radio" name="display" value="values" {% if display == 'values' %}checked{% endif %}>
+                <span>Category value</span>
+            </label>
+        </fieldset>
+        {% endif %}
+        <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
 
@@ -74,83 +92,40 @@
             {% include "partials/setup_categories.html" %}
         {% endif %}
     </section>
-    {% endif %}
 
-    {% if mode != 'prospects' %}
-    <section class="filter-bar">
-        <div class="pool-toggle">
-            <label class="pool-btn">
-                <input type="radio" name="pool" value=""
-                       {{ 'checked' if not pool else '' }}>
-                <span>All</span>
-            </label>
-            {% if mode == 'dd_dynasty' %}
-            <label class="pool-btn">
-                <input type="radio" name="pool" value="mlb"
-                       {{ 'checked' if pool == 'mlb' else '' }}>
-                <span>MLB</span>
-            </label>
-            {% endif %}
-            <label class="pool-btn">
-                <input type="radio" name="pool" value="hitter"
-                       {{ 'checked' if pool == 'hitter' else '' }}>
-                <span>Hitters</span>
-            </label>
-            <label class="pool-btn">
-                <input type="radio" name="pool" value="pitcher"
-                       {{ 'checked' if pool == 'pitcher' else '' }}>
-                <span>Pitchers</span>
-            </label>
-            {% if mode == 'dd_dynasty' %}
-            <label class="pool-btn">
-                <input type="radio" name="pool" value="prospect"
-                       {{ 'checked' if pool == 'prospect' else '' }}>
-                <span>Prospects</span>
-            </label>
-            {% endif %}
-        </div>
-
-        {% if mode in ['categories', 'roto'] %}
-        <fieldset class="source-seg" aria-label="Column display">
-            <label class="source-opt">
-                <input type="radio" name="display" value="projections" {% if (display or 'projections') != 'values' %}checked{% endif %}>
-                <span>Projections</span>
-            </label>
-            <label class="source-opt">
-                <input type="radio" name="display" value="values" {% if display == 'values' %}checked{% endif %}>
-                <span>Category value</span>
-            </label>
+    {% elif horizon == 'dynasty' %}
+    <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
+        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value. League customization is coming.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <fieldset class="pool-toggle" aria-label="Player pool">
+            <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
+            <label class="pool-btn"><input type="radio" name="pool" value="prospect" {{ 'checked' if pool == 'prospect' else '' }}><span>Prospects</span></label>
         </fieldset>
-        {% endif %}
-
         <select name="position" class="position-select">
             <option value="">All Positions</option>
             {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
             <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
             {% endfor %}
         </select>
-
-        <input type="text" name="search" id="search-input"
-               class="search-input" placeholder="Search players..."
-               value="{{ search }}">
-
+        <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
-    </section>
-    {% else %}
-    <section class="filter-bar">
+    </div>
+
+    {% else %}{# prospects #}
+    <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
+        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, MiLB stats, ETA, and level.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
         <select name="position" class="position-select">
             <option value="">All Positions</option>
             {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
             <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
             {% endfor %}
         </select>
-        <input type="text" name="search" id="search-input"
-               class="search-input" placeholder="Search prospects..."
-               value="{{ search }}">
+        <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
         <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
-    </section>
+    </div>
     {% endif %}
-</form>
 
 <div id="rankings-container">
     {% if mode == 'dd_dynasty' or mode == 'prospects' %}
@@ -159,6 +134,7 @@
     {% include "partials/rankings_table.html" %}
     {% endif %}
 </div>
+</form>
 
 {% if mode != 'dd_dynasty' and mode != 'prospects' %}
 <div id="compare-bar" class="compare-bar" style="display:none;">
@@ -171,6 +147,18 @@
 {% endif %}
 
 <script>
+// Publish the (wrapping) toolbar's height so the sticky table header sits flush beneath it.
+(function () {
+    var bar = document.getElementById('rank-toolbar');
+    if (!bar) return;
+    var publish = function () {
+        document.documentElement.style.setProperty('--toolbar-h', bar.offsetHeight + 'px');
+    };
+    if (window.ResizeObserver) { new ResizeObserver(publish).observe(bar); }
+    window.addEventListener('resize', publish);
+    publish();
+})();
+
 function toggleSetup() {
     const panel = document.getElementById('setup-panel');
     const btn = document.querySelector('.customize-toggle');

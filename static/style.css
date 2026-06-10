@@ -87,6 +87,29 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .seg-opt:has(input:checked) > span { background: var(--c-blue-strong); color: #fff; }
 .seg-opt input:focus-visible + span { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
+/* Consolidated sticky toolbar — pinned under the tabs, above the sticky table header. */
+.rank-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #fff;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.rank-toolbar-locked { background: #f5f3ff; border-color: #ddd6fe; }
+.rank-toolbar .config-summary { font-size: 0.85rem; color: var(--c-muted); font-weight: 500; }
+.rank-toolbar .export-btn { margin-left: auto; }
+.rank-toolbar .customize-toggle { margin-left: 0; }
+/* pool-toggle is now a <fieldset> — strip default fieldset chrome. */
+.pool-toggle { padding: 0; margin: 0; min-width: 0; }
+
 .source-seg {
     display: inline-flex;
     border: 1px solid var(--c-border-strong);
@@ -305,14 +328,13 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     background: #fff;
     border: 1px solid var(--c-border);
     border-radius: 8px;
-    overflow: hidden;
     font-size: 0.8rem;
 }
 .rankings-table thead {
     background: #f9fafb;
     position: sticky;
-    top: 0;
-    z-index: 1;
+    top: var(--toolbar-h, 44px);
+    z-index: 10;
 }
 .rankings-table th {
     padding: 0.45rem 0.4rem;
@@ -490,6 +512,10 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     .mode-btn { flex: 1; text-align: center; padding: 0.5rem 0.5rem; font-size: 0.8rem; }
     .cat-grid, .points-grid { grid-template-columns: 1fr; gap: 1rem; }
     .filter-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    /* On mobile (card layout, no sticky table header) a tall pinned toolbar would eat
+       the screen — stack it full-width and let it scroll normally. */
+    .rank-toolbar { position: static; flex-direction: column; align-items: stretch; }
+    .rank-toolbar .export-btn, .rank-toolbar .customize-toggle { margin-left: 0; }
     .pool-toggle { width: 100%; }
     .pool-btn { flex: 1; text-align: center; }
     .search-input { width: 100%; }
