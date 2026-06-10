@@ -77,7 +77,7 @@
             </label>
         </fieldset>
         {% endif %}
-        <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
+        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
 
@@ -110,7 +110,7 @@
             {% endfor %}
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
-        <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
+        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>
 
     {% else %}{# prospects #}
@@ -123,7 +123,7 @@
             {% endfor %}
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
-        <a id="export-btn" class="export-btn" onclick="exportCsv(event)">Export CSV</a>
+        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>
     {% endif %}
 
@@ -214,9 +214,13 @@ function sortTable(colIndex) {
     const th = table.querySelectorAll('th')[colIndex];
     const ascending = th.dataset.sort === 'asc';
 
-    // Reset all headers
-    table.querySelectorAll('th').forEach(h => delete h.dataset.sort);
+    // Reset all headers (visual + aria-sort), then mark this one.
+    table.querySelectorAll('th').forEach(h => {
+        delete h.dataset.sort;
+        if (h.hasAttribute('aria-sort')) h.setAttribute('aria-sort', 'none');
+    });
     th.dataset.sort = ascending ? 'desc' : 'asc';
+    th.setAttribute('aria-sort', ascending ? 'descending' : 'ascending');
 
     rows.sort((a, b) => {
         const aText = a.children[colIndex]?.textContent.trim().replace('$', '').replace('—', '-999');
@@ -248,8 +252,10 @@ function exportCsv(e) {
 function toggleDetail(playerId, row) {
     const detailRow = document.getElementById('detail-' + playerId);
     if (!detailRow) return;
+    const btn = row && row.querySelector('.detail-toggle');
     if (detailRow.style.display === 'table-row') {
         detailRow.style.display = 'none';
+        if (btn) btn.setAttribute('aria-expanded', 'false');
         return;
     }
     if (!detailRow.dataset.loaded) {
@@ -261,6 +267,7 @@ function toggleDetail(playerId, row) {
         detailRow.dataset.loaded = 'true';
     }
     detailRow.style.display = 'table-row';
+    if (btn) btn.setAttribute('aria-expanded', 'true');
 }
 </script>
 {% endblock %}

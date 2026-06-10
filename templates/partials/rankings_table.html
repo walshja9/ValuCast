@@ -6,19 +6,18 @@
 <table class="rankings-table">
     <thead>
         <tr>
-            <th class="col-rank sortable" onclick="sortTable(0)">#</th>
+            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">#</button></th>
             <th class="col-compare"></th>
-            <th class="col-name sortable" onclick="sortTable(2)">Player</th>
+            <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(2)">Player</button></th>
             <th class="col-pos">Pos</th>
-            <th class="col-team sortable" onclick="sortTable(4)">Team</th>
-            <th class="col-dollars sortable" onclick="sortTable(5)">$</th>
-            <th class="col-value sortable" onclick="sortTable(6)">Value</th>
+            <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Team</button></th>
+            <th class="col-dollars sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">$</button></th>
+            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">Value</button></th>
             {% for col in display_columns %}
             {% if display == 'values' %}
-            <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})"
-                title="Category value: this category's contribution to total value (not a projection)">{{ col.id }} value</th>
+            <th class="col-cat sortable" aria-sort="none" title="Category value: this category's contribution to total value (not a projection)"><button type="button" class="sort-btn" onclick="sortTable({{ loop.index0 + 7 }})">{{ col.id }} value</button></th>
             {% else %}
-            <th class="col-cat sortable" onclick="sortTable({{ loop.index0 + 7 }})" title="{{ col.label }}">{{ col.id }}</th>
+            <th class="col-cat sortable" aria-sort="none" title="{{ col.label }}"><button type="button" class="sort-btn" onclick="sortTable({{ loop.index0 + 7 }})">{{ col.id }}</button></th>
             {% endif %}
             {% endfor %}
         </tr>
@@ -32,9 +31,10 @@
         <tr class="player-row {% if tier != prev_tier %}tier-break{% endif %}" onclick="toggleDetail('{{ result.player.id }}', this)">
             <td class="col-rank">{{ overall_ranks.get(result.player.id) or '—' }}</td>
             <td class="col-compare">
-                <span class="compare-cb" onclick="event.stopPropagation(); toggleCompare('{{ result.player.id }}', this)" title="Compare">+</span>
+                <button type="button" class="compare-cb" aria-label="Add {{ result.player.name }} to compare" onclick="event.stopPropagation(); toggleCompare('{{ result.player.id }}', this)">+</button>
             </td>
             <td class="col-name">
+                <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ result.player.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ result.player.id }}', this.closest('tr'))">▸</button>
                 <strong>{{ result.player.name }}</strong>
                 {% set pos_rank = position_ranks.get(result.player.id, '') %}
                 {% if pos_rank %}<span class="pos-rank">{{ pos_rank }}</span>{% endif %}

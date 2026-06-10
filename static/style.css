@@ -299,9 +299,11 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     transition: background 0.15s;
 }
 .pool-btn:last-child { border-right: none; }
-.pool-btn input[type="radio"] { display: none; }
+/* Hidden but focusable (clip) — NOT display:none, which drops it from tab order. */
+.pool-btn input[type="radio"] { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
 .pool-btn:has(input:checked) { background: #1a1a2e; color: #fff; }
 .pool-btn:hover:not(:has(input:checked)) { background: #f0f0f5; }
+.pool-btn:has(input:focus-visible) { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
 .position-select {
     padding: 0.35rem 0.5rem;
@@ -411,6 +413,8 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
 .sortable { cursor: pointer; user-select: none; }
 .sortable:hover { color: var(--c-blue); }
+.sort-btn { background: none; border: none; padding: 0; margin: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
+.sort-btn:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 2px; }
 .sortable[data-sort="asc"]::after { content: " \25B2"; font-size: 0.65rem; }  /* micro */
 .sortable[data-sort="desc"]::after { content: " \25BC"; font-size: 0.65rem; }  /* micro */
 
@@ -423,13 +427,22 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
 .compare-cb {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 22px; height: 22px;
+    width: 22px; height: 22px; padding: 0;
     border: 1px solid var(--c-border-strong); border-radius: 4px;
-    font-size: 0.8rem; color: #9ca3af;
+    background: #fff; font: inherit; font-size: 0.8rem; color: #9ca3af;
     cursor: pointer; transition: all 0.15s; user-select: none;
 }
 .compare-cb:hover { border-color: var(--c-blue); color: var(--c-blue); }
 .compare-cb.selected { background: var(--c-blue); color: #fff; border-color: var(--c-blue); }
+.compare-cb:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 1px; }
+
+/* Detail-toggle button in the player-name cell (keyboard path; row click stays mouse-only). */
+.detail-toggle {
+    background: none; border: none; padding: 0 0.3rem 0 0; margin: 0;
+    font: inherit; color: var(--c-muted); cursor: pointer; line-height: 1;
+}
+.detail-toggle[aria-expanded="true"] { transform: rotate(90deg); }
+.detail-toggle:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 1px; }
 
 .detail-row td { padding: 0; background: #fafbff; }
 
