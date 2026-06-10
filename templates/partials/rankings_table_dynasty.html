@@ -6,13 +6,13 @@
 <table class="rankings-table">
     <thead>
         <tr>
-            <th class="col-rank sortable" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}#{% endif %}</th>
-            <th class="col-name sortable" onclick="sortTable(1)">Player</th>
+            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}#{% endif %}</button></th>
+            <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
             <th class="col-pos">Pos</th>
-            <th class="col-team sortable" onclick="sortTable(3)">Team</th>
-            <th class="col-age sortable" onclick="sortTable(4)">Age</th>
-            <th class="col-value sortable" onclick="sortTable(5)">Dynasty Value</th>
-            <th class="col-risk sortable" onclick="sortTable(6)">Risk</th>
+            <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
+            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
+            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
+            <th class="col-risk sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">Risk</button></th>
             <th class="col-range">Range</th>
         </tr>
     </thead>
@@ -30,6 +30,7 @@
                 {% endif %}
             </td>
             <td class="col-name">
+                <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ row.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ row.id }}', this.closest('tr'))">▸</button>
                 <strong>{{ row.name }}</strong>
                 {% if mode == 'prospects' %}
                 <span class="pos-rank">#{{ row.dynasty_rank }} overall</span>

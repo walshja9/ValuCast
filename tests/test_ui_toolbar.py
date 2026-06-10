@@ -38,6 +38,16 @@ class TestToolbar(unittest.TestCase):
         self.assertNotIn('name="pool"', html)
         self.assertNotIn('name="source"', html)
 
+    def test_scoring_switch_updates_display_slot_oob(self):
+        # P1 fix: switching Categories<->Points must restructure the toolbar (the
+        # Category-value toggle), not just the table. The OOB #display-slot does it.
+        cats = self.client.get("/rankings?mode=categories").data.decode("utf-8")
+        self.assertIn('id="display-slot" hx-swap-oob', cats)
+        self.assertIn('name="display"', cats)              # toggle present for categories
+        pts = self.client.get("/rankings?mode=points").data.decode("utf-8")
+        self.assertIn('id="display-slot" hx-swap-oob', pts)  # slot still emitted...
+        self.assertNotIn('name="display"', pts)              # ...but emptied for points
+
 
 class TestStickyOffset(unittest.TestCase):
     def setUp(self):

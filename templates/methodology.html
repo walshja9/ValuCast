@@ -39,45 +39,52 @@
 
     <section>
         <h3>How the model works</h3>
-        <p>For each player we weight recent seasons, regress toward the league average
-        (more for small samples), and adjust for age. For <strong>hitters</strong> we first
-        de-noise the inputs toward Statcast expected stats (Savant xBA/xSLG) before
-        projecting. For <strong>pitchers</strong> we project per batter faced and blend a
-        pitcher's starting-vs-relieving usage continuously rather than forcing a
-        starter/reliever cliff.</p>
+        <p>For each player we weight recent seasons and regress toward the league average
+        (more for small samples). <strong>Hitters</strong> are then age-adjusted and
+        de-noised toward Statcast expected stats (Savant xBA/xSLG) before projecting.
+        <strong>Pitchers</strong> are projected per batter faced with a continuous
+        starting-vs-relieving usage blend (no hard starter/reliever cliff). <em>Age
+        adjustment applies to hitters only — the v1 pitching model has no aging curve, a
+        planned future improvement.</em></p>
 
         <details>
             <summary>Under the hood</summary>
             <p>A Marcel-style method: recent seasons weighted {{ hit_weights }} (most recent
-            first), regressed to the league mean, age-adjusted, with per-opportunity rate
-            components reconstructed. Hitters add <strong>Statcast input de-noising</strong>
-            (blend actual contact/power toward Savant xBA/xSLG, redistributing into
-            1B/2B/3B/HR by the player's own extra-base mix). Pitchers use a continuous
-            starter-probability blend so swingmen and converted arms aren't mis-categorised.
-            <strong>The pitching model consumes no third-party projection.</strong></p>
+            first), regressed to the league mean, with per-component rate (events ÷
+            opportunities) reconstructed into counts. Hitters are age-adjusted and add
+            <strong>Statcast input de-noising</strong> (blend actual contact/power toward
+            Savant xBA/xSLG, redistributing into 1B/2B/3B/HR by the player's own extra-base
+            mix). Pitchers use a continuous starter-probability blend so swingmen and
+            converted arms aren't mis-categorised; the <strong>v1 pitching model has no age
+            curve</strong> (a planned improvement) and <strong>consumes no third-party
+            projection.</strong></p>
         </details>
 
         <details>
             <summary>Model equations</summary>
-            <p><strong>Season weighting</strong> of a per-opportunity rate r over the three
-            prior seasons: weights <code>{{ hit_weights }}</code> →
-            <code>r̄ = (5·r₋₁ + 4·r₋₂ + 3·r₋₃) / (5·PA₋₁ + 4·PA₋₂ + 3·PA₋₃)</code>.</p>
-            <p><strong>Regression to the mean</strong> with a regression constant
-            <code>n_reg</code> (hitters {{ hit_n_reg }}, pitchers {{ pit_n_reg }}):
-            <code>projected = (observed·N + league·n_reg) / (N + n_reg)</code>.</p>
-            <p><strong>Age adjustment</strong> nudges the projection along an empirical
-            aging curve.</p>
+            <p><strong>Season weighting</strong> is done per component as <em>weighted
+            events ÷ weighted opportunities</em> (not a weighted rate). For a component with
+            event count E and opportunities PA, weights <code>{{ hit_weights }}</code>:
+            <code>rate = (5·E₋₁ + 4·E₋₂ + 3·E₋₃) / (5·PA₋₁ + 4·PA₋₂ + 3·PA₋₃)</code>.</p>
+            <p><strong>Regression to the mean</strong> over N opportunities with a regression
+            constant <code>n_reg</code> (hitters {{ hit_n_reg }}, pitchers {{ pit_n_reg }}):
+            <code>projected_rate = (rate·N + league_rate·n_reg) / (N + n_reg)</code>, then the
+            projected count is rebuilt as <code>projected_rate × projected_PA</code>.</p>
+            <p><strong>Age adjustment (hitters only)</strong> nudges hitter projections along
+            an empirical aging curve. The v1 pitching model applies no aging curve.</p>
             <p><strong>Hitter de-noising</strong> (knobs α): blend the actual rate toward the
-            Savant expected rate, <code>r* = (1−α)·r + α·x</code> (x = xBA/xSLG), then
+            Savant expected rate, <code>rate* = (1−α)·rate + α·x</code> (x = xBA/xSLG), then
             redistribute the extra hits/bases preserving the player's hit-type mix.</p>
             <p><strong>Pitcher role blend</strong>: with p<sub>sp</sub> the starter
             probability, each component is shifted continuously by
             <code>f[c]^(h_sp − p_sp)</code> — no hard SP/RP split.</p>
-            <p><em>Worked example.</em> A hitter with AB-rate .270 / .280 / .260 over the
-            last three years (weights 5/4/3) gives a weighted .267; regressing ~600 PA of
-            signal toward a .250 league mean with <code>n_reg = {{ hit_n_reg }}</code> pulls
-            it toward ~.261; an age nudge and Statcast de-noise toward the player's xBA give
-            the final projected average.</p>
+            <p><em>Worked example (HR rate).</em> A hitter with 30 HR / 600 PA, 26 / 580,
+            20 / 520 over the last three seasons (weights 5/4/3): the weighted rate is
+            <code>(5·30 + 4·26 + 3·20) / (5·600 + 4·580 + 3·520) = 314 / 6880 ≈ .046</code>
+            HR per PA. Regressing ~600 PA of that signal toward a ~.033 league HR rate with
+            <code>n_reg = {{ hit_n_reg }}</code> gives
+            <code>(.046·600 + .033·1200) / (600 + 1200) ≈ .037</code>; reconstructing over a
+            projected ~600 PA yields about <strong>22 projected HR</strong>.</p>
         </details>
 
         <details>

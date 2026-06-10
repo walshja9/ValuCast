@@ -7,6 +7,8 @@
 
 <span class="config-summary" hx-swap-oob="innerHTML:.config-summary">{{ config_summary }}</span>
 
+<span id="display-slot" hx-swap-oob="innerHTML:#display-slot">{% include "partials/_display_toggle.html" %}</span>
+
 <section id="setup-panel" class="setup-panel" hx-swap-oob="innerHTML:#setup-panel">
     {% if mode == 'points' %}
         {% include "partials/setup_points.html" %}

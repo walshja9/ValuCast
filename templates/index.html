@@ -65,18 +65,7 @@
             {% endfor %}
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
-        {% if mode in ['categories', 'roto'] %}
-        <fieldset class="source-seg" aria-label="Column display">
-            <label class="source-opt">
-                <input type="radio" name="display" value="projections" {% if (display or 'projections') != 'values' %}checked{% endif %}>
-                <span>Projections</span>
-            </label>
-            <label class="source-opt">
-                <input type="radio" name="display" value="values" {% if display == 'values' %}checked{% endif %}>
-                <span>Category value</span>
-            </label>
-        </fieldset>
-        {% endif %}
+        <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
@@ -212,15 +201,16 @@ function sortTable(colIndex) {
     const rows = Array.from(tbody.querySelectorAll('tr.player-row'));
 
     const th = table.querySelectorAll('th')[colIndex];
-    const ascending = th.dataset.sort === 'asc';
+    // ONE next-direction variable drives order, data-sort, aria-sort, and the arrow —
+    // so the displayed order always agrees with the announced sort state.
+    const nextAsc = th.dataset.sort !== 'asc';
 
-    // Reset all headers (visual + aria-sort), then mark this one.
     table.querySelectorAll('th').forEach(h => {
         delete h.dataset.sort;
         if (h.hasAttribute('aria-sort')) h.setAttribute('aria-sort', 'none');
     });
-    th.dataset.sort = ascending ? 'desc' : 'asc';
-    th.setAttribute('aria-sort', ascending ? 'descending' : 'ascending');
+    th.dataset.sort = nextAsc ? 'asc' : 'desc';
+    th.setAttribute('aria-sort', nextAsc ? 'ascending' : 'descending');
 
     rows.sort((a, b) => {
         const aText = a.children[colIndex]?.textContent.trim().replace('$', '').replace('—', '-999');
@@ -228,9 +218,9 @@ function sortTable(colIndex) {
         const aNum = parseFloat(aText);
         const bNum = parseFloat(bText);
         if (!isNaN(aNum) && !isNaN(bNum)) {
-            return ascending ? aNum - bNum : bNum - aNum;
+            return nextAsc ? aNum - bNum : bNum - aNum;
         }
-        return ascending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        return nextAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
     });
 
     // Re-insert rows, keeping each detail row paired with its player row

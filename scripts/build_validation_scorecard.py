@@ -94,12 +94,18 @@ def _agg(seasons, skill_only=False):
 
 
 def main():
+    # The hitting model consumes T-1..T-3 (offset-aligned prior seasons); the de-noise
+    # reads Statcast snapshots for those SAME prior seasons. The pitching model consumes
+    # T-1..T-3. Require all of it so a missing snapshot fails loud, never silently
+    # degrading the model to classic and publishing a wrong number.
     for yr in HIT_SEASONS:
-        _require(DATA / "historical" / f"hitting_{yr}.json")
-        _require(DATA / "historical" / f"hitting_{yr - 1}.json")
+        for back in range(0, 4):                    # T, T-1, T-2, T-3
+            _require(DATA / "historical" / f"hitting_{yr - back}.json")
+        for back in range(1, 4):                    # de-noise inputs: Statcast T-1..T-3
+            _require(DATA / "statcast" / f"hitting_{yr - back}.json")
     for yr in PIT_SEASONS:
-        _require(DATA / "pitching" / f"pitching_{yr}.json")
-        _require(DATA / "pitching" / f"pitching_{yr - 1}.json")
+        for back in range(0, 4):                    # T, T-1, T-2, T-3
+            _require(DATA / "pitching" / f"pitching_{yr - back}.json")
     _require(IDENTITY)
 
     identities = json.loads(IDENTITY.read_text(encoding="utf-8"))
