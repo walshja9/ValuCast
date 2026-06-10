@@ -16,17 +16,21 @@
             <h4>Category Breakdown</h4>
             <table class="detail-table">
                 <thead>
-                    <tr><th>Category</th><th>Raw</th><th>Z-Score</th><th>Value</th></tr>
+                    <tr><th>Category</th><th>Raw</th><th>Z-Score</th><th></th><th>Value</th></tr>
                 </thead>
                 <tbody>
                     {% for cat in active_categories %}
                     {% set raw = result.raw_values.get(cat.id) %}
                     {% if raw is not none %}
+                    {% set z = result.z_scores.get(cat.id, 0) %}
                     <tr>
                         <td>{{ cat.label }}</td>
                         <td>{{ "%.2f" | format(raw) }}</td>
-                        <td class="{{ 'val-pos' if result.z_scores.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if result.z_scores.get(cat.id, 0) < 0 else '' }}">
-                            {{ "%.2f" | format(result.z_scores.get(cat.id, 0)) }}
+                        <td class="{{ 'val-pos' if z > 0 else '' }}{{ 'val-neg' if z < 0 else '' }}">
+                            {{ "%.2f" | format(z) }}
+                        </td>
+                        <td class="zbar-cell" aria-hidden="true">
+                            <div class="zbar"><div class="zbar-fill {{ 'pos' if z >= 0 else 'neg' }}" style="width: {{ "%.1f" | format(([z | abs, 3.0] | min) / 3.0 * 50) }}%"></div></div>
                         </td>
                         <td class="{{ 'val-pos' if result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if result.category_values.get(cat.id, 0) < 0 else '' }}">
                             {{ "%.2f" | format(result.category_values.get(cat.id, 0)) }}
@@ -37,6 +41,8 @@
                 </tbody>
             </table>
         </div>
+
+        {% include "partials/_statcast_bars.html" %}
 
         <div class="detail-section">
             <h4>2026 Season Outlook</h4>

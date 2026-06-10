@@ -341,7 +341,9 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     border-radius: 8px;
     font-size: 0.8rem;
 }
-.rankings-table thead {
+/* Direct child only — the expanded detail row nests its own tables whose headers
+   must NOT inherit the board's sticky treatment. */
+.rankings-table > thead {
     background: #f9fafb;
     position: sticky;
     top: var(--toolbar-h, 44px);
@@ -541,21 +543,42 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     .pool-toggle { width: 100%; }
     .pool-btn { flex: 1; text-align: center; }
     .search-input { width: 100%; }
-    .rankings-table thead { display: none; }
-    .rankings-table, .rankings-table tbody, .rankings-table tr, .rankings-table td { display: block; width: 100%; }
-    .rankings-table tr.player-row {
+    /* Card layout: block-ify ONLY the board table's own rows/cells (direct children).
+       Nested tables inside the expanded detail row must keep table display — the old
+       descendant selectors flattened the detail card's category table and hid its
+       header row. */
+    .rankings-table > thead { display: none; }
+    .rankings-table, .rankings-table > tbody, .rankings-table > tbody > tr,
+    .rankings-table > tbody > tr > td { display: block; width: 100%; }
+    .rankings-table > tbody > tr.player-row {
         background: #fff; border: 1px solid var(--c-border); border-radius: 8px;
         margin-bottom: 0.5rem; padding: 0.75rem; position: relative;
     }
-    .rankings-table td { border: none; padding: 0.15rem 0; }
-    .col-rank { position: absolute; top: 0.75rem; right: 0.75rem; width: auto; font-size: 0.8rem; }
-    .col-compare { display: none; }
-    .col-name { font-size: 1rem; }
-    .col-value { text-align: left; font-size: 1rem; margin-top: 0.25rem; }
-    .col-cat { display: none; }
-    .col-pos, .col-team { display: inline; }
-    .col-pos::after { content: " | "; }
+    .rankings-table > tbody > tr > td { border: none; padding: 0.15rem 0; }
+    /* Column rules are td-qualified so they BEAT the generic direct-child td rule —
+       bare .col-* selectors lose on specificity and the columns leak into the cards. */
+    .rankings-table td.col-rank { position: absolute; top: 0.75rem; right: 0.75rem; width: auto; font-size: 0.8rem; }
+    .rankings-table td.col-compare, .rankings-table td.col-cat,
+    .rankings-table td.col-age, .rankings-table td.col-range { display: none; }
+    .rankings-table td.col-name { font-size: 1rem; }
+    .rankings-table td.col-value { text-align: left; font-size: 1rem; margin-top: 0.25rem; }
+    .rankings-table td.col-value::before {
+        content: "Value"; display: block; font-size: 0.8rem; font-weight: 600;
+        color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .rankings-table td.col-dollars { text-align: left; }
+    .rankings-table td.col-pos, .rankings-table td.col-team { display: inline; width: auto; }
+    .rankings-table td.col-pos::after { content: " | "; }
+    /* Expanded detail: frame it as a card attached beneath its row. */
+    .rankings-table > tbody > tr.detail-row { margin: -0.35rem 0 0.5rem; }
+    .rankings-table > tbody > tr.detail-row > td {
+        padding: 0; background: #fafbff; border: 1px solid var(--c-border);
+        border-radius: 8px; overflow: hidden;
+    }
+    .player-detail { padding: 0.75rem; }
     .detail-body { grid-template-columns: 1fr; }
+    .pct-row { max-width: none; }
+    .pct-label { flex-basis: 96px; }
     .compare-modal { width: 95%; padding: 1rem; }
     .config-bar { flex-direction: column; gap: 0.4rem; align-items: stretch; }
     .customize-toggle { width: 100%; text-align: center; }
@@ -646,6 +669,40 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
 .col-risk { text-align: center; white-space: nowrap; }
 .col-range { text-align: center; white-space: nowrap; font-size: 0.85rem; color: var(--c-muted); }
+
+/* Statcast percentile sliders (Savant-style) */
+.statcast-section h4 { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.statcast-asof { text-transform: none; letter-spacing: 0; font-weight: 400; color: #9ca3af; font-size: 0.8rem; }
+.pct-group + .pct-group { margin-top: 0.75rem; }
+.pct-group-label {
+    font-size: 0.8rem; font-weight: 700; color: var(--c-muted);
+    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem;
+}
+.pct-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.2rem 0; max-width: 560px; }
+.pct-label { flex: 0 0 110px; font-size: 0.8rem; color: var(--c-text); }
+.pct-track { position: relative; flex: 1; height: 8px; background: #e8eaf0; border-radius: 4px; }
+.pct-fill { height: 100%; border-radius: 4px; min-width: 4px; }
+.pct-num {
+    position: absolute; top: 50%;
+    left: clamp(11px, var(--pct, 0%), calc(100% - 11px));
+    transform: translate(-50%, -50%);
+    min-width: 22px; height: 22px; line-height: 22px; text-align: center;
+    border-radius: 11px; color: #fff; font-size: 0.8rem; font-weight: 700;
+    border: 2px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* Outbound player links (FanGraphs / Savant full chart pages) */
+.player-links { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: baseline; font-size: 0.85rem; margin-top: 0.25rem; }
+.player-links-label { color: var(--c-muted); font-size: 0.8rem; font-weight: 600; }
+.player-links a { font-weight: 600; }
+
+/* Diverging z-score bars in the category breakdown */
+.zbar-cell { width: 84px; min-width: 56px; }
+.zbar { position: relative; height: 8px; background: #eef0f4; border-radius: 4px; }
+.zbar::before { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: #cbd5e1; }
+.zbar-fill { position: absolute; top: 0; bottom: 0; max-width: 50%; }
+.zbar-fill.pos { left: 50%; background: var(--c-pos); border-radius: 0 4px 4px 0; }
+.zbar-fill.neg { right: 50%; background: var(--c-neg); border-radius: 4px 0 0 4px; }
 
 .risk-block {
     margin-top: 0.5rem;

@@ -1,0 +1,33 @@
+{# Savant-style percentile sliders + outbound player links.
+   Context: statcast_groups, statcast_asof, player_links (all optional). #}
+{% if statcast_groups %}
+<div class="detail-section statcast-section">
+    <h4>Statcast Percentiles
+        <span class="statcast-asof">via Baseball Savant{% if statcast_asof %} · {{ statcast_asof }}{% endif %}</span>
+    </h4>
+    {% for group in statcast_groups %}
+    <div class="pct-group">
+        {% if statcast_groups | length > 1 %}
+        <div class="pct-group-label">{{ group.label }}</div>
+        {% endif %}
+        {% for m in group.metrics %}
+        <div class="pct-row">
+            <span class="pct-label">{{ m.label }}</span>
+            <div class="pct-track" role="img" aria-label="{{ m.label }}: {{ m.pct }}th percentile">
+                <div class="pct-fill" style="width: {{ m.pct }}%; background: {{ m.color }};"></div>
+                <span class="pct-num" style="--pct: {{ m.pct }}%; background: {{ m.color }};">{{ m.pct }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% if player_links %}
+<div class="player-links">
+    <span class="player-links-label">Full charts:</span>
+    {% for link in player_links %}
+    <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }} ↗</a>
+    {% endfor %}
+</div>
+{% endif %}

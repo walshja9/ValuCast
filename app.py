@@ -28,7 +28,9 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
-from web.season_outlook import find_season_outlook
+from web.season_outlook import find_season_outlook, find_outlook_projections
+from web.statcast_store import StatcastStore
+from web.player_links import build_player_links
 from league_values.risk import RiskModel
 
 app = Flask(__name__)
@@ -63,6 +65,25 @@ VALUCAST_HP_PATH = (
 CATALOG = ProjectionCatalog(
     {"steamer": str(DATA_PATH), "valucast": str(VALUCAST_HP_PATH)}, default="steamer")
 store = CATALOG.store_for("steamer")   # module-level default (kept for existing imports)
+
+# Committed Statcast percentile snapshot (Baseball Savant) for player cards.
+# Missing artifact -> cards simply render without the percentile section.
+statcast = StatcastStore()
+
+_PITCHER_POOLS = (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER)
+
+
+def _card_extras(name, pool, metadata):
+    """Statcast percentile groups + outbound links for a player card."""
+    mlbam_id = (metadata or {}).get("mlbam_id")
+    fangraphs_id = (metadata or {}).get("fangraphs_id")
+    return {
+        "statcast_groups": statcast.display_groups(
+            mlbam_id, prefer_pitching=pool in _PITCHER_POOLS),
+        "statcast_asof": statcast.as_of,
+        "player_links": build_player_links(
+            name, mlbam_id=mlbam_id, fangraphs_id=fangraphs_id),
+    }
 
 
 class SourceError(Exception):
@@ -767,10 +788,16 @@ def player_detail(player_id):
         mlb_stats = None
         mlb_stats_actual = None
         mlb_stats_ros = None
+        extras = {"statcast_groups": [], "statcast_asof": None, "player_links": []}
         if not dd_row.is_prospect:
             outlook = find_season_outlook(dd_row, store.get_all())
             if outlook:
                 mlb_stats, mlb_stats_actual, mlb_stats_ros = outlook
+            # Identity (mlbam/fangraphs ids) comes from the safely-matched
+            # projection row — the feed itself carries no ids today.
+            matches = find_outlook_projections(dd_row, store.get_all())
+            if matches:
+                extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
 
         return render_template(
             "partials/player_detail_dynasty.html",
@@ -779,6 +806,7 @@ def player_detail(player_id):
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
+            **extras,
         )
 
     # _build_context resolves + guards the source first (SourceError -> 400), then we
@@ -803,6 +831,7 @@ def player_detail(player_id):
         player=player_proj,
         result=result,
         active_categories=ctx["active_categories"],
+        **_card_extras(player_proj.name, player_proj.pool, player_proj.metadata),
     )
 
 

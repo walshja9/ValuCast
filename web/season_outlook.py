@@ -75,11 +75,15 @@ def _merged_outlook(projs: list[PlayerProjection]) -> Outlook:
     )
 
 
-def find_season_outlook(
+def find_outlook_projections(
     dd_row: DynastyRankingRow,
     projections: Iterable[PlayerProjection],
-) -> Outlook | None:
-    """Return (stats, stats_actual, stats_ros) for the matching projection, or None."""
+) -> list[PlayerProjection]:
+    """The projection row(s) safely matching a feed row; [] when none/ambiguous.
+
+    Multiple rows means a two-way player (shared base_id). Callers needing
+    identity (mlbam_id / fangraphs_id) read it from any returned row.
+    """
     projections = list(projections)
 
     # 1. mlbam_id is the real key (feed has none today; future-proofing).
@@ -87,7 +91,7 @@ def find_season_outlook(
     if feed_mlbam:
         for proj in projections:
             if str(proj.metadata.get("mlbam_id") or "") == str(feed_mlbam):
-                return _outlook(proj)
+                return [proj]
 
     # 2. Name + pool/position compatibility.
     name = _normalize_name(dd_row.name)
@@ -100,12 +104,23 @@ def find_season_outlook(
         if (_is_pitcher(proj) and pitcher_side) or (not _is_pitcher(proj) and hitter_side):
             compatible.append(proj)
 
-    if not compatible:
-        return None
-    if len(compatible) == 1:
-        return _outlook(compatible[0])
+    if len(compatible) <= 1:
+        return compatible
 
-    # Multiple compatible: same person (shared base_id) -> merge; else ambiguous.
+    # Multiple compatible: same person (shared base_id) -> two-way; else ambiguous.
     if len({_base(p) for p in compatible}) == 1:
-        return _merged_outlook(compatible)
-    return None
+        return compatible
+    return []
+
+
+def find_season_outlook(
+    dd_row: DynastyRankingRow,
+    projections: Iterable[PlayerProjection],
+) -> Outlook | None:
+    """Return (stats, stats_actual, stats_ros) for the matching projection, or None."""
+    matches = find_outlook_projections(dd_row, projections)
+    if not matches:
+        return None
+    if len(matches) == 1:
+        return _outlook(matches[0])
+    return _merged_outlook(matches)
