@@ -702,10 +702,28 @@ def methodology():
         .read_text(encoding="utf-8")
     )
     hp, pp = MarcelParams(), PitcherMarcelParams()
+
+    # Worked example computed from the REAL params (drift-proof): an age-29 hitter
+    # (peak, age factor ~1.0) with no Statcast movement, HR component over 3 seasons.
+    ex = [(30, 600), (26, 580), (20, 520)]          # (HR, PA), newest first
+    w = hp.season_weights
+    w_ev = sum(wi * e for wi, (e, _) in zip(w, ex))
+    w_pa = sum(wi * pa for wi, (_, pa) in zip(w, ex))
+    league_hr = 0.033
+    reg = (w_ev + league_hr * hp.n_reg) / (w_pa + hp.n_reg)
+    proj_pa = hp.pa_w1 * ex[0][1] + hp.pa_w2 * ex[1][1] + hp.pa_base
+    worked = {
+        "ex": ex, "weights": [int(x) for x in w],
+        "w_ev": int(w_ev), "w_pa": int(w_pa),
+        "rate": round(w_ev / w_pa, 3), "league": league_hr, "n_reg": int(hp.n_reg),
+        "reg": round(reg, 4),
+        "pa_w1": hp.pa_w1, "pa_w2": hp.pa_w2, "pa_base": int(hp.pa_base),
+        "proj_pa": int(round(proj_pa)), "proj_hr": round(reg * proj_pa, 1),
+    }
     return render_template(
         "methodology.html", methodology_page=True, scorecard=scorecard,
         hit_weights=",".join(str(w) for w in hp.season_weights),
-        hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg),
+        hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),
     )
 

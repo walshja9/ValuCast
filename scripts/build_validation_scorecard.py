@@ -33,6 +33,9 @@ RUN_MANIFEST = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "run_mani
 # matching the Rung-3 hitting verdict and the pitching-foundation verdict.
 HIT_SEASONS = list(range(2020, 2026))
 PIT_SEASONS = list(range(2020, 2026))
+# Pitching role factors are derived from EVERY available pre-target season, so the
+# canonical pitching-history window (not just T-3..T) must all be present.
+PIT_HISTORY = list(range(2010, max(PIT_SEASONS) + 1))   # 2010..2025
 
 
 def _require(path: Path):
@@ -103,9 +106,8 @@ def main():
             _require(DATA / "historical" / f"hitting_{yr - back}.json")
         for back in range(1, 4):                    # de-noise inputs: Statcast T-1..T-3
             _require(DATA / "statcast" / f"hitting_{yr - back}.json")
-    for yr in PIT_SEASONS:
-        for back in range(0, 4):                    # T, T-1, T-2, T-3
-            _require(DATA / "pitching" / f"pitching_{yr - back}.json")
+    for yr in PIT_HISTORY:                           # complete role-factor history window
+        _require(DATA / "pitching" / f"pitching_{yr}.json")
     _require(IDENTITY)
 
     identities = json.loads(IDENTITY.read_text(encoding="utf-8"))

@@ -78,13 +78,18 @@
             <p><strong>Pitcher role blend</strong>: with p<sub>sp</sub> the starter
             probability, each component is shifted continuously by
             <code>f[c]^(h_sp − p_sp)</code> — no hard SP/RP split.</p>
-            <p><em>Worked example (HR rate).</em> A hitter with 30 HR / 600 PA, 26 / 580,
-            20 / 520 over the last three seasons (weights 5/4/3): the weighted rate is
-            <code>(5·30 + 4·26 + 3·20) / (5·600 + 4·580 + 3·520) = 314 / 6880 ≈ .046</code>
-            HR per PA. Regressing ~600 PA of that signal toward a ~.033 league HR rate with
-            <code>n_reg = {{ hit_n_reg }}</code> gives
-            <code>(.046·600 + .033·1200) / (600 + 1200) ≈ .037</code>; reconstructing over a
-            projected ~600 PA yields about <strong>22 projected HR</strong>.</p>
+            <p><em>Worked example (HR rate).</em> An age-29 hitter (near peak, age factor
+            ≈ 1.0) with no Statcast movement: {{ worked.ex[0][0] }} HR / {{ worked.ex[0][1] }} PA,
+            {{ worked.ex[1][0] }} / {{ worked.ex[1][1] }}, {{ worked.ex[2][0] }} / {{ worked.ex[2][1] }}
+            over the last three seasons (weights {{ worked.weights|join('/') }}). Weighted
+            events ÷ weighted opportunities =
+            <code>({{ worked.weights[0] }}·{{ worked.ex[0][0] }} + {{ worked.weights[1] }}·{{ worked.ex[1][0] }} + {{ worked.weights[2] }}·{{ worked.ex[2][0] }}) / ({{ worked.weights[0] }}·{{ worked.ex[0][1] }} + {{ worked.weights[1] }}·{{ worked.ex[1][1] }} + {{ worked.weights[2] }}·{{ worked.ex[2][1] }}) = {{ worked.w_ev }} / {{ worked.w_pa }} ≈ {{ worked.rate }}</code>
+            HR per PA. Regressing toward a {{ worked.league }} league HR rate with
+            <code>n_reg = {{ worked.n_reg }}</code> gives
+            <code>({{ worked.w_ev }} + {{ worked.league }}·{{ worked.n_reg }}) / ({{ worked.w_pa }} + {{ worked.n_reg }}) ≈ {{ worked.reg }}</code>.
+            Projected PA = <code>{{ worked.pa_w1 }}·{{ worked.ex[0][1] }} + {{ worked.pa_w2 }}·{{ worked.ex[1][1] }} + {{ worked.pa_base }} = {{ worked.proj_pa }}</code>,
+            so projected HR ≈ <code>{{ worked.reg }} × {{ worked.proj_pa }}</code> ≈
+            <strong>{{ worked.proj_hr }} HR</strong>.</p>
         </details>
 
         <details>

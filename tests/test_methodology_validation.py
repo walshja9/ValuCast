@@ -58,6 +58,33 @@ class TestMethodologyValidation(unittest.TestCase):
     def test_no_internal_corr_leak(self):
         self.assertNotIn("0.87", self.html)
 
+    # P1 repair: the worked example is COMPUTED from the real params (drift-proof),
+    # using the implementation's weighted-opportunity denominator + PA projection.
+    def test_worked_example_matches_params(self):
+        from projections.models.marcel_params import MarcelParams
+        p = MarcelParams()
+        ex = [(30, 600), (26, 580), (20, 520)]
+        w = p.season_weights
+        w_ev = sum(wi * e for wi, (e, _) in zip(w, ex))     # weighted events
+        w_pa = sum(wi * pa for wi, (_, pa) in zip(w, ex))   # weighted OPPORTUNITIES
+        reg = (w_ev + 0.033 * p.n_reg) / (w_pa + p.n_reg)
+        proj_pa = p.pa_w1 * ex[0][1] + p.pa_w2 * ex[1][1] + p.pa_base
+        proj_hr = round(reg * proj_pa, 1)
+        self.assertIn(str(int(w_pa)), self.html)            # 6880, the real denominator
+        self.assertIn(str(int(round(proj_pa))), self.html)  # 558 projected PA
+        self.assertIn(str(proj_hr), self.html)              # ~24.4, not 22
+        self.assertNotIn("22 projected HR", self.html)      # the old wrong number is gone
+
+
+class TestBuilderGuard(unittest.TestCase):
+    def test_requires_full_pitching_history(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "bvs", ROOT / "scripts" / "build_validation_scorecard.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        self.assertEqual(mod.PIT_HISTORY, list(range(2010, 2026)))  # 2010..2025, role factors
+
 
 class TestReframeRipples(unittest.TestCase):
     def setUp(self):
