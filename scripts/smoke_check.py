@@ -28,9 +28,10 @@ def main() -> int:
 
     try:
         _, home = _get(base + "/")
-        if 'value="dd_dynasty"' not in home:
+        # Horizon tabs are navigation links (not radios) since the UI pass.
+        if 'href="/?mode=dd_dynasty"' not in home:
             problems.append("Dynasty tab missing from nav")
-        if 'value="prospects"' not in home:
+        if 'href="/?mode=prospects"' not in home:
             problems.append("Prospects tab missing from nav")
         if "Dynasty data is not available" in home:
             problems.append("home shows DD-unavailable fallback notice")
