@@ -169,6 +169,49 @@ function toggleSetup() {
     btn.textContent = panel.classList.contains('collapsed') ? 'Customize' : 'Hide';
 }
 
+// Dynasty league settings persistence: save on change, reapply on bare landings.
+// URL params always win — only a landing with NO settings params reads storage.
+(function () {
+    var KEYS = ['teams', 'budget', 'roster', 'pslots'];
+    var form = document.getElementById('league-setup');
+    var isDynasty = {{ 'true' if horizon == 'dynasty' else 'false' }};
+    if (!form || !isDynasty || !window.localStorage) return;
+
+    var params = new URLSearchParams(window.location.search);
+    var urlHasSettings = KEYS.some(function (k) { return params.has(k); });
+
+    if (!urlHasSettings) {
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem('vc-league-settings')); } catch (e) {}
+        if (saved) {
+            var applied = false;
+            KEYS.forEach(function (k) {
+                var input = form.querySelector('[name="' + k + '"]');
+                if (input && saved[k] != null && String(saved[k]) !== input.value) {
+                    input.value = saved[k];
+                    applied = true;
+                }
+            });
+            if (applied) {
+                // Defer until htmx has attached its listeners (it inits on
+                // DOMContentLoaded; this inline script runs during parse).
+                var fire = function () { form.dispatchEvent(new Event('change', { bubbles: true })); };
+                if (document.readyState === 'complete') fire();
+                else window.addEventListener('load', fire);
+            }
+        }
+    }
+
+    form.addEventListener('change', function () {
+        var out = {};
+        KEYS.forEach(function (k) {
+            var input = form.querySelector('[name="' + k + '"]');
+            if (input) out[k] = input.value;
+        });
+        try { localStorage.setItem('vc-league-settings', JSON.stringify(out)); } catch (e) {}
+    });
+})();
+
 const selected = new Set();
 
 function toggleCompare(id, el) {

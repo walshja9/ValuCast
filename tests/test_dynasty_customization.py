@@ -155,6 +155,13 @@ class TestDynastyRoutes(unittest.TestCase):
         self.assertIn(b'hx-swap-oob="innerHTML:#setup-panel"', r.data)
         self.assertIn(b'hx-swap-oob="innerHTML:.config-summary"', r.data)
 
+    def test_persistence_script_renders_on_dynasty_only(self):
+        dyn = self.client.get("/?mode=dd_dynasty")
+        red = self.client.get("/")
+        self.assertIn(b"vc-league-settings", dyn.data)
+        # Script ships on all pages but self-disables off-dynasty via isDynasty flag
+        self.assertIn(b"var isDynasty = false", red.data)
+
     def test_prospects_has_no_customize_panel(self):
         r = self.client.get("/?mode=prospects")
         self.assertNotIn(b'class="customize-toggle"', r.data)
