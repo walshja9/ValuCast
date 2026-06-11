@@ -90,7 +90,7 @@
     </section>
 
     {% elif horizon == 'dynasty' %}
-    <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
+    <div class="rank-toolbar" id="rank-toolbar">
         <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}{% if dd_schema_version %} · Feed v{{ dd_schema_version }}{% endif %}</span>
         <fieldset class="pool-toggle" aria-label="Player pool">
             <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
@@ -107,8 +107,13 @@
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+        <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
     {% include "partials/dynasty_category_fit.html" %}
+
+    <section id="setup-panel" class="setup-panel collapsed">
+        {% include "partials/setup_dynasty.html" %}
+    </section>
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
@@ -156,12 +161,14 @@
     publish();
 })();
 
+{% if horizon != 'prospects' %}
 function toggleSetup() {
     const panel = document.getElementById('setup-panel');
     const btn = document.querySelector('.customize-toggle');
     panel.classList.toggle('collapsed');
     btn.textContent = panel.classList.contains('collapsed') ? 'Customize' : 'Hide';
 }
+{% endif %}
 
 const selected = new Set();
 

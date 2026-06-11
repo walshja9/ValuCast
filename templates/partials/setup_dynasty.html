@@ -1,0 +1,32 @@
+<div class="league-knobs">
+    <label class="knob">
+        <span>Teams</span>
+        <input type="number" name="teams" value="{{ league_settings.teams }}" min="4" max="20" step="1">
+    </label>
+    <label class="knob">
+        <span>Budget ($)</span>
+        <input type="number" name="budget" value="{{ league_settings.budget }}" min="100" max="1000" step="10">
+    </label>
+    <label class="knob">
+        <span>Roster slots</span>
+        <input type="number" name="roster" value="{{ league_settings.roster }}" min="10" max="50" step="1">
+    </label>
+    <label class="knob">
+        <span>Prospect slots</span>
+        <input type="number" name="pslots" value="{{ league_settings.pslots }}" min="0" max="20" step="1">
+    </label>
+</div>
+
+<div class="league-import">
+    <input type="url" name="league_url" id="league-url-input" class="league-url-input"
+           placeholder="Paste your Fantrax or ESPN league URL to import settings"
+           value="" hx-trigger="none">
+    <button type="button" class="import-btn"
+            hx-get="/league-import"
+            hx-include="closest form"
+            hx-target="#setup-panel"
+            hx-swap="innerHTML">Import settings</button>
+    {% if import_notice %}
+    <p class="import-notice">{{ import_notice }}</p>
+    {% endif %}
+</div>

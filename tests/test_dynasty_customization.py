@@ -127,6 +127,35 @@ class TestDynastyRoutes(unittest.TestCase):
         r = self.client.get("/?mode=dd_dynasty")  # 312 > 200 shown
         self.assertNotIn(b'class="cutoff-row"', r.data)
 
+    def test_dynasty_has_customize_button_and_panel(self):
+        r = self.client.get("/?mode=dd_dynasty")
+        self.assertIn(b"customize-toggle", r.data)
+        self.assertIn(b"setup-panel collapsed", r.data)
+        for name in (b'name="teams"', b'name="budget"', b'name="roster"', b'name="pslots"'):
+            self.assertIn(name, r.data)
+
+    def test_dynasty_panel_inputs_carry_current_values(self):
+        r = self.client.get("/?mode=dd_dynasty&teams=14&budget=500")
+        self.assertIn(b'name="teams"', r.data)
+        self.assertIn(b'value="14"', r.data)
+        self.assertIn(b'value="500"', r.data)
+
+    def test_dynasty_hidden_mode_input_still_present(self):
+        # Guard against the 6/10 P0: form requests MUST carry mode on non-redraft
+        r = self.client.get("/?mode=dd_dynasty")
+        self.assertIn(b'<input type="hidden" name="mode" value="dd_dynasty">', r.data)
+
+    def test_rankings_oob_swaps_dynasty_panel(self):
+        r = self.client.get("/rankings?mode=dd_dynasty&teams=10")
+        self.assertIn(b'hx-swap-oob="innerHTML:#setup-panel"', r.data)
+        self.assertIn(b'hx-swap-oob="innerHTML:.config-summary"', r.data)
+
+    def test_prospects_has_no_customize_panel(self):
+        r = self.client.get("/?mode=prospects")
+        self.assertNotIn(b"customize-toggle", r.data)
+        r2 = self.client.get("/rankings?mode=prospects")
+        self.assertNotIn(b'hx-swap-oob="innerHTML:#setup-panel"', r2.data)
+
 
 if __name__ == "__main__":
     unittest.main()
