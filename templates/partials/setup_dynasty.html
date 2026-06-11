@@ -32,3 +32,11 @@
     <p class="import-notice">{{ import_notice }}</p>
     {% endif %}
 </div>
+{% if import_refresh %}
+<script class="league-setup-refresh">
+/* htmx executes scripts in swapped fragments. Programmatic input swaps don't
+   fire 'change', so kick the form once to re-render the board with the
+   imported settings. */
+document.getElementById('league-setup').dispatchEvent(new Event('change', { bubbles: true }));
+</script>
+{% endif %}

@@ -161,5 +161,48 @@ class TestDynastyRoutes(unittest.TestCase):
         self.assertNotIn(b'hx-swap-oob="innerHTML:#setup-panel"', r2.data)
 
 
+from unittest.mock import patch
+
+
+class TestLeagueImportRoute(unittest.TestCase):
+    def setUp(self):
+        self.client = flask_app.test_client()
+        flask_app.config["TESTING"] = True
+
+    def test_import_success_fills_knobs(self):
+        with patch("app.import_league", return_value=({"teams": 10, "roster": 30},
+                                                      "Imported roster, teams from Fantrax.")):
+            r = self.client.get("/league-import?league_url=https://www.fantrax.com/fantasy/league/abc/home&teams=12&budget=350&roster=26&pslots=5")
+        self.assertEqual(r.status_code, 200)
+        body = r.data.decode("utf-8")
+        self.assertIn('name="teams" value="10"', body)      # imported
+        self.assertIn('name="roster" value="30"', body)     # imported
+        self.assertIn('name="budget" value="350"', body)    # NOT imported -> user's current value kept
+        self.assertIn("Imported roster, teams", body)
+        self.assertIn("league-setup-refresh", body)  # triggers board re-render
+
+    def test_import_failure_keeps_knobs_and_notices(self):
+        from web.league_import import ImportError_
+        with patch("app.import_league", side_effect=ImportError_("This league is private — enter settings manually.")):
+            r = self.client.get("/league-import?league_url=https://fantasy.espn.com/baseball/league?leagueId=1&teams=14")
+        self.assertEqual(r.status_code, 200)
+        body = r.data.decode("utf-8")
+        self.assertIn('name="teams" value="14"', body)      # untouched
+        self.assertIn("league is private", body)
+        self.assertNotIn("league-setup-refresh", body)  # no refresh on failure
+
+    def test_import_empty_url(self):
+        r = self.client.get("/league-import?teams=12")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"Unsupported URL", r.data)
+
+    def test_imported_values_are_clamped(self):
+        with patch("app.import_league", return_value=({"teams": 99, "roster": 200}, "Imported.")):
+            r = self.client.get("/league-import?league_url=https://www.fantrax.com/fantasy/league/abc/home")
+        body = r.data.decode("utf-8")
+        self.assertIn('name="teams" value="20"', body)   # clamped to max
+        self.assertIn('name="roster" value="50"', body)  # clamped to max
+
+
 if __name__ == "__main__":
     unittest.main()

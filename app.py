@@ -29,6 +29,7 @@ from web.category_registry import (
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
 from web.league_settings import parse_league_settings
+from web.league_import import import_league, ImportError_
 from web.season_outlook import find_season_outlook, find_outlook_projections
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
@@ -738,6 +739,31 @@ def rankings():
     push_url = f"/?{all_params}" if all_params else "/"
     response.headers["HX-Replace-Url"] = push_url
     return response
+
+
+@app.route("/league-import")
+def league_import():
+    """Fill the dynasty setup knobs from a league URL. Self-contained seam —
+    a future paid gate wraps exactly this route. Always returns the panel
+    fragment (200): failures become an inline notice, knobs untouched."""
+    current = parse_league_settings(request.args)
+    url = (request.args.get("league_url") or "").strip()
+    try:
+        partial, notice = import_league(url)
+        merged = {
+            "teams": partial.get("teams", current.teams),
+            "budget": partial.get("budget", current.budget),
+            "roster": partial.get("roster", current.roster),
+            "pslots": partial.get("pslots", current.pslots),
+        }
+        settings = parse_league_settings(merged)  # clamp imported values too
+        refresh = True
+    except ImportError_ as exc:
+        settings, notice, refresh = current, str(exc), False
+    return render_template(
+        "partials/setup_dynasty.html",
+        league_settings=settings, import_notice=notice, import_refresh=refresh,
+    )
 
 
 @app.route("/methodology")
