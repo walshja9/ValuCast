@@ -82,3 +82,46 @@ class TestTierPool(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+from app import app as flask_app
+
+
+class TestDynastyRoutes(unittest.TestCase):
+    def setUp(self):
+        self.client = flask_app.test_client()
+        flask_app.config["TESTING"] = True
+
+    def test_dynasty_config_summary_reflects_params(self):
+        r = self.client.get("/?mode=dd_dynasty&teams=10&budget=300&roster=20&pslots=4")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("10 teams · $300 · 20 roster · 4 prospect slots",
+                      r.data.decode("utf-8"))
+
+    def test_dynasty_default_summary(self):
+        r = self.client.get("/?mode=dd_dynasty")
+        self.assertIn("12 teams · $200 · 26 roster · 5 prospect slots",
+                      r.data.decode("utf-8"))
+
+    def test_dynasty_no_longer_promises_customization(self):
+        r = self.client.get("/?mode=dd_dynasty")
+        self.assertNotIn(b"League customization is coming", r.data)
+
+    def test_rankings_partial_carries_settings(self):
+        r = self.client.get("/rankings?mode=dd_dynasty&teams=8&budget=260&roster=25&pslots=3")
+        self.assertEqual(r.status_code, 200)
+
+    def test_export_carries_settings(self):
+        r = self.client.get("/export?mode=dd_dynasty&teams=8&budget=100&roster=12")
+        self.assertEqual(r.status_code, 200)
+        # shallow league -> below-cutoff players export $0; header row intact
+        self.assertIn(b"valucast-dynasty-rankings.csv",
+                      r.headers["Content-Disposition"].encode())
+
+    def test_cutoff_divider_renders_when_visible(self):
+        # 4x10=40 slots: divider must appear inside the top-200 board
+        r = self.client.get("/?mode=dd_dynasty&teams=4&roster=10")
+        self.assertIn(b"cutoff-row", r.data)
+
+    def test_cutoff_divider_absent_when_beyond_display(self):
+        r = self.client.get("/?mode=dd_dynasty")  # 312 > 200 shown
+        self.assertNotIn(b"cutoff-row", r.data)

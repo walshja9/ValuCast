@@ -91,7 +91,7 @@
 
     {% elif horizon == 'dynasty' %}
     <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
-        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}{% if dd_schema_version %} · Feed v{{ dd_schema_version }}{% endif %}</span>
+        <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}{% if dd_schema_version %} · Feed v{{ dd_schema_version }}{% endif %}</span>
         <fieldset class="pool-toggle" aria-label="Player pool">
             <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
             <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>

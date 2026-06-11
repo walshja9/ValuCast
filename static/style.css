@@ -567,6 +567,9 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
         color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.03em;
     }
     .rankings-table td.col-dollars { text-align: left; }
+    .rankings-table td.col-dollar { text-align: left; }
+    /* Cutoff divider stays a full-width strip between cards. */
+    .rankings-table > tbody > tr.cutoff-row { margin-bottom: 0.5rem; }
     .rankings-table td.col-pos, .rankings-table td.col-team { display: inline; width: auto; }
     .rankings-table td.col-pos::after { content: " | "; }
     /* Expanded detail: frame it as a card attached beneath its row. */
@@ -792,4 +795,15 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     .rankings-table td.col-confidence { display: none; }
     .rankings-table td.col-fit { text-align: left; }
     .rankings-table td.col-fit::before { content: "Category Fit "; color: var(--c-muted); font-size: .75rem; font-weight: 600; }
+}
+
+/* Dynasty league customization */
+.cutoff-row td {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted, #6b7280);
+    border-top: 2px dashed #9ca3af;
+    border-bottom: 2px dashed #9ca3af;
+    padding: 0.35rem;
+    background: rgba(156, 163, 175, 0.08);
 }

@@ -292,9 +292,10 @@ def _build_dynasty_context(args):
     pool = args.get("pool", "")
     position = args.get("position", "")
     search = args.get("search", "")
+    settings = parse_league_settings(args)
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
     rows = rows[:200]
-    dynasty_dollars, tiers = _dynasty_metadata(parse_league_settings(args))
+    dynasty_dollars, tiers = _dynasty_metadata(settings)
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -308,6 +309,9 @@ def _build_dynasty_context(args):
         "dd_schema_version": dd_store.schema_version,
         "as_of": store.as_of,
         "horizon": "dynasty",
+        "league_settings": settings,
+        "config_summary": settings.summary(),
+        "cutoff_rank": settings.roster_cutoff,
     }
 
 
@@ -665,8 +669,10 @@ def index():
                 position=ctx.get("position") or None,
                 search=ctx.get("search") or None,
             )
-            ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
+            settings = parse_league_settings(request.args)
+            ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
             ctx["tiers"] = _prospect_tiers()
+            ctx["cutoff_rank"] = settings.prospect_cutoff
             ctx["mode"] = "prospects"
             ctx["horizon"] = "prospects"
         return render_template("index.html", **ctx)
@@ -694,8 +700,10 @@ def rankings():
                     position=ctx.get("position") or None,
                     search=ctx.get("search") or None,
                 )
-                ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
+                settings = parse_league_settings(request.args)
+                ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
                 ctx["tiers"] = _prospect_tiers()
+                ctx["cutoff_rank"] = settings.prospect_cutoff
                 ctx["mode"] = "prospects"
                 ctx["horizon"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
