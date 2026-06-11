@@ -11,6 +11,7 @@ returned partial dict and the caller keeps its current/default value.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -20,7 +21,7 @@ FETCH_TIMEOUT = 5  # seconds
 _FANTRAX_RE = re.compile(r"fantrax\.com/fantasy/league/([A-Za-z0-9]+)")
 _FANTRAX_API = "https://www.fantrax.com/fxea/general/getLeagueInfo"
 _ESPN_API = ("https://lm-api-reads.fantasy.espn.com/apis/v3/games/flb/"
-             "seasons/2026/segments/0/leagues/{league_id}?view=mSettings")
+             "seasons/{season}/segments/0/leagues/{league_id}?view=mSettings")
 
 
 class ImportError_(Exception):
@@ -63,12 +64,15 @@ def parse_espn(data: dict) -> dict:
     if isinstance(size, int) and size > 0:
         partial["teams"] = size
     slot_counts = (settings.get("rosterSettings") or {}).get("lineupSlotCounts") or {}
-    total_slots = sum(v for v in slot_counts.values() if isinstance(v, int) and v > 0)
+    total_slots = sum(
+        int(v) for v in slot_counts.values()
+        if isinstance(v, (int, float)) and v > 0 and not isinstance(v, bool)
+    )
     if total_slots > 0:
         partial["roster"] = total_slots
     budget = (settings.get("draftSettings") or {}).get("auctionBudget")
-    if isinstance(budget, int) and budget > 0:
-        partial["budget"] = budget
+    if isinstance(budget, (int, float)) and budget > 0 and not isinstance(budget, bool):
+        partial["budget"] = int(budget)
     return partial
 
 
@@ -77,15 +81,18 @@ def _fetch_json(url: str, params: dict | None = None) -> dict:
         resp = requests.get(url, params=params, timeout=FETCH_TIMEOUT,
                             headers={"User-Agent": "ValuCast/1.0 league-import"})
     except requests.RequestException:
-        raise ImportError_("Couldn't reach the league host — try again, or enter settings manually.")
+        raise ImportError_("Couldn't reach the league host — try again, or enter settings manually.") from None
     if resp.status_code in (401, 403):
         raise ImportError_("This league is private — enter settings manually.")
     if resp.status_code != 200:
         raise ImportError_(f"League lookup failed (HTTP {resp.status_code}) — enter settings manually.")
     try:
-        return resp.json()
+        data = resp.json()
     except ValueError:
+        raise ImportError_("Unexpected response from the league host — enter settings manually.") from None
+    if not isinstance(data, dict):
         raise ImportError_("Unexpected response from the league host — enter settings manually.")
+    return data
 
 
 def import_league(url: str) -> tuple[dict, str]:
@@ -102,12 +109,13 @@ def import_league(url: str) -> tuple[dict, str]:
         data = _fetch_json(_FANTRAX_API, params={"leagueId": league_id})
         partial = parse_fantrax(data)
     else:
-        data = _fetch_json(_ESPN_API.format(league_id=league_id))
+        season = datetime.now(timezone.utc).year
+        data = _fetch_json(_ESPN_API.format(season=season, league_id=league_id))
         partial = parse_espn(data)
     if not partial:
         raise ImportError_("Found the league but couldn't read its settings — enter them manually.")
     imported = ", ".join(sorted(partial))
-    missing = sorted({"teams", "budget", "roster", "pslots"} - set(partial))
+    missing = sorted({"teams", "budget", "roster"} - set(partial))
     notice = f"Imported {imported} from {platform.title()}."
     if missing:
         notice += f" Couldn't read {', '.join(missing)} — kept your current values."

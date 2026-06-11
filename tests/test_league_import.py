@@ -1,10 +1,10 @@
 # tests/test_league_import.py
 import json
-import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import requests
 
 from web.league_import import (
     detect_platform, parse_fantrax, parse_espn, ImportError_, import_league,
@@ -65,6 +65,41 @@ class TestImportLeague(unittest.TestCase):
     def test_unsupported_url_raises(self):
         with self.assertRaises(ImportError_):
             import_league("https://example.com/nope")
+
+
+FANTRAX_URL = "https://www.fantrax.com/fantasy/league/abc123/home"
+
+
+class TestFetchErrors(unittest.TestCase):
+    @patch("web.league_import.requests.get")
+    def test_timeout_raises_couldnt_reach(self, mock_get):
+        mock_get.side_effect = requests.exceptions.Timeout()
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("Couldn't reach", str(ctx.exception))
+
+    @patch("web.league_import.requests.get")
+    def test_403_raises_private(self, mock_get):
+        mock_get.return_value.status_code = 403
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("private", str(ctx.exception))
+
+    @patch("web.league_import.requests.get")
+    def test_bad_json_raises_unexpected(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.side_effect = ValueError("not json")
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("Unexpected response", str(ctx.exception))
+
+    @patch("web.league_import.requests.get")
+    def test_non_dict_json_raises_unexpected(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.json.return_value = [1, 2, 3]
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("Unexpected response", str(ctx.exception))
 
 
 if __name__ == "__main__":
