@@ -39,6 +39,14 @@ from web.player_links import build_player_links
 app = Flask(__name__)
 
 
+@app.after_request
+def _security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    return response
+
+
 # Per-category projected-stat formatting for the rankings columns.
 _RATE_3DP = {"AVG", "OBP", "SLG", "OPS"}            # .280
 _RATE_2DP = {"ERA", "WHIP", "K_BB", "K_9", "BB_9"}  # 3.24
@@ -547,9 +555,11 @@ def _build_context(args):
     for key in args:
         if key.startswith("w_"):
             try:
-                weights[key[2:]] = float(args[key])
+                w = float(args[key])
             except ValueError:
-                pass
+                continue
+            if math.isfinite(w):  # inf/nan parse as floats and would poison the board
+                weights[key[2:]] = w
 
     # Build config and run engine
     config = build_config(
@@ -973,6 +983,13 @@ def compare():
     )
 
 
+def _csv_safe(value):
+    """Excel executes cells starting with = + - @ (or tab/CR) as formulas;
+    names come from scraped feeds, so prefix rather than trust."""
+    if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", chr(9), chr(13)):
+        return chr(39) + value
+    return value
+
 @app.route("/export")
 def export_csv():
     mode = request.args.get("mode", "categories")
@@ -997,7 +1014,7 @@ def export_csv():
             confidence = row.confidence or {}
             value_range = confidence.get("range") or {}
             writer.writerow([
-                row.dynasty_rank, row.name, row.player_type.upper(),
+                row.dynasty_rank, _csv_safe(row.name), row.player_type.upper(),
                 ", ".join(row.positions) or "", row.team, row.age or "",
                 row.dynasty_value, dynasty_dollars.get(row.id, 0),
                 confidence.get("level", ""),
@@ -1042,7 +1059,7 @@ def export_csv():
             display_positions = list(result.player.positions)
         row = [
             overall_ranks.get(result.player.id, ""),
-            result.player.name,
+            _csv_safe(result.player.name),
             ", ".join(display_positions) or "DH",
             result.player.metadata.get("team", ""),
             position_ranks.get(result.player.id, ""),
@@ -1076,4 +1093,4 @@ def export_csv():
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5001))
-    app.run(debug=True, host="0.0.0.0", port=port)
+    app.run(debug=os.environ.get("FLASK_DEBUG") == "1", host="0.0.0.0", port=port)

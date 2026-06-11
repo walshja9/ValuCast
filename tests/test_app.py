@@ -586,3 +586,32 @@ class TestPublicSurface(unittest.TestCase):
         self.assertNotIn(b"unpkg.com", r.data)
         asset = self.client.get("/static/htmx.min.js")
         self.assertEqual(asset.status_code, 200)
+
+
+class TestInputHardening(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_unknown_mode_falls_back_to_categories(self):
+        r = self.client.get("/?mode=garbage-mode")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"rankings-table", r.data)
+
+    def test_non_finite_weight_is_ignored(self):
+        r = self.client.get("/?mode=categories&w_HR=inf")
+        self.assertEqual(r.status_code, 200)
+        r = self.client.get("/?mode=categories&w_HR=nan")
+        self.assertEqual(r.status_code, 200)
+
+    def test_csv_formula_cells_are_escaped(self):
+        from app import _csv_safe
+        self.assertEqual(_csv_safe("=2+2"), "'=2+2")
+        self.assertEqual(_csv_safe("@cmd"), "'@cmd")
+        self.assertEqual(_csv_safe("Aaron Judge"), "Aaron Judge")
+        self.assertEqual(_csv_safe(42), 42)
+
+    def test_security_headers_present(self):
+        r = self.client.get("/")
+        self.assertEqual(r.headers.get("X-Content-Type-Options"), "nosniff")
+        self.assertEqual(r.headers.get("X-Frame-Options"), "DENY")

@@ -39,7 +39,10 @@ def build_config(
     """Build a LeagueConfig from URL query parameters."""
     from dataclasses import replace as dc_replace
 
-    scoring_mode = ScoringMode(mode)
+    try:
+        scoring_mode = ScoringMode(mode)
+    except ValueError:
+        scoring_mode = ScoringMode.CATEGORIES  # unknown mode -> default board, not a 500
 
     if scoring_mode is ScoringMode.POINTS:
         if pt_params:
