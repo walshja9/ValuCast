@@ -231,7 +231,10 @@ function sortTable(colIndex) {
         return nextAsc ? aText.localeCompare(bText) : bText.localeCompare(aText);
     });
 
-    // Re-insert rows, keeping each detail row paired with its player row
+    // Re-insert rows, keeping each detail row paired with its player row.
+    // The cutoff divider only makes sense in rank order — drop it on sort.
+    const cutoff = tbody.querySelector('tr.cutoff-row');
+    if (cutoff) cutoff.remove();
     rows.forEach(row => {
         const detailRow = row.nextElementSibling;
         tbody.appendChild(row);

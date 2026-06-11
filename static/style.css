@@ -555,6 +555,13 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
         margin-bottom: 0.5rem; padding: 0.75rem; position: relative;
     }
     .rankings-table > tbody > tr > td { border: none; padding: 0.15rem 0; }
+    /* td-qualified so it beats the generic direct-child td rule above. */
+    .rankings-table > tbody > tr.cutoff-row > td {
+        border-top: 2px dashed #9ca3af;
+        border-bottom: 2px dashed #9ca3af;
+        padding: 0.35rem;
+        text-align: center;
+    }
     /* Column rules are td-qualified so they BEAT the generic direct-child td rule —
        bare .col-* selectors lose on specificity and the columns leak into the cards. */
     .rankings-table td.col-rank { position: absolute; top: 0.75rem; right: 0.75rem; width: auto; font-size: 0.8rem; }
@@ -801,7 +808,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .cutoff-row td {
     text-align: center;
     font-size: 0.8rem;
-    color: var(--text-muted, #6b7280);
+    color: var(--c-muted, #6b7280);
     border-top: 2px dashed #9ca3af;
     border-bottom: 2px dashed #9ca3af;
     padding: 0.35rem;

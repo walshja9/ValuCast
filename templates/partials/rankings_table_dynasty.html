@@ -3,6 +3,7 @@
     {% if mode == 'dd_dynasty' %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
 </div>
 
+{% set ncols = 10 if mode == 'dd_dynasty' else 8 %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings">
     <thead>
@@ -32,7 +33,7 @@
         {% set this_rank = row.prospect_rank if mode == 'prospects' else row.dynasty_rank %}
         {% set prev_rank = (dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0 %}
         {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
-        <tr class="cutoff-row"><td colspan="{{ 10 if mode == 'dd_dynasty' else 8 }}">&asymp; replacement level in your league ({{ cutoff_rank }} rostered)</td></tr>
+        <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} rostered)</td></tr>
         {% endif %}
         <tr class="player-row {% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
             data-player-id="{{ row.id }}"
@@ -79,7 +80,7 @@
             </td>
         </tr>
         <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
-            <td colspan="{{ 10 if mode == 'dd_dynasty' else 8 }}"></td>
+            <td colspan="{{ ncols }}"></td>
         </tr>
         {% endfor %}
     </tbody>

@@ -80,9 +80,6 @@ class TestTierPool(unittest.TestCase):
         self.assertNotIn(0, tiers.values())
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 from app import app as flask_app
 
 
@@ -109,19 +106,27 @@ class TestDynastyRoutes(unittest.TestCase):
     def test_rankings_partial_carries_settings(self):
         r = self.client.get("/rankings?mode=dd_dynasty&teams=8&budget=260&roster=25&pslots=3")
         self.assertEqual(r.status_code, 200)
+        self.assertIn(b"col-dollar", r.data)
 
     def test_export_carries_settings(self):
         r = self.client.get("/export?mode=dd_dynasty&teams=8&budget=100&roster=12")
         self.assertEqual(r.status_code, 200)
-        # shallow league -> below-cutoff players export $0; header row intact
         self.assertIn(b"valucast-dynasty-rankings.csv",
                       r.headers["Content-Disposition"].encode())
+        # shallow league (96 rostered): below-cutoff players export $0 (rendered 0.0)
+        body = r.data.decode("utf-8")
+        self.assertIn(",0.0,", body)
 
     def test_cutoff_divider_renders_when_visible(self):
-        # 4x10=40 slots: divider must appear inside the top-200 board
+        # 4x10=40 slots: divider must appear inside the top-200 board.
+        # Match the markup, not the bare string — sortTable JS also says "cutoff-row".
         r = self.client.get("/?mode=dd_dynasty&teams=4&roster=10")
-        self.assertIn(b"cutoff-row", r.data)
+        self.assertIn(b'class="cutoff-row"', r.data)
 
     def test_cutoff_divider_absent_when_beyond_display(self):
         r = self.client.get("/?mode=dd_dynasty")  # 312 > 200 shown
-        self.assertNotIn(b"cutoff-row", r.data)
+        self.assertNotIn(b'class="cutoff-row"', r.data)
+
+
+if __name__ == "__main__":
+    unittest.main()
