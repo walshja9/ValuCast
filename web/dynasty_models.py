@@ -17,6 +17,17 @@ class DynastyRankingRow:
     dynasty_value: float
     status: str | None
     mlbam_id: str | None
+    tier: str | int | None = None
+    value_type: str | None = None
+    market_value: float | None = None
+    trend_delta: float | None = None
+    trend_direction: str | None = None
+    proj_pa: float | None = None
+    proj_ip: float | None = None
+    is_rp_only: bool | None = None
+    dna: str | None = None
+    z_scores: dict | None = None
+    confidence: dict | None = None
     # MLB-specific (populated by join to season outlook)
     mlb_stats: dict | None = None
     mlb_stats_actual: dict | None = None
@@ -26,6 +37,7 @@ class DynastyRankingRow:
     level: str | None = None
     eta: int | None = None
     source_ranks: dict | None = None
+    source_divergence: float | None = None
     breakout_label: str | None = None
     breakout_rank_change: int | None = None
     stat_line: dict | None = None
@@ -39,6 +51,30 @@ class DynastyRankingRow:
     @property
     def is_prospect(self) -> bool:
         return self.player_type == "prospect"
+
+    @property
+    def public_source_ranks(self) -> dict:
+        """Public prospect-board ranks, excluding DD's proprietary performance signal."""
+        return {
+            source: rank
+            for source, rank in (self.source_ranks or {}).items()
+            if source != "milb_perf" and isinstance(rank, (int, float))
+        }
+
+    @property
+    def public_source_consensus(self) -> int | None:
+        """Rounded median public-board rank for a compact consensus comparison."""
+        ranks = sorted(self.public_source_ranks.values())
+        if not ranks:
+            return None
+        midpoint = len(ranks) // 2
+        if len(ranks) % 2:
+            return round(ranks[midpoint])
+        return round((ranks[midpoint - 1] + ranks[midpoint]) / 2)
+
+    @property
+    def milb_performance_rank(self) -> int | float | None:
+        return (self.source_ranks or {}).get("milb_perf")
 
     @classmethod
     def _normalize_positions(cls, positions: list) -> tuple:
@@ -74,10 +110,22 @@ class DynastyRankingRow:
             dynasty_value=record["dynasty_value"],
             status=record.get("status"),
             mlbam_id=record.get("mlbam_id"),
+            tier=record.get("tier"),
+            value_type=record.get("value_type"),
+            market_value=record.get("market_value"),
+            trend_delta=record.get("trend_delta"),
+            trend_direction=record.get("trend_direction"),
+            proj_pa=record.get("proj_pa"),
+            proj_ip=record.get("proj_ip"),
+            is_rp_only=record.get("is_rp_only"),
+            dna=record.get("dna"),
+            z_scores=record.get("z_scores"),
+            confidence=record.get("confidence"),
             prospect_rank=record.get("prospect_rank"),
             level=record.get("level"),
             eta=record.get("eta"),
             source_ranks=record.get("source_ranks"),
+            source_divergence=record.get("source_divergence"),
             breakout_label=record.get("breakout_label"),
             breakout_rank_change=record.get("breakout_rank_change"),
             stat_line=record.get("stat_line"),

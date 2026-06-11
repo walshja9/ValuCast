@@ -10,6 +10,7 @@ from .dynasty_models import DynastyRankingRow
 logger = logging.getLogger(__name__)
 
 REQUIRED_RECORD_FIELDS = ("id", "player_type", "name", "dynasty_rank", "dynasty_value")
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", "1.1"}
 
 
 class DDFeedStore:
@@ -20,6 +21,7 @@ class DDFeedStore:
         self._by_id: dict[str, DynastyRankingRow] = {}
         self._is_available: bool = False
         self._generated_at: str | None = None
+        self._schema_version: str | None = None
         self._load(Path(path))
 
     def _load(self, path: Path) -> None:
@@ -34,8 +36,12 @@ class DDFeedStore:
             logger.warning("Failed to load DD feed: %s", e)
             return
 
-        if raw.get("schema_version") != "1.0":
-            logger.warning("DD feed schema_version is %s, expected 1.0", raw.get("schema_version"))
+        if raw.get("schema_version") not in SUPPORTED_SCHEMA_VERSIONS:
+            logger.warning(
+                "DD feed schema_version is %s, expected one of %s",
+                raw.get("schema_version"),
+                sorted(SUPPORTED_SCHEMA_VERSIONS),
+            )
             return
 
         players = raw.get("players")
@@ -74,6 +80,7 @@ class DDFeedStore:
         self._rows = valid_rows
         self._by_id = {r.id: r for r in valid_rows}
         self._generated_at = raw.get("generated_at")
+        self._schema_version = raw.get("schema_version")
         self._is_available = True
 
     @staticmethod
@@ -94,6 +101,10 @@ class DDFeedStore:
     @property
     def generated_at(self) -> str | None:
         return self._generated_at
+
+    @property
+    def schema_version(self) -> str | None:
+        return self._schema_version
 
     def get_all(self) -> list[DynastyRankingRow]:
         return list(self._rows)

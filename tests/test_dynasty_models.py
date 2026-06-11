@@ -13,6 +13,12 @@ SAMPLE_MLB = {
     "dynasty_rank": 1,
     "dynasty_value": 148.0,
     "status": "mlb",
+    "tier": 1,
+    "market_value": 142.0,
+    "proj_ip": 180.0,
+    "dna": "Front-line ace.",
+    "z_scores": {"ERA": -2.0, "K": 2.4},
+    "confidence": {"score": 90, "level": "high", "range": {"low": 135, "mid": 148, "high": 150}},
 }
 
 SAMPLE_PROSPECT = {
@@ -30,6 +36,7 @@ SAMPLE_PROSPECT = {
     "eta": 2027,
     "prospect_rank": 3,
     "source_ranks": {"pipeline": 6, "cfr": 9.0, "hkb": 7},
+    "source_divergence": 55,
     "breakout_label": "steady",
     "breakout_rank_change": -1,
     "stat_line": {"pa": 200, "hr": 10, "ops": 0.900},
@@ -46,6 +53,9 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.dynasty_value, 148.0)
         self.assertIsNone(row.prospect_rank)
         self.assertIsNone(row.stat_line)
+        self.assertEqual(row.market_value, 142.0)
+        self.assertEqual(row.z_scores["K"], 2.4)
+        self.assertEqual(row.confidence["range"]["low"], 135)
 
     def test_from_feed_prospect(self):
         row = DynastyRankingRow.from_feed(SAMPLE_PROSPECT)
@@ -56,6 +66,10 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.eta, 2027)
         self.assertEqual(row.breakout_label, "steady")
         self.assertIsNotNone(row.stat_line)
+        self.assertEqual(row.source_divergence, 55)
+        self.assertEqual(row.public_source_ranks, {"pipeline": 6, "cfr": 9.0, "hkb": 7})
+        self.assertEqual(row.public_source_consensus, 7)
+        self.assertIsNone(row.milb_performance_rank)
 
     def test_is_prospect(self):
         mlb_row = DynastyRankingRow.from_feed(SAMPLE_MLB)

@@ -65,7 +65,7 @@ class TestModeCarriedByForm(unittest.TestCase):
 
     def test_rankings_with_mode_returns_dynasty_table(self):
         html = self.client.get("/rankings?mode=dd_dynasty&position=&search=").data.decode("utf-8")
-        self.assertIn("col-risk", html)
+        self.assertIn("col-confidence", html)
 
 
 if __name__ == "__main__":

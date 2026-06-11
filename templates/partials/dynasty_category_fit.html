@@ -1,0 +1,37 @@
+<section class="category-fit-panel" id="category-fit-panel" aria-labelledby="category-fit-heading">
+    <div class="category-fit-intro">
+        <div>
+            <h3 id="category-fit-heading">Category Fit</h3>
+            <p>Re-ranks the visible pool by category emphasis only. Dynasty Value still includes age curves, position scarcity, market blend, and volume, and does not change here.</p>
+        </div>
+        <button type="button" class="preset-btn reset-fit-btn" onclick="resetDynastyOrder()">Dynasty order</button>
+    </div>
+    <div class="fit-presets" aria-label="Category Fit presets">
+        <button type="button" class="preset-btn" data-fit-preset="h2h" onclick="applyFitPreset('h2h')">H2H Categories</button>
+        <button type="button" class="preset-btn" data-fit-preset="roto" onclick="applyFitPreset('roto')">5x5 Roto</button>
+        <button type="button" class="preset-btn" data-fit-preset="obp" onclick="applyFitPreset('obp')">OBP League</button>
+        <button type="button" class="preset-btn" data-fit-preset="points" onclick="applyFitPreset('points')">Points</button>
+    </div>
+    <div class="fit-category-grid">
+        <div>
+            <h4>Hitting</h4>
+            {% for cat, label in [('R','R'),('HR','HR'),('RBI','RBI'),('SB','SB'),('AVG','AVG'),('OPS','OPS'),('SO','SO'),('OBP','OBP (OPS proxy)')] %}
+            <label class="fit-category">
+                <input type="checkbox" data-fit-cat="{{ cat }}" onchange="fitControlChanged(event)">
+                <span>{{ label }}</span>
+                <input type="number" class="fit-weight" data-fit-weight="{{ cat }}" value="1" min="0" max="5" step="0.1" aria-label="{{ label }} weight" onchange="fitControlChanged(event)">
+            </label>
+            {% endfor %}
+        </div>
+        <div>
+            <h4>Pitching</h4>
+            {% for cat, label in [('ERA','ERA'),('WHIP','WHIP'),('K','K'),('QS','QS'),('L','L'),('K/BB','K/BB'),('W','W (QS proxy)'),('SV','SV if available')] %}
+            <label class="fit-category">
+                <input type="checkbox" data-fit-cat="{{ cat }}" onchange="fitControlChanged(event)">
+                <span>{{ label }}</span>
+                <input type="number" class="fit-weight" data-fit-weight="{{ cat }}" value="1" min="0" max="5" step="0.1" aria-label="{{ label }} weight" onchange="fitControlChanged(event)">
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+</section>

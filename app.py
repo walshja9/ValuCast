@@ -31,7 +31,6 @@ from web.dd_feed_store import DDFeedStore
 from web.season_outlook import find_season_outlook, find_outlook_projections
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
-from league_values.risk import RiskModel
 
 app = Flask(__name__)
 
@@ -155,9 +154,6 @@ if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not dd_store.is_available:
         "prior healthy Render deploy stays live."
     )
 
-risk_model = RiskModel()
-
-
 def _compute_dynasty_dollars(rows, num_teams=12, budget=200):
     """Convert dynasty values to auction dollars proportionally."""
     positive = [r for r in rows if r.dynasty_value > 0]
@@ -264,7 +260,6 @@ def _build_dynasty_context(args):
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
     rows = rows[:200]
     dynasty_dollars, tiers = _dynasty_metadata()
-    risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -273,9 +268,9 @@ def _build_dynasty_context(args):
         "dd_rows": rows,
         "dynasty_dollars": dynasty_dollars,
         "tiers": tiers,
-        "risk_assessments": risk_assessments,
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
+        "dd_schema_version": dd_store.schema_version,
         "as_of": store.as_of,
         "horizon": "dynasty",
     }
@@ -640,7 +635,6 @@ def index():
             ctx["dd_rows"] = rows
             ctx["dynasty_dollars"], _ = _dynasty_metadata()
             ctx["tiers"] = _prospect_tiers()
-            ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
             ctx["mode"] = "prospects"
             ctx["horizon"] = "prospects"
         return render_template("index.html", **ctx)
@@ -673,7 +667,6 @@ def rankings():
                 ctx["dd_rows"] = rows
                 ctx["dynasty_dollars"], _ = _dynasty_metadata()
                 ctx["tiers"] = _prospect_tiers()
-                ctx["risk_assessments"] = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
                 ctx["mode"] = "prospects"
                 ctx["horizon"] = "prospects"
         html = render_template("partials/rankings_response.html", **ctx)
@@ -783,8 +776,6 @@ def player_detail(player_id):
         if dd_row is None:
             return "<div class='error'>Player not found</div>", 404
 
-        risk = risk_model.evaluate_dynasty(dd_row)
-
         mlb_stats = None
         mlb_stats_actual = None
         mlb_stats_ros = None
@@ -802,7 +793,6 @@ def player_detail(player_id):
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
-            risk=risk,
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
@@ -881,23 +871,21 @@ def export_csv():
             ctx["tiers"] = _prospect_tiers()
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
-        risk_assessments = {row.id: risk_model.evaluate_dynasty(row) for row in rows}
-
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
-                         "Age", "Dynasty Value", "Dynasty $", "Risk Level", "Value Low",
-                         "Value High", "Risk Drivers", "Prospect Rank", "Level", "ETA"])
+                         "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
+                         "Value Low", "Value High", "Prospect Rank", "Level", "ETA"])
         for row in rows:
-            risk = risk_assessments.get(row.id)
+            confidence = row.confidence or {}
+            value_range = confidence.get("range") or {}
             writer.writerow([
                 row.dynasty_rank, row.name, row.player_type.upper(),
                 ", ".join(row.positions) or "", row.team, row.age or "",
                 row.dynasty_value, dynasty_dollars.get(row.id, 0),
-                risk.risk_level if risk else "",
-                risk.value_low if risk else "",
-                risk.value_high if risk else "",
-                ", ".join(risk.driver_labels) if risk else "",
+                confidence.get("level", ""),
+                value_range.get("low", ""),
+                value_range.get("high", ""),
                 row.prospect_rank or "", row.level or "", row.eta or "",
             ])
 

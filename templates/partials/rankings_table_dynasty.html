@@ -1,27 +1,39 @@
 <div class="results-meta">
     <span>{{ dd_rows | length }} {% if mode == 'prospects' %}prospects{% else %}players{% endif %}{% if dd_rows | length == 200 %} (showing top 200){% endif %}</span>
+    {% if mode == 'dd_dynasty' %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
 </div>
 
 {% if dd_rows %}
-<table class="rankings-table">
+<table class="rankings-table dynasty-rankings">
     <thead>
         <tr>
-            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}#{% endif %}</button></th>
+            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}Dynasty #{% endif %}</button></th>
             <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
             <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
-            <th class="col-risk sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">Risk</button></th>
+            {% if mode == 'dd_dynasty' %}
+            <th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">Category Fit</button></th>
+            {% endif %}
+            <th class="col-confidence">Confidence</th>
             <th class="col-range">Range</th>
         </tr>
     </thead>
     <tbody>
         {% set tier_colors = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#6b7280', '#9ca3af'] %}
         {% for row in dd_rows %}
-        {% set tier = tiers.get(row.id, 0) %}
-        {% set prev_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else tier %}
-        <tr class="player-row {% if tier != prev_tier %}tier-break{% endif %}" onclick="toggleDetail('{{ row.id }}', this)">
+        {% set computed_tier = tiers.get(row.id, 0) %}
+        {% set display_tier = row.tier if row.tier is not none else computed_tier %}
+        {% set prev_computed_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else computed_tier %}
+        {% set confidence = row.confidence or {} %}
+        {% set confidence_range = confidence.get('range') or {} %}
+        <tr class="player-row {% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
+            data-player-id="{{ row.id }}"
+            data-dynasty-rank="{{ row.dynasty_rank }}"
+            data-original-index="{{ loop.index0 }}"
+            data-z-scores="{{ row.z_scores | tojson | forceescape if row.z_scores else '{}' }}"
+            onclick="toggleDetail('{{ row.id }}', this)">
             <td class="col-rank">
                 {% if mode == 'prospects' and row.prospect_rank %}
                     {{ row.prospect_rank }}
@@ -37,30 +49,28 @@
                 {% elif row.is_prospect and row.prospect_rank %}
                 <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
                 {% endif %}
-                {% if tier != prev_tier or loop.index0 == 0 %}
-                <span class="tier-badge" style="background: {{ tier_colors[(tier - 1) % tier_colors|length] }}">T{{ tier }}</span>
+                {% if display_tier %}
+                <span class="tier-badge" style="background: {{ tier_colors[(computed_tier - 1) % tier_colors|length] if computed_tier else '#6b7280' }}">T{{ display_tier }}</span>
                 {% endif %}
             </td>
             <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>
             <td class="col-team">{{ row.team or '—' }}</td>
             <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
-            <td class="col-value val-pos">
-                {{ "%.1f" | format(row.dynasty_value) }}
-            </td>
-            {% set risk = risk_assessments.get(row.id) if risk_assessments is defined else None %}
-            <td class="col-risk">
-                {% if risk %}
-                <span class="risk-badge risk-{{ risk.risk_level | lower }}">{{ risk.risk_level }}</span>
+            <td class="col-value val-pos">{{ "%.1f" | format(row.dynasty_value) }}</td>
+            {% if mode == 'dd_dynasty' %}<td class="col-fit"><span class="fit-score">—</span></td>{% endif %}
+            <td class="col-confidence">
+                {% if confidence.get('level') %}
+                <span class="confidence-chip confidence-{{ confidence.get('level') }}">{{ confidence.get('level') | replace('_', ' ') | title }}</span>
                 {% endif %}
             </td>
             <td class="col-range">
-                {% if risk %}
-                {{ "%.0f" | format(risk.value_low) }}–{{ "%.0f" | format(risk.value_high) }}
+                {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
+                {{ "%.0f" | format(confidence_range.get('low')) }}–{{ "%.0f" | format(confidence_range.get('high')) }}
                 {% endif %}
             </td>
         </tr>
         <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
-            <td colspan="8"></td>
+            <td colspan="{{ 9 if mode == 'dd_dynasty' else 8 }}"></td>
         </tr>
         {% endfor %}
     </tbody>

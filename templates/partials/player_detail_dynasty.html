@@ -1,23 +1,39 @@
-<div class="player-detail">
-    <div class="detail-header">
-        <h3>{{ row.name }}</h3>
-        <span class="detail-meta">
-            {{ row.positions | join(', ') or 'N/A' }}
-            {% if row.team %} | {{ row.team }}{% endif %}
-            {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
-        </span>
-        <span class="detail-value val-pos">
-            Dynasty Value: {{ "%.1f" | format(row.dynasty_value) }}
-        </span>
-        {% if risk %}
-        <div class="risk-block">
-            <span class="risk-badge risk-{{ risk.risk_level | lower }}">{{ risk.risk_level }}</span>
-            <span class="risk-range">Range: {{ "%.0f" | format(risk.value_low) }}–{{ "%.0f" | format(risk.value_high) }}</span>
-            {% if risk.driver_labels %}
-            <div class="risk-drivers">{{ risk.driver_labels | join(', ') }}</div>
+{% macro stat_value(value, key='') -%}
+    {% if value is number %}
+        {% if key in ['avg', 'obp', 'slg', 'ops', 'iso'] %}{{ "%.3f" | format(value) }}
+        {% elif key in ['k_pct', 'bb_pct', 'k_bb_pct'] %}{{ "%.1f" | format(value) }}%
+        {% elif key in ['era', 'whip', 'k_per_9', 'bb_per_9'] %}{{ "%.2f" | format(value) }}
+        {% elif value == value | int %}{{ value | int }}
+        {% else %}{{ "%.1f" | format(value) }}{% endif %}
+    {% else %}{{ value }}{% endif %}
+{%- endmacro %}
+
+{% set confidence = row.confidence or {} %}
+{% set confidence_range = confidence.get('range') or {} %}
+<div class="player-detail dynasty-detail">
+    <div class="detail-header dynasty-card-header">
+        <div class="detail-identity">
+            <h3>{{ row.name }}</h3>
+            <span class="detail-meta">
+                {{ row.positions | join(', ') or 'N/A' }}
+                {% if row.team %} | {{ row.team }}{% endif %}
+                {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
+            </span>
+            {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
+        </div>
+        <div class="dynasty-headline">
+            <span class="headline-value"><span>Dynasty Value</span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
+            <span class="headline-range">Range {{ "%.0f" | format(confidence_range.get('low')) }}–{{ "%.0f" | format(confidence_range.get('high')) }}</span>
+            {% endif %}
+            {% if row.tier is not none %}<span class="headline-tier">Tier {{ row.tier }}</span>{% endif %}
+            {% if confidence.get('level') %}
+            <span class="confidence-chip confidence-{{ confidence.get('level') }}">
+                {{ confidence.get('level') | replace('_', ' ') | title }}
+                {% if confidence.get('score') is not none %} {{ confidence.get('score') | round | int }}{% endif %}
+            </span>
             {% endif %}
         </div>
-        {% endif %}
     </div>
 
     <div class="detail-body">
@@ -25,22 +41,18 @@
         <div class="detail-section">
             <h4>Prospect Profile</h4>
             <div class="stat-grid">
-                <div class="stat-item">
-                    <span class="stat-label">Prospect Rank</span>
-                    <span class="stat-value">#{{ row.prospect_rank or '—' }}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Level</span>
-                    <span class="stat-value">{{ row.level or '—' }}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">ETA</span>
-                    <span class="stat-value">{{ row.eta or '—' }}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Age</span>
-                    <span class="stat-value">{{ row.age or '—' }}</span>
-                </div>
+                {% if row.prospect_rank is not none %}
+                <div class="stat-item"><span class="stat-label">Prospect Rank</span><span class="stat-value">#{{ row.prospect_rank }}</span></div>
+                {% endif %}
+                {% if row.level %}
+                <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.level }}</span></div>
+                {% endif %}
+                {% if row.eta %}
+                <div class="stat-item"><span class="stat-label">ETA</span><span class="stat-value">{{ row.eta }}</span></div>
+                {% endif %}
+                {% if row.age is not none %}
+                <div class="stat-item"><span class="stat-label">Age</span><span class="stat-value">{{ row.age }}</span></div>
+                {% endif %}
                 {% if row.breakout_label %}
                 <div class="stat-item">
                     <span class="stat-label">Trend</span>
@@ -51,105 +63,146 @@
         </div>
 
         {% if row.source_ranks %}
-        <div class="detail-section">
-            <h4>Source Rankings</h4>
-            <div class="stat-grid">
-                {% for source, rank in row.source_ranks.items() %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ source | upper }}</span>
-                    <span class="stat-value">#{{ rank | int if rank is number else rank }}</span>
+        <div class="detail-section source-evidence">
+            <h4>Market Context
+                {% if row.source_divergence is not none and row.source_divergence > 50 %}
+                <span class="source-spread" title="Public sources disagree">⚠ Spread {{ row.source_divergence | round | int }}</span>
+                {% endif %}
+            </h4>
+            <div class="source-summary">
+                {% if row.prospect_rank is not none %}
+                <div class="source-summary-item valucast-view">
+                    <span class="stat-label">ValuCast Prospect Rank</span>
+                    <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
+                    <span class="source-summary-note">Our valuation</span>
                 </div>
-                {% endfor %}
+                {% endif %}
+                {% if row.public_source_consensus is not none %}
+                <div class="source-summary-item public-consensus">
+                    <span class="stat-label">Public Consensus</span>
+                    <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
+                    <span class="source-summary-note">{{ row.public_source_ranks | length }} boards</span>
+                </div>
+                {% endif %}
+                {% if row.milb_performance_rank is not none %}
+                <div class="source-summary-item milb-edge">
+                    <span class="stat-label">DD MiLB Performance</span>
+                    <span class="source-summary-rank">#{{ row.milb_performance_rank | int if row.milb_performance_rank is number else row.milb_performance_rank }}</span>
+                    <span class="source-summary-note">Proprietary performance signal</span>
+                </div>
+                {% endif %}
             </div>
+            {% if row.public_source_ranks %}
+            <details class="public-board-details">
+                <summary>View individual public boards</summary>
+                <div class="public-board-list">
+                    {% for source, rank in row.public_source_ranks.items() %}
+                    <span><strong>{{ source | upper }}</strong> #{{ rank | int }}</span>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
         </div>
         {% endif %}
 
         {% if row.stat_line %}
-        <div class="detail-section">
+        <div class="detail-section milb-stats">
             <h4>MiLB Stats</h4>
-            <div class="stat-grid">
-                {% for key, value in row.stat_line.items() %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ key | upper }}</span>
-                    <span class="stat-value">
-                        {% if value is number %}
-                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
-                        {% else %}{{ value }}{% endif %}
-                    </span>
+            {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
+            <div class="stat-group">
+                <h5>Rate Stats</h5>
+                <div class="stat-grid">
+                    {% for key in ['avg', 'obp', 'slg', 'ops'] %}{% if row.stat_line.get(key) is not none %}
+                    <div class="stat-item"><span class="stat-label">{{ key | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    {% endif %}{% endfor %}
                 </div>
-                {% endfor %}
             </div>
+            {% endif %}
+            {% if row.stat_line.get('k_pct') is not none or row.stat_line.get('bb_pct') is not none or row.stat_line.get('iso') is not none %}
+            <div class="stat-group">
+                <h5>Plate Discipline</h5>
+                <div class="stat-grid">
+                    {% for key in ['k_pct', 'bb_pct', 'iso'] %}{% if row.stat_line.get(key) is not none %}
+                    <div class="stat-item"><span class="stat-label">{{ key | replace('_pct', '%') | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if row.stat_line.get('era') is not none or row.stat_line.get('whip') is not none or row.stat_line.get('k_per_9') is not none or row.stat_line.get('bb_per_9') is not none or row.stat_line.get('k_bb_pct') is not none %}
+            <div class="stat-group">
+                <h5>Pitching Rates</h5>
+                <div class="stat-grid">
+                    {% for key in ['era', 'whip', 'k_per_9', 'bb_per_9', 'k_bb_pct'] %}{% if row.stat_line.get(key) is not none %}
+                    <div class="stat-item"><span class="stat-label">{{ key | replace('_per_9', '/9') | replace('_pct', '%') | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if row.stat_line.get('pa') is not none or row.stat_line.get('ip') is not none %}
+            <div class="stat-group">
+                <h5>Volume</h5>
+                <div class="stat-grid">
+                    {% for key in ['pa', 'ip'] %}{% if row.stat_line.get(key) is not none %}
+                    <div class="stat-item"><span class="stat-label">{{ key | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
         {% else %}
+        {% if row.proj_pa is not none or row.proj_ip is not none or row.market_value is not none or row.trend_delta is not none %}
+        <div class="detail-section">
+            <h4>Dynasty Snapshot</h4>
+            <div class="stat-grid">
+                {% if row.proj_pa is not none %}<div class="stat-item"><span class="stat-label">Projected PA</span><span class="stat-value">{{ row.proj_pa | round | int }}</span></div>{% endif %}
+                {% if row.proj_ip is not none %}<div class="stat-item"><span class="stat-label">Projected IP</span><span class="stat-value">{{ "%.1f" | format(row.proj_ip) }}</span></div>{% endif %}
+                {% if row.market_value is not none %}<div class="stat-item"><span class="stat-label">Market Comp</span><span class="stat-value">{{ "%.1f" | format(row.market_value) }}</span></div>{% endif %}
+                {% if row.trend_delta is not none %}
+                <div class="stat-item"><span class="stat-label">Trend</span><span class="trend-chip trend-{{ row.trend_direction or ('up' if row.trend_delta >= 0 else 'down') }}">{{ '▲' if (row.trend_direction == 'up' or (not row.trend_direction and row.trend_delta >= 0)) else '▼' }} {{ "%.1f" | format(row.trend_delta | abs) }}</span></div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if row.z_scores %}
+        <div class="detail-section category-profile">
+            <h4>Category Profile <span class="profile-note">League average at center; right is better</span></h4>
+            <div class="category-strip">
+                {% for category, z_score in row.z_scores.items() %}
+                {% if z_score is number %}
+                {% set adjusted_z = -z_score if category in ['SO', 'ERA', 'WHIP', 'L'] else z_score %}
+                {% set bar_width = [adjusted_z | abs * 16, 50] | min %}
+                <div class="category-bar" title="{{ category }} raw z-score: {{ '%.2f' | format(z_score) }}">
+                    <span class="category-label">{{ category }}</span>
+                    <div class="zbar category-zbar">
+                        <span class="zbar-fill {{ 'pos' if adjusted_z >= 0 else 'neg' }}" style="width: {{ bar_width }}%;"></span>
+                    </div>
+                    <span class="category-z">{{ "%+.2f" | format(adjusted_z) }}</span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% include "partials/_statcast_bars.html" %}
 
-        {% if mlb_stats %}
+        {% for title, stats in [('2026 Season Outlook', mlb_stats), ('2026 Actual Stats', mlb_stats_actual), ('ROS Projection (Steamer)', mlb_stats_ros)] %}
+        {% if stats %}
         <div class="detail-section">
-            <h4>2026 Season Outlook</h4>
+            <h4>{{ title }}</h4>
             <div class="stat-grid">
-                {% for key, value in mlb_stats.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ key }}</span>
-                    <span class="stat-value">
-                        {% if value is number %}
-                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
-                        {% else %}{{ value }}{% endif %}
-                    </span>
-                </div>
+                {% for key, value in stats.items() %}
+                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] and value is not none %}
+                <div class="stat-item"><span class="stat-label">{{ key }}</span><span class="stat-value">{{ stat_value(value, key | lower) }}</span></div>
                 {% endif %}
                 {% endfor %}
             </div>
         </div>
         {% endif %}
-
-        {% if mlb_stats_actual %}
-        <div class="detail-section">
-            <h4>2026 Actual Stats</h4>
-            <div class="stat-grid">
-                {% for key, value in mlb_stats_actual.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ key }}</span>
-                    <span class="stat-value">
-                        {% if value is number %}
-                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
-                        {% else %}{{ value }}{% endif %}
-                    </span>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if mlb_stats_ros %}
-        <div class="detail-section">
-            <h4>ROS Projection (Steamer)</h4>
-            <div class="stat-grid">
-                {% for key, value in mlb_stats_ros.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ key }}</span>
-                    <span class="stat-value">
-                        {% if value is number %}
-                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
-                        {% else %}{{ value }}{% endif %}
-                    </span>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        {% if not mlb_stats %}
-        <div class="detail-section">
-            <p>No season outlook stats available for this player.</p>
-        </div>
-        {% endif %}
+        {% endfor %}
         {% endif %}
     </div>
 </div>

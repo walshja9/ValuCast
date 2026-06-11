@@ -91,7 +91,7 @@
 
     {% elif horizon == 'dynasty' %}
     <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
-        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value. League customization is coming.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary">Dynasty rankings blend current MLB value, age-adjusted future value, and prospect value.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}{% if dd_schema_version %} · Feed v{{ dd_schema_version }}{% endif %}</span>
         <fieldset class="pool-toggle" aria-label="Player pool">
             <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
             <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>
@@ -108,6 +108,7 @@
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>
+    {% include "partials/dynasty_category_fit.html" %}
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
@@ -268,5 +269,127 @@ function toggleDetail(playerId, row) {
     detailRow.style.display = '';
     if (btn) btn.setAttribute('aria-expanded', 'true');
 }
+
+const FIT_INVERSE = new Set(['SO', 'ERA', 'WHIP', 'L']);
+const FIT_PRESETS = {
+    h2h: {R:1, HR:1, RBI:1, SB:1, AVG:1, OPS:1, SO:1, ERA:1, WHIP:1, K:1, QS:1, L:1, 'K/BB':1},
+    roto: {R:1, HR:1, RBI:1, SB:1, AVG:1, ERA:1, WHIP:1, K:1, W:1, SV:1},
+    obp: {R:1, HR:1, RBI:1, SB:1, OBP:1.4, ERA:1, WHIP:1, K:1, W:1, SV:1},
+    points: {R:1.5, HR:2, RBI:1.5, SB:1.2, SO:1.2, OPS:.6, K:1.6, QS:1.4, L:.5, ERA:.4, WHIP:.4, 'K/BB':.7},
+};
+let activeFitPreset = 'h2h';
+
+function fitZScore(zScores, category) {
+    if (typeof zScores[category] === 'number') return zScores[category];
+    if (category === 'OBP' && typeof zScores.OPS === 'number') return zScores.OPS;
+    if (category === 'W' && typeof zScores.QS === 'number') return zScores.QS;
+    return null;
+}
+
+function selectedFitCategories() {
+    const selected = {};
+    document.querySelectorAll('[data-fit-cat]:checked').forEach(input => {
+        const weight = document.querySelector('[data-fit-weight="' + input.dataset.fitCat + '"]');
+        selected[input.dataset.fitCat] = Math.max(0, parseFloat(weight?.value || '1') || 0);
+    });
+    return selected;
+}
+
+function applyFitPreset(presetName) {
+    activeFitPreset = presetName;
+    const preset = FIT_PRESETS[presetName];
+    document.querySelectorAll('[data-fit-cat]').forEach(input => {
+        input.checked = Object.prototype.hasOwnProperty.call(preset, input.dataset.fitCat);
+    });
+    document.querySelectorAll('[data-fit-weight]').forEach(input => {
+        input.value = preset[input.dataset.fitWeight] ?? 1;
+    });
+    document.querySelectorAll('[data-fit-preset]').forEach(button => {
+        button.classList.toggle('active', button.dataset.fitPreset === presetName);
+    });
+    updateCategoryFit();
+}
+
+function fitControlChanged(event) {
+    event.stopPropagation();
+    activeFitPreset = 'custom';
+    document.querySelectorAll('[data-fit-preset]').forEach(button => button.classList.remove('active'));
+    updateCategoryFit();
+}
+
+function pairedAppend(tbody, row) {
+    const detail = document.getElementById('detail-' + row.dataset.playerId);
+    tbody.appendChild(row);
+    if (detail) tbody.appendChild(detail);
+}
+
+function updateCategoryFit() {
+    const table = document.querySelector('.dynasty-rankings');
+    if (!table || !table.querySelector('.col-fit')) return;
+    const rows = Array.from(table.querySelectorAll('tbody > tr.player-row'));
+    const selected = selectedFitCategories();
+    const scored = [];
+    rows.forEach(row => {
+        let zScores = {};
+        try { zScores = JSON.parse(row.dataset.zScores || '{}'); } catch (_) {}
+        let raw = 0;
+        let matched = 0;
+        Object.entries(selected).forEach(([category, weight]) => {
+            const z = fitZScore(zScores, category);
+            if (z === null) return;
+            raw += z * weight * (FIT_INVERSE.has(category) ? -1 : 1);
+            matched += 1;
+        });
+        scored.push({row, raw, matched});
+    });
+    const values = scored.filter(item => item.matched).map(item => item.raw);
+    const min = values.length ? Math.min(...values) : 0;
+    const max = values.length ? Math.max(...values) : 0;
+    scored.forEach(item => {
+        item.fit = item.matched ? (max === min ? 50 : ((item.raw - min) / (max - min)) * 100) : null;
+        const score = item.row.querySelector('.fit-score');
+        if (score) score.textContent = item.fit === null ? '—' : item.fit.toFixed(0);
+        item.row.classList.remove('tier-break');
+    });
+    scored.sort((a, b) => {
+        if (a.fit === null && b.fit === null) return Number(a.row.dataset.originalIndex) - Number(b.row.dataset.originalIndex);
+        if (a.fit === null) return 1;
+        if (b.fit === null) return -1;
+        return b.fit - a.fit;
+    });
+    const tbody = table.querySelector('tbody');
+    scored.forEach(item => pairedAppend(tbody, item.row));
+    const status = document.getElementById('fit-status');
+    const presetButton = document.querySelector('[data-fit-preset="' + activeFitPreset + '"]');
+    const presetLabel = activeFitPreset === 'custom' ? 'Custom Category Fit' : presetButton?.textContent;
+    if (status) status.textContent = values.length ? presetLabel + ' · normalized 0–100' : presetLabel + ' · no v1.1 z-scores in visible pool';
+}
+
+function resetDynastyOrder() {
+    activeFitPreset = 'dynasty';
+    document.querySelectorAll('[data-fit-preset]').forEach(button => button.classList.remove('active'));
+    const table = document.querySelector('.dynasty-rankings');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(table.querySelectorAll('tbody > tr.player-row'))
+        .sort((a, b) => Number(a.dataset.originalIndex) - Number(b.dataset.originalIndex));
+    rows.forEach(row => {
+        const score = row.querySelector('.fit-score');
+        if (score) score.textContent = '—';
+        pairedAppend(tbody, row);
+    });
+    const status = document.getElementById('fit-status');
+    if (status) status.textContent = 'Dynasty order';
+}
+
+const requestedFitPreset = new URLSearchParams(window.location.search).get('fit');
+if (document.getElementById('category-fit-panel')) {
+    applyFitPreset(FIT_PRESETS[requestedFitPreset] ? requestedFitPreset : 'h2h');
+}
+document.body.addEventListener('htmx:afterSwap', function () {
+    if (!document.getElementById('category-fit-panel')) return;
+    if (activeFitPreset === 'dynasty') resetDynastyOrder();
+    else updateCategoryFit();
+});
 </script>
 {% endblock %}

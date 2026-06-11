@@ -49,6 +49,14 @@ class TestDDFeedStoreLoad(unittest.TestCase):
             self.assertTrue(store.is_available)
             self.assertEqual(len(store.get_all()), 3)
 
+    def test_loads_schema_v11_feed(self):
+        with tempfile.TemporaryDirectory() as d:
+            feed = {**VALID_FEED, "schema_version": "1.1"}
+            path = _write_feed(d, feed)
+            store = DDFeedStore(path)
+            self.assertTrue(store.is_available)
+            self.assertEqual(store.schema_version, "1.1")
+
     def test_missing_file_not_available(self):
         store = DDFeedStore("/nonexistent/path/feed.json")
         self.assertFalse(store.is_available)
