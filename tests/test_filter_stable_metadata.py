@@ -36,23 +36,26 @@ class TestFilterStableMetadata(unittest.TestCase):
 
     def test_dynasty_metadata_computed_on_full_universe(self):
         from app import (dd_store, _dynasty_metadata,
-                         _compute_dynasty_tiers, _compute_dynasty_dollars)
+                         _dynasty_tiers_for, _compute_dynasty_dollars)
+        from web.league_settings import LeagueSettings
         if not dd_store.is_available:
             self.skipTest("DD feed unavailable")
-        dollars, tiers = _dynasty_metadata()
-        full_top200 = sorted(dd_store.get_all(),
-                             key=lambda r: r.dynasty_value, reverse=True)[:200]
-        self.assertEqual(tiers, _compute_dynasty_tiers(full_top200))
-        self.assertEqual(dollars, _compute_dynasty_dollars(full_top200))
-        self.assertGreater(len(tiers), 100, "metadata pool should be the full top-200")
+        settings = LeagueSettings()
+        dollars, tiers = _dynasty_metadata(settings)
+        full = sorted(dd_store.get_all(),
+                      key=lambda r: r.dynasty_value, reverse=True)
+        self.assertEqual(tiers, _dynasty_tiers_for(full, settings))
+        self.assertEqual(dollars, _compute_dynasty_dollars(full, settings))
+        self.assertGreater(len(tiers), 100, "metadata pool should be the full universe")
 
     def test_dynasty_context_uses_full_universe_metadata_under_filter(self):
-        from app import dd_store, _build_dynasty_context, _compute_dynasty_tiers
+        from app import dd_store, _build_dynasty_context, _dynasty_tiers_for
+        from web.league_settings import LeagueSettings
         if not dd_store.is_available:
             self.skipTest("DD feed unavailable")
         from werkzeug.datastructures import ImmutableMultiDict
         ctx = _build_dynasty_context(ImmutableMultiDict([("position", "SS")]))
-        full_top200 = sorted(dd_store.get_all(),
-                             key=lambda r: r.dynasty_value, reverse=True)[:200]
+        full = sorted(dd_store.get_all(),
+                      key=lambda r: r.dynasty_value, reverse=True)
         # Tiers must come from the full universe, not the filtered SS subset.
-        self.assertEqual(ctx["tiers"], _compute_dynasty_tiers(full_top200))
+        self.assertEqual(ctx["tiers"], _dynasty_tiers_for(full, LeagueSettings()))

@@ -28,6 +28,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
+from web.league_settings import parse_league_settings
 from web.season_outlook import find_season_outlook, find_outlook_projections
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
@@ -154,18 +155,27 @@ if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not dd_store.is_available:
         "prior healthy Render deploy stays live."
     )
 
-def _compute_dynasty_dollars(rows, num_teams=12, budget=200):
-    """Convert dynasty values to auction dollars proportionally."""
-    positive = [r for r in rows if r.dynasty_value > 0]
-    total_positive = sum(r.dynasty_value for r in positive)
-    total_budget = budget * num_teams
-    dollars = {}
-    if total_positive > 0:
-        for r in rows:
-            if r.dynasty_value > 0:
-                dollars[r.id] = round(r.dynasty_value / total_positive * total_budget, 1)
-            else:
-                dollars[r.id] = 0.0
+def _compute_dynasty_dollars(rows, settings):
+    """Replacement-adjusted auction dollars for a league shaped by `settings`.
+
+    Rostered pool = top (teams x roster) by dynasty value. Replacement value =
+    the value at the cutoff rank. Every rostered player gets a $1 floor; the
+    remaining budget is split proportionally to value ABOVE replacement.
+    Below the cutoff = $0. Total payout == teams x budget (the league's cash).
+    """
+    ordered = sorted(rows, key=lambda r: r.dynasty_value, reverse=True)
+    cutoff = min(settings.roster_cutoff, len(ordered))
+    rostered, bench = ordered[:cutoff], ordered[cutoff:]
+    dollars = {r.id: 0.0 for r in bench}
+    if not rostered:
+        return dollars
+    replacement = rostered[-1].dynasty_value
+    surplus = {r.id: max(0.0, r.dynasty_value - replacement) for r in rostered}
+    total_surplus = sum(surplus.values())
+    spendable = settings.total_budget - len(rostered)  # $1 floor reserved each
+    for r in rostered:
+        share = (surplus[r.id] / total_surplus * spendable) if total_surplus > 0 else 0.0
+        dollars[r.id] = round(1.0 + max(0.0, share), 1)
     return dollars
 
 
@@ -235,12 +245,24 @@ def _gap_tiers(rows, num_tiers=8):
     return {pid: t for pid, t in tiers_list}
 
 
-def _dynasty_metadata():
-    """Dynasty $ and tiers computed on a fixed top-200-by-value pool of the FULL DD
-    universe, so they don't change when the displayed rows are filtered."""
+def _dynasty_tiers_for(rows, settings):
+    """Tiers over the rostered pool; below-cutoff rows are lumped into the LAST
+    tier (never 0 — the template renders tier badges and 'T0' is nonsense)."""
+    ordered = sorted(rows, key=lambda r: r.dynasty_value, reverse=True)
+    cutoff = min(settings.roster_cutoff, len(ordered))
+    pool, bench = ordered[:cutoff], ordered[cutoff:]
+    tiers = _compute_dynasty_tiers(pool)
+    last = max(tiers.values()) if tiers else 1
+    for r in bench:
+        tiers[r.id] = last
+    return tiers
+
+
+def _dynasty_metadata(settings):
+    """Dynasty $ and tiers computed on the FULL DD universe shaped by league
+    settings, so they don't change when the displayed rows are filtered."""
     all_rows = sorted(dd_store.get_all(), key=lambda r: r.dynasty_value, reverse=True)
-    pool = all_rows[:200]
-    return _compute_dynasty_dollars(pool), _compute_dynasty_tiers(pool)
+    return _compute_dynasty_dollars(all_rows, settings), _dynasty_tiers_for(all_rows, settings)
 
 
 def _prospect_tiers():
@@ -272,7 +294,7 @@ def _build_dynasty_context(args):
     search = args.get("search", "")
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
     rows = rows[:200]
-    dynasty_dollars, tiers = _dynasty_metadata()
+    dynasty_dollars, tiers = _dynasty_metadata(parse_league_settings(args))
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -643,7 +665,7 @@ def index():
                 position=ctx.get("position") or None,
                 search=ctx.get("search") or None,
             )
-            ctx["dynasty_dollars"], _ = _dynasty_metadata()
+            ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
             ctx["tiers"] = _prospect_tiers()
             ctx["mode"] = "prospects"
             ctx["horizon"] = "prospects"
@@ -672,7 +694,7 @@ def rankings():
                     position=ctx.get("position") or None,
                     search=ctx.get("search") or None,
                 )
-                ctx["dynasty_dollars"], _ = _dynasty_metadata()
+                ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
                 ctx["tiers"] = _prospect_tiers()
                 ctx["mode"] = "prospects"
                 ctx["horizon"] = "prospects"
@@ -871,7 +893,7 @@ def export_csv():
                 position=ctx.get("position") or None,
                 search=ctx.get("search") or None,
             )
-            ctx["dynasty_dollars"], _ = _dynasty_metadata()
+            ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
             ctx["tiers"] = _prospect_tiers()
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
