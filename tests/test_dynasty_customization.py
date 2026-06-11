@@ -104,7 +104,7 @@ class TestDynastyRoutes(unittest.TestCase):
 
     def test_dynasty_no_longer_promises_customization(self):
         r = self.client.get("/?mode=dd_dynasty")
-        self.assertNotIn(b"League customization is coming", r.data)
+        self.assertNotIn("customization is coming", r.data.decode("utf-8").lower())
 
     def test_rankings_partial_carries_settings(self):
         r = self.client.get("/rankings?mode=dd_dynasty&teams=8&budget=260&roster=25&pslots=3")
