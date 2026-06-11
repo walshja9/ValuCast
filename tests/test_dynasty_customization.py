@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -161,9 +162,6 @@ class TestDynastyRoutes(unittest.TestCase):
         self.assertNotIn(b'hx-swap-oob="innerHTML:#setup-panel"', r2.data)
 
 
-from unittest.mock import patch
-
-
 class TestLeagueImportRoute(unittest.TestCase):
     def setUp(self):
         self.client = flask_app.test_client()
@@ -179,6 +177,7 @@ class TestLeagueImportRoute(unittest.TestCase):
         self.assertIn('name="roster" value="30"', body)     # imported
         self.assertIn('name="budget" value="350"', body)    # NOT imported -> user's current value kept
         self.assertIn("Imported roster, teams", body)
+        self.assertIn('hx-swap-oob="true"', body)  # notice lands in stable slot
         self.assertIn("league-setup-refresh", body)  # triggers board re-render
 
     def test_import_failure_keeps_knobs_and_notices(self):
@@ -189,6 +188,7 @@ class TestLeagueImportRoute(unittest.TestCase):
         body = r.data.decode("utf-8")
         self.assertIn('name="teams" value="14"', body)      # untouched
         self.assertIn("league is private", body)
+        self.assertIn('hx-swap-oob="true"', body)  # notice lands in stable slot
         self.assertNotIn("league-setup-refresh", body)  # no refresh on failure
 
     def test_import_empty_url(self):
@@ -202,6 +202,12 @@ class TestLeagueImportRoute(unittest.TestCase):
         body = r.data.decode("utf-8")
         self.assertIn('name="teams" value="20"', body)   # clamped to max
         self.assertIn('name="roster" value="50"', body)  # clamped to max
+
+    def test_rankings_oob_panel_does_not_wipe_notice_slot(self):
+        # The board-refresh response must not contain an OOB swap for the
+        # notice slot — otherwise it would wipe the import notice.
+        r = self.client.get("/rankings?mode=dd_dynasty&teams=10")
+        self.assertNotIn(b"import-notice-slot", r.data)
 
 
 if __name__ == "__main__":

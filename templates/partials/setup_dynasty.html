@@ -28,9 +28,6 @@
             hx-target="#setup-panel"
             hx-swap="innerHTML"
             hx-sync="closest form:replace">Import settings</button>
-    {% if import_notice %}
-    <p class="import-notice">{{ import_notice }}</p>
-    {% endif %}
 </div>
 {% if import_refresh %}
 <script class="league-setup-refresh">
@@ -39,4 +36,7 @@
    imported settings. */
 document.getElementById('league-setup').dispatchEvent(new Event('change', { bubbles: true }));
 </script>
+{% endif %}
+{% if import_notice is defined and import_notice %}
+<div id="import-notice-slot" hx-swap-oob="true"><p class="import-notice">{{ import_notice }}</p></div>
 {% endif %}
