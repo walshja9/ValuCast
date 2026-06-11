@@ -161,14 +161,12 @@
     publish();
 })();
 
-{% if horizon != 'prospects' %}
 function toggleSetup() {
     const panel = document.getElementById('setup-panel');
     const btn = document.querySelector('.customize-toggle');
     panel.classList.toggle('collapsed');
     btn.textContent = panel.classList.contains('collapsed') ? 'Customize' : 'Hide';
 }
-{% endif %}
 
 const selected = new Set();
 

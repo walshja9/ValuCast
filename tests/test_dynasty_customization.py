@@ -152,7 +152,7 @@ class TestDynastyRoutes(unittest.TestCase):
 
     def test_prospects_has_no_customize_panel(self):
         r = self.client.get("/?mode=prospects")
-        self.assertNotIn(b"customize-toggle", r.data)
+        self.assertNotIn(b'class="customize-toggle"', r.data)
         r2 = self.client.get("/rankings?mode=prospects")
         self.assertNotIn(b'hx-swap-oob="innerHTML:#setup-panel"', r2.data)
 
