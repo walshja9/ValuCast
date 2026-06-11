@@ -81,7 +81,7 @@
                 <div class="source-summary-item public-consensus">
                     <span class="stat-label">Public Consensus</span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
-                    <span class="source-summary-note">{{ row.public_source_ranks | length }} boards</span>
+                    <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
                 </div>
                 {% endif %}
                 {% if row.milb_performance_rank is not none %}

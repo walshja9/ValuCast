@@ -365,19 +365,31 @@ class TestConfidenceIntegration(unittest.TestCase):
         self.client = app.test_client()
         app.config["TESTING"] = True
 
-    def test_dynasty_table_shows_confidence_column(self):
+    def test_dynasty_table_gates_v11_columns_on_v10_feed(self):
         from app import dd_store
         if not dd_store.is_available:
             self.skipTest("DD feed not available")
         response = self.client.get("/?mode=dd_dynasty")
-        self.assertIn(b"col-confidence", response.data)
+        if dd_store.schema_version == "1.1":
+            self.assertIn(b'class="col-confidence"', response.data)
+            self.assertIn(b'id="category-fit-panel"', response.data)
+        else:
+            # v1.0 feed carries no confidence/z-scores: the columns and the
+            # Category Fit panel must not render as dead UI. (The inline JS
+            # still mentions the class names, so assert on markup forms.)
+            self.assertNotIn(b'class="col-confidence"', response.data)
+            self.assertNotIn(b'class="col-fit"', response.data)
+            self.assertNotIn(b'id="category-fit-panel"', response.data)
 
-    def test_prospects_table_shows_confidence_column(self):
+    def test_prospects_table_gates_v11_columns_on_v10_feed(self):
         from app import dd_store
         if not dd_store.is_available:
             self.skipTest("DD feed not available")
         response = self.client.get("/?mode=prospects")
-        self.assertIn(b"col-confidence", response.data)
+        if dd_store.schema_version == "1.1":
+            self.assertIn(b'class="col-confidence"', response.data)
+        else:
+            self.assertNotIn(b'class="col-confidence"', response.data)
 
     def test_dynasty_player_detail_hides_missing_confidence(self):
         from app import dd_store

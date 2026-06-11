@@ -22,7 +22,9 @@ class TestDynastyV11UI(unittest.TestCase):
     def test_v11_store_and_category_fit_controls_render(self):
         response = self.client.get("/?mode=dd_dynasty")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Feed v1.1", response.data)
+        self.assertIn(b'id="category-fit-panel"', response.data)
+        self.assertIn(b'class="col-confidence"', response.data)
+        self.assertNotIn(b"Feed v", response.data)  # internal plumbing stays internal
         self.assertIn(b"Category Fit", response.data)
         self.assertIn(b"H2H Categories", response.data)
         self.assertIn(b"5x5 Roto", response.data)

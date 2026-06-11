@@ -109,7 +109,11 @@
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
     </div>
+    {# Category Fit needs per-player z-scores, which only a v1.1 feed carries —
+       with a v1.0 feed the panel would be a dead control surface. #}
+    {% if dd_schema_version == '1.1' %}
     {% include "partials/dynasty_category_fit.html" %}
+    {% endif %}
 
     <section id="setup-panel" class="setup-panel collapsed">
         {% include "partials/setup_dynasty.html" %}
@@ -409,12 +413,30 @@ function updateCategoryFit() {
         scored.push({row, raw, matched});
     });
     const values = scored.filter(item => item.matched).map(item => item.raw);
-    const min = values.length ? Math.min(...values) : 0;
-    const max = values.length ? Math.max(...values) : 0;
+    const status = document.getElementById('fit-status');
+    const presetButton = document.querySelector('[data-fit-preset="' + activeFitPreset + '"]');
+    const presetLabel = activeFitPreset === 'custom' ? 'Custom Category Fit' : presetButton?.textContent;
+    if (!values.length) {
+        // Nothing scoreable: leave row order, tier breaks, and the cutoff
+        // divider untouched instead of reshuffling to a no-op order.
+        scored.forEach(item => {
+            const score = item.row.querySelector('.fit-score');
+            if (score) score.textContent = '—';
+        });
+        if (status) status.textContent = presetLabel + ' · no v1.1 z-scores in visible pool';
+        return;
+    }
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    // A client re-rank invalidates dynasty-order furniture: drop the cutoff
+    // divider (same treatment as sortTable) and snapshot tier breaks so
+    // resetDynastyOrder can restore them.
+    table.querySelectorAll('tbody > tr.cutoff-row').forEach(row => row.remove());
     scored.forEach(item => {
         item.fit = item.matched ? (max === min ? 50 : ((item.raw - min) / (max - min)) * 100) : null;
         const score = item.row.querySelector('.fit-score');
         if (score) score.textContent = item.fit === null ? '—' : item.fit.toFixed(0);
+        if (item.row.classList.contains('tier-break')) item.row.dataset.tierBreak = '1';
         item.row.classList.remove('tier-break');
     });
     scored.sort((a, b) => {
@@ -425,10 +447,7 @@ function updateCategoryFit() {
     });
     const tbody = table.querySelector('tbody');
     scored.forEach(item => pairedAppend(tbody, item.row));
-    const status = document.getElementById('fit-status');
-    const presetButton = document.querySelector('[data-fit-preset="' + activeFitPreset + '"]');
-    const presetLabel = activeFitPreset === 'custom' ? 'Custom Category Fit' : presetButton?.textContent;
-    if (status) status.textContent = values.length ? presetLabel + ' · normalized 0–100' : presetLabel + ' · no v1.1 z-scores in visible pool';
+    if (status) status.textContent = presetLabel + ' · normalized 0–100';
 }
 
 function resetDynastyOrder() {
@@ -442,6 +461,7 @@ function resetDynastyOrder() {
     rows.forEach(row => {
         const score = row.querySelector('.fit-score');
         if (score) score.textContent = '—';
+        if (row.dataset.tierBreak === '1') row.classList.add('tier-break');
         pairedAppend(tbody, row);
     });
     const status = document.getElementById('fit-status');

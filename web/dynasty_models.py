@@ -4,6 +4,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 
+# DD-internal model signals — not independent public boards, so they are
+# excluded from the public-consensus surfaces.
+_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout"})
+
+
 @dataclass(frozen=True)
 class DynastyRankingRow:
     """A single player row in DD Dynasty rankings. Not an engine result."""
@@ -58,7 +63,7 @@ class DynastyRankingRow:
         return {
             source: rank
             for source, rank in (self.source_ranks or {}).items()
-            if source != "milb_perf" and isinstance(rank, (int, float))
+            if source not in _INTERNAL_SOURCES and isinstance(rank, (int, float))
         }
 
     @property

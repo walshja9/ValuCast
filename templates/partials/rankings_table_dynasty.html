@@ -1,9 +1,12 @@
+{% set v11 = dd_schema_version == '1.1' %}
 <div class="results-meta">
     <span>{{ dd_rows | length }} {% if mode == 'prospects' %}prospects{% else %}players{% endif %}{% if dd_rows | length == 200 %} (showing top 200){% endif %}</span>
-    {% if mode == 'dd_dynasty' %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
+    {% if mode == 'dd_dynasty' and v11 %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
 </div>
 
-{% set ncols = 10 if mode == 'dd_dynasty' else 8 %}
+{# Category Fit, Confidence, and Range render only from a v1.1 feed — with a
+   v1.0 feed they'd be a dead column and two always-empty ones. #}
+{% set ncols = (10 if v11 else 7) if mode == 'dd_dynasty' else (8 if v11 else 6) %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings">
     <thead>
@@ -16,10 +19,12 @@
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
-            <th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(7)">Category Fit</button></th>
+            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(7)">Category Fit</button></th>{% endif %}
             {% endif %}
+            {% if v11 %}
             <th class="col-confidence">Confidence</th>
             <th class="col-range">Range</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -56,8 +61,10 @@
                 {% elif row.is_prospect and row.prospect_rank %}
                 <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
                 {% endif %}
-                {% if display_tier %}
-                <span class="tier-badge" style="background: {{ tier_colors[(computed_tier - 1) % tier_colors|length] if computed_tier else '#6b7280' }}">T{{ display_tier }}</span>
+                {% set badge_tier = (row.tier | int(0)) if row.tier is not none else computed_tier %}
+                {% set badge_tier = badge_tier if badge_tier and badge_tier > 0 else computed_tier %}
+                {% if badge_tier %}
+                <span class="tier-badge" style="background: {{ tier_colors[(badge_tier - 1) % tier_colors|length] if badge_tier else '#6b7280' }}">T{{ badge_tier }}</span>
                 {% endif %}
             </td>
             <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>
@@ -66,8 +73,9 @@
             <td class="col-value val-pos">{{ "%.1f" | format(row.dynasty_value) }}</td>
             {% if mode == 'dd_dynasty' %}
             <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>
-            <td class="col-fit"><span class="fit-score">—</span></td>
+            {% if v11 %}<td class="col-fit"><span class="fit-score">—</span></td>{% endif %}
             {% endif %}
+            {% if v11 %}
             <td class="col-confidence">
                 {% if confidence.get('level') %}
                 <span class="confidence-chip confidence-{{ confidence.get('level') }}">{{ confidence.get('level') | replace('_', ' ') | title }}</span>
@@ -78,6 +86,7 @@
                 {{ "%.0f" | format(confidence_range.get('low')) }}–{{ "%.0f" | format(confidence_range.get('high')) }}
                 {% endif %}
             </td>
+            {% endif %}
         </tr>
         <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
             <td colspan="{{ ncols }}"></td>
