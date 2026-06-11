@@ -48,7 +48,8 @@ class TestDynastyV11UI(unittest.TestCase):
     def test_prospect_card_groups_stats_and_hides_null_level(self):
         response = self.client.get("/player/dd_prospect_future_bat?mode=prospects")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"ValuCast Prospect Rank", response.data)
+        self.assertIn(b"DD Prospect Rank", response.data)
+        self.assertIn(b"DD model rank", response.data)
         self.assertIn(b"Public Consensus", response.data)
         self.assertIn(b"~P#18", response.data)
         self.assertIn(b"DD MiLB Performance", response.data)
@@ -58,6 +59,11 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Rate Stats", response.data)
         self.assertIn(b"Plate Discipline", response.data)
         self.assertNotIn(b'<span class="stat-label">Level</span>', response.data)
+
+    def test_prospects_board_uses_dd_prospect_rank_order(self):
+        response = self.client.get("/?mode=prospects")
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(response.data.find(b"Future Arm"), response.data.find(b"Future Bat"))
 
     def test_category_fit_formula_includes_inverse_and_aliases(self):
         response = self.client.get("/?mode=dd_dynasty")

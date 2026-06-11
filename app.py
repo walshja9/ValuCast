@@ -252,6 +252,19 @@ def _prospect_tiers():
     return _compute_dynasty_tiers(pros)
 
 
+def _prospect_rows(position=None, search=None):
+    """Return the dedicated Prospects board in DD's authoritative prospect order."""
+    rows = dd_store.filter(pool="prospect", position=position, search=search)
+    return sorted(
+        rows,
+        key=lambda row: (
+            row.prospect_rank is None,
+            row.prospect_rank if row.prospect_rank is not None else row.dynasty_rank,
+            row.dynasty_rank,
+        ),
+    )[:200]
+
+
 def _build_dynasty_context(args):
     """Build template context for DD Dynasty mode. Bypasses engine entirely."""
     pool = args.get("pool", "")
@@ -626,13 +639,10 @@ def index():
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
-            rows = dd_store.filter(
-                pool="prospect",
+            ctx["dd_rows"] = _prospect_rows(
                 position=ctx.get("position") or None,
                 search=ctx.get("search") or None,
             )
-            rows = rows[:200]
-            ctx["dd_rows"] = rows
             ctx["dynasty_dollars"], _ = _dynasty_metadata()
             ctx["tiers"] = _prospect_tiers()
             ctx["mode"] = "prospects"
@@ -658,13 +668,10 @@ def rankings():
         else:
             ctx = _build_dynasty_context(request.args)
             if mode == "prospects":
-                rows = dd_store.filter(
-                    pool="prospect",
+                ctx["dd_rows"] = _prospect_rows(
                     position=ctx.get("position") or None,
                     search=ctx.get("search") or None,
                 )
-                rows = rows[:200]
-                ctx["dd_rows"] = rows
                 ctx["dynasty_dollars"], _ = _dynasty_metadata()
                 ctx["tiers"] = _prospect_tiers()
                 ctx["mode"] = "prospects"
@@ -860,13 +867,10 @@ def export_csv():
     if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
-            rows = dd_store.filter(
-                pool="prospect",
+            ctx["dd_rows"] = _prospect_rows(
                 position=ctx.get("position") or None,
                 search=ctx.get("search") or None,
             )
-            rows = rows[:200]
-            ctx["dd_rows"] = rows
             ctx["dynasty_dollars"], _ = _dynasty_metadata()
             ctx["tiers"] = _prospect_tiers()
         rows = ctx["dd_rows"]
