@@ -549,3 +549,40 @@ class TestPlayingTimeFilter(unittest.TestCase):
         )
         detail_val = next(r.total_value for r in detail if r.player.id == "19755")
         self.assertAlmostEqual(rank_val, detail_val, places=6)
+
+
+class TestPublicSurface(unittest.TestCase):
+    """Launch-facing surface: crawler files, icons, social tags, error pages."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_robots_txt(self):
+        r = self.client.get("/robots.txt")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"User-agent", r.data)
+
+    def test_favicon(self):
+        r = self.client.get("/favicon.ico")
+        self.assertEqual(r.status_code, 200)
+
+    def test_social_preview_tags_on_homepage(self):
+        r = self.client.get("/")
+        self.assertIn(b'property="og:image"', r.data)
+        self.assertIn(b'name="twitter:card"', r.data)
+        self.assertIn(b'name="description"', r.data)
+        self.assertIn(b'rel="icon"', r.data)
+
+    def test_404_is_branded(self):
+        r = self.client.get("/definitely-not-a-page")
+        self.assertEqual(r.status_code, 404)
+        self.assertIn(b"Back to the rankings", r.data)
+        self.assertIn(b"ValuCast", r.data)
+
+    def test_htmx_served_locally(self):
+        r = self.client.get("/")
+        self.assertIn(b"/static/htmx.min.js", r.data)
+        self.assertNotIn(b"unpkg.com", r.data)
+        asset = self.client.get("/static/htmx.min.js")
+        self.assertEqual(asset.status_code, 200)

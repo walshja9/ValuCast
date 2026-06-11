@@ -115,6 +115,30 @@ def _handle_source_error(_e):
     return "<div class='error'>Unknown or unavailable projection source.</div>", 400
 
 
+@app.errorhandler(404)
+def _handle_not_found(_e):
+    return render_template(
+        "error.html", code=404,
+        message="That page doesn't exist — the boards live on the home page."), 404
+
+
+@app.errorhandler(500)
+def _handle_server_error(_e):
+    return render_template(
+        "error.html", code=500,
+        message="Something broke on our end. Try again in a minute."), 500
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    return app.send_static_file("robots.txt")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return app.send_static_file("favicon.ico")
+
+
 # Engine with volume adjustment
 engine = ValuationEngine(post_processors=[VolumeMultiplier()])
 

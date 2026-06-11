@@ -3,9 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ValuCast{% endblock %}</title>
+    <title>{% block title %}ValuCast — fantasy baseball player values tuned to your league{% endblock %}</title>
+    <meta name="description" content="Fantasy baseball player values tuned to your league's categories, weights, and roster rules. Redraft, dynasty, and prospect boards with a public methodology and held-out validation.">
+    <link rel="icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="ValuCast">
+    <meta property="og:title" content="ValuCast — player values tuned to your league">
+    <meta property="og:description" content="H2H categories, roto, or points — values scored for your league's settings, with a public methodology and held-out validation (including what didn't work).">
+    <meta property="og:url" content="https://valucast.app/">
+    <meta property="og:image" content="https://valucast.app/static/og-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ValuCast — player values tuned to your league">
+    <meta name="twitter:description" content="H2H categories, roto, or points — values scored for your league's settings, with a public methodology and held-out validation.">
+    <meta name="twitter:image" content="https://valucast.app/static/og-card.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
 </head>
 <body>
     <header class="site-header">
