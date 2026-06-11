@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import csv
 import io
+import math
 import os
 import sys
+import time
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -741,12 +743,43 @@ def rankings():
     return response
 
 
+# /league-import holds a worker for an outbound fetch (up to ~5s) and we run
+# only 2 gunicorn workers — a cheap per-IP throttle keeps one client from
+# pinning the deploy. In-memory per worker, so the effective ceiling is 2x.
+_IMPORT_HITS: dict[str, list[float]] = {}
+_IMPORT_RATE_MAX = 5
+_IMPORT_RATE_WINDOW = 60.0
+
+
+def _import_rate_limited(ip: str) -> bool:
+    now = time.monotonic()
+    if len(_IMPORT_HITS) > 1000:
+        stale = [k for k, v in _IMPORT_HITS.items()
+                 if not v or now - v[-1] > _IMPORT_RATE_WINDOW]
+        for k in stale:
+            _IMPORT_HITS.pop(k, None)
+    hits = [t for t in _IMPORT_HITS.get(ip, []) if now - t < _IMPORT_RATE_WINDOW]
+    limited = len(hits) >= _IMPORT_RATE_MAX
+    if not limited:
+        hits.append(now)
+    _IMPORT_HITS[ip] = hits
+    return limited
+
+
 @app.route("/league-import")
 def league_import():
     """Fill the dynasty setup knobs from a league URL. Self-contained seam —
     a future paid gate wraps exactly this route. Always returns the panel
     fragment (200): failures become an inline notice, knobs untouched."""
     current = parse_league_settings(request.args)
+    ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "?")
+          .split(",")[0].strip())
+    if not app.config.get("TESTING") and _import_rate_limited(ip):
+        return render_template(
+            "partials/setup_dynasty.html",
+            league_settings=current, import_refresh=False,
+            import_notice="Too many import attempts — wait a minute and try again.",
+        )
     url = (request.args.get("league_url") or "").strip()
     try:
         partial, notice = import_league(url)

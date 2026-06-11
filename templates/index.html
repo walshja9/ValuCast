@@ -4,7 +4,7 @@
 <form id="league-setup"
       hx-get="/rankings"
       hx-target="#rankings-container"
-      hx-trigger="change delay:100ms, keyup changed delay:300ms from:#search-input"
+      hx-trigger="change[event.target.name!=='league_url'] delay:100ms, keyup changed delay:300ms from:#search-input"
       hx-sync="this:replace">
 
     {% if notice %}

@@ -219,3 +219,39 @@ class TestLeagueImportRoute(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestLeagueImportRateLimit(unittest.TestCase):
+    """The throttle is bypassed under TESTING; flip it off to exercise it."""
+
+    def setUp(self):
+        import app as app_module
+        self.app_module = app_module
+        self.client = flask_app.test_client()
+        flask_app.config["TESTING"] = False
+        app_module._IMPORT_HITS.clear()
+
+    def tearDown(self):
+        flask_app.config["TESTING"] = True
+        self.app_module._IMPORT_HITS.clear()
+
+    def test_sixth_attempt_within_window_is_throttled(self):
+        from web.league_import import ImportError_
+        with patch("app.import_league",
+                   side_effect=ImportError_("Unsupported URL — nope.")) as mock_imp:
+            for i in range(5):
+                r = self.client.get("/league-import?league_url=x")
+                self.assertEqual(r.status_code, 200, i)
+                self.assertNotIn(b"Too many import attempts", r.data)
+            r = self.client.get("/league-import?league_url=x")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b"Too many import attempts", r.data)
+        self.assertEqual(mock_imp.call_count, 5)  # throttled call never fetches
+
+    def test_throttle_notice_keeps_current_knobs(self):
+        self.app_module._IMPORT_HITS["127.0.0.1"] = [
+            __import__("time").monotonic()] * 5
+        r = self.client.get("/league-import?league_url=x&teams=14")
+        body = r.data.decode("utf-8")
+        self.assertIn('name="teams" value="14"', body)
+        self.assertIn("Too many import attempts", body)

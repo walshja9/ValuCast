@@ -17,6 +17,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 
 FETCH_TIMEOUT = 5  # seconds
+MAX_RESPONSE_BYTES = 512 * 1024  # sanity cap; settings payloads are a few KB
 
 _FANTRAX_RE = re.compile(r"fantrax\.com/fantasy/league/([A-Za-z0-9]+)")
 _FANTRAX_API = "https://www.fantrax.com/fxea/general/getLeagueInfo"
@@ -78,7 +79,10 @@ def parse_espn(data: dict) -> dict:
 
 def _fetch_json(url: str, params: dict | None = None) -> dict:
     try:
+        # allow_redirects=False: the API hosts are hardcoded; following a 30x
+        # is never legitimate here and would re-open the fetch to other hosts.
         resp = requests.get(url, params=params, timeout=FETCH_TIMEOUT,
+                            allow_redirects=False,
                             headers={"User-Agent": "ValuCast/1.0 league-import"})
     except requests.RequestException:
         raise ImportError_("Couldn't reach the league host — try again, or enter settings manually.") from None
@@ -86,6 +90,12 @@ def _fetch_json(url: str, params: dict | None = None) -> dict:
         raise ImportError_("This league is private — enter settings manually.")
     if resp.status_code != 200:
         raise ImportError_(f"League lookup failed (HTTP {resp.status_code}) — enter settings manually.")
+    try:
+        declared_size = int(resp.headers.get("Content-Length", "0") or 0)
+    except (TypeError, ValueError):
+        declared_size = 0
+    if declared_size > MAX_RESPONSE_BYTES:
+        raise ImportError_("Unexpected response from the league host — enter settings manually.")
     try:
         data = resp.json()
     except ValueError:
@@ -105,13 +115,20 @@ def import_league(url: str) -> tuple[dict, str]:
         raise ImportError_("Unsupported URL — paste a Fantrax league URL or an "
                            "ESPN baseball league URL (Yahoo isn't supported yet).")
     platform, league_id = detected
-    if platform == "fantrax":
-        data = _fetch_json(_FANTRAX_API, params={"leagueId": league_id})
-        partial = parse_fantrax(data)
-    else:
-        season = datetime.now(timezone.utc).year
-        data = _fetch_json(_ESPN_API.format(season=season, league_id=league_id))
-        partial = parse_espn(data)
+    try:
+        if platform == "fantrax":
+            data = _fetch_json(_FANTRAX_API, params={"leagueId": league_id})
+            partial = parse_fantrax(data)
+        else:
+            season = datetime.now(timezone.utc).year
+            data = _fetch_json(_ESPN_API.format(season=season, league_id=league_id))
+            partial = parse_espn(data)
+    except ImportError_:
+        raise
+    except Exception:
+        # Third-party response shapes drift; a surprise shape must degrade to
+        # the inline notice, never a 500 (htmx drops 5xx without swapping).
+        raise ImportError_("Couldn't read that league's settings — enter them manually.") from None
     if not partial:
         raise ImportError_("Found the league but couldn't read its settings — enter them manually.")
     imported = ", ".join(sorted(partial))

@@ -104,3 +104,50 @@ class TestFetchErrors(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestUpstreamShapeDrift(unittest.TestCase):
+    """Surprise third-party response shapes must degrade to the inline notice,
+    never a 500 (htmx drops 5xx without swapping, so the button looks dead)."""
+
+    @patch("web.league_import._fetch_json")
+    def test_fantrax_rosterinfo_list_degrades_to_notice(self, mock_fetch):
+        mock_fetch.return_value = {"teamInfo": {"t1": {}}, "rosterInfo": [1, 2]}
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("enter them manually", str(ctx.exception))
+
+    @patch("web.league_import._fetch_json")
+    def test_espn_settings_list_degrades_to_notice(self, mock_fetch):
+        mock_fetch.return_value = {"settings": [1, 2, 3]}
+        with self.assertRaises(ImportError_) as ctx:
+            import_league("https://fantasy.espn.com/baseball/league?leagueId=12345")
+        self.assertIn("enter them manually", str(ctx.exception))
+
+    @patch("web.league_import._fetch_json")
+    def test_espn_infinity_slot_count_degrades_to_notice(self, mock_fetch):
+        mock_fetch.return_value = {"settings": {
+            "size": 10,
+            "rosterSettings": {"lineupSlotCounts": {"0": float("inf")}},
+        }}
+        with self.assertRaises(ImportError_) as ctx:
+            import_league("https://fantasy.espn.com/baseball/league?leagueId=12345")
+        self.assertIn("enter them manually", str(ctx.exception))
+
+
+class TestFetchHardening(unittest.TestCase):
+    @patch("web.league_import.requests.get")
+    def test_redirects_are_not_followed(self, mock_get):
+        mock_get.return_value.status_code = 301
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("HTTP 301", str(ctx.exception))
+        self.assertFalse(mock_get.call_args.kwargs.get("allow_redirects", True))
+
+    @patch("web.league_import.requests.get")
+    def test_oversize_declared_response_degrades_to_notice(self, mock_get):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.headers = {"Content-Length": str(10 * 1024 * 1024)}
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(FANTRAX_URL)
+        self.assertIn("Unexpected response", str(ctx.exception))
