@@ -122,7 +122,15 @@
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
-        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, MiLB stats, ETA, and level.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, and MiLB stats.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        {# No visible knobs on this horizon, so the form must carry the league
+           params or a shared URL's divider resets on the first filter change. #}
+        {% if league_settings %}
+        <input type="hidden" name="teams" value="{{ league_settings.teams }}">
+        <input type="hidden" name="budget" value="{{ league_settings.budget }}">
+        <input type="hidden" name="roster" value="{{ league_settings.roster }}">
+        <input type="hidden" name="pslots" value="{{ league_settings.pslots }}">
+        {% endif %}
         <select name="position" class="position-select">
             <option value="">All Positions</option>
             {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}

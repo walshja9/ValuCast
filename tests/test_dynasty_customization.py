@@ -92,12 +92,12 @@ class TestDynastyRoutes(unittest.TestCase):
     def test_dynasty_config_summary_reflects_params(self):
         r = self.client.get("/?mode=dd_dynasty&teams=10&budget=300&roster=20&pslots=4")
         self.assertEqual(r.status_code, 200)
-        self.assertIn("10 teams · $300 · 20 roster · 4 prospect slots",
+        self.assertIn("10 teams · $300 · 20 roster spots · 4 prospect slots",
                       r.data.decode("utf-8"))
 
     def test_dynasty_default_summary(self):
         r = self.client.get("/?mode=dd_dynasty")
-        self.assertIn("12 teams · $200 · 26 roster · 5 prospect slots",
+        self.assertIn("12 teams · $200 · 26 roster spots · 5 prospect slots",
                       r.data.decode("utf-8"))
 
     def test_dynasty_no_longer_promises_customization(self):

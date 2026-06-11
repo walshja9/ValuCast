@@ -4,7 +4,7 @@ Player values tuned to your league.
 
 ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats with rest-of-season projections to produce season outlook rankings for any league format. Configure your scoring mode, categories, and weights — ValuCast handles the math.
 
-**Live:** [valucast.onrender.com](https://valucast.onrender.com) (deployment pending)
+**Live:** [valucast.app](https://valucast.app)
 
 ## What It Does
 
@@ -69,11 +69,11 @@ Post-processors adjust raw scores:
 src/league_values/     Engine: models, scoring, post-processors, presets
 scraper/               Data pipeline: FanGraphs, MLB Stats API, combiner, refresh
 web/                   Web layer: projection store, category registry, config builder
-app.py                 Flask app (5 routes: /, /rankings, /player, /compare, /export)
+app.py                 Flask app (/, /rankings, /player, /compare, /export, /league-import, /methodology, /health/ready)
 templates/             Jinja2 + htmx templates
 static/                CSS
 data/                  Projections, actuals, metadata
-tests/                 282 unit tests
+tests/                 unit tests (700+)
 ```
 
 ## Tests

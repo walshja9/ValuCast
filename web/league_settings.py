@@ -50,7 +50,7 @@ class LeagueSettings:
 
     def summary(self) -> str:
         return (f"{self.teams} teams · ${self.budget} · "
-                f"{self.roster} roster · {self.pslots} prospect slots")
+                f"{self.roster} roster spots · {self.pslots} prospect slots")
 
 
 def _clamp_int(raw, field: str, default: int) -> int:

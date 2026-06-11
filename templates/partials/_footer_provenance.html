@@ -3,7 +3,7 @@
         {% if methodology_page %}
         ValuCast methodology — how our projections are built and validated. The projection source for player values is selectable on the main board.
         {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
-        Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Category Fit re-ranks by category emphasis without changing Dynasty Value — tune dollars, tiers, and the cutoff to your league with the Customize panel.
+        Dynasty values blend current MLB value, age-adjusted future value, and prospect value.{% if mode == 'dd_dynasty' %} Tune dollars, tiers, and the cutoff to your league with the Customize panel.{% if dd_schema_version == '1.1' %} Category Fit re-ranks by category emphasis without changing Dynasty Value.{% endif %}{% endif %}
         {% elif source == 'valucast' %}
         ValuCast H+P projection — hitters use Savant xBA/xSLG inputs; the pitching model is fully ValuCast-built (no third-party pitcher projections), scored against your league's categories and weights.
         {% else %}
@@ -16,12 +16,15 @@
     <a href="/">Back to rankings</a> · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
     Data: Dynasty model + prospect feed · MLB stats from FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="/methodology">How ValuCast works</a>
     · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif source == 'valucast' %}
     Data: ValuCast-built projections (public MLB historical data; hitter inputs from Baseball Savant) + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="/methodology">How ValuCast works</a>
     · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% else %}
     Data: FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="/methodology">How ValuCast works</a>
     · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% endif %}
 </p>

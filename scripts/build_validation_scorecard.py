@@ -137,7 +137,7 @@ def main():
             "per_stat_mae_ratio": hit_per_stat,
             "concentrated_in": ["AVG", "OBP", "SLG", "OPS"],
             "seasons": HIT_SEASONS,
-            "eligibility": "qualified hitters (>= MIN_EVAL_PA actual PA, projectable, has prior season)",
+            "eligibility": f"qualified hitters (>= {MIN_EVAL_PA} actual PA, projectable, has prior season)",
             "sample_size": hit_sample,
             "correlation_win_rate": hit_corr,
             "denoise_alphas": alphas,

@@ -43,7 +43,7 @@ class TestParseLeagueSettings(unittest.TestCase):
 
     def test_summary(self):
         s = LeagueSettings(teams=12, budget=200, roster=26, pslots=5)
-        self.assertEqual(s.summary(), "12 teams · $200 · 26 roster · 5 prospect slots")
+        self.assertEqual(s.summary(), "12 teams · $200 · 26 roster spots · 5 prospect slots")
 
     def test_is_default(self):
         self.assertTrue(LeagueSettings(12, 200, 26, 5).is_default)
