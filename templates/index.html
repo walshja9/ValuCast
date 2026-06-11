@@ -175,14 +175,16 @@ function toggleSetup() {
     var KEYS = ['teams', 'budget', 'roster', 'pslots'];
     var form = document.getElementById('league-setup');
     var isDynasty = {{ 'true' if horizon == 'dynasty' else 'false' }};
-    if (!form || !isDynasty || !window.localStorage) return;
+    var storage = null;
+    try { storage = window.localStorage; } catch (e) {}
+    if (!form || !isDynasty || !storage) return;
 
     var params = new URLSearchParams(window.location.search);
     var urlHasSettings = KEYS.some(function (k) { return params.has(k); });
 
     if (!urlHasSettings) {
         var saved = null;
-        try { saved = JSON.parse(localStorage.getItem('vc-league-settings')); } catch (e) {}
+        try { saved = JSON.parse(storage.getItem('vc-league-settings')); } catch (e) {}
         if (saved) {
             var applied = false;
             KEYS.forEach(function (k) {
@@ -208,7 +210,7 @@ function toggleSetup() {
             var input = form.querySelector('[name="' + k + '"]');
             if (input) out[k] = input.value;
         });
-        try { localStorage.setItem('vc-league-settings', JSON.stringify(out)); } catch (e) {}
+        try { storage.setItem('vc-league-settings', JSON.stringify(out)); } catch (e) {}
     });
 })();
 
