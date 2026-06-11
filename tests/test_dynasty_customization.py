@@ -52,8 +52,8 @@ class TestDynastyDollars(unittest.TestCase):
     def test_league_size_moves_dollars(self):
         small = _compute_dynasty_dollars(self.rows, LeagueSettings(2, 100, 3, 0))
         deep = _compute_dynasty_dollars(self.rows, LeagueSettings(2, 100, 5, 0))
-        # Deeper league -> lower replacement -> top player worth MORE surplus share
-        self.assertNotAlmostEqual(small["p1"], deep["p1"], delta=0.5)
+        # Deeper league -> more rostered players to share budget -> top player worth less
+        self.assertLess(deep["p1"], small["p1"])
 
     def test_cutoff_beyond_pool_all_rostered(self):
         s = LeagueSettings(teams=12, budget=200, roster=26, pslots=0)  # cutoff 312 > 10 rows

@@ -161,7 +161,7 @@ def _compute_dynasty_dollars(rows, settings):
     Rostered pool = top (teams x roster) by dynasty value. Replacement value =
     the value at the cutoff rank. Every rostered player gets a $1 floor; the
     remaining budget is split proportionally to value ABOVE replacement.
-    Below the cutoff = $0. Total payout == teams x budget (the league's cash).
+    Below the cutoff = $0. Total payout == teams x budget (the league's cash), except the degenerate all-equal-values pool where only the $1 floors are paid.
     """
     ordered = sorted(rows, key=lambda r: r.dynasty_value, reverse=True)
     cutoff = min(settings.roster_cutoff, len(ordered))
@@ -170,12 +170,12 @@ def _compute_dynasty_dollars(rows, settings):
     if not rostered:
         return dollars
     replacement = rostered[-1].dynasty_value
-    surplus = {r.id: max(0.0, r.dynasty_value - replacement) for r in rostered}
+    surplus = {r.id: r.dynasty_value - replacement for r in rostered}
     total_surplus = sum(surplus.values())
     spendable = settings.total_budget - len(rostered)  # $1 floor reserved each
     for r in rostered:
         share = (surplus[r.id] / total_surplus * spendable) if total_surplus > 0 else 0.0
-        dollars[r.id] = round(1.0 + max(0.0, share), 1)
+        dollars[r.id] = round(1.0 + share, 1)
     return dollars
 
 
