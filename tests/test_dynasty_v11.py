@@ -26,6 +26,13 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Category Fit", response.data)
         self.assertIn(b"H2H Categories", response.data)
         self.assertIn(b"5x5 Roto", response.data)
+        self.assertIn(b"6x6 OBP/QS", response.data)
+        self.assertIn(b"Saves + Holds", response.data)
+        self.assertIn(b"Categories without a player z-score are skipped.", response.data)
+        self.assertIn(b'data-fit-cat="SLG"', response.data)
+        self.assertIn(b"HLD / HD", response.data)
+        self.assertIn(b'data-fit-cat="SV+HLD"', response.data)
+        self.assertIn(b'data-fit-cat="BB/9"', response.data)
         self.assertIn(b'data-z-scores="{', response.data)
 
     def test_mlb_card_uses_feed_confidence_and_profile(self):
@@ -55,8 +62,12 @@ class TestDynastyV11UI(unittest.TestCase):
     def test_category_fit_formula_includes_inverse_and_aliases(self):
         response = self.client.get("/?mode=dd_dynasty")
         self.assertIn(b"FIT_INVERSE", response.data)
-        self.assertIn(b"category === 'OBP'", response.data)
-        self.assertIn(b"category === 'W'", response.data)
+        self.assertIn(b"FIT_Z_ALIASES", response.data)
+        self.assertIn(b"OBP: ['OPS']", response.data)
+        self.assertIn(b"W: ['QS']", response.data)
+        self.assertIn(b"HLD: ['HD']", response.data)
+        self.assertIn(b"'SV+HLD': ['SV_HLD', 'SV+HD', 'SV_HD']", response.data)
+        self.assertIn(b"'BB/9': ['BB_9']", response.data)
         self.assertIn(b"normalized 0", response.data)
 
 

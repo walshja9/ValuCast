@@ -270,19 +270,31 @@ function toggleDetail(playerId, row) {
     if (btn) btn.setAttribute('aria-expanded', 'true');
 }
 
-const FIT_INVERSE = new Set(['SO', 'ERA', 'WHIP', 'L']);
+const FIT_INVERSE = new Set(['SO', 'ERA', 'WHIP', 'L', 'BB/9']);
+const FIT_Z_ALIASES = {
+    OBP: ['OPS'],
+    W: ['QS'],
+    HLD: ['HD'],
+    'K/BB': ['K_BB'],
+    'SV+HLD': ['SV_HLD', 'SV+HD', 'SV_HD'],
+    'K/9': ['K_9'],
+    'BB/9': ['BB_9'],
+};
 const FIT_PRESETS = {
     h2h: {R:1, HR:1, RBI:1, SB:1, AVG:1, OPS:1, SO:1, ERA:1, WHIP:1, K:1, QS:1, L:1, 'K/BB':1},
     roto: {R:1, HR:1, RBI:1, SB:1, AVG:1, ERA:1, WHIP:1, K:1, W:1, SV:1},
     obp: {R:1, HR:1, RBI:1, SB:1, OBP:1.4, ERA:1, WHIP:1, K:1, W:1, SV:1},
+    sixBySix: {R:1, HR:1, RBI:1, SB:1, OBP:1, SLG:1, ERA:1, WHIP:1, K:1, QS:1, SV:1, 'K/BB':1},
+    svh: {R:1, HR:1, RBI:1, SB:1, AVG:1, ERA:1, WHIP:1, K:1, W:1, 'SV+HLD':1},
     points: {R:1.5, HR:2, RBI:1.5, SB:1.2, SO:1.2, OPS:.6, K:1.6, QS:1.4, L:.5, ERA:.4, WHIP:.4, 'K/BB':.7},
 };
 let activeFitPreset = 'h2h';
 
 function fitZScore(zScores, category) {
-    if (typeof zScores[category] === 'number') return zScores[category];
-    if (category === 'OBP' && typeof zScores.OPS === 'number') return zScores.OPS;
-    if (category === 'W' && typeof zScores.QS === 'number') return zScores.QS;
+    const candidates = [category, ...(FIT_Z_ALIASES[category] || [])];
+    for (const candidate of candidates) {
+        if (typeof zScores[candidate] === 'number') return zScores[candidate];
+    }
     return null;
 }
 
