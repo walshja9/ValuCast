@@ -19,13 +19,15 @@
 
 <div class="league-import">
     <input type="url" name="league_url" id="league-url-input" class="league-url-input"
+           aria-label="League URL"
            placeholder="Paste your Fantrax or ESPN league URL to import settings"
-           value="" hx-trigger="none">
+           value="{{ request.args.get('league_url', '') }}">
     <button type="button" class="import-btn"
             hx-get="/league-import"
             hx-include="closest form"
             hx-target="#setup-panel"
-            hx-swap="innerHTML">Import settings</button>
+            hx-swap="innerHTML"
+            hx-sync="closest form:replace">Import settings</button>
     {% if import_notice %}
     <p class="import-notice">{{ import_notice }}</p>
     {% endif %}

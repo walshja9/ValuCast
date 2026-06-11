@@ -136,9 +136,13 @@ class TestDynastyRoutes(unittest.TestCase):
 
     def test_dynasty_panel_inputs_carry_current_values(self):
         r = self.client.get("/?mode=dd_dynasty&teams=14&budget=500")
-        self.assertIn(b'name="teams"', r.data)
-        self.assertIn(b'value="14"', r.data)
-        self.assertIn(b'value="500"', r.data)
+        body = r.data.decode("utf-8")
+        self.assertIn('name="teams" value="14"', body)
+        self.assertIn('name="budget" value="500"', body)
+
+    def test_league_url_survives_board_rerender(self):
+        r = self.client.get("/rankings?mode=dd_dynasty&teams=10&league_url=https://www.fantrax.com/fantasy/league/abc/home")
+        self.assertIn(b"fantrax.com/fantasy/league/abc", r.data)
 
     def test_dynasty_hidden_mode_input_still_present(self):
         # Guard against the 6/10 P0: form requests MUST carry mode on non-redraft
