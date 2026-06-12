@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -93,6 +95,29 @@ class TestDynastyCardZScores(unittest.TestCase):
     def setUpClass(cls):
         app_module.app.config["TESTING"] = True
         cls.client = app_module.app.test_client()
+
+    def test_board_z_map_filled_app_side_in_stat_space(self):
+        z_map = app_module._dynasty_z_map()
+        judge = next(r for r in app_module.dd_store.get_all()
+                     if not r.is_prospect and "Judge" in r.name)
+        self.assertIn(judge.id, z_map)
+        for cat in ("HR", "OBP", "SLG", "QS"):
+            self.assertIn(cat, z_map[judge.id])
+        # data-z-scores contract is STAT-SPACE: the fit JS sign-flips its
+        # FIT_INVERSE cats, so an elite ERA must arrive negative here.
+        sanchez = next(r for r in app_module.dd_store.get_all()
+                       if "Cristopher S" in r.name)
+        self.assertLess(z_map[sanchez.id]["ERA"], 0)
+        self.assertGreater(z_map[sanchez.id]["W"], 0)
+
+    def test_dynasty_board_rows_carry_z_payload(self):
+        html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
+        m = re.search(
+            r'data-player-id="dd_mlb_aaron_judge"[^>]*data-z-scores="([^"]*)"',
+            html)
+        self.assertIsNotNone(m)
+        payload = json.loads(m.group(1).replace("&#34;", '"'))
+        self.assertGreater(payload.get("HR", 0), 0)
 
     def test_matched_mlb_player_gets_breakdown(self):
         row = next(r for r in app_module.dd_store.get_all()

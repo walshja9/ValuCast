@@ -311,6 +311,60 @@ def _dynasty_metadata(settings):
     return _compute_dynasty_dollars(all_rows, settings), _dynasty_tiers_for(all_rows, settings)
 
 
+FIT_CATS = ("R", "HR", "RBI", "SB", "AVG", "OBP", "OPS", "SLG", "H", "BB",
+            "SO", "TB", "NSB")
+FIT_PCATS = ("W", "L", "K", "QS", "SV", "HLD", "ERA", "WHIP", "IP")
+_FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L"})
+_DYN_Z_CACHE = {"key": None, "map": {}}
+
+
+def _dynasty_z_map():
+    """Per-player z's for the dynasty board's Category Fit panel.
+
+    The feed's z_scores field has never been produced (DD-producer gap), so
+    matched projections are scored app-side across the fit panel's category
+    union — same engine as the cards, so board and card numbers agree.
+    The data-z-scores contract is STAT-SPACE (the fit JS sign-flips its
+    FIT_INVERSE cats), while the engine emits value-oriented z's — flip
+    those here. Cached per feed generation; ~0.1s to build."""
+    if not dd_store.is_available:
+        return {}
+    key = dd_store.generated_at
+    if _DYN_Z_CACHE.get("key") == key:
+        return _DYN_Z_CACHE["map"]
+    config = build_config(
+        mode="categories", cats=list(FIT_CATS), pcats=list(FIT_PCATS),
+        rules_str="", pt_params=None, split_rp=False, weights=None,
+    )
+    results = _merge_two_way_players(
+        engine.value_players(_valuation_players(active_store=store), config))
+    by_id = {}
+    for res in results:
+        by_id[res.player.id] = res
+        base = res.player.metadata.get("base_id")
+        if base:
+            by_id.setdefault(base, res)
+    match_index = build_outlook_match_index(store.get_all())
+    z_map = {}
+    for row in dd_store.get_all():
+        matches = find_outlook_projections(row, match_index) or []
+        res = next((by_id[m.id] for m in matches if m.id in by_id), None)
+        if res is None:
+            res = next(
+                (by_id[m.metadata.get("base_id") or m.id] for m in matches
+                 if (m.metadata.get("base_id") or m.id) in by_id), None)
+        if res is None or not res.z_scores:
+            continue
+        z_map[row.id] = {
+            cat: round(-z if cat in _FIT_STAT_SPACE_FLIP else z, 2)
+            for cat, z in res.z_scores.items()
+            if isinstance(z, (int, float))
+        }
+    _DYN_Z_CACHE["key"] = key
+    _DYN_Z_CACHE["map"] = z_map
+    return z_map
+
+
 def _prospect_tiers():
     """Tiers for the Prospects board, computed on the prospect-ONLY universe (top 200
     by value). The combined-universe tiers from _dynasty_metadata() collapse to ~2
@@ -400,6 +454,7 @@ def _apply_prospect_board_context(ctx, args):
     ctx["cutoff_rank"] = settings.prospect_cutoff
     ctx["mode"] = "prospects"
     ctx["horizon"] = "prospects"
+    ctx["dyn_z_map"] = _dynasty_z_map()
     ctx["prospect_movers"] = (
         prospect_percentiles.top_movers(dd_store.filter(player_type="prospect"))
         if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
@@ -442,6 +497,7 @@ def _build_dynasty_context(args):
         "position": position,
         "search": search,
         "dd_rows": rows,
+        "dyn_z_map": _dynasty_z_map(),
         "dynasty_dollars": dynasty_dollars,
         "now_dollars": now_dollars,
         "custom_cats_active": custom_cats_active,

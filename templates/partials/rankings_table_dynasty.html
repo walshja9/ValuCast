@@ -52,11 +52,14 @@
         {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
         <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} {% if mode == 'prospects' %}prospect slots{% else %}rostered{% endif %})</td></tr>
         {% endif %}
+        {# App-side z's (stat-space, matched projections) with feed z_scores
+           as the fallback — the producer has never emitted the field. #}
+        {% set z_row = (dyn_z_map or {}).get(row.id) or row.z_scores %}
         <tr class="player-row {% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
             data-player-id="{{ row.id }}"
             data-dynasty-rank="{{ row.dynasty_rank }}"
             data-original-index="{{ loop.index0 }}"
-            data-z-scores="{{ row.z_scores | tojson | forceescape if row.z_scores else '{}' }}"
+            data-z-scores="{{ z_row | tojson | forceescape if z_row else '{}' }}"
             onclick="toggleDetail('{{ row.id }}', this)">
             <td class="col-rank">
                 {% if mode == 'prospects' and row.prospect_rank %}
