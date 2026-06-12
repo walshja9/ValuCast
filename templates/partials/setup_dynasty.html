@@ -17,6 +17,45 @@
     </label>
 </div>
 
+{% set selected_cats = cats if cats is defined else ['R','HR','RBI','SB','AVG'] %}
+{% set selected_pcats = pcats if pcats is defined else ['W','SV','K','ERA','WHIP'] %}
+<details class="dynasty-categories">
+    <summary>Customize categories</summary>
+    <div class="dynasty-category-body">
+        <h3>Scoring categories</h3>
+        <div class="presets">
+            {% for name, preset in (category_presets or {}).items() %}
+            <button type="button" class="preset-btn {{ 'active' if selected_cats == preset.cats and selected_pcats == preset.pcats else '' }}"
+                    data-cats="{{ preset.cats | join(',') }}" data-pcats="{{ preset.pcats | join(',') }}"
+                    onclick="applyDynastyCategoryPreset(this)">
+                {% if name == '5x5' %}Standard 5x5{% elif name == '6x6' %}6x6 (OBP/QS){% else %}{{ name }}{% endif %}
+            </button>
+            {% endfor %}
+        </div>
+        <div class="cat-grid">
+            <div class="cat-column">
+                <h3>Hitting</h3>
+                {% for cat in (hitting_categories or []) %}
+                <label class="cat-option">
+                    <input type="checkbox" name="cats" value="{{ cat.id }}" {{ 'checked' if cat.id in selected_cats else '' }}>
+                    <span class="cat-label">{{ cat.label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div class="cat-column">
+                <h3>Pitching</h3>
+                {% for cat in (pitching_categories or []) %}
+                <label class="cat-option">
+                    <input type="checkbox" name="pcats" value="{{ cat.id }}" {{ 'checked' if cat.id in selected_pcats else '' }}>
+                    <span class="cat-label">{{ cat.label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        <p class="profile-note">Now $ is this-season auction value in your categories, using Steamer. Dynasty Value is unchanged.</p>
+    </div>
+</details>
+
 <div class="league-import">
     <input type="url" name="league_url" id="league-url-input" class="league-url-input"
            aria-label="League URL"

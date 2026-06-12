@@ -119,6 +119,13 @@
             {% endfor %}
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
+        {% if custom_cats_active %}
+        <fieldset class="rank-by-toggle" aria-label="Rank dynasty board by">
+            <label><input type="radio" name="rank_by" value="dynasty" {{ 'checked' if rank_by == 'dynasty' else '' }}><span>Rank by Dynasty $</span></label>
+            <label><input type="radio" name="rank_by" value="now" {{ 'checked' if rank_by == 'now' else '' }}><span>Now $</span></label>
+        </fieldset>
+        {% endif %}
+        <a class="map-link" href="/map">Map</a>
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
     </div>
@@ -151,6 +158,7 @@
             {% endfor %}
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
+        <a class="map-link" href="/map">Map</a>
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>
     {% endif %}
@@ -198,6 +206,14 @@ function toggleToolbarFilters(btn) {
     const panel = document.getElementById('toolbar-secondary');
     panel.classList.toggle('open');
     btn.setAttribute('aria-expanded', panel.classList.contains('open'));
+}
+
+function applyDynastyCategoryPreset(btn) {
+    const selectedCats = new Set(btn.dataset.cats.split(','));
+    const selectedPcats = new Set(btn.dataset.pcats.split(','));
+    document.querySelectorAll('input[name="cats"]').forEach(input => { input.checked = selectedCats.has(input.value); });
+    document.querySelectorAll('input[name="pcats"]').forEach(input => { input.checked = selectedPcats.has(input.value); });
+    btn.closest('form').dispatchEvent(new Event('change', { bubbles: true }));
 }
 
 // Dynasty league settings persistence: save on change, reapply on bare landings.

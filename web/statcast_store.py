@@ -45,6 +45,14 @@ PITCHER_METRICS: list[tuple[str, str]] = [
     ("fb_spin", "FB Spin"),
 ]
 
+_LEADING_DOT = {"xba", "xwoba", "xslg", "xobp", "xiso"}
+_RATES = {
+    "brl_percent", "hard_hit_percent", "k_percent", "bb_percent",
+    "whiff_percent", "chase_percent",
+}
+_VELOCITIES = {"exit_velocity", "fb_velocity"}
+_SPINS = {"fb_spin", "curve_spin"}
+
 # Savant-style diverging scale: blue (poor) -> gray (average) -> red (elite).
 _LOW = (54, 97, 173)
 _MID = (160, 163, 170)
@@ -122,8 +130,43 @@ class StatcastStore:
             return []
         rows = []
         for key, label in spec:
-            pct = metrics.get(key)
+            value = metrics.get(key)
+            raw = None
+            if isinstance(value, dict):
+                pct = value.get("pct")
+                raw = value.get("raw")
+            else:
+                pct = value
             if isinstance(pct, (int, float)):
                 p = int(max(0, min(100, pct)))
-                rows.append({"label": label, "pct": p, "color": percentile_color(p)})
+                rows.append({
+                    "label": label,
+                    "pct": p,
+                    "raw": raw if isinstance(raw, (int, float)) else None,
+                    "display": format_raw(key, raw),
+                    "color": percentile_color(p),
+                })
         return rows
+
+
+def format_raw(metric: str, raw) -> str | None:
+    """Format a Savant custom-leaderboard raw value for card display."""
+    if not isinstance(raw, (int, float)):
+        return None
+    value = float(raw)
+    if metric in _LEADING_DOT:
+        text = f"{value:.3f}"
+        return text.replace("0.", ".", 1) if text.startswith("0.") else text
+    if metric in _RATES:
+        return f"{value:.1f}%"
+    if metric in _VELOCITIES:
+        return f"{value:.1f} mph"
+    if metric in _SPINS:
+        return f"{value:.0f} rpm"
+    if metric == "sprint_speed":
+        return f"{value:.1f} ft/s"
+    if metric == "oaa":
+        return f"{value:+.0f}"
+    if metric == "xera":
+        return f"{value:.2f}"
+    return str(raw)

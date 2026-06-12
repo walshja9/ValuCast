@@ -38,7 +38,7 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b'data-z-scores="{', response.data)
 
     def test_mlb_card_uses_feed_confidence_and_profile(self):
-        response = self.client.get("/player/dd_mlb_power_star?mode=dd_dynasty")
+        response = self.client.get("/player/dd_mlb_power_star?mode=dd_dynasty", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Range 108", response.data)
         self.assertIn(b"126", response.data)
@@ -48,7 +48,7 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertNotIn(b"risk-block", response.data)
 
     def test_prospect_card_groups_stats_and_hides_null_level(self):
-        response = self.client.get("/player/dd_prospect_future_bat?mode=prospects")
+        response = self.client.get("/player/dd_prospect_future_bat?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"ValuCast Rank", response.data)
         self.assertIn(b"ValuCast model rank", response.data)

@@ -2,9 +2,11 @@
    Context: statcast_groups, statcast_asof, player_links (all optional). #}
 {% if statcast_groups %}
 <div class="detail-section statcast-section">
+    {% if not statcast_suppress_heading %}
     <h4>Statcast Percentiles
         <span class="statcast-asof">via Baseball Savant{% if statcast_asof %} · {{ statcast_asof }}{% endif %}</span>
     </h4>
+    {% endif %}
     {% for group in statcast_groups %}
     <div class="pct-group">
         {% if statcast_groups | length > 1 %}
@@ -12,13 +14,13 @@
         {% endif %}
         {% for m in group.metrics %}
         <div class="pct-row">
-            <span class="pct-label">{{ m.label }}</span>
+            <span class="pct-label">{{ m.label }}{% if m.raw is not none %} <span class="pct-raw">{{ m.display }}</span>{% endif %}</span>
             <div class="pct-track" role="img" aria-label="{{ m.label }}: {{ m.pct }}th percentile">
                 <div class="pct-fill" style="width: {{ m.pct }}%; background: {{ m.color }};"></div>
                 <span class="pct-num" style="--pct: {{ m.pct }}%; background: {{ m.color }};">{{ m.pct }}</span>
             </div>
-            {% if m.pct >= 75 %}<span class="pct-chip">top {{ 100 - m.pct }}%</span>
-            {% elif m.pct <= 25 %}<span class="pct-chip low">bottom {{ m.pct }}%</span>{% endif %}
+            {% if m.pct >= 75 %}<span class="pct-chip">top {{ [100 - m.pct, 1] | max }}%</span>
+            {% elif m.pct <= 25 %}<span class="pct-chip low">bottom {{ [m.pct, 1] | max }}%</span>{% endif %}
         </div>
         {% endfor %}
     </div>

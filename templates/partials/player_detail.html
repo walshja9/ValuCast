@@ -1,3 +1,18 @@
+{% macro projection_grid(stats) -%}
+<div class="stat-grid">
+    {% for key, value in stats.items() %}
+    {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+    <div class="stat-item">
+        <span class="stat-label">{{ key }}</span>
+        <span class="stat-value">
+            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+        </span>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{%- endmacro %}
+
 {% if result %}
 <div class="player-detail">
     <div class="detail-header">
@@ -46,18 +61,12 @@
 
         <div class="detail-section">
             <h4>2026 Season Outlook</h4>
-            <div class="stat-grid">
-                {% for key, value in player.stats.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
-                <div class="stat-item">
-                    <span class="stat-label">{{ key }}</span>
-                    <span class="stat-value">
-                        {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
-                    </span>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
+            {% if projection_split and projection_split.hitting and projection_split.pitching %}
+            <div class="stat-group two-way-stats"><h5>Hitting</h5>{{ projection_grid(projection_split.hitting) }}</div>
+            <div class="stat-group two-way-stats"><h5>Pitching</h5>{{ projection_grid(projection_split.pitching) }}</div>
+            {% else %}
+            {{ projection_grid(player.stats) }}
+            {% endif %}
         </div>
 
         {% set stats_actual = player.metadata.get('stats_actual') %}

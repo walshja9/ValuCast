@@ -16,7 +16,7 @@
 
 {# Category Fit, Confidence, and Range render only from a v1.1 feed — with a
    v1.0 feed they'd be a dead column and two always-empty ones. #}
-{% set ncols = (10 if v11 else 7) if mode == 'dd_dynasty' else (9 if v11 else 7) %}
+{% set ncols = ((10 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else (9 if v11 else 7) %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings">
     <thead>
@@ -30,7 +30,8 @@
             {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
-            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(7)">Category Fit</button></th>{% endif %}
+            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="This season only, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button></th>{% endif %}
+            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable({{ 8 if custom_cats_active else 7 }})">Category Fit</button></th>{% endif %}
             {% endif %}
             {% if v11 %}
             <th class="col-confidence">Confidence</th>
@@ -85,6 +86,7 @@
             {% if mode == 'prospects' %}<td class="col-eta">{{ row.eta or '—' }}</td>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>
+            {% if custom_cats_active %}<td class="col-now-dollar">{% set nd = now_dollars.get(row.id) %}{% if nd is not none %}${{ "%.0f" | format(nd) }}{% else %}—{% endif %}</td>{% endif %}
             {% if v11 %}<td class="col-fit"><span class="fit-score">—</span></td>{% endif %}
             {% endif %}
             {% if v11 %}

@@ -398,7 +398,7 @@ class TestConfidenceIntegration(unittest.TestCase):
         rows = dd_store.filter()
         if not rows:
             self.skipTest("No dynasty rows")
-        response = self.client.get(f"/player/{rows[0].id}?mode=dd_dynasty")
+        response = self.client.get(f"/player/{rows[0].id}?mode=dd_dynasty", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"risk-block", response.data)
 
@@ -409,7 +409,7 @@ class TestConfidenceIntegration(unittest.TestCase):
         rows = dd_store.filter(pool="prospect")
         if not rows:
             self.skipTest("No prospect rows")
-        response = self.client.get(f"/player/{rows[0].id}?mode=prospects")
+        response = self.client.get(f"/player/{rows[0].id}?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"risk-block", response.data)
 

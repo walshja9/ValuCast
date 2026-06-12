@@ -55,7 +55,7 @@ class TestCardRoutes(unittest.TestCase):
         cls.client = app.test_client()
 
     def test_redraft_card_has_statcast_and_links(self):
-        html = self.client.get("/player/15640").data.decode("utf-8")  # Judge
+        html = self.client.get("/player/15640", headers={"HX-Request": "true"}).data.decode("utf-8")  # Judge
         self.assertIn("statcast-section", html)
         self.assertIn("pct-row", html)
         self.assertIn("player-links", html)
@@ -63,14 +63,15 @@ class TestCardRoutes(unittest.TestCase):
         self.assertIn("fangraphs.com/players/aaron-judge/15640", html)
 
     def test_redraft_card_has_zscore_bars(self):
-        html = self.client.get("/player/15640").data.decode("utf-8")
+        html = self.client.get("/player/15640", headers={"HX-Request": "true"}).data.decode("utf-8")
         self.assertIn("zbar-fill", html)
 
     def test_prospect_card_has_neither(self):
         from app import dd_store
         prospect = next(r for r in dd_store.get_all() if r.is_prospect)
         html = self.client.get(
-            f"/player/{prospect.id}?mode=prospects").data.decode("utf-8")
+            f"/player/{prospect.id}?mode=prospects",
+            headers={"HX-Request": "true"}).data.decode("utf-8")
         self.assertNotIn("statcast-section", html)
         self.assertNotIn("player-links", html)
 
@@ -78,7 +79,8 @@ class TestCardRoutes(unittest.TestCase):
         from app import dd_store
         row = next(r for r in dd_store.get_all() if r.name == "Shohei Ohtani")
         html = self.client.get(
-            f"/player/{row.id}?mode=dd_dynasty").data.decode("utf-8")
+            f"/player/{row.id}?mode=dd_dynasty",
+            headers={"HX-Request": "true"}).data.decode("utf-8")
         self.assertIn("statcast-section", html)
         # two-way: both groups labeled
         self.assertIn("pct-group-label", html)

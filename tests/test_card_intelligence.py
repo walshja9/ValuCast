@@ -253,7 +253,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertNotIn(b'class="movers-strip"', response.data)
 
     def test_prospect_card_has_identity_percentiles_and_pool_label(self):
-        response = self.client.get("/player/dd_prospect_top?mode=prospects")
+        response = self.client.get("/player/dd_prospect_top?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'class="identity-line"', response.data)
         self.assertIn(b'class="pct-rail"', response.data)
@@ -262,7 +262,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"last MiLB sample", response.data)
 
     def test_small_sample_card_has_tag_without_percentiles(self):
-        response = self.client.get("/player/dd_prospect_small?mode=prospects")
+        response = self.client.get("/player/dd_prospect_small?mode=prospects", headers={"HX-Request": "true"})
         self.assertIn(b"small sample", response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
 

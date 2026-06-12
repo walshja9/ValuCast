@@ -6,10 +6,11 @@ import math
 import os
 import sys
 import time
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlencode
 
-from flask import Flask, render_template, request, make_response, jsonify
+from flask import Flask, render_template, request, make_response, jsonify, redirect
 
 from dataclasses import replace as dc_replace
 
@@ -32,7 +33,13 @@ from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
 from web.league_settings import parse_league_settings
 from web.league_import import import_league, ImportError_
-from web.season_outlook import find_season_outlook, find_outlook_projections
+from web.season_outlook import (
+    build_outlook_match_index,
+    find_season_outlook,
+    find_season_outlook_split,
+    find_outlook_projections,
+    split_outlook,
+)
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
 from web import prospect_percentiles
@@ -324,6 +331,61 @@ def _prospect_rows(position=None, search=None):
     )[:200]
 
 
+def _dynasty_category_state(args):
+    """Canonical dynasty category params and whether custom scoring is active."""
+    from web.category_registry import canonicalize_cats
+    cats_present = bool(args.getlist("cats"))
+    pcats_present = bool(args.getlist("pcats"))
+    cats = canonicalize_cats(parse_list(args.getlist("cats"))) or list(DEFAULT_CATS)
+    pcats = canonicalize_cats(parse_list(args.getlist("pcats"))) or list(DEFAULT_PCATS)
+    active = (
+        (cats_present or pcats_present)
+        and (cats != list(DEFAULT_CATS) or pcats != list(DEFAULT_PCATS))
+    )
+    return cats, pcats, active
+
+
+def _dynasty_category_summary(cats, pcats):
+    for name, preset in CATEGORY_PRESETS.items():
+        if cats == preset["cats"] and pcats == preset["pcats"]:
+            return "6x6 (OBP, QS)" if name == "6x6" else "5x5"
+    extras = [cat for cat in cats if cat not in DEFAULT_CATS]
+    extras += [cat for cat in pcats if cat not in DEFAULT_PCATS]
+    detail = ", ".join(extras or list(cats) + list(pcats))
+    return f"Custom {len(cats)}x{len(pcats)} ({detail})"
+
+
+@lru_cache(maxsize=16)
+def _custom_dynasty_values(cats, pcats, teams, budget):
+    """Feed-row id -> this-season auction dollars for a custom category tuple."""
+    config = build_config(mode="categories", cats=list(cats), pcats=list(pcats))
+    results = _merge_two_way_players(
+        engine.value_players(_valuation_players(active_store=store), config)
+    )
+    dollars = _compute_dollar_values(results, num_teams=teams, budget=budget)
+    result_by_projection_id = {}
+    for result in results:
+        result_by_projection_id[result.player.id] = result
+        base_id = str(result.player.metadata.get("base_id") or "").strip()
+        if base_id:
+            result_by_projection_id[base_id] = result
+
+    match_index = build_outlook_match_index(store.get_all())
+    mapped = {}
+    for row in dd_store.get_all():
+        if row.is_prospect:
+            continue
+        for projection in match_index.find(row):
+            result = result_by_projection_id.get(projection.id)
+            if result is None:
+                base_id = str(projection.metadata.get("base_id") or "").strip()
+                result = result_by_projection_id.get(base_id)
+            if result is not None:
+                mapped[row.id] = dollars.get(result.player.id, 0.0)
+                break
+    return mapped
+
+
 def _apply_prospect_board_context(ctx, args):
     """Apply dedicated prospect-board rows and metadata to a DD context."""
     ctx["dd_rows"] = _prospect_rows(
@@ -344,14 +406,34 @@ def _apply_prospect_board_context(ctx, args):
 
 
 def _build_dynasty_context(args):
-    """Build template context for DD Dynasty mode. Bypasses engine entirely."""
+    """Build template context for DD Dynasty mode."""
     pool = args.get("pool", "")
     position = args.get("position", "")
     search = args.get("search", "")
     settings = parse_league_settings(args)
+    cats, pcats, custom_cats_active = _dynasty_category_state(args)
+    rank_by = args.get("rank_by", "dynasty")
+    if rank_by not in ("dynasty", "now") or not custom_cats_active:
+        rank_by = "dynasty"
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
+    now_dollars = (
+        _custom_dynasty_values(tuple(cats), tuple(pcats), settings.teams, settings.budget)
+        if custom_cats_active else {}
+    )
+    if rank_by == "now":
+        rows = sorted(
+            rows,
+            key=lambda row: (
+                row.id not in now_dollars,
+                -now_dollars.get(row.id, 0.0),
+                row.dynasty_rank,
+            ),
+        )
     rows = rows[:200]
     dynasty_dollars, tiers = _dynasty_metadata(settings)
+    summary = settings.summary()
+    if custom_cats_active:
+        summary += f" · {_dynasty_category_summary(cats, pcats)}"
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -359,6 +441,14 @@ def _build_dynasty_context(args):
         "search": search,
         "dd_rows": rows,
         "dynasty_dollars": dynasty_dollars,
+        "now_dollars": now_dollars,
+        "custom_cats_active": custom_cats_active,
+        "rank_by": rank_by,
+        "cats": cats,
+        "pcats": pcats,
+        "hitting_categories": HITTING_CATEGORIES,
+        "pitching_categories": PITCHING_CATEGORIES,
+        "category_presets": CATEGORY_PRESETS,
         "tiers": tiers,
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
@@ -366,7 +456,7 @@ def _build_dynasty_context(args):
         "as_of": store.as_of,
         "horizon": "dynasty",
         "league_settings": settings,
-        "config_summary": settings.summary(),
+        "config_summary": summary,
         "cutoff_rank": settings.roster_cutoff,
     }
 
@@ -765,6 +855,10 @@ def rankings():
             value = request.args.get(name)
             if value:
                 params[name] = value
+        for name in ("cats", "pcats", "rank_by"):
+            values = request.args.getlist(name)
+            if values:
+                params[name] = ",".join(parse_list(values)) if name != "rank_by" else values[0]
         url_params = urlencode({k: v for k, v in params.items() if v})
         push_url = f"/?{url_params}" if url_params else "/"
         response.headers["HX-Replace-Url"] = push_url
@@ -819,6 +913,14 @@ def league_import():
     a future paid gate wraps exactly this route. Always returns the panel
     fragment (200): failures become an inline notice, knobs untouched."""
     current = parse_league_settings(request.args)
+    cats, pcats, _ = _dynasty_category_state(request.args)
+    setup_context = {
+        "cats": cats,
+        "pcats": pcats,
+        "hitting_categories": HITTING_CATEGORIES,
+        "pitching_categories": PITCHING_CATEGORIES,
+        "category_presets": CATEGORY_PRESETS,
+    }
     ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "?")
           .split(",")[0].strip())
     if not app.config.get("TESTING") and _import_rate_limited(ip):
@@ -826,6 +928,7 @@ def league_import():
             "partials/setup_dynasty.html",
             league_settings=current, import_refresh=False,
             import_notice="Too many import attempts — wait a minute and try again.",
+            **setup_context,
         )
     url = (request.args.get("league_url") or "").strip()
     try:
@@ -843,6 +946,7 @@ def league_import():
     return render_template(
         "partials/setup_dynasty.html",
         league_settings=settings, import_notice=notice, import_refresh=refresh,
+        **setup_context,
     )
 
 
@@ -885,6 +989,51 @@ def methodology():
     )
 
 
+def _value_map_players(rows):
+    """Slim, committed-feed-only payload for the value map."""
+    payload = []
+    pitcher_positions = {"SP", "RP", "P"}
+    for row in rows:
+        if row.age is None or row.dynasty_value is None:
+            continue
+        positions = list(row.positions or ())
+        primary = positions[0] if positions else "DH"
+        if row.is_prospect:
+            group = "prospect"
+        elif "SP" in positions:
+            group = "sp"
+        elif positions and set(positions) <= pitcher_positions:
+            group = "rp"
+        else:
+            group = "hitter"
+        payload.append({
+            "id": row.id,
+            "name": row.name,
+            "age": row.age,
+            "value": row.dynasty_value,
+            "position": primary,
+            "group": group,
+            "player_type": row.player_type,
+            "prospect_rank": row.prospect_rank,
+        })
+    return payload
+
+
+@app.route("/map")
+def value_map():
+    players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
+    return render_template(
+        "value_map.html",
+        players=players,
+        player_count=len(players),
+        dd_generated_at=dd_store.generated_at,
+        dd_available=dd_store.is_available,
+        map_page=True,
+        mode="dd_dynasty",
+        as_of=store.as_of,
+    )
+
+
 @app.route("/health/ready")
 def health_ready():
     """Readiness probe (Render healthCheckPath). 200 only when all three projection
@@ -914,6 +1063,21 @@ def health_ready():
 def player_detail(player_id):
     mode = request.args.get("mode", "categories")
 
+    if request.headers.get("HX-Request") != "true":
+        player_name = None
+        if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
+            row = dd_store.get_by_id(player_id)
+            player_name = row.name if row else None
+        else:
+            try:
+                active = _active_store(request.args.get("source", ""))
+            except SourceError:
+                active = store
+            projection = active.get_by_id(player_id)
+            player_name = projection.name if projection else None
+        if player_name:
+            return redirect("/?" + urlencode({"mode": mode, "search": player_name}))
+
     if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
         dd_row = dd_store.get_by_id(player_id)
         if dd_row is None:
@@ -922,19 +1086,29 @@ def player_detail(player_id):
         mlb_stats = None
         mlb_stats_actual = None
         mlb_stats_ros = None
+        mlb_stats_split = None
+        mlb_stats_actual_split = None
+        mlb_stats_ros_split = None
         extras = {"statcast_groups": [], "statcast_asof": None, "player_links": []}
+        match_index = build_outlook_match_index(store.get_all())
         if not dd_row.is_prospect:
-            outlook = find_season_outlook(dd_row, store.get_all())
+            outlook = find_season_outlook(dd_row, match_index)
             if outlook:
                 mlb_stats, mlb_stats_actual, mlb_stats_ros = outlook
+            split = find_season_outlook_split(dd_row, match_index)
+            if split:
+                mlb_stats_split, mlb_stats_actual_split, mlb_stats_ros_split = split
             # Identity (mlbam/fangraphs ids) comes from the safely-matched
             # projection row — the feed itself carries no ids today.
-            matches = find_outlook_projections(dd_row, store.get_all())
+            matches = find_outlook_projections(dd_row, match_index)
             if matches:
                 extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
 
         prospect_context = {}
         if dd_row.is_prospect:
+            matches = find_outlook_projections(dd_row, match_index)
+            if matches:
+                extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
             stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, dd_row)
             stat_captions = {
                 m: c for m in prospect_percentiles.CAPTION_METRICS
@@ -953,6 +1127,9 @@ def player_detail(player_id):
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
+            mlb_stats_split=mlb_stats_split,
+            mlb_stats_actual_split=mlb_stats_actual_split,
+            mlb_stats_ros_split=mlb_stats_ros_split,
             **prospect_context,
             **extras,
         )
@@ -973,12 +1150,19 @@ def player_detail(player_id):
         engine.value_players(_valuation_players(active_store=active), config)
     )
     result = next((r for r in detail_results if r.player.id == player_id), None)
+    base_id = player_proj.metadata.get("base_id") or player_proj.id
+    siblings = [
+        projection for projection in active.get_all()
+        if (projection.metadata.get("base_id") or projection.id) == base_id
+    ]
+    projection_split = split_outlook(siblings)[0]
 
     return render_template(
         "partials/player_detail.html",
         player=player_proj,
         result=result,
         active_categories=ctx["active_categories"],
+        projection_split=projection_split,
         **_card_extras(player_proj.name, player_proj.pool, player_proj.metadata),
     )
 

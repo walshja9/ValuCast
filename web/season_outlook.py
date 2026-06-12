@@ -15,6 +15,7 @@ join shows the wrong player's stats. This module resolves the join safely:
 """
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import Iterable
 
 from league_values.models import PlayerPool, PlayerProjection
@@ -24,6 +25,8 @@ _PITCHER_POSITIONS = {"SP", "RP", "P"}
 _PITCHER_POOLS = {PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER}
 
 Outlook = tuple[dict | None, dict | None, dict | None]
+SplitStats = dict[str, dict | None]
+SplitOutlook = tuple[SplitStats, SplitStats, SplitStats]
 
 
 def _normalize_name(name: str) -> str:
@@ -75,47 +78,82 @@ def _merged_outlook(projs: list[PlayerProjection]) -> Outlook:
     )
 
 
+def _split_dicts(projs: Iterable[PlayerProjection], getter) -> SplitStats:
+    hitting = _merge(getter(p) for p in projs if not _is_pitcher(p))
+    pitching = _merge(getter(p) for p in projs if _is_pitcher(p))
+    return {"hitting": hitting, "pitching": pitching}
+
+
+def split_outlook(projs: Iterable[PlayerProjection]) -> SplitOutlook:
+    """Hitting/pitching views of outlook, actuals, and ROS for matched rows."""
+    rows = list(projs)
+    return (
+        _split_dicts(rows, lambda p: p.stats),
+        _split_dicts(rows, lambda p: p.metadata.get("stats_actual")),
+        _split_dicts(rows, lambda p: p.metadata.get("stats_ros")),
+    )
+
+
+class OutlookMatchIndex:
+    """Reusable safe matcher for a static projection collection."""
+
+    def __init__(self, projections: Iterable[PlayerProjection]) -> None:
+        self.projections = list(projections)
+        self._by_mlbam: dict[str, list[PlayerProjection]] = defaultdict(list)
+        self._by_name: dict[str, list[PlayerProjection]] = defaultdict(list)
+        for proj in self.projections:
+            mlbam = str(proj.metadata.get("mlbam_id") or "").strip()
+            if mlbam:
+                self._by_mlbam[mlbam].append(proj)
+            self._by_name[_normalize_name(proj.name)].append(proj)
+
+    def find(self, dd_row: DynastyRankingRow) -> list[PlayerProjection]:
+        feed_mlbam = str(dd_row.mlbam_id or "").strip()
+        if feed_mlbam:
+            matches = self._by_mlbam.get(feed_mlbam, [])
+            if matches:
+                return list(matches)
+
+        pitcher_side, hitter_side = _row_sides(dd_row.positions)
+        compatible = [
+            proj for proj in self._by_name.get(_normalize_name(dd_row.name), [])
+            if (_is_pitcher(proj) and pitcher_side)
+            or (not _is_pitcher(proj) and hitter_side)
+        ]
+        if len(compatible) <= 1:
+            return compatible
+        if len({_base(p) for p in compatible}) == 1:
+            return compatible
+        return []
+
+
+def build_outlook_match_index(
+    projections: Iterable[PlayerProjection],
+) -> OutlookMatchIndex:
+    """Build the safe name+team/pool guarded matcher once for batch joins."""
+    return OutlookMatchIndex(projections)
+
+
 def find_outlook_projections(
     dd_row: DynastyRankingRow,
-    projections: Iterable[PlayerProjection],
+    projections: Iterable[PlayerProjection] | OutlookMatchIndex,
 ) -> list[PlayerProjection]:
     """The projection row(s) safely matching a feed row; [] when none/ambiguous.
 
     Multiple rows means a two-way player (shared base_id). Callers needing
     identity (mlbam_id / fangraphs_id) read it from any returned row.
     """
-    projections = list(projections)
-
-    # 1. mlbam_id is the real key (feed has none today; future-proofing).
-    feed_mlbam = dd_row.mlbam_id
-    if feed_mlbam:
-        for proj in projections:
-            if str(proj.metadata.get("mlbam_id") or "") == str(feed_mlbam):
-                return [proj]
-
-    # 2. Name + pool/position compatibility.
-    name = _normalize_name(dd_row.name)
-    pitcher_side, hitter_side = _row_sides(dd_row.positions)
-
-    compatible = []
-    for proj in projections:
-        if _normalize_name(proj.name) != name:
-            continue
-        if (_is_pitcher(proj) and pitcher_side) or (not _is_pitcher(proj) and hitter_side):
-            compatible.append(proj)
-
-    if len(compatible) <= 1:
-        return compatible
-
-    # Multiple compatible: same person (shared base_id) -> two-way; else ambiguous.
-    if len({_base(p) for p in compatible}) == 1:
-        return compatible
-    return []
+    index = (
+        projections
+        if isinstance(projections, OutlookMatchIndex)
+        else build_outlook_match_index(projections)
+    )
+    return index.find(dd_row)
 
 
 def find_season_outlook(
     dd_row: DynastyRankingRow,
-    projections: Iterable[PlayerProjection],
+    projections: Iterable[PlayerProjection] | OutlookMatchIndex,
 ) -> Outlook | None:
     """Return (stats, stats_actual, stats_ros) for the matching projection, or None."""
     matches = find_outlook_projections(dd_row, projections)
@@ -124,3 +162,12 @@ def find_season_outlook(
     if len(matches) == 1:
         return _outlook(matches[0])
     return _merged_outlook(matches)
+
+
+def find_season_outlook_split(
+    dd_row: DynastyRankingRow,
+    projections: Iterable[PlayerProjection] | OutlookMatchIndex,
+) -> SplitOutlook | None:
+    """Return split hitting/pitching outlook views for a safely matched row."""
+    matches = find_outlook_projections(dd_row, projections)
+    return split_outlook(matches) if matches else None
