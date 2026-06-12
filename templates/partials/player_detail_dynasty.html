@@ -8,6 +8,10 @@
     {% else %}{{ value }}{% endif %}
 {%- endmacro %}
 
+{% macro ordinal(n) -%}
+{{ n }}{% if 10 <= n % 100 <= 13 %}th{% elif n % 10 == 1 %}st{% elif n % 10 == 2 %}nd{% elif n % 10 == 3 %}rd{% else %}th{% endif %}
+{%- endmacro %}
+
 {% set confidence = row.confidence or {} %}
 {% set confidence_range = confidence.get('range') or {} %}
 <div class="player-detail dynasty-detail">
@@ -19,6 +23,7 @@
                 {% if row.team %} | {{ row.team }}{% endif %}
                 {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
             </span>
+            {% if identity %}<p class="identity-line">{{ identity }}</p>{% endif %}
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
@@ -56,7 +61,8 @@
                 {% if row.breakout_label %}
                 <div class="stat-item">
                     <span class="stat-label">Trend</span>
-                    <span class="stat-value">{{ row.breakout_label | replace('_', ' ') | title }}{% if row.breakout_rank_change %} ({{ '+' if row.breakout_rank_change > 0 else '' }}{{ row.breakout_rank_change }}){% endif %}</span>
+                    {% set tdir = 'up' if (row.breakout_label == 'rising' or (row.breakout_rank_change or 0) > 0) else ('down' if (row.breakout_label == 'falling' or (row.breakout_rank_change or 0) < 0) else none) %}
+                    <span class="trend-chip {% if tdir %}trend-{{ tdir }}{% endif %}">{{ row.breakout_label | replace('_', ' ') | title }}{% if row.breakout_rank_change %} ({{ '+' if row.breakout_rank_change > 0 else '' }}{{ row.breakout_rank_change }}){% endif %}</span>
                 </div>
                 {% endif %}
             </div>
@@ -92,6 +98,26 @@
                 </div>
                 {% endif %}
             </div>
+            {% set public = row.public_source_ranks %}
+            {% if public | length >= 2 %}
+            {% set ranks = public.values() | list %}
+            {% set lo = ranks | min %}
+            {% set hi = ranks | max %}
+            {% set span = (hi - lo) if hi > lo else 1 %}
+            <div class="spread-strip">
+                <div class="spread-rail">
+                    {% for source, rank in public.items() %}
+                    <span class="spread-dot" style="left: {{ ((rank - lo) / span * 100) | round(1) }}%" title="{{ source | upper }} #{{ rank | int }}"></span>
+                    {% endfor %}
+                    {% if row.milb_performance_rank is not none and row.milb_performance_rank >= lo and row.milb_performance_rank <= hi %}
+                    <span class="spread-dot ours" style="left: {{ ((row.milb_performance_rank - lo) / span * 100) | round(1) }}%" title="MiLB performance #{{ row.milb_performance_rank | int }}"></span>
+                    {% endif %}
+                </div>
+                <span class="spread-bounds">P#{{ lo | int }}–P#{{ hi | int }}</span>
+                {% if hi - lo <= 15 %}<span class="spread-chip tight">Tight consensus</span>
+                {% elif hi - lo >= 40 %}<span class="spread-chip split">Sources split</span>{% endif %}
+            </div>
+            {% endif %}
             {% if row.public_source_ranks %}
             <details class="public-board-details">
                 <summary>View individual public boards</summary>
@@ -107,13 +133,28 @@
 
         {% if row.stat_line %}
         <div class="detail-section milb-stats">
-            <h4>MiLB Stats</h4>
+            <h4>MiLB Stats
+                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">vs ValuCast prospect pool</span>
+                {% elif row.stat_line and row.stat_line.get('pa') is not none and row.stat_line.get('pa') < 100 %}<span class="small-sample">small sample · {{ row.stat_line.get('pa') | int }} PA</span>{% endif %}
+            </h4>
             {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
             <div class="stat-group">
                 <h5>Rate Stats</h5>
                 <div class="stat-grid">
                     {% for key in ['avg', 'obp', 'slg', 'ops'] %}{% if row.stat_line.get(key) is not none %}
-                    <div class="stat-item"><span class="stat-label">{{ key | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    <div class="stat-item">
+                        <span class="stat-label">{{ key | upper }}</span>
+                        <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
+                        {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
+                        {% if pct is not none %}
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile vs ValuCast prospect pool">
+                            <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
+                        </div>
+                        <span class="pct-ord">{{ ordinal(pct) }}</span>
+                        {% endif %}
+                        {% set cap = stat_captions.get(key) if stat_captions is defined and stat_captions else none %}
+                        {% if cap %}<span class="stat-caption">{{ cap }}</span>{% endif %}
+                    </div>
                     {% endif %}{% endfor %}
                 </div>
             </div>
@@ -123,7 +164,19 @@
                 <h5>Plate Discipline</h5>
                 <div class="stat-grid">
                     {% for key in ['k_pct', 'bb_pct', 'iso'] %}{% if row.stat_line.get(key) is not none %}
-                    <div class="stat-item"><span class="stat-label">{{ key | replace('_pct', '%') | upper }}</span><span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span></div>
+                    <div class="stat-item">
+                        <span class="stat-label">{{ key | replace('_pct', '%') | upper }}</span>
+                        <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
+                        {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
+                        {% if pct is not none %}
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile vs ValuCast prospect pool">
+                            <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
+                        </div>
+                        <span class="pct-ord">{{ ordinal(pct) }}</span>
+                        {% endif %}
+                        {% set cap = stat_captions.get(key) if stat_captions is defined and stat_captions else none %}
+                        {% if cap %}<span class="stat-caption">{{ cap }}</span>{% endif %}
+                    </div>
                     {% endif %}{% endfor %}
                 </div>
             </div>

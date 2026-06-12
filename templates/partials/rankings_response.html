@@ -4,7 +4,7 @@
 {% include "partials/rankings_table_dynasty.html" %}
 {% if mode == 'dd_dynasty' %}
 <span class="config-summary" hx-swap-oob="innerHTML:.config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
-<section id="setup-panel" class="setup-panel" hx-swap-oob="innerHTML:#setup-panel">
+<section id="setup-panel" class="setup-panel glass" hx-swap-oob="innerHTML:#setup-panel">
     {% include "partials/setup_dynasty.html" %}
 </section>
 {% endif %}
@@ -15,7 +15,7 @@
 
 <span id="display-slot" hx-swap-oob="innerHTML:#display-slot">{% include "partials/_display_toggle.html" %}</span>
 
-<section id="setup-panel" class="setup-panel" hx-swap-oob="innerHTML:#setup-panel">
+<section id="setup-panel" class="setup-panel glass" hx-swap-oob="innerHTML:#setup-panel">
     {% if mode == 'points' %}
         {% include "partials/setup_points.html" %}
     {% else %}

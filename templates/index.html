@@ -52,7 +52,7 @@
 
     {# One consolidated, sticky toolbar with horizon-specific contents. #}
     {% if horizon == 'redraft' %}
-    <div class="rank-toolbar rank-toolbar-redraft" id="rank-toolbar">
+    <div class="rank-toolbar rank-toolbar-redraft glass" id="rank-toolbar">
         <span class="config-summary-line">
             <span class="config-summary">{{ config_summary }}</span>
             <a class="toolbar-how-link" href="/methodology">How it works</a>
@@ -91,7 +91,7 @@
         {% if source == 'valucast' %}{% include "partials/_source_caption.html" %}{% endif %}
     </div>
 
-    <section id="setup-panel" class="setup-panel collapsed">
+    <section id="setup-panel" class="setup-panel collapsed glass">
         {% if mode == 'points' %}
             {% include "partials/setup_points.html" %}
         {% else %}
@@ -100,7 +100,7 @@
     </section>
 
     {% elif horizon == 'dynasty' %}
-    <div class="rank-toolbar rank-toolbar-dynasty" id="rank-toolbar">
+    <div class="rank-toolbar rank-toolbar-dynasty glass" id="rank-toolbar">
         <span class="config-summary-line">
             <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
             <a class="toolbar-how-link" href="/methodology">How it works</a>
@@ -128,13 +128,13 @@
     {% include "partials/dynasty_category_fit.html" %}
     {% endif %}
 
-    <section id="setup-panel" class="setup-panel collapsed">
+    <section id="setup-panel" class="setup-panel collapsed glass">
         {% include "partials/setup_dynasty.html" %}
     </section>
     <div id="import-notice-slot"></div>
 
     {% else %}{# prospects #}
-    <div class="rank-toolbar rank-toolbar-locked" id="rank-toolbar">
+    <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
         <span class="config-summary">Prospect rankings include source ranks, breakout indicators, and MiLB stats.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
         {# No visible knobs on this horizon, so the form must carry the league
            params or a shared URL's divider resets on the first filter change. #}
@@ -165,7 +165,7 @@
 </form>
 
 {% if mode != 'dd_dynasty' and mode != 'prospects' %}
-<div id="compare-bar" class="compare-bar" style="display:none;">
+<div id="compare-bar" class="compare-bar glass" style="display:none;">
     <span id="compare-count">0 selected</span>
     <button id="compare-btn" onclick="openCompare()" disabled>Compare</button>
     <button onclick="clearCompare()" class="btn-clear">Clear</button>
@@ -353,6 +353,14 @@ function toggleDetail(playerId, row) {
        block (card) in the mobile layout. Forcing 'table-row' broke mobile. */
     detailRow.style.display = '';
     if (btn) btn.setAttribute('aria-expanded', 'true');
+}
+
+function moverJump(id) {
+    const row = document.querySelector(`tr.player-row[data-player-id="${id}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const detail = document.getElementById(`detail-${id}`);
+    if (detail && detail.style.display === 'none') toggleDetail(id, row);
 }
 
 const FIT_INVERSE = new Set(['SO', 'ERA', 'WHIP', 'L', 'BB/9']);

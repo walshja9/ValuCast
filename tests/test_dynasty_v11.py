@@ -65,7 +65,10 @@ class TestDynastyV11UI(unittest.TestCase):
     def test_prospects_board_uses_dd_prospect_rank_order(self):
         response = self.client.get("/?mode=prospects")
         self.assertEqual(response.status_code, 200)
-        self.assertLess(response.data.find(b"Future Arm"), response.data.find(b"Future Bat"))
+        self.assertLess(
+            response.data.find(b'data-player-id="dd_prospect_future_arm"'),
+            response.data.find(b'data-player-id="dd_prospect_future_bat"'),
+        )
 
     def test_category_fit_formula_includes_inverse_and_aliases(self):
         response = self.client.get("/?mode=dd_dynasty")

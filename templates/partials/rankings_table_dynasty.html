@@ -1,4 +1,14 @@
 {% set v11 = dd_schema_version == '1.1' %}
+{% if mode == 'prospects' and prospect_movers %}
+<div class="movers-strip" aria-label="Biggest prospect rank movers">
+    <span class="movers-label">Movers</span>
+    {% for m in prospect_movers %}
+    <button type="button" class="mover-chip {{ 'up' if m.change > 0 else 'down' }}" onclick="moverJump('{{ m.id }}')">
+        {{ '▲' if m.change > 0 else '▼' }} {{ m.name }} <span class="mover-delta">{{ '%+d' | format(m.change) }}</span>
+    </button>
+    {% endfor %}
+</div>
+{% endif %}
 <div class="results-meta">
     <span>{{ dd_rows | length }} {% if mode == 'prospects' %}prospects{% else %}players{% endif %}{% if dd_rows | length == 200 %} (showing top 200){% endif %}</span>
     {% if mode == 'dd_dynasty' and v11 %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
@@ -6,7 +16,7 @@
 
 {# Category Fit, Confidence, and Range render only from a v1.1 feed — with a
    v1.0 feed they'd be a dead column and two always-empty ones. #}
-{% set ncols = (10 if v11 else 7) if mode == 'dd_dynasty' else (8 if v11 else 6) %}
+{% set ncols = (10 if v11 else 7) if mode == 'dd_dynasty' else (9 if v11 else 7) %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings">
     <thead>
@@ -17,6 +27,7 @@
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
             <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
+            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
             {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(7)">Category Fit</button></th>{% endif %}
@@ -71,6 +82,7 @@
             <td class="col-team">{{ row.team or '—' }}</td>
             <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
             <td class="col-value val-pos">{{ "%.1f" | format(row.dynasty_value) }}</td>
+            {% if mode == 'prospects' %}<td class="col-eta">{{ row.eta or '—' }}</td>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>
             {% if v11 %}<td class="col-fit"><span class="fit-score">—</span></td>{% endif %}

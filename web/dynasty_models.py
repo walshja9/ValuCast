@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 
 # DD-internal model signals — not independent public boards, so they are
 # excluded from the public-consensus surfaces.
-_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout"})
+_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr_raw"})
 
 
 @dataclass(frozen=True)

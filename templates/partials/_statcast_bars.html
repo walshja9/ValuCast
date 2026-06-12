@@ -17,6 +17,8 @@
                 <div class="pct-fill" style="width: {{ m.pct }}%; background: {{ m.color }};"></div>
                 <span class="pct-num" style="--pct: {{ m.pct }}%; background: {{ m.color }};">{{ m.pct }}</span>
             </div>
+            {% if m.pct >= 75 %}<span class="pct-chip">top {{ 100 - m.pct }}%</span>
+            {% elif m.pct <= 25 %}<span class="pct-chip low">bottom {{ m.pct }}%</span>{% endif %}
         </div>
         {% endfor %}
     </div>

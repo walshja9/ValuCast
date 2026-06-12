@@ -35,6 +35,7 @@ from web.league_import import import_league, ImportError_
 from web.season_outlook import find_season_outlook, find_outlook_projections
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
+from web import prospect_percentiles
 
 app = Flask(__name__)
 
@@ -179,6 +180,7 @@ def _valuation_players(always_keep=None, active_store=None):
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
                     str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
 dd_store = DDFeedStore(DD_FEED_PATH)
+prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
 
 # In production (VALUCAST_REQUIRE_DD=1) treat DD as required: refuse to start if the
 # feed failed to load. With gunicorn --preload this raises in the master, so the
@@ -320,6 +322,25 @@ def _prospect_rows(position=None, search=None):
             row.dynasty_rank,
         ),
     )[:200]
+
+
+def _apply_prospect_board_context(ctx, args):
+    """Apply dedicated prospect-board rows and metadata to a DD context."""
+    ctx["dd_rows"] = _prospect_rows(
+        position=ctx.get("position") or None,
+        search=ctx.get("search") or None,
+    )
+    settings = parse_league_settings(args)
+    ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
+    ctx["tiers"] = _prospect_tiers()
+    ctx["cutoff_rank"] = settings.prospect_cutoff
+    ctx["mode"] = "prospects"
+    ctx["horizon"] = "prospects"
+    ctx["prospect_movers"] = (
+        prospect_percentiles.top_movers(dd_store.filter(player_type="prospect"))
+        if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
+        else []
+    )
 
 
 def _build_dynasty_context(args):
@@ -707,16 +728,7 @@ def index():
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
-            ctx["dd_rows"] = _prospect_rows(
-                position=ctx.get("position") or None,
-                search=ctx.get("search") or None,
-            )
-            settings = parse_league_settings(request.args)
-            ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
-            ctx["tiers"] = _prospect_tiers()
-            ctx["cutoff_rank"] = settings.prospect_cutoff
-            ctx["mode"] = "prospects"
-            ctx["horizon"] = "prospects"
+            _apply_prospect_board_context(ctx, request.args)
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
@@ -738,16 +750,7 @@ def rankings():
         else:
             ctx = _build_dynasty_context(request.args)
             if mode == "prospects":
-                ctx["dd_rows"] = _prospect_rows(
-                    position=ctx.get("position") or None,
-                    search=ctx.get("search") or None,
-                )
-                settings = parse_league_settings(request.args)
-                ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
-                ctx["tiers"] = _prospect_tiers()
-                ctx["cutoff_rank"] = settings.prospect_cutoff
-                ctx["mode"] = "prospects"
-                ctx["horizon"] = "prospects"
+                _apply_prospect_board_context(ctx, request.args)
         html = render_template("partials/rankings_response.html", **ctx)
         response = make_response(html)
         params = {"mode": mode}
@@ -930,12 +933,27 @@ def player_detail(player_id):
             if matches:
                 extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
 
+        prospect_context = {}
+        if dd_row.is_prospect:
+            stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, dd_row)
+            stat_captions = {
+                m: c for m in prospect_percentiles.CAPTION_METRICS
+                if (c := prospect_percentiles.caption_for(m, stat_percentiles.get(m))) is not None
+            }
+            identity = prospect_percentiles.identity_line(dd_row, stat_percentiles)
+            prospect_context = {
+                "stat_percentiles": stat_percentiles,
+                "stat_captions": stat_captions,
+                "identity": identity,
+            }
+
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
+            **prospect_context,
             **extras,
         )
 
