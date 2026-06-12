@@ -66,7 +66,7 @@
             <span class="bg-rank">#{{ p.rank }}</span>
             <span class="bg-cell-score">{{ p.score | round | int }}</span>
             <span class="bg-name">{% set parts = p.name.split() %}{% if parts | length > 1 %}{{ parts[0][0] }}. {{ parts[1:] | join(' ') }}{% else %}{{ p.name }}{% endif %}</span>
-            <span class="bg-tag">{{ p.team }}</span>
+            <span class="bg-tag">{{ p.team }} &middot; {{ p.pos }}</span>
         </div>
         {% endfor %}
     </div>
