@@ -94,3 +94,8 @@ python -m pytest
 - [ ] Dynasty league customization (scoring format, prospect depth, trade window)
 - [ ] Render deployment
 - [ ] Engine result caching for faster player detail loads
+
+## Deploy
+Run `powershell -File scripts/deploy.ps1` from a clean `master` working tree.
+Set `RENDER_DEPLOY_HOOK` to the Render deploy-hook URL to explicitly trigger the deployment.
+Manual fallback: Render dashboard → `valucast` service → Manual Deploy → Deploy latest commit.
