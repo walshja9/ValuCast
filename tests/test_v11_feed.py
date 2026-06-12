@@ -121,8 +121,9 @@ class TestTranslatedBlock(_CardCase):
         row = next(r for r in app_module.dd_store.get_all()
                    if r.is_prospect and r.stat_line)
         resp = self.client.get(f"/player/{row.id}?mode=dd_dynasty", headers=HX)
-        if b"prospect pool" in resp.data:
-            self.assertIn(b"prospect pool (all levels)", resp.data)
+        if b"ValuCast hitter pool" in resp.data:
+            self.assertIn(b"all levels", resp.data)
+            self.assertIn(b"100+ PA", resp.data)
 
 
 if __name__ == "__main__":

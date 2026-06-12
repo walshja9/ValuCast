@@ -160,7 +160,7 @@
         {% if row.stat_line %}
         <div class="detail-section milb-stats">
             <h4>MiLB Stats
-                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}vs ValuCast prospect pool (all levels)</span>
+                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}vs ValuCast hitter pool · all levels · 100+ PA</span>
                 {% elif row.stat_line and row.stat_line.get('pa') is not none and row.stat_line.get('pa') < 100 %}<span class="small-sample">small sample · {{ row.stat_line.get('pa') | int }} PA</span>{% endif %}
             </h4>
             {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
@@ -173,7 +173,7 @@
                         <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
                         {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
                         {% if pct is not none %}
-                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile vs ValuCast prospect pool">
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast hitter prospect pool across all levels with 100 or more PA">
                             <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
                         </div>
                         <span class="pct-ord">{{ ordinal(pct) }}</span>
@@ -195,7 +195,7 @@
                         <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
                         {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
                         {% if pct is not none %}
-                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile vs ValuCast prospect pool">
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast hitter prospect pool across all levels with 100 or more PA">
                             <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
                         </div>
                         <span class="pct-ord">{{ ordinal(pct) }}</span>

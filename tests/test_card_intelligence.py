@@ -20,6 +20,8 @@ def _row(
     positions=None,
     source_ranks=None,
     stat_line=None,
+    stat_line_translated=None,
+    level=None,
 ):
     return DynastyRankingRow.from_feed({
         "id": row_id,
@@ -36,6 +38,9 @@ def _row(
         "breakout_label": "rising" if change > 0 else "falling" if change < 0 else "steady",
         "breakout_rank_change": change,
         "stat_line": stat_line,
+        "stat_line_translated": stat_line_translated,
+        "level": level,
+        "last_updated": "2026-06-12",
     })
 
 
@@ -79,6 +84,10 @@ class TestProspectPercentiles(unittest.TestCase):
     def test_caption_neutral_and_non_headline_metric(self):
         self.assertIsNone(prospect_percentiles.caption_for("ops", 50))
         self.assertIsNone(prospect_percentiles.caption_for("avg", 95))
+        self.assertEqual(
+            prospect_percentiles.caption_for("ops", 80),
+            "Strong all-around production",
+        )
 
     def test_top_movers_filters_sorts_and_caps(self):
         rows = [
@@ -96,25 +105,128 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertEqual(len(movers), 5)
         self.assertEqual(prospect_percentiles.top_movers([rows[-2], rows[-1]]), [])
 
-    def test_identity_line_agree_higher_elite_and_non_prospect(self):
-        agree = _row(
-            "agree",
-            prospect_rank=10,
-            source_ranks={"pipeline": 12, "cfr": 14, "hkb": 16},
+    def test_identity_line_reads_like_scouting_not_rank_narration(self):
+        hitter = _row(
+            "hitter",
+            stat_line={"pa": 180, "ops": 0.920, "iso": 0.280, "k_pct": 30.0, "bb_pct": 12.0},
         )
-        higher = _row(
-            "higher",
-            prospect_rank=10,
-            source_ranks={"pipeline": 30, "cfr": 32, "hkb": 34},
+        pitcher = _row(
+            "pitcher",
+            positions=["SP"],
+            stat_line={"ip": 50, "era": 2.20, "k_per_9": 13.0, "bb_per_9": 5.0},
         )
         mlb = _row("mlb", player_type="mlb", prospect_rank=None)
-        self.assertIn("see it the same way", prospect_percentiles.identity_line(agree, {}))
-        self.assertIn("we're higher", prospect_percentiles.identity_line(higher, {}))
-        self.assertIn(
-            "carried by elite power",
-            prospect_percentiles.identity_line(agree, {"iso": 95}),
+        hitter_line = prospect_percentiles.identity_line(hitter, {"iso": 95})
+        pitcher_line = prospect_percentiles.identity_line(pitcher, {})
+        self.assertTrue(
+            "power" in hitter_line.lower()
+            or "thump" in hitter_line.lower()
+            or "damage" in hitter_line.lower()
         )
+        self.assertTrue(
+            "contact" in hitter_line.lower()
+            or "miss" in hitter_line.lower()
+            or "empty swings" in hitter_line.lower()
+        )
+        self.assertTrue("walk" in pitcher_line or "control" in pitcher_line or "strike throwing" in pitcher_line)
+        for line in (hitter_line, pitcher_line):
+            self.assertNotIn("ValuCast", line)
+            self.assertNotIn("public", line)
+            self.assertNotIn("percentile", line)
+            self.assertNotIn("P#", line)
+            self.assertNotIn("carrying skill", line)
+            self.assertNotIn("foundation", line)
+            self.assertTrue(
+                any(
+                    outcome in line.lower()
+                    for outcome in ("role", "regular", "starter", "bullpen", "bench", "floor")
+                )
+            )
+            self.assertIn("confidence", line.lower())
         self.assertIsNone(prospect_percentiles.identity_line(mlb, {}))
+
+    def test_identity_line_is_honest_when_no_performance_sample_exists(self):
+        no_sample = prospect_percentiles.identity_line(_row("no_sample"), {})
+        self.assertIn("current performance sample", no_sample)
+        self.assertIn("anything stronger is projection", no_sample)
+        self.assertIn("confidence: low", no_sample.lower())
+        self.assertNotIn("public", no_sample)
+
+    def test_identity_line_handles_called_up_and_old_samples_honestly(self):
+        called_up = _row(
+            "called_up",
+            age=20,
+            level="MLB",
+            stat_line={"pa": 180, "ops": 0.900, "iso": 0.250, "k_pct": 20.0, "bb_pct": 12.0},
+        )
+        called_up_line = prospect_percentiles.identity_line(called_up, {})
+        self.assertNotIn("in the majors", called_up_line)
+
+        old_sample = _row(
+            "old_sample",
+            stat_line_translated={
+                "season": 2025,
+                "role": "hitter",
+                "stats": [
+                    {"key": "k_pct", "milb": 15.0},
+                    {"key": "bb_pct", "milb": 10.0},
+                    {"key": "iso", "milb": 0.150},
+                ],
+            },
+        )
+        old_sample_line = prospect_percentiles.identity_line(old_sample, {})
+        self.assertIn("latest meaningful sample is from 2025", old_sample_line.lower())
+        self.assertIn("confidence is low", old_sample_line.lower())
+
+    def test_identity_line_contract_length_and_rotating_structure(self):
+        rows = [
+            _row(
+                f"contract_{rank}",
+                prospect_rank=rank,
+                stat_line={
+                    "pa": 180, "ops": 0.920, "iso": 0.280,
+                    "k_pct": 30.0, "bb_pct": 12.0,
+                },
+            )
+            for rank in range(1, 21)
+        ]
+        lines = [prospect_percentiles.identity_line(row, {}) for row in rows]
+        sentence_counts = [line.count(".") for line in lines]
+        for line in lines:
+            self.assertGreaterEqual(len(line.split()), 20)
+            self.assertLessEqual(len(line.split()), 80)
+            self.assertGreaterEqual(line.count("."), 2)
+            self.assertLessEqual(line.count("."), 4)
+            self.assertNotIn("carrying skill", line)
+            self.assertNotIn("sturdy foundation", line)
+            self.assertNotIn("real risk", line)
+            self.assertNotIn("there is still runway", line.lower())
+            self.assertNotRegex(line.lower(), r"\bif\b")
+            self.assertNotRegex(
+                line,
+                r"\b\d+(?:\.\d+)?%|\b(?:K/9|BB/9|K-BB%|ISO|ERA|WHIP)\b",
+            )
+        self.assertEqual(set(sentence_counts), {2, 3, 4})
+        self.assertGreaterEqual(sum(count <= 3 for count in sentence_counts), len(lines) * 0.2)
+        self.assertEqual(sentence_counts[0], 2)
+        self.assertEqual(len({line.split(". ", 1)[0] for line in lines[:4]}), 4)
+
+    def test_identity_line_is_stable_but_varies_by_player(self):
+        rows = [
+            _row(
+                f"variety_{i}",
+                stat_line={
+                    "pa": 180, "ops": 0.920, "iso": 0.280,
+                    "k_pct": 30.0, "bb_pct": 12.0,
+                },
+            )
+            for i in range(12)
+        ]
+        lines = [prospect_percentiles.identity_line(row, {"iso": 95}) for row in rows]
+        self.assertEqual(lines, [
+            prospect_percentiles.identity_line(row, {"iso": 95}) for row in rows
+        ])
+        self.assertGreaterEqual(len(set(lines)), 3)
 
 
 class TestPublicSourceRanks(unittest.TestCase):
@@ -257,7 +369,13 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'class="identity-line"', response.data)
         self.assertIn(b'class="pct-rail"', response.data)
-        self.assertIn(b"vs ValuCast prospect pool", response.data)
+        self.assertIn(b"vs ValuCast hitter pool", response.data)
+        self.assertIn(b"all levels", response.data)
+        self.assertIn(b"100+ PA", response.data)
+        self.assertIn(
+            b"percentile in the ValuCast hitter prospect pool across all levels",
+            response.data,
+        )
         # Called-up prospect (level MLB): the MiLB sample is flagged as pre-call-up.
         self.assertIn(b"last MiLB sample", response.data)
 
