@@ -77,3 +77,57 @@ Follows the `value_spark.py` pattern: feed rows in, plain dicts out, no Flask im
 ## Execution
 
 Codex implements from Fable's brief (single repo, this spec). Fable reviews diff, runs pytest, sanity-checks the top-40 names with Alex, tunes weights, ships. Render auto-deploys from master push; verify live via /health/ready then /buys.
+
+## Resolutions (6/12, post-critique — implemented)
+
+Design critique (Codex dispatch died; Fable completed) surfaced one P0 and a
+set of P1s. Decisions, all implemented in `web/buy_score.py` / `buys.html`:
+
+**Scoring**
+- **Step detection across date gaps (P0):** the threshold applies to
+  consecutive-*point* deltas regardless of calendar span — the producer's
+  denylist removes days adjacent to real steps (6/3's 10.6-pt step sits
+  across the removed 6/2; a per-day rate would slip under it). Additionally,
+  consecutive points more than 3 calendar days apart break the tail
+  (sparse/stale series). Real-series fixture pinned in tests.
+- **Momentum denominator floor 30** (spec had `max(first, 1)`): relative
+  change on tiny values saturated on noise (+0.4 on a value-3 prospect read
+  as +13%).
+- **Clamp tuned to (-0.10, +0.15)** (spec: -0.08/+0.12): measured against
+  the live feed, the spec numbers left 24% of the eligible pool pinned at
+  m=1.0; the tuned pair cuts that to 10% with the same top-10 names. Zero
+  move still maps to exactly 0.4.
+- **Consensus gap clamped at 1.0** — the spec formula was unbounded for
+  pipeline ranks beyond 150. `cfr` stays deliberately unused (age-gated
+  value blend, not a pure performance signal). Tie-break treats missing
+  `dynasty_value` as 0 (None crashed the sort).
+- Bolte himself now carries `level: MLB` and is correctly excluded — the
+  buy window closed at his debut; his *shape* (gap term 0.98) is what the
+  board hunts.
+
+**Graphic/export**
+- **Team logos are midfield spots PNG**, not `team-logos/*.svg` — external
+  SVG `<img>` is html2canvas's known silent-blank path.
+- **`crossorigin="anonymous"` on every mlbstatic img on the page** (list and
+  graphic): mixed-mode requests for the same URL can hit a cached no-CORS
+  response and taint intermittently.
+- html2canvas pinned **1.4.1**; capture passes `windowWidth/windowHeight`
+  (mobile breakpoints otherwise apply inside the clone) and
+  `scrollX/scrollY: 0` (scroll-offset capture bug class). Export awaits
+  `document.fonts.ready` and preflights image loads; partial image failures
+  surface a "blank cells" warning instead of silently shipping holes.
+- The graphic markup is a partial included **twice** (scaled preview +
+  off-canvas export target) — one node can't be both scaled-visible and
+  unscaled-off-canvas.
+- List-row sparks reuse `build_spark()` geometry with slim row markup; the
+  `_value_spark.html` partial is a detail-card section (h4 header) and is
+  wrong per-row.
+- **`EXCLUDE_IDS` operator guard** in `buy_score.py`: the feed carries no
+  injury signal, so this is the manual brake against tweeting a "buy" on
+  yesterday's TJ news (or an identity doubt).
+
+**Ship gate additions** (manual, before first public post): eyeball the
+top-40 *faces* (mlbam_id mis-resolution puts the wrong player on a public
+graphic), export once from a scrolled desktop page and once from a phone,
+confirm logos/headshots/fonts in the PNG, and confirm the taint fallback
+notice by blocking mlbstatic in devtools.

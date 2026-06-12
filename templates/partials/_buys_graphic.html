@@ -1,0 +1,34 @@
+{# 1080x1350 shareable buys card. Included twice on /buys: off-canvas as the
+   html2canvas export target, and scaled inside the preview. Styles are the
+   bg-* block in buys.html — fixed px only, no media queries, linear
+   gradients only, no backdrop-filter (html2canvas can't rasterize those).
+   No loading="lazy" here: lazy off-viewport images never start loading and
+   the export preflight would wait on them forever. #}
+<div class="bg-card">
+    <div class="bg-head">
+        <span class="bg-brand">ValuCast</span>
+        <span class="bg-title">BUYS NOW FOR LATER</span>
+        <span class="bg-sub">Top 40 Prospect Buys &middot; {{ (dd_generated_at or '')[:10] }}</span>
+    </div>
+    <div class="bg-grid">
+        {% for p in graphic_rows %}
+        <div class="bg-cell">
+            <span class="bg-rank">{{ p.rank }}</span>
+            {% if p.logo_url %}
+            <img class="bg-logo" src="{{ p.logo_url }}" crossorigin="anonymous" alt="">
+            {% else %}
+            <span class="bg-logo"></span>
+            {% endif %}
+            <img class="bg-face" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="">
+            <span class="bg-who">
+                <span class="bg-name">{{ p.name }}</span>
+                <span class="bg-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="bg-foot">
+        <span class="bg-foot-brand">valucast.app</span>
+        <span class="bg-foot-note">dynasty values &middot; public methodology</span>
+    </div>
+</div>

@@ -43,6 +43,7 @@ from web.season_outlook import (
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
 from web.value_spark import build_spark
+from web import buy_score
 from web import prospect_percentiles
 
 app = Flask(__name__)
@@ -1031,6 +1032,30 @@ def value_map():
         dd_available=dd_store.is_available,
         map_page=True,
         mode="dd_dynasty",
+        as_of=store.as_of,
+    )
+
+
+@app.route("/buys")
+def buys():
+    """Top-40 prospect buys + the shareable 1080x1350 graphic node."""
+    n = buy_score.clamp_n(request.args.get("n", buy_score.BOARD_SIZE))
+    if dd_store.is_available:
+        graphic_rows = buy_score.build_board(dd_store.get_all())
+        # n drives the interactive list only; the 2x20 graphic always takes 40
+        list_rows = (graphic_rows[:n] if n <= buy_score.BOARD_SIZE
+                     else buy_score.build_board(dd_store.get_all(), n=n))
+    else:
+        graphic_rows, list_rows = [], []
+    for row in list_rows:
+        row["spark"] = build_spark(row["value_history"])
+    return render_template(
+        "buys.html",
+        list_rows=list_rows,
+        graphic_rows=graphic_rows,
+        n=n,
+        dd_available=dd_store.is_available,
+        dd_generated_at=dd_store.generated_at,
         as_of=store.as_of,
     )
 

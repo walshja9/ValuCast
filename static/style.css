@@ -1188,3 +1188,44 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .value-map-shell { min-height: 460px; height: 70vh; }
     .map-label { display: none; }
 }
+
+/* ---- /buys: prospect buy board ---- */
+.buys-fineprint { font-size: .72rem; color: var(--c-muted); margin-top: 2px; }
+.buys-actions { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
+.buys-export-notice { font-size: .76rem; color: var(--c-amber); max-width: 260px; text-align: right; }
+.buys-list { padding: var(--space-2) var(--space-3); border-radius: var(--radius-lg); }
+.buys-row {
+    display: grid;
+    grid-template-columns: 2rem 40px minmax(0, 1fr) auto auto 120px;
+    gap: var(--space-2);
+    align-items: center;
+    padding: var(--space-2) var(--space-1);
+    border-bottom: 1px solid var(--c-border);
+}
+.buys-row:last-child { border-bottom: none; }
+.buys-rank { font-weight: 700; color: var(--c-blue-strong); text-align: right; }
+.buys-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); object-fit: cover; }
+.buys-main a { font-weight: 600; }
+.buys-tag { display: block; font-size: .76rem; color: var(--c-muted); }
+.buys-score {
+    font-weight: 700; color: var(--c-prospect);
+    background: var(--surface-2); border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); padding: 2px 8px; cursor: help;
+}
+.buys-chip { white-space: nowrap; }
+.buys-spark { width: 120px; height: 32px; }
+.buys-spark polyline { stroke: var(--c-muted); stroke-width: 1.5; }
+.buys-spark circle { fill: var(--c-muted); }
+.buys-spark.up polyline { stroke: var(--c-prospect); }
+.buys-spark.up circle { fill: var(--c-prospect); }
+.buys-spark.down polyline { stroke: var(--c-neg); }
+.buys-spark.down circle { fill: var(--c-neg); }
+.buys-preview { margin-top: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); }
+.buys-preview summary { cursor: pointer; font-weight: 600; color: var(--c-blue-strong); }
+.buys-preview-wrap { margin-top: var(--space-2); overflow: hidden; }
+.buys-preview-card { transform-origin: top left; }
+@media (max-width: 640px) {
+    .buys-row { grid-template-columns: 1.5rem 32px minmax(0, 1fr) auto; }
+    .buys-thumb { width: 32px; height: 32px; }
+    .buys-chip, .buys-spark { display: none; }
+}
