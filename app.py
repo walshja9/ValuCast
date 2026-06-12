@@ -1103,8 +1103,11 @@ def buys():
                      else buy_score.build_board(dd_store.get_all(), n=n))
     else:
         graphic_rows, list_rows = [], []
-    for row in list_rows:
+    for row in graphic_rows:
         row["spark"] = build_spark(row["value_history"])
+    for row in list_rows:
+        if "spark" not in row:
+            row["spark"] = build_spark(row["value_history"])
     return render_template(
         "buys.html",
         list_rows=list_rows,

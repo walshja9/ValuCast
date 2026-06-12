@@ -166,6 +166,22 @@ def clamp_n(raw):
         return BOARD_SIZE
 
 
+def graphic_initials(name):
+    """At most two initials for the graphic's intentional photo fallback."""
+    return "".join(part[0] for part in str(name or "").split()[:2]).upper() or "VC"
+
+
+def graphic_reason(terms, label):
+    """Short, controlled explanation that fits a featured graphic card."""
+    if terms["gap"] >= 0.9:
+        return "Rank gap"
+    if terms["momentum"] >= 0.95:
+        return "14-day surge"
+    if label in {"major_breakout", "breakout"}:
+        return "Breakout"
+    return "Young runway"
+
+
 def build_board(rows, n=BOARD_SIZE):
     """Ranked buy list, top n. Plain dicts ready for the template."""
     scored = []
@@ -192,6 +208,8 @@ def build_board(rows, n=BOARD_SIZE):
             "score": round(max(composite, 0.0) * 100, 1),
             "label": row.breakout_label or "",
             "terms": terms,
+            "initials": graphic_initials(row.name),
+            "reason": graphic_reason(terms, row.breakout_label),
             "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
             "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
             "value_history": row.value_history,

@@ -1,34 +1,78 @@
 {# 1080x1350 shareable buys card. Included twice on /buys: off-canvas as the
-   html2canvas export target, and scaled inside the preview. Styles are the
-   bg-* block in buys.html — fixed px only, no media queries, linear
-   gradients only, no backdrop-filter (html2canvas can't rasterize those).
-   No loading="lazy" here: lazy off-viewport images never start loading and
-   the export preflight would wait on them forever. #}
-<div class="bg-card">
+   html2canvas export target, and scaled inside the preview. Real headshots
+   are revealed by buys.html after they are checked against MLB's generic
+   silhouette; the monogram underneath is the intentional fallback. #}
+<div class="bg-card" data-generic-headshot="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/0/headshot/67/current">
     <div class="bg-head">
-        <span class="bg-brand">ValuCast</span>
-        <span class="bg-title">BUYS NOW FOR LATER</span>
-        <span class="bg-sub">Top 40 Prospect Buys &middot; {{ (dd_generated_at or '')[:10] }}</span>
+        <span class="bg-brand">VALUCAST</span>
+        <span class="bg-title">AHEAD OF THE CURVE</span>
+        <span class="bg-sub">The 40 best prospect buys by signal, not reputation &middot; {{ (dd_generated_at or '')[:10] }}</span>
+        <svg class="bg-arc" viewBox="0 0 330 150" aria-hidden="true">
+            <path d="M318 10 C220 2 126 34 14 140" fill="none" stroke="#232c49" stroke-width="2" />
+        </svg>
     </div>
-    <div class="bg-grid">
-        {% for p in graphic_rows %}
-        <div class="bg-cell">
-            <span class="bg-rank">{{ p.rank }}</span>
-            {% if p.logo_url %}
-            <img class="bg-logo" src="{{ p.logo_url }}" crossorigin="anonymous" alt="">
-            {% else %}
-            <span class="bg-logo"></span>
-            {% endif %}
-            <img class="bg-face" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="">
-            <span class="bg-who">
-                <span class="bg-name">{{ p.name }}</span>
-                <span class="bg-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
+
+    {% set hero = graphic_rows[0] %}
+    <div class="bg-featured">
+        <article class="bg-featured-card bg-hero">
+            <span class="bg-feature-rank">#1 &middot; TOP BUY</span>
+            <span class="bg-portrait bg-portrait-hero">
+                <span class="bg-monogram">{{ hero.initials }}</span>
+                <img class="bg-face bg-headshot-candidate" src="{{ hero.headshot_url }}" crossorigin="anonymous" alt="">
             </span>
+            <span class="bg-hero-name">{{ hero.name }}</span>
+            <span class="bg-feature-tag">{{ hero.team }} &middot; {{ hero.pos }} &middot; {{ hero.level }}</span>
+            <span class="bg-hero-score">{{ hero.score | round | int }}</span>
+            <span class="bg-score-label">/100</span>
+            {% if hero.spark %}
+            <svg class="bg-feature-spark bg-hero-spark {{ hero.spark.direction }}" viewBox="0 0 {{ hero.spark.width }} {{ hero.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
+                {% set spark_color = '#34d399' if hero.spark.direction == 'up' else '#ff6b6b' if hero.spark.direction == 'down' else '#9aa1c0' %}
+                <polyline points="{{ hero.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
+                <circle cx="{{ hero.spark.last_x }}" cy="{{ hero.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
+            </svg>
+            {% endif %}
+            <span class="bg-spark-label">30-DAY VALUE</span>
+            <span class="bg-feature-reason">{{ hero.reason }}</span>
+        </article>
+
+        <div class="bg-supporting">
+            {% for p in graphic_rows[1:5] %}
+            <article class="bg-featured-card bg-support-card">
+                <span class="bg-portrait bg-portrait-support">
+                    <span class="bg-monogram">{{ p.initials }}</span>
+                    <img class="bg-face bg-headshot-candidate" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="">
+                </span>
+                <span class="bg-support-rank">#{{ p.rank }}</span>
+                <span class="bg-support-name">{{ p.name }}</span>
+                <span class="bg-support-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
+                <span class="bg-support-score">{{ p.score | round | int }}</span>
+                <span class="bg-support-score-label">/100</span>
+                {% if p.spark %}
+                <svg class="bg-feature-spark bg-support-spark {{ p.spark.direction }}" viewBox="0 0 {{ p.spark.width }} {{ p.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
+                    {% set spark_color = '#34d399' if p.spark.direction == 'up' else '#ff6b6b' if p.spark.direction == 'down' else '#9aa1c0' %}
+                    <polyline points="{{ p.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
+                    <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
+                </svg>
+                {% endif %}
+                <span class="bg-support-reason">{{ p.reason }}</span>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-grid">
+        {% for p in graphic_rows[5:40] %}
+        <div class="bg-cell">
+            <span class="bg-rank">#{{ p.rank }}</span>
+            <span class="bg-cell-score">{{ p.score | round | int }}</span>
+            <span class="bg-name">{% set parts = p.name.split() %}{% if parts | length > 1 %}{{ parts[0][0] }}. {{ parts[1:] | join(' ') }}{% else %}{{ p.name }}{% endif %}</span>
+            <span class="bg-tag">{{ p.team }}</span>
         </div>
         {% endfor %}
     </div>
+
     <div class="bg-foot">
         <span class="bg-foot-brand">valucast.app</span>
-        <span class="bg-foot-note">dynasty values &middot; public methodology</span>
+        <span class="bg-foot-note">buy score = momentum + breakout + market gap + runway</span>
     </div>
 </div>

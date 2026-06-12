@@ -220,6 +220,13 @@ class TestBoard(unittest.TestCase):
         self.assertIn("/people/0/", board[0]["headshot_url"])
         self.assertIsNone(board[0]["logo_url"])
 
+    def test_graphic_presentation_fields(self):
+        board = buy_score.build_board(self._rows())
+        self.assertEqual(board[0]["initials"], "AS")
+        self.assertEqual(board[0]["reason"], "Rank gap")
+        self.assertEqual(buy_score.graphic_initials("Single"), "S")
+        self.assertEqual(buy_score.graphic_initials(""), "VC")
+
     def test_n_clamping(self):
         self.assertEqual(buy_score.clamp_n(5), 10)
         self.assertEqual(buy_score.clamp_n(999), 60)
@@ -246,14 +253,19 @@ class TestBuysRoute(_RealAppCase):
         self.assertIn('class="buys-list', html)
         self.assertIn("Buys Now for Later", html)
         self.assertIn("html2canvas.min.js", html)
-        # graphic node included twice (preview + export target), 40 each
-        self.assertEqual(html.count('class="bg-cell"'), 80)
+        self.assertIn("AHEAD OF THE CURVE", html)
+        # Graphic node included twice: 5 featured + 35 compact each.
+        self.assertEqual(html.count('class="bg-featured-card'), 10)
+        self.assertEqual(html.count('class="bg-cell"'), 70)
+        self.assertEqual(html.count('class="bg-face bg-headshot-candidate"'), 10)
+        self.assertEqual(html.count('class="bg-monogram"'), 10)
         self.assertEqual(html.count('class="buys-row"'), 40)
 
     def test_n_shrinks_list_but_never_the_graphic(self):
         html = self.client.get("/buys?n=10").data.decode("utf-8")
         self.assertEqual(html.count('class="buys-row"'), 10)
-        self.assertEqual(html.count('class="bg-cell"'), 80)
+        self.assertEqual(html.count('class="bg-featured-card'), 10)
+        self.assertEqual(html.count('class="bg-cell"'), 70)
 
     def test_no_callups_and_prospects_only(self):
         board = buy_score.build_board(self.dd_rows)
