@@ -72,9 +72,9 @@
             <div class="source-summary">
                 {% if row.prospect_rank is not none %}
                 <div class="source-summary-item dd-rank-view">
-                    <span class="stat-label">DD Prospect Rank</span>
+                    <span class="stat-label">ValuCast Rank</span>
                     <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
-                    <span class="source-summary-note">DD model rank</span>
+                    <span class="source-summary-note">ValuCast model rank</span>
                 </div>
                 {% endif %}
                 {% if row.public_source_consensus is not none %}
@@ -86,7 +86,7 @@
                 {% endif %}
                 {% if row.milb_performance_rank is not none %}
                 <div class="source-summary-item milb-edge">
-                    <span class="stat-label">DD MiLB Performance</span>
+                    <span class="stat-label">MiLB Performance</span>
                     <span class="source-summary-rank">#{{ row.milb_performance_rank | int if row.milb_performance_rank is number else row.milb_performance_rank }}</span>
                     <span class="source-summary-note">Proprietary performance signal</span>
                 </div>
