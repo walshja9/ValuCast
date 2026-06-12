@@ -752,6 +752,11 @@ def rankings():
             params["position"] = ctx["position"]
         if ctx.get("search"):
             params["search"] = ctx["search"]
+        from web.league_settings import _BOUNDS
+        for name in _BOUNDS:
+            value = request.args.get(name)
+            if value:
+                params[name] = value
         url_params = urlencode({k: v for k, v in params.items() if v})
         push_url = f"/?{url_params}" if url_params else "/"
         response.headers["HX-Replace-Url"] = push_url
