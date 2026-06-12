@@ -65,9 +65,11 @@ grades (no honest source — never fabricate), org/system pages, headshots.
   max |change| < 5. Mobile: horizontal scroll. No new JS dependencies.
 
 ### 4. MLB dynasty cards
-- Existing Statcast sliders gain ordinal chips ("90th · top 10%" at >=75th; "bottom X%"
-  at <=25th) + the same caption bank treatment; keep existing slider colors/markup.
-- Season outlook gains a compact bottom stat-line strip (data already on the card).
+- Existing Statcast sliders gain ordinal chips ("top 10%" at >=75th percentile;
+  "bottom X%" at <=25th); keep existing slider colors/markup. Captions stay a
+  prospect-tile feature (statcast metric families are too varied for an honest
+  fixed phrase bank). Season outlook grids stay as-is — restyling them to a strip
+  was trimmed as restructure-risk for no information gain.
 
 ### 5. Liquid glass (style.css; rides the Broadcast Dark palette)
 - `.glass`: translucent surface rgba(26,27,46,.72) + backdrop-filter blur(14px)
