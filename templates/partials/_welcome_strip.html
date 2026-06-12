@@ -1,0 +1,36 @@
+<aside id="welcome-strip" class="welcome-strip" aria-label="Welcome">
+    <div class="welcome-copy">
+        <strong>Values for your league — not someone else's.</strong>
+        <span>Set your categories, weights, and roster rules — every number re-scores. Our validation is public, including what didn't work.</span>
+    </div>
+    <div class="welcome-actions">
+        <button type="button" class="welcome-customize" onclick="openWelcomeSetup()">Customize your league</button>
+        <a href="/methodology">How ValuCast works →</a>
+    </div>
+    <button type="button" class="welcome-dismiss" aria-label="Dismiss" onclick="dismissWelcomeStrip()">×</button>
+</aside>
+<script>
+(function () {
+    var strip = document.getElementById('welcome-strip');
+    var storage = null;
+    try { storage = window.localStorage; } catch (e) {}
+    if (!strip || !storage) return;
+    try {
+        if (storage.getItem('vc_welcome_dismissed')) strip.classList.add('welcome-strip-hidden');
+    } catch (e) {}
+})();
+
+function dismissWelcomeStrip() {
+    var strip = document.getElementById('welcome-strip');
+    var storage = null;
+    if (strip) strip.classList.add('welcome-strip-hidden');
+    try { storage = window.localStorage; } catch (e) {}
+    try { if (storage) storage.setItem('vc_welcome_dismissed', '1'); } catch (e) {}
+}
+
+function openWelcomeSetup() {
+    var panel = document.getElementById('setup-panel');
+    if (panel && panel.classList.contains('collapsed')) toggleSetup();
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>

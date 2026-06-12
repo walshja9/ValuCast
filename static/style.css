@@ -87,6 +87,47 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .seg-opt:has(input:checked) > span { background: var(--c-blue-strong); color: #fff; }
 .seg-opt input:focus-visible + span { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
+.welcome-strip {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius-lg);
+    padding: .4rem .65rem;
+    margin-bottom: var(--space-2);
+    color: var(--c-text);
+}
+.welcome-strip-hidden { display: none; }
+.welcome-copy { min-width: 0; line-height: 1.25; }
+.welcome-copy strong { display: block; font-size: .86rem; color: var(--c-navy); }
+.welcome-copy span { display: block; font-size: .74rem; color: var(--c-muted); }
+.welcome-actions { display: flex; align-items: center; gap: var(--space-3); white-space: nowrap; }
+.welcome-actions a { font-size: .76rem; font-weight: 600; }
+.welcome-customize {
+    border: 1px solid var(--c-blue);
+    border-radius: var(--radius-sm);
+    background: var(--c-blue);
+    color: #fff;
+    cursor: pointer;
+    font-size: .76rem;
+    font-weight: 600;
+    padding: .3rem .65rem;
+}
+.welcome-customize:hover { background: var(--c-blue-strong); border-color: var(--c-blue-strong); }
+.welcome-dismiss {
+    border: 0;
+    background: transparent;
+    color: var(--c-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: .2rem;
+}
+.welcome-dismiss:hover { color: var(--c-navy); }
+
 /* Consolidated sticky toolbar — pinned under the tabs, above the sticky table header. */
 .rank-toolbar {
     position: sticky;
@@ -107,6 +148,21 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .rank-toolbar .config-summary { font-size: 0.85rem; color: var(--c-muted); font-weight: 500; }
 .rank-toolbar .export-btn { margin-left: auto; }
 .rank-toolbar .customize-toggle { margin-left: 0; }
+.config-summary-line { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+.toolbar-how-link { color: var(--c-muted); font-size: .74rem; font-weight: 500; white-space: nowrap; }
+.toolbar-how-link:hover { color: var(--c-blue-strong); }
+
+/* Secondary controls remain ordinary toolbar flex items on desktop. */
+.rank-toolbar-redraft .toolbar-filters-btn { display: none; }
+.rank-toolbar-redraft .toolbar-secondary { display: contents; }
+.rank-toolbar-redraft .config-summary-line { order: 0; }
+.rank-toolbar-redraft .source-seg { order: 1; }
+.rank-toolbar-redraft .pool-toggle { order: 2; }
+.rank-toolbar-redraft .position-select { order: 3; }
+.rank-toolbar-redraft .search-input { order: 4; }
+.rank-toolbar-redraft .display-slot { order: 5; }
+.rank-toolbar-redraft .export-btn { order: 6; }
+.rank-toolbar-redraft .customize-toggle { order: 7; }
 /* pool-toggle is now a <fieldset> — strip default fieldset chrome. */
 .pool-toggle { padding: 0; margin: 0; min-width: 0; }
 
@@ -197,17 +253,18 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .customize-toggle {
     padding: 0.35rem 0.85rem;
     font-size: 0.8rem;
-    font-weight: 500;
-    background: #fff;
-    border: 1px solid var(--c-border-strong);
+    font-weight: 600;
+    background: var(--c-blue);
+    border: 1px solid var(--c-blue);
     border-radius: 6px;
     cursor: pointer;
-    color: #374151;
+    color: #fff;
     transition: all 0.15s;
 }
 .customize-toggle:hover {
-    border-color: var(--c-blue);
-    color: var(--c-blue);
+    background: var(--c-blue-strong);
+    border-color: var(--c-blue-strong);
+    color: #fff;
 }
 .setup-panel.collapsed {
     display: none;
@@ -374,6 +431,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .col-dollars { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 40px; }
 .col-value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 .col-cat { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.rankings-table td.col-cat.na { opacity: .35; }
 
 .tier-break {
     border-top: 2px solid var(--c-blue) !important;
@@ -532,6 +590,13 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 @media (max-width: 640px) {
     main { padding: 0.75rem; }
     .site-header { padding: 0.75rem 1rem; flex-direction: column; gap: 0.25rem; }
+    .welcome-strip {
+        display: block;
+        padding: .6rem 2rem .65rem .7rem;
+    }
+    .welcome-copy span { margin-top: .15rem; }
+    .welcome-actions { flex-wrap: wrap; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); white-space: normal; }
+    .welcome-dismiss { position: absolute; right: .45rem; top: .4rem; }
     .mode-selector { width: 100%; }
     .mode-btn { flex: 1; text-align: center; padding: 0.5rem 0.5rem; font-size: 0.8rem; }
     .cat-grid, .points-grid { grid-template-columns: 1fr; gap: 1rem; }
@@ -540,6 +605,29 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
        the screen — stack it full-width and let it scroll normally. */
     .rank-toolbar { position: static; flex-direction: column; align-items: stretch; }
     .rank-toolbar .export-btn, .rank-toolbar .customize-toggle { margin-left: 0; }
+    .rank-toolbar-redraft .config-summary-line { order: 0; justify-content: space-between; }
+    .rank-toolbar-redraft .search-input { order: 1; }
+    .rank-toolbar-redraft .toolbar-filters-btn {
+        display: block;
+        order: 2;
+        width: 100%;
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--radius-sm);
+        background: #f8fafc;
+        color: var(--c-text);
+        cursor: pointer;
+        font-size: .8rem;
+        font-weight: 600;
+        padding: .45rem .65rem;
+    }
+    .rank-toolbar-redraft .toolbar-secondary { display: none; }
+    .rank-toolbar-redraft .toolbar-secondary.open {
+        display: flex;
+        order: 3;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-2);
+    }
     .pool-toggle { width: 100%; }
     .pool-btn { flex: 1; text-align: center; }
     .search-input { width: 100%; }

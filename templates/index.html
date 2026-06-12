@@ -22,6 +22,10 @@
         {% endif %}
     </nav>
 
+    {% if horizon in ['redraft', 'dynasty'] %}
+    {% include "partials/_welcome_strip.html" %}
+    {% endif %}
+
     {# Non-redraft horizons have no mode radios, so the form MUST carry the mode
        explicitly — htmx detail/rankings/export requests drop it otherwise and the
        server falls back to the redraft board. #}
@@ -48,33 +52,39 @@
 
     {# One consolidated, sticky toolbar with horizon-specific contents. #}
     {% if horizon == 'redraft' %}
-    <div class="rank-toolbar" id="rank-toolbar">
-        <span class="config-summary">{{ config_summary }}</span>
-        <fieldset class="source-seg" aria-label="Projection source">
-            <label class="source-opt">
-                <input type="radio" name="source" value="steamer" {% if (source or 'steamer') != 'valucast' %}checked{% endif %}>
-                <span>Steamer</span>
-            </label>
-            <label class="source-opt">
-                <input type="radio" name="source" value="valucast" {% if source == 'valucast' %}checked{% endif %}>
-                <span>ValuCast H+P</span>
-            </label>
-        </fieldset>
-        <fieldset class="pool-toggle" aria-label="Player pool">
-            <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
-        </fieldset>
-        <select name="position" class="position-select">
-            <option value="">All Positions</option>
-            {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
-            <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
-            {% endfor %}
-        </select>
+    <div class="rank-toolbar rank-toolbar-redraft" id="rank-toolbar">
+        <span class="config-summary-line">
+            <span class="config-summary">{{ config_summary }}</span>
+            <a class="toolbar-how-link" href="/methodology">How it works</a>
+        </span>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
-        <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
-        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
-        <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
+        <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
+        <div id="toolbar-secondary" class="toolbar-secondary">
+            <fieldset class="source-seg" aria-label="Projection source">
+                <label class="source-opt">
+                    <input type="radio" name="source" value="steamer" {% if (source or 'steamer') != 'valucast' %}checked{% endif %}>
+                    <span>Steamer</span>
+                </label>
+                <label class="source-opt">
+                    <input type="radio" name="source" value="valucast" {% if source == 'valucast' %}checked{% endif %}>
+                    <span>ValuCast H+P</span>
+                </label>
+            </fieldset>
+            <fieldset class="pool-toggle" aria-label="Player pool">
+                <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
+            </fieldset>
+            <select name="position" class="position-select">
+                <option value="">All Positions</option>
+                {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
+                <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
+                {% endfor %}
+            </select>
+            <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
+            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
+        </div>
     </div>
 
     <div id="source-caption" class="source-caption">
@@ -90,8 +100,11 @@
     </section>
 
     {% elif horizon == 'dynasty' %}
-    <div class="rank-toolbar" id="rank-toolbar">
-        <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+    <div class="rank-toolbar rank-toolbar-dynasty" id="rank-toolbar">
+        <span class="config-summary-line">
+            <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+            <a class="toolbar-how-link" href="/methodology">How it works</a>
+        </span>
         <fieldset class="pool-toggle" aria-label="Player pool">
             <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
             <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>
@@ -107,7 +120,7 @@
         </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
-        <button type="button" class="customize-toggle" onclick="toggleSetup()">Customize</button>
+        <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
     </div>
     {# Category Fit needs per-player z-scores, which only a v1.1 feed carries —
        with a v1.0 feed the panel would be a dead control surface. #}
@@ -179,6 +192,12 @@ function toggleSetup() {
     const btn = document.querySelector('.customize-toggle');
     panel.classList.toggle('collapsed');
     btn.textContent = panel.classList.contains('collapsed') ? 'Customize' : 'Hide';
+}
+
+function toggleToolbarFilters(btn) {
+    const panel = document.getElementById('toolbar-secondary');
+    panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', panel.classList.contains('open'));
 }
 
 // Dynasty league settings persistence: save on change, reapply on bare landings.
