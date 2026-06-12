@@ -589,7 +589,12 @@ def _build_context(args):
                 if r.player.pool in (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER)
             ]
         else:
-            results = [r for r in results if r.player.pool == PlayerPool(pool)]
+            try:
+                pool_value = PlayerPool(pool)
+            except ValueError:
+                pool_value = None
+            if pool_value is not None:
+                results = [r for r in results if r.player.pool == pool_value]
     if position:
         results = [r for r in results if position in r.player.positions]
     if search:

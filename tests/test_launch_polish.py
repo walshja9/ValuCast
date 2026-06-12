@@ -93,6 +93,10 @@ class TestLaunchPolish(unittest.TestCase):
         response = self.client.get("/rankings?mode=prospects&pslots=8")
         self.assertIn("pslots=8", response.headers.get("HX-Replace-Url", ""))
 
+    def test_hostile_pool_param_falls_back_cleanly(self):
+        for path in ("/?pool=garbage", "/?pool=garbage&mode=roto"):
+            self.assertEqual(self.client.get(path).status_code, 200)
+
     def test_customize_and_methodology_link_are_promoted(self):
         for path in ("/", "/?mode=dd_dynasty"):
             html = self.html(path)
