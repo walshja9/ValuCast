@@ -273,24 +273,37 @@
         </div>
         {% endif %}
 
-        {% if row.z_scores %}
-        <div class="detail-section category-profile">
-            <h4>Category Profile <span class="profile-note">League average at center; right is better</span></h4>
-            <div class="category-strip">
-                {% for category, z_score in row.z_scores.items() %}
-                {% if z_score is number %}
-                {% set adjusted_z = -z_score if category in ['SO', 'ERA', 'WHIP', 'L'] else z_score %}
-                {% set bar_width = [adjusted_z | abs * 16, 50] | min %}
-                <div class="category-bar" title="{{ category }} raw z-score: {{ '%.2f' | format(z_score) }}">
-                    <span class="category-label">{{ category }}</span>
-                    <div class="zbar category-zbar">
-                        <span class="zbar-fill {{ 'pos' if adjusted_z >= 0 else 'neg' }}" style="width: {{ bar_width }}%;"></span>
-                    </div>
-                    <span class="category-z">{{ "%+.2f" | format(adjusted_z) }}</span>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
+        {# App-side z's from the matched projection — the feed's z_scores
+           field has never been produced. Same table as the categories card. #}
+        {% if dyn_result %}
+        <div class="detail-section">
+            <h4>Category Breakdown <span class="profile-note">Current-season production &middot; default league categories</span></h4>
+            <table class="detail-table">
+                <thead>
+                    <tr><th>Category</th><th>Raw</th><th>Z-Score</th><th></th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {% for cat in dyn_categories %}
+                    {% set raw = dyn_result.raw_values.get(cat.id) %}
+                    {% if raw is not none %}
+                    {% set z = dyn_result.z_scores.get(cat.id, 0) %}
+                    <tr>
+                        <td>{{ cat.label }}</td>
+                        <td>{{ "%.2f" | format(raw) }}</td>
+                        <td class="{{ 'val-pos' if z > 0 else '' }}{{ 'val-neg' if z < 0 else '' }}">
+                            {{ "%.2f" | format(z) }}
+                        </td>
+                        <td class="zbar-cell" aria-hidden="true">
+                            <div class="zbar"><div class="zbar-fill {{ 'pos' if z >= 0 else 'neg' }}" style="width: {{ "%.1f" | format(([z | abs, 3.0] | min) / 3.0 * 50) }}%"></div></div>
+                        </td>
+                        <td class="{{ 'val-pos' if dyn_result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if dyn_result.category_values.get(cat.id, 0) < 0 else '' }}">
+                            {{ "%.2f" | format(dyn_result.category_values.get(cat.id, 0)) }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
         {% endif %}
 

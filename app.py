@@ -1147,9 +1147,33 @@ def player_detail(player_id):
                 "identity": identity,
             }
 
+        # Same-engine category z's as the categories card. The feed's
+        # z_scores field has never been produced (DD-producer gap), so the
+        # card scores the matched projection against the default league
+        # config app-side — identical numbers to the redraft card.
+        dyn_result = None
+        dyn_categories = []
+        if matches:
+            config = build_config(
+                mode="categories", cats=list(DEFAULT_CATS),
+                pcats=list(DEFAULT_PCATS), rules_str="",
+                pt_params=None, split_rp=False, weights=None,
+            )
+            detail_results = _merge_two_way_players(
+                engine.value_players(
+                    _valuation_players(active_store=store), config)
+            )
+            ids = {m.id for m in matches}
+            ids |= {m.metadata.get("base_id") or m.id for m in matches}
+            dyn_result = next(
+                (r for r in detail_results if r.player.id in ids), None)
+            dyn_categories = list(getattr(config, "categories", []) or [])
+
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
+            dyn_result=dyn_result,
+            dyn_categories=dyn_categories,
             spark=build_spark(dd_row.value_history),
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,

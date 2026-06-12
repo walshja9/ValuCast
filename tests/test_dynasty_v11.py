@@ -43,7 +43,10 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Range 108", response.data)
         self.assertIn(b"126", response.data)
         self.assertIn(b"Market Comp", response.data)
-        self.assertIn(b"Category Profile", response.data)
+        # Card z's come from the app-side engine now (the feed's z_scores
+        # field was never produced); fixture players match no real
+        # projection, so the breakdown section is correctly absent.
+        self.assertNotIn(b"Category Breakdown", response.data)
         self.assertIn(b"Middle-of-the-order power anchor", response.data)
         self.assertNotIn(b"risk-block", response.data)
 
@@ -80,6 +83,27 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"'SV+HLD': ['SV_HLD', 'SV+HD', 'SV_HD']", response.data)
         self.assertIn(b"'BB/9': ['BB_9']", response.data)
         self.assertIn(b"normalized 0", response.data)
+
+
+class TestDynastyCardZScores(unittest.TestCase):
+    """Card z's are computed app-side from the matched projection — the
+    feed's z_scores field has never been produced (DD-producer gap)."""
+
+    @classmethod
+    def setUpClass(cls):
+        app_module.app.config["TESTING"] = True
+        cls.client = app_module.app.test_client()
+
+    def test_matched_mlb_player_gets_breakdown(self):
+        row = next(r for r in app_module.dd_store.get_all()
+                   if not r.is_prospect and "Judge" in r.name)
+        r = self.client.get(f"/player/{row.id}?mode=dd_dynasty",
+                            headers={"HX-Request": "true"})
+        self.assertEqual(r.status_code, 200)
+        html = r.data.decode("utf-8")
+        self.assertIn("Category Breakdown", html)
+        self.assertIn("Z-Score", html)
+        self.assertIn("zbar-fill", html)
 
 
 if __name__ == "__main__":
