@@ -24,23 +24,45 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--c-text);
-    background: #12131f;
+    background: #0e0f1a;
     line-height: 1.5;
     font-size: 14px;
     min-height: 100vh;
     isolation: isolate;
 }
+/* Ambient field the glass refracts. Fixed so content scrolls OVER it — surfaces
+   above are translucent; if every panel were opaque this would be invisible. */
 body::before {
     content: "";
     position: fixed;
-    inset: 0;
-    z-index: -1;
+    inset: -10%;
+    z-index: -2;
     pointer-events: none;
     transform: translateZ(0);
     background:
-        radial-gradient(circle at 8% 4%, rgba(79, 134, 247, .14), transparent 38%),
-        radial-gradient(circle at 92% 32%, rgba(167, 139, 250, .12), transparent 42%),
-        radial-gradient(circle at 48% 100%, rgba(45, 212, 197, .10), transparent 40%);
+        radial-gradient(42% 38% at 12% 4%, rgba(79, 134, 247, .34), transparent 70%),
+        radial-gradient(36% 34% at 94% 22%, rgba(167, 139, 250, .28), transparent 70%),
+        radial-gradient(44% 40% at 76% 98%, rgba(45, 212, 160, .20), transparent 70%),
+        radial-gradient(28% 26% at 28% 76%, rgba(251, 191, 36, .10), transparent 70%),
+        linear-gradient(165deg, #161834 0%, #0e0f1a 48%, #111430 100%);
+}
+body::after {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(26% 28% at 68% 10%, rgba(110, 161, 255, .16), transparent 70%),
+        radial-gradient(24% 24% at 16% 52%, rgba(167, 139, 250, .13), transparent 70%);
+    animation: ambient-drift 75s ease-in-out infinite alternate;
+}
+@keyframes ambient-drift {
+    from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
+    to   { transform: translate3d(2.5%, 3%, 0) scale(1.14); }
+}
+@media (prefers-reduced-motion: reduce) {
+    body::after { animation: none; }
 }
 
 a { color: var(--c-blue); text-decoration: none; }
@@ -58,9 +80,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 .site-header {
-    background: var(--surface);
+    background: rgba(26, 27, 46, .50);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
     color: #fff;
-    border-bottom: 1px solid var(--c-border-strong);
+    border-bottom: 1px solid rgba(255, 255, 255, .10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
     padding: 1rem 2rem;
     display: flex;
     align-items: baseline;
@@ -92,17 +117,20 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     display: flex;
     gap: 0;
     margin-bottom: 1rem;
-    border: 1px solid var(--c-border-strong);
+    border: 1px solid rgba(255, 255, 255, .14);
     border-radius: 8px;
     overflow: hidden;
     width: fit-content;
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 .mode-btn {
     cursor: pointer;
     padding: 0.5rem 1.25rem;
     font-size: 0.85rem;
     font-weight: 500;
-    background: var(--surface-2);
+    background: rgba(35, 36, 64, .45);
     color: var(--c-text);
     border-right: 1px solid var(--c-border-strong);
     transition: background 0.15s;
@@ -113,8 +141,8 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .mode-btn:has(input:checked) { background: var(--c-blue); color: #fff; }
 
 /* Horizon tabs (nav links) + scoring segment (mode radios) */
-.horizon-tabs { display: flex; width: fit-content; border: 1px solid var(--c-border-strong); border-radius: 9px; overflow: hidden; margin-bottom: var(--space-2); }
-.htab { padding: .5rem 1rem; font-size: .9rem; font-weight: 600; color: var(--c-text); background: var(--surface-2); border-right: 1px solid var(--c-border-strong); text-decoration: none; }
+.horizon-tabs { display: flex; width: fit-content; border: 1px solid rgba(255, 255, 255, .14); border-radius: 9px; overflow: hidden; margin-bottom: var(--space-2); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
+.htab { padding: .5rem 1rem; font-size: .9rem; font-weight: 600; color: var(--c-text); background: rgba(35, 36, 64, .45); border-right: 1px solid rgba(255, 255, 255, .08); text-decoration: none; }
 .htab:last-child { border-right: none; }
 .htab:hover { background: #2a2c4a; text-decoration: none; }
 .htab.on { background: var(--c-blue); color: #fff; }
@@ -443,23 +471,25 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .rankings-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
-    border: 1px solid var(--c-border);
+    /* Translucent (no blur — too large an area) so the ambient field tints the board. */
+    background: rgba(26, 27, 46, .58);
+    border: 1px solid rgba(255, 255, 255, .09);
     border-radius: 8px;
     font-size: 0.8rem;
 }
 /* Direct child only — the expanded detail row nests its own tables whose headers
    must NOT inherit the board's sticky treatment. */
 .rankings-table > thead {
-    background: rgba(35, 36, 64, .86);
     position: sticky;
     top: var(--toolbar-h, 44px);
     z-index: 10;
 }
+/* bg lives on th ONLY — painting thead AND th stacked two .86 layers (≈ opaque). */
 .rankings-table > thead th {
-    background: rgba(35, 36, 64, .86);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
+    background: rgba(22, 23, 41, .60);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10);
 }
 .rankings-table th {
     padding: 0.45rem 0.4rem;
@@ -569,7 +599,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .detail-toggle[aria-expanded="true"] { transform: rotate(90deg); }
 .detail-toggle:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 1px; }
 
-.detail-row td { padding: 0; background: #151625; }
+.detail-row td { padding: 0; background: rgba(13, 14, 26, .72); }
 
 /* Cards render inside a board td whose nowrap would otherwise clip prose
    (identity line, stat captions) — restore normal wrapping for card content. */
@@ -696,8 +726,14 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .rankings-table > thead { display: none; }
     .rankings-table, .rankings-table > tbody, .rankings-table > tbody > tr,
     .rankings-table > tbody > tr > td { display: block; width: 100%; }
+    /* Cards carry their own translucent bg — a table slab behind them would
+       double-darken every card and tint the gaps between them. */
+    .rankings-table { background: transparent; border: none; }
     .rankings-table > tbody > tr.player-row {
-        background: var(--surface); border: 1px solid var(--c-border); border-radius: 8px;
+        /* Translucent card (no per-card blur — hundreds of them) so the field tints through. */
+        background: rgba(26, 27, 46, .60); border: 1px solid rgba(255, 255, 255, .10);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+        border-radius: 8px;
         margin-bottom: 0.5rem; padding: 0.75rem; position: relative;
     }
     .rankings-table > tbody > tr > td { border: none; padding: 0.15rem 0; }
@@ -728,7 +764,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     /* Expanded detail: frame it as a card attached beneath its row. */
     .rankings-table > tbody > tr.detail-row { margin: -0.35rem 0 0.5rem; }
     .rankings-table > tbody > tr.detail-row > td {
-        padding: 0; background: #151625; border: 1px solid var(--c-border);
+        padding: 0; background: rgba(13, 14, 26, .72); border: 1px solid rgba(255, 255, 255, .08);
         border-radius: 8px; overflow: hidden;
     }
     .player-detail { padding: 0.75rem; }
@@ -1038,15 +1074,20 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 /* Liquid glass — floating surfaces only (perf: never on per-tile elements) */
 .glass {
-    background: rgba(26, 27, 46, .58);
-    -webkit-backdrop-filter: blur(20px) saturate(170%);
-    backdrop-filter: blur(20px) saturate(170%);
-    border: 1px solid rgba(255, 255, 255, .12);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 32px rgba(0,0,0,.35);
+    background: rgba(22, 23, 41, .46);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    backdrop-filter: blur(28px) saturate(185%);
+    border: 1px solid rgba(255, 255, 255, .16);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .20),
+        inset 0 -1px 0 rgba(255, 255, 255, .04),
+        0 12px 40px rgba(0, 0, 0, .45);
 }
-.rank-toolbar.glass { background: rgba(26, 27, 46, .82); }
+/* Sticky surfaces stay denser than free-floating glass — text crosses under them. */
+.rank-toolbar.glass { background: rgba(22, 23, 41, .60); }
 @supports not (backdrop-filter: blur(1px)) {
-    .glass { background: var(--surface); }
+    .glass, .site-header { background: var(--surface); }
+    .htab, .mode-btn { background: var(--surface-2); }
 }
 @supports not (backdrop-filter: blur(1px)) {
     .rankings-table > thead, .rankings-table > thead th { background: var(--surface-2); }

@@ -284,8 +284,10 @@ class TestGlassAndMap(_RealAppCase):
         css = (Path(app_module.__file__).parent / "static" / "style.css").read_text(
             encoding="utf-8")
         self.assertIn("body::before", css)
+        self.assertIn("body::after", css)
         self.assertIn("radial-gradient", css)
-        self.assertIn("blur(20px) saturate(170%)", css)
+        self.assertIn("blur(28px) saturate(185%)", css)
+        self.assertIn("ambient-drift", css)
 
     def test_map_route_embeds_feed_players(self):
         r = self.client.get("/map")
