@@ -158,7 +158,7 @@ FEED = {
             "dynasty_rank": 2,
             "dynasty_value": 75.0,
             "status": "minors",
-            "level": "AA",
+            "level": "MLB",
             "eta": 2027,
             "prospect_rank": 1,
             "source_ranks": {
@@ -258,6 +258,8 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b'class="identity-line"', response.data)
         self.assertIn(b'class="pct-rail"', response.data)
         self.assertIn(b"vs ValuCast prospect pool", response.data)
+        # Called-up prospect (level MLB): the MiLB sample is flagged as pre-call-up.
+        self.assertIn(b"last MiLB sample", response.data)
 
     def test_small_sample_card_has_tag_without_percentiles(self):
         response = self.client.get("/player/dd_prospect_small?mode=prospects")
