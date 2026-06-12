@@ -46,6 +46,10 @@ class DynastyRankingRow:
     breakout_label: str | None = None
     breakout_rank_change: int | None = None
     stat_line: dict | None = None
+    # v1.1 feed fields (all optional — 1.0 feeds simply lack them)
+    value_history: tuple = ()              # ((date, value), ...) chronological
+    mlb_stat_line: dict | None = None      # call-ups: current-season MLB line
+    stat_line_translated: dict | None = None  # MLB-equivalent peripherals
     # Raw metadata passthrough
     metadata: dict = field(default_factory=dict)
 
@@ -98,6 +102,30 @@ class DynastyRankingRow:
                 cleaned.append(pos)
         return tuple(cleaned) if cleaned else ("DH",)
 
+    @staticmethod
+    def _coerce_value_history(raw) -> tuple:
+        """((date, value), ...) — drop malformed pairs, never reject the row."""
+        out = []
+        for item in raw or ():
+            try:
+                d, v = item[0], float(item[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            if isinstance(d, str) and d:
+                out.append((d, v))
+        return tuple(out)
+
+    @staticmethod
+    def _coerce_int(raw):
+        try:
+            return int(raw) if raw is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _coerce_dict(raw):
+        return raw if isinstance(raw, dict) and raw else None
+
     @classmethod
     def from_feed(cls, record: dict) -> DynastyRankingRow:
         """Create from a DD feed record."""
@@ -110,7 +138,7 @@ class DynastyRankingRow:
             player_type=record["player_type"],
             positions=positions,
             team=team,
-            age=record.get("age"),
+            age=cls._coerce_int(record.get("age")),
             dynasty_rank=record["dynasty_rank"],
             dynasty_value=record["dynasty_value"],
             status=record.get("status"),
@@ -128,11 +156,14 @@ class DynastyRankingRow:
             confidence=record.get("confidence"),
             prospect_rank=record.get("prospect_rank"),
             level=record.get("level"),
-            eta=record.get("eta"),
+            eta=cls._coerce_int(record.get("eta")),
             source_ranks=record.get("source_ranks"),
             source_divergence=record.get("source_divergence"),
             breakout_label=record.get("breakout_label"),
-            breakout_rank_change=record.get("breakout_rank_change"),
-            stat_line=record.get("stat_line"),
+            breakout_rank_change=cls._coerce_int(record.get("breakout_rank_change")),
+            stat_line=cls._coerce_dict(record.get("stat_line")),
+            value_history=cls._coerce_value_history(record.get("value_history")),
+            mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),
+            stat_line_translated=cls._coerce_dict(record.get("stat_line_translated")),
             metadata=record,
         )

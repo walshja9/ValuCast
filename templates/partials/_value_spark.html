@@ -1,0 +1,15 @@
+{# Dynasty value sparkline. Context: spark (build_spark output or None). #}
+{% if spark %}
+<div class="detail-section value-spark-section">
+    <h4>Dynasty Value Trend
+        <span class="statcast-asof">{{ spark.first_date }} → {{ spark.last_date }} · model re-baselines smoothed</span>
+        <span class="spark-delta {{ spark.direction }}">{{ "%+.1f" | format(spark.delta) }}</span>
+    </h4>
+    <svg class="value-spark" viewBox="0 0 {{ spark.width }} {{ spark.height }}"
+         preserveAspectRatio="none" role="img"
+         aria-label="Dynasty value {{ spark.first_date }} to {{ spark.last_date }}: range {{ spark.min }} to {{ spark.max }}, change {{ spark.delta }}">
+        <polyline points="{{ spark.points }}" fill="none" vector-effect="non-scaling-stroke" />
+        <circle cx="{{ spark.last_x }}" cy="{{ spark.last_y }}" r="2.5" />
+    </svg>
+</div>
+{% endif %}

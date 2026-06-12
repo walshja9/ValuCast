@@ -52,6 +52,7 @@
     </div>
 
     <div class="detail-body">
+        {% include "partials/_value_spark.html" %}
         {% if row.is_prospect %}
         <div class="detail-section">
             <h4>Prospect Profile</h4>
@@ -141,10 +142,25 @@
         </div>
         {% endif %}
 
+        {% if row.level == 'MLB' and row.mlb_stat_line %}
+        <div class="detail-section">
+            <h4>2026 MLB Stats
+                <span class="statcast-asof">current season · via Fantrax</span>
+                {% if row.mlb_stat_line.get('pa') is not none and row.mlb_stat_line.get('pa') < 100 %}<span class="small-sample">small sample · {{ row.mlb_stat_line.get('pa') | int }} PA</span>
+                {% elif row.mlb_stat_line.get('ip') is not none and row.mlb_stat_line.get('ip') < 30 %}<span class="small-sample">small sample · {{ row.mlb_stat_line.get('ip') }} IP</span>{% endif %}
+            </h4>
+            <div class="stat-grid">
+                {% for key in ['pa', 'avg', 'ops', 'hr', 'rbi', 'r', 'sb', 'ip', 'era', 'whip', 'k', 'qs', 'sv'] %}{% if row.mlb_stat_line.get(key) is not none %}
+                <div class="stat-item"><span class="stat-label">{{ key | upper }}</span><span class="stat-value">{{ stat_value(row.mlb_stat_line.get(key), key) }}</span></div>
+                {% endif %}{% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% if row.stat_line %}
         <div class="detail-section milb-stats">
             <h4>MiLB Stats
-                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}vs ValuCast prospect pool</span>
+                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}vs ValuCast prospect pool (all levels)</span>
                 {% elif row.stat_line and row.stat_line.get('pa') is not none and row.stat_line.get('pa') < 100 %}<span class="small-sample">small sample · {{ row.stat_line.get('pa') | int }} PA</span>{% endif %}
             </h4>
             {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
@@ -211,6 +227,26 @@
                 </div>
             </div>
             {% endif %}
+        </div>
+        {% endif %}
+
+        {% if row.stat_line_translated and row.stat_line_translated.get('stats') %}
+        {% set tr = row.stat_line_translated %}
+        <div class="detail-section translated-section">
+            <h4>MLB-Equivalent Rates
+                <span class="statcast-asof">level-adjusted from {{ tr.get('level_label') or tr.get('level') }} · sticky peripherals only · {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
+                {% if tr.get('confidence') %}<span class="pct-chip {% if tr.get('confidence') == 'low' %}low{% endif %}">{{ tr.get('confidence') }} confidence</span>{% endif %}
+            </h4>
+            <div class="stat-grid">
+                {% for s in tr.get('stats') %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ s.label }}</span>
+                    <span class="stat-value">{{ s.mlb }}{% if s.fmt == 'pct' %}%{% endif %}</span>
+                    <span class="translated-from">{{ tr.get('level_label') or tr.get('level') }}: {{ s.milb }}{% if s.fmt == 'pct' %}%{% endif %} · MLB avg {{ s.mlb_avg }}{% if s.fmt == 'pct' %}%{% endif %}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="stat-caption">Only K%, BB%, ISO (hitters) and K/9, BB/9, K-BB% (pitchers) survive the minors-to-MLB jump reliably; other stats are deliberately not translated. Small samples are regressed toward MLB average.</p>
         </div>
         {% endif %}
 

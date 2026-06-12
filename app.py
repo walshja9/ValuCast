@@ -42,6 +42,7 @@ from web.season_outlook import (
 )
 from web.statcast_store import StatcastStore
 from web.player_links import build_player_links
+from web.value_spark import build_spark
 from web import prospect_percentiles
 
 app = Flask(__name__)
@@ -1124,6 +1125,7 @@ def player_detail(player_id):
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
+            spark=build_spark(dd_row.value_history),
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,

@@ -1122,6 +1122,19 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .spread-chip.tight { background: rgba(52, 211, 153, .14); color: var(--c-prospect); }
 .spread-chip.split { background: rgba(251, 191, 36, .14); color: var(--c-amber); }
 
+/* Dynasty value sparkline */
+.value-spark-section h4 { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.value-spark { width: 100%; max-width: 420px; height: 56px; display: block; margin-top: .35rem; }
+.value-spark polyline { stroke: var(--c-dynasty); stroke-width: 2; }
+.value-spark circle { fill: var(--c-dynasty); }
+.spark-delta { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .12rem .5rem; }
+.spark-delta.up { color: var(--c-pos); background: rgba(45, 212, 160, .14); }
+.spark-delta.down { color: var(--c-neg); background: rgba(255, 107, 107, .14); }
+.spark-delta.flat { color: var(--c-muted); background: rgba(154, 161, 192, .14); }
+
+/* MLB-equivalent peripherals */
+.translated-from { display: block; font-size: .68rem; color: var(--c-muted); margin-top: .15rem; }
+
 /* Statcast ordinal chips + ETA column */
 .pct-chip { font-size: .68rem; font-weight: 700; color: var(--c-muted); background: var(--surface-2); border-radius: 999px; padding: .1rem .4rem; white-space: nowrap; }
 .pct-chip.low { color: var(--c-amber); background: rgba(251, 191, 36, .14); }
