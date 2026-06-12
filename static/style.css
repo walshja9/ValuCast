@@ -1190,7 +1190,31 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 }
 
 /* ---- /buys: prospect buy board ---- */
-.buys-fineprint { font-size: .72rem; color: var(--c-muted); margin-top: 2px; }
+.buys-heading {
+    position: relative; overflow: hidden;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: var(--space-4); min-height: 184px;
+    padding: 1.75rem var(--space-4) var(--space-4);
+    border-radius: var(--radius-lg); margin-bottom: var(--space-3);
+}
+.buys-heading-copy { position: relative; z-index: 1; max-width: 760px; }
+.buys-heading-eyebrow {
+    display: block; margin-bottom: .35rem;
+    color: var(--c-prospect); font-size: .72rem; font-weight: 800;
+    letter-spacing: .1em;
+}
+.buys-heading h1 {
+    margin: 0; color: var(--c-text);
+    font-size: clamp(2rem, 5vw, 3.65rem); line-height: .98;
+    font-weight: 900; letter-spacing: .01em;
+}
+.buys-heading-sub { margin-top: .7rem; color: var(--c-muted); font-size: .9rem; }
+.buys-heading-arc {
+    position: absolute; z-index: 0; right: 1rem; top: .7rem;
+    width: min(36%, 330px); height: auto; opacity: .8;
+}
+.buys-heading-arc path { fill: none; stroke: rgba(110,161,255,.26); stroke-width: 2; }
+.buys-fineprint { max-width: 690px; font-size: .72rem; color: var(--c-muted); margin-top: .35rem; }
 .buys-actions { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
 .buys-export-notice { font-size: .76rem; color: var(--c-amber); max-width: 260px; text-align: right; }
 .buys-list { padding: var(--space-2) var(--space-3); border-radius: var(--radius-lg); }
@@ -1225,6 +1249,15 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .buys-preview-wrap { margin-top: var(--space-2); overflow: hidden; }
 .buys-preview-card { transform-origin: top left; }
 @media (max-width: 640px) {
+    .buys-heading {
+        align-items: stretch; flex-direction: column; min-height: 0;
+        gap: var(--space-3); padding: 1.25rem var(--space-3);
+    }
+    .buys-heading h1 { max-width: 270px; font-size: 2.35rem; }
+    .buys-heading-sub { max-width: 290px; font-size: .82rem; }
+    .buys-heading-arc { right: -.6rem; top: .25rem; width: 48%; opacity: .62; }
+    .buys-actions { position: relative; z-index: 1; align-items: stretch; }
+    .buys-export-notice { max-width: none; text-align: left; }
     .buys-row { grid-template-columns: 1.5rem 32px minmax(0, 1fr) auto; }
     .buys-thumb { width: 32px; height: 32px; }
     .buys-chip, .buys-spark { display: none; }

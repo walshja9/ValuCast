@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Buys Now for Later | ValuCast{% endblock %}
+{% block title %}Ahead of the Curve | ValuCast{% endblock %}
 
 {% block content %}
 <nav class="horizon-tabs" aria-label="Buys board navigation">
@@ -10,11 +10,15 @@
     <a href="/buys" class="htab on" aria-current="page">Buys</a>
 </nav>
 
-<section class="map-heading glass">
-    <div>
-        <h2>Buys Now for Later</h2>
-        <p>Top {{ list_rows | length }} prospect buys &middot; momentum + breakout + rank gap + runway{% if dd_generated_at %} &middot; updated {{ dd_generated_at[:10] }}{% endif %}</p>
-        <p class="buys-fineprint">Window closes at MLB debut, so near-graduation names roll off by design. No-data prospects (fresh signings) can't surface yet.</p>
+<section class="buys-heading glass">
+    <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
+        <path d="M318 10 C220 2 126 34 14 140" />
+    </svg>
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">VALUCAST BUYS</span>
+        <h1>AHEAD OF THE CURVE</h1>
+        <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ dd_generated_at[:10] }}{% endif %}</p>
+        <p class="buys-fineprint">Buy score = momentum + breakout + market gap + runway. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
     </div>
     {% if dd_available %}
     <div class="buys-actions">

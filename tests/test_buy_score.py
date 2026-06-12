@@ -251,7 +251,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
         self.assertIn('class="buys-list', html)
-        self.assertIn("Buys Now for Later", html)
+        self.assertIn("Ahead of the Curve | ValuCast", html)
+        self.assertIn('class="buys-heading-arc"', html)
+        self.assertIn("The 40 best prospect buys by signal, not reputation", html)
         self.assertIn("html2canvas.min.js", html)
         self.assertIn("AHEAD OF THE CURVE", html)
         # Graphic node included twice: 5 featured + 35 compact each.
