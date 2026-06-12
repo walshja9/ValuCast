@@ -24,7 +24,7 @@ if ($branch -ne "master") {
     Stop-Deploy "Deploys must run from branch 'master'; current branch is '$branch'."
 }
 
-$workingTreeStatus = @(& git status --porcelain 2>&1)
+$workingTreeStatus = @(& git status --porcelain --untracked-files=no 2>&1)
 if ($LASTEXITCODE -ne 0) {
     Stop-Deploy "Could not inspect the Git working tree."
 }
