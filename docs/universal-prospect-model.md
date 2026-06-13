@@ -165,6 +165,13 @@ plus sanitized Rule 4 draft-pick and signing-bonus facts. Draft facts dated
 after a historical cohort are hidden. Scouting reports, draft rankings, blurbs,
 and fantasy-market data never cross the contract boundary.
 
+The current prospect contract can also include a latest eligible MiLB history
+row when a player has no current-season sample large enough for modeling. Those
+rows carry `source_kind=latest_milb_history`, `sample_season`, and
+`sample_staleness_years`. They are factual stat rows, not rankings or market
+signals, and normal current-season rows still win when they meet the model's
+minimum sample gate.
+
 Every target has its own player-grouped expanding-window validation gate. Ridge
 must beat the strongest of a factual level-age prior, expanded-feature
 neighbors, and unchanged canonical core-stat neighbors by at least 2% out of

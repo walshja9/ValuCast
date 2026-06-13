@@ -1,6 +1,6 @@
 {
   "backtest_version": "0.1.0",
-  "generated_at": "2026-06-13T13:41:23.903243+00:00",
+  "generated_at": "2026-06-13T19:02:01.984267+00:00",
   "layer_name": "ValuCast Prospect Dynasty Ceiling/Risk Layer",
   "layer_version": "0.1.0",
   "promotion": {
@@ -13,30 +13,17 @@
   },
   "roles": {
     "hitter": {
-      "baseline_multiclass_brier": 0.167698,
-      "baseline_rank_concordance": 0.734378,
-      "candidate_multiclass_brier": 0.157715,
-      "candidate_rank_concordance": 0.78786,
-      "fold_count": 3,
+      "baseline_multiclass_brier": 0.192158,
+      "baseline_rank_concordance": 0.705781,
+      "candidate_multiclass_brier": 0.178268,
+      "candidate_rank_concordance": 0.78273,
+      "fold_count": 2,
       "folds": [
         {
-          "baseline_multiclass_brier": 0.115316,
-          "baseline_rank_concordance": 0.78286,
-          "candidate_multiclass_brier": 0.115316,
-          "candidate_rank_concordance": 0.78286,
-          "candidate_sources": {
-            "established_probability": "level_age_prior",
-            "star_probability": "level_age_prior"
-          },
-          "sample_size": 345,
-          "test_cohort": 2018,
-          "train_cohort_max": 2014
-        },
-        {
-          "baseline_multiclass_brier": 0.13453,
-          "baseline_rank_concordance": 0.772772,
-          "candidate_multiclass_brier": 0.13453,
-          "candidate_rank_concordance": 0.772772,
+          "baseline_multiclass_brier": 0.135563,
+          "baseline_rank_concordance": 0.743215,
+          "candidate_multiclass_brier": 0.135563,
+          "candidate_rank_concordance": 0.743215,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "star_probability": "level_age_prior"
@@ -46,10 +33,10 @@
           "train_cohort_max": 2015
         },
         {
-          "baseline_multiclass_brier": 0.245451,
-          "baseline_rank_concordance": 0.655237,
-          "candidate_multiclass_brier": 0.217235,
-          "candidate_rank_concordance": 0.806401,
+          "baseline_multiclass_brier": 0.244941,
+          "baseline_rank_concordance": 0.670868,
+          "candidate_multiclass_brier": 0.218097,
+          "candidate_rank_concordance": 0.819583,
           "candidate_sources": {
             "established_probability": "canonical_historical_neighbors_25",
             "star_probability": "canonical_historical_neighbors_25"
@@ -60,79 +47,66 @@
         }
       ],
       "gate": {
-        "activated_at": "2026-06-13T13:41:23.903243+00:00",
+        "activated_at": "2026-06-13T19:02:01.984267+00:00",
         "baseline": "level_age_prior_distribution",
-        "baseline_score": 0.167698,
+        "baseline_score": 0.192158,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 5.9529,
+        "improvement_pct": 7.2283,
         "metric": "dynasty_outcome_distribution_multiclass_brier",
-        "model_score": 0.157715,
-        "reason": "beats level_age_prior_distribution by 5.95% OOS (dynasty_outcome_distribution_multiclass_brier)",
-        "sample_size": 1091,
+        "model_score": 0.178268,
+        "reason": "beats level_age_prior_distribution by 7.23% OOS (dynasty_outcome_distribution_multiclass_brier)",
+        "sample_size": 746,
         "status": "active",
         "validated_through": "2025"
       },
       "ordering_guard": {
-        "activated_at": "2026-06-13T13:41:23.903243+00:00",
+        "activated_at": "2026-06-13T19:02:01.984267+00:00",
         "baseline": "level_age_prior_distribution",
-        "baseline_score": 0.734378,
+        "baseline_score": 0.705781,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 7.2827,
+        "improvement_pct": 10.9027,
         "metric": "dynasty_expected_outcome_tier_rank_concordance",
-        "model_score": 0.78786,
-        "reason": "beats level_age_prior_distribution by 7.28% OOS (dynasty_expected_outcome_tier_rank_concordance)",
-        "sample_size": 1091,
+        "model_score": 0.78273,
+        "reason": "beats level_age_prior_distribution by 10.90% OOS (dynasty_expected_outcome_tier_rank_concordance)",
+        "sample_size": 746,
         "status": "active",
         "validated_through": "2025"
       },
       "role_research_gate": "active",
-      "sample_size": 1091,
+      "sample_size": 746,
       "temporal_stability_guard": {
         "distribution_non_regression_every_fold": true,
-        "fold_count": 3,
+        "fold_count": 2,
         "minimum_fold_count": 2,
         "ordering_non_regression_every_fold": true,
         "status": "active"
       }
     },
     "pitcher": {
-      "baseline_multiclass_brier": 0.227713,
-      "baseline_rank_concordance": 0.67293,
-      "candidate_multiclass_brier": 0.221842,
-      "candidate_rank_concordance": 0.701403,
-      "fold_count": 3,
+      "baseline_multiclass_brier": 0.232289,
+      "baseline_rank_concordance": 0.626425,
+      "candidate_multiclass_brier": 0.216752,
+      "candidate_rank_concordance": 0.701503,
+      "fold_count": 2,
       "folds": [
         {
-          "baseline_multiclass_brier": 0.225137,
-          "baseline_rank_concordance": 0.740675,
-          "candidate_multiclass_brier": 0.225137,
-          "candidate_rank_concordance": 0.740675,
+          "baseline_multiclass_brier": 0.213468,
+          "baseline_rank_concordance": 0.585353,
+          "candidate_multiclass_brier": 0.213468,
+          "candidate_rank_concordance": 0.585353,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "star_probability": "level_age_prior"
           },
-          "sample_size": 352,
-          "test_cohort": 2018,
-          "train_cohort_max": 2014
-        },
-        {
-          "baseline_multiclass_brier": 0.208295,
-          "baseline_rank_concordance": 0.595176,
-          "candidate_multiclass_brier": 0.208295,
-          "candidate_rank_concordance": 0.595176,
-          "candidate_sources": {
-            "established_probability": "level_age_prior",
-            "star_probability": "level_age_prior"
-          },
-          "sample_size": 410,
+          "sample_size": 411,
           "test_cohort": 2019,
           "train_cohort_max": 2015
         },
         {
-          "baseline_multiclass_brier": 0.252008,
-          "baseline_rank_concordance": 0.694939,
-          "candidate_multiclass_brier": 0.233881,
-          "candidate_rank_concordance": 0.782853,
+          "baseline_multiclass_brier": 0.253482,
+          "baseline_rank_concordance": 0.672673,
+          "candidate_multiclass_brier": 0.220449,
+          "candidate_rank_concordance": 0.832291,
           "candidate_sources": {
             "established_probability": "historical_neighbors_25",
             "star_probability": "historical_neighbors_25"
@@ -143,36 +117,36 @@
         }
       ],
       "gate": {
-        "activated_at": "2026-06-13T13:41:23.903243+00:00",
+        "activated_at": "2026-06-13T19:02:01.984267+00:00",
         "baseline": "level_age_prior_distribution",
-        "baseline_score": 0.227713,
+        "baseline_score": 0.232289,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 2.5781,
+        "improvement_pct": 6.6888,
         "metric": "dynasty_outcome_distribution_multiclass_brier",
-        "model_score": 0.221842,
-        "reason": "beats level_age_prior_distribution by 2.58% OOS (dynasty_outcome_distribution_multiclass_brier)",
-        "sample_size": 1127,
+        "model_score": 0.216752,
+        "reason": "beats level_age_prior_distribution by 6.69% OOS (dynasty_outcome_distribution_multiclass_brier)",
+        "sample_size": 776,
         "status": "active",
         "validated_through": "2025"
       },
       "ordering_guard": {
-        "activated_at": "2026-06-13T13:41:23.903243+00:00",
+        "activated_at": "2026-06-13T19:02:01.984267+00:00",
         "baseline": "level_age_prior_distribution",
-        "baseline_score": 0.67293,
+        "baseline_score": 0.626425,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 4.2311,
+        "improvement_pct": 11.9852,
         "metric": "dynasty_expected_outcome_tier_rank_concordance",
-        "model_score": 0.701403,
-        "reason": "beats level_age_prior_distribution by 4.23% OOS (dynasty_expected_outcome_tier_rank_concordance)",
-        "sample_size": 1127,
+        "model_score": 0.701503,
+        "reason": "beats level_age_prior_distribution by 11.99% OOS (dynasty_expected_outcome_tier_rank_concordance)",
+        "sample_size": 776,
         "status": "active",
         "validated_through": "2025"
       },
       "role_research_gate": "active",
-      "sample_size": 1127,
+      "sample_size": 776,
       "temporal_stability_guard": {
         "distribution_non_regression_every_fold": true,
-        "fold_count": 3,
+        "fold_count": 2,
         "minimum_fold_count": 2,
         "ordering_non_regression_every_fold": true,
         "status": "active"

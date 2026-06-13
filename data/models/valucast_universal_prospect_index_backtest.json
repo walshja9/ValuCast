@@ -1,17 +1,17 @@
 {
   "backtest_version": "0.1.0",
   "combined": {
-    "baseline_rank_concordance": 0.70266,
-    "baseline_top_quartile_star_precision": 0.045216,
-    "candidate_rank_concordance": 0.744666,
-    "candidate_top_quartile_star_precision": 0.058607,
+    "baseline_rank_concordance": 0.669257,
+    "baseline_top_quartile_star_precision": 0.069786,
+    "candidate_rank_concordance": 0.740805,
+    "candidate_top_quartile_star_precision": 0.072644,
     "combined_research_gate": "active",
-    "fold_count": 3,
+    "fold_count": 2,
     "folds": [
       {
-        "baseline_rank_concordance": 0.76257,
-        "baseline_top_quartile_star_precision": 0.04023,
-        "candidate_rank_concordance": 0.76257,
+        "baseline_rank_concordance": 0.658331,
+        "baseline_top_quartile_star_precision": 0.04921,
+        "candidate_rank_concordance": 0.658331,
         "candidate_sources": {
           "hitter": {
             "established_probability": "level_age_prior",
@@ -22,72 +22,34 @@
             "star_probability": "level_age_prior"
           }
         },
-        "candidate_top_quartile_star_precision": 0.04023,
-        "factual_star_count": 7,
-        "role_diagnostics": {
-          "hitter": {
-            "baseline_rank_concordance": 0.7828595553053758,
-            "baseline_top_quartile_star_precision": 0.0,
-            "candidate_rank_concordance": 0.7828595553053758,
-            "candidate_top_quartile_star_precision": 0.0,
-            "factual_star_count": 0,
-            "sample_size": 345
-          },
-          "pitcher": {
-            "baseline_rank_concordance": 0.7406747765306808,
-            "baseline_top_quartile_star_precision": 0.04962894248608534,
-            "candidate_rank_concordance": 0.7406747765306808,
-            "candidate_top_quartile_star_precision": 0.04962894248608534,
-            "factual_star_count": 7,
-            "sample_size": 352
-          }
-        },
-        "sample_size": 697,
-        "test_cohort": 2018,
-        "train_cohort_max": 2014
-      },
-      {
-        "baseline_rank_concordance": 0.68088,
-        "baseline_top_quartile_star_precision": 0.036458,
-        "candidate_rank_concordance": 0.68088,
-        "candidate_sources": {
-          "hitter": {
-            "established_probability": "level_age_prior",
-            "star_probability": "level_age_prior"
-          },
-          "pitcher": {
-            "established_probability": "level_age_prior",
-            "star_probability": "level_age_prior"
-          }
-        },
-        "candidate_top_quartile_star_precision": 0.036458,
+        "candidate_top_quartile_star_precision": 0.04921,
         "factual_star_count": 13,
         "role_diagnostics": {
           "hitter": {
-            "baseline_rank_concordance": 0.7727722228326558,
-            "baseline_top_quartile_star_precision": 0.021839080459770118,
-            "candidate_rank_concordance": 0.7727722228326558,
-            "candidate_top_quartile_star_precision": 0.021839080459770118,
+            "baseline_rank_concordance": 0.7432150313152401,
+            "baseline_top_quartile_star_precision": 0.03422733077905492,
+            "candidate_rank_concordance": 0.7432150313152401,
+            "candidate_top_quartile_star_precision": 0.03422733077905492,
             "factual_star_count": 5,
             "sample_size": 360
           },
           "pitcher": {
-            "baseline_rank_concordance": 0.5951764231854026,
+            "baseline_rank_concordance": 0.5853527953110911,
             "baseline_top_quartile_star_precision": 0.058823529411764705,
-            "candidate_rank_concordance": 0.5951764231854026,
+            "candidate_rank_concordance": 0.5853527953110911,
             "candidate_top_quartile_star_precision": 0.058823529411764705,
             "factual_star_count": 8,
-            "sample_size": 410
+            "sample_size": 411
           }
         },
-        "sample_size": 770,
+        "sample_size": 771,
         "test_cohort": 2019,
         "train_cohort_max": 2015
       },
       {
-        "baseline_rank_concordance": 0.669389,
-        "baseline_top_quartile_star_precision": 0.058824,
-        "candidate_rank_concordance": 0.79345,
+        "baseline_rank_concordance": 0.680473,
+        "baseline_top_quartile_star_precision": 0.090909,
+        "candidate_rank_concordance": 0.825476,
         "candidate_sources": {
           "hitter": {
             "established_probability": "canonical_historical_neighbors_25",
@@ -98,22 +60,22 @@
             "star_probability": "historical_neighbors_25"
           }
         },
-        "candidate_top_quartile_star_precision": 0.098371,
+        "candidate_top_quartile_star_precision": 0.096702,
         "factual_star_count": 21,
         "role_diagnostics": {
           "hitter": {
-            "baseline_rank_concordance": 0.6552369420441411,
-            "baseline_top_quartile_star_precision": 0.09505208333333333,
-            "candidate_rank_concordance": 0.806786284330453,
-            "candidate_top_quartile_star_precision": 0.11458333333333333,
+            "baseline_rank_concordance": 0.6708679619131488,
+            "baseline_top_quartile_star_precision": 0.11548913043478261,
+            "candidate_rank_concordance": 0.8191424954592988,
+            "candidate_top_quartile_star_precision": 0.1221590909090909,
             "factual_star_count": 13,
             "sample_size": 386
           },
           "pitcher": {
-            "baseline_rank_concordance": 0.6949385974979915,
+            "baseline_rank_concordance": 0.6726730173304258,
             "baseline_top_quartile_star_precision": 0.06593406593406594,
-            "candidate_rank_concordance": 0.7841443819579939,
-            "candidate_top_quartile_star_precision": 0.08097165991902834,
+            "candidate_rank_concordance": 0.8333811545965798,
+            "candidate_top_quartile_star_precision": 0.0695970695970696,
             "factual_star_count": 8,
             "sample_size": 365
           }
@@ -124,41 +86,41 @@
       }
     ],
     "rank_gate": {
-      "activated_at": "2026-06-13T13:41:23.903243+00:00",
+      "activated_at": "2026-06-13T19:02:01.984267+00:00",
       "baseline": "level_age_outcome_index",
-      "baseline_score": 0.70266,
+      "baseline_score": 0.669257,
       "cv_method": "nested_fixed_horizon_combined_cohort_walk_forward",
-      "improvement_pct": 5.9782,
+      "improvement_pct": 10.6908,
       "metric": "universal_prospect_index_rank_concordance",
-      "model_score": 0.744666,
-      "reason": "beats level_age_outcome_index by 5.98% OOS (universal_prospect_index_rank_concordance)",
-      "sample_size": 2218,
+      "model_score": 0.740805,
+      "reason": "beats level_age_outcome_index by 10.69% OOS (universal_prospect_index_rank_concordance)",
+      "sample_size": 1522,
       "status": "active",
       "validated_through": "2025"
     },
-    "sample_size": 2218,
+    "sample_size": 1522,
     "temporal_stability_guard": {
-      "fold_count": 3,
+      "fold_count": 2,
       "minimum_fold_count": 2,
       "rank_non_regression_every_fold": true,
       "status": "active",
       "top_quartile_star_non_regression_every_fold": true
     },
     "top_quartile_guard": {
-      "activated_at": "2026-06-13T13:41:23.903243+00:00",
+      "activated_at": "2026-06-13T19:02:01.984267+00:00",
       "baseline": "level_age_outcome_index",
-      "baseline_score": 0.045216,
+      "baseline_score": 0.069786,
       "cv_method": "nested_fixed_horizon_combined_cohort_walk_forward",
-      "improvement_pct": 29.614,
+      "improvement_pct": 4.096,
       "metric": "universal_prospect_index_top_quartile_star_precision",
-      "model_score": 0.058607,
-      "reason": "beats level_age_outcome_index by 29.61% OOS (universal_prospect_index_top_quartile_star_precision)",
-      "sample_size": 2218,
+      "model_score": 0.072644,
+      "reason": "beats level_age_outcome_index by 4.10% OOS (universal_prospect_index_top_quartile_star_precision)",
+      "sample_size": 1522,
       "status": "active",
       "validated_through": "2025"
     }
   },
-  "generated_at": "2026-06-13T13:41:23.903243+00:00",
+  "generated_at": "2026-06-13T19:02:01.984267+00:00",
   "index_name": "ValuCast Universal Prospect Index",
   "index_version": "0.1.0",
   "promotion": {
