@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 import math
 import os
 import sys
@@ -190,10 +189,6 @@ def _valuation_players(always_keep=None, active_store=None):
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
                     str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
 dd_store = DDFeedStore(DD_FEED_PATH)
-UNIVERSAL_PROSPECT_INDEX_PATH = (
-    Path(__file__).parent / "data" / "models" / "valucast_universal_prospect_index.json"
-)
-_UNIVERSAL_PROSPECT_INDEX_CACHE = {"mtime": None, "index": {}}
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
 
 # In production (VALUCAST_REQUIRE_DD=1) treat DD as required: refuse to start if the
@@ -392,115 +387,24 @@ def _dynasty_z_map():
     return z_map
 
 
-def _prospect_model_role(row):
-    pitcher_positions = {"SP", "RP", "P"}
-    positions = set(row.positions or ())
-    return "pitcher" if positions and positions <= pitcher_positions else "hitter"
-
-
-def _load_universal_prospect_index():
-    """MLBAM+role -> ValuCast Universal Prospect Index row.
-
-    The public Prospects horizon must not sort by DD's feed rank. This artifact is
-    ValuCast-owned, market-independent, and generated from the universal
-    statistical prospect model.
-    """
-    try:
-        mtime = UNIVERSAL_PROSPECT_INDEX_PATH.stat().st_mtime
-    except OSError:
-        return {}
-    if _UNIVERSAL_PROSPECT_INDEX_CACHE["mtime"] == mtime:
-        return _UNIVERSAL_PROSPECT_INDEX_CACHE["index"]
-    try:
-        payload = json.loads(UNIVERSAL_PROSPECT_INDEX_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    contract = payload.get("index_contract") or {}
-    if (
-        contract.get("league_scoring_independent") is not True
-        or contract.get("market_independent") is not True
-        or contract.get("external_rankings_used") is not False
-        or contract.get("fantasy_value") is not False
-    ):
-        return {}
-    index = {}
-    for position, row in enumerate(payload.get("board") or [], start=1):
-        mlbam_id = row.get("mlbam_id")
-        role = row.get("role")
-        rank = row.get("universal_rank")
-        score = row.get("universal_prospect_index")
-        if mlbam_id is None or role not in {"hitter", "pitcher"}:
-            continue
-        if not isinstance(rank, int) or not isinstance(score, (int, float)):
-            continue
-        indexed_row = dict(row)
-        indexed_row["_board_index"] = position
-        index[(str(mlbam_id), role)] = indexed_row
-    _UNIVERSAL_PROSPECT_INDEX_CACHE["mtime"] = mtime
-    _UNIVERSAL_PROSPECT_INDEX_CACHE["index"] = index
-    return index
-
-
-def _with_universal_prospect_index(row, index=None):
-    index = index if index is not None else _load_universal_prospect_index()
-    if not row.is_prospect or row.mlbam_id is None:
-        return None
-    role = _prospect_model_role(row)
-    vc = index.get((str(row.mlbam_id), role))
-    if not vc:
-        return None
-    metadata = dict(row.metadata or {})
-    metadata.update(
-        {
-            "dd_dynasty_rank": row.dynasty_rank,
-            "dd_dynasty_value": row.dynasty_value,
-            "dd_prospect_rank": row.prospect_rank,
-            "valucast_universal_rank": vc["universal_rank"],
-            "valucast_universal_index": vc["universal_prospect_index"],
-            "valucast_board_index": vc.get("_board_index"),
-            "valucast_universal_role": role,
-            "valucast_sample": vc.get("sample"),
-            "valucast_sample_unit": vc.get("sample_unit"),
-            "valucast_source": "universal_prospect_index",
-        }
-    )
-    return dc_replace(
-        row,
-        dynasty_rank=int(vc["universal_rank"]),
-        dynasty_value=float(vc["universal_prospect_index"]),
-        prospect_rank=int(vc["universal_rank"]),
-        tier=None,
-        metadata=metadata,
-    )
-
-
-def _prospect_tiers(rows=None):
-    """Tiers for ValuCast-ranked prospects, computed on the displayed index score."""
-    pros = list(rows) if rows is not None else _prospect_rows()
-    pros = sorted(pros, key=lambda r: (-r.dynasty_value, r.prospect_rank or 9999))[:200]
-    return _gap_tiers(pros)
+def _prospect_tiers():
+    """Tiers for the Prospects board, computed on the prospect-ONLY universe (top 200
+    by value). The combined-universe tiers from _dynasty_metadata() collapse to ~2
+    badges across prospects because every prospect sits below the MLB cluster."""
+    pros = sorted(dd_store.filter(pool="prospect"),
+                  key=lambda r: r.dynasty_value, reverse=True)[:200]
+    return _compute_dynasty_tiers(pros)
 
 
 def _prospect_rows(position=None, search=None):
-    """Return the dedicated Prospects board in ValuCast Universal Index order."""
-    source_rows = dd_store.filter(pool="prospect", position=position, search=search)
-    index = _load_universal_prospect_index()
-    rows = [
-        row
-        for row in (_with_universal_prospect_index(row, index=index) for row in source_rows)
-        if row is not None
-    ]
-    if not rows and not index:
-        # Local tests and deliberately minimal fixtures can run without the
-        # committed index artifact. Production has the artifact and should use it.
-        rows = source_rows
+    """Return the dedicated Prospects board in DD's authoritative prospect order."""
+    rows = dd_store.filter(pool="prospect", position=position, search=search)
     return sorted(
         rows,
         key=lambda row: (
-            row.metadata.get("valucast_board_index") is None if row.metadata else True,
-            (row.metadata or {}).get("valucast_board_index")
-            or (row.prospect_rank if row.prospect_rank is not None else row.dynasty_rank),
-            row.name,
+            row.prospect_rank is None,
+            row.prospect_rank if row.prospect_rank is not None else row.dynasty_rank,
+            row.dynasty_rank,
         ),
     )[:200]
 
@@ -587,14 +491,13 @@ def _custom_dynasty_values(cats, pcats, teams, budget):
 
 def _apply_prospect_board_context(ctx, args):
     """Apply dedicated prospect-board rows and metadata to a DD context."""
-    prospect_rows = _prospect_rows(
+    ctx["dd_rows"] = _prospect_rows(
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
     )
-    ctx["dd_rows"] = prospect_rows
     settings = parse_league_settings(args)
     ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
-    ctx["tiers"] = _prospect_tiers(prospect_rows)
+    ctx["tiers"] = _prospect_tiers()
     ctx["cutoff_rank"] = settings.prospect_cutoff
     ctx["mode"] = "prospects"
     ctx["horizon"] = "prospects"
@@ -1309,11 +1212,6 @@ def player_detail(player_id):
         dd_row = dd_store.get_by_id(player_id)
         if dd_row is None:
             return "<div class='error'>Player not found</div>", 404
-        display_row = (
-            _with_universal_prospect_index(dd_row) if mode == "prospects" else dd_row
-        )
-        if display_row is None:
-            display_row = dd_row
 
         mlb_stats = None
         mlb_stats_actual = None
@@ -1389,18 +1287,17 @@ def player_detail(player_id):
 
         return render_template(
             "partials/player_detail_dynasty.html",
-            row=display_row,
+            row=dd_row,
             dyn_result=dyn_result,
             dyn_categories=dyn_categories,
             dyn_category_summary=dyn_category_summary,
-            spark=None if mode == "prospects" else build_spark(dd_row.value_history),
+            spark=build_spark(dd_row.value_history),
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
             mlb_stats_ros=mlb_stats_ros,
             mlb_stats_split=mlb_stats_split,
             mlb_stats_actual_split=mlb_stats_actual_split,
             mlb_stats_ros_split=mlb_stats_ros_split,
-            prospect_horizon=mode == "prospects",
             **prospect_context,
             **extras,
         )
@@ -1485,44 +1382,26 @@ def export_csv():
                 search=ctx.get("search") or None,
             )
             ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
-            ctx["tiers"] = _prospect_tiers(ctx["dd_rows"])
+            ctx["tiers"] = _prospect_tiers()
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
         output = io.StringIO()
         writer = csv.writer(output)
-        if mode == "prospects":
-            writer.writerow(["ValuCast Prospect Rank", "Player", "Type", "Positions", "Team",
-                             "Age", "ValuCast Index", "DD Dynasty Rank", "DD Dynasty Value",
-                             "Confidence Level", "Value Low", "Value High", "Level", "ETA"])
-        else:
-            writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
-                             "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
-                             "Value Low", "Value High", "Prospect Rank", "Level", "ETA"])
+        writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
+                         "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
+                         "Value Low", "Value High", "Prospect Rank", "Level", "ETA"])
         for row in rows:
             confidence = row.confidence or {}
             value_range = confidence.get("range") or {}
-            if mode == "prospects":
-                writer.writerow([
-                    row.prospect_rank or "", _csv_safe(row.name), row.player_type.upper(),
-                    ", ".join(row.positions) or "", row.team, row.age or "",
-                    row.dynasty_value,
-                    (row.metadata or {}).get("dd_dynasty_rank", ""),
-                    (row.metadata or {}).get("dd_dynasty_value", ""),
-                    confidence.get("level", ""),
-                    value_range.get("low", ""),
-                    value_range.get("high", ""),
-                    row.level or "", row.eta or "",
-                ])
-            else:
-                writer.writerow([
-                    row.dynasty_rank, _csv_safe(row.name), row.player_type.upper(),
-                    ", ".join(row.positions) or "", row.team, row.age or "",
-                    row.dynasty_value, dynasty_dollars.get(row.id, 0),
-                    confidence.get("level", ""),
-                    value_range.get("low", ""),
-                    value_range.get("high", ""),
-                    row.prospect_rank or "", row.level or "", row.eta or "",
-                ])
+            writer.writerow([
+                row.dynasty_rank, _csv_safe(row.name), row.player_type.upper(),
+                ", ".join(row.positions) or "", row.team, row.age or "",
+                row.dynasty_value, dynasty_dollars.get(row.id, 0),
+                confidence.get("level", ""),
+                value_range.get("low", ""),
+                value_range.get("high", ""),
+                row.prospect_rank or "", row.level or "", row.eta or "",
+            ])
 
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"

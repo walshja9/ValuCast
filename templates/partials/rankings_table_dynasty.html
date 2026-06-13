@@ -26,7 +26,7 @@
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
             <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
-            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">{% if mode == 'prospects' %}ValuCast Index{% else %}Dynasty Value{% endif %}</button></th>
+            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
             {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
@@ -72,8 +72,7 @@
                 <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ row.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ row.id }}', this.closest('tr'))">▸</button>
                 <strong>{{ row.name }}</strong>
                 {% if mode == 'prospects' %}
-                {% set dd_rank = row.metadata.get('dd_dynasty_rank') if row.metadata else none %}
-                {% if dd_rank %}<span class="pos-rank">DD #{{ dd_rank }}</span>{% endif %}
+                <span class="pos-rank">#{{ row.dynasty_rank }} overall</span>
                 {% elif row.is_prospect and row.prospect_rank %}
                 <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
                 {% endif %}

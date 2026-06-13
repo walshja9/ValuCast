@@ -14,28 +14,12 @@ class TestDynastyV11UI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.original_store = app_module.dd_store
-        cls.original_universal_index = app_module._load_universal_prospect_index
         app_module.dd_store = DDFeedStore(FIXTURE)
-        app_module._load_universal_prospect_index = lambda: {
-            ("1002", "hitter"): {
-                "universal_rank": 1,
-                "universal_prospect_index": 88.0,
-                "sample": 247,
-                "sample_unit": "PA",
-            },
-            ("1001", "pitcher"): {
-                "universal_rank": 2,
-                "universal_prospect_index": 77.0,
-                "sample": 44,
-                "sample_unit": "IP",
-            },
-        }
         cls.client = app_module.app.test_client()
 
     @classmethod
     def tearDownClass(cls):
         app_module.dd_store = cls.original_store
-        app_module._load_universal_prospect_index = cls.original_universal_index
 
     def test_v11_store_and_category_fit_controls_render(self):
         response = self.client.get("/?mode=dd_dynasty")
@@ -83,15 +67,13 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Plate Discipline", response.data)
         self.assertNotIn(b'<span class="stat-label">Level</span>', response.data)
 
-    def test_prospects_board_uses_valucast_universal_index_order(self):
+    def test_prospects_board_uses_dd_prospect_rank_order(self):
         response = self.client.get("/?mode=prospects")
         self.assertEqual(response.status_code, 200)
         self.assertLess(
-            response.data.find(b'data-player-id="dd_prospect_future_bat"'),
             response.data.find(b'data-player-id="dd_prospect_future_arm"'),
+            response.data.find(b'data-player-id="dd_prospect_future_bat"'),
         )
-        self.assertIn(b"ValuCast Index", response.data)
-        self.assertIn(b"DD #5", response.data)
 
     def test_category_fit_formula_includes_inverse_and_aliases(self):
         response = self.client.get("/?mode=dd_dynasty")

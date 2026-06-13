@@ -37,7 +37,7 @@
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
-            <span class="headline-value"><span>{{ 'ValuCast Index' if prospect_horizon else 'Dynasty Value' }}</span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            <span class="headline-value"><span>Dynasty Value</span>{{ "%.1f" | format(row.dynasty_value) }}</span>
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
             <span class="headline-range">Range {{ "%.0f" | format(confidence_range.get('low')) }}–{{ "%.0f" | format(confidence_range.get('high')) }}</span>
             {% endif %}
@@ -58,7 +58,7 @@
             <h4>Prospect Profile</h4>
             <div class="stat-grid">
                 {% if row.prospect_rank is not none %}
-                <div class="stat-item"><span class="stat-label">{{ 'ValuCast Rank' if prospect_horizon else 'Prospect Rank' }}</span><span class="stat-value">#{{ row.prospect_rank }}</span></div>
+                <div class="stat-item"><span class="stat-label">Prospect Rank</span><span class="stat-value">#{{ row.prospect_rank }}</span></div>
                 {% endif %}
                 {% if row.level %}
                 <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.level }}</span></div>

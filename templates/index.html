@@ -143,7 +143,7 @@
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
-        <span class="config-summary">ValuCast Universal Prospect Index: independent statistical ranks from observed MiLB profiles. DD feed context supplies cards, source ranks, and MiLB stats.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, and MiLB stats.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
         {# No visible knobs on this horizon, so the form must carry the league
            params or a shared URL's divider resets on the first filter change. #}
         {% if league_settings %}
