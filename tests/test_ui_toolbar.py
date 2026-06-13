@@ -37,6 +37,10 @@ class TestToolbar(unittest.TestCase):
         html = self.client.get("/?mode=prospects").data.decode("utf-8")
         self.assertNotIn('name="pool"', html)
         self.assertNotIn('name="source"', html)
+        self.assertIn("Generate Top 10", html)
+        self.assertIn("Generate Top 20", html)
+        self.assertIn("/prospects/share-card.png", html)
+        self.assertIn("openProspectGraphic", html)
 
     def test_scoring_switch_updates_display_slot_oob(self):
         # P1 fix: switching Categories<->Points must restructure the toolbar (the

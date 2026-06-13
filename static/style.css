@@ -234,6 +234,10 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .rank-toolbar-redraft .display-slot { order: 5; }
 .rank-toolbar-redraft .export-btn { order: 6; }
 .rank-toolbar-redraft .customize-toggle { order: 7; }
+.rank-toolbar .graphic-actions { display: inline-flex; gap: .4rem; margin-left: auto; }
+.rank-toolbar .graphic-actions + .export-btn { margin-left: 0; }
+.rank-toolbar .graphic-btn { margin-left: 0; color: #047857; border-color: #86efac; }
+.rank-toolbar .graphic-btn:hover { color: #065f46; border-color: #10b981; background: #ecfdf5; }
 /* pool-toggle is now a <fieldset> — strip default fieldset chrome. */
 .pool-toggle { padding: 0; margin: 0; min-width: 0; }
 
@@ -716,6 +720,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
         align-items: stretch;
         gap: var(--space-2);
     }
+    .rank-toolbar .graphic-actions { width: 100%; margin-left: 0; }
+    .rank-toolbar .graphic-btn { flex: 1; text-align: center; }
     .pool-toggle { width: 100%; }
     .pool-btn { flex: 1; text-align: center; }
     .search-input { width: 100%; }

@@ -161,6 +161,10 @@
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
         <a class="map-link" href="/map">Map</a>
         <a class="map-link" href="/buys">Buys</a>
+        <span class="graphic-actions" aria-label="Prospect graphic actions">
+            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10</a>
+            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20</a>
+        </span>
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>
     {% endif %}
@@ -357,6 +361,14 @@ function detailRequestParams() {
         if (fitCats.length) params.set('fit_cats', fitCats.join(','));
     }
     return params;
+}
+
+function openProspectGraphic(e, limit) {
+    e.preventDefault();
+    const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
+    params.set('limit', String(limit));
+    params.set('mode', 'prospects');
+    window.open('/prospects/share-card.png?' + params.toString(), '_blank', 'noopener');
 }
 
 function toggleDetail(playerId, row) {

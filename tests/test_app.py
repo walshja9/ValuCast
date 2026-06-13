@@ -329,6 +329,50 @@ class TestDynastyMode(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/csv", response.content_type)
 
+    def test_prospects_position_graphic_preview(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/prospects/share-card?position=SS&limit=10")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response.content_type)
+        self.assertIn(b"Ahead of the Curve", response.data)
+        self.assertIn(b"Top 10 SS Prospects", response.data)
+        self.assertIn(b"Download SVG", response.data)
+
+    def test_prospects_position_graphic_svg(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/prospects/share-card.svg?position=SS&limit=10")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("image/svg+xml", response.content_type)
+        self.assertIn(b"DD prospect rank", response.data)
+
+    def test_prospects_position_graphic_png(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/prospects/share-card.png?position=SS&limit=10")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertIn("image/png", response.content_type)
+        self.assertIn(
+            'filename="valucast-top-10-ss-prospects.png"',
+            response.headers.get("Content-Disposition", ""),
+        )
+
+    def test_prospects_graphic_limit_20_filename(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/prospects/share-card.png?position=SP&limit=20")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            'filename="valucast-top-20-sp-prospects.png"',
+            response.headers.get("Content-Disposition", ""),
+        )
+
     def test_prospects_compare_bar_hidden_by_default(self):
         """Compare bar element is present in DOM but starts hidden (display:none)."""
         from app import dd_store

@@ -7,6 +7,7 @@ import os
 import sys
 import time
 from functools import lru_cache
+from html import escape
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -507,6 +508,224 @@ def _apply_prospect_board_context(ctx, args):
         if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
         else []
     )
+
+def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
+    """Render an Ahead of the Curve-style SVG share graphic."""
+    width = 1080
+    row_height = 58 if limit == 20 else 78
+    header_height = 245
+    footer_height = 92
+    height = header_height + max(len(rows), 1) * row_height + footer_height
+    scope = f"{position} " if position else ""
+    title = f"Top {limit} {scope}Prospects"
+    if search:
+        title += f" | {search}"
+    updated = dd_store.generated_at[:10] if dd_store.generated_at else "current feed"
+    max_value = max((row.dynasty_value for row in rows), default=1)
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="{escape(title)}">',
+        "<defs>",
+        '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">',
+        '<stop offset="0%" stop-color="#031f1b"/>',
+        '<stop offset="48%" stop-color="#064e3b"/>',
+        '<stop offset="100%" stop-color="#111827"/>',
+        "</linearGradient>",
+        '<linearGradient id="card" x1="0" y1="0" x2="1" y2="0">',
+        '<stop offset="0%" stop-color="#f8fffb"/>',
+        '<stop offset="100%" stop-color="#ecfdf5"/>',
+        "</linearGradient>",
+        "</defs>",
+        '<rect width="1080" height="100%" fill="url(#bg)"/>',
+        '<circle cx="905" cy="96" r="225" fill="#34d399" opacity=".12"/>',
+        '<circle cx="148" cy="972" r="305" fill="#10b981" opacity=".09"/>',
+        '<path d="M710 88 C818 34 920 28 1040 62" fill="none" stroke="#a7f3d0" stroke-width="4" opacity=".35"/>',
+        '<path d="M710 116 C828 58 940 52 1040 88" fill="none" stroke="#34d399" stroke-width="3" opacity=".35"/>',
+        '<text x="64" y="62" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="900" letter-spacing="5">VALUCAST</text>',
+        '<text x="64" y="125" fill="#ffffff" font-family="Georgia,Times New Roman,serif" font-size="62" font-weight="900">Ahead of the Curve</text>',
+        f'<text x="68" y="174" fill="#a7f3d0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="32" font-weight="850">{escape(title)}</text>',
+        f'<text x="68" y="207" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="650">DD prospect rank + dynasty value | Updated {escape(updated)}</text>',
+    ]
+
+    if not rows:
+        parts.extend([
+            '<rect x="72" y="255" width="952" height="108" rx="22" fill="#000000" opacity=".20"/>',
+            '<rect x="64" y="245" width="952" height="108" rx="22" fill="url(#card)"/>',
+            '<text x="112" y="310" fill="#065f46" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="30" font-weight="900">No prospects found for this filter.</text>',
+        ])
+    else:
+        for i, row in enumerate(rows):
+            y = header_height + i * row_height
+            card_h = row_height - 10
+            rank = row.prospect_rank or i + 1
+            positions = ", ".join(row.positions) if row.positions else "N/A"
+            team = row.team or "FA"
+            age = row.age if row.age is not None else "N/A"
+            detail = f"{positions} | {team} | Age {age}"
+            value_width = int(244 * (row.dynasty_value / max_value)) if max_value else 0
+            name_size = 25 if limit == 10 else 21
+            detail_size = 15 if limit == 10 else 12
+            value_size = 25 if limit == 10 else 21
+            rank_box = card_h - 12
+            parts.extend([
+                f'<rect x="70" y="{y + 7}" width="952" height="{card_h}" rx="19" fill="#000000" opacity=".18"/>',
+                f'<rect x="64" y="{y}" width="952" height="{card_h}" rx="19" fill="url(#card)"/>',
+                f'<rect x="82" y="{y + 6}" width="{rank_box}" height="{rank_box}" rx="14" fill="#064e3b"/>',
+                f'<text x="{82 + rank_box / 2}" y="{y + card_h / 2 + 9}" text-anchor="middle" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{18 if limit == 20 else 22}" font-weight="950">#{rank}</text>',
+                f'<text x="154" y="{y + (31 if limit == 10 else 24)}" fill="#0f172a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{name_size}" font-weight="900">{escape(row.name)}</text>',
+                f'<text x="154" y="{y + (57 if limit == 10 else 41)}" fill="#64748b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{detail_size}" font-weight="700">{escape(detail)}</text>',
+                f'<rect x="644" y="{y + card_h / 2 - 7}" width="244" height="14" rx="7" fill="#bbf7d0"/>',
+                f'<rect x="644" y="{y + card_h / 2 - 7}" width="{value_width}" height="14" rx="7" fill="#10b981"/>',
+                f'<text x="918" y="{y + card_h / 2 + 9}" fill="#065f46" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{value_size}" font-weight="950">{row.dynasty_value:.1f}</text>',
+                f'<text x="976" y="{y + card_h / 2 + 8}" fill="#64748b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="800">DV</text>',
+            ])
+
+    parts.extend([
+        f'<text x="64" y="{height - 44}" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="750">Generated from the Prospects tab filters. Dynasty Value remains DD valuation, not a position-only score.</text>',
+        f'<text x="64" y="{height - 20}" fill="#86efac" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="700">valucast.app</text>',
+        "</svg>",
+    ])
+    return "".join(parts)
+
+
+def _prospect_graphic_png(rows, *, limit, position=None, search=None):
+    """Render the same share-card data as a PNG for easy posting/saving."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    def font(size, *, bold=False, serif=False):
+        candidates = []
+        if sys.platform.startswith("win"):
+            root = Path(os.environ.get("WINDIR", "C:\\Windows")) / "Fonts"
+            if serif:
+                candidates += [root / ("georgiab.ttf" if bold else "georgia.ttf")]
+            candidates += [root / ("segoeuib.ttf" if bold else "segoeui.ttf")]
+            candidates += [root / ("arialbd.ttf" if bold else "arial.ttf")]
+        if serif:
+            candidates += [
+                Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"),
+                Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"),
+            ]
+        candidates += [
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+            Path("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"),
+        ]
+        for candidate in candidates:
+            try:
+                return ImageFont.truetype(str(candidate), size)
+            except OSError:
+                continue
+        return ImageFont.load_default()
+
+    def text_width(draw, text, fnt):
+        box = draw.textbbox((0, 0), text, font=fnt)
+        return box[2] - box[0]
+
+    def fit_text(draw, text, fnt, max_width):
+        if text_width(draw, text, fnt) <= max_width:
+            return text
+        trimmed = text
+        while trimmed and text_width(draw, trimmed + "...", fnt) > max_width:
+            trimmed = trimmed[:-1]
+        return (trimmed.rstrip() + "...") if trimmed else "..."
+
+    width = 1080
+    row_height = 58 if limit == 20 else 78
+    header_height = 245
+    footer_height = 92
+    height = header_height + max(len(rows), 1) * row_height + footer_height
+
+    top = (3, 31, 27)
+    mid = (6, 78, 59)
+    bottom = (17, 24, 39)
+    img = Image.new("RGB", (width, height), top)
+    draw = ImageDraw.Draw(img)
+    for y in range(height):
+        t = y / max(height - 1, 1)
+        if t < 0.52:
+            local = t / 0.52
+            color = tuple(round(top[i] + (mid[i] - top[i]) * local) for i in range(3))
+        else:
+            local = (t - 0.52) / 0.48
+            color = tuple(round(mid[i] + (bottom[i] - mid[i]) * local) for i in range(3))
+        draw.line([(0, y), (width, y)], fill=color)
+
+    overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    odraw = ImageDraw.Draw(overlay)
+    odraw.ellipse((680, -130, 1130, 320), fill=(52, 211, 153, 28))
+    odraw.ellipse((-160, height - 500, 450, height + 110), fill=(16, 185, 129, 22))
+    img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
+    draw = ImageDraw.Draw(img)
+
+    scope = f"{position} " if position else ""
+    title = f"Top {limit} {scope}Prospects"
+    if search:
+        title += f" | {search}"
+    updated = dd_store.generated_at[:10] if dd_store.generated_at else "current feed"
+    max_value = max((row.dynasty_value for row in rows), default=1)
+
+    sans_small = font(17, bold=True)
+    sans_meta = font(16, bold=True)
+    sans_title = font(32, bold=True)
+    serif_title = font(62, bold=True, serif=True)
+    draw.text((64, 37), "VALUCAST", fill=(209, 250, 229), font=font(23, bold=True), spacing=5)
+    draw.text((64, 76), "Ahead of the Curve", fill=(255, 255, 255), font=serif_title)
+    draw.text((68, 142), fit_text(draw, title, sans_title, 900), fill=(167, 243, 208), font=sans_title)
+    draw.text(
+        (68, 188),
+        f"DD prospect rank + dynasty value | Updated {updated}",
+        fill=(209, 250, 229),
+        font=sans_small,
+    )
+
+    if not rows:
+        draw.rounded_rectangle((72, 255, 1024, 363), radius=22, fill=(0, 0, 0))
+        draw.rounded_rectangle((64, 245, 1016, 353), radius=22, fill=(248, 255, 251))
+        draw.text((112, 286), "No prospects found for this filter.", fill=(6, 95, 70), font=font(30, bold=True))
+    else:
+        for i, row in enumerate(rows):
+            y = header_height + i * row_height
+            card_h = row_height - 10
+            rank = row.prospect_rank or i + 1
+            positions = ", ".join(row.positions) if row.positions else "N/A"
+            team = row.team or "FA"
+            age = row.age if row.age is not None else "N/A"
+            detail = f"{positions} | {team} | Age {age}"
+            value_width = int(244 * (row.dynasty_value / max_value)) if max_value else 0
+            name_font = font(25 if limit == 10 else 21, bold=True)
+            detail_font = font(15 if limit == 10 else 12, bold=True)
+            value_font = font(25 if limit == 10 else 21, bold=True)
+            rank_font = font(22 if limit == 10 else 18, bold=True)
+            rank_box = card_h - 12
+
+            draw.rounded_rectangle((70, y + 7, 1022, y + 7 + card_h), radius=19, fill=(0, 0, 0))
+            draw.rounded_rectangle((64, y, 1016, y + card_h), radius=19, fill=(248, 255, 251))
+            draw.rounded_rectangle((82, y + 6, 82 + rank_box, y + 6 + rank_box), radius=14, fill=(6, 78, 59))
+            rank_text = f"#{rank}"
+            box = draw.textbbox((0, 0), rank_text, font=rank_font)
+            draw.text(
+                (82 + rank_box / 2 - (box[2] - box[0]) / 2, y + 6 + rank_box / 2 - (box[3] - box[1]) / 2 - 1),
+                rank_text,
+                fill=(209, 250, 229),
+                font=rank_font,
+            )
+            draw.text((154, y + (18 if limit == 10 else 12)), fit_text(draw, row.name, name_font, 430), fill=(15, 23, 42), font=name_font)
+            draw.text((154, y + (49 if limit == 10 else 34)), fit_text(draw, detail, detail_font, 390), fill=(100, 116, 139), font=detail_font)
+            bar_y = y + card_h / 2 - 7
+            draw.rounded_rectangle((644, bar_y, 888, bar_y + 14), radius=7, fill=(187, 247, 208))
+            draw.rounded_rectangle((644, bar_y, 644 + value_width, bar_y + 14), radius=7, fill=(16, 185, 129))
+            draw.text((918, y + card_h / 2 - 14), f"{row.dynasty_value:.1f}", fill=(6, 95, 70), font=value_font)
+            draw.text((976, y + card_h / 2 - 6), "DV", fill=(100, 116, 139), font=font(12, bold=True))
+
+    draw.text(
+        (64, height - 50),
+        "Generated from the Prospects tab filters. Dynasty Value remains DD valuation, not a position-only score.",
+        fill=(209, 250, 229),
+        font=sans_meta,
+    )
+    draw.text((64, height - 25), "valucast.app", fill=(134, 239, 172), font=font(14, bold=True))
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
 
 
 def _build_dynasty_context(args):
@@ -1467,6 +1686,88 @@ def export_csv():
     response = make_response(output.getvalue())
     response.headers["Content-Type"] = "text/csv; charset=utf-8"
     response.headers["Content-Disposition"] = "attachment; filename=valucast-rankings.csv"
+    return response
+
+
+def _prospect_graphic_payload():
+    limit = 20 if request.args.get("limit") == "20" else 10
+    position = request.args.get("position") or None
+    search = request.args.get("search") or None
+    rows = _prospect_rows(position=position, search=search)[:limit]
+    svg = _prospect_graphic_svg(rows, limit=limit, position=position, search=search)
+    scope = (position or "all").lower()
+    filename = f"valucast-top-{limit}-{scope}-prospects.svg"
+    return svg, filename, limit, position, search
+
+
+@app.route("/prospects/share-card")
+def prospects_share_card():
+    if not dd_store.is_available:
+        return "<!doctype html><title>Prospect graphic unavailable</title>", 503
+
+    svg, filename, limit, position, search = _prospect_graphic_payload()
+    params = {"limit": limit}
+    if position:
+        params["position"] = position
+    if search:
+        params["search"] = search
+    svg_url = "/prospects/share-card.svg?" + urlencode(params)
+    html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ahead of the Curve | {escape(filename)}</title>
+  <style>
+    body {{ margin: 0; background: #020617; color: #d1fae5; font-family: Inter, Segoe UI, Arial, sans-serif; }}
+    main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
+    .card-wrap {{ width: min(1080px, 100%); }}
+    svg {{ width: 100%; height: auto; display: block; border-radius: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }}
+    .actions {{ width: min(1080px, 100%); display: flex; justify-content: flex-end; }}
+    .download {{ color: #052e2b; background: #a7f3d0; border-radius: 999px; padding: 10px 16px; text-decoration: none; font-weight: 900; }}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="card-wrap">{svg}</div>
+    <div class="actions"><a class="download" href="{escape(svg_url)}" download="{escape(filename)}">Download SVG</a></div>
+  </main>
+</body>
+</html>"""
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/prospects/share-card.png")
+def prospects_share_card_png():
+    if not dd_store.is_available:
+        return "", 503
+
+    limit = 20 if request.args.get("limit") == "20" else 10
+    position = request.args.get("position") or None
+    search = request.args.get("search") or None
+    rows = _prospect_rows(position=position, search=search)[:limit]
+    png = _prospect_graphic_png(rows, limit=limit, position=position, search=search)
+    scope = (position or "all").lower()
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-top-{limit}-{scope}-prospects.png"'
+    )
+    return response
+
+
+@app.route("/prospects/share-card.svg")
+@app.route("/prospects/graphic")
+def prospects_graphic():
+    if not dd_store.is_available:
+        return "<svg xmlns='http://www.w3.org/2000/svg'></svg>", 503
+
+    svg, filename, *_ = _prospect_graphic_payload()
+    response = make_response(svg)
+    response.headers["Content-Type"] = "image/svg+xml; charset=utf-8"
+    response.headers["Content-Disposition"] = f'inline; filename="{filename}"'
     return response
 
 
