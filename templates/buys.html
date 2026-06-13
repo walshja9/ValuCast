@@ -3,6 +3,7 @@
 {% block title %}Ahead of the Curve | ValuCast{% endblock %}
 
 {% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <nav class="horizon-tabs" aria-label="Buys board navigation">
     <a href="/?mode=dd_dynasty" class="htab htab-dynasty">Dynasty</a>
     <a href="/?mode=prospects" class="htab htab-prospects">Prospects</a>
@@ -17,7 +18,7 @@
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">VALUCAST BUYS</span>
         <h1>AHEAD OF THE CURVE</h1>
-        <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ dd_generated_at[:10] }}{% endif %}</p>
+        <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint">Buy score = momentum + breakout + market gap + runway. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
     </div>
     {% if dd_available %}
@@ -136,7 +137,6 @@
 .bg-cell:nth-child(5n) { border-right: 0; }
 .bg-rank { position: absolute; left: 10px; top: 14px; font-size: 17px; font-weight: 800; color: #6ea1ff; }
 .bg-cell-score { position: absolute; right: 10px; top: 10px; font-size: 22px; font-weight: 800; color: #9aa1c0; }
-.bg-cell:first-child .bg-cell-score { color: #34d399; }
 .bg-name { position: absolute; left: 10px; right: 10px; top: 40px; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-tag { position: absolute; left: 10px; top: 69px; font-size: 17px; color: #9aa1c0; }
 .bg-foot { position: absolute; left: 48px; right: 48px; bottom: 22px; height: 46px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; background: #232440; border-radius: 8px; }

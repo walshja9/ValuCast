@@ -1,0 +1,12 @@
+{# editorial_date("2026-06-12T08:00:00") -> "JUNE 12, 2026". Falls back to the
+   raw [:10] slice when the string is not ISO-shaped. Pure macro — safe to
+   import without context. #}
+{% macro editorial_date(iso) -%}
+{%- set d = (iso or '')[:10] -%}
+{%- set m = d[5:7] | int(0) -%}
+{%- if m >= 1 and m <= 12 -%}
+{{ ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'][m - 1] }} {{ d[8:10] | int }}, {{ d[:4] }}
+{%- else -%}
+{{ d }}
+{%- endif -%}
+{%- endmacro %}

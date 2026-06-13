@@ -2,11 +2,12 @@
    html2canvas export target, and scaled inside the preview. Real headshots
    are revealed by buys.html after they are checked against MLB's generic
    silhouette; the monogram underneath is the intentional fallback. #}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <div class="bg-card" data-generic-headshot="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/0/headshot/67/current">
     <div class="bg-head">
         <span class="bg-brand">VALUCAST</span>
         <span class="bg-title">AHEAD OF THE CURVE</span>
-        <span class="bg-sub">The 40 best prospect buys by signal, not reputation &middot; {{ (dd_generated_at or '')[:10] }}</span>
+        <span class="bg-sub">The 40 best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</span>
         <svg class="bg-arc" viewBox="0 0 330 150" aria-hidden="true">
             <path d="M318 10 C220 2 126 34 14 140" fill="none" stroke="#232c49" stroke-width="2" />
         </svg>
