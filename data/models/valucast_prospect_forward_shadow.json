@@ -1,0 +1,43 @@
+{
+  "comparisons": [],
+  "generated_at": "2026-06-13T11:39:49.655214+00:00",
+  "integrity": {
+    "candidate_count_mismatch_count": 0,
+    "duplicate_identity_count": 0,
+    "invalid_profile_count": 0,
+    "missing_snapshot_dates": [],
+    "status": "active"
+  },
+  "latest_comparison": null,
+  "observation_contract": {
+    "is_outcome_accuracy_evidence": false,
+    "minimum_observation_span_days": 60,
+    "minimum_observations": 30,
+    "minimum_overlap_rate": 0.7,
+    "purpose": "Measure forward archive integrity and prediction stability.",
+    "review_ready_means": "Enough structurally sound forward observations exist for a human consumer-design review; it never authorizes live use."
+  },
+  "promotion": {
+    "feeds_live_dd_value": false,
+    "feeds_live_valucast_rank": false,
+    "forward_observation_status": "collecting",
+    "live_consumer": "blocked",
+    "next_allowed_step": "continue_collection"
+  },
+  "readiness_checks": {
+    "enough_observation_span": false,
+    "enough_observations": false,
+    "integrity_guard": true,
+    "overlap_guard": false
+  },
+  "status": "collecting",
+  "summary": {
+    "comparison_count": 0,
+    "completed_observation_count": 1,
+    "latest_observation_date": "2026-06-13",
+    "minimum_overlap_rate": null,
+    "observation_span_days": 0
+  },
+  "tracker_name": "ValuCast Prospect Forward Shadow Tracker",
+  "tracker_version": "0.1.0"
+}

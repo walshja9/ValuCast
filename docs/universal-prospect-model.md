@@ -92,6 +92,45 @@ The layer remains incomplete as a dynasty valuation because it intentionally
 contains no league, roster, trade-market, position-scarcity, or manager-
 preference context.
 
+## Automated Forward Shadow Tracking
+
+The fresh-input-gated shadow pipeline runs the universal model, dynasty
+historical backtest, dynasty layer, and forward-observation report in order:
+
+```powershell
+python scripts/run_prospect_shadow_pipeline.py
+```
+
+The runner fingerprints `data/dd/prospect_model_inputs.json` and refuses to
+create another dated observation when the latest completed run used unchanged
+inputs. `--force` exists for repair and investigation, but routine automation
+must not use it. Model gates and observation dates are anchored to the factual
+contract's `generated_at`; machine execution time appears only in the run
+manifest.
+
+The repository workflow `.github/workflows/prospect-shadow.yml` runs after the
+factual input contract changes and can also be manually dispatched. It commits
+only generated model, evidence, report, and archive artifacts.
+
+Forward tracking measures:
+
+- dated observation count and span
+- archive/profile identity integrity
+- candidate overlap, entries, and exits
+- bust, role, star, expected-tier, and uncertainty movement
+- largest expected-tier movers between observations
+
+The report remains `collecting` until it has at least 30 fresh-input
+observations spanning at least 60 days, with sound archive integrity and at
+least 70% identity overlap. Reaching `review_ready` permits only a human
+consumer-design review. Stability is not realized-outcome accuracy, and the
+tracker can never authorize live DD value or ValuCast rank influence.
+
+Outputs:
+
+- `data/models/valucast_prospect_forward_shadow.json`
+- `data/prediction_archive/valucast_prospect_forward_shadow/YYYY-MM-DD.json`
+
 The representative season is always the player's highest-volume future MLB
 season (`PA` for hitters, `IP` for pitchers). It is never selected because it
 was the player's best fantasy-category season.
@@ -242,11 +281,12 @@ current blockers without changing league weights:
    without lowering or tuning against the adapter promotion gates.
 4. Expand completed historical coverage enough to test a longer outcome
    horizon without introducing label leakage.
-5. Design and validate a separate dynasty ceiling/risk layer that may consume
-   the factual outcome distribution without feeding preferences back into the
-   universal model.
-6. Forward-test dated profiles and adapter disagreements.
-7. Plug ValuCast's separate MLB projection models into the shared league
+5. Accumulate at least 30 fresh-input forward observations spanning at least
+   60 days, then review stability without treating it as outcome accuracy.
+6. Define realized-outcome evaluation once archived prospects begin reaching
+   measurable MLB outcomes.
+7. Forward-test adapter disagreements separately from the dynasty signal layer.
+8. Plug ValuCast's separate MLB projection models into the shared league
    projection contract.
-8. Add the missing universal outcomes required to unlock complete 5x5, points,
+9. Add the missing universal outcomes required to unlock complete 5x5, points,
    and broader custom-league adapters.
