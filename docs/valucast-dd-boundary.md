@@ -120,10 +120,10 @@ python scripts/build_prospect_rank_v1.py
 
 ## Current Shadow Build
 
-ValuCast now publishes a shadow gate artifact at
+ValuCast now publishes a gate artifact at
 `data/public/public_dynasty_snapshot.json`. That snapshot proves the public
-schema, freshness, source-policy, duplicate-identity, and field-validation
-rails before any live switch.
+schema, freshness, source-policy, duplicate-identity, field-validation, and
+cross-universe calibration rails before any live switch.
 
 The snapshot includes:
 
@@ -135,16 +135,19 @@ The snapshot includes:
   artifact built from ValuCast Rank v1 rather than DD value history or public
   source-rank gaps
 
-It is intentionally not ready for public consumers yet because:
+It has two separate readiness concepts:
 
-- current projection artifacts do not include an owned age source, so the MLB
-  layer cannot apply a dynasty age curve
-- the MLB layer is still one-season projection value, not a multi-year dynasty
-  horizon
-- MLB and prospect scores are not yet calibrated onto one cross-universe
-  dynasty scale
-- buy signals are shadow-only pending human review against the current
-  DD-backed `/buys` page and more dated ValuCast score history
+- `ready_for_live_consumers` means the snapshot can feed Dynasty/Prospects
+  instead of the DD feed when the environment switch is enabled.
+- `ready_for_all_public_surfaces` remains false until buy signals are reviewed
+  and have enough dated ValuCast score history.
+
+The MLB layer now has a ValuCast-owned identity age source and a three-year
+dynasty horizon. The cross-universe gate certifies MLB and prospect rows on the
+shared `0_100_valucast_dynasty_score` scale without mutating the underlying raw
+scores. The `/buys` switch remains separately gated by `ValuCastBuyStore` so a
+calibrated Dynasty/Prospects snapshot cannot accidentally promote an unreviewed
+buy board.
 
 ## Next Build
 

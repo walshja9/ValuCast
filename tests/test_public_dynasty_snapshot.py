@@ -2,7 +2,7 @@
 import json
 from types import SimpleNamespace
 
-from scripts.build_public_dynasty_snapshot import build_snapshot
+from scripts.build_public_dynasty_snapshot import COMMON_VALUE_SCALE, build_snapshot
 from web.public_snapshot_store import (
     PublicSnapshotStore,
     validate_public_snapshot_payload,
@@ -18,6 +18,14 @@ def _rank_payload():
         "ranked_count": 2,
         "rank_contract": {
             "prospect_universe_source": "valucast_prospect_universe",
+        },
+        "validation": {
+            "coverage_rate": 1.0,
+            "duplicate_identity_count": 0,
+            "missing_mlbam_count": 0,
+            "same_day_freshness": True,
+            "ranks_contiguous": True,
+            "top_200_unique_score_count": 182,
         },
         "board": [
             {
@@ -102,6 +110,65 @@ def _mlb_payload(mlbam_id=99, role="hitter"):
     }
 
 
+def _ready_mlb_payload():
+    players = []
+    for rank, (mlbam_id, name, value) in enumerate(
+        [
+            (99, "MLB Star", 90.0),
+            (98, "MLB Anchor", 80.0),
+            (97, "MLB Core", 70.0),
+        ],
+        1,
+    ):
+        players.append(
+            {
+                "id": f"vc_mlb_{mlbam_id}_hitter",
+                "player_type": "mlb",
+                "name": name,
+                "mlbam_id": mlbam_id,
+                "role": "hitter",
+                "positions": ["SS"],
+                "team": "BOS",
+                "mlb_team": "BOS",
+                "age": 24,
+                "rank": rank,
+                "value": value,
+                "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+                "value_source": "valucast_mlb_dynasty_horizon_v0_2",
+                "confidence": "high",
+                "projection_value": 12.3,
+                "components": {
+                    "dynasty_horizon_value": 11.0,
+                    "horizon_years": [{"season": 2026}, {"season": 2027}, {"season": 2028}],
+                },
+                "drivers": ["HR +1.20"],
+                "stat_line": {"stats": {"PA": 650}},
+            }
+        )
+    return {
+        "status": "shadow_only",
+        "layer_version": "0.2.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "value_contract": {
+            "score_range": [0.0, 100.0],
+            "value_kind": "multi_year_dynasty_horizon",
+            "horizon_years": 3,
+        },
+        "validation": {
+            "row_count": len(players),
+            "ready_for_live_consumers": True,
+            "blockers": [],
+            "missing_mlbam_count": 0,
+            "duplicate_identity_count": 0,
+            "ranks_contiguous": True,
+            "age_coverage_rate": 1.0,
+            "age_coverage_threshold": 0.95,
+            "horizon_year_count": 3,
+        },
+        "players": players,
+    }
+
+
 def _buy_payload():
     return {
         "status": "shadow_only",
@@ -144,6 +211,45 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["valucast_buy_signals_ready"] is False
     assert payload["validation"]["surface_readiness"]["buys"] is False
     assert "shadow-only" in payload["validation"]["blockers"][0]
+
+
+def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    problems = validate_public_snapshot_payload(payload)
+
+    assert problems == []
+    assert payload["validation"]["ready_for_live_consumers"] is True
+    assert payload["validation"]["ready_for_all_public_surfaces"] is False
+    assert payload["validation"]["cross_universe_value_scale_calibrated"] is True
+    assert payload["validation"]["surface_readiness"] == {
+        "dynasty": True,
+        "prospects": True,
+        "buys": False,
+    }
+    assert payload["validation"]["blockers"] == []
+    assert payload["validation"]["buy_signal_blockers"] == [
+        "ValuCast buy signals are shadow-only.",
+    ]
+    assert {row["value_scale"] for row in payload["players"]} == {COMMON_VALUE_SCALE}
+    assert {row["status"] for row in payload["players"]} == {"candidate_ready"}
+
+    calibration = payload["validation"]["cross_universe_calibration"]
+    assert calibration["method"] == "raw_common_scale_certification_v1"
+    assert calibration["value_mutation"] == "none"
+    assert calibration["metrics"]["mlb_rows_at_or_above_top_prospect"] == 3
+    assert calibration["metrics"]["top_prospect_mlb_equivalent_rank"] == 4
+    assert payload["players"][0]["name"] == "MLB Star"
+    top_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+    assert top_prospect["rank"] == 4
+    assert top_prospect["context"]["cross_universe_calibration"]["raw_value"] == 55.5
+    assert (
+        top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
+        == COMMON_VALUE_SCALE
+    )
 
 
 def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):

@@ -14,6 +14,14 @@ OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
+COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
+CALIBRATION_METHOD = "raw_common_scale_certification_v1"
+
+MIN_PROSPECT_COVERAGE_RATE = 0.98
+MIN_TOP_200_UNIQUE_SCORE_COUNT = 150
+MIN_MLB_ROWS_ABOVE_TOP_PROSPECT = 3
+MAX_MLB_ROWS_ABOVE_TOP_PROSPECT = 50
+MIN_MLB_HORIZON_YEARS = 3
 
 
 def _load_json(path: Path) -> dict:
@@ -149,12 +157,188 @@ def _assign_global_ranks(players: list[dict]) -> list[dict]:
     return ranked
 
 
+def _numeric_values(rows: list[dict]) -> list[float]:
+    values = []
+    for row in rows:
+        try:
+            value = float(row.get("value"))
+        except (TypeError, ValueError):
+            continue
+        if value == value and 0.0 <= value <= 100.0:
+            values.append(value)
+    return values
+
+
+def _percentile(values: list[float], percentile: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return round(ordered[0], 2)
+    position = (len(ordered) - 1) * percentile
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    fraction = position - lower
+    return round(ordered[lower] * (1.0 - fraction) + ordered[upper] * fraction, 2)
+
+
+def _value_distribution(values: list[float]) -> dict:
+    return {
+        "count": len(values),
+        "max": round(max(values), 2) if values else None,
+        "p95": _percentile(values, 0.95),
+        "p90": _percentile(values, 0.90),
+        "p75": _percentile(values, 0.75),
+        "median": _percentile(values, 0.50),
+    }
+
+
+def _apply_common_value_scale(players: list[dict], report: dict) -> None:
+    for row in players:
+        original_scale = row.get("value_scale")
+        row["value_scale"] = COMMON_VALUE_SCALE
+        row["status"] = "candidate_ready"
+        context = dict(row.get("context") or {})
+        context["cross_universe_calibration"] = {
+            "method": CALIBRATION_METHOD,
+            "value_mutation": "none",
+            "raw_value": row.get("value"),
+            "raw_value_scale": original_scale,
+            "calibrated_value": row.get("value"),
+            "calibrated_value_scale": COMMON_VALUE_SCALE,
+            "mlb_equivalent_rank_for_top_prospect": report["metrics"].get(
+                "top_prospect_mlb_equivalent_rank"
+            ),
+        }
+        row["context"] = context
+
+
+def _cross_universe_calibration_report(
+    players: list[dict],
+    rank_payload: dict,
+    mlb_layer: dict | None,
+    generated_date: str | None,
+    rank_date: str | None,
+    mlb_date: str | None,
+    duplicate_identity_count: int,
+) -> dict:
+    mlb_rows = [row for row in players if row.get("player_type") == "mlb"]
+    prospect_rows = [row for row in players if row.get("player_type") == "prospect"]
+    mlb_values = _numeric_values(mlb_rows)
+    prospect_values = _numeric_values(prospect_rows)
+    mlb_validation = (mlb_layer or {}).get("validation") or {}
+    value_contract = (mlb_layer or {}).get("value_contract") or {}
+    rank_validation = rank_payload.get("validation") or {}
+
+    top_prospect_value = max(prospect_values) if prospect_values else None
+    mlb_rows_above_top_prospect = (
+        sum(1 for value in mlb_values if value >= top_prospect_value)
+        if top_prospect_value is not None
+        else 0
+    )
+    minimum_mlb_rows_above = min(MIN_MLB_ROWS_ABOVE_TOP_PROSPECT, len(mlb_values))
+    maximum_mlb_rows_above = min(MAX_MLB_ROWS_ABOVE_TOP_PROSPECT, len(mlb_values))
+
+    metrics = {
+        "mlb": _value_distribution(mlb_values),
+        "prospects": _value_distribution(prospect_values),
+        "top_prospect_value": round(top_prospect_value, 2)
+        if top_prospect_value is not None
+        else None,
+        "mlb_rows_at_or_above_top_prospect": mlb_rows_above_top_prospect,
+        "top_prospect_mlb_equivalent_rank": (
+            mlb_rows_above_top_prospect + 1 if prospect_values else None
+        ),
+        "minimum_mlb_rows_at_or_above_top_prospect": minimum_mlb_rows_above,
+        "maximum_mlb_rows_at_or_above_top_prospect": maximum_mlb_rows_above,
+    }
+
+    blockers = []
+    if not mlb_layer:
+        blockers.append("ValuCast MLB dynasty layer is missing.")
+    if not mlb_validation.get("ready_for_live_consumers"):
+        blockers.append("ValuCast MLB dynasty layer is not standalone-ready.")
+    if value_contract.get("value_kind") != "multi_year_dynasty_horizon":
+        blockers.append("ValuCast MLB layer is not a multi-year dynasty horizon.")
+    if int(value_contract.get("horizon_years") or 0) < MIN_MLB_HORIZON_YEARS:
+        blockers.append("ValuCast MLB horizon is shorter than the calibration gate.")
+    if mlb_validation.get("duplicate_identity_count", 0) != 0:
+        blockers.append("ValuCast MLB layer has duplicate MLBAM+role identities.")
+    if mlb_validation.get("missing_mlbam_count", 0) != 0:
+        blockers.append("ValuCast MLB layer has rows missing MLBAM identity.")
+    if not mlb_validation.get("ranks_contiguous", False):
+        blockers.append("ValuCast MLB layer ranks are not contiguous.")
+    if not mlb_values:
+        blockers.append("ValuCast MLB layer has no numeric 0-100 values.")
+
+    coverage_rate = float(rank_validation.get("coverage_rate") or 0.0)
+    top_unique_count = int(rank_validation.get("top_200_unique_score_count") or 0)
+    if coverage_rate < MIN_PROSPECT_COVERAGE_RATE:
+        blockers.append("Prospect Rank v1 coverage is below the calibration gate.")
+    if rank_validation.get("duplicate_identity_count", 0) != 0:
+        blockers.append("Prospect Rank v1 has duplicate MLBAM+role identities.")
+    if rank_validation.get("missing_mlbam_count", 0) != 0:
+        blockers.append("Prospect Rank v1 has rows missing MLBAM identity.")
+    if not rank_validation.get("same_day_freshness", False):
+        blockers.append("Prospect Rank v1 input artifacts are not same-day fresh.")
+    if not rank_validation.get("ranks_contiguous", False):
+        blockers.append("Prospect Rank v1 ranks are not contiguous.")
+    if top_unique_count < MIN_TOP_200_UNIQUE_SCORE_COUNT:
+        blockers.append("Prospect Rank v1 top-200 score separation is below the gate.")
+    if not prospect_values:
+        blockers.append("Prospect Rank v1 has no numeric 0-100 values.")
+
+    date_values = [generated_date, rank_date, mlb_date]
+    if not all(date_values) or len(set(date_values)) != 1:
+        blockers.append("MLB layer, prospect rank, and public snapshot are not same-day fresh.")
+    if duplicate_identity_count:
+        blockers.append("Public snapshot has duplicate MLBAM+role identities.")
+    if len(mlb_values) != len(mlb_rows) or len(prospect_values) != len(prospect_rows):
+        blockers.append("Public snapshot has non-numeric or out-of-range values.")
+    if (
+        top_prospect_value is not None
+        and mlb_values
+        and mlb_rows_above_top_prospect < minimum_mlb_rows_above
+    ):
+        blockers.append(
+            "Top prospect is calibrated above too much of the current MLB dynasty board."
+        )
+    if (
+        top_prospect_value is not None
+        and mlb_values
+        and mlb_rows_above_top_prospect > maximum_mlb_rows_above
+    ):
+        blockers.append(
+            "Top prospect is calibrated below too much of the current MLB dynasty board."
+        )
+
+    return {
+        "method": CALIBRATION_METHOD,
+        "target_value_scale": COMMON_VALUE_SCALE,
+        "value_mutation": "none",
+        "applied": not blockers,
+        "metrics": metrics,
+        "criteria": {
+            "mlb_value_kind": "multi_year_dynasty_horizon",
+            "minimum_mlb_horizon_years": MIN_MLB_HORIZON_YEARS,
+            "minimum_prospect_coverage_rate": MIN_PROSPECT_COVERAGE_RATE,
+            "minimum_top_200_unique_score_count": MIN_TOP_200_UNIQUE_SCORE_COUNT,
+            "minimum_mlb_rows_at_or_above_top_prospect": minimum_mlb_rows_above,
+            "maximum_mlb_rows_at_or_above_top_prospect": maximum_mlb_rows_above,
+            "same_day_freshness_required": True,
+            "duplicate_identity_count_required": 0,
+        },
+        "blockers": blockers,
+    }
+
+
 def _validation(
     payload: dict,
     rank_payload: dict,
     mlb_layer: dict | None,
     buy_signals: dict | None,
     prospects_excluded_by_mlb_identity_count: int,
+    calibration_report: dict,
 ) -> dict:
     players = payload.get("players") or []
     identity_keys = [key for row in players if (key := _identity_key(row))]
@@ -166,6 +350,7 @@ def _validation(
     mlb_validation = (mlb_layer or {}).get("validation") or {}
     buy_validation = (buy_signals or {}).get("validation") or {}
     blockers = []
+    buy_blockers = []
     if not mlb_layer:
         blockers.append(
             "ValuCast MLB dynasty value layer artifact is missing; snapshot contains no MLB canonical values."
@@ -175,15 +360,11 @@ def _validation(
             mlb_validation.get("blockers")
             or ["ValuCast MLB dynasty value layer is still shadow-only."]
         )
-    blockers.extend(
-        [
-            "MLB and prospect scores are not yet calibrated to one cross-universe dynasty scale.",
-        ]
-    )
+    blockers.extend(calibration_report.get("blockers") or [])
     if not buy_signals:
-        blockers.append("ValuCast-owned buy signal artifact is missing.")
+        buy_blockers.append("ValuCast-owned buy signal artifact is missing.")
     elif not buy_validation.get("ready_for_live_consumers"):
-        blockers.extend(
+        buy_blockers.extend(
             buy_validation.get("blockers")
             or ["ValuCast buy signals are still shadow-only."]
         )
@@ -192,9 +373,22 @@ def _validation(
         date_values.append(mlb_date)
     if buy_signals:
         date_values.append(buy_date)
+    same_day_freshness = all(date_values) and len(set(date_values)) == 1
+    if not same_day_freshness:
+        blockers.append("Public snapshot input artifacts are not all same-day fresh.")
+    if duplicate_identity_count:
+        blockers.append("Public snapshot has duplicate MLBAM+role identities.")
+
+    dynasty_ready = not blockers and bool(calibration_report.get("applied"))
+    prospects_ready = dynasty_ready
+    buys_ready = dynasty_ready and bool(buy_validation.get("ready_for_live_consumers"))
+    blockers = list(dict.fromkeys(blockers))
+    buy_blockers = list(dict.fromkeys(buy_blockers))
+
     return {
-        "ready_for_live_consumers": False,
-        "same_day_freshness": all(date_values) and len(set(date_values)) == 1,
+        "ready_for_live_consumers": dynasty_ready and prospects_ready,
+        "ready_for_all_public_surfaces": dynasty_ready and prospects_ready and buys_ready,
+        "same_day_freshness": same_day_freshness,
         "generated_dates": {
             "public_snapshot": generated_date,
             "mlb_dynasty_layer": mlb_date,
@@ -217,12 +411,19 @@ def _validation(
             buy_validation.get("ready_for_live_consumers")
         ),
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
-        "cross_universe_value_scale_calibrated": False,
+        "cross_universe_value_scale_calibrated": bool(calibration_report.get("applied")),
+        "cross_universe_calibration": calibration_report,
         "surface_readiness": {
-            "dynasty": False,
-            "prospects": False,
-            "buys": bool(buy_validation.get("ready_for_live_consumers")),
+            "dynasty": dynasty_ready,
+            "prospects": prospects_ready,
+            "buys": buys_ready,
         },
+        "surface_blockers": {
+            "dynasty": blockers,
+            "prospects": blockers,
+            "buys": buy_blockers,
+        },
+        "buy_signal_blockers": buy_blockers,
         "blockers": blockers,
     }
 
@@ -251,6 +452,23 @@ def build_snapshot(
     prospects_excluded_by_mlb_identity_count = (
         len((prospect_rank.get("board") or [])) - len(prospect_rows)
     )
+    combined_rows = mlb_rows + prospect_rows
+    identity_keys = [key for row in combined_rows if (key := _identity_key(row))]
+    duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
+    generated_date = _date_part(generated_at)
+    rank_date = _date_part(prospect_rank.get("generated_at"))
+    mlb_date = _date_part((mlb_layer or {}).get("generated_at"))
+    calibration_report = _cross_universe_calibration_report(
+        combined_rows,
+        prospect_rank,
+        mlb_layer,
+        generated_date,
+        rank_date,
+        mlb_date,
+        duplicate_identity_count,
+    )
+    if calibration_report.get("applied"):
+        _apply_common_value_scale(combined_rows, calibration_report)
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact": ARTIFACT_NAME,
@@ -275,7 +493,7 @@ def build_snapshot(
                 "prospect_universe_source"
             ),
         },
-        "players": _assign_global_ranks(mlb_rows + prospect_rows),
+        "players": _assign_global_ranks(combined_rows),
     }
     payload["validation"] = _validation(
         payload,
@@ -283,6 +501,7 @@ def build_snapshot(
         mlb_layer,
         buy_signals,
         prospects_excluded_by_mlb_identity_count,
+        calibration_report,
     )
     return payload
 

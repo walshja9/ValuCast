@@ -95,7 +95,8 @@ class PublicSnapshotStore:
     """Loads the ValuCast public dynasty snapshot.
 
     `is_available` means the snapshot is structurally valid. `ready_for_live_consumers`
-    is stricter and controls whether routes may consume it instead of the DD feed.
+    is stricter and controls whether Dynasty/Prospects routes may consume it
+    instead of the DD feed. Buys are gated separately by ValuCastBuyStore.
     """
 
     def __init__(self, path: str | Path) -> None:
