@@ -28,10 +28,21 @@ class PublicSnapshotRow:
     mlbam_id: str | None
     role: str | None = None
     status: str | None = None
+    tier: str | int | None = None
+    value_type: str | None = None
+    market_value: float | None = None
+    trend_delta: float | None = None
+    trend_direction: str | None = None
+    proj_pa: float | None = None
+    proj_ip: float | None = None
+    is_rp_only: bool | None = None
+    dna: str | None = None
+    z_scores: dict | None = None
     prospect_rank: int | None = None
     level: str | None = None
     eta: int | None = None
     source_ranks: dict | None = None
+    source_divergence: float | None = None
     breakout_label: str | None = None
     breakout_rank_change: int | None = None
     value_history: tuple = ()
@@ -101,6 +112,14 @@ class PublicSnapshotRow:
         return raw if isinstance(raw, dict) and raw else None
 
     @staticmethod
+    def _coerce_confidence(raw):
+        if isinstance(raw, dict):
+            return raw or None
+        if isinstance(raw, str) and raw:
+            return {"level": raw}
+        return None
+
+    @staticmethod
     def _normalize_positions(raw) -> tuple[str, ...]:
         positions = []
         for position in raw or []:
@@ -125,15 +144,26 @@ class PublicSnapshotRow:
             value=float(record["value"]),
             value_scale=record["value_scale"],
             value_source=record["value_source"],
-            confidence=record.get("confidence"),
+            confidence=cls._coerce_confidence(record.get("confidence")),
             updated_at=record["updated_at"],
             mlbam_id=str(record["mlbam_id"]) if record.get("mlbam_id") not in (None, "") else None,
             role=record.get("role"),
             status=record.get("status"),
+            tier=record.get("tier"),
+            value_type=record.get("value_type"),
+            market_value=record.get("market_value"),
+            trend_delta=record.get("trend_delta"),
+            trend_direction=record.get("trend_direction"),
+            proj_pa=record.get("proj_pa"),
+            proj_ip=record.get("proj_ip"),
+            is_rp_only=record.get("is_rp_only"),
+            dna=record.get("dna"),
+            z_scores=cls._coerce_dict(record.get("z_scores")),
             prospect_rank=cls._coerce_int(record.get("prospect_rank")),
             level=record.get("level"),
             eta=cls._coerce_int(record.get("eta")),
             source_ranks=cls._coerce_dict(context.get("source_ranks")),
+            source_divergence=record.get("source_divergence"),
             breakout_label=record.get("breakout_label") or context.get("breakout_label"),
             breakout_rank_change=cls._coerce_int(
                 record.get("breakout_rank_change")

@@ -206,6 +206,7 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["validation"]["mlb_dynasty_value_layer_present"] is True
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
     assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
     assert payload["validation"]["valucast_buy_signal_count"] == 2
     assert payload["validation"]["valucast_buy_signals_ready"] is False
@@ -270,6 +271,10 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row is not None
     assert row.dynasty_rank == 2
     assert row.dynasty_value == 55.5
+    assert row.confidence == {"level": "medium"}
+    assert row.tier is None
+    assert row.z_scores is None
+    assert row.source_divergence is None
     assert row.prospect_rank == 1
     assert row.breakout_label == "rising"
     assert row.public_source_consensus == 10
@@ -286,9 +291,13 @@ def test_snapshot_excludes_prospect_duplicate_when_mlb_identity_exists():
     assert payload["validation"]["duplicate_identity_count"] == 0
     assert payload["validation"]["mlb_count"] == 1
     assert payload["validation"]["prospect_count"] == 1
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
     assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
         "vc_mlb_1_hitter"
     ]
+    remaining_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+    assert remaining_prospect["prospect_rank"] == 1
+    assert remaining_prospect["context"]["valucast_rank_v1"] == 2
 
 
 def test_rejects_bad_schema(tmp_path):

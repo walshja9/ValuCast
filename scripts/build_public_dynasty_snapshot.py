@@ -129,6 +129,7 @@ def _prospect_rows(
                 "breakout_rank_change": context.get("breakout_rank_change"),
                 "context": {
                     "kind": "optional_dd_display_context",
+                    "valucast_rank_v1": row.get("rank"),
                     "dd_dynasty_rank": context.get("dd_dynasty_rank"),
                     "dd_dynasty_value": context.get("dd_dynasty_value"),
                     "dd_prospect_rank": context.get("dd_prospect_rank"),
@@ -138,6 +139,12 @@ def _prospect_rows(
                 },
             }
         )
+    return rows
+
+
+def _assign_visible_prospect_ranks(rows: list[dict]) -> list[dict]:
+    for rank, row in enumerate(rows, 1):
+        row["prospect_rank"] = rank
     return rows
 
 
@@ -343,6 +350,14 @@ def _validation(
     players = payload.get("players") or []
     identity_keys = [key for row in players if (key := _identity_key(row))]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
+    prospect_visible_ranks = [
+        row.get("prospect_rank")
+        for row in players
+        if row.get("player_type") == "prospect"
+    ]
+    visible_prospect_ranks_contiguous = prospect_visible_ranks == list(
+        range(1, len(prospect_visible_ranks) + 1)
+    )
     generated_date = _date_part(payload.get("generated_at"))
     rank_date = _date_part(rank_payload.get("generated_at"))
     mlb_date = _date_part((mlb_layer or {}).get("generated_at"))
@@ -378,6 +393,8 @@ def _validation(
         blockers.append("Public snapshot input artifacts are not all same-day fresh.")
     if duplicate_identity_count:
         blockers.append("Public snapshot has duplicate MLBAM+role identities.")
+    if not visible_prospect_ranks_contiguous:
+        blockers.append("Public snapshot visible prospect ranks are not contiguous.")
 
     dynasty_ready = not blockers and bool(calibration_report.get("applied"))
     prospects_ready = dynasty_ready
@@ -406,6 +423,7 @@ def _validation(
         ),
         "prospect_rank_v1_candidate_count": rank_payload.get("candidate_count"),
         "prospect_rank_v1_ranked_count": rank_payload.get("ranked_count"),
+        "visible_prospect_ranks_contiguous": visible_prospect_ranks_contiguous,
         "valucast_buy_signal_count": buy_validation.get("row_count"),
         "valucast_buy_signals_ready": bool(
             buy_validation.get("ready_for_live_consumers")
@@ -449,6 +467,7 @@ def build_snapshot(
         generated_at,
         excluded_identity_keys=mlb_identity_keys,
     )
+    prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
     prospects_excluded_by_mlb_identity_count = (
         len((prospect_rank.get("board") or [])) - len(prospect_rows)
     )
