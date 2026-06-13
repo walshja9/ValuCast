@@ -1,0 +1,67 @@
+name: Daily public data refresh
+
+on:
+  schedule:
+    # DD's VPS nightly starts at 7:00 AM ET. This runs at 9:30 AM EDT /
+    # 8:30 AM EST so the generated dynasty feed and its Render deploy can land.
+    - cron: "30 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e . pytest
+
+      - name: Refresh MLB actuals and Steamer ROS
+        run: python -m scraper.refresh
+
+      - name: Refresh Baseball Savant player-card data
+        run: python scripts/fetch_statcast_percentiles.py
+
+      - name: Sync generated DD dynasty and buys feed
+        run: python scripts/sync_dd_feed.py
+
+      - name: Validate public artifacts
+        run: |
+          python scripts/validate_feed.py
+          python scripts/validate_public_data_freshness.py
+          python -m pytest -q \
+            tests/test_refresh.py \
+            tests/test_dd_feed_integrity.py \
+            tests/test_public_data_refresh.py
+
+      - name: Commit and publish refreshed data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/actuals/current.json \
+            data/dd/dd_dynasty_feed.json \
+            data/projections/current.json \
+            data/projections/metadata.json \
+            data/projections/ros.json \
+            data/statcast/percentiles.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
+          git push origin master

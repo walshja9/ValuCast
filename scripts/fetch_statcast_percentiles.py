@@ -1,8 +1,8 @@
 """Fetch Baseball Savant percentile rankings into a committed snapshot artifact.
 
-Snapshot model (same as data/projections): this script is run MANUALLY on a dev
-machine and the resulting data/statcast/percentiles.json is committed. The web
-app never fetches Savant at runtime — it only reads the committed artifact.
+Snapshot model (same as data/projections): the daily public-data workflow writes
+and commits data/statcast/percentiles.json. The web app never fetches Savant at
+runtime; it only reads the committed artifact.
 
 Usage: PYTHONPATH=src:. python scripts/fetch_statcast_percentiles.py [year]
 

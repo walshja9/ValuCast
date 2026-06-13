@@ -43,6 +43,7 @@ FanGraphs API  →  scraper/fangraphs.py    →  scraper/combine.py  →  data/p
 - **ROS:** Steamer Rest-of-Season projections via FanGraphs (`steamerr`)
 - **Combine:** Counting stats add directly. Rate stats (AVG, ERA, WHIP, etc.) recalculated from combined components — never averaged.
 - **IP normalization:** MLB API innings are in baseball notation (4.2 = 4⅔); adapter converts to decimal before arithmetic.
+- **Daily publish:** GitHub Actions refreshes actuals, Steamer ROS, Statcast player-card data, and the generated DD dynasty/buys feed each morning, then deploys only after same-day freshness checks pass.
 
 ## Engine
 
