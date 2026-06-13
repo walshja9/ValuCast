@@ -107,11 +107,14 @@ It may not use:
 - public prospect source ranks
 - DD 7x7 adapter score or rank
 
-For now the DD feed can define the review universe and provide card/display
-context. That does not make DD a scoring input. The artifact reports coverage
-gaps and migration blockers so it cannot quietly replace the production feed.
+`prospects/universe.py` builds the ValuCast-owned candidate universe from
+ValuCast prospect model artifacts. DD feed rows may add optional
+display/comparison context by MLBAM ID plus role, but DD no longer defines
+Rank v1 membership. The artifact reports coverage gaps and migration blockers
+so it cannot quietly replace the production feed.
 
 ```powershell
+python scripts/build_prospect_universe.py
 python scripts/build_prospect_rank_v1.py
 ```
 

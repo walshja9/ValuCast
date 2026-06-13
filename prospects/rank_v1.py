@@ -1,8 +1,8 @@
 """Candidate ValuCast prospect ranking built from ValuCast-owned signals.
 
-This artifact is a bridge, not a production switch. It ranks the current public
-prospect universe for review while keeping DD ranks, DD values, and public
-source ranks out of the score.
+This artifact is a bridge, not a production switch. It ranks the current
+ValuCast prospect universe for review while keeping DD ranks, DD values, and
+public source ranks out of the score.
 """
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from typing import Any
 
 from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
+from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
@@ -192,12 +193,28 @@ def _adapter_lookup(adapter: dict | None) -> dict[tuple[str, str], dict]:
     return lookup
 
 
-def _prospect_rows(dd_feed: dict) -> list[dict]:
+def _universe_rows(prospect_universe: dict) -> list[dict]:
     return [
         row
-        for row in dd_feed.get("players") or []
-        if row.get("player_type") == "prospect"
+        for row in prospect_universe.get("players") or []
+        if row.get("role") in {"hitter", "pitcher"}
     ]
+
+
+def _dd_context_lookup(dd_feed: dict | None) -> dict[tuple[str, str], dict]:
+    if not dd_feed:
+        return {}
+    lookup = {}
+    for row in dd_feed.get("players") or []:
+        if row.get("player_type") != "prospect":
+            continue
+        role = row.get("role") if row.get("role") in {"hitter", "pitcher"} else infer_role(
+            row.get("positions")
+        )
+        key = identity_key(row.get("mlbam_id"), role)
+        if key and key not in lookup:
+            lookup[key] = row
+    return lookup
 
 
 def _model_score(model_profile: dict | None) -> float | None:
@@ -383,15 +400,16 @@ def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
     ]
 
 
-def _context(dd_row: dict, adapter_row: dict | None) -> dict:
+def _context(dd_row: dict | None, adapter_row: dict | None) -> dict:
     context = {
-        "dd_dynasty_rank": dd_row.get("dynasty_rank"),
-        "dd_dynasty_value": dd_row.get("dynasty_value"),
-        "dd_prospect_rank": dd_row.get("prospect_rank"),
-        "source_ranks": dd_row.get("source_ranks"),
-        "breakout_label": dd_row.get("breakout_label"),
-        "breakout_rank_change": dd_row.get("breakout_rank_change"),
-        "value_history_points": len(dd_row.get("value_history") or []),
+        "has_dd_context": bool(dd_row),
+        "dd_dynasty_rank": (dd_row or {}).get("dynasty_rank"),
+        "dd_dynasty_value": (dd_row or {}).get("dynasty_value"),
+        "dd_prospect_rank": (dd_row or {}).get("prospect_rank"),
+        "source_ranks": (dd_row or {}).get("source_ranks"),
+        "breakout_label": (dd_row or {}).get("breakout_label"),
+        "breakout_rank_change": (dd_row or {}).get("breakout_rank_change"),
+        "value_history_points": len((dd_row or {}).get("value_history") or []),
     }
     if adapter_row:
         context["dd_adapter_context"] = {
@@ -404,17 +422,21 @@ def _context(dd_row: dict, adapter_row: dict | None) -> dict:
 
 def _missing_sample(rows: list[dict], missing_keys: set[tuple[str, str]], limit: int = 15) -> list[dict]:
     missing = []
-    for row in sorted(rows, key=lambda item: item.get("prospect_rank") or 9999):
-        role = infer_role(row.get("positions"))
+    for row in sorted(rows, key=lambda item: str(item.get("name") or "")):
+        role = row.get("role") if row.get("role") in {"hitter", "pitcher"} else infer_role(
+            row.get("positions")
+        )
         key = identity_key(row.get("mlbam_id"), role)
         if key in missing_keys:
+            context = row.get("context_only") or {}
             missing.append(
                 {
                     "name": row.get("name"),
                     "mlbam_id": row.get("mlbam_id"),
                     "role": role,
-                    "dd_prospect_rank": row.get("prospect_rank"),
-                    "dd_dynasty_rank": row.get("dynasty_rank"),
+                    "dd_prospect_rank": context.get("dd_prospect_rank"),
+                    "dd_dynasty_rank": context.get("dd_dynasty_rank"),
+                    "universe_source": row.get("universe_source"),
                 }
             )
         if len(missing) >= limit:
@@ -423,9 +445,10 @@ def _missing_sample(rows: list[dict], missing_keys: set[tuple[str, str]], limit:
 
 
 def _validation(
-    dd_feed: dict,
+    prospect_universe: dict,
     dynasty_layer: dict,
     input_contract: dict,
+    dd_feed: dict | None,
     prospect_rows: list[dict],
     board: list[dict],
     duplicate_keys: list[tuple[str, str]],
@@ -433,11 +456,12 @@ def _validation(
     unmatched_layer_keys: set[tuple[str, str]],
     identity_only_fallback_count: int,
 ) -> dict:
-    feed_date = _generated_date(dd_feed)
+    universe_date = _generated_date(prospect_universe)
+    feed_date = _generated_date(dd_feed or {})
     layer_date = _generated_date(dynasty_layer)
     input_date = _generated_date(input_contract)
-    same_day = bool(feed_date and layer_date and input_date) and len(
-        {feed_date, layer_date, input_date}
+    same_day = bool(universe_date and layer_date and input_date) and len(
+        {universe_date, layer_date, input_date}
     ) == 1
     coverage_rate = round(len(board) / len(prospect_rows), 4) if prospect_rows else 0.0
     top_200_scores = {row["score"] for row in board[:200]}
@@ -450,7 +474,7 @@ def _validation(
             "Current ValuCast prospect-model coverage is below the public migration threshold."
         )
     if missing_mlbam_count:
-        blockers.append("Some public prospect rows still lack MLBAM identity.")
+        blockers.append("Some ValuCast prospect-universe rows still lack MLBAM identity.")
     if duplicate_keys:
         blockers.append("Duplicate MLBAM+role identities exist in the prospect universe.")
     if len(top_200_scores) < MIN_TOP_200_UNIQUE_SCORE_COUNT:
@@ -463,9 +487,10 @@ def _validation(
         "ready_to_replace_dd_feed": False,
         "same_day_freshness": same_day,
         "generated_dates": {
-            "dd_feed": feed_date,
+            "prospect_universe": universe_date,
             "dynasty_layer": layer_date,
             "prospect_input_contract": input_date,
+            "dd_feed_context": feed_date,
         },
         "prospect_universe_count": len(prospect_rows),
         "ranked_count": len(board),
@@ -486,18 +511,20 @@ def _validation(
 
 
 def build_prospect_rank_v1(
-    dd_feed: dict,
+    prospect_universe: dict,
     dynasty_layer: dict,
     prospect_model: dict,
     input_contract: dict,
     dd_adapter: dict | None = None,
+    dd_feed: dict | None = None,
 ) -> dict:
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
     input_by_key = _input_lookup(input_contract)
     adapter_by_key = _adapter_lookup(dd_adapter)
+    dd_context_by_key = _dd_context_lookup(dd_feed)
 
-    rows = _prospect_rows(dd_feed)
+    rows = _universe_rows(prospect_universe)
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_mlbam_count = 0
@@ -505,9 +532,9 @@ def build_prospect_rank_v1(
     identity_only_fallback_count = 0
     board = []
 
-    for dd_row in rows:
-        role = infer_role(dd_row.get("positions"))
-        key = identity_key(dd_row.get("mlbam_id"), role)
+    for universe_row in rows:
+        role = universe_row.get("role")
+        key = identity_key(universe_row.get("mlbam_id"), role)
         if key is None:
             missing_mlbam_count += 1
             continue
@@ -515,6 +542,7 @@ def build_prospect_rank_v1(
             duplicate_keys.append(key)
             continue
         seen.add(key)
+        dd_row = dd_context_by_key.get(key)
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
@@ -535,17 +563,21 @@ def build_prospect_rank_v1(
         )
         board.append(
             {
-                "mlbam_id": dd_row.get("mlbam_id"),
-                "name": dd_row.get("name") or (layer_profile or {}).get("name"),
-                "normalized_name": (layer_profile or {}).get("normalized_name"),
+                "mlbam_id": universe_row.get("mlbam_id"),
+                "name": universe_row.get("name")
+                or (dd_row or {}).get("name")
+                or (layer_profile or {}).get("name"),
+                "normalized_name": universe_row.get("normalized_name")
+                or (layer_profile or {}).get("normalized_name"),
                 "role": role,
-                "positions": dd_row.get("positions"),
-                "mlb_team": dd_row.get("mlb_team"),
-                "age": dd_row.get("age")
-                if dd_row.get("age") is not None
+                "positions": universe_row.get("positions") or (dd_row or {}).get("positions"),
+                "mlb_team": universe_row.get("mlb_team") or (dd_row or {}).get("mlb_team"),
+                "age": universe_row.get("age")
+                if universe_row.get("age") is not None
                 else (layer_profile or {}).get("age"),
-                "level": dd_row.get("level") or (layer_profile or {}).get("level"),
-                "eta": dd_row.get("eta"),
+                "level": universe_row.get("level") or (layer_profile or {}).get("level"),
+                "eta": universe_row.get("eta") or (dd_row or {}).get("eta"),
+                "universe_source": universe_row.get("universe_source"),
                 "score": score,
                 "score_source": source,
                 "confidence": confidence,
@@ -569,9 +601,10 @@ def build_prospect_rank_v1(
         row["rank"] = rank
 
     validation = _validation(
-        dd_feed,
+        prospect_universe,
         dynasty_layer,
         input_contract,
+        dd_feed,
         rows,
         board,
         duplicate_keys,
@@ -585,9 +618,10 @@ def build_prospect_rank_v1(
         or validation["duplicate_identity_count"] > 0
     )
     generated_at = (
-        dynasty_layer.get("generated_at")
+        prospect_universe.get("generated_at")
+        or dynasty_layer.get("generated_at")
         or input_contract.get("generated_at")
-        or dd_feed.get("generated_at")
+        or (dd_feed or {}).get("generated_at")
     )
     return {
         "status": "candidate_shadow",
@@ -606,7 +640,8 @@ def build_prospect_rank_v1(
             "model_component_weights": MODEL_COMPONENT_WEIGHTS,
             "fallback_score_cap": FALLBACK_SCORE_CAP,
             "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
-            "dd_feed_usage": "Universe, identity, and display context only.",
+            "prospect_universe_source": "valucast_prospect_universe",
+            "dd_feed_usage": "Optional display/comparison context only.",
             "context_only_fields": [
                 "DD dynasty_rank",
                 "DD dynasty_value",
@@ -623,9 +658,12 @@ def build_prospect_rank_v1(
             "tie_policy": "Ranks are contiguous after deterministic non-score tiebreakers.",
         },
         "input_artifacts": {
-            "dd_feed_generated_by": dd_feed.get("generated_by"),
-            "dd_feed_source": dd_feed.get("source"),
-            "dd_feed_schema_version": dd_feed.get("schema_version"),
+            "prospect_universe_schema_version": prospect_universe.get("schema_version"),
+            "prospect_universe_artifact": prospect_universe.get("artifact"),
+            "prospect_universe_candidate_count": prospect_universe.get("candidate_count"),
+            "dd_feed_generated_by": (dd_feed or {}).get("generated_by"),
+            "dd_feed_source": (dd_feed or {}).get("source"),
+            "dd_feed_schema_version": (dd_feed or {}).get("schema_version"),
             "prospect_model_version": prospect_model.get("model_version"),
             "dynasty_layer_version": dynasty_layer.get("layer_version"),
             "prospect_input_schema_version": input_contract.get("schema_version"),
@@ -645,7 +683,7 @@ def build_prospect_rank_v1(
         "validation": validation,
         "limitations": [
             "Candidate only; the live ValuCast Prospects board is not switched by this artifact.",
-            "DD feed rows provide the current review universe and card context, not score inputs.",
+            "ValuCast prospect-universe rows define membership; DD feed rows are optional context only.",
             "Identity-only fallback rows remain for prospects absent from the current ValuCast layer.",
             "Identity-only fallback rows have verified MLBAM identity but no eligible ValuCast model sample yet.",
             "Fallback-only lower-minors profiles are capped until the expanded model earns publication-grade evidence.",
@@ -680,15 +718,16 @@ def archive_rank(
 
 
 def run_prospect_rank_v1(
-    dd_feed_path: Path = DD_FEED_PATH,
+    prospect_universe_path: Path = PROSPECT_UNIVERSE_PATH,
     dynasty_layer_path: Path = DYNASTY_LAYER_PATH,
     prospect_model_path: Path = PROSPECT_MODEL_PATH,
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     dd_adapter_path: Path = DD_ADAPTER_PATH,
+    dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
 ) -> dict:
-    dd_feed = json.loads(dd_feed_path.read_text(encoding="utf-8"))
+    prospect_universe = json.loads(prospect_universe_path.read_text(encoding="utf-8"))
     dynasty_layer = json.loads(dynasty_layer_path.read_text(encoding="utf-8"))
     prospect_model = json.loads(prospect_model_path.read_text(encoding="utf-8"))
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
@@ -697,12 +736,18 @@ def run_prospect_rank_v1(
         if dd_adapter_path.exists()
         else None
     )
+    dd_feed = (
+        json.loads(dd_feed_path.read_text(encoding="utf-8"))
+        if dd_feed_path.exists()
+        else None
+    )
     payload = build_prospect_rank_v1(
-        dd_feed,
+        prospect_universe,
         dynasty_layer,
         prospect_model,
         input_contract,
         dd_adapter,
+        dd_feed,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

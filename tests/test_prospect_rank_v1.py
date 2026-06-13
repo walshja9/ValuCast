@@ -53,6 +53,45 @@ def _feed(extra_players=None):
     }
 
 
+def _universe(extra_players=None):
+    players = [
+        {
+            "mlbam_id": 1,
+            "name": "Model Strong",
+            "normalized_name": "model strong",
+            "role": "hitter",
+            "positions": ["SS"],
+            "mlb_team": "BOS",
+            "age": 20,
+            "level": "AA",
+            "eta": 2027,
+            "sample_reliability": 0.6,
+            "universe_source": "valucast_prospect_dynasty_layer",
+        },
+        {
+            "mlbam_id": 2,
+            "name": "Fallback Good",
+            "normalized_name": "fallback good",
+            "role": "hitter",
+            "positions": ["SS"],
+            "mlb_team": "MIL",
+            "age": 19,
+            "level": "A+",
+            "eta": 2028,
+            "sample_reliability": 0.5,
+            "universe_source": "valucast_prospect_dynasty_layer",
+        },
+    ]
+    players.extend(extra_players or [])
+    return {
+        "schema_version": "1.0",
+        "artifact": "valucast_prospect_universe",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": len(players),
+        "players": players,
+    }
+
+
 def _profile(mlbam_id, tier, reliability=0.6):
     role_probability = min(1.0, tier)
     star_probability = max(0.0, tier - 1.0)
@@ -157,11 +196,12 @@ def _adapter():
 
 def test_rank_v1_is_candidate_shadow_and_blocks_live_consumers():
     payload = build_prospect_rank_v1(
-        _feed(),
+        _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        _adapter(),
+        dd_adapter=_adapter(),
+        dd_feed=_feed(),
     )
     assert payload["status"] == "candidate_shadow"
     assert payload["promotion"]["live_consumer"] == "blocked"
@@ -176,11 +216,12 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     feed = _feed()
     adapter = _adapter()
     original = build_prospect_rank_v1(
-        feed,
+        _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        adapter,
+        dd_adapter=adapter,
+        dd_feed=feed,
     )
     original_score = {
         row["mlbam_id"]: row["score"] for row in original["board"]
@@ -193,11 +234,12 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     feed["players"][0]["value_history"] = [["2026-06-13", 150.0]]
     adapter["roles"]["hitter"]["players"][0]["adapter_score"] = 999.0
     changed = build_prospect_rank_v1(
-        feed,
+        _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        adapter,
+        dd_adapter=adapter,
+        dd_feed=feed,
     )
     changed_score = {row["mlbam_id"]: row["score"] for row in changed["board"]}
 
@@ -212,24 +254,20 @@ def test_dd_and_public_rank_context_does_not_change_scores():
 
 def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
     payload = build_prospect_rank_v1(
-        _feed(
+        _universe(
             [
                 {
-                    "id": "p3",
-                    "player_type": "prospect",
                     "name": "Missing Layer",
                     "mlbam_id": 3,
+                    "role": "hitter",
                     "positions": ["SS"],
-                    "prospect_rank": 1,
-                    "dynasty_rank": 10,
+                    "universe_source": "valucast_prospect_dynasty_layer",
                 },
                 {
-                    "id": "p4",
-                    "player_type": "prospect",
                     "name": "No Identity",
+                    "role": "hitter",
                     "positions": ["SS"],
-                    "prospect_rank": 3,
-                    "dynasty_rank": 30,
+                    "universe_source": "valucast_prospect_dynasty_layer",
                 },
             ]
         ),
@@ -254,15 +292,13 @@ def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
 
 def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
     duplicate = {
-        "id": "p1-copy",
-        "player_type": "prospect",
         "name": "Model Strong Copy",
         "mlbam_id": 1,
+        "role": "hitter",
         "positions": ["SS"],
-        "prospect_rank": 99,
     }
     payload = build_prospect_rank_v1(
-        _feed([duplicate]),
+        _universe([duplicate]),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
@@ -273,7 +309,46 @@ def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
     assert any("Duplicate MLBAM+role" in blocker for blocker in payload["validation"]["blockers"])
 
 
+def test_rank_v1_candidate_membership_comes_from_valucast_universe_not_dd_feed():
+    dd_extra = {
+        "id": "p3",
+        "player_type": "prospect",
+        "name": "DD Only",
+        "mlbam_id": 3,
+        "positions": ["SS"],
+        "dynasty_rank": 1,
+        "dynasty_value": 150.0,
+        "prospect_rank": 1,
+    }
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        dd_feed=_feed([dd_extra]),
+    )
+
+    assert payload["candidate_count"] == 2
+    assert {row["mlbam_id"] for row in payload["board"]} == {1, 2}
+
+
+def test_rank_v1_does_not_require_dd_feed_context():
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        dd_feed=None,
+    )
+
+    assert payload["candidate_count"] == 2
+    assert payload["ranked_count"] == 2
+    assert all(row["context_only"]["has_dd_context"] is False for row in payload["board"])
+
+
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
+    universe_path = tmp_path / "universe.json"
     feed_path = tmp_path / "feed.json"
     layer_path = tmp_path / "layer.json"
     model_path = tmp_path / "model.json"
@@ -281,6 +356,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     adapter_path = tmp_path / "adapter.json"
     artifact_path = tmp_path / "rank.json"
 
+    universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
     feed_path.write_text(json.dumps(_feed()), encoding="utf-8")
     layer_path.write_text(json.dumps(_dynasty_layer()), encoding="utf-8")
     model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
@@ -288,11 +364,12 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     adapter_path.write_text(json.dumps(_adapter()), encoding="utf-8")
 
     result = run_prospect_rank_v1(
-        dd_feed_path=feed_path,
+        prospect_universe_path=universe_path,
         dynasty_layer_path=layer_path,
         prospect_model_path=model_path,
         input_contract_path=input_path,
         dd_adapter_path=adapter_path,
+        dd_feed_path=feed_path,
         artifact_path=artifact_path,
         archive_dir=tmp_path / "archive",
     )

@@ -94,22 +94,25 @@ preference context.
 
 ## Prospect Rank v1 Candidate
 
-`prospects/rank_v1.py` is a downstream review artifact that combines
-ValuCast-owned prospect signals into a candidate ordering. It is not the
-universal model itself and it is not a live consumer.
+`prospects/universe.py` builds `data/models/valucast_prospect_universe.json`
+from ValuCast-owned model artifacts. `prospects/rank_v1.py` is a downstream
+review artifact that combines ValuCast-owned prospect signals into a candidate
+ordering. It is not the universal model itself and it is not a live consumer.
 
 The score can use the shadow prospect model, the universal dynasty layer,
 sample reliability, and factual draft/signing context. DD feed rows can provide
-the current review universe and display context only. DD ranks, DD values, DD
-value history, public prospect source ranks, and DD adapter ranks are explicitly
-excluded from the score.
+optional display/comparison context only by MLBAM ID plus role. DD ranks, DD
+values, DD value history, public prospect source ranks, and DD adapter ranks
+are explicitly excluded from the score.
 
 ```powershell
+python scripts/build_prospect_universe.py
 python scripts/build_prospect_rank_v1.py
 ```
 
 Output:
 
+- `data/models/valucast_prospect_universe.json`
 - `data/models/valucast_prospect_rank_v1.json`
 - `data/prediction_archive/valucast_prospect_rank_v1/YYYY-MM-DD.json`
 
@@ -182,8 +185,8 @@ profile publishes the stronger factual baseline instead.
 There is no model-wide promotion gate and no live consumer. Per-target evidence
 is allowed to be mixed.
 
-The expanded June 13, 2026 build enrolled 6,040 historical prospects without
-survivor filtering and produced 2,486 current prospect profiles. The exact
+The expanded June 13, 2026 build enrolled 6,756 historical prospect rows without
+survivor filtering and produced 2,740 current prospect profiles. The exact
 per-target gate counts are emitted in the model artifact on every build. No
 target is promoted merely to complete a league adapter.
 
