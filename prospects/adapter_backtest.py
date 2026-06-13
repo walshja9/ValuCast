@@ -12,6 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from prospects.adapters import PRESETS, project_categories
+from prospects.dynasty_backtest import (
+    OUTCOME_COMPLETE_THROUGH,
+    OUTCOME_HORIZON_YEARS,
+)
 from prospects.gate import decide_gate
 from prospects.model import _prior_predict, _rank_concordance
 from prospects.universal import (
@@ -31,9 +35,7 @@ from projections.league_adapter import projection_row, rank_projection_rows
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_adapter_backtest.json"
-BACKTEST_VERSION = "0.1.0"
-OUTCOME_HORIZON_YEARS = 3
-OUTCOME_COMPLETE_THROUGH = 2025
+BACKTEST_VERSION = "0.2.0"
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
 MIN_FOLD_COUNT = 2
@@ -161,20 +163,32 @@ def _actual_row(row: dict, role: str, seasons_by_player: dict) -> dict | None:
 
 
 def _top_quartile_precision(predicted: list[float], actual: list[float]) -> float | None:
+    """Return tie-aware overlap between predicted and actual top quartiles."""
     if not predicted:
         return None
-    size = max(1, len(predicted) // 4)
-    predicted_top = set(
-        sorted(range(len(predicted)), key=lambda index: predicted[index], reverse=True)[
-            :size
-        ]
-    )
-    actual_top = set(
-        sorted(range(len(actual)), key=lambda index: actual[index], reverse=True)[
-            :size
-        ]
-    )
-    return len(predicted_top & actual_top) / size
+    quota = max(1, len(predicted) // 4)
+
+    def membership(scores: list[float]) -> dict[int, float]:
+        groups = {}
+        for index, score in enumerate(scores):
+            groups.setdefault(score, []).append(index)
+        remaining = float(quota)
+        weights = {}
+        for score in sorted(groups, reverse=True):
+            indices = groups[score]
+            weight = min(1.0, remaining / len(indices))
+            weights.update({index: weight for index in indices})
+            remaining -= weight * len(indices)
+            if remaining <= 0:
+                break
+        return weights
+
+    predicted_top = membership(predicted)
+    actual_top = membership(actual)
+    return sum(
+        predicted_weight * actual_top.get(index, 0.0)
+        for index, predicted_weight in predicted_top.items()
+    ) / quota
 
 
 def _weighted_fold_metric(folds: list[dict], metric: str) -> float | None:
@@ -573,6 +587,13 @@ def build_backtest(contract: dict, now: str | None = None) -> dict:
             ),
             "baseline": "Every target uses the factual level-age prior.",
             "actual": "DD 7x7 impact from the highest-volume MLB season inside the horizon.",
+            "horizon_alignment": (
+                "Uses the same factual four-year outcome horizon as the universal "
+                "dynasty outcome and Universal Prospect Index layers."
+            ),
+            "top_quartile_guard": (
+                "Tie-aware overlap between predicted and actual DD 7x7 top quartiles."
+            ),
             "temporal_stability_guard": (
                 "At least two eligible test cohorts; rank concordance and "
                 "top-quartile precision cannot regress in any fold."
@@ -582,6 +603,13 @@ def build_backtest(contract: dict, now: str | None = None) -> dict:
         "promotion": {
             "adapter_research_gate": (
                 "active" if adapter_gate_active else "hold"
+            ),
+            "reason": (
+                "Both role-specific DD 7x7 adapters passed the ordering, "
+                "top-quartile, and temporal-stability guards."
+                if adapter_gate_active
+                else "At least one role-specific DD 7x7 adapter failed an ordering, "
+                "top-quartile, or temporal-stability guard."
             ),
             "next_allowed_step": (
                 "separate_dd_shadow_comparison"

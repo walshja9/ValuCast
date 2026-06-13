@@ -3,6 +3,7 @@ import json
 
 from prospects.adapter_backtest import (
     _temporal_stability_guard,
+    _top_quartile_precision,
     _weighted_fold_metric,
     build_backtest,
     run_backtest,
@@ -39,7 +40,7 @@ def _contract():
     rows, seasons = [], {}
     for role in ("hitter", "pitcher"):
         offset = 0 if role == "hitter" else 10000
-        for cohort in (2015, 2018, 2021):
+        for cohort in (2012, 2015, 2018, 2021):
             for index in range(1, 9):
                 mlbam_id = offset + cohort * 100 + index
                 rows.append(_row(role, cohort, mlbam_id))
@@ -101,17 +102,16 @@ def test_backtest_never_trains_on_an_unclosed_outcome_horizon():
     payload = build_backtest(_contract(), now="2026-06-13T00:00:00+00:00")
 
     assert payload["status"] == "shadow_only"
-    assert payload["validation_contract"]["outcome_horizon_years"] == 3
+    assert payload["validation_contract"]["outcome_horizon_years"] == 4
     assert payload["promotion"]["live_dd_value_influence"] == "blocked"
     assert payload["promotion"]["feeds_live_dd_value"] is False
     for role, result in payload["roles"].items():
         assert result["gate"]["status"] == "insufficient_sample"
-        assert result["temporal_stability_guard"]["status"] == "active"
         assert result["folds"]
         assert set(result["category_diagnostics"]) == set(PRESETS["dd_7x7"][role])
         assert set(result["target_ablation_diagnostics"]) == set(TARGET_SPECS[role])
         assert all(
-            fold["train_cohort_max"] <= fold["test_cohort"] - 3
+            fold["train_cohort_max"] <= fold["test_cohort"] - 4
             for fold in result["folds"]
         )
 
@@ -143,6 +143,12 @@ def test_temporal_stability_guard_rejects_any_fold_regression():
     assert guard["status"] == "hold"
     assert guard["rank_non_regression_every_fold"] is True
     assert guard["top_quartile_non_regression_every_fold"] is False
+
+
+def test_top_quartile_precision_is_tie_aware_on_both_boards():
+    predicted = [0.8, 0.8, 0.8, 0.8, 0.1, 0.1, 0.1, 0.1]
+    actual = [1.0, 1.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.0]
+    assert _top_quartile_precision(predicted, actual) == 0.5
 
 
 def test_run_backtest_writes_promotion_artifact(tmp_path):

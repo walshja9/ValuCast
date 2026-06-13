@@ -1,126 +1,127 @@
 {
   "adapter_preset": "dd_7x7",
-  "backtest_version": "0.1.0",
+  "backtest_version": "0.2.0",
   "generated_at": "2026-06-13T13:41:23.903243+00:00",
   "promotion": {
-    "adapter_research_gate": "hold",
+    "adapter_research_gate": "active",
     "feeds_live_dd_value": false,
     "live_block_reason": "Historical adapter evidence must pass for both roles, then dated forward archives must demonstrate stability before any capped influence.",
     "live_dd_value_influence": "blocked",
-    "next_allowed_step": "improve_model_or_historical_evidence"
+    "next_allowed_step": "separate_dd_shadow_comparison",
+    "reason": "Both role-specific DD 7x7 adapters passed the ordering, top-quartile, and temporal-stability guards."
   },
   "roles": {
     "hitter": {
-      "baseline_rank_concordance": 0.761006,
-      "baseline_top_quartile_precision": 0.393869,
-      "candidate_rank_concordance": 0.810448,
-      "candidate_top_quartile_precision": 0.358502,
+      "baseline_rank_concordance": 0.7248,
+      "baseline_top_quartile_precision": 0.339933,
+      "candidate_rank_concordance": 0.779116,
+      "candidate_top_quartile_precision": 0.373563,
       "category_diagnostics": {
         "AVG": {
           "single_category": {
-            "baseline_rank_concordance": 0.63906,
-            "baseline_top_quartile_precision": 0.387211,
-            "candidate_rank_concordance": 0.644232,
-            "candidate_top_quartile_precision": 0.371707
+            "baseline_rank_concordance": 0.597316,
+            "baseline_top_quartile_precision": 0.276367,
+            "candidate_rank_concordance": 0.601844,
+            "candidate_top_quartile_precision": 0.31851
           },
           "without_category": {
-            "baseline_rank_concordance": 0.758416,
-            "baseline_top_quartile_precision": 0.396075,
-            "candidate_rank_concordance": 0.800824,
-            "candidate_top_quartile_precision": 0.36289
+            "baseline_rank_concordance": 0.73502,
+            "baseline_top_quartile_precision": 0.342277,
+            "candidate_rank_concordance": 0.785245,
+            "candidate_top_quartile_precision": 0.370047
           }
         },
         "HR": {
           "single_category": {
-            "baseline_rank_concordance": 0.766034,
-            "baseline_top_quartile_precision": 0.400511,
-            "candidate_rank_concordance": 0.803848,
-            "candidate_top_quartile_precision": 0.36291
+            "baseline_rank_concordance": 0.704883,
+            "baseline_top_quartile_precision": 0.330273,
+            "candidate_rank_concordance": 0.759853,
+            "candidate_top_quartile_precision": 0.36277
           },
           "without_category": {
-            "baseline_rank_concordance": 0.756444,
-            "baseline_top_quartile_precision": 0.391659,
-            "candidate_rank_concordance": 0.805436,
-            "candidate_top_quartile_precision": 0.362924
+            "baseline_rank_concordance": 0.711179,
+            "baseline_top_quartile_precision": 0.318005,
+            "candidate_rank_concordance": 0.772236,
+            "candidate_top_quartile_precision": 0.364614
           }
         },
         "OPS": {
           "single_category": {
-            "baseline_rank_concordance": 0.59825,
-            "baseline_top_quartile_precision": 0.369532,
-            "candidate_rank_concordance": 0.66999,
-            "candidate_top_quartile_precision": 0.360642
+            "baseline_rank_concordance": 0.617894,
+            "baseline_top_quartile_precision": 0.284042,
+            "candidate_rank_concordance": 0.665757,
+            "candidate_top_quartile_precision": 0.351862
           },
           "without_category": {
-            "baseline_rank_concordance": 0.764707,
-            "baseline_top_quartile_precision": 0.39387,
-            "candidate_rank_concordance": 0.800728,
-            "candidate_top_quartile_precision": 0.354069
+            "baseline_rank_concordance": 0.734923,
+            "baseline_top_quartile_precision": 0.342277,
+            "candidate_rank_concordance": 0.784209,
+            "candidate_top_quartile_precision": 0.370047
           }
         },
         "R": {
           "single_category": {
-            "baseline_rank_concordance": 0.767365,
-            "baseline_top_quartile_precision": 0.400511,
-            "candidate_rank_concordance": 0.805023,
-            "candidate_top_quartile_precision": 0.365121
+            "baseline_rank_concordance": 0.704798,
+            "baseline_top_quartile_precision": 0.330273,
+            "candidate_rank_concordance": 0.760641,
+            "candidate_top_quartile_precision": 0.36277
           },
           "without_category": {
-            "baseline_rank_concordance": 0.756377,
-            "baseline_top_quartile_precision": 0.391659,
-            "candidate_rank_concordance": 0.805517,
-            "candidate_top_quartile_precision": 0.358508
+            "baseline_rank_concordance": 0.712963,
+            "baseline_top_quartile_precision": 0.318005,
+            "candidate_rank_concordance": 0.775442,
+            "candidate_top_quartile_precision": 0.361404
           }
         },
         "RBI": {
           "single_category": {
-            "baseline_rank_concordance": 0.764415,
-            "baseline_top_quartile_precision": 0.400511,
-            "candidate_rank_concordance": 0.804933,
-            "candidate_top_quartile_precision": 0.365138
+            "baseline_rank_concordance": 0.704765,
+            "baseline_top_quartile_precision": 0.330273,
+            "candidate_rank_concordance": 0.761936,
+            "candidate_top_quartile_precision": 0.359561
           },
           "without_category": {
-            "baseline_rank_concordance": 0.757004,
-            "baseline_top_quartile_precision": 0.391659,
-            "candidate_rank_concordance": 0.80519,
-            "candidate_top_quartile_precision": 0.360713
+            "baseline_rank_concordance": 0.713097,
+            "baseline_top_quartile_precision": 0.318005,
+            "candidate_rank_concordance": 0.774516,
+            "candidate_top_quartile_precision": 0.364614
           }
         },
         "SB": {
           "single_category": {
-            "baseline_rank_concordance": 0.766338,
-            "baseline_top_quartile_precision": 0.398305,
-            "candidate_rank_concordance": 0.80511,
-            "candidate_top_quartile_precision": 0.365137
+            "baseline_rank_concordance": 0.689811,
+            "baseline_top_quartile_precision": 0.313786,
+            "candidate_rank_concordance": 0.743893,
+            "candidate_top_quartile_precision": 0.351138
           },
           "without_category": {
-            "baseline_rank_concordance": 0.754586,
-            "baseline_top_quartile_precision": 0.391659,
-            "candidate_rank_concordance": 0.80662,
-            "candidate_top_quartile_precision": 0.35628
+            "baseline_rank_concordance": 0.699521,
+            "baseline_top_quartile_precision": 0.292468,
+            "candidate_rank_concordance": 0.777303,
+            "candidate_top_quartile_precision": 0.361404
           }
         },
         "SO": {
           "single_category": {
-            "baseline_rank_concordance": 0.764832,
-            "baseline_top_quartile_precision": 0.378328,
-            "candidate_rank_concordance": 0.80159,
-            "candidate_top_quartile_precision": 0.515313
+            "baseline_rank_concordance": 0.703199,
+            "baseline_top_quartile_precision": 0.266124,
+            "candidate_rank_concordance": 0.752877,
+            "candidate_top_quartile_precision": 0.273377
           },
           "without_category": {
-            "baseline_rank_concordance": 0.766243,
-            "baseline_top_quartile_precision": 0.39387,
-            "candidate_rank_concordance": 0.810959,
-            "candidate_top_quartile_precision": 0.358491
+            "baseline_rank_concordance": 0.734805,
+            "baseline_top_quartile_precision": 0.342584,
+            "candidate_rank_concordance": 0.789827,
+            "candidate_top_quartile_precision": 0.373564
           }
         }
       },
-      "fold_count": 5,
+      "fold_count": 3,
       "folds": [
         {
-          "baseline_rank_concordance": 0.809023,
-          "baseline_top_quartile_precision": 0.392857,
-          "candidate_rank_concordance": 0.809023,
+          "baseline_rank_concordance": 0.796306,
+          "baseline_top_quartile_precision": 0.32289,
+          "candidate_rank_concordance": 0.796306,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "regular_probability": "level_age_prior",
@@ -134,15 +135,15 @@
             "representative_sb_per_600": "level_age_prior",
             "star_probability": "level_age_prior"
           },
-          "candidate_top_quartile_precision": 0.392857,
-          "sample_size": 338,
-          "test_cohort": 2017,
+          "candidate_top_quartile_precision": 0.32289,
+          "sample_size": 345,
+          "test_cohort": 2018,
           "train_cohort_max": 2014
         },
         {
-          "baseline_rank_concordance": 0.850443,
-          "baseline_top_quartile_precision": 0.360465,
-          "candidate_rank_concordance": 0.850443,
+          "baseline_rank_concordance": 0.730732,
+          "baseline_top_quartile_precision": 0.324324,
+          "candidate_rank_concordance": 0.730732,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "regular_probability": "level_age_prior",
@@ -156,293 +157,249 @@
             "representative_sb_per_600": "level_age_prior",
             "star_probability": "level_age_prior"
           },
-          "candidate_top_quartile_precision": 0.360465,
-          "sample_size": 345,
-          "test_cohort": 2018,
+          "candidate_top_quartile_precision": 0.324324,
+          "sample_size": 360,
+          "test_cohort": 2019,
           "train_cohort_max": 2015
         },
         {
-          "baseline_rank_concordance": 0.736012,
-          "baseline_top_quartile_precision": 0.311111,
-          "candidate_rank_concordance": 0.810192,
+          "baseline_rank_concordance": 0.655358,
+          "baseline_top_quartile_precision": 0.369723,
+          "candidate_rank_concordance": 0.808877,
           "candidate_sources": {
             "established_probability": "canonical_historical_neighbors_25",
-            "regular_probability": "canonical_historical_neighbors_25",
+            "regular_probability": "ridge",
             "representative_avg": "canonical_historical_neighbors_25",
             "representative_hr_per_600": "historical_neighbors_25",
             "representative_k_pct": "canonical_historical_neighbors_25",
             "representative_ops": "historical_neighbors_25",
-            "representative_pa": "level_age_prior",
-            "representative_r_per_600": "historical_neighbors_25",
+            "representative_pa": "canonical_historical_neighbors_25",
+            "representative_r_per_600": "level_age_prior",
             "representative_rbi_per_600": "historical_neighbors_25",
             "representative_sb_per_600": "historical_neighbors_25",
             "star_probability": "canonical_historical_neighbors_25"
           },
-          "candidate_top_quartile_precision": 0.288889,
-          "sample_size": 360,
-          "test_cohort": 2019,
-          "train_cohort_max": 2016
-        },
-        {
-          "baseline_rank_concordance": 0.679992,
-          "baseline_top_quartile_precision": 0.4375,
-          "candidate_rank_concordance": 0.781534,
-          "candidate_sources": {
-            "established_probability": "canonical_historical_neighbors_25",
-            "regular_probability": "canonical_historical_neighbors_25",
-            "representative_avg": "canonical_historical_neighbors_25",
-            "representative_hr_per_600": "historical_neighbors_25",
-            "representative_k_pct": "canonical_historical_neighbors_25",
-            "representative_ops": "level_age_prior",
-            "representative_pa": "historical_neighbors_25",
-            "representative_r_per_600": "historical_neighbors_25",
-            "representative_rbi_per_600": "canonical_historical_neighbors_25",
-            "representative_sb_per_600": "historical_neighbors_25",
-            "star_probability": "canonical_historical_neighbors_25"
-          },
-          "candidate_top_quartile_precision": 0.427083,
+          "candidate_top_quartile_precision": 0.464777,
           "sample_size": 386,
           "test_cohort": 2021,
-          "train_cohort_max": 2018
-        },
-        {
-          "baseline_rank_concordance": 0.743301,
-          "baseline_top_quartile_precision": 0.458333,
-          "candidate_rank_concordance": 0.80509,
-          "candidate_sources": {
-            "established_probability": "canonical_historical_neighbors_25",
-            "regular_probability": "canonical_historical_neighbors_25",
-            "representative_avg": "canonical_historical_neighbors_25",
-            "representative_hr_per_600": "historical_neighbors_25",
-            "representative_k_pct": "canonical_historical_neighbors_25",
-            "representative_ops": "historical_neighbors_25",
-            "representative_pa": "historical_neighbors_25",
-            "representative_r_per_600": "canonical_historical_neighbors_25",
-            "representative_rbi_per_600": "canonical_historical_neighbors_25",
-            "representative_sb_per_600": "historical_neighbors_25",
-            "star_probability": "level_age_prior"
-          },
-          "candidate_top_quartile_precision": 0.322917,
-          "sample_size": 385,
-          "test_cohort": 2022,
-          "train_cohort_max": 2019
+          "train_cohort_max": 2017
         }
       ],
       "gate": {
         "activated_at": "2026-06-13T13:41:23.903243+00:00",
         "baseline": "level_age_prior_adapter",
-        "baseline_score": 0.761006,
+        "baseline_score": 0.7248,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 6.497,
+        "improvement_pct": 7.4939,
         "metric": "dd_7x7_adapter_rank_concordance",
-        "model_score": 0.810448,
-        "reason": "beats level_age_prior_adapter by 6.50% OOS (dd_7x7_adapter_rank_concordance)",
-        "sample_size": 1814,
+        "model_score": 0.779116,
+        "reason": "beats level_age_prior_adapter by 7.49% OOS (dd_7x7_adapter_rank_concordance)",
+        "sample_size": 1091,
         "status": "active",
         "validated_through": "2025"
       },
-      "role_research_gate": "hold",
-      "sample_size": 1814,
+      "role_research_gate": "active",
+      "sample_size": 1091,
       "target_ablation_diagnostics": {
         "established_probability": {
-          "candidate_rank_concordance": 0.798213,
-          "candidate_rank_concordance_delta_vs_full": -0.012236,
-          "candidate_top_quartile_precision": 0.385021,
-          "candidate_top_quartile_precision_delta_vs_full": 0.026518
+          "candidate_rank_concordance": 0.744595,
+          "candidate_rank_concordance_delta_vs_full": -0.034521,
+          "candidate_top_quartile_precision": 0.344678,
+          "candidate_top_quartile_precision_delta_vs_full": -0.028886
         },
         "regular_probability": {
-          "candidate_rank_concordance": 0.810448,
-          "candidate_rank_concordance_delta_vs_full": -0.0,
-          "candidate_top_quartile_precision": 0.358502,
+          "candidate_rank_concordance": 0.779116,
+          "candidate_rank_concordance_delta_vs_full": 0.0,
+          "candidate_top_quartile_precision": 0.373564,
           "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_avg": {
-          "candidate_rank_concordance": 0.80815,
-          "candidate_rank_concordance_delta_vs_full": -0.002298,
-          "candidate_top_quartile_precision": 0.356269,
-          "candidate_top_quartile_precision_delta_vs_full": -0.002234
+          "candidate_rank_concordance": 0.776178,
+          "candidate_rank_concordance_delta_vs_full": -0.002938,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_hr_per_600": {
-          "candidate_rank_concordance": 0.810333,
-          "candidate_rank_concordance_delta_vs_full": -0.000115,
-          "candidate_top_quartile_precision": 0.360707,
-          "candidate_top_quartile_precision_delta_vs_full": 0.002205
+          "candidate_rank_concordance": 0.779042,
+          "candidate_rank_concordance_delta_vs_full": -7.4e-05,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_k_pct": {
-          "candidate_rank_concordance": 0.81076,
-          "candidate_rank_concordance_delta_vs_full": 0.000311,
-          "candidate_top_quartile_precision": 0.358497,
-          "candidate_top_quartile_precision_delta_vs_full": -6e-06
+          "candidate_rank_concordance": 0.778809,
+          "candidate_rank_concordance_delta_vs_full": -0.000307,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_ops": {
-          "candidate_rank_concordance": 0.809511,
-          "candidate_rank_concordance_delta_vs_full": -0.000937,
-          "candidate_top_quartile_precision": 0.373955,
-          "candidate_top_quartile_precision_delta_vs_full": 0.015453
+          "candidate_rank_concordance": 0.776187,
+          "candidate_rank_concordance_delta_vs_full": -0.002929,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_pa": {
-          "candidate_rank_concordance": 0.810794,
-          "candidate_rank_concordance_delta_vs_full": 0.000346,
-          "candidate_top_quartile_precision": 0.358497,
-          "candidate_top_quartile_precision_delta_vs_full": -6e-06
+          "candidate_rank_concordance": 0.778614,
+          "candidate_rank_concordance_delta_vs_full": -0.000502,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_r_per_600": {
-          "candidate_rank_concordance": 0.810352,
-          "candidate_rank_concordance_delta_vs_full": -9.6e-05,
-          "candidate_top_quartile_precision": 0.356286,
-          "candidate_top_quartile_precision_delta_vs_full": -0.002217
+          "candidate_rank_concordance": 0.779116,
+          "candidate_rank_concordance_delta_vs_full": 0.0,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_rbi_per_600": {
-          "candidate_rank_concordance": 0.810307,
-          "candidate_rank_concordance_delta_vs_full": -0.000141,
-          "candidate_top_quartile_precision": 0.360707,
-          "candidate_top_quartile_precision_delta_vs_full": 0.002205
+          "candidate_rank_concordance": 0.778856,
+          "candidate_rank_concordance_delta_vs_full": -0.00026,
+          "candidate_top_quartile_precision": 0.373564,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_sb_per_600": {
-          "candidate_rank_concordance": 0.80916,
-          "candidate_rank_concordance_delta_vs_full": -0.001288,
-          "candidate_top_quartile_precision": 0.360702,
-          "candidate_top_quartile_precision_delta_vs_full": 0.002199
+          "candidate_rank_concordance": 0.779628,
+          "candidate_rank_concordance_delta_vs_full": 0.000511,
+          "candidate_top_quartile_precision": 0.367144,
+          "candidate_top_quartile_precision_delta_vs_full": -0.006419
         },
         "star_probability": {
-          "candidate_rank_concordance": 0.810448,
-          "candidate_rank_concordance_delta_vs_full": -0.0,
-          "candidate_top_quartile_precision": 0.358502,
+          "candidate_rank_concordance": 0.779116,
+          "candidate_rank_concordance_delta_vs_full": 0.0,
+          "candidate_top_quartile_precision": 0.373564,
           "candidate_top_quartile_precision_delta_vs_full": 0.0
         }
       },
       "temporal_stability_guard": {
-        "fold_count": 5,
+        "fold_count": 3,
         "minimum_fold_count": 2,
         "rank_non_regression_every_fold": true,
-        "status": "hold",
-        "top_quartile_non_regression_every_fold": false
+        "status": "active",
+        "top_quartile_non_regression_every_fold": true
       },
       "top_quartile_guard": {
-        "activated_at": null,
+        "activated_at": "2026-06-13T13:41:23.903243+00:00",
         "baseline": "level_age_prior_adapter",
-        "baseline_score": 0.393869,
+        "baseline_score": 0.339933,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": -8.9794,
+        "improvement_pct": 9.8933,
         "metric": "dd_7x7_adapter_top_quartile_precision",
-        "model_score": 0.358502,
-        "reason": "does not beat level_age_prior_adapter: -8.98% < required 0.0%",
-        "sample_size": 1814,
-        "status": "fallback",
+        "model_score": 0.373563,
+        "reason": "beats level_age_prior_adapter by 9.89% OOS (dd_7x7_adapter_top_quartile_precision)",
+        "sample_size": 1091,
+        "status": "active",
         "validated_through": "2025"
       }
     },
     "pitcher": {
-      "baseline_rank_concordance": 0.480565,
-      "baseline_top_quartile_precision": 0.288753,
-      "candidate_rank_concordance": 0.495789,
-      "candidate_top_quartile_precision": 0.290994,
+      "baseline_rank_concordance": 0.468691,
+      "baseline_top_quartile_precision": 0.246068,
+      "candidate_rank_concordance": 0.490276,
+      "candidate_top_quartile_precision": 0.255657,
       "category_diagnostics": {
         "ERA": {
           "single_category": {
-            "baseline_rank_concordance": 0.374262,
-            "baseline_top_quartile_precision": 0.262667,
-            "candidate_rank_concordance": 0.516748,
-            "candidate_top_quartile_precision": 0.251602
+            "baseline_rank_concordance": 0.474296,
+            "baseline_top_quartile_precision": 0.240746,
+            "candidate_rank_concordance": 0.453594,
+            "candidate_top_quartile_precision": 0.23001
           },
           "without_category": {
-            "baseline_rank_concordance": 0.607114,
-            "baseline_top_quartile_precision": 0.310564,
-            "candidate_rank_concordance": 0.524828,
-            "candidate_top_quartile_precision": 0.293161
+            "baseline_rank_concordance": 0.561879,
+            "baseline_top_quartile_precision": 0.262716,
+            "candidate_rank_concordance": 0.557038,
+            "candidate_top_quartile_precision": 0.274808
           }
         },
         "K": {
           "single_category": {
-            "baseline_rank_concordance": 0.811957,
-            "baseline_top_quartile_precision": 0.393894,
-            "candidate_rank_concordance": 0.82218,
-            "candidate_top_quartile_precision": 0.34572
+            "baseline_rank_concordance": 0.771281,
+            "baseline_top_quartile_precision": 0.363228,
+            "candidate_rank_concordance": 0.81689,
+            "candidate_top_quartile_precision": 0.38345
           },
           "without_category": {
-            "baseline_rank_concordance": 0.452569,
-            "baseline_top_quartile_precision": 0.371918,
-            "candidate_rank_concordance": 0.522286,
-            "candidate_top_quartile_precision": 0.345658
+            "baseline_rank_concordance": 0.432848,
+            "baseline_top_quartile_precision": 0.2313,
+            "candidate_rank_concordance": 0.459488,
+            "candidate_top_quartile_precision": 0.235571
           }
         },
         "K/BB": {
           "single_category": {
-            "baseline_rank_concordance": 0.377587,
-            "baseline_top_quartile_precision": 0.336953,
-            "candidate_rank_concordance": 0.335667,
-            "candidate_top_quartile_precision": 0.367522
+            "baseline_rank_concordance": 0.395068,
+            "baseline_top_quartile_precision": 0.253299,
+            "candidate_rank_concordance": 0.398063,
+            "candidate_top_quartile_precision": 0.275544
           },
           "without_category": {
-            "baseline_rank_concordance": 0.398484,
-            "baseline_top_quartile_precision": 0.253742,
-            "candidate_rank_concordance": 0.428403,
-            "candidate_top_quartile_precision": 0.229728
+            "baseline_rank_concordance": 0.391052,
+            "baseline_top_quartile_precision": 0.233501,
+            "candidate_rank_concordance": 0.401376,
+            "candidate_top_quartile_precision": 0.24399
           }
         },
         "L": {
           "single_category": {
-            "baseline_rank_concordance": 0.808423,
-            "baseline_top_quartile_precision": 0.378665,
-            "candidate_rank_concordance": 0.819953,
-            "candidate_top_quartile_precision": 0.356682
+            "baseline_rank_concordance": 0.765644,
+            "baseline_top_quartile_precision": 0.268091,
+            "candidate_rank_concordance": 0.810351,
+            "candidate_top_quartile_precision": 0.270463
           },
           "without_category": {
-            "baseline_rank_concordance": 0.662776,
-            "baseline_top_quartile_precision": 0.29747,
-            "candidate_rank_concordance": 0.603401,
-            "candidate_top_quartile_precision": 0.266904
+            "baseline_rank_concordance": 0.607664,
+            "baseline_top_quartile_precision": 0.291492,
+            "candidate_rank_concordance": 0.615207,
+            "candidate_top_quartile_precision": 0.30583
           }
         },
         "QS": {
           "single_category": {
-            "baseline_rank_concordance": 0.762827,
-            "baseline_top_quartile_precision": 0.275788,
-            "candidate_rank_concordance": 0.827581,
-            "candidate_top_quartile_precision": 0.297536
+            "baseline_rank_concordance": 0.709032,
+            "baseline_top_quartile_precision": 0.29681,
+            "candidate_rank_concordance": 0.751247,
+            "candidate_top_quartile_precision": 0.319694
           },
           "without_category": {
-            "baseline_rank_concordance": 0.449142,
-            "baseline_top_quartile_precision": 0.387233,
-            "candidate_rank_concordance": 0.53594,
-            "candidate_top_quartile_precision": 0.341267
+            "baseline_rank_concordance": 0.436648,
+            "baseline_top_quartile_precision": 0.231302,
+            "candidate_rank_concordance": 0.46698,
+            "candidate_top_quartile_precision": 0.238459
           }
         },
         "SV+HLD": {
           "single_category": {
-            "baseline_rank_concordance": 0.803557,
-            "baseline_top_quartile_precision": 0.328176,
-            "candidate_rank_concordance": 0.674958,
-            "candidate_top_quartile_precision": 0.275738
+            "baseline_rank_concordance": 0.731494,
+            "baseline_top_quartile_precision": 0.284235,
+            "candidate_rank_concordance": 0.768383,
+            "candidate_top_quartile_precision": 0.278856
           },
           "without_category": {
-            "baseline_rank_concordance": 0.443206,
-            "baseline_top_quartile_precision": 0.363138,
-            "candidate_rank_concordance": 0.453323,
-            "candidate_top_quartile_precision": 0.319351
+            "baseline_rank_concordance": 0.493034,
+            "baseline_top_quartile_precision": 0.249038,
+            "candidate_rank_concordance": 0.490306,
+            "candidate_top_quartile_precision": 0.253566
           }
         },
         "WHIP": {
           "single_category": {
-            "baseline_rank_concordance": 0.511563,
-            "baseline_top_quartile_precision": 0.297399,
-            "candidate_rank_concordance": 0.635103,
-            "candidate_top_quartile_precision": 0.27121
+            "baseline_rank_concordance": 0.550174,
+            "baseline_top_quartile_precision": 0.245675,
+            "candidate_rank_concordance": 0.54132,
+            "candidate_top_quartile_precision": 0.238434
           },
           "without_category": {
-            "baseline_rank_concordance": 0.645748,
-            "baseline_top_quartile_precision": 0.299639,
-            "candidate_rank_concordance": 0.601873,
-            "candidate_top_quartile_precision": 0.27563
+            "baseline_rank_concordance": 0.599909,
+            "baseline_top_quartile_precision": 0.289287,
+            "candidate_rank_concordance": 0.611838,
+            "candidate_top_quartile_precision": 0.299757
           }
         }
       },
-      "fold_count": 5,
+      "fold_count": 3,
       "folds": [
         {
-          "baseline_rank_concordance": 0.386013,
-          "baseline_top_quartile_precision": 0.258065,
-          "candidate_rank_concordance": 0.386013,
+          "baseline_rank_concordance": 0.440921,
+          "baseline_top_quartile_precision": 0.234028,
+          "candidate_rank_concordance": 0.440921,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "representative_era": "level_age_prior",
@@ -456,15 +413,15 @@
             "rotation_probability": "level_age_prior",
             "star_probability": "level_age_prior"
           },
-          "candidate_top_quartile_precision": 0.258065,
-          "sample_size": 375,
-          "test_cohort": 2017,
+          "candidate_top_quartile_precision": 0.234028,
+          "sample_size": 334,
+          "test_cohort": 2018,
           "train_cohort_max": 2014
         },
         {
-          "baseline_rank_concordance": 0.507202,
-          "baseline_top_quartile_precision": 0.317647,
-          "candidate_rank_concordance": 0.507202,
+          "baseline_rank_concordance": 0.53792,
+          "baseline_top_quartile_precision": 0.260045,
+          "candidate_rank_concordance": 0.53792,
           "candidate_sources": {
             "established_probability": "level_age_prior",
             "representative_era": "level_age_prior",
@@ -478,178 +435,134 @@
             "rotation_probability": "level_age_prior",
             "star_probability": "level_age_prior"
           },
-          "candidate_top_quartile_precision": 0.317647,
-          "sample_size": 341,
-          "test_cohort": 2018,
+          "candidate_top_quartile_precision": 0.260045,
+          "sample_size": 388,
+          "test_cohort": 2019,
           "train_cohort_max": 2015
         },
         {
-          "baseline_rank_concordance": 0.56111,
-          "baseline_top_quartile_precision": 0.181818,
-          "candidate_rank_concordance": 0.525977,
+          "baseline_rank_concordance": 0.418013,
+          "baseline_top_quartile_precision": 0.242029,
+          "candidate_rank_concordance": 0.484509,
           "candidate_sources": {
             "established_probability": "historical_neighbors_25",
             "representative_era": "level_age_prior",
-            "representative_ip": "canonical_historical_neighbors_25",
+            "representative_ip": "historical_neighbors_25",
             "representative_k_bb": "level_age_prior",
             "representative_k_per_9": "canonical_historical_neighbors_25",
             "representative_l_per_180": "level_age_prior",
             "representative_qs_per_180": "historical_neighbors_25",
-            "representative_sv_hld_per_60": "historical_neighbors_25",
-            "representative_whip": "historical_neighbors_25",
-            "rotation_probability": "ridge",
-            "star_probability": "canonical_historical_neighbors_25"
-          },
-          "candidate_top_quartile_precision": 0.292929,
-          "sample_size": 398,
-          "test_cohort": 2019,
-          "train_cohort_max": 2016
-        },
-        {
-          "baseline_rank_concordance": 0.430868,
-          "baseline_top_quartile_precision": 0.352273,
-          "candidate_rank_concordance": 0.509745,
-          "candidate_sources": {
-            "established_probability": "historical_neighbors_25",
-            "representative_era": "historical_neighbors_25",
-            "representative_ip": "level_age_prior",
-            "representative_k_bb": "level_age_prior",
-            "representative_k_per_9": "canonical_historical_neighbors_25",
-            "representative_l_per_180": "level_age_prior",
-            "representative_qs_per_180": "canonical_historical_neighbors_25",
-            "representative_sv_hld_per_60": "historical_neighbors_25",
-            "representative_whip": "historical_neighbors_25",
-            "rotation_probability": "ridge",
+            "representative_sv_hld_per_60": "canonical_historical_neighbors_25",
+            "representative_whip": "level_age_prior",
+            "rotation_probability": "historical_neighbors_25",
             "star_probability": "historical_neighbors_25"
           },
-          "candidate_top_quartile_precision": 0.295455,
-          "sample_size": 352,
+          "candidate_top_quartile_precision": 0.271568,
+          "sample_size": 347,
           "test_cohort": 2021,
-          "train_cohort_max": 2018
-        },
-        {
-          "baseline_rank_concordance": 0.512483,
-          "baseline_top_quartile_precision": 0.347826,
-          "candidate_rank_concordance": 0.550778,
-          "candidate_sources": {
-            "established_probability": "historical_neighbors_25",
-            "representative_era": "canonical_historical_neighbors_25",
-            "representative_ip": "canonical_historical_neighbors_25",
-            "representative_k_bb": "level_age_prior",
-            "representative_k_per_9": "canonical_historical_neighbors_25",
-            "representative_l_per_180": "level_age_prior",
-            "representative_qs_per_180": "level_age_prior",
-            "representative_sv_hld_per_60": "historical_neighbors_25",
-            "representative_whip": "canonical_historical_neighbors_25",
-            "rotation_probability": "level_age_prior",
-            "star_probability": "canonical_historical_neighbors_25"
-          },
-          "candidate_top_quartile_precision": 0.293478,
-          "sample_size": 370,
-          "test_cohort": 2022,
-          "train_cohort_max": 2019
+          "train_cohort_max": 2017
         }
       ],
       "gate": {
         "activated_at": "2026-06-13T13:41:23.903243+00:00",
         "baseline": "level_age_prior_adapter",
-        "baseline_score": 0.480565,
+        "baseline_score": 0.468691,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 3.1679,
+        "improvement_pct": 4.6053,
         "metric": "dd_7x7_adapter_rank_concordance",
-        "model_score": 0.495789,
-        "reason": "beats level_age_prior_adapter by 3.17% OOS (dd_7x7_adapter_rank_concordance)",
-        "sample_size": 1836,
+        "model_score": 0.490276,
+        "reason": "beats level_age_prior_adapter by 4.61% OOS (dd_7x7_adapter_rank_concordance)",
+        "sample_size": 1069,
         "status": "active",
         "validated_through": "2025"
       },
-      "role_research_gate": "hold",
-      "sample_size": 1836,
+      "role_research_gate": "active",
+      "sample_size": 1069,
       "target_ablation_diagnostics": {
         "established_probability": {
-          "candidate_rank_concordance": 0.506549,
-          "candidate_rank_concordance_delta_vs_full": 0.010761,
-          "candidate_top_quartile_precision": 0.284437,
-          "candidate_top_quartile_precision_delta_vs_full": -0.006557
+          "candidate_rank_concordance": 0.48613,
+          "candidate_rank_concordance_delta_vs_full": -0.004146,
+          "candidate_top_quartile_precision": 0.252369,
+          "candidate_top_quartile_precision_delta_vs_full": -0.003287
         },
         "representative_era": {
-          "candidate_rank_concordance": 0.480708,
-          "candidate_rank_concordance_delta_vs_full": -0.015081,
-          "candidate_top_quartile_precision": 0.280053,
-          "candidate_top_quartile_precision_delta_vs_full": -0.010941
+          "candidate_rank_concordance": 0.490276,
+          "candidate_rank_concordance_delta_vs_full": -0.0,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_ip": {
-          "candidate_rank_concordance": 0.493161,
-          "candidate_rank_concordance_delta_vs_full": -0.002627,
-          "candidate_top_quartile_precision": 0.297563,
-          "candidate_top_quartile_precision_delta_vs_full": 0.006569
+          "candidate_rank_concordance": 0.490637,
+          "candidate_rank_concordance_delta_vs_full": 0.000361,
+          "candidate_top_quartile_precision": 0.253587,
+          "candidate_top_quartile_precision_delta_vs_full": -0.00207
         },
         "representative_k_bb": {
-          "candidate_rank_concordance": 0.495789,
-          "candidate_rank_concordance_delta_vs_full": 0.0,
-          "candidate_top_quartile_precision": 0.290994,
-          "candidate_top_quartile_precision_delta_vs_full": -0.0
+          "candidate_rank_concordance": 0.490276,
+          "candidate_rank_concordance_delta_vs_full": -0.0,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_k_per_9": {
-          "candidate_rank_concordance": 0.493512,
-          "candidate_rank_concordance_delta_vs_full": -0.002277,
-          "candidate_top_quartile_precision": 0.293183,
-          "candidate_top_quartile_precision_delta_vs_full": 0.00219
+          "candidate_rank_concordance": 0.488083,
+          "candidate_rank_concordance_delta_vs_full": -0.002193,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_l_per_180": {
-          "candidate_rank_concordance": 0.495789,
-          "candidate_rank_concordance_delta_vs_full": 0.0,
-          "candidate_top_quartile_precision": 0.290994,
-          "candidate_top_quartile_precision_delta_vs_full": -0.0
+          "candidate_rank_concordance": 0.490276,
+          "candidate_rank_concordance_delta_vs_full": -0.0,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "representative_qs_per_180": {
-          "candidate_rank_concordance": 0.498243,
-          "candidate_rank_concordance_delta_vs_full": 0.002454,
-          "candidate_top_quartile_precision": 0.291005,
-          "candidate_top_quartile_precision_delta_vs_full": 1.1e-05
+          "candidate_rank_concordance": 0.491105,
+          "candidate_rank_concordance_delta_vs_full": 0.000829,
+          "candidate_top_quartile_precision": 0.259431,
+          "candidate_top_quartile_precision_delta_vs_full": 0.003775
         },
         "representative_sv_hld_per_60": {
-          "candidate_rank_concordance": 0.499918,
-          "candidate_rank_concordance_delta_vs_full": 0.004129,
-          "candidate_top_quartile_precision": 0.27783,
-          "candidate_top_quartile_precision_delta_vs_full": -0.013164
+          "candidate_rank_concordance": 0.474228,
+          "candidate_rank_concordance_delta_vs_full": -0.016048,
+          "candidate_top_quartile_precision": 0.25517,
+          "candidate_top_quartile_precision_delta_vs_full": -0.000487
         },
         "representative_whip": {
-          "candidate_rank_concordance": 0.493338,
-          "candidate_rank_concordance_delta_vs_full": -0.002451,
-          "candidate_top_quartile_precision": 0.282197,
-          "candidate_top_quartile_precision_delta_vs_full": -0.008797
+          "candidate_rank_concordance": 0.490276,
+          "candidate_rank_concordance_delta_vs_full": -0.0,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         },
         "rotation_probability": {
-          "candidate_rank_concordance": 0.475432,
-          "candidate_rank_concordance_delta_vs_full": -0.020357,
-          "candidate_top_quartile_precision": 0.286626,
-          "candidate_top_quartile_precision_delta_vs_full": -0.004368
+          "candidate_rank_concordance": 0.488029,
+          "candidate_rank_concordance_delta_vs_full": -0.002247,
+          "candidate_top_quartile_precision": 0.258579,
+          "candidate_top_quartile_precision_delta_vs_full": 0.002922
         },
         "star_probability": {
-          "candidate_rank_concordance": 0.495789,
-          "candidate_rank_concordance_delta_vs_full": 0.0,
-          "candidate_top_quartile_precision": 0.290994,
-          "candidate_top_quartile_precision_delta_vs_full": -0.0
+          "candidate_rank_concordance": 0.490276,
+          "candidate_rank_concordance_delta_vs_full": -0.0,
+          "candidate_top_quartile_precision": 0.255657,
+          "candidate_top_quartile_precision_delta_vs_full": 0.0
         }
       },
       "temporal_stability_guard": {
-        "fold_count": 5,
+        "fold_count": 3,
         "minimum_fold_count": 2,
-        "rank_non_regression_every_fold": false,
-        "status": "hold",
-        "top_quartile_non_regression_every_fold": false
+        "rank_non_regression_every_fold": true,
+        "status": "active",
+        "top_quartile_non_regression_every_fold": true
       },
       "top_quartile_guard": {
         "activated_at": "2026-06-13T13:41:23.903243+00:00",
         "baseline": "level_age_prior_adapter",
-        "baseline_score": 0.288753,
+        "baseline_score": 0.246068,
         "cv_method": "nested_fixed_horizon_cohort_walk_forward",
-        "improvement_pct": 0.7759,
+        "improvement_pct": 3.8967,
         "metric": "dd_7x7_adapter_top_quartile_precision",
-        "model_score": 0.290994,
-        "reason": "beats level_age_prior_adapter by 0.78% OOS (dd_7x7_adapter_top_quartile_precision)",
-        "sample_size": 1836,
+        "model_score": 0.255657,
+        "reason": "beats level_age_prior_adapter by 3.90% OOS (dd_7x7_adapter_top_quartile_precision)",
+        "sample_size": 1069,
         "status": "active",
         "validated_through": "2025"
       }
@@ -662,10 +575,12 @@
     "actual": "DD 7x7 impact from the highest-volume MLB season inside the horizon.",
     "baseline": "Every target uses the factual level-age prior.",
     "candidate": "Each target uses the method selected by gates fitted only inside the eligible training cohorts.",
+    "horizon_alignment": "Uses the same factual four-year outcome horizon as the universal dynasty outcome and Universal Prospect Index layers.",
     "method": "nested_fixed_horizon_cohort_walk_forward",
     "outcome_complete_through": 2025,
-    "outcome_horizon_years": 3,
+    "outcome_horizon_years": 4,
     "temporal_stability_guard": "At least two eligible test cohorts; rank concordance and top-quartile precision cannot regress in any fold.",
+    "top_quartile_guard": "Tie-aware overlap between predicted and actual DD 7x7 top quartiles.",
     "training_rule": "A test cohort may use only training cohorts whose full outcome horizon closed before the test cohort."
   }
 }
