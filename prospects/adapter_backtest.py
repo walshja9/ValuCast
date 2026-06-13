@@ -59,7 +59,12 @@ def _horizon_seasons(contract: dict) -> dict:
     }
 
 
-def _profile_from_models(row: dict, role: str, models: dict, source: str) -> dict:
+def _profile_from_models(
+    row: dict,
+    role: str,
+    models: dict,
+    source: str,
+) -> dict:
     outcomes = {}
     for target_name, target_model in models.items():
         if source == "selected":
@@ -189,35 +194,144 @@ def _score_fold(
     baseline_rows: list[dict],
     actual_rows: list[dict],
     role: str,
+    *,
+    include_category_diagnostics: bool = True,
 ) -> dict:
     config = PRESETS["dd_7x7"][role]
     actual_ids = {row["player_id"] for row in actual_rows}
     candidate_rows = [row for row in candidate_rows if row["player_id"] in actual_ids]
     baseline_rows = [row for row in baseline_rows if row["player_id"] in actual_ids]
     actual_rows = [row for row in actual_rows if row["player_id"] in actual_ids]
-    ranked = {
-        "candidate": rank_projection_rows(candidate_rows, role, config)["players"],
-        "baseline": rank_projection_rows(baseline_rows, role, config)["players"],
-        "actual": rank_projection_rows(actual_rows, role, config)["players"],
-    }
-    score_maps = {
-        key: {row["player_id"]: row["adapter_score"] for row in rows}
-        for key, rows in ranked.items()
-    }
-    ids = sorted(actual_ids)
-    candidate = [score_maps["candidate"][player_id] for player_id in ids]
-    baseline = [score_maps["baseline"][player_id] for player_id in ids]
-    actual = [score_maps["actual"][player_id] for player_id in ids]
+
+    def score_variant(variant: dict) -> dict:
+        ranked = {
+            "candidate": rank_projection_rows(candidate_rows, role, variant)["players"],
+            "baseline": rank_projection_rows(baseline_rows, role, variant)["players"],
+            "actual": rank_projection_rows(actual_rows, role, variant)["players"],
+        }
+        score_maps = {
+            key: {row["player_id"]: row["adapter_score"] for row in rows}
+            for key, rows in ranked.items()
+        }
+        ids = sorted(actual_ids)
+        candidate = [score_maps["candidate"][player_id] for player_id in ids]
+        baseline = [score_maps["baseline"][player_id] for player_id in ids]
+        actual = [score_maps["actual"][player_id] for player_id in ids]
+        return {
+            "candidate_scores": candidate,
+            "baseline_scores": baseline,
+            "actual_scores": actual,
+            "candidate_rank_concordance": _rank_concordance(candidate, actual),
+            "baseline_rank_concordance": _rank_concordance(baseline, actual),
+            "candidate_top_quartile_precision": _top_quartile_precision(
+                candidate, actual
+            ),
+            "baseline_top_quartile_precision": _top_quartile_precision(
+                baseline, actual
+            ),
+        }
+
+    full = score_variant(config)
+    diagnostics = {}
+    if include_category_diagnostics:
+        for category, weight in config.items():
+            single = score_variant({category: weight})
+            without = score_variant(
+                {
+                    other: other_weight
+                    for other, other_weight in config.items()
+                    if other != category
+                }
+            )
+            diagnostics[category] = {
+                "single_category": {
+                    key: value
+                    for key, value in single.items()
+                    if not key.endswith("_scores")
+                },
+                "without_category": {
+                    key: value
+                    for key, value in without.items()
+                    if not key.endswith("_scores")
+                },
+            }
     return {
-        "sample_size": len(ids),
-        "candidate_scores": candidate,
-        "baseline_scores": baseline,
-        "actual_scores": actual,
-        "candidate_rank_concordance": _rank_concordance(candidate, actual),
-        "baseline_rank_concordance": _rank_concordance(baseline, actual),
-        "candidate_top_quartile_precision": _top_quartile_precision(candidate, actual),
-        "baseline_top_quartile_precision": _top_quartile_precision(baseline, actual),
+        "sample_size": len(actual_ids),
+        "category_diagnostics": diagnostics,
+        **full,
     }
+
+
+def _aggregate_category_diagnostics(folds: list[dict], role: str) -> dict:
+    if not folds:
+        return {}
+    diagnostics = {}
+    for category in PRESETS["dd_7x7"][role]:
+        diagnostics[category] = {}
+        for variant in ("single_category", "without_category"):
+            diagnostics[category][variant] = {}
+            for metric in (
+                    "candidate_rank_concordance",
+                    "baseline_rank_concordance",
+                    "candidate_top_quartile_precision",
+                    "baseline_top_quartile_precision",
+            ):
+                available = [
+                    (
+                        fold["category_diagnostics"][category][variant][metric],
+                        fold["sample_size"],
+                    )
+                    for fold in folds
+                    if fold["category_diagnostics"][category][variant][metric]
+                    is not None
+                ]
+                diagnostics[category][variant][metric] = (
+                    round(
+                        sum(value * sample for value, sample in available)
+                        / sum(sample for _, sample in available),
+                        6,
+                    )
+                    if available
+                    else None
+                )
+    return diagnostics
+
+
+def _aggregate_target_ablation_diagnostics(
+    folds: list[dict], role: str, full_metrics: dict
+) -> dict:
+    if not folds:
+        return {}
+    diagnostics = {}
+    for target in TARGET_SPECS[role]:
+        diagnostics[target] = {}
+        for metric in (
+            "candidate_rank_concordance",
+            "candidate_top_quartile_precision",
+        ):
+            available = [
+                (
+                    fold["target_ablation_diagnostics"][target][metric],
+                    fold["sample_size"],
+                )
+                for fold in folds
+                if fold["target_ablation_diagnostics"][target][metric] is not None
+            ]
+            value = (
+                sum(value * sample for value, sample in available)
+                / sum(sample for _, sample in available)
+                if available
+                else None
+            )
+            diagnostics[target][metric] = (
+                round(value, 6) if value is not None else None
+            )
+            diagnostics[target][f"{metric}_delta_vs_full"] = (
+                round(value - full_metrics[metric], 6)
+                if value is not None and full_metrics[metric] is not None
+                else None
+            )
+    return diagnostics
 
 
 def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -> dict:
@@ -249,14 +363,16 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
             )
             for target_name in TARGET_SPECS[role]
         }
-        candidate_rows = [
-            _projected_row(_profile_from_models(row, role, models, "selected"))
+        candidate_profiles = [
+            _profile_from_models(row, role, models, "selected")
             for row in test_rows
         ]
-        baseline_rows = [
-            _projected_row(_profile_from_models(row, role, models, "level_age_prior"))
+        baseline_profiles = [
+            _profile_from_models(row, role, models, "level_age_prior")
             for row in test_rows
         ]
+        candidate_rows = [_projected_row(profile) for profile in candidate_profiles]
+        baseline_rows = [_projected_row(profile) for profile in baseline_profiles]
         actual_rows = [
             actual
             for row in test_rows
@@ -265,6 +381,37 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
         fold = _score_fold(candidate_rows, baseline_rows, actual_rows, role)
         if not fold["sample_size"]:
             continue
+        target_ablation_diagnostics = {}
+        for target_name in TARGET_SPECS[role]:
+            hybrid_rows = [
+                _projected_row(
+                    {
+                        **candidate,
+                        "outcomes": {
+                            **candidate["outcomes"],
+                            target_name: baseline["outcomes"][target_name],
+                        },
+                    }
+                )
+                for candidate, baseline in zip(
+                    candidate_profiles, baseline_profiles
+                )
+            ]
+            hybrid = _score_fold(
+                hybrid_rows,
+                baseline_rows,
+                actual_rows,
+                role,
+                include_category_diagnostics=False,
+            )
+            target_ablation_diagnostics[target_name] = {
+                "candidate_rank_concordance": hybrid[
+                    "candidate_rank_concordance"
+                ],
+                "candidate_top_quartile_precision": hybrid[
+                    "candidate_top_quartile_precision"
+                ],
+            }
         fold.pop("candidate_scores")
         fold.pop("baseline_scores")
         fold.pop("actual_scores")
@@ -276,6 +423,7 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
                     target: model["prediction_source"] or "level_age_prior"
                     for target, model in models.items()
                 },
+                "target_ablation_diagnostics": target_ablation_diagnostics,
                 **{
                     key: round(value, 6) if isinstance(value, float) else value
                     for key, value in fold.items()
@@ -295,6 +443,17 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
     baseline_top_quartile = _weighted_fold_metric(
         folds, "baseline_top_quartile_precision"
     )
+    full_metrics = {
+        "candidate_rank_concordance": candidate_concordance,
+        "candidate_top_quartile_precision": candidate_top_quartile,
+    }
+    category_diagnostics = _aggregate_category_diagnostics(folds, role)
+    target_ablation_diagnostics = _aggregate_target_ablation_diagnostics(
+        folds, role, full_metrics
+    )
+    for fold in folds:
+        fold.pop("category_diagnostics")
+        fold.pop("target_ablation_diagnostics")
     gate = decide_gate(
         metric="dd_7x7_adapter_rank_concordance",
         model_score=candidate_concordance,
@@ -344,6 +503,8 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
             if baseline_top_quartile is not None
             else None
         ),
+        "category_diagnostics": category_diagnostics,
+        "target_ablation_diagnostics": target_ablation_diagnostics,
         "folds": folds,
     }
 

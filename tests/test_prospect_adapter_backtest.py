@@ -2,6 +2,8 @@
 import json
 
 from prospects.adapter_backtest import _weighted_fold_metric, build_backtest, run_backtest
+from prospects.adapters import PRESETS
+from prospects.universal import TARGET_SPECS
 
 
 def _row(role, cohort, mlbam_id):
@@ -97,9 +99,11 @@ def test_backtest_never_trains_on_an_unclosed_outcome_horizon():
     assert payload["validation_contract"]["outcome_horizon_years"] == 3
     assert payload["promotion"]["live_dd_value_influence"] == "blocked"
     assert payload["promotion"]["feeds_live_dd_value"] is False
-    for result in payload["roles"].values():
+    for role, result in payload["roles"].items():
         assert result["gate"]["status"] == "insufficient_sample"
         assert result["folds"]
+        assert set(result["category_diagnostics"]) == set(PRESETS["dd_7x7"][role])
+        assert set(result["target_ablation_diagnostics"]) == set(TARGET_SPECS[role])
         assert all(
             fold["train_cohort_max"] <= fold["test_cohort"] - 3
             for fold in result["folds"]

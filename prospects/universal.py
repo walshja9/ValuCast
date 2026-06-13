@@ -28,6 +28,7 @@ from prospects.model import (
     _num,
     _predict,
     _prior_predict,
+    _rank_concordance,
     _service_index,
     _walk_forward,
 )
@@ -39,7 +40,7 @@ ARCHIVE_DIR = (
 )
 
 MODEL_NAME = "ValuCast Universal Prospect Model"
-MODEL_VERSION = "0.3.0"
+MODEL_VERSION = "0.4.0"
 MODEL_STATUS = "shadow_only"
 INPUT_SCHEMA_SOURCES = {
     "1.0": {
@@ -134,6 +135,10 @@ SHRINK_FEATURES = {
 ROLE_THRESHOLDS = {
     "hitter": {"established": 300.0, "regular": 450.0},
     "pitcher": {"established": 50.0, "rotation": 120.0},
+}
+STAR_THRESHOLDS = {
+    "hitter": {"pa": 450.0, "ops": 0.800},
+    "pitcher": {"ip": 120.0, "era": 3.75},
 }
 
 
@@ -306,6 +311,14 @@ TARGET_SPECS = {
             "description": "Probability of any post-cohort MLB season with at least 300 PA",
             "unit": "probability",
         },
+        "star_probability": {
+            "kind": "probability",
+            "description": (
+                "Probability of any post-cohort MLB season with at least 450 PA "
+                "and .800 OPS"
+            ),
+            "unit": "probability",
+        },
         "regular_probability": {
             "kind": "probability",
             "description": "Probability of any post-cohort MLB season with at least 450 PA",
@@ -372,6 +385,14 @@ TARGET_SPECS = {
         "established_probability": {
             "kind": "probability",
             "description": "Probability of any post-cohort MLB season with at least 50 IP",
+            "unit": "probability",
+        },
+        "star_probability": {
+            "kind": "probability",
+            "description": (
+                "Probability of any post-cohort MLB season with at least 120 IP "
+                "and a 3.75 ERA or better"
+            ),
             "unit": "probability",
         },
         "rotation_probability": {
@@ -517,6 +538,24 @@ def _raw_target(row: dict, role: str, target_name: str, seasons_by_player: dict)
     if target_name == "established_probability":
         threshold = ROLE_THRESHOLDS[role]["established"]
         return float(any((_num(season.get(sample_key)) or 0.0) >= threshold for season in seasons))
+    if target_name == "star_probability":
+        if role == "hitter":
+            return float(
+                any(
+                    (_num(season.get("pa")) or 0.0) >= STAR_THRESHOLDS[role]["pa"]
+                    and (_num(season.get("ops")) or 0.0)
+                    >= STAR_THRESHOLDS[role]["ops"]
+                    for season in seasons
+                )
+            )
+        return float(
+            any(
+                (_num(season.get("ip")) or 0.0) >= STAR_THRESHOLDS[role]["ip"]
+                and _num(season.get("era")) is not None
+                and _num(season.get("era")) <= STAR_THRESHOLDS[role]["era"]
+                for season in seasons
+            )
+        )
     if target_name == "regular_probability":
         threshold = ROLE_THRESHOLDS["hitter"]["regular"]
         return float(any((_num(season.get("pa")) or 0.0) >= threshold for season in seasons))
@@ -626,6 +665,20 @@ def train_target(
             spec["kind"],
         ),
     }
+    rank_concordance_by_source = {
+        "ridge": _rank_concordance(
+            validation["model_predictions"], validation["targets"]
+        ),
+        "level_age_prior": _rank_concordance(
+            validation["prior_predictions"], validation["targets"]
+        ),
+        "historical_neighbors_25": _rank_concordance(
+            validation["neighbor_predictions"], validation["targets"]
+        ),
+        "canonical_historical_neighbors_25": _rank_concordance(
+            validation["canonical_neighbor_predictions"], validation["targets"]
+        ),
+    }
     now = now or datetime.now(timezone.utc).isoformat()
     gate = decide_gate(
         metric=f"{target_name}_{metric_name}",
@@ -708,6 +761,10 @@ def train_target(
             if validation["rank_concordance"] is not None
             else None
         ),
+        "rank_concordance_by_source": {
+            name: round(value, 6) if value is not None else None
+            for name, value in rank_concordance_by_source.items()
+        },
         "gate": gate,
         "prediction_source": source,
         "_runtime": {
@@ -738,6 +795,22 @@ def _selected_prediction(
     if source not in predictions:
         source = "level_age_prior"
     return predictions[source], source
+
+
+def _coherent_outcome_distribution(outcomes: dict) -> dict:
+    established = _clamp(
+        float(outcomes["established_probability"]["prediction"])
+    )
+    star = min(
+        established,
+        _clamp(float(outcomes["star_probability"]["prediction"])),
+    )
+    outcomes["star_probability"]["prediction"] = round(star, 4)
+    return {
+        "bust_probability": round(1.0 - established, 4),
+        "role_probability": round(established - star, 4),
+        "star_probability": round(star, 4),
+    }
 
 
 def score_current(contract: dict, role_targets: dict) -> list[dict]:
@@ -784,6 +857,7 @@ def score_current(contract: dict, role_targets: dict) -> list[dict]:
                     "prediction_source": source,
                     "gate_status": target_model["gate"]["status"],
                 }
+            outcome_distribution = _coherent_outcome_distribution(outcomes)
             profiles.append(
                 {
                     "mlbam_id": int(record["mlbam_id"]),
@@ -798,6 +872,7 @@ def score_current(contract: dict, role_targets: dict) -> list[dict]:
                     "sample_unit": "PA" if role == "hitter" else "IP",
                     "sample_reliability": round(reliability, 3),
                     "outcomes": outcomes,
+                    "outcome_distribution": outcome_distribution,
                 }
             )
     return sorted(profiles, key=lambda row: (row["role"], row["mlbam_id"]))
@@ -814,6 +889,10 @@ def _target_contract() -> dict:
         "conditional_targets": (
             "trained only when the representative season reaches the role's "
             "established threshold"
+        ),
+        "outcome_distribution": (
+            "bust = 1 - established; star is a factual volume/production "
+            "probability capped at established; role is the remainder"
         ),
         "validation": "player-grouped expanding-window",
         "mature_through": MATURE_THROUGH,
@@ -930,6 +1009,9 @@ def archive_predictions(
                     "neighbor_validation_score": target["neighbor_validation_score"],
                     "canonical_neighbor_validation_score": target[
                         "canonical_neighbor_validation_score"
+                    ],
+                    "rank_concordance_by_source": target[
+                        "rank_concordance_by_source"
                     ],
                     "model_mae": target["model_mae"],
                     "prior_mae": target["prior_mae"],

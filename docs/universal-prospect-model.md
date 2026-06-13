@@ -14,14 +14,32 @@ and custom-league values without retraining the baseball model.
 The existing `prospects/model.py` remains the DD-oriented research model. Its
 direct 7x7 target and ranks are not reused as universal truth.
 
-## Version 0.3
+## Version 0.4
 
-Version 0.3 is a shadow-only A/A+/AA/AAA foundation. It predicts:
+Version 0.4 is a shadow-only A/A+/AA/AAA foundation. It predicts:
 
 - Establishment probability for hitters and pitchers
+- Factual star probability from MLB volume and production thresholds
 - Regular-hitter and rotation-volume probability
 - Representative MLB volume and production, conditional on establishment
 - Every outcome required by the Diamond Dynasties 7x7 adapter
+
+The profile now publishes a coherent factual outcome distribution:
+
+- `bust_probability = 1 - established_probability`
+- `star_probability` is capped at establishment probability
+- `role_probability` is the remaining established probability
+
+The star definition is independent of fantasy scoring: hitters require a
+post-cohort `450 PA / .800 OPS` season; pitchers require a post-cohort
+`120 IP / 3.75 ERA` season. The published hitter star-probability source reached
+`0.842135` held-out rank concordance and the published pitcher source reached
+`0.813632`. Both currently publish the strongest factual-neighbor baseline
+because ridge did not earn its target-level promotion gate.
+
+Star probability does not feed the league adapter or DD value. Expected
+category impact and ceiling probability remain separate until a later
+dynasty-valuation gate proves how they should interact.
 
 The representative season is always the player's highest-volume future MLB
 season (`PA` for hitters, `IP` for pitchers). It is never selected because it
@@ -151,18 +169,33 @@ The artifact therefore blocks a DD shadow consumer and all live DD value
 influence. Even after both historical role gates pass, dated forward archives
 must demonstrate stability before any capped live influence is considered.
 
+Version 0.4 also emits category and target-source ablations. They identify the
+current blockers without changing league weights:
+
+- Hitter ratio-rate categories are the largest drag on top-quartile precision;
+  removing `AVG` or `OPS` in research improves the diagnostic, but production
+  adapters must not omit real league categories.
+- Pitcher rate/context outcomes, especially `WHIP`, `ERA`, and `L`, add
+  substantial ordering noise.
+- Replacing only pitcher establishment probability with the level-age prior
+  improves both held-out ordering and top-quartile precision, but that
+  post-hoc result is diagnostic evidence, not an eligible production override.
+
 ## Next Research Blockers
 
 1. Add complex-league and rookie-ball coverage without weakening enrollment or
    outcome-completeness rules.
 2. Add role-neutral underlying MLB skills where the source contract supports
    them, rather than fantasy-category outcomes.
-3. Improve pitcher separation and both roles' top-of-board precision without
-   lowering the adapter promotion gates.
+3. Improve pitcher separation and both roles' ratio/outcome-rate projections
+   without lowering or tuning against the adapter promotion gates.
 4. Expand completed historical coverage enough to test a longer outcome
    horizon without introducing label leakage.
-5. Forward-test dated profiles and adapter disagreements.
-6. Plug ValuCast's separate MLB projection models into the shared league
+5. Design and validate a separate dynasty ceiling/risk layer that may consume
+   the factual outcome distribution without feeding preferences back into the
+   universal model.
+6. Forward-test dated profiles and adapter disagreements.
+7. Plug ValuCast's separate MLB projection models into the shared league
    projection contract.
-7. Add the missing universal outcomes required to unlock complete 5x5, points,
+8. Add the missing universal outcomes required to unlock complete 5x5, points,
    and broader custom-league adapters.

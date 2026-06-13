@@ -7,6 +7,7 @@ import pytest
 from prospects.gate import validate_gate
 from prospects.universal import (
     TARGET_SPECS,
+    _coherent_outcome_distribution,
     _raw_target,
     _representative_season,
     _target_rows,
@@ -200,6 +201,31 @@ def test_probability_targets_include_non_established_players_but_conditionals_do
     assert {row["target"] for row in probabilities} == {0.0, 1.0}
 
 
+def test_star_probability_is_factual_and_league_independent():
+    hitter = {"mlbam_id": 1, "cohort_year": 2018}
+    pitcher = {"mlbam_id": 2, "cohort_year": 2018}
+    seasons = {
+        "1_hitter": [{"year": 2019, "pa": 500, "ops": 0.810}],
+        "2_pitcher": [{"year": 2019, "ip": 130, "era": 3.70}],
+    }
+    assert _raw_target(hitter, "hitter", "star_probability", seasons) == 1.0
+    assert _raw_target(pitcher, "pitcher", "star_probability", seasons) == 1.0
+
+
+def test_outcome_distribution_is_coherent_when_independent_targets_cross():
+    outcomes = {
+        "established_probability": {"prediction": 0.30},
+        "star_probability": {"prediction": 0.40},
+    }
+    distribution = _coherent_outcome_distribution(outcomes)
+    assert distribution == {
+        "bust_probability": 0.7,
+        "role_probability": 0.0,
+        "star_probability": 0.3,
+    }
+    assert outcomes["star_probability"]["prediction"] == 0.3
+
+
 def test_probability_gate_uses_brier_while_continuous_targets_use_mae():
     predictions = [0.2, 0.6]
     targets = [0.0, 1.0]
@@ -216,10 +242,12 @@ def test_shadow_output_is_rank_free_and_independently_gated():
     assert payload["candidate_count"] == 2
     assert all("rank" not in profile for profile in payload["profiles"])
     assert {
+        "star_probability",
         "representative_r_per_600",
         "representative_rbi_per_600",
     } <= set(payload["roles"]["hitter"])
     assert {
+        "star_probability",
         "representative_qs_per_180",
         "representative_sv_hld_per_60",
         "representative_l_per_180",
@@ -238,6 +266,14 @@ def test_shadow_output_is_rank_free_and_independently_gated():
                 "historical_neighbors_25",
                 "canonical_historical_neighbors_25",
             }
+            assert set(target["rank_concordance_by_source"]) == {
+                "ridge",
+                "level_age_prior",
+                "historical_neighbors_25",
+                "canonical_historical_neighbors_25",
+            }
+    for profile in payload["profiles"]:
+        assert sum(profile["outcome_distribution"].values()) == pytest.approx(1.0)
 
 
 def test_v11_contract_accepts_lower_minors_and_expanded_factual_sources():
