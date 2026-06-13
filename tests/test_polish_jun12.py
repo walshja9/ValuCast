@@ -220,13 +220,46 @@ class TestDynastyCategories(_RealAppCase):
     def test_default_board_has_no_now_column(self):
         html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
         self.assertNotIn("col-now-dollar", html)
+        self.assertIn("prospect slots · 7x7 · Updated", html)
+        self.assertIn("DD 7x7", html)
+
+    def test_default_dynasty_categories_are_not_redraft_5x5(self):
+        ctx = app_module._build_dynasty_context(MultiDict())
+        self.assertEqual(
+            set(ctx["cats"]),
+            {"R", "HR", "RBI", "SB", "AVG", "OPS", "SO"},
+        )
+        self.assertEqual(
+            set(ctx["pcats"]),
+            {"ERA", "WHIP", "K", "SV", "HLD", "K_BB", "QS"},
+        )
+        self.assertFalse(ctx["custom_cats_active"])
+        self.assertIn("7x7", ctx["config_summary"])
+        self.assertNotIn("DD 7x7", ctx["config_summary"])
+
+    def test_dd_7x7_remains_selectable_but_is_not_default(self):
+        ctx = app_module._build_dynasty_context(MultiDict([
+            ("cats", "R,HR,RBI,SB,AVG,OPS,SO"),
+            ("pcats", "L,K,QS,SV_HLD,ERA,WHIP,K_BB"),
+        ]))
+        self.assertTrue(ctx["custom_cats_active"])
+        self.assertIn("DD 7x7", ctx["config_summary"])
+
+    def test_standard_5x5_is_recognized_regardless_of_canonical_order(self):
+        ctx = app_module._build_dynasty_context(MultiDict([
+            ("cats", "R,HR,RBI,SB,AVG"),
+            ("pcats", "W,SV,K,ERA,WHIP"),
+        ]))
+        self.assertTrue(ctx["custom_cats_active"])
+        self.assertIn("5x5", ctx["config_summary"])
+        self.assertNotIn("Custom 5x5", ctx["config_summary"])
 
     def test_custom_cats_add_now_column_and_summary(self):
         html = self.client.get(
             f"/?mode=dd_dynasty&{self.CUSTOM}").data.decode("utf-8")
         self.assertIn("col-now-dollar", html)
         self.assertIn("Now $", html)
-        self.assertIn("Custom 5x5 (OBP)", html)
+        self.assertIn("Custom 5x5 (OBP, W)", html)
         # prospects can't have a this-season value -> em-dash cell
         self.assertIn('<td class="col-now-dollar">—</td>', html)
 
@@ -277,6 +310,33 @@ class TestDynastyCategories(_RealAppCase):
         push = r.headers.get("HX-Replace-Url", "")
         self.assertIn("cats=", push)
         self.assertIn("rank_by=now", push)
+
+    def test_dynasty_detail_uses_active_category_state(self):
+        hitter = next(
+            row for row in self.dd_rows
+            if not row.is_prospect and not {"P", "SP", "RP"}.intersection(row.positions)
+        )
+        default_html = self.client.get(
+            f"/player/{hitter.id}?mode=dd_dynasty", headers=self.HX,
+        ).data.decode("utf-8")
+        self.assertIn("7x7 categories", default_html)
+        self.assertNotIn("DD 7x7 categories", default_html)
+
+        custom_html = self.client.get(
+            f"/player/{hitter.id}?mode=dd_dynasty&cats=OPS&pcats=QS",
+            headers=self.HX,
+        ).data.decode("utf-8")
+        self.assertIn("Custom 1x1 (OPS, QS) categories", custom_html)
+        self.assertIn(">OPS<", custom_html)
+        self.assertNotIn(">Runs<", custom_html)
+
+    def test_h2h_category_fit_matches_default_separate_saves_and_holds(self):
+        html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
+        self.assertIn(
+            "h2h: {R:1, HR:1, RBI:1, SB:1, AVG:1, OPS:1, SO:1, "
+            "ERA:1, WHIP:1, K:1, QS:1, SV:1, HLD:1, 'K/BB':1}",
+            html,
+        )
 
 
 class TestGlassAndMap(_RealAppCase):

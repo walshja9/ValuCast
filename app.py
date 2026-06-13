@@ -314,6 +314,21 @@ def _dynasty_metadata(settings):
 FIT_CATS = ("R", "HR", "RBI", "SB", "AVG", "OBP", "OPS", "SLG", "H", "BB",
             "SO", "TB", "NSB")
 FIT_PCATS = ("W", "L", "K", "QS", "SV", "HLD", "ERA", "WHIP", "IP")
+DYNASTY_DEFAULT_CATS = ("R", "HR", "RBI", "SB", "SO", "AVG", "OPS")
+DYNASTY_DEFAULT_PCATS = ("ERA", "WHIP", "K", "SV", "HLD", "K_BB", "QS")
+DD_DYNASTY_CATS = ("R", "HR", "RBI", "SB", "AVG", "OPS", "SO")
+DD_DYNASTY_PCATS = ("L", "K", "QS", "SV_HLD", "ERA", "WHIP", "K_BB")
+DYNASTY_CATEGORY_PRESETS = {
+    "7x7": {
+        "cats": list(DYNASTY_DEFAULT_CATS),
+        "pcats": list(DYNASTY_DEFAULT_PCATS),
+    },
+    "DD 7x7": {
+        "cats": list(DD_DYNASTY_CATS),
+        "pcats": list(DD_DYNASTY_PCATS),
+    },
+    **CATEGORY_PRESETS,
+}
 _FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L"})
 _DYN_Z_CACHE = {"key": None, "map": {}}
 
@@ -392,21 +407,29 @@ def _dynasty_category_state(args):
     from web.category_registry import canonicalize_cats
     cats_present = bool(args.getlist("cats"))
     pcats_present = bool(args.getlist("pcats"))
-    cats = canonicalize_cats(parse_list(args.getlist("cats"))) or list(DEFAULT_CATS)
-    pcats = canonicalize_cats(parse_list(args.getlist("pcats"))) or list(DEFAULT_PCATS)
+    default_cats = canonicalize_cats(list(DYNASTY_DEFAULT_CATS))
+    default_pcats = canonicalize_cats(list(DYNASTY_DEFAULT_PCATS))
+    cats = canonicalize_cats(parse_list(args.getlist("cats"))) or default_cats
+    pcats = canonicalize_cats(parse_list(args.getlist("pcats"))) or default_pcats
     active = (
         (cats_present or pcats_present)
-        and (cats != list(DEFAULT_CATS) or pcats != list(DEFAULT_PCATS))
+        and (cats != default_cats or pcats != default_pcats)
     )
     return cats, pcats, active
 
 
 def _dynasty_category_summary(cats, pcats):
-    for name, preset in CATEGORY_PRESETS.items():
-        if cats == preset["cats"] and pcats == preset["pcats"]:
-            return "6x6 (OBP, QS)" if name == "6x6" else "5x5"
-    extras = [cat for cat in cats if cat not in DEFAULT_CATS]
-    extras += [cat for cat in pcats if cat not in DEFAULT_PCATS]
+    from web.category_registry import canonicalize_cats
+    for name, preset in DYNASTY_CATEGORY_PRESETS.items():
+        if (
+            cats == canonicalize_cats(preset["cats"])
+            and pcats == canonicalize_cats(preset["pcats"])
+        ):
+            if name == "6x6":
+                return "6x6 (OBP, QS)"
+            return name
+    extras = [cat for cat in cats if cat not in DYNASTY_DEFAULT_CATS]
+    extras += [cat for cat in pcats if cat not in DYNASTY_DEFAULT_PCATS]
     detail = ", ".join(extras or list(cats) + list(pcats))
     return f"Custom {len(cats)}x{len(pcats)} ({detail})"
 
@@ -488,9 +511,7 @@ def _build_dynasty_context(args):
         )
     rows = rows[:200]
     dynasty_dollars, tiers = _dynasty_metadata(settings)
-    summary = settings.summary()
-    if custom_cats_active:
-        summary += f" · {_dynasty_category_summary(cats, pcats)}"
+    summary = f"{settings.summary()} · {_dynasty_category_summary(cats, pcats)}"
     return {
         "mode": "dd_dynasty",
         "pool": pool,
@@ -506,7 +527,7 @@ def _build_dynasty_context(args):
         "pcats": pcats,
         "hitting_categories": HITTING_CATEGORIES,
         "pitching_categories": PITCHING_CATEGORIES,
-        "category_presets": CATEGORY_PRESETS,
+        "category_presets": DYNASTY_CATEGORY_PRESETS,
         "tiers": tiers,
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
@@ -977,7 +998,7 @@ def league_import():
         "pcats": pcats,
         "hitting_categories": HITTING_CATEGORIES,
         "pitching_categories": PITCHING_CATEGORIES,
-        "category_presets": CATEGORY_PRESETS,
+        "category_presets": DYNASTY_CATEGORY_PRESETS,
     }
     ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "?")
           .split(",")[0].strip())
@@ -1206,16 +1227,17 @@ def player_detail(player_id):
                 "identity": identity,
             }
 
-        # Same-engine category z's as the categories card. The feed's
-        # z_scores field has never been produced (DD-producer gap), so the
-        # card scores the matched projection against the default league
-        # config app-side — identical numbers to the redraft card.
+        # Same-engine category z's as the active dynasty category configuration.
+        # The feed's z_scores field has never been produced (DD-producer gap),
+        # so the card scores the safely matched projection app-side.
         dyn_result = None
         dyn_categories = []
+        dyn_category_summary = None
         if matches:
+            dyn_cats, dyn_pcats, _ = _dynasty_category_state(request.args)
             config = build_config(
-                mode="categories", cats=list(DEFAULT_CATS),
-                pcats=list(DEFAULT_PCATS), rules_str="",
+                mode="categories", cats=dyn_cats,
+                pcats=dyn_pcats, rules_str="",
                 pt_params=None, split_rp=False, weights=None,
             )
             detail_results = _merge_two_way_players(
@@ -1227,12 +1249,14 @@ def player_detail(player_id):
             dyn_result = next(
                 (r for r in detail_results if r.player.id in ids), None)
             dyn_categories = list(getattr(config, "categories", []) or [])
+            dyn_category_summary = _dynasty_category_summary(dyn_cats, dyn_pcats)
 
         return render_template(
             "partials/player_detail_dynasty.html",
             row=dd_row,
             dyn_result=dyn_result,
             dyn_categories=dyn_categories,
+            dyn_category_summary=dyn_category_summary,
             spark=build_spark(dd_row.value_history),
             mlb_stats=mlb_stats,
             mlb_stats_actual=mlb_stats_actual,
