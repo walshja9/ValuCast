@@ -48,6 +48,7 @@ jobs:
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_rank_v1.py
           python scripts/build_valucast_buys.py
+          python scripts/review_valucast_buys.py
           python scripts/build_public_dynasty_snapshot.py
 
       - name: Validate public artifacts
@@ -71,6 +72,7 @@ jobs:
             data/dd/dd_dynasty_feed.json \
             data/models/valucast_mlb_dynasty_layer.json \
             data/models/valucast_prospect_buys.json \
+            data/models/valucast_prospect_buys_review.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
             data/prediction_archive/valucast_mlb_dynasty_layer \

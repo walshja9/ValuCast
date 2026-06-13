@@ -1,8 +1,15 @@
 """Tests for ValuCast-owned prospect buy signals."""
+import json
 from copy import deepcopy
+from types import SimpleNamespace
 
 from prospects.buys import build_buy_signals, buy_window_score
-from scripts.validate_valucast_buys import validate_payload
+from scripts.review_valucast_buys import build_review
+from web import buy_score
+from web.valucast_buy_store import (
+    ValuCastBuyStore,
+    validate_valucast_buy_payload,
+)
 
 
 def _row(
@@ -85,7 +92,7 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
     assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["promotion"]["feeds_live_buys"] is False
-    assert validate_payload(payload) == []
+    assert validate_valucast_buy_payload(payload) == []
 
 
 def test_context_only_and_public_ranks_do_not_change_scores():
@@ -129,4 +136,80 @@ def test_validator_rejects_dd_usage_flag():
     payload = build_buy_signals(_rank_payload(), _history())
     payload["source_policy"]["dd_values_used"] = True
 
-    assert "source_policy.dd_values_used must be false" in validate_payload(payload)
+    assert "source_policy.dd_values_used must be false" in validate_valucast_buy_payload(payload)
+
+
+def test_valucast_buy_store_loads_shadow_artifact(tmp_path):
+    payload = build_buy_signals(_rank_payload(), _history())
+    path = tmp_path / "buys.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    store = ValuCastBuyStore(path)
+
+    assert store.is_available is True
+    assert store.ready_for_live_consumers is False
+    assert store.generated_at == payload["generated_at"]
+    assert len(store.get_all()) == 3
+
+
+def test_build_valucast_board_formats_existing_template_shape():
+    payload = build_buy_signals(_rank_payload(), _history())
+    board = buy_score.build_valucast_board(payload["board"], n=1)
+
+    assert len(board) == 1
+    assert board[0]["id"].startswith("vc_prospect_")
+    assert board[0]["headshot_url"].endswith("/headshot/67/current")
+    assert "momentum" in board[0]["terms"]
+    assert "valucast_terms" in board[0]
+
+
+def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active():
+    from app import _select_buy_source
+
+    dd = SimpleNamespace(is_available=True)
+    blocked = SimpleNamespace(is_available=True, ready_for_live_consumers=False)
+    ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+
+    selected, source = _select_buy_source(
+        dd,
+        blocked,
+        use_valucast_buys=True,
+        public_snapshot_active=True,
+    )
+    assert selected is dd
+    assert source == "dd_feed"
+
+    selected, source = _select_buy_source(
+        dd,
+        ready,
+        use_valucast_buys=True,
+        public_snapshot_active=False,
+    )
+    assert selected is dd
+    assert source == "dd_feed"
+
+    selected, source = _select_buy_source(
+        dd,
+        ready,
+        use_valucast_buys=True,
+        public_snapshot_active=True,
+    )
+    assert selected is ready
+    assert source == "valucast_buys"
+
+
+def test_review_artifact_blocks_low_overlap_and_history_limited_board():
+    payload = build_buy_signals(_rank_payload(), _history())
+    valucast = buy_score.build_valucast_board(payload["board"])
+    dd = [
+        {"rank": 1, "name": "Different One", "score": 80.0, "level": "AA", "age": 22, "reason": "Breakout"},
+        {"rank": 2, "name": "Different Two", "score": 79.0, "level": "A+", "age": 21, "reason": "Rank gap"},
+    ]
+    store = SimpleNamespace(validation={"history_limited_count": 40, "row_count": 40})
+
+    review = build_review(dd, valucast, store)
+
+    assert review["review_status"] == "blocked"
+    assert review["metrics"]["top40_name_overlap_count"] == 0
+    assert review["metrics"]["history_limited_rate"] == 1.0
+    assert any("overlap" in blocker for blocker in review["blockers"])

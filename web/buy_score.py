@@ -80,8 +80,8 @@ def clean_tail(value_history):
         return []
     tail = [pts[-1]]
     last_ord = _day_ordinal(pts[-1][0])
-    for date, value in reversed(pts[:-1]):
-        cur_ord = _day_ordinal(date)
+    for date_str, value in reversed(pts[:-1]):
+        cur_ord = _day_ordinal(date_str)
         prev_ord = _day_ordinal(tail[0][0])
         if cur_ord is None or prev_ord is None:
             break
@@ -91,7 +91,7 @@ def clean_tail(value_history):
             break
         if last_ord - cur_ord > MOMENTUM_WINDOW_DAYS:
             break
-        tail.insert(0, (date, value))
+        tail.insert(0, (date_str, value))
     return tail
 
 
@@ -213,5 +213,43 @@ def build_board(rows, n=BOARD_SIZE):
             "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
             "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
             "value_history": row.value_history,
+        })
+    return board
+
+
+def build_valucast_board(rows, n=BOARD_SIZE):
+    """Format ValuCast-owned buy signal rows for the existing `/buys` template.
+
+    The live route only consumes this when the ValuCast buy artifact is promoted.
+    """
+    board = []
+    for row in list(rows)[:n]:
+        positions = list(row.get("positions") or ())
+        team_id = TEAM_IDS.get(row.get("team"))
+        mlbam = row.get("mlbam_id") if row.get("mlbam_id") else 0
+        valucast_terms = row.get("terms") or {}
+        display_terms = {
+            "momentum": valucast_terms.get("momentum", NEUTRAL_MOMENTUM),
+            "breakout": valucast_terms.get("model_strength", 0.0),
+            "gap": valucast_terms.get("buy_window", 0.0),
+            "runway": valucast_terms.get("runway", 0.0),
+        }
+        board.append({
+            "rank": row.get("rank"),
+            "id": row.get("player_id") or row.get("id"),
+            "name": row.get("name"),
+            "team": row.get("team") or "",
+            "pos": "/".join(positions[:2]) or "-",
+            "level": row.get("level") or "-",
+            "age": row.get("age"),
+            "score": row.get("score"),
+            "label": row.get("reason") or "",
+            "terms": display_terms,
+            "valucast_terms": valucast_terms,
+            "initials": graphic_initials(row.get("name")),
+            "reason": row.get("reason") or "ValuCast signal",
+            "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
+            "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
+            "value_history": row.get("score_history") or (),
         })
     return board

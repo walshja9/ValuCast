@@ -235,6 +235,7 @@ def build_buy_signals(
             {
                 "rank": rank,
                 "id": f"vc_buy_{row['mlbam_id']}_{row['role']}",
+                "player_id": f"vc_prospect_{row['mlbam_id']}_{row['role']}",
                 "name": row.get("name"),
                 "mlbam_id": row.get("mlbam_id"),
                 "role": row.get("role"),

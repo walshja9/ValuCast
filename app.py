@@ -32,6 +32,7 @@ from web.category_registry import (
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
 from web.public_snapshot_store import PublicSnapshotStore
+from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import parse_league_settings
 from web.league_import import import_league, ImportError_
 from web.season_outlook import (
@@ -211,8 +212,13 @@ PUBLIC_SNAPSHOT_PATH = Path(os.environ.get(
     "VALUCAST_PUBLIC_SNAPSHOT_PATH",
     str(Path(__file__).parent / "data" / "public" / "public_dynasty_snapshot.json"),
 ))
+VALUCAST_BUYS_PATH = Path(os.environ.get(
+    "VALUCAST_BUYS_PATH",
+    str(Path(__file__).parent / "data" / "models" / "valucast_prospect_buys.json"),
+))
 legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
+valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
 
 
 def _select_dynasty_store(dd_candidate, snapshot_candidate, use_public_snapshot=None):
@@ -227,6 +233,33 @@ def _select_dynasty_store(dd_candidate, snapshot_candidate, use_public_snapshot=
         and snapshot_candidate.ready_for_live_consumers
     ):
         return snapshot_candidate, "valucast_public_snapshot"
+    return dd_candidate, "dd_feed"
+
+
+def _select_buy_source(
+    dd_candidate,
+    buy_candidate,
+    *,
+    use_valucast_buys=None,
+    public_snapshot_active=None,
+):
+    enabled = (
+        os.environ.get("VALUCAST_USE_VALUCAST_BUYS") == "1"
+        if use_valucast_buys is None
+        else bool(use_valucast_buys)
+    )
+    snapshot_active = (
+        dynasty_data_source == "valucast_public_snapshot"
+        if public_snapshot_active is None
+        else bool(public_snapshot_active)
+    )
+    if (
+        enabled
+        and snapshot_active
+        and buy_candidate.is_available
+        and buy_candidate.ready_for_live_consumers
+    ):
+        return buy_candidate, "valucast_buys"
     return dd_candidate, "dd_feed"
 
 
@@ -1489,13 +1522,25 @@ def value_map():
 def buys():
     """Top-40 prospect buys + the shareable 1080x1350 graphic node."""
     n = buy_score.clamp_n(request.args.get("n", buy_score.BOARD_SIZE))
-    if dd_store.is_available:
+    buy_store, buy_data_source = _select_buy_source(dd_store, valucast_buy_store)
+    if buy_data_source == "valucast_buys" and buy_store.is_available:
+        graphic_rows = buy_score.build_valucast_board(buy_store.get_all())
+        # n drives the interactive list only; the 2x20 graphic always takes 40
+        list_rows = (graphic_rows[:n] if n <= buy_score.BOARD_SIZE
+                     else buy_score.build_valucast_board(buy_store.get_all(), n=n))
+        data_generated_at = buy_store.generated_at
+        data_available = True
+    elif dd_store.is_available:
         graphic_rows = buy_score.build_board(dd_store.get_all())
         # n drives the interactive list only; the 2x20 graphic always takes 40
         list_rows = (graphic_rows[:n] if n <= buy_score.BOARD_SIZE
                      else buy_score.build_board(dd_store.get_all(), n=n))
+        data_generated_at = dd_store.generated_at
+        data_available = True
     else:
         graphic_rows, list_rows = [], []
+        data_generated_at = None
+        data_available = False
     for row in graphic_rows:
         row["spark"] = build_spark(row["value_history"])
     for row in list_rows:
@@ -1506,8 +1551,9 @@ def buys():
         list_rows=list_rows,
         graphic_rows=graphic_rows,
         n=n,
-        dd_available=dd_store.is_available,
-        dd_generated_at=dd_store.generated_at,
+        dd_available=data_available,
+        dd_generated_at=data_generated_at,
+        buy_data_source=buy_data_source,
         as_of=store.as_of,
     )
 
@@ -1533,6 +1579,12 @@ def health_ready():
             public_snapshot_store.is_available
             and public_snapshot_store.ready_for_live_consumers
         )
+    if os.environ.get("VALUCAST_USE_VALUCAST_BUYS") == "1":
+        stores["valucast_buys_ready"] = (
+            valucast_buy_store.is_available
+            and valucast_buy_store.ready_for_live_consumers
+            and dynasty_data_source == "valucast_public_snapshot"
+        )
     ready = all(stores.values())
     body = {
         "ready": ready,
@@ -1541,6 +1593,10 @@ def health_ready():
             "available": public_snapshot_store.is_available,
             "ready_for_live_consumers": public_snapshot_store.ready_for_live_consumers,
             "active": dynasty_data_source == "valucast_public_snapshot",
+        },
+        "valucast_buys": {
+            "available": valucast_buy_store.is_available,
+            "ready_for_live_consumers": valucast_buy_store.ready_for_live_consumers,
         },
         "dynasty_data_source": dynasty_data_source,
         "commit": os.environ.get("RENDER_GIT_COMMIT", ""),
