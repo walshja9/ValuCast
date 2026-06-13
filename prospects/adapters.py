@@ -8,13 +8,18 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from statistics import mean, pstdev
 
 from prospects.universal import ARTIFACT_PATH as UNIVERSAL_ARTIFACT_PATH
+from projections.league_adapter import (
+    PROJECTION_CONTRACT_VERSION,
+    normalize_categories,
+    projection_row,
+    rank_projection_rows,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_league_adapters.json"
-ADAPTER_VERSION = "0.2.0"
+ADAPTER_VERSION = "0.3.0"
 
 PRESETS = {
     "roto_5x5": {
@@ -48,13 +53,6 @@ SUPPORTED_CATEGORIES = {
     "hitter": {"PA", "R", "HR", "RBI", "SB", "AVG", "OPS", "SO"},
     "pitcher": {"IP", "K", "QS", "SV+HLD", "ERA", "WHIP", "K/BB", "L"},
 }
-RATIO_CATEGORIES = {
-    "hitter": {"AVG", "OPS"},
-    "pitcher": {"ERA", "WHIP", "K/BB"},
-}
-VOLUME_CATEGORY = {"hitter": "PA", "pitcher": "IP"}
-
-
 def _prediction(profile: dict, name: str) -> float:
     return float(profile["outcomes"][name]["prediction"])
 
@@ -137,105 +135,24 @@ def project_categories(profile: dict) -> dict[str, float]:
     return categories
 
 
-def _available_categories(profiles: list[dict], role: str) -> set[str]:
-    available = None
-    for profile in profiles:
-        if profile.get("role") != role:
-            continue
-        categories = set(project_categories(profile))
-        available = categories if available is None else available & categories
-    return available or set()
-
-
-def _category_scoring_value(
-    row: dict, role: str, category: str, raw_center: float
-) -> float:
-    value = row["categories"][category]
-    if category not in RATIO_CATEGORIES[role]:
-        return value
-    return (value - raw_center) * row["projected_volume"]
-
-
-def _normalize_categories(categories: dict) -> dict[str, float]:
-    normalized = {}
-    for category, weight in categories.items():
-        value = float(weight)
-        if value:
-            normalized[str(category).upper()] = value
-    return normalized
-
-
 def adapt_categories(
     profiles: list[dict],
     *,
     name: str,
     categories: dict[str, dict[str, float]],
 ) -> dict:
-    role_configs = {
-        role: _normalize_categories(categories.get(role, {}))
-        for role in ("hitter", "pitcher")
-    }
     role_results = {}
     for role in ("hitter", "pitcher"):
-        config = role_configs[role]
+        config = normalize_categories(categories.get(role, {}))
         role_profiles = [profile for profile in profiles if profile.get("role") == role]
-        available = _available_categories(role_profiles, role)
-        missing = sorted(set(config) - available)
-        coverage = (len(config) - len(missing)) / len(config) if config else 0.0
         projected = [
             _adapter_row(profile, role, config)
             for profile in role_profiles
         ]
-        complete = bool(config) and bool(projected) and not missing
-        if complete:
-            raw_centers = {
-                category: mean(row["categories"][category] for row in projected)
-                for category in config
-            }
-            scoring_values = {
-                row["mlbam_id"]: {
-                    category: _category_scoring_value(
-                        row, role, category, raw_centers[category]
-                    )
-                    for category in config
-                }
-                for row in projected
-            }
-            centers = {
-                category: mean(
-                    scoring_values[row["mlbam_id"]][category] for row in projected
-                )
-                for category in config
-            }
-            spreads = {
-                category: pstdev(
-                    scoring_values[row["mlbam_id"]][category] for row in projected
-                )
-                or 1.0
-                for category in config
-            }
-            for row in projected:
-                row["adapter_score"] = round(
-                    sum(
-                        (scoring_values[row["mlbam_id"]][category] - centers[category])
-                        / spreads[category]
-                        * weight
-                        for category, weight in config.items()
-                    ),
-                    4,
-                )
-            projected.sort(key=lambda row: (-row["adapter_score"], row["mlbam_id"]))
-            for rank, row in enumerate(projected, 1):
-                row["adapter_rank"] = rank
-        role_results[role] = {
-            "status": "research_ranked" if complete else "insufficient_category_coverage",
-            "category_coverage": round(coverage, 4),
-            "configured_categories": config,
-            "supported_categories": sorted(set(config) & available),
-            "missing_categories": missing,
-            "candidate_count": len(projected),
-            "players": projected,
-        }
+        result = rank_projection_rows(projected, role, config)
+        for player in result["players"]:
+            player.pop("player_id", None)
+        role_results[role] = result
     return {
         "name": name,
         "status": (
@@ -249,19 +166,21 @@ def adapt_categories(
 
 def _adapter_row(profile: dict, role: str, config: dict) -> dict:
     projected = project_categories(profile)
-    return {
-        "mlbam_id": profile["mlbam_id"],
-        "name": profile.get("name"),
-        "role": role,
-        "level": profile.get("level"),
-        "age": profile.get("age"),
-        "projected_volume": round(projected.get(VOLUME_CATEGORY[role], 0.0), 4),
-        "categories": {
-            category: round(value, 4)
+    volume_category = "PA" if role == "hitter" else "IP"
+    return projection_row(
+        player_id=profile["mlbam_id"],
+        role=role,
+        projected_volume=projected.get(volume_category, 0.0),
+        categories={
+            category: value
             for category, value in projected.items()
             if category in config
         },
-    }
+        mlbam_id=profile["mlbam_id"],
+        name=profile.get("name"),
+        level=profile.get("level"),
+        age=profile.get("age"),
+    )
 
 
 def adapt_points(
@@ -296,6 +215,11 @@ def build_adapter_artifact(universal: dict) -> dict:
         "universal_model_version": universal.get("model_version"),
         "candidate_count": len(profiles),
         "rule": "No adapter rank is emitted unless every configured category is supported.",
+        "projection_contract": {
+            "version": PROJECTION_CONTRACT_VERSION,
+            "shared_by": ["prospect_models", "mlb_projection_models"],
+            "boundary": "source model category projections -> league adapter",
+        },
         "scoring_contract": {
             "authority": "research_only",
             "rank_scope": "within_role",

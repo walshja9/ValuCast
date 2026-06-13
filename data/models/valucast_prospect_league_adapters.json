@@ -1,5 +1,5 @@
 {
-  "adapter_version": "0.2.0",
+  "adapter_version": "0.3.0",
   "candidate_count": 2486,
   "presets": {
     "dd_7x7": {
@@ -84603,6 +84603,14 @@
       },
       "status": "insufficient_category_coverage"
     }
+  },
+  "projection_contract": {
+    "boundary": "source model category projections -> league adapter",
+    "shared_by": [
+      "prospect_models",
+      "mlb_projection_models"
+    ],
+    "version": "1.0"
   },
   "rule": "No adapter rank is emitted unless every configured category is supported.",
   "scoring_contract": {

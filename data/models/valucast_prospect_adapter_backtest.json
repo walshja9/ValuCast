@@ -1,0 +1,268 @@
+{
+  "adapter_preset": "dd_7x7",
+  "backtest_version": "0.1.0",
+  "generated_at": "2026-06-13T04:33:02.494162+00:00",
+  "promotion": {
+    "adapter_research_gate": "hold",
+    "feeds_live_dd_value": false,
+    "live_block_reason": "Historical adapter evidence must pass for both roles, then dated forward archives must demonstrate stability before any capped influence.",
+    "live_dd_value_influence": "blocked",
+    "next_allowed_step": "improve_model_or_historical_evidence"
+  },
+  "roles": {
+    "hitter": {
+      "baseline_rank_concordance": 0.723494,
+      "baseline_top_quartile_precision": 0.301695,
+      "candidate_rank_concordance": 0.779231,
+      "candidate_top_quartile_precision": 0.293608,
+      "fold_count": 4,
+      "folds": [
+        {
+          "baseline_rank_concordance": 0.790128,
+          "baseline_top_quartile_precision": 0.302326,
+          "candidate_rank_concordance": 0.790128,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "regular_probability": "level_age_prior",
+            "representative_avg": "level_age_prior",
+            "representative_hr_per_600": "level_age_prior",
+            "representative_k_pct": "level_age_prior",
+            "representative_ops": "level_age_prior",
+            "representative_pa": "level_age_prior",
+            "representative_r_per_600": "level_age_prior",
+            "representative_rbi_per_600": "level_age_prior",
+            "representative_sb_per_600": "level_age_prior"
+          },
+          "candidate_top_quartile_precision": 0.302326,
+          "sample_size": 345,
+          "test_cohort": 2018,
+          "train_cohort_max": 2015
+        },
+        {
+          "baseline_rank_concordance": 0.719686,
+          "baseline_top_quartile_precision": 0.166667,
+          "candidate_rank_concordance": 0.719686,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "regular_probability": "level_age_prior",
+            "representative_avg": "level_age_prior",
+            "representative_hr_per_600": "level_age_prior",
+            "representative_k_pct": "level_age_prior",
+            "representative_ops": "level_age_prior",
+            "representative_pa": "level_age_prior",
+            "representative_r_per_600": "level_age_prior",
+            "representative_rbi_per_600": "level_age_prior",
+            "representative_sb_per_600": "level_age_prior"
+          },
+          "candidate_top_quartile_precision": 0.166667,
+          "sample_size": 360,
+          "test_cohort": 2019,
+          "train_cohort_max": 2016
+        },
+        {
+          "baseline_rank_concordance": 0.646482,
+          "baseline_top_quartile_precision": 0.270833,
+          "candidate_rank_concordance": 0.766543,
+          "candidate_sources": {
+            "established_probability": "canonical_historical_neighbors_25",
+            "regular_probability": "level_age_prior",
+            "representative_avg": "level_age_prior",
+            "representative_hr_per_600": "canonical_historical_neighbors_25",
+            "representative_k_pct": "canonical_historical_neighbors_25",
+            "representative_ops": "level_age_prior",
+            "representative_pa": "canonical_historical_neighbors_25",
+            "representative_r_per_600": "level_age_prior",
+            "representative_rbi_per_600": "canonical_historical_neighbors_25",
+            "representative_sb_per_600": "historical_neighbors_25"
+          },
+          "candidate_top_quartile_precision": 0.364583,
+          "sample_size": 386,
+          "test_cohort": 2021,
+          "train_cohort_max": 2018
+        },
+        {
+          "baseline_rank_concordance": 0.744554,
+          "baseline_top_quartile_precision": 0.458333,
+          "candidate_rank_concordance": 0.837864,
+          "candidate_sources": {
+            "established_probability": "canonical_historical_neighbors_25",
+            "regular_probability": "level_age_prior",
+            "representative_avg": "canonical_historical_neighbors_25",
+            "representative_hr_per_600": "canonical_historical_neighbors_25",
+            "representative_k_pct": "canonical_historical_neighbors_25",
+            "representative_ops": "level_age_prior",
+            "representative_pa": "canonical_historical_neighbors_25",
+            "representative_r_per_600": "level_age_prior",
+            "representative_rbi_per_600": "historical_neighbors_25",
+            "representative_sb_per_600": "historical_neighbors_25"
+          },
+          "candidate_top_quartile_precision": 0.333333,
+          "sample_size": 385,
+          "test_cohort": 2022,
+          "train_cohort_max": 2019
+        }
+      ],
+      "gate": {
+        "activated_at": "2026-06-13T04:33:02.494162+00:00",
+        "baseline": "level_age_prior_adapter",
+        "baseline_score": 0.723494,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 7.7039,
+        "metric": "dd_7x7_adapter_rank_concordance",
+        "model_score": 0.779231,
+        "reason": "beats level_age_prior_adapter by 7.70% OOS (dd_7x7_adapter_rank_concordance)",
+        "sample_size": 1476,
+        "status": "active",
+        "validated_through": "2025"
+      },
+      "role_research_gate": "hold",
+      "sample_size": 1476,
+      "top_quartile_guard": {
+        "activated_at": null,
+        "baseline": "level_age_prior_adapter",
+        "baseline_score": 0.301695,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": -2.6808,
+        "metric": "dd_7x7_adapter_top_quartile_precision",
+        "model_score": 0.293608,
+        "reason": "does not beat level_age_prior_adapter: -2.68% < required 0.0%",
+        "sample_size": 1476,
+        "status": "fallback",
+        "validated_through": "2025"
+      }
+    },
+    "pitcher": {
+      "baseline_rank_concordance": 0.533152,
+      "baseline_top_quartile_precision": 0.354407,
+      "candidate_rank_concordance": 0.538083,
+      "candidate_top_quartile_precision": 0.316025,
+      "fold_count": 4,
+      "folds": [
+        {
+          "baseline_rank_concordance": 0.513373,
+          "baseline_top_quartile_precision": 0.329412,
+          "candidate_rank_concordance": 0.513373,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "representative_era": "level_age_prior",
+            "representative_ip": "level_age_prior",
+            "representative_k_bb": "level_age_prior",
+            "representative_k_per_9": "level_age_prior",
+            "representative_l_per_180": "level_age_prior",
+            "representative_qs_per_180": "level_age_prior",
+            "representative_sv_hld_per_60": "level_age_prior",
+            "representative_whip": "level_age_prior",
+            "rotation_probability": "level_age_prior"
+          },
+          "candidate_top_quartile_precision": 0.329412,
+          "sample_size": 342,
+          "test_cohort": 2018,
+          "train_cohort_max": 2015
+        },
+        {
+          "baseline_rank_concordance": 0.686172,
+          "baseline_top_quartile_precision": 0.373737,
+          "candidate_rank_concordance": 0.686172,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "representative_era": "level_age_prior",
+            "representative_ip": "level_age_prior",
+            "representative_k_bb": "level_age_prior",
+            "representative_k_per_9": "level_age_prior",
+            "representative_l_per_180": "level_age_prior",
+            "representative_qs_per_180": "level_age_prior",
+            "representative_sv_hld_per_60": "level_age_prior",
+            "representative_whip": "level_age_prior",
+            "rotation_probability": "level_age_prior"
+          },
+          "candidate_top_quartile_precision": 0.373737,
+          "sample_size": 399,
+          "test_cohort": 2019,
+          "train_cohort_max": 2016
+        },
+        {
+          "baseline_rank_concordance": 0.415709,
+          "baseline_top_quartile_precision": 0.352273,
+          "candidate_rank_concordance": 0.421706,
+          "candidate_sources": {
+            "established_probability": "historical_neighbors_25",
+            "representative_era": "level_age_prior",
+            "representative_ip": "level_age_prior",
+            "representative_k_bb": "historical_neighbors_25",
+            "representative_k_per_9": "canonical_historical_neighbors_25",
+            "representative_l_per_180": "level_age_prior",
+            "representative_qs_per_180": "level_age_prior",
+            "representative_sv_hld_per_60": "historical_neighbors_25",
+            "representative_whip": "canonical_historical_neighbors_25",
+            "rotation_probability": "ridge"
+          },
+          "candidate_top_quartile_precision": 0.272727,
+          "sample_size": 352,
+          "test_cohort": 2021,
+          "train_cohort_max": 2018
+        },
+        {
+          "baseline_rank_concordance": 0.498151,
+          "baseline_top_quartile_precision": 0.358696,
+          "candidate_rank_concordance": 0.511943,
+          "candidate_sources": {
+            "established_probability": "historical_neighbors_25",
+            "representative_era": "level_age_prior",
+            "representative_ip": "level_age_prior",
+            "representative_k_bb": "canonical_historical_neighbors_25",
+            "representative_k_per_9": "canonical_historical_neighbors_25",
+            "representative_l_per_180": "level_age_prior",
+            "representative_qs_per_180": "level_age_prior",
+            "representative_sv_hld_per_60": "historical_neighbors_25",
+            "representative_whip": "canonical_historical_neighbors_25",
+            "rotation_probability": "canonical_historical_neighbors_25"
+          },
+          "candidate_top_quartile_precision": 0.282609,
+          "sample_size": 370,
+          "test_cohort": 2022,
+          "train_cohort_max": 2019
+        }
+      ],
+      "gate": {
+        "activated_at": null,
+        "baseline": "level_age_prior_adapter",
+        "baseline_score": 0.533152,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 0.9249,
+        "metric": "dd_7x7_adapter_rank_concordance",
+        "model_score": 0.538083,
+        "reason": "does not beat level_age_prior_adapter: 0.92% < required 2.0%",
+        "sample_size": 1463,
+        "status": "fallback",
+        "validated_through": "2025"
+      },
+      "role_research_gate": "hold",
+      "sample_size": 1463,
+      "top_quartile_guard": {
+        "activated_at": null,
+        "baseline": "level_age_prior_adapter",
+        "baseline_score": 0.354407,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": -10.8298,
+        "metric": "dd_7x7_adapter_top_quartile_precision",
+        "model_score": 0.316025,
+        "reason": "does not beat level_age_prior_adapter: -10.83% < required 0.0%",
+        "sample_size": 1463,
+        "status": "fallback",
+        "validated_through": "2025"
+      }
+    }
+  },
+  "status": "shadow_only",
+  "universal_model_name": "ValuCast Universal Prospect Model",
+  "universal_model_version": "0.3.0",
+  "validation_contract": {
+    "actual": "DD 7x7 impact from the highest-volume MLB season inside the horizon.",
+    "baseline": "Every target uses the factual level-age prior.",
+    "candidate": "Each target uses the method selected by gates fitted only inside the eligible training cohorts.",
+    "method": "nested_fixed_horizon_cohort_walk_forward",
+    "outcome_complete_through": 2025,
+    "outcome_horizon_years": 3,
+    "training_rule": "A test cohort may use only training cohorts whose full outcome horizon closed before the test cohort."
+  }
+}

@@ -96,6 +96,18 @@ League adapters live separately in `prospects/adapters.py`. They translate
 universal factual profiles into category or points-league opinions without
 changing the baseball model.
 
+The scoring implementation now lives in the source-neutral
+`projections/league_adapter.py` contract. Prospect and MLB projection models
+remain separate, but both can emit the same rows:
+
+- stable player identifier and role
+- projected playing-time volume
+- factual category projections
+- optional source metadata
+
+League settings are applied only after that boundary. The shared contract does
+not make a prospect model and an MLB projection model the same model.
+
 ```powershell
 python scripts/build_prospect_league_adapters.py
 ```
@@ -110,14 +122,47 @@ The DD adapter uses rotation probability to split pitcher `QS` from
 `SV+HLD`, and scales ratio-category impact by projected playing time. Those are
 league-scoring decisions and never feed back into the universal baseball model.
 
+## Adapter Backtest And Promotion Gate
+
+```powershell
+python scripts/build_prospect_adapter_backtest.py
+```
+
+Output:
+
+- `data/models/valucast_prospect_adapter_backtest.json`
+
+The adapter replay uses a fixed three-year post-cohort outcome horizon. Each
+test cohort may use only training cohorts whose complete three-year horizon
+closed before the test cohort. This prevents later MLB results from leaking
+into an earlier historical decision. Candidate target methods are selected
+inside each eligible training window; the comparison baseline uses factual
+level-age priors for every target.
+
+The first complete DD 7x7 replay remains on hold:
+
+- Hitter rank concordance: `0.779231` versus `0.723494` baseline (`+7.70%`);
+  however, top-quartile precision was `0.293608` versus `0.301695`, so the
+  no-regression guard did not pass.
+- Pitcher rank concordance: `0.538083` versus `0.533152` baseline (`+0.92%`),
+  below the required `+2%`; top-quartile precision also trailed the baseline.
+
+The artifact therefore blocks a DD shadow consumer and all live DD value
+influence. Even after both historical role gates pass, dated forward archives
+must demonstrate stability before any capped live influence is considered.
+
 ## Next Research Blockers
 
 1. Add complex-league and rookie-ball coverage without weakening enrollment or
    outcome-completeness rules.
 2. Add role-neutral underlying MLB skills where the source contract supports
    them, rather than fantasy-category outcomes.
-3. Improve probability calibration and conditional target sample size without
-   lowering the promotion gates.
-4. Forward-test dated profiles.
-5. Add the missing universal outcomes required to unlock complete 5x5, points,
+3. Improve pitcher separation and both roles' top-of-board precision without
+   lowering the adapter promotion gates.
+4. Expand completed historical coverage enough to test a longer outcome
+   horizon without introducing label leakage.
+5. Forward-test dated profiles and adapter disagreements.
+6. Plug ValuCast's separate MLB projection models into the shared league
+   projection contract.
+7. Add the missing universal outcomes required to unlock complete 5x5, points,
    and broader custom-league adapters.
