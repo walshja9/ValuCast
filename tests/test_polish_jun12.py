@@ -330,6 +330,41 @@ class TestDynastyCategories(_RealAppCase):
         self.assertIn(">OPS<", custom_html)
         self.assertNotIn(">Runs<", custom_html)
 
+    def test_dynasty_detail_category_fit_overrides_scoring_form_state(self):
+        pitcher = next(
+            row for row in self.dd_rows
+            if not row.is_prospect and {"P", "SP", "RP"}.intersection(row.positions)
+        )
+        html = self.client.get(
+            f"/player/{pitcher.id}?mode=dd_dynasty"
+            "&cats=R,HR,RBI,SB,AVG&pcats=W,K,SV,ERA,WHIP"
+            "&fit_cats=R,HR,RBI,SB,AVG,OPS,SO,K,QS,SV,HLD,ERA,WHIP,K/BB",
+            headers=self.HX,
+        ).data.decode("utf-8")
+        self.assertIn("7x7 categories", html)
+        self.assertIn(">K/BB<", html)
+        self.assertIn(">Holds<", html)
+        self.assertNotIn(">Wins<", html)
+
+    def test_category_fit_generates_every_exposed_pitching_z_score(self):
+        self.assertEqual(
+            set(app_module.FIT_PCATS),
+            {
+                "W", "L", "K", "QS", "SV", "HLD", "SV_HLD",
+                "ERA", "WHIP", "K_BB", "IP", "K_9", "BB_9",
+            },
+        )
+        z_map = app_module._dynasty_z_map()
+        self.assertTrue(
+            any("K_BB" in scores for scores in z_map.values()),
+            "Category Fit z-score map is still missing K/BB",
+        )
+
+    def test_detail_requests_forward_and_refresh_active_category_fit(self):
+        html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
+        self.assertIn("params.set('fit_cats', fitCats.join(','))", html)
+        self.assertIn("refreshLoadedFitDetails();", html)
+
     def test_h2h_category_fit_matches_default_separate_saves_and_holds(self):
         html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
         self.assertIn(

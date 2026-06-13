@@ -313,7 +313,14 @@ def _dynasty_metadata(settings):
 
 FIT_CATS = ("R", "HR", "RBI", "SB", "AVG", "OBP", "OPS", "SLG", "H", "BB",
             "SO", "TB", "NSB")
-FIT_PCATS = ("W", "L", "K", "QS", "SV", "HLD", "ERA", "WHIP", "IP")
+FIT_PCATS = ("W", "L", "K", "QS", "SV", "HLD", "SV_HLD", "ERA", "WHIP",
+             "K_BB", "IP", "K_9", "BB_9")
+FIT_QUERY_ALIASES = {
+    "SV+HLD": "SV_HLD",
+    "K/BB": "K_BB",
+    "K/9": "K_9",
+    "BB/9": "BB_9",
+}
 DYNASTY_DEFAULT_CATS = ("R", "HR", "RBI", "SB", "SO", "AVG", "OPS")
 DYNASTY_DEFAULT_PCATS = ("ERA", "WHIP", "K", "SV", "HLD", "K_BB", "QS")
 DD_DYNASTY_CATS = ("R", "HR", "RBI", "SB", "AVG", "OPS", "SO")
@@ -329,7 +336,7 @@ DYNASTY_CATEGORY_PRESETS = {
     },
     **CATEGORY_PRESETS,
 }
-_FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L"})
+_FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L", "BB_9"})
 _DYN_Z_CACHE = {"key": None, "map": {}}
 
 
@@ -416,6 +423,23 @@ def _dynasty_category_state(args):
         and (cats != default_cats or pcats != default_pcats)
     )
     return cats, pcats, active
+
+
+def _dynasty_detail_category_state(args):
+    """Use active Category Fit controls for detail cards when supplied."""
+    from web.category_registry import canonicalize_cats
+    fit_values = parse_list(args.getlist("fit_cats"))
+    if not fit_values:
+        cats, pcats, _ = _dynasty_category_state(args)
+        return cats, pcats, False
+
+    category_ids = [FIT_QUERY_ALIASES.get(cat, cat) for cat in fit_values]
+    cats = canonicalize_cats([cat for cat in category_ids if cat in FIT_CATS])
+    pcats = canonicalize_cats([cat for cat in category_ids if cat in FIT_PCATS])
+    if not cats and not pcats:
+        cats, pcats, _ = _dynasty_category_state(args)
+        return cats, pcats, False
+    return cats, pcats, True
 
 
 def _dynasty_category_summary(cats, pcats):
@@ -1234,10 +1258,14 @@ def player_detail(player_id):
         dyn_categories = []
         dyn_category_summary = None
         if matches:
-            dyn_cats, dyn_pcats, _ = _dynasty_category_state(request.args)
+            dyn_cats, dyn_pcats, fit_active = _dynasty_detail_category_state(
+                request.args
+            )
+            # build_config treats an empty side as "use default"; use one
+            # harmless category instead, then filter it from the detail table.
             config = build_config(
-                mode="categories", cats=dyn_cats,
-                pcats=dyn_pcats, rules_str="",
+                mode="categories", cats=dyn_cats or ["R"],
+                pcats=dyn_pcats or ["K"], rules_str="",
                 pt_params=None, split_rp=False, weights=None,
             )
             detail_results = _merge_two_way_players(
@@ -1249,6 +1277,12 @@ def player_detail(player_id):
             dyn_result = next(
                 (r for r in detail_results if r.player.id in ids), None)
             dyn_categories = list(getattr(config, "categories", []) or [])
+            if fit_active:
+                requested = set(dyn_cats + dyn_pcats)
+                dyn_categories = [
+                    category for category in dyn_categories
+                    if category.id in requested
+                ]
             dyn_category_summary = _dynasty_category_summary(dyn_cats, dyn_pcats)
 
         return render_template(

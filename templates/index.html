@@ -350,6 +350,15 @@ function exportCsv(e) {
     window.location.href = '/export?' + params.toString();
 }
 
+function detailRequestParams() {
+    const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
+    if (document.getElementById('category-fit-panel')) {
+        const fitCats = Object.keys(selectedFitCategories());
+        if (fitCats.length) params.set('fit_cats', fitCats.join(','));
+    }
+    return params;
+}
+
 function toggleDetail(playerId, row) {
     const detailRow = document.getElementById('detail-' + playerId);
     if (!detailRow) return;
@@ -360,7 +369,7 @@ function toggleDetail(playerId, row) {
         return;
     }
     if (!detailRow.dataset.loaded) {
-        const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
+        const params = detailRequestParams();
         htmx.ajax('GET', '/player/' + playerId + '?' + params.toString(), {
             target: '#detail-' + playerId + ' td',
             swap: 'innerHTML',
@@ -418,6 +427,22 @@ function selectedFitCategories() {
     return selected;
 }
 
+function refreshLoadedFitDetails() {
+    document.querySelectorAll('.detail-row[data-loaded]').forEach(detailRow => {
+        const wasOpen = detailRow.style.display !== 'none';
+        delete detailRow.dataset.loaded;
+        const cell = detailRow.querySelector('td');
+        if (cell) cell.replaceChildren();
+        if (!wasOpen) return;
+        detailRow.style.display = 'none';
+        const playerId = detailRow.id.replace(/^detail-/, '');
+        const playerRow = document.querySelector(
+            'tr.player-row[data-player-id="' + playerId + '"]'
+        );
+        if (playerRow) toggleDetail(playerId, playerRow);
+    });
+}
+
 function applyFitPreset(presetName) {
     activeFitPreset = presetName;
     const preset = FIT_PRESETS[presetName];
@@ -431,6 +456,7 @@ function applyFitPreset(presetName) {
         button.classList.toggle('active', button.dataset.fitPreset === presetName);
     });
     updateCategoryFit();
+    refreshLoadedFitDetails();
 }
 
 function fitControlChanged(event) {
@@ -438,6 +464,7 @@ function fitControlChanged(event) {
     activeFitPreset = 'custom';
     document.querySelectorAll('[data-fit-preset]').forEach(button => button.classList.remove('active'));
     updateCategoryFit();
+    refreshLoadedFitDetails();
 }
 
 function pairedAppend(tbody, row) {
