@@ -5,6 +5,7 @@ coverage, target, and out-of-sample gates earn a separate promotion decision.
 """
 from __future__ import annotations
 
+import copy
 import json
 import os
 from bisect import bisect_right
@@ -80,6 +81,18 @@ IMPACT_FEATURE_NAMES = {
         "starter_x_youth",
         "era_x_whip",
     ),
+}
+IMPACT_DRIVER_GROUPS = {
+    "hitter": {
+        "aaa_translation": (
+            "level",
+            "iso_x_level",
+            "ops_x_level",
+            "k_pct_x_level",
+            "bb_pct_x_level",
+        ),
+    },
+    "pitcher": {},
 }
 IMPACT_CATEGORIES = {
     "hitter": ("r", "hr", "rbi", "sb", "avg", "ops", "so"),
@@ -779,6 +792,48 @@ def _drivers(
     return [{"feature": name, "contribution": round(value, 4)} for name, value in ranked]
 
 
+def _prediction_drivers(
+    prediction_model: dict,
+    features: list[float],
+    feature_names: tuple[str, ...],
+    groups: dict[str, tuple[str, ...]] | None = None,
+) -> list[dict]:
+    """Report local score changes from the model that produced the score."""
+    groups = groups or {}
+    reference_model = (
+        prediction_model["arrival_model"]
+        if prediction_model.get("model_kind") == "hurdle_ridge"
+        else prediction_model
+    )
+    reference = reference_model["means"]
+    index_by_name = {name: index for index, name in enumerate(feature_names)}
+    grouped_names = {name for names in groups.values() for name in names}
+    candidates = [
+        (name, (index_by_name[name],))
+        for name in feature_names
+        if name not in grouped_names
+    ]
+    candidates.extend(
+        (
+            label,
+            tuple(index_by_name[name] for name in names),
+        )
+        for label, names in groups.items()
+    )
+
+    full_score = _predict_model(prediction_model, features)
+    contributions = []
+    for label, indexes in candidates:
+        neutral = list(features)
+        for index in indexes:
+            neutral[index] = reference[index]
+        contributions.append(
+            (label, full_score - _predict_model(prediction_model, neutral))
+        )
+    ranked = sorted(contributions, key=lambda item: (-abs(item[1]), item[0]))[:3]
+    return [{"feature": name, "contribution": round(value, 4)} for name, value in ranked]
+
+
 def _service_index(contract: dict) -> dict:
     return {
         (int(row["mlbam_id"]), row["role"]): row
@@ -840,8 +895,11 @@ def score_current(
                     "role_gate": role_model["gate"]["status"],
                     "impact_gate": impact_model["gate"]["status"],
                     "drivers": _drivers(role_model, regressed, FEATURE_NAMES[role]),
-                    "impact_drivers": _drivers(
-                        impact_model, impact_features, IMPACT_FEATURE_NAMES[role]
+                    "impact_drivers": _prediction_drivers(
+                        impact_runtime,
+                        impact_features,
+                        IMPACT_FEATURE_NAMES[role],
+                        IMPACT_DRIVER_GROUPS[role],
                     ),
                 }
             )
@@ -861,6 +919,44 @@ def score_current(
     ):
         row["valucast_impact_rank"] = rank
     return scored
+
+
+def refresh_impact_drivers(payload: dict, contract: dict) -> tuple[dict, int]:
+    """Refresh display-only impact drivers while preserving all model outputs."""
+    refreshed_ranked = score_current(
+        contract,
+        payload["roles"],
+        payload["impact_roles"],
+    )
+    old_by_identity = {
+        (row["mlbam_id"], row["role"]): row for row in payload["ranked"]
+    }
+    new_by_identity = {
+        (row["mlbam_id"], row["role"]): row for row in refreshed_ranked
+    }
+    if old_by_identity.keys() != new_by_identity.keys():
+        raise ValueError("Driver refresh changed the candidate set")
+
+    refreshed = copy.deepcopy(payload)
+    changed = 0
+    for row in refreshed["ranked"]:
+        identity = (row["mlbam_id"], row["role"])
+        regenerated = new_by_identity[identity]
+        old_stable = {key: value for key, value in row.items() if key != "impact_drivers"}
+        new_stable = {
+            key: value
+            for key, value in regenerated.items()
+            if key != "impact_drivers"
+        }
+        if old_stable != new_stable:
+            raise ValueError(
+                f"Driver refresh changed a non-driver field for {identity}"
+            )
+        new_drivers = regenerated["impact_drivers"]
+        if row.get("impact_drivers") != new_drivers:
+            changed += 1
+        row["impact_drivers"] = new_drivers
+    return refreshed, changed
 
 
 def build_shadow_model(contract: dict, now: str | None = None) -> dict:

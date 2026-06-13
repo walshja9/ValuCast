@@ -15,6 +15,7 @@ from prospects.model import (
     _impact_feature_vector,
     _impact_references,
     _impact_target,
+    _prediction_drivers,
     _predict_model,
     _regress_current_features,
     _select_current_records,
@@ -22,7 +23,9 @@ from prospects.model import (
     archive_predictions,
     build_shadow_model,
     load_input_contract,
+    refresh_impact_drivers,
     run_model,
+    score_current,
     train_role,
     train_impact_role,
     validate_input_contract,
@@ -371,6 +374,36 @@ def test_hurdle_prediction_multiplies_arrival_and_conditional_impact():
     )
 
 
+def test_prediction_drivers_use_hurdle_score_and_group_aaa_translation():
+    model = {
+        "model_kind": "hurdle_ridge",
+        "arrival_model": {
+            "weights": [0.5, 0.2, -0.3, 0.4],
+            "means": [0.0, 0.0, 0.0],
+            "stds": [1.0, 1.0, 1.0],
+        },
+        "conditional_model": {
+            "weights": [0.5, -0.1, 0.2, 0.1],
+            "means": [0.0, 0.0, 0.0],
+            "stds": [1.0, 1.0, 1.0],
+        },
+    }
+    features = [1.0, 1.0, 1.0]
+    drivers = _prediction_drivers(
+        model,
+        features,
+        ("ops", "level", "ops_x_level"),
+        {"aaa_translation": ("level", "ops_x_level")},
+    )
+    by_name = {driver["feature"]: driver["contribution"] for driver in drivers}
+    neutral = [1.0, 0.0, 0.0]
+    assert by_name["aaa_translation"] == pytest.approx(
+        _predict_model(model, features) - _predict_model(model, neutral)
+    )
+    assert "level" not in by_name
+    assert "ops_x_level" not in by_name
+
+
 def test_hitter_translation_interactions_do_not_change_canonical_features():
     base = [0.2, 20.0, 10.0, 0.8, 1.0, 1.0]
     canonical = _canonical_impact_feature_vector(base, "hitter")
@@ -400,6 +433,56 @@ def test_missing_service_fact_fails_closed():
     contract["mlb_service"] = []
     payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
     assert payload["ranked"] == []
+
+
+def test_impact_drivers_do_not_use_plain_ridge_driver_weights():
+    contract = _contract()
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    before = score_current(contract, payload["roles"], payload["impact_roles"])
+    for role_model in payload["impact_roles"].values():
+        role_model["weights"] = [999.0 for _ in role_model["weights"]]
+    after = score_current(contract, payload["roles"], payload["impact_roles"])
+    assert [
+        (row["expected_category_impact_score"], row["impact_drivers"])
+        for row in after
+    ] == [
+        (row["expected_category_impact_score"], row["impact_drivers"])
+        for row in before
+    ]
+
+
+def test_driver_refresh_preserves_every_non_driver_model_output():
+    contract = _contract()
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    expected_drivers = [
+        row["impact_drivers"]
+        for row in payload["ranked"]
+    ]
+    for row in payload["ranked"]:
+        row["impact_drivers"] = [{"feature": "legacy_surrogate", "contribution": 9.0}]
+    before_stable = [
+        {key: value for key, value in row.items() if key != "impact_drivers"}
+        for row in payload["ranked"]
+    ]
+
+    refreshed, changed = refresh_impact_drivers(payload, contract)
+
+    assert changed == len(payload["ranked"])
+    assert refreshed["board_gate"] == payload["board_gate"]
+    assert refreshed["impact_board_gate"] == payload["impact_board_gate"]
+    assert [
+        {key: value for key, value in row.items() if key != "impact_drivers"}
+        for row in refreshed["ranked"]
+    ] == before_stable
+    assert [row["impact_drivers"] for row in refreshed["ranked"]] == expected_drivers
+
+
+def test_driver_refresh_fails_closed_if_a_score_changes():
+    contract = _contract()
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    contract["current"]["hitters"][0]["ops"] = 0.500
+    with pytest.raises(ValueError, match="non-driver field"):
+        refresh_impact_drivers(payload, contract)
 
 
 def test_archive_is_deterministic(tmp_path):
