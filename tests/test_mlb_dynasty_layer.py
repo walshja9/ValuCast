@@ -1,7 +1,7 @@
 """Tests for the shadow ValuCast MLB dynasty layer."""
 
 from league_values.models import PlayerPool, PlayerProjection
-from mlb.dynasty import build_mlb_dynasty_layer
+from mlb.dynasty import VALUE_SOURCE, build_mlb_dynasty_layer
 
 
 def _hitter(
@@ -96,7 +96,8 @@ def test_mlb_layer_is_shadow_only_and_independent():
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["promotion"]["live_consumer"] == "blocked"
     assert payload["players"][0]["rank"] == 1
-    assert payload["players"][0]["value_source"] == "valucast_mlb_projection_index_v0_1"
+    assert payload["players"][0]["value_source"] == VALUE_SOURCE
+    assert payload["value_contract"]["value_kind"] == "multi_year_dynasty_horizon"
 
 
 def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
@@ -141,8 +142,15 @@ def test_mlb_layer_applies_age_from_valucast_identity_store():
     assert row["components"]["age_adjustment_status"] == "applied"
     assert row["components"]["age_adjustment"] == 1.4967
     assert row["components"]["age_source"] == "valucast_identity_birth_date"
+    assert row["dynasty_horizon_value"] == row["components"]["dynasty_horizon_value"]
+    assert len(row["components"]["horizon_years"]) == 3
+    assert row["components"]["horizon_years"][0]["season"] == 2026
+    assert row["components"]["horizon_years"][1]["age"] == 25
     assert payload["validation"]["age_coverage_count"] == 1
     assert payload["validation"]["age_coverage_rate"] == 1.0
+    assert payload["validation"]["horizon_year_count"] == 3
+    assert payload["validation"]["ready_for_live_consumers"] is True
+    assert payload["promotion"]["live_consumer"] == "candidate_ready"
     assert not any("age coverage" in blocker for blocker in payload["validation"]["blockers"])
 
 
@@ -157,3 +165,16 @@ def test_mlb_layer_prefers_projection_metadata_age_over_identity():
     assert row["age"] == 30
     assert row["components"]["age_source"] == "projection_metadata"
     assert row["components"]["age_adjustment"] == 0.97
+
+
+def test_mlb_layer_horizon_declines_for_older_player_future_years():
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1", metadata={"age": 34})],
+        "2026-06-13",
+    )
+
+    years = payload["players"][0]["components"]["horizon_years"]
+    assert years[0]["age_factor"] == 1.0
+    assert years[1]["age_factor"] < 1.0
+    assert years[2]["age_factor"] < years[1]["age_factor"]
+    assert years[1]["reliability_factor"] < 1.0

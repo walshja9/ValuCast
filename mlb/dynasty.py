@@ -29,8 +29,8 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.1.0"
-VALUE_SOURCE = "valucast_mlb_projection_index_v0_1"
+LAYER_VERSION = "0.2.0"
+VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_2"
 
 MIN_HITTER_PA = 100
 MIN_SP_IP = 40
@@ -39,6 +39,12 @@ MIN_RP_IP = 20
 PRODUCTION_WEIGHT = 0.95
 RELIABILITY_WEIGHT = 0.05
 MIN_AGE_COVERAGE_RATE = 0.95
+HORIZON_YEAR_WEIGHTS = (
+    (0, 1.00),
+    (1, 0.72),
+    (2, 0.48),
+)
+FUTURE_RELIABILITY_FLOOR = 0.55
 
 HITTER_AGE_CURVE = {
     22: 1.65,
@@ -154,6 +160,53 @@ def _age_multiplier(player: PlayerProjection, age: int | None) -> float | None:
             fraction = (age - lower) / (upper - lower)
             return low_value + fraction * (high_value - low_value)
     return 1.0
+
+
+def _future_reliability_factor(reliability: float, offset: int) -> float:
+    if offset <= 0:
+        return 1.0
+    stability = max(FUTURE_RELIABILITY_FLOOR, min(1.0, reliability / 100.0))
+    return stability ** offset
+
+
+def _horizon_profile(
+    result: ValuationResult,
+    start_season: int,
+) -> dict[str, Any]:
+    player = result.player
+    current_age = _coerce_age(player.metadata.get("age"))
+    current_age_multiplier = _age_multiplier(player, current_age)
+    reliability = _playing_time_reliability(player)
+    weighted_value = 0.0
+    total_weight = 0.0
+    years = []
+
+    for offset, weight in HORIZON_YEAR_WEIGHTS:
+        age = current_age + offset if current_age is not None else None
+        future_age_multiplier = _age_multiplier(player, age)
+        if current_age_multiplier and future_age_multiplier:
+            age_factor = future_age_multiplier / current_age_multiplier
+        else:
+            age_factor = 1.0
+        reliability_factor = _future_reliability_factor(reliability, offset)
+        projected_value = result.total_value * age_factor * reliability_factor
+        weighted_value += projected_value * weight
+        total_weight += weight
+        years.append(
+            {
+                "season": start_season + offset,
+                "age": age,
+                "weight": weight,
+                "age_factor": round(age_factor, 4),
+                "reliability_factor": round(reliability_factor, 4),
+                "projected_value": round(projected_value, 4),
+            }
+        )
+
+    return {
+        "value": weighted_value / total_weight if total_weight else result.total_value,
+        "years": years,
+    }
 
 
 def _player_age(
@@ -294,6 +347,7 @@ def _row(
     result: ValuationResult,
     score: float,
     production_score: float,
+    horizon: dict[str, Any],
     rank: int,
 ) -> dict:
     player = result.player
@@ -322,10 +376,13 @@ def _row(
         "value_source": VALUE_SOURCE,
         "confidence": _confidence(player, reliability),
         "projection_value": round(result.total_value, 4),
+        "dynasty_horizon_value": round(horizon["value"], 4),
         "components": {
             "production_score": round(production_score, 2),
             "playing_time_reliability": reliability,
             "season_category_value": round(result.total_value, 4),
+            "dynasty_horizon_value": round(horizon["value"], 4),
+            "horizon_years": horizon["years"],
             "age_adjustment": _round(age_multiplier, 4),
             "age_adjustment_status": (
                 "applied" if age_multiplier is not None else "missing_age"
@@ -372,42 +429,44 @@ def build_mlb_dynasty_layer(
     )
     results = engine.value_players(eligible, build_config(mode="categories"))
     deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(results)
-    values = [result.total_value for result in deduped]
+    horizon_rows = [
+        (result, _horizon_profile(result, season))
+        for result in deduped
+    ]
+    values = [horizon["value"] for _, horizon in horizon_rows]
     floor = _percentile(values, 0.05)
     ceiling = max(values) if values else floor
 
     rows = []
-    for result in deduped:
-        production_score = _scale_value(result.total_value, floor, ceiling)
+    for result, horizon in horizon_rows:
+        production_score = _scale_value(horizon["value"], floor, ceiling)
         reliability = _playing_time_reliability(result.player)
         score = (
             PRODUCTION_WEIGHT * production_score
             + RELIABILITY_WEIGHT * reliability
         )
-        rows.append((score, production_score, result))
+        rows.append((score, production_score, horizon, result))
 
     rows.sort(
         key=lambda item: (
             -item[0],
-            -item[2].total_value,
-            str(item[2].player.name),
-            str(item[2].player.metadata.get("mlbam_id") or ""),
+            -item[2]["value"],
+            str(item[3].player.name),
+            str(item[3].player.metadata.get("mlbam_id") or ""),
         )
     )
     board = [
-        _row(result, score, production_score, rank)
-        for rank, (score, production_score, result) in enumerate(rows, 1)
+        _row(result, score, production_score, horizon, rank)
+        for rank, (score, production_score, horizon, result) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
-    blockers = [
-        "This is a one-season projection value layer, not a fully calibrated multi-year dynasty horizon.",
-    ]
+    blockers = []
     if age_coverage_rate < MIN_AGE_COVERAGE_RATE:
-        blockers.insert(
-            0,
+        blockers.append(
             "ValuCast MLB age coverage is below the promotion threshold.",
         )
+    ready_for_live_consumers = not blockers
     return {
         "status": "shadow_only",
         "layer_name": LAYER_NAME,
@@ -423,21 +482,29 @@ def build_mlb_dynasty_layer(
         },
         "value_contract": {
             "score_range": [0.0, 100.0],
+            "value_kind": "multi_year_dynasty_horizon",
+            "horizon_years": len(HORIZON_YEAR_WEIGHTS),
+            "horizon_year_weights": [
+                {"offset": offset, "weight": weight}
+                for offset, weight in HORIZON_YEAR_WEIGHTS
+            ],
             "score_weights": {
-                "production_score": PRODUCTION_WEIGHT,
+                "horizon_production_score": PRODUCTION_WEIGHT,
                 "playing_time_reliability": RELIABILITY_WEIGHT,
             },
-            "production_score": "ValuCast default 5x5 category value scaled between p05 and p99 of eligible MLB projection rows.",
+            "horizon_production_score": "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows.",
+            "horizon_model": "Carries the current ValuCast category projection forward through age-curve ratios and reliability decay.",
             "playing_time_reliability": "PA/IP volume shrinkage score from the same projection artifact.",
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
             "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
         },
         "validation": {
-            "ready_for_live_consumers": False,
+            "ready_for_live_consumers": ready_for_live_consumers,
             "row_count": len(board),
             "eligible_projection_count": len(eligible),
             "missing_mlbam_count": missing_identity_count,
             "duplicate_identity_count": duplicate_identity_count,
+            "horizon_year_count": len(HORIZON_YEAR_WEIGHTS),
             "age_coverage_count": age_coverage_count,
             "age_coverage_rate": age_coverage_rate,
             "age_coverage_threshold": MIN_AGE_COVERAGE_RATE,
@@ -446,10 +513,14 @@ def build_mlb_dynasty_layer(
             "blockers": blockers,
         },
         "promotion": {
-            "live_consumer": "blocked",
-            "feeds_live_valucast_snapshot": False,
+            "live_consumer": "candidate_ready" if ready_for_live_consumers else "blocked",
+            "feeds_live_valucast_snapshot": ready_for_live_consumers,
             "next_allowed_step": "add_multi_year_dynasty_horizon_and_cross_universe_calibration",
-            "reason": blockers[0],
+            "reason": (
+                "MLB layer passes standalone multi-year horizon gates."
+                if ready_for_live_consumers
+                else blockers[0]
+            ),
         },
         "limitations": blockers,
         "players": board,
