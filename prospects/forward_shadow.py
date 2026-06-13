@@ -20,6 +20,13 @@ from prospects.dynasty import (
     run_layer,
 )
 from prospects.dynasty_backtest import run_backtest
+from prospects.index import (
+    ARCHIVE_DIR as INDEX_ARCHIVE_DIR,
+    ARTIFACT_PATH as INDEX_ARTIFACT_PATH,
+    BACKTEST_PATH as INDEX_BACKTEST_PATH,
+    run_index,
+)
+from prospects.index_backtest import run_backtest as run_index_backtest
 from prospects.model import INPUT_PATH
 from prospects.universal import (
     ARCHIVE_DIR as UNIVERSAL_ARCHIVE_DIR,
@@ -154,6 +161,53 @@ def _profile_index(snapshot: dict) -> tuple[dict[tuple[int, str], dict], dict]:
     }
 
 
+def _index_board(snapshot: dict) -> tuple[dict[tuple[int, str], dict], dict]:
+    index = {}
+    duplicate_count = 0
+    invalid_count = 0
+    ordering_valid = True
+    previous_score = None
+    previous_rank = 0
+    for position, row in enumerate(snapshot.get("board") or [], 1):
+        mlbam_id = row.get("mlbam_id")
+        role = row.get("role")
+        score = row.get("universal_prospect_index")
+        rank = row.get("universal_rank")
+        if (
+            not isinstance(mlbam_id, int)
+            or role not in {"hitter", "pitcher"}
+            or not isinstance(score, (int, float))
+            or isinstance(score, bool)
+            or not isinstance(rank, int)
+            or isinstance(rank, bool)
+            or rank < 1
+        ):
+            invalid_count += 1
+            continue
+        expected_rank = (
+            previous_rank if previous_score is not None and score == previous_score else position
+        )
+        if (
+            (previous_score is not None and score > previous_score)
+            or rank != expected_rank
+        ):
+            ordering_valid = False
+        previous_score = score
+        previous_rank = rank
+        key = (mlbam_id, role)
+        if key in index:
+            duplicate_count += 1
+            continue
+        index[key] = row
+    return index, {
+        "duplicate_identity_count": duplicate_count,
+        "invalid_profile_count": invalid_count,
+        "candidate_count_matches_board": snapshot.get("candidate_count")
+        == len(snapshot.get("board") or []),
+        "rank_ordering_valid": ordering_valid,
+    }
+
+
 def _percentile(values: list[float], fraction: float) -> float | None:
     if not values:
         return None
@@ -240,6 +294,76 @@ def compare_snapshots(previous: dict, current: dict) -> dict:
     }
 
 
+def compare_index_snapshots(previous: dict, current: dict) -> dict:
+    previous_index, previous_integrity = _index_board(previous)
+    current_index, current_integrity = _index_board(current)
+    overlap = sorted(set(previous_index) & set(current_index))
+    denominator = min(len(previous_index), len(current_index))
+    overlap_rate = len(overlap) / denominator if denominator else None
+    score_changes = [
+        abs(
+            float(current_index[key]["universal_prospect_index"])
+            - float(previous_index[key]["universal_prospect_index"])
+        )
+        for key in overlap
+    ]
+    rank_changes = [
+        abs(
+            int(current_index[key]["universal_rank"])
+            - int(previous_index[key]["universal_rank"])
+        )
+        for key in overlap
+    ]
+    movers = sorted(
+        (
+            {
+                "mlbam_id": key[0],
+                "role": key[1],
+                "name": current_index[key].get("name"),
+                "previous_rank": previous_index[key]["universal_rank"],
+                "current_rank": current_index[key]["universal_rank"],
+                "absolute_rank_change": abs(
+                    int(current_index[key]["universal_rank"])
+                    - int(previous_index[key]["universal_rank"])
+                ),
+                "previous_index": previous_index[key]["universal_prospect_index"],
+                "current_index": current_index[key]["universal_prospect_index"],
+                "absolute_index_change": round(
+                    abs(
+                        float(current_index[key]["universal_prospect_index"])
+                        - float(previous_index[key]["universal_prospect_index"])
+                    ),
+                    6,
+                ),
+            }
+            for key in overlap
+        ),
+        key=lambda row: (
+            -row["absolute_rank_change"],
+            -row["absolute_index_change"],
+            row["role"],
+            row["mlbam_id"],
+        ),
+    )[:25]
+    return {
+        "previous_date": previous.get("date"),
+        "current_date": current.get("date"),
+        "previous_candidate_count": len(previous_index),
+        "current_candidate_count": len(current_index),
+        "overlap_count": len(overlap),
+        "overlap_rate": round(overlap_rate, 6) if overlap_rate is not None else None,
+        "new_identity_count": len(set(current_index) - set(previous_index)),
+        "exited_identity_count": len(set(previous_index) - set(current_index)),
+        "integrity": {
+            "previous": previous_integrity,
+            "current": current_integrity,
+        },
+        "index_movement": _movement_summary(score_changes),
+        "rank_movement": _movement_summary(rank_changes),
+        "largest_rank_movers": movers,
+    }
+
+
 def _observation_span_days(manifests: list[dict]) -> int:
     if len(manifests) < 2:
         return 0
@@ -251,6 +375,7 @@ def _observation_span_days(manifests: list[dict]) -> int:
 def build_report(
     run_archive_dir: Path = RUN_ARCHIVE_DIR,
     dynasty_archive_dir: Path = DYNASTY_ARCHIVE_DIR,
+    index_archive_dir: Path = INDEX_ARCHIVE_DIR,
 ) -> dict:
     manifests = [_load_json(path) for path in _archive_paths(run_archive_dir)]
     manifest_by_date = {
@@ -260,22 +385,48 @@ def build_report(
     }
     snapshots = []
     missing_snapshot_dates = []
+    index_snapshots = []
+    missing_index_snapshot_dates = []
     for date_str in sorted(manifest_by_date):
         path = dynasty_archive_dir / f"{date_str}.json"
         if path.exists():
             snapshots.append(_load_json(path))
         else:
             missing_snapshot_dates.append(date_str)
+        index_path = index_archive_dir / f"{date_str}.json"
+        if index_path.exists():
+            index_snapshots.append(_load_json(index_path))
+        else:
+            missing_index_snapshot_dates.append(date_str)
 
     comparisons = [
         compare_snapshots(previous, current)
         for previous, current in zip(snapshots, snapshots[1:])
     ]
+    index_comparisons = [
+        compare_index_snapshots(previous, current)
+        for previous, current in zip(index_snapshots, index_snapshots[1:])
+    ]
     snapshot_integrity = [_profile_index(snapshot)[1] for snapshot in snapshots]
+    index_snapshot_integrity = [
+        _index_board(snapshot)[1] for snapshot in index_snapshots
+    ]
     duplicate_count = sum(item["duplicate_identity_count"] for item in snapshot_integrity)
     invalid_count = sum(item["invalid_profile_count"] for item in snapshot_integrity)
     candidate_mismatch_count = sum(
         not item["candidate_count_matches_profiles"] for item in snapshot_integrity
+    )
+    index_duplicate_count = sum(
+        item["duplicate_identity_count"] for item in index_snapshot_integrity
+    )
+    index_invalid_count = sum(
+        item["invalid_profile_count"] for item in index_snapshot_integrity
+    )
+    index_candidate_mismatch_count = sum(
+        not item["candidate_count_matches_board"] for item in index_snapshot_integrity
+    )
+    index_ordering_failure_count = sum(
+        not item["rank_ordering_valid"] for item in index_snapshot_integrity
     )
     overlap_rates = [
         comparison["overlap_rate"]
@@ -283,21 +434,44 @@ def build_report(
         if comparison["overlap_rate"] is not None
     ]
     minimum_overlap_rate = min(overlap_rates) if overlap_rates else None
+    index_overlap_rates = [
+        comparison["overlap_rate"]
+        for comparison in index_comparisons
+        if comparison["overlap_rate"] is not None
+    ]
+    minimum_index_overlap_rate = (
+        min(index_overlap_rates) if index_overlap_rates else None
+    )
     span_days = _observation_span_days(
         [manifest_by_date[date_str] for date_str in sorted(manifest_by_date)]
     )
     integrity_ok = not (
         missing_snapshot_dates
+        or missing_index_snapshot_dates
         or duplicate_count
         or invalid_count
         or candidate_mismatch_count
+        or index_duplicate_count
+        or index_invalid_count
+        or index_candidate_mismatch_count
+        or index_ordering_failure_count
     )
     enough_observations = len(snapshots) >= MIN_OBSERVATIONS
     enough_span = span_days >= MIN_OBSERVATION_SPAN_DAYS
     overlap_ok = (
         minimum_overlap_rate is not None and minimum_overlap_rate >= MIN_OVERLAP_RATE
     )
-    review_ready = integrity_ok and enough_observations and enough_span and overlap_ok
+    index_overlap_ok = (
+        minimum_index_overlap_rate is not None
+        and minimum_index_overlap_rate >= MIN_OVERLAP_RATE
+    )
+    review_ready = (
+        integrity_ok
+        and enough_observations
+        and enough_span
+        and overlap_ok
+        and index_overlap_ok
+    )
     status = (
         "blocked_integrity"
         if not integrity_ok
@@ -326,9 +500,15 @@ def build_report(
             "completed_observation_count": len(snapshots),
             "observation_span_days": span_days,
             "comparison_count": len(comparisons),
+            "index_comparison_count": len(index_comparisons),
             "minimum_overlap_rate": (
                 round(minimum_overlap_rate, 6)
                 if minimum_overlap_rate is not None
+                else None
+            ),
+            "minimum_index_overlap_rate": (
+                round(minimum_index_overlap_rate, 6)
+                if minimum_index_overlap_rate is not None
                 else None
             ),
             "latest_observation_date": snapshots[-1]["date"] if snapshots else None,
@@ -336,18 +516,28 @@ def build_report(
         "integrity": {
             "status": "active" if integrity_ok else "blocked",
             "missing_snapshot_dates": missing_snapshot_dates,
+            "missing_index_snapshot_dates": missing_index_snapshot_dates,
             "duplicate_identity_count": duplicate_count,
             "invalid_profile_count": invalid_count,
             "candidate_count_mismatch_count": candidate_mismatch_count,
+            "index_duplicate_identity_count": index_duplicate_count,
+            "index_invalid_profile_count": index_invalid_count,
+            "index_candidate_count_mismatch_count": index_candidate_mismatch_count,
+            "index_rank_ordering_failure_count": index_ordering_failure_count,
         },
         "readiness_checks": {
             "enough_observations": enough_observations,
             "enough_observation_span": enough_span,
             "overlap_guard": overlap_ok,
+            "index_overlap_guard": index_overlap_ok,
             "integrity_guard": integrity_ok,
         },
         "latest_comparison": comparisons[-1] if comparisons else None,
+        "latest_index_comparison": (
+            index_comparisons[-1] if index_comparisons else None
+        ),
         "comparisons": comparisons,
+        "index_comparisons": index_comparisons,
         "promotion": {
             "forward_observation_status": status,
             "next_allowed_step": (
@@ -372,6 +562,9 @@ def run_pipeline(
     dynasty_backtest_path: Path = DYNASTY_BACKTEST_PATH,
     dynasty_artifact_path: Path = DYNASTY_ARTIFACT_PATH,
     dynasty_archive_dir: Path = DYNASTY_ARCHIVE_DIR,
+    index_backtest_path: Path = INDEX_BACKTEST_PATH,
+    index_artifact_path: Path = INDEX_ARTIFACT_PATH,
+    index_archive_dir: Path = INDEX_ARCHIVE_DIR,
     run_archive_dir: Path = RUN_ARCHIVE_DIR,
     report_path: Path = ARTIFACT_PATH,
     now: str | None = None,
@@ -398,7 +591,7 @@ def run_pipeline(
     if not run_allowed:
         if reason == "stale_input_contract":
             raise ValueError("Refusing stale factual input contract")
-        report = build_report(run_archive_dir, dynasty_archive_dir)
+        report = build_report(run_archive_dir, dynasty_archive_dir, index_archive_dir)
         write_report(report, report_path)
         return {
             "status": "skipped",
@@ -420,11 +613,23 @@ def run_pipeline(
         artifact_path=dynasty_backtest_path,
         now=observation_now,
     )
+    index_backtest = run_index_backtest(
+        input_path=input_path,
+        dynasty_backtest_path=dynasty_backtest_path,
+        artifact_path=index_backtest_path,
+        now=observation_now,
+    )
     dynasty = run_layer(
         universal_path=universal_artifact_path,
         backtest_path=dynasty_backtest_path,
         artifact_path=dynasty_artifact_path,
         archive_dir=dynasty_archive_dir,
+    )
+    index = run_index(
+        universal_path=universal_artifact_path,
+        backtest_path=index_backtest_path,
+        artifact_path=index_artifact_path,
+        archive_dir=index_archive_dir,
     )
     manifest = {
         "status": "completed",
@@ -442,6 +647,8 @@ def run_pipeline(
             "universal_model": _portable_output(universal),
             "dynasty_backtest": _portable_output(dynasty_backtest),
             "dynasty_layer": _portable_output(dynasty),
+            "universal_index_backtest": _portable_output(index_backtest),
+            "universal_index": _portable_output(index),
         },
         "promotion": {
             "live_consumer": "blocked",
@@ -454,7 +661,7 @@ def run_pipeline(
         run_archive_dir / f"{date_str}.json",
         compact=True,
     )
-    report = build_report(run_archive_dir, dynasty_archive_dir)
+    report = build_report(run_archive_dir, dynasty_archive_dir, index_archive_dir)
     write_report(report, report_path)
     return {
         "status": "completed",
@@ -467,4 +674,6 @@ def run_pipeline(
         "universal_candidates": universal["candidates"],
         "dynasty_candidates": dynasty["candidate_count"],
         "dynasty_research_gate": dynasty["research_gate"],
+        "universal_index_candidates": index["candidate_count"],
+        "universal_index_research_gate": index["research_gate"],
     }

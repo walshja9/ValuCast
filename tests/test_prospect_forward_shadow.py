@@ -4,6 +4,7 @@ import json
 from prospects.forward_shadow import (
     _portable_output,
     build_report,
+    compare_index_snapshots,
     compare_snapshots,
     input_fingerprint,
     run_pipeline,
@@ -31,6 +32,24 @@ def _snapshot(date_str, profiles):
         "date": date_str,
         "candidate_count": len(profiles),
         "profiles": profiles,
+    }
+
+
+def _index_snapshot(date_str, profiles):
+    board = [
+        {
+            "mlbam_id": profile["mlbam_id"],
+            "name": profile["name"],
+            "role": profile["role"],
+            "universal_rank": index + 1,
+            "universal_prospect_index": round(80.0 - index * 10.0, 2),
+        }
+        for index, profile in enumerate(profiles)
+    ]
+    return {
+        "date": date_str,
+        "candidate_count": len(board),
+        "board": board,
     }
 
 
@@ -100,17 +119,28 @@ def test_snapshot_comparison_tracks_identity_and_signal_movement():
     assert comparison["largest_expected_tier_movers"][0]["mlbam_id"] == 1
 
 
+def test_index_snapshot_comparison_tracks_rank_and_score_movement():
+    previous = _index_snapshot("2026-06-13", [_profile(1), _profile(2)])
+    current = _index_snapshot("2026-06-20", [_profile(2), _profile(1)])
+    comparison = compare_index_snapshots(previous, current)
+    assert comparison["overlap_rate"] == 1.0
+    assert comparison["rank_movement"]["max_absolute_change"] == 1
+    assert comparison["index_movement"]["max_absolute_change"] == 10.0
+
+
 def test_report_collects_observations_but_never_authorizes_live_use(tmp_path):
     run_dir = tmp_path / "runs"
     dynasty_dir = tmp_path / "dynasty"
+    index_dir = tmp_path / "index"
     for date_str, fingerprint, tier in (
         ("2026-06-13", "one", 0.8),
         ("2026-06-20", "two", 0.9),
     ):
         _write(run_dir / f"{date_str}.json", _manifest(date_str, fingerprint))
         _write(dynasty_dir / f"{date_str}.json", _snapshot(date_str, [_profile(1, tier)]))
+        _write(index_dir / f"{date_str}.json", _index_snapshot(date_str, [_profile(1)]))
 
-    report = build_report(run_dir, dynasty_dir)
+    report = build_report(run_dir, dynasty_dir, index_dir)
     assert report["status"] == "collecting"
     assert report["summary"]["completed_observation_count"] == 2
     assert report["integrity"]["status"] == "active"
@@ -123,21 +153,40 @@ def test_report_collects_observations_but_never_authorizes_live_use(tmp_path):
 def test_report_blocks_duplicate_identity_integrity_failure(tmp_path):
     run_dir = tmp_path / "runs"
     dynasty_dir = tmp_path / "dynasty"
+    index_dir = tmp_path / "index"
     date_str = "2026-06-13"
     _write(run_dir / f"{date_str}.json", _manifest(date_str, "one"))
     _write(
         dynasty_dir / f"{date_str}.json",
         _snapshot(date_str, [_profile(1), _profile(1)]),
     )
+    _write(index_dir / f"{date_str}.json", _index_snapshot(date_str, [_profile(1)]))
 
-    report = build_report(run_dir, dynasty_dir)
+    report = build_report(run_dir, dynasty_dir, index_dir)
     assert report["status"] == "blocked_integrity"
     assert report["integrity"]["duplicate_identity_count"] == 1
+
+
+def test_report_blocks_invalid_index_rank_ordering(tmp_path):
+    run_dir = tmp_path / "runs"
+    dynasty_dir = tmp_path / "dynasty"
+    index_dir = tmp_path / "index"
+    date_str = "2026-06-13"
+    _write(run_dir / f"{date_str}.json", _manifest(date_str, "one"))
+    _write(dynasty_dir / f"{date_str}.json", _snapshot(date_str, [_profile(1)]))
+    invalid_index = _index_snapshot(date_str, [_profile(1), _profile(2)])
+    invalid_index["board"][1]["universal_rank"] = 1
+    _write(index_dir / f"{date_str}.json", invalid_index)
+
+    report = build_report(run_dir, dynasty_dir, index_dir)
+    assert report["status"] == "blocked_integrity"
+    assert report["integrity"]["index_rank_ordering_failure_count"] == 1
 
 
 def test_review_ready_still_blocks_live_consumers(tmp_path):
     run_dir = tmp_path / "runs"
     dynasty_dir = tmp_path / "dynasty"
+    index_dir = tmp_path / "index"
     start = 1
     for index in range(30):
         month = 1 + (index * 3) // 28
@@ -148,8 +197,12 @@ def test_review_ready_still_blocks_live_consumers(tmp_path):
             dynasty_dir / f"{date_str}.json",
             _snapshot(date_str, [_profile(start, 0.8 + index / 1000)]),
         )
+        _write(
+            index_dir / f"{date_str}.json",
+            _index_snapshot(date_str, [_profile(start)]),
+        )
 
-    report = build_report(run_dir, dynasty_dir)
+    report = build_report(run_dir, dynasty_dir, index_dir)
     assert report["status"] == "review_ready"
     assert report["promotion"]["next_allowed_step"] == "human_consumer_design_review"
     assert report["promotion"]["live_consumer"] == "blocked"
@@ -161,6 +214,7 @@ def test_pipeline_skips_unchanged_input_without_calling_builders(tmp_path, monke
     fingerprint = input_fingerprint(input_path)
     run_dir = tmp_path / "runs"
     dynasty_dir = tmp_path / "dynasty"
+    index_dir = tmp_path / "index"
     _write(run_dir / "2026-06-13.json", _manifest("2026-06-13", fingerprint))
 
     monkeypatch.setattr(
@@ -176,6 +230,7 @@ def test_pipeline_skips_unchanged_input_without_calling_builders(tmp_path, monke
         input_path=input_path,
         run_archive_dir=run_dir,
         dynasty_archive_dir=dynasty_dir,
+        index_archive_dir=index_dir,
         report_path=tmp_path / "report.json",
         now="2026-06-14T00:00:00+00:00",
     )
@@ -189,6 +244,7 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
     run_dir = tmp_path / "runs"
     universal_archive_dir = tmp_path / "universal"
     dynasty_archive_dir = tmp_path / "dynasty"
+    index_archive_dir = tmp_path / "index"
     seen = {}
 
     monkeypatch.setattr(
@@ -216,14 +272,30 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
         )
         return {"candidate_count": 1, "research_gate": "active"}
 
+    def fake_index_backtest(**kwargs):
+        seen["index_backtest_now"] = kwargs["now"]
+        return {"research_gate": "active"}
+
+    def fake_index(**kwargs):
+        _write(
+            index_archive_dir / "2026-06-12.json",
+            _index_snapshot("2026-06-12", [_profile()]),
+        )
+        return {"candidate_count": 1, "research_gate": "active"}
+
     monkeypatch.setattr("prospects.forward_shadow.run_model", fake_model)
     monkeypatch.setattr("prospects.forward_shadow.run_backtest", fake_backtest)
     monkeypatch.setattr("prospects.forward_shadow.run_layer", fake_layer)
+    monkeypatch.setattr(
+        "prospects.forward_shadow.run_index_backtest", fake_index_backtest
+    )
+    monkeypatch.setattr("prospects.forward_shadow.run_index", fake_index)
 
     result = run_pipeline(
         input_path=input_path,
         universal_archive_dir=universal_archive_dir,
         dynasty_archive_dir=dynasty_archive_dir,
+        index_archive_dir=index_archive_dir,
         run_archive_dir=run_dir,
         report_path=tmp_path / "report.json",
         now=None,
@@ -233,5 +305,7 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
     assert seen == {
         "model_now": "2026-06-12T08:30:00+00:00",
         "backtest_now": "2026-06-12T08:30:00+00:00",
+        "index_backtest_now": "2026-06-12T08:30:00+00:00",
     }
     assert (run_dir / "2026-06-12.json").exists()
+    assert result["forward_observation_status"] == "collecting"

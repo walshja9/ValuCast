@@ -41,6 +41,8 @@ jobs:
             tests/test_universal_prospect_model.py \
             tests/test_prospect_dynasty_backtest.py \
             tests/test_prospect_dynasty_layer.py \
+            tests/test_universal_prospect_index.py \
+            tests/test_universal_prospect_index_backtest.py \
             tests/test_prospect_forward_shadow.py
 
       - name: Commit changed shadow artifacts
@@ -52,8 +54,11 @@ jobs:
             data/models/valucast_prospect_dynasty_backtest.json \
             data/models/valucast_prospect_dynasty_layer.json \
             data/models/valucast_prospect_forward_shadow.json \
+            data/models/valucast_universal_prospect_index.json \
+            data/models/valucast_universal_prospect_index_backtest.json \
             data/prediction_archive/valucast_universal_prospect_model \
             data/prediction_archive/valucast_prospect_dynasty_layer \
+            data/prediction_archive/valucast_universal_prospect_index \
             data/prediction_archive/valucast_prospect_forward_shadow
           git diff --cached --quiet && exit 0
           git commit -m "Archive prospect shadow observations"
