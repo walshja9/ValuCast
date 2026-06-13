@@ -43,8 +43,16 @@ SCORE_WEIGHTS = {
         "factual_investment_context": 0.14,
         "sample_reliability": 0.10,
     },
+    "identity_only_fallback": {
+        "base_score": 1.0,
+        "factual_investment_context": 0.08,
+        "sample_reliability": 0.06,
+    },
 }
 FALLBACK_SCORE_CAP = 62.0
+IDENTITY_ONLY_BASE_SCORE = 18.0
+IDENTITY_ONLY_SCORE_CAP = 32.0
+IDENTITY_ONLY_NEUTRAL_RELIABILITY = 10.0
 NEUTRAL_CONTEXT_SCORE = 50.0
 MIN_PUBLIC_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 120
@@ -240,6 +248,16 @@ def _sample_reliability_score(
     return round(max(0.0, min(100.0, reliability)), 2)
 
 
+def _input_sample_reliability_score(input_row: dict | None, role: str) -> float:
+    if not input_row:
+        return IDENTITY_ONLY_NEUTRAL_RELIABILITY
+    sample = _sample_size(input_row, role)
+    regression = 200.0 if role == "hitter" else 50.0
+    if sample <= 0:
+        return IDENTITY_ONLY_NEUTRAL_RELIABILITY
+    return round(max(0.0, min(100.0, 100.0 * sample / (sample + regression))), 2)
+
+
 def _factual_investment_score(input_row: dict | None) -> float | None:
     if not input_row:
         return None
@@ -265,6 +283,34 @@ def _factual_investment_score(input_row: dict | None) -> float | None:
     if not pieces:
         return None
     return round(max(pieces), 2)
+
+
+def _identity_only_score_components(
+    input_row: dict | None,
+    role: str,
+) -> tuple[float, str, dict]:
+    investment_score = _factual_investment_score(input_row)
+    reliability_score = _input_sample_reliability_score(input_row, role)
+    weights = SCORE_WEIGHTS["identity_only_fallback"]
+    score = (
+        weights["base_score"] * IDENTITY_ONLY_BASE_SCORE
+        + weights["factual_investment_context"]
+        * (investment_score if investment_score is not None else NEUTRAL_CONTEXT_SCORE)
+        + weights["sample_reliability"] * reliability_score
+    )
+    return (
+        round(min(score, IDENTITY_ONLY_SCORE_CAP), 2),
+        "identity_only_fallback",
+        {
+            "model_score": None,
+            "universal_outcome_index": None,
+            "factual_investment_context": _round(investment_score),
+            "factual_investment_missing_uses_neutral": investment_score is None,
+            "sample_reliability": _round(reliability_score),
+            "identity_only_base_score": IDENTITY_ONLY_BASE_SCORE,
+            "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
+        },
+    )
 
 
 def _score_components(
@@ -311,7 +357,7 @@ def _score_components(
 
 
 def _confidence(source: str, model_profile: dict | None, reliability: float | None) -> str:
-    if source == "universal_fallback":
+    if source in {"universal_fallback", "identity_only_fallback"}:
         return "low"
     role_gate = (model_profile or {}).get("role_gate")
     impact_gate = (model_profile or {}).get("impact_gate")
@@ -385,6 +431,7 @@ def _validation(
     duplicate_keys: list[tuple[str, str]],
     missing_mlbam_count: int,
     unmatched_layer_keys: set[tuple[str, str]],
+    identity_only_fallback_count: int,
 ) -> dict:
     feed_date = _generated_date(dd_feed)
     layer_date = _generated_date(dynasty_layer)
@@ -424,6 +471,7 @@ def _validation(
         "ranked_count": len(board),
         "missing_mlbam_count": missing_mlbam_count,
         "unmatched_dynasty_layer_count": len(unmatched_layer_keys),
+        "identity_only_fallback_count": identity_only_fallback_count,
         "coverage_rate": coverage_rate,
         "duplicate_identity_count": len(duplicate_keys),
         "duplicate_identities": [
@@ -454,6 +502,7 @@ def build_prospect_rank_v1(
     duplicate_keys: list[tuple[str, str]] = []
     missing_mlbam_count = 0
     unmatched_layer_keys: set[tuple[str, str]] = set()
+    identity_only_fallback_count = 0
     board = []
 
     for dd_row in rows:
@@ -467,16 +516,18 @@ def build_prospect_rank_v1(
             continue
         seen.add(key)
         layer_profile = layer_by_key.get(key)
-        if not layer_profile:
-            unmatched_layer_keys.add(key)
-            continue
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
-        score, source, components = _score_components(
-            model_profile,
-            layer_profile,
-            input_row,
-        )
+        if layer_profile:
+            score, source, components = _score_components(
+                model_profile,
+                layer_profile,
+                input_row,
+            )
+        else:
+            unmatched_layer_keys.add(key)
+            identity_only_fallback_count += 1
+            score, source, components = _identity_only_score_components(input_row, role)
         confidence = _confidence(
             source,
             model_profile,
@@ -485,20 +536,22 @@ def build_prospect_rank_v1(
         board.append(
             {
                 "mlbam_id": dd_row.get("mlbam_id"),
-                "name": dd_row.get("name") or layer_profile.get("name"),
-                "normalized_name": layer_profile.get("normalized_name"),
+                "name": dd_row.get("name") or (layer_profile or {}).get("name"),
+                "normalized_name": (layer_profile or {}).get("normalized_name"),
                 "role": role,
                 "positions": dd_row.get("positions"),
                 "mlb_team": dd_row.get("mlb_team"),
-                "age": dd_row.get("age") if dd_row.get("age") is not None else layer_profile.get("age"),
-                "level": dd_row.get("level") or layer_profile.get("level"),
+                "age": dd_row.get("age")
+                if dd_row.get("age") is not None
+                else (layer_profile or {}).get("age"),
+                "level": dd_row.get("level") or (layer_profile or {}).get("level"),
                 "eta": dd_row.get("eta"),
                 "score": score,
                 "score_source": source,
                 "confidence": confidence,
                 "components": components,
-                "dynasty_signal": layer_profile.get("dynasty_signal"),
-                "drivers": _drivers(model_profile, layer_profile),
+                "dynasty_signal": (layer_profile or {}).get("dynasty_signal"),
+                "drivers": _drivers(model_profile, layer_profile or {}),
                 "context_only": _context(dd_row, adapter_by_key.get(key)),
             }
         )
@@ -524,6 +577,12 @@ def build_prospect_rank_v1(
         duplicate_keys,
         missing_mlbam_count,
         unmatched_layer_keys,
+        identity_only_fallback_count,
+    )
+    coverage_repair_needed = (
+        validation["coverage_rate"] < MIN_PUBLIC_COVERAGE_RATE
+        or validation["missing_mlbam_count"] > 0
+        or validation["duplicate_identity_count"] > 0
     )
     generated_at = (
         dynasty_layer.get("generated_at")
@@ -546,6 +605,7 @@ def build_prospect_rank_v1(
             "score_weights": SCORE_WEIGHTS,
             "model_component_weights": MODEL_COMPONENT_WEIGHTS,
             "fallback_score_cap": FALLBACK_SCORE_CAP,
+            "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
             "dd_feed_usage": "Universe, identity, and display context only.",
             "context_only_fields": [
                 "DD dynasty_rank",
@@ -575,14 +635,19 @@ def build_prospect_rank_v1(
             "live_consumer": "blocked",
             "feeds_live_valucast_rank": False,
             "feeds_live_dd_value": False,
-            "next_allowed_step": "human_review_and_coverage_repair",
+            "next_allowed_step": (
+                "human_review_and_coverage_repair"
+                if coverage_repair_needed
+                else "human_review_and_canonical_snapshot_build"
+            ),
             "reason": validation["blockers"][0],
         },
         "validation": validation,
         "limitations": [
             "Candidate only; the live ValuCast Prospects board is not switched by this artifact.",
             "DD feed rows provide the current review universe and card context, not score inputs.",
-            "Coverage gaps remain for notable public prospects absent from the current ValuCast layer.",
+            "Identity-only fallback rows remain for prospects absent from the current ValuCast layer.",
+            "Identity-only fallback rows have verified MLBAM identity but no eligible ValuCast model sample yet.",
             "Fallback-only lower-minors profiles are capped until the expanded model earns publication-grade evidence.",
         ],
         "board": board,

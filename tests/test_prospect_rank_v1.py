@@ -241,10 +241,14 @@ def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
     assert validation["public_migration_ready"] is False
     assert validation["ready_to_replace_dd_feed"] is False
     assert validation["prospect_universe_count"] == 4
-    assert validation["ranked_count"] == 2
+    assert validation["ranked_count"] == 3
     assert validation["missing_mlbam_count"] == 1
     assert validation["unmatched_dynasty_layer_count"] == 1
+    assert validation["identity_only_fallback_count"] == 1
     assert validation["unmatched_sample"][0]["name"] == "Missing Layer"
+    missing_layer = next(row for row in payload["board"] if row["name"] == "Missing Layer")
+    assert missing_layer["score_source"] == "identity_only_fallback"
+    assert missing_layer["confidence"] == "low"
     assert any("coverage" in blocker for blocker in validation["blockers"])
 
 
