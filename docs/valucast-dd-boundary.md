@@ -122,6 +122,13 @@ python scripts/build_prospect_rank_v1.py
 
 Build ValuCast Dynasty Value v1.
 
+ValuCast now also publishes a shadow gate artifact at
+`data/public/public_dynasty_snapshot.json`. That snapshot proves the public
+schema, freshness, source-policy, duplicate-identity, and field-validation
+rails before any live switch. It is intentionally not ready for public
+consumers yet because the MLB dynasty value layer and ValuCast-owned buy inputs
+are still missing.
+
 It should combine:
 
 - MLB projection value from ValuCast's season/projection engine

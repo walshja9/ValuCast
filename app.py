@@ -18,9 +18,8 @@ from dataclasses import replace as dc_replace
 from league_values.engine import ValuationEngine
 from league_values.post_processors import VolumeMultiplier
 from league_values.playing_time import filter_by_playing_time
-from league_values.models import PlayerPool, PlayerProjection, ValuationResult
+from league_values.models import PlayerPool, ValuationResult
 
-from web.projection_store import ProjectionStore
 from web.projection_catalog import ProjectionCatalog
 from web.category_registry import (
     HITTING_CATEGORIES,
@@ -32,6 +31,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.dd_feed_store import DDFeedStore
+from web.public_snapshot_store import PublicSnapshotStore
 from web.league_settings import parse_league_settings
 from web.league_import import import_league, ImportError_
 from web.season_outlook import (
@@ -207,14 +207,39 @@ def _valuation_players(always_keep=None, active_store=None):
 # Load DD Dynasty feed once at startup
 DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
                     str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
-dd_store = DDFeedStore(DD_FEED_PATH)
+PUBLIC_SNAPSHOT_PATH = Path(os.environ.get(
+    "VALUCAST_PUBLIC_SNAPSHOT_PATH",
+    str(Path(__file__).parent / "data" / "public" / "public_dynasty_snapshot.json"),
+))
+legacy_dd_store = DDFeedStore(DD_FEED_PATH)
+public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
+
+
+def _select_dynasty_store(dd_candidate, snapshot_candidate, use_public_snapshot=None):
+    enabled = (
+        os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT") == "1"
+        if use_public_snapshot is None
+        else bool(use_public_snapshot)
+    )
+    if (
+        enabled
+        and snapshot_candidate.is_available
+        and snapshot_candidate.ready_for_live_consumers
+    ):
+        return snapshot_candidate, "valucast_public_snapshot"
+    return dd_candidate, "dd_feed"
+
+
+dd_store, dynasty_data_source = _select_dynasty_store(
+    legacy_dd_store, public_snapshot_store
+)
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
 
 # In production (VALUCAST_REQUIRE_DD=1) treat DD as required: refuse to start if the
 # feed failed to load. With gunicorn --preload this raises in the master, so the
 # candidate deploy fails and Render keeps the prior healthy deploy live — a corrupt
 # snapshot can never replace a working deployment and blank the tabs.
-if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not dd_store.is_available:
+if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not legacy_dd_store.is_available:
     raise RuntimeError(
         f"DD feed required but unavailable: {DD_FEED_PATH}. Refusing to start so the "
         "prior healthy Render deploy stays live."
@@ -1501,12 +1526,23 @@ def health_ready():
     stores = {
         "steamer": _store_ok("steamer"),
         "valucast": _store_ok("valucast"),
-        "dd": dd_store.is_available,
+        "dd": legacy_dd_store.is_available,
     }
+    if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT") == "1":
+        stores["public_snapshot_ready"] = (
+            public_snapshot_store.is_available
+            and public_snapshot_store.ready_for_live_consumers
+        )
     ready = all(stores.values())
     body = {
         "ready": ready,
         "stores": stores,
+        "public_snapshot": {
+            "available": public_snapshot_store.is_available,
+            "ready_for_live_consumers": public_snapshot_store.ready_for_live_consumers,
+            "active": dynasty_data_source == "valucast_public_snapshot",
+        },
+        "dynasty_data_source": dynasty_data_source,
         "commit": os.environ.get("RENDER_GIT_COMMIT", ""),
     }
     return jsonify(body), (200 if ready else 503)

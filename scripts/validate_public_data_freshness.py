@@ -14,6 +14,7 @@ REDRAFT_CURRENT = ROOT / "data" / "projections" / "current.json"
 REDRAFT_ROS = ROOT / "data" / "projections" / "ros.json"
 ACTUALS = ROOT / "data" / "actuals" / "current.json"
 STATCAST = ROOT / "data" / "statcast" / "percentiles.json"
+PUBLIC_SNAPSHOT = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 
 def _load(path: Path):
@@ -29,6 +30,7 @@ def validate_public_data(expected_date: str) -> list[str]:
 
     dated_artifacts = [
         (DD_FEED, "generated_at"),
+        (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),
     ]

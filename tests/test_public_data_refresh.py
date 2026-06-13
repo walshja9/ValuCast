@@ -59,6 +59,7 @@ def test_sync_feed_keeps_last_good_artifact_on_download_failure(tmp_path, monkey
 def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths = {
         "DD_FEED": tmp_path / "dd.json",
+        "PUBLIC_SNAPSHOT": tmp_path / "public_snapshot.json",
         "REDRAFT_METADATA": tmp_path / "metadata.json",
         "REDRAFT_CURRENT": tmp_path / "current.json",
         "REDRAFT_ROS": tmp_path / "ros.json",
@@ -66,6 +67,16 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "STATCAST": tmp_path / "statcast.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
+    paths["PUBLIC_SNAPSHOT"].write_text(
+        json.dumps(
+            {
+                "artifact": "valucast_public_dynasty_snapshot",
+                "generated_at": "2026-06-13T11:00:00-04:00",
+                "schema_version": "1.0",
+            }
+        ),
+        encoding="utf-8",
+    )
     paths["REDRAFT_METADATA"].write_text(
         json.dumps({"as_of": "2026-06-13"}), encoding="utf-8"
     )
