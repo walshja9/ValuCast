@@ -30,14 +30,15 @@ As of June 13, 2026:
 | Surface | Current behavior | Product meaning |
 | --- | --- | --- |
 | ValuCast season rankings | ValuCast combines MLB actuals and rest-of-season projections into configurable redraft-style rankings. | Independent ValuCast season outlook. |
-| ValuCast prospect board | Prospects are ordered by the ValuCast Universal Prospect Index and joined to DD feed rows for identity, cards, source-rank context, and MiLB details. | Independent ValuCast prospect opinion, not DD order. |
+| ValuCast prospect board | Still uses the legacy DD prospect feed value/order after the Universal Index live trial was reverted. | Beta/legacy bridge, not the final independent ValuCast prospect model. |
 | ValuCast dynasty board | Still uses the legacy DD dynasty feed value/order. | Beta/legacy bridge, not the final independent ValuCast dynasty model. |
 | DD prospect board | DD ranks and values players for the Diamond Dynasties league. | DD league value. |
 | DD Statistical Lens | DD compares its live prospect value against a ValuCast DD 7x7 adapter output. | Research-only disagreement lens; it does not change DD rank or value. |
 
-The important gap is the ValuCast dynasty board. Prospects are no longer simply
-mirroring DD, but the combined dynasty view still needs its own ValuCast-owned
-value model.
+The important gap is the ValuCast-owned public snapshot. Dynasty, Prospects,
+and Buys still depend on DD-generated public rows in production. ValuCast now
+has shadow prospect model pieces and a DD adapter, but those artifacts are not
+publication-grade replacements for the public boards yet.
 
 ## Allowed Boundaries
 
@@ -85,6 +86,34 @@ factual player data
 The current system has pieces of this pipeline, but it is not complete. The
 missing center piece is a ValuCast Dynasty Value model that puts MLB players
 and prospects on one independent dynasty scale.
+
+## Prospect Rank v1 Candidate
+
+`prospects/rank_v1.py` builds `data/models/valucast_prospect_rank_v1.json`.
+This is a candidate shadow artifact, not a live-board switch.
+
+The rank score may use:
+
+- ValuCast's shadow prospect model scores
+- ValuCast's universal dynasty ceiling/risk layer
+- factual sample reliability
+- factual Rule 4 draft-pick and signing-bonus context
+
+It may not use:
+
+- DD dynasty ranks or values
+- DD prospect ranks
+- DD value history
+- public prospect source ranks
+- DD 7x7 adapter score or rank
+
+For now the DD feed can define the review universe and provide card/display
+context. That does not make DD a scoring input. The artifact reports coverage
+gaps and migration blockers so it cannot quietly replace the production feed.
+
+```powershell
+python scripts/build_prospect_rank_v1.py
+```
 
 ## Next Build
 
