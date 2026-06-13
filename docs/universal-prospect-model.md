@@ -41,6 +41,57 @@ Star probability does not feed the league adapter or DD value. Expected
 category impact and ceiling probability remain separate until a later
 dynasty-valuation gate proves how they should interact.
 
+## Dynasty Ceiling/Risk Layer
+
+The separate shadow-only dynasty layer lives in `prospects/dynasty.py`. It
+consumes only the universal model's coherent factual outcome distribution and
+publishes:
+
+- bust risk
+- role-or-better probability
+- star ceiling probability
+- expected factual outcome tier (`bust=0`, `role=1`, `star=2`)
+- normalized outcome uncertainty
+
+It emits no prospect rank, fantasy value, trade recommendation, or live
+consumer output. It does not feed information back into the universal model or
+the category adapters.
+
+Its independent historical gate lives in `prospects/dynasty_backtest.py`. The
+replay uses a fixed four-year outcome horizon and nested cohort walk-forward
+training. Four years is the longest closed horizon supported by the current
+2015-2022 cohort history while retaining prior training cohorts. The primary
+gate requires the full bust/role/star probability
+distribution to beat factual level-age priors by at least 2% on multiclass
+Brier score. A separate guard requires expected factual outcome-tier ordering
+to avoid regression. A temporal-stability guard also requires at least two
+eligible test cohorts and forbids distribution or ordering regression in any
+fold.
+
+```powershell
+python scripts/build_prospect_dynasty_backtest.py
+python scripts/build_prospect_dynasty_layer.py
+```
+
+Outputs:
+
+- `data/models/valucast_prospect_dynasty_backtest.json`
+- `data/models/valucast_prospect_dynasty_layer.json`
+- `data/prediction_archive/valucast_prospect_dynasty_layer/YYYY-MM-DD.json`
+
+The first four-year replay earned the historical research gate:
+
+- Hitters: multiclass Brier `0.178268` versus `0.192158` level-age baseline
+  (`+7.23%`); expected-tier rank concordance `0.782730` versus `0.705781`.
+- Pitchers: multiclass Brier `0.216752` versus `0.232289` level-age baseline
+  (`+6.69%`); expected-tier rank concordance `0.701503` versus `0.626425`.
+
+Both roles passed the no-regression temporal guard across the two eligible test
+cohorts. That earns dated forward shadow observation, not a live rank or value.
+The layer remains incomplete as a dynasty valuation because it intentionally
+contains no league, roster, trade-market, position-scarcity, or manager-
+preference context.
+
 The representative season is always the player's highest-volume future MLB
 season (`PA` for hitters, `IP` for pitchers). It is never selected because it
 was the player's best fantasy-category season.

@@ -1,0 +1,171 @@
+{
+  "backtest_version": "0.1.0",
+  "generated_at": "2026-06-13T04:33:02.494162+00:00",
+  "layer_name": "ValuCast Prospect Dynasty Ceiling/Risk Layer",
+  "layer_version": "0.1.0",
+  "promotion": {
+    "dynasty_layer_research_gate": "active",
+    "feeds_live_dd_value": false,
+    "feeds_live_valucast_rank": false,
+    "live_consumer": "blocked",
+    "next_allowed_step": "dated_forward_shadow_observation",
+    "reason": "Both role distributions beat level-age priors without aggregate or fold-level ordering/distribution regression."
+  },
+  "roles": {
+    "hitter": {
+      "baseline_multiclass_brier": 0.192158,
+      "baseline_rank_concordance": 0.705781,
+      "candidate_multiclass_brier": 0.178268,
+      "candidate_rank_concordance": 0.78273,
+      "fold_count": 2,
+      "folds": [
+        {
+          "baseline_multiclass_brier": 0.135563,
+          "baseline_rank_concordance": 0.743215,
+          "candidate_multiclass_brier": 0.135563,
+          "candidate_rank_concordance": 0.743215,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "star_probability": "level_age_prior"
+          },
+          "sample_size": 360,
+          "test_cohort": 2019,
+          "train_cohort_max": 2015
+        },
+        {
+          "baseline_multiclass_brier": 0.244941,
+          "baseline_rank_concordance": 0.670868,
+          "candidate_multiclass_brier": 0.218097,
+          "candidate_rank_concordance": 0.819583,
+          "candidate_sources": {
+            "established_probability": "canonical_historical_neighbors_25",
+            "star_probability": "canonical_historical_neighbors_25"
+          },
+          "sample_size": 386,
+          "test_cohort": 2021,
+          "train_cohort_max": 2017
+        }
+      ],
+      "gate": {
+        "activated_at": "2026-06-13T04:33:02.494162+00:00",
+        "baseline": "level_age_prior_distribution",
+        "baseline_score": 0.192158,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 7.2283,
+        "metric": "dynasty_outcome_distribution_multiclass_brier",
+        "model_score": 0.178268,
+        "reason": "beats level_age_prior_distribution by 7.23% OOS (dynasty_outcome_distribution_multiclass_brier)",
+        "sample_size": 746,
+        "status": "active",
+        "validated_through": "2025"
+      },
+      "ordering_guard": {
+        "activated_at": "2026-06-13T04:33:02.494162+00:00",
+        "baseline": "level_age_prior_distribution",
+        "baseline_score": 0.705781,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 10.9027,
+        "metric": "dynasty_expected_outcome_tier_rank_concordance",
+        "model_score": 0.78273,
+        "reason": "beats level_age_prior_distribution by 10.90% OOS (dynasty_expected_outcome_tier_rank_concordance)",
+        "sample_size": 746,
+        "status": "active",
+        "validated_through": "2025"
+      },
+      "role_research_gate": "active",
+      "sample_size": 746,
+      "temporal_stability_guard": {
+        "distribution_non_regression_every_fold": true,
+        "fold_count": 2,
+        "minimum_fold_count": 2,
+        "ordering_non_regression_every_fold": true,
+        "status": "active"
+      }
+    },
+    "pitcher": {
+      "baseline_multiclass_brier": 0.232289,
+      "baseline_rank_concordance": 0.626425,
+      "candidate_multiclass_brier": 0.216752,
+      "candidate_rank_concordance": 0.701503,
+      "fold_count": 2,
+      "folds": [
+        {
+          "baseline_multiclass_brier": 0.213468,
+          "baseline_rank_concordance": 0.585353,
+          "candidate_multiclass_brier": 0.213468,
+          "candidate_rank_concordance": 0.585353,
+          "candidate_sources": {
+            "established_probability": "level_age_prior",
+            "star_probability": "level_age_prior"
+          },
+          "sample_size": 411,
+          "test_cohort": 2019,
+          "train_cohort_max": 2015
+        },
+        {
+          "baseline_multiclass_brier": 0.253482,
+          "baseline_rank_concordance": 0.672673,
+          "candidate_multiclass_brier": 0.220449,
+          "candidate_rank_concordance": 0.832291,
+          "candidate_sources": {
+            "established_probability": "historical_neighbors_25",
+            "star_probability": "historical_neighbors_25"
+          },
+          "sample_size": 365,
+          "test_cohort": 2021,
+          "train_cohort_max": 2017
+        }
+      ],
+      "gate": {
+        "activated_at": "2026-06-13T04:33:02.494162+00:00",
+        "baseline": "level_age_prior_distribution",
+        "baseline_score": 0.232289,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 6.6888,
+        "metric": "dynasty_outcome_distribution_multiclass_brier",
+        "model_score": 0.216752,
+        "reason": "beats level_age_prior_distribution by 6.69% OOS (dynasty_outcome_distribution_multiclass_brier)",
+        "sample_size": 776,
+        "status": "active",
+        "validated_through": "2025"
+      },
+      "ordering_guard": {
+        "activated_at": "2026-06-13T04:33:02.494162+00:00",
+        "baseline": "level_age_prior_distribution",
+        "baseline_score": 0.626425,
+        "cv_method": "nested_fixed_horizon_cohort_walk_forward",
+        "improvement_pct": 11.9852,
+        "metric": "dynasty_expected_outcome_tier_rank_concordance",
+        "model_score": 0.701503,
+        "reason": "beats level_age_prior_distribution by 11.99% OOS (dynasty_expected_outcome_tier_rank_concordance)",
+        "sample_size": 776,
+        "status": "active",
+        "validated_through": "2025"
+      },
+      "role_research_gate": "active",
+      "sample_size": 776,
+      "temporal_stability_guard": {
+        "distribution_non_regression_every_fold": true,
+        "fold_count": 2,
+        "minimum_fold_count": 2,
+        "ordering_non_regression_every_fold": true,
+        "status": "active"
+      }
+    }
+  },
+  "status": "shadow_only",
+  "universal_model_name": "ValuCast Universal Prospect Model",
+  "universal_model_version": "0.4.0",
+  "validation_contract": {
+    "actual": "One-hot factual bust/role/star outcome inside the fixed horizon.",
+    "baseline": "Factual level-age priors for establishment and star probability.",
+    "candidate": "Gate-selected factual establishment and star probabilities combined into a coherent bust/role/star distribution.",
+    "guard": "expected factual outcome tier rank concordance cannot regress",
+    "horizon_reason": "Four years is the longest closed horizon supported by the current 2015-2022 historical cohort coverage with at least one prior training cohort.",
+    "method": "nested_fixed_horizon_cohort_walk_forward",
+    "outcome_complete_through": 2025,
+    "outcome_horizon_years": 4,
+    "primary_metric": "multiclass Brier score",
+    "temporal_stability_guard": "At least two eligible test cohorts; distribution and ordering cannot regress in any fold."
+  }
+}
