@@ -1168,9 +1168,15 @@ def run_model(
     archive_dir: Path = ARCHIVE_DIR,
     now: str | None = None,
 ) -> dict:
-    payload = build_shadow_model(load_input_contract(input_path), now=now)
+    effective_now = now or datetime.now(timezone.utc).isoformat()
+    payload = build_shadow_model(load_input_contract(input_path), now=effective_now)
     path = write_artifact(payload, artifact_path)
-    archive_path, archive_changed = archive_predictions(payload, archive_dir=archive_dir)
+    parsed_now = datetime.fromisoformat(effective_now.replace("Z", "+00:00"))
+    if parsed_now.tzinfo is None:
+        parsed_now = parsed_now.replace(tzinfo=timezone.utc)
+    archive_path, archive_changed = archive_predictions(
+        payload, date_str=parsed_now.date().isoformat(), archive_dir=archive_dir
+    )
     return {
         "artifact_path": str(path),
         "archive_path": str(archive_path),
