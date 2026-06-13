@@ -338,7 +338,8 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("text/html", response.content_type)
         self.assertIn(b"Ahead of the Curve", response.data)
         self.assertIn(b"Top 10 SS Prospects", response.data)
-        self.assertIn(b"Download SVG", response.data)
+        self.assertIn(b"Download PNG", response.data)
+        self.assertIn(b"/prospects/share-card.png?limit=10&amp;position=SS", response.data)
 
     def test_prospects_position_graphic_svg(self):
         from app import dd_store
@@ -347,7 +348,11 @@ class TestDynastyMode(unittest.TestCase):
         response = self.client.get("/prospects/share-card.svg?position=SS&limit=10")
         self.assertEqual(response.status_code, 200)
         self.assertIn("image/svg+xml", response.content_type)
-        self.assertIn(b"DD prospect rank", response.data)
+        self.assertIn(b"Filtered from the current prospect board", response.data)
+        self.assertIn(b"SS RANK", response.data)
+        self.assertNotIn(b"dynasty value", response.data.lower())
+        self.assertNotIn(b">DV<", response.data)
+        self.assertNotIn(b"PROSPECT RANK", response.data)
 
     def test_prospects_position_graphic_png(self):
         from app import dd_store
