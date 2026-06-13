@@ -2,8 +2,10 @@
     <p class="footer-how">
         {% if methodology_page %}
         ValuCast methodology — how our projections are built and validated. The projection source for player values is selectable on the main board.
-        {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
-        Dynasty values blend current MLB value, age-adjusted future value, and prospect value.{% if mode == 'dd_dynasty' %} Tune dollars, tiers, and the cutoff to your league with the Customize panel.{% if dd_schema_version == '1.1' %} Category Fit re-ranks by category emphasis without changing Dynasty Value.{% endif %}{% endif %}
+        {% elif mode == 'prospects' %}
+        Prospect ranks use the ValuCast Universal Prospect Index, an independent statistical model built from observed MiLB profiles and historical MLB outcomes. DD feed context supplies player cards, source ranks, and MiLB stat displays.
+        {% elif mode == 'dd_dynasty' %}
+        Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Tune dollars, tiers, and the cutoff to your league with the Customize panel.{% if dd_schema_version == '1.1' %} Category Fit re-ranks by category emphasis without changing Dynasty Value.{% endif %}
         {% elif source == 'valucast' %}
         ValuCast H+P projection — hitters use Savant xBA/xSLG inputs; the pitching model is fully ValuCast-built (no third-party pitcher projections), scored against your league's categories and weights.
         {% else %}
@@ -14,7 +16,11 @@
 <p class="footer-data">
     {% if methodology_page %}
     <a href="/">Back to rankings</a> · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
-    {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
+    {% elif mode == 'prospects' %}
+    Data: ValuCast Universal Prospect Index + DD prospect context feed{% if as_of %} · Updated {{ as_of }}{% endif %}
+    · <a href="/methodology">How ValuCast works</a>
+    · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% elif mode == 'dd_dynasty' %}
     Data: Dynasty model + prospect feed · MLB stats from FanGraphs Steamer ROS + MLB Stats API{% if as_of %} · Updated {{ as_of }}{% endif %}
     · <a href="/methodology">How ValuCast works</a>
     · <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>

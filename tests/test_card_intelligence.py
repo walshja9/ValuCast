@@ -338,8 +338,10 @@ class TestCardIntelligenceUI(unittest.TestCase):
         cls.fixture_path = Path(fixture.name)
         cls.original_store = app_module.dd_store
         cls.original_pool = app_module.prospect_pool
+        cls.original_universal_index = app_module._load_universal_prospect_index
         app_module.dd_store = DDFeedStore(cls.fixture_path)
         app_module.prospect_pool = prospect_percentiles.build_pool(app_module.dd_store.get_all())
+        app_module._load_universal_prospect_index = lambda: {}
         app_module.app.config["TESTING"] = True
         cls.client = app_module.app.test_client()
 
@@ -347,6 +349,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def tearDownClass(cls):
         app_module.dd_store = cls.original_store
         app_module.prospect_pool = cls.original_pool
+        app_module._load_universal_prospect_index = cls.original_universal_index
         cls.fixture_path.unlink()
 
     def test_prospects_board_eta_cutoff_and_movers(self):
