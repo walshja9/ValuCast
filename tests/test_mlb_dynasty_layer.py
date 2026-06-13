@@ -12,14 +12,18 @@ def _hitter(
     hr=35,
     sb=18,
     avg=.290,
+    metadata=None,
 ):
     hits = avg * 500
+    base_metadata = {"mlbam_id": mlbam_id, "team": "BOS", "has_ros": True}
+    if metadata:
+        base_metadata.update(metadata)
     return PlayerProjection(
         id=player_id,
         name=name,
         pool=PlayerPool.HITTER,
         positions=("SS",),
-        metadata={"mlbam_id": mlbam_id, "team": "BOS", "has_ros": True},
+        metadata=base_metadata,
         stats={
             "PA": pa,
             "AB": 500,
@@ -123,3 +127,33 @@ def test_mlb_layer_dedupes_same_mlbam_role_to_best_projection():
     assert len(hitters) == 1
     assert payload["validation"]["duplicate_identity_count"] == 1
     assert hitters[0]["stat_line"]["stats"]["PA"] == 650
+
+
+def test_mlb_layer_applies_age_from_valucast_identity_store():
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1")],
+        "2026-06-13",
+        identities={"1": {"birth_date": "2001-07-01"}},
+    )
+
+    row = payload["players"][0]
+    assert row["age"] == 24
+    assert row["components"]["age_adjustment_status"] == "applied"
+    assert row["components"]["age_adjustment"] == 1.4967
+    assert row["components"]["age_source"] == "valucast_identity_birth_date"
+    assert payload["validation"]["age_coverage_count"] == 1
+    assert payload["validation"]["age_coverage_rate"] == 1.0
+    assert not any("age coverage" in blocker for blocker in payload["validation"]["blockers"])
+
+
+def test_mlb_layer_prefers_projection_metadata_age_over_identity():
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1", metadata={"age": 30})],
+        "2026-06-13",
+        identities={"1": {"birth_date": "2001-07-01"}},
+    )
+
+    row = payload["players"][0]
+    assert row["age"] == 30
+    assert row["components"]["age_source"] == "projection_metadata"
+    assert row["components"]["age_adjustment"] == 0.97

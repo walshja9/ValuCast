@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -16,7 +17,8 @@ from typing import Any, Iterable
 from league_values.engine import ValuationEngine
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from league_values.playing_time import filter_by_playing_time
-from league_values.post_processors import VolumeMultiplier
+from league_values.post_processors import AgeCurve, VolumeMultiplier
+from projections.data.identity import age_for, load_identity_store
 from web.config_builder import build_config
 from web.projection_store import ProjectionStore
 
@@ -24,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECTION_PATH = ROOT / "data" / "projections" / "current.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
+IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
 LAYER_VERSION = "0.1.0"
@@ -35,6 +38,26 @@ MIN_RP_IP = 20
 
 PRODUCTION_WEIGHT = 0.95
 RELIABILITY_WEIGHT = 0.05
+MIN_AGE_COVERAGE_RATE = 0.95
+
+HITTER_AGE_CURVE = {
+    22: 1.65,
+    25: 1.42,
+    27: 1.25,
+    30: 0.97,
+    32: 0.87,
+    34: 0.77,
+    37: 0.48,
+}
+PITCHER_AGE_CURVE = {
+    22: 1.50,
+    25: 1.30,
+    27: 1.15,
+    30: 0.88,
+    32: 0.78,
+    34: 0.65,
+    37: 0.33,
+}
 
 PITCHER_POOLS = {PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER}
 KEY_STATS = (
@@ -83,6 +106,16 @@ def _date_part(value: str | None) -> str | None:
         return text[:10] if len(text) >= 10 else None
 
 
+def _season_from_generated_at(value: str | None) -> int:
+    date_part = _date_part(value)
+    if date_part:
+        try:
+            return int(date_part[:4])
+        except ValueError:
+            pass
+    return datetime.now(timezone.utc).year
+
+
 def _generated_at(store: ProjectionStore, generated_at: str | None = None) -> str:
     if generated_at:
         return generated_at
@@ -93,6 +126,68 @@ def _generated_at(store: ProjectionStore, generated_at: str | None = None) -> st
 
 def _role(player: PlayerProjection) -> str:
     return "pitcher" if player.pool in PITCHER_POOLS else "hitter"
+
+
+def _coerce_age(value: Any) -> int | None:
+    try:
+        age = int(value)
+    except (TypeError, ValueError):
+        return None
+    if age < 16 or age > 55:
+        return None
+    return age
+
+
+def _age_multiplier(player: PlayerProjection, age: int | None) -> float | None:
+    if age is None:
+        return None
+    curve = PITCHER_AGE_CURVE if player.pool in PITCHER_POOLS else HITTER_AGE_CURVE
+    ages = sorted(curve)
+    if age <= ages[0]:
+        return curve[ages[0]]
+    if age >= ages[-1]:
+        return curve[ages[-1]]
+    for lower, upper in zip(ages, ages[1:]):
+        if lower <= age <= upper:
+            low_value = curve[lower]
+            high_value = curve[upper]
+            fraction = (age - lower) / (upper - lower)
+            return low_value + fraction * (high_value - low_value)
+    return 1.0
+
+
+def _player_age(
+    player: PlayerProjection,
+    identities: dict[str, dict],
+    season: int,
+) -> tuple[int | None, str]:
+    metadata_age = _coerce_age(player.metadata.get("age"))
+    if metadata_age is not None:
+        return metadata_age, "projection_metadata"
+
+    mlbam_id = player.metadata.get("mlbam_id")
+    if mlbam_id in (None, ""):
+        return None, "missing_mlbam_id"
+    identity = identities.get(str(mlbam_id)) or {}
+    identity_age = age_for(identity.get("birth_date"), season)
+    if identity_age is not None:
+        return identity_age, "valucast_identity_birth_date"
+    return None, "missing_identity_birth_date"
+
+
+def _attach_ages(
+    players: Iterable[PlayerProjection],
+    identities: dict[str, dict],
+    season: int,
+) -> list[PlayerProjection]:
+    enriched = []
+    for player in players:
+        age, source = _player_age(player, identities, season)
+        metadata = dict(player.metadata)
+        metadata["age"] = age
+        metadata["age_source"] = source
+        enriched.append(replace(player, metadata=metadata))
+    return enriched
 
 
 def identity_key(player: PlayerProjection) -> tuple[str, str] | None:
@@ -204,6 +299,8 @@ def _row(
     player = result.player
     role = _role(player)
     mlbam_id = str(player.metadata.get("mlbam_id"))
+    age = _coerce_age(player.metadata.get("age"))
+    age_multiplier = _age_multiplier(player, age)
     reliability = _playing_time_reliability(player)
     drivers = _category_drivers(result)
     drivers.append(f"playing time reliability {reliability:.0f}")
@@ -217,7 +314,7 @@ def _row(
         "positions": list(player.positions),
         "team": player.metadata.get("team") or "",
         "mlb_team": player.metadata.get("team") or "",
-        "age": None,
+        "age": age,
         "rank": rank,
         "score": round(score, 2),
         "value": round(score, 2),
@@ -229,8 +326,11 @@ def _row(
             "production_score": round(production_score, 2),
             "playing_time_reliability": reliability,
             "season_category_value": round(result.total_value, 4),
-            "age_adjustment": None,
-            "age_adjustment_status": "unavailable_in_valucast_projection_artifact",
+            "age_adjustment": _round(age_multiplier, 4),
+            "age_adjustment_status": (
+                "applied" if age_multiplier is not None else "missing_age"
+            ),
+            "age_source": player.metadata.get("age_source"),
         },
         "stat_line": {
             "source": "valucast_current_projection",
@@ -251,14 +351,25 @@ def _row(
 def build_mlb_dynasty_layer(
     players: Iterable[PlayerProjection],
     generated_at: str,
+    identities: dict[str, dict] | None = None,
 ) -> dict:
+    season = _season_from_generated_at(generated_at)
+    players = _attach_ages(players, identities or {}, season)
     eligible = filter_by_playing_time(
         players,
         hitter_pa=MIN_HITTER_PA,
         sp_ip=MIN_SP_IP,
         rp_ip=MIN_RP_IP,
     )
-    engine = ValuationEngine(post_processors=[VolumeMultiplier()])
+    engine = ValuationEngine(
+        post_processors=[
+            AgeCurve(
+                hitter_curve=HITTER_AGE_CURVE,
+                pitcher_curve=PITCHER_AGE_CURVE,
+            ),
+            VolumeMultiplier(),
+        ]
+    )
     results = engine.value_players(eligible, build_config(mode="categories"))
     deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(results)
     values = [result.total_value for result in deduped]
@@ -288,10 +399,15 @@ def build_mlb_dynasty_layer(
         for rank, (score, production_score, result) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
+    age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
     blockers = [
-        "Current ValuCast projection artifacts do not include age, so no MLB age curve is applied yet.",
         "This is a one-season projection value layer, not a fully calibrated multi-year dynasty horizon.",
     ]
+    if age_coverage_rate < MIN_AGE_COVERAGE_RATE:
+        blockers.insert(
+            0,
+            "ValuCast MLB age coverage is below the promotion threshold.",
+        )
     return {
         "status": "shadow_only",
         "layer_name": LAYER_NAME,
@@ -313,7 +429,8 @@ def build_mlb_dynasty_layer(
             },
             "production_score": "ValuCast default 5x5 category value scaled between p05 and p99 of eligible MLB projection rows.",
             "playing_time_reliability": "PA/IP volume shrinkage score from the same projection artifact.",
-            "age_adjustment": "not applied until ValuCast owns a current age source.",
+            "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
+            "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
         },
         "validation": {
             "ready_for_live_consumers": False,
@@ -322,7 +439,8 @@ def build_mlb_dynasty_layer(
             "missing_mlbam_count": missing_identity_count,
             "duplicate_identity_count": duplicate_identity_count,
             "age_coverage_count": age_coverage_count,
-            "age_coverage_rate": round(age_coverage_count / len(board), 4) if board else 0.0,
+            "age_coverage_rate": age_coverage_rate,
+            "age_coverage_threshold": MIN_AGE_COVERAGE_RATE,
             "ranks_contiguous": [row["rank"] for row in board] == list(range(1, len(board) + 1)),
             "generated_date": _date_part(generated_at),
             "blockers": blockers,
@@ -330,7 +448,7 @@ def build_mlb_dynasty_layer(
         "promotion": {
             "live_consumer": "blocked",
             "feeds_live_valucast_snapshot": False,
-            "next_allowed_step": "add_owned_age_source_and_multi_year_dynasty_horizon",
+            "next_allowed_step": "add_multi_year_dynasty_horizon_and_cross_universe_calibration",
             "reason": blockers[0],
         },
         "limitations": blockers,
@@ -365,9 +483,15 @@ def run_mlb_dynasty_layer(
     projection_path: Path = PROJECTION_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
+    identity_data_dir: Path = IDENTITY_DATA_DIR,
 ) -> dict:
     store = ProjectionStore(projection_path)
-    payload = build_mlb_dynasty_layer(store.get_all(), _generated_at(store))
+    identities = load_identity_store(identity_data_dir)
+    payload = build_mlb_dynasty_layer(
+        store.get_all(),
+        _generated_at(store),
+        identities=identities,
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

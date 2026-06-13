@@ -44,6 +44,7 @@ jobs:
 
       - name: Build ValuCast public snapshot gate
         run: |
+          python scripts/backfill_projection_identities.py
           python scripts/build_mlb_dynasty_layer.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_rank_v1.py
@@ -82,7 +83,8 @@ jobs:
             data/projections/metadata.json \
             data/projections/ros.json \
             data/public/public_dynasty_snapshot.json \
-            data/statcast/percentiles.json
+            data/statcast/percentiles.json \
+            projections/data/identity.json
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
           git push origin master
