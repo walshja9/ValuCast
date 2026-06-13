@@ -131,6 +131,9 @@ The snapshot includes:
   projection-value layer built from the app's projection engine
 - `data/models/valucast_prospect_rank_v1.json`, a ValuCast-owned prospect
   candidate board built from the ValuCast prospect universe
+- `data/models/valucast_prospect_buys.json`, a ValuCast-owned buy-signal
+  artifact built from ValuCast Rank v1 rather than DD value history or public
+  source-rank gaps
 
 It is intentionally not ready for public consumers yet because:
 
@@ -140,7 +143,8 @@ It is intentionally not ready for public consumers yet because:
   horizon
 - MLB and prospect scores are not yet calibrated onto one cross-universe
   dynasty scale
-- ValuCast-owned buy inputs are still missing
+- buy signals are shadow-only pending human review against the current
+  DD-backed `/buys` page and more dated ValuCast score history
 
 ## Next Build
 

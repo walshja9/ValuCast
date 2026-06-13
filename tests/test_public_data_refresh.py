@@ -66,6 +66,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "ACTUALS": tmp_path / "actuals.json",
         "STATCAST": tmp_path / "statcast.json",
         "MLB_DYNASTY_LAYER": tmp_path / "mlb_dynasty_layer.json",
+        "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
     paths["PUBLIC_SNAPSHOT"].write_text(
@@ -85,6 +86,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"as_of": "2026-06-12"}), encoding="utf-8"
     )
     paths["MLB_DYNASTY_LAYER"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["VALUCAST_BUYS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     for key in ("REDRAFT_CURRENT", "REDRAFT_ROS", "ACTUALS"):

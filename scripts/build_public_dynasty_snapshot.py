@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 SCHEMA_VERSION = "1.0"
@@ -152,6 +153,7 @@ def _validation(
     payload: dict,
     rank_payload: dict,
     mlb_layer: dict | None,
+    buy_signals: dict | None,
     prospects_excluded_by_mlb_identity_count: int,
 ) -> dict:
     players = payload.get("players") or []
@@ -160,7 +162,9 @@ def _validation(
     generated_date = _date_part(payload.get("generated_at"))
     rank_date = _date_part(rank_payload.get("generated_at"))
     mlb_date = _date_part((mlb_layer or {}).get("generated_at"))
+    buy_date = _date_part((buy_signals or {}).get("generated_at"))
     mlb_validation = (mlb_layer or {}).get("validation") or {}
+    buy_validation = (buy_signals or {}).get("validation") or {}
     blockers = []
     if not mlb_layer:
         blockers.append(
@@ -174,12 +178,20 @@ def _validation(
     blockers.extend(
         [
             "MLB and prospect scores are not yet calibrated to one cross-universe dynasty scale.",
-            "ValuCast Buys still need ValuCast-owned buy inputs before public consumers can switch.",
         ]
     )
+    if not buy_signals:
+        blockers.append("ValuCast-owned buy signal artifact is missing.")
+    elif not buy_validation.get("ready_for_live_consumers"):
+        blockers.extend(
+            buy_validation.get("blockers")
+            or ["ValuCast buy signals are still shadow-only."]
+        )
     date_values = [generated_date, rank_date]
     if mlb_layer:
         date_values.append(mlb_date)
+    if buy_signals:
+        date_values.append(buy_date)
     return {
         "ready_for_live_consumers": False,
         "same_day_freshness": all(date_values) and len(set(date_values)) == 1,
@@ -187,6 +199,7 @@ def _validation(
             "public_snapshot": generated_date,
             "mlb_dynasty_layer": mlb_date,
             "prospect_rank_v1": rank_date,
+            "valucast_prospect_buys": buy_date,
         },
         "row_count": len(players),
         "mlb_count": sum(1 for row in players if row.get("player_type") == "mlb"),
@@ -199,12 +212,16 @@ def _validation(
         ),
         "prospect_rank_v1_candidate_count": rank_payload.get("candidate_count"),
         "prospect_rank_v1_ranked_count": rank_payload.get("ranked_count"),
+        "valucast_buy_signal_count": buy_validation.get("row_count"),
+        "valucast_buy_signals_ready": bool(
+            buy_validation.get("ready_for_live_consumers")
+        ),
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
         "cross_universe_value_scale_calibrated": False,
         "surface_readiness": {
             "dynasty": False,
             "prospects": False,
-            "buys": False,
+            "buys": bool(buy_validation.get("ready_for_live_consumers")),
         },
         "blockers": blockers,
     }
@@ -213,6 +230,7 @@ def _validation(
 def build_snapshot(
     prospect_rank: dict,
     mlb_layer: dict | None = None,
+    buy_signals: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = (
@@ -249,6 +267,8 @@ def build_snapshot(
         "input_artifacts": {
             "mlb_dynasty_layer_version": (mlb_layer or {}).get("layer_version"),
             "mlb_dynasty_layer_status": (mlb_layer or {}).get("status"),
+            "valucast_buy_signal_version": (buy_signals or {}).get("signal_version"),
+            "valucast_buy_signal_status": (buy_signals or {}).get("status"),
             "prospect_rank_v1_version": prospect_rank.get("rank_version"),
             "prospect_rank_v1_status": prospect_rank.get("status"),
             "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
@@ -261,6 +281,7 @@ def build_snapshot(
         payload,
         prospect_rank,
         mlb_layer,
+        buy_signals,
         prospects_excluded_by_mlb_identity_count,
     )
     return payload
@@ -277,7 +298,12 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 def main() -> None:
     rank_payload = _load_json(PROSPECT_RANK_PATH)
     mlb_layer = _load_json(MLB_LAYER_PATH) if MLB_LAYER_PATH.exists() else None
-    payload = build_snapshot(rank_payload, mlb_layer=mlb_layer)
+    buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=mlb_layer,
+        buy_signals=buy_signals,
+    )
     path = write_snapshot(payload)
     validation = payload["validation"]
     print(

@@ -102,6 +102,20 @@ def _mlb_payload(mlbam_id=99, role="hitter"):
     }
 
 
+def _buy_payload():
+    return {
+        "status": "shadow_only",
+        "signal_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "row_count": 2,
+            "ready_for_live_consumers": False,
+            "blockers": ["ValuCast buy signals are shadow-only."],
+        },
+        "board": [],
+    }
+
+
 def _write_snapshot(tmp_path, payload):
     path = tmp_path / "snapshot.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -109,7 +123,11 @@ def _write_snapshot(tmp_path, payload):
 
 
 def test_build_snapshot_is_valid_but_not_live_ready():
-    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload())
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
     problems = validate_public_snapshot_payload(payload)
 
     assert problems == []
@@ -122,11 +140,18 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["validation"]["mlb_dynasty_value_layer_present"] is True
     assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
+    assert payload["validation"]["valucast_buy_signal_count"] == 2
+    assert payload["validation"]["valucast_buy_signals_ready"] is False
+    assert payload["validation"]["surface_readiness"]["buys"] is False
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
 
 def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
-    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload())
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
     path = _write_snapshot(tmp_path, payload)
 
     store = PublicSnapshotStore(path)
@@ -145,7 +170,11 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
 
 
 def test_snapshot_excludes_prospect_duplicate_when_mlb_identity_exists():
-    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload(mlbam_id=1))
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1),
+        buy_signals=_buy_payload(),
+    )
 
     assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
     assert payload["validation"]["duplicate_identity_count"] == 0
