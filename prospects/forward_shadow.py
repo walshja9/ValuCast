@@ -26,6 +26,10 @@ from prospects.dd_adapter import (
     BACKTEST_PATH as DD_ADAPTER_BACKTEST_PATH,
     run_dd_adapter,
 )
+from prospects.dd_lens_feed import (
+    ARTIFACT_PATH as DD_LENS_FEED_ARTIFACT_PATH,
+    run_feed as run_dd_lens_feed,
+)
 from prospects.adapter_backtest import run_backtest as run_adapter_backtest
 from prospects.index import (
     ARCHIVE_DIR as INDEX_ARCHIVE_DIR,
@@ -775,6 +779,7 @@ def run_pipeline(
     dd_adapter_backtest_path: Path = DD_ADAPTER_BACKTEST_PATH,
     dd_adapter_artifact_path: Path = DD_ADAPTER_ARTIFACT_PATH,
     dd_adapter_archive_dir: Path = DD_ADAPTER_ARCHIVE_DIR,
+    dd_lens_feed_artifact_path: Path = DD_LENS_FEED_ARTIFACT_PATH,
     run_archive_dir: Path = RUN_ARCHIVE_DIR,
     report_path: Path = ARTIFACT_PATH,
     now: str | None = None,
@@ -857,6 +862,12 @@ def run_pipeline(
         artifact_path=dd_adapter_artifact_path,
         archive_dir=dd_adapter_archive_dir,
     )
+    dd_lens_feed = run_dd_lens_feed(
+        adapter_path=dd_adapter_artifact_path,
+        universal_path=universal_artifact_path,
+        artifact_path=dd_lens_feed_artifact_path,
+        published_at=observation_now,
+    )
     manifest = {
         "status": "completed",
         "date": date_str,
@@ -877,6 +888,7 @@ def run_pipeline(
             "universal_index": _portable_output(index),
             "dd_7x7_adapter_backtest": _portable_output(dd_adapter_backtest),
             "dd_7x7_adapter": _portable_output(dd_adapter),
+            "dd_prospect_lens_feed": _portable_output(dd_lens_feed),
         },
         "promotion": {
             "live_consumer": "blocked",

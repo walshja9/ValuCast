@@ -373,6 +373,10 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
         )
         return {"candidate_count": 1, "research_gate": "active"}
 
+    def fake_dd_lens_feed(**kwargs):
+        seen["dd_lens_feed_published_at"] = kwargs["published_at"]
+        return {"candidate_count": 1, "research_gate": "active"}
+
     monkeypatch.setattr("prospects.forward_shadow.run_model", fake_model)
     monkeypatch.setattr("prospects.forward_shadow.run_backtest", fake_backtest)
     monkeypatch.setattr("prospects.forward_shadow.run_layer", fake_layer)
@@ -384,6 +388,7 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
         "prospects.forward_shadow.run_adapter_backtest", fake_adapter_backtest
     )
     monkeypatch.setattr("prospects.forward_shadow.run_dd_adapter", fake_dd_adapter)
+    monkeypatch.setattr("prospects.forward_shadow.run_dd_lens_feed", fake_dd_lens_feed)
 
     result = run_pipeline(
         input_path=input_path,
@@ -391,6 +396,7 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
         dynasty_archive_dir=dynasty_archive_dir,
         index_archive_dir=index_archive_dir,
         dd_adapter_archive_dir=dd_adapter_archive_dir,
+        dd_lens_feed_artifact_path=tmp_path / "dd-lens-feed.json",
         run_archive_dir=run_dir,
         report_path=tmp_path / "report.json",
         now=None,
@@ -402,6 +408,7 @@ def test_pipeline_anchors_observation_to_factual_contract_time(tmp_path, monkeyp
         "backtest_now": "2026-06-12T08:30:00+00:00",
         "index_backtest_now": "2026-06-12T08:30:00+00:00",
         "dd_adapter_backtest_now": "2026-06-12T08:30:00+00:00",
+        "dd_lens_feed_published_at": "2026-06-12T08:30:00+00:00",
     }
     assert (run_dir / "2026-06-12.json").exists()
     assert result["forward_observation_status"] == "collecting"
