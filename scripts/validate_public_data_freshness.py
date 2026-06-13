@@ -14,6 +14,7 @@ REDRAFT_CURRENT = ROOT / "data" / "projections" / "current.json"
 REDRAFT_ROS = ROOT / "data" / "projections" / "ros.json"
 ACTUALS = ROOT / "data" / "actuals" / "current.json"
 STATCAST = ROOT / "data" / "statcast" / "percentiles.json"
+MLB_DYNASTY_LAYER = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 PUBLIC_SNAPSHOT = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 
@@ -30,6 +31,7 @@ def validate_public_data(expected_date: str) -> list[str]:
 
     dated_artifacts = [
         (DD_FEED, "generated_at"),
+        (MLB_DYNASTY_LAYER, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),

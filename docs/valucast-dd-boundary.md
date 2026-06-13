@@ -118,16 +118,33 @@ python scripts/build_prospect_universe.py
 python scripts/build_prospect_rank_v1.py
 ```
 
+## Current Shadow Build
+
+ValuCast now publishes a shadow gate artifact at
+`data/public/public_dynasty_snapshot.json`. That snapshot proves the public
+schema, freshness, source-policy, duplicate-identity, and field-validation
+rails before any live switch.
+
+The snapshot includes:
+
+- `data/models/valucast_mlb_dynasty_layer.json`, a ValuCast-owned MLB
+  projection-value layer built from the app's projection engine
+- `data/models/valucast_prospect_rank_v1.json`, a ValuCast-owned prospect
+  candidate board built from the ValuCast prospect universe
+
+It is intentionally not ready for public consumers yet because:
+
+- current projection artifacts do not include an owned age source, so the MLB
+  layer cannot apply a dynasty age curve
+- the MLB layer is still one-season projection value, not a multi-year dynasty
+  horizon
+- MLB and prospect scores are not yet calibrated onto one cross-universe
+  dynasty scale
+- ValuCast-owned buy inputs are still missing
+
 ## Next Build
 
 Build ValuCast Dynasty Value v1.
-
-ValuCast now also publishes a shadow gate artifact at
-`data/public/public_dynasty_snapshot.json`. That snapshot proves the public
-schema, freshness, source-policy, duplicate-identity, and field-validation
-rails before any live switch. It is intentionally not ready for public
-consumers yet because the MLB dynasty value layer and ValuCast-owned buy inputs
-are still missing.
 
 It should combine:
 

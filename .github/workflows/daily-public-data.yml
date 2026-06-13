@@ -44,6 +44,7 @@ jobs:
 
       - name: Build ValuCast public snapshot gate
         run: |
+          python scripts/build_mlb_dynasty_layer.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_rank_v1.py
           python scripts/build_public_dynasty_snapshot.py
@@ -66,8 +67,10 @@ jobs:
           git add \
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
+            data/models/valucast_mlb_dynasty_layer.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
+            data/prediction_archive/valucast_mlb_dynasty_layer \
             data/prediction_archive/valucast_prospect_rank_v1 \
             data/projections/current.json \
             data/projections/metadata.json \

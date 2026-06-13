@@ -67,6 +67,41 @@ def _rank_payload():
     }
 
 
+def _mlb_payload(mlbam_id=99, role="hitter"):
+    return {
+        "status": "shadow_only",
+        "layer_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "row_count": 1,
+            "ready_for_live_consumers": False,
+            "blockers": ["MLB layer still shadow-only."],
+        },
+        "players": [
+            {
+                "id": f"vc_mlb_{mlbam_id}_{role}",
+                "player_type": "mlb",
+                "name": "MLB Star",
+                "mlbam_id": mlbam_id,
+                "role": role,
+                "positions": ["SS"] if role == "hitter" else ["SP"],
+                "team": "BOS",
+                "mlb_team": "BOS",
+                "age": None,
+                "rank": 1,
+                "value": 90.0,
+                "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+                "value_source": "valucast_mlb_projection_index_v0_1",
+                "confidence": "medium",
+                "projection_value": 12.3,
+                "components": {"production_score": 90.0},
+                "drivers": ["HR +1.20"],
+                "stat_line": {"stats": {"PA": 650}},
+            }
+        ],
+    }
+
+
 def _write_snapshot(tmp_path, payload):
     path = tmp_path / "snapshot.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -74,22 +109,24 @@ def _write_snapshot(tmp_path, payload):
 
 
 def test_build_snapshot_is_valid_but_not_live_ready():
-    payload = build_snapshot(_rank_payload())
+    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload())
     problems = validate_public_snapshot_payload(payload)
 
     assert problems == []
     assert payload["artifact"] == "valucast_public_dynasty_snapshot"
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["dd_ranks_used"] is False
-    assert payload["validation"]["row_count"] == 2
-    assert payload["validation"]["mlb_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
     assert payload["validation"]["prospect_count"] == 2
+    assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
-    assert "MLB dynasty value layer" in payload["validation"]["blockers"][0]
+    assert payload["validation"]["mlb_dynasty_value_layer_present"] is True
+    assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
+    assert "shadow-only" in payload["validation"]["blockers"][0]
 
 
 def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
-    payload = build_snapshot(_rank_payload())
+    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload())
     path = _write_snapshot(tmp_path, payload)
 
     store = PublicSnapshotStore(path)
@@ -97,14 +134,26 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert store.is_available is True
     assert store.ready_for_live_consumers is False
     assert store.generated_at == payload["generated_at"]
-    assert len(store.get_all()) == 2
+    assert len(store.get_all()) == 3
     row = store.get_by_id("vc_prospect_1_hitter")
     assert row is not None
-    assert row.dynasty_rank == 1
+    assert row.dynasty_rank == 2
     assert row.dynasty_value == 55.5
     assert row.prospect_rank == 1
     assert row.breakout_label == "rising"
     assert row.public_source_consensus == 10
+
+
+def test_snapshot_excludes_prospect_duplicate_when_mlb_identity_exists():
+    payload = build_snapshot(_rank_payload(), mlb_layer=_mlb_payload(mlbam_id=1))
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
 
 
 def test_rejects_bad_schema(tmp_path):
