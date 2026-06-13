@@ -79,12 +79,14 @@ def _evidence_summary(backtest: dict | None, universal_version: str | None) -> d
             "research_gate": "hold",
             "reason": "No historical dynasty-layer backtest artifact is available.",
             "role_gates": {},
+            "role_fold_counts": {},
         }
     if backtest.get("universal_model_version") != universal_version:
         return {
             "research_gate": "hold",
             "reason": "Historical evidence was built from a different universal model version.",
             "role_gates": {},
+            "role_fold_counts": {},
         }
     promotion = backtest.get("promotion") or {}
     return {
@@ -94,7 +96,26 @@ def _evidence_summary(backtest: dict | None, universal_version: str | None) -> d
             role: result.get("role_research_gate", "hold")
             for role, result in (backtest.get("roles") or {}).items()
         },
+        "role_fold_counts": {
+            role: int(result.get("fold_count") or 0)
+            for role, result in (backtest.get("roles") or {}).items()
+        },
     }
+
+
+def _fold_evidence_limitation(evidence: dict) -> str:
+    counts = evidence.get("role_fold_counts") or {}
+    if not counts:
+        return "Historical fixed-horizon temporal-fold evidence is not yet available."
+    unique_counts = set(counts.values())
+    if len(unique_counts) == 1:
+        count = unique_counts.pop()
+        return (
+            "The historical research gate currently has "
+            f"{count} eligible temporal folds per role."
+        )
+    detail = ", ".join(f"{role}={count}" for role, count in sorted(counts.items()))
+    return f"Historical eligible temporal folds by role: {detail}."
 
 
 def build_layer(universal: dict, backtest: dict | None = None) -> dict:
@@ -163,7 +184,7 @@ def build_layer(universal: dict, backtest: dict | None = None) -> dict:
         "limitations": [
             "This is a ceiling/risk signal layer, not a complete dynasty valuation model.",
             "It contains no league, roster, trade-market, position-scarcity, or manager-preference context.",
-            "The historical research gate currently has two eligible temporal folds per role.",
+            _fold_evidence_limitation(evidence),
             "Live consumers remain blocked until dated forward shadow evidence is stable.",
         ],
         "profiles": profiles,

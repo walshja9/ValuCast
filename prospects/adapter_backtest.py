@@ -36,6 +36,7 @@ OUTCOME_HORIZON_YEARS = 3
 OUTCOME_COMPLETE_THROUGH = 2025
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
+MIN_FOLD_COUNT = 2
 
 
 def _horizon_seasons(contract: dict) -> dict:
@@ -187,6 +188,30 @@ def _weighted_fold_metric(folds: list[dict], metric: str) -> float | None:
     return sum(value * sample for value, sample in available) / sum(
         sample for _, sample in available
     )
+
+
+def _temporal_stability_guard(folds: list[dict]) -> dict:
+    rank_non_regression = all(
+        fold["candidate_rank_concordance"] >= fold["baseline_rank_concordance"]
+        for fold in folds
+    )
+    top_quartile_non_regression = all(
+        fold["candidate_top_quartile_precision"]
+        >= fold["baseline_top_quartile_precision"]
+        for fold in folds
+    )
+    active = (
+        len(folds) >= MIN_FOLD_COUNT
+        and rank_non_regression
+        and top_quartile_non_regression
+    )
+    return {
+        "status": "active" if active else "hold",
+        "minimum_fold_count": MIN_FOLD_COUNT,
+        "fold_count": len(folds),
+        "rank_non_regression_every_fold": rank_non_regression,
+        "top_quartile_non_regression_every_fold": top_quartile_non_regression,
+    }
 
 
 def _score_fold(
@@ -478,13 +503,17 @@ def _role_backtest(contract: dict, horizon_seasons: dict, role: str, now: str) -
         lower_is_better=False,
         now=now,
     )
+    temporal_stability_guard = _temporal_stability_guard(folds)
     role_gate_active = (
-        gate["status"] == "active" and top_quartile_guard["status"] == "active"
+        gate["status"] == "active"
+        and top_quartile_guard["status"] == "active"
+        and temporal_stability_guard["status"] == "active"
     )
     return {
         "role_research_gate": "active" if role_gate_active else "hold",
         "gate": gate,
         "top_quartile_guard": top_quartile_guard,
+        "temporal_stability_guard": temporal_stability_guard,
         "sample_size": sample_size,
         "fold_count": len(folds),
         "candidate_rank_concordance": (
@@ -544,6 +573,10 @@ def build_backtest(contract: dict, now: str | None = None) -> dict:
             ),
             "baseline": "Every target uses the factual level-age prior.",
             "actual": "DD 7x7 impact from the highest-volume MLB season inside the horizon.",
+            "temporal_stability_guard": (
+                "At least two eligible test cohorts; rank concordance and "
+                "top-quartile precision cannot regress in any fold."
+            ),
         },
         "roles": roles,
         "promotion": {

@@ -98,6 +98,7 @@ def test_backtest_uses_longest_supported_closed_horizon_and_blocks_live_use():
     payload = build_backtest(_contract(), now="2026-06-13T00:00:00+00:00")
 
     assert payload["validation_contract"]["outcome_horizon_years"] == 4
+    assert "2015-2022" not in payload["validation_contract"]["horizon_reason"]
     assert payload["promotion"]["live_consumer"] == "blocked"
     assert payload["promotion"]["feeds_live_dd_value"] is False
     assert payload["promotion"]["feeds_live_valucast_rank"] is False

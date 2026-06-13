@@ -1,7 +1,12 @@
 """Tests for the fixed-horizon prospect adapter promotion gate."""
 import json
 
-from prospects.adapter_backtest import _weighted_fold_metric, build_backtest, run_backtest
+from prospects.adapter_backtest import (
+    _temporal_stability_guard,
+    _weighted_fold_metric,
+    build_backtest,
+    run_backtest,
+)
 from prospects.adapters import PRESETS
 from prospects.universal import TARGET_SPECS
 
@@ -101,6 +106,7 @@ def test_backtest_never_trains_on_an_unclosed_outcome_horizon():
     assert payload["promotion"]["feeds_live_dd_value"] is False
     for role, result in payload["roles"].items():
         assert result["gate"]["status"] == "insufficient_sample"
+        assert result["temporal_stability_guard"]["status"] == "active"
         assert result["folds"]
         assert set(result["category_diagnostics"]) == set(PRESETS["dd_7x7"][role])
         assert set(result["target_ablation_diagnostics"]) == set(TARGET_SPECS[role])
@@ -116,6 +122,27 @@ def test_backtest_aggregates_only_comparable_within_cohort_metrics():
         {"sample_size": 300, "rank_concordance": 0.80},
     ]
     assert _weighted_fold_metric(folds, "rank_concordance") == 0.75
+
+
+def test_temporal_stability_guard_rejects_any_fold_regression():
+    folds = [
+        {
+            "candidate_rank_concordance": 0.70,
+            "baseline_rank_concordance": 0.69,
+            "candidate_top_quartile_precision": 0.40,
+            "baseline_top_quartile_precision": 0.39,
+        },
+        {
+            "candidate_rank_concordance": 0.71,
+            "baseline_rank_concordance": 0.70,
+            "candidate_top_quartile_precision": 0.35,
+            "baseline_top_quartile_precision": 0.36,
+        },
+    ]
+    guard = _temporal_stability_guard(folds)
+    assert guard["status"] == "hold"
+    assert guard["rank_non_regression_every_fold"] is True
+    assert guard["top_quartile_non_regression_every_fold"] is False
 
 
 def test_run_backtest_writes_promotion_artifact(tmp_path):

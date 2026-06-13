@@ -278,9 +278,8 @@ def build_backtest(contract: dict, now: str | None = None) -> dict:
             "outcome_horizon_years": OUTCOME_HORIZON_YEARS,
             "outcome_complete_through": OUTCOME_COMPLETE_THROUGH,
             "horizon_reason": (
-                "Four years is the longest closed horizon supported by the current "
-                "2015-2022 historical cohort coverage with at least one prior "
-                "training cohort."
+                "Four years is the longest closed horizon currently supported "
+                "with at least one prior training cohort."
             ),
             "candidate": (
                 "Gate-selected factual establishment and star probabilities "

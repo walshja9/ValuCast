@@ -90,11 +90,20 @@ def test_layer_uses_only_matching_historical_evidence():
             "reason": "Evidence passed.",
         },
         "roles": {
-            "hitter": {"role_research_gate": "active"},
-            "pitcher": {"role_research_gate": "active"},
+            "hitter": {"role_research_gate": "active", "fold_count": 3},
+            "pitcher": {"role_research_gate": "active", "fold_count": 3},
         },
     }
-    assert build_layer(_universal(), backtest)["promotion"]["research_gate"] == "active"
+    payload = build_layer(_universal(), backtest)
+    assert payload["promotion"]["research_gate"] == "active"
+    assert payload["historical_evidence"]["role_fold_counts"] == {
+        "hitter": 3,
+        "pitcher": 3,
+    }
+    assert (
+        "The historical research gate currently has 3 eligible temporal folds per role."
+        in payload["limitations"]
+    )
     backtest["universal_model_version"] = "0.3.0"
     assert build_layer(_universal(), backtest)["promotion"]["research_gate"] == "hold"
 
