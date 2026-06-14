@@ -156,6 +156,31 @@ class TestDDFeedStoreFilter(unittest.TestCase):
             self.assertEqual(len(sps), 1)
             self.assertEqual(sps[0].name, "Good Pitcher")
 
+    def test_sp_filter_includes_generic_prospect_pitchers(self):
+        with tempfile.TemporaryDirectory() as d:
+            feed = {
+                **VALID_FEED,
+                "players": [
+                    *VALID_FEED["players"],
+                    {
+                        "id": "dd_prospect_generic_pitcher",
+                        "player_type": "prospect",
+                        "name": "Generic Pitcher Prospect",
+                        "mlbam_id": 123,
+                        "positions": ["P"],
+                        "mlb_team": "SEA",
+                        "age": 21,
+                        "dynasty_rank": 4,
+                        "dynasty_value": 50.0,
+                        "status": "minors",
+                    },
+                ],
+            }
+            path = _write_feed(d, feed)
+            store = DDFeedStore(path)
+            names = [row.name for row in store.filter(pool="prospect", position="SP")]
+            self.assertIn("Generic Pitcher Prospect", names)
+
     def test_filter_by_search(self):
         with tempfile.TemporaryDirectory() as d:
             path = _write_feed(d, VALID_FEED)

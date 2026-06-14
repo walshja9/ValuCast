@@ -451,6 +451,21 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     assert row.bucket_calibration_label == "Lower-minors context"
 
 
+def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):
+    rank_payload = _rank_payload()
+    rank_payload["board"][1]["positions"] = ["P"]
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    names = [row.name for row in store.filter(pool="prospect", position="SP")]
+
+    assert "Fallback Good" in names
+
+
 def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
     payload = build_snapshot(
         _rank_payload(),

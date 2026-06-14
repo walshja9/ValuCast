@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 
 from .public_snapshot_models import PublicSnapshotRow
+from .position_matching import has_hitter_position, has_pitcher_position, matches_position
 
 logger = logging.getLogger(__name__)
 
@@ -228,19 +229,11 @@ class PublicSnapshotStore:
             elif pool == "mlb":
                 results = [row for row in results if not row.is_prospect]
             elif pool == "hitter":
-                results = [
-                    row
-                    for row in results
-                    if any(position not in ("SP", "RP", "P") for position in row.positions)
-                ]
+                results = [row for row in results if has_hitter_position(row)]
             elif pool == "pitcher":
-                results = [
-                    row
-                    for row in results
-                    if any(position in ("SP", "RP", "P") for position in row.positions)
-                ]
+                results = [row for row in results if has_pitcher_position(row)]
         if position:
-            results = [row for row in results if position in row.positions]
+            results = [row for row in results if matches_position(row, position)]
         if search:
             query = search.lower()
             results = [row for row in results if query in row.name.lower()]

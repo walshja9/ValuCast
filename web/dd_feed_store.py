@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 
 from .dynasty_models import DynastyRankingRow
+from .position_matching import has_hitter_position, has_pitcher_position, matches_position
 
 logger = logging.getLogger(__name__)
 
@@ -128,13 +129,11 @@ class DDFeedStore:
             elif pool == "mlb":
                 results = [r for r in results if not r.is_prospect]
             elif pool == "hitter":
-                results = [r for r in results
-                           if any(p not in ("SP", "RP", "P") for p in r.positions)]
+                results = [r for r in results if has_hitter_position(r)]
             elif pool == "pitcher":
-                results = [r for r in results
-                           if any(p in ("SP", "RP", "P") for p in r.positions)]
+                results = [r for r in results if has_pitcher_position(r)]
         if position:
-            results = [r for r in results if position in r.positions]
+            results = [r for r in results if matches_position(r, position)]
         if search:
             query = search.lower()
             results = [r for r in results if query in r.name.lower()]
