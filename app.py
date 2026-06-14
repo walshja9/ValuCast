@@ -244,7 +244,7 @@ def _select_buy_source(
     public_snapshot_active=None,
 ):
     enabled = (
-        os.environ.get("VALUCAST_USE_VALUCAST_BUYS") == "1"
+        os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1"
         if use_valucast_buys is None
         else bool(use_valucast_buys)
     )

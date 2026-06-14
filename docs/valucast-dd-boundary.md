@@ -32,15 +32,15 @@ As of June 13, 2026:
 | ValuCast season rankings | ValuCast combines MLB actuals and rest-of-season projections into configurable redraft-style rankings. | Independent ValuCast season outlook. |
 | ValuCast prospect board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast prospect board, fail-closed to legacy DD feed if the snapshot is not ready. |
 | ValuCast dynasty board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast dynasty board, fail-closed to legacy DD feed if the snapshot is not ready. |
-| ValuCast buys board | Still uses the DD-backed buy board unless `VALUCAST_USE_VALUCAST_BUYS=1` and the ValuCast buy artifact passes its separate review/history gate. | Legacy DD buy surface until ValuCast-owned Buys are explicitly approved. |
+| ValuCast buys board | Uses the ValuCast-owned buy artifact when the public snapshot is active and the buy artifact passes its review/history gate; `VALUCAST_USE_VALUCAST_BUYS=0` is the rollback switch. | Independent ValuCast buy surface, fail-closed to the legacy DD-backed board if the artifact is not ready. |
 | DD prospect board | DD ranks and values players for the Diamond Dynasties league. | DD league value. |
 | DD Statistical Lens | DD compares its live prospect value against a ValuCast DD 7x7 adapter output. | Research-only disagreement lens; it does not change DD rank or value. |
 
-The important remaining gap is ValuCast-owned Buys promotion. Dynasty and
-Prospects can now consume the ValuCast public snapshot once the snapshot is
-same-day fresh and the quality governor approves it. Buys intentionally remains
-separate because it needs human review and enough dated ValuCast score history
-before it can replace the DD-backed buy board.
+The public surfaces now have separate gates. Dynasty and Prospects consume the
+ValuCast public snapshot once the snapshot is same-day fresh and the quality
+governor approves it. Buys consumes the ValuCast-owned buy artifact only after
+its buy-review gate approves the launch; otherwise it fails closed to the
+legacy DD-backed board.
 
 ## Allowed Boundaries
 
@@ -148,10 +148,9 @@ The snapshot includes:
 It has two separate readiness concepts:
 
 - `ready_for_live_consumers` means the snapshot can feed Dynasty/Prospects
-  instead of the DD feed when the environment switch is enabled. This now
-  requires the quality governor to pass.
-- `ready_for_all_public_surfaces` remains false until buy signals are reviewed
-  and have enough dated ValuCast score history.
+  instead of the DD feed. This requires the quality governor to pass.
+- `ready_for_all_public_surfaces` means Dynasty, Prospects, and Buys all have
+  approved ValuCast-owned live artifacts.
 
 The MLB layer now has a ValuCast-owned identity age source, a three-year
 dynasty horizon, an annualized ROS true-talent prior, and a factual MLB
@@ -165,7 +164,7 @@ record can support established players and discount limited-history spikes, but
 it cannot bypass the pure-reliever dynasty cap. The cross-universe gate
 certifies MLB and prospect rows on the shared `0_100_valucast_dynasty_score`
 scale without mutating the underlying raw scores. The `/buys` switch remains
-separately gated by `ValuCastBuyStore` so a calibrated Dynasty/Prospects
+separately gated by `ValuCastBuyStore`, so a calibrated Dynasty/Prospects
 snapshot cannot accidentally promote an unreviewed buy board.
 
 The quality governor is not a scoring input. It does not train the model and it

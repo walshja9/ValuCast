@@ -204,12 +204,13 @@ def test_build_valucast_board_formats_existing_template_shape():
     assert "valucast_terms" in board[0]
 
 
-def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active():
+def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active(monkeypatch):
     from app import _select_buy_source
 
     dd = SimpleNamespace(is_available=True)
     blocked = SimpleNamespace(is_available=True, ready_for_live_consumers=False)
     ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
 
     selected, source = _select_buy_source(
         dd,
@@ -237,6 +238,23 @@ def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active():
     )
     assert selected is ready
     assert source == "valucast_buys"
+
+    selected, source = _select_buy_source(
+        dd,
+        ready,
+        public_snapshot_active=True,
+    )
+    assert selected is ready
+    assert source == "valucast_buys"
+
+    monkeypatch.setenv("VALUCAST_USE_VALUCAST_BUYS", "0")
+    selected, source = _select_buy_source(
+        dd,
+        ready,
+        public_snapshot_active=True,
+    )
+    assert selected is dd
+    assert source == "dd_feed"
 
 
 def test_review_artifact_reports_low_overlap_but_blocks_only_history_and_approval():

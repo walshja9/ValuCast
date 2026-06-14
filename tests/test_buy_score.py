@@ -247,7 +247,8 @@ class _RealAppCase(unittest.TestCase):
 
 class TestBuysRoute(_RealAppCase):
     def test_page_renders_list_and_graphic(self):
-        r = self.client.get("/buys")
+        with mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
+            r = self.client.get("/buys")
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
         self.assertIn('class="buys-list', html)
@@ -256,9 +257,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertIn("The 40 best prospect buys by signal, not reputation", html)
         self.assertIn("html2canvas.min.js", html)
         self.assertIn("AHEAD OF THE CURVE", html)
-        self.assertIn("Source:</strong> Legacy DD-backed buy signal", html)
-        self.assertIn("Transitional buy board from the DD feed", html)
-        self.assertIn("Legacy DD-backed buy signal", html)
+        self.assertIn("Source:</strong> ValuCast-owned buy signal", html)
+        self.assertIn("Independent ValuCast model signal", html)
+        self.assertIn("buy score = model strength + momentum + buy window + runway", html)
         # Graphic node included twice: 5 featured + 35 compact each.
         self.assertEqual(html.count('class="bg-featured-card'), 10)
         self.assertEqual(html.count('class="bg-cell"'), 70)
@@ -282,7 +283,8 @@ class TestBuysRoute(_RealAppCase):
 
     def test_dd_unavailable_fallback(self):
         stub = SimpleNamespace(is_available=False, generated_at=None)
-        with mock.patch.object(app_module, "dd_store", stub):
+        with mock.patch.object(app_module, "dd_store", stub), \
+             mock.patch.object(app_module, "valucast_buy_store", stub):
             r = self.client.get("/buys")
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
