@@ -1,3 +1,4 @@
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -112,6 +113,24 @@ class TestLaunchPolish(unittest.TestCase):
         self.assertIn('class="col-cat na"', html)
         css = self.html("/static/style.css")
         self.assertIn(".rankings-table td.col-cat.na { opacity: .35; }", css)
+
+    def test_mobile_cards_surface_compact_stat_strip(self):
+        html = self.html("/?pool=hitter")
+        rows = re.findall(r'<tr class="player-row.*?</tr>', html, re.S)
+        self.assertGreater(len(rows), 0)
+        strip = re.search(r'<div class="mobile-stat-strip".*?</div>', rows[0], re.S)
+
+        self.assertIsNotNone(strip)
+        self.assertGreaterEqual(strip.group(0).count('class="mobile-stat '), 3)
+        self.assertLessEqual(strip.group(0).count('class="mobile-stat '), 4)
+        self.assertIn("mobile-stat-label", strip.group(0))
+        self.assertIn("mobile-stat-value", strip.group(0))
+
+        css = self.html("/static/style.css")
+        self.assertIn(".mobile-stat-strip { display: none; }", css)
+        self.assertIn("padding: 0.55rem 0.65rem", css)
+        self.assertIn("display: inline-flex", css)
+        self.assertIn("flex-wrap: wrap", css)
 
 
 if __name__ == "__main__":

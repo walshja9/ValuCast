@@ -44,6 +44,27 @@
                 {% if result.player.metadata.get('has_ros') == false %}
                 <span class="no-ros-badge">No projection</span>
                 {% endif %}
+                <div class="mobile-stat-strip" aria-label="{{ result.player.name }} category stats">
+                    {% set ns = namespace(shown=0) %}
+                    {% for col in display_columns %}
+                        {% if col.split %}
+                            {% set sp_raw = result.raw_values.get(col.sp_id) %}
+                            {% set rp_raw = result.raw_values.get(col.rp_id) %}
+                            {% set raw = sp_raw if sp_raw is not none else rp_raw %}
+                            {% set val = result.category_values.get(col.sp_id, 0) + result.category_values.get(col.rp_id, 0) %}
+                        {% else %}
+                            {% set raw = result.raw_values.get(col.id) %}
+                            {% set val = result.category_values.get(col.id, 0) %}
+                        {% endif %}
+                        {% if raw is not none and ns.shown < 4 %}
+                            <span class="mobile-stat {{ 'val-pos' if display == 'values' and val > 0 else ('val-neg' if display == 'values' and val < 0 else '') }}">
+                                <span class="mobile-stat-label">{{ col.id }}</span>
+                                <span class="mobile-stat-value">{% if display == 'values' %}{{ "%.1f" | format(val) }}{% else %}{{ raw | format_stat(col.id) }}{% endif %}</span>
+                            </span>
+                            {% set ns.shown = ns.shown + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
             </td>
             <td class="col-pos">{{ result.player.positions | join(', ') or '&mdash;' }}</td>
             <td class="col-team">{{ result.player.metadata.get('team') or '—' }}</td>

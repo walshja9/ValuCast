@@ -522,6 +522,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .col-value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 .col-cat { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
 .rankings-table td.col-cat.na { opacity: .35; }
+.mobile-stat-strip { display: none; }
 
 .tier-break {
     border-top: 2px solid var(--c-blue) !important;
@@ -740,9 +741,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
         background: rgba(26, 27, 46, .60); border: 1px solid rgba(255, 255, 255, .10);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
         border-radius: 8px;
-        margin-bottom: 0.5rem; padding: 0.75rem; position: relative;
+        margin-bottom: 0.38rem; padding: 0.55rem 0.65rem; position: relative;
     }
-    .rankings-table > tbody > tr > td { border: none; padding: 0.15rem 0; }
+    .rankings-table > tbody > tr > td { border: none; padding: 0.08rem 0; }
     /* td-qualified so it beats the generic direct-child td rule above. */
     .rankings-table > tbody > tr.cutoff-row > td {
         border-top: 2px dashed var(--c-muted);
@@ -752,21 +753,74 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     }
     /* Column rules are td-qualified so they BEAT the generic direct-child td rule —
        bare .col-* selectors lose on specificity and the columns leak into the cards. */
-    .rankings-table td.col-rank { position: absolute; top: 0.75rem; right: 0.75rem; width: auto; font-size: 0.8rem; }
+    .rankings-table td.col-rank { position: absolute; top: 0.55rem; right: 0.65rem; width: auto; font-size: 0.75rem; }
     .rankings-table td.col-compare, .rankings-table td.col-cat,
     .rankings-table td.col-age, .rankings-table td.col-range { display: none; }
-    .rankings-table td.col-name { font-size: 1rem; }
-    .rankings-table td.col-value { text-align: left; font-size: 1rem; margin-top: 0.25rem; }
-    .rankings-table td.col-value::before {
-        content: "Value"; display: block; font-size: 0.8rem; font-weight: 600;
-        color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.03em;
+    .rankings-table td.col-name { font-size: 0.94rem; padding-right: 2.15rem; line-height: 1.18; }
+    .rankings-table td.col-name .detail-toggle { margin-right: 0.18rem; }
+    .rankings-table td.col-pos, .rankings-table td.col-team,
+    .rankings-table td.col-dollars, .rankings-table td.col-dollar,
+    .rankings-table td.col-value {
+        display: inline-flex;
+        align-items: baseline;
+        width: auto;
+        color: var(--c-muted);
+        font-size: 0.74rem;
+        line-height: 1.1;
+        text-align: left;
     }
-    .rankings-table td.col-dollars { text-align: left; }
-    .rankings-table td.col-dollar { text-align: left; }
+    .rankings-table td.col-value {
+        gap: 0.18rem;
+        margin-top: 0.16rem;
+        font-size: 0.82rem;
+    }
+    .rankings-table td.col-value::before {
+        content: "Val";
+        color: var(--c-muted);
+        font-size: 0.66rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+    .rankings-table td.col-pos::after,
+    .rankings-table td.col-team::after,
+    .rankings-table td.col-dollars::after,
+    .rankings-table td.col-dollar::after {
+        content: "·";
+        color: var(--c-muted);
+        margin: 0 0.24rem;
+        opacity: .55;
+    }
+    .mobile-stat-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.24rem;
+        margin-top: 0.28rem;
+    }
+    .mobile-stat {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.2rem;
+        min-height: 1.25rem;
+        padding: 0.12rem 0.34rem;
+        border: 1px solid rgba(255, 255, 255, .08);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .045);
+        color: var(--c-text);
+        font-size: 0.72rem;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+    }
+    .mobile-stat-label {
+        color: var(--c-muted);
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+    .mobile-stat-value { font-weight: 650; }
     /* Cutoff divider stays a full-width strip between cards. */
     .rankings-table > tbody > tr.cutoff-row { margin-bottom: 0.5rem; }
-    .rankings-table td.col-pos, .rankings-table td.col-team { display: inline; width: auto; }
-    .rankings-table td.col-pos::after { content: " | "; }
     /* Expanded detail: frame it as a card attached beneath its row. */
     .rankings-table > tbody > tr.detail-row { margin: -0.35rem 0 0.5rem; }
     .rankings-table > tbody > tr.detail-row > td {
