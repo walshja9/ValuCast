@@ -116,6 +116,39 @@ def test_quality_governor_passes_clean_synthetic_board_but_keeps_buys_separate()
     ]
 
 
+def test_quality_governor_allows_reviewed_neutral_momentum_buy_launch():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=True, history_limited_count=40, row_count=40),
+        buy_review={
+            "review_status": "candidate_ready",
+            "source_policy": {"history_launch_approved": True},
+            "promotion_decision": {"neutral_momentum_launch_approved": True},
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    buy_check = next(
+        check for check in payload["checks"] if check["id"] == "buy_promotion_gate"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert payload["ready_for_buys_promotion"] is True
+    assert payload["surface_readiness"]["buys"] is True
+    assert payload["buy_blockers"] == []
+    assert buy_check["metrics"]["history_ready"] is True
+    assert buy_check["metrics"]["history_launch_approved"] is True
+
+
 def test_quality_governor_blocks_obvious_public_board_quality_failures():
     prospects = []
     for index in range(1, 51):

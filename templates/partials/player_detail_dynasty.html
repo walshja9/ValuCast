@@ -79,6 +79,28 @@
             </div>
         </div>
 
+        {% if row.availability_context or row.bucket_calibration_context %}
+        <div class="detail-section prospect-sample-context">
+            <h4>ValuCast Sample Context</h4>
+            <div class="stat-grid">
+                {% if row.availability_status_label %}
+                <div class="stat-item"><span class="stat-label">Availability</span><span class="stat-value">{{ row.availability_status_label }}</span></div>
+                {% endif %}
+                {% if row.availability_sample_label %}
+                <div class="stat-item"><span class="stat-label">Current Sample</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
+                {% endif %}
+                {% if row.availability_risk_discount %}
+                <div class="stat-item"><span class="stat-label">Risk Adjustment</span><span class="stat-value">-{{ "%.1f%%" | format(row.availability_risk_discount * 100) }}</span></div>
+                {% endif %}
+                {% if row.bucket_calibration_label %}
+                <div class="stat-item"><span class="stat-label">Bucket Calibration</span><span class="stat-value">{{ row.bucket_calibration_label }}</span></div>
+                {% endif %}
+            </div>
+            {% if row.availability_note %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
+            {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
+        </div>
+        {% endif %}
+
         {% if row.source_ranks %}
         <div class="detail-section source-evidence">
             <h4>Market Context

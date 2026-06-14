@@ -9,6 +9,19 @@ from dataclasses import dataclass, field
 _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr_raw"})
 
 
+def _clean_float(raw) -> float | None:
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _format_status(raw) -> str | None:
+    if not raw:
+        return None
+    return str(raw).replace("_", " ").title()
+
+
 @dataclass(frozen=True)
 class DynastyRankingRow:
     """A single player row in DD Dynasty rankings. Not an engine result."""
@@ -84,6 +97,73 @@ class DynastyRankingRow:
     @property
     def milb_performance_rank(self) -> int | float | None:
         return (self.source_ranks or {}).get("milb_perf")
+
+    @property
+    def prospect_components(self) -> dict:
+        if not isinstance(self.metadata, dict):
+            return {}
+        raw = self.metadata.get("components")
+        if isinstance(raw, dict) and raw:
+            return raw
+        context = self.metadata.get("context")
+        if isinstance(context, dict) and isinstance(context.get("components"), dict):
+            return context["components"]
+        return {}
+
+    @property
+    def availability_context(self) -> dict:
+        raw = self.prospect_components.get("availability")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def availability_adjusted(self) -> bool:
+        discount = _clean_float(self.prospect_components.get("availability_risk_discount"))
+        return self.prospect_components.get("availability_adjusted") is True or (discount or 0.0) > 0
+
+    @property
+    def availability_risk_discount(self) -> float | None:
+        return _clean_float(self.prospect_components.get("availability_risk_discount"))
+
+    @property
+    def availability_status_label(self) -> str | None:
+        return _format_status(self.availability_context.get("status"))
+
+    @property
+    def availability_sample_label(self) -> str | None:
+        sample = _clean_float(self.availability_context.get("sample"))
+        unit = self.availability_context.get("sample_unit")
+        if sample is None or not unit:
+            return None
+        if sample.is_integer():
+            sample_text = str(int(sample))
+        else:
+            sample_text = f"{sample:.1f}"
+        return f"{sample_text} {unit}"
+
+    @property
+    def availability_note(self) -> str | None:
+        note = self.availability_context.get("note")
+        return str(note) if note else None
+
+    @property
+    def bucket_calibration_context(self) -> dict:
+        raw = self.prospect_components.get("bucket_calibration")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def bucket_calibration_adjusted(self) -> bool:
+        return bool(self.bucket_calibration_context)
+
+    @property
+    def bucket_calibration_label(self) -> str | None:
+        context = self.bucket_calibration_context
+        if not context:
+            return None
+        bucket = str(context.get("bucket") or "").replace("_", " ").title()
+        adjustment = _clean_float(context.get("adjustment"))
+        if adjustment is None:
+            return bucket or "Bucket Calibration"
+        return f"{bucket} ({adjustment:+.1f})"
 
     @classmethod
     def _normalize_positions(cls, positions: list) -> tuple:

@@ -397,6 +397,45 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.public_source_consensus == 10
 
 
+def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["components"] = {
+        "availability_adjusted": True,
+        "availability_risk_discount": 0.06,
+        "availability": {
+            "status": "thin_current_sample",
+            "risk_level": "medium",
+            "note": "Thin sample.",
+            "sample": 90,
+            "sample_unit": "PA",
+        },
+        "bucket_calibration": {
+            "bucket": "lower_minors_pedigree_score_source",
+            "adjustment": -1.0,
+            "reason": "Lower-minors pedigree-only profile.",
+        },
+    }
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    path = _write_snapshot(tmp_path, payload)
+
+    store = PublicSnapshotStore(path)
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.prospect_components["availability_adjusted"] is True
+    assert row.availability_adjusted is True
+    assert row.availability_risk_discount == 0.06
+    assert row.availability_status_label == "Thin Current Sample"
+    assert row.availability_sample_label == "90 PA"
+    assert row.availability_note == "Thin sample."
+    assert row.bucket_calibration_adjusted is True
+    assert row.bucket_calibration_label == "Lower Minors Pedigree Score Source (-1.0)"
+
+
 def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
     payload = build_snapshot(
         _rank_payload(),

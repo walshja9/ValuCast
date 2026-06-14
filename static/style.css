@@ -840,6 +840,24 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     padding: 0.05rem 0.3rem;
     vertical-align: middle;
 }
+.sample-risk-badge {
+    display: inline-block;
+    margin-left: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--c-amber);
+    background: rgba(251, 191, 36, .14);
+    border: 1px solid rgba(251, 191, 36, .32);
+    border-radius: 999px;
+    padding: 0.05rem 0.35rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.sample-risk-badge.bucket {
+    color: var(--c-prospect);
+    background: rgba(52, 211, 153, .10);
+    border-color: rgba(52, 211, 153, .28);
+}
 
 .notice {
     background: rgba(251,191,36,.14);
@@ -1107,6 +1125,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .pct-ord { margin-top: .15rem; font-size: .68rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
 .stat-caption { margin-top: .2rem; font-size: .7rem; line-height: 1.25; color: var(--c-muted); font-style: italic; }
 .small-sample { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: .7rem; color: var(--c-amber); background: rgba(251, 191, 36, .14); border-radius: 999px; padding: .12rem .45rem; }
+.prospect-sample-context .stat-grid { margin-bottom: .45rem; }
+.sample-context-note { margin: .35rem 0 0; color: var(--c-muted); font-size: .78rem; line-height: 1.45; }
 .identity-line { margin-top: .25rem; max-width: 720px; color: var(--c-muted); font-size: .85rem; }
 
 /* Movers strip */

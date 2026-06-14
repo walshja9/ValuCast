@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+import argparse
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -82,6 +83,9 @@ def build_review(
             "Human review is still required before changing the public /buys source."
         )
     review_status = "candidate_ready" if not blockers else "blocked"
+    neutral_momentum_launch = (
+        manual_approval and history_limited_rate > MAX_HISTORY_LIMITED_RATE
+    )
 
     return {
         "artifact": "valucast_prospect_buys_review",
@@ -97,6 +101,20 @@ def build_review(
             "dd_overlap_required_for_candidate_ready": False,
             "history_launch_approved": manual_approval
             and history_limited_rate > MAX_HISTORY_LIMITED_RATE,
+            "approval_kind": (
+                "neutral_momentum_launch"
+                if neutral_momentum_launch
+                else "human_review"
+                if manual_approval
+                else None
+            ),
+        },
+        "promotion_decision": {
+            "status": review_status,
+            "neutral_momentum_launch_approved": neutral_momentum_launch,
+            "dd_overlap_is_context_only": True,
+            "history_limited_rate": round(history_limited_rate, 4),
+            "requires_route_gate": True,
         },
         "metrics": {
             "dd_top40_count": len(dd_board),
@@ -137,6 +155,16 @@ def write_review(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--approve-neutral-momentum-launch",
+        action="store_true",
+        help=(
+            "Record explicit review approval to launch ValuCast-owned Buys "
+            "while score-history momentum is still launch-limited."
+        ),
+    )
+    args = parser.parse_args()
     dd_store = DDFeedStore(DD_FEED_PATH)
     buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
     if not dd_store.is_available:
@@ -153,7 +181,8 @@ def main() -> None:
         dd_board,
         valucast_board,
         buy_store,
-        manual_approval=os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1",
+        manual_approval=args.approve_neutral_momentum_launch
+        or os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1",
         generated_at=buy_store.generated_at,
     )
     path = write_review(payload)

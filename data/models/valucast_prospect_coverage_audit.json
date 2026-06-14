@@ -20,7 +20,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 66,
+      "rank": 65,
       "reasons": [
         "missing_v0_6_model_profile",
         "raw_fallback_score_source",
@@ -35,8 +35,8 @@
       "source_ranks_context": {
         "cfr": 20,
         "cfr_raw": 20.0,
-        "hkb": 31,
-        "milb_perf": 70,
+        "hkb": 32,
+        "milb_perf": 64,
         "pipeline": 14
       },
       "universal_outcome_index": 36.0
@@ -44,7 +44,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 137,
+      "dd_dynasty_rank_context": 139,
       "dd_prospect_rank_context": 22,
       "eta": 2027,
       "factual_investment_context": null,
@@ -81,7 +81,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 68,
+      "dd_dynasty_rank_context": 67,
       "dd_prospect_rank_context": 5,
       "eta": 2027,
       "factual_investment_context": null,
@@ -155,8 +155,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 160,
-      "dd_prospect_rank_context": 32,
+      "dd_dynasty_rank_context": 159,
+      "dd_prospect_rank_context": 31,
       "eta": 2028,
       "factual_investment_context": null,
       "level": "A+",
@@ -182,7 +182,7 @@
       "source_ranks_context": {
         "cfr": 28,
         "cfr_raw": 28.0,
-        "hkb": 57,
+        "hkb": 55,
         "milb_perf": 64,
         "pipeline": 25
       },
@@ -191,8 +191,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 81,
-      "dd_prospect_rank_context": 7,
+      "dd_dynasty_rank_context": 80,
+      "dd_prospect_rank_context": 6,
       "eta": 2026,
       "factual_investment_context": null,
       "level": "AA",
@@ -226,8 +226,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 890,
-      "dd_prospect_rank_context": 348,
+      "dd_dynasty_rank_context": 898,
+      "dd_prospect_rank_context": 352,
       "eta": null,
       "factual_investment_context": 64.03,
       "level": "A+",
@@ -287,7 +287,7 @@
       "source_ranks_context": {
         "cfr": 6,
         "cfr_raw": 6.0,
-        "hkb": 56,
+        "hkb": 57,
         "pipeline": 39
       },
       "universal_outcome_index": 30.0
@@ -295,8 +295,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 107,
-      "dd_prospect_rank_context": 17,
+      "dd_dynasty_rank_context": 109,
+      "dd_prospect_rank_context": 16,
       "eta": 2026,
       "factual_investment_context": null,
       "level": "AA",
@@ -365,10 +365,43 @@
       "universal_outcome_index": 14.0
     },
     {
+      "age": 23,
+      "confidence": "low",
+      "dd_dynasty_rank_context": 961,
+      "dd_prospect_rank_context": 381,
+      "eta": null,
+      "factual_investment_context": 50.9,
+      "level": "A+",
+      "mlb_team": "SFG",
+      "mlbam_id": 814194,
+      "model_score": null,
+      "name": "Quinn McDaniel",
+      "pedigree_score_cap": null,
+      "positions": [
+        "LF"
+      ],
+      "rank": 1069,
+      "reasons": [
+        "missing_v0_6_model_profile",
+        "raw_fallback_score_source",
+        "context_public_source_top_prospect"
+      ],
+      "role": "hitter",
+      "sample_reliability": 26.7,
+      "score": 17.4,
+      "score_source": "universal_fallback",
+      "source_ranks_context": {
+        "cfr": 721,
+        "cfr_raw": 722.0,
+        "milb_perf": 28
+      },
+      "universal_outcome_index": 10.0
+    },
+    {
       "age": 24,
       "confidence": "low",
-      "dd_dynasty_rank_context": 1017,
-      "dd_prospect_rank_context": 412,
+      "dd_dynasty_rank_context": 1016,
+      "dd_prospect_rank_context": 409,
       "eta": null,
       "factual_investment_context": 13.71,
       "level": "A+",
@@ -411,15 +444,15 @@
     "v06_score_source": "prospect_model_v0_6"
   },
   "elite_factual_raw_fallback_misses": [],
-  "generated_at": "2026-06-13T19:42:35.751009+00:00",
+  "generated_at": "2026-06-14T12:27:30.646599+00:00",
   "input_artifacts": {
     "prospect_model_version": "0.6.0",
-    "rank_generated_at": "2026-06-13T19:42:35.751009+00:00",
+    "rank_generated_at": "2026-06-14T12:27:30.646599+00:00",
     "rank_name": "ValuCast Prospect Rank v1 Candidate",
-    "rank_version": "0.2.0"
+    "rank_version": "0.2.1"
   },
   "metrics": {
-    "context_watchlist_raw_fallback_count": 11,
+    "context_watchlist_raw_fallback_count": 12,
     "elite_factual_raw_fallback_count": 0,
     "elite_factual_raw_fallback_top_200_count": 0,
     "non_v06_score_count": 1874,
@@ -443,8 +476,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 106,
-      "dd_prospect_rank_context": 16,
+      "dd_dynasty_rank_context": 110,
+      "dd_prospect_rank_context": 17,
       "eta": 2028,
       "factual_investment_context": 100.0,
       "level": "A",
@@ -456,7 +489,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 14,
+      "rank": 18,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -466,7 +499,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 53.7,
-      "score": 48.17,
+      "score": 47.17,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 266,
@@ -480,8 +513,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 540,
-      "dd_prospect_rank_context": 154,
+      "dd_dynasty_rank_context": 544,
+      "dd_prospect_rank_context": 156,
       "eta": null,
       "factual_investment_context": 92.36,
       "level": "A",
@@ -493,7 +526,7 @@
       "positions": [
         "RF"
       ],
-      "rank": 18,
+      "rank": 23,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -501,12 +534,12 @@
       ],
       "role": "hitter",
       "sample_reliability": 36.5,
-      "score": 47.8,
+      "score": 46.8,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1961,
         "cfr_raw": 1972.0,
-        "hkb": 119,
+        "hkb": 120,
         "milb_perf": 259
       },
       "universal_outcome_index": 10.0
@@ -527,7 +560,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 20,
+      "rank": 25,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -535,7 +568,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 41.2,
-      "score": 47.2,
+      "score": 46.2,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": null,
       "universal_outcome_index": 8.0
@@ -543,7 +576,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 142,
+      "dd_dynasty_rank_context": 143,
       "dd_prospect_rank_context": 23,
       "eta": 2029,
       "factual_investment_context": 100.0,
@@ -556,7 +589,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 21,
+      "rank": 26,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -566,7 +599,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 43.2,
-      "score": 47.16,
+      "score": 46.16,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 482,
@@ -580,8 +613,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 171,
-      "dd_prospect_rank_context": 38,
+      "dd_dynasty_rank_context": 173,
+      "dd_prospect_rank_context": 39,
       "eta": 2028,
       "factual_investment_context": 90.96,
       "level": "A+",
@@ -593,7 +626,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 22,
+      "rank": 27,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -601,7 +634,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 52.9,
-      "score": 47.09,
+      "score": 46.09,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 63,
@@ -615,8 +648,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 219,
-      "dd_prospect_rank_context": 55,
+      "dd_dynasty_rank_context": 194,
+      "dd_prospect_rank_context": 47,
       "eta": 2029,
       "factual_investment_context": 96.18,
       "level": "A",
@@ -628,7 +661,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 25,
+      "rank": 29,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -636,13 +669,13 @@
       ],
       "role": "hitter",
       "sample_reliability": 53.9,
-      "score": 46.99,
+      "score": 45.99,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1223,
         "cfr_raw": 1226.0,
         "hkb": 37,
-        "milb_perf": 259,
+        "milb_perf": 193,
         "pipeline": 31
       },
       "universal_outcome_index": 18.0
@@ -650,8 +683,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 405,
-      "dd_prospect_rank_context": 97,
+      "dd_dynasty_rank_context": 377,
+      "dd_prospect_rank_context": 89,
       "eta": 2029,
       "factual_investment_context": 91.66,
       "level": "A",
@@ -663,7 +696,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 27,
+      "rank": 30,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -671,12 +704,12 @@
       ],
       "role": "hitter",
       "sample_reliability": 50.9,
-      "score": 46.96,
+      "score": 45.96,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1822,
         "cfr_raw": 1831.0,
-        "hkb": 105,
+        "hkb": 102,
         "milb_perf": 71,
         "pipeline": 81
       },
@@ -685,8 +718,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 473,
-      "dd_prospect_rank_context": 121,
+      "dd_dynasty_rank_context": 472,
+      "dd_prospect_rank_context": 122,
       "eta": 2029,
       "factual_investment_context": 90.07,
       "level": "A",
@@ -698,7 +731,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 29,
+      "rank": 31,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -706,7 +739,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 51.1,
-      "score": 46.85,
+      "score": 45.85,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1629,
@@ -720,8 +753,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 477,
-      "dd_prospect_rank_context": 123,
+      "dd_dynasty_rank_context": 482,
+      "dd_prospect_rank_context": 126,
       "eta": 2029,
       "factual_investment_context": 96.27,
       "level": "A",
@@ -733,7 +766,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 30,
+      "rank": 32,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -741,12 +774,12 @@
       ],
       "role": "hitter",
       "sample_reliability": 46.9,
-      "score": 46.8,
+      "score": 45.8,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 2389,
         "cfr_raw": 2403.0,
-        "hkb": 151,
+        "hkb": 152,
         "milb_perf": 259,
         "pipeline": 52
       },
@@ -755,8 +788,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 446,
-      "dd_prospect_rank_context": 111,
+      "dd_dynasty_rank_context": 476,
+      "dd_prospect_rank_context": 123,
       "eta": 2027,
       "factual_investment_context": 92.66,
       "level": "A+",
@@ -768,7 +801,7 @@
       "positions": [
         "C"
       ],
-      "rank": 31,
+      "rank": 33,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -776,13 +809,13 @@
       ],
       "role": "hitter",
       "sample_reliability": 54.5,
-      "score": 46.75,
+      "score": 45.75,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 207,
         "cfr_raw": 207.0,
-        "hkb": 158,
-        "milb_perf": 76,
+        "hkb": 159,
+        "milb_perf": 109,
         "pipeline": 54
       },
       "universal_outcome_index": 12.0
@@ -790,8 +823,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 343,
-      "dd_prospect_rank_context": 82,
+      "dd_dynasty_rank_context": 250,
+      "dd_prospect_rank_context": 63,
       "eta": 2028,
       "factual_investment_context": 95.18,
       "level": "A+",
@@ -803,7 +836,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 32,
+      "rank": 34,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -811,13 +844,13 @@
       ],
       "role": "hitter",
       "sample_reliability": 45.2,
-      "score": 46.75,
+      "score": 45.75,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 519,
         "cfr_raw": 520.0,
         "hkb": 39,
-        "milb_perf": 303,
+        "milb_perf": 220,
         "pipeline": 45
       },
       "universal_outcome_index": 10.0
@@ -825,8 +858,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 581,
-      "dd_prospect_rank_context": 172,
+      "dd_dynasty_rank_context": 577,
+      "dd_prospect_rank_context": 169,
       "eta": null,
       "factual_investment_context": 93.69,
       "level": "A+",
@@ -838,7 +871,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 33,
+      "rank": 35,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -846,12 +879,12 @@
       ],
       "role": "hitter",
       "sample_reliability": 55.7,
-      "score": 46.72,
+      "score": 45.72,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1850,
         "cfr_raw": 1859.0,
-        "hkb": 145,
+        "hkb": 142,
         "milb_perf": 222
       },
       "universal_outcome_index": 10.0
@@ -859,8 +892,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 474,
-      "dd_prospect_rank_context": 122,
+      "dd_dynasty_rank_context": 469,
+      "dd_prospect_rank_context": 120,
       "eta": 2028,
       "factual_investment_context": 91.12,
       "level": "A+",
@@ -872,7 +905,7 @@
       "positions": [
         "RF"
       ],
-      "rank": 34,
+      "rank": 36,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -880,13 +913,13 @@
       ],
       "role": "hitter",
       "sample_reliability": 50.5,
-      "score": 46.68,
+      "score": 45.68,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1122,
         "cfr_raw": 1124.0,
         "hkb": 106,
-        "milb_perf": 168,
+        "milb_perf": 159,
         "pipeline": 91
       },
       "universal_outcome_index": 14.0
@@ -894,8 +927,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 1084,
-      "dd_prospect_rank_context": 448,
+      "dd_dynasty_rank_context": 625,
+      "dd_prospect_rank_context": 198,
       "eta": null,
       "factual_investment_context": 91.38,
       "level": "A+",
@@ -907,7 +940,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 35,
+      "rank": 37,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -915,13 +948,13 @@
       ],
       "role": "hitter",
       "sample_reliability": 54.8,
-      "score": 46.68,
+      "score": 45.68,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 1852,
         "cfr_raw": 1861.0,
-        "hkb": 225,
-        "milb_perf": 171
+        "hkb": 226,
+        "milb_perf": 129
       },
       "universal_outcome_index": 12.0
     },
@@ -941,7 +974,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 37,
+      "rank": 42,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -949,7 +982,7 @@
       ],
       "role": "hitter",
       "sample_reliability": 54.1,
-      "score": 46.1,
+      "score": 45.1,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": null,
       "universal_outcome_index": 0.0
@@ -957,7 +990,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 94,
+      "dd_dynasty_rank_context": 93,
       "dd_prospect_rank_context": 11,
       "eta": 2028,
       "factual_investment_context": 98.53,
@@ -970,7 +1003,7 @@
       "positions": [
         "P"
       ],
-      "rank": 48,
+      "rank": 50,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -980,7 +1013,7 @@
       ],
       "role": "pitcher",
       "sample_reliability": 35.9,
-      "score": 44.57,
+      "score": 43.57,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 177,
@@ -994,7 +1027,7 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 528,
+      "dd_dynasty_rank_context": 527,
       "dd_prospect_rank_context": 147,
       "eta": 2027,
       "factual_investment_context": 92.97,
@@ -1007,7 +1040,7 @@
       "positions": [
         "P"
       ],
-      "rank": 49,
+      "rank": 51,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -1015,12 +1048,12 @@
       ],
       "role": "pitcher",
       "sample_reliability": 47.9,
-      "score": 44.54,
+      "score": 43.54,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 3094,
         "cfr_raw": 3129.0,
-        "hkb": 81,
+        "hkb": 82,
         "milb_perf": 460,
         "pipeline": 85
       },
@@ -1029,8 +1062,142 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 327,
-      "dd_prospect_rank_context": 79,
+      "dd_dynasty_rank_context": 431,
+      "dd_prospect_rank_context": 103,
+      "eta": null,
+      "factual_investment_context": 87.63,
+      "level": "A+",
+      "mlb_team": "MIL",
+      "mlbam_id": 702652,
+      "model_score": null,
+      "name": "Andrew Fischer",
+      "pedigree_score_cap": null,
+      "positions": [
+        "3B"
+      ],
+      "rank": 62,
+      "reasons": [
+        "missing_v0_6_model_profile",
+        "raw_fallback_score_source",
+        "top_200_valucast_board"
+      ],
+      "role": "hitter",
+      "sample_reliability": 54.8,
+      "score": 41.75,
+      "score_source": "universal_fallback",
+      "source_ranks_context": {
+        "cfr": 172,
+        "cfr_raw": 172.0,
+        "hkb": 60,
+        "milb_perf": 56
+      },
+      "universal_outcome_index": 34.0
+    },
+    {
+      "age": 18,
+      "confidence": "low",
+      "dd_dynasty_rank_context": null,
+      "dd_prospect_rank_context": null,
+      "eta": null,
+      "factual_investment_context": 84.03,
+      "level": "A",
+      "mlb_team": "MIL",
+      "mlbam_id": 815816,
+      "model_score": null,
+      "name": "Brady Ebel",
+      "pedigree_score_cap": null,
+      "positions": [
+        "SS"
+      ],
+      "rank": 63,
+      "reasons": [
+        "missing_v0_6_model_profile",
+        "raw_fallback_score_source",
+        "top_200_valucast_board"
+      ],
+      "role": "hitter",
+      "sample_reliability": 57.0,
+      "score": 41.75,
+      "score_source": "universal_fallback",
+      "source_ranks_context": null,
+      "universal_outcome_index": 32.0
+    },
+    {
+      "age": 19,
+      "confidence": "low",
+      "dd_dynasty_rank_context": 321,
+      "dd_prospect_rank_context": 78,
+      "eta": null,
+      "factual_investment_context": 87.37,
+      "level": "A+",
+      "mlb_team": "MIL",
+      "mlbam_id": 815520,
+      "model_score": null,
+      "name": "Braylon Payne",
+      "pedigree_score_cap": null,
+      "positions": [
+        "CF"
+      ],
+      "rank": 64,
+      "reasons": [
+        "missing_v0_6_model_profile",
+        "raw_fallback_score_source",
+        "top_200_valucast_board"
+      ],
+      "role": "hitter",
+      "sample_reliability": 45.4,
+      "score": 41.75,
+      "score_source": "universal_fallback",
+      "source_ranks_context": {
+        "cfr": 83,
+        "cfr_raw": 83.0,
+        "hkb": 83,
+        "milb_perf": 62
+      },
+      "universal_outcome_index": 34.0
+    },
+    {
+      "age": 20,
+      "confidence": "low",
+      "dd_dynasty_rank_context": 130,
+      "dd_prospect_rank_context": 21,
+      "eta": 2028,
+      "factual_investment_context": 85.33,
+      "level": "A+",
+      "mlb_team": "CHW",
+      "mlbam_id": 815352,
+      "model_score": null,
+      "name": "Caleb Bonemer",
+      "pedigree_score_cap": null,
+      "positions": [
+        "3B"
+      ],
+      "rank": 65,
+      "reasons": [
+        "missing_v0_6_model_profile",
+        "raw_fallback_score_source",
+        "context_dd_top_prospect",
+        "context_public_source_top_prospect",
+        "top_200_valucast_board"
+      ],
+      "role": "hitter",
+      "sample_reliability": 57.1,
+      "score": 41.75,
+      "score_source": "universal_fallback",
+      "source_ranks_context": {
+        "cfr": 20,
+        "cfr_raw": 20.0,
+        "hkb": 32,
+        "milb_perf": 64,
+        "pipeline": 14
+      },
+      "universal_outcome_index": 36.0
+    },
+    {
+      "age": 22,
+      "confidence": "low",
+      "dd_dynasty_rank_context": 316,
+      "dd_prospect_rank_context": 77,
       "eta": 2026,
       "factual_investment_context": 99.41,
       "level": "A+",
@@ -1042,7 +1209,7 @@
       "positions": [
         "P"
       ],
-      "rank": 62,
+      "rank": 70,
       "reasons": [
         "missing_v0_6_model_profile",
         "elite_factual_draft_signing_context",
@@ -1050,7 +1217,7 @@
       ],
       "role": "pitcher",
       "sample_reliability": 30.9,
-      "score": 41.88,
+      "score": 40.88,
       "score_source": "prospect_pedigree_v0_7",
       "source_ranks_context": {
         "cfr": 159,
@@ -1062,140 +1229,6 @@
       "universal_outcome_index": 24.0
     },
     {
-      "age": 22,
-      "confidence": "low",
-      "dd_dynasty_rank_context": 427,
-      "dd_prospect_rank_context": 103,
-      "eta": null,
-      "factual_investment_context": 87.63,
-      "level": "A+",
-      "mlb_team": "MIL",
-      "mlbam_id": 702652,
-      "model_score": null,
-      "name": "Andrew Fischer",
-      "pedigree_score_cap": null,
-      "positions": [
-        "3B"
-      ],
-      "rank": 63,
-      "reasons": [
-        "missing_v0_6_model_profile",
-        "raw_fallback_score_source",
-        "top_200_valucast_board"
-      ],
-      "role": "hitter",
-      "sample_reliability": 54.8,
-      "score": 41.75,
-      "score_source": "universal_fallback",
-      "source_ranks_context": {
-        "cfr": 172,
-        "cfr_raw": 172.0,
-        "hkb": 59,
-        "milb_perf": 56
-      },
-      "universal_outcome_index": 34.0
-    },
-    {
-      "age": 18,
-      "confidence": "low",
-      "dd_dynasty_rank_context": null,
-      "dd_prospect_rank_context": null,
-      "eta": null,
-      "factual_investment_context": 84.03,
-      "level": "A",
-      "mlb_team": "MIL",
-      "mlbam_id": 815816,
-      "model_score": null,
-      "name": "Brady Ebel",
-      "pedigree_score_cap": null,
-      "positions": [
-        "SS"
-      ],
-      "rank": 64,
-      "reasons": [
-        "missing_v0_6_model_profile",
-        "raw_fallback_score_source",
-        "top_200_valucast_board"
-      ],
-      "role": "hitter",
-      "sample_reliability": 57.0,
-      "score": 41.75,
-      "score_source": "universal_fallback",
-      "source_ranks_context": null,
-      "universal_outcome_index": 32.0
-    },
-    {
-      "age": 19,
-      "confidence": "low",
-      "dd_dynasty_rank_context": 265,
-      "dd_prospect_rank_context": 66,
-      "eta": null,
-      "factual_investment_context": 87.37,
-      "level": "A+",
-      "mlb_team": "MIL",
-      "mlbam_id": 815520,
-      "model_score": null,
-      "name": "Braylon Payne",
-      "pedigree_score_cap": null,
-      "positions": [
-        "CF"
-      ],
-      "rank": 65,
-      "reasons": [
-        "missing_v0_6_model_profile",
-        "raw_fallback_score_source",
-        "top_200_valucast_board"
-      ],
-      "role": "hitter",
-      "sample_reliability": 45.4,
-      "score": 41.75,
-      "score_source": "universal_fallback",
-      "source_ranks_context": {
-        "cfr": 83,
-        "cfr_raw": 83.0,
-        "hkb": 83,
-        "milb_perf": 56
-      },
-      "universal_outcome_index": 34.0
-    },
-    {
-      "age": 20,
-      "confidence": "low",
-      "dd_dynasty_rank_context": 130,
-      "dd_prospect_rank_context": 21,
-      "eta": 2028,
-      "factual_investment_context": 85.33,
-      "level": "A+",
-      "mlb_team": "CHW",
-      "mlbam_id": 815352,
-      "model_score": null,
-      "name": "Caleb Bonemer",
-      "pedigree_score_cap": null,
-      "positions": [
-        "3B"
-      ],
-      "rank": 66,
-      "reasons": [
-        "missing_v0_6_model_profile",
-        "raw_fallback_score_source",
-        "context_dd_top_prospect",
-        "context_public_source_top_prospect",
-        "top_200_valucast_board"
-      ],
-      "role": "hitter",
-      "sample_reliability": 57.1,
-      "score": 41.75,
-      "score_source": "universal_fallback",
-      "source_ranks_context": {
-        "cfr": 20,
-        "cfr_raw": 20.0,
-        "hkb": 31,
-        "milb_perf": 70,
-        "pipeline": 14
-      },
-      "universal_outcome_index": 36.0
-    },
-    {
       "age": 20,
       "confidence": "low",
       "dd_dynasty_rank_context": null,
@@ -1227,8 +1260,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 542,
-      "dd_prospect_rank_context": 155,
+      "dd_dynasty_rank_context": 539,
+      "dd_prospect_rank_context": 154,
       "eta": null,
       "factual_investment_context": 77.24,
       "level": "A",
@@ -1253,7 +1286,7 @@
       "source_ranks_context": {
         "cfr": 242,
         "cfr_raw": 242.0,
-        "hkb": 230,
+        "hkb": 227,
         "milb_perf": 54
       },
       "universal_outcome_index": 32.0
@@ -1261,7 +1294,7 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 737,
+      "dd_dynasty_rank_context": 740,
       "dd_prospect_rank_context": 264,
       "eta": null,
       "factual_investment_context": null,
@@ -1294,8 +1327,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 545,
-      "dd_prospect_rank_context": 156,
+      "dd_dynasty_rank_context": 555,
+      "dd_prospect_rank_context": 160,
       "eta": null,
       "factual_investment_context": 67.66,
       "level": "A",
@@ -1320,7 +1353,7 @@
       "source_ranks_context": {
         "cfr": 263,
         "cfr_raw": 263.0,
-        "hkb": 142,
+        "hkb": 147,
         "milb_perf": 103
       },
       "universal_outcome_index": 34.0
@@ -1328,8 +1361,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 551,
-      "dd_prospect_rank_context": 159,
+      "dd_dynasty_rank_context": 547,
+      "dd_prospect_rank_context": 157,
       "eta": null,
       "factual_investment_context": 83.32,
       "level": "A",
@@ -1354,7 +1387,7 @@
       "source_ranks_context": {
         "cfr": 413,
         "cfr_raw": 413.0,
-        "hkb": 219,
+        "hkb": 217,
         "milb_perf": 66
       },
       "universal_outcome_index": 30.0
@@ -1362,7 +1395,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 259,
+      "dd_dynasty_rank_context": 261,
       "dd_prospect_rank_context": 65,
       "eta": 2028,
       "factual_investment_context": 67.32,
@@ -1388,7 +1421,7 @@
       "source_ranks_context": {
         "cfr": 73,
         "cfr_raw": 73.0,
-        "hkb": 84,
+        "hkb": 80,
         "milb_perf": 50,
         "pipeline": 99
       },
@@ -1397,7 +1430,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 137,
+      "dd_dynasty_rank_context": 139,
       "dd_prospect_rank_context": 22,
       "eta": 2027,
       "factual_investment_context": null,
@@ -1434,8 +1467,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 948,
-      "dd_prospect_rank_context": 373,
+      "dd_dynasty_rank_context": 955,
+      "dd_prospect_rank_context": 377,
       "eta": null,
       "factual_investment_context": 40.51,
       "level": "A+",
@@ -1460,7 +1493,7 @@
       "source_ranks_context": {
         "cfr": 145,
         "cfr_raw": 145.0,
-        "milb_perf": 224
+        "milb_perf": 293
       },
       "universal_outcome_index": 40.0
     },
@@ -1523,8 +1556,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 510,
-      "dd_prospect_rank_context": 139,
+      "dd_dynasty_rank_context": 509,
+      "dd_prospect_rank_context": 138,
       "eta": 2029,
       "factual_investment_context": null,
       "level": "A",
@@ -1549,7 +1582,7 @@
       "source_ranks_context": {
         "cfr": 722,
         "cfr_raw": 723.0,
-        "hkb": 132,
+        "hkb": 133,
         "milb_perf": 239,
         "pipeline": 78
       },
@@ -1585,8 +1618,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 666,
-      "dd_prospect_rank_context": 224,
+      "dd_dynasty_rank_context": 671,
+      "dd_prospect_rank_context": 227,
       "eta": null,
       "factual_investment_context": null,
       "level": "A+",
@@ -1645,7 +1678,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 68,
+      "dd_dynasty_rank_context": 67,
       "dd_prospect_rank_context": 5,
       "eta": 2027,
       "factual_investment_context": null,
@@ -1682,8 +1715,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 490,
-      "dd_prospect_rank_context": 128,
+      "dd_dynasty_rank_context": 487,
+      "dd_prospect_rank_context": 127,
       "eta": 2028,
       "factual_investment_context": null,
       "level": "A+",
@@ -1772,7 +1805,7 @@
       "age": 19,
       "confidence": "low",
       "dd_dynasty_rank_context": 506,
-      "dd_prospect_rank_context": 136,
+      "dd_prospect_rank_context": 135,
       "eta": 2028,
       "factual_investment_context": 65.06,
       "level": "A+",
@@ -1797,7 +1830,7 @@
       "source_ranks_context": {
         "cfr": 118,
         "cfr_raw": 118.0,
-        "hkb": 245,
+        "hkb": 246,
         "milb_perf": 109,
         "pipeline": 88
       },
@@ -1806,7 +1839,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 456,
+      "dd_dynasty_rank_context": 457,
       "dd_prospect_rank_context": 115,
       "eta": null,
       "factual_investment_context": 79.26,
@@ -1832,7 +1865,7 @@
       "source_ranks_context": {
         "cfr": 162,
         "cfr_raw": 162.0,
-        "hkb": 189,
+        "hkb": 190,
         "milb_perf": 32
       },
       "universal_outcome_index": 26.0
@@ -1840,8 +1873,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 397,
-      "dd_prospect_rank_context": 92,
+      "dd_dynasty_rank_context": 382,
+      "dd_prospect_rank_context": 90,
       "eta": 2027,
       "factual_investment_context": 87.87,
       "level": "A+",
@@ -2059,8 +2092,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 492,
-      "dd_prospect_rank_context": 130,
+      "dd_dynasty_rank_context": 507,
+      "dd_prospect_rank_context": 136,
       "eta": null,
       "factual_investment_context": null,
       "level": "A",
@@ -2085,8 +2118,8 @@
       "source_ranks_context": {
         "cfr": 134,
         "cfr_raw": 134.0,
-        "hkb": 171,
-        "milb_perf": 66
+        "hkb": 172,
+        "milb_perf": 75
       },
       "universal_outcome_index": 36.0
     },
@@ -2122,8 +2155,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 160,
-      "dd_prospect_rank_context": 32,
+      "dd_dynasty_rank_context": 159,
+      "dd_prospect_rank_context": 31,
       "eta": 2028,
       "factual_investment_context": null,
       "level": "A+",
@@ -2149,7 +2182,7 @@
       "source_ranks_context": {
         "cfr": 28,
         "cfr_raw": 28.0,
-        "hkb": 57,
+        "hkb": 55,
         "milb_perf": 64,
         "pipeline": 25
       },
@@ -2158,8 +2191,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 904,
-      "dd_prospect_rank_context": 353,
+      "dd_dynasty_rank_context": 918,
+      "dd_prospect_rank_context": 359,
       "eta": null,
       "factual_investment_context": 62.27,
       "level": "A+",
@@ -2184,15 +2217,15 @@
       "source_ranks_context": {
         "cfr": 933,
         "cfr_raw": 934.0,
-        "milb_perf": 83
+        "milb_perf": 87
       },
       "universal_outcome_index": 28.0
     },
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 618,
-      "dd_prospect_rank_context": 193,
+      "dd_dynasty_rank_context": 621,
+      "dd_prospect_rank_context": 194,
       "eta": null,
       "factual_investment_context": 81.35,
       "level": "A+",
@@ -2217,7 +2250,7 @@
       "source_ranks_context": {
         "cfr": 1689,
         "cfr_raw": 1698.0,
-        "hkb": 179,
+        "hkb": 180,
         "milb_perf": 179
       },
       "universal_outcome_index": 24.0
@@ -2252,8 +2285,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 401,
-      "dd_prospect_rank_context": 94,
+      "dd_dynasty_rank_context": 387,
+      "dd_prospect_rank_context": 91,
       "eta": 2028,
       "factual_investment_context": 86.29,
       "level": "A+",
@@ -2287,8 +2320,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 361,
-      "dd_prospect_rank_context": 86,
+      "dd_dynasty_rank_context": 346,
+      "dd_prospect_rank_context": 84,
       "eta": 2029,
       "factual_investment_context": null,
       "level": "A",
@@ -2313,7 +2346,7 @@
       "source_ranks_context": {
         "cfr": 233,
         "cfr_raw": 233.0,
-        "hkb": 71,
+        "hkb": 74,
         "milb_perf": 64,
         "pipeline": 63
       },
@@ -2434,8 +2467,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 452,
-      "dd_prospect_rank_context": 113,
+      "dd_dynasty_rank_context": 451,
+      "dd_prospect_rank_context": 112,
       "eta": null,
       "factual_investment_context": 52.64,
       "level": "A+",
@@ -2468,7 +2501,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 741,
+      "dd_dynasty_rank_context": 742,
       "dd_prospect_rank_context": 266,
       "eta": null,
       "factual_investment_context": 63.89,
@@ -2501,8 +2534,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 1032,
-      "dd_prospect_rank_context": 422,
+      "dd_dynasty_rank_context": 1057,
+      "dd_prospect_rank_context": 431,
       "eta": null,
       "factual_investment_context": 68.89,
       "level": "A+",
@@ -2590,8 +2623,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 190,
-      "dd_prospect_rank_context": 45,
+      "dd_dynasty_rank_context": 193,
+      "dd_prospect_rank_context": 46,
       "eta": 2027,
       "factual_investment_context": null,
       "level": "AA",
@@ -2625,8 +2658,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 808,
-      "dd_prospect_rank_context": 299,
+      "dd_dynasty_rank_context": 813,
+      "dd_prospect_rank_context": 300,
       "eta": null,
       "factual_investment_context": 61.19,
       "level": "A+",
@@ -2687,8 +2720,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 491,
-      "dd_prospect_rank_context": 129,
+      "dd_dynasty_rank_context": 493,
+      "dd_prospect_rank_context": 128,
       "eta": null,
       "factual_investment_context": 87.38,
       "level": "A+",
@@ -2721,7 +2754,7 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 503,
+      "dd_dynasty_rank_context": 504,
       "dd_prospect_rank_context": 133,
       "eta": null,
       "factual_investment_context": null,
@@ -2748,7 +2781,7 @@
         "cfr": 763,
         "cfr_raw": 764.0,
         "hkb": 109,
-        "milb_perf": 160
+        "milb_perf": 170
       },
       "universal_outcome_index": 32.0
     }
@@ -2757,7 +2790,7 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 427,
+      "dd_dynasty_rank_context": 431,
       "dd_prospect_rank_context": 103,
       "eta": null,
       "factual_investment_context": 87.63,
@@ -2770,7 +2803,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 63,
+      "rank": 62,
       "reasons": [
         "missing_v0_6_model_profile",
         "raw_fallback_score_source",
@@ -2783,7 +2816,7 @@
       "source_ranks_context": {
         "cfr": 172,
         "cfr_raw": 172.0,
-        "hkb": 59,
+        "hkb": 60,
         "milb_perf": 56
       },
       "universal_outcome_index": 34.0
@@ -2804,7 +2837,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 64,
+      "rank": 63,
       "reasons": [
         "missing_v0_6_model_profile",
         "raw_fallback_score_source",
@@ -2820,8 +2853,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 265,
-      "dd_prospect_rank_context": 66,
+      "dd_dynasty_rank_context": 321,
+      "dd_prospect_rank_context": 78,
       "eta": null,
       "factual_investment_context": 87.37,
       "level": "A+",
@@ -2833,7 +2866,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 65,
+      "rank": 64,
       "reasons": [
         "missing_v0_6_model_profile",
         "raw_fallback_score_source",
@@ -2847,7 +2880,7 @@
         "cfr": 83,
         "cfr_raw": 83.0,
         "hkb": 83,
-        "milb_perf": 56
+        "milb_perf": 62
       },
       "universal_outcome_index": 34.0
     },
@@ -2867,7 +2900,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 66,
+      "rank": 65,
       "reasons": [
         "missing_v0_6_model_profile",
         "raw_fallback_score_source",
@@ -2882,8 +2915,8 @@
       "source_ranks_context": {
         "cfr": 20,
         "cfr_raw": 20.0,
-        "hkb": 31,
-        "milb_perf": 70,
+        "hkb": 32,
+        "milb_perf": 64,
         "pipeline": 14
       },
       "universal_outcome_index": 36.0
@@ -2920,8 +2953,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 542,
-      "dd_prospect_rank_context": 155,
+      "dd_dynasty_rank_context": 539,
+      "dd_prospect_rank_context": 154,
       "eta": null,
       "factual_investment_context": 77.24,
       "level": "A",
@@ -2946,7 +2979,7 @@
       "source_ranks_context": {
         "cfr": 242,
         "cfr_raw": 242.0,
-        "hkb": 230,
+        "hkb": 227,
         "milb_perf": 54
       },
       "universal_outcome_index": 32.0
@@ -2954,7 +2987,7 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 737,
+      "dd_dynasty_rank_context": 740,
       "dd_prospect_rank_context": 264,
       "eta": null,
       "factual_investment_context": null,
@@ -2987,8 +3020,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 545,
-      "dd_prospect_rank_context": 156,
+      "dd_dynasty_rank_context": 555,
+      "dd_prospect_rank_context": 160,
       "eta": null,
       "factual_investment_context": 67.66,
       "level": "A",
@@ -3013,7 +3046,7 @@
       "source_ranks_context": {
         "cfr": 263,
         "cfr_raw": 263.0,
-        "hkb": 142,
+        "hkb": 147,
         "milb_perf": 103
       },
       "universal_outcome_index": 34.0
@@ -3021,8 +3054,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 551,
-      "dd_prospect_rank_context": 159,
+      "dd_dynasty_rank_context": 547,
+      "dd_prospect_rank_context": 157,
       "eta": null,
       "factual_investment_context": 83.32,
       "level": "A",
@@ -3047,7 +3080,7 @@
       "source_ranks_context": {
         "cfr": 413,
         "cfr_raw": 413.0,
-        "hkb": 219,
+        "hkb": 217,
         "milb_perf": 66
       },
       "universal_outcome_index": 30.0
@@ -3055,7 +3088,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 259,
+      "dd_dynasty_rank_context": 261,
       "dd_prospect_rank_context": 65,
       "eta": 2028,
       "factual_investment_context": 67.32,
@@ -3081,7 +3114,7 @@
       "source_ranks_context": {
         "cfr": 73,
         "cfr_raw": 73.0,
-        "hkb": 84,
+        "hkb": 80,
         "milb_perf": 50,
         "pipeline": 99
       },
@@ -3090,7 +3123,7 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 137,
+      "dd_dynasty_rank_context": 139,
       "dd_prospect_rank_context": 22,
       "eta": 2027,
       "factual_investment_context": null,
@@ -3127,8 +3160,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 948,
-      "dd_prospect_rank_context": 373,
+      "dd_dynasty_rank_context": 955,
+      "dd_prospect_rank_context": 377,
       "eta": null,
       "factual_investment_context": 40.51,
       "level": "A+",
@@ -3153,7 +3186,7 @@
       "source_ranks_context": {
         "cfr": 145,
         "cfr_raw": 145.0,
-        "milb_perf": 224
+        "milb_perf": 293
       },
       "universal_outcome_index": 40.0
     },
@@ -3216,8 +3249,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 510,
-      "dd_prospect_rank_context": 139,
+      "dd_dynasty_rank_context": 509,
+      "dd_prospect_rank_context": 138,
       "eta": 2029,
       "factual_investment_context": null,
       "level": "A",
@@ -3242,7 +3275,7 @@
       "source_ranks_context": {
         "cfr": 722,
         "cfr_raw": 723.0,
-        "hkb": 132,
+        "hkb": 133,
         "milb_perf": 239,
         "pipeline": 78
       },
@@ -3278,8 +3311,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 666,
-      "dd_prospect_rank_context": 224,
+      "dd_dynasty_rank_context": 671,
+      "dd_prospect_rank_context": 227,
       "eta": null,
       "factual_investment_context": null,
       "level": "A+",
@@ -3338,7 +3371,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 68,
+      "dd_dynasty_rank_context": 67,
       "dd_prospect_rank_context": 5,
       "eta": 2027,
       "factual_investment_context": null,
@@ -3375,8 +3408,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 490,
-      "dd_prospect_rank_context": 128,
+      "dd_dynasty_rank_context": 487,
+      "dd_prospect_rank_context": 127,
       "eta": 2028,
       "factual_investment_context": null,
       "level": "A+",
@@ -3465,7 +3498,7 @@
       "age": 19,
       "confidence": "low",
       "dd_dynasty_rank_context": 506,
-      "dd_prospect_rank_context": 136,
+      "dd_prospect_rank_context": 135,
       "eta": 2028,
       "factual_investment_context": 65.06,
       "level": "A+",
@@ -3490,7 +3523,7 @@
       "source_ranks_context": {
         "cfr": 118,
         "cfr_raw": 118.0,
-        "hkb": 245,
+        "hkb": 246,
         "milb_perf": 109,
         "pipeline": 88
       },
@@ -3499,7 +3532,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 456,
+      "dd_dynasty_rank_context": 457,
       "dd_prospect_rank_context": 115,
       "eta": null,
       "factual_investment_context": 79.26,
@@ -3525,7 +3558,7 @@
       "source_ranks_context": {
         "cfr": 162,
         "cfr_raw": 162.0,
-        "hkb": 189,
+        "hkb": 190,
         "milb_perf": 32
       },
       "universal_outcome_index": 26.0
@@ -3533,8 +3566,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 397,
-      "dd_prospect_rank_context": 92,
+      "dd_dynasty_rank_context": 382,
+      "dd_prospect_rank_context": 90,
       "eta": 2027,
       "factual_investment_context": 87.87,
       "level": "A+",
@@ -3752,8 +3785,8 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 492,
-      "dd_prospect_rank_context": 130,
+      "dd_dynasty_rank_context": 507,
+      "dd_prospect_rank_context": 136,
       "eta": null,
       "factual_investment_context": null,
       "level": "A",
@@ -3778,8 +3811,8 @@
       "source_ranks_context": {
         "cfr": 134,
         "cfr_raw": 134.0,
-        "hkb": 171,
-        "milb_perf": 66
+        "hkb": 172,
+        "milb_perf": 75
       },
       "universal_outcome_index": 36.0
     },
@@ -3815,8 +3848,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 160,
-      "dd_prospect_rank_context": 32,
+      "dd_dynasty_rank_context": 159,
+      "dd_prospect_rank_context": 31,
       "eta": 2028,
       "factual_investment_context": null,
       "level": "A+",
@@ -3842,7 +3875,7 @@
       "source_ranks_context": {
         "cfr": 28,
         "cfr_raw": 28.0,
-        "hkb": 57,
+        "hkb": 55,
         "milb_perf": 64,
         "pipeline": 25
       },
@@ -3851,8 +3884,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 904,
-      "dd_prospect_rank_context": 353,
+      "dd_dynasty_rank_context": 918,
+      "dd_prospect_rank_context": 359,
       "eta": null,
       "factual_investment_context": 62.27,
       "level": "A+",
@@ -3877,15 +3910,15 @@
       "source_ranks_context": {
         "cfr": 933,
         "cfr_raw": 934.0,
-        "milb_perf": 83
+        "milb_perf": 87
       },
       "universal_outcome_index": 28.0
     },
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 618,
-      "dd_prospect_rank_context": 193,
+      "dd_dynasty_rank_context": 621,
+      "dd_prospect_rank_context": 194,
       "eta": null,
       "factual_investment_context": 81.35,
       "level": "A+",
@@ -3910,7 +3943,7 @@
       "source_ranks_context": {
         "cfr": 1689,
         "cfr_raw": 1698.0,
-        "hkb": 179,
+        "hkb": 180,
         "milb_perf": 179
       },
       "universal_outcome_index": 24.0
@@ -3945,8 +3978,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 401,
-      "dd_prospect_rank_context": 94,
+      "dd_dynasty_rank_context": 387,
+      "dd_prospect_rank_context": 91,
       "eta": 2028,
       "factual_investment_context": 86.29,
       "level": "A+",
@@ -3980,8 +4013,8 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 361,
-      "dd_prospect_rank_context": 86,
+      "dd_dynasty_rank_context": 346,
+      "dd_prospect_rank_context": 84,
       "eta": 2029,
       "factual_investment_context": null,
       "level": "A",
@@ -4006,7 +4039,7 @@
       "source_ranks_context": {
         "cfr": 233,
         "cfr_raw": 233.0,
-        "hkb": 71,
+        "hkb": 74,
         "milb_perf": 64,
         "pipeline": 63
       },
@@ -4127,8 +4160,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 452,
-      "dd_prospect_rank_context": 113,
+      "dd_dynasty_rank_context": 451,
+      "dd_prospect_rank_context": 112,
       "eta": null,
       "factual_investment_context": 52.64,
       "level": "A+",
@@ -4161,7 +4194,7 @@
     {
       "age": 19,
       "confidence": "low",
-      "dd_dynasty_rank_context": 741,
+      "dd_dynasty_rank_context": 742,
       "dd_prospect_rank_context": 266,
       "eta": null,
       "factual_investment_context": 63.89,
@@ -4194,8 +4227,8 @@
     {
       "age": 20,
       "confidence": "low",
-      "dd_dynasty_rank_context": 1032,
-      "dd_prospect_rank_context": 422,
+      "dd_dynasty_rank_context": 1057,
+      "dd_prospect_rank_context": 431,
       "eta": null,
       "factual_investment_context": 68.89,
       "level": "A+",
@@ -4283,8 +4316,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 190,
-      "dd_prospect_rank_context": 45,
+      "dd_dynasty_rank_context": 193,
+      "dd_prospect_rank_context": 46,
       "eta": 2027,
       "factual_investment_context": null,
       "level": "AA",
@@ -4318,8 +4351,8 @@
     {
       "age": 22,
       "confidence": "low",
-      "dd_dynasty_rank_context": 808,
-      "dd_prospect_rank_context": 299,
+      "dd_dynasty_rank_context": 813,
+      "dd_prospect_rank_context": 300,
       "eta": null,
       "factual_investment_context": 61.19,
       "level": "A+",
@@ -4380,8 +4413,8 @@
     {
       "age": 21,
       "confidence": "low",
-      "dd_dynasty_rank_context": 491,
-      "dd_prospect_rank_context": 129,
+      "dd_dynasty_rank_context": 493,
+      "dd_prospect_rank_context": 128,
       "eta": null,
       "factual_investment_context": 87.38,
       "level": "A+",
@@ -4414,7 +4447,7 @@
     {
       "age": 18,
       "confidence": "low",
-      "dd_dynasty_rank_context": 503,
+      "dd_dynasty_rank_context": 504,
       "dd_prospect_rank_context": 133,
       "eta": null,
       "factual_investment_context": null,
@@ -4441,7 +4474,7 @@
         "cfr": 763,
         "cfr_raw": 764.0,
         "hkb": 109,
-        "milb_perf": 160
+        "milb_perf": 170
       },
       "universal_outcome_index": 32.0
     }

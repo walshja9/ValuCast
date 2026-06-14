@@ -71,6 +71,37 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.public_source_consensus, 7)
         self.assertIsNone(row.milb_performance_rank)
 
+    def test_from_feed_prospect_sample_context_properties(self):
+        record = dict(
+            SAMPLE_PROSPECT,
+            components={
+                "availability_adjusted": True,
+                "availability_risk_discount": 0.04,
+                "availability": {
+                    "status": "thin_current_sample",
+                    "sample": 72,
+                    "sample_unit": "PA",
+                    "note": "Limited current sample.",
+                },
+                "bucket_calibration": {
+                    "bucket": "lower_minors_pedigree_score_source",
+                    "adjustment": -1.0,
+                },
+            },
+        )
+        row = DynastyRankingRow.from_feed(record)
+
+        self.assertTrue(row.availability_adjusted)
+        self.assertEqual(row.availability_risk_discount, 0.04)
+        self.assertEqual(row.availability_status_label, "Thin Current Sample")
+        self.assertEqual(row.availability_sample_label, "72 PA")
+        self.assertEqual(row.availability_note, "Limited current sample.")
+        self.assertTrue(row.bucket_calibration_adjusted)
+        self.assertEqual(
+            row.bucket_calibration_label,
+            "Lower Minors Pedigree Score Source (-1.0)",
+        )
+
     def test_is_prospect(self):
         mlb_row = DynastyRankingRow.from_feed(SAMPLE_MLB)
         prospect_row = DynastyRankingRow.from_feed(SAMPLE_PROSPECT)

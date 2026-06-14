@@ -2,6 +2,8 @@
 import json
 
 from prospects.rank_v1 import (
+    BUCKET_CALIBRATION_VERSION,
+    LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
     PROHIBITED_SCORE_INPUTS,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
@@ -440,8 +442,73 @@ def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
     assert row["components"]["age_level_context"] > 80
     assert row["components"]["pedigree_score_cap"] >= 48
     assert row["components"]["pedigree_cap_compressed"] is True
+    assert row["components"]["bucket_calibration"]["bucket"] == "lower_minors_pedigree_score_source"
     assert row["score"] > 41.75
     assert row["score"] < row["components"]["pedigree_score_cap"]
+
+
+def test_rank_v1_applies_lower_minors_pedigree_bucket_calibration():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][1].update(
+        {
+            "age": 18,
+            "level": "A",
+            "plate_appearances": 220,
+            "draft_pick_number": 1,
+            "signing_bonus": 8_200_000,
+            "school_type": "high_school",
+        }
+    )
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 2)
+    calibration = row["components"]["bucket_calibration"]
+
+    assert row["score_source"] == "prospect_pedigree_v0_7"
+    assert calibration["version"] == BUCKET_CALIBRATION_VERSION
+    assert calibration["adjustment"] == LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT
+    assert row["score"] == round(
+        row["components"]["score_before_bucket_calibration"]
+        + LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
+        2,
+    )
+    assert payload["rank_contract"]["bucket_calibration"]["scope"] == (
+        "score_source_and_level_bucket_only"
+    )
+
+
+def test_rank_v1_does_not_bucket_adjust_upper_level_pedigree_profiles():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][1].update(
+        {
+            "age": 20,
+            "level": "AA",
+            "plate_appearances": 220,
+            "draft_pick_number": 1,
+            "signing_bonus": 8_200_000,
+            "school_type": "college",
+        }
+    )
+    universe = _universe()
+    universe["players"][1]["level"] = "AA"
+
+    payload = build_prospect_rank_v1(
+        universe,
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 2)
+
+    assert row["score_source"] == "prospect_pedigree_v0_7"
+    assert "bucket_calibration" not in row["components"]
 
 
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):

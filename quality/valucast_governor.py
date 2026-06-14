@@ -695,13 +695,24 @@ def _buy_promotion_check(
     )
     review_ready = review_status in {"candidate_ready", "approved"}
     buy_validation_ready = bool(validation.get("ready_for_live_consumers"))
+    review_policy = (buy_review or {}).get("source_policy") or {}
+    review_decision = (buy_review or {}).get("promotion_decision") or {}
+    history_launch_approved = (
+        validation.get("history_launch_approved") is True
+        or review_policy.get("history_launch_approved") is True
+        or review_decision.get("neutral_momentum_launch_approved") is True
+    )
+    history_ready = (
+        history_limited_rate <= MAX_BUY_HISTORY_LIMITED_RATE
+        or history_launch_approved
+    )
     passed = (
         public_board_ready
         and bool(buy_signals)
         and bool(buy_review)
         and buy_validation_ready
         and review_ready
-        and history_limited_rate <= MAX_BUY_HISTORY_LIMITED_RATE
+        and history_ready
     )
     return _check(
         "buy_promotion_gate",
@@ -720,6 +731,8 @@ def _buy_promotion_check(
         history_limited_count=history_limited_count,
         history_limited_rate=history_limited_rate,
         max_history_limited_rate=MAX_BUY_HISTORY_LIMITED_RATE,
+        history_launch_approved=history_launch_approved,
+        history_ready=history_ready,
         public_board_ready=public_board_ready,
     )
 

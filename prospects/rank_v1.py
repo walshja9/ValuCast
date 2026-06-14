@@ -28,10 +28,13 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1 Candidate"
-RANK_VERSION = "0.2.0"
+RANK_VERSION = "0.2.1"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
+BUCKET_CALIBRATION_VERSION = "0.1.0"
+UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
+LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -1.0
 PEDIGREE_MIN_INVESTMENT_SCORE = 90.0
 PEDIGREE_HITTER_SCORE_CAP = 48.0
 PEDIGREE_PITCHER_SCORE_CAP = 45.5
@@ -536,6 +539,41 @@ def _score_components(
     return round(score, 2), source, components
 
 
+def _bucket_calibration_adjustment(
+    score: float,
+    source: str,
+    layer_profile: dict | None,
+    input_row: dict | None,
+    universe_row: dict | None,
+    components: dict,
+) -> tuple[float, dict]:
+    if source != PEDIGREE_SCORE_SOURCE:
+        return score, components
+
+    level = _level_key(
+        (input_row or {}).get("level")
+        or (layer_profile or {}).get("level")
+        or (universe_row or {}).get("level")
+    )
+    if level in UPPER_LEVEL_BUCKETS:
+        return score, components
+
+    adjusted_score = max(0.0, score + LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT)
+    next_components = dict(components)
+    next_components["score_before_bucket_calibration"] = round(score, 2)
+    next_components["bucket_calibration"] = {
+        "version": BUCKET_CALIBRATION_VERSION,
+        "bucket": "lower_minors_pedigree_score_source",
+        "level": level,
+        "adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
+        "reason": (
+            "Lower-minors pedigree-only profiles are kept slightly behind "
+            "upper-level evidence until the model has stronger current samples."
+        ),
+    }
+    return round(adjusted_score, 2), next_components
+
+
 def _confidence(source: str, model_profile: dict | None, reliability: float | None) -> str:
     if source in {PEDIGREE_SCORE_SOURCE, "universal_fallback", "identity_only_fallback"}:
         return "low"
@@ -735,6 +773,14 @@ def build_prospect_rank_v1(
             components,
             availability_by_key.get(key),
         )
+        score, components = _bucket_calibration_adjustment(
+            score,
+            source,
+            layer_profile,
+            input_row,
+            universe_row,
+            components,
+        )
         confidence = _confidence(
             source,
             model_profile,
@@ -825,6 +871,12 @@ def build_prospect_rank_v1(
             "pedigree_score_caps": {
                 "hitter": PEDIGREE_HITTER_SCORE_CAP,
                 "pitcher": PEDIGREE_PITCHER_SCORE_CAP,
+            },
+            "bucket_calibration": {
+                "version": BUCKET_CALIBRATION_VERSION,
+                "upper_level_buckets": sorted(UPPER_LEVEL_BUCKETS),
+                "lower_minors_pedigree_score_adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
+                "scope": "score_source_and_level_bucket_only",
             },
             "prospect_universe_source": "valucast_prospect_universe",
             "dd_feed_usage": "Optional display/comparison context only.",

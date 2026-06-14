@@ -281,6 +281,8 @@ def test_review_artifact_can_be_candidate_ready_with_manual_approval():
     assert review["review_status"] == "candidate_ready"
     assert review["blockers"] == []
     assert review["source_policy"]["manual_approval_recorded"] is True
+    assert review["source_policy"]["approval_kind"] == "human_review"
+    assert review["promotion_decision"]["neutral_momentum_launch_approved"] is False
 
 
 def test_review_manual_approval_can_launch_with_neutral_momentum_history():
@@ -292,6 +294,9 @@ def test_review_manual_approval_can_launch_with_neutral_momentum_history():
 
     assert review["review_status"] == "candidate_ready"
     assert review["source_policy"]["history_launch_approved"] is True
+    assert review["source_policy"]["approval_kind"] == "neutral_momentum_launch"
+    assert review["promotion_decision"]["neutral_momentum_launch_approved"] is True
+    assert review["promotion_decision"]["requires_route_gate"] is True
     assert review["blockers"] == []
 
 

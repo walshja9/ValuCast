@@ -48,6 +48,9 @@ jobs:
       - name: Sync generated DD dynasty and buys feed
         run: python scripts/sync_dd_feed.py
 
+      - name: Sync DD factual prospect input contract
+        run: python scripts/sync_dd_prospect_inputs.py
+
       - name: Build ValuCast public snapshot gate
         env:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
@@ -55,6 +58,7 @@ jobs:
           python scripts/backfill_projection_identities.py
           python scripts/build_mlb_track_record.py
           python scripts/build_mlb_dynasty_layer.py
+          python scripts/run_prospect_shadow_pipeline.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_availability.py
           python scripts/build_prospect_rank_v1.py
@@ -90,21 +94,36 @@ jobs:
           git add \
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
+            data/dd/prospect_model_inputs.json \
+            data/exports/valucast_dd_prospect_lens.json \
             data/mlb/mlb_track_record_cache.json \
             data/models/valucast_mlb_dynasty_layer.json \
             data/models/valucast_mlb_track_record.json \
+            data/models/valucast_dd_7x7_prospect_adapter.json \
+            data/models/valucast_prospect_adapter_backtest.json \
             data/models/valucast_quality_governor.json \
             data/models/valucast_prospect_buys.json \
             data/models/valucast_prospect_buys_review.json \
             data/models/valucast_prospect_availability.json \
             data/models/valucast_prospect_coverage_audit.json \
             data/models/valucast_prospect_calibration_report.json \
+            data/models/valucast_prospect_dynasty_backtest.json \
+            data/models/valucast_prospect_dynasty_layer.json \
+            data/models/valucast_prospect_forward_shadow.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
+            data/models/valucast_universal_prospect_index.json \
+            data/models/valucast_universal_prospect_index_backtest.json \
+            data/models/valucast_universal_prospect_model.json \
+            data/prediction_archive/valucast_dd_7x7_prospect_adapter \
             data/prediction_archive/valucast_mlb_dynasty_layer \
             data/prediction_archive/valucast_mlb_track_record \
             data/prediction_archive/valucast_prospect_buys \
+            data/prediction_archive/valucast_prospect_dynasty_layer \
+            data/prediction_archive/valucast_prospect_forward_shadow \
             data/prediction_archive/valucast_prospect_rank_v1 \
+            data/prediction_archive/valucast_universal_prospect_index \
+            data/prediction_archive/valucast_universal_prospect_model \
             data/projections/current.json \
             data/projections/metadata.json \
             data/projections/ros.json \

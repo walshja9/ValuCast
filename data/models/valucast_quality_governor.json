@@ -1,9 +1,7 @@
 {
   "artifact": "valucast_quality_governor",
   "blockers": [],
-  "buy_blockers": [
-    "ValuCast-owned Buy signals are not approved for public promotion."
-  ],
+  "buy_blockers": [],
   "checks": [
     {
       "id": "mlb_top_value_gap",
@@ -45,7 +43,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 5,
+        "pitcher_count": 6,
         "pitcher_samples": [
           {
             "name": "Shohei Ohtani",
@@ -62,15 +60,15 @@
               "SP"
             ],
             "rank": 3,
-            "value": 94.11
+            "value": 94.99
           },
           {
             "name": "Cristopher S\u00e1nchez",
             "positions": [
               "SP"
             ],
-            "rank": 8,
-            "value": 76.37
+            "rank": 9,
+            "value": 75.48
           },
           {
             "name": "Jacob Misiorowski",
@@ -79,7 +77,7 @@
               "RP"
             ],
             "rank": 10,
-            "value": 75.55
+            "value": 74.88
           },
           {
             "name": "Chase Burns",
@@ -88,7 +86,15 @@
               "RP"
             ],
             "rank": 16,
-            "value": 66.6
+            "value": 67.42
+          },
+          {
+            "name": "Yoshinobu Yamamoto",
+            "positions": [
+              "SP"
+            ],
+            "rank": 19,
+            "value": 62.33
           }
         ],
         "reliever_count": 0,
@@ -151,68 +157,68 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_rate": 0.35,
-        "pedigree_count": 17,
-        "pedigree_rate": 0.34,
+        "pedigree_count": 16,
+        "pedigree_rate": 0.32,
         "sample_ready": true,
         "samples": [
           {
             "name": "Eli Willits",
-            "rank": 14,
-            "score": 48.17,
+            "rank": 18,
+            "score": 47.17,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Gavin Fien",
-            "rank": 18,
-            "score": 47.8,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Daniel Pierce",
-            "rank": 20,
-            "score": 47.2,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Ethan Holliday",
-            "rank": 21,
-            "score": 47.16,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Theo Gillen",
-            "rank": 22,
-            "score": 47.09,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "JoJo Parker",
-            "rank": 25,
-            "score": 46.99,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Kayson Cunningham",
-            "rank": 27,
-            "score": 46.96,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Xavier Neyens",
-            "rank": 29,
-            "score": 46.85,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Billy Carlson",
-            "rank": 30,
+            "rank": 23,
             "score": 46.8,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
-            "name": "Blake Mitchell",
+            "name": "Daniel Pierce",
+            "rank": 25,
+            "score": 46.2,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Ethan Holliday",
+            "rank": 26,
+            "score": 46.16,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Theo Gillen",
+            "rank": 27,
+            "score": 46.09,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "JoJo Parker",
+            "rank": 29,
+            "score": 45.99,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Kayson Cunningham",
+            "rank": 30,
+            "score": 45.96,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Xavier Neyens",
             "rank": 31,
-            "score": 46.75,
+            "score": 45.85,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Billy Carlson",
+            "rank": 32,
+            "score": 45.8,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Blake Mitchell",
+            "rank": 33,
+            "score": 45.75,
             "score_source": "prospect_pedigree_v0_7"
           }
         ],
@@ -288,20 +294,22 @@
     },
     {
       "id": "buy_promotion_gate",
-      "message": "ValuCast-owned Buy signals are not approved for public promotion.",
+      "message": "ValuCast-owned Buy signals pass promotion checks.",
       "metrics": {
         "buy_artifact_present": true,
         "buy_review_present": true,
-        "buy_validation_ready": false,
-        "history_limited_count": 884,
-        "history_limited_rate": 1.0,
+        "buy_validation_ready": true,
+        "history_launch_approved": false,
+        "history_limited_count": 0,
+        "history_limited_rate": 0.0,
+        "history_ready": true,
         "max_history_limited_rate": 0.5,
         "public_board_ready": true,
-        "review_ready": false,
-        "review_status": "blocked",
+        "review_ready": true,
+        "review_status": "candidate_ready",
         "row_count": 884
       },
-      "status": "blocked"
+      "status": "passed"
     }
   ],
   "criteria": {
@@ -325,24 +333,24 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-13T19:42:35.751009+00:00",
+  "generated_at": "2026-06-14T12:27:30.646599+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.1.0",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-06-13",
-      "buy_signals": "2026-06-13",
-      "mlb_layer": "2026-06-13",
-      "prospect_coverage_audit": "2026-06-13",
-      "prospect_rank": "2026-06-13",
-      "public_snapshot": "2026-06-13"
+      "buy_review": "2026-06-14",
+      "buy_signals": "2026-06-14",
+      "mlb_layer": "2026-06-14",
+      "prospect_coverage_audit": "2026-06-14",
+      "prospect_rank": "2026-06-14",
+      "public_snapshot": "2026-06-14"
     },
-    "mlb_count": 898,
+    "mlb_count": 899,
     "prospect_count": 2740,
-    "public_row_count": 3638
+    "public_row_count": 3639
   },
   "next_allowed_step": "wire_public_consumers",
-  "ready_for_buys_promotion": false,
+  "ready_for_buys_promotion": true,
   "ready_for_public_snapshot": true,
   "source_policy": {
     "dd_ranks_used_for_model_score": false,
@@ -353,7 +361,7 @@
   },
   "status": "candidate_ready",
   "surface_readiness": {
-    "buys": false,
+    "buys": true,
     "dynasty": true,
     "prospects": true
   }

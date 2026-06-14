@@ -5,6 +5,7 @@ from urllib.error import URLError
 import pytest
 
 from scripts import sync_dd_feed
+from scripts import sync_dd_prospect_inputs
 from scripts import validate_public_data_freshness as freshness
 
 
@@ -23,6 +24,23 @@ def _valid_feed(generated_at="2026-06-13T11:00:00-04:00"):
                 "dynasty_value": 50.0,
             }
         ],
+    }
+
+
+def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
+    return {
+        "schema_version": "1.1",
+        "generated_at": generated_at,
+        "source_policy": {
+            "kind": "factual_only",
+            "external_rankings_used": False,
+            "external_projections_used": False,
+            "market_values_used": False,
+            "dynasty_values_used": False,
+        },
+        "historical": {"rows": []},
+        "current": {"hitters": [], "pitchers": []},
+        "mlb_service": {},
     }
 
 
@@ -53,6 +71,63 @@ def test_sync_feed_keeps_last_good_artifact_on_download_failure(tmp_path, monkey
 
     with pytest.raises(URLError):
         sync_dd_feed.sync_feed("https://example.test/feed", output)
+
+    assert json.loads(output.read_text(encoding="utf-8")) == {"old": True}
+
+
+def test_sync_prospect_inputs_validates_then_replaces(tmp_path, monkeypatch):
+    output = tmp_path / "prospect_model_inputs.json"
+    output.write_text('{"old":true}', encoding="utf-8")
+    monkeypatch.setattr(
+        sync_dd_prospect_inputs,
+        "fetch_contract",
+        lambda _url: json.dumps(_valid_prospect_inputs()).encode(),
+    )
+
+    payload = sync_dd_prospect_inputs.sync_contract(
+        "https://example.test/prospect-inputs",
+        output,
+    )
+
+    assert payload["source_policy"]["kind"] == "factual_only"
+    assert json.loads(output.read_text(encoding="utf-8")) == payload
+    assert not output.with_suffix(".json.tmp").exists()
+
+
+def test_sync_prospect_inputs_keeps_last_good_artifact_on_failure(tmp_path, monkeypatch):
+    output = tmp_path / "prospect_model_inputs.json"
+    output.write_text('{"old":true}', encoding="utf-8")
+
+    def fail(_url):
+        raise URLError("offline")
+
+    monkeypatch.setattr(sync_dd_prospect_inputs, "fetch_contract", fail)
+
+    with pytest.raises(URLError):
+        sync_dd_prospect_inputs.sync_contract(
+            "https://example.test/prospect-inputs",
+            output,
+        )
+
+    assert json.loads(output.read_text(encoding="utf-8")) == {"old": True}
+
+
+def test_sync_prospect_inputs_rejects_non_factual_contract(tmp_path, monkeypatch):
+    output = tmp_path / "prospect_model_inputs.json"
+    output.write_text('{"old":true}', encoding="utf-8")
+    payload = _valid_prospect_inputs()
+    payload["source_policy"]["dynasty_values_used"] = True
+    monkeypatch.setattr(
+        sync_dd_prospect_inputs,
+        "fetch_contract",
+        lambda _url: json.dumps(payload).encode(),
+    )
+
+    with pytest.raises(ValueError, match="dynasty_values_used"):
+        sync_dd_prospect_inputs.sync_contract(
+            "https://example.test/prospect-inputs",
+            output,
+        )
 
     assert json.loads(output.read_text(encoding="utf-8")) == {"old": True}
 
@@ -132,13 +207,18 @@ def test_daily_public_workflow_requires_manual_buy_approval():
 
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
+    assert "python scripts/sync_dd_prospect_inputs.py" in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/validate_mlb_track_record.py" in workflow
+    assert "python scripts/run_prospect_shadow_pipeline.py" in workflow
     assert "python scripts/build_prospect_availability.py" in workflow
     assert "python scripts/build_prospect_calibration_report.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/mlb/mlb_track_record_cache.json" in workflow
+    assert "data/dd/prospect_model_inputs.json" in workflow
+    assert "data/models/valucast_universal_prospect_model.json" in workflow
+    assert "data/models/valucast_prospect_dynasty_layer.json" in workflow
     assert "data/models/valucast_prospect_availability.json" in workflow
     assert "data/models/valucast_prospect_calibration_report.json" in workflow
     assert (
