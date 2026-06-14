@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
+from web.public_snapshot_store import required_field_problems  # noqa: E402
 
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
@@ -21,7 +22,7 @@ BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 CALIBRATION_METHOD = "raw_common_scale_certification_v1"
@@ -567,6 +568,9 @@ def _validation(
         blockers.append("Public snapshot has duplicate MLBAM+role identities.")
     if not visible_prospect_ranks_contiguous:
         blockers.append("Public snapshot visible prospect ranks are not contiguous.")
+    field_problems = required_field_problems(players)
+    if field_problems:
+        blockers.append("Public snapshot has incomplete required fields.")
 
     quality_surface_readiness = quality_governor.get("surface_readiness") or {}
     dynasty_ready = (
@@ -593,7 +597,9 @@ def _validation(
         "mlb_count": sum(1 for row in players if row.get("player_type") == "mlb"),
         "prospect_count": sum(1 for row in players if row.get("player_type") == "prospect"),
         "duplicate_identity_count": duplicate_identity_count,
-        "required_fields_complete": True,
+        "required_fields_complete": not field_problems,
+        "required_field_problem_count": len(field_problems),
+        "required_field_problem_sample": field_problems[:12],
         "mlb_dynasty_value_layer_present": bool(mlb_layer and mlb_validation.get("row_count")),
         "mlb_dynasty_value_layer_ready": bool(
             mlb_validation.get("ready_for_live_consumers")

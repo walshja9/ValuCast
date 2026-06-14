@@ -155,7 +155,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
             {
                 "artifact": "valucast_public_dynasty_snapshot",
                 "generated_at": "2026-06-13T11:00:00-04:00",
-                "schema_version": "1.0",
+                "schema_version": "1.1",
             }
         ),
         encoding="utf-8",

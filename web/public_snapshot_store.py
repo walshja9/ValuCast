@@ -9,7 +9,7 @@ from .public_snapshot_models import PublicSnapshotRow
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SCHEMA_VERSIONS = {"1.0"}
+SUPPORTED_SCHEMA_VERSIONS = {"1.1"}
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 REQUIRED_RECORD_FIELDS = (
     "id",
@@ -25,6 +25,12 @@ REQUIRED_RECORD_FIELDS = (
     "confidence",
     "updated_at",
 )
+PROSPECT_REQUIRED_RECORD_FIELDS = (
+    "prospect_rank",
+    "score_source",
+    "stat_line",
+)
+PROSPECT_REQUIRED_CONTEXT_FIELDS = ("stat_line_source",)
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -33,12 +39,41 @@ PROHIBITED_TRUE_FLAGS = (
 )
 
 
+def _missing_required(value) -> bool:
+    return value in (None, "", [], {})
+
+
 def _identity_key(record: dict) -> tuple[str, str] | None:
     mlbam_id = record.get("mlbam_id")
     role = record.get("role")
     if mlbam_id in (None, "") or role not in {"hitter", "pitcher", "two_way"}:
         return None
     return str(mlbam_id), role
+
+
+def required_field_problems(players: list) -> list[str]:
+    problems = []
+    for index, record in enumerate(players):
+        if not isinstance(record, dict):
+            problems.append(f"players[{index}] must be an object")
+            continue
+        for field in REQUIRED_RECORD_FIELDS:
+            if _missing_required(record.get(field)):
+                problems.append(f"players[{index}].{field} is required")
+        if record.get("player_type") == "prospect":
+            for field in PROSPECT_REQUIRED_RECORD_FIELDS:
+                if _missing_required(record.get(field)):
+                    problems.append(f"players[{index}].{field} is required for prospects")
+            context = record.get("context")
+            if not isinstance(context, dict) or not context:
+                problems.append(f"players[{index}].context is required for prospects")
+                continue
+            for field in PROSPECT_REQUIRED_CONTEXT_FIELDS:
+                if _missing_required(context.get(field)):
+                    problems.append(
+                        f"players[{index}].context.{field} is required for prospects"
+                    )
+    return problems
 
 
 def validate_public_snapshot_payload(payload: dict) -> list[str]:
@@ -60,15 +95,13 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
         problems.append("players must be a non-empty list")
         return problems
 
+    problems.extend(required_field_problems(players))
+
     ids = []
     identity_keys = []
     for index, record in enumerate(players):
         if not isinstance(record, dict):
-            problems.append(f"players[{index}] must be an object")
             continue
-        for field in REQUIRED_RECORD_FIELDS:
-            if record.get(field) in (None, ""):
-                problems.append(f"players[{index}].{field} is required")
         if not isinstance(record.get("rank"), int):
             problems.append(f"players[{index}].rank must be an integer")
         if not isinstance(record.get("value"), (int, float)):

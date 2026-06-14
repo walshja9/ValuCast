@@ -73,7 +73,10 @@ def _rank_payload():
                 "eta": 2028,
                 "drivers": [],
                 "dynasty_signal": None,
-                "context_only": {},
+                "context_only": {
+                    "stat_line": {"era": 3.20, "ip": 45.0},
+                    "stat_line_source": "valucast_input_contract",
+                },
             },
         ],
     }
@@ -202,6 +205,7 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     problems = validate_public_snapshot_payload(payload)
 
     assert problems == []
+    assert payload["schema_version"] == "1.1"
     assert payload["artifact"] == "valucast_public_dynasty_snapshot"
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["dd_ranks_used"] is False
@@ -215,6 +219,8 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["valucast_buy_signal_count"] == 2
     assert payload["validation"]["valucast_buy_signals_ready"] is False
     assert payload["validation"]["quality_governor_ready"] is True
+    assert payload["validation"]["required_fields_complete"] is True
+    assert payload["validation"]["required_field_problem_count"] == 0
     assert payload["validation"]["surface_readiness"]["buys"] is False
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
@@ -536,6 +542,47 @@ def test_rejects_missing_required_fields():
     del payload["players"][0]["value_source"]
 
     assert "players[0].value_source is required" in validate_public_snapshot_payload(payload)
+
+
+def test_rejects_missing_prospect_stat_context():
+    payload = build_snapshot(_rank_payload())
+    prospect_index = next(
+        index
+        for index, row in enumerate(payload["players"])
+        if row["player_type"] == "prospect"
+    )
+    del payload["players"][prospect_index]["stat_line"]
+    del payload["players"][prospect_index]["context"]["stat_line_source"]
+
+    problems = validate_public_snapshot_payload(payload)
+
+    assert (
+        f"players[{prospect_index}].stat_line is required for prospects"
+        in problems
+    )
+    assert (
+        f"players[{prospect_index}].context.stat_line_source is required for prospects"
+        in problems
+    )
+
+
+def test_builder_computes_required_field_completeness():
+    rank_payload = _rank_payload()
+    del rank_payload["board"][0]["context_only"]["stat_line"]
+    del rank_payload["board"][0]["context_only"]["stat_line_source"]
+
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["required_fields_complete"] is False
+    assert payload["validation"]["required_field_problem_count"] >= 1
+    assert (
+        "Public snapshot has incomplete required fields."
+        in payload["validation"]["blockers"]
+    )
 
 
 def test_rejects_source_policy_that_uses_dd_values():
