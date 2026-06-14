@@ -59,6 +59,7 @@ jobs:
           python scripts/build_prospect_availability.py
           python scripts/build_prospect_rank_v1.py
           python scripts/build_prospect_coverage_audit.py
+          python scripts/build_prospect_calibration_report.py
           python scripts/build_valucast_buys.py
           python scripts/review_valucast_buys.py
           python scripts/build_valucast_buys.py --with-review
@@ -70,6 +71,7 @@ jobs:
           python scripts/validate_feed.py
           python scripts/validate_mlb_track_record.py
           python scripts/validate_prospect_coverage_audit.py
+          python scripts/validate_prospect_calibration_report.py
           python scripts/validate_valucast_buys.py
           python scripts/validate_valucast_quality_governor.py
           python scripts/validate_public_dynasty_snapshot.py
@@ -96,6 +98,7 @@ jobs:
             data/models/valucast_prospect_buys_review.json \
             data/models/valucast_prospect_availability.json \
             data/models/valucast_prospect_coverage_audit.json \
+            data/models/valucast_prospect_calibration_report.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
             data/prediction_archive/valucast_mlb_dynasty_layer \
