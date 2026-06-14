@@ -52,8 +52,28 @@ def validate_contract(payload: dict) -> list[str]:
     for role in ("hitters", "pitchers"):
         if not isinstance(current.get(role), list):
             problems.append(f"current.{role} must be a list")
-    if not isinstance(payload.get("mlb_service"), dict):
-        problems.append("mlb_service must be an object")
+    service_rows = payload.get("mlb_service")
+    if not isinstance(service_rows, list):
+        problems.append("mlb_service must be a list")
+    else:
+        for index, row in enumerate(service_rows):
+            if not isinstance(row, dict):
+                problems.append(f"mlb_service[{index}] must be an object")
+                continue
+            if not row.get("mlbam_id"):
+                problems.append(f"mlb_service[{index}].mlbam_id is required")
+            if row.get("role") not in {"hitter", "pitcher"}:
+                problems.append(f"mlb_service[{index}].role is invalid")
+            if not isinstance(row.get("graduated"), bool):
+                problems.append(f"mlb_service[{index}].graduated must be boolean")
+            for volume_field in ("pa", "ab", "ip"):
+                value = row.get(volume_field)
+                if value is not None and (
+                    isinstance(value, bool) or not isinstance(value, (int, float))
+                ):
+                    problems.append(
+                        f"mlb_service[{index}].{volume_field} must be numeric"
+                    )
     return problems
 
 

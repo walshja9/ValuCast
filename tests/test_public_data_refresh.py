@@ -40,7 +40,16 @@ def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
         },
         "historical": {"rows": []},
         "current": {"hitters": [], "pitchers": []},
-        "mlb_service": {},
+        "mlb_service": [
+            {
+                "mlbam_id": 101,
+                "role": "hitter",
+                "pa": 500.0,
+                "ab": 500.0,
+                "ip": 0.0,
+                "graduated": True,
+            }
+        ],
     }
 
 
@@ -124,6 +133,26 @@ def test_sync_prospect_inputs_rejects_non_factual_contract(tmp_path, monkeypatch
     )
 
     with pytest.raises(ValueError, match="dynasty_values_used"):
+        sync_dd_prospect_inputs.sync_contract(
+            "https://example.test/prospect-inputs",
+            output,
+        )
+
+    assert json.loads(output.read_text(encoding="utf-8")) == {"old": True}
+
+
+def test_sync_prospect_inputs_rejects_invalid_service_rows(tmp_path, monkeypatch):
+    output = tmp_path / "prospect_model_inputs.json"
+    output.write_text('{"old":true}', encoding="utf-8")
+    payload = _valid_prospect_inputs()
+    payload["mlb_service"] = [{"mlbam_id": 101, "role": "hitter"}]
+    monkeypatch.setattr(
+        sync_dd_prospect_inputs,
+        "fetch_contract",
+        lambda _url: json.dumps(payload).encode(),
+    )
+
+    with pytest.raises(ValueError, match="graduated must be boolean"):
         sync_dd_prospect_inputs.sync_contract(
             "https://example.test/prospect-inputs",
             output,
