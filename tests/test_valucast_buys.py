@@ -76,6 +76,19 @@ def _history():
     ]
 
 
+def _mlb_roster_status(active_ids=None, ready=True):
+    active_ids = active_ids or [999999]
+    return {
+        "artifact": "valucast_mlb_roster_status",
+        "contract_version": "0.1.0",
+        "validation": {"ready_for_public_snapshot": ready},
+        "profiles": [
+            {"mlbam_id": mlbam_id, "active_mlb_roster": True}
+            for mlbam_id in active_ids
+        ],
+    }
+
+
 def test_buy_window_curve_favors_sweet_spot_not_obvious_elite():
     assert buy_window_score(4) < buy_window_score(80)
     assert buy_window_score(80) == 1.0
@@ -173,11 +186,49 @@ def test_excludes_mlb_level_and_duplicate_identities():
     assert payload["board"][0]["name"] == "Kept"
 
 
+def test_excludes_active_mlb_roster_identities_from_buy_board():
+    rows = [
+        _row(1, "Kept", 80, 58.0),
+        _row(2, "Active MLB Graduate", 20, 60.0, level="AAA"),
+    ]
+
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        [],
+        mlb_roster_status=_mlb_roster_status([2]),
+        require_mlb_roster_status=True,
+    )
+
+    assert payload["validation"]["active_mlb_roster_excluded_count"] == 1
+    assert payload["validation"]["active_mlb_roster_overlap_count"] == 0
+    assert payload["validation"]["mlb_roster_status_ready"] is True
+    assert payload["validation"]["row_count"] == 1
+    assert payload["board"][0]["name"] == "Kept"
+
+
 def test_validator_rejects_dd_usage_flag():
     payload = build_buy_signals(_rank_payload(), _history())
     payload["source_policy"]["dd_values_used"] = True
 
     assert "source_policy.dd_values_used must be false" in validate_valucast_buy_payload(payload)
+
+
+def test_validator_rejects_ready_board_with_active_mlb_roster_overlap():
+    review = {"review_status": "candidate_ready"}
+    payload = build_buy_signals(
+        _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]),
+        _history(),
+        promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
+    )
+    payload["validation"]["ready_for_live_consumers"] = True
+    payload["validation"]["active_mlb_roster_overlap_count"] = 1
+
+    assert (
+        "validation reports active MLB roster overlap"
+        in validate_valucast_buy_payload(payload)
+    )
 
 
 def test_valucast_buy_store_loads_shadow_artifact(tmp_path):
@@ -356,6 +407,8 @@ def test_ready_buy_payload_can_use_reviewed_neutral_momentum_launch():
         _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]),
         history_payloads=[],
         promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
     )
 
     assert payload["validation"]["ready_for_live_consumers"] is True

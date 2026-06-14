@@ -12,6 +12,10 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from mlb.roster_status import (
+    ARTIFACT_PATH as MLB_ROSTER_STATUS_PATH,
+    active_roster_lookup,
+)
 from prospects.adapter_backtest import (
     ARTIFACT_PATH as BACKTEST_PATH,
     OUTCOME_HORIZON_YEARS,
@@ -24,8 +28,22 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_dd_7x7_prospect_adapter.jso
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_dd_7x7_prospect_adapter"
 
 ADAPTER_NAME = "ValuCast Diamond Dynasties 7x7 Prospect Adapter"
-DD_ADAPTER_VERSION = "0.1.0"
+DD_ADAPTER_VERSION = "0.1.1"
 PRESET_KEY = "dd_7x7"
+
+
+def _load_mlb_roster_status(path: Path | None) -> dict | None:
+    if path is None or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _active_mlb_roster_ids(payload: dict | None) -> set[str]:
+    return set(active_roster_lookup(payload).keys())
 
 
 def _assign_shared_ranks(players: list[dict]) -> None:
@@ -94,11 +112,28 @@ def _evidence_summary(
     }
 
 
-def build_dd_adapter(universal: dict, backtest: dict | None = None) -> dict:
+def build_dd_adapter(
+    universal: dict,
+    backtest: dict | None = None,
+    mlb_roster_status: dict | None = None,
+    require_mlb_roster_status: bool = False,
+) -> dict:
     generated_at = (universal.get("input_contract") or {}).get("generated_at")
+    source_profiles = list(universal.get("profiles") or [])
+    active_mlb_ids = _active_mlb_roster_ids(mlb_roster_status)
+    mlb_roster_validation = (mlb_roster_status or {}).get("validation") or {}
+    mlb_roster_status_ready = (
+        mlb_roster_validation.get("ready_for_public_snapshot") is True
+    )
+    profiles = [
+        profile
+        for profile in source_profiles
+        if str(profile.get("mlbam_id")) not in active_mlb_ids
+    ]
+    active_mlb_roster_excluded_count = len(source_profiles) - len(profiles)
     preset = PRESETS[PRESET_KEY]
     adapted = adapt_categories(
-        universal.get("profiles") or [],
+        profiles,
         name=preset["name"],
         categories={"hitter": preset["hitter"], "pitcher": preset["pitcher"]},
     )
@@ -107,11 +142,36 @@ def build_dd_adapter(universal: dict, backtest: dict | None = None) -> dict:
             _assign_shared_ranks(role_result["players"])
     evidence = _evidence_summary(backtest, universal.get("model_version"), generated_at)
     current_contract_active = adapted["status"] == "research_ranked"
+    active_mlb_roster_overlap_count = sum(
+        1
+        for result in adapted["roles"].values()
+        for row in result.get("players") or []
+        if str(row.get("mlbam_id")) in active_mlb_ids
+    )
+    roster_status_blocked = require_mlb_roster_status and not mlb_roster_status_ready
     research_gate = (
         "active"
-        if evidence["research_gate"] == "active" and current_contract_active
+        if (
+            evidence["research_gate"] == "active"
+            and current_contract_active
+            and not roster_status_blocked
+            and not active_mlb_roster_overlap_count
+        )
         else "hold"
     )
+    if roster_status_blocked:
+        promotion_reason = (
+            "Official MLB active-roster status artifact is required before "
+            "publishing the DD adapter lens."
+        )
+    elif active_mlb_roster_overlap_count:
+        promotion_reason = "DD adapter contains active MLB roster identities."
+    elif current_contract_active:
+        promotion_reason = evidence["reason"]
+    else:
+        promotion_reason = (
+            "The current universal artifact does not support every DD 7x7 category."
+        )
     return {
         "status": "shadow_only",
         "adapter_name": ADAPTER_NAME,
@@ -123,6 +183,20 @@ def build_dd_adapter(universal: dict, backtest: dict | None = None) -> dict:
         "candidate_count": sum(
             result["candidate_count"] for result in adapted["roles"].values()
         ),
+        "input_artifacts": {
+            "mlb_roster_status_version": (mlb_roster_status or {}).get(
+                "contract_version"
+            ),
+            "mlb_roster_status_ready": mlb_roster_status_ready,
+            "active_mlb_roster_profile_count": len(active_mlb_ids),
+        },
+        "validation": {
+            "source_candidate_count": len(source_profiles),
+            "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
+            "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
+            "mlb_roster_status_required": require_mlb_roster_status,
+            "mlb_roster_status_ready": mlb_roster_status_ready,
+        },
         "adapter_contract": {
             "purpose": (
                 "Translate ValuCast factual prospect profiles into expected future "
@@ -156,11 +230,7 @@ def build_dd_adapter(universal: dict, backtest: dict | None = None) -> dict:
             "current_category_contract": (
                 "active" if current_contract_active else "hold"
             ),
-            "reason": (
-                evidence["reason"]
-                if current_contract_active
-                else "The current universal artifact does not support every DD 7x7 category."
-            ),
+            "reason": promotion_reason,
             "next_allowed_step": (
                 "dated_forward_shadow_observation"
                 if research_gate == "active"
@@ -209,6 +279,7 @@ def run_dd_adapter(
     backtest_path: Path = BACKTEST_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
+    mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
 ) -> dict:
     universal = json.loads(universal_path.read_text(encoding="utf-8"))
     backtest = (
@@ -216,7 +287,13 @@ def run_dd_adapter(
         if backtest_path.exists()
         else None
     )
-    payload = build_dd_adapter(universal, backtest)
+    mlb_roster_status = _load_mlb_roster_status(mlb_roster_status_path)
+    payload = build_dd_adapter(
+        universal,
+        backtest,
+        mlb_roster_status=mlb_roster_status,
+        require_mlb_roster_status=mlb_roster_status_path is not None,
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

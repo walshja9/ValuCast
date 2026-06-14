@@ -7,7 +7,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0", "0.2.1"}
+SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0", "0.2.1", "0.2.2"}
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -66,9 +66,13 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
         problems.append("validation reports duplicate identities")
     if validation.get("ranks_contiguous") is False:
         problems.append("validation reports non-contiguous ranks")
+    if validation.get("active_mlb_roster_overlap_count", 0) != 0:
+        problems.append("validation reports active MLB roster overlap")
     if validation.get("ready_for_live_consumers") is True:
         if validation.get("buy_review_ready") is not True:
             problems.append("ready buy signals must have buy_review_ready=true")
+        if validation.get("mlb_roster_status_ready") is not True:
+            problems.append("ready buy signals must have active MLB roster status")
         top_board_quality = validation.get("top_board_quality") or {}
         if top_board_quality.get("raw_fallback_count", 0) != 0:
             problems.append("ready buy signals must not include raw fallback rows in the top board")

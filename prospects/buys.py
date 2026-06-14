@@ -12,6 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from mlb.roster_status import (
+    ARTIFACT_PATH as MLB_ROSTER_STATUS_PATH,
+    active_roster_lookup,
+)
 from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
 from web.buy_score import momentum_score, runway_score
 
@@ -22,7 +26,7 @@ RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_ran
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
-SIGNAL_VERSION = "0.2.1"
+SIGNAL_VERSION = "0.2.2"
 MAX_HISTORY_LIMITED_RATE = 0.50
 PROMOTION_BOARD_SIZE = 40
 PROMOTABLE_SCORE_SOURCES = {"prospect_model_v0_6", "prospect_pedigree_v0_7"}
@@ -172,10 +176,27 @@ def _load_same_day_review(path: Path, generated_at: str | None) -> dict | None:
     return payload
 
 
-def _eligible(row: dict) -> bool:
+def _load_mlb_roster_status(path: Path | None) -> dict | None:
+    if path is None or not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _active_mlb_roster_ids(payload: dict | None) -> set[str]:
+    return set(active_roster_lookup(payload).keys())
+
+
+def _eligible(row: dict, active_mlb_ids: set[str] | None = None) -> bool:
     if row.get("role") not in {"hitter", "pitcher"}:
         return False
     if row.get("level") == "MLB":
+        return False
+    key = _identity_key(row)
+    if key and active_mlb_ids and key[0] in active_mlb_ids:
         return False
     return _identity_key(row) is not None
 
@@ -265,16 +286,24 @@ def build_buy_signals(
     rank_payload: dict,
     history_payloads: list[dict] | None = None,
     promotion_review: dict | None = None,
+    mlb_roster_status: dict | None = None,
+    require_mlb_roster_status: bool = False,
 ) -> dict:
     generated_at = rank_payload.get("generated_at") or datetime.now(
         timezone.utc
     ).isoformat()
     history = _history_by_key(history_payloads or [])
+    active_mlb_ids = _active_mlb_roster_ids(mlb_roster_status)
+    mlb_roster_validation = (mlb_roster_status or {}).get("validation") or {}
+    mlb_roster_status_ready = (
+        mlb_roster_validation.get("ready_for_public_snapshot") is True
+    )
     scored = []
     duplicate_keys: list[tuple[str, str]] = []
     seen: set[tuple[str, str]] = set()
     missing_identity_count = 0
     excluded_score_source_count = 0
+    active_mlb_roster_excluded_count = 0
 
     for row in rank_payload.get("board") or []:
         key = _identity_key(row)
@@ -285,7 +314,10 @@ def build_buy_signals(
             duplicate_keys.append(key)
             continue
         seen.add(key)
-        if not _eligible(row):
+        if key[0] in active_mlb_ids:
+            active_mlb_roster_excluded_count += 1
+            continue
+        if not _eligible(row, active_mlb_ids):
             continue
         if not _promotion_eligible(row):
             excluded_score_source_count += 1
@@ -343,11 +375,20 @@ def build_buy_signals(
     history_ready = history_limited_rate <= MAX_HISTORY_LIMITED_RATE
     history_launch_approved = _history_launch_approved(promotion_review)
     top_quality = _top_board_quality(board)
+    active_mlb_roster_overlap_count = sum(
+        1 for row in board if str(row.get("mlbam_id")) in active_mlb_ids
+    )
     blockers = []
     if not review_ready:
         blockers.append(
             "ValuCast Buy review has not approved changing the public /buys source."
         )
+    if require_mlb_roster_status and not mlb_roster_status_ready:
+        blockers.append(
+            "Official MLB active-roster status artifact is required before promoting ValuCast Buys."
+        )
+    if active_mlb_roster_overlap_count:
+        blockers.append("ValuCast Buy board includes active MLB roster identities.")
     if not history_ready and not history_launch_approved:
         blockers.append(
             "ValuCast Buy momentum is launch-limited until review approves neutral-momentum launch or more dated history accumulates."
@@ -399,12 +440,21 @@ def build_buy_signals(
             "prospect_rank_v1_count": rank_payload.get("ranked_count"),
             "rank_history_artifact_count": len(history_payloads or []),
             "buy_review_status": (promotion_review or {}).get("review_status"),
+            "mlb_roster_status_version": (mlb_roster_status or {}).get(
+                "contract_version"
+            ),
+            "mlb_roster_status_ready": mlb_roster_status_ready,
+            "active_mlb_roster_profile_count": len(active_mlb_ids),
         },
         "validation": {
             "ready_for_live_consumers": ready_for_live_consumers,
             "candidate_count": len(rank_payload.get("board") or []),
             "eligible_count": len(scored),
             "excluded_score_source_count": excluded_score_source_count,
+            "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
+            "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
+            "mlb_roster_status_required": require_mlb_roster_status,
+            "mlb_roster_status_ready": mlb_roster_status_ready,
             "row_count": len(board),
             "missing_identity_count": missing_identity_count,
             "duplicate_identity_count": len(duplicate_keys),
@@ -463,6 +513,7 @@ def run_buy_signals(
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
     promotion_review_path: Path | None = None,
+    mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
 ) -> dict:
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
     promotion_review = (
@@ -470,10 +521,13 @@ def run_buy_signals(
         if promotion_review_path
         else None
     )
+    mlb_roster_status = _load_mlb_roster_status(mlb_roster_status_path)
     payload = build_buy_signals(
         rank_payload,
         _load_history_payloads(rank_archive_dir),
         promotion_review=promotion_review,
+        mlb_roster_status=mlb_roster_status,
+        require_mlb_roster_status=mlb_roster_status_path is not None,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

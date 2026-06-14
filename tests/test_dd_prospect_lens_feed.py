@@ -129,6 +129,17 @@ def test_feed_rejects_mismatched_or_prohibited_sources():
     with pytest.raises(ValueError, match="historical evidence"):
         build_feed(adapter, universal)
 
+    adapter, universal = _inputs()
+    adapter["validation"]["active_mlb_roster_overlap_count"] = 1
+    with pytest.raises(ValueError, match="active MLB roster"):
+        build_feed(adapter, universal)
+
+    adapter, universal = _inputs()
+    adapter["validation"]["mlb_roster_status_required"] = True
+    adapter["validation"]["mlb_roster_status_ready"] = False
+    with pytest.raises(ValueError, match="requires active MLB roster status"):
+        build_feed(adapter, universal)
+
 
 def test_feed_rejects_duplicate_identity_and_incomplete_categories():
     adapter, universal = _inputs()

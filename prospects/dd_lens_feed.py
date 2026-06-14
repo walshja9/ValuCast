@@ -65,6 +65,14 @@ def _validate_relationship(adapter: dict, universal: dict) -> dict:
         raise ValueError("DD adapter and universal model snapshots do not match")
     if adapter.get("universal_model_version") != universal.get("model_version"):
         raise ValueError("DD adapter and universal model versions do not match")
+    adapter_validation = adapter.get("validation") or {}
+    if (
+        adapter_validation.get("mlb_roster_status_required") is True
+        and adapter_validation.get("mlb_roster_status_ready") is not True
+    ):
+        raise ValueError("DD adapter requires active MLB roster status")
+    if adapter_validation.get("active_mlb_roster_overlap_count", 0) != 0:
+        raise ValueError("DD adapter contains active MLB roster identities")
 
     contract = adapter.get("adapter_contract") or {}
     promotion = adapter.get("promotion") or {}
@@ -166,6 +174,11 @@ def build_feed(
                 "valucast_dd_7x7_prospect_adapter",
             ],
             "sample_size": len(players),
+            "active_mlb_roster_excluded_count": (
+                (adapter.get("validation") or {}).get(
+                    "active_mlb_roster_excluded_count", 0
+                )
+            ),
             "staleness_max_hours": 96,
         },
         "status": "shadow_only",

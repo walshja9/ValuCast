@@ -68,6 +68,19 @@ def _backtest(gate="active"):
     }
 
 
+def _mlb_roster_status(active_ids=None, ready=True):
+    active_ids = active_ids or [999999]
+    return {
+        "artifact": "valucast_mlb_roster_status",
+        "contract_version": "0.1.0",
+        "validation": {"ready_for_public_snapshot": ready},
+        "profiles": [
+            {"mlbam_id": mlbam_id, "active_mlb_roster": True}
+            for mlbam_id in active_ids
+        ],
+    }
+
+
 def test_dd_adapter_is_separate_from_universal_index_and_live_dd_value():
     payload = build_dd_adapter(_universal(), _backtest())
     contract = payload["adapter_contract"]
@@ -105,6 +118,25 @@ def test_dd_adapter_emits_role_scoped_ranks():
     assert payload["candidate_count"] == 4
     assert payload["roles"]["hitter"]["players"][0]["mlbam_id"] == 1
     assert payload["roles"]["pitcher"]["players"][0]["mlbam_id"] == 3
+    assert payload["roles"]["hitter"]["players"][0]["adapter_rank"] == 1
+
+
+def test_dd_adapter_excludes_active_mlb_roster_identities_before_ranking():
+    payload = build_dd_adapter(
+        _universal(),
+        _backtest(),
+        mlb_roster_status=_mlb_roster_status([1]),
+        require_mlb_roster_status=True,
+    )
+
+    hitter_ids = {
+        player["mlbam_id"] for player in payload["roles"]["hitter"]["players"]
+    }
+    assert 1 not in hitter_ids
+    assert payload["candidate_count"] == 3
+    assert payload["validation"]["active_mlb_roster_excluded_count"] == 1
+    assert payload["validation"]["active_mlb_roster_overlap_count"] == 0
+    assert payload["validation"]["mlb_roster_status_ready"] is True
     assert payload["roles"]["hitter"]["players"][0]["adapter_rank"] == 1
 
 
