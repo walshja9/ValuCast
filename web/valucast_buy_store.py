@@ -7,7 +7,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SIGNAL_VERSIONS = {"0.1.0"}
+SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0"}
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -69,12 +69,19 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
     if validation.get("ready_for_live_consumers") is True:
         if validation.get("buy_review_ready") is not True:
             problems.append("ready buy signals must have buy_review_ready=true")
+        top_board_quality = validation.get("top_board_quality") or {}
+        if top_board_quality.get("raw_fallback_count", 0) != 0:
+            problems.append("ready buy signals must not include raw fallback rows in the top board")
+        if top_board_quality.get("missing_team_count", 0) != 0:
+            problems.append("ready buy signals must have top-board team coverage")
         history_limited_rate = validation.get("history_limited_rate")
         max_history_limited_rate = validation.get("max_history_limited_rate")
+        history_launch_approved = validation.get("history_launch_approved") is True
         if (
             isinstance(history_limited_rate, (int, float))
             and isinstance(max_history_limited_rate, (int, float))
             and history_limited_rate > max_history_limited_rate
+            and not history_launch_approved
         ):
             problems.append("ready buy signals exceed history-limited threshold")
     return problems

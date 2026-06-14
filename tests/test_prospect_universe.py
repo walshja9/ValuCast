@@ -83,14 +83,26 @@ def test_universe_builds_without_dd_feed():
     assert "context_only" not in payload["players"][0]
 
 
-def test_universe_backfills_known_mlb_affiliate_from_minor_team():
+@pytest.mark.parametrize(
+    ("minor_team", "mlb_team"),
+    [
+        ("Somerset Patriots", "NYY"),
+        ("Biloxi Shuckers", "MIL"),
+        ("Harrisburg Senators", "WSN"),
+        ("Reading Fightin Phils", "PHI"),
+        ("Columbus Clingstones", "ATL"),
+        ("Montgomery Biscuits", "TBR"),
+        ("Chesapeake Baysox", "BAL"),
+    ],
+)
+def test_universe_backfills_known_mlb_affiliate_from_minor_team(minor_team, mlb_team):
     payload = build_universe(
-        _layer([_profile(team="Somerset Patriots")]),
+        _layer([_profile(team=minor_team)]),
         _universal(),
         dd_feed=None,
     )
 
-    assert payload["players"][0]["mlb_team"] == "NYY"
+    assert payload["players"][0]["mlb_team"] == mlb_team
     assert "context_only" not in payload["players"][0]
 
 

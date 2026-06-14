@@ -98,10 +98,20 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
 
 def test_build_buy_signals_can_be_candidate_ready_after_review():
     review = {"review_status": "candidate_ready"}
+    rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
+    history = [
+        {
+            "date": "2026-06-12",
+            "board": [
+                {"mlbam_id": index, "role": "hitter", "score": 53.0}
+                for index in range(1, 45)
+            ],
+        }
+    ]
 
     payload = build_buy_signals(
-        _rank_payload(),
-        _history(),
+        _rank_payload(rows),
+        history,
         promotion_review=review,
     )
 
@@ -125,6 +135,21 @@ def test_context_only_and_public_ranks_do_not_change_scores():
 
     assert original["board"][0]["score"] == mutated["board"][0]["score"]
     assert original["board"][0]["terms"] == mutated["board"][0]["terms"]
+
+
+def test_raw_fallback_rows_are_excluded_from_promotable_buy_board():
+    rows = [
+        _row(1, "Model Buy", 80, 58.0),
+        _row(2, "Pedigree Buy", 90, 48.0, source="prospect_pedigree_v0_7"),
+        _row(3, "Raw Fallback", 85, 45.0, source="universal_fallback"),
+    ]
+
+    payload = build_buy_signals(_rank_payload(rows), _history())
+
+    assert [row["name"] for row in payload["board"]] == ["Model Buy", "Pedigree Buy"]
+    assert payload["validation"]["eligible_count"] == 2
+    assert payload["validation"]["excluded_score_source_count"] == 1
+    assert payload["validation"]["top_board_quality"]["raw_fallback_count"] == 0
 
 
 def test_history_drives_momentum_from_valucast_scores():
@@ -214,7 +239,7 @@ def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active():
     assert source == "valucast_buys"
 
 
-def test_review_artifact_blocks_low_overlap_and_history_limited_board():
+def test_review_artifact_reports_low_overlap_but_blocks_only_history_and_approval():
     payload = build_buy_signals(_rank_payload(), _history())
     valucast = buy_score.build_valucast_board(payload["board"])
     dd = [
@@ -227,8 +252,11 @@ def test_review_artifact_blocks_low_overlap_and_history_limited_board():
 
     assert review["review_status"] == "blocked"
     assert review["metrics"]["top40_name_overlap_count"] == 0
+    assert review["metrics"]["dd_overlap_context_only"] is True
     assert review["metrics"]["history_limited_rate"] == 1.0
-    assert any("overlap" in blocker for blocker in review["blockers"])
+    assert not any("overlap" in blocker for blocker in review["blockers"])
+    assert any("history-limited" in blocker for blocker in review["blockers"])
+    assert any("Human review" in blocker for blocker in review["blockers"])
 
 
 def test_review_artifact_can_be_candidate_ready_with_manual_approval():
@@ -253,3 +281,44 @@ def test_review_artifact_can_be_candidate_ready_with_manual_approval():
     assert review["review_status"] == "candidate_ready"
     assert review["blockers"] == []
     assert review["source_policy"]["manual_approval_recorded"] is True
+
+
+def test_review_manual_approval_can_launch_with_neutral_momentum_history():
+    payload = build_buy_signals(_rank_payload(), _history())
+    valucast = buy_score.build_valucast_board(payload["board"])
+    store = SimpleNamespace(validation={"history_limited_count": 40, "row_count": 40})
+
+    review = build_review([], valucast, store, manual_approval=True)
+
+    assert review["review_status"] == "candidate_ready"
+    assert review["source_policy"]["history_launch_approved"] is True
+    assert review["blockers"] == []
+
+
+def test_ready_buy_payload_can_use_reviewed_neutral_momentum_launch():
+    review = {
+        "review_status": "candidate_ready",
+        "source_policy": {"history_launch_approved": True},
+    }
+    payload = build_buy_signals(
+        _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]),
+        history_payloads=[],
+        promotion_review=review,
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is True
+    assert payload["validation"]["history_ready"] is False
+    assert payload["validation"]["history_launch_approved"] is True
+    assert validate_valucast_buy_payload(payload) == []
+
+
+def test_ready_buy_payload_rejects_top_board_raw_fallback():
+    review = {"review_status": "candidate_ready"}
+    payload = build_buy_signals(_rank_payload(), _history(), promotion_review=review)
+    payload["validation"]["ready_for_live_consumers"] = True
+    payload["validation"]["top_board_quality"]["raw_fallback_count"] = 1
+
+    assert (
+        "ready buy signals must not include raw fallback rows in the top board"
+        in validate_valucast_buy_payload(payload)
+    )

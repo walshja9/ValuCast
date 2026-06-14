@@ -23,11 +23,17 @@ SCHEMA_VERSION = "1.0"
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 MINOR_TEAM_MLB_AFFILIATES = {
     "Amarillo Sod Poodles": "ARI",
+    "Biloxi Shuckers": "MIL",
     "Bowling Green Hot Rods": "TBR",
     "Charleston RiverDogs": "TBR",
+    "Chesapeake Baysox": "BAL",
+    "Columbus Clingstones": "ATL",
     "Columbus Clippers": "CLE",
+    "Harrisburg Senators": "WSN",
     "Hudson Valley Renegades": "NYY",
     "Iowa Cubs": "CHC",
+    "Montgomery Biscuits": "TBR",
+    "Reading Fightin Phils": "PHI",
     "Reno Aces": "ARI",
     "Somerset Patriots": "NYY",
     "Tampa Tarpons": "NYY",

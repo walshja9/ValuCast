@@ -1,4 +1,8 @@
-"""Compare ValuCast-owned Buy signals against the current DD-backed /buys page."""
+"""Review ValuCast-owned Buy signals before public promotion.
+
+DD overlap is reported as comparison context only. A ValuCast Buy board should
+not be blocked just because it disagrees with the legacy DD-backed buy board.
+"""
 from __future__ import annotations
 
 import json
@@ -20,8 +24,8 @@ DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 VALUCAST_BUYS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 OUTPUT_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
-MIN_TOP40_NAME_OVERLAP = 5
 MAX_HISTORY_LIMITED_RATE = 0.50
+BOARD_REVIEW_SIZE = 40
 
 
 def _norm_name(name: str | None) -> str:
@@ -51,6 +55,7 @@ def build_review(
     valucast_board: list[dict],
     buy_store,
     manual_approval: bool = False,
+    generated_at: str | None = None,
 ) -> dict:
     dd_names = {_norm_name(row.get("name")): row for row in dd_board}
     valucast_names = {_norm_name(row.get("name")): row for row in valucast_board}
@@ -67,14 +72,11 @@ def build_review(
     )
 
     blockers = []
-    if top40_name_overlap_count < MIN_TOP40_NAME_OVERLAP:
-        blockers.append(
-            "ValuCast Buy top-40 overlap with the current DD-backed /buys board is below review threshold."
-        )
     if history_limited_rate > MAX_HISTORY_LIMITED_RATE:
-        blockers.append(
-            "ValuCast Buy momentum is history-limited until more dated ValuCast score archives accumulate."
-        )
+        if not manual_approval:
+            blockers.append(
+                "ValuCast Buy momentum is history-limited until review approves neutral-momentum launch or more dated ValuCast score archives accumulate."
+            )
     if not manual_approval:
         blockers.append(
             "Human review is still required before changing the public /buys source."
@@ -83,7 +85,7 @@ def build_review(
 
     return {
         "artifact": "valucast_prospect_buys_review",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": generated_at or datetime.now(timezone.utc).isoformat(),
         "review_status": review_status,
         "source_policy": {
             "kind": "comparison_only",
@@ -92,14 +94,19 @@ def build_review(
             "dd_ranks_used_for_valucast_score": False,
             "manual_approval_required_for_candidate_ready": True,
             "manual_approval_recorded": manual_approval,
+            "dd_overlap_required_for_candidate_ready": False,
+            "history_launch_approved": manual_approval
+            and history_limited_rate > MAX_HISTORY_LIMITED_RATE,
         },
         "metrics": {
             "dd_top40_count": len(dd_board),
             "valucast_top40_count": len(valucast_board),
             "top40_name_overlap_count": top40_name_overlap_count,
             "top40_name_overlap_rate": round(top40_name_overlap_count / 40, 4),
+            "dd_overlap_context_only": True,
             "history_limited_count": history_limited_count,
             "history_limited_rate": round(history_limited_rate, 4),
+            "max_history_limited_rate": MAX_HISTORY_LIMITED_RATE,
             "dd_level_distribution": _distribution(dd_board, "level"),
             "valucast_level_distribution": _distribution(valucast_board, "level"),
             "dd_age_distribution": _distribution(dd_board, "age"),
@@ -138,12 +145,16 @@ def main() -> None:
         raise SystemExit("ValuCast buys unavailable; cannot review ValuCast buys")
 
     dd_board = buy_score.build_board(dd_store.get_all())
-    valucast_board = buy_score.build_valucast_board(buy_store.get_all())
+    valucast_board = buy_score.build_valucast_board(
+        buy_store.get_all(),
+        n=BOARD_REVIEW_SIZE,
+    )
     payload = build_review(
         dd_board,
         valucast_board,
         buy_store,
         manual_approval=os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1",
+        generated_at=buy_store.generated_at,
     )
     path = write_review(payload)
     metrics = payload["metrics"]

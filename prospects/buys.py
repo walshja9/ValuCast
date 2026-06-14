@@ -22,8 +22,13 @@ RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_ran
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
-SIGNAL_VERSION = "0.1.0"
+SIGNAL_VERSION = "0.2.0"
 MAX_HISTORY_LIMITED_RATE = 0.50
+PROMOTION_BOARD_SIZE = 40
+PROMOTABLE_SCORE_SOURCES = {"prospect_model_v0_6", "prospect_pedigree_v0_7"}
+MAX_TOP40_RAW_FALLBACK_COUNT = 0
+MAX_TOP40_MISSING_TEAM_COUNT = 0
+RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 
 WEIGHTS = {
     "model_strength": 0.35,
@@ -212,6 +217,39 @@ def _review_ready(review: dict | None) -> bool:
     return (review or {}).get("review_status") in {"candidate_ready", "approved"}
 
 
+def _history_launch_approved(review: dict | None) -> bool:
+    policy = (review or {}).get("source_policy") or {}
+    return bool(policy.get("history_launch_approved"))
+
+
+def _promotion_eligible(row: dict) -> bool:
+    return row.get("score_source") in PROMOTABLE_SCORE_SOURCES
+
+
+def _top_board_quality(board: list[dict]) -> dict:
+    top_rows = board[:PROMOTION_BOARD_SIZE]
+    raw_fallback_count = sum(
+        1 for row in top_rows if row.get("score_source") in RAW_FALLBACK_SCORE_SOURCES
+    )
+    missing_team_count = sum(1 for row in top_rows if not (row.get("team") or "").strip())
+    low_confidence_count = sum(1 for row in top_rows if row.get("confidence") == "low")
+    source_counts: dict[str, int] = {}
+    for row in top_rows:
+        source = str(row.get("score_source") or "unknown")
+        source_counts[source] = source_counts.get(source, 0) + 1
+    return {
+        "top_n": PROMOTION_BOARD_SIZE,
+        "evaluated_count": len(top_rows),
+        "raw_fallback_count": raw_fallback_count,
+        "missing_team_count": missing_team_count,
+        "low_confidence_count": low_confidence_count,
+        "low_confidence_rate": round(low_confidence_count / len(top_rows), 4)
+        if top_rows
+        else 0.0,
+        "score_source_counts": source_counts,
+    }
+
+
 def build_buy_signals(
     rank_payload: dict,
     history_payloads: list[dict] | None = None,
@@ -225,6 +263,7 @@ def build_buy_signals(
     duplicate_keys: list[tuple[str, str]] = []
     seen: set[tuple[str, str]] = set()
     missing_identity_count = 0
+    excluded_score_source_count = 0
 
     for row in rank_payload.get("board") or []:
         key = _identity_key(row)
@@ -236,6 +275,9 @@ def build_buy_signals(
             continue
         seen.add(key)
         if not _eligible(row):
+            continue
+        if not _promotion_eligible(row):
+            excluded_score_source_count += 1
             continue
         terms = _terms(row, history, generated_at)
         composite = sum(WEIGHTS[key] * terms[key] for key in WEIGHTS)
@@ -287,14 +329,27 @@ def build_buy_signals(
         round(history_limited_count / max(len(board), 1), 4) if board else 0.0
     )
     review_ready = _review_ready(promotion_review)
+    history_ready = history_limited_rate <= MAX_HISTORY_LIMITED_RATE
+    history_launch_approved = _history_launch_approved(promotion_review)
+    top_quality = _top_board_quality(board)
     blockers = []
     if not review_ready:
         blockers.append(
             "ValuCast Buy review has not approved changing the public /buys source."
         )
-    if history_limited_rate > MAX_HISTORY_LIMITED_RATE:
+    if not history_ready and not history_launch_approved:
         blockers.append(
-            "Most buy rows have fewer than two ValuCast score-history points until the daily archive accumulates."
+            "ValuCast Buy momentum is launch-limited until review approves neutral-momentum launch or more dated history accumulates."
+        )
+    if top_quality["raw_fallback_count"] > MAX_TOP40_RAW_FALLBACK_COUNT:
+        blockers.append(
+            "ValuCast Buy top board includes raw fallback-scored players."
+        )
+    if top_quality["missing_team_count"] > MAX_TOP40_MISSING_TEAM_COUNT:
+        blockers.append("ValuCast Buy top board has missing MLB-org display coverage.")
+    if top_quality["evaluated_count"] < PROMOTION_BOARD_SIZE:
+        blockers.append(
+            "ValuCast Buy top board has too few promotion-eligible rows."
         )
     ready_for_live_consumers = not blockers
 
@@ -330,13 +385,18 @@ def build_buy_signals(
             "ready_for_live_consumers": ready_for_live_consumers,
             "candidate_count": len(rank_payload.get("board") or []),
             "eligible_count": len(scored),
+            "excluded_score_source_count": excluded_score_source_count,
             "row_count": len(board),
             "missing_identity_count": missing_identity_count,
             "duplicate_identity_count": len(duplicate_keys),
             "history_limited_count": history_limited_count,
             "history_limited_rate": history_limited_rate,
             "max_history_limited_rate": MAX_HISTORY_LIMITED_RATE,
+            "history_ready": history_ready,
+            "history_launch_approved": history_launch_approved,
             "buy_review_ready": review_ready,
+            "promotion_score_sources": sorted(PROMOTABLE_SCORE_SOURCES),
+            "top_board_quality": top_quality,
             "ranks_contiguous": [row["rank"] for row in board] == list(range(1, len(board) + 1)),
             "blockers": blockers,
         },

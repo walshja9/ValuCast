@@ -1,8 +1,7 @@
 {
   "artifact": "valucast_prospect_buys_review",
   "blockers": [
-    "ValuCast Buy top-40 overlap with the current DD-backed /buys board is below review threshold.",
-    "ValuCast Buy momentum is history-limited until more dated ValuCast score archives accumulate.",
+    "ValuCast Buy momentum is history-limited until review approves neutral-momentum launch or more dated ValuCast score archives accumulate.",
     "Human review is still required before changing the public /buys source."
   ],
   "dd_top": [
@@ -127,7 +126,7 @@
       "score": 66.8
     }
   ],
-  "generated_at": "2026-06-14T02:14:31.405970+00:00",
+  "generated_at": "2026-06-13T19:42:35.751009+00:00",
   "metrics": {
     "dd_age_distribution": {
       "19": 4,
@@ -143,23 +142,25 @@
       "AA": 10,
       "AAA": 9
     },
+    "dd_overlap_context_only": true,
     "dd_top40_count": 40,
-    "history_limited_count": 2740,
+    "history_limited_count": 884,
     "history_limited_rate": 1.0,
+    "max_history_limited_rate": 0.5,
     "top40_name_overlap_count": 4,
     "top40_name_overlap_rate": 0.1,
     "valucast_age_distribution": {
-      "18": 6,
-      "19": 12,
-      "20": 14,
-      "21": 7,
-      "22": 1
+      "18": 1,
+      "19": 7,
+      "20": 9,
+      "21": 18,
+      "22": 5
     },
     "valucast_level_distribution": {
-      "A": 13,
-      "A+": 16,
-      "AA": 10,
-      "AAA": 1
+      "A": 9,
+      "A+": 8,
+      "AA": 20,
+      "AAA": 3
     },
     "valucast_top40_count": 40
   },
@@ -172,32 +173,34 @@
       "valucast_score": 61.5
     },
     {
-      "dd_rank": 16,
-      "dd_score": 66.4,
-      "name": "Tate Southisene",
-      "valucast_rank": 7,
-      "valucast_score": 60.5
-    },
-    {
       "dd_rank": 10,
       "dd_score": 70.6,
       "name": "Jaison Chourio",
-      "valucast_rank": 27,
+      "valucast_rank": 12,
       "valucast_score": 56.4
     },
     {
       "dd_rank": 7,
       "dd_score": 74.7,
       "name": "Nelson Rada",
-      "valucast_rank": 32,
+      "valucast_rank": 16,
       "valucast_score": 56.1
+    },
+    {
+      "dd_rank": 38,
+      "dd_score": 61.1,
+      "name": "Johanfran Garcia",
+      "valucast_rank": 34,
+      "valucast_score": 54.5
     }
   ],
   "review_status": "blocked",
   "source_policy": {
+    "dd_overlap_required_for_candidate_ready": false,
     "dd_ranks_used_for_valucast_score": false,
     "dd_values_used_for_valucast_score": false,
     "feeds_buy_score": false,
+    "history_launch_approved": false,
     "kind": "comparison_only",
     "manual_approval_recorded": false,
     "manual_approval_required_for_candidate_ready": true
@@ -220,58 +223,18 @@
       "score": 61.4
     },
     {
-      "age": 18,
-      "level": "A",
-      "name": "Taitn Gray",
-      "rank": 3,
-      "reason": "Young runway",
-      "score": 61.4
-    },
-    {
       "age": 19,
       "level": "A+",
       "name": "Rainiel Rodriguez",
-      "rank": 4,
+      "rank": 3,
       "reason": "Still in the buy window",
       "score": 61.0
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Brady Ebel",
-      "rank": 5,
-      "reason": "Young runway",
-      "score": 60.7
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Chase Harlan",
-      "rank": 6,
-      "reason": "Still in the buy window",
-      "score": 60.7
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Tate Southisene",
-      "rank": 7,
-      "reason": "Still in the buy window",
-      "score": 60.5
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Kevin Alvarez",
-      "rank": 8,
-      "reason": "Young runway",
-      "score": 60.5
     },
     {
       "age": 20,
       "level": "A",
       "name": "Seth Hernandez",
-      "rank": 9,
+      "rank": 4,
       "reason": "Still in the buy window",
       "score": 59.5
     },
@@ -279,7 +242,7 @@
       "age": 20,
       "level": "AA",
       "name": "Ethan Salas",
-      "rank": 10,
+      "rank": 5,
       "reason": "Still in the buy window",
       "score": 58.6
     },
@@ -287,41 +250,81 @@
       "age": 20,
       "level": "A+",
       "name": "Arjun Nimmala",
-      "rank": 11,
+      "rank": 6,
       "reason": "Still in the buy window",
       "score": 58.1
     },
     {
-      "age": 19,
-      "level": "A+",
-      "name": "Braylon Payne",
-      "rank": 12,
+      "age": 20,
+      "level": "AA",
+      "name": "Ryan Sloan",
+      "rank": 7,
       "reason": "Still in the buy window",
-      "score": 57.8
+      "score": 57.5
     },
     {
-      "age": 19,
+      "age": 18,
+      "level": "A",
+      "name": "Eli Willits",
+      "rank": 8,
+      "reason": "Young runway",
+      "score": 57.1
+    },
+    {
+      "age": 21,
       "level": "A+",
-      "name": "Justin Gonzales",
-      "rank": 13,
+      "name": "Kyson Witherspoon",
+      "rank": 9,
       "reason": "Still in the buy window",
-      "score": 57.6
+      "score": 56.9
+    },
+    {
+      "age": 21,
+      "level": "A+",
+      "name": "Eliazar Dishmey",
+      "rank": 10,
+      "reason": "Still in the buy window",
+      "score": 56.7
     },
     {
       "age": 20,
-      "level": "A+",
-      "name": "Adrian Santana",
-      "rank": 14,
+      "level": "AA",
+      "name": "Wei-En Lin",
+      "rank": 11,
       "reason": "Still in the buy window",
-      "score": 57.6
+      "score": 56.7
     },
     {
-      "age": 19,
+      "age": 21,
       "level": "A+",
-      "name": "Nathan Flewelling",
+      "name": "Jaison Chourio",
+      "rank": 12,
+      "reason": "Still in the buy window",
+      "score": 56.4
+    },
+    {
+      "age": 21,
+      "level": "AA",
+      "name": "Lazaro Montes",
+      "rank": 13,
+      "reason": "Still in the buy window",
+      "score": 56.3
+    },
+    {
+      "age": 22,
+      "level": "A+",
+      "name": "Joseph Dzierwa",
+      "rank": 14,
+      "reason": "Still in the buy window",
+      "score": 56.2
+    },
+    {
+      "age": 20,
+      "level": "AA",
+      "name": "Manuel Rodriguez",
       "rank": 15,
       "reason": "Still in the buy window",
-      "score": 57.5
+      "score": 56.2
     }
   ]
 }
