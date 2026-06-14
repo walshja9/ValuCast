@@ -29,8 +29,8 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.2.0"
-VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_2"
+LAYER_VERSION = "0.3.0"
+VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_3"
 
 MIN_HITTER_PA = 100
 MIN_SP_IP = 40
@@ -43,6 +43,14 @@ ROS_STABILITY_MAX_WEIGHT = 0.70
 ROS_STABILITY_UNDERPERFORMANCE_WEIGHT = 0.25
 ROS_STABILITY_GAP_TO_MAX = 12.0
 MIN_AGE_COVERAGE_RATE = 0.95
+TRUE_TALENT_FLOOR_SHARE = 0.72
+ESTABLISHED_HITTER_MIN_PA = 250
+ESTABLISHED_SP_MIN_IP = 60
+YOUNG_SP_VOLATILITY_AGE_MAX = 24
+YOUNG_SP_VOLATILITY_IP_MAX = 120.0
+YOUNG_SP_VOLATILITY_GAP_START = 2.5
+YOUNG_SP_VOLATILITY_MAX_DISCOUNT = 0.18
+RELIEVER_DYNASTY_SCORE_CAP = 52.0
 HORIZON_YEAR_WEIGHTS = (
     (0, 1.00),
     (1, 0.72),
@@ -88,6 +96,23 @@ KEY_STATS = (
     "ERA",
     "WHIP",
 )
+ROS_RATE_STATS = {
+    "AVG",
+    "OBP",
+    "SLG",
+    "OPS",
+    "ERA",
+    "WHIP",
+    "K_BB",
+    "K_9",
+    "BB_9",
+}
+TRUE_TALENT_TARGET_VOLUME = {
+    PlayerPool.HITTER: 600.0,
+    PlayerPool.STARTER: 180.0,
+    PlayerPool.PITCHER: 160.0,
+    PlayerPool.RELIEVER: 65.0,
+}
 
 
 def _finite_float(value: Any) -> float | None:
@@ -322,12 +347,35 @@ def _ros_projection_stats(player: PlayerProjection) -> dict[str, float]:
     }
 
 
+def _true_talent_target_volume(player: PlayerProjection) -> float:
+    target = TRUE_TALENT_TARGET_VOLUME.get(player.pool, TRUE_TALENT_TARGET_VOLUME[PlayerPool.PITCHER])
+    return max(target, _volume(player))
+
+
+def _annualized_ros_projection_stats(player: PlayerProjection) -> tuple[dict[str, float], float]:
+    stats = _ros_projection_stats(player)
+    if not stats:
+        return {}, 1.0
+    ros_volume = stats.get("PA") if player.pool is PlayerPool.HITTER else stats.get("IP")
+    ros_volume = _finite_float(ros_volume)
+    target_volume = _true_talent_target_volume(player)
+    if ros_volume is None or ros_volume <= 0 or target_volume <= 0:
+        return stats, 1.0
+    scale = target_volume / ros_volume
+    annualized = {}
+    for key, value in stats.items():
+        annualized[key] = value if key in ROS_RATE_STATS else value * scale
+    return annualized, round(scale, 4)
+
+
 def _ros_players(players: Iterable[PlayerProjection]) -> list[PlayerProjection]:
     out = []
     for player in players:
-        stats = _ros_projection_stats(player)
+        stats, scale = _annualized_ros_projection_stats(player)
         if stats:
-            out.append(replace(player, stats=stats))
+            metadata = dict(player.metadata)
+            metadata["ros_true_talent_annualization_scale"] = scale
+            out.append(replace(player, stats=stats, metadata=metadata))
     return out
 
 
@@ -371,16 +419,116 @@ def _stability_adjusted_result(
         if ros_value is None
         else current_value * (1.0 - ros_weight) + ros_value * ros_weight
     )
+    reliability = _playing_time_reliability(result.player)
+    floor_value = _established_true_talent_floor(result.player, ros_value, reliability)
+    floor_applied = False
+    if floor_value is not None and adjusted_value < floor_value:
+        adjusted_value = floor_value
+        floor_applied = True
     return (
         replace(result, total_value=adjusted_value),
         {
             "current_season_category_value": round(current_value, 4),
             "ros_category_value": _round(ros_value, 4),
+            "ros_value_kind": "annualized_true_talent",
+            "ros_true_talent_annualization_scale": (
+                (ros_result.player.metadata or {}).get("ros_true_talent_annualization_scale")
+                if ros_result is not None
+                else None
+            ),
             "ros_stability_weight": ros_weight,
             "stability_adjusted_category_value": round(adjusted_value, 4),
             "stability_adjustment": round(adjusted_value - current_value, 4),
+            "true_talent_floor_value": _round(floor_value, 4),
+            "true_talent_floor_applied": floor_applied,
         },
     )
+
+
+def _is_reliever_only(player: PlayerProjection) -> bool:
+    return player.pool is PlayerPool.RELIEVER or (
+        "RP" in player.positions and "SP" not in player.positions
+    )
+
+
+def _is_starter(player: PlayerProjection) -> bool:
+    return player.pool is PlayerPool.STARTER or "SP" in player.positions
+
+
+def _actual_ip(player: PlayerProjection) -> float:
+    actual = player.metadata.get("stats_actual") or {}
+    return _finite_float(actual.get("IP")) or 0.0
+
+
+def _established_true_talent_floor(
+    player: PlayerProjection,
+    ros_value: float | None,
+    reliability: float,
+) -> float | None:
+    if ros_value is None or reliability < 70.0:
+        return None
+    age = _coerce_age(player.metadata.get("age"))
+    if age is None:
+        return None
+    if player.pool is PlayerPool.HITTER:
+        if age > 33 or _volume(player) < ESTABLISHED_HITTER_MIN_PA:
+            return None
+    elif _is_starter(player) and not _is_reliever_only(player):
+        if age > 31 or _volume(player) < ESTABLISHED_SP_MIN_IP:
+            return None
+    else:
+        return None
+    return ros_value * TRUE_TALENT_FLOOR_SHARE
+
+
+def _role_adjusted_score(
+    player: PlayerProjection,
+    score: float,
+    stability: dict[str, Any] | None,
+) -> tuple[float, dict[str, Any]]:
+    adjustments: dict[str, Any] = {
+        "reliever_score_cap": None,
+        "young_sp_volatility_discount": 0.0,
+    }
+    adjusted = score
+    if _is_reliever_only(player):
+        adjustments["reliever_score_cap"] = RELIEVER_DYNASTY_SCORE_CAP
+        adjusted = min(adjusted, RELIEVER_DYNASTY_SCORE_CAP)
+    elif _is_starter(player):
+        age = _coerce_age(player.metadata.get("age"))
+        actual_ip = _actual_ip(player)
+        projection_stability = stability or {}
+        current_value = _finite_float(projection_stability.get("current_season_category_value"))
+        ros_value = _finite_float(projection_stability.get("ros_category_value"))
+        current_over_true_talent_gap = (
+            current_value - ros_value
+            if current_value is not None and ros_value is not None
+            else 0.0
+        )
+        if (
+            age is not None
+            and age <= YOUNG_SP_VOLATILITY_AGE_MAX
+            and actual_ip < YOUNG_SP_VOLATILITY_IP_MAX
+            and current_over_true_talent_gap > YOUNG_SP_VOLATILITY_GAP_START
+        ):
+            gap_discount = min(
+                YOUNG_SP_VOLATILITY_MAX_DISCOUNT,
+                (current_over_true_talent_gap - YOUNG_SP_VOLATILITY_GAP_START) / 40.0,
+            )
+            track_record_discount = min(
+                0.06,
+                (YOUNG_SP_VOLATILITY_IP_MAX - actual_ip) / YOUNG_SP_VOLATILITY_IP_MAX * 0.06,
+            )
+            discount = round(
+                min(YOUNG_SP_VOLATILITY_MAX_DISCOUNT, gap_discount + track_record_discount),
+                4,
+            )
+            adjusted *= 1.0 - discount
+            adjustments["young_sp_volatility_discount"] = discount
+            adjustments["actual_mlb_ip"] = round(actual_ip, 3)
+            adjustments["current_over_true_talent_gap"] = round(current_over_true_talent_gap, 4)
+    adjustments["score_before_role_adjustment"] = round(score, 2)
+    return adjusted, adjustments
 
 
 def _category_drivers(result: ValuationResult) -> list[str]:
@@ -423,6 +571,7 @@ def _row(
     horizon: dict[str, Any],
     rank: int,
     stability: dict[str, Any] | None = None,
+    role_adjustments: dict[str, Any] | None = None,
 ) -> dict:
     player = result.player
     role = _role(player)
@@ -457,6 +606,7 @@ def _row(
             "season_category_value": round(result.total_value, 4),
             "dynasty_horizon_value": round(horizon["value"], 4),
             "projection_stability": stability or {},
+            "role_adjustments": role_adjustments or {},
             "horizon_years": horizon["years"],
             "age_adjustment": _round(age_multiplier, 4),
             "age_adjustment_status": (
@@ -528,7 +678,12 @@ def build_mlb_dynasty_layer(
             PRODUCTION_WEIGHT * production_score
             + RELIABILITY_WEIGHT * reliability
         )
-        rows.append((score, production_score, horizon, result))
+        score, role_adjustments = _role_adjusted_score(
+            result.player,
+            score,
+            stability_by_player_id.get(result.player.id),
+        )
+        rows.append((score, production_score, horizon, result, role_adjustments))
 
     rows.sort(
         key=lambda item: (
@@ -546,8 +701,9 @@ def build_mlb_dynasty_layer(
             horizon,
             rank,
             stability_by_player_id.get(result.player.id),
+            role_adjustments,
         )
-        for rank, (score, production_score, horizon, result) in enumerate(rows, 1)
+        for rank, (score, production_score, horizon, result, role_adjustments) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
@@ -586,9 +742,20 @@ def build_mlb_dynasty_layer(
             "horizon_model": "Carries the current ValuCast category projection forward through age-curve ratios and reliability decay.",
             "projection_stability": (
                 "Blends current-season category value with the same player's ROS "
-                "category value; extreme current-over-ROS outliers receive the "
+                "true-talent annualized category value; extreme current-over-ROS outliers receive the "
                 "largest pullback before dynasty-horizon scaling."
             ),
+            "true_talent_floor": (
+                "Established high-reliability MLB hitters and starters cannot fall below "
+                f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+            ),
+            "role_adjustments": {
+                "young_sp_volatility_age_max": YOUNG_SP_VOLATILITY_AGE_MAX,
+                "young_sp_volatility_ip_max": YOUNG_SP_VOLATILITY_IP_MAX,
+                "young_sp_volatility_gap_start": YOUNG_SP_VOLATILITY_GAP_START,
+                "young_sp_volatility_max_discount": YOUNG_SP_VOLATILITY_MAX_DISCOUNT,
+                "reliever_dynasty_score_cap": RELIEVER_DYNASTY_SCORE_CAP,
+            },
             "ros_stability_weights": {
                 "base_ros_weight": ROS_STABILITY_BASE_WEIGHT,
                 "max_ros_weight": ROS_STABILITY_MAX_WEIGHT,

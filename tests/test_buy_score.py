@@ -256,6 +256,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertIn("The 40 best prospect buys by signal, not reputation", html)
         self.assertIn("html2canvas.min.js", html)
         self.assertIn("AHEAD OF THE CURVE", html)
+        self.assertIn("Source:</strong> Legacy DD-backed buy signal", html)
+        self.assertIn("Transitional buy board from the DD feed", html)
+        self.assertIn("Legacy DD-backed buy signal", html)
         # Graphic node included twice: 5 featured + 35 compact each.
         self.assertEqual(html.count('class="bg-featured-card'), 10)
         self.assertEqual(html.count('class="bg-cell"'), 70)

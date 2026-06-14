@@ -9,19 +9,19 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 2.97,
+        "gap": 0.88,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 677951,
           "name": "Bobby Witt Jr.",
           "rank": 2,
-          "value": 96.04
+          "value": 99.12
         },
         "top": {
-          "mlbam_id": 694973,
-          "name": "Paul Skenes",
+          "mlbam_id": 660271,
+          "name": "Shohei Ohtani",
           "rank": 1,
-          "value": 99.01
+          "value": 100.0
         }
       },
       "status": "passed"
@@ -35,6 +35,88 @@
         "outlier_count": 0,
         "ros_stability_weight_limit": 0.69,
         "samples": [],
+        "top_n": 25
+      },
+      "status": "passed"
+    },
+    {
+      "id": "mlb_top_board_role_shape",
+      "message": "Top MLB dynasty board role shape is within publication limits.",
+      "metrics": {
+        "max_pitcher_count": 9,
+        "max_reliever_count": 1,
+        "pitcher_count": 8,
+        "pitcher_samples": [
+          {
+            "name": "Shohei Ohtani",
+            "positions": [
+              "DH",
+              "SP"
+            ],
+            "rank": 1,
+            "value": 100.0
+          },
+          {
+            "name": "Paul Skenes",
+            "positions": [
+              "SP"
+            ],
+            "rank": 3,
+            "value": 95.45
+          },
+          {
+            "name": "Jacob Misiorowski",
+            "positions": [
+              "SP",
+              "RP"
+            ],
+            "rank": 7,
+            "value": 81.11
+          },
+          {
+            "name": "Cristopher S\u00e1nchez",
+            "positions": [
+              "SP"
+            ],
+            "rank": 9,
+            "value": 78.89
+          },
+          {
+            "name": "Chase Burns",
+            "positions": [
+              "SP",
+              "RP"
+            ],
+            "rank": 15,
+            "value": 70.17
+          },
+          {
+            "name": "Cam Schlittler",
+            "positions": [
+              "SP"
+            ],
+            "rank": 22,
+            "value": 61.6
+          },
+          {
+            "name": "Bryan Woo",
+            "positions": [
+              "SP"
+            ],
+            "rank": 23,
+            "value": 60.83
+          },
+          {
+            "name": "Yoshinobu Yamamoto",
+            "positions": [
+              "SP"
+            ],
+            "rank": 24,
+            "value": 60.6
+          }
+        ],
+        "reliever_count": 0,
+        "reliever_samples": [],
         "top_n": 25
       },
       "status": "passed"
@@ -101,6 +183,19 @@
       "status": "passed"
     },
     {
+      "id": "prospect_top25_pedigree_cap_plateau",
+      "message": "Top prospect board is not dominated by exact pedigree-cap ties.",
+      "metrics": {
+        "evaluated_count": 25,
+        "exact_pedigree_cap_count": 0,
+        "max_allowed_exact_pedigree_cap_count": 3,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 25
+      },
+      "status": "passed"
+    },
+    {
       "id": "prospect_top50_team_coverage",
       "message": "Top prospect board has complete MLB-org display coverage.",
       "metrics": {
@@ -134,6 +229,9 @@
   "criteria": {
     "max_buy_history_limited_rate": 0.5,
     "max_elite_factual_raw_fallback_top_200": 0,
+    "max_top25_exact_pedigree_cap_count": 3,
+    "max_top25_mlb_pitcher_count": 9,
+    "max_top25_mlb_reliever_count": 1,
     "max_top25_neutral_investment_rate": 0.35,
     "max_top50_fallback_rate": 0.1,
     "max_top50_missing_team_count": 0,
@@ -142,6 +240,7 @@
     "max_top_mlb_current_over_ros_gap": 10.0,
     "max_top_mlb_ros_stability_weight": 0.69,
     "max_top_mlb_value_gap": 18.0,
+    "mlb_role_shape_top_n": 25,
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },

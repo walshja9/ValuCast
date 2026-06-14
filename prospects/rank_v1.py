@@ -34,6 +34,7 @@ PEDIGREE_HITTER_SCORE_CAP = 49.0
 PEDIGREE_PITCHER_SCORE_CAP = 46.5
 PEDIGREE_HIGH_SAMPLE_BONUS_CAP = 1.0
 PEDIGREE_UPPER_LEVEL_BONUS_CAP = 1.5
+PEDIGREE_CAP_COMPRESSION_WINDOW = 1.2
 PEDIGREE_LEVEL_BASELINE_AGE = {
     "DSL": 18.0,
     "CPX": 19.0,
@@ -397,13 +398,32 @@ def _pedigree_fallback_score_components(
         reliability_score,
         investment_score,
     )
-    score = min(uncapped_score, cap)
+    cap_compressed = uncapped_score > cap
+    if cap_compressed:
+        overage = min(1.0, (uncapped_score - cap) / 20.0)
+        context_blend = (
+            0.35 * max(0.0, min(1.0, (investment_score - PEDIGREE_MIN_INVESTMENT_SCORE) / 10.0))
+            + 0.25 * max(0.0, min(1.0, reliability_score / 100.0))
+            + 0.25 * max(0.0, min(1.0, universal_score / 100.0))
+            + 0.15 * max(0.0, min(1.0, age_level_score / 100.0))
+        )
+        score = min(
+            cap - 0.01,
+            cap
+            - PEDIGREE_CAP_COMPRESSION_WINDOW
+            + 0.8 * overage
+            + 0.4 * context_blend,
+        )
+    else:
+        score = uncapped_score
     return (
         round(score, 2),
         {
             "age_level_context": _round(age_level_score),
             "pedigree_score_uncapped": _round(uncapped_score),
             "pedigree_score_cap": cap,
+            "pedigree_cap_compressed": cap_compressed,
+            "pedigree_cap_compression_window": PEDIGREE_CAP_COMPRESSION_WINDOW,
             "pedigree_min_investment_score": PEDIGREE_MIN_INVESTMENT_SCORE,
         },
     )

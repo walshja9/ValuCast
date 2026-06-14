@@ -150,9 +150,13 @@ It has two separate readiness concepts:
 - `ready_for_all_public_surfaces` remains false until buy signals are reviewed
   and have enough dated ValuCast score history.
 
-The MLB layer now has a ValuCast-owned identity age source and a three-year
-dynasty horizon. The cross-universe gate certifies MLB and prospect rows on the
-shared `0_100_valucast_dynasty_score` scale without mutating the underlying raw
+The MLB layer now has a ValuCast-owned identity age source, a three-year
+dynasty horizon, and an annualized ROS true-talent prior. The prior scales
+rest-of-season projections back to season-level context before comparing them
+to the current full-season line, then applies an established-player floor, a
+young-starter volatility discount, and a pure-reliever dynasty score cap. The
+cross-universe gate certifies MLB and prospect rows on the shared
+`0_100_valucast_dynasty_score` scale without mutating the underlying raw
 scores. The `/buys` switch remains separately gated by `ValuCastBuyStore` so a
 calibrated Dynasty/Prospects snapshot cannot accidentally promote an unreviewed
 buy board.
@@ -170,6 +174,9 @@ score. It is a publication brake. Current checks include:
 - Prospect Rank v1 rows suppressed from the visible public prospect surface
 - MLB projection rows with extreme current-over-ROS gaps near the top of the
   Dynasty board
+- top-board MLB role shape, so pitcher or reliever runs cannot dominate the
+  published Dynasty board
+- exact pedigree-cap tie clusters near the top of the prospect board
 - Buy promotion readiness, including review status and ValuCast score-history
   depth
 
@@ -191,6 +198,9 @@ Two model-quality rules are now part of the public snapshot path:
   of separate public Dynasty rows.
 - MLB dynasty values use an internal ROS-stability adjustment so one extreme
   current-season line cannot define the whole top of the board by itself.
+- Prospect pedigree fallback rows compress below their cap instead of tying at
+  the same capped score, so high-investment low-minors prospects can surface
+  without creating an arbitrary plateau.
 - Prospect rows win publication conflicts against weak MLB projection rows
   until the prospect is explicitly marked as MLB-level or the MLB row is a
   material current-value promotion. A low present-day projection row should not
@@ -201,8 +211,8 @@ Two model-quality rules are now part of the public snapshot path:
 
 ## Next Build
 
-Harden ValuCast Dynasty Value v1 and promote ValuCast-owned Buys only after the
-buy gate passes.
+Promote ValuCast-owned Buys only after the buy gate passes and keep hardening
+ValuCast Dynasty Value with dated forward evidence.
 
 It should combine:
 

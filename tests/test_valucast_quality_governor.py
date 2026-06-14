@@ -3,13 +3,14 @@
 from quality.valucast_governor import evaluate_quality_governor
 
 
-def _mlb_row(mlbam_id, name, role, rank, value):
+def _mlb_row(mlbam_id, name, role, rank, value, positions=None):
     return {
         "id": f"vc_mlb_{mlbam_id}_{role}",
         "player_type": "mlb",
         "mlbam_id": mlbam_id,
         "name": name,
         "role": role,
+        "positions": positions or (["SP"] if role == "pitcher" else ["SS"]),
         "rank": rank,
         "value": value,
     }
@@ -252,3 +253,59 @@ def test_quality_governor_allows_extreme_raw_mlb_outlier_after_stability_adjustm
 
     assert payload["ready_for_public_snapshot"] is True
     assert payload["blockers"] == []
+
+
+def test_quality_governor_blocks_pitcher_heavy_top_dynasty_board():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        *[
+            _mlb_row(index, f"Pitcher {index}", "pitcher", index, 90.0 - index, positions=["SP"])
+            for index in range(1, 11)
+        ],
+        _mlb_row(50, "Closer One", "pitcher", 11, 70.0, positions=["RP"]),
+        _mlb_row(51, "Closer Two", "pitcher", 12, 69.0, positions=["RP"]),
+        _mlb_row(60, "MLB Bat", "hitter", 13, 68.0, positions=["OF"]),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top MLB dynasty board is too pitcher/reliever-heavy for public promotion." in payload["blockers"]
+
+
+def test_quality_governor_blocks_exact_pedigree_cap_plateau():
+    prospects = []
+    for index in range(1, 51):
+        row = _prospect_row(index)
+        if index <= 4:
+            row["score_source"] = "prospect_pedigree_v0_7"
+            row["value_source"] = "prospect_pedigree_v0_7"
+            row["score"] = 49.0
+            row["value"] = 49.0
+            row["components"]["pedigree_score_cap"] = 49.0
+        prospects.append(row)
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board has too many exact pedigree-cap ties." in payload["blockers"]

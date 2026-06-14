@@ -19,7 +19,8 @@
         <span class="buys-heading-eyebrow">VALUCAST BUYS</span>
         <h1>AHEAD OF THE CURVE</h1>
         <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
-        <p class="buys-fineprint">Buy score = momentum + breakout + market gap + runway. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
+        <p class="buys-fineprint"><strong>Source:</strong> {{ buy_source_label }}. {{ buy_source_note }}</p>
+        <p class="buys-fineprint">{{ buy_formula_note }}. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
     </div>
     {% if dd_available %}
     <div class="buys-actions">
@@ -86,7 +87,8 @@
 .bg-head { position: absolute; inset: 0 0 auto 0; height: 206px; }
 .bg-brand { position: absolute; left: 48px; top: 40px; font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #34d399; }
 .bg-title { position: absolute; left: 48px; top: 74px; font-size: 60px; font-weight: 900; letter-spacing: .5px; line-height: 1.05; }
-.bg-sub { position: absolute; left: 48px; top: 156px; font-size: 22px; color: #9aa1c0; }
+.bg-sub { position: absolute; left: 48px; top: 150px; font-size: 21px; color: #9aa1c0; }
+.bg-source { position: absolute; left: 48px; top: 180px; font-size: 16px; color: #34d399; font-weight: 700; }
 .bg-arc { position: absolute; right: 48px; top: 40px; width: 330px; height: 150px; }
 .bg-arc path { fill: none; stroke: #232c49; stroke-width: 2px; }
 .bg-featured { position: absolute; left: 48px; top: 226px; width: 984px; height: 314px; display: grid; grid-template-columns: 370px 598px; gap: 16px; }
@@ -142,6 +144,7 @@
 .bg-foot { position: absolute; left: 48px; right: 48px; bottom: 22px; height: 46px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; padding: 0 12px; background: #232440; border-radius: 8px; }
 .bg-foot-brand { font-size: 22px; font-weight: 800; color: #34d399; }
 .bg-foot-note { font-size: 18px; color: #9aa1c0; }
+.bg-foot-source { color: #34d399; font-weight: 800; }
 </style>
 
 <script src="{{ url_for('static', filename='html2canvas.min.js') }}"></script>

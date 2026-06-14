@@ -263,6 +263,20 @@ def _select_buy_source(
     return dd_candidate, "dd_feed"
 
 
+def _buy_source_copy(source: str) -> dict[str, str]:
+    if source == "valucast_buys":
+        return {
+            "label": "ValuCast-owned buy signal",
+            "note": "Independent ValuCast model signal; no DD ranks or values feed the score.",
+            "formula": "buy score = model strength + momentum + buy window + runway",
+        }
+    return {
+        "label": "Legacy DD-backed buy signal",
+        "note": "Transitional buy board from the DD feed; not the ValuCast-owned Buy artifact.",
+        "formula": "buy score = momentum + breakout + market gap + runway",
+    }
+
+
 dd_store, dynasty_data_source = _select_dynasty_store(
     legacy_dd_store, public_snapshot_store
 )
@@ -1541,6 +1555,7 @@ def buys():
         graphic_rows, list_rows = [], []
         data_generated_at = None
         data_available = False
+    buy_source_copy = _buy_source_copy(buy_data_source)
     for row in graphic_rows:
         row["spark"] = build_spark(row["value_history"])
     for row in list_rows:
@@ -1554,6 +1569,9 @@ def buys():
         dd_available=data_available,
         dd_generated_at=data_generated_at,
         buy_data_source=buy_data_source,
+        buy_source_label=buy_source_copy["label"],
+        buy_source_note=buy_source_copy["note"],
+        buy_formula_note=buy_source_copy["formula"],
         as_of=store.as_of,
     )
 

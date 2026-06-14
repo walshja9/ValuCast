@@ -29,6 +29,9 @@ GOVERNOR_VERSION = "0.1.0"
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25
+MLB_ROLE_SHAPE_TOP_N = 25
+MAX_TOP25_MLB_PITCHER_COUNT = 9
+MAX_TOP25_MLB_RELIEVER_COUNT = 1
 MAX_TOP_MLB_CURRENT_OVER_ROS_GAP = 10.0
 MAX_TOP_MLB_ADJUSTED_OVER_ROS_GAP = 5.0
 MAX_TOP_MLB_ROS_STABILITY_WEIGHT = 0.69
@@ -39,6 +42,7 @@ MAX_TOP50_SUPPRESSED_RANK_ROWS = 0
 MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200 = 0
 PROSPECT_INVESTMENT_TOP_N = 25
 MAX_TOP25_NEUTRAL_INVESTMENT_RATE = 0.35
+MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT = 3
 MAX_TOP50_MISSING_TEAM_COUNT = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 
@@ -243,6 +247,63 @@ def _mlb_projection_stability_outliers(players: list[dict]) -> dict:
     )
 
 
+def _is_pitcher_row(row: dict) -> bool:
+    positions = set(row.get("positions") or [])
+    return bool(positions & {"P", "SP", "RP"}) or row.get("role") == "pitcher"
+
+
+def _is_reliever_only_row(row: dict) -> bool:
+    positions = set(row.get("positions") or [])
+    return "RP" in positions and "SP" not in positions
+
+
+def _mlb_top_board_role_shape(players: list[dict]) -> dict:
+    top_rows = [
+        row
+        for row in players
+        if row.get("player_type") == "mlb"
+        and (_clean_int(row.get("rank")) or 999999) <= MLB_ROLE_SHAPE_TOP_N
+    ]
+    pitcher_rows = [row for row in top_rows if _is_pitcher_row(row)]
+    reliever_rows = [row for row in top_rows if _is_reliever_only_row(row)]
+    passed = (
+        len(pitcher_rows) <= MAX_TOP25_MLB_PITCHER_COUNT
+        and len(reliever_rows) <= MAX_TOP25_MLB_RELIEVER_COUNT
+    )
+    return _check(
+        "mlb_top_board_role_shape",
+        passed,
+        (
+            "Top MLB dynasty board role shape is within publication limits."
+            if passed
+            else "Top MLB dynasty board is too pitcher/reliever-heavy for public promotion."
+        ),
+        top_n=MLB_ROLE_SHAPE_TOP_N,
+        pitcher_count=len(pitcher_rows),
+        max_pitcher_count=MAX_TOP25_MLB_PITCHER_COUNT,
+        reliever_count=len(reliever_rows),
+        max_reliever_count=MAX_TOP25_MLB_RELIEVER_COUNT,
+        pitcher_samples=[
+            {
+                "rank": row.get("rank"),
+                "name": row.get("name"),
+                "positions": row.get("positions"),
+                "value": row.get("value"),
+            }
+            for row in pitcher_rows[:10]
+        ],
+        reliever_samples=[
+            {
+                "rank": row.get("rank"),
+                "name": row.get("name"),
+                "positions": row.get("positions"),
+                "value": row.get("value"),
+            }
+            for row in reliever_rows[:10]
+        ],
+    )
+
+
 def _two_way_policy(players: list[dict]) -> dict:
     by_mlbam: dict[str, list[dict]] = defaultdict(list)
     for row in players:
@@ -343,6 +404,44 @@ def _prospect_neutral_investment_rate(players: list[dict]) -> dict:
         neutral_investment_rate=rate,
         max_allowed_rate=MAX_TOP25_NEUTRAL_INVESTMENT_RATE,
         sample_ready=sample_ready,
+    )
+
+
+def _prospect_pedigree_cap_plateau(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_INVESTMENT_TOP_N]
+    exact_cap_rows = []
+    for row in top_rows:
+        components = _components(row)
+        cap = _clean_float(components.get("pedigree_score_cap"))
+        score = _clean_float(row.get("value") or row.get("score"))
+        if cap is None or score is None:
+            continue
+        if abs(score - cap) < 0.005:
+            exact_cap_rows.append(
+                {
+                    "rank": row.get("prospect_rank") or row.get("rank"),
+                    "name": row.get("name"),
+                    "score": score,
+                    "cap": cap,
+                    "score_source": row.get("score_source") or row.get("value_source"),
+                }
+            )
+    sample_ready = len(top_rows) >= PROSPECT_INVESTMENT_TOP_N
+    passed = (not sample_ready) or len(exact_cap_rows) <= MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT
+    return _check(
+        "prospect_top25_pedigree_cap_plateau",
+        passed,
+        (
+            "Top prospect board is not dominated by exact pedigree-cap ties."
+            if passed
+            else "Top prospect board has too many exact pedigree-cap ties."
+        ),
+        top_n=PROSPECT_INVESTMENT_TOP_N,
+        evaluated_count=len(top_rows),
+        exact_pedigree_cap_count=len(exact_cap_rows),
+        max_allowed_exact_pedigree_cap_count=MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT,
+        sample_ready=sample_ready,
+        samples=exact_cap_rows[:10],
     )
 
 
@@ -525,11 +624,13 @@ def evaluate_quality_governor(
     board_checks = [
         _top_mlb_value_gap(players),
         _mlb_projection_stability_outliers(players),
+        _mlb_top_board_role_shape(players),
         _two_way_policy(players),
         _prospect_rank_surface_suppression(prospect_rank, players),
         _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
         _prospect_fallback_rate(players),
         _prospect_neutral_investment_rate(players),
+        _prospect_pedigree_cap_plateau(players),
         _prospect_missing_team_count(players),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
@@ -559,6 +660,9 @@ def evaluate_quality_governor(
         "criteria": {
             "max_top_mlb_value_gap": MAX_TOP_MLB_VALUE_GAP,
             "mlb_stability_top_n": MLB_STABILITY_TOP_N,
+            "mlb_role_shape_top_n": MLB_ROLE_SHAPE_TOP_N,
+            "max_top25_mlb_pitcher_count": MAX_TOP25_MLB_PITCHER_COUNT,
+            "max_top25_mlb_reliever_count": MAX_TOP25_MLB_RELIEVER_COUNT,
             "max_top_mlb_current_over_ros_gap": MAX_TOP_MLB_CURRENT_OVER_ROS_GAP,
             "max_top_mlb_adjusted_over_ros_gap": MAX_TOP_MLB_ADJUSTED_OVER_ROS_GAP,
             "max_top_mlb_ros_stability_weight": MAX_TOP_MLB_ROS_STABILITY_WEIGHT,
@@ -567,6 +671,7 @@ def evaluate_quality_governor(
             "max_top50_suppressed_rank_rows": MAX_TOP50_SUPPRESSED_RANK_ROWS,
             "max_elite_factual_raw_fallback_top_200": MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200,
             "max_top25_neutral_investment_rate": MAX_TOP25_NEUTRAL_INVESTMENT_RATE,
+            "max_top25_exact_pedigree_cap_count": MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT,
             "max_top50_missing_team_count": MAX_TOP50_MISSING_TEAM_COUNT,
             "max_buy_history_limited_rate": MAX_BUY_HISTORY_LIMITED_RATE,
         },
