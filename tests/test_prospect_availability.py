@@ -191,3 +191,27 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert payload["artifact_version"] == "0.3.0"
     assert payload["summary"]["profile_count"] == 3
     assert validate_prospect_availability(artifact_path)[1] == []
+
+
+def test_availability_validator_rejects_mislabeled_risk_basis(tmp_path):
+    payload = build_prospect_availability(_input_contract())
+    thin = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+    thin["risk_basis"] = "none"
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_prospect_availability(artifact_path)
+
+    assert "profiles[2].status is inconsistent with risk_basis" in problems
+    assert "profiles[2].risk_basis=none requires zero risk_discount" in problems
+
+
+def test_availability_validator_rejects_unknown_risk_basis(tmp_path):
+    payload = build_prospect_availability(_input_contract())
+    payload["profiles"][0]["risk_basis"] = "market_rank"
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_prospect_availability(artifact_path)
+
+    assert "profiles[0].risk_basis is invalid" in problems

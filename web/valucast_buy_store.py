@@ -71,7 +71,9 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
     if validation.get("active_mlb_roster_overlap_count", 0) != 0:
         problems.append("validation reports active MLB roster overlap")
     if validation.get("ready_for_live_consumers") is True:
-        if payload.get("signal_version") == LOCKED_SIGNAL_VERSION:
+        if payload.get("signal_version") != LOCKED_SIGNAL_VERSION:
+            problems.append("ready buy signals must use locked v1 signal_version")
+        else:
             release_contract = payload.get("release_contract") or {}
             if release_contract.get("release") != LOCKED_RELEASE:
                 problems.append("ready v1 buy signals must declare the locked release")

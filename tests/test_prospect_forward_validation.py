@@ -164,3 +164,22 @@ def test_run_forward_validation_report_writes_valid_artifact(tmp_path):
     assert result["buy_comparison_count"] == 1
     assert payload["artifact"] == "valucast_prospect_forward_validation"
     assert problems == []
+
+
+def test_forward_validation_validator_rejects_unknown_top_level_metrics(tmp_path):
+    rank_payloads = [
+        _rank_payload("2026-06-13", [_rank_row(1, "A", 1, 60.0)]),
+        _rank_payload("2026-06-14", [_rank_row(1, "A", 2, 59.0)]),
+    ]
+    buy_payloads = [
+        _buy_payload("2026-06-13", [_buy_row(1, "A", 1, 60.0)]),
+        _buy_payload("2026-06-14", [_buy_row(1, "A", 1, 59.0)]),
+    ]
+    payload = build_forward_validation_report(rank_payloads, buy_payloads)
+    payload["hit_rate"] = 0.80
+    artifact_path = tmp_path / "forward-validation.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_report(artifact_path)
+
+    assert "unexpected top-level keys: hit_rate" in problems

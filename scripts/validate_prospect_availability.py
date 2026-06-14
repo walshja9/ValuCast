@@ -10,6 +10,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
+ALLOWED_RISK_BASIS = {
+    "none",
+    "current_sample_size",
+    "sample_staleness",
+    "upstream_factual_status",
+    "manual_override",
+}
+EXPECTED_STATUS_BY_BASIS = {
+    "none": {"available"},
+    "current_sample_size": {"thin_current_sample"},
+    "sample_staleness": {"stale_or_inactive"},
+    "upstream_factual_status": {"injured", "inactive", "restricted", "rehab", "il"},
+    "manual_override": {"injured", "inactive", "restricted", "rehab", "il"},
+}
 
 
 def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str]]:
@@ -57,8 +71,11 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
             problems.append(f"profiles[{index}].role must be hitter or pitcher")
         if row.get("present") is not True:
             problems.append(f"profiles[{index}].present must be true")
-        if row.get("risk_basis") in (None, ""):
+        risk_basis = row.get("risk_basis")
+        if risk_basis in (None, ""):
             problems.append(f"profiles[{index}].risk_basis is required")
+        elif risk_basis not in ALLOWED_RISK_BASIS:
+            problems.append(f"profiles[{index}].risk_basis is invalid")
         discount = row.get("risk_discount")
         if not isinstance(discount, (int, float)) or isinstance(discount, bool):
             problems.append(f"profiles[{index}].risk_discount must be numeric")
@@ -66,6 +83,22 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
             problems.append(f"profiles[{index}].risk_discount is out of bounds")
         elif discount > 0:
             risk_count += 1
+        if risk_basis in ALLOWED_RISK_BASIS and isinstance(discount, (int, float)):
+            risk_level = row.get("risk_level")
+            status = row.get("status")
+            expected_statuses = EXPECTED_STATUS_BY_BASIS[risk_basis]
+            if status not in expected_statuses:
+                problems.append(f"profiles[{index}].status is inconsistent with risk_basis")
+            if risk_basis == "none":
+                if discount != 0:
+                    problems.append(f"profiles[{index}].risk_basis=none requires zero risk_discount")
+                if risk_level != "clear":
+                    problems.append(f"profiles[{index}].risk_basis=none requires risk_level=clear")
+            else:
+                if discount <= 0:
+                    problems.append(f"profiles[{index}].risk_basis requires positive risk_discount")
+                if risk_level == "clear":
+                    problems.append(f"profiles[{index}].risk_basis requires non-clear risk_level")
         identities.append((str(row.get("mlbam_id")), row.get("role")))
 
     if len(identities) != len(set(identities)):

@@ -278,6 +278,32 @@ def test_validator_rejects_ready_v1_payload_without_locked_release_contract():
     assert "ready v1 buy signals must freeze the score contract" in problems
 
 
+def test_validator_rejects_ready_legacy_signal_version_even_with_ready_flags():
+    review = {"review_status": "candidate_ready"}
+    rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
+    history = [
+        {
+            "date": "2026-06-12",
+            "board": [
+                {"mlbam_id": index, "role": "hitter", "score": 53.0}
+                for index in range(1, 45)
+            ],
+        }
+    ]
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        history,
+        promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
+    )
+    payload["signal_version"] = "0.2.2"
+
+    problems = validate_valucast_buy_payload(payload)
+
+    assert "ready buy signals must use locked v1 signal_version" in problems
+
+
 def test_valucast_buy_store_loads_shadow_artifact(tmp_path):
     payload = build_buy_signals(_rank_payload(), _history())
     path = tmp_path / "buys.json"

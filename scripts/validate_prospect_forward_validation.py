@@ -10,6 +10,22 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 REPORT_PATH = ROOT / "data" / "models" / "valucast_prospect_forward_validation.json"
+ALLOWED_TOP_LEVEL_KEYS = {
+    "artifact",
+    "buy_comparisons",
+    "generated_at",
+    "input_artifacts",
+    "latest_buy_comparison",
+    "latest_rank_comparison",
+    "metrics",
+    "observation_contract",
+    "rank_comparisons",
+    "recommendations",
+    "report_name",
+    "report_version",
+    "source_policy",
+    "status",
+}
 
 
 def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
@@ -19,6 +35,9 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
         return None, [f"{path} unreadable: {exc}"]
 
     problems = []
+    unexpected = sorted(set(payload) - ALLOWED_TOP_LEVEL_KEYS)
+    if unexpected:
+        problems.append(f"unexpected top-level keys: {', '.join(unexpected)}")
     if payload.get("artifact") != "valucast_prospect_forward_validation":
         problems.append("artifact must be valucast_prospect_forward_validation")
     if payload.get("status") not in {"collecting", "review_ready"}:

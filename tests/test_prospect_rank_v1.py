@@ -5,6 +5,10 @@ from prospects.rank_v1 import (
     BUCKET_CALIBRATION_VERSION,
     LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
     PROHIBITED_SCORE_INPUTS,
+    UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
+    UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
+    UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
+    UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
@@ -531,7 +535,7 @@ def test_rank_v1_applies_lower_minors_pedigree_bucket_calibration():
         2,
     )
     assert payload["rank_contract"]["bucket_calibration"]["scope"] == (
-        "score_source_and_level_bucket_only"
+        "score_source_level_and_factual_current_stat_bucket_only"
     )
 
 
@@ -654,6 +658,45 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     assert calibration["rules"][0]["sample_threshold"] == 30.0
     assert row["score"] == round(
         row["components"]["score_before_bucket_calibration"] - 2.0,
+        2,
+    )
+
+
+def test_rank_v1_bucket_adjusts_upper_level_low_impact_hitter_model_samples():
+    universe = _universe()
+    universe["players"][0]["level"] = "AAA"
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][0].update(
+        {
+            "level": "AAA",
+            "plate_appearances": 250,
+            "iso": 0.079,
+            "ops": 0.694,
+        }
+    )
+
+    payload = build_prospect_rank_v1(
+        universe,
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 1)
+    calibration = row["components"]["bucket_calibration"]
+
+    assert row["score_source"] == "prospect_model_v0_6"
+    assert calibration["version"] == BUCKET_CALIBRATION_VERSION
+    assert calibration["bucket"] == "upper_level_low_impact_hitter_model_sample"
+    assert calibration["adjustment"] == UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT
+    assert calibration["rules"][0]["sample_threshold"] == (
+        UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA
+    )
+    assert calibration["rules"][0]["iso_threshold"] == UPPER_LEVEL_HITTER_LOW_IMPACT_ISO
+    assert calibration["rules"][0]["ops_threshold"] == UPPER_LEVEL_HITTER_LOW_IMPACT_OPS
+    assert row["score"] == round(
+        row["components"]["score_before_bucket_calibration"]
+        + UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
         2,
     )
 

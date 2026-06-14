@@ -27,15 +27,19 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1"
-RANK_VERSION = "0.2.4"
+RANK_VERSION = "0.2.5"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
-BUCKET_CALIBRATION_VERSION = "0.2.2"
+BUCKET_CALIBRATION_VERSION = "0.2.3"
 UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
 LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.5
 THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
 THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
+UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA = 200.0
+UPPER_LEVEL_HITTER_LOW_IMPACT_ISO = 0.100
+UPPER_LEVEL_HITTER_LOW_IMPACT_OPS = 0.720
+UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT = -1.5
 PEDIGREE_MIN_INVESTMENT_SCORE = 90.0
 PEDIGREE_HITTER_SCORE_CAP = 48.0
 PEDIGREE_PITCHER_SCORE_CAP = 45.5
@@ -645,6 +649,42 @@ def _bucket_calibration_adjustment(
             }
         )
 
+    iso = _clean_float((input_row or {}).get("iso"))
+    ops = _clean_float((input_row or {}).get("ops"))
+    if (
+        source == "prospect_model_v0_6"
+        and role == "hitter"
+        and level in {"AA", "AAA"}
+        and sample_unit == "PA"
+        and sample >= UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA
+        and iso is not None
+        and iso < UPPER_LEVEL_HITTER_LOW_IMPACT_ISO
+        and ops is not None
+        and ops < UPPER_LEVEL_HITTER_LOW_IMPACT_OPS
+    ):
+        adjustments.append(
+            {
+                "bucket": "upper_level_low_impact_hitter_model_sample",
+                "label": "Upper-level impact floor",
+                "level": level,
+                "role": role,
+                "score_source": source,
+                "sample": round(sample, 3),
+                "sample_unit": sample_unit,
+                "sample_threshold": UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
+                "iso": round(iso, 3),
+                "iso_threshold": UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
+                "ops": round(ops, 3),
+                "ops_threshold": UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
+                "adjustment": UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
+                "reason": (
+                    "Upper-level hitter model scores with full current samples but "
+                    "limited game impact are kept slightly behind comparable bats "
+                    "with stronger impact evidence."
+                ),
+            }
+        )
+
     if not adjustments:
         return score, components
 
@@ -996,7 +1036,11 @@ def build_prospect_rank_v1(
                 "lower_minors_pedigree_score_adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
                 "thin_upper_level_pitcher_model_sample_ip": THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP,
                 "thin_upper_level_pitcher_model_adjustment": THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT,
-                "scope": "score_source_and_level_bucket_only",
+                "upper_level_hitter_low_impact_sample_pa": UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
+                "upper_level_hitter_low_impact_iso": UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
+                "upper_level_hitter_low_impact_ops": UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
+                "upper_level_hitter_low_impact_adjustment": UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
+                "scope": "score_source_level_and_factual_current_stat_bucket_only",
             },
             "prospect_universe_source": "valucast_prospect_universe",
             "dd_feed_usage": "Optional display/comparison context only.",
