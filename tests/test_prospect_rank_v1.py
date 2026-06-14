@@ -194,6 +194,45 @@ def _adapter():
     }
 
 
+def _availability():
+    return {
+        "artifact": "valucast_prospect_availability",
+        "artifact_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "profile_count": 2,
+        "profiles": [
+            {
+                "mlbam_id": 1,
+                "role": "hitter",
+                "status": "available",
+                "risk_level": "clear",
+                "risk_discount": 0.0,
+                "availability_note": "Current sample is active.",
+                "signals": [],
+                "sample": 200,
+                "sample_unit": "PA",
+                "sample_fetched_date": "2026-06-13",
+                "sample_staleness_days": 0,
+                "present": True,
+            },
+            {
+                "mlbam_id": 2,
+                "role": "hitter",
+                "status": "thin_current_sample",
+                "risk_level": "medium",
+                "risk_discount": 0.06,
+                "availability_note": "Thin sample.",
+                "signals": ["thin_upper_level_hitter_sample_under_100_pa"],
+                "sample": 90,
+                "sample_unit": "PA",
+                "sample_fetched_date": "2026-06-13",
+                "sample_staleness_days": 0,
+                "present": True,
+            },
+        ],
+    }
+
+
 def test_rank_v1_is_candidate_shadow_and_blocks_live_consumers():
     payload = build_prospect_rank_v1(
         _universe(),
@@ -210,6 +249,32 @@ def test_rank_v1_is_candidate_shadow_and_blocks_live_consumers():
     assert payload["rank_contract"]["dd_values_used_for_score"] is False
     assert payload["rank_contract"]["external_rankings_used_for_score"] is False
     assert payload["rank_contract"]["prohibited_score_inputs"] == PROHIBITED_SCORE_INPUTS
+
+
+def test_rank_v1_applies_bounded_availability_discount():
+    original = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+    )
+    changed = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        prospect_availability=_availability(),
+    )
+
+    original_row = next(row for row in original["board"] if row["mlbam_id"] == 2)
+    changed_row = next(row for row in changed["board"] if row["mlbam_id"] == 2)
+
+    assert changed_row["score"] == round(original_row["score"] * 0.94, 2)
+    assert changed_row["components"]["score_before_availability_adjustment"] == original_row["score"]
+    assert changed_row["components"]["availability_risk_discount"] == 0.06
+    assert changed_row["components"]["availability_adjusted"] is True
+    assert changed_row["components"]["availability"]["status"] == "thin_current_sample"
+    assert changed["input_artifacts"]["prospect_availability_version"] == "0.1.0"
 
 
 def test_dd_and_public_rank_context_does_not_change_scores():
@@ -385,6 +450,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     layer_path = tmp_path / "layer.json"
     model_path = tmp_path / "model.json"
     input_path = tmp_path / "input.json"
+    availability_path = tmp_path / "availability.json"
     adapter_path = tmp_path / "adapter.json"
     artifact_path = tmp_path / "rank.json"
 
@@ -393,6 +459,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     layer_path.write_text(json.dumps(_dynasty_layer()), encoding="utf-8")
     model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
     input_path.write_text(json.dumps(_input_contract()), encoding="utf-8")
+    availability_path.write_text(json.dumps(_availability()), encoding="utf-8")
     adapter_path.write_text(json.dumps(_adapter()), encoding="utf-8")
 
     result = run_prospect_rank_v1(
@@ -400,6 +467,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         dynasty_layer_path=layer_path,
         prospect_model_path=model_path,
         input_contract_path=input_path,
+        availability_path=availability_path,
         dd_adapter_path=adapter_path,
         dd_feed_path=feed_path,
         artifact_path=artifact_path,
@@ -411,4 +479,5 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     assert result["live_consumer"] == "blocked"
     assert result["archive_changed"] is True
     assert payload["board"][0]["rank"] == 1
+    assert payload["board"][0]["components"]["availability"]["present"] is True
     assert (tmp_path / "archive" / "2026-06-13.json").exists()

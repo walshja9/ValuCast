@@ -18,6 +18,9 @@ MLB_DYNASTY_LAYER = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 MLB_TRACK_RECORD = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 VALUCAST_BUYS = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
+PROSPECT_AVAILABILITY = (
+    ROOT / "data" / "models" / "valucast_prospect_availability.json"
+)
 PROSPECT_COVERAGE_AUDIT = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 )
@@ -39,6 +42,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (DD_FEED, "generated_at"),
         (MLB_TRACK_RECORD, "generated_at"),
         (MLB_DYNASTY_LAYER, "generated_at"),
+        (PROSPECT_AVAILABILITY, "generated_at"),
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),

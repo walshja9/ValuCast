@@ -70,6 +70,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "MLB_DYNASTY_LAYER": tmp_path / "mlb_dynasty_layer.json",
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
+        "PROSPECT_AVAILABILITY": tmp_path / "prospect_availability.json",
         "PROSPECT_COVERAGE_AUDIT": tmp_path / "prospect_coverage_audit.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
@@ -101,6 +102,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths["VALUCAST_QUALITY_GOVERNOR"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
+    paths["PROSPECT_AVAILABILITY"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
     paths["PROSPECT_COVERAGE_AUDIT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
@@ -126,8 +130,10 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "type: boolean" in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/validate_mlb_track_record.py" in workflow
+    assert "python scripts/build_prospect_availability.py" in workflow
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/mlb/mlb_track_record_cache.json" in workflow
+    assert "data/models/valucast_prospect_availability.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ github.event_name == 'workflow_dispatch' "

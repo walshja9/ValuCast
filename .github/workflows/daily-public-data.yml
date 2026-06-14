@@ -56,6 +56,7 @@ jobs:
           python scripts/build_mlb_track_record.py
           python scripts/build_mlb_dynasty_layer.py
           python scripts/build_prospect_universe.py
+          python scripts/build_prospect_availability.py
           python scripts/build_prospect_rank_v1.py
           python scripts/build_prospect_coverage_audit.py
           python scripts/build_valucast_buys.py
@@ -93,6 +94,7 @@ jobs:
             data/models/valucast_quality_governor.json \
             data/models/valucast_prospect_buys.json \
             data/models/valucast_prospect_buys_review.json \
+            data/models/valucast_prospect_availability.json \
             data/models/valucast_prospect_coverage_audit.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \

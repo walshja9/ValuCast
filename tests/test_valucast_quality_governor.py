@@ -32,6 +32,13 @@ def _prospect_row(index, source="prospect_model_v0_6", team="BOS", neutral=False
         "mlb_team": team,
         "components": {
             "factual_investment_missing_uses_neutral": neutral,
+            "availability": {
+                "present": True,
+                "status": "available",
+                "risk_level": "clear",
+                "risk_discount": 0.0,
+                "signals": [],
+            },
         },
     }
 
@@ -334,3 +341,53 @@ def test_quality_governor_blocks_exact_pedigree_cap_plateau():
 
     assert payload["ready_for_public_snapshot"] is False
     assert "Top prospect board has too many exact pedigree-cap ties." in payload["blockers"]
+
+
+def test_quality_governor_blocks_missing_prospect_availability_pricing():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["components"].pop("availability")
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board is missing availability/risk pricing." in payload["blockers"]
+
+
+def test_quality_governor_blocks_labeled_availability_risk_without_discount():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["components"]["availability"] = {
+        "present": True,
+        "status": "thin_current_sample",
+        "risk_level": "medium",
+        "risk_discount": 0.0,
+        "signals": ["thin_starter_workload_under_30_ip"],
+    }
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board has unpriced availability risk." in payload["blockers"]

@@ -13,6 +13,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.availability import ARTIFACT_PATH as AVAILABILITY_PATH
+from prospects.availability import apply_availability_adjustment
+from prospects.availability import availability_lookup
 from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
@@ -686,10 +689,12 @@ def build_prospect_rank_v1(
     input_contract: dict,
     dd_adapter: dict | None = None,
     dd_feed: dict | None = None,
+    prospect_availability: dict | None = None,
 ) -> dict:
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
     input_by_key = _input_lookup(input_contract)
+    availability_by_key = availability_lookup(prospect_availability)
     adapter_by_key = _adapter_lookup(dd_adapter)
     dd_context_by_key = _dd_context_lookup(dd_feed)
 
@@ -725,6 +730,11 @@ def build_prospect_rank_v1(
             unmatched_layer_keys.add(key)
             identity_only_fallback_count += 1
             score, source, components = _identity_only_score_components(input_row, role)
+        score, components = apply_availability_adjustment(
+            score,
+            components,
+            availability_by_key.get(key),
+        )
         confidence = _confidence(
             source,
             model_profile,
@@ -843,6 +853,12 @@ def build_prospect_rank_v1(
             "prospect_model_version": prospect_model.get("model_version"),
             "dynasty_layer_version": dynasty_layer.get("layer_version"),
             "prospect_input_schema_version": input_contract.get("schema_version"),
+            "prospect_availability_version": (prospect_availability or {}).get(
+                "artifact_version"
+            ),
+            "prospect_availability_profile_count": (
+                prospect_availability or {}
+            ).get("profile_count"),
             "dd_adapter_version": (dd_adapter or {}).get("adapter_version"),
         },
         "promotion": {
@@ -898,6 +914,7 @@ def run_prospect_rank_v1(
     dynasty_layer_path: Path = DYNASTY_LAYER_PATH,
     prospect_model_path: Path = PROSPECT_MODEL_PATH,
     input_contract_path: Path = INPUT_CONTRACT_PATH,
+    availability_path: Path | None = AVAILABILITY_PATH,
     dd_adapter_path: Path = DD_ADAPTER_PATH,
     dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
@@ -907,6 +924,11 @@ def run_prospect_rank_v1(
     dynasty_layer = json.loads(dynasty_layer_path.read_text(encoding="utf-8"))
     prospect_model = json.loads(prospect_model_path.read_text(encoding="utf-8"))
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
+    prospect_availability = (
+        json.loads(availability_path.read_text(encoding="utf-8"))
+        if availability_path is not None and availability_path.exists()
+        else None
+    )
     dd_adapter = (
         json.loads(dd_adapter_path.read_text(encoding="utf-8"))
         if dd_adapter_path.exists()
@@ -922,8 +944,9 @@ def run_prospect_rank_v1(
         dynasty_layer,
         prospect_model,
         input_contract,
-        dd_adapter,
-        dd_feed,
+        dd_adapter=dd_adapter,
+        dd_feed=dd_feed,
+        prospect_availability=prospect_availability,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

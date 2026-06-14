@@ -45,10 +45,13 @@ PROSPECT_INVESTMENT_TOP_N = 25
 MAX_TOP25_NEUTRAL_INVESTMENT_RATE = 0.35
 MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT = 3
 MAX_TOP50_MISSING_TEAM_COUNT = 0
+MAX_TOP50_MISSING_AVAILABILITY_COUNT = 0
+MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
+CLEAR_AVAILABILITY_STATUSES = {"", "available", "clear"}
 
 
 def _clean_float(value: Any) -> float | None:
@@ -141,6 +144,11 @@ def _projection_stability(row: dict) -> dict:
     components = _components(row)
     stability = components.get("projection_stability")
     return stability if isinstance(stability, dict) else {}
+
+
+def _availability_component(row: dict) -> dict:
+    availability = _components(row).get("availability")
+    return availability if isinstance(availability, dict) else {}
 
 
 def _top_mlb_value_gap(players: list[dict]) -> dict:
@@ -511,6 +519,93 @@ def _prospect_missing_team_count(players: list[dict]) -> dict:
     )
 
 
+def _prospect_availability_coverage(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    missing = [
+        {
+            "rank": row.get("prospect_rank") or row.get("rank"),
+            "name": row.get("name"),
+            "mlbam_id": row.get("mlbam_id"),
+            "role": row.get("role"),
+        }
+        for row in top_rows
+        if not _availability_component(row).get("present")
+    ]
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(missing) <= MAX_TOP50_MISSING_AVAILABILITY_COUNT
+    return _check(
+        "prospect_top50_availability_coverage",
+        passed,
+        (
+            "Top prospect board has availability/risk components."
+            if passed
+            else "Top prospect board is missing availability/risk pricing."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        missing_availability_count=len(missing),
+        max_allowed_missing_availability_count=MAX_TOP50_MISSING_AVAILABILITY_COUNT,
+        sample_ready=sample_ready,
+        samples=missing[:10],
+    )
+
+
+def _availability_is_risky(availability: dict) -> bool:
+    risk_level = str(availability.get("risk_level") or "").strip().lower()
+    status = str(availability.get("status") or "").strip().lower()
+    return risk_level in {"low", "medium", "high"} or status not in CLEAR_AVAILABILITY_STATUSES
+
+
+def _prospect_availability_risk_pricing(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    unpriced = []
+    priced_risk_count = 0
+    for row in top_rows:
+        availability = _availability_component(row)
+        if not availability:
+            continue
+        discount = _clean_float(availability.get("risk_discount")) or 0.0
+        if _availability_is_risky(availability):
+            if discount <= 0:
+                unpriced.append(
+                    {
+                        "rank": row.get("prospect_rank") or row.get("rank"),
+                        "name": row.get("name"),
+                        "mlbam_id": row.get("mlbam_id"),
+                        "role": row.get("role"),
+                        "status": availability.get("status"),
+                        "risk_level": availability.get("risk_level"),
+                        "risk_discount": availability.get("risk_discount"),
+                    }
+                )
+            else:
+                priced_risk_count += 1
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(unpriced) <= MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT
+    return _check(
+        "prospect_top50_availability_risk_pricing",
+        passed,
+        (
+            "Top prospect board prices labeled availability risk."
+            if passed
+            else "Top prospect board has unpriced availability risk."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        priced_availability_risk_count=priced_risk_count,
+        unpriced_availability_risk_count=len(unpriced),
+        max_allowed_unpriced_availability_risk_count=(
+            MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT
+        ),
+        sample_ready=sample_ready,
+        samples=unpriced[:10],
+    )
+
+
 def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list[dict]) -> dict:
     top_rank_rows = _prospect_rank_rows(prospect_rank)[:PROSPECT_FALLBACK_TOP_N]
     public_ids = {
@@ -668,6 +763,8 @@ def evaluate_quality_governor(
         _prospect_neutral_investment_rate(players),
         _prospect_pedigree_cap_plateau(players),
         _prospect_missing_team_count(players),
+        _prospect_availability_coverage(players),
+        _prospect_availability_risk_pricing(players),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
     buy_check = _buy_promotion_check(
@@ -710,6 +807,10 @@ def evaluate_quality_governor(
             "max_top25_neutral_investment_rate": MAX_TOP25_NEUTRAL_INVESTMENT_RATE,
             "max_top25_exact_pedigree_cap_count": MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT,
             "max_top50_missing_team_count": MAX_TOP50_MISSING_TEAM_COUNT,
+            "max_top50_missing_availability_count": MAX_TOP50_MISSING_AVAILABILITY_COUNT,
+            "max_top50_unpriced_availability_risk_count": (
+                MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT
+            ),
             "max_buy_history_limited_rate": MAX_BUY_HISTORY_LIMITED_RATE,
         },
         "metrics": {

@@ -157,61 +157,61 @@
         "samples": [
           {
             "name": "Eli Willits",
-            "rank": 18,
+            "rank": 14,
             "score": 48.17,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Gavin Fien",
-            "rank": 21,
+            "rank": 18,
             "score": 47.8,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Daniel Pierce",
-            "rank": 22,
+            "rank": 20,
             "score": 47.2,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Ethan Holliday",
-            "rank": 23,
+            "rank": 21,
             "score": 47.16,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Theo Gillen",
-            "rank": 24,
+            "rank": 22,
             "score": 47.09,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "JoJo Parker",
-            "rank": 27,
+            "rank": 25,
             "score": 46.99,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Kayson Cunningham",
-            "rank": 29,
+            "rank": 27,
             "score": 46.96,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Xavier Neyens",
-            "rank": 30,
+            "rank": 29,
             "score": 46.85,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Billy Carlson",
-            "rank": 31,
+            "rank": 30,
             "score": 46.8,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Blake Mitchell",
-            "rank": 32,
+            "rank": 31,
             "score": 46.75,
             "score_source": "prospect_pedigree_v0_7"
           }
@@ -260,6 +260,33 @@
       "status": "passed"
     },
     {
+      "id": "prospect_top50_availability_coverage",
+      "message": "Top prospect board has availability/risk components.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_missing_availability_count": 0,
+        "missing_availability_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top50_availability_risk_pricing",
+      "message": "Top prospect board prices labeled availability risk.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_unpriced_availability_risk_count": 0,
+        "priced_availability_risk_count": 7,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50,
+        "unpriced_availability_risk_count": 0
+      },
+      "status": "passed"
+    },
+    {
       "id": "buy_promotion_gate",
       "message": "ValuCast-owned Buy signals are not approved for public promotion.",
       "metrics": {
@@ -285,9 +312,11 @@
     "max_top25_mlb_reliever_count": 1,
     "max_top25_neutral_investment_rate": 0.35,
     "max_top50_fallback_rate": 0.1,
+    "max_top50_missing_availability_count": 0,
     "max_top50_missing_team_count": 0,
     "max_top50_pedigree_rate": 0.35,
     "max_top50_suppressed_rank_rows": 0,
+    "max_top50_unpriced_availability_risk_count": 0,
     "max_top_mlb_adjusted_over_ros_gap": 5.0,
     "max_top_mlb_current_over_ros_gap": 10.0,
     "max_top_mlb_ros_stability_weight": 0.69,
