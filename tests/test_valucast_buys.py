@@ -99,12 +99,17 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
     payload = build_buy_signals(_rank_payload(), _history())
 
     assert payload["status"] == "shadow_only"
+    assert payload["signal_version"] == "1.0.0"
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["dd_context_used"] is False
     assert payload["source_policy"]["public_source_ranks_used"] is False
     assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["validation"]["buy_review_ready"] is False
+    assert payload["validation"]["mlb_roster_status_required"] is True
+    assert payload["score_contract"]["contract_status"] == "blocked"
+    assert payload["release_contract"]["release_status"] == "blocked"
+    assert payload["release_contract"]["frozen_score_contract"] is False
     assert payload["promotion"]["feeds_live_buys"] is False
     assert validate_valucast_buy_payload(payload) == []
 
@@ -126,12 +131,22 @@ def test_build_buy_signals_can_be_candidate_ready_after_review():
         _rank_payload(rows),
         history,
         promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
     )
 
     assert payload["validation"]["ready_for_live_consumers"] is True
     assert payload["validation"]["history_limited_rate"] <= 0.5
+    assert payload["score_contract"]["contract_status"] == "v1_locked"
+    assert payload["release_contract"]["release"] == "valucast_prospect_buys_v1"
+    assert payload["release_contract"]["release_status"] == "locked"
+    assert payload["release_contract"]["frozen_score_contract"] is True
     assert payload["promotion"]["live_consumer"] == "candidate_ready"
     assert payload["promotion"]["feeds_live_buys"] is True
+    assert payload["promotion"]["next_allowed_step"] == (
+        "monitor_forward_results_and_recalibrate_by_bucket"
+    )
+    assert validate_valucast_buy_payload(payload) == []
 
 
 def test_context_only_and_public_ranks_do_not_change_scores():
@@ -229,6 +244,38 @@ def test_validator_rejects_ready_board_with_active_mlb_roster_overlap():
         "validation reports active MLB roster overlap"
         in validate_valucast_buy_payload(payload)
     )
+
+
+def test_validator_rejects_ready_v1_payload_without_locked_release_contract():
+    review = {"review_status": "candidate_ready"}
+    rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
+    history = [
+        {
+            "date": "2026-06-12",
+            "board": [
+                {"mlbam_id": index, "role": "hitter", "score": 53.0}
+                for index in range(1, 45)
+            ],
+        }
+    ]
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        history,
+        promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
+    )
+    payload["release_contract"] = {
+        "release": "draft_buy_signal",
+        "release_status": "blocked",
+        "frozen_score_contract": False,
+    }
+
+    problems = validate_valucast_buy_payload(payload)
+
+    assert "ready v1 buy signals must declare the locked release" in problems
+    assert "ready v1 buy signals must have release_status=locked" in problems
+    assert "ready v1 buy signals must freeze the score contract" in problems
 
 
 def test_valucast_buy_store_loads_shadow_artifact(tmp_path):

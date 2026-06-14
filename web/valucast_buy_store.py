@@ -7,7 +7,9 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0", "0.2.1", "0.2.2"}
+SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0", "0.2.1", "0.2.2", "1.0.0"}
+LOCKED_SIGNAL_VERSION = "1.0.0"
+LOCKED_RELEASE = "valucast_prospect_buys_v1"
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -69,6 +71,16 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
     if validation.get("active_mlb_roster_overlap_count", 0) != 0:
         problems.append("validation reports active MLB roster overlap")
     if validation.get("ready_for_live_consumers") is True:
+        if payload.get("signal_version") == LOCKED_SIGNAL_VERSION:
+            release_contract = payload.get("release_contract") or {}
+            if release_contract.get("release") != LOCKED_RELEASE:
+                problems.append("ready v1 buy signals must declare the locked release")
+            if release_contract.get("release_status") != "locked":
+                problems.append("ready v1 buy signals must have release_status=locked")
+            if release_contract.get("frozen_score_contract") is not True:
+                problems.append("ready v1 buy signals must freeze the score contract")
+            if release_contract.get("active_mlb_roster_exclusion_required") is not True:
+                problems.append("ready v1 buy signals must require active MLB roster exclusion")
         if validation.get("buy_review_ready") is not True:
             problems.append("ready buy signals must have buy_review_ready=true")
         if validation.get("mlb_roster_status_ready") is not True:

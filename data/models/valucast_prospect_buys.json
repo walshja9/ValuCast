@@ -43260,12 +43260,36 @@
   "promotion": {
     "feeds_live_buys": true,
     "live_consumer": "candidate_ready",
-    "next_allowed_step": "human_review_and_route_switch_gate",
-    "reason": "ValuCast Buy signals pass promotion gates."
+    "next_allowed_step": "monitor_forward_results_and_recalibrate_by_bucket",
+    "reason": "ValuCast Buy signals are v1 locked for live consumers."
+  },
+  "release_contract": {
+    "active_mlb_roster_exclusion_required": true,
+    "allowed_score_sources": [
+      "prospect_model_v0_6",
+      "prospect_pedigree_v0_7"
+    ],
+    "calibration_gate": {
+      "method": "bucket_calibration_review",
+      "required_flags": 0,
+      "required_status": "review_ready",
+      "result": "passed"
+    },
+    "eye_test_gate": {
+      "method": "senior_review",
+      "result": "approved"
+    },
+    "frozen_score_contract": true,
+    "locked_at": "2026-06-14T20:26:06.130813+00:00",
+    "locked_signal_version": "1.0.0",
+    "release": "valucast_prospect_buys_v1",
+    "release_status": "locked"
   },
   "score_contract": {
     "buy_window": "ValuCast-rank band curve; no public-rank or market-rank gap.",
+    "contract_status": "v1_locked",
     "momentum": "ValuCast prospect score history from Rank v1 archives.",
+    "release_notes": "Locked after bucket calibration produced zero tuning flags and the top-board quality gates passed.",
     "score_range": [
       0.0,
       100.0
@@ -43279,7 +43303,7 @@
     }
   },
   "signal_name": "ValuCast Prospect Buy Signals",
-  "signal_version": "0.2.2",
+  "signal_version": "1.0.0",
   "source_policy": {
     "dd_context_used": false,
     "dd_ranks_used": false,

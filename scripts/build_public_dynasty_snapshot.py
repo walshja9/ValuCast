@@ -517,6 +517,7 @@ def _validation(
     buy_signals: dict | None,
     quality_governor: dict,
     prospects_excluded_by_mlb_identity_count: int,
+    prospects_excluded_by_mlb_identity_sample: list[dict],
     mlb_projection_rows_suppressed_by_prospect_count: int,
     mlb_projection_rows_suppressed_by_prospect_sample: list[dict],
     calibration_report: dict,
@@ -628,6 +629,7 @@ def _validation(
         "quality_governor_version": quality_governor.get("governor_version"),
         "quality_governor_blockers": quality_governor.get("blockers") or [],
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
+        "prospects_excluded_by_mlb_identity_sample": prospects_excluded_by_mlb_identity_sample,
         "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
         "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
         "cross_universe_value_scale_calibrated": bool(calibration_report.get("applied")),
@@ -678,10 +680,10 @@ def build_snapshot(
     graduated_prospect_rows = [
         row
         for row in all_prospect_rows
-        if (mlbam_id := _mlbam_id(row)) in mlb_identity_ids
-        and (
-            mlbam_id in active_mlb_ids
-            or _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        or (
+            mlbam_id in mlb_identity_ids
+            and _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
         )
     ]
     graduated_ids = {
@@ -707,6 +709,27 @@ def build_snapshot(
     ]
     prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
     prospects_excluded_by_mlb_identity_count = len(graduated_prospect_rows)
+    graduated_prospect_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "level": row.get("level"),
+            "rank": row.get("prospect_rank"),
+            "reason": (
+                "active_mlb_roster"
+                if _mlbam_id(row) in active_mlb_ids
+                else "material_mlb_row"
+            ),
+        }
+        for row in sorted(
+            graduated_prospect_rows,
+            key=lambda row: (
+                int(row.get("prospect_rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
     suppressed_mlb_sample = [
         {
             "mlbam_id": row.get("mlbam_id"),
@@ -748,6 +771,7 @@ def build_snapshot(
         buy_signals=buy_signals,
         buy_review=buy_review,
         generated_at=generated_at,
+        graduated_prospect_ids=graduated_ids,
     )
     payload = {
         "schema_version": SCHEMA_VERSION,
@@ -795,6 +819,7 @@ def build_snapshot(
         buy_signals,
         quality_governor,
         prospects_excluded_by_mlb_identity_count,
+        graduated_prospect_sample,
         len(suppressed_mlb_rows),
         suppressed_mlb_sample,
         calibration_report,

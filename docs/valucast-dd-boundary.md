@@ -195,17 +195,19 @@ score. It is a publication brake. Current checks include:
 
 The current Dynasty/Prospects gate can pass independently of Buys. That is
 intentional: ValuCast's canonical public snapshot may be fit for board display
-while the Buy board remains shadow-only until it has enough ValuCast score
-history and explicit review approval.
+while the Buy board has its own review, roster-status, and top-board quality
+gates.
 
 Buy approval is an explicit release action, then a persisted source decision.
-The daily public-data workflow keeps `VALUCAST_BUYS_REVIEW_APPROVED=0`, but
-`scripts/review_valucast_buys.py` reuses a prior `candidate_ready` human review
-instead of de-promoting Buys every scheduled run. A manual workflow dispatch may
-set `approve_valucast_buys=true` to record initial approval or approve a
-neutral-momentum launch when history is still thin. The public route still
-requires `VALUCAST_USE_VALUCAST_BUYS=1`, `ValuCastBuyStore` validation, and the
-quality governor before `/buys` can serve ValuCast-owned signals.
+ValuCast-owned Buys are locked as `signal_version: 1.0.0` only when the artifact
+has a same-day review, official active-MLB-roster exclusion, no active-roster
+overlap, no raw fallback rows in the top board, complete top-board org display,
+and acceptable low-confidence/pedigree-only rates. The artifact keeps
+`status: shadow_only` as a provenance label, but its `release_contract` must be
+`valucast_prospect_buys_v1` with `release_status: locked` before
+`ValuCastBuyStore` will accept it as ready for live consumers. The public route
+still requires `VALUCAST_USE_VALUCAST_BUYS=1`, `ValuCastBuyStore` validation,
+and the quality governor before `/buys` can serve ValuCast-owned signals.
 
 Two model-quality rules are now part of the public snapshot path:
 
@@ -239,14 +241,15 @@ Two model-quality rules are now part of the public snapshot path:
 
 ## Next Build
 
-Promote ValuCast-owned Buys only after the buy gate passes and keep hardening
-ValuCast Dynasty Value with dated forward evidence. The next model-calibration
-inputs should be injury/playing-time context, role probability, position
-scarcity, and forward validation against archived ValuCast outcomes. The MLB
-track-record contract now separates projection upside from dynasty certainty at
-the factual-history level; the next step is proving and tuning those weights
-against future dated archives without borrowing DD values, public ranks, or
-market lists.
+Keep hardening ValuCast Dynasty Value and Buy v1 with dated forward evidence.
+Future Buy changes should be treated as versioned calibration changes and
+tuned by bucket outcomes, not one-off player overrides. The next
+model-calibration inputs should be injury/playing-time context, role
+probability, position scarcity, and forward validation against archived
+ValuCast outcomes. The MLB track-record contract now separates projection
+upside from dynasty certainty at the factual-history level; the next step is
+proving and tuning those weights against future dated archives without
+borrowing DD values, public ranks, or market lists.
 
 The canonical model should keep combining:
 

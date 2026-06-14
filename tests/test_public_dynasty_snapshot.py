@@ -522,6 +522,46 @@ def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_
     assert payload["input_artifacts"]["mlb_roster_status_ready"] is True
 
 
+def test_snapshot_excludes_active_mlb_roster_identity_without_mlb_layer_row():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert not any(row["mlbam_id"] == 1 for row in payload["players"])
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_sample"][0] == {
+        "mlbam_id": 1,
+        "name": "Model Strong",
+        "role": "hitter",
+        "level": "AA",
+        "rank": 1,
+        "reason": "active_mlb_roster",
+    }
+
+
 def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():
     payload = build_snapshot(
         _rank_payload(),

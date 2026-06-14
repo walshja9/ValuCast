@@ -699,8 +699,13 @@ def _prospect_availability_risk_pricing(players: list[dict]) -> dict:
     )
 
 
-def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list[dict]) -> dict:
+def _prospect_rank_surface_suppression(
+    prospect_rank: dict | None,
+    players: list[dict],
+    graduated_prospect_ids: set[str] | None = None,
+) -> dict:
     top_rank_rows = _prospect_rank_rows(prospect_rank)[:PROSPECT_FALLBACK_TOP_N]
+    graduated_prospect_ids = graduated_prospect_ids or set()
     public_prospect_ids = {
         mlbam_id
         for row in _public_prospect_rows(players)
@@ -720,7 +725,7 @@ def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list
         mlbam_id = _mlbam_id(row)
         if mlbam_id in public_prospect_ids:
             continue
-        if mlbam_id in public_mlb_ids:
+        if mlbam_id in public_mlb_ids or mlbam_id in graduated_prospect_ids:
             graduated_to_mlb.append(
                 {
                     "rank": row.get("rank"),
@@ -730,6 +735,11 @@ def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list
                     "level": row.get("level"),
                     "score": row.get("score"),
                     "score_source": row.get("score_source"),
+                    "graduation_surface": (
+                        "public_mlb"
+                        if mlbam_id in public_mlb_ids
+                        else "active_mlb_roster"
+                    ),
                 }
             )
             continue
@@ -878,6 +888,7 @@ def evaluate_quality_governor(
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
     generated_at: str | None = None,
+    graduated_prospect_ids: set[str] | None = None,
 ) -> dict:
     """Evaluate whether current ValuCast-owned outputs can power public surfaces."""
     players = _player_rows(public_snapshot_or_rows)
@@ -888,13 +899,28 @@ def evaluate_quality_governor(
         mlb_layer,
         buy_signals,
     )
+    if graduated_prospect_ids is None and isinstance(public_snapshot_or_rows, dict):
+        graduated_prospect_ids = {
+            str(row.get("mlbam_id"))
+            for row in (
+                (public_snapshot_or_rows.get("validation") or {}).get(
+                    "prospects_excluded_by_mlb_identity_sample"
+                )
+                or []
+            )
+            if row.get("mlbam_id") not in (None, "")
+        }
 
     board_checks = [
         _top_mlb_value_gap(players),
         _mlb_projection_stability_outliers(players),
         _mlb_top_board_role_shape(players),
         _two_way_policy(players),
-        _prospect_rank_surface_suppression(prospect_rank, players),
+        _prospect_rank_surface_suppression(
+            prospect_rank,
+            players,
+            graduated_prospect_ids,
+        ),
         _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
         _prospect_fallback_rate(players),
         _prospect_pedigree_rate(players),

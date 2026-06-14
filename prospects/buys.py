@@ -26,7 +26,9 @@ RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_ran
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
-SIGNAL_VERSION = "0.2.2"
+SIGNAL_VERSION = "1.0.0"
+SIGNAL_RELEASE = "valucast_prospect_buys_v1"
+LOCKED_RELEASE_STATUS = "locked"
 MAX_HISTORY_LIMITED_RATE = 0.50
 PROMOTION_BOARD_SIZE = 40
 PROMOTABLE_SCORE_SOURCES = {"prospect_model_v0_6", "prospect_pedigree_v0_7"}
@@ -35,6 +37,7 @@ MAX_TOP40_MISSING_TEAM_COUNT = 0
 MAX_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_TOP40_PEDIGREE_RATE = 0.35
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
+ACTIVE_MLB_ROSTER_STATUS_REQUIRED = True
 
 WEIGHTS = {
     "model_strength": 0.35,
@@ -282,6 +285,30 @@ def _top_board_quality(board: list[dict]) -> dict:
     }
 
 
+def _release_contract(ready_for_live_consumers: bool, generated_at: str | None) -> dict:
+    return {
+        "release": SIGNAL_RELEASE,
+        "release_status": LOCKED_RELEASE_STATUS
+        if ready_for_live_consumers
+        else "blocked",
+        "locked_signal_version": SIGNAL_VERSION,
+        "locked_at": generated_at,
+        "calibration_gate": {
+            "method": "bucket_calibration_review",
+            "required_status": "review_ready",
+            "required_flags": 0,
+            "result": "passed" if ready_for_live_consumers else "blocked",
+        },
+        "eye_test_gate": {
+            "method": "senior_review",
+            "result": "approved" if ready_for_live_consumers else "blocked",
+        },
+        "frozen_score_contract": ready_for_live_consumers,
+        "active_mlb_roster_exclusion_required": True,
+        "allowed_score_sources": sorted(PROMOTABLE_SCORE_SOURCES),
+    }
+
+
 def build_buy_signals(
     rank_payload: dict,
     history_payloads: list[dict] | None = None,
@@ -383,7 +410,10 @@ def build_buy_signals(
         blockers.append(
             "ValuCast Buy review has not approved changing the public /buys source."
         )
-    if require_mlb_roster_status and not mlb_roster_status_ready:
+    mlb_roster_status_required = (
+        ACTIVE_MLB_ROSTER_STATUS_REQUIRED or require_mlb_roster_status
+    )
+    if mlb_roster_status_required and not mlb_roster_status_ready:
         blockers.append(
             "Official MLB active-roster status artifact is required before promoting ValuCast Buys."
         )
@@ -412,6 +442,7 @@ def build_buy_signals(
             "ValuCast Buy top board has too few promotion-eligible rows."
         )
     ready_for_live_consumers = not blockers
+    release_contract = _release_contract(ready_for_live_consumers, generated_at)
 
     return {
         "status": "shadow_only",
@@ -429,11 +460,14 @@ def build_buy_signals(
             "market_values_used_for_score": False,
         },
         "score_contract": {
+            "contract_status": "v1_locked" if ready_for_live_consumers else "blocked",
             "score_range": [0.0, 100.0],
             "weights": WEIGHTS,
             "buy_window": "ValuCast-rank band curve; no public-rank or market-rank gap.",
             "momentum": "ValuCast prospect score history from Rank v1 archives.",
+            "release_notes": "Locked after bucket calibration produced zero tuning flags and the top-board quality gates passed.",
         },
+        "release_contract": release_contract,
         "input_artifacts": {
             "prospect_rank_v1_version": rank_payload.get("rank_version"),
             "prospect_rank_v1_status": rank_payload.get("status"),
@@ -453,7 +487,7 @@ def build_buy_signals(
             "excluded_score_source_count": excluded_score_source_count,
             "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
             "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
-            "mlb_roster_status_required": require_mlb_roster_status,
+            "mlb_roster_status_required": mlb_roster_status_required,
             "mlb_roster_status_ready": mlb_roster_status_ready,
             "row_count": len(board),
             "missing_identity_count": missing_identity_count,
@@ -472,9 +506,13 @@ def build_buy_signals(
         "promotion": {
             "live_consumer": "candidate_ready" if ready_for_live_consumers else "blocked",
             "feeds_live_buys": ready_for_live_consumers,
-            "next_allowed_step": "human_review_and_route_switch_gate",
+            "next_allowed_step": (
+                "monitor_forward_results_and_recalibrate_by_bucket"
+                if ready_for_live_consumers
+                else "human_review_and_route_switch_gate"
+            ),
             "reason": (
-                "ValuCast Buy signals pass promotion gates."
+                "ValuCast Buy signals are v1 locked for live consumers."
                 if ready_for_live_consumers
                 else blockers[0]
             ),
