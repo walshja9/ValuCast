@@ -33,6 +33,13 @@ def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
         "generated_at": generated_at,
         "source_policy": {
             "kind": "factual_only",
+            "sources": [
+                "valucast_universal_prospect_dataset",
+                "milb_season_stats",
+                "fantrax_mlb_actuals",
+                "mlb_prospect_seasons_cache",
+                "mlb_statsapi_draft",
+            ],
             "external_rankings_used": False,
             "external_projections_used": False,
             "market_values_used": False,
@@ -101,6 +108,37 @@ def test_sync_prospect_inputs_validates_then_replaces(tmp_path, monkeypatch):
     assert payload["source_policy"]["kind"] == "factual_only"
     assert json.loads(output.read_text(encoding="utf-8")) == payload
     assert not output.with_suffix(".json.tmp").exists()
+
+
+def test_sync_prospect_inputs_accepts_v12_factual_roster_status_source(tmp_path, monkeypatch):
+    output = tmp_path / "prospect_model_inputs.json"
+    output.write_text('{"old":true}', encoding="utf-8")
+    payload = _valid_prospect_inputs()
+    payload["schema_version"] = "1.2"
+    payload["source_policy"]["sources"].append("fantrax_roster_status")
+    payload["current"]["hitters"].append(
+        {
+            "mlbam_id": 101,
+            "name": "Injured Prospect",
+            "role": "hitter",
+            "availability_status": "injured",
+            "availability_source": "fantrax_roster_status",
+            "roster_status": "Inj Res",
+        }
+    )
+    monkeypatch.setattr(
+        sync_dd_prospect_inputs,
+        "fetch_contract",
+        lambda _url: json.dumps(payload).encode(),
+    )
+
+    synced = sync_dd_prospect_inputs.sync_contract(
+        "https://example.test/prospect-inputs",
+        output,
+    )
+
+    assert synced["schema_version"] == "1.2"
+    assert json.loads(output.read_text(encoding="utf-8")) == payload
 
 
 def test_sync_prospect_inputs_keeps_last_good_artifact_on_failure(tmp_path, monkeypatch):

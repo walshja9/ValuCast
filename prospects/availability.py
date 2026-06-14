@@ -19,7 +19,7 @@ OVERRIDES_PATH = ROOT / "data" / "manual" / "prospect_availability_overrides.jso
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.1.0"
+ARTIFACT_VERSION = "0.2.0"
 
 MAX_RISK_DISCOUNT = 0.12
 STALE_MODERATE_DAYS = 14
@@ -43,6 +43,13 @@ EXPLICIT_STATUS_DISCOUNTS = {
     "inactive": 0.10,
     "restricted": 0.10,
     "rehab": 0.08,
+}
+ROSTER_STATUS_MAP = {
+    "inj res": "injured",
+    "injured reserve": "injured",
+    "il": "injured",
+    "injured": "injured",
+    "out": "injured",
 }
 
 
@@ -245,20 +252,58 @@ def _staleness_signal(
     return discount, signals, days
 
 
-def _override_signal(role: str, override: dict | None) -> tuple[float, list[str], str | None, str | None]:
-    if not override:
-        return 0.0, [], None, None
-    status = str(override.get("status") or "").strip().lower() or None
-    note = override.get("note")
-    explicit = _clean_float(override.get("risk_discount"))
+def _status_discount(role: str, status: str | None, explicit: float | None = None) -> float:
     if explicit is not None:
         discount = explicit
     else:
         discount = EXPLICIT_STATUS_DISCOUNTS.get(status or "", 0.0)
         if role == "hitter" and discount == MAX_RISK_DISCOUNT:
             discount = 0.08
+    return discount
+
+
+def _override_signal(role: str, override: dict | None) -> tuple[float, list[str], str | None, str | None]:
+    if not override:
+        return 0.0, [], None, None
+    status = str(override.get("status") or "").strip().lower() or None
+    note = override.get("note")
+    explicit = _clean_float(override.get("risk_discount"))
+    discount = _status_discount(role, status, explicit)
     signals = ["manual_status_override"] if status else []
     return discount, signals, status, str(note) if note not in (None, "") else None
+
+
+def _row_status(row: dict) -> str | None:
+    status = str(row.get("availability_status") or "").strip().lower()
+    if status:
+        return ROSTER_STATUS_MAP.get(status, status)
+    roster_status = str(row.get("roster_status") or "").strip().lower()
+    if roster_status:
+        return ROSTER_STATUS_MAP.get(roster_status)
+    return None
+
+
+def _upstream_status_signal(role: str, rows: list[dict]) -> tuple[float, list[str], str | None, str | None]:
+    candidates = []
+    for row in rows:
+        status = _row_status(row)
+        if status not in EXPLICIT_STATUS_DISCOUNTS:
+            continue
+        candidates.append((status, row))
+    if not candidates:
+        return 0.0, [], None, None
+    status, row = candidates[0]
+    note = row.get("availability_note")
+    roster_status = row.get("roster_status")
+    source = row.get("availability_source") or "upstream_factual_status"
+    if not note and roster_status:
+        note = f"Upstream factual roster status is {roster_status}."
+    return (
+        _status_discount(role, status),
+        [f"{source}_override"],
+        status,
+        str(note) if note not in (None, "") else None,
+    )
 
 
 def _risk_level(discount: float) -> str:
@@ -299,15 +344,22 @@ def _profile(
         highest_level,
     )
     stale_discount, stale_signals, stale_days = _staleness_signal(role, rows, generated_at)
+    upstream_discount, upstream_signals, upstream_status, upstream_note = (
+        _upstream_status_signal(role, rows)
+    )
     override_discount, override_signals, override_status, override_note = _override_signal(
         role,
         override,
     )
     override_age = _clean_int((override or {}).get("age"))
-    signals = list(dict.fromkeys(sample_signals + stale_signals + override_signals))
+    signals = list(
+        dict.fromkeys(
+            sample_signals + stale_signals + upstream_signals + override_signals
+        )
+    )
     risk_discount = min(
         MAX_RISK_DISCOUNT,
-        max(0.0, sample_discount, stale_discount, override_discount),
+        max(0.0, sample_discount, stale_discount, upstream_discount, override_discount),
     )
     return {
         "mlbam_id": _clean_int(mlbam_id) or mlbam_id,
@@ -324,8 +376,8 @@ def _profile(
         "source_kind": display_row.get("source_kind"),
         "risk_discount": round(risk_discount, 4),
         "risk_level": _risk_level(risk_discount),
-        "status": _status(signals, override_status),
-        "availability_note": override_note or (
+        "status": _status(signals, override_status or upstream_status),
+        "availability_note": override_note or upstream_note or (
             "; ".join(signals).replace("_", " ") if signals else "Current sample is active."
         ),
         "signals": signals,
@@ -417,6 +469,7 @@ def build_prospect_availability(
             "kind": "valucast_factual_availability_layer",
             "source_artifact": "prospect_model_inputs",
             "manual_overrides_allowed": True,
+            "dd_factual_roster_status_allowed": True,
             "dd_values_used": False,
             "dd_ranks_used": False,
             "external_rankings_used": False,
@@ -435,6 +488,11 @@ def build_prospect_availability(
             ),
             "risk_profile_count": len(risk_profiles),
             "manual_override_count": len(override_by_key),
+            "upstream_status_count": sum(
+                1
+                for row in profiles
+                if "fantrax_roster_status_override" in (row.get("signals") or [])
+            ),
             "unmatched_manual_override_count": len(
                 set(override_by_key).difference(grouped)
             ),

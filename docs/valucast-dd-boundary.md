@@ -50,6 +50,8 @@ DD may provide:
 - MLBAM identity and role matching
 - display context, such as player cards, MiLB stat snippets, team, level, and
   source-rank context
+- factual roster-status context, such as Fantrax injured-reserve status, for
+  ValuCast availability/risk pricing
 - DD rank/value as clearly labeled comparison context
 
 ValuCast may provide:
@@ -102,6 +104,7 @@ The rank score may use:
 - ValuCast's universal dynasty ceiling/risk layer
 - factual sample reliability
 - factual Rule 4 draft-pick and signing-bonus context
+- factual roster-status availability context for risk pricing
 
 It may not use:
 

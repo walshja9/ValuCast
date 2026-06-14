@@ -320,6 +320,24 @@ def test_v11_contract_accepts_lower_minors_and_expanded_factual_sources():
     assert len(selected["features"]) > len(selected["baseline_features"])
 
 
+def test_v12_contract_accepts_factual_roster_status_source():
+    contract = _contract()
+    contract["schema_version"] = "1.2"
+    contract["source_policy"]["sources"] = [
+        "valucast_universal_prospect_dataset",
+        "milb_season_stats",
+        "fantrax_mlb_actuals",
+        "mlb_prospect_seasons_cache",
+        "mlb_statsapi_draft",
+        "fantrax_roster_status",
+    ]
+
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+
+    assert payload["input_contract"]["schema_version"] == "1.2"
+    assert payload["profiles"]
+
+
 def test_missing_service_fact_fails_closed():
     contract = _contract()
     contract["mlb_service"] = []

@@ -100,10 +100,11 @@ review artifact that combines ValuCast-owned prospect signals into a candidate
 ordering. It is not the universal model itself and it is not a live consumer.
 
 The score can use the shadow prospect model, the universal dynasty layer,
-sample reliability, and factual draft/signing context. DD feed rows can provide
-optional display/comparison context only by MLBAM ID plus role. DD ranks, DD
-values, DD value history, public prospect source ranks, and DD adapter ranks
-are explicitly excluded from the score.
+sample reliability, factual draft/signing context, and factual roster-status
+availability context for risk pricing. DD feed rows can provide optional
+display/comparison context only by MLBAM ID plus role. DD ranks, DD values, DD
+value history, public prospect source ranks, and DD adapter ranks are
+explicitly excluded from the score.
 
 ```powershell
 python scripts/build_prospect_universe.py

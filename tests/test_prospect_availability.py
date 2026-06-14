@@ -122,6 +122,26 @@ def test_availability_applies_manual_status_overrides_with_bounded_discount():
     assert payload["validation"]["manual_override_count"] == 1
 
 
+def test_availability_applies_upstream_factual_roster_status():
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["availability_status"] = "injured"
+    contract["current"]["pitchers"][2]["roster_status"] = "Inj Res"
+    contract["current"]["pitchers"][2]["availability_source"] = "fantrax_roster_status"
+    contract["current"]["pitchers"][2]["availability_note"] = (
+        "Fantrax roster status is Inj Res."
+    )
+
+    payload = build_prospect_availability(contract)
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["status"] == "injured"
+    assert pitcher["risk_discount"] == MAX_RISK_DISCOUNT
+    assert pitcher["risk_level"] == "high"
+    assert "fantrax_roster_status_override" in pitcher["signals"]
+    assert pitcher["availability_note"] == "Fantrax roster status is Inj Res."
+    assert payload["validation"]["upstream_status_count"] == 1
+
+
 def test_apply_availability_adjustment_keeps_original_score_explainable():
     score, components = apply_availability_adjustment(
         50.0,
@@ -162,3 +182,4 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
+    assert payload["artifact_version"] == "0.2.0"

@@ -56,6 +56,14 @@ INPUT_SCHEMA_SOURCES = {
         "mlb_prospect_seasons_cache",
         "mlb_statsapi_draft",
     },
+    "1.2": {
+        "valucast_universal_prospect_dataset",
+        "milb_season_stats",
+        "fantrax_mlb_actuals",
+        "mlb_prospect_seasons_cache",
+        "mlb_statsapi_draft",
+        "fantrax_roster_status",
+    },
 }
 LEVEL_CODE = {"A": 0.0, "A+": 1.0, "AA": 2.0, "AAA": 3.0}
 EXPECTED_AGE = {"A": 20.5, "A+": 21.5, "AA": 22.5, "AAA": 24.0}

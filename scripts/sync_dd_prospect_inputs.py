@@ -17,6 +17,23 @@ DEFAULT_URL = (
 )
 DEFAULT_OUTPUT = ROOT / "data" / "dd" / "prospect_model_inputs.json"
 TIMEOUT_SECONDS = 90
+SUPPORTED_SCHEMA_SOURCES = {
+    "1.1": {
+        "valucast_universal_prospect_dataset",
+        "milb_season_stats",
+        "fantrax_mlb_actuals",
+        "mlb_prospect_seasons_cache",
+        "mlb_statsapi_draft",
+    },
+    "1.2": {
+        "valucast_universal_prospect_dataset",
+        "milb_season_stats",
+        "fantrax_mlb_actuals",
+        "mlb_prospect_seasons_cache",
+        "mlb_statsapi_draft",
+        "fantrax_roster_status",
+    },
+}
 
 
 def fetch_contract(url: str) -> bytes:
@@ -30,13 +47,17 @@ def fetch_contract(url: str) -> bytes:
 
 def validate_contract(payload: dict) -> list[str]:
     problems = []
-    if payload.get("schema_version") != "1.1":
-        problems.append("schema_version must be 1.1")
+    schema_version = payload.get("schema_version")
+    allowed_sources = SUPPORTED_SCHEMA_SOURCES.get(schema_version)
+    if allowed_sources is None:
+        problems.append("schema_version must be one of 1.1, 1.2")
     if not payload.get("generated_at"):
         problems.append("generated_at is required")
     source_policy = payload.get("source_policy") or {}
     if source_policy.get("kind") != "factual_only":
         problems.append("source_policy.kind must be factual_only")
+    elif allowed_sources is not None and set(source_policy.get("sources") or []) != allowed_sources:
+        problems.append("source_policy.sources does not match schema_version")
     for flag in (
         "external_rankings_used",
         "external_projections_used",
