@@ -616,3 +616,29 @@ def test_app_selector_can_use_ready_public_snapshot():
 
     assert selected is snapshot
     assert source == "valucast_public_snapshot"
+
+
+def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
+    from app import _select_dynasty_store
+
+    dd = SimpleNamespace(is_available=True)
+    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    monkeypatch.delenv("VALUCAST_USE_PUBLIC_SNAPSHOT", raising=False)
+
+    selected, source = _select_dynasty_store(dd, snapshot)
+
+    assert selected is snapshot
+    assert source == "valucast_public_snapshot"
+
+
+def test_app_selector_can_disable_public_snapshot_rollout(monkeypatch):
+    from app import _select_dynasty_store
+
+    dd = SimpleNamespace(is_available=True)
+    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    monkeypatch.setenv("VALUCAST_USE_PUBLIC_SNAPSHOT", "0")
+
+    selected, source = _select_dynasty_store(dd, snapshot)
+
+    assert selected is dd
+    assert source == "dd_feed"

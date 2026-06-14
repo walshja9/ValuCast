@@ -1,6 +1,7 @@
 import json
 import re
 import unittest
+import urllib.parse
 from pathlib import Path
 
 import app as app_module
@@ -114,9 +115,15 @@ class TestDynastyCardZScores(unittest.TestCase):
         self.assertGreater(z_map[sanchez.id]["W"], 0)
 
     def test_dynasty_board_rows_carry_z_payload(self):
-        html = self.client.get("/?mode=dd_dynasty").data.decode("utf-8")
+        judge = next(
+            r for r in app_module.dd_store.get_all()
+            if not r.is_prospect and "Judge" in r.name
+        )
+        html = self.client.get(
+            f"/rankings?mode=dd_dynasty&search={urllib.parse.quote(judge.name)}"
+        ).data.decode("utf-8")
         m = re.search(
-            r'data-player-id="dd_mlb_aaron_judge"[^>]*data-z-scores="([^"]*)"',
+            fr'data-player-id="{re.escape(judge.id)}"[^>]*data-z-scores="([^"]*)"',
             html)
         self.assertIsNotNone(m)
         payload = json.loads(m.group(1).replace("&#34;", '"'))

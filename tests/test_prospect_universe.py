@@ -93,6 +93,11 @@ def test_universe_builds_without_dd_feed():
         ("Columbus Clingstones", "ATL"),
         ("Montgomery Biscuits", "TBR"),
         ("Chesapeake Baysox", "BAL"),
+        ("Rochester Red Wings", "WSN"),
+        ("Salt Lake Bees", "LAA"),
+        ("Norfolk Tides", "BAL"),
+        ("Birmingham Barons", "CHW"),
+        ("Oklahoma City Dodgers", "LAD"),
     ],
 )
 def test_universe_backfills_known_mlb_affiliate_from_minor_team(minor_team, mlb_team):
@@ -103,6 +108,8 @@ def test_universe_backfills_known_mlb_affiliate_from_minor_team(minor_team, mlb_
     )
 
     assert payload["players"][0]["mlb_team"] == mlb_team
+    assert payload["validation"]["mlb_team_backfill_count"] == 1
+    assert payload["validation"]["missing_mlb_team_count"] == 0
     assert "context_only" not in payload["players"][0]
 
 

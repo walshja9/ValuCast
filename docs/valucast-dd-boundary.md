@@ -30,16 +30,16 @@ As of June 13, 2026:
 | Surface | Current behavior | Product meaning |
 | --- | --- | --- |
 | ValuCast season rankings | ValuCast combines MLB actuals and rest-of-season projections into configurable redraft-style rankings. | Independent ValuCast season outlook. |
-| ValuCast prospect board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast prospect board, fail-closed to legacy DD feed if the snapshot is not ready. |
-| ValuCast dynasty board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast dynasty board, fail-closed to legacy DD feed if the snapshot is not ready. |
+| ValuCast prospect board | Uses the ValuCast public snapshot by default once the quality governor approves it; `VALUCAST_USE_PUBLIC_SNAPSHOT=0` is the rollback switch. | Independent ValuCast prospect board, fail-closed to legacy DD feed only when the rollout flag is disabled or the snapshot is not ready. |
+| ValuCast dynasty board | Uses the ValuCast public snapshot by default once the quality governor approves it; `VALUCAST_USE_PUBLIC_SNAPSHOT=0` is the rollback switch. | Independent ValuCast dynasty board, fail-closed to legacy DD feed only when the rollout flag is disabled or the snapshot is not ready. |
 | ValuCast buys board | Uses the ValuCast-owned buy artifact when the public snapshot is active and the buy artifact passes its review/history gate; `VALUCAST_USE_VALUCAST_BUYS=0` is the rollback switch. | Independent ValuCast buy surface, fail-closed to the legacy DD-backed board if the artifact is not ready. |
 | DD prospect board | DD ranks and values players for the Diamond Dynasties league. | DD league value. |
 | DD Statistical Lens | DD compares its live prospect value against a ValuCast DD 7x7 adapter output. | Research-only disagreement lens; it does not change DD rank or value. |
 
 The public surfaces now have separate gates. Dynasty and Prospects consume the
-ValuCast public snapshot once the snapshot is same-day fresh and the quality
-governor approves it. Buys consumes the ValuCast-owned buy artifact only after
-its buy-review gate approves the launch; otherwise it fails closed to the
+ValuCast public snapshot by default once the snapshot is same-day fresh and the
+quality governor approves it. Buys consumes the ValuCast-owned buy artifact only
+after its buy-review gate approves the launch; otherwise it fails closed to the
 legacy DD-backed board.
 
 ## Allowed Boundaries

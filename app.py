@@ -223,7 +223,7 @@ valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
 
 def _select_dynasty_store(dd_candidate, snapshot_candidate, use_public_snapshot=None):
     enabled = (
-        os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT") == "1"
+        os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1"
         if use_public_snapshot is None
         else bool(use_public_snapshot)
     )
@@ -479,12 +479,28 @@ def _dynasty_z_map():
 
 
 def _prospect_tiers():
-    """Tiers for the Prospects board, computed on the prospect-ONLY universe (top 200
-    by value). The combined-universe tiers from _dynasty_metadata() collapse to ~2
-    badges across prospects because every prospect sits below the MLB cluster."""
-    pros = sorted(dd_store.filter(pool="prospect"),
-                  key=lambda r: r.dynasty_value, reverse=True)[:200]
-    return _compute_dynasty_tiers(pros)
+    """Rank-band tiers for the prospect-only board.
+
+    Prospect scores are intentionally smoother than the old DD feed values, so
+    gap hunting collapses the board into a tiny number of tiers. Rank bands keep
+    the badge language stable without feeding public ranks into the model.
+    """
+    bands = ((10, 1), (25, 2), (50, 3), (100, 4), (200, 5))
+    rows = sorted(
+        dd_store.filter(pool="prospect"),
+        key=lambda row: (
+            row.prospect_rank is None,
+            row.prospect_rank if row.prospect_rank is not None else row.dynasty_rank,
+            row.dynasty_rank,
+        ),
+    )[:200]
+    tiers = {}
+    for index, row in enumerate(rows, 1):
+        for max_rank, tier in bands:
+            if index <= max_rank:
+                tiers[row.id] = tier
+                break
+    return tiers
 
 
 def _prospect_rows(position=None, search=None):
@@ -1592,12 +1608,12 @@ def health_ready():
         "valucast": _store_ok("valucast"),
         "dd": legacy_dd_store.is_available,
     }
-    if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT") == "1":
+    if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1":
         stores["public_snapshot_ready"] = (
             public_snapshot_store.is_available
             and public_snapshot_store.ready_for_live_consumers
         )
-    if os.environ.get("VALUCAST_USE_VALUCAST_BUYS") == "1":
+    if os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1":
         stores["valucast_buys_ready"] = (
             valucast_buy_store.is_available
             and valucast_buy_store.ready_for_live_consumers
