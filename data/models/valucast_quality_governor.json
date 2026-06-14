@@ -45,7 +45,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 8,
+        "pitcher_count": 5,
         "pitcher_samples": [
           {
             "name": "Shohei Ohtani",
@@ -62,7 +62,15 @@
               "SP"
             ],
             "rank": 3,
-            "value": 95.45
+            "value": 94.11
+          },
+          {
+            "name": "Cristopher S\u00e1nchez",
+            "positions": [
+              "SP"
+            ],
+            "rank": 8,
+            "value": 76.37
           },
           {
             "name": "Jacob Misiorowski",
@@ -70,16 +78,8 @@
               "SP",
               "RP"
             ],
-            "rank": 7,
-            "value": 81.11
-          },
-          {
-            "name": "Cristopher S\u00e1nchez",
-            "positions": [
-              "SP"
-            ],
-            "rank": 9,
-            "value": 78.89
+            "rank": 10,
+            "value": 75.55
           },
           {
             "name": "Chase Burns",
@@ -87,32 +87,8 @@
               "SP",
               "RP"
             ],
-            "rank": 15,
-            "value": 70.17
-          },
-          {
-            "name": "Cam Schlittler",
-            "positions": [
-              "SP"
-            ],
-            "rank": 22,
-            "value": 61.6
-          },
-          {
-            "name": "Bryan Woo",
-            "positions": [
-              "SP"
-            ],
-            "rank": 23,
-            "value": 60.83
-          },
-          {
-            "name": "Yoshinobu Yamamoto",
-            "positions": [
-              "SP"
-            ],
-            "rank": 24,
-            "value": 60.6
+            "rank": 16,
+            "value": 66.6
           }
         ],
         "reliever_count": 0,
@@ -165,6 +141,81 @@
         "fallback_rate": 0.0,
         "max_allowed_rate": 0.1,
         "sample_ready": true,
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top50_pedigree_rate",
+      "message": "Top prospect board pedigree-only usage is within the publication threshold.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_rate": 0.35,
+        "pedigree_count": 17,
+        "pedigree_rate": 0.34,
+        "sample_ready": true,
+        "samples": [
+          {
+            "name": "Eli Willits",
+            "rank": 18,
+            "score": 48.17,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Gavin Fien",
+            "rank": 21,
+            "score": 47.8,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Daniel Pierce",
+            "rank": 22,
+            "score": 47.2,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Ethan Holliday",
+            "rank": 23,
+            "score": 47.16,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Theo Gillen",
+            "rank": 24,
+            "score": 47.09,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "JoJo Parker",
+            "rank": 27,
+            "score": 46.99,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Kayson Cunningham",
+            "rank": 29,
+            "score": 46.96,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Xavier Neyens",
+            "rank": 30,
+            "score": 46.85,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Billy Carlson",
+            "rank": 31,
+            "score": 46.8,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Blake Mitchell",
+            "rank": 32,
+            "score": 46.75,
+            "score_source": "prospect_pedigree_v0_7"
+          }
+        ],
         "top_n": 50
       },
       "status": "passed"
@@ -235,6 +286,7 @@
     "max_top25_neutral_investment_rate": 0.35,
     "max_top50_fallback_rate": 0.1,
     "max_top50_missing_team_count": 0,
+    "max_top50_pedigree_rate": 0.35,
     "max_top50_suppressed_rank_rows": 0,
     "max_top_mlb_adjusted_over_ros_gap": 5.0,
     "max_top_mlb_current_over_ros_gap": 10.0,
@@ -256,8 +308,8 @@
       "prospect_rank": "2026-06-13",
       "public_snapshot": "2026-06-13"
     },
-    "mlb_count": 900,
-    "prospect_count": 2738,
+    "mlb_count": 898,
+    "prospect_count": 2740,
     "public_row_count": 3638
   },
   "next_allowed_step": "wire_public_consumers",

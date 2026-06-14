@@ -133,6 +133,9 @@ The snapshot includes:
 
 - `data/models/valucast_mlb_dynasty_layer.json`, a ValuCast-owned MLB
   projection-value layer built from the app's projection engine
+- `data/models/valucast_mlb_track_record.json`, a ValuCast-owned MLB
+  track-record contract built from official year-by-year MLB history and
+  ValuCast current actuals
 - `data/models/valucast_prospect_rank_v1.json`, a ValuCast-owned prospect
   candidate board built from the ValuCast prospect universe
 - `data/models/valucast_prospect_buys.json`, a ValuCast-owned buy-signal
@@ -151,15 +154,19 @@ It has two separate readiness concepts:
   and have enough dated ValuCast score history.
 
 The MLB layer now has a ValuCast-owned identity age source, a three-year
-dynasty horizon, and an annualized ROS true-talent prior. The prior scales
-rest-of-season projections back to season-level context before comparing them
-to the current full-season line, then applies an established-player floor, a
-young-starter volatility discount, and a pure-reliever dynasty score cap. The
-cross-universe gate certifies MLB and prospect rows on the shared
-`0_100_valucast_dynasty_score` scale without mutating the underlying raw
-scores. The `/buys` switch remains separately gated by `ValuCastBuyStore` so a
-calibrated Dynasty/Prospects snapshot cannot accidentally promote an unreviewed
-buy board.
+dynasty horizon, an annualized ROS true-talent prior, and a factual MLB
+track-record contract. The prior scales rest-of-season projections back to
+season-level context before comparing them to the current full-season line. The
+track-record contract contributes career/prior/current/recent MLB volume,
+experience bands, certainty, and bounded support floors from official
+year-by-year history. These are projection-sanity rules, not name overrides,
+and they do not use DD values, DD ranks, public ranks, or market lists. Track
+record can support established players and discount limited-history spikes, but
+it cannot bypass the pure-reliever dynasty cap. The cross-universe gate
+certifies MLB and prospect rows on the shared `0_100_valucast_dynasty_score`
+scale without mutating the underlying raw scores. The `/buys` switch remains
+separately gated by `ValuCastBuyStore` so a calibrated Dynasty/Prospects
+snapshot cannot accidentally promote an unreviewed buy board.
 
 The quality governor is not a scoring input. It does not train the model and it
 does not use DD ranks, DD values, public ranks, or market values to change a
@@ -169,6 +176,7 @@ score. It is a publication brake. Current checks include:
 - two-way identities split into separate hitter/pitcher public rows without a
   combined-value policy
 - fallback-heavy top prospect rankings
+- pedigree-only top prospect concentration
 - top prospects leaning too heavily on neutral draft/signing context
 - missing MLB-org display coverage near the top of the prospect board
 - Prospect Rank v1 rows suppressed from the visible public prospect surface
@@ -198,9 +206,18 @@ Two model-quality rules are now part of the public snapshot path:
   of separate public Dynasty rows.
 - MLB dynasty values use an internal ROS-stability adjustment so one extreme
   current-season line cannot define the whole top of the board by itself.
+- Young hitters and limited-sample starters receive transparent volatility
+  haircuts when current-season value is materially ahead of annualized ROS
+  true talent.
+- MLB track-record context can apply bounded established-player support floors
+  and limited-history discounts, but cannot lift pure relievers above the
+  reliever dynasty cap.
 - Prospect pedigree fallback rows compress below their cap instead of tying at
   the same capped score, so high-investment low-minors prospects can surface
   without creating an arbitrary plateau.
+- Prospect pedigree-only rows have a lower ceiling than model-backed rows, and
+  the quality governor blocks the public snapshot if the top 50 leans too
+  heavily on pedigree-only scoring.
 - Prospect rows win publication conflicts against weak MLB projection rows
   until the prospect is explicitly marked as MLB-level or the MLB row is a
   material current-value promotion. A low present-day projection row should not
@@ -212,9 +229,15 @@ Two model-quality rules are now part of the public snapshot path:
 ## Next Build
 
 Promote ValuCast-owned Buys only after the buy gate passes and keep hardening
-ValuCast Dynasty Value with dated forward evidence.
+ValuCast Dynasty Value with dated forward evidence. The next model-calibration
+inputs should be injury/playing-time context, role probability, position
+scarcity, and forward validation against archived ValuCast outcomes. The MLB
+track-record contract now separates projection upside from dynasty certainty at
+the factual-history level; the next step is proving and tuning those weights
+against future dated archives without borrowing DD values, public ranks, or
+market lists.
 
-It should combine:
+The canonical model should keep combining:
 
 - MLB projection value from ValuCast's season/projection engine
 - prospect future value from the universal prospect profile and dynasty layer

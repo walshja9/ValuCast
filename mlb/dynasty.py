@@ -25,6 +25,7 @@ from web.projection_store import ProjectionStore
 ROOT = Path(__file__).resolve().parents[1]
 PROJECTION_PATH = ROOT / "data" / "projections" / "current.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
+TRACK_RECORD_PATH = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
@@ -40,16 +41,28 @@ PRODUCTION_WEIGHT = 0.95
 RELIABILITY_WEIGHT = 0.05
 ROS_STABILITY_BASE_WEIGHT = 0.35
 ROS_STABILITY_MAX_WEIGHT = 0.70
-ROS_STABILITY_UNDERPERFORMANCE_WEIGHT = 0.25
+ROS_STABILITY_UNDERPERFORMANCE_WEIGHT = 0.40
 ROS_STABILITY_GAP_TO_MAX = 12.0
 MIN_AGE_COVERAGE_RATE = 0.95
-TRUE_TALENT_FLOOR_SHARE = 0.72
+TRUE_TALENT_FLOOR_SHARE = 0.85
 ESTABLISHED_HITTER_MIN_PA = 250
 ESTABLISHED_SP_MIN_IP = 60
+YOUNG_HITTER_VOLATILITY_AGE_MAX = 25
+YOUNG_HITTER_VOLATILITY_PA_MAX = 400.0
+YOUNG_HITTER_VOLATILITY_GAP_START = 2.5
+YOUNG_HITTER_VOLATILITY_MAX_DISCOUNT = 0.12
 YOUNG_SP_VOLATILITY_AGE_MAX = 24
 YOUNG_SP_VOLATILITY_IP_MAX = 120.0
 YOUNG_SP_VOLATILITY_GAP_START = 2.5
 YOUNG_SP_VOLATILITY_MAX_DISCOUNT = 0.18
+STARTER_VOLATILITY_IP_MAX = 110.0
+STARTER_VOLATILITY_GAP_START = 3.0
+STARTER_VOLATILITY_MAX_DISCOUNT = 0.12
+LIMITED_HITTER_TRACK_RECORD_PRIOR_PA = 600.0
+LIMITED_PITCHER_TRACK_RECORD_PRIOR_IP = 180.0
+LIMITED_HITTER_TRACK_RECORD_MAX_DISCOUNT = 0.16
+LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT = 0.14
+TRACK_RECORD_FLOOR_MIN_CERTAINTY = 40.0
 RELIEVER_DYNASTY_SCORE_CAP = 52.0
 HORIZON_YEAR_WEIGHTS = (
     (0, 1.00),
@@ -123,6 +136,13 @@ def _finite_float(value: Any) -> float | None:
     if not math.isfinite(numeric):
         return None
     return numeric
+
+
+def _finite_int(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _round(value: float | None, digits: int = 2) -> float | None:
@@ -278,6 +298,38 @@ def identity_key(player: PlayerProjection) -> tuple[str, str] | None:
     if mlbam_id in (None, ""):
         return None
     return str(mlbam_id), role
+
+
+def _track_record_lookup(track_record: dict | None) -> dict[tuple[str, str], dict]:
+    lookup = {}
+    for row in (track_record or {}).get("profiles") or []:
+        key = _track_record_key(row)
+        if key:
+            lookup[key] = row
+    return lookup
+
+
+def _track_record_key(row: dict) -> tuple[str, str] | None:
+    mlbam_id = row.get("mlbam_id")
+    role = row.get("role")
+    if mlbam_id in (None, "") or role not in {"hitter", "pitcher"}:
+        return None
+    return str(mlbam_id), role
+
+
+def _track_record_component(profile: dict | None) -> dict:
+    if not profile:
+        return {
+            "present": False,
+        }
+    return {
+        "present": True,
+        "experience_band": profile.get("experience_band"),
+        "track_record_certainty": _round(_finite_float(profile.get("track_record_certainty"))),
+        "track_record_floor_score": _round(_finite_float(profile.get("track_record_floor_score"))),
+        "volume": profile.get("volume") or {},
+        "source": profile.get("source"),
+    }
 
 
 def _volume(player: PlayerProjection) -> float:
@@ -460,6 +512,11 @@ def _actual_ip(player: PlayerProjection) -> float:
     return _finite_float(actual.get("IP")) or 0.0
 
 
+def _actual_pa(player: PlayerProjection) -> float:
+    actual = player.metadata.get("stats_actual") or {}
+    return _finite_float(actual.get("PA")) or 0.0
+
+
 def _established_true_talent_floor(
     player: PlayerProjection,
     ros_value: float | None,
@@ -481,19 +538,122 @@ def _established_true_talent_floor(
     return ros_value * TRUE_TALENT_FLOOR_SHARE
 
 
+def _track_record_volume(profile: dict | None, key: str) -> float:
+    volume = (profile or {}).get("volume") or {}
+    return _finite_float(volume.get(key)) or 0.0
+
+
+def _limited_track_record_discount(
+    player: PlayerProjection,
+    score: float,
+    profile: dict | None,
+) -> float:
+    if not profile or score <= 55.0:
+        return 0.0
+    certainty = _finite_float(profile.get("track_record_certainty")) or 0.0
+    score_pressure = max(0.0, min(1.0, (score - 55.0) / 40.0))
+    if player.pool is PlayerPool.HITTER:
+        prior_volume = _track_record_volume(profile, "prior_mlb")
+        if prior_volume >= LIMITED_HITTER_TRACK_RECORD_PRIOR_PA:
+            return 0.0
+        volume_pressure = 1.0 - max(0.0, min(1.0, prior_volume / LIMITED_HITTER_TRACK_RECORD_PRIOR_PA))
+        certainty_pressure = 1.0 - max(0.0, min(1.0, certainty / 60.0))
+        return round(
+            LIMITED_HITTER_TRACK_RECORD_MAX_DISCOUNT
+            * score_pressure
+            * max(volume_pressure, certainty_pressure),
+            4,
+        )
+    if _is_starter(player) and not _is_reliever_only(player):
+        prior_volume = _track_record_volume(profile, "prior_mlb")
+        if prior_volume >= LIMITED_PITCHER_TRACK_RECORD_PRIOR_IP:
+            return 0.0
+        volume_pressure = 1.0 - max(0.0, min(1.0, prior_volume / LIMITED_PITCHER_TRACK_RECORD_PRIOR_IP))
+        certainty_pressure = 1.0 - max(0.0, min(1.0, certainty / 55.0))
+        return round(
+            LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT
+            * score_pressure
+            * max(volume_pressure, certainty_pressure),
+            4,
+        )
+    return 0.0
+
+
+def _track_record_floor(
+    profile: dict | None,
+) -> float | None:
+    if not profile:
+        return None
+    certainty = _finite_float(profile.get("track_record_certainty")) or 0.0
+    if certainty < TRACK_RECORD_FLOOR_MIN_CERTAINTY:
+        return None
+    experience_band = profile.get("experience_band")
+    if experience_band not in {"established", "partial_track_record"}:
+        return None
+    floor_score = _finite_float(profile.get("track_record_floor_score"))
+    if floor_score is None or floor_score <= 0:
+        return None
+    return floor_score
+
+
 def _role_adjusted_score(
     player: PlayerProjection,
     score: float,
     stability: dict[str, Any] | None,
+    track_record_profile: dict | None = None,
 ) -> tuple[float, dict[str, Any]]:
     adjustments: dict[str, Any] = {
         "reliever_score_cap": None,
+        "young_hitter_volatility_discount": 0.0,
         "young_sp_volatility_discount": 0.0,
+        "starter_volatility_discount": 0.0,
+        "limited_mlb_track_record_discount": 0.0,
+        "track_record_floor_score": None,
+        "track_record_floor_applied": False,
+        "track_record_certainty": _round(
+            _finite_float((track_record_profile or {}).get("track_record_certainty"))
+        ),
+        "track_record_experience_band": (track_record_profile or {}).get("experience_band"),
     }
     adjusted = score
     if _is_reliever_only(player):
         adjustments["reliever_score_cap"] = RELIEVER_DYNASTY_SCORE_CAP
         adjusted = min(adjusted, RELIEVER_DYNASTY_SCORE_CAP)
+    elif player.pool is PlayerPool.HITTER:
+        age = _coerce_age(player.metadata.get("age"))
+        actual_pa = _actual_pa(player)
+        projection_stability = stability or {}
+        current_value = _finite_float(projection_stability.get("current_season_category_value"))
+        ros_value = _finite_float(projection_stability.get("ros_category_value"))
+        current_over_true_talent_gap = (
+            current_value - ros_value
+            if current_value is not None and ros_value is not None
+            else 0.0
+        )
+        if (
+            age is not None
+            and age <= YOUNG_HITTER_VOLATILITY_AGE_MAX
+            and actual_pa < YOUNG_HITTER_VOLATILITY_PA_MAX
+            and current_over_true_talent_gap > YOUNG_HITTER_VOLATILITY_GAP_START
+        ):
+            gap_discount = min(
+                YOUNG_HITTER_VOLATILITY_MAX_DISCOUNT,
+                (current_over_true_talent_gap - YOUNG_HITTER_VOLATILITY_GAP_START) / 45.0,
+            )
+            track_record_discount = min(
+                0.04,
+                (YOUNG_HITTER_VOLATILITY_PA_MAX - actual_pa)
+                / YOUNG_HITTER_VOLATILITY_PA_MAX
+                * 0.04,
+            )
+            discount = round(
+                min(YOUNG_HITTER_VOLATILITY_MAX_DISCOUNT, gap_discount + track_record_discount),
+                4,
+            )
+            adjusted *= 1.0 - discount
+            adjustments["young_hitter_volatility_discount"] = discount
+            adjustments["actual_mlb_pa"] = round(actual_pa, 3)
+            adjustments["current_over_true_talent_gap"] = round(current_over_true_talent_gap, 4)
     elif _is_starter(player):
         age = _coerce_age(player.metadata.get("age"))
         actual_ip = _actual_ip(player)
@@ -527,6 +687,43 @@ def _role_adjusted_score(
             adjustments["young_sp_volatility_discount"] = discount
             adjustments["actual_mlb_ip"] = round(actual_ip, 3)
             adjustments["current_over_true_talent_gap"] = round(current_over_true_talent_gap, 4)
+        elif (
+            actual_ip < STARTER_VOLATILITY_IP_MAX
+            and current_over_true_talent_gap > STARTER_VOLATILITY_GAP_START
+        ):
+            gap_discount = min(
+                STARTER_VOLATILITY_MAX_DISCOUNT,
+                (current_over_true_talent_gap - STARTER_VOLATILITY_GAP_START) / 45.0,
+            )
+            track_record_discount = min(
+                0.04,
+                (STARTER_VOLATILITY_IP_MAX - actual_ip) / STARTER_VOLATILITY_IP_MAX * 0.04,
+            )
+            discount = round(
+                min(STARTER_VOLATILITY_MAX_DISCOUNT, gap_discount + track_record_discount),
+                4,
+            )
+            adjusted *= 1.0 - discount
+            adjustments["starter_volatility_discount"] = discount
+            adjustments["actual_mlb_ip"] = round(actual_ip, 3)
+            adjustments["current_over_true_talent_gap"] = round(current_over_true_talent_gap, 4)
+    track_record_discount = _limited_track_record_discount(
+        player,
+        adjusted,
+        track_record_profile,
+    )
+    if track_record_discount:
+        adjusted *= 1.0 - track_record_discount
+        adjustments["limited_mlb_track_record_discount"] = track_record_discount
+    floor_score = _track_record_floor(track_record_profile)
+    adjustments["track_record_floor_score"] = _round(floor_score)
+    if (
+        floor_score is not None
+        and adjusted < floor_score
+        and not _is_reliever_only(player)
+    ):
+        adjusted = floor_score
+        adjustments["track_record_floor_applied"] = True
     adjustments["score_before_role_adjustment"] = round(score, 2)
     return adjusted, adjustments
 
@@ -572,6 +769,7 @@ def _row(
     rank: int,
     stability: dict[str, Any] | None = None,
     role_adjustments: dict[str, Any] | None = None,
+    track_record_profile: dict | None = None,
 ) -> dict:
     player = result.player
     role = _role(player)
@@ -607,6 +805,7 @@ def _row(
             "dynasty_horizon_value": round(horizon["value"], 4),
             "projection_stability": stability or {},
             "role_adjustments": role_adjustments or {},
+            "track_record": _track_record_component(track_record_profile),
             "horizon_years": horizon["years"],
             "age_adjustment": _round(age_multiplier, 4),
             "age_adjustment_status": (
@@ -634,9 +833,11 @@ def build_mlb_dynasty_layer(
     players: Iterable[PlayerProjection],
     generated_at: str,
     identities: dict[str, dict] | None = None,
+    track_record: dict | None = None,
 ) -> dict:
     season = _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
+    track_record_by_key = _track_record_lookup(track_record)
     eligible = filter_by_playing_time(
         players,
         hitter_pa=MIN_HITTER_PA,
@@ -672,6 +873,8 @@ def build_mlb_dynasty_layer(
 
     rows = []
     for result, horizon in horizon_rows:
+        key = identity_key(result.player)
+        track_record_profile = track_record_by_key.get(key) if key else None
         production_score = _scale_value(horizon["value"], floor, ceiling)
         reliability = _playing_time_reliability(result.player)
         score = (
@@ -682,8 +885,9 @@ def build_mlb_dynasty_layer(
             result.player,
             score,
             stability_by_player_id.get(result.player.id),
+            track_record_profile,
         )
-        rows.append((score, production_score, horizon, result, role_adjustments))
+        rows.append((score, production_score, horizon, result, role_adjustments, track_record_profile))
 
     rows.sort(
         key=lambda item: (
@@ -702,8 +906,9 @@ def build_mlb_dynasty_layer(
             rank,
             stability_by_player_id.get(result.player.id),
             role_adjustments,
+            track_record_profile,
         )
-        for rank, (score, production_score, horizon, result, role_adjustments) in enumerate(rows, 1)
+        for rank, (score, production_score, horizon, result, role_adjustments, track_record_profile) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
@@ -711,6 +916,13 @@ def build_mlb_dynasty_layer(
     if age_coverage_rate < MIN_AGE_COVERAGE_RATE:
         blockers.append(
             "ValuCast MLB age coverage is below the promotion threshold.",
+        )
+    track_record_validation = (track_record or {}).get("validation") or {}
+    track_record_ready = bool(track_record_validation.get("ready_for_mlb_dynasty_layer"))
+    if track_record and not track_record_ready:
+        blockers.extend(
+            track_record_validation.get("blockers")
+            or ["ValuCast MLB track-record contract is not ready for dynasty-layer consumption."]
         )
     ready_for_live_consumers = not blockers
     return {
@@ -721,6 +933,9 @@ def build_mlb_dynasty_layer(
         "source_policy": {
             "kind": "valucast_mlb_projection_value",
             "projection_source": "data/projections/current.json",
+            "track_record_source": (
+                "data/models/valucast_mlb_track_record.json" if track_record else None
+            ),
             "dd_values_used": False,
             "dd_ranks_used": False,
             "external_rankings_used_for_score": False,
@@ -750,10 +965,22 @@ def build_mlb_dynasty_layer(
                 f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
             ),
             "role_adjustments": {
+                "young_hitter_volatility_age_max": YOUNG_HITTER_VOLATILITY_AGE_MAX,
+                "young_hitter_volatility_pa_max": YOUNG_HITTER_VOLATILITY_PA_MAX,
+                "young_hitter_volatility_gap_start": YOUNG_HITTER_VOLATILITY_GAP_START,
+                "young_hitter_volatility_max_discount": YOUNG_HITTER_VOLATILITY_MAX_DISCOUNT,
                 "young_sp_volatility_age_max": YOUNG_SP_VOLATILITY_AGE_MAX,
                 "young_sp_volatility_ip_max": YOUNG_SP_VOLATILITY_IP_MAX,
                 "young_sp_volatility_gap_start": YOUNG_SP_VOLATILITY_GAP_START,
                 "young_sp_volatility_max_discount": YOUNG_SP_VOLATILITY_MAX_DISCOUNT,
+                "starter_volatility_ip_max": STARTER_VOLATILITY_IP_MAX,
+                "starter_volatility_gap_start": STARTER_VOLATILITY_GAP_START,
+                "starter_volatility_max_discount": STARTER_VOLATILITY_MAX_DISCOUNT,
+                "limited_hitter_track_record_prior_pa": LIMITED_HITTER_TRACK_RECORD_PRIOR_PA,
+                "limited_pitcher_track_record_prior_ip": LIMITED_PITCHER_TRACK_RECORD_PRIOR_IP,
+                "limited_hitter_track_record_max_discount": LIMITED_HITTER_TRACK_RECORD_MAX_DISCOUNT,
+                "limited_pitcher_track_record_max_discount": LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT,
+                "track_record_floor_min_certainty": TRACK_RECORD_FLOOR_MIN_CERTAINTY,
                 "reliever_dynasty_score_cap": RELIEVER_DYNASTY_SCORE_CAP,
             },
             "ros_stability_weights": {
@@ -763,6 +990,11 @@ def build_mlb_dynasty_layer(
                 "gap_to_max_weight": ROS_STABILITY_GAP_TO_MAX,
             },
             "playing_time_reliability": "PA/IP volume shrinkage score from the same projection artifact.",
+            "mlb_track_record": (
+                "Optional ValuCast-owned factual MLB history contract. Established "
+                "players can receive a track-record floor; limited-history players "
+                "can receive a transparent certainty haircut."
+            ),
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
             "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
         },
@@ -776,6 +1008,10 @@ def build_mlb_dynasty_layer(
             "age_coverage_count": age_coverage_count,
             "age_coverage_rate": age_coverage_rate,
             "age_coverage_threshold": MIN_AGE_COVERAGE_RATE,
+            "track_record_present": bool(track_record),
+            "track_record_ready": track_record_ready if track_record else False,
+            "track_record_profile_count": track_record_validation.get("profile_count", 0),
+            "track_record_coverage_rate": track_record_validation.get("coverage_rate"),
             "ranks_contiguous": [row["rank"] for row in board] == list(range(1, len(board) + 1)),
             "generated_date": _date_part(generated_at),
             "blockers": blockers,
@@ -821,15 +1057,22 @@ def archive_layer(
 def run_mlb_dynasty_layer(
     projection_path: Path = PROJECTION_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    track_record_path: Path = TRACK_RECORD_PATH,
     archive_dir: Path = ARCHIVE_DIR,
     identity_data_dir: Path = IDENTITY_DATA_DIR,
 ) -> dict:
     store = ProjectionStore(projection_path)
     identities = load_identity_store(identity_data_dir)
+    track_record = (
+        json.loads(track_record_path.read_text(encoding="utf-8"))
+        if track_record_path.exists()
+        else None
+    )
     payload = build_mlb_dynasty_layer(
         store.get_all(),
         _generated_at(store),
         identities=identities,
+        track_record=track_record,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

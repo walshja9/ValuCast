@@ -40,12 +40,14 @@ PROSPECT_FALLBACK_TOP_N = 50
 MAX_TOP50_FALLBACK_RATE = 0.10
 MAX_TOP50_SUPPRESSED_RANK_ROWS = 0
 MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200 = 0
+MAX_TOP50_PEDIGREE_RATE = 0.35
 PROSPECT_INVESTMENT_TOP_N = 25
 MAX_TOP25_NEUTRAL_INVESTMENT_RATE = 0.35
 MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT = 3
 MAX_TOP50_MISSING_TEAM_COUNT = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 
+PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 
 
@@ -380,6 +382,39 @@ def _prospect_fallback_rate(players: list[dict]) -> dict:
     )
 
 
+def _prospect_pedigree_rate(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    pedigree_rows = [
+        {
+            "rank": row.get("prospect_rank") or row.get("rank"),
+            "name": row.get("name"),
+            "score": row.get("value") or row.get("score"),
+            "score_source": row.get("score_source") or row.get("value_source"),
+        }
+        for row in top_rows
+        if (row.get("score_source") or row.get("value_source")) == PEDIGREE_SCORE_SOURCE
+    ]
+    rate = round(len(pedigree_rows) / len(top_rows), 4) if top_rows else 0.0
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (not sample_ready) or rate <= MAX_TOP50_PEDIGREE_RATE
+    return _check(
+        "prospect_top50_pedigree_rate",
+        passed,
+        (
+            "Top prospect board pedigree-only usage is within the publication threshold."
+            if passed
+            else "Top prospect board leans too heavily on pedigree-only scoring."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        pedigree_count=len(pedigree_rows),
+        pedigree_rate=rate,
+        max_allowed_rate=MAX_TOP50_PEDIGREE_RATE,
+        sample_ready=sample_ready,
+        samples=pedigree_rows[:10],
+    )
+
+
 def _prospect_neutral_investment_rate(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_INVESTMENT_TOP_N]
     neutral_count = sum(
@@ -629,6 +664,7 @@ def evaluate_quality_governor(
         _prospect_rank_surface_suppression(prospect_rank, players),
         _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
         _prospect_fallback_rate(players),
+        _prospect_pedigree_rate(players),
         _prospect_neutral_investment_rate(players),
         _prospect_pedigree_cap_plateau(players),
         _prospect_missing_team_count(players),
@@ -668,6 +704,7 @@ def evaluate_quality_governor(
             "max_top_mlb_ros_stability_weight": MAX_TOP_MLB_ROS_STABILITY_WEIGHT,
             "two_way_policy_rank_limit": TWO_WAY_POLICY_RANK_LIMIT,
             "max_top50_fallback_rate": MAX_TOP50_FALLBACK_RATE,
+            "max_top50_pedigree_rate": MAX_TOP50_PEDIGREE_RATE,
             "max_top50_suppressed_rank_rows": MAX_TOP50_SUPPRESSED_RANK_ROWS,
             "max_elite_factual_raw_fallback_top_200": MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200,
             "max_top25_neutral_investment_rate": MAX_TOP25_NEUTRAL_INVESTMENT_RATE,

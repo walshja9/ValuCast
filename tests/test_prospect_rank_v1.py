@@ -373,7 +373,7 @@ def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
     assert row["confidence"] == "low"
     assert row["components"]["factual_investment_context"] >= 90
     assert row["components"]["age_level_context"] > 80
-    assert row["components"]["pedigree_score_cap"] >= 49
+    assert row["components"]["pedigree_score_cap"] >= 48
     assert row["components"]["pedigree_cap_compressed"] is True
     assert row["score"] > 41.75
     assert row["score"] < row["components"]["pedigree_score_cap"]

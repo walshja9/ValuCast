@@ -281,6 +281,31 @@ def test_quality_governor_blocks_pitcher_heavy_top_dynasty_board():
     assert "Top MLB dynasty board is too pitcher/reliever-heavy for public promotion." in payload["blockers"]
 
 
+def test_quality_governor_blocks_pedigree_only_top50_crowding():
+    prospects = []
+    for index in range(1, 51):
+        source = "prospect_pedigree_v0_7" if index <= 18 else "prospect_model_v0_6"
+        prospects.append(_prospect_row(index, source=source))
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board leans too heavily on pedigree-only scoring." in payload["blockers"]
+
+
 def test_quality_governor_blocks_exact_pedigree_cap_plateau():
     prospects = []
     for index in range(1, 51):

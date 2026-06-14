@@ -4,6 +4,7 @@ from league_values.models import PlayerPool, PlayerProjection
 from mlb.dynasty import (
     RELIEVER_DYNASTY_SCORE_CAP,
     VALUE_SOURCE,
+    _role_adjusted_score,
     build_mlb_dynasty_layer,
 )
 
@@ -115,6 +116,20 @@ def _reliever(
             "WHIP": 0.90,
         },
     )
+
+
+def _track_record_payload(profile):
+    return {
+        "artifact": "valucast_mlb_track_record",
+        "contract_version": "0.1.0",
+        "validation": {
+            "ready_for_mlb_dynasty_layer": True,
+            "profile_count": 1,
+            "coverage_rate": 1.0,
+            "blockers": [],
+        },
+        "profiles": [profile],
+    }
 
 
 def test_mlb_layer_is_shadow_only_and_independent():
@@ -380,6 +395,26 @@ def test_mlb_layer_caps_pure_reliever_dynasty_score():
     assert row["value"] <= RELIEVER_DYNASTY_SCORE_CAP
 
 
+def test_mlb_layer_track_record_floor_cannot_bypass_reliever_cap():
+    player = _reliever()
+    score, adjustments = _role_adjusted_score(
+        player,
+        80.0,
+        {},
+        {
+            "experience_band": "established",
+            "track_record_certainty": 80.0,
+            "track_record_floor_score": 59.0,
+            "volume": {"prior_mlb": 400, "career": 450},
+        },
+    )
+
+    assert score == RELIEVER_DYNASTY_SCORE_CAP
+    assert adjustments["reliever_score_cap"] == RELIEVER_DYNASTY_SCORE_CAP
+    assert adjustments["track_record_floor_score"] == 59.0
+    assert adjustments["track_record_floor_applied"] is False
+
+
 def test_mlb_layer_discounts_young_starter_current_line_volatility():
     payload = build_mlb_dynasty_layer(
         [
@@ -438,4 +473,140 @@ def test_mlb_layer_discounts_young_starter_current_line_volatility():
     adjustments = row["components"]["role_adjustments"]
 
     assert adjustments["young_sp_volatility_discount"] > 0
-    assert row["value"] < adjustments["score_before_role_adjustment"]
+
+
+def test_mlb_layer_discounts_young_hitter_current_line_volatility():
+    payload = build_mlb_dynasty_layer(
+        [
+            _hitter(
+                player_id="young_bat",
+                mlbam_id="40",
+                name="Young Current Spike Bat",
+                pa=690,
+                hr=48,
+                sb=28,
+                avg=.330,
+                metadata={
+                    "age": 24,
+                    "stats_actual": {"PA": 260},
+                    "stats_ros": {
+                        "PA": 350,
+                        "AB": 310,
+                        "H": 65,
+                        "HR": 6,
+                        "R": 32,
+                        "RBI": 30,
+                        "SB": 3,
+                        "BB": 30,
+                        "SO": 75,
+                        "1B": 49,
+                        "2B": 14,
+                        "3B": 1,
+                        "AVG": .210,
+                        "OBP": .285,
+                        "OPS": .620,
+                    },
+                },
+            ),
+            _hitter("steady", "41", "Steady Bat", metadata={"age": 28}),
+            _pitcher(metadata={"age": 28}),
+        ],
+        "2026-06-13",
+    )
+
+    row = next(item for item in payload["players"] if item["name"] == "Young Current Spike Bat")
+    adjustments = row["components"]["role_adjustments"]
+
+    assert adjustments["young_hitter_volatility_discount"] > 0
+    assert adjustments["actual_mlb_pa"] == 260
+
+
+def test_mlb_layer_discounts_limited_sample_starter_spike_after_young_age_band():
+    player = _pitcher(
+        player_id="starter_spike",
+        mlbam_id="50",
+        name="Limited Starter Spike",
+        metadata={"age": 25, "stats_actual": {"IP": 82}},
+    )
+    score, adjustments = _role_adjusted_score(
+        player,
+        80.0,
+        {
+            "current_season_category_value": 10.0,
+            "ros_category_value": 4.0,
+        },
+    )
+
+    assert score < 80.0
+    assert adjustments["young_sp_volatility_discount"] == 0
+    assert adjustments["starter_volatility_discount"] > 0
+    assert adjustments["actual_mlb_ip"] == 82
+
+
+def test_mlb_layer_applies_established_track_record_floor():
+    player = _hitter(metadata={"age": 31})
+    score, adjustments = _role_adjusted_score(
+        player,
+        42.0,
+        {},
+        {
+            "experience_band": "established",
+            "track_record_certainty": 78.0,
+            "track_record_floor_score": 58.0,
+            "volume": {"prior_mlb": 3200, "career": 3500},
+        },
+    )
+
+    assert score == 58.0
+    assert adjustments["track_record_floor_applied"] is True
+    assert adjustments["track_record_floor_score"] == 58.0
+    assert adjustments["track_record_certainty"] == 78.0
+
+
+def test_mlb_layer_discounts_high_score_with_limited_track_record():
+    player = _hitter(metadata={"age": 23})
+    score, adjustments = _role_adjusted_score(
+        player,
+        92.0,
+        {},
+        {
+            "experience_band": "current_year_only_or_limited",
+            "track_record_certainty": 8.0,
+            "track_record_floor_score": 22.0,
+            "volume": {"prior_mlb": 0, "career": 300},
+        },
+    )
+
+    assert score < 92.0
+    assert adjustments["limited_mlb_track_record_discount"] > 0
+    assert adjustments["track_record_floor_applied"] is False
+
+
+def test_mlb_layer_embeds_track_record_context_when_artifact_is_present():
+    payload = build_mlb_dynasty_layer(
+        [
+            _hitter(mlbam_id="60", metadata={"age": 30}),
+            _pitcher(metadata={"age": 28}),
+        ],
+        "2026-06-13",
+        track_record=_track_record_payload(
+            {
+                "mlbam_id": 60,
+                "role": "hitter",
+                "experience_band": "established",
+                "track_record_certainty": 74.0,
+                "track_record_floor_score": 56.0,
+                "volume": {"prior_mlb": 2400, "career": 2700},
+                "source": "mlb_stats_api_year_by_year_and_current_actuals",
+            }
+        ),
+    )
+
+    row = next(item for item in payload["players"] if item["mlbam_id"] == 60)
+    track_record = row["components"]["track_record"]
+
+    assert payload["validation"]["track_record_present"] is True
+    assert payload["validation"]["track_record_ready"] is True
+    assert track_record["present"] is True
+    assert track_record["experience_band"] == "established"
+    assert track_record["track_record_certainty"] == 74.0

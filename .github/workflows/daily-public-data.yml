@@ -53,6 +53,7 @@ jobs:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
         run: |
           python scripts/backfill_projection_identities.py
+          python scripts/build_mlb_track_record.py
           python scripts/build_mlb_dynasty_layer.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_rank_v1.py
@@ -66,6 +67,7 @@ jobs:
       - name: Validate public artifacts
         run: |
           python scripts/validate_feed.py
+          python scripts/validate_mlb_track_record.py
           python scripts/validate_prospect_coverage_audit.py
           python scripts/validate_valucast_buys.py
           python scripts/validate_valucast_quality_governor.py
@@ -85,7 +87,9 @@ jobs:
           git add \
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
+            data/mlb/mlb_track_record_cache.json \
             data/models/valucast_mlb_dynasty_layer.json \
+            data/models/valucast_mlb_track_record.json \
             data/models/valucast_quality_governor.json \
             data/models/valucast_prospect_buys.json \
             data/models/valucast_prospect_buys_review.json \
@@ -93,6 +97,7 @@ jobs:
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
             data/prediction_archive/valucast_mlb_dynasty_layer \
+            data/prediction_archive/valucast_mlb_track_record \
             data/prediction_archive/valucast_prospect_buys \
             data/prediction_archive/valucast_prospect_rank_v1 \
             data/projections/current.json \
