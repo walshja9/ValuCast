@@ -91,8 +91,24 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
     assert payload["source_policy"]["public_source_ranks_used"] is False
     assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["buy_review_ready"] is False
     assert payload["promotion"]["feeds_live_buys"] is False
     assert validate_valucast_buy_payload(payload) == []
+
+
+def test_build_buy_signals_can_be_candidate_ready_after_review():
+    review = {"review_status": "candidate_ready"}
+
+    payload = build_buy_signals(
+        _rank_payload(),
+        _history(),
+        promotion_review=review,
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is True
+    assert payload["validation"]["history_limited_rate"] <= 0.5
+    assert payload["promotion"]["live_consumer"] == "candidate_ready"
+    assert payload["promotion"]["feeds_live_buys"] is True
 
 
 def test_context_only_and_public_ranks_do_not_change_scores():
@@ -213,3 +229,27 @@ def test_review_artifact_blocks_low_overlap_and_history_limited_board():
     assert review["metrics"]["top40_name_overlap_count"] == 0
     assert review["metrics"]["history_limited_rate"] == 1.0
     assert any("overlap" in blocker for blocker in review["blockers"])
+
+
+def test_review_artifact_can_be_candidate_ready_with_manual_approval():
+    rows = [_row(index, f"Match {index}", index, 55.0) for index in range(1, 7)]
+    payload = build_buy_signals(_rank_payload(rows), _history())
+    valucast = buy_score.build_valucast_board(payload["board"])
+    dd = [
+        {
+            "rank": index,
+            "name": f"Match {index}",
+            "score": 80.0 - index,
+            "level": "AA",
+            "age": 21,
+            "reason": "Review match",
+        }
+        for index in range(1, 7)
+    ]
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+
+    review = build_review(dd, valucast, store, manual_approval=True)
+
+    assert review["review_status"] == "candidate_ready"
+    assert review["blockers"] == []
+    assert review["source_policy"]["manual_approval_recorded"] is True

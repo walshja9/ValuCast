@@ -25,9 +25,26 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1 Candidate"
-RANK_VERSION = "0.1.0"
+RANK_VERSION = "0.2.0"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
+PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
+PEDIGREE_MIN_INVESTMENT_SCORE = 90.0
+PEDIGREE_HITTER_SCORE_CAP = 49.0
+PEDIGREE_PITCHER_SCORE_CAP = 46.5
+PEDIGREE_HIGH_SAMPLE_BONUS_CAP = 1.0
+PEDIGREE_UPPER_LEVEL_BONUS_CAP = 1.5
+PEDIGREE_LEVEL_BASELINE_AGE = {
+    "DSL": 18.0,
+    "CPX": 19.0,
+    "ROK": 19.0,
+    "A": 20.5,
+    "A+": 21.3,
+    "HIGH-A": 21.3,
+    "AA": 22.2,
+    "AAA": 23.0,
+    "MLB": 24.0,
+}
 MODEL_COMPONENT_WEIGHTS = {
     "expected_outcome_score": 0.58,
     "expected_category_impact_score": 0.42,
@@ -44,17 +61,23 @@ SCORE_WEIGHTS = {
         "factual_investment_context": 0.14,
         "sample_reliability": 0.10,
     },
+    PEDIGREE_SCORE_SOURCE: {
+        "universal_outcome_index": 0.42,
+        "factual_investment_context": 0.32,
+        "sample_reliability": 0.16,
+        "age_level_context": 0.10,
+    },
     "identity_only_fallback": {
         "base_score": 1.0,
         "factual_investment_context": 0.08,
         "sample_reliability": 0.06,
     },
 }
-FALLBACK_SCORE_CAP = 62.0
+FALLBACK_SCORE_CAP = 41.75
 IDENTITY_ONLY_BASE_SCORE = 18.0
-IDENTITY_ONLY_SCORE_CAP = 32.0
+IDENTITY_ONLY_SCORE_CAP = 28.0
 IDENTITY_ONLY_NEUTRAL_RELIABILITY = 10.0
-NEUTRAL_CONTEXT_SCORE = 50.0
+MISSING_INVESTMENT_CONTEXT_SCORE = 25.0
 MIN_PUBLIC_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 120
 
@@ -302,17 +325,106 @@ def _factual_investment_score(input_row: dict | None) -> float | None:
     return round(max(pieces), 2)
 
 
+def _level_key(level: Any) -> str | None:
+    if not level:
+        return None
+    text = str(level).strip().upper()
+    aliases = {
+        "A_PLUS": "A+",
+        "HIGH A": "A+",
+        "HIGH-A": "A+",
+        "HI-A": "A+",
+        "LOW A": "A",
+        "LOW-A": "A",
+        "SINGLE-A": "A",
+        "ROOKIE": "ROK",
+        "COMPLEX": "CPX",
+    }
+    return aliases.get(text, text)
+
+
+def _age_level_context_score(
+    input_row: dict | None,
+    layer_profile: dict | None,
+    role: str,
+) -> float:
+    age = _clean_float((input_row or {}).get("age"))
+    if age is None:
+        age = _clean_float((layer_profile or {}).get("age"))
+    level = _level_key((input_row or {}).get("level") or (layer_profile or {}).get("level"))
+    baseline_age = PEDIGREE_LEVEL_BASELINE_AGE.get(level or "")
+    if age is None or baseline_age is None:
+        return 50.0
+    if role == "pitcher":
+        baseline_age += 0.3
+    return round(max(0.0, min(100.0, 70.0 + (baseline_age - age) * 8.0)), 2)
+
+
+def _pedigree_score_cap(
+    role: str,
+    level: Any,
+    reliability_score: float,
+    investment_score: float | None,
+) -> float:
+    cap = PEDIGREE_PITCHER_SCORE_CAP if role == "pitcher" else PEDIGREE_HITTER_SCORE_CAP
+    level_key = _level_key(level)
+    if level_key in {"AA", "AAA"}:
+        cap += PEDIGREE_UPPER_LEVEL_BONUS_CAP
+    if (investment_score or 0.0) >= 98.0 and reliability_score >= 45.0:
+        cap += PEDIGREE_HIGH_SAMPLE_BONUS_CAP
+    return round(cap, 2)
+
+
+def _pedigree_fallback_score_components(
+    layer_profile: dict,
+    input_row: dict | None,
+    role: str,
+    universal_score: float,
+    investment_score: float,
+    reliability_score: float,
+) -> tuple[float, dict]:
+    weights = SCORE_WEIGHTS[PEDIGREE_SCORE_SOURCE]
+    age_level_score = _age_level_context_score(input_row, layer_profile, role)
+    uncapped_score = (
+        weights["universal_outcome_index"] * universal_score
+        + weights["factual_investment_context"] * investment_score
+        + weights["sample_reliability"] * reliability_score
+        + weights["age_level_context"] * age_level_score
+    )
+    cap = _pedigree_score_cap(
+        role,
+        (input_row or {}).get("level") or layer_profile.get("level"),
+        reliability_score,
+        investment_score,
+    )
+    score = min(uncapped_score, cap)
+    return (
+        round(score, 2),
+        {
+            "age_level_context": _round(age_level_score),
+            "pedigree_score_uncapped": _round(uncapped_score),
+            "pedigree_score_cap": cap,
+            "pedigree_min_investment_score": PEDIGREE_MIN_INVESTMENT_SCORE,
+        },
+    )
+
+
 def _identity_only_score_components(
     input_row: dict | None,
     role: str,
 ) -> tuple[float, str, dict]:
     investment_score = _factual_investment_score(input_row)
     reliability_score = _input_sample_reliability_score(input_row, role)
+    investment_component = (
+        investment_score
+        if investment_score is not None
+        else MISSING_INVESTMENT_CONTEXT_SCORE
+    )
     weights = SCORE_WEIGHTS["identity_only_fallback"]
     score = (
         weights["base_score"] * IDENTITY_ONLY_BASE_SCORE
         + weights["factual_investment_context"]
-        * (investment_score if investment_score is not None else NEUTRAL_CONTEXT_SCORE)
+        * investment_component
         + weights["sample_reliability"] * reliability_score
     )
     return (
@@ -322,7 +434,11 @@ def _identity_only_score_components(
             "model_score": None,
             "universal_outcome_index": None,
             "factual_investment_context": _round(investment_score),
-            "factual_investment_missing_uses_neutral": investment_score is None,
+            "factual_investment_missing_uses_neutral": False,
+            "factual_investment_missing_penalty": investment_score is None,
+            "factual_investment_missing_score": (
+                MISSING_INVESTMENT_CONTEXT_SCORE if investment_score is None else None
+            ),
             "sample_reliability": _round(reliability_score),
             "identity_only_base_score": IDENTITY_ONLY_BASE_SCORE,
             "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
@@ -339,6 +455,11 @@ def _score_components(
     universal_score = _universal_outcome_index(layer_profile)
     investment_score = _factual_investment_score(input_row)
     reliability_score = _sample_reliability_score(layer_profile, model_profile)
+    investment_component = (
+        investment_score
+        if investment_score is not None
+        else MISSING_INVESTMENT_CONTEXT_SCORE
+    )
 
     if model_score is not None:
         source = "prospect_model_v0_6"
@@ -347,8 +468,20 @@ def _score_components(
             weights["model_score"] * model_score
             + weights["universal_outcome_index"] * universal_score
             + weights["factual_investment_context"]
-            * (investment_score if investment_score is not None else NEUTRAL_CONTEXT_SCORE)
+            * investment_component
             + weights["sample_reliability"] * reliability_score
+        )
+        pedigree_components = {}
+    elif (investment_score or 0.0) >= PEDIGREE_MIN_INVESTMENT_SCORE:
+        source = PEDIGREE_SCORE_SOURCE
+        assert investment_score is not None
+        score, pedigree_components = _pedigree_fallback_score_components(
+            layer_profile,
+            input_row,
+            layer_profile.get("role") or (input_row or {}).get("role") or "hitter",
+            universal_score,
+            investment_score,
+            reliability_score,
         )
     else:
         source = "universal_fallback"
@@ -356,31 +489,47 @@ def _score_components(
         uncapped = (
             weights["universal_outcome_index"] * universal_score
             + weights["factual_investment_context"]
-            * (investment_score if investment_score is not None else NEUTRAL_CONTEXT_SCORE)
+            * investment_component
             + weights["sample_reliability"] * reliability_score
         )
         score = min(uncapped, FALLBACK_SCORE_CAP)
+        pedigree_components = {}
 
     components = {
         "model_score": _round(model_score),
         "universal_outcome_index": _round(universal_score),
         "factual_investment_context": _round(investment_score),
-        "factual_investment_missing_uses_neutral": investment_score is None,
+        "factual_investment_missing_uses_neutral": False,
+        "factual_investment_missing_penalty": investment_score is None,
+        "factual_investment_missing_score": (
+            MISSING_INVESTMENT_CONTEXT_SCORE if investment_score is None else None
+        ),
         "sample_reliability": _round(reliability_score),
     }
     if source == "universal_fallback":
         components["fallback_score_cap"] = FALLBACK_SCORE_CAP
+    if pedigree_components:
+        components.update(pedigree_components)
     return round(score, 2), source, components
 
 
 def _confidence(source: str, model_profile: dict | None, reliability: float | None) -> str:
-    if source in {"universal_fallback", "identity_only_fallback"}:
+    if source in {PEDIGREE_SCORE_SOURCE, "universal_fallback", "identity_only_fallback"}:
         return "low"
     role_gate = (model_profile or {}).get("role_gate")
     impact_gate = (model_profile or {}).get("impact_gate")
     if role_gate == "active" and impact_gate == "active" and (reliability or 0.0) >= 45:
         return "high"
     return "medium"
+
+
+def _score_source_sort_order(source: str | None) -> int:
+    return {
+        "prospect_model_v0_6": 0,
+        PEDIGREE_SCORE_SOURCE: 1,
+        "universal_fallback": 2,
+        "identity_only_fallback": 3,
+    }.get(source or "", 4)
 
 
 def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
@@ -591,7 +740,7 @@ def build_prospect_rank_v1(
     board.sort(
         key=lambda row: (
             -row["score"],
-            row["score_source"] == "universal_fallback",
+            _score_source_sort_order(row.get("score_source")),
             str(row.get("role") or ""),
             str(row.get("name") or ""),
             int(row.get("mlbam_id") or 0),
@@ -640,6 +789,13 @@ def build_prospect_rank_v1(
             "model_component_weights": MODEL_COMPONENT_WEIGHTS,
             "fallback_score_cap": FALLBACK_SCORE_CAP,
             "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
+            "missing_investment_context_score": MISSING_INVESTMENT_CONTEXT_SCORE,
+            "pedigree_fallback_score_source": PEDIGREE_SCORE_SOURCE,
+            "pedigree_min_investment_score": PEDIGREE_MIN_INVESTMENT_SCORE,
+            "pedigree_score_caps": {
+                "hitter": PEDIGREE_HITTER_SCORE_CAP,
+                "pitcher": PEDIGREE_PITCHER_SCORE_CAP,
+            },
             "prospect_universe_source": "valucast_prospect_universe",
             "dd_feed_usage": "Optional display/comparison context only.",
             "context_only_fields": [

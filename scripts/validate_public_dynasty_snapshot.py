@@ -44,6 +44,7 @@ def main() -> int:
         f"duplicate_identity_count={validation.get('duplicate_identity_count')} "
         f"required_fields_complete={validation.get('required_fields_complete')} "
         f"same_day_freshness={validation.get('same_day_freshness')} "
+        f"quality_governor_ready={validation.get('quality_governor_ready')} "
         f"ready_for_live_consumers={validation.get('ready_for_live_consumers')}"
     )
     for blocker in validation.get("blockers") or []:

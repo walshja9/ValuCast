@@ -46,7 +46,12 @@ def _distribution(rows: list[dict], field: str) -> dict[str, int]:
     return dict(sorted(Counter(str(row.get(field)) for row in rows).items()))
 
 
-def build_review(dd_board: list[dict], valucast_board: list[dict], buy_store) -> dict:
+def build_review(
+    dd_board: list[dict],
+    valucast_board: list[dict],
+    buy_store,
+    manual_approval: bool = False,
+) -> dict:
     dd_names = {_norm_name(row.get("name")): row for row in dd_board}
     valucast_names = {_norm_name(row.get("name")): row for row in valucast_board}
     overlap_names = sorted(
@@ -70,20 +75,23 @@ def build_review(dd_board: list[dict], valucast_board: list[dict], buy_store) ->
         blockers.append(
             "ValuCast Buy momentum is history-limited until more dated ValuCast score archives accumulate."
         )
-    if not blockers:
+    if not manual_approval:
         blockers.append(
             "Human review is still required before changing the public /buys source."
         )
+    review_status = "candidate_ready" if not blockers else "blocked"
 
     return {
         "artifact": "valucast_prospect_buys_review",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "review_status": "blocked",
+        "review_status": review_status,
         "source_policy": {
             "kind": "comparison_only",
             "feeds_buy_score": False,
             "dd_values_used_for_valucast_score": False,
             "dd_ranks_used_for_valucast_score": False,
+            "manual_approval_required_for_candidate_ready": True,
+            "manual_approval_recorded": manual_approval,
         },
         "metrics": {
             "dd_top40_count": len(dd_board),
@@ -131,7 +139,12 @@ def main() -> None:
 
     dd_board = buy_score.build_board(dd_store.get_all())
     valucast_board = buy_score.build_valucast_board(buy_store.get_all())
-    payload = build_review(dd_board, valucast_board, buy_store)
+    payload = build_review(
+        dd_board,
+        valucast_board,
+        buy_store,
+        manual_approval=os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1",
+    )
     path = write_review(payload)
     metrics = payload["metrics"]
     print(

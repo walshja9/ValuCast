@@ -48,21 +48,27 @@ jobs:
           python scripts/build_mlb_dynasty_layer.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_rank_v1.py
+          python scripts/build_prospect_coverage_audit.py
           python scripts/build_valucast_buys.py
           python scripts/review_valucast_buys.py
+          python scripts/build_valucast_buys.py --with-review
           python scripts/build_public_dynasty_snapshot.py
+          python scripts/build_valucast_quality_governor.py
 
       - name: Validate public artifacts
         run: |
           python scripts/validate_feed.py
+          python scripts/validate_prospect_coverage_audit.py
           python scripts/validate_valucast_buys.py
+          python scripts/validate_valucast_quality_governor.py
           python scripts/validate_public_dynasty_snapshot.py
           python scripts/validate_public_data_freshness.py
           python -m pytest -q \
             tests/test_refresh.py \
             tests/test_dd_feed_integrity.py \
             tests/test_public_data_refresh.py \
-            tests/test_public_dynasty_snapshot.py
+            tests/test_public_dynasty_snapshot.py \
+            tests/test_valucast_quality_governor.py
 
       - name: Commit and publish refreshed data
         run: |
@@ -72,8 +78,10 @@ jobs:
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
             data/models/valucast_mlb_dynasty_layer.json \
+            data/models/valucast_quality_governor.json \
             data/models/valucast_prospect_buys.json \
             data/models/valucast_prospect_buys_review.json \
+            data/models/valucast_prospect_coverage_audit.json \
             data/models/valucast_prospect_universe.json \
             data/models/valucast_prospect_rank_v1.json \
             data/prediction_archive/valucast_mlb_dynasty_layer \

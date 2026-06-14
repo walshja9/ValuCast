@@ -1,0 +1,180 @@
+{
+  "artifact": "valucast_quality_governor",
+  "blockers": [],
+  "buy_blockers": [
+    "ValuCast-owned Buy signals are not approved for public promotion."
+  ],
+  "checks": [
+    {
+      "id": "mlb_top_value_gap",
+      "message": "Top MLB dynasty value is within the maximum spike threshold.",
+      "metrics": {
+        "gap": 2.97,
+        "max_allowed_gap": 18.0,
+        "second": {
+          "mlbam_id": 677951,
+          "name": "Bobby Witt Jr.",
+          "rank": 2,
+          "value": 96.04
+        },
+        "top": {
+          "mlbam_id": 694973,
+          "name": "Paul Skenes",
+          "rank": 1,
+          "value": 99.01
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "id": "mlb_projection_stability_outliers",
+      "message": "Top MLB rows do not retain extreme current-over-ROS projection outliers after stability adjustment.",
+      "metrics": {
+        "adjusted_over_ros_gap_limit": 5.0,
+        "current_over_ros_gap_limit": 10.0,
+        "outlier_count": 0,
+        "ros_stability_weight_limit": 0.69,
+        "samples": [],
+        "top_n": 25
+      },
+      "status": "passed"
+    },
+    {
+      "id": "two_way_identity_policy",
+      "message": "Top public rows do not split two-way identities across hitter/pitcher rows.",
+      "metrics": {
+        "rank_limit": 200,
+        "samples": [],
+        "split_identity_count": 0
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_rank_surface_suppression",
+      "message": "Top Prospect Rank v1 rows are present on the public prospect surface.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_suppressed_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "suppressed_count": 0,
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_elite_factual_raw_fallback_audit",
+      "message": "Elite factual lower-minors prospects are not stuck on raw fallback scoring.",
+      "metrics": {
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "elite_factual_raw_fallback_top_200_count": 0,
+        "max_allowed_elite_factual_raw_fallback_top_200": 0,
+        "samples": []
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top50_fallback_rate",
+      "message": "Top prospect board fallback-score usage is within the publication threshold.",
+      "metrics": {
+        "evaluated_count": 50,
+        "fallback_count": 0,
+        "fallback_rate": 0.0,
+        "max_allowed_rate": 0.1,
+        "sample_ready": true,
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top25_neutral_investment_rate",
+      "message": "Top prospect board has enough factual draft/signing context.",
+      "metrics": {
+        "evaluated_count": 25,
+        "max_allowed_rate": 0.35,
+        "neutral_investment_count": 0,
+        "neutral_investment_rate": 0.0,
+        "sample_ready": true,
+        "top_n": 25
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top50_team_coverage",
+      "message": "Top prospect board has complete MLB-org display coverage.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_missing_team_count": 0,
+        "missing_team_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "buy_promotion_gate",
+      "message": "ValuCast-owned Buy signals are not approved for public promotion.",
+      "metrics": {
+        "buy_artifact_present": true,
+        "buy_review_present": true,
+        "buy_validation_ready": false,
+        "history_limited_count": 2740,
+        "history_limited_rate": 1.0,
+        "max_history_limited_rate": 0.5,
+        "public_board_ready": true,
+        "review_ready": false,
+        "review_status": "blocked",
+        "row_count": 2740
+      },
+      "status": "blocked"
+    }
+  ],
+  "criteria": {
+    "max_buy_history_limited_rate": 0.5,
+    "max_elite_factual_raw_fallback_top_200": 0,
+    "max_top25_neutral_investment_rate": 0.35,
+    "max_top50_fallback_rate": 0.1,
+    "max_top50_missing_team_count": 0,
+    "max_top50_suppressed_rank_rows": 0,
+    "max_top_mlb_adjusted_over_ros_gap": 5.0,
+    "max_top_mlb_current_over_ros_gap": 10.0,
+    "max_top_mlb_ros_stability_weight": 0.69,
+    "max_top_mlb_value_gap": 18.0,
+    "mlb_stability_top_n": 25,
+    "two_way_policy_rank_limit": 200
+  },
+  "generated_at": "2026-06-13T19:42:35.751009+00:00",
+  "governor_name": "ValuCast Quality Governor",
+  "governor_version": "0.1.0",
+  "metrics": {
+    "generated_dates": {
+      "buy_review": "2026-06-14",
+      "buy_signals": "2026-06-13",
+      "mlb_layer": "2026-06-13",
+      "prospect_coverage_audit": "2026-06-13",
+      "prospect_rank": "2026-06-13",
+      "public_snapshot": "2026-06-13"
+    },
+    "mlb_count": 900,
+    "prospect_count": 2738,
+    "public_row_count": 3638
+  },
+  "next_allowed_step": "wire_public_consumers",
+  "ready_for_buys_promotion": false,
+  "ready_for_public_snapshot": true,
+  "source_policy": {
+    "dd_ranks_used_for_model_score": false,
+    "dd_values_used_for_model_score": false,
+    "external_rankings_used_for_model_score": false,
+    "feeds_model_score": false,
+    "kind": "model_output_quality_gate"
+  },
+  "status": "candidate_ready",
+  "surface_readiness": {
+    "buys": false,
+    "dynasty": true,
+    "prospects": true
+  }
+}

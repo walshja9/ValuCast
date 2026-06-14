@@ -36,7 +36,7 @@ PROHIBITED_TRUE_FLAGS = (
 def _identity_key(record: dict) -> tuple[str, str] | None:
     mlbam_id = record.get("mlbam_id")
     role = record.get("role")
-    if mlbam_id in (None, "") or role not in {"hitter", "pitcher"}:
+    if mlbam_id in (None, "") or role not in {"hitter", "pitcher", "two_way"}:
         return None
     return str(mlbam_id), role
 
@@ -84,6 +84,16 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
         problems.append("duplicate MLBAM+role identities")
 
     validation = payload.get("validation") or {}
+    quality_governor = payload.get("quality_governor") or validation.get(
+        "quality_governor"
+    )
+    if validation.get("ready_for_live_consumers") is True:
+        if not isinstance(quality_governor, dict):
+            problems.append("ready snapshots must include quality_governor")
+        elif quality_governor.get("ready_for_public_snapshot") is not True:
+            problems.append("quality_governor has not approved public snapshot")
+        if validation.get("quality_governor_ready") is not True:
+            problems.append("validation reports quality_governor_ready is not true")
     if validation.get("duplicate_identity_count", 0) != 0:
         problems.append("validation reports duplicate identities")
     if validation.get("required_fields_complete") is False:

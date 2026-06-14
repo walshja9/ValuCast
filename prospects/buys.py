@@ -19,9 +19,11 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_buys"
 RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
+BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
 SIGNAL_VERSION = "0.1.0"
+MAX_HISTORY_LIMITED_RATE = 0.50
 
 WEIGHTS = {
     "model_strength": 0.35,
@@ -33,6 +35,7 @@ WEIGHTS = {
 CONFIDENCE_SCORE = {"high": 0.9, "medium": 0.68, "low": 0.38}
 SOURCE_SCORE = {
     "prospect_model_v0_6": 0.85,
+    "prospect_pedigree_v0_7": 0.62,
     "universal_fallback": 0.45,
     "identity_only_fallback": 0.25,
 }
@@ -150,6 +153,18 @@ def _load_history_payloads(path: Path = RANK_ARCHIVE_DIR) -> list[dict]:
     return payloads
 
 
+def _load_same_day_review(path: Path, generated_at: str | None) -> dict | None:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if _date_part(payload.get("generated_at")) != _date_part(generated_at):
+        return None
+    return payload
+
+
 def _eligible(row: dict) -> bool:
     if row.get("role") not in {"hitter", "pitcher"}:
         return False
@@ -193,9 +208,14 @@ def _history_limited_count(rows: list[dict]) -> int:
     return sum(1 for row in rows if len(row.get("score_history") or []) < 2)
 
 
+def _review_ready(review: dict | None) -> bool:
+    return (review or {}).get("review_status") in {"candidate_ready", "approved"}
+
+
 def build_buy_signals(
     rank_payload: dict,
     history_payloads: list[dict] | None = None,
+    promotion_review: dict | None = None,
 ) -> dict:
     generated_at = rank_payload.get("generated_at") or datetime.now(
         timezone.utc
@@ -262,13 +282,21 @@ def build_buy_signals(
             }
         )
 
-    blockers = [
-        "ValuCast buy signals are shadow-only until human review compares the top board against the current DD-backed /buys page.",
-    ]
-    if _history_limited_count(board):
+    history_limited_count = _history_limited_count(board)
+    history_limited_rate = (
+        round(history_limited_count / max(len(board), 1), 4) if board else 0.0
+    )
+    review_ready = _review_ready(promotion_review)
+    blockers = []
+    if not review_ready:
+        blockers.append(
+            "ValuCast Buy review has not approved changing the public /buys source."
+        )
+    if history_limited_rate > MAX_HISTORY_LIMITED_RATE:
         blockers.append(
             "Most buy rows have fewer than two ValuCast score-history points until the daily archive accumulates."
         )
+    ready_for_live_consumers = not blockers
 
     return {
         "status": "shadow_only",
@@ -296,23 +324,31 @@ def build_buy_signals(
             "prospect_rank_v1_status": rank_payload.get("status"),
             "prospect_rank_v1_count": rank_payload.get("ranked_count"),
             "rank_history_artifact_count": len(history_payloads or []),
+            "buy_review_status": (promotion_review or {}).get("review_status"),
         },
         "validation": {
-            "ready_for_live_consumers": False,
+            "ready_for_live_consumers": ready_for_live_consumers,
             "candidate_count": len(rank_payload.get("board") or []),
             "eligible_count": len(scored),
             "row_count": len(board),
             "missing_identity_count": missing_identity_count,
             "duplicate_identity_count": len(duplicate_keys),
-            "history_limited_count": _history_limited_count(board),
+            "history_limited_count": history_limited_count,
+            "history_limited_rate": history_limited_rate,
+            "max_history_limited_rate": MAX_HISTORY_LIMITED_RATE,
+            "buy_review_ready": review_ready,
             "ranks_contiguous": [row["rank"] for row in board] == list(range(1, len(board) + 1)),
             "blockers": blockers,
         },
         "promotion": {
-            "live_consumer": "blocked",
-            "feeds_live_buys": False,
+            "live_consumer": "candidate_ready" if ready_for_live_consumers else "blocked",
+            "feeds_live_buys": ready_for_live_consumers,
             "next_allowed_step": "human_review_and_route_switch_gate",
-            "reason": blockers[0],
+            "reason": (
+                "ValuCast Buy signals pass promotion gates."
+                if ready_for_live_consumers
+                else blockers[0]
+            ),
         },
         "limitations": blockers,
         "board": board,
@@ -347,9 +383,19 @@ def run_buy_signals(
     rank_archive_dir: Path = RANK_ARCHIVE_DIR,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
+    promotion_review_path: Path | None = None,
 ) -> dict:
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
-    payload = build_buy_signals(rank_payload, _load_history_payloads(rank_archive_dir))
+    promotion_review = (
+        _load_same_day_review(promotion_review_path, rank_payload.get("generated_at"))
+        if promotion_review_path
+        else None
+    )
+    payload = build_buy_signals(
+        rank_payload,
+        _load_history_payloads(rank_archive_dir),
+        promotion_review=promotion_review,
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

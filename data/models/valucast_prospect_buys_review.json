@@ -2,7 +2,8 @@
   "artifact": "valucast_prospect_buys_review",
   "blockers": [
     "ValuCast Buy top-40 overlap with the current DD-backed /buys board is below review threshold.",
-    "ValuCast Buy momentum is history-limited until more dated ValuCast score archives accumulate."
+    "ValuCast Buy momentum is history-limited until more dated ValuCast score archives accumulate.",
+    "Human review is still required before changing the public /buys source."
   ],
   "dd_top": [
     {
@@ -126,7 +127,7 @@
       "score": 66.8
     }
   ],
-  "generated_at": "2026-06-13T22:22:25.191434+00:00",
+  "generated_at": "2026-06-14T02:14:31.405970+00:00",
   "metrics": {
     "dd_age_distribution": {
       "19": 4,
@@ -145,36 +146,51 @@
     "dd_top40_count": 40,
     "history_limited_count": 2740,
     "history_limited_rate": 1.0,
-    "top40_name_overlap_count": 2,
-    "top40_name_overlap_rate": 0.05,
+    "top40_name_overlap_count": 4,
+    "top40_name_overlap_rate": 0.1,
     "valucast_age_distribution": {
-      "18": 8,
-      "19": 13,
-      "20": 15,
-      "21": 3,
+      "18": 6,
+      "19": 12,
+      "20": 14,
+      "21": 7,
       "22": 1
     },
     "valucast_level_distribution": {
-      "A": 19,
-      "A+": 15,
-      "AA": 6
+      "A": 13,
+      "A+": 16,
+      "AA": 10,
+      "AAA": 1
     },
     "valucast_top40_count": 40
   },
   "overlap": [
     {
+      "dd_rank": 14,
+      "dd_score": 67.5,
+      "name": "Gavin Fien",
+      "valucast_rank": 1,
+      "valucast_score": 61.5
+    },
+    {
       "dd_rank": 16,
       "dd_score": 66.4,
       "name": "Tate Southisene",
-      "valucast_rank": 5,
+      "valucast_rank": 7,
       "valucast_score": 60.5
     },
     {
       "dd_rank": 10,
       "dd_score": 70.6,
       "name": "Jaison Chourio",
-      "valucast_rank": 30,
-      "valucast_score": 56.9
+      "valucast_rank": 27,
+      "valucast_score": 56.4
+    },
+    {
+      "dd_rank": 7,
+      "dd_score": 74.7,
+      "name": "Nelson Rada",
+      "valucast_rank": 32,
+      "valucast_score": 56.1
     }
   ],
   "review_status": "blocked",
@@ -182,128 +198,130 @@
     "dd_ranks_used_for_valucast_score": false,
     "dd_values_used_for_valucast_score": false,
     "feeds_buy_score": false,
-    "kind": "comparison_only"
+    "kind": "comparison_only",
+    "manual_approval_recorded": false,
+    "manual_approval_required_for_candidate_ready": true
   },
   "valucast_top": [
     {
-      "age": 18,
+      "age": 19,
       "level": "A",
-      "name": "Eli Willits",
+      "name": "Gavin Fien",
       "rank": 1,
       "reason": "Young runway",
-      "score": 62.3
+      "score": 61.5
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Daniel Pierce",
+      "rank": 2,
+      "reason": "Young runway",
+      "score": 61.4
+    },
+    {
+      "age": 18,
+      "level": "A",
+      "name": "Taitn Gray",
+      "rank": 3,
+      "reason": "Young runway",
+      "score": 61.4
+    },
+    {
+      "age": 19,
+      "level": "A+",
+      "name": "Rainiel Rodriguez",
+      "rank": 4,
+      "reason": "Still in the buy window",
+      "score": 61.0
     },
     {
       "age": 18,
       "level": "A",
       "name": "Brady Ebel",
-      "rank": 2,
+      "rank": 5,
       "reason": "Young runway",
       "score": 60.7
     },
     {
-      "age": 18,
+      "age": 19,
       "level": "A",
-      "name": "Gabriel Davalillo",
-      "rank": 3,
-      "reason": "Young runway",
-      "score": 60.6
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Juneiker Caceres",
-      "rank": 4,
-      "reason": "Young runway",
-      "score": 60.5
+      "name": "Chase Harlan",
+      "rank": 6,
+      "reason": "Still in the buy window",
+      "score": 60.7
     },
     {
       "age": 19,
       "level": "A",
       "name": "Tate Southisene",
-      "rank": 5,
+      "rank": 7,
       "reason": "Still in the buy window",
-      "score": 60.5
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Elian Pe\u00f1a",
-      "rank": 6,
-      "reason": "Young runway",
       "score": 60.5
     },
     {
       "age": 18,
       "level": "A",
       "name": "Kevin Alvarez",
-      "rank": 7,
-      "reason": "Young runway",
-      "score": 60.2
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Hayden Alvarez",
       "rank": 8,
-      "reason": "Still in the buy window",
-      "score": 60.1
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Taitn Gray",
-      "rank": 9,
       "reason": "Young runway",
-      "score": 59.9
+      "score": 60.5
     },
     {
-      "age": 19,
+      "age": 20,
       "level": "A",
-      "name": "Jhonny Level",
-      "rank": 10,
-      "reason": "Still in the buy window",
-      "score": 59.7
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Ethan Holliday",
-      "rank": 11,
+      "name": "Seth Hernandez",
+      "rank": 9,
       "reason": "Still in the buy window",
       "score": 59.5
     },
     {
+      "age": 20,
+      "level": "AA",
+      "name": "Ethan Salas",
+      "rank": 10,
+      "reason": "Still in the buy window",
+      "score": 58.6
+    },
+    {
+      "age": 20,
+      "level": "A+",
+      "name": "Arjun Nimmala",
+      "rank": 11,
+      "reason": "Still in the buy window",
+      "score": 58.1
+    },
+    {
       "age": 19,
-      "level": "A",
-      "name": "Chase Harlan",
+      "level": "A+",
+      "name": "Braylon Payne",
       "rank": 12,
-      "reason": "Young runway",
-      "score": 59.2
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Robert Arias",
-      "rank": 13,
       "reason": "Still in the buy window",
-      "score": 59.0
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Emil Morales",
-      "rank": 14,
-      "reason": "Still in the buy window",
-      "score": 58.9
+      "score": 57.8
     },
     {
       "age": 19,
       "level": "A+",
       "name": "Justin Gonzales",
+      "rank": 13,
+      "reason": "Still in the buy window",
+      "score": 57.6
+    },
+    {
+      "age": 20,
+      "level": "A+",
+      "name": "Adrian Santana",
+      "rank": 14,
+      "reason": "Still in the buy window",
+      "score": 57.6
+    },
+    {
+      "age": 19,
+      "level": "A+",
+      "name": "Nathan Flewelling",
       "rank": 15,
       "reason": "Still in the buy window",
-      "score": 58.9
+      "score": 57.5
     }
   ]
 }

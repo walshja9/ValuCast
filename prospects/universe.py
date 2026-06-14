@@ -21,6 +21,20 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 
 SCHEMA_VERSION = "1.0"
 PITCHER_POSITIONS = {"P", "SP", "RP"}
+MINOR_TEAM_MLB_AFFILIATES = {
+    "Amarillo Sod Poodles": "ARI",
+    "Bowling Green Hot Rods": "TBR",
+    "Charleston RiverDogs": "TBR",
+    "Columbus Clippers": "CLE",
+    "Hudson Valley Renegades": "NYY",
+    "Iowa Cubs": "CHC",
+    "Reno Aces": "ARI",
+    "Somerset Patriots": "NYY",
+    "Tampa Tarpons": "NYY",
+    "Toledo Mud Hens": "DET",
+    "Wilmington Blue Rocks": "WSN",
+    "Wilson Warbirds": "MIL",
+}
 
 
 def infer_role(positions: list[str] | tuple[str, ...] | None) -> str:
@@ -81,6 +95,17 @@ def _dd_context(row: dict) -> dict:
     }
 
 
+def _mlb_team(profile: dict, context: dict | None) -> str | None:
+    if context and context.get("mlb_team"):
+        return context.get("mlb_team")
+    if profile.get("mlb_team"):
+        return profile.get("mlb_team")
+    team = profile.get("team")
+    if isinstance(team, str):
+        return MINOR_TEAM_MLB_AFFILIATES.get(team)
+    return None
+
+
 def _universal_keys(universal_model: dict | None) -> set[tuple[str, str]]:
     return {
         key
@@ -133,7 +158,7 @@ def build_universe(
             "positions": _positions(profile),
             "position": profile.get("position"),
             "team": profile.get("team"),
-            "mlb_team": None,
+            "mlb_team": _mlb_team(profile, context),
             "level": profile.get("level"),
             "age": profile.get("age"),
             "sample": profile.get("sample"),
@@ -144,7 +169,6 @@ def build_universe(
         }
         if context:
             player["context_only"] = _dd_context(context)
-            player["mlb_team"] = context.get("mlb_team")
             player["eta"] = context.get("eta")
         players.append(player)
 

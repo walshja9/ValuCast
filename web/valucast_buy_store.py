@@ -66,6 +66,17 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
         problems.append("validation reports duplicate identities")
     if validation.get("ranks_contiguous") is False:
         problems.append("validation reports non-contiguous ranks")
+    if validation.get("ready_for_live_consumers") is True:
+        if validation.get("buy_review_ready") is not True:
+            problems.append("ready buy signals must have buy_review_ready=true")
+        history_limited_rate = validation.get("history_limited_rate")
+        max_history_limited_rate = validation.get("max_history_limited_rate")
+        if (
+            isinstance(history_limited_rate, (int, float))
+            and isinstance(max_history_limited_rate, (int, float))
+            and history_limited_rate > max_history_limited_rate
+        ):
+            problems.append("ready buy signals exceed history-limited threshold")
     return problems
 
 

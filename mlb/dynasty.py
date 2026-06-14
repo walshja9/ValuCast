@@ -38,6 +38,10 @@ MIN_RP_IP = 20
 
 PRODUCTION_WEIGHT = 0.95
 RELIABILITY_WEIGHT = 0.05
+ROS_STABILITY_BASE_WEIGHT = 0.35
+ROS_STABILITY_MAX_WEIGHT = 0.70
+ROS_STABILITY_UNDERPERFORMANCE_WEIGHT = 0.25
+ROS_STABILITY_GAP_TO_MAX = 12.0
 MIN_AGE_COVERAGE_RATE = 0.95
 HORIZON_YEAR_WEIGHTS = (
     (0, 1.00),
@@ -310,6 +314,75 @@ def _projection_stats(player: PlayerProjection) -> dict[str, float]:
     }
 
 
+def _ros_projection_stats(player: PlayerProjection) -> dict[str, float]:
+    return {
+        key: value
+        for key, raw in (player.metadata.get("stats_ros") or {}).items()
+        if (value := _finite_float(raw)) is not None
+    }
+
+
+def _ros_players(players: Iterable[PlayerProjection]) -> list[PlayerProjection]:
+    out = []
+    for player in players:
+        stats = _ros_projection_stats(player)
+        if stats:
+            out.append(replace(player, stats=stats))
+    return out
+
+
+def _ros_lookup(
+    engine: ValuationEngine,
+    players: Iterable[PlayerProjection],
+) -> dict[tuple[str, str], ValuationResult]:
+    ros_results = engine.value_players(_ros_players(players), build_config(mode="categories"))
+    return {
+        key: result
+        for result in ros_results
+        if (key := identity_key(result.player))
+    }
+
+
+def _ros_stability_weight(current_value: float, ros_value: float | None) -> float:
+    if ros_value is None:
+        return 0.0
+    gap = current_value - ros_value
+    if gap <= 0:
+        return ROS_STABILITY_UNDERPERFORMANCE_WEIGHT
+    extra = min(1.0, gap / ROS_STABILITY_GAP_TO_MAX)
+    return round(
+        ROS_STABILITY_BASE_WEIGHT
+        + extra * (ROS_STABILITY_MAX_WEIGHT - ROS_STABILITY_BASE_WEIGHT),
+        4,
+    )
+
+
+def _stability_adjusted_result(
+    result: ValuationResult,
+    ros_by_key: dict[tuple[str, str], ValuationResult],
+) -> tuple[ValuationResult, dict[str, Any]]:
+    key = identity_key(result.player)
+    ros_result = ros_by_key.get(key) if key else None
+    ros_value = ros_result.total_value if ros_result is not None else None
+    current_value = result.total_value
+    ros_weight = _ros_stability_weight(current_value, ros_value)
+    adjusted_value = (
+        current_value
+        if ros_value is None
+        else current_value * (1.0 - ros_weight) + ros_value * ros_weight
+    )
+    return (
+        replace(result, total_value=adjusted_value),
+        {
+            "current_season_category_value": round(current_value, 4),
+            "ros_category_value": _round(ros_value, 4),
+            "ros_stability_weight": ros_weight,
+            "stability_adjusted_category_value": round(adjusted_value, 4),
+            "stability_adjustment": round(adjusted_value - current_value, 4),
+        },
+    )
+
+
 def _category_drivers(result: ValuationResult) -> list[str]:
     drivers = []
     for category, value in sorted(
@@ -349,6 +422,7 @@ def _row(
     production_score: float,
     horizon: dict[str, Any],
     rank: int,
+    stability: dict[str, Any] | None = None,
 ) -> dict:
     player = result.player
     role = _role(player)
@@ -382,6 +456,7 @@ def _row(
             "playing_time_reliability": reliability,
             "season_category_value": round(result.total_value, 4),
             "dynasty_horizon_value": round(horizon["value"], 4),
+            "projection_stability": stability or {},
             "horizon_years": horizon["years"],
             "age_adjustment": _round(age_multiplier, 4),
             "age_adjustment_status": (
@@ -427,8 +502,16 @@ def build_mlb_dynasty_layer(
             VolumeMultiplier(),
         ]
     )
-    results = engine.value_players(eligible, build_config(mode="categories"))
-    deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(results)
+    league = build_config(mode="categories")
+    results = engine.value_players(eligible, league)
+    ros_by_key = _ros_lookup(engine, eligible)
+    stability_by_player_id: dict[str, dict[str, Any]] = {}
+    adjusted_results = []
+    for result in results:
+        adjusted, stability = _stability_adjusted_result(result, ros_by_key)
+        adjusted_results.append(adjusted)
+        stability_by_player_id[adjusted.player.id] = stability
+    deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(adjusted_results)
     horizon_rows = [
         (result, _horizon_profile(result, season))
         for result in deduped
@@ -456,7 +539,14 @@ def build_mlb_dynasty_layer(
         )
     )
     board = [
-        _row(result, score, production_score, horizon, rank)
+        _row(
+            result,
+            score,
+            production_score,
+            horizon,
+            rank,
+            stability_by_player_id.get(result.player.id),
+        )
         for rank, (score, production_score, horizon, result) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
@@ -492,8 +582,19 @@ def build_mlb_dynasty_layer(
                 "horizon_production_score": PRODUCTION_WEIGHT,
                 "playing_time_reliability": RELIABILITY_WEIGHT,
             },
-            "horizon_production_score": "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows.",
+            "horizon_production_score": "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows after ROS stability adjustment.",
             "horizon_model": "Carries the current ValuCast category projection forward through age-curve ratios and reliability decay.",
+            "projection_stability": (
+                "Blends current-season category value with the same player's ROS "
+                "category value; extreme current-over-ROS outliers receive the "
+                "largest pullback before dynasty-horizon scaling."
+            ),
+            "ros_stability_weights": {
+                "base_ros_weight": ROS_STABILITY_BASE_WEIGHT,
+                "max_ros_weight": ROS_STABILITY_MAX_WEIGHT,
+                "underperformance_ros_weight": ROS_STABILITY_UNDERPERFORMANCE_WEIGHT,
+                "gap_to_max_weight": ROS_STABILITY_GAP_TO_MAX,
+            },
             "playing_time_reliability": "PA/IP volume shrinkage score from the same projection artifact.",
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
             "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",

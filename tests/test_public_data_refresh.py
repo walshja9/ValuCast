@@ -67,6 +67,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "STATCAST": tmp_path / "statcast.json",
         "MLB_DYNASTY_LAYER": tmp_path / "mlb_dynasty_layer.json",
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
+        "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
+        "PROSPECT_COVERAGE_AUDIT": tmp_path / "prospect_coverage_audit.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
     paths["PUBLIC_SNAPSHOT"].write_text(
@@ -89,6 +91,12 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["VALUCAST_BUYS"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["VALUCAST_QUALITY_GOVERNOR"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PROSPECT_COVERAGE_AUDIT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     for key in ("REDRAFT_CURRENT", "REDRAFT_ROS", "ACTUALS"):

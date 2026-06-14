@@ -52,13 +52,17 @@ def _pitcher(
     ip=180,
     strikeouts=210,
     era=3.10,
+    metadata=None,
 ):
+    base_metadata = {"mlbam_id": mlbam_id, "team": "MIL", "has_ros": True}
+    if metadata:
+        base_metadata.update(metadata)
     return PlayerProjection(
         id=player_id,
         name=name,
         pool=PlayerPool.STARTER,
         positions=("SP",),
-        metadata={"mlbam_id": mlbam_id, "team": "MIL", "has_ros": True},
+        metadata=base_metadata,
         stats={
             "IP": ip,
             "W": 14,
@@ -178,3 +182,67 @@ def test_mlb_layer_horizon_declines_for_older_player_future_years():
     assert years[1]["age_factor"] < 1.0
     assert years[2]["age_factor"] < years[1]["age_factor"]
     assert years[1]["reliability_factor"] < 1.0
+
+
+def test_mlb_layer_records_ros_stability_pull_for_current_outlier():
+    payload = build_mlb_dynasty_layer(
+        [
+            _pitcher(
+                player_id="outlier",
+                mlbam_id="10",
+                name="Current Outlier",
+                ip=185,
+                strikeouts=285,
+                era=1.80,
+                metadata={
+                    "age": 24,
+                    "stats_ros": {
+                        "IP": 90,
+                        "W": 5,
+                        "QS": 8,
+                        "SV": 0,
+                        "HLD": 0,
+                        "K": 85,
+                        "ER": 36,
+                        "BB": 35,
+                        "H_ALLOWED": 82,
+                        "ERA": 3.60,
+                        "WHIP": 1.30,
+                    },
+                },
+            ),
+            _pitcher(
+                player_id="stable",
+                mlbam_id="11",
+                name="Stable Ace",
+                ip=185,
+                strikeouts=220,
+                era=2.90,
+                metadata={
+                    "age": 25,
+                    "stats_ros": {
+                        "IP": 95,
+                        "W": 7,
+                        "QS": 10,
+                        "SV": 0,
+                        "HLD": 0,
+                        "K": 115,
+                        "ER": 30,
+                        "BB": 22,
+                        "H_ALLOWED": 74,
+                        "ERA": 2.84,
+                        "WHIP": 1.01,
+                    },
+                },
+            ),
+        ],
+        "2026-06-13",
+    )
+
+    outlier = next(row for row in payload["players"] if row["name"] == "Current Outlier")
+    stability = outlier["components"]["projection_stability"]
+
+    assert stability["ros_category_value"] is not None
+    assert stability["ros_stability_weight"] > 0.35
+    assert stability["stability_adjustment"] < 0
+    assert outlier["projection_value"] == stability["stability_adjusted_category_value"]

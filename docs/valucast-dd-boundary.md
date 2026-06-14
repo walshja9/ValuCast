@@ -30,15 +30,17 @@ As of June 13, 2026:
 | Surface | Current behavior | Product meaning |
 | --- | --- | --- |
 | ValuCast season rankings | ValuCast combines MLB actuals and rest-of-season projections into configurable redraft-style rankings. | Independent ValuCast season outlook. |
-| ValuCast prospect board | Still uses the legacy DD prospect feed value/order after the Universal Index live trial was reverted. | Beta/legacy bridge, not the final independent ValuCast prospect model. |
-| ValuCast dynasty board | Still uses the legacy DD dynasty feed value/order. | Beta/legacy bridge, not the final independent ValuCast dynasty model. |
+| ValuCast prospect board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast prospect board, fail-closed to legacy DD feed if the snapshot is not ready. |
+| ValuCast dynasty board | Uses the ValuCast public snapshot when `VALUCAST_USE_PUBLIC_SNAPSHOT=1` and the quality governor approves it; otherwise falls back to the DD feed. | Independent ValuCast dynasty board, fail-closed to legacy DD feed if the snapshot is not ready. |
+| ValuCast buys board | Still uses the DD-backed buy board unless `VALUCAST_USE_VALUCAST_BUYS=1` and the ValuCast buy artifact passes its separate review/history gate. | Legacy DD buy surface until ValuCast-owned Buys are explicitly approved. |
 | DD prospect board | DD ranks and values players for the Diamond Dynasties league. | DD league value. |
 | DD Statistical Lens | DD compares its live prospect value against a ValuCast DD 7x7 adapter output. | Research-only disagreement lens; it does not change DD rank or value. |
 
-The important gap is the ValuCast-owned public snapshot. Dynasty, Prospects,
-and Buys still depend on DD-generated public rows in production. ValuCast now
-has shadow prospect model pieces and a DD adapter, but those artifacts are not
-publication-grade replacements for the public boards yet.
+The important remaining gap is ValuCast-owned Buys promotion. Dynasty and
+Prospects can now consume the ValuCast public snapshot once the snapshot is
+same-day fresh and the quality governor approves it. Buys intentionally remains
+separate because it needs human review and enough dated ValuCast score history
+before it can replace the DD-backed buy board.
 
 ## Allowed Boundaries
 
@@ -83,9 +85,11 @@ factual player data
   -> DD 7x7, 5x5, points, OBP, and custom-league rankings
 ```
 
-The current system has pieces of this pipeline, but it is not complete. The
-missing center piece is a ValuCast Dynasty Value model that puts MLB players
-and prospects on one independent dynasty scale.
+The current system now has a ValuCast public snapshot that places MLB players
+and prospects on one independent dynasty scale for Dynasty and Prospects. The
+remaining pipeline work is to keep hardening that model, accumulate dated
+ValuCast history, and promote league adapters and Buys only when their gates
+pass.
 
 ## Prospect Rank v1 Candidate
 
@@ -118,12 +122,12 @@ python scripts/build_prospect_universe.py
 python scripts/build_prospect_rank_v1.py
 ```
 
-## Current Shadow Build
+## Current Public Snapshot Gate
 
-ValuCast now publishes a gate artifact at
+ValuCast publishes a gate artifact at
 `data/public/public_dynasty_snapshot.json`. That snapshot proves the public
 schema, freshness, source-policy, duplicate-identity, field-validation, and
-cross-universe calibration rails before any live switch.
+cross-universe calibration rails before Dynasty/Prospects can consume it.
 
 The snapshot includes:
 
@@ -134,11 +138,15 @@ The snapshot includes:
 - `data/models/valucast_prospect_buys.json`, a ValuCast-owned buy-signal
   artifact built from ValuCast Rank v1 rather than DD value history or public
   source-rank gaps
+- `data/models/valucast_quality_governor.json`, a ValuCast-owned promotion
+  gate that reviews the generated boards for baseball-sanity blockers before
+  Dynasty/Prospects can treat them as official
 
 It has two separate readiness concepts:
 
 - `ready_for_live_consumers` means the snapshot can feed Dynasty/Prospects
-  instead of the DD feed when the environment switch is enabled.
+  instead of the DD feed when the environment switch is enabled. This now
+  requires the quality governor to pass.
 - `ready_for_all_public_surfaces` remains false until buy signals are reviewed
   and have enough dated ValuCast score history.
 
@@ -149,9 +157,45 @@ scores. The `/buys` switch remains separately gated by `ValuCastBuyStore` so a
 calibrated Dynasty/Prospects snapshot cannot accidentally promote an unreviewed
 buy board.
 
+The quality governor is not a scoring input. It does not train the model and it
+does not use DD ranks, DD values, public ranks, or market values to change a
+score. It is a publication brake. Current checks include:
+
+- top-board MLB value spikes
+- two-way identities split into separate hitter/pitcher public rows without a
+  combined-value policy
+- fallback-heavy top prospect rankings
+- top prospects leaning too heavily on neutral draft/signing context
+- missing MLB-org display coverage near the top of the prospect board
+- Prospect Rank v1 rows suppressed from the visible public prospect surface
+- MLB projection rows with extreme current-over-ROS gaps near the top of the
+  Dynasty board
+- Buy promotion readiness, including review status and ValuCast score-history
+  depth
+
+The current Dynasty/Prospects gate can pass independently of Buys. That is
+intentional: ValuCast's canonical public snapshot may be fit for board display
+while the Buy board remains shadow-only until it has enough ValuCast score
+history and explicit review approval.
+
+Two model-quality rules are now part of the public snapshot path:
+
+- MLB two-way rows publish as one player with hitter/pitcher components instead
+  of separate public Dynasty rows.
+- MLB dynasty values use an internal ROS-stability adjustment so one extreme
+  current-season line cannot define the whole top of the board by itself.
+- Prospect rows win publication conflicts against weak MLB projection rows
+  until the prospect is explicitly marked as MLB-level or the MLB row is a
+  material current-value promotion. A low present-day projection row should not
+  erase a higher-confidence prospect future-value row, but a real current MLB
+  contributor should not be demoted by stale prospect context.
+- Quality-governor prospect checks run against the final visible public
+  prospect surface, not only against the pre-merge Rank v1 artifact.
+
 ## Next Build
 
-Build ValuCast Dynasty Value v1.
+Harden ValuCast Dynasty Value v1 and promote ValuCast-owned Buys only after the
+buy gate passes.
 
 It should combine:
 
@@ -162,7 +206,7 @@ It should combine:
 - a dynasty horizon that can compare current MLB value against future prospect
   value
 
-That model should publish:
+The model should keep publishing:
 
 - a ValuCast dynasty score
 - a ValuCast dynasty rank

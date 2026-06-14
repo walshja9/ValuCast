@@ -347,6 +347,36 @@ def test_rank_v1_does_not_require_dd_feed_context():
     assert all(row["context_only"]["has_dd_context"] is False for row in payload["board"])
 
 
+def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][1].update(
+        {
+            "age": 18,
+            "level": "A",
+            "plate_appearances": 220,
+            "draft_pick_number": 1,
+            "signing_bonus": 8_200_000,
+            "school_type": "high_school",
+        }
+    )
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+        dd_feed=_feed(),
+    )
+
+    row = next(item for item in payload["board"] if item["name"] == "Fallback Good")
+
+    assert row["score_source"] == "prospect_pedigree_v0_7"
+    assert row["confidence"] == "low"
+    assert row["components"]["factual_investment_context"] >= 90
+    assert row["components"]["age_level_context"] > 80
+    assert row["components"]["pedigree_score_cap"] >= 49
+    assert row["score"] > 41.75
+
+
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     universe_path = tmp_path / "universe.json"
     feed_path = tmp_path / "feed.json"

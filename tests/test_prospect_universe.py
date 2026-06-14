@@ -83,6 +83,17 @@ def test_universe_builds_without_dd_feed():
     assert "context_only" not in payload["players"][0]
 
 
+def test_universe_backfills_known_mlb_affiliate_from_minor_team():
+    payload = build_universe(
+        _layer([_profile(team="Somerset Patriots")]),
+        _universal(),
+        dd_feed=None,
+    )
+
+    assert payload["players"][0]["mlb_team"] == "NYY"
+    assert "context_only" not in payload["players"][0]
+
+
 def test_universe_rejects_duplicate_identity():
     profiles = [
         _profile(mlbam_id=1, role="hitter", name="First"),

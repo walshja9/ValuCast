@@ -75,7 +75,7 @@ def _rank_payload():
     }
 
 
-def _mlb_payload(mlbam_id=99, role="hitter"):
+def _mlb_payload(mlbam_id=99, role="hitter", value=90.0, rank=1):
     return {
         "status": "shadow_only",
         "layer_version": "0.1.0",
@@ -96,8 +96,8 @@ def _mlb_payload(mlbam_id=99, role="hitter"):
                 "team": "BOS",
                 "mlb_team": "BOS",
                 "age": None,
-                "rank": 1,
-                "value": 90.0,
+                "rank": rank,
+                "value": value,
                 "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
                 "value_source": "valucast_mlb_projection_index_v0_1",
                 "confidence": "medium",
@@ -210,6 +210,7 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
     assert payload["validation"]["valucast_buy_signal_count"] == 2
     assert payload["validation"]["valucast_buy_signals_ready"] is False
+    assert payload["validation"]["quality_governor_ready"] is True
     assert payload["validation"]["surface_readiness"]["buys"] is False
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
@@ -226,6 +227,7 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert payload["validation"]["ready_for_live_consumers"] is True
     assert payload["validation"]["ready_for_all_public_surfaces"] is False
     assert payload["validation"]["cross_universe_value_scale_calibrated"] is True
+    assert payload["validation"]["quality_governor_ready"] is True
     assert payload["validation"]["surface_readiness"] == {
         "dynasty": True,
         "prospects": True,
@@ -234,6 +236,7 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert payload["validation"]["blockers"] == []
     assert payload["validation"]["buy_signal_blockers"] == [
         "ValuCast buy signals are shadow-only.",
+        "ValuCast-owned Buy signals are not approved for public promotion.",
     ]
     assert {row["value_scale"] for row in payload["players"]} == {COMMON_VALUE_SCALE}
     assert {row["status"] for row in payload["players"]} == {"candidate_ready"}
@@ -251,6 +254,120 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
         top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
         == COMMON_VALUE_SCALE
     )
+
+
+def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
+    mlb_layer = _ready_mlb_payload()
+    mlb_layer["players"] = [
+        {
+            **mlb_layer["players"][0],
+            "id": "vc_mlb_660271_hitter",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "hitter",
+            "positions": ["DH"],
+            "value": 60.0,
+            "rank": 1,
+        },
+        {
+            **mlb_layer["players"][1],
+            "id": "vc_mlb_660271_pitcher",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 40.0,
+            "rank": 2,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_99_hitter",
+            "name": "MLB Star",
+            "mlbam_id": 99,
+            "value": 90.0,
+            "rank": 3,
+        },
+    ]
+    mlb_layer["validation"]["row_count"] = len(mlb_layer["players"])
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=mlb_layer,
+        buy_signals=_buy_payload(),
+    )
+
+    ohtani_rows = [
+        row for row in payload["players"] if str(row.get("mlbam_id")) == "660271"
+    ]
+    assert len(ohtani_rows) == 1
+    row = ohtani_rows[0]
+    assert row["id"] == "vc_mlb_660271_two_way"
+    assert row["role"] == "two_way"
+    assert row["positions"] == ["DH", "SP"]
+    assert row["value"] == 86.0
+    assert row["context"]["kind"] == "valucast_mlb_two_way_context"
+    assert {item["role"] for item in row["context"]["role_components"]} == {
+        "hitter",
+        "pitcher",
+    }
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert not any("two-way" in blocker for blocker in payload["validation"]["blockers"])
+
+
+def test_quality_governor_blocks_public_snapshot_promotion():
+    mlb_layer = _ready_mlb_payload()
+    mlb_layer["players"] = [
+        {
+            **mlb_layer["players"][0],
+            "id": "vc_mlb_10_pitcher",
+            "name": "Spike Pitcher",
+            "mlbam_id": 10,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 99.0,
+            "rank": 1,
+        },
+        {
+            **mlb_layer["players"][1],
+            "id": "vc_mlb_11_hitter",
+            "name": "MLB Anchor",
+            "mlbam_id": 11,
+            "value": 77.0,
+            "rank": 2,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_660271_hitter",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "hitter",
+            "positions": ["DH"],
+            "value": 20.0,
+            "rank": 3,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_660271_pitcher",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 10.0,
+            "rank": 4,
+        },
+    ]
+    mlb_layer["validation"]["row_count"] = len(mlb_layer["players"])
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=mlb_layer,
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["quality_governor_ready"] is False
+    assert "Top MLB dynasty value is too far above the second row for public promotion." in payload["validation"]["blockers"]
+    assert "Top public rows split two-way identities without a combined-value policy." not in payload["validation"]["blockers"]
 
 
 def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
@@ -280,22 +397,65 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.public_source_consensus == 10
 
 
-def test_snapshot_excludes_prospect_duplicate_when_mlb_identity_exists():
+def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
     payload = build_snapshot(
         _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 0
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 1
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 0
+    assert payload["validation"]["prospect_count"] == 2
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_prospect_1_hitter"
+    ]
+    top_prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert top_prospect["prospect_rank"] == 1
+    assert top_prospect["context"]["valucast_rank_v1"] == 1
+
+
+def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=90.0, rank=1),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
+
+
+def test_snapshot_allows_confirmed_mlb_level_prospect_to_graduate():
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "MLB"
+
+    payload = build_snapshot(
+        rank_payload,
         mlb_layer=_mlb_payload(mlbam_id=1),
         buy_signals=_buy_payload(),
     )
 
     assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
     assert payload["validation"]["duplicate_identity_count"] == 0
     assert payload["validation"]["mlb_count"] == 1
     assert payload["validation"]["prospect_count"] == 1
-    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
     assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
         "vc_mlb_1_hitter"
     ]
-    remaining_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+    remaining_prospect = next(
+        row for row in payload["players"] if row["player_type"] == "prospect"
+    )
     assert remaining_prospect["prospect_rank"] == 1
     assert remaining_prospect["context"]["valucast_rank_v1"] == 2
 

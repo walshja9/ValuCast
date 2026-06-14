@@ -3,19 +3,33 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
+
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+PROSPECT_COVERAGE_AUDIT_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
+)
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
+BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 SCHEMA_VERSION = "1.0"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 CALIBRATION_METHOD = "raw_common_scale_certification_v1"
+TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_1"
+TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
+MLB_COLLISION_PROMOTION_MAX_RANK = 75
+MLB_COLLISION_PROMOTION_MIN_VALUE = 45.0
+MLB_COLLISION_PROMOTION_MIN_MARGIN = 15.0
 
 MIN_PROSPECT_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 150
@@ -45,14 +59,56 @@ def _positions(row: dict) -> list[str]:
     return ["P"] if row.get("role") == "pitcher" else ["DH"]
 
 
+def _clean_float(value) -> float | None:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if numeric == numeric else None
+
+
+def _clean_int(value) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _snapshot_id(row: dict) -> str:
     return f"vc_prospect_{row['mlbam_id']}_{row['role']}"
 
 
 def _identity_key(row: dict) -> tuple[str, str] | None:
-    if row.get("mlbam_id") in (None, "") or row.get("role") not in {"hitter", "pitcher"}:
+    if row.get("mlbam_id") in (None, "") or row.get("role") not in {"hitter", "pitcher", "two_way"}:
         return None
     return str(row["mlbam_id"]), row["role"]
+
+
+def _mlbam_id(row: dict) -> str | None:
+    value = row.get("mlbam_id")
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
+def _is_confirmed_mlb_level_prospect(row: dict) -> bool:
+    return str(row.get("level") or "").strip().upper() == "MLB"
+
+
+def _mlb_collision_should_promote(prospect_row: dict, mlb_rows: list[dict]) -> bool:
+    if _is_confirmed_mlb_level_prospect(prospect_row):
+        return True
+    prospect_value = _clean_float(prospect_row.get("value")) or 0.0
+    for row in mlb_rows:
+        mlb_value = _clean_float(row.get("value")) or 0.0
+        mlb_rank = _clean_int(row.get("rank")) or 999999
+        if (
+            mlb_rank <= MLB_COLLISION_PROMOTION_MAX_RANK
+            and mlb_value >= MLB_COLLISION_PROMOTION_MIN_VALUE
+            and mlb_value - prospect_value >= MLB_COLLISION_PROMOTION_MIN_MARGIN
+        ):
+            return True
+    return False
 
 
 def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
@@ -90,16 +146,113 @@ def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
     return rows
 
 
+def _combined_confidence(rows: list[dict]) -> str | dict | None:
+    levels = [
+        row.get("confidence")
+        for row in rows
+        if isinstance(row.get("confidence"), str) and row.get("confidence")
+    ]
+    if not levels:
+        return rows[0].get("confidence") if rows else None
+    if "low" in levels:
+        return "low"
+    if "medium" in levels:
+        return "medium"
+    return "high"
+
+
+def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    passthrough = []
+    for row in rows:
+        mlbam_id = row.get("mlbam_id")
+        if mlbam_id in (None, ""):
+            passthrough.append(row)
+            continue
+        grouped.setdefault(str(mlbam_id), []).append(row)
+
+    merged_rows = list(passthrough)
+    for mlbam_id, group in grouped.items():
+        roles = {row.get("role") for row in group if row.get("role")}
+        if len(group) == 1 or len(roles) < 2:
+            merged_rows.extend(group)
+            continue
+
+        ordered = sorted(
+            group,
+            key=lambda row: (
+                -(_clean_float(row.get("value")) or 0.0),
+                row.get("role") != "hitter",
+                str(row.get("name") or ""),
+            ),
+        )
+        primary = ordered[0]
+        secondary_value = sum(
+            (_clean_float(row.get("value")) or 0.0) for row in ordered[1:]
+        )
+        primary_value = _clean_float(primary.get("value")) or 0.0
+        combined_value = min(
+            100.0,
+            primary_value + TWO_WAY_SECONDARY_VALUE_WEIGHT * secondary_value,
+        )
+        positions = []
+        for row in ordered:
+            for position in row.get("positions") or []:
+                if position and position not in positions:
+                    positions.append(position)
+        drivers = []
+        for row in ordered:
+            for driver in row.get("drivers") or []:
+                if driver not in drivers:
+                    drivers.append(driver)
+
+        component_rows = [
+            {
+                "role": row.get("role"),
+                "id": row.get("id"),
+                "rank": row.get("rank"),
+                "value": row.get("value"),
+                "value_source": row.get("value_source"),
+                "stat_line": row.get("stat_line"),
+                "drivers": row.get("drivers") or [],
+                "context": row.get("context") or {},
+            }
+            for row in ordered
+        ]
+        context = {
+            "kind": "valucast_mlb_two_way_context",
+            "primary_role": primary.get("role"),
+            "combined_value_formula": (
+                "primary_value + secondary_value * "
+                f"{TWO_WAY_SECONDARY_VALUE_WEIGHT}"
+            ),
+            "primary_value": round(primary_value, 2),
+            "secondary_value": round(secondary_value, 2),
+            "combined_value": round(combined_value, 2),
+            "role_components": component_rows,
+        }
+        merged = {
+            **primary,
+            "id": f"vc_mlb_{mlbam_id}_two_way",
+            "role": "two_way",
+            "positions": positions or primary.get("positions") or [],
+            "value": round(combined_value, 2),
+            "value_source": TWO_WAY_VALUE_SOURCE,
+            "confidence": _combined_confidence(ordered),
+            "drivers": drivers[:6],
+            "context": context,
+        }
+        merged_rows.append(merged)
+
+    return merged_rows
+
+
 def _prospect_rows(
     rank_payload: dict,
     generated_at: str,
-    excluded_identity_keys: set[tuple[str, str]] | None = None,
 ) -> list[dict]:
-    excluded_identity_keys = excluded_identity_keys or set()
     rows = []
     for row in rank_payload.get("board") or []:
-        if _identity_key(row) in excluded_identity_keys:
-            continue
         context = row.get("context_only") or {}
         rows.append(
             {
@@ -123,6 +276,7 @@ def _prospect_rows(
                 "level": row.get("level"),
                 "eta": row.get("eta"),
                 "score_source": row.get("score_source"),
+                "components": row.get("components") or {},
                 "drivers": row.get("drivers") or [],
                 "dynasty_signal": row.get("dynasty_signal"),
                 "breakout_label": context.get("breakout_label"),
@@ -344,7 +498,10 @@ def _validation(
     rank_payload: dict,
     mlb_layer: dict | None,
     buy_signals: dict | None,
+    quality_governor: dict,
     prospects_excluded_by_mlb_identity_count: int,
+    mlb_projection_rows_suppressed_by_prospect_count: int,
+    mlb_projection_rows_suppressed_by_prospect_sample: list[dict],
     calibration_report: dict,
 ) -> dict:
     players = payload.get("players") or []
@@ -383,6 +540,16 @@ def _validation(
             buy_validation.get("blockers")
             or ["ValuCast buy signals are still shadow-only."]
         )
+    if not quality_governor.get("ready_for_public_snapshot"):
+        blockers.extend(
+            quality_governor.get("blockers")
+            or ["ValuCast quality governor has not approved public snapshot promotion."]
+        )
+    if not quality_governor.get("ready_for_buys_promotion"):
+        buy_blockers.extend(
+            quality_governor.get("buy_blockers")
+            or ["ValuCast quality governor has not approved Buy promotion."]
+        )
     date_values = [generated_date, rank_date]
     if mlb_layer:
         date_values.append(mlb_date)
@@ -396,9 +563,14 @@ def _validation(
     if not visible_prospect_ranks_contiguous:
         blockers.append("Public snapshot visible prospect ranks are not contiguous.")
 
-    dynasty_ready = not blockers and bool(calibration_report.get("applied"))
+    quality_surface_readiness = quality_governor.get("surface_readiness") or {}
+    dynasty_ready = (
+        not blockers
+        and bool(calibration_report.get("applied"))
+        and bool(quality_surface_readiness.get("dynasty"))
+    )
     prospects_ready = dynasty_ready
-    buys_ready = dynasty_ready and bool(buy_validation.get("ready_for_live_consumers"))
+    buys_ready = dynasty_ready and bool(quality_surface_readiness.get("buys"))
     blockers = list(dict.fromkeys(blockers))
     buy_blockers = list(dict.fromkeys(buy_blockers))
 
@@ -428,9 +600,17 @@ def _validation(
         "valucast_buy_signals_ready": bool(
             buy_validation.get("ready_for_live_consumers")
         ),
+        "quality_governor_ready": bool(
+            quality_governor.get("ready_for_public_snapshot")
+        ),
+        "quality_governor_version": quality_governor.get("governor_version"),
+        "quality_governor_blockers": quality_governor.get("blockers") or [],
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
+        "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
+        "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
         "cross_universe_value_scale_calibrated": bool(calibration_report.get("applied")),
         "cross_universe_calibration": calibration_report,
+        "quality_governor": quality_governor,
         "surface_readiness": {
             "dynasty": dynasty_ready,
             "prospects": prospects_ready,
@@ -449,7 +629,9 @@ def _validation(
 def build_snapshot(
     prospect_rank: dict,
     mlb_layer: dict | None = None,
+    prospect_coverage_audit: dict | None = None,
     buy_signals: dict | None = None,
+    buy_review: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = (
@@ -458,19 +640,61 @@ def build_snapshot(
         or (mlb_layer or {}).get("generated_at")
         or datetime.now(timezone.utc).isoformat()
     )
-    mlb_rows = _mlb_rows(mlb_layer, generated_at)
-    mlb_identity_keys = {
-        key for row in mlb_rows if (key := _identity_key(row))
+    mlb_rows = _merge_two_way_mlb_rows(_mlb_rows(mlb_layer, generated_at))
+    mlb_identity_ids = {
+        mlbam_id
+        for row in mlb_rows
+        if (mlbam_id := _mlbam_id(row))
     }
-    prospect_rows = _prospect_rows(
-        prospect_rank,
-        generated_at,
-        excluded_identity_keys=mlb_identity_keys,
-    )
+    mlb_rows_by_id: dict[str, list[dict]] = {}
+    for row in mlb_rows:
+        if mlbam_id := _mlbam_id(row):
+            mlb_rows_by_id.setdefault(mlbam_id, []).append(row)
+    all_prospect_rows = _prospect_rows(prospect_rank, generated_at)
+    graduated_prospect_rows = [
+        row
+        for row in all_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in mlb_identity_ids
+        and _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
+    ]
+    graduated_ids = {
+        mlbam_id
+        for row in graduated_prospect_rows
+        if (mlbam_id := _mlbam_id(row))
+    }
+    prospect_rows = [
+        row
+        for row in all_prospect_rows
+        if _mlbam_id(row) not in graduated_ids
+    ]
+    active_prospect_ids = {
+        mlbam_id
+        for row in prospect_rows
+        if (mlbam_id := _mlbam_id(row))
+    }
+    suppressed_mlb_rows = [
+        row for row in mlb_rows if _mlbam_id(row) in active_prospect_ids
+    ]
+    mlb_rows = [
+        row for row in mlb_rows if _mlbam_id(row) not in active_prospect_ids
+    ]
     prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
-    prospects_excluded_by_mlb_identity_count = (
-        len((prospect_rank.get("board") or [])) - len(prospect_rows)
-    )
+    prospects_excluded_by_mlb_identity_count = len(graduated_prospect_rows)
+    suppressed_mlb_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "value": row.get("value"),
+        }
+        for row in sorted(
+            suppressed_mlb_rows,
+            key=lambda row: (
+                int(row.get("rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
     combined_rows = mlb_rows + prospect_rows
     identity_keys = [key for row in combined_rows if (key := _identity_key(row))]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
@@ -488,6 +712,16 @@ def build_snapshot(
     )
     if calibration_report.get("applied"):
         _apply_common_value_scale(combined_rows, calibration_report)
+    players = _assign_global_ranks(combined_rows)
+    quality_governor = evaluate_quality_governor(
+        players,
+        prospect_rank=prospect_rank,
+        prospect_coverage_audit=prospect_coverage_audit,
+        mlb_layer=mlb_layer,
+        buy_signals=buy_signals,
+        buy_review=buy_review,
+        generated_at=generated_at,
+    )
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact": ARTIFACT_NAME,
@@ -506,20 +740,30 @@ def build_snapshot(
             "mlb_dynasty_layer_status": (mlb_layer or {}).get("status"),
             "valucast_buy_signal_version": (buy_signals or {}).get("signal_version"),
             "valucast_buy_signal_status": (buy_signals or {}).get("status"),
+            "prospect_coverage_audit_version": (prospect_coverage_audit or {}).get(
+                "audit_version"
+            ),
+            "prospect_coverage_audit_status": (prospect_coverage_audit or {}).get(
+                "status"
+            ),
             "prospect_rank_v1_version": prospect_rank.get("rank_version"),
             "prospect_rank_v1_status": prospect_rank.get("status"),
             "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
                 "prospect_universe_source"
             ),
         },
-        "players": _assign_global_ranks(combined_rows),
+        "quality_governor": quality_governor,
+        "players": players,
     }
     payload["validation"] = _validation(
         payload,
         prospect_rank,
         mlb_layer,
         buy_signals,
+        quality_governor,
         prospects_excluded_by_mlb_identity_count,
+        len(suppressed_mlb_rows),
+        suppressed_mlb_sample,
         calibration_report,
     )
     return payload
@@ -536,11 +780,19 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 def main() -> None:
     rank_payload = _load_json(PROSPECT_RANK_PATH)
     mlb_layer = _load_json(MLB_LAYER_PATH) if MLB_LAYER_PATH.exists() else None
+    prospect_coverage_audit = (
+        _load_json(PROSPECT_COVERAGE_AUDIT_PATH)
+        if PROSPECT_COVERAGE_AUDIT_PATH.exists()
+        else None
+    )
     buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
+    buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
     payload = build_snapshot(
         rank_payload,
         mlb_layer=mlb_layer,
+        prospect_coverage_audit=prospect_coverage_audit,
         buy_signals=buy_signals,
+        buy_review=buy_review,
     )
     path = write_snapshot(payload)
     validation = payload["validation"]
