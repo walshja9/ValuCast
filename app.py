@@ -914,7 +914,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     foot_y = height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card)
     draw.text((60, foot_y + 10), "valucast.app", fill=green, font=font(22, bold=True))
-    draw.text((505, foot_y + 14), "rank numbers are local to this graphic - filtered from the Prospects tab", fill=muted, font=font(16))
+    draw.text((440, foot_y + 14), "Source: ValuCast Prospect Rank v1 - performance + age/level + investment + availability", fill=muted, font=font(15))
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
