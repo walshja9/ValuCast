@@ -178,6 +178,13 @@ intentional: ValuCast's canonical public snapshot may be fit for board display
 while the Buy board remains shadow-only until it has enough ValuCast score
 history and explicit review approval.
 
+Buy approval is an explicit release action, not a scheduled default. The daily
+public-data workflow keeps `VALUCAST_BUYS_REVIEW_APPROVED=0`; a manual workflow
+dispatch may set `approve_valucast_buys=true` to record human review approval
+and regenerate the Buy artifact with the promotion gate open. The public route
+still requires `VALUCAST_USE_VALUCAST_BUYS=1` and `ValuCastBuyStore` validation
+before `/buys` can serve ValuCast-owned signals.
+
 Two model-quality rules are now part of the public snapshot path:
 
 - MLB two-way rows publish as one player with hitter/pitcher components instead

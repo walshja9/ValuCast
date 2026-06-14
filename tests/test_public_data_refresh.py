@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from urllib.error import URLError
 
 import pytest
@@ -110,3 +111,17 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     assert problems == [
         "statcast.json as_of=2026-06-12, expected 2026-06-13"
     ]
+
+
+def test_daily_public_workflow_requires_manual_buy_approval():
+    workflow = Path(".github/workflows/daily-public-data.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "approve_valucast_buys" in workflow
+    assert "type: boolean" in workflow
+    assert (
+        "VALUCAST_BUYS_REVIEW_APPROVED: "
+        "${{ github.event_name == 'workflow_dispatch' "
+        "&& inputs.approve_valucast_buys && '1' || '0' }}"
+    ) in workflow

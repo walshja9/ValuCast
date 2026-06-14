@@ -6,6 +6,12 @@ on:
     # 8:30 AM EST so the generated dynasty feed and its Render deploy can land.
     - cron: "30 13 * * *"
   workflow_dispatch:
+    inputs:
+      approve_valucast_buys:
+        description: "Record explicit human approval for ValuCast-owned /buys promotion"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -43,6 +49,8 @@ jobs:
         run: python scripts/sync_dd_feed.py
 
       - name: Build ValuCast public snapshot gate
+        env:
+          VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
         run: |
           python scripts/backfill_projection_identities.py
           python scripts/build_mlb_dynasty_layer.py
