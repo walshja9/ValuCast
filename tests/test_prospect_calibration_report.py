@@ -82,6 +82,8 @@ def test_calibration_report_passes_clean_board_and_keeps_context_observe_only():
     assert payload["status"] == "review_ready"
     assert payload["metrics"]["bands"]["25"]["role_counts"]["pitcher"] == 1
     assert payload["metrics"]["bands"]["50"]["availability_adjusted_count"] == 1
+    assert payload["metrics"]["bucket_metrics"]
+    assert payload["metrics"]["bucket_tuning_flag_count"] == 0
     assert payload["metrics"]["context_disagreement_count_top50"] == 1
     assert payload["watchlists"]["top50_dd_context_disagreements"][0][
         "disagreement_direction"
@@ -114,6 +116,35 @@ def test_calibration_report_flags_broad_top_board_shape_problems():
     assert "top25_pedigree_crowding" in flag_ids
     assert "top50_raw_fallback_rate" in flag_ids
     assert payload["metrics"]["bands"]["50"]["fallback_count"] == 6
+
+
+def test_calibration_report_flags_thin_upper_level_pitcher_bucket():
+    rows = []
+    for rank in range(1, 61):
+        if rank <= 5:
+            rows.append(
+                _row(
+                    rank,
+                    role="pitcher",
+                    availability_status="thin_current_sample",
+                    availability_discount=0.03,
+                )
+            )
+        else:
+            rows.append(_row(rank))
+
+    payload = build_prospect_calibration_report(_rank_payload(rows))
+    flag_ids = {flag["id"] for flag in payload["tuning_flags"]}
+    thin_bucket = next(
+        item
+        for item in payload["metrics"]["bucket_metrics"]
+        if item["bucket"] == "pitcher|upper_level|prospect_model_v0_6|thin_current_sample"
+    )
+
+    assert payload["status"] == "needs_review"
+    assert "top50_thin_upper_level_pitcher_count" in flag_ids
+    assert payload["metrics"]["bucket_tuning_flag_count"] == 1
+    assert thin_bucket["top50_count"] == 5
 
 
 def test_run_and_validate_calibration_report(tmp_path):

@@ -22,12 +22,14 @@ RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_ran
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
-SIGNAL_VERSION = "0.2.0"
+SIGNAL_VERSION = "0.2.1"
 MAX_HISTORY_LIMITED_RATE = 0.50
 PROMOTION_BOARD_SIZE = 40
 PROMOTABLE_SCORE_SOURCES = {"prospect_model_v0_6", "prospect_pedigree_v0_7"}
 MAX_TOP40_RAW_FALLBACK_COUNT = 0
 MAX_TOP40_MISSING_TEAM_COUNT = 0
+MAX_TOP40_LOW_CONFIDENCE_RATE = 0.35
+MAX_TOP40_PEDIGREE_RATE = 0.35
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 
 WEIGHTS = {
@@ -233,6 +235,9 @@ def _top_board_quality(board: list[dict]) -> dict:
     )
     missing_team_count = sum(1 for row in top_rows if not (row.get("team") or "").strip())
     low_confidence_count = sum(1 for row in top_rows if row.get("confidence") == "low")
+    pedigree_count = sum(
+        1 for row in top_rows if row.get("score_source") == "prospect_pedigree_v0_7"
+    )
     source_counts: dict[str, int] = {}
     for row in top_rows:
         source = str(row.get("score_source") or "unknown")
@@ -246,6 +251,12 @@ def _top_board_quality(board: list[dict]) -> dict:
         "low_confidence_rate": round(low_confidence_count / len(top_rows), 4)
         if top_rows
         else 0.0,
+        "max_low_confidence_rate": MAX_TOP40_LOW_CONFIDENCE_RATE,
+        "pedigree_count": pedigree_count,
+        "pedigree_rate": round(pedigree_count / len(top_rows), 4)
+        if top_rows
+        else 0.0,
+        "max_pedigree_rate": MAX_TOP40_PEDIGREE_RATE,
         "score_source_counts": source_counts,
     }
 
@@ -347,6 +358,14 @@ def build_buy_signals(
         )
     if top_quality["missing_team_count"] > MAX_TOP40_MISSING_TEAM_COUNT:
         blockers.append("ValuCast Buy top board has missing MLB-org display coverage.")
+    if top_quality["low_confidence_rate"] > MAX_TOP40_LOW_CONFIDENCE_RATE:
+        blockers.append(
+            "ValuCast Buy top board has too many low-confidence profiles."
+        )
+    if top_quality["pedigree_rate"] > MAX_TOP40_PEDIGREE_RATE:
+        blockers.append(
+            "ValuCast Buy top board leans too heavily on pedigree-only profiles."
+        )
     if top_quality["evaluated_count"] < PROMOTION_BOARD_SIZE:
         blockers.append(
             "ValuCast Buy top board has too few promotion-eligible rows."

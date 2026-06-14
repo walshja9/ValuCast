@@ -106,6 +106,7 @@ def test_availability_applies_manual_status_overrides_with_bounded_discount():
                     "status": "injured",
                     "note": "Verified manual test status.",
                     "risk_discount": 0.40,
+                    "age": 24,
                 }
             ]
         },
@@ -116,6 +117,7 @@ def test_availability_applies_manual_status_overrides_with_bounded_discount():
     assert hitter["status"] == "injured"
     assert hitter["risk_discount"] == MAX_RISK_DISCOUNT
     assert hitter["risk_level"] == "high"
+    assert hitter["age"] == 24
     assert hitter["availability_note"] == "Verified manual test status."
     assert payload["validation"]["manual_override_count"] == 1
 

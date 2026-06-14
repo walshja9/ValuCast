@@ -56,6 +56,8 @@ def build_review(
     valucast_board: list[dict],
     buy_store,
     manual_approval: bool = False,
+    prior_approval: bool = False,
+    neutral_momentum_approval: bool = False,
     generated_at: str | None = None,
 ) -> dict:
     dd_names = {_norm_name(row.get("name")): row for row in dd_board}
@@ -72,20 +74,25 @@ def build_review(
         history_limited_count / max(buy_row_count, 1)
     )
 
+    approval_recorded = manual_approval or prior_approval
+    neutral_momentum_launch = (
+        history_limited_rate > MAX_HISTORY_LIMITED_RATE
+        and (
+            neutral_momentum_approval
+            or (manual_approval and not prior_approval)
+        )
+    )
     blockers = []
     if history_limited_rate > MAX_HISTORY_LIMITED_RATE:
-        if not manual_approval:
+        if not neutral_momentum_launch:
             blockers.append(
                 "ValuCast Buy momentum is history-limited until review approves neutral-momentum launch or more dated ValuCast score archives accumulate."
             )
-    if not manual_approval:
+    if not approval_recorded:
         blockers.append(
             "Human review is still required before changing the public /buys source."
         )
     review_status = "candidate_ready" if not blockers else "blocked"
-    neutral_momentum_launch = (
-        manual_approval and history_limited_rate > MAX_HISTORY_LIMITED_RATE
-    )
 
     return {
         "artifact": "valucast_prospect_buys_review",
@@ -97,15 +104,15 @@ def build_review(
             "dd_values_used_for_valucast_score": False,
             "dd_ranks_used_for_valucast_score": False,
             "manual_approval_required_for_candidate_ready": True,
-            "manual_approval_recorded": manual_approval,
+            "manual_approval_recorded": approval_recorded,
+            "prior_approval_reused": prior_approval and not manual_approval,
             "dd_overlap_required_for_candidate_ready": False,
-            "history_launch_approved": manual_approval
-            and history_limited_rate > MAX_HISTORY_LIMITED_RATE,
+            "history_launch_approved": neutral_momentum_launch,
             "approval_kind": (
                 "neutral_momentum_launch"
                 if neutral_momentum_launch
                 else "human_review"
-                if manual_approval
+                if approval_recorded
                 else None
             ),
         },
@@ -154,6 +161,24 @@ def write_review(payload: dict, path: Path = OUTPUT_PATH) -> Path:
     return path
 
 
+def _load_prior_approval(path: Path = OUTPUT_PATH) -> tuple[bool, bool]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return False, False
+    source_policy = payload.get("source_policy") or {}
+    promotion_decision = payload.get("promotion_decision") or {}
+    approval_recorded = (
+        payload.get("review_status") == "candidate_ready"
+        and source_policy.get("manual_approval_recorded") is True
+    )
+    neutral_momentum_approval = (
+        source_policy.get("history_launch_approved") is True
+        or promotion_decision.get("neutral_momentum_launch_approved") is True
+    )
+    return approval_recorded, neutral_momentum_approval
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -172,6 +197,11 @@ def main() -> None:
     if not buy_store.is_available:
         raise SystemExit("ValuCast buys unavailable; cannot review ValuCast buys")
 
+    explicit_approval = (
+        args.approve_neutral_momentum_launch
+        or os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1"
+    )
+    prior_approval, neutral_momentum_approval = _load_prior_approval()
     dd_board = buy_score.build_board(dd_store.get_all())
     valucast_board = buy_score.build_valucast_board(
         buy_store.get_all(),
@@ -181,8 +211,9 @@ def main() -> None:
         dd_board,
         valucast_board,
         buy_store,
-        manual_approval=args.approve_neutral_momentum_launch
-        or os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1",
+        manual_approval=explicit_approval,
+        prior_approval=prior_approval and not explicit_approval,
+        neutral_momentum_approval=neutral_momentum_approval,
         generated_at=buy_store.generated_at,
     )
     path = write_review(payload)

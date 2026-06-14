@@ -34,8 +34,12 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
         bands = metrics.get("bands")
         if not isinstance(bands, dict) or "50" not in bands:
             problems.append("metrics.bands.50 is required")
+        if not isinstance(metrics.get("bucket_metrics"), list):
+            problems.append("metrics.bucket_metrics is required")
         if "tuning_flag_count" not in metrics:
             problems.append("metrics.tuning_flag_count is required")
+        if "bucket_tuning_flag_count" not in metrics:
+            problems.append("metrics.bucket_tuning_flag_count is required")
     source_policy = payload.get("source_policy")
     if not isinstance(source_policy, dict):
         problems.append("source_policy must be an object")

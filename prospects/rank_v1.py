@@ -1,8 +1,7 @@
 """Candidate ValuCast prospect ranking built from ValuCast-owned signals.
 
-This artifact is a bridge, not a production switch. It ranks the current
-ValuCast prospect universe for review while keeping DD ranks, DD values, and
-public source ranks out of the score.
+It ranks the current ValuCast prospect universe while keeping DD ranks, DD
+values, and public source ranks out of the score.
 """
 from __future__ import annotations
 
@@ -27,14 +26,16 @@ DD_ADAPTER_PATH = ROOT / "data" / "models" / "valucast_dd_7x7_prospect_adapter.j
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
-RANK_NAME = "ValuCast Prospect Rank v1 Candidate"
-RANK_VERSION = "0.2.2"
+RANK_NAME = "ValuCast Prospect Rank v1"
+RANK_VERSION = "0.2.3"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
-BUCKET_CALIBRATION_VERSION = "0.1.0"
+BUCKET_CALIBRATION_VERSION = "0.2.1"
 UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
-LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -2.5
+LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.0
+THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
+THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
 PEDIGREE_MIN_INVESTMENT_SCORE = 90.0
 PEDIGREE_HITTER_SCORE_CAP = 48.0
 PEDIGREE_PITCHER_SCORE_CAP = 45.5
@@ -585,29 +586,84 @@ def _bucket_calibration_adjustment(
     universe_row: dict | None,
     components: dict,
 ) -> tuple[float, dict]:
-    if source != PEDIGREE_SCORE_SOURCE:
-        return score, components
-
     level = _level_key(
         (input_row or {}).get("level")
         or (layer_profile or {}).get("level")
         or (universe_row or {}).get("level")
     )
-    if level in UPPER_LEVEL_BUCKETS:
+    role = (
+        (universe_row or {}).get("role")
+        or (layer_profile or {}).get("role")
+        or (input_row or {}).get("role")
+    )
+    adjustments = []
+
+    if source == PEDIGREE_SCORE_SOURCE and level not in UPPER_LEVEL_BUCKETS:
+        adjustments.append(
+            {
+                "bucket": "lower_minors_pedigree_score_source",
+                "label": "Lower-minors context",
+                "level": level,
+                "score_source": source,
+                "adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
+                "reason": (
+                    "Lower-minors pedigree-only profiles are kept slightly behind "
+                    "upper-level evidence until the model has stronger current samples."
+                ),
+            }
+        )
+
+    availability = components.get("availability")
+    availability = availability if isinstance(availability, dict) else {}
+    sample = _clean_float(availability.get("sample"))
+    sample_unit = str(availability.get("sample_unit") or "").upper()
+    if sample is None:
+        sample = _sample_size(input_row or {}, str(role or ""))
+        sample_unit = "IP" if role == "pitcher" else "PA"
+    if (
+        source == "prospect_model_v0_6"
+        and role == "pitcher"
+        and level in {"AA", "AAA"}
+        and sample_unit == "IP"
+        and sample < THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP
+    ):
+        adjustments.append(
+            {
+                "bucket": "upper_level_thin_pitcher_model_sample",
+                "label": "Thin upper-level pitcher sample",
+                "level": level,
+                "role": role,
+                "score_source": source,
+                "sample": round(sample, 3),
+                "sample_unit": sample_unit,
+                "sample_threshold": THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP,
+                "adjustment": THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT,
+                "reason": (
+                    "Upper-level pitcher model scores with fewer than 30 current IP "
+                    "are kept slightly behind fuller pitching samples."
+                ),
+            }
+        )
+
+    if not adjustments:
         return score, components
 
-    adjusted_score = max(0.0, score + LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT)
+    total_adjustment = round(
+        sum(float(adjustment["adjustment"]) for adjustment in adjustments),
+        2,
+    )
+    adjusted_score = max(0.0, score + total_adjustment)
     next_components = dict(components)
     next_components["score_before_bucket_calibration"] = round(score, 2)
+    primary = adjustments[0]
     next_components["bucket_calibration"] = {
         "version": BUCKET_CALIBRATION_VERSION,
-        "bucket": "lower_minors_pedigree_score_source",
-        "level": level,
-        "adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
-        "reason": (
-            "Lower-minors pedigree-only profiles are kept slightly behind "
-            "upper-level evidence until the model has stronger current samples."
-        ),
+        "bucket": primary["bucket"],
+        "label": primary["label"],
+        "level": primary.get("level"),
+        "adjustment": total_adjustment,
+        "reason": primary["reason"],
+        "rules": adjustments,
     }
     return round(adjusted_score, 2), next_components
 
@@ -731,10 +787,7 @@ def _validation(
     ) == 1
     coverage_rate = round(len(board) / len(prospect_rows), 4) if prospect_rows else 0.0
     top_200_scores = {row["score"] for row in board[:200]}
-    blockers = [
-        "Prospect Rank v1 is a candidate shadow artifact; no public consumer is allowed yet.",
-        "ValuCast still does not publish a complete canonical Dynasty/Prospects/Buys snapshot.",
-    ]
+    blockers = []
     if coverage_rate < MIN_PUBLIC_COVERAGE_RATE:
         blockers.append(
             "Current ValuCast prospect-model coverage is below the public migration threshold."
@@ -749,8 +802,8 @@ def _validation(
         blockers.append("Input artifacts were not generated on the same date.")
 
     return {
-        "public_migration_ready": False,
-        "ready_to_replace_dd_feed": False,
+        "public_migration_ready": not blockers,
+        "ready_to_replace_dd_feed": not blockers,
         "same_day_freshness": same_day,
         "generated_dates": {
             "prospect_universe": universe_date,
@@ -814,6 +867,7 @@ def build_prospect_rank_v1(
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
+        availability_profile = availability_by_key.get(key)
         if layer_profile:
             score, source, components = _score_components(
                 model_profile,
@@ -827,7 +881,7 @@ def build_prospect_rank_v1(
         score, components = apply_availability_adjustment(
             score,
             components,
-            availability_by_key.get(key),
+            availability_profile,
         )
         score, components = _bucket_calibration_adjustment(
             score,
@@ -842,6 +896,11 @@ def build_prospect_rank_v1(
             model_profile,
             components.get("sample_reliability"),
         )
+        display_age = (availability_profile or {}).get("age")
+        if display_age is None:
+            display_age = universe_row.get("age")
+        if display_age is None:
+            display_age = (layer_profile or {}).get("age")
         board.append(
             {
                 "mlbam_id": universe_row.get("mlbam_id"),
@@ -853,9 +912,7 @@ def build_prospect_rank_v1(
                 "role": role,
                 "positions": universe_row.get("positions") or (dd_row or {}).get("positions"),
                 "mlb_team": universe_row.get("mlb_team") or (dd_row or {}).get("mlb_team"),
-                "age": universe_row.get("age")
-                if universe_row.get("age") is not None
-                else (layer_profile or {}).get("age"),
+                "age": display_age,
                 "level": universe_row.get("level") or (layer_profile or {}).get("level"),
                 "eta": universe_row.get("eta") or (dd_row or {}).get("eta"),
                 "universe_source": universe_row.get("universe_source"),
@@ -910,7 +967,7 @@ def build_prospect_rank_v1(
         or (dd_feed or {}).get("generated_at")
     )
     return {
-        "status": "candidate_shadow",
+        "status": "candidate_ready" if not validation["blockers"] else "blocked",
         "rank_name": RANK_NAME,
         "rank_version": RANK_VERSION,
         "generated_at": generated_at,
@@ -918,8 +975,8 @@ def build_prospect_rank_v1(
         "ranked_count": len(board),
         "rank_contract": {
             "purpose": (
-                "Review a ValuCast-owned prospect ordering before it is allowed "
-                "to influence any public ValuCast or DD surface."
+                "Produce a ValuCast-owned prospect ordering for canonical "
+                "ValuCast public snapshots after validation and governor gates pass."
             ),
             "score_range": [0.0, 100.0],
             "score_weights": SCORE_WEIGHTS,
@@ -937,6 +994,8 @@ def build_prospect_rank_v1(
                 "version": BUCKET_CALIBRATION_VERSION,
                 "upper_level_buckets": sorted(UPPER_LEVEL_BUCKETS),
                 "lower_minors_pedigree_score_adjustment": LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
+                "thin_upper_level_pitcher_model_sample_ip": THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP,
+                "thin_upper_level_pitcher_model_adjustment": THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT,
                 "scope": "score_source_and_level_bucket_only",
             },
             "prospect_universe_source": "valucast_prospect_universe",
@@ -957,7 +1016,7 @@ def build_prospect_rank_v1(
             "external_rankings_used_for_score": False,
             "dd_values_used_for_score": False,
             "market_independent": True,
-            "live_surface": False,
+            "live_surface": True,
             "tie_policy": "Ranks are contiguous after deterministic non-score tiebreakers.",
         },
         "input_artifacts": {
@@ -979,19 +1038,23 @@ def build_prospect_rank_v1(
             "dd_adapter_version": (dd_adapter or {}).get("adapter_version"),
         },
         "promotion": {
-            "live_consumer": "blocked",
-            "feeds_live_valucast_rank": False,
+            "live_consumer": "candidate_ready" if not validation["blockers"] else "blocked",
+            "feeds_live_valucast_rank": not validation["blockers"],
             "feeds_live_dd_value": False,
             "next_allowed_step": (
                 "human_review_and_coverage_repair"
                 if coverage_repair_needed
-                else "human_review_and_canonical_snapshot_build"
+                else "canonical_snapshot_build_and_quality_governor"
             ),
-            "reason": validation["blockers"][0],
+            "reason": (
+                validation["blockers"][0]
+                if validation["blockers"]
+                else "Prospect Rank v1 passes coverage, identity, freshness, and separation gates."
+            ),
         },
         "validation": validation,
         "limitations": [
-            "Candidate only; the live ValuCast Prospects board is not switched by this artifact.",
+            "Public ValuCast surfaces consume this rank only through the canonical snapshot and quality governor.",
             "ValuCast prospect-universe rows define membership; DD feed rows are optional context only.",
             "Identity-only fallback rows remain for prospects absent from the current ValuCast layer.",
             "Identity-only fallback rows have verified MLBAM identity but no eligible ValuCast model sample yet.",

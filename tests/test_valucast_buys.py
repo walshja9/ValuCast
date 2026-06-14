@@ -333,6 +333,20 @@ def test_review_manual_approval_can_launch_with_neutral_momentum_history():
     assert review["blockers"] == []
 
 
+def test_review_can_reuse_prior_human_approval_after_buys_are_promoted():
+    payload = build_buy_signals(_rank_payload(), _history())
+    valucast = buy_score.build_valucast_board(payload["board"])
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+
+    review = build_review([], valucast, store, prior_approval=True)
+
+    assert review["review_status"] == "candidate_ready"
+    assert review["source_policy"]["manual_approval_recorded"] is True
+    assert review["source_policy"]["prior_approval_reused"] is True
+    assert review["source_policy"]["approval_kind"] == "human_review"
+    assert review["blockers"] == []
+
+
 def test_ready_buy_payload_can_use_reviewed_neutral_momentum_launch():
     review = {
         "review_status": "candidate_ready",
@@ -358,5 +372,71 @@ def test_ready_buy_payload_rejects_top_board_raw_fallback():
 
     assert (
         "ready buy signals must not include raw fallback rows in the top board"
+        in validate_valucast_buy_payload(payload)
+    )
+
+
+def test_buy_promotion_blocks_low_confidence_top_board_crowding():
+    review = {"review_status": "candidate_ready"}
+    rows = [
+        _row(index, f"Buy {index}", index + 30, 55.0, confidence="low")
+        for index in range(1, 45)
+    ]
+    history = [
+        {
+            "date": "2026-06-12",
+            "board": [
+                {"mlbam_id": index, "role": "hitter", "score": 53.0}
+                for index in range(1, 45)
+            ],
+        }
+    ]
+
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        history,
+        promotion_review=review,
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["top_board_quality"]["low_confidence_rate"] == 1.0
+    assert any("low-confidence" in blocker for blocker in payload["validation"]["blockers"])
+
+    payload["validation"]["ready_for_live_consumers"] = True
+    assert (
+        "ready buy signals exceed low-confidence threshold"
+        in validate_valucast_buy_payload(payload)
+    )
+
+
+def test_buy_promotion_blocks_pedigree_only_top_board_crowding():
+    review = {"review_status": "candidate_ready"}
+    rows = [
+        _row(index, f"Buy {index}", index + 30, 55.0, source="prospect_pedigree_v0_7")
+        for index in range(1, 45)
+    ]
+    history = [
+        {
+            "date": "2026-06-12",
+            "board": [
+                {"mlbam_id": index, "role": "hitter", "score": 53.0}
+                for index in range(1, 45)
+            ],
+        }
+    ]
+
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        history,
+        promotion_review=review,
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["top_board_quality"]["pedigree_rate"] == 1.0
+    assert any("pedigree-only" in blocker for blocker in payload["validation"]["blockers"])
+
+    payload["validation"]["ready_for_live_consumers"] = True
+    assert (
+        "ready buy signals exceed pedigree-only threshold"
         in validate_valucast_buy_payload(payload)
     )

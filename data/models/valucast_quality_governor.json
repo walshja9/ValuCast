@@ -157,71 +157,217 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_rate": 0.35,
-        "pedigree_count": 17,
-        "pedigree_rate": 0.34,
+        "pedigree_count": 14,
+        "pedigree_rate": 0.28,
         "sample_ready": true,
         "samples": [
           {
-            "name": "Dylan Crews",
-            "rank": 11,
-            "score": 48.91,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Jace Jung",
-            "rank": 14,
-            "score": 48.48,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Christian Moore",
-            "rank": 16,
-            "score": 48.2,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Travis Bazzana",
-            "rank": 25,
-            "score": 46.77,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Jackson Holliday",
-            "rank": 29,
-            "score": 45.83,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
             "name": "Eli Willits",
-            "rank": 30,
-            "score": 45.67,
-            "score_source": "prospect_pedigree_v0_7"
-          },
-          {
-            "name": "Brady House",
-            "rank": 31,
-            "score": 45.6,
+            "rank": 27,
+            "score": 45.17,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Daniel Pierce",
-            "rank": 39,
-            "score": 44.7,
+            "rank": 35,
+            "score": 44.2,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Ethan Holliday",
-            "rank": 40,
-            "score": 44.66,
+            "rank": 36,
+            "score": 44.16,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Theo Gillen",
+            "rank": 37,
+            "score": 44.16,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "JoJo Parker",
+            "rank": 38,
+            "score": 44.0,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Kayson Cunningham",
+            "rank": 39,
+            "score": 43.96,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Billy Carlson",
             "rank": 41,
-            "score": 44.66,
+            "score": 43.8,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Bryce Rainer",
+            "rank": 42,
+            "score": 43.79,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Xavier Neyens",
+            "rank": 43,
+            "score": 43.78,
+            "score_source": "prospect_pedigree_v0_7"
+          },
+          {
+            "name": "Blake Mitchell",
+            "rank": 44,
+            "score": 43.76,
             "score_source": "prospect_pedigree_v0_7"
           }
         ],
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
+      "id": "prospect_top50_bucket_shape",
+      "message": "Top prospect board bucket shape is within publication limits.",
+      "metrics": {
+        "evaluated_count": 50,
+        "failures": [],
+        "low_confidence_count": 14,
+        "low_confidence_rate": 0.28,
+        "lower_minors_pedigree_count": 14,
+        "max_low_confidence_rate": 0.38,
+        "max_lower_minors_pedigree_count": 14,
+        "max_thin_upper_level_pitcher_count": 4,
+        "sample_ready": true,
+        "samples": {
+          "low_confidence": [
+            {
+              "confidence": "low",
+              "name": "Eli Willits",
+              "rank": 27,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Daniel Pierce",
+              "rank": 35,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Ethan Holliday",
+              "rank": 36,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Theo Gillen",
+              "rank": 37,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "JoJo Parker",
+              "rank": 38,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Kayson Cunningham",
+              "rank": 39,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Billy Carlson",
+              "rank": 41,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "confidence": "low",
+              "name": "Bryce Rainer",
+              "rank": 42,
+              "score_source": "prospect_pedigree_v0_7"
+            }
+          ],
+          "lower_minors_pedigree": [
+            {
+              "level": "A",
+              "name": "Eli Willits",
+              "rank": 27,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A",
+              "name": "Daniel Pierce",
+              "rank": 35,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A",
+              "name": "Ethan Holliday",
+              "rank": 36,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A+",
+              "name": "Theo Gillen",
+              "rank": 37,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A",
+              "name": "JoJo Parker",
+              "rank": 38,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A",
+              "name": "Kayson Cunningham",
+              "rank": 39,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A",
+              "name": "Billy Carlson",
+              "rank": 41,
+              "score_source": "prospect_pedigree_v0_7"
+            },
+            {
+              "level": "A+",
+              "name": "Bryce Rainer",
+              "rank": 42,
+              "score_source": "prospect_pedigree_v0_7"
+            }
+          ],
+          "thin_upper_level_pitchers": [
+            {
+              "level": "AAA",
+              "name": "Robby Snelling",
+              "rank": 22,
+              "sample": 29.0,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AAA",
+              "name": "Gage Jump",
+              "rank": 28,
+              "sample": 38.0,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AAA",
+              "name": "Thomas White",
+              "rank": 33,
+              "sample": 24.667,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ]
+        },
+        "thin_upper_level_pitcher_count": 3,
         "top_n": 50
       },
       "status": "passed"
@@ -284,7 +430,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 9,
+        "priced_availability_risk_count": 6,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,
@@ -300,30 +446,39 @@
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 6,
-        "history_limited_rate": 0.0068,
+        "history_limited_count": 0,
+        "history_limited_rate": 0.0,
         "history_ready": true,
+        "low_confidence_rate": 0.2,
         "max_history_limited_rate": 0.5,
+        "max_low_confidence_rate": 0.35,
+        "max_pedigree_rate": 0.35,
+        "pedigree_rate": 0.2,
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 886
+        "row_count": 879
       },
       "status": "passed"
     }
   ],
   "criteria": {
     "max_buy_history_limited_rate": 0.5,
+    "max_buy_top40_low_confidence_rate": 0.35,
+    "max_buy_top40_pedigree_rate": 0.35,
     "max_elite_factual_raw_fallback_top_200": 0,
     "max_top25_exact_pedigree_cap_count": 3,
     "max_top25_mlb_pitcher_count": 9,
     "max_top25_mlb_reliever_count": 1,
     "max_top25_neutral_investment_rate": 0.35,
     "max_top50_fallback_rate": 0.1,
+    "max_top50_low_confidence_rate": 0.38,
+    "max_top50_lower_minors_pedigree_count": 14,
     "max_top50_missing_availability_count": 0,
     "max_top50_missing_team_count": 0,
     "max_top50_pedigree_rate": 0.35,
     "max_top50_suppressed_rank_rows": 0,
+    "max_top50_thin_upper_level_pitcher_count": 4,
     "max_top50_unpriced_availability_risk_count": 0,
     "max_top_mlb_adjusted_over_ros_gap": 5.0,
     "max_top_mlb_current_over_ros_gap": 10.0,
@@ -333,9 +488,9 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-14T18:02:38.609804+00:00",
+  "generated_at": "2026-06-14T19:51:17.206354+00:00",
   "governor_name": "ValuCast Quality Governor",
-  "governor_version": "0.1.0",
+  "governor_version": "0.2.0",
   "metrics": {
     "generated_dates": {
       "buy_review": "2026-06-14",
@@ -345,9 +500,9 @@
       "prospect_rank": "2026-06-14",
       "public_snapshot": "2026-06-14"
     },
-    "mlb_count": 822,
-    "prospect_count": 2844,
-    "public_row_count": 3666
+    "mlb_count": 907,
+    "prospect_count": 2744,
+    "public_row_count": 3651
   },
   "next_allowed_step": "wire_public_consumers",
   "ready_for_buys_promotion": true,

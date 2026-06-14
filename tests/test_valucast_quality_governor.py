@@ -16,13 +16,21 @@ def _mlb_row(mlbam_id, name, role, rank, value, positions=None):
     }
 
 
-def _prospect_row(index, source="prospect_model_v0_6", team="BOS", neutral=False):
+def _prospect_row(
+    index,
+    source="prospect_model_v0_6",
+    team="BOS",
+    neutral=False,
+    confidence="medium",
+    level="AA",
+    role="hitter",
+):
     return {
-        "id": f"vc_prospect_{10_000 + index}_hitter",
+        "id": f"vc_prospect_{10_000 + index}_{role}",
         "player_type": "prospect",
         "mlbam_id": 10_000 + index,
         "name": f"Prospect {index}",
-        "role": "hitter",
+        "role": role,
         "rank": index,
         "prospect_rank": index,
         "value": 55.0 - index * 0.1,
@@ -30,6 +38,9 @@ def _prospect_row(index, source="prospect_model_v0_6", team="BOS", neutral=False
         "score": 55.0 - index * 0.1,
         "score_source": source,
         "mlb_team": team,
+        "level": level,
+        "confidence": confidence,
+        "positions": ["SP"] if role == "pitcher" else ["SS"],
         "components": {
             "factual_investment_missing_uses_neutral": neutral,
             "availability": {
@@ -50,13 +61,14 @@ def _prospect_rank(rows):
     }
 
 
-def _buy_signals(ready=False, history_limited_count=0, row_count=40):
+def _buy_signals(ready=False, history_limited_count=0, row_count=40, top_board_quality=None):
     return {
         "generated_at": "2026-06-13T12:00:00+00:00",
         "validation": {
             "ready_for_live_consumers": ready,
             "history_limited_count": history_limited_count,
             "row_count": row_count,
+            "top_board_quality": top_board_quality or {},
         },
     }
 
@@ -147,6 +159,41 @@ def test_quality_governor_allows_reviewed_neutral_momentum_buy_launch():
     assert payload["buy_blockers"] == []
     assert buy_check["metrics"]["history_ready"] is True
     assert buy_check["metrics"]["history_launch_approved"] is True
+
+
+def test_quality_governor_blocks_ready_buys_with_bad_top_board_shape():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(
+            ready=True,
+            top_board_quality={
+                "low_confidence_rate": 0.5,
+                "pedigree_rate": 0.2,
+            },
+        ),
+        buy_review={
+            "review_status": "candidate_ready",
+            "source_policy": {"history_launch_approved": True},
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    buy_check = next(
+        check for check in payload["checks"] if check["id"] == "buy_promotion_gate"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert payload["ready_for_buys_promotion"] is False
+    assert buy_check["metrics"]["low_confidence_rate"] == 0.5
 
 
 def test_quality_governor_blocks_obvious_public_board_quality_failures():
@@ -344,6 +391,47 @@ def test_quality_governor_blocks_pedigree_only_top50_crowding():
 
     assert payload["ready_for_public_snapshot"] is False
     assert "Top prospect board leans too heavily on pedigree-only scoring." in payload["blockers"]
+
+
+def test_quality_governor_blocks_risky_prospect_bucket_shape():
+    prospects = []
+    for index in range(1, 51):
+        if index <= 5:
+            row = _prospect_row(index, role="pitcher", level="AAA")
+            row["components"]["availability"] = {
+                "present": True,
+                "status": "thin_current_sample",
+                "risk_level": "medium",
+                "risk_discount": 0.06,
+                "signals": ["thin_starter_workload_under_30_ip"],
+                "sample": 24.2,
+                "sample_unit": "IP",
+            }
+        else:
+            row = _prospect_row(index)
+        prospects.append(row)
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    bucket_check = next(
+        check for check in payload["checks"] if check["id"] == "prospect_top50_bucket_shape"
+    )
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board has a risky bucket concentration." in payload["blockers"]
+    assert bucket_check["metrics"]["thin_upper_level_pitcher_count"] == 5
 
 
 def test_quality_governor_blocks_exact_pedigree_cap_plateau():

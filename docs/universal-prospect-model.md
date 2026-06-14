@@ -116,9 +116,10 @@ Output:
 - `data/models/valucast_prospect_rank_v1.json`
 - `data/prediction_archive/valucast_prospect_rank_v1/YYYY-MM-DD.json`
 
-The artifact remains `candidate_shadow` until coverage, forward evidence, and
-human review are good enough to promote it. It currently cannot authorize a
-public ValuCast prospect board or DD value change.
+The artifact is `candidate_ready` only when coverage, identity, freshness, and
+score-separation gates pass. Public ValuCast surfaces still consume it only
+through `data/public/public_dynasty_snapshot.json` and the quality governor. It
+never authorizes a DD value change.
 
 ## Automated Forward Shadow Tracking
 

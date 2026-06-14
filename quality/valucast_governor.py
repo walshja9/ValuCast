@@ -25,7 +25,7 @@ BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.1.0"
+GOVERNOR_VERSION = "0.2.0"
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25
@@ -41,6 +41,9 @@ MAX_TOP50_FALLBACK_RATE = 0.10
 MAX_TOP50_SUPPRESSED_RANK_ROWS = 0
 MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200 = 0
 MAX_TOP50_PEDIGREE_RATE = 0.35
+MAX_TOP50_LOW_CONFIDENCE_RATE = 0.38
+MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT = 14
+MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT = 4
 PROSPECT_INVESTMENT_TOP_N = 25
 MAX_TOP25_NEUTRAL_INVESTMENT_RATE = 0.35
 MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT = 3
@@ -48,10 +51,14 @@ MAX_TOP50_MISSING_TEAM_COUNT = 0
 MAX_TOP50_MISSING_AVAILABILITY_COUNT = 0
 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
+MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
+MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
 
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 CLEAR_AVAILABILITY_STATUSES = {"", "available", "clear"}
+LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
+UPPER_LEVELS = {"AA", "AAA", "MLB"}
 
 
 def _clean_float(value: Any) -> float | None:
@@ -423,6 +430,92 @@ def _prospect_pedigree_rate(players: list[dict]) -> dict:
     )
 
 
+def _level(row: dict) -> str:
+    return str(row.get("level") or "").strip().upper()
+
+
+def _prospect_bucket_shape(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    low_confidence_rows = [
+        {
+            "rank": row.get("prospect_rank") or row.get("rank"),
+            "name": row.get("name"),
+            "score_source": row.get("score_source") or row.get("value_source"),
+            "confidence": row.get("confidence"),
+        }
+        for row in top_rows
+        if row.get("confidence") == "low"
+    ]
+    lower_minors_pedigree_rows = [
+        {
+            "rank": row.get("prospect_rank") or row.get("rank"),
+            "name": row.get("name"),
+            "level": row.get("level"),
+            "score_source": row.get("score_source") or row.get("value_source"),
+        }
+        for row in top_rows
+        if (row.get("score_source") or row.get("value_source")) == PEDIGREE_SCORE_SOURCE
+        and _level(row) in LOWER_LEVELS
+    ]
+    thin_upper_pitcher_rows = []
+    for row in top_rows:
+        availability = _availability_component(row)
+        if (
+            _is_pitcher_row(row)
+            and _level(row) in UPPER_LEVELS
+            and str(availability.get("status") or "").strip().lower()
+            == "thin_current_sample"
+        ):
+            thin_upper_pitcher_rows.append(
+                {
+                    "rank": row.get("prospect_rank") or row.get("rank"),
+                    "name": row.get("name"),
+                    "level": row.get("level"),
+                    "sample": availability.get("sample"),
+                    "sample_unit": availability.get("sample_unit"),
+                    "score_source": row.get("score_source") or row.get("value_source"),
+                }
+            )
+
+    low_confidence_rate = (
+        round(len(low_confidence_rows) / len(top_rows), 4) if top_rows else 0.0
+    )
+    failures = []
+    if low_confidence_rate > MAX_TOP50_LOW_CONFIDENCE_RATE:
+        failures.append("low_confidence_rate")
+    if len(lower_minors_pedigree_rows) > MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT:
+        failures.append("lower_minors_pedigree_count")
+    if len(thin_upper_pitcher_rows) > MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT:
+        failures.append("thin_upper_level_pitcher_count")
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (not sample_ready) or not failures
+    return _check(
+        "prospect_top50_bucket_shape",
+        passed,
+        (
+            "Top prospect board bucket shape is within publication limits."
+            if passed
+            else "Top prospect board has a risky bucket concentration."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        sample_ready=sample_ready,
+        low_confidence_count=len(low_confidence_rows),
+        low_confidence_rate=low_confidence_rate,
+        max_low_confidence_rate=MAX_TOP50_LOW_CONFIDENCE_RATE,
+        lower_minors_pedigree_count=len(lower_minors_pedigree_rows),
+        max_lower_minors_pedigree_count=MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT,
+        thin_upper_level_pitcher_count=len(thin_upper_pitcher_rows),
+        max_thin_upper_level_pitcher_count=MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT,
+        failures=failures,
+        samples={
+            "low_confidence": low_confidence_rows[:8],
+            "lower_minors_pedigree": lower_minors_pedigree_rows[:8],
+            "thin_upper_level_pitchers": thin_upper_pitcher_rows[:8],
+        },
+    )
+
+
 def _prospect_neutral_investment_rate(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_INVESTMENT_TOP_N]
     neutral_count = sum(
@@ -695,6 +788,9 @@ def _buy_promotion_check(
     )
     review_ready = review_status in {"candidate_ready", "approved"}
     buy_validation_ready = bool(validation.get("ready_for_live_consumers"))
+    top_board_quality = validation.get("top_board_quality") or {}
+    low_confidence_rate = _clean_float(top_board_quality.get("low_confidence_rate")) or 0.0
+    pedigree_rate = _clean_float(top_board_quality.get("pedigree_rate")) or 0.0
     review_policy = (buy_review or {}).get("source_policy") or {}
     review_decision = (buy_review or {}).get("promotion_decision") or {}
     history_launch_approved = (
@@ -713,6 +809,8 @@ def _buy_promotion_check(
         and buy_validation_ready
         and review_ready
         and history_ready
+        and low_confidence_rate <= MAX_BUY_TOP40_LOW_CONFIDENCE_RATE
+        and pedigree_rate <= MAX_BUY_TOP40_PEDIGREE_RATE
     )
     return _check(
         "buy_promotion_gate",
@@ -733,6 +831,10 @@ def _buy_promotion_check(
         max_history_limited_rate=MAX_BUY_HISTORY_LIMITED_RATE,
         history_launch_approved=history_launch_approved,
         history_ready=history_ready,
+        low_confidence_rate=low_confidence_rate,
+        max_low_confidence_rate=MAX_BUY_TOP40_LOW_CONFIDENCE_RATE,
+        pedigree_rate=pedigree_rate,
+        max_pedigree_rate=MAX_BUY_TOP40_PEDIGREE_RATE,
         public_board_ready=public_board_ready,
     )
 
@@ -773,6 +875,7 @@ def evaluate_quality_governor(
         _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
         _prospect_fallback_rate(players),
         _prospect_pedigree_rate(players),
+        _prospect_bucket_shape(players),
         _prospect_neutral_investment_rate(players),
         _prospect_pedigree_cap_plateau(players),
         _prospect_missing_team_count(players),
@@ -815,6 +918,9 @@ def evaluate_quality_governor(
             "two_way_policy_rank_limit": TWO_WAY_POLICY_RANK_LIMIT,
             "max_top50_fallback_rate": MAX_TOP50_FALLBACK_RATE,
             "max_top50_pedigree_rate": MAX_TOP50_PEDIGREE_RATE,
+            "max_top50_low_confidence_rate": MAX_TOP50_LOW_CONFIDENCE_RATE,
+            "max_top50_lower_minors_pedigree_count": MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT,
+            "max_top50_thin_upper_level_pitcher_count": MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT,
             "max_top50_suppressed_rank_rows": MAX_TOP50_SUPPRESSED_RANK_ROWS,
             "max_elite_factual_raw_fallback_top_200": MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200,
             "max_top25_neutral_investment_rate": MAX_TOP25_NEUTRAL_INVESTMENT_RATE,
@@ -825,6 +931,8 @@ def evaluate_quality_governor(
                 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT
             ),
             "max_buy_history_limited_rate": MAX_BUY_HISTORY_LIMITED_RATE,
+            "max_buy_top40_low_confidence_rate": MAX_BUY_TOP40_LOW_CONFIDENCE_RATE,
+            "max_buy_top40_pedigree_rate": MAX_BUY_TOP40_PEDIGREE_RATE,
         },
         "metrics": {
             "public_row_count": len(players),

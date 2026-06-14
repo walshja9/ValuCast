@@ -220,6 +220,7 @@ def _availability():
             {
                 "mlbam_id": 2,
                 "role": "hitter",
+                "age": 21,
                 "status": "thin_current_sample",
                 "risk_level": "medium",
                 "risk_discount": 0.06,
@@ -235,7 +236,7 @@ def _availability():
     }
 
 
-def test_rank_v1_is_candidate_shadow_and_blocks_live_consumers():
+def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
     payload = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
@@ -244,10 +245,15 @@ def test_rank_v1_is_candidate_shadow_and_blocks_live_consumers():
         dd_adapter=_adapter(),
         dd_feed=_feed(),
     )
-    assert payload["status"] == "candidate_shadow"
+    assert payload["status"] == "blocked"
     assert payload["promotion"]["live_consumer"] == "blocked"
     assert payload["promotion"]["feeds_live_valucast_rank"] is False
     assert payload["promotion"]["feeds_live_dd_value"] is False
+    assert payload["validation"]["public_migration_ready"] is False
+    assert payload["validation"]["ready_to_replace_dd_feed"] is False
+    assert payload["validation"]["blockers"] == [
+        "Top-200 score separation is not strong enough for publication."
+    ]
     assert payload["rank_contract"]["dd_values_used_for_score"] is False
     assert payload["rank_contract"]["external_rankings_used_for_score"] is False
     assert payload["rank_contract"]["prohibited_score_inputs"] == PROHIBITED_SCORE_INPUTS
@@ -276,6 +282,7 @@ def test_rank_v1_applies_bounded_availability_discount():
     assert changed_row["components"]["availability_risk_discount"] == 0.06
     assert changed_row["components"]["availability_adjusted"] is True
     assert changed_row["components"]["availability"]["status"] == "thin_current_sample"
+    assert changed_row["age"] == 21
     assert changed["input_artifacts"]["prospect_availability_version"] == "0.1.0"
 
 
@@ -554,6 +561,101 @@ def test_rank_v1_does_not_bucket_adjust_upper_level_pedigree_profiles():
 
     assert row["score_source"] == "prospect_pedigree_v0_7"
     assert "bucket_calibration" not in row["components"]
+
+
+def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
+    universe = {
+        "schema_version": "1.0",
+        "artifact": "valucast_prospect_universe",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": 1,
+        "players": [
+            {
+                "mlbam_id": 3,
+                "name": "Thin Upper Pitcher",
+                "normalized_name": "thin upper pitcher",
+                "role": "pitcher",
+                "positions": ["SP"],
+                "mlb_team": "MIA",
+                "age": 21,
+                "level": "AAA",
+                "eta": 2027,
+                "universe_source": "valucast_prospect_dynasty_layer",
+            }
+        ],
+    }
+    layer_profile = _profile(3, 0.9)
+    layer_profile.update(
+        {
+            "name": "Thin Upper Pitcher",
+            "normalized_name": "thin upper pitcher",
+            "role": "pitcher",
+            "position": "SP",
+            "level": "AAA",
+            "sample": 24.2,
+            "sample_unit": "IP",
+            "sample_reliability": 0.32,
+        }
+    )
+    dynasty_layer = {
+        "status": "shadow_only",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "layer_version": "0.1.0",
+        "profiles": [layer_profile],
+    }
+    prospect_model = {
+        "status": "shadow_only",
+        "model_version": "0.6.0",
+        "ranked": [
+            {
+                "mlbam_id": 3,
+                "name": "Thin Upper Pitcher",
+                "normalized_name": "thin upper pitcher",
+                "role": "pitcher",
+                "expected_outcome_score": 0.64,
+                "expected_category_impact_score": 0.58,
+                "sample_reliability": 0.32,
+                "role_gate": "active",
+                "impact_gate": "active",
+            }
+        ],
+    }
+    input_contract = {
+        "schema_version": "1.1",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "current": {
+            "hitters": [],
+            "pitchers": [
+                {
+                    "mlbam_id": 3,
+                    "name": "Thin Upper Pitcher",
+                    "age": 21,
+                    "level": "AAA",
+                    "innings_pitched": 24.2,
+                }
+            ],
+        },
+    }
+
+    payload = build_prospect_rank_v1(
+        universe,
+        dynasty_layer,
+        prospect_model,
+        input_contract,
+    )
+
+    row = payload["board"][0]
+    calibration = row["components"]["bucket_calibration"]
+
+    assert row["score_source"] == "prospect_model_v0_6"
+    assert calibration["version"] == BUCKET_CALIBRATION_VERSION
+    assert calibration["bucket"] == "upper_level_thin_pitcher_model_sample"
+    assert calibration["adjustment"] == -2.0
+    assert calibration["rules"][0]["sample_threshold"] == 30.0
+    assert row["score"] == round(
+        row["components"]["score_before_bucket_calibration"] - 2.0,
+        2,
+    )
 
 
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):

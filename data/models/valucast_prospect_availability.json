@@ -1,7 +1,7 @@
 {
   "artifact": "valucast_prospect_availability",
   "artifact_version": "0.1.0",
-  "generated_at": "2026-06-14T18:02:38.609804+00:00",
+  "generated_at": "2026-06-14T19:51:17.206354+00:00",
   "max_risk_discount": 0.12,
   "profile_count": 4962,
   "profiles": [
@@ -96406,14 +96406,14 @@
       "team": "St. Paul Saints"
     },
     {
-      "age": 20,
-      "availability_note": "limited upper level starter workload under 45 ip; prior season sample",
+      "age": 23,
+      "availability_note": "Official MLB transactions show Ricky Tiedemann on Buffalo's 7-day injured list on 2026-03-27, after 2024 Tommy John surgery and a 2025 injured-list season.",
       "level": "AA",
       "mlbam_id": 694357,
       "name": "Ricky Tiedemann",
       "normalized_name": "ricky tiedemann",
       "present": true,
-      "risk_discount": 0.1,
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -96423,10 +96423,11 @@
       "sample_unit": "IP",
       "signals": [
         "limited_upper_level_starter_workload_under_45_ip",
-        "prior_season_sample"
+        "prior_season_sample",
+        "manual_status_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "New Hampshire Fisher Cats"
     },
     {
@@ -108169,7 +108170,7 @@
   "validation": {
     "current_identity_count": 4962,
     "duplicate_level_rows_collapsed": 1211,
-    "manual_override_count": 0,
+    "manual_override_count": 1,
     "risk_profile_count": 1914,
     "unmatched_manual_override_count": 0
   }

@@ -753,7 +753,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     }
     /* Column rules are td-qualified so they BEAT the generic direct-child td rule —
        bare .col-* selectors lose on specificity and the columns leak into the cards. */
-    .rankings-table td.col-rank { position: absolute; top: 0.55rem; right: 0.65rem; width: auto; font-size: 0.75rem; }
+    .rankings-table td.col-rank { position: absolute; top: 0.55rem; right: 0.65rem; width: auto; font-size: 0.8rem; }
     .rankings-table td.col-compare, .rankings-table td.col-cat,
     .rankings-table td.col-age, .rankings-table td.col-range { display: none; }
     .rankings-table td.col-name { font-size: 0.94rem; padding-right: 2.15rem; line-height: 1.18; }
@@ -765,7 +765,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
         align-items: baseline;
         width: auto;
         color: var(--c-muted);
-        font-size: 0.74rem;
+        font-size: 0.8rem;
         line-height: 1.1;
         text-align: left;
     }
@@ -777,7 +777,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .rankings-table td.col-value::before {
         content: "Val";
         color: var(--c-muted);
-        font-size: 0.66rem;
+        font-size: 0.8rem;
         font-weight: 700;
         letter-spacing: 0.03em;
         text-transform: uppercase;
@@ -807,13 +807,13 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
         border-radius: 999px;
         background: rgba(255, 255, 255, .045);
         color: var(--c-text);
-        font-size: 0.72rem;
+        font-size: 0.8rem;
         line-height: 1;
         font-variant-numeric: tabular-nums;
     }
     .mobile-stat-label {
         color: var(--c-muted);
-        font-size: 0.64rem;
+        font-size: 0.8rem;
         font-weight: 700;
         letter-spacing: 0.03em;
         text-transform: uppercase;

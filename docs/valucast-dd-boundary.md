@@ -176,6 +176,9 @@ score. It is a publication brake. Current checks include:
   combined-value policy
 - fallback-heavy top prospect rankings
 - pedigree-only top prospect concentration
+- risky prospect bucket concentrations, including low-confidence top-board
+  crowding, lower-minors pedigree crowding, and thin upper-level pitcher
+  samples near the top
 - top prospects leaning too heavily on neutral draft/signing context
 - missing MLB-org display coverage near the top of the prospect board
 - Prospect Rank v1 rows suppressed from the visible public prospect surface
@@ -185,19 +188,21 @@ score. It is a publication brake. Current checks include:
   published Dynasty board
 - exact pedigree-cap tie clusters near the top of the prospect board
 - Buy promotion readiness, including review status and ValuCast score-history
-  depth
+  depth, top-board confidence, and pedigree-only concentration
 
 The current Dynasty/Prospects gate can pass independently of Buys. That is
 intentional: ValuCast's canonical public snapshot may be fit for board display
 while the Buy board remains shadow-only until it has enough ValuCast score
 history and explicit review approval.
 
-Buy approval is an explicit release action, not a scheduled default. The daily
-public-data workflow keeps `VALUCAST_BUYS_REVIEW_APPROVED=0`; a manual workflow
-dispatch may set `approve_valucast_buys=true` to record human review approval
-and regenerate the Buy artifact with the promotion gate open. The public route
-still requires `VALUCAST_USE_VALUCAST_BUYS=1` and `ValuCastBuyStore` validation
-before `/buys` can serve ValuCast-owned signals.
+Buy approval is an explicit release action, then a persisted source decision.
+The daily public-data workflow keeps `VALUCAST_BUYS_REVIEW_APPROVED=0`, but
+`scripts/review_valucast_buys.py` reuses a prior `candidate_ready` human review
+instead of de-promoting Buys every scheduled run. A manual workflow dispatch may
+set `approve_valucast_buys=true` to record initial approval or approve a
+neutral-momentum launch when history is still thin. The public route still
+requires `VALUCAST_USE_VALUCAST_BUYS=1`, `ValuCastBuyStore` validation, and the
+quality governor before `/buys` can serve ValuCast-owned signals.
 
 Two model-quality rules are now part of the public snapshot path:
 
@@ -217,6 +222,10 @@ Two model-quality rules are now part of the public snapshot path:
 - Prospect pedigree-only rows have a lower ceiling than model-backed rows, and
   the quality governor blocks the public snapshot if the top 50 leans too
   heavily on pedigree-only scoring.
+- Prospect Rank v1 applies bucket-level calibration rules, not player-specific
+  overrides. Current rules include lower-minors pedigree context and a small
+  upper-level pitcher adjustment for model-backed AA/AAA arms with fewer than
+  30 current IP.
 - Prospect rows win publication conflicts against weak MLB projection rows
   until the prospect is explicitly marked as MLB-level or the MLB row is a
   material current-value promotion. A low present-day projection row should not

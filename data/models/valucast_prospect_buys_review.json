@@ -123,7 +123,7 @@
       "score": 67.5
     }
   ],
-  "generated_at": "2026-06-14T18:02:38.609804+00:00",
+  "generated_at": "2026-06-14T19:51:17.206354+00:00",
   "metrics": {
     "dd_age_distribution": {
       "19": 4,
@@ -142,23 +142,22 @@
     },
     "dd_overlap_context_only": true,
     "dd_top40_count": 40,
-    "history_limited_count": 6,
-    "history_limited_rate": 0.0068,
+    "history_limited_count": 0,
+    "history_limited_rate": 0.0,
     "max_history_limited_rate": 0.5,
     "top40_name_overlap_count": 2,
     "top40_name_overlap_rate": 0.05,
     "valucast_age_distribution": {
       "18": 1,
       "19": 8,
-      "20": 9,
+      "20": 6,
       "21": 16,
-      "22": 6
+      "22": 9
     },
     "valucast_level_distribution": {
-      "A": 9,
-      "A+": 7,
-      "AA": 23,
-      "AAA": 1
+      "A": 8,
+      "A+": 5,
+      "AA": 27
     },
     "valucast_top40_count": 40
   },
@@ -167,20 +166,20 @@
       "dd_rank": 3,
       "dd_score": 77.6,
       "name": "Jaison Chourio",
-      "valucast_rank": 9,
+      "valucast_rank": 6,
       "valucast_score": 56.4
     },
     {
       "dd_rank": 16,
       "dd_score": 67.3,
       "name": "Gavin Fien",
-      "valucast_rank": 30,
-      "valucast_score": 54.2
+      "valucast_rank": 38,
+      "valucast_score": 53.2
     }
   ],
   "promotion_decision": {
     "dd_overlap_is_context_only": true,
-    "history_limited_rate": 0.0068,
+    "history_limited_rate": 0.0,
     "neutral_momentum_launch_approved": false,
     "requires_route_gate": true,
     "status": "candidate_ready"
@@ -195,46 +194,31 @@
     "history_launch_approved": false,
     "kind": "comparison_only",
     "manual_approval_recorded": true,
-    "manual_approval_required_for_candidate_ready": true
+    "manual_approval_required_for_candidate_ready": true,
+    "prior_approval_reused": true
   },
   "valucast_top": [
     {
-      "age": 19,
+      "age": 20,
       "level": "A+",
-      "name": "Rainiel Rodriguez",
+      "name": "Arjun Nimmala",
       "rank": 1,
       "reason": "Still in the buy window",
-      "score": 61.0
-    },
-    {
-      "age": 20,
-      "level": "AA",
-      "name": "Ryan Sloan",
-      "rank": 2,
-      "reason": "Still in the buy window",
-      "score": 60.3
+      "score": 58.1
     },
     {
       "age": 18,
       "level": "A",
       "name": "Eli Willits",
-      "rank": 3,
+      "rank": 2,
       "reason": "Young runway",
-      "score": 58.2
-    },
-    {
-      "age": 20,
-      "level": "A+",
-      "name": "Arjun Nimmala",
-      "rank": 4,
-      "reason": "Still in the buy window",
-      "score": 58.1
+      "score": 57.2
     },
     {
       "age": 20,
       "level": "AA",
       "name": "Alex Clemmey",
-      "rank": 5,
+      "rank": 3,
       "reason": "Still in the buy window",
       "score": 57.0
     },
@@ -242,7 +226,7 @@
       "age": 21,
       "level": "A+",
       "name": "Eliazar Dishmey",
-      "rank": 6,
+      "rank": 4,
       "reason": "Still in the buy window",
       "score": 56.7
     },
@@ -250,73 +234,89 @@
       "age": 20,
       "level": "AA",
       "name": "Wei-En Lin",
-      "rank": 7,
+      "rank": 5,
       "reason": "Still in the buy window",
-      "score": 56.7
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "JoJo Parker",
-      "rank": 8,
-      "reason": "Young runway",
       "score": 56.7
     },
     {
       "age": 21,
       "level": "A+",
       "name": "Jaison Chourio",
-      "rank": 9,
+      "rank": 6,
       "reason": "Still in the buy window",
-      "score": 56.4
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Xavier Neyens",
-      "rank": 10,
-      "reason": "Young runway",
-      "score": 56.4
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Ethan Holliday",
-      "rank": 11,
-      "reason": "Young runway",
       "score": 56.4
     },
     {
       "age": 22,
       "level": "AA",
       "name": "Brooks Brannon",
-      "rank": 12,
+      "rank": 7,
       "reason": "Still in the buy window",
       "score": 56.4
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Billy Carlson",
-      "rank": 13,
-      "reason": "Young runway",
-      "score": 56.3
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Daniel Pierce",
-      "rank": 14,
-      "reason": "Young runway",
-      "score": 56.3
     },
     {
       "age": 22,
       "level": "A+",
       "name": "Joseph Dzierwa",
-      "rank": 15,
+      "rank": 8,
       "reason": "Still in the buy window",
       "score": 56.2
+    },
+    {
+      "age": 20,
+      "level": "AA",
+      "name": "Manuel Rodriguez",
+      "rank": 9,
+      "reason": "Still in the buy window",
+      "score": 56.2
+    },
+    {
+      "age": 21,
+      "level": "AA",
+      "name": "Cristofer Torin",
+      "rank": 10,
+      "reason": "Still in the buy window",
+      "score": 56.0
+    },
+    {
+      "age": 21,
+      "level": "AA",
+      "name": "Aron Estrada",
+      "rank": 11,
+      "reason": "Still in the buy window",
+      "score": 55.7
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "JoJo Parker",
+      "rank": 12,
+      "reason": "Young runway",
+      "score": 55.7
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Xavier Neyens",
+      "rank": 13,
+      "reason": "Young runway",
+      "score": 55.3
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Ethan Holliday",
+      "rank": 14,
+      "reason": "Young runway",
+      "score": 55.3
+    },
+    {
+      "age": 21,
+      "level": "AA",
+      "name": "Johanfran Garcia",
+      "rank": 15,
+      "reason": "Still in the buy window",
+      "score": 55.3
     }
   ]
 }

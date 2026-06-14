@@ -160,6 +160,8 @@ class PublicSnapshotRow:
         context = self.bucket_calibration_context
         if not context:
             return None
+        if context.get("label"):
+            return str(context["label"])
         bucket = str(context.get("bucket") or "").replace("_", " ").title()
         if "Lower Minors" in bucket:
             return "Lower-minors context"

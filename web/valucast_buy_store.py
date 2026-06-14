@@ -7,7 +7,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0"}
+SUPPORTED_SIGNAL_VERSIONS = {"0.1.0", "0.2.0", "0.2.1"}
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -74,6 +74,22 @@ def validate_valucast_buy_payload(payload: dict) -> list[str]:
             problems.append("ready buy signals must not include raw fallback rows in the top board")
         if top_board_quality.get("missing_team_count", 0) != 0:
             problems.append("ready buy signals must have top-board team coverage")
+        low_confidence_rate = top_board_quality.get("low_confidence_rate")
+        max_low_confidence_rate = top_board_quality.get("max_low_confidence_rate")
+        if (
+            isinstance(low_confidence_rate, (int, float))
+            and isinstance(max_low_confidence_rate, (int, float))
+            and low_confidence_rate > max_low_confidence_rate
+        ):
+            problems.append("ready buy signals exceed low-confidence threshold")
+        pedigree_rate = top_board_quality.get("pedigree_rate")
+        max_pedigree_rate = top_board_quality.get("max_pedigree_rate")
+        if (
+            isinstance(pedigree_rate, (int, float))
+            and isinstance(max_pedigree_rate, (int, float))
+            and pedigree_rate > max_pedigree_rate
+        ):
+            problems.append("ready buy signals exceed pedigree-only threshold")
         history_limited_rate = validation.get("history_limited_rate")
         max_history_limited_rate = validation.get("max_history_limited_rate")
         history_launch_approved = validation.get("history_launch_approved") is True

@@ -303,6 +303,7 @@ def _profile(
         role,
         override,
     )
+    override_age = _clean_int((override or {}).get("age"))
     signals = list(dict.fromkeys(sample_signals + stale_signals + override_signals))
     risk_discount = min(
         MAX_RISK_DISCOUNT,
@@ -313,7 +314,7 @@ def _profile(
         "role": role,
         "name": display_row.get("name"),
         "normalized_name": display_row.get("normalized_name"),
-        "age": display_row.get("age"),
+        "age": override_age if override_age is not None else display_row.get("age"),
         "level": display_row.get("level"),
         "team": display_row.get("team"),
         "sample": _round(total_sample, 3),

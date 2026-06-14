@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 
 REPORT_NAME = "ValuCast Prospect Rank v1 Calibration Report"
-REPORT_VERSION = "0.1.0"
+REPORT_VERSION = "0.2.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -35,6 +35,11 @@ MAX_TOP50_PEDIGREE_RATE = 0.35
 MAX_TOP50_FALLBACK_RATE = 0.10
 MAX_TOP50_AVAILABILITY_ADJUSTED_RATE = 0.25
 MAX_TOP50_THIN_SAMPLE_COUNT = 12
+MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT = 4
+MAX_TOP50_LOW_CONFIDENCE_RATE = 0.38
+MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT = 14
+UPPER_LEVELS = {"AA", "AAA", "MLB"}
+LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 
 
 def _clean_float(value: Any) -> float | None:
@@ -112,6 +117,41 @@ def _availability_adjusted(row: dict) -> bool:
 
 def _availability_status(row: dict) -> str:
     return str(_availability(row).get("status") or "missing")
+
+
+def _sample_value(row: dict) -> float | None:
+    return _clean_float(_availability(row).get("sample"))
+
+
+def _level_band(row: dict) -> str:
+    level = _level(row)
+    if level in LOWER_LEVELS:
+        return "lower_minors"
+    if level in UPPER_LEVELS:
+        return "upper_level"
+    return "unknown_level"
+
+
+def _evidence_bucket(row: dict) -> str:
+    status = _availability_status(row)
+    if status == "thin_current_sample":
+        return "thin_current_sample"
+    if status in {"missing", ""}:
+        return "missing_availability"
+    if status == "available":
+        return "active_sample"
+    return status
+
+
+def _bucket_id(row: dict) -> str:
+    return "|".join(
+        [
+            _role(row),
+            _level_band(row),
+            _score_source(row) or "unknown_source",
+            _evidence_bucket(row),
+        ]
+    )
 
 
 def _entry(row: dict, *, include_context: bool = True) -> dict:
@@ -208,6 +248,54 @@ def _band_metrics(rows: list[dict], top_n: int) -> dict:
         "thin_current_sample_count": thin_sample_count,
         "max_availability_risk_discount": round(max_discount, 4),
     }
+
+
+def _bucket_metrics(rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    for row in rows:
+        grouped.setdefault(_bucket_id(row), []).append(row)
+
+    metrics = []
+    for bucket_id, bucket_rows in grouped.items():
+        ranks = [
+            rank for row in bucket_rows if (rank := _clean_int(row.get("rank"))) is not None
+        ]
+        scores = [score for row in bucket_rows if (score := _score(row)) is not None]
+        samples = [
+            sample
+            for row in bucket_rows
+            if (sample := _sample_value(row)) is not None
+        ]
+        representative = bucket_rows[0]
+        metrics.append(
+            {
+                "bucket": bucket_id,
+                "role": _role(representative),
+                "level_band": _level_band(representative),
+                "score_source": _score_source(representative) or "unknown_source",
+                "evidence_bucket": _evidence_bucket(representative),
+                "row_count": len(bucket_rows),
+                "top_rank": min(ranks) if ranks else None,
+                "top25_count": sum(1 for rank in ranks if rank <= 25),
+                "top50_count": sum(1 for rank in ranks if rank <= 50),
+                "top100_count": sum(1 for rank in ranks if rank <= 100),
+                "top200_count": sum(1 for rank in ranks if rank <= 200),
+                "average_score": _average(scores),
+                "average_sample": _average(samples),
+                "level_counts": {
+                    key: Counter(_level(row) for row in bucket_rows)[key]
+                    for key in sorted(Counter(_level(row) for row in bucket_rows))
+                },
+            }
+        )
+    metrics.sort(
+        key=lambda item: (
+            item["top_rank"] or 999999,
+            -item["top50_count"],
+            item["bucket"],
+        )
+    )
+    return metrics
 
 
 def _rank_gap(row: dict) -> int | None:
@@ -316,6 +404,64 @@ def _tuning_flags(bands: dict[int, dict]) -> list[dict]:
     return flags
 
 
+def _bucket_tuning_flags(rows: list[dict]) -> list[dict]:
+    flags = []
+    top50 = rows[:50]
+    thin_upper_pitchers = [
+        row
+        for row in top50
+        if _role(row) == "pitcher"
+        and _level(row) in {"AA", "AAA"}
+        and _availability_status(row) == "thin_current_sample"
+    ]
+    low_confidence_count = sum(1 for row in top50 if row.get("confidence") == "low")
+    low_confidence_rate = _rate(low_confidence_count, len(top50))
+    lower_minors_pedigree_count = sum(
+        1
+        for row in top50
+        if _score_source(row) == PEDIGREE_SCORE_SOURCE
+        and _level(row) in LOWER_LEVELS
+    )
+
+    if len(thin_upper_pitchers) > MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT:
+        flags.append(
+            {
+                "id": "top50_thin_upper_level_pitcher_count",
+                "severity": "review",
+                "message": (
+                    "Top-50 contains too many upper-level pitchers with thin current IP samples."
+                ),
+                "actual": len(thin_upper_pitchers),
+                "threshold": MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT,
+                "bucket": "pitcher|upper_level|prospect_model_v0_6|thin_current_sample",
+            }
+        )
+    if low_confidence_rate > MAX_TOP50_LOW_CONFIDENCE_RATE:
+        flags.append(
+            {
+                "id": "top50_low_confidence_rate",
+                "severity": "review",
+                "message": "Top-50 contains too many low-confidence prospect profiles.",
+                "actual": low_confidence_rate,
+                "threshold": MAX_TOP50_LOW_CONFIDENCE_RATE,
+            }
+        )
+    if lower_minors_pedigree_count > MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT:
+        flags.append(
+            {
+                "id": "top50_lower_minors_pedigree_count",
+                "severity": "review",
+                "message": (
+                    "Top-50 contains too many lower-minors pedigree-only profiles."
+                ),
+                "actual": lower_minors_pedigree_count,
+                "threshold": MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT,
+                "bucket": "hitter/pitcher|lower_minors|prospect_pedigree_v0_7|any",
+            }
+        )
+    return flags
+
+
 def _recommendations(flags: list[dict], disagreements: list[dict]) -> list[str]:
     recommendations = []
     ids = {flag["id"] for flag in flags}
@@ -335,6 +481,14 @@ def _recommendations(flags: list[dict], disagreements: list[dict]) -> list[str]:
         recommendations.append(
             "Audit current-season sample thresholds; many top prospects are being priced down for limited current evidence."
         )
+    if "top50_thin_upper_level_pitcher_count" in ids:
+        recommendations.append(
+            "Tune upper-level pitcher sample buckets before manually moving individual pitchers."
+        )
+    if "top50_low_confidence_rate" in ids or "top50_lower_minors_pedigree_count" in ids:
+        recommendations.append(
+            "Expand current factual coverage for low-confidence top-board buckets before hand-tuning names."
+        )
     if disagreements:
         recommendations.append(
             "Review the largest DD-context disagreements as questions, not scoring inputs."
@@ -350,7 +504,10 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
     rows = list(rank_payload.get("board") or [])
     rows.sort(key=lambda row: _clean_int(row.get("rank")) or 999999)
     bands = {top_n: _band_metrics(rows, top_n) for top_n in TOP_BANDS}
-    flags = _tuning_flags(bands)
+    bucket_metrics = _bucket_metrics(rows)
+    shape_flags = _tuning_flags(bands)
+    bucket_flags = _bucket_tuning_flags(rows)
+    flags = shape_flags + bucket_flags
     disagreements = _context_disagreements(rows)
     top50 = rows[:50]
     availability_watchlist = [
@@ -407,11 +564,16 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "max_top50_fallback_rate": MAX_TOP50_FALLBACK_RATE,
             "max_top50_availability_adjusted_rate": MAX_TOP50_AVAILABILITY_ADJUSTED_RATE,
             "max_top50_thin_sample_count": MAX_TOP50_THIN_SAMPLE_COUNT,
+            "max_top50_thin_upper_level_pitcher_count": MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT,
+            "max_top50_low_confidence_rate": MAX_TOP50_LOW_CONFIDENCE_RATE,
+            "max_top50_lower_minors_pedigree_count": MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT,
         },
         "metrics": {
             "row_count": len(rows),
             "bands": {str(top_n): bands[top_n] for top_n in TOP_BANDS},
+            "bucket_metrics": bucket_metrics,
             "tuning_flag_count": len(flags),
+            "bucket_tuning_flag_count": len(bucket_flags),
             "context_disagreement_count_top50": len(disagreements),
             "availability_watchlist_count_top50": len(availability_watchlist),
             "pedigree_watchlist_count_top50": len(pedigree_watchlist),
