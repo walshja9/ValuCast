@@ -161,9 +161,20 @@ def test_public_rank_context_does_not_change_universe_membership():
     changed_feed["players"][0]["dynasty_value"] = 150.0
     changed_feed["players"][0]["prospect_rank"] = 1
     changed_feed["players"][0]["source_ranks"] = {"pipeline": 1, "cfr": 1}
+    changed_feed["players"][0]["stat_line"] = {"ops": 0.900, "pa": 200}
+    changed_feed["players"][0]["stat_line_translated"] = {"stats": {"OPS": 0.760}}
+    changed_feed["players"][0]["mlb_stat_line"] = {"pa": 12, "ops": 0.700}
     changed = build_universe(_layer(), _universal(), changed_feed)
 
     assert _without_context(changed) == _without_context(original)
+    assert changed["players"][0]["context_only"]["stat_line"] == {"ops": 0.900, "pa": 200}
+    assert changed["players"][0]["context_only"]["stat_line_translated"] == {
+        "stats": {"OPS": 0.760}
+    }
+    assert changed["players"][0]["context_only"]["mlb_stat_line"] == {
+        "pa": 12,
+        "ops": 0.700,
+    }
     assert changed["players"][0]["context_only"]["dd_dynasty_value"] == 150.0
     assert changed["players"][0]["context_only"]["source_ranks"] == {
         "pipeline": 1,

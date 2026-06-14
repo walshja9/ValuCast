@@ -96,6 +96,9 @@ def _dd_context(row: dict) -> dict:
         "breakout_label": row.get("breakout_label"),
         "breakout_rank_change": row.get("breakout_rank_change"),
         "value_history_points": len(row.get("value_history") or []),
+        "stat_line": row.get("stat_line"),
+        "stat_line_translated": row.get("stat_line_translated"),
+        "mlb_stat_line": row.get("mlb_stat_line"),
         "mlb_team": row.get("mlb_team"),
         "eta": row.get("eta"),
     }

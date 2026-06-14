@@ -299,6 +299,9 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     feed["players"][0]["prospect_rank"] = 1
     feed["players"][0]["source_ranks"] = {"pipeline": 1, "cfr": 1, "hkb": 1}
     feed["players"][0]["value_history"] = [["2026-06-13", 150.0]]
+    feed["players"][0]["stat_line"] = {"ops": 0.900, "pa": 200}
+    feed["players"][0]["stat_line_translated"] = {"stats": {"OPS": 0.760}}
+    feed["players"][0]["mlb_stat_line"] = {"pa": 12, "ops": 0.700}
     adapter["roles"]["hitter"]["players"][0]["adapter_score"] = 999.0
     changed = build_prospect_rank_v1(
         _universe(),
@@ -317,6 +320,48 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     assert context["dd_dynasty_value"] == 150.0
     assert context["source_ranks"]["pipeline"] == 1
     assert context["dd_adapter_context"]["adapter_score"] == 999.0
+    assert context["stat_line"] == {"ops": 0.900, "pa": 200}
+    assert context["stat_line_translated"] == {"stats": {"OPS": 0.760}}
+    assert context["mlb_stat_line"] == {"pa": 12, "ops": 0.700}
+
+
+def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][1].update(
+        {
+            "avg": 0.252,
+            "obp": 0.336,
+            "slg": 0.390,
+            "ops": 0.726,
+            "iso": 0.138,
+            "k_pct": 28.6,
+            "bb_pct": 7.9,
+        }
+    )
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+        dd_feed={"schema_version": "1.1", "players": []},
+    )
+
+    context = next(row for row in payload["board"] if row["mlbam_id"] == 2)[
+        "context_only"
+    ]
+    assert context["has_dd_context"] is False
+    assert context["stat_line_source"] == "valucast_input_contract"
+    assert context["stat_line"] == {
+        "avg": 0.252,
+        "obp": 0.336,
+        "slg": 0.39,
+        "ops": 0.726,
+        "iso": 0.138,
+        "k_pct": 28.6,
+        "bb_pct": 7.9,
+        "pa": 150,
+    }
 
 
 def test_rank_v1_reports_coverage_blockers_and_missing_top_names():

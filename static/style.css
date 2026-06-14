@@ -960,6 +960,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .trend-down { background: rgba(255,107,107,.14); color: var(--c-neg); }
 .source-spread { margin-left: .35rem; background: rgba(251,191,36,.14); color: var(--c-amber); text-transform: none; letter-spacing: 0; }
 .dynasty-detail .stat-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); }
+.market-context-details > summary { display: flex; align-items: center; gap: .45rem; cursor: pointer; color: var(--c-muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.market-context-details > summary::marker { color: var(--c-muted); }
+.market-context-note { margin: .5rem 0 .65rem; color: var(--c-muted); font-size: .82rem; line-height: 1.45; }
 .source-summary { display: flex; flex-wrap: wrap; gap: .55rem; }
 .source-summary-item { display: flex; flex-direction: column; min-width: 155px; padding: .55rem .7rem; border: 1px solid var(--c-border); border-top: 1px solid rgba(255, 255, 255, .07); border-radius: 7px; background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, 0) 42%), var(--surface-2); }
 .source-summary-rank { font-size: 1rem; font-weight: 800; color: var(--c-text); }

@@ -102,12 +102,15 @@
         {% endif %}
 
         {% if row.source_ranks %}
-        <div class="detail-section source-evidence">
-            <h4>Market Context
+        <details class="detail-section source-evidence market-context-details">
+            <summary><span>Market context (not used in ValuCast score)</span>
                 {% if row.source_divergence is not none and row.source_divergence > 50 %}
                 <span class="source-spread" title="Public sources disagree">⚠ Spread {{ row.source_divergence | round | int }}</span>
                 {% endif %}
-            </h4>
+            </summary>
+            <p class="market-context-note">
+                External/public boards and DD context are display-only. They do not feed ValuCast rank or value.
+            </p>
             <div class="source-summary">
                 {% if row.prospect_rank is not none %}
                 <div class="source-summary-item dd-rank-view">
@@ -153,7 +156,7 @@
             {% endif %}
             {% if row.public_source_ranks %}
             <details class="public-board-details">
-                <summary>View individual public boards</summary>
+                <summary>Individual external boards</summary>
                 <div class="public-board-list">
                     {% for source, rank in row.public_source_ranks.items() %}
                     <span><strong>{{ source | upper }}</strong> #{{ rank | int }}</span>
@@ -161,7 +164,7 @@
                 </div>
             </details>
             {% endif %}
-        </div>
+        </details>
         {% endif %}
 
         {% if row.level == 'MLB' and row.mlb_stat_line %}

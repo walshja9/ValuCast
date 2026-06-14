@@ -52,6 +52,10 @@ def _rank_payload():
                     "breakout_label": "rising",
                     "breakout_rank_change": 5,
                     "value_history_points": 3,
+                    "stat_line": {"ops": 0.900, "pa": 200},
+                    "stat_line_source": "valucast_input_contract",
+                    "stat_line_translated": {"stats": {"OPS": 0.760}},
+                    "mlb_stat_line": {"pa": 12, "ops": 0.700},
                 },
             },
             {
@@ -249,6 +253,8 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert payload["players"][0]["name"] == "MLB Star"
     top_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
     assert top_prospect["rank"] == 4
+    assert top_prospect["context"]["kind"] == "optional_display_context"
+    assert top_prospect["context"]["stat_line_source"] == "valucast_input_contract"
     assert top_prospect["context"]["cross_universe_calibration"]["raw_value"] == 55.5
     assert (
         top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
@@ -395,6 +401,9 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.prospect_rank == 1
     assert row.breakout_label == "rising"
     assert row.public_source_consensus == 10
+    assert row.stat_line == {"ops": 0.900, "pa": 200}
+    assert row.stat_line_translated == {"stats": {"OPS": 0.760}}
+    assert row.mlb_stat_line == {"pa": 12, "ops": 0.700}
 
 
 def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):

@@ -211,6 +211,44 @@ def _fill_factual_context(target: dict, source: dict) -> None:
             target[key] = source[key]
 
 
+def _input_stat_line(row: dict | None, role: str | None) -> dict | None:
+    if not row:
+        return None
+    if role == "pitcher":
+        fields = (
+            ("era", 2),
+            ("whip", 2),
+            ("k_per_9", 1),
+            ("bb_per_9", 1),
+            ("k_bb_pct", 1),
+            ("ip", 1),
+        )
+        aliases = {"ip": "innings_pitched"}
+    else:
+        fields = (
+            ("avg", 3),
+            ("obp", 3),
+            ("slg", 3),
+            ("ops", 3),
+            ("iso", 3),
+            ("k_pct", 1),
+            ("bb_pct", 1),
+            ("pa", 0),
+        )
+        aliases = {"pa": "plate_appearances"}
+
+    stat_line = {}
+    for key, digits in fields:
+        raw = row.get(key)
+        if raw in (None, "") and key in aliases:
+            raw = row.get(aliases[key])
+        value = _clean_float(raw)
+        if value is None:
+            continue
+        stat_line[key] = int(round(value)) if digits == 0 else round(value, digits)
+    return stat_line or None
+
+
 def _adapter_lookup(adapter: dict | None) -> dict[tuple[str, str], dict]:
     if not adapter:
         return {}
@@ -610,7 +648,21 @@ def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
     ]
 
 
-def _context(dd_row: dict | None, adapter_row: dict | None) -> dict:
+def _context(
+    dd_row: dict | None,
+    adapter_row: dict | None,
+    input_row: dict | None,
+    role: str | None,
+) -> dict:
+    dd_stat_line = (dd_row or {}).get("stat_line")
+    input_stat_line = _input_stat_line(input_row, role)
+    stat_line = dd_stat_line or input_stat_line
+    if dd_stat_line:
+        stat_line_source = "dd_display_context"
+    elif stat_line:
+        stat_line_source = "valucast_input_contract"
+    else:
+        stat_line_source = None
     context = {
         "has_dd_context": bool(dd_row),
         "dd_dynasty_rank": (dd_row or {}).get("dynasty_rank"),
@@ -620,6 +672,10 @@ def _context(dd_row: dict | None, adapter_row: dict | None) -> dict:
         "breakout_label": (dd_row or {}).get("breakout_label"),
         "breakout_rank_change": (dd_row or {}).get("breakout_rank_change"),
         "value_history_points": len((dd_row or {}).get("value_history") or []),
+        "stat_line": stat_line,
+        "stat_line_source": stat_line_source,
+        "stat_line_translated": (dd_row or {}).get("stat_line_translated"),
+        "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
     }
     if adapter_row:
         context["dd_adapter_context"] = {
@@ -809,7 +865,12 @@ def build_prospect_rank_v1(
                 "components": components,
                 "dynasty_signal": (layer_profile or {}).get("dynasty_signal"),
                 "drivers": _drivers(model_profile, layer_profile or {}),
-                "context_only": _context(dd_row, adapter_by_key.get(key)),
+                "context_only": _context(
+                    dd_row,
+                    adapter_by_key.get(key),
+                    input_row,
+                    role,
+                ),
             }
         )
 
@@ -886,6 +947,10 @@ def build_prospect_rank_v1(
                 "DD prospect_rank",
                 "source_ranks",
                 "value_history",
+                "stat_line",
+                "stat_line_source",
+                "stat_line_translated",
+                "mlb_stat_line",
                 "DD adapter score/rank",
             ],
             "prohibited_score_inputs": PROHIBITED_SCORE_INPUTS,
