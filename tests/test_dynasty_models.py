@@ -97,10 +97,7 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.availability_sample_label, "72 PA")
         self.assertEqual(row.availability_note, "Limited current sample.")
         self.assertTrue(row.bucket_calibration_adjusted)
-        self.assertEqual(
-            row.bucket_calibration_label,
-            "Lower Minors Pedigree Score Source (-1.0)",
-        )
+        self.assertEqual(row.bucket_calibration_label, "Lower-minors context")
 
     def test_is_prospect(self):
         mlb_row = DynastyRankingRow.from_feed(SAMPLE_MLB)

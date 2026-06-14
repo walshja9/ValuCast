@@ -202,6 +202,21 @@ def test_build_valucast_board_formats_existing_template_shape():
     assert board[0]["headshot_url"].endswith("/headshot/67/current")
     assert "momentum" in board[0]["terms"]
     assert "valucast_terms" in board[0]
+    assert board[0]["value_history"] == ()
+
+
+def test_build_valucast_board_exposes_spark_history_after_real_history_accumulates():
+    payload = build_buy_signals(_rank_payload(), _history())
+    payload["board"][0]["score_history"] = [
+        ("2026-06-11", 52.0),
+        ("2026-06-12", 53.0),
+        ("2026-06-13", 55.0),
+        ("2026-06-14", 58.0),
+    ]
+
+    board = buy_score.build_valucast_board(payload["board"], n=1)
+
+    assert board[0]["value_history"] == payload["board"][0]["score_history"]
 
 
 def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active(monkeypatch):

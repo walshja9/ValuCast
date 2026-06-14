@@ -46,6 +46,7 @@ LEVEL_RUNWAY = {"A": 1.0, "A+": 0.85, "AA": 0.6, "AAA": 0.35}
 
 BOARD_SIZE = 40
 N_BOUNDS = (10, 60)
+MIN_VALUCAST_BUY_SPARK_POINTS = 4
 
 # Graphic assets. PNG spots, not team-logos/*.svg — external SVG <img> is
 # html2canvas's known silent-blank path. mlbstatic serves ACAO:* on both.
@@ -228,6 +229,12 @@ def build_valucast_board(rows, n=BOARD_SIZE):
         team_id = TEAM_IDS.get(row.get("team"))
         mlbam = row.get("mlbam_id") if row.get("mlbam_id") else 0
         valucast_terms = row.get("terms") or {}
+        score_history = row.get("score_history") or ()
+        display_history = (
+            score_history
+            if len(score_history) >= MIN_VALUCAST_BUY_SPARK_POINTS
+            else ()
+        )
         display_terms = {
             "momentum": valucast_terms.get("momentum", NEUTRAL_MOMENTUM),
             "breakout": valucast_terms.get("model_strength", 0.0),
@@ -250,6 +257,6 @@ def build_valucast_board(rows, n=BOARD_SIZE):
             "reason": row.get("reason") or "ValuCast signal",
             "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
             "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
-            "value_history": row.get("score_history") or (),
+            "value_history": display_history,
         })
     return board

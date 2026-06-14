@@ -32,8 +32,8 @@
                 <polyline points="{{ hero.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
                 <circle cx="{{ hero.spark.last_x }}" cy="{{ hero.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
             </svg>
-            {% endif %}
             <span class="bg-spark-label">30-DAY VALUE</span>
+            {% endif %}
             <span class="bg-feature-reason">{{ hero.reason }}</span>
         </article>
 

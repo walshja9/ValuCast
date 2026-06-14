@@ -433,7 +433,7 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     assert row.availability_sample_label == "90 PA"
     assert row.availability_note == "Thin sample."
     assert row.bucket_calibration_adjusted is True
-    assert row.bucket_calibration_label == "Lower Minors Pedigree Score Source (-1.0)"
+    assert row.bucket_calibration_label == "Lower-minors context"
 
 
 def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():

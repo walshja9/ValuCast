@@ -160,10 +160,9 @@ class DynastyRankingRow:
         if not context:
             return None
         bucket = str(context.get("bucket") or "").replace("_", " ").title()
-        adjustment = _clean_float(context.get("adjustment"))
-        if adjustment is None:
-            return bucket or "Bucket Calibration"
-        return f"{bucket} ({adjustment:+.1f})"
+        if "Lower Minors" in bucket:
+            return "Lower-minors context"
+        return bucket or "Model context"
 
     @classmethod
     def _normalize_positions(cls, positions: list) -> tuple:
