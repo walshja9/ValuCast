@@ -610,3 +610,50 @@ def test_mlb_layer_embeds_track_record_context_when_artifact_is_present():
     assert track_record["present"] is True
     assert track_record["experience_band"] == "established"
     assert track_record["track_record_certainty"] == 74.0
+
+
+def test_mlb_layer_applies_official_availability_discount_by_mlbam():
+    players = [
+        _pitcher(mlbam_id="70", metadata={"age": 27}),
+        _hitter(mlbam_id="71", metadata={"age": 28}),
+    ]
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    payload = build_mlb_dynasty_layer(
+        players,
+        "2026-06-13",
+        availability={
+            "artifact": "valucast_mlb_availability",
+            "validation": {
+                "ready_for_mlb_dynasty_layer": True,
+                "profile_count": 1,
+                "risk_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 70,
+                    "name": "Ace Arm",
+                    "status": "injured",
+                    "active_injury_risk": True,
+                    "list_type": "60-day injured list",
+                    "transaction_id": 1,
+                    "transaction_date": "2026-06-01",
+                    "effective_date": "2026-06-01",
+                    "description": "Milwaukee Brewers transferred RHP Ace Arm from the 15-day injured list to the 60-day injured list.",
+                    "source": "official_mlb_statsapi_transactions",
+                }
+            ],
+        },
+    )
+
+    baseline_row = next(row for row in baseline["players"] if row["mlbam_id"] == 70)
+    row = next(row for row in payload["players"] if row["mlbam_id"] == 70)
+    components = row["components"]
+
+    assert payload["source_policy"]["official_mlb_transactions_used_for_availability"] is True
+    assert payload["validation"]["availability_present"] is True
+    assert payload["validation"]["availability_adjusted_count"] == 1
+    assert row["value"] < baseline_row["value"]
+    assert components["availability_adjusted"] is True
+    assert components["availability_risk_discount"] == 0.12
+    assert components["availability"]["status"] == "injured"
+    assert components["availability"]["source"] == "official_mlb_statsapi_transactions"

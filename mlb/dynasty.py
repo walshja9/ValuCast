@@ -18,6 +18,10 @@ from league_values.engine import ValuationEngine
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from league_values.playing_time import filter_by_playing_time
 from league_values.post_processors import AgeCurve, VolumeMultiplier
+from mlb.availability import (
+    ARTIFACT_PATH as MLB_AVAILABILITY_PATH,
+    availability_lookup as mlb_availability_lookup,
+)
 from projections.data.identity import age_for, load_identity_store
 from web.config_builder import build_config
 from web.projection_store import ProjectionStore
@@ -30,8 +34,8 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.3.0"
-VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_3"
+LAYER_VERSION = "0.4.0"
+VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_4"
 
 MIN_HITTER_PA = 100
 MIN_SP_IP = 40
@@ -64,6 +68,11 @@ LIMITED_HITTER_TRACK_RECORD_MAX_DISCOUNT = 0.16
 LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT = 0.14
 TRACK_RECORD_FLOOR_MIN_CERTAINTY = 40.0
 RELIEVER_DYNASTY_SCORE_CAP = 52.0
+MLB_AVAILABILITY_MAX_DISCOUNT = 0.12
+MLB_AVAILABILITY_HITTER_IL_DISCOUNT = 0.06
+MLB_AVAILABILITY_PITCHER_IL_DISCOUNT = 0.10
+MLB_AVAILABILITY_REHAB_DISCOUNT = 0.04
+MLB_AVAILABILITY_60_DAY_EXTRA_DISCOUNT = 0.02
 HORIZON_YEAR_WEIGHTS = (
     (0, 1.00),
     (1, 0.72),
@@ -330,6 +339,68 @@ def _track_record_component(profile: dict | None) -> dict:
         "volume": profile.get("volume") or {},
         "source": profile.get("source"),
     }
+
+
+def _availability_discount(player: PlayerProjection, profile: dict | None) -> float:
+    if not profile:
+        return 0.0
+    status = str(profile.get("status") or "").lower()
+    if status == "rehab":
+        discount = MLB_AVAILABILITY_REHAB_DISCOUNT
+    elif status == "injured":
+        discount = (
+            MLB_AVAILABILITY_PITCHER_IL_DISCOUNT
+            if _role(player) == "pitcher"
+            else MLB_AVAILABILITY_HITTER_IL_DISCOUNT
+        )
+        if "60-day" in str(profile.get("list_type") or "").lower():
+            discount += MLB_AVAILABILITY_60_DAY_EXTRA_DISCOUNT
+    else:
+        return 0.0
+    return round(max(0.0, min(MLB_AVAILABILITY_MAX_DISCOUNT, discount)), 4)
+
+
+def _availability_risk_level(discount: float) -> str:
+    if discount >= 0.08:
+        return "high"
+    if discount >= 0.04:
+        return "medium"
+    if discount > 0:
+        return "low"
+    return "clear"
+
+
+def _availability_component(profile: dict | None, discount: float, score_before: float) -> dict:
+    if not profile:
+        return {"present": False}
+    component = {
+        "present": True,
+        "status": profile.get("status"),
+        "active_injury_risk": profile.get("active_injury_risk") is True,
+        "risk_discount": round(discount, 4),
+        "risk_level": _availability_risk_level(discount),
+        "list_type": profile.get("list_type"),
+        "transaction_id": profile.get("transaction_id"),
+        "transaction_date": profile.get("transaction_date"),
+        "effective_date": profile.get("effective_date"),
+        "note": profile.get("description"),
+        "source": profile.get("source"),
+    }
+    if discount > 0:
+        component["score_before_availability_adjustment"] = round(score_before, 2)
+    return component
+
+
+def _availability_adjusted_score(
+    player: PlayerProjection,
+    score: float,
+    profile: dict | None,
+) -> tuple[float, dict]:
+    discount = _availability_discount(player, profile)
+    component = _availability_component(profile, discount, score)
+    if discount <= 0:
+        return score, component
+    return round(max(0.0, score * (1.0 - discount)), 2), component
 
 
 def _volume(player: PlayerProjection) -> float:
@@ -770,6 +841,7 @@ def _row(
     stability: dict[str, Any] | None = None,
     role_adjustments: dict[str, Any] | None = None,
     track_record_profile: dict | None = None,
+    availability_component: dict | None = None,
 ) -> dict:
     player = result.player
     role = _role(player)
@@ -779,6 +851,30 @@ def _row(
     reliability = _playing_time_reliability(player)
     drivers = _category_drivers(result)
     drivers.append(f"playing time reliability {reliability:.0f}")
+    components = {
+        "production_score": round(production_score, 2),
+        "playing_time_reliability": reliability,
+        "season_category_value": round(result.total_value, 4),
+        "dynasty_horizon_value": round(horizon["value"], 4),
+        "projection_stability": stability or {},
+        "role_adjustments": role_adjustments or {},
+        "track_record": _track_record_component(track_record_profile),
+        "horizon_years": horizon["years"],
+        "age_adjustment": _round(age_multiplier, 4),
+        "age_adjustment_status": (
+            "applied" if age_multiplier is not None else "missing_age"
+        ),
+        "age_source": player.metadata.get("age_source"),
+    }
+    if availability_component:
+        discount = _finite_float(availability_component.get("risk_discount")) or 0.0
+        components["availability"] = availability_component
+        components["availability_risk_discount"] = round(discount, 4)
+        components["availability_adjusted"] = discount > 0
+        if availability_component.get("score_before_availability_adjustment") is not None:
+            components["score_before_availability_adjustment"] = availability_component[
+                "score_before_availability_adjustment"
+            ]
     return {
         "id": f"vc_mlb_{mlbam_id}_{role}",
         "player_type": "mlb",
@@ -798,21 +894,7 @@ def _row(
         "confidence": _confidence(player, reliability),
         "projection_value": round(result.total_value, 4),
         "dynasty_horizon_value": round(horizon["value"], 4),
-        "components": {
-            "production_score": round(production_score, 2),
-            "playing_time_reliability": reliability,
-            "season_category_value": round(result.total_value, 4),
-            "dynasty_horizon_value": round(horizon["value"], 4),
-            "projection_stability": stability or {},
-            "role_adjustments": role_adjustments or {},
-            "track_record": _track_record_component(track_record_profile),
-            "horizon_years": horizon["years"],
-            "age_adjustment": _round(age_multiplier, 4),
-            "age_adjustment_status": (
-                "applied" if age_multiplier is not None else "missing_age"
-            ),
-            "age_source": player.metadata.get("age_source"),
-        },
+        "components": components,
         "stat_line": {
             "source": "valucast_current_projection",
             "stats": _projection_stats(player),
@@ -834,10 +916,12 @@ def build_mlb_dynasty_layer(
     generated_at: str,
     identities: dict[str, dict] | None = None,
     track_record: dict | None = None,
+    availability: dict | None = None,
 ) -> dict:
     season = _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
     track_record_by_key = _track_record_lookup(track_record)
+    availability_by_mlbam = mlb_availability_lookup(availability)
     eligible = filter_by_playing_time(
         players,
         hitter_pa=MIN_HITTER_PA,
@@ -887,7 +971,25 @@ def build_mlb_dynasty_layer(
             stability_by_player_id.get(result.player.id),
             track_record_profile,
         )
-        rows.append((score, production_score, horizon, result, role_adjustments, track_record_profile))
+        availability_profile = availability_by_mlbam.get(
+            str(result.player.metadata.get("mlbam_id"))
+        )
+        score, availability_component = _availability_adjusted_score(
+            result.player,
+            score,
+            availability_profile,
+        )
+        rows.append(
+            (
+                score,
+                production_score,
+                horizon,
+                result,
+                role_adjustments,
+                track_record_profile,
+                availability_component,
+            )
+        )
 
     rows.sort(
         key=lambda item: (
@@ -907,11 +1009,25 @@ def build_mlb_dynasty_layer(
             stability_by_player_id.get(result.player.id),
             role_adjustments,
             track_record_profile,
+            availability_component,
         )
-        for rank, (score, production_score, horizon, result, role_adjustments, track_record_profile) in enumerate(rows, 1)
+        for rank, (
+            score,
+            production_score,
+            horizon,
+            result,
+            role_adjustments,
+            track_record_profile,
+            availability_component,
+        ) in enumerate(rows, 1)
     ]
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
+    availability_adjusted_count = sum(
+        1
+        for row in board
+        if (row.get("components") or {}).get("availability_adjusted") is True
+    )
     blockers = []
     if age_coverage_rate < MIN_AGE_COVERAGE_RATE:
         blockers.append(
@@ -923,6 +1039,15 @@ def build_mlb_dynasty_layer(
         blockers.extend(
             track_record_validation.get("blockers")
             or ["ValuCast MLB track-record contract is not ready for dynasty-layer consumption."]
+        )
+    availability_validation = (availability or {}).get("validation") or {}
+    availability_ready = bool(
+        availability_validation.get("ready_for_mlb_dynasty_layer")
+    )
+    if availability and not availability_ready:
+        blockers.extend(
+            availability_validation.get("blockers")
+            or ["ValuCast MLB availability contract is not ready for dynasty-layer consumption."]
         )
     ready_for_live_consumers = not blockers
     return {
@@ -936,6 +1061,10 @@ def build_mlb_dynasty_layer(
             "track_record_source": (
                 "data/models/valucast_mlb_track_record.json" if track_record else None
             ),
+            "availability_source": (
+                "data/models/valucast_mlb_availability.json" if availability else None
+            ),
+            "official_mlb_transactions_used_for_availability": bool(availability),
             "dd_values_used": False,
             "dd_ranks_used": False,
             "external_rankings_used_for_score": False,
@@ -995,6 +1124,17 @@ def build_mlb_dynasty_layer(
                 "players can receive a track-record floor; limited-history players "
                 "can receive a transparent certainty haircut."
             ),
+            "mlb_availability": (
+                "Optional official MLB Stats API transaction contract. Active injured-list "
+                "and rehab statuses receive bounded role-aware risk discounts keyed only by MLBAM ID."
+            ),
+            "availability_adjustments": {
+                "max_discount": MLB_AVAILABILITY_MAX_DISCOUNT,
+                "hitter_il_discount": MLB_AVAILABILITY_HITTER_IL_DISCOUNT,
+                "pitcher_il_discount": MLB_AVAILABILITY_PITCHER_IL_DISCOUNT,
+                "rehab_discount": MLB_AVAILABILITY_REHAB_DISCOUNT,
+                "sixty_day_il_extra_discount": MLB_AVAILABILITY_60_DAY_EXTRA_DISCOUNT,
+            },
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
             "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
         },
@@ -1012,6 +1152,11 @@ def build_mlb_dynasty_layer(
             "track_record_ready": track_record_ready if track_record else False,
             "track_record_profile_count": track_record_validation.get("profile_count", 0),
             "track_record_coverage_rate": track_record_validation.get("coverage_rate"),
+            "availability_present": bool(availability),
+            "availability_ready": availability_ready if availability else False,
+            "availability_profile_count": availability_validation.get("profile_count", 0),
+            "availability_risk_profile_count": availability_validation.get("risk_profile_count", 0),
+            "availability_adjusted_count": availability_adjusted_count,
             "ranks_contiguous": [row["rank"] for row in board] == list(range(1, len(board) + 1)),
             "generated_date": _date_part(generated_at),
             "blockers": blockers,
@@ -1058,6 +1203,7 @@ def run_mlb_dynasty_layer(
     projection_path: Path = PROJECTION_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     track_record_path: Path = TRACK_RECORD_PATH,
+    availability_path: Path = MLB_AVAILABILITY_PATH,
     archive_dir: Path = ARCHIVE_DIR,
     identity_data_dir: Path = IDENTITY_DATA_DIR,
 ) -> dict:
@@ -1068,11 +1214,17 @@ def run_mlb_dynasty_layer(
         if track_record_path.exists()
         else None
     )
+    availability = (
+        json.loads(availability_path.read_text(encoding="utf-8"))
+        if availability_path.exists()
+        else None
+    )
     payload = build_mlb_dynasty_layer(
         store.get_all(),
         _generated_at(store),
         identities=identities,
         track_record=track_record,
+        availability=availability,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
@@ -1090,4 +1242,5 @@ def run_mlb_dynasty_layer(
         "row_count": payload["validation"]["row_count"],
         "missing_mlbam_count": payload["validation"]["missing_mlbam_count"],
         "ready_for_live_consumers": payload["validation"]["ready_for_live_consumers"],
+        "availability_adjusted_count": payload["validation"]["availability_adjusted_count"],
     }

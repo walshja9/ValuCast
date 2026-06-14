@@ -14,6 +14,7 @@ from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
 from web.public_snapshot_store import required_field_problems  # noqa: E402
 
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
+MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 PROSPECT_COVERAGE_AUDIT_PATH = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
@@ -110,6 +111,16 @@ def _mlb_collision_should_promote(prospect_row: dict, mlb_rows: list[dict]) -> b
         ):
             return True
     return False
+
+
+def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
+    ids = set()
+    for row in (roster_status or {}).get("profiles") or []:
+        mlbam_id = row.get("mlbam_id")
+        if mlbam_id in (None, "") or row.get("active_mlb_roster") is not True:
+            continue
+        ids.add(str(mlbam_id))
+    return ids
 
 
 def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
@@ -640,6 +651,7 @@ def _validation(
 def build_snapshot(
     prospect_rank: dict,
     mlb_layer: dict | None = None,
+    mlb_roster_status: dict | None = None,
     prospect_coverage_audit: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
@@ -661,12 +673,16 @@ def build_snapshot(
     for row in mlb_rows:
         if mlbam_id := _mlbam_id(row):
             mlb_rows_by_id.setdefault(mlbam_id, []).append(row)
+    active_mlb_ids = _active_mlb_roster_ids(mlb_roster_status)
     all_prospect_rows = _prospect_rows(prospect_rank, generated_at)
     graduated_prospect_rows = [
         row
         for row in all_prospect_rows
         if (mlbam_id := _mlbam_id(row)) in mlb_identity_ids
-        and _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
+        and (
+            mlbam_id in active_mlb_ids
+            or _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
+        )
     ]
     graduated_ids = {
         mlbam_id
@@ -749,6 +765,12 @@ def build_snapshot(
         "input_artifacts": {
             "mlb_dynasty_layer_version": (mlb_layer or {}).get("layer_version"),
             "mlb_dynasty_layer_status": (mlb_layer or {}).get("status"),
+            "mlb_roster_status_version": (mlb_roster_status or {}).get("contract_version"),
+            "mlb_roster_status_ready": (
+                ((mlb_roster_status or {}).get("validation") or {}).get(
+                    "ready_for_public_snapshot"
+                )
+            ),
             "valucast_buy_signal_version": (buy_signals or {}).get("signal_version"),
             "valucast_buy_signal_status": (buy_signals or {}).get("status"),
             "prospect_coverage_audit_version": (prospect_coverage_audit or {}).get(
@@ -791,6 +813,11 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 def main() -> None:
     rank_payload = _load_json(PROSPECT_RANK_PATH)
     mlb_layer = _load_json(MLB_LAYER_PATH) if MLB_LAYER_PATH.exists() else None
+    mlb_roster_status = (
+        _load_json(MLB_ROSTER_STATUS_PATH)
+        if MLB_ROSTER_STATUS_PATH.exists()
+        else None
+    )
     prospect_coverage_audit = (
         _load_json(PROSPECT_COVERAGE_AUDIT_PATH)
         if PROSPECT_COVERAGE_AUDIT_PATH.exists()
@@ -801,6 +828,7 @@ def main() -> None:
     payload = build_snapshot(
         rank_payload,
         mlb_layer=mlb_layer,
+        mlb_roster_status=mlb_roster_status,
         prospect_coverage_audit=prospect_coverage_audit,
         buy_signals=buy_signals,
         buy_review=buy_review,

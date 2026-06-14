@@ -15,6 +15,8 @@ REDRAFT_ROS = ROOT / "data" / "projections" / "ros.json"
 ACTUALS = ROOT / "data" / "actuals" / "current.json"
 STATCAST = ROOT / "data" / "statcast" / "percentiles.json"
 MLB_DYNASTY_LAYER = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
+MLB_AVAILABILITY = ROOT / "data" / "models" / "valucast_mlb_availability.json"
+MLB_ROSTER_STATUS = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 MLB_TRACK_RECORD = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 VALUCAST_BUYS = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
@@ -44,6 +46,8 @@ def validate_public_data(expected_date: str) -> list[str]:
     dated_artifacts = [
         (DD_FEED, "generated_at"),
         (MLB_TRACK_RECORD, "generated_at"),
+        (MLB_AVAILABILITY, "generated_at"),
+        (MLB_ROSTER_STATUS, "generated_at"),
         (MLB_DYNASTY_LAYER, "generated_at"),
         (PROSPECT_AVAILABILITY, "generated_at"),
         (PROSPECT_CALIBRATION_REPORT, "generated_at"),

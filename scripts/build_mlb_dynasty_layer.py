@@ -15,6 +15,7 @@ def main() -> None:
         "ValuCast MLB dynasty layer: "
         f"rows={result['row_count']} "
         f"missing_mlbam={result['missing_mlbam_count']} "
+        f"availability_adjusted={result['availability_adjusted_count']} "
         f"ready={result['ready_for_live_consumers']} -> {result['artifact_path']}"
     )
 

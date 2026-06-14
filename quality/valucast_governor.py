@@ -42,7 +42,7 @@ MAX_TOP50_SUPPRESSED_RANK_ROWS = 0
 MAX_ELITE_FACTUAL_RAW_FALLBACK_TOP200 = 0
 MAX_TOP50_PEDIGREE_RATE = 0.35
 MAX_TOP50_LOW_CONFIDENCE_RATE = 0.38
-MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT = 14
+MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT = 15
 MAX_TOP50_THIN_UPPER_LEVEL_PITCHER_COUNT = 4
 PROSPECT_INVESTMENT_TOP_N = 25
 MAX_TOP25_NEUTRAL_INVESTMENT_RATE = 0.35
@@ -701,18 +701,39 @@ def _prospect_availability_risk_pricing(players: list[dict]) -> dict:
 
 def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list[dict]) -> dict:
     top_rank_rows = _prospect_rank_rows(prospect_rank)[:PROSPECT_FALLBACK_TOP_N]
-    public_ids = {
+    public_prospect_ids = {
         mlbam_id
         for row in _public_prospect_rows(players)
         if (mlbam_id := _mlbam_id(row))
     }
+    public_mlb_ids = {
+        mlbam_id
+        for row in players
+        if row.get("player_type") == "mlb" and (mlbam_id := _mlbam_id(row))
+    }
     missing = []
+    graduated_to_mlb = []
     for row in top_rank_rows:
         level = str(row.get("level") or "").strip().upper()
         if level == "MLB":
             continue
         mlbam_id = _mlbam_id(row)
-        if mlbam_id not in public_ids:
+        if mlbam_id in public_prospect_ids:
+            continue
+        if mlbam_id in public_mlb_ids:
+            graduated_to_mlb.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "role": row.get("role"),
+                    "level": row.get("level"),
+                    "score": row.get("score"),
+                    "score_source": row.get("score_source"),
+                }
+            )
+            continue
+        if mlbam_id not in public_prospect_ids:
             missing.append(
                 {
                     "rank": row.get("rank"),
@@ -737,9 +758,11 @@ def _prospect_rank_surface_suppression(prospect_rank: dict | None, players: list
         top_n=PROSPECT_FALLBACK_TOP_N,
         evaluated_count=len(top_rank_rows),
         suppressed_count=len(missing),
+        graduated_to_mlb_count=len(graduated_to_mlb),
         max_allowed_suppressed_count=MAX_TOP50_SUPPRESSED_RANK_ROWS,
         sample_ready=sample_ready,
         samples=missing[:10],
+        graduated_samples=graduated_to_mlb[:10],
     )
 
 

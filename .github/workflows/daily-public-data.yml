@@ -57,7 +57,9 @@ jobs:
         run: |
           python scripts/backfill_projection_identities.py
           python scripts/build_mlb_track_record.py
+          python scripts/build_mlb_availability.py
           python scripts/build_mlb_dynasty_layer.py
+          python scripts/build_mlb_roster_status.py
           python scripts/run_prospect_shadow_pipeline.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_availability.py
@@ -74,6 +76,8 @@ jobs:
         run: |
           python scripts/validate_feed.py
           python scripts/validate_mlb_track_record.py
+          python scripts/validate_mlb_availability.py
+          python scripts/validate_mlb_roster_status.py
           python scripts/validate_prospect_coverage_audit.py
           python scripts/validate_prospect_calibration_report.py
           python scripts/validate_valucast_buys.py
@@ -97,6 +101,10 @@ jobs:
             data/dd/prospect_model_inputs.json \
             data/exports/valucast_dd_prospect_lens.json \
             data/mlb/mlb_track_record_cache.json \
+            data/mlb/mlb_availability_transactions_cache.json \
+            data/mlb/mlb_roster_status_cache.json \
+            data/models/valucast_mlb_availability.json \
+            data/models/valucast_mlb_roster_status.json \
             data/models/valucast_mlb_dynasty_layer.json \
             data/models/valucast_mlb_track_record.json \
             data/models/valucast_dd_7x7_prospect_adapter.json \
@@ -117,6 +125,8 @@ jobs:
             data/models/valucast_universal_prospect_model.json \
             data/prediction_archive/valucast_dd_7x7_prospect_adapter \
             data/prediction_archive/valucast_mlb_dynasty_layer \
+            data/prediction_archive/valucast_mlb_availability \
+            data/prediction_archive/valucast_mlb_roster_status \
             data/prediction_archive/valucast_mlb_track_record \
             data/prediction_archive/valucast_prospect_buys \
             data/prediction_archive/valucast_prospect_dynasty_layer \

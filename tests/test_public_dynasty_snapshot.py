@@ -487,6 +487,41 @@ def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
     assert top_prospect["context"]["valucast_rank_v1"] == 1
 
 
+def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_is_low():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
+    assert payload["input_artifacts"]["mlb_roster_status_ready"] is True
+
+
 def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():
     payload = build_snapshot(
         _rank_payload(),
