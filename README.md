@@ -43,7 +43,7 @@ FanGraphs API  →  scraper/fangraphs.py    →  scraper/combine.py  →  data/p
 - **ROS:** Steamer Rest-of-Season projections via FanGraphs (`steamerr`)
 - **Combine:** Counting stats add directly. Rate stats (AVG, ERA, WHIP, etc.) recalculated from combined components — never averaged.
 - **IP normalization:** MLB API innings are in baseball notation (4.2 = 4⅔); adapter converts to decimal before arithmetic.
-- **Daily publish:** GitHub Actions refreshes actuals, Steamer ROS, Statcast player-card data, DD factual prospect inputs, the ValuCast public dynasty snapshot, and ValuCast-owned buy signals each morning, then deploys only after same-day freshness checks pass.
+- **Daily publish:** GitHub Actions refreshes actuals, Steamer ROS, Statcast player-card data, DD factual prospect inputs, the ValuCast public dynasty snapshot, ValuCast-owned buy signals, and prospect forward-validation reports each morning, then deploys only after same-day freshness checks pass.
 - **Dynasty migration:** `data/public/public_dynasty_snapshot.json` is ValuCast's canonical-publisher gate. Dynasty, Prospects, and Buys can consume ValuCast-owned artifacts once the quality governor and buy-review gates mark them ready for live consumers.
 
 ## Engine

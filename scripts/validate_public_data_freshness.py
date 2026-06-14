@@ -26,6 +26,9 @@ PROSPECT_AVAILABILITY = (
 PROSPECT_CALIBRATION_REPORT = (
     ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 )
+PROSPECT_FORWARD_VALIDATION = (
+    ROOT / "data" / "models" / "valucast_prospect_forward_validation.json"
+)
 PROSPECT_COVERAGE_AUDIT = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 )
@@ -51,6 +54,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (MLB_DYNASTY_LAYER, "generated_at"),
         (PROSPECT_AVAILABILITY, "generated_at"),
         (PROSPECT_CALIBRATION_REPORT, "generated_at"),
+        (PROSPECT_FORWARD_VALIDATION, "generated_at"),
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),

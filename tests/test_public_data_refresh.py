@@ -216,6 +216,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
         "PROSPECT_AVAILABILITY": tmp_path / "prospect_availability.json",
         "PROSPECT_CALIBRATION_REPORT": tmp_path / "prospect_calibration_report.json",
+        "PROSPECT_FORWARD_VALIDATION": tmp_path / "prospect_forward_validation.json",
         "PROSPECT_COVERAGE_AUDIT": tmp_path / "prospect_coverage_audit.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
@@ -259,6 +260,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths["PROSPECT_CALIBRATION_REPORT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
+    paths["PROSPECT_FORWARD_VALIDATION"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
     paths["PROSPECT_COVERAGE_AUDIT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
@@ -292,7 +296,10 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/run_prospect_shadow_pipeline.py" in workflow
     assert "python scripts/build_prospect_availability.py" in workflow
     assert "python scripts/build_prospect_calibration_report.py" in workflow
+    assert "python scripts/build_prospect_forward_validation.py" in workflow
+    assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
+    assert "python scripts/validate_prospect_forward_validation.py" in workflow
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/models/valucast_mlb_availability.json" in workflow
     assert "data/models/valucast_mlb_roster_status.json" in workflow
@@ -304,6 +311,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_prospect_dynasty_layer.json" in workflow
     assert "data/models/valucast_prospect_availability.json" in workflow
     assert "data/models/valucast_prospect_calibration_report.json" in workflow
+    assert "data/models/valucast_prospect_forward_validation.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ github.event_name == 'workflow_dispatch' "

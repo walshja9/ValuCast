@@ -144,6 +144,8 @@ The snapshot includes:
 - `data/models/valucast_prospect_buys.json`, a ValuCast-owned buy-signal
   artifact built from ValuCast Rank v1 rather than DD value history or public
   source-rank gaps
+- `data/models/valucast_prospect_forward_validation.json`, an observe-only
+  archive comparison that tracks Rank v1 and Buy movement by bucket over time
 - `data/models/valucast_quality_governor.json`, a ValuCast-owned promotion
   gate that reviews the generated boards for baseball-sanity blockers before
   Dynasty/Prospects can treat them as official
@@ -231,6 +233,12 @@ Two model-quality rules are now part of the public snapshot path:
   overrides. Current rules include lower-minors pedigree context and a small
   upper-level pitcher adjustment for model-backed AA/AAA arms with fewer than
   30 current IP.
+- Prospect availability is priced as a factual risk component, with each
+  discount carrying a basis such as current sample size, sample staleness,
+  upstream factual roster status, or a manually verified override.
+- Forward validation compares ValuCast-owned Rank v1 and Buy archives by
+  role/level/source/availability bucket. It is for future calibration review
+  only; it does not claim realized MLB outcome accuracy and cannot feed score.
 - Prospect rows win publication conflicts against weak MLB projection rows
   until the prospect is explicitly marked as MLB-level or the MLB row is a
   material current-value promotion. A low present-day projection row should not

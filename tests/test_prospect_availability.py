@@ -7,6 +7,7 @@ from prospects.availability import (
     build_prospect_availability,
     run_prospect_availability,
 )
+from scripts.validate_prospect_availability import validate_prospect_availability
 
 
 def _input_contract():
@@ -88,8 +89,10 @@ def test_availability_collapses_multi_level_samples_before_pricing_risk():
     assert split["status"] == "available"
     assert thin["sample"] == 29.0
     assert thin["risk_discount"] == 0.06
+    assert thin["risk_basis"] == "current_sample_size"
     assert thin["status"] == "thin_current_sample"
     assert "thin_starter_workload_under_30_ip" in thin["signals"]
+    assert payload["summary"]["risk_basis_counts"]["current_sample_size"] == 2
     assert payload["validation"]["duplicate_level_rows_collapsed"] == 1
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["external_rankings_used"] is False
@@ -116,6 +119,7 @@ def test_availability_applies_manual_status_overrides_with_bounded_discount():
 
     assert hitter["status"] == "injured"
     assert hitter["risk_discount"] == MAX_RISK_DISCOUNT
+    assert hitter["risk_basis"] == "manual_override"
     assert hitter["risk_level"] == "high"
     assert hitter["age"] == 24
     assert hitter["availability_note"] == "Verified manual test status."
@@ -136,6 +140,7 @@ def test_availability_applies_upstream_factual_roster_status():
 
     assert pitcher["status"] == "injured"
     assert pitcher["risk_discount"] == MAX_RISK_DISCOUNT
+    assert pitcher["risk_basis"] == "upstream_factual_status"
     assert pitcher["risk_level"] == "high"
     assert "fantrax_roster_status_override" in pitcher["signals"]
     assert pitcher["availability_note"] == "Fantrax roster status is Inj Res."
@@ -165,6 +170,7 @@ def test_apply_availability_adjustment_keeps_original_score_explainable():
     assert components["availability_risk_discount"] == 0.06
     assert components["availability_adjusted"] is True
     assert components["availability"]["status"] == "thin_current_sample"
+    assert components["availability"]["risk_basis"] is None
 
 
 def test_run_prospect_availability_writes_artifact(tmp_path):
@@ -182,4 +188,6 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
-    assert payload["artifact_version"] == "0.2.0"
+    assert payload["artifact_version"] == "0.3.0"
+    assert payload["summary"]["profile_count"] == 3
+    assert validate_prospect_availability(artifact_path)[1] == []

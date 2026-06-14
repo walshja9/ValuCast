@@ -19,7 +19,7 @@ OVERRIDES_PATH = ROOT / "data" / "manual" / "prospect_availability_overrides.jso
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.2.0"
+ARTIFACT_VERSION = "0.3.0"
 
 MAX_RISK_DISCOUNT = 0.12
 STALE_MODERATE_DAYS = 14
@@ -326,6 +326,22 @@ def _status(signals: list[str], override_status: str | None) -> str:
     return "available"
 
 
+def _risk_basis(
+    sample_discount: float,
+    stale_discount: float,
+    upstream_discount: float,
+    override_discount: float,
+) -> str:
+    discounts = {
+        "manual_override": override_discount,
+        "upstream_factual_status": upstream_discount,
+        "sample_staleness": stale_discount,
+        "current_sample_size": sample_discount,
+    }
+    basis, discount = max(discounts.items(), key=lambda item: item[1])
+    return basis if discount > 0 else "none"
+
+
 def _profile(
     key: tuple[str, str],
     rows: list[dict],
@@ -361,6 +377,12 @@ def _profile(
         MAX_RISK_DISCOUNT,
         max(0.0, sample_discount, stale_discount, upstream_discount, override_discount),
     )
+    risk_basis = _risk_basis(
+        sample_discount,
+        stale_discount,
+        upstream_discount,
+        override_discount,
+    )
     return {
         "mlbam_id": _clean_int(mlbam_id) or mlbam_id,
         "role": role,
@@ -375,6 +397,7 @@ def _profile(
         "sample_staleness_days": stale_days,
         "source_kind": display_row.get("source_kind"),
         "risk_discount": round(risk_discount, 4),
+        "risk_basis": risk_basis,
         "risk_level": _risk_level(risk_discount),
         "status": _status(signals, override_status or upstream_status),
         "availability_note": override_note or upstream_note or (
@@ -414,6 +437,7 @@ def apply_availability_adjustment(
         "status": availability_profile.get("status"),
         "risk_level": availability_profile.get("risk_level"),
         "risk_discount": round(discount, 4),
+        "risk_basis": availability_profile.get("risk_basis"),
         "note": availability_profile.get("availability_note"),
         "signals": list(availability_profile.get("signals") or []),
         "sample": availability_profile.get("sample"),
@@ -422,6 +446,65 @@ def apply_availability_adjustment(
         "sample_staleness_days": availability_profile.get("sample_staleness_days"),
     }
     return adjusted_score, next_components
+
+
+def _count_by(profiles: list[dict], field: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in profiles:
+        key = str(row.get(field) or "missing")
+        counts[key] = counts.get(key, 0) + 1
+    return {key: counts[key] for key in sorted(counts)}
+
+
+def _signal_counts(profiles: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in profiles:
+        for signal in row.get("signals") or []:
+            key = str(signal)
+            counts[key] = counts.get(key, 0) + 1
+    return {key: counts[key] for key in sorted(counts)}
+
+
+def _risk_entry(row: dict) -> dict:
+    return {
+        "mlbam_id": row.get("mlbam_id"),
+        "name": row.get("name"),
+        "role": row.get("role"),
+        "level": row.get("level"),
+        "team": row.get("team"),
+        "sample": row.get("sample"),
+        "sample_unit": row.get("sample_unit"),
+        "status": row.get("status"),
+        "risk_level": row.get("risk_level"),
+        "risk_discount": row.get("risk_discount"),
+        "risk_basis": row.get("risk_basis"),
+        "signals": row.get("signals") or [],
+        "availability_note": row.get("availability_note"),
+    }
+
+
+def _risk_summary(profiles: list[dict]) -> dict:
+    risk_profiles = [
+        row for row in profiles if (_clean_float(row.get("risk_discount")) or 0.0) > 0
+    ]
+    top_risk = sorted(
+        risk_profiles,
+        key=lambda row: (
+            -(_clean_float(row.get("risk_discount")) or 0.0),
+            str(row.get("role") or ""),
+            str(row.get("name") or ""),
+            str(row.get("mlbam_id") or ""),
+        ),
+    )[:25]
+    return {
+        "profile_count": len(profiles),
+        "risk_profile_count": len(risk_profiles),
+        "status_counts": _count_by(profiles, "status"),
+        "risk_level_counts": _count_by(profiles, "risk_level"),
+        "risk_basis_counts": _count_by(profiles, "risk_basis"),
+        "signal_counts": _signal_counts(profiles),
+        "top_risk_profiles": [_risk_entry(row) for row in top_risk],
+    }
 
 
 def build_prospect_availability(
@@ -458,6 +541,7 @@ def build_prospect_availability(
         )
     )
     risk_profiles = [row for row in profiles if (row.get("risk_discount") or 0.0) > 0]
+    summary = _risk_summary(profiles)
     return {
         "artifact": ARTIFACT_NAME,
         "artifact_version": ARTIFACT_VERSION,
@@ -481,6 +565,7 @@ def build_prospect_availability(
             "upper_levels": sorted(UPPER_LEVELS),
             "max_risk_discount": MAX_RISK_DISCOUNT,
         },
+        "summary": summary,
         "validation": {
             "current_identity_count": len(profiles),
             "duplicate_level_rows_collapsed": sum(
