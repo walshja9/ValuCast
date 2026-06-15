@@ -98,6 +98,51 @@ def test_availability_collapses_multi_level_samples_before_pricing_risk():
     assert payload["source_policy"]["external_rankings_used"] is False
 
 
+def test_availability_uses_newest_sample_season_when_prior_history_is_present():
+    contract = _input_contract()
+    contract["current"]["pitchers"] = [
+        {
+            "mlbam_id": 40,
+            "name": "Current Starter",
+            "role": "pitcher",
+            "level": "AAA",
+            "team": "Current Club",
+            "innings_pitched": 25.333,
+            "games_started": 6,
+            "is_starter": True,
+            "sample_season": 2026,
+            "sample_fetched_date": "2026-06-13",
+            "sample_staleness_years": 0,
+            "source_kind": "current_season",
+        },
+        {
+            "mlbam_id": 40,
+            "name": "Current Starter",
+            "role": "pitcher",
+            "level": "AAA",
+            "team": "Old Club",
+            "innings_pitched": 79.0,
+            "games_started": 18,
+            "is_starter": True,
+            "sample_season": 2024,
+            "sample_fetched_date": "2026-06-13",
+            "sample_staleness_years": 2,
+            "source_kind": "latest_milb_history",
+        },
+    ]
+
+    payload = build_prospect_availability(contract)
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 40)
+
+    assert pitcher["sample"] == 25.333
+    assert pitcher["team"] == "Current Club"
+    assert pitcher["source_kind"] == "current_season"
+    assert pitcher["active_row_count"] == 1
+    assert pitcher["risk_basis"] == "current_sample_size"
+    assert pitcher["status"] == "thin_current_sample"
+    assert "prior_season_sample" not in pitcher["signals"]
+
+
 def test_availability_applies_manual_status_overrides_with_bounded_discount():
     payload = build_prospect_availability(
         _input_contract(),

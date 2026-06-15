@@ -376,6 +376,80 @@ def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
     }
 
 
+def test_rank_v1_prefers_newest_current_input_row_over_larger_old_sample():
+    input_contract = _input_contract()
+    input_contract["current"]["pitchers"] = [
+        {
+            "mlbam_id": 8,
+            "name": "Current Pitcher",
+            "level": "AAA",
+            "sample_season": 2026,
+            "source_kind": "current_season",
+            "innings_pitched": 25.333,
+            "era": 4.26,
+            "whip": 1.58,
+            "k_per_9": 8.53,
+            "bb_per_9": 5.33,
+            "k_bb_pct": 8.0,
+            "games_started": 6,
+        },
+        {
+            "mlbam_id": 8,
+            "name": "Current Pitcher",
+            "level": "AAA",
+            "sample_season": 2024,
+            "source_kind": "latest_milb_history",
+            "innings_pitched": 79.0,
+            "era": 7.97,
+            "whip": 1.77,
+            "k_per_9": 11.62,
+            "bb_per_9": 4.56,
+            "k_bb_pct": 16.8,
+            "games_started": 18,
+        },
+    ]
+    universe = _universe(
+        [
+            {
+                "mlbam_id": 8,
+                "name": "Current Pitcher",
+                "normalized_name": "current pitcher",
+                "role": "pitcher",
+                "positions": ["P"],
+                "mlb_team": "DET",
+                "age": 26,
+                "level": "AAA",
+                "sample_reliability": 0.3,
+                "universe_source": "valucast_prospect_dynasty_layer",
+            }
+        ]
+    )
+    pitcher_profile = _profile(8, 0.7)
+    pitcher_profile.update({"role": "pitcher", "position": "P", "level": "AAA"})
+    dynasty_layer = _dynasty_layer()
+    dynasty_layer["profiles"].append(pitcher_profile)
+
+    payload = build_prospect_rank_v1(
+        universe,
+        dynasty_layer,
+        _prospect_model(),
+        input_contract,
+        dd_feed={"schema_version": "1.1", "players": []},
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 8)
+    assert row["context_only"]["stat_line"] == {
+        "era": 4.26,
+        "whip": 1.58,
+        "k_per_9": 8.5,
+        "bb_per_9": 5.3,
+        "k_bb_pct": 8.0,
+        "ip": 25.3,
+    }
+    assert row["components"]["factual_current_context"]["sample"] == 25.3
+    assert row["components"]["factual_current_context"]["era"] == 4.26
+
+
 def test_rank_v1_exposes_factual_current_context_for_hitter_components():
     input_contract = _input_contract()
     input_contract["current"]["hitters"][0].update(

@@ -207,7 +207,10 @@ def _input_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
             if not key:
                 continue
             existing = lookup.get(key)
-            if existing is None or _sample_size(row, role) > _sample_size(existing, role):
+            if existing is None or _input_row_sort_key(row, role) > _input_row_sort_key(
+                existing,
+                role,
+            ):
                 merged = dict(row)
                 if existing:
                     _fill_factual_context(merged, existing)
@@ -215,6 +218,28 @@ def _input_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
             elif existing:
                 _fill_factual_context(existing, row)
     return lookup
+
+
+def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, float, int]:
+    """Prefer the most recent factual row before falling back to sample size."""
+    season = _clean_float(row.get("sample_season")) or 0.0
+    current_flag = 1 if row.get("source_kind") == "current_season" else 0
+    return (
+        season,
+        current_flag,
+        _sample_size(row, role),
+        _input_level_rank(row.get("level")),
+    )
+
+
+def _input_level_rank(level: Any) -> int:
+    return {
+        "AAA": 4,
+        "AA": 3,
+        "A+": 2,
+        "HIGH-A": 2,
+        "A": 1,
+    }.get(str(level or "").upper(), 0)
 
 
 def _fill_factual_context(target: dict, source: dict) -> None:

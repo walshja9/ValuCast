@@ -472,6 +472,26 @@ def _statsapi_number(value, default=0.0):
         return default
 
 
+def _statsapi_innings(value, default=0.0):
+    try:
+        text = str(value).split()[0]
+    except (TypeError, ValueError):
+        return default
+    if "." not in text:
+        try:
+            return float(text)
+        except ValueError:
+            return default
+    whole, fraction = text.split(".", 1)
+    try:
+        outs = int(fraction[:1] or 0)
+        if outs not in {0, 1, 2}:
+            return default
+        return float(whole) + outs / 3.0
+    except ValueError:
+        return default
+
+
 def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
     """Fetch MLB regular-season service lines by MLBAM id.
 
@@ -519,7 +539,7 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
                 seasons.append(
                     {
                         "year": year,
-                        "ip": _statsapi_number(stat.get("inningsPitched")),
+                        "ip": _statsapi_innings(stat.get("inningsPitched")),
                         "era": _statsapi_number(stat.get("era"), 99.0),
                         "whip": _statsapi_number(stat.get("whip"), 99.0),
                         "so": int(_statsapi_number(stat.get("strikeOuts"))),

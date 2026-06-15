@@ -359,6 +359,12 @@ def test_contract_exports_mlbam_keyed_service_facts():
     }]
 
 
+def test_statsapi_innings_parse_baseball_outs_for_graduation_service():
+    assert exporter._statsapi_innings("25.1") == pytest.approx(25 + 1 / 3)
+    assert exporter._statsapi_innings("25.2") == pytest.approx(25 + 2 / 3)
+    assert exporter._statsapi_innings("25.0") == 25.0
+
+
 def test_contract_fails_closed_when_service_cache_missing_current_candidate():
     with pytest.raises(ValueError, match="MLB service cache is missing"):
         exporter.build_contract(

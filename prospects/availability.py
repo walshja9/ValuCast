@@ -141,6 +141,19 @@ def _best_display_row(rows: list[dict], role: str) -> dict:
     )
 
 
+def _sample_season(row: dict) -> float:
+    return _clean_float(row.get("sample_season")) or 0.0
+
+
+def _active_sample_rows(rows: list[dict]) -> list[dict]:
+    seasons = [_sample_season(row) for row in rows]
+    valid_seasons = [season for season in seasons if season > 0]
+    if not valid_seasons:
+        return rows
+    latest = max(valid_seasons)
+    return [row for row in rows if _sample_season(row) == latest]
+
+
 def _latest_sample_date(rows: list[dict]) -> str | None:
     dates = [_parse_date(row.get("sample_fetched_date")) for row in rows]
     valid_dates = [value for value in dates if value is not None]
@@ -351,8 +364,9 @@ def _profile(
     override: dict | None,
 ) -> dict:
     mlbam_id, role = key
-    display_row = _best_display_row(rows, role)
-    total_sample = sum(_sample_value(row, role) for row in rows)
+    active_rows = _active_sample_rows(rows)
+    display_row = _best_display_row(active_rows, role)
+    total_sample = sum(_sample_value(row, role) for row in active_rows)
     highest_level = _level_key(display_row.get("level"))
 
     sample_discount, sample_signals = _sample_signal(
@@ -361,9 +375,13 @@ def _profile(
         display_row,
         highest_level,
     )
-    stale_discount, stale_signals, stale_days = _staleness_signal(role, rows, generated_at)
+    stale_discount, stale_signals, stale_days = _staleness_signal(
+        role,
+        active_rows,
+        generated_at,
+    )
     upstream_discount, upstream_signals, upstream_status, upstream_note = (
-        _upstream_status_signal(role, rows)
+        _upstream_status_signal(role, active_rows)
     )
     override_discount, override_signals, override_status, override_note = _override_signal(
         role,
@@ -395,7 +413,7 @@ def _profile(
         "team": display_row.get("team"),
         "sample": _round(total_sample, 3),
         "sample_unit": "IP" if role == "pitcher" else "PA",
-        "sample_fetched_date": _latest_sample_date(rows),
+        "sample_fetched_date": _latest_sample_date(active_rows),
         "sample_staleness_days": stale_days,
         "source_kind": display_row.get("source_kind"),
         "risk_discount": round(risk_discount, 4),
@@ -407,6 +425,7 @@ def _profile(
         ),
         "signals": signals,
         "row_count": len(rows),
+        "active_row_count": len(active_rows),
         "present": True,
     }
 
