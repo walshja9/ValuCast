@@ -398,6 +398,49 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("image/png", png.content_type)
         self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
 
+    def test_prospect_player_card_read_uses_stats_not_stock_blurb(self):
+        from types import SimpleNamespace
+
+        from app import _prospect_player_card_read
+
+        row = SimpleNamespace(
+            name="Franklin Arias",
+            age=20,
+            level="AA",
+            stat_line={
+                "avg": 0.318,
+                "obp": 0.397,
+                "slg": 0.579,
+                "ops": 0.976,
+                "iso": 0.261,
+                "k_pct": 12.9,
+                "bb_pct": 9.8,
+                "pa": 224,
+            },
+        )
+        read = _prospect_player_card_read(
+            row,
+            {
+                "ops": 96,
+                "iso": 94,
+                "k_pct": 96,
+                "avg": 95,
+                "obp": 84,
+                "slg": 96,
+                "bb_pct": 32,
+            },
+            {"stat_line_sample": 224, "stat_line_sample_unit": "PA"},
+        )
+
+        self.assertIn(".318/.397/.579", read)
+        self.assertIn("224 PA", read)
+        self.assertIn(".976 OPS", read)
+        self.assertIn(".261 ISO", read)
+        self.assertIn("12.9% K rate", read)
+        self.assertIn("9.8% walk rate", read)
+        self.assertIn("32nd", read)
+        self.assertNotIn("open question", read.lower())
+
     def test_prospect_detail_links_player_share_graphic(self):
         from app import dd_store
         if not dd_store.is_available:

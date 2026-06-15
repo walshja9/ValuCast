@@ -1001,6 +1001,178 @@ def _graphic_stat_value(value, key):
     return f"{value:.1f}"
 
 
+def _graphic_prose_stat(value, key):
+    if not isinstance(value, (int, float)):
+        return None
+    if key in {"avg", "obp", "slg", "ops", "iso"}:
+        text = f"{value:.3f}"
+        return text[1:] if text.startswith("0.") else text
+    if key in {"k_pct", "bb_pct", "k_bb_pct"}:
+        return f"{value:.1f}%"
+    if key in {"era", "whip", "k_per_9", "bb_per_9"}:
+        return f"{value:.2f}"
+    if float(value).is_integer():
+        return str(int(value))
+    return f"{value:.1f}"
+
+
+def _graphic_ordinal(value):
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return ""
+    if 10 <= number % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(number % 10, "th")
+    return f"{number}{suffix}"
+
+
+def _graphic_join(parts):
+    parts = [part for part in parts if part]
+    if len(parts) <= 1:
+        return parts[0] if parts else ""
+    if len(parts) == 2:
+        return f"{parts[0]} and {parts[1]}"
+    return f"{', '.join(parts[:-1])}, and {parts[-1]}"
+
+
+def _graphic_level_phrase(row):
+    labels = {
+        "A": "Single-A",
+        "A+": "High-A",
+        "AA": "Double-A",
+        "AAA": "Triple-A",
+        "MLB": "the majors",
+    }
+    level = labels.get(row.level, row.level)
+    if row.age is not None and level:
+        return f"At {row.age} in {level}"
+    if row.age is not None:
+        return f"At {row.age}"
+    if level:
+        return f"In {level}"
+    return "In the current sample"
+
+
+def _graphic_sample_phrase(row, context, line):
+    sample = context.get("stat_line_sample")
+    unit = context.get("stat_line_sample_unit")
+    if not isinstance(sample, (int, float)) or not unit:
+        if isinstance(line.get("pa"), (int, float)):
+            sample, unit = line["pa"], "PA"
+        elif isinstance(line.get("ip"), (int, float)):
+            sample, unit = line["ip"], "IP"
+    if not isinstance(sample, (int, float)) or not unit:
+        return ""
+    number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
+    return f" over {number} {unit}"
+
+
+def _graphic_last_name(name):
+    parts = str(name or "").split()
+    return parts[-1] if parts else "This profile"
+
+
+def _graphic_hitter_callout(key, line, pct):
+    value = _graphic_prose_stat(line.get(key), key)
+    if value is None or pct is None:
+        return None
+    ord_pct = _graphic_ordinal(pct)
+    if key == "ops":
+        return f"{value} OPS ({ord_pct} percentile)"
+    if key == "iso":
+        return f"{value} ISO ({ord_pct} percentile)"
+    if key == "k_pct":
+        return f"{value} K rate ({ord_pct} percentile contact)"
+    if key == "bb_pct":
+        return f"{value} walk rate ({ord_pct} percentile)"
+    if key == "avg":
+        return f"{value} AVG ({ord_pct} percentile)"
+    if key == "obp":
+        return f"{value} OBP ({ord_pct} percentile)"
+    if key == "slg":
+        return f"{value} SLG ({ord_pct} percentile)"
+    return None
+
+
+def _graphic_pitcher_callout(key, line, pct):
+    value = _graphic_prose_stat(line.get(key), key)
+    if value is None or pct is None:
+        return None
+    ord_pct = _graphic_ordinal(pct)
+    if key == "k_per_9":
+        return f"{value} K/9 ({ord_pct} percentile bat-missing)"
+    if key == "bb_per_9":
+        return f"{value} BB/9 ({ord_pct} percentile command)"
+    if key == "k_bb_pct":
+        return f"{value} K-BB% ({ord_pct} percentile)"
+    if key == "era":
+        return f"{value} ERA ({ord_pct} percentile)"
+    if key == "whip":
+        return f"{value} WHIP ({ord_pct} percentile)"
+    return None
+
+
+def _prospect_player_card_read(row, stat_percentiles, context):
+    line = row.stat_line or {}
+    if not line:
+        return prospect_percentiles.identity_line(row, stat_percentiles) or ""
+
+    last = _graphic_last_name(row.name)
+    sample = _graphic_sample_phrase(row, context, line)
+    if any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")):
+        era = _graphic_prose_stat(line.get("era"), "era")
+        whip = _graphic_prose_stat(line.get("whip"), "whip")
+        k9 = _graphic_prose_stat(line.get("k_per_9"), "k_per_9")
+        core = " / ".join(part for part in (f"{era} ERA" if era else None, f"{whip} WHIP" if whip else None) if part)
+        if not core and k9:
+            core = f"{k9} K/9"
+        intro = f"{_graphic_level_phrase(row)}, {last} is showing {core or 'a usable current arm shape'}{sample}."
+        strength_keys = ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+        strengths = [
+            _graphic_pitcher_callout(key, line, stat_percentiles.get(key))
+            for key in strength_keys
+            if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
+        ][:3]
+        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud right now."
+        weak_key = min(
+            (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
+            key=lambda key: stat_percentiles[key],
+            default=None,
+        )
+        weak = ""
+        if weak_key and stat_percentiles[weak_key] <= 40:
+            weak = f" The check is {_graphic_pitcher_callout(weak_key, line, stat_percentiles[weak_key])}, so role confidence still has some drag."
+        return f"{intro} {loud}{weak}"
+
+    avg = _graphic_prose_stat(line.get("avg"), "avg")
+    obp = _graphic_prose_stat(line.get("obp"), "obp")
+    slg = _graphic_prose_stat(line.get("slg"), "slg")
+    if avg and obp and slg:
+        core = f"a {avg}/{obp}/{slg} line"
+    else:
+        ops = _graphic_prose_stat(line.get("ops"), "ops")
+        core = f"a {ops} OPS" if ops else "a usable current bat shape"
+    intro = f"{_graphic_level_phrase(row)}, {last} is carrying {core}{sample}."
+    strength_keys = ("ops", "iso", "k_pct", "avg", "obp", "slg", "bb_pct")
+    strengths = [
+        _graphic_hitter_callout(key, line, stat_percentiles.get(key))
+        for key in strength_keys
+        if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
+    ][:3]
+    loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive right now."
+    weak_key = min(
+        (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
+        key=lambda key: stat_percentiles[key],
+        default=None,
+    )
+    weak = ""
+    if weak_key and stat_percentiles[weak_key] <= 40:
+        weak = f" The softer spot is the {_graphic_hitter_callout(weak_key, line, stat_percentiles[weak_key])}, which keeps the read from being a full green light."
+    return f"{intro} {loud}{weak}"
+
+
 def _prospect_player_card_png(row):
     """Render a single-prospect share card from ValuCast-owned current context."""
     from PIL import Image, ImageDraw
@@ -1008,13 +1180,13 @@ def _prospect_player_card_png(row):
     stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, row)
     profile_bars = prospect_percentiles.profile_bars(row, stat_percentiles)
     skill_grades = prospect_percentiles.skill_grades(row, stat_percentiles)
-    identity = prospect_percentiles.identity_line(row, stat_percentiles) or ""
     pool_label = prospect_percentiles.pool_label(row)
     context = getattr(row, "context", None)
     if not isinstance(context, dict):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
     if not isinstance(context, dict):
         context = {}
+    identity = _prospect_player_card_read(row, stat_percentiles, context)
 
     width, height = 1080, 1350
     bg = (18, 19, 31)
@@ -1040,7 +1212,7 @@ def _prospect_player_card_png(row):
     draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
     draw.text((48, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
     draw.text((48, 82), "PLAYER CARD", fill=text, font=_graphic_font(60, bold=True))
-    subtitle = "current skill percentiles + ValuCast model context"
+    subtitle = "current skill percentiles + ValuCast read"
     generated = _editorial_date(dd_store.generated_at)
     if generated:
         subtitle = f"{subtitle} - {generated}"
@@ -1125,7 +1297,7 @@ def _prospect_player_card_png(row):
 
     # Footer
     draw.rounded_rectangle((48, 1190, 1032, 1268), radius=14, fill=card, outline=border, width=1)
-    source = "ValuCast-owned current MiLB stat context. 20-80 shape is percentile-derived, not sourced scouting grades."
+    source = "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     draw.text((70, 1212), source, fill=muted, font=_graphic_font(18))
     draw.text((70, 1242), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
 
