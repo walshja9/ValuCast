@@ -157,6 +157,27 @@ def test_mlb_layer_is_shadow_only_and_independent():
     assert payload["value_contract"]["value_kind"] == "multi_year_dynasty_horizon"
 
 
+def test_mlb_layer_records_explicit_projection_source():
+    payload = build_mlb_dynasty_layer(
+        [_hitter(metadata={"age": 25}), _pitcher(metadata={"age": 28})],
+        "2026-06-13",
+        projection_source="projections/runs/valucast_hp_2026_v1/projections.json",
+        projection_source_kind="valucast_hp_projection_run",
+    )
+
+    assert (
+        payload["source_policy"]["projection_source"]
+        == "projections/runs/valucast_hp_2026_v1/projections.json"
+    )
+    assert payload["source_policy"]["projection_source_kind"] == "valucast_hp_projection_run"
+    assert (
+        payload["value_contract"]["projection_source"]
+        == "projections/runs/valucast_hp_2026_v1/projections.json"
+    )
+    assert payload["value_contract"]["projection_source_kind"] == "valucast_hp_projection_run"
+    assert payload["players"][0]["stat_line"]["source"] == "valucast_hp_projection_run"
+
+
 def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
     payload = build_mlb_dynasty_layer(
         [

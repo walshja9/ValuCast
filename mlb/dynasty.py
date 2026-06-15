@@ -80,6 +80,13 @@ HORIZON_YEAR_WEIGHTS = (
     (1, 0.72),
     (2, 0.48),
 )
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
 FUTURE_RELIABILITY_FLOOR = 0.55
 
 HITTER_AGE_CURVE = {
@@ -865,6 +872,7 @@ def _row(
     role_adjustments: dict[str, Any] | None = None,
     track_record_profile: dict | None = None,
     availability_component: dict | None = None,
+    projection_source_kind: str = "valucast_current_projection",
 ) -> dict:
     player = result.player
     role = _role(player)
@@ -919,7 +927,7 @@ def _row(
         "dynasty_horizon_value": round(horizon["value"], 4),
         "components": components,
         "stat_line": {
-            "source": "valucast_current_projection",
+            "source": projection_source_kind,
             "stats": _projection_stats(player),
             "category_values": {
                 category: round(value, 4)
@@ -940,6 +948,8 @@ def build_mlb_dynasty_layer(
     identities: dict[str, dict] | None = None,
     track_record: dict | None = None,
     availability: dict | None = None,
+    projection_source: str = "data/projections/current.json",
+    projection_source_kind: str = "valucast_current_projection",
 ) -> dict:
     season = _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
@@ -1033,6 +1043,7 @@ def build_mlb_dynasty_layer(
             role_adjustments,
             track_record_profile,
             availability_component,
+            projection_source_kind,
         )
         for rank, (
             score,
@@ -1080,7 +1091,8 @@ def build_mlb_dynasty_layer(
         "generated_at": generated_at,
         "source_policy": {
             "kind": "valucast_mlb_projection_value",
-            "projection_source": "data/projections/current.json",
+            "projection_source": projection_source,
+            "projection_source_kind": projection_source_kind,
             "track_record_source": (
                 "data/models/valucast_mlb_track_record.json" if track_record else None
             ),
@@ -1160,6 +1172,8 @@ def build_mlb_dynasty_layer(
             },
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
             "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
+            "projection_source": projection_source,
+            "projection_source_kind": projection_source_kind,
         },
         "validation": {
             "ready_for_live_consumers": ready_for_live_consumers,
@@ -1229,6 +1243,8 @@ def run_mlb_dynasty_layer(
     availability_path: Path = MLB_AVAILABILITY_PATH,
     archive_dir: Path = ARCHIVE_DIR,
     identity_data_dir: Path = IDENTITY_DATA_DIR,
+    projection_source: str | None = None,
+    projection_source_kind: str = "valucast_current_projection",
 ) -> dict:
     store = ProjectionStore(projection_path)
     identities = load_identity_store(identity_data_dir)
@@ -1248,6 +1264,8 @@ def run_mlb_dynasty_layer(
         identities=identities,
         track_record=track_record,
         availability=availability,
+        projection_source=projection_source or _display_path(projection_path),
+        projection_source_kind=projection_source_kind,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
