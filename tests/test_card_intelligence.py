@@ -81,6 +81,66 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertEqual(prospect_percentiles.card_percentiles(pool, small), {})
         self.assertEqual(prospect_percentiles.card_percentiles(pool, mlb), {})
 
+    def test_card_percentiles_support_pitcher_profiles(self):
+        rows = [
+            _row(
+                "low_miss",
+                positions=["SP"],
+                stat_line={"ip": 40, "era": 4.50, "whip": 1.40, "k_per_9": 7.0, "bb_per_9": 4.8, "k_bb_pct": 6.0},
+            ),
+            _row(
+                "mid_arm",
+                positions=["SP"],
+                stat_line={"ip": 42, "era": 3.50, "whip": 1.20, "k_per_9": 10.0, "bb_per_9": 3.2, "k_bb_pct": 16.0},
+            ),
+            _row(
+                "top_arm",
+                positions=["SP"],
+                stat_line={"ip": 44, "era": 2.10, "whip": 0.90, "k_per_9": 13.0, "bb_per_9": 1.8, "k_bb_pct": 31.0},
+            ),
+        ]
+        pool = prospect_percentiles.build_pool(rows)
+        pcts = prospect_percentiles.card_percentiles(pool, rows[-1])
+        bars = prospect_percentiles.profile_bars(rows[-1], pcts)
+        grades = prospect_percentiles.skill_grades(rows[-1], pcts)
+
+        self.assertGreater(pcts["k_per_9"], 75)
+        self.assertGreater(pcts["bb_per_9"], 75)
+        self.assertEqual(bars[0]["label"], "K/9")
+        self.assertEqual(grades[0]["label"], "Miss")
+        self.assertGreater(grades[0]["grade"], 60)
+        self.assertIn("pitcher pool", prospect_percentiles.pool_label(rows[-1]))
+
+    def test_skill_grades_are_current_stat_derived(self):
+        row = _row(
+            "tool_shape",
+            stat_line={
+                "pa": 220,
+                "avg": 0.300,
+                "obp": 0.390,
+                "slg": 0.520,
+                "ops": 0.910,
+                "iso": 0.220,
+                "k_pct": 15.0,
+                "bb_pct": 12.0,
+            },
+        )
+        grades = prospect_percentiles.skill_grades(
+            row,
+            {
+                "avg": 70,
+                "k_pct": 90,
+                "iso": 80,
+                "slg": 76,
+                "bb_pct": 65,
+                "ops": 82,
+            },
+        )
+
+        self.assertEqual([g["label"] for g in grades], ["Hit", "Power", "Approach", "Production"])
+        self.assertTrue(all(20 <= g["grade"] <= 80 for g in grades))
+        self.assertEqual(grades[0]["metrics"], "AVG / K%")
+
     def test_caption_neutral_and_non_headline_metric(self):
         self.assertIsNone(prospect_percentiles.caption_for("ops", 50))
         self.assertIsNone(prospect_percentiles.caption_for("avg", 95))
@@ -319,6 +379,31 @@ FEED = {
                 "pa": 80,
             },
         },
+        {
+            "id": "dd_prospect_arm",
+            "player_type": "prospect",
+            "name": "Pitcher Prospect",
+            "positions": ["SP"],
+            "mlb_team": "SEA",
+            "age": 20,
+            "dynasty_rank": 4,
+            "dynasty_value": 58.0,
+            "status": "minors",
+            "level": "AA",
+            "eta": 2028,
+            "prospect_rank": 12,
+            "source_ranks": {"milb_perf": 14},
+            "breakout_label": "steady",
+            "breakout_rank_change": 0,
+            "stat_line": {
+                "era": 2.45,
+                "whip": 1.02,
+                "k_per_9": 12.4,
+                "bb_per_9": 2.4,
+                "k_bb_pct": 26.0,
+                "ip": 44.2,
+            },
+        },
     ],
 }
 
@@ -367,13 +452,18 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_prospect_card_has_identity_percentiles_and_pool_label(self):
         response = self.client.get("/player/dd_prospect_top?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'class="identity-line"', response.data)
+        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"Current Skill Percentiles", response.data)
+        self.assertIn(b"ValuCast Skill Shape", response.data)
+        self.assertIn(b"not scouting grades", response.data)
+        self.assertIn(b"identity-line", response.data)
+        self.assertIn(b'class="prospect-profile-bar"', response.data)
         self.assertIn(b'class="pct-rail"', response.data)
         self.assertIn(b"vs ValuCast hitter pool", response.data)
         self.assertIn(b"all levels", response.data)
         self.assertIn(b"100+ PA", response.data)
         self.assertIn(
-            b"percentile in the ValuCast hitter prospect pool across all levels",
+            b"percentile in the ValuCast prospect pool",
             response.data,
         )
         # Called-up prospect (level MLB): the MiLB sample is flagged as pre-call-up.
@@ -383,6 +473,14 @@ class TestCardIntelligenceUI(unittest.TestCase):
         response = self.client.get("/player/dd_prospect_small?mode=prospects", headers={"HX-Request": "true"})
         self.assertIn(b"small sample", response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
+
+    def test_pitcher_prospect_card_uses_pitcher_pool_label(self):
+        response = self.client.get("/player/dd_prospect_arm?mode=prospects", headers={"HX-Request": "true"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"vs ValuCast pitcher pool", response.data)
+        self.assertIn(b"20+ IP", response.data)
+        self.assertNotIn(b"vs ValuCast hitter pool", response.data)
 
     def test_index_has_glass_toolbar_and_welcome_strip(self):
         response = self.client.get("/")

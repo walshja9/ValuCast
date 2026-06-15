@@ -1076,6 +1076,192 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .trend-down { background: rgba(255,107,107,.14); color: var(--c-neg); }
 .source-spread { margin-left: .35rem; background: rgba(251,191,36,.14); color: var(--c-amber); text-transform: none; letter-spacing: 0; }
 .dynasty-detail .stat-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); }
+.prospect-profile-card {
+    background:
+        radial-gradient(circle at 8% 10%, rgba(52, 211, 153, .12), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, 0) 46%),
+        var(--surface);
+    border-color: rgba(52, 211, 153, .26);
+}
+.prospect-profile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .65rem;
+}
+.profile-card-kicker {
+    display: block;
+    margin-bottom: .18rem;
+    color: var(--c-prospect);
+    font-size: .68rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.prospect-profile-top h4 { margin-bottom: .1rem; }
+.profile-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .3rem;
+}
+.profile-card-badges span {
+    border: 1px solid rgba(148, 163, 184, .24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .045);
+    color: var(--c-text);
+    font-size: .72rem;
+    font-weight: 800;
+    padding: .18rem .48rem;
+    white-space: nowrap;
+}
+.profile-card-identity {
+    max-width: 900px;
+    margin: .45rem 0 .75rem;
+    color: var(--c-text);
+}
+.prospect-profile-bars {
+    display: grid;
+    gap: .38rem;
+    max-width: 760px;
+}
+.prospect-profile-bar {
+    display: grid;
+    grid-template-columns: 58px minmax(130px, 1fr) 58px;
+    align-items: center;
+    gap: .5rem;
+}
+.profile-bar-label {
+    color: var(--c-muted);
+    font-size: .76rem;
+    font-weight: 900;
+    text-align: right;
+}
+.profile-bar-track {
+    position: relative;
+    height: 18px;
+    border-radius: 5px;
+    background: #27304a;
+    overflow: visible;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04);
+}
+.profile-bar-track::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: rgba(255, 255, 255, .18);
+}
+.profile-bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    min-width: 3px;
+    border-radius: 5px;
+    background: var(--c-blue);
+}
+.profile-bar-fill.elite { background: linear-gradient(90deg, #2dd4bf, #34d399); }
+.profile-bar-fill.good { background: linear-gradient(90deg, #4f86f7, #34d399); }
+.profile-bar-fill.risk { background: linear-gradient(90deg, #dc2626, #f59e0b); }
+.profile-bar-num {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 26px;
+    padding: 0 .18rem;
+    border-radius: 999px;
+    background: rgba(12, 14, 26, .86);
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 900;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .45);
+}
+.profile-bar-value {
+    color: var(--c-text);
+    font-size: .78rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+.profile-bar-caption {
+    grid-column: 2 / 4;
+    margin-top: -.18rem;
+    color: var(--c-muted);
+    font-size: .68rem;
+    font-style: italic;
+}
+.skill-shape-card {
+    margin-top: .85rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(148, 163, 184, .18);
+}
+.skill-shape-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .5rem;
+}
+.skill-shape-head h5 {
+    margin: 0;
+    color: var(--c-muted);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+.skill-shape-head span {
+    color: var(--c-muted);
+    font-size: .68rem;
+}
+.skill-shape-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    gap: .45rem;
+    max-width: 760px;
+}
+.skill-shape-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .1rem .55rem;
+    padding: .55rem .65rem;
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .045);
+}
+.skill-shape-item.plus {
+    border-color: rgba(52, 211, 153, .28);
+    background: rgba(52, 211, 153, .08);
+}
+.skill-shape-item.risk {
+    border-color: rgba(251, 191, 36, .28);
+    background: rgba(251, 191, 36, .08);
+}
+.skill-shape-label {
+    color: var(--c-muted);
+    font-size: .72rem;
+    font-weight: 800;
+}
+.skill-shape-grade {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    align-self: center;
+    color: var(--c-text);
+    font-size: 1.25rem;
+    font-weight: 950;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+.skill-shape-item.plus .skill-shape-grade { color: var(--c-prospect); }
+.skill-shape-item.risk .skill-shape-grade { color: var(--c-amber); }
+.skill-shape-source {
+    color: var(--c-muted);
+    font-size: .66rem;
+    font-variant-numeric: tabular-nums;
+}
 .market-context-details > summary { display: flex; align-items: center; gap: .45rem; cursor: pointer; color: var(--c-muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 .market-context-details > summary::marker { color: var(--c-muted); }
 .market-context-note { margin: .5rem 0 .65rem; color: var(--c-muted); font-size: .82rem; line-height: 1.45; }
@@ -1124,6 +1310,14 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
     .dynasty-headline { justify-content: flex-start; margin-left: 0; }
+    .prospect-profile-top { flex-direction: column; gap: .55rem; }
+    .profile-card-badges { justify-content: flex-start; }
+    .prospect-profile-bar { grid-template-columns: 44px minmax(0, 1fr) 48px; gap: .35rem; }
+    .profile-bar-label { font-size: .7rem; }
+    .profile-bar-value { font-size: .72rem; }
+    .profile-bar-caption { grid-column: 1 / 4; padding-left: 44px; }
+    .skill-shape-head { flex-direction: column; gap: .15rem; }
+    .skill-shape-grid { grid-template-columns: 1fr 1fr; }
     .fit-category-grid { grid-template-columns: 1fr; }
     .category-fit-intro { flex-direction: column; }
     .rankings-table td.col-confidence { display: none; }

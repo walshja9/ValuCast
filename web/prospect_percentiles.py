@@ -1,18 +1,50 @@
 """Percentile context, captions, movers, and scouting reads for prospect cards.
 
-Pool = feed hitter prospects with a batting stat_line and pa >= MIN_PA, combined
-across every level. Percentiles are not age- or level-adjusted. Pure functions
-over DynastyRankingRow; no I/O. Built once at app startup.
+Pool = feed prospects with current MiLB stat context, combined across every
+level. Hitter percentiles require 100+ PA; pitcher percentiles require 20+ IP.
+Percentiles are not age- or level-adjusted. Pure functions over ranking rows;
+no I/O. Built once at app startup.
 """
 from __future__ import annotations
 
 from bisect import bisect_left, bisect_right
 from hashlib import blake2s
 
-METRICS = ("avg", "obp", "slg", "ops", "iso", "k_pct", "bb_pct")
-LOWER_IS_BETTER = frozenset({"k_pct"})
+HITTER_METRICS = ("avg", "obp", "slg", "ops", "iso", "k_pct", "bb_pct")
+PITCHER_METRICS = ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")
+METRICS = HITTER_METRICS + PITCHER_METRICS
+LOWER_IS_BETTER = frozenset({"k_pct", "era", "whip", "bb_per_9"})
 MIN_PA = 100
-CAPTION_METRICS = ("ops", "k_pct", "iso")
+MIN_IP = 20
+CAPTION_METRICS = ("ops", "k_pct", "iso", "k_per_9", "bb_per_9", "k_bb_pct")
+HITTER_PROFILE_ORDER = ("ops", "iso", "bb_pct", "k_pct", "avg", "obp", "slg")
+PITCHER_PROFILE_ORDER = ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+HITTER_SKILL_SPECS = (
+    ("Hit", ("avg", "k_pct")),
+    ("Power", ("iso", "slg")),
+    ("Approach", ("bb_pct", "k_pct")),
+    ("Production", ("ops",)),
+)
+PITCHER_SKILL_SPECS = (
+    ("Miss", ("k_per_9",)),
+    ("Command", ("bb_per_9",)),
+    ("Dominance", ("k_bb_pct",)),
+    ("Run Prevention", ("era", "whip")),
+)
+METRIC_LABELS = {
+    "avg": "AVG",
+    "obp": "OBP",
+    "slg": "SLG",
+    "ops": "OPS",
+    "iso": "ISO",
+    "k_pct": "K%",
+    "bb_pct": "BB%",
+    "era": "ERA",
+    "whip": "WHIP",
+    "k_per_9": "K/9",
+    "bb_per_9": "BB/9",
+    "k_bb_pct": "K-BB%",
+}
 
 # Percentile here is ALWAYS quality-direction: high percentile = good,
 # so k_pct values are inverted before banding.
@@ -24,6 +56,12 @@ _CAPTIONS = {
               (10, "Serious swing-and-miss risk"), (25, "Swing-and-miss concerns")),
     "iso": ((90, "Elite raw power output"), (75, "Real power in the profile"),
             (10, "Minimal power impact"), (25, "Light power so far")),
+    "k_per_9": ((90, "Elite bat-missing"), (75, "Strong bat-missing"),
+                (10, "Below-pool bat-missing"), (25, "Strikeout rate trails the pool")),
+    "bb_per_9": ((90, "Elite strike throwing"), (75, "Strong strike throwing"),
+                 (10, "Walk rate is a major risk"), (25, "Walk rate trails the pool")),
+    "k_bb_pct": ((90, "Elite strikeout-to-walk profile"), (75, "Strong strikeout-to-walk profile"),
+                 (10, "Strikeout-to-walk profile is a risk"), (25, "Strikeout-to-walk trails the pool")),
 }
 
 _LEVEL_NAMES = {
@@ -254,7 +292,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
         and iso is not None and bb_pct is not None and k_pct is not None
     ):
         skill = (
-            f"He is contributing across contact, walks and damage rather than leaning on one result.",
+            "He is contributing across contact, walks and damage rather than leaning on one result.",
             "He controls at-bats and does damage without leaning on one result.",
         )
         risk = (
@@ -542,19 +580,29 @@ def _no_sample_report(row) -> str:
     )
 
 
-def _eligible(row) -> bool:
+def _eligible_hitter(row) -> bool:
     line = row.stat_line or {}
     pa = line.get("pa")
     return bool(row.is_prospect and line and isinstance(pa, (int, float)) and pa >= MIN_PA)
+
+
+def _eligible_pitcher(row) -> bool:
+    line = row.stat_line or {}
+    ip = line.get("ip")
+    return bool(row.is_prospect and line and isinstance(ip, (int, float)) and ip >= MIN_IP)
 
 
 def build_pool(rows) -> dict[str, list[float]]:
     """Sorted per-metric value arrays over eligible prospects."""
     pool: dict[str, list[float]] = {m: [] for m in METRICS}
     for row in rows:
-        if not _eligible(row):
+        if _eligible_hitter(row):
+            metrics = HITTER_METRICS
+        elif _eligible_pitcher(row):
+            metrics = PITCHER_METRICS
+        else:
             continue
-        for m in METRICS:
+        for m in metrics:
             v = (row.stat_line or {}).get(m)
             if isinstance(v, (int, float)):
                 pool[m].append(float(v))
@@ -577,14 +625,79 @@ def percentile_for(pool: dict, metric: str, value) -> int | None:
 
 def card_percentiles(pool: dict, row) -> dict[str, int]:
     """{metric: percentile} for an eligible prospect; {} otherwise."""
-    if not _eligible(row):
+    if _eligible_hitter(row):
+        metrics = HITTER_METRICS
+    elif _eligible_pitcher(row):
+        metrics = PITCHER_METRICS
+    else:
         return {}
     out = {}
-    for m in METRICS:
+    for m in metrics:
         pct = percentile_for(pool, m, (row.stat_line or {}).get(m))
         if pct is not None:
             out[m] = pct
     return out
+
+
+def pool_label(row) -> str:
+    """Display label for the percentile comparison pool."""
+    line = row.stat_line or {}
+    if _is_pitcher(row, line):
+        return f"vs ValuCast pitcher pool - all levels - {MIN_IP}+ IP"
+    return f"vs ValuCast hitter pool - all levels - {MIN_PA}+ PA"
+
+
+def profile_bars(row, percentiles: dict) -> tuple[dict, ...]:
+    """Ordered profile bars for the expanded player card."""
+    line = row.stat_line or {}
+    if not line or not percentiles:
+        return ()
+    order = PITCHER_PROFILE_ORDER if _is_pitcher(row, line) else HITTER_PROFILE_ORDER
+    bars = []
+    for metric in order:
+        value = line.get(metric)
+        pct = percentiles.get(metric)
+        if not isinstance(value, (int, float)) or pct is None:
+            continue
+        bars.append({
+            "key": metric,
+            "label": METRIC_LABELS.get(metric, metric.upper()),
+            "value": value,
+            "percentile": pct,
+            "caption": caption_for(metric, pct),
+        })
+    return tuple(bars)
+
+
+def _grade_from_pcts(pcts: list[int]) -> int | None:
+    if not pcts:
+        return None
+    avg = sum(pcts) / len(pcts)
+    return round(max(20.0, min(80.0, 20.0 + avg * 0.6)))
+
+
+def skill_grades(row, percentiles: dict) -> tuple[dict, ...]:
+    """20-80-style current skill shape derived from ValuCast percentiles."""
+    line = row.stat_line or {}
+    if not line or not percentiles:
+        return ()
+    specs = PITCHER_SKILL_SPECS if _is_pitcher(row, line) else HITTER_SKILL_SPECS
+    grades = []
+    for label, keys in specs:
+        pcts = [
+            int(percentiles[key])
+            for key in keys
+            if isinstance(percentiles.get(key), int)
+        ]
+        grade = _grade_from_pcts(pcts)
+        if grade is None:
+            continue
+        grades.append({
+            "label": label,
+            "grade": grade,
+            "metrics": " / ".join(METRIC_LABELS.get(key, key.upper()) for key in keys),
+        })
+    return tuple(grades)
 
 
 def caption_for(metric: str, pct: int | None) -> str | None:

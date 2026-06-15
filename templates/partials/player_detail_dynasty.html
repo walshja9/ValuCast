@@ -33,7 +33,6 @@
                 {% if row.team %} | {{ row.team }}{% endif %}
                 {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
             </span>
-            {% if identity %}<p class="identity-line">{{ identity }}</p>{% endif %}
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
@@ -54,6 +53,61 @@
     <div class="detail-body">
         {% include "partials/_value_spark.html" %}
         {% if row.is_prospect %}
+        {% set card_context = profile_stat_context if profile_stat_context is defined else {} %}
+        {% if identity or profile_bars %}
+        <div class="detail-section prospect-profile-card">
+            <div class="prospect-profile-top">
+                <div>
+                    <span class="profile-card-kicker">ValuCast Prospect Card</span>
+                    <h4>Current Skill Percentiles</h4>
+                    <p class="profile-note">{{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}</p>
+                </div>
+                <div class="profile-card-badges">
+                    {% if row.prospect_rank is not none %}<span>P#{{ row.prospect_rank }}</span>{% endif %}
+                    <span>VAL {{ "%.1f" | format(row.dynasty_value) }}</span>
+                    {% if row.tier is not none %}<span>T{{ row.tier }}</span>{% endif %}
+                    {% if card_context.get('stat_line_sample_season') %}<span>{{ card_context.get('stat_line_sample_season') }} stats</span>{% endif %}
+                </div>
+            </div>
+            {% if identity %}<p class="identity-line profile-card-identity">{{ identity }}</p>{% endif %}
+            {% if profile_bars %}
+            <div class="prospect-profile-bars">
+                {% for item in profile_bars %}
+                {% set pct = item.percentile %}
+                <div class="prospect-profile-bar">
+                    <span class="profile-bar-label">{{ item.label }}</span>
+                    <div class="profile-bar-track" role="img" aria-label="{{ item.label }}: {{ ordinal(pct) }} percentile in the ValuCast prospect pool">
+                        <span class="profile-bar-fill {{ 'elite' if pct >= 90 else ('good' if pct >= 75 else ('risk' if pct <= 25 else 'neutral')) }}" style="width: {{ pct }}%"></span>
+                        <span class="profile-bar-num" style="left: {{ pct }}%">{{ pct }}</span>
+                    </div>
+                    <span class="profile-bar-value">{{ stat_value(item.value, item.key) }}</span>
+                    {% if item.caption %}<span class="profile-bar-caption">{{ item.caption }}</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% if skill_grades %}
+            <div class="skill-shape-card">
+                <div class="skill-shape-head">
+                    <h5>ValuCast Skill Shape</h5>
+                    <span>20-80 style · current-stat derived · not scouting grades</span>
+                </div>
+                <div class="skill-shape-grid">
+                    {% for skill in skill_grades %}
+                    <div class="skill-shape-item {{ 'plus' if skill.grade >= 60 else ('risk' if skill.grade <= 40 else '') }}">
+                        <span class="skill-shape-label">{{ skill.label }}</span>
+                        <span class="skill-shape-grade">{{ skill.grade }}</span>
+                        <span class="skill-shape-source">{{ skill.metrics }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% elif row.stat_line %}
+            <p class="sample-context-note">Percentile bars require the current sample to meet the ValuCast pool threshold.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div class="detail-section">
             <h4>Prospect Profile</h4>
             <div class="stat-grid">
@@ -211,7 +265,7 @@
         {% if row.stat_line %}
         <div class="detail-section milb-stats">
             <h4>MiLB Stats
-                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}vs ValuCast hitter pool · all levels · 100+ PA</span>
+                {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample · {% endif %}{{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}</span>
                 {% elif row.stat_line and row.stat_line.get('pa') is not none and row.stat_line.get('pa') < 100 %}<span class="small-sample">small sample · {{ row.stat_line.get('pa') | int }} PA</span>{% endif %}
             </h4>
             {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
@@ -224,7 +278,7 @@
                         <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
                         {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
                         {% if pct is not none %}
-                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast hitter prospect pool across all levels with 100 or more PA">
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast prospect pool">
                             <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
                         </div>
                         <span class="pct-ord">{{ ordinal(pct) }}</span>
@@ -246,7 +300,7 @@
                         <span class="stat-value">{{ stat_value(row.stat_line.get(key), key) }}</span>
                         {% set pct = stat_percentiles.get(key) if stat_percentiles is defined and stat_percentiles else none %}
                         {% if pct is not none %}
-                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast hitter prospect pool across all levels with 100 or more PA">
+                        <div class="pct-rail" role="img" aria-label="{{ ordinal(pct) }} percentile in the ValuCast prospect pool">
                             <span class="pct-rail-fill {{ 'good' if pct >= 75 else ('bad' if pct <= 25 else '') }}" style="width: {{ pct }}%"></span>
                         </div>
                         <span class="pct-ord">{{ ordinal(pct) }}</span>

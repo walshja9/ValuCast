@@ -1705,10 +1705,25 @@ def player_detail(player_id):
                 if (c := prospect_percentiles.caption_for(m, stat_percentiles.get(m))) is not None
             }
             identity = prospect_percentiles.identity_line(dd_row, stat_percentiles)
+            profile_bars = prospect_percentiles.profile_bars(dd_row, stat_percentiles)
+            skill_grades = prospect_percentiles.skill_grades(dd_row, stat_percentiles)
+            profile_stat_context = getattr(dd_row, "context", None)
+            if not isinstance(profile_stat_context, dict):
+                profile_stat_context = (
+                    dd_row.metadata.get("context")
+                    if isinstance(dd_row.metadata, dict)
+                    else {}
+                )
+            if not isinstance(profile_stat_context, dict):
+                profile_stat_context = {}
             prospect_context = {
                 "stat_percentiles": stat_percentiles,
                 "stat_captions": stat_captions,
                 "identity": identity,
+                "profile_bars": profile_bars,
+                "skill_grades": skill_grades,
+                "profile_pool_label": prospect_percentiles.pool_label(dd_row),
+                "profile_stat_context": profile_stat_context,
             }
 
         # Same-engine category z's as the active dynasty category configuration.
