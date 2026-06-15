@@ -599,10 +599,13 @@ def _sanitize_current_row(
     out["mlbam_id"] = mlbam_id
     out["role"] = role
     out["sample_season"] = sample_season
-    out["sample_fetched_date"] = fetched_date
+    row_fetched_date = row.get("sample_fetched_date") or fetched_date
+    out["sample_fetched_date"] = row_fetched_date
     out["source_artifact"] = source_artifact
     out["source_kind"] = source_kind
-    current_season = _num(fetched_date[:4]) if isinstance(fetched_date, str) else None
+    current_season = (
+        _num(row_fetched_date[:4]) if isinstance(row_fetched_date, str) else None
+    )
     sample_year = _num(sample_season)
     if current_season is not None and sample_year is not None:
         out["sample_staleness_years"] = int(current_season - sample_year)
