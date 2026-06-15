@@ -38,6 +38,30 @@
     </section>
 
     <section>
+        <h3>Prospect Rank v1</h3>
+        <p>The <strong>Prospects board</strong> is ValuCast's own prospect ordering. It
+        combines factual current performance, age/level context, draft/signing investment,
+        and availability/sample risk into one baseball-first rank.</p>
+
+        <details>
+            <summary>What can and cannot affect a prospect score</summary>
+            <ul>
+                <li><strong>Can affect score:</strong> Prospect Model v0.6, universal
+                    outcome context, MiLB performance rates and sample reliability,
+                    draft/signing facts, age/level context, and factual availability
+                    status.</li>
+                <li><strong>Cannot affect score:</strong> DD ranks, DD values, DD value
+                    history, public prospect rankings, market signals, and DD adapter
+                    ranks or scores. Those are display/comparison context only.</li>
+                <li><strong>Bucket calibration:</strong> applied by rule, not by name.
+                    Current rules cover lower-minors pedigree compression, thin upper-level
+                    pitcher samples, and upper-level hitters with full samples but limited
+                    game impact.</li>
+            </ul>
+        </details>
+    </section>
+
+    <section>
         <h3>How the model works</h3>
         <p>For each player we weight recent seasons and regress toward the league average
         (more for small samples). <strong>Hitters</strong> are then age-adjusted and

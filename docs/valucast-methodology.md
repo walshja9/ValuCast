@@ -39,7 +39,28 @@ We built ValuCast's projections as a ladder of rungs, each gated by held-out val
 - **Own-xBA grid (Phase A): SHORTFALL.** Our EV×LA empirical grid reached corr 0.87 but
   did not beat Savant (sprint-speed component needed). Savant remains the better input;
   we kept the finding and did not ship our own xBA.
-- **Steamer:** external benchmark and the default source.
+- **Steamer:** external comparison board and the default source; a fair historical
+  benchmark against archived preseason Steamer remains pending.
+
+## Prospect Rank v1
+
+Prospect Rank v1 is ValuCast's own prospect ordering. It combines ValuCast-owned
+factual signals into one baseball-first rank:
+
+- current MiLB performance and sample reliability
+- age/level context
+- factual draft/signing investment
+- factual availability and sample-risk context
+- the shadow Prospect Model v0.6 and universal outcome context
+
+DD ranks, DD values, DD value history, public prospect rankings, market signals,
+and DD adapter ranks or scores are display/comparison context only. They can be
+shown beside a player to explain disagreement, but they cannot affect the
+ValuCast prospect score.
+
+Bucket calibration is applied by rule, not by name. Current rules cover
+lower-minors pedigree compression, thin upper-level pitcher samples, and
+upper-level hitters with full current samples but limited game impact.
 
 ## Verdict ledger
 | Rung | Result |

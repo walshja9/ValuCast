@@ -3,6 +3,7 @@ import json
 
 from prospects.rank_v1 import (
     BUCKET_CALIBRATION_VERSION,
+    FACTUAL_CURRENT_CONTEXT_VERSION,
     LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
     PROHIBITED_SCORE_INPUTS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
@@ -373,6 +374,111 @@ def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
         "bb_pct": 7.9,
         "pa": 150,
     }
+
+
+def test_rank_v1_exposes_factual_current_context_for_hitter_components():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][0].update(
+        {
+            "level": "AA",
+            "plate_appearances": 260,
+            "ops": 0.881,
+            "iso": 0.214,
+            "k_pct": 21.2,
+            "bb_pct": 12.4,
+        }
+    )
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 1)
+    context = row["components"]["factual_current_context"]
+
+    assert context["version"] == FACTUAL_CURRENT_CONTEXT_VERSION
+    assert context["role"] == "hitter"
+    assert context["level"] == "AA"
+    assert context["sample"] == 260
+    assert context["sample_unit"] == "PA"
+    assert context["skill_band"] == "impact"
+    assert context["ops"] == 0.881
+    assert context["iso"] == 0.214
+    assert context["bb_minus_k_pct"] == -8.8
+    assert payload["rank_contract"]["factual_current_context"]["version"] == (
+        FACTUAL_CURRENT_CONTEXT_VERSION
+    )
+    assert payload["rank_contract"]["factual_current_context"]["source"] == (
+        "validated_prospect_input_contract_current_rows"
+    )
+
+
+def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
+    universe = {
+        "schema_version": "1.0",
+        "artifact": "valucast_prospect_universe",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": 1,
+        "players": [
+            {
+                "mlbam_id": 8,
+                "name": "Starter Shape",
+                "normalized_name": "starter shape",
+                "role": "pitcher",
+                "positions": ["SP"],
+                "level": "AA",
+            }
+        ],
+    }
+    layer_profile = _profile(8, 0.88)
+    layer_profile.update({"role": "pitcher", "level": "AA"})
+    dynasty_layer = {
+        "status": "shadow_only",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "layer_version": "0.1.0",
+        "profiles": [layer_profile],
+    }
+    input_contract = {
+        "schema_version": "1.1",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "current": {
+            "hitters": [],
+            "pitchers": [
+                {
+                    "mlbam_id": 8,
+                    "name": "Starter Shape",
+                    "level": "AA",
+                    "innings_pitched": 54.1,
+                    "games_started": 10,
+                    "is_starter": True,
+                    "era": 2.81,
+                    "whip": 1.05,
+                    "k_per_9": 11.7,
+                    "bb_per_9": 3.1,
+                    "k_bb_pct": 22.4,
+                }
+            ],
+        },
+    }
+
+    payload = build_prospect_rank_v1(
+        universe,
+        dynasty_layer,
+        {"status": "shadow_only", "model_version": "0.6.0", "ranked": []},
+        input_contract,
+    )
+
+    context = payload["board"][0]["components"]["factual_current_context"]
+    assert context["version"] == FACTUAL_CURRENT_CONTEXT_VERSION
+    assert context["role"] == "pitcher"
+    assert context["sample"] == 54.1
+    assert context["sample_unit"] == "IP"
+    assert context["starter_role"] is True
+    assert context["skill_band"] == "starter_volume"
+    assert context["k_bb_pct"] == 22.4
 
 
 def test_rank_v1_reports_coverage_blockers_and_missing_top_names():

@@ -27,11 +27,12 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1"
-RANK_VERSION = "0.2.5"
+RANK_VERSION = "0.2.6"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 BUCKET_CALIBRATION_VERSION = "0.2.3"
+FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
 UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
 LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.5
 THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
@@ -252,6 +253,95 @@ def _input_stat_line(row: dict | None, role: str | None) -> dict | None:
             continue
         stat_line[key] = int(round(value)) if digits == 0 else round(value, digits)
     return stat_line or None
+
+
+def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
+    if not row or role not in {"hitter", "pitcher"}:
+        return None
+
+    sample = _sample_size(row, role)
+    level = _level_key(row.get("level"))
+    context: dict[str, Any] = {
+        "version": FACTUAL_CURRENT_CONTEXT_VERSION,
+        "role": role,
+        "level": level,
+        "sample": round(sample, 1),
+        "sample_unit": "IP" if role == "pitcher" else "PA",
+    }
+
+    if role == "pitcher":
+        k_per_9 = _clean_float(row.get("k_per_9"))
+        bb_per_9 = _clean_float(row.get("bb_per_9"))
+        k_bb_pct = _clean_float(row.get("k_bb_pct"))
+        era = _clean_float(row.get("era"))
+        whip = _clean_float(row.get("whip"))
+        games_started = _clean_float(row.get("games_started"))
+        starter_flag = bool(row.get("is_starter")) or (games_started or 0.0) >= 5.0
+
+        if sample < 15.0:
+            skill_band = "thin"
+        elif sample < 30.0:
+            skill_band = "limited"
+        elif starter_flag and sample >= 50.0:
+            skill_band = "starter_volume"
+        elif (k_bb_pct or 0.0) >= 20.0 or (
+            k_per_9 is not None and bb_per_9 is not None and k_per_9 - bb_per_9 >= 7.0
+        ):
+            skill_band = "bat_missing"
+        else:
+            skill_band = "mixed"
+
+        context.update(
+            {
+                "skill_band": skill_band,
+                "starter_role": starter_flag,
+                "games_started": _round(games_started, 0),
+                "era": _round(era, 2),
+                "whip": _round(whip, 2),
+                "k_per_9": _round(k_per_9, 1),
+                "bb_per_9": _round(bb_per_9, 1),
+                "k_bb_pct": _round(k_bb_pct, 1),
+            }
+        )
+    else:
+        ops = _clean_float(row.get("ops"))
+        iso = _clean_float(row.get("iso"))
+        k_pct = _clean_float(row.get("k_pct"))
+        bb_pct = _clean_float(row.get("bb_pct"))
+        bb_minus_k_pct = (
+            round(bb_pct - k_pct, 1)
+            if bb_pct is not None and k_pct is not None
+            else None
+        )
+
+        if sample < 50.0:
+            skill_band = "thin"
+        elif ops is not None and iso is not None and ops >= 0.850 and iso >= 0.170:
+            skill_band = "impact"
+        elif ops is not None and iso is not None and ops < 0.720 and iso < 0.100:
+            skill_band = "low_impact"
+        elif (
+            ops is not None
+            and ops >= 0.760
+            and bb_minus_k_pct is not None
+            and bb_minus_k_pct >= -10.0
+        ):
+            skill_band = "balanced"
+        else:
+            skill_band = "mixed"
+
+        context.update(
+            {
+                "skill_band": skill_band,
+                "ops": _round(ops, 3),
+                "iso": _round(iso, 3),
+                "k_pct": _round(k_pct, 1),
+                "bb_pct": _round(bb_pct, 1),
+                "bb_minus_k_pct": bb_minus_k_pct,
+            }
+        )
+
+    return {key: value for key, value in context.items() if value is not None}
 
 
 def _adapter_lookup(adapter: dict | None) -> dict[tuple[str, str], dict]:
@@ -484,6 +574,7 @@ def _identity_only_score_components(
 ) -> tuple[float, str, dict]:
     investment_score = _factual_investment_score(input_row)
     reliability_score = _input_sample_reliability_score(input_row, role)
+    current_context = _factual_current_context(input_row, role)
     investment_component = (
         investment_score
         if investment_score is not None
@@ -511,7 +602,8 @@ def _identity_only_score_components(
             "sample_reliability": _round(reliability_score),
             "identity_only_base_score": IDENTITY_ONLY_BASE_SCORE,
             "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
-        },
+        }
+        | ({"factual_current_context": current_context} if current_context else {}),
     )
 
 
@@ -524,6 +616,13 @@ def _score_components(
     universal_score = _universal_outcome_index(layer_profile)
     investment_score = _factual_investment_score(input_row)
     reliability_score = _sample_reliability_score(layer_profile, model_profile)
+    role = (
+        (layer_profile or {}).get("role")
+        or (model_profile or {}).get("role")
+        or (input_row or {}).get("role")
+        or "hitter"
+    )
+    current_context = _factual_current_context(input_row, role)
     investment_component = (
         investment_score
         if investment_score is not None
@@ -547,7 +646,7 @@ def _score_components(
         score, pedigree_components = _pedigree_fallback_score_components(
             layer_profile,
             input_row,
-            layer_profile.get("role") or (input_row or {}).get("role") or "hitter",
+            role,
             universal_score,
             investment_score,
             reliability_score,
@@ -575,6 +674,8 @@ def _score_components(
         ),
         "sample_reliability": _round(reliability_score),
     }
+    if current_context:
+        components["factual_current_context"] = current_context
     if source == "universal_fallback":
         components["fallback_score_cap"] = FALLBACK_SCORE_CAP
     if pedigree_components:
@@ -1041,6 +1142,35 @@ def build_prospect_rank_v1(
                 "upper_level_hitter_low_impact_ops": UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
                 "upper_level_hitter_low_impact_adjustment": UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
                 "scope": "score_source_level_and_factual_current_stat_bucket_only",
+            },
+            "factual_current_context": {
+                "version": FACTUAL_CURRENT_CONTEXT_VERSION,
+                "source": "validated_prospect_input_contract_current_rows",
+                "score_effect": (
+                    "context_for_calibration_display_and_quality_review; "
+                    "not a DD, market, or public-rank signal"
+                ),
+                "hitter_fields": [
+                    "level",
+                    "sample",
+                    "ops",
+                    "iso",
+                    "k_pct",
+                    "bb_pct",
+                    "bb_minus_k_pct",
+                    "skill_band",
+                ],
+                "pitcher_fields": [
+                    "level",
+                    "sample",
+                    "starter_role",
+                    "era",
+                    "whip",
+                    "k_per_9",
+                    "bb_per_9",
+                    "k_bb_pct",
+                    "skill_band",
+                ],
             },
             "prospect_universe_source": "valucast_prospect_universe",
             "dd_feed_usage": "Optional display/comparison context only.",

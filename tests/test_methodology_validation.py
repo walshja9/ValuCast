@@ -28,6 +28,7 @@ class TestMethodologyValidation(unittest.TestCase):
     def test_layout_and_disclosure(self):
         self.assertIn("Back to rankings", self.html)
         self.assertIn("At a glance", self.html)
+        self.assertIn("Prospect Rank v1", self.html)
         self.assertIn("<details", self.html)
         self.assertIn("Under the hood", self.html)
         self.assertIn("Model equations", self.html)
@@ -57,6 +58,17 @@ class TestMethodologyValidation(unittest.TestCase):
     # public page must not leak the internal own-xBA correlation figure
     def test_no_internal_corr_leak(self):
         self.assertNotIn("0.87", self.html)
+
+    def test_prospect_rank_v1_explains_scoring_boundary(self):
+        self.assertIn("current performance", self.html)
+        self.assertIn("age/level context", self.html)
+        self.assertIn("draft/signing investment", self.html)
+        self.assertIn("availability/sample risk", self.html)
+        self.assertIn("DD ranks", self.html)
+        self.assertIn("DD values", self.html)
+        self.assertIn("public prospect rankings", self.html)
+        self.assertIn("display/comparison context only", self.html)
+        self.assertIn("applied by rule, not by name", self.html)
 
     # P1 repair: the worked example is COMPUTED from the real params (drift-proof),
     # using the implementation's weighted-opportunity denominator + PA projection.
