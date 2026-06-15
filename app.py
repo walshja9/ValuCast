@@ -762,6 +762,33 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     def rank_label(fallback):
         return f"#{fallback}"
 
+    def hero_rank_label(fallback):
+        return f"{position.upper()}#{fallback}" if position else f"#{fallback}"
+
+    def value_label(row):
+        try:
+            return f"{float(row.value):.1f}"
+        except (TypeError, ValueError):
+            return None
+
+    def overall_label(row):
+        if getattr(row, "prospect_rank", None) is not None:
+            return f"P#{row.prospect_rank}"
+        return None
+
+    def draw_chip(x, y, label, *, fill=None, fg=None, outline=None, fnt=None):
+        if not label:
+            return x
+        fill = fill or (28, 30, 54)
+        fg = fg or muted
+        outline = outline or border
+        fnt = fnt or font(15, bold=True)
+        pad_x = 13
+        chip_w = text_width(draw, label, fnt) + pad_x * 2
+        draw.rounded_rectangle((x, y, x + chip_w, y + 31), radius=15, fill=fill, outline=outline, width=1)
+        draw.text((x + pad_x, y + 7), label, fill=fg, font=fnt)
+        return x + chip_w + 8
+
     def note_label(row):
         if row.age is not None:
             return f"AGE {row.age}"
@@ -829,23 +856,30 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
         draw.rounded_rectangle((48, 226, 1032, 560), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), f"{rank_label(1)} - {leader}", fill=green, font=font(24, bold=True))
+        draw.text((70, 252), f"{hero_rank_label(1)} - {leader}", fill=green, font=font(24, bold=True))
         draw.ellipse((72, 315, 222, 465), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
         initials = buy_score.graphic_initials(hero.name)
         mono = font(58, bold=True)
         box = draw.textbbox((0, 0), initials, font=mono)
         draw.text((147 - (box[2] - box[0]) / 2, 390 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
         hero_name_font = font(43, bold=True)
-        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 410)
+        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 360)
         for line_idx, line in enumerate(hero_name_lines):
             draw.text((250, 304 + line_idx * 50), line, fill=text, font=hero_name_font)
-        draw.text((250, 370 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 420), fill=muted, font=font(22))
-        draw.text((70, 455), rank_label(1), fill=green, font=font(64, bold=True))
+        draw.text((250, 370 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 360), fill=muted, font=font(22))
+        draw.text((70, 455), hero_rank_label(1), fill=green, font=font(58, bold=True))
         draw.text((205, 508), rank_kind, fill=muted, font=font(18, bold=True))
+
+        value = value_label(hero)
+        draw.rounded_rectangle((650, 314, 990, 468), radius=16, fill=(28, 30, 54), outline=border, width=2)
+        draw.text((672, 340), "VAL", fill=muted, font=font(17, bold=True))
+        draw.text((672, 367), value or "--", fill=green, font=font(45, bold=True))
+        draw_chip(810, 342, overall_label(hero), fill=card, fg=text, outline=border)
+        draw_chip(810, 384, "current board", fill=card, fg=muted, outline=border, fnt=font(14, bold=True))
         spark = spark_points(hero, 660, 455, 240, 64)
         if spark:
             draw.line(spark[0], fill=green if spark[1] == "up" else muted, width=3, joint="curve")
-        draw.text((660, 525), "RECENT MOVEMENT", fill=muted, font=font(18, bold=True))
+            draw.text((660, 525), "RECENT MOVEMENT", fill=muted, font=font(18, bold=True))
 
         grid_rows = rows[1:10]
         cols = 3
@@ -915,7 +949,8 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     foot_y = height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card)
     draw.text((60, foot_y + 10), "valucast.app", fill=green, font=font(22, bold=True))
-    draw.text((440, foot_y + 14), "Source: ValuCast Prospect Rank v1 - performance + age/level + investment + availability", fill=muted, font=font(15))
+    footer = "Source: ValuCast Prospect Rank v1"
+    draw.text((700, foot_y + 14), fit_text(draw, footer, font(15), 300), fill=muted, font=font(15))
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
