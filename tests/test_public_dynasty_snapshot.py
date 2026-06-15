@@ -429,6 +429,19 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
             "adjustment": -1.0,
             "reason": "Lower-minors pedigree-only profile.",
         },
+        "factual_current_context": {
+            "version": "0.1.0",
+            "role": "hitter",
+            "level": "AA",
+            "sample": 224,
+            "sample_unit": "PA",
+            "skill_band": "impact",
+            "ops": 0.976,
+            "iso": 0.261,
+            "k_pct": 12.9,
+            "bb_pct": 9.8,
+            "bb_minus_k_pct": -3.1,
+        },
     }
     payload = build_snapshot(
         rank_payload,
@@ -449,6 +462,33 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     assert row.availability_note == "Thin sample."
     assert row.bucket_calibration_adjusted is True
     assert row.bucket_calibration_label == "Lower-minors context"
+    assert row.factual_skill_label == "Impact bat"
+    assert row.factual_context_note == (
+        "Impact bat from the current 224 PA factual sample."
+    )
+    assert row.factual_context_stat_items == (
+        {"label": "Sample", "value": "224 PA"},
+        {"label": "OPS", "value": "0.976"},
+        {"label": "ISO", "value": "0.261"},
+        {"label": "BB-K", "value": "-3.1%"},
+    )
+    assert row.why_rank_chips == (
+        {
+            "label": "Impact bat",
+            "kind": "positive",
+            "title": "Impact bat from the current 224 PA factual sample.",
+        },
+        {
+            "label": "Sample adjusted",
+            "kind": "caution",
+            "title": "Availability or sample risk is priced into the score.",
+        },
+        {
+            "label": "Bucket calibrated",
+            "kind": "neutral",
+            "title": "Lower-minors pedigree-only profile.",
+        },
+    )
 
 
 def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):

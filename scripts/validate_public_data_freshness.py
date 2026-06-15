@@ -19,7 +19,11 @@ MLB_AVAILABILITY = ROOT / "data" / "models" / "valucast_mlb_availability.json"
 MLB_ROSTER_STATUS = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 MLB_TRACK_RECORD = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 VALUCAST_BUYS = ROOT / "data" / "models" / "valucast_prospect_buys.json"
+VALUCAST_BUYS_MONITOR = (
+    ROOT / "data" / "models" / "valucast_prospect_buys_monitor.json"
+)
 VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
+PROSPECT_MODEL_V07 = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
 PROSPECT_AVAILABILITY = (
     ROOT / "data" / "models" / "valucast_prospect_availability.json"
 )
@@ -56,7 +60,9 @@ def validate_public_data(expected_date: str) -> list[str]:
         (PROSPECT_CALIBRATION_REPORT, "generated_at"),
         (PROSPECT_FORWARD_VALIDATION, "generated_at"),
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
+        (PROSPECT_MODEL_V07, "generated_at"),
         (VALUCAST_BUYS, "generated_at"),
+        (VALUCAST_BUYS_MONITOR, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),

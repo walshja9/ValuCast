@@ -25,7 +25,7 @@ BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.2.0"
+GOVERNOR_VERSION = "0.2.1"
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25
@@ -50,6 +50,8 @@ MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT = 3
 MAX_TOP50_MISSING_TEAM_COUNT = 0
 MAX_TOP50_MISSING_AVAILABILITY_COUNT = 0
 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
+MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT = 0
+MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT = 8
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
@@ -57,6 +59,7 @@ MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 CLEAR_AVAILABILITY_STATUSES = {"", "available", "clear"}
+CAUTION_FACTUAL_CONTEXT_BANDS = {"thin", "limited", "low_impact"}
 LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
 
@@ -156,6 +159,11 @@ def _projection_stability(row: dict) -> dict:
 def _availability_component(row: dict) -> dict:
     availability = _components(row).get("availability")
     return availability if isinstance(availability, dict) else {}
+
+
+def _factual_context_component(row: dict) -> dict:
+    context = _components(row).get("factual_current_context")
+    return context if isinstance(context, dict) else {}
 
 
 def _top_mlb_value_gap(players: list[dict]) -> dict:
@@ -612,6 +620,89 @@ def _prospect_missing_team_count(players: list[dict]) -> dict:
     )
 
 
+def _prospect_factual_context_coverage(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    missing = [
+        {
+            "rank": row.get("prospect_rank") or row.get("rank"),
+            "name": row.get("name"),
+            "mlbam_id": row.get("mlbam_id"),
+            "role": row.get("role"),
+            "score_source": row.get("score_source") or row.get("value_source"),
+        }
+        for row in top_rows
+        if not _factual_context_component(row)
+    ]
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(missing) <= MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT
+    return _check(
+        "prospect_top50_factual_context_coverage",
+        passed,
+        (
+            "Top prospect board has factual current-sample context."
+            if passed
+            else "Top prospect board is missing factual current-sample context."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        missing_factual_context_count=len(missing),
+        max_allowed_missing_factual_context_count=(
+            MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT
+        ),
+        sample_ready=sample_ready,
+        samples=missing[:10],
+    )
+
+
+def _prospect_factual_context_shape(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    caution_rows = []
+    band_counts: dict[str, int] = defaultdict(int)
+    for row in top_rows:
+        context = _factual_context_component(row)
+        band = str(context.get("skill_band") or "missing").strip().lower()
+        band_counts[band] += 1
+        if band in CAUTION_FACTUAL_CONTEXT_BANDS:
+            caution_rows.append(
+                {
+                    "rank": row.get("prospect_rank") or row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "role": row.get("role"),
+                    "level": row.get("level"),
+                    "skill_band": band,
+                    "sample": context.get("sample"),
+                    "sample_unit": context.get("sample_unit"),
+                }
+            )
+
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(caution_rows) <= MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT
+    return _check(
+        "prospect_top50_factual_context_shape",
+        passed,
+        (
+            "Top prospect board factual context shape is within publication limits."
+            if passed
+            else "Top prospect board has too many thin or low-impact current-sample reads."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=len(top_rows),
+        caution_factual_context_count=len(caution_rows),
+        max_allowed_caution_factual_context_count=(
+            MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT
+        ),
+        band_counts=dict(sorted(band_counts.items())),
+        caution_bands=sorted(CAUTION_FACTUAL_CONTEXT_BANDS),
+        sample_ready=sample_ready,
+        samples=caution_rows[:10],
+    )
+
+
 def _prospect_availability_coverage(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
     missing = [
@@ -928,6 +1019,8 @@ def evaluate_quality_governor(
         _prospect_neutral_investment_rate(players),
         _prospect_pedigree_cap_plateau(players),
         _prospect_missing_team_count(players),
+        _prospect_factual_context_coverage(players),
+        _prospect_factual_context_shape(players),
         _prospect_availability_coverage(players),
         _prospect_availability_risk_pricing(players),
     ]
@@ -975,6 +1068,12 @@ def evaluate_quality_governor(
             "max_top25_neutral_investment_rate": MAX_TOP25_NEUTRAL_INVESTMENT_RATE,
             "max_top25_exact_pedigree_cap_count": MAX_TOP25_EXACT_PEDIGREE_CAP_COUNT,
             "max_top50_missing_team_count": MAX_TOP50_MISSING_TEAM_COUNT,
+            "max_top50_missing_factual_context_count": (
+                MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT
+            ),
+            "max_top50_caution_factual_context_count": (
+                MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT
+            ),
             "max_top50_missing_availability_count": MAX_TOP50_MISSING_AVAILABILITY_COUNT,
             "max_top50_unpriced_availability_risk_count": (
                 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT

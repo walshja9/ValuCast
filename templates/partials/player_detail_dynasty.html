@@ -79,10 +79,16 @@
             </div>
         </div>
 
-        {% if row.availability_context or row.bucket_calibration_context %}
+        {% if row.availability_context or row.bucket_calibration_context or row.factual_current_context %}
         <div class="detail-section prospect-sample-context">
             <h4>ValuCast Model Context</h4>
             <div class="stat-grid">
+                {% if row.factual_skill_label %}
+                <div class="stat-item"><span class="stat-label">Skill Read</span><span class="stat-value">{{ row.factual_skill_label }}</span></div>
+                {% endif %}
+                {% for item in row.factual_context_stat_items %}
+                <div class="stat-item"><span class="stat-label">{{ item.label }}</span><span class="stat-value">{{ item.value }}</span></div>
+                {% endfor %}
                 {% if row.availability_status_label %}
                 <div class="stat-item"><span class="stat-label">Availability</span><span class="stat-value">{{ row.availability_status_label }}</span></div>
                 {% endif %}
@@ -96,6 +102,7 @@
                 <div class="stat-item"><span class="stat-label">Model Context</span><span class="stat-value">{{ row.bucket_calibration_label }}</span></div>
                 {% endif %}
             </div>
+            {% if row.factual_context_note %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
             {% if row.availability_note %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
             {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
         </div>

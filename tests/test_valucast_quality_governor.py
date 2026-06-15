@@ -43,6 +43,14 @@ def _prospect_row(
         "positions": ["SP"] if role == "pitcher" else ["SS"],
         "components": {
             "factual_investment_missing_uses_neutral": neutral,
+            "factual_current_context": {
+                "version": "0.1.0",
+                "role": role,
+                "level": level,
+                "sample": 54.0 if role == "pitcher" else 224.0,
+                "sample_unit": "IP" if role == "pitcher" else "PA",
+                "skill_band": "starter_volume" if role == "pitcher" else "impact",
+            },
             "availability": {
                 "present": True,
                 "status": "available",
@@ -543,6 +551,59 @@ def test_quality_governor_blocks_missing_prospect_availability_pricing():
 
     assert payload["ready_for_public_snapshot"] is False
     assert "Top prospect board is missing availability/risk pricing." in payload["blockers"]
+
+
+def test_quality_governor_blocks_missing_factual_current_context():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["components"].pop("factual_current_context")
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    assert "Top prospect board is missing factual current-sample context." in payload["blockers"]
+
+
+def test_quality_governor_blocks_crowded_caution_factual_context():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    for row in prospects[:9]:
+        row["components"]["factual_current_context"]["skill_band"] = "low_impact"
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_factual_context_shape"
+    )
+    assert payload["ready_for_public_snapshot"] is False
+    assert (
+        "Top prospect board has too many thin or low-impact current-sample reads."
+        in payload["blockers"]
+    )
+    assert check["metrics"]["caution_factual_context_count"] == 9
 
 
 def test_quality_governor_blocks_labeled_availability_risk_without_discount():

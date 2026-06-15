@@ -76,10 +76,27 @@
                 {% elif row.is_prospect and row.prospect_rank %}
                 <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
                 {% endif %}
+                {% if mode == 'prospects' and row.why_rank_chips %}
+                <span class="why-rank-chips" aria-label="Why this prospect ranks here">
+                    {% for chip in row.why_rank_chips %}
+                    <span class="sample-risk-badge rank-context {{ chip.kind }}" title="{{ chip.title }}">{{ chip.label }}</span>
+                    {% endfor %}
+                </span>
+                {% endif %}
                 {% set badge_tier = (row.tier | int(0)) if row.tier is not none else computed_tier %}
                 {% set badge_tier = badge_tier if badge_tier and badge_tier > 0 else computed_tier %}
                 {% if badge_tier %}
                 <span class="tier-badge" style="background: {{ tier_colors[(badge_tier - 1) % tier_colors|length] if badge_tier else '#6b7280' }}">T{{ badge_tier }}</span>
+                {% endif %}
+                {% if mode == 'prospects' and row.factual_context_stat_items %}
+                <div class="mobile-stat-strip" aria-label="{{ row.name }} ValuCast model context">
+                    {% for item in row.factual_context_stat_items[:4] %}
+                    <span class="mobile-stat">
+                        <span class="mobile-stat-label">{{ item.label }}</span>
+                        <span class="mobile-stat-value">{{ item.value }}</span>
+                    </span>
+                    {% endfor %}
+                </div>
                 {% endif %}
             </td>
             <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>

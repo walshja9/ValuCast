@@ -471253,6 +471253,77 @@
         "status": "passed"
       },
       {
+        "id": "prospect_top50_factual_context_coverage",
+        "message": "Top prospect board has factual current-sample context.",
+        "metrics": {
+          "evaluated_count": 50,
+          "max_allowed_missing_factual_context_count": 0,
+          "missing_factual_context_count": 0,
+          "sample_ready": true,
+          "samples": [],
+          "top_n": 50
+        },
+        "status": "passed"
+      },
+      {
+        "id": "prospect_top50_factual_context_shape",
+        "message": "Top prospect board factual context shape is within publication limits.",
+        "metrics": {
+          "band_counts": {
+            "balanced": 10,
+            "bat_missing": 2,
+            "impact": 15,
+            "limited": 2,
+            "low_impact": 1,
+            "mixed": 15,
+            "starter_volume": 5
+          },
+          "caution_bands": [
+            "limited",
+            "low_impact",
+            "thin"
+          ],
+          "caution_factual_context_count": 3,
+          "evaluated_count": 50,
+          "max_allowed_caution_factual_context_count": 8,
+          "sample_ready": true,
+          "samples": [
+            {
+              "level": "AAA",
+              "mlbam_id": 703185,
+              "name": "Nelson Rada",
+              "rank": 15,
+              "role": "hitter",
+              "sample": 265.0,
+              "sample_unit": "PA",
+              "skill_band": "low_impact"
+            },
+            {
+              "level": "AAA",
+              "mlbam_id": 806258,
+              "name": "Thomas White",
+              "rank": 24,
+              "role": "pitcher",
+              "sample": 18.7,
+              "sample_unit": "IP",
+              "skill_band": "limited"
+            },
+            {
+              "level": "AAA",
+              "mlbam_id": 702281,
+              "name": "Robby Snelling",
+              "rank": 40,
+              "role": "pitcher",
+              "sample": 29.0,
+              "sample_unit": "IP",
+              "skill_band": "limited"
+            }
+          ],
+          "top_n": 50
+        },
+        "status": "passed"
+      },
+      {
         "id": "prospect_top50_availability_coverage",
         "message": "Top prospect board has availability/risk components.",
         "metrics": {
@@ -471312,10 +471383,12 @@
       "max_top25_mlb_pitcher_count": 9,
       "max_top25_mlb_reliever_count": 1,
       "max_top25_neutral_investment_rate": 0.35,
+      "max_top50_caution_factual_context_count": 8,
       "max_top50_fallback_rate": 0.1,
       "max_top50_low_confidence_rate": 0.38,
       "max_top50_lower_minors_pedigree_count": 15,
       "max_top50_missing_availability_count": 0,
+      "max_top50_missing_factual_context_count": 0,
       "max_top50_missing_team_count": 0,
       "max_top50_pedigree_rate": 0.35,
       "max_top50_suppressed_rank_rows": 0,
@@ -471331,7 +471404,7 @@
     },
     "generated_at": "2026-06-14T20:26:06.130813+00:00",
     "governor_name": "ValuCast Quality Governor",
-    "governor_version": "0.2.0",
+    "governor_version": "0.2.1",
     "metrics": {
       "generated_dates": {
         "buy_review": "2026-06-14",
@@ -472111,6 +472184,77 @@
           "status": "passed"
         },
         {
+          "id": "prospect_top50_factual_context_coverage",
+          "message": "Top prospect board has factual current-sample context.",
+          "metrics": {
+            "evaluated_count": 50,
+            "max_allowed_missing_factual_context_count": 0,
+            "missing_factual_context_count": 0,
+            "sample_ready": true,
+            "samples": [],
+            "top_n": 50
+          },
+          "status": "passed"
+        },
+        {
+          "id": "prospect_top50_factual_context_shape",
+          "message": "Top prospect board factual context shape is within publication limits.",
+          "metrics": {
+            "band_counts": {
+              "balanced": 10,
+              "bat_missing": 2,
+              "impact": 15,
+              "limited": 2,
+              "low_impact": 1,
+              "mixed": 15,
+              "starter_volume": 5
+            },
+            "caution_bands": [
+              "limited",
+              "low_impact",
+              "thin"
+            ],
+            "caution_factual_context_count": 3,
+            "evaluated_count": 50,
+            "max_allowed_caution_factual_context_count": 8,
+            "sample_ready": true,
+            "samples": [
+              {
+                "level": "AAA",
+                "mlbam_id": 703185,
+                "name": "Nelson Rada",
+                "rank": 15,
+                "role": "hitter",
+                "sample": 265.0,
+                "sample_unit": "PA",
+                "skill_band": "low_impact"
+              },
+              {
+                "level": "AAA",
+                "mlbam_id": 806258,
+                "name": "Thomas White",
+                "rank": 24,
+                "role": "pitcher",
+                "sample": 18.7,
+                "sample_unit": "IP",
+                "skill_band": "limited"
+              },
+              {
+                "level": "AAA",
+                "mlbam_id": 702281,
+                "name": "Robby Snelling",
+                "rank": 40,
+                "role": "pitcher",
+                "sample": 29.0,
+                "sample_unit": "IP",
+                "skill_band": "limited"
+              }
+            ],
+            "top_n": 50
+          },
+          "status": "passed"
+        },
+        {
           "id": "prospect_top50_availability_coverage",
           "message": "Top prospect board has availability/risk components.",
           "metrics": {
@@ -472170,10 +472314,12 @@
         "max_top25_mlb_pitcher_count": 9,
         "max_top25_mlb_reliever_count": 1,
         "max_top25_neutral_investment_rate": 0.35,
+        "max_top50_caution_factual_context_count": 8,
         "max_top50_fallback_rate": 0.1,
         "max_top50_low_confidence_rate": 0.38,
         "max_top50_lower_minors_pedigree_count": 15,
         "max_top50_missing_availability_count": 0,
+        "max_top50_missing_factual_context_count": 0,
         "max_top50_missing_team_count": 0,
         "max_top50_pedigree_rate": 0.35,
         "max_top50_suppressed_rank_rows": 0,
@@ -472189,7 +472335,7 @@
       },
       "generated_at": "2026-06-14T20:26:06.130813+00:00",
       "governor_name": "ValuCast Quality Governor",
-      "governor_version": "0.2.0",
+      "governor_version": "0.2.1",
       "metrics": {
         "generated_dates": {
           "buy_review": "2026-06-14",
@@ -472222,7 +472368,7 @@
     },
     "quality_governor_blockers": [],
     "quality_governor_ready": true,
-    "quality_governor_version": "0.2.0",
+    "quality_governor_version": "0.2.1",
     "ready_for_all_public_surfaces": true,
     "ready_for_live_consumers": true,
     "required_field_problem_count": 0,

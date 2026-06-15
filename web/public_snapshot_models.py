@@ -7,6 +7,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .prospect_context import (
+    context_note,
+    skill_band_label,
+    stat_items,
+    why_rank_chips,
+)
+
 
 _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr_raw"})
 
@@ -166,6 +173,27 @@ class PublicSnapshotRow:
         if "Lower Minors" in bucket:
             return "Lower-minors context"
         return bucket or "Model context"
+
+    @property
+    def factual_current_context(self) -> dict:
+        raw = self.prospect_components.get("factual_current_context")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def factual_skill_label(self) -> str | None:
+        return skill_band_label(self.factual_current_context)
+
+    @property
+    def factual_context_note(self) -> str | None:
+        return context_note(self.factual_current_context)
+
+    @property
+    def factual_context_stat_items(self) -> tuple[dict[str, str], ...]:
+        return stat_items(self.factual_current_context)
+
+    @property
+    def why_rank_chips(self) -> tuple[dict[str, str], ...]:
+        return why_rank_chips(self.prospect_components, self.role)
 
     @staticmethod
     def _coerce_int(raw):
