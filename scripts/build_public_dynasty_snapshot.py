@@ -309,6 +309,8 @@ def _prospect_rows(
                     "value_history_points": context.get("value_history_points"),
                     "stat_line_source": context.get("stat_line_source"),
                     "stat_line_source_kind": context.get("stat_line_source_kind"),
+                    "stat_line_level": context.get("stat_line_level"),
+                    "stat_line_team": context.get("stat_line_team"),
                     "stat_line_sample": context.get("stat_line_sample"),
                     "stat_line_sample_unit": context.get("stat_line_sample_unit"),
                     "stat_line_sample_season": context.get("stat_line_sample_season"),

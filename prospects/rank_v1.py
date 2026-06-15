@@ -349,6 +349,8 @@ def _stat_line_context(row: dict | None, role: str | None) -> dict:
     sample_season = _clean_float(row.get("sample_season"))
     context = {
         "stat_line_source_kind": row.get("source_kind"),
+        "stat_line_level": row.get("level"),
+        "stat_line_team": row.get("team"),
         "stat_line_sample": round(sample, 3),
         "stat_line_sample_unit": "IP" if role == "pitcher" else "PA",
         "stat_line_sample_season": int(sample_season)
@@ -1484,6 +1486,8 @@ def build_prospect_rank_v1(
                 "stat_line",
                 "stat_line_source",
                 "stat_line_source_kind",
+                "stat_line_level",
+                "stat_line_team",
                 "stat_line_sample",
                 "stat_line_sample_unit",
                 "stat_line_sample_season",

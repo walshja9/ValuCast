@@ -61,13 +61,18 @@
                 <div>
                     <span class="profile-card-kicker">ValuCast Prospect Card</span>
                     <h4>Current Skill Percentiles</h4>
-                    <p class="profile-note">{{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}</p>
+                    <p class="profile-note">
+                        {{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}
+                        {% if row.sample_context_label %}<br><span class="sample-scope-note">{{ row.sample_context_label }}</span>{% endif %}
+                    </p>
                 </div>
                 <div class="profile-card-badges">
                     {% if row.prospect_rank is not none %}<span>P#{{ row.prospect_rank }}</span>{% endif %}
                     <span>VAL {{ "%.1f" | format(row.dynasty_value) }}</span>
                     {% if row.tier is not none %}<span>T{{ row.tier }}</span>{% endif %}
-                    {% if card_context.get('stat_line_sample_season') %}<span>{{ card_context.get('stat_line_sample_season') }} stats</span>{% endif %}
+                    {% if row.current_level_sample_badge %}<span>{{ row.current_level_sample_badge }}</span>
+                    {% elif card_context.get('stat_line_sample_season') %}<span>{{ card_context.get('stat_line_sample_season') }} stats</span>{% endif %}
+                    {% if row.season_total_sample_badge %}<span>{{ row.season_total_sample_badge }}</span>{% endif %}
                     <a class="player-share-link" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
                 </div>
             </div>
@@ -156,8 +161,11 @@
                 {% if row.availability_status_label %}
                 <div class="stat-item"><span class="stat-label">Availability</span><span class="stat-value">{{ row.availability_status_label }}</span></div>
                 {% endif %}
+                {% if row.current_level_sample_label %}
+                <div class="stat-item"><span class="stat-label">Current Level</span><span class="stat-value">{{ row.current_level_sample_label }}</span></div>
+                {% endif %}
                 {% if row.availability_sample_label %}
-                <div class="stat-item"><span class="stat-label">Current Sample</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
+                <div class="stat-item"><span class="stat-label">{{ '2026 Total' if row.has_split_level_sample else 'Current Sample' }}</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
                 {% endif %}
                 {% if row.availability_risk_discount %}
                 <div class="stat-item"><span class="stat-label">Risk Adjustment</span><span class="stat-value">-{{ "%.1f%%" | format(row.availability_risk_discount * 100) }}</span></div>

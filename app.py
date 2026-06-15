@@ -1073,6 +1073,20 @@ def _graphic_sample_phrase(row, context, line):
     return f" over {number} {unit}"
 
 
+def _graphic_sample_context_label(row, context):
+    label = getattr(row, "sample_context_label", None)
+    if label:
+        return str(label)
+    sample = context.get("stat_line_sample")
+    unit = context.get("stat_line_sample_unit")
+    if not isinstance(sample, (int, float)) or not unit:
+        return ""
+    number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
+    level = context.get("stat_line_level") or getattr(row, "level", None)
+    current = f"Current {level}: {number} {unit}" if level else f"Current sample: {number} {unit}"
+    return current
+
+
 def _graphic_context_sample_season(context):
     try:
         return int(float(context.get("stat_line_sample_season")))
@@ -1315,15 +1329,9 @@ def _prospect_player_card_png(row):
     # Skill bars
     draw.rounded_rectangle((48, 438, 1032, 812), radius=22, fill=card, outline=border, width=2)
     draw.text((74, 468), "CURRENT SKILL PERCENTILES", fill=text, font=_graphic_font(24, bold=True))
-    if context.get("stat_line_sample_season"):
-        sample = context.get("stat_line_sample")
-        unit = context.get("stat_line_sample_unit") or ""
-        if isinstance(sample, (int, float)):
-            sample_number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
-            sample_text = f"{sample_number} {unit}".strip()
-        else:
-            sample_text = ""
-        draw.text((74, 500), f"{context.get('stat_line_sample_season')} sample {sample_text}".strip(), fill=muted, font=_graphic_font(17, bold=True))
+    sample_context = _graphic_sample_context_label(row, context)
+    if sample_context:
+        draw.text((74, 500), _graphic_fit_text(draw, sample_context, _graphic_font(17, bold=True), 890), fill=muted, font=_graphic_font(17, bold=True))
 
     y = 542
     if profile_bars:

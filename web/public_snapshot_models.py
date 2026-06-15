@@ -33,6 +33,16 @@ def _format_status(raw) -> str | None:
     return str(raw).replace("_", " ").title()
 
 
+def _format_sample(sample: float | None, unit: str | None) -> str | None:
+    if sample is None or not unit:
+        return None
+    if sample.is_integer():
+        sample_text = str(int(sample))
+    else:
+        sample_text = f"{sample:.1f}"
+    return f"{sample_text} {unit}"
+
+
 @dataclass(frozen=True)
 class PublicSnapshotRow:
     id: str
@@ -142,13 +152,90 @@ class PublicSnapshotRow:
     def availability_sample_label(self) -> str | None:
         sample = _clean_float(self.availability_context.get("sample"))
         unit = self.availability_context.get("sample_unit")
-        if sample is None or not unit:
+        return _format_sample(sample, unit)
+
+    @property
+    def stat_line_sample_label(self) -> str | None:
+        sample = _clean_float(self.context.get("stat_line_sample"))
+        unit = self.context.get("stat_line_sample_unit")
+        return _format_sample(sample, unit)
+
+    @property
+    def stat_line_level_label(self) -> str | None:
+        level = self.context.get("stat_line_level") or self.level
+        return str(level) if level else None
+
+    @property
+    def current_level_sample_label(self) -> str | None:
+        sample = self.stat_line_sample_label
+        if not sample:
             return None
-        if sample.is_integer():
-            sample_text = str(int(sample))
-        else:
-            sample_text = f"{sample:.1f}"
-        return f"{sample_text} {unit}"
+        level = self.stat_line_level_label
+        return f"{level} sample: {sample}" if level else f"Current sample: {sample}"
+
+    @property
+    def current_level_sample_badge(self) -> str | None:
+        sample = self.stat_line_sample_label
+        if not sample:
+            return None
+        level = self.stat_line_level_label
+        return f"{level} {sample}" if level else sample
+
+    @property
+    def _season_total_sample_parts(self) -> tuple[float | None, str | None, str | None, str | None]:
+        translated = self.stat_line_translated or {}
+        sample = _clean_float(translated.get("sample"))
+        unit = translated.get("sample_unit")
+        if sample is None:
+            sample = _clean_float(self.availability_context.get("sample"))
+        if not unit:
+            unit = self.availability_context.get("sample_unit")
+        season = translated.get("season") or self.context.get("stat_line_sample_season")
+        levels = translated.get("level_label")
+        if not levels and isinstance(translated.get("levels"), list):
+            levels = "+".join(str(level) for level in translated["levels"] if level)
+        return sample, unit, str(season) if season else None, str(levels) if levels else None
+
+    @property
+    def has_split_level_sample(self) -> bool:
+        total, unit, _season, levels = self._season_total_sample_parts
+        current = _clean_float(self.context.get("stat_line_sample"))
+        current_unit = self.context.get("stat_line_sample_unit")
+        if total is None or current is None or not unit or unit != current_unit:
+            return False
+        return total > current + 0.05 and bool(levels)
+
+    @property
+    def season_total_sample_label(self) -> str | None:
+        if not self.has_split_level_sample:
+            return None
+        sample, unit, season, levels = self._season_total_sample_parts
+        sample_label = _format_sample(sample, unit)
+        if not sample_label:
+            return None
+        label = f"{season or 'Season'} total: {sample_label}"
+        if levels:
+            label = f"{label} across {levels}"
+        return label
+
+    @property
+    def season_total_sample_badge(self) -> str | None:
+        if not self.has_split_level_sample:
+            return None
+        sample, unit, season, _levels = self._season_total_sample_parts
+        sample_label = _format_sample(sample, unit)
+        if not sample_label:
+            return None
+        return f"{season or 'Season'} total {sample_label}"
+
+    @property
+    def sample_context_label(self) -> str | None:
+        labels = [
+            self.current_level_sample_label,
+            self.season_total_sample_label,
+        ]
+        labels = [label for label in labels if label]
+        return " | ".join(labels) if labels else None
 
     @property
     def availability_note(self) -> str | None:

@@ -55,6 +55,8 @@ def _rank_payload():
                     "stat_line": {"ops": 0.900, "pa": 200},
                     "stat_line_source": "valucast_input_contract",
                     "stat_line_source_kind": "current_season",
+                    "stat_line_level": "AA",
+                    "stat_line_team": "New Hampshire",
                     "stat_line_sample": 200,
                     "stat_line_sample_unit": "PA",
                     "stat_line_sample_season": 2026,
@@ -66,7 +68,13 @@ def _rank_payload():
                         "remaining": 12.0,
                         "graduated": False,
                     },
-                    "stat_line_translated": {"stats": {"OPS": 0.760}},
+                    "stat_line_translated": {
+                        "level_label": "AA+A+",
+                        "sample": 260,
+                        "sample_unit": "PA",
+                        "season": 2026,
+                        "stats": {"OPS": 0.760},
+                    },
                     "mlb_stat_line": {"pa": 12, "ops": 0.700},
                 },
             },
@@ -426,7 +434,13 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.breakout_label == "rising"
     assert row.public_source_consensus == 10
     assert row.stat_line == {"ops": 0.900, "pa": 200}
-    assert row.stat_line_translated == {"stats": {"OPS": 0.760}}
+    assert row.stat_line_translated == {
+        "level_label": "AA+A+",
+        "sample": 260,
+        "sample_unit": "PA",
+        "season": 2026,
+        "stats": {"OPS": 0.760},
+    }
     assert row.mlb_stat_line == {"pa": 12, "ops": 0.700}
 
 
@@ -439,7 +453,7 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
             "status": "thin_current_sample",
             "risk_level": "medium",
             "note": "Thin sample.",
-            "sample": 90,
+            "sample": 260,
             "sample_unit": "PA",
         },
         "bucket_calibration": {
@@ -460,22 +474,22 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
             "bb_pct": 9.8,
             "bb_minus_k_pct": -3.1,
         },
-            "uncertainty": {
-                "version": "0.1.0",
-                "kind": "display_only_score_interval",
-                "band": "moderate",
-                "lower": 48.0,
-                "upper": 62.0,
-                "score_effect": "none",
-                "drivers": {
-                    "score_source": "prospect_model_v0_6",
-                    "confidence": "medium",
-                    "sample_reliability": 63.0,
-                    "skill_band": "impact",
-                    "availability_risk_discount": 0.06,
-                },
+        "uncertainty": {
+            "version": "0.1.0",
+            "kind": "display_only_score_interval",
+            "band": "moderate",
+            "lower": 48.0,
+            "upper": 62.0,
+            "score_effect": "none",
+            "drivers": {
+                "score_source": "prospect_model_v0_6",
+                "confidence": "medium",
+                "sample_reliability": 63.0,
+                "skill_band": "impact",
+                "availability_risk_discount": 0.06,
             },
-        }
+        },
+    }
     payload = build_snapshot(
         rank_payload,
         mlb_layer=_mlb_payload(),
@@ -491,7 +505,16 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     assert row.availability_adjusted is True
     assert row.availability_risk_discount == 0.06
     assert row.availability_status_label == "Thin Current Sample"
-    assert row.availability_sample_label == "90 PA"
+    assert row.availability_sample_label == "260 PA"
+    assert row.stat_line_sample_label == "200 PA"
+    assert row.current_level_sample_label == "AA sample: 200 PA"
+    assert row.current_level_sample_badge == "AA 200 PA"
+    assert row.has_split_level_sample is True
+    assert row.season_total_sample_label == "2026 total: 260 PA across AA+A+"
+    assert row.season_total_sample_badge == "2026 total 260 PA"
+    assert row.sample_context_label == (
+        "AA sample: 200 PA | 2026 total: 260 PA across AA+A+"
+    )
     assert row.availability_note == "Thin sample."
     assert row.bucket_calibration_adjusted is True
     assert row.bucket_calibration_label == "Lower-minors context"

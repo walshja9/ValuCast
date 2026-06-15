@@ -441,6 +441,30 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("32nd", read)
         self.assertNotIn("open question", read.lower())
 
+    def test_player_card_sample_context_shows_current_and_combined_samples(self):
+        from types import SimpleNamespace
+
+        from app import _graphic_sample_context_label
+
+        row = SimpleNamespace(
+            level="AA",
+            sample_context_label="AA sample: 72 PA | 2026 total: 177 PA across AA+A+",
+        )
+
+        label = _graphic_sample_context_label(
+            row,
+            {
+                "stat_line_level": "AA",
+                "stat_line_sample": 72,
+                "stat_line_sample_unit": "PA",
+            },
+        )
+
+        self.assertEqual(
+            label,
+            "AA sample: 72 PA | 2026 total: 177 PA across AA+A+",
+        )
+
     def test_prospect_detail_links_player_share_graphic(self):
         from app import dd_store
         if not dd_store.is_available:
