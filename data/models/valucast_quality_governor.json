@@ -578,6 +578,19 @@
       "status": "passed"
     },
     {
+      "id": "prospect_top50_current_stat_context_alignment",
+      "message": "Top prospect board stat lines align with current factual context.",
+      "metrics": {
+        "current_stat_context_mismatch_count": 0,
+        "evaluated_count": 50,
+        "max_allowed_current_stat_context_mismatch_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed"
+    },
+    {
       "id": "prospect_top50_availability_coverage",
       "message": "Top prospect board has availability/risk components.",
       "metrics": {
@@ -638,6 +651,7 @@
     "max_top25_mlb_reliever_count": 1,
     "max_top25_neutral_investment_rate": 0.35,
     "max_top50_caution_factual_context_count": 8,
+    "max_top50_current_stat_context_mismatch_count": 0,
     "max_top50_fallback_rate": 0.1,
     "max_top50_low_confidence_rate": 0.38,
     "max_top50_lower_minors_pedigree_count": 15,

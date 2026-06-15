@@ -33,7 +33,11 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"5x5 Roto", response.data)
         self.assertIn(b"6x6 OBP/QS", response.data)
         self.assertIn(b"Saves + Holds", response.data)
-        self.assertIn(b"Categories without a player z-score are skipped.", response.data)
+        self.assertIn(b"Category Fit is not the Top Prospects ranking.", response.data)
+        self.assertIn(
+            b"A dash means ValuCast does not have usable category-fit stat context",
+            response.data,
+        )
         self.assertIn(b'data-fit-cat="SLG"', response.data)
         self.assertIn(b"HLD / HD", response.data)
         self.assertIn(b'data-fit-cat="SV+HLD"', response.data)

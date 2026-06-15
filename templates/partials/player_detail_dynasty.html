@@ -69,6 +69,9 @@
                 {% if row.age is not none %}
                 <div class="stat-item"><span class="stat-label">Age</span><span class="stat-value">{{ row.age }}</span></div>
                 {% endif %}
+                {% if row.graduation_context_label %}
+                <div class="stat-item"><span class="stat-label">Rookie Limit</span><span class="stat-value">{{ row.graduation_context_label }}</span></div>
+                {% endif %}
                 {% if row.breakout_label %}
                 <div class="stat-item">
                     <span class="stat-label">Trend</span>
@@ -106,6 +109,7 @@
                 {% endif %}
             </div>
             {% if row.factual_context_note %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
+            {% if row.graduation_context_note %}<p class="sample-context-note">{{ row.graduation_context_note }}</p>{% endif %}
             {% if row.availability_note %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
             {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
             {% if row.uncertainty_note %}

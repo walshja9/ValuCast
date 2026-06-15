@@ -220,6 +220,50 @@ class PublicSnapshotRow:
     def why_rank_chips(self) -> tuple[dict[str, str], ...]:
         return why_rank_chips(self.prospect_components, self.role)
 
+    @property
+    def graduation_context(self) -> dict:
+        raw = self.context.get("graduation_context")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def graduation_context_label(self) -> str | None:
+        context = self.graduation_context
+        if not context:
+            return None
+        if context.get("status") == "near_graduation":
+            unit = context.get("unit") or ""
+            current = _clean_float(context.get("current"))
+            limit = _clean_float(context.get("limit"))
+            if current is not None and limit is not None:
+                return f"Near grad {current:.1f}/{limit:.0f} {unit}".strip()
+            return "Near graduation"
+        if context.get("status") == "graduated":
+            return "Graduated"
+        return str(context.get("label") or "").strip() or None
+
+    @property
+    def graduation_context_note(self) -> str | None:
+        context = self.graduation_context
+        if not context:
+            return None
+        unit = context.get("unit") or "rookie-limit units"
+        current = _clean_float(context.get("current"))
+        limit = _clean_float(context.get("limit"))
+        remaining = _clean_float(context.get("remaining"))
+        if current is None or limit is None:
+            return None
+        if context.get("graduated") is True:
+            return (
+                f"MLB service is at {current:.1f}/{limit:.0f} {unit}; this player "
+                "has crossed the rookie-limit line and should move to the MLB surface."
+            )
+        if remaining is not None:
+            return (
+                f"MLB service is at {current:.1f}/{limit:.0f} {unit}, about "
+                f"{remaining:.1f} {unit} from prospect graduation."
+            )
+        return f"MLB service is at {current:.1f}/{limit:.0f} {unit}."
+
     @staticmethod
     def _coerce_int(raw):
         try:

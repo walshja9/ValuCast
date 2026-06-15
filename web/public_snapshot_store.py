@@ -32,6 +32,12 @@ PROSPECT_REQUIRED_RECORD_FIELDS = (
     "stat_line",
 )
 PROSPECT_REQUIRED_CONTEXT_FIELDS = ("stat_line_source",)
+PROSPECT_VALUCAST_STAT_CONTEXT_FIELDS = (
+    "stat_line_source_kind",
+    "stat_line_sample",
+    "stat_line_sample_unit",
+    "stat_line_sample_season",
+)
 PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
@@ -74,6 +80,13 @@ def required_field_problems(players: list) -> list[str]:
                     problems.append(
                         f"players[{index}].context.{field} is required for prospects"
                     )
+            if context.get("stat_line_source") == "valucast_input_contract":
+                for field in PROSPECT_VALUCAST_STAT_CONTEXT_FIELDS:
+                    if _missing_required(context.get(field)):
+                        problems.append(
+                            f"players[{index}].context.{field} is required "
+                            "for ValuCast prospect stat context"
+                        )
     return problems
 
 

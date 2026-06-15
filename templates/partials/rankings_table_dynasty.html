@@ -83,6 +83,9 @@
                     {% endfor %}
                 </span>
                 {% endif %}
+                {% if mode == 'prospects' and row.graduation_context_label %}
+                <span class="sample-risk-badge rank-context graduation" title="{{ row.graduation_context_note or 'Near MLB rookie-limit graduation.' }}">{{ row.graduation_context_label }}</span>
+                {% endif %}
                 {% set badge_tier = (row.tier | int(0)) if row.tier is not none else computed_tier %}
                 {% set badge_tier = badge_tier if badge_tier and badge_tier > 0 else computed_tier %}
                 {% if badge_tier %}

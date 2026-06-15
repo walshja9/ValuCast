@@ -52,6 +52,7 @@ MAX_TOP50_MISSING_AVAILABILITY_COUNT = 0
 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
 MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT = 0
 MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT = 8
+MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
@@ -703,6 +704,74 @@ def _prospect_factual_context_shape(players: list[dict]) -> dict:
     )
 
 
+def _prospect_current_stat_context_alignment(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    mismatches = []
+    evaluated = 0
+    for row in top_rows:
+        factual = _factual_context_component(row)
+        if factual.get("source_kind") != "current_season":
+            continue
+        evaluated += 1
+        context = row.get("context") if isinstance(row.get("context"), dict) else {}
+        factual_sample = _clean_float(factual.get("sample"))
+        context_sample = _clean_float(context.get("stat_line_sample"))
+        factual_season = _clean_int(factual.get("sample_season"))
+        context_season = _clean_int(context.get("stat_line_sample_season"))
+        sample_matches = (
+            factual_sample is None
+            or context_sample is None
+            or round(factual_sample, 1) == round(context_sample, 1)
+        )
+        season_matches = (
+            factual_season is None
+            or context_season is None
+            or factual_season == context_season
+        )
+        if (
+            context.get("stat_line_source") == "valucast_input_contract"
+            and context.get("stat_line_source_kind") == "current_season"
+            and sample_matches
+            and season_matches
+        ):
+            continue
+        mismatches.append(
+            {
+                "rank": row.get("prospect_rank") or row.get("rank"),
+                "name": row.get("name"),
+                "mlbam_id": row.get("mlbam_id"),
+                "role": row.get("role"),
+                "factual_sample": factual.get("sample"),
+                "factual_sample_season": factual.get("sample_season"),
+                "stat_line_source": context.get("stat_line_source"),
+                "stat_line_source_kind": context.get("stat_line_source_kind"),
+                "stat_line_sample": context.get("stat_line_sample"),
+                "stat_line_sample_season": context.get("stat_line_sample_season"),
+            }
+        )
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(mismatches) <= MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT
+    return _check(
+        "prospect_top50_current_stat_context_alignment",
+        passed,
+        (
+            "Top prospect board stat lines align with current factual context."
+            if passed
+            else "Top prospect board has stale or mismatched current stat context."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=evaluated,
+        current_stat_context_mismatch_count=len(mismatches),
+        max_allowed_current_stat_context_mismatch_count=(
+            MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT
+        ),
+        sample_ready=sample_ready,
+        samples=mismatches[:10],
+    )
+
+
 def _prospect_availability_coverage(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
     missing = [
@@ -1021,6 +1090,7 @@ def evaluate_quality_governor(
         _prospect_missing_team_count(players),
         _prospect_factual_context_coverage(players),
         _prospect_factual_context_shape(players),
+        _prospect_current_stat_context_alignment(players),
         _prospect_availability_coverage(players),
         _prospect_availability_risk_pricing(players),
     ]
@@ -1073,6 +1143,9 @@ def evaluate_quality_governor(
             ),
             "max_top50_caution_factual_context_count": (
                 MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT
+            ),
+            "max_top50_current_stat_context_mismatch_count": (
+                MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT
             ),
             "max_top50_missing_availability_count": MAX_TOP50_MISSING_AVAILABILITY_COUNT,
             "max_top50_unpriced_availability_risk_count": (

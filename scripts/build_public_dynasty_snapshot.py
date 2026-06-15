@@ -306,6 +306,11 @@ def _prospect_rows(
                     "source_ranks": context.get("source_ranks"),
                     "value_history_points": context.get("value_history_points"),
                     "stat_line_source": context.get("stat_line_source"),
+                    "stat_line_source_kind": context.get("stat_line_source_kind"),
+                    "stat_line_sample": context.get("stat_line_sample"),
+                    "stat_line_sample_unit": context.get("stat_line_sample_unit"),
+                    "stat_line_sample_season": context.get("stat_line_sample_season"),
+                    "graduation_context": context.get("graduation_context"),
                     "has_dd_context": context.get("has_dd_context", False),
                 },
             }

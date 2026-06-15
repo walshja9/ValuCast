@@ -606,6 +606,48 @@ def test_quality_governor_blocks_crowded_caution_factual_context():
     assert check["metrics"]["caution_factual_context_count"] == 9
 
 
+def test_quality_governor_blocks_stale_current_stat_context():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["components"]["factual_current_context"].update(
+        {
+            "source_kind": "current_season",
+            "sample_season": 2026,
+            "sample": 225.0,
+        }
+    )
+    prospects[0]["context"] = {
+        "stat_line_source": "valucast_input_contract",
+        "stat_line_source_kind": "latest_milb_history",
+        "stat_line_sample": 420.0,
+        "stat_line_sample_season": 2024,
+    }
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_current_stat_context_alignment"
+    )
+    assert payload["ready_for_public_snapshot"] is False
+    assert (
+        "Top prospect board has stale or mismatched current stat context."
+        in payload["blockers"]
+    )
+    assert check["metrics"]["current_stat_context_mismatch_count"] == 1
+
+
 def test_quality_governor_blocks_labeled_availability_risk_without_discount():
     prospects = [_prospect_row(index) for index in range(1, 51)]
     prospects[0]["components"]["availability"] = {

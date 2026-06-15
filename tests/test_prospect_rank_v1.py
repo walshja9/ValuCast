@@ -364,6 +364,8 @@ def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
     ]
     assert context["has_dd_context"] is False
     assert context["stat_line_source"] == "valucast_input_contract"
+    assert context["stat_line_sample"] == 150
+    assert context["stat_line_sample_unit"] == "PA"
     assert context["stat_line"] == {
         "avg": 0.252,
         "obp": 0.336,
@@ -446,8 +448,76 @@ def test_rank_v1_prefers_newest_current_input_row_over_larger_old_sample():
         "k_bb_pct": 8.0,
         "ip": 25.3,
     }
+    assert row["context_only"]["stat_line_source"] == "valucast_input_contract"
+    assert row["context_only"]["stat_line_source_kind"] == "current_season"
+    assert row["context_only"]["stat_line_sample_season"] == 2026
+    assert row["context_only"]["stat_line_sample"] == 25.333
     assert row["components"]["factual_current_context"]["sample"] == 25.3
     assert row["components"]["factual_current_context"]["era"] == 4.26
+    assert row["components"]["factual_current_context"]["source_kind"] == "current_season"
+    assert row["components"]["factual_current_context"]["sample_season"] == 2026
+    assert payload["validation"]["current_stat_context_mismatch_count"] == 0
+
+
+def test_rank_v1_prefers_valucast_current_stat_line_over_dd_display_context():
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][0].update(
+        {
+            "source_kind": "current_season",
+            "sample_season": 2026,
+            "avg": 0.281,
+            "obp": 0.351,
+            "slg": 0.511,
+            "ops": 0.862,
+            "iso": 0.230,
+            "k_pct": 18.0,
+            "bb_pct": 11.2,
+        }
+    )
+    feed = _feed()
+    feed["players"][0]["stat_line"] = {"ops": 0.610, "pa": 300}
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+        dd_feed=feed,
+    )
+
+    context = next(row for row in payload["board"] if row["mlbam_id"] == 1)[
+        "context_only"
+    ]
+    assert context["stat_line_source"] == "valucast_input_contract"
+    assert context["stat_line_source_kind"] == "current_season"
+    assert context["stat_line"]["ops"] == 0.862
+    assert context["stat_line"]["pa"] == 200
+
+
+def test_rank_v1_surfaces_near_graduation_context():
+    input_contract = _input_contract()
+    input_contract["mlb_service"] = [
+        {"mlbam_id": 1, "role": "hitter", "ab": 119.0, "pa": 130.0, "ip": 0.0, "graduated": False},
+        {"mlbam_id": 2, "role": "hitter", "ab": 12.0, "pa": 15.0, "ip": 0.0, "graduated": False},
+    ]
+    input_contract["rookie_limits"] = {"at_bats": 131, "innings_pitched": 51}
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    near = next(row for row in payload["board"] if row["mlbam_id"] == 1)[
+        "context_only"
+    ]["graduation_context"]
+    far = next(row for row in payload["board"] if row["mlbam_id"] == 2)["context_only"]
+    assert near["status"] == "near_graduation"
+    assert near["current"] == 119.0
+    assert near["limit"] == 131.0
+    assert near["score_effect"] == "display_only_not_used_for_valucast_score"
+    assert "graduation_context" not in far
 
 
 def test_rank_v1_exposes_factual_current_context_for_hitter_components():

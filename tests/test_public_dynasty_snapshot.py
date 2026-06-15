@@ -54,6 +54,18 @@ def _rank_payload():
                     "value_history_points": 3,
                     "stat_line": {"ops": 0.900, "pa": 200},
                     "stat_line_source": "valucast_input_contract",
+                    "stat_line_source_kind": "current_season",
+                    "stat_line_sample": 200,
+                    "stat_line_sample_unit": "PA",
+                    "stat_line_sample_season": 2026,
+                    "graduation_context": {
+                        "status": "near_graduation",
+                        "unit": "AB",
+                        "current": 119.0,
+                        "limit": 131.0,
+                        "remaining": 12.0,
+                        "graduated": False,
+                    },
                     "stat_line_translated": {"stats": {"OPS": 0.760}},
                     "mlb_stat_line": {"pa": 12, "ops": 0.700},
                 },
@@ -76,6 +88,10 @@ def _rank_payload():
                 "context_only": {
                     "stat_line": {"era": 3.20, "ip": 45.0},
                     "stat_line_source": "valucast_input_contract",
+                    "stat_line_source_kind": "current_season",
+                    "stat_line_sample": 45.0,
+                    "stat_line_sample_unit": "IP",
+                    "stat_line_sample_season": 2026,
                 },
             },
         ],
@@ -261,6 +277,8 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert top_prospect["rank"] == 4
     assert top_prospect["context"]["kind"] == "optional_display_context"
     assert top_prospect["context"]["stat_line_source"] == "valucast_input_contract"
+    assert top_prospect["context"]["stat_line_source_kind"] == "current_season"
+    assert top_prospect["context"]["graduation_context"]["status"] == "near_graduation"
     assert top_prospect["context"]["cross_universe_calibration"]["raw_value"] == 55.5
     assert (
         top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
@@ -710,6 +728,24 @@ def test_rejects_missing_prospect_stat_context():
     )
     assert (
         f"players[{prospect_index}].context.stat_line_source is required for prospects"
+        in problems
+    )
+
+
+def test_rejects_missing_valucast_prospect_stat_provenance():
+    payload = build_snapshot(_rank_payload())
+    prospect_index = next(
+        index
+        for index, row in enumerate(payload["players"])
+        if row["player_type"] == "prospect"
+    )
+    del payload["players"][prospect_index]["context"]["stat_line_source_kind"]
+
+    problems = validate_public_snapshot_payload(payload)
+
+    assert (
+        f"players[{prospect_index}].context.stat_line_source_kind is required "
+        "for ValuCast prospect stat context"
         in problems
     )
 

@@ -28,13 +28,17 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1"
-RANK_VERSION = "0.2.6"
+RANK_VERSION = "0.2.7"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 BUCKET_CALIBRATION_VERSION = "0.2.3"
 FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
 UNCERTAINTY_VERSION = "0.1.0"
+NEAR_GRADUATION_VERSION = "0.1.0"
+ROOKIE_AB_LIMIT = 131.0
+ROOKIE_IP_LIMIT = 51.0
+NEAR_GRADUATION_RATIO = 0.90
 UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
 LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.5
 THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
@@ -220,6 +224,43 @@ def _input_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
     return lookup
 
 
+def _current_stat_expectation_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
+    """Newest current-season stat row per MLBAM+role, used as a regression gate."""
+    lookup: dict[tuple[str, str], dict] = {}
+    for role, bucket in (("hitter", "hitters"), ("pitcher", "pitchers")):
+        for row in (input_contract.get("current") or {}).get(bucket) or []:
+            if row.get("source_kind") != "current_season":
+                continue
+            key = identity_key(row.get("mlbam_id"), role)
+            stat_line = _input_stat_line(row, role)
+            if not key or not _has_skill_stat(stat_line):
+                continue
+            existing = lookup.get(key)
+            if existing is None or _input_row_sort_key(row, role) > _input_row_sort_key(
+                existing,
+                role,
+            ):
+                lookup[key] = row
+    return lookup
+
+
+def _service_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
+    lookup: dict[tuple[str, str], dict] = {}
+    for row in input_contract.get("mlb_service") or []:
+        key = identity_key(row.get("mlbam_id"), row.get("role"))
+        if key:
+            lookup[key] = row
+    return lookup
+
+
+def _rookie_limits(input_contract: dict) -> dict[str, float]:
+    raw = input_contract.get("rookie_limits") or {}
+    return {
+        "at_bats": _clean_float(raw.get("at_bats")) or ROOKIE_AB_LIMIT,
+        "innings_pitched": _clean_float(raw.get("innings_pitched")) or ROOKIE_IP_LIMIT,
+    }
+
+
 def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, float, int]:
     """Prefer the most recent factual row before falling back to sample size."""
     season = _clean_float(row.get("sample_season")) or 0.0
@@ -295,6 +336,72 @@ def _input_stat_line(row: dict | None, role: str | None) -> dict | None:
     return stat_line or None
 
 
+def _has_skill_stat(stat_line: dict | None) -> bool:
+    if not isinstance(stat_line, dict):
+        return False
+    return any(key not in {"pa", "ip"} for key in stat_line)
+
+
+def _stat_line_context(row: dict | None, role: str | None) -> dict:
+    if not row or role not in {"hitter", "pitcher"}:
+        return {}
+    sample = _sample_size(row, role)
+    sample_season = _clean_float(row.get("sample_season"))
+    context = {
+        "stat_line_source_kind": row.get("source_kind"),
+        "stat_line_sample": round(sample, 3),
+        "stat_line_sample_unit": "IP" if role == "pitcher" else "PA",
+        "stat_line_sample_season": int(sample_season)
+        if sample_season is not None
+        else None,
+    }
+    return {key: value for key, value in context.items() if value not in (None, "")}
+
+
+def _graduation_context(
+    service_row: dict | None,
+    role: str | None,
+    limits: dict[str, float],
+) -> dict | None:
+    if not service_row or role not in {"hitter", "pitcher"}:
+        return None
+    if role == "pitcher":
+        current = _clean_float(service_row.get("ip"))
+        limit = limits.get("innings_pitched") or ROOKIE_IP_LIMIT
+        unit = "IP"
+    else:
+        current = _clean_float(service_row.get("ab"))
+        unit = "AB"
+        if current is None or current <= 0:
+            current = _clean_float(service_row.get("pa"))
+            unit = "PA"
+        limit = limits.get("at_bats") or ROOKIE_AB_LIMIT
+    if current is None or limit <= 0:
+        return None
+    graduated = service_row.get("graduated") is True
+    ratio = max(0.0, current / limit)
+    if not graduated and ratio < NEAR_GRADUATION_RATIO:
+        return None
+    status = "graduated" if graduated else "near_graduation"
+    remaining = max(0.0, limit - current)
+    return {
+        "version": NEAR_GRADUATION_VERSION,
+        "status": status,
+        "unit": unit,
+        "current": round(current, 1),
+        "limit": round(limit, 1),
+        "remaining": round(remaining, 1),
+        "ratio": round(min(ratio, 1.0), 3),
+        "graduated": graduated,
+        "label": (
+            "Graduated by rookie limits"
+            if graduated
+            else f"Near graduation: {current:.1f}/{limit:.0f} {unit}"
+        ),
+        "score_effect": "display_only_not_used_for_valucast_score",
+    }
+
+
 def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
     if not row or role not in {"hitter", "pitcher"}:
         return None
@@ -307,6 +414,8 @@ def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
         "level": level,
         "sample": round(sample, 1),
         "sample_unit": "IP" if role == "pitcher" else "PA",
+        "source_kind": row.get("source_kind"),
+        "sample_season": _round(_clean_float(row.get("sample_season")), 0),
     }
 
     if role == "pitcher":
@@ -951,14 +1060,21 @@ def _context(
     adapter_row: dict | None,
     input_row: dict | None,
     role: str | None,
+    service_row: dict | None = None,
+    rookie_limits: dict[str, float] | None = None,
 ) -> dict:
     dd_stat_line = (dd_row or {}).get("stat_line")
     input_stat_line = _input_stat_line(input_row, role)
-    stat_line = dd_stat_line or input_stat_line
-    if dd_stat_line:
-        stat_line_source = "dd_display_context"
-    elif stat_line:
+    use_input_stat_line = bool(input_stat_line) and (
+        _has_skill_stat(input_stat_line) or not dd_stat_line
+    )
+    stat_line = input_stat_line if use_input_stat_line else dd_stat_line
+    stat_context = {}
+    if use_input_stat_line:
         stat_line_source = "valucast_input_contract"
+        stat_context = _stat_line_context(input_row, role)
+    elif dd_stat_line:
+        stat_line_source = "dd_display_context"
     else:
         stat_line_source = None
     context = {
@@ -972,9 +1088,13 @@ def _context(
         "value_history_points": len((dd_row or {}).get("value_history") or []),
         "stat_line": stat_line,
         "stat_line_source": stat_line_source,
+        **stat_context,
         "stat_line_translated": (dd_row or {}).get("stat_line_translated"),
         "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
     }
+    graduation = _graduation_context(service_row, role, rookie_limits or {})
+    if graduation:
+        context["graduation_context"] = graduation
     if adapter_row:
         context["dd_adapter_context"] = {
             "adapter_score": adapter_row.get("adapter_score"),
@@ -1008,6 +1128,54 @@ def _missing_sample(rows: list[dict], missing_keys: set[tuple[str, str]], limit:
     return missing
 
 
+def _current_stat_context_mismatches(
+    board: list[dict],
+    expected_by_key: dict[tuple[str, str], dict],
+    limit: int = 20,
+) -> list[dict]:
+    mismatches = []
+    for row in board:
+        key = identity_key(row.get("mlbam_id"), row.get("role"))
+        if key not in expected_by_key:
+            continue
+        expected = expected_by_key[key]
+        context = row.get("context_only") or {}
+        expected_season = _clean_float(expected.get("sample_season"))
+        actual_season = _clean_float(context.get("stat_line_sample_season"))
+        expected_sample = round(_sample_size(expected, str(row.get("role"))), 1)
+        actual_sample = _clean_float(context.get("stat_line_sample"))
+        actual_sample_rounded = round(actual_sample, 1) if actual_sample is not None else None
+        if (
+            context.get("stat_line_source") == "valucast_input_contract"
+            and context.get("stat_line_source_kind") == "current_season"
+            and (
+                expected_season is None
+                or actual_season is None
+                or int(expected_season) == int(actual_season)
+            )
+            and actual_sample_rounded == expected_sample
+        ):
+            continue
+        mismatches.append(
+            {
+                "rank": row.get("rank"),
+                "name": row.get("name"),
+                "mlbam_id": row.get("mlbam_id"),
+                "role": row.get("role"),
+                "stat_line_source": context.get("stat_line_source"),
+                "stat_line_source_kind": context.get("stat_line_source_kind"),
+                "stat_line_sample_season": context.get("stat_line_sample_season"),
+                "stat_line_sample": context.get("stat_line_sample"),
+                "expected_source_kind": expected.get("source_kind"),
+                "expected_sample_season": expected.get("sample_season"),
+                "expected_sample": expected_sample,
+            }
+        )
+        if len(mismatches) >= limit:
+            break
+    return mismatches
+
+
 def _validation(
     prospect_universe: dict,
     dynasty_layer: dict,
@@ -1019,6 +1187,7 @@ def _validation(
     missing_mlbam_count: int,
     unmatched_layer_keys: set[tuple[str, str]],
     identity_only_fallback_count: int,
+    current_stat_context_mismatches: list[dict],
 ) -> dict:
     universe_date = _generated_date(prospect_universe)
     feed_date = _generated_date(dd_feed or {})
@@ -1042,6 +1211,10 @@ def _validation(
         blockers.append("Top-200 score separation is not strong enough for publication.")
     if not same_day:
         blockers.append("Input artifacts were not generated on the same date.")
+    if current_stat_context_mismatches:
+        blockers.append(
+            "Current prospect stat context did not select the newest factual current-season row."
+        )
 
     return {
         "public_migration_ready": not blockers,
@@ -1058,6 +1231,8 @@ def _validation(
         "missing_mlbam_count": missing_mlbam_count,
         "unmatched_dynasty_layer_count": len(unmatched_layer_keys),
         "identity_only_fallback_count": identity_only_fallback_count,
+        "current_stat_context_mismatch_count": len(current_stat_context_mismatches),
+        "current_stat_context_mismatch_sample": current_stat_context_mismatches[:20],
         "coverage_rate": coverage_rate,
         "duplicate_identity_count": len(duplicate_keys),
         "duplicate_identities": [
@@ -1083,6 +1258,9 @@ def build_prospect_rank_v1(
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
     input_by_key = _input_lookup(input_contract)
+    expected_current_stat_by_key = _current_stat_expectation_lookup(input_contract)
+    service_by_key = _service_lookup(input_contract)
+    rookie_limits = _rookie_limits(input_contract)
     availability_by_key = availability_lookup(prospect_availability)
     adapter_by_key = _adapter_lookup(dd_adapter)
     dd_context_by_key = _dd_context_lookup(dd_feed)
@@ -1109,6 +1287,7 @@ def build_prospect_rank_v1(
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
+        service_row = service_by_key.get(key)
         availability_profile = availability_by_key.get(key)
         if layer_profile:
             score, source, components = _score_components(
@@ -1178,6 +1357,8 @@ def build_prospect_rank_v1(
                     adapter_by_key.get(key),
                     input_row,
                     role,
+                    service_row,
+                    rookie_limits,
                 ),
             }
         )
@@ -1205,6 +1386,7 @@ def build_prospect_rank_v1(
         missing_mlbam_count,
         unmatched_layer_keys,
         identity_only_fallback_count,
+        _current_stat_context_mismatches(board, expected_current_stat_by_key),
     )
     coverage_repair_needed = (
         validation["coverage_rate"] < MIN_PUBLIC_COVERAGE_RATE
@@ -1262,8 +1444,10 @@ def build_prospect_rank_v1(
                 ),
                 "hitter_fields": [
                     "level",
-                    "sample",
-                    "ops",
+                "sample",
+                "source_kind",
+                "sample_season",
+                "ops",
                     "iso",
                     "k_pct",
                     "bb_pct",
@@ -1272,8 +1456,10 @@ def build_prospect_rank_v1(
                 ],
                 "pitcher_fields": [
                     "level",
-                    "sample",
-                    "starter_role",
+                "sample",
+                "source_kind",
+                "sample_season",
+                "starter_role",
                     "era",
                     "whip",
                     "k_per_9",
@@ -1292,6 +1478,11 @@ def build_prospect_rank_v1(
                 "value_history",
                 "stat_line",
                 "stat_line_source",
+                "stat_line_source_kind",
+                "stat_line_sample",
+                "stat_line_sample_unit",
+                "stat_line_sample_season",
+                "graduation_context",
                 "stat_line_translated",
                 "mlb_stat_line",
                 "DD adapter score/rank",
