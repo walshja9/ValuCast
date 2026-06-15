@@ -115,7 +115,7 @@ class TestTranslatedBlock(_CardCase):
             self.skipTest("committed feed predates stat_line_translated")
         resp = self.client.get(f"/player/{row.id}?mode=dd_dynasty", headers=HX)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"MLB-Equivalent Rates", resp.data)
+        self.assertIn(b"Translated Rates", resp.data)
 
     def test_pool_label_carries_all_levels_caveat(self):
         row = next(r for r in app_module.dd_store.get_all()

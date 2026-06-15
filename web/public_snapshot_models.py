@@ -321,14 +321,19 @@ class PublicSnapshotRow:
     @property
     def peak_projection_summary(self) -> str | None:
         summary = self.peak_projection_context.get("summary")
-        return str(summary) if summary else None
+        if not summary:
+            return None
+        text = str(summary)
+        for marker in (
+            "; this is a role and skill-shape projection, not a full stat forecast.",
+            " This is a role and skill-shape projection, not a full stat forecast.",
+        ):
+            text = text.replace(marker, ".")
+        return text.replace("Peak read:", "Projection:")
 
     @property
     def peak_projection_note(self) -> str:
-        return (
-            "Role and skill-shape projection only. This does not change the "
-            "current ValuCast rank or dynasty value."
-        )
+        return "Display-only peak role and shape. Current rank/value unchanged."
 
     @property
     def peak_score_label(self) -> str | None:

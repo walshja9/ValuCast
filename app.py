@@ -2509,7 +2509,7 @@ def prospect_player_card_preview(player_id):
     )
     filename = f"valucast-{filename_slug or 'prospect'}-card.png"
     png_url = f"/prospects/player-card/{escape(player_id)}.png"
-    title = f"{row.name} | ValuCast Player Card"
+    title = f"{row.name} | Ahead of the Curve"
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -2530,8 +2530,8 @@ def prospect_player_card_preview(player_id):
 <body>
   <main>
     <div class="meta">
-      <h1>ValuCast Player Card</h1>
-      <p>{escape(row.name)} · current skill percentiles</p>
+      <h1>Ahead of the Curve</h1>
+      <p>{escape(row.name)} - current skill percentiles + peak context</p>
     </div>
     <div class="card-wrap"><img src="{png_url}" alt="{escape(row.name)} ValuCast player card"></div>
     <div class="actions"><a class="download" href="{png_url}" download="{escape(filename)}">Download PNG</a></div>

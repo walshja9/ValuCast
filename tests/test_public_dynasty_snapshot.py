@@ -382,7 +382,7 @@ def test_snapshot_carries_peak_projection_card_context(tmp_path):
     assert row.peak_score_label == "61.2"
     assert row.peak_role_label == "Everyday Regular"
     assert row.peak_risk_label == "Medium"
-    assert row.peak_projection_summary == "Peak read: everyday regular with medium risk."
+    assert row.peak_projection_summary == "Projection: everyday regular with medium risk."
     assert len(row.peak_shape_items) == 4
     assert row.peak_shape_items[0]["label"] == "Hit"
 

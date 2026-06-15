@@ -118,27 +118,21 @@
                 <div>
                     <span class="profile-card-kicker">ValuCast Peak Projection v1</span>
                     <h4>Projected Peak Shape</h4>
-                    <p class="profile-note">{{ row.peak_projection_note }}</p>
                 </div>
-                {% if row.peak_score_label %}
-                <div class="peak-score-box">
-                    <span>Peak</span>
-                    <strong>{{ row.peak_score_label }}</strong>
-                </div>
-                {% endif %}
+                <p class="profile-note peak-projection-note">{{ row.peak_projection_note }}</p>
             </div>
-            <div class="stat-grid">
-                {% if row.peak_role_label %}<div class="stat-item"><span class="stat-label">Peak Role</span><span class="stat-value">{{ row.peak_role_label }}</span></div>{% endif %}
-                {% if row.peak_floor_label %}<div class="stat-item"><span class="stat-label">Floor</span><span class="stat-value">{{ row.peak_floor_label }}</span></div>{% endif %}
-                {% if row.peak_risk_label %}<div class="stat-item"><span class="stat-label">Risk</span><span class="stat-value">{{ row.peak_risk_label }}</span></div>{% endif %}
-                {% if row.peak_confidence_label %}<div class="stat-item"><span class="stat-label">Confidence</span><span class="stat-value">{{ row.peak_confidence_label }}</span></div>{% endif %}
-                {% if row.peak_eta_label %}<div class="stat-item"><span class="stat-label">Window</span><span class="stat-value">{{ row.peak_eta_label }}</span></div>{% endif %}
+            <div class="peak-summary-strip">
+                {% if row.peak_score_label %}<span><b>Peak</b>{{ row.peak_score_label }}</span>{% endif %}
+                {% if row.peak_role_label %}<span><b>Role</b>{{ row.peak_role_label }}</span>{% endif %}
+                {% if row.peak_risk_label %}<span><b>Risk</b>{{ row.peak_risk_label }}</span>{% endif %}
+                {% if row.peak_confidence_label %}<span><b>Conf</b>{{ row.peak_confidence_label }}</span>{% endif %}
+                {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
             </div>
             {% if row.peak_shape_items %}
             <div class="skill-shape-card peak-shape-card">
                 <div class="skill-shape-head">
-                    <h5>Peak Skill Shape</h5>
-                    <span>ValuCast-owned role projection, not public grades</span>
+                    <h5>Peak Shape</h5>
+                    <span>ValuCast-owned role projection</span>
                 </div>
                 <div class="skill-shape-grid">
                     {% for skill in row.peak_shape_items %}
@@ -325,8 +319,8 @@
         {% if row.stat_line_translated and row.stat_line_translated.get('stats') %}
         {% set tr = row.stat_line_translated %}
         <div class="detail-section translated-section">
-            <h4>MLB-Equivalent Rates
-                <span class="statcast-asof">level-adjusted from {{ tr.get('level_label') or tr.get('level') }} - sticky peripherals only - {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
+            <h4>Translated Rates
+                <span class="statcast-asof">{{ tr.get('level_label') or tr.get('level') }} - sticky MLB-equivalent - {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
                 {% if tr.get('confidence') %}<span class="pct-chip {% if tr.get('confidence') == 'low' %}low{% endif %}">{{ tr.get('confidence') }} confidence</span>{% endif %}
             </h4>
             <div class="stat-grid">
@@ -338,7 +332,7 @@
                 </div>
                 {% endfor %}
             </div>
-            <p class="stat-caption">Only K%, BB%, ISO (hitters) and K/9, BB/9, K-BB% (pitchers) survive the minors-to-MLB jump reliably; other stats are deliberately not translated. Small samples are regressed toward MLB average.</p>
+            <p class="stat-caption">Only the stickiest peripherals are translated. Everything else stays as current MiLB context, with small samples regressed toward MLB average.</p>
         </div>
         {% endif %}
 

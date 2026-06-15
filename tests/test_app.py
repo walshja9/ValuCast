@@ -389,7 +389,8 @@ class TestDynastyMode(unittest.TestCase):
         preview = self.client.get(f"/prospects/player-card/{row.id}")
         self.assertEqual(preview.status_code, 200)
         self.assertIn("text/html", preview.content_type)
-        self.assertIn(b"ValuCast Player Card", preview.data)
+        self.assertIn(b"Ahead of the Curve", preview.data)
+        self.assertIn(b"current skill percentiles + peak context", preview.data)
         self.assertIn(f"/prospects/player-card/{row.id}.png".encode(), preview.data)
 
         png = self.client.get(f"/prospects/player-card/{row.id}.png")
