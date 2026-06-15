@@ -1277,8 +1277,8 @@ def _prospect_player_card_png(row):
 
     draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
     draw.text((48, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
-    draw.text((48, 82), "PLAYER CARD", fill=text, font=_graphic_font(60, bold=True))
-    subtitle = "current skill percentiles + ValuCast read"
+    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=_graphic_font(60, bold=True))
+    subtitle = "player skill percentiles + ValuCast read"
     generated = _editorial_date(dd_store.generated_at)
     if generated:
         subtitle = f"{subtitle} - {generated}"
