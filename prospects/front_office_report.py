@@ -79,14 +79,21 @@ def build_front_office_report(
     buys_validation = (buys_monitor.get("validation") or {})
     failure_summary = (front_office_failures or {}).get("summary") or {}
     blocking_findings = (front_office_failures or {}).get("blocking_findings") or []
+    evidence_gates = (front_office_failures or {}).get("evidence_gates") or []
+    forward_progress = (front_office_failures or {}).get(
+        "forward_archive_progress"
+    ) or {}
     failure_watchlist = {
         "status": (front_office_failures or {}).get("status", "unavailable"),
         "blocking_finding_count": failure_summary.get("blocking_finding_count", 0),
+        "evidence_gate_count": failure_summary.get("evidence_gate_count", 0),
         "front_office_risk_count": failure_summary.get("front_office_risk_count", 0),
         "v0_7_disagreement_count": failure_summary.get("v0_7_disagreement_count", 0),
         "latest_rank_bucket_count": failure_summary.get("latest_rank_bucket_count"),
         "latest_buy_retention_rate": failure_summary.get("latest_buy_retention_rate"),
         "blocking_findings": blocking_findings[:5],
+        "evidence_gates": evidence_gates[:5],
+        "forward_archive_progress": forward_progress,
     }
     governor_ready = quality_governor.get("ready_for_public_snapshot") is True
     governor_checks = quality_governor.get("checks") or []
@@ -270,6 +277,16 @@ def build_front_office_report(
                     "forward_next_target_grade"
                 ),
                 "forward_thresholds": outcome_track.get("forward_thresholds"),
+                "evidence_gates": evidence_gates,
+                "rank_comparisons_needed": forward_progress.get(
+                    "remaining_rank_comparisons"
+                ),
+                "buy_comparisons_needed": forward_progress.get(
+                    "remaining_buy_comparisons"
+                ),
+                "observation_days_needed": forward_progress.get(
+                    "remaining_span_days"
+                ),
                 "limitations": outcome_track.get("interpretation"),
                 "buys_monitor_status": buys_monitor.get("status"),
                 "buy_comparison_count": buys_monitoring.get("buy_comparison_count"),

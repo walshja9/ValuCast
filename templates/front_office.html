@@ -30,27 +30,45 @@
         <div class="front-office-card-head">
             <div>
                 <span class="eyebrow">Evidence watchlist</span>
-                <h3>What still blocks the front-office grade</h3>
+                <h3>What still gates the front-office grade</h3>
             </div>
             <span class="grade-chip">{{ report.failure_watchlist.status | replace("_", " ") | title }}</span>
         </div>
         <div class="front-office-watchlist-stats">
             <div>
                 <span>{{ report.failure_watchlist.blocking_finding_count }}</span>
-                <small>Blocking findings</small>
+                <small>True blockers</small>
+            </div>
+            <div>
+                <span>{{ report.failure_watchlist.evidence_gate_count }}</span>
+                <small>Evidence gates</small>
             </div>
             <div>
                 <span>{{ report.failure_watchlist.front_office_risk_count }}</span>
                 <small>Risk flags</small>
             </div>
-            <div>
-                <span>{{ report.failure_watchlist.v0_7_disagreement_count }}</span>
-                <small>v0.7 disagreements</small>
-            </div>
         </div>
+        {% set progress = report.failure_watchlist.forward_archive_progress or {} %}
+        {% if progress %}
+        <p class="front-office-progress">
+            Next target: <strong>{{ progress.next_target_grade }}</strong>.
+            Needs {{ progress.remaining_rank_comparisons }} more rank archive comparisons,
+            {{ progress.remaining_buy_comparisons }} more buy comparisons, and
+            {{ progress.remaining_span_days }} more observation days.
+        </p>
+        {% endif %}
         {% if report.failure_watchlist.blocking_findings %}
+        <h4>True blockers</h4>
         <ul class="front-office-failures">
             {% for finding in report.failure_watchlist.blocking_findings %}
+            <li>{{ finding.message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if report.failure_watchlist.evidence_gates %}
+        <h4>Evidence gates</h4>
+        <ul class="front-office-failures">
+            {% for finding in report.failure_watchlist.evidence_gates %}
             <li>{{ finding.message }}</li>
             {% endfor %}
         </ul>

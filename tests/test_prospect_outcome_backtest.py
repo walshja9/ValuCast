@@ -93,6 +93,8 @@ def test_outcome_backtest_separates_realized_evidence_from_forward_observation()
     ] is False
     assert payload["evidence"]["bucket_cohort"]["status"] == "ready"
     assert payload["validation"]["bucket_cohort_evidence_ready"] is True
+    assert payload["validation"]["blockers"] == []
+    assert len(payload["validation"]["evidence_gates"]) == 2
     assert payload["source_policy"]["feeds_model_score"] is False
     assert payload["front_office_track"]["grade"] == "B+"
 

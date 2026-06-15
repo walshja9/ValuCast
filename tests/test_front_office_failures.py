@@ -28,6 +28,7 @@ def _forward():
 
 def _outcome():
     return {
+        "status": "evidence_ready",
         "front_office_track": {
             "cap_reasons": [
                 "Ordinal bridge is still partial.",
@@ -88,11 +89,28 @@ def test_front_office_failures_tracks_caps_risks_and_v07_disagreements():
     )
 
     assert payload["source_policy"]["feeds_model_score"] is False
-    assert payload["summary"]["blocking_finding_count"] == 3
+    assert payload["summary"]["blocking_finding_count"] == 0
+    assert payload["summary"]["evidence_gate_count"] == 3
     assert payload["front_office_risks"][0]["name"] == "Risky Prospect"
     assert payload["v0_7_disagreements"][0]["name"] == "V07 Up"
     assert payload["forward_archive_thresholds"]["next_target_grade"] == "A-"
+    assert payload["forward_archive_progress"]["remaining_rank_comparisons"] == 6
     assert payload["latest_rank_bucket_watchlist"][0]["bucket"].startswith("hitter")
+
+
+def test_front_office_failures_fail_closed_on_missing_outcome_status():
+    outcome = _outcome()
+    outcome.pop("status")
+
+    payload = build_front_office_failures(
+        _forward(),
+        outcome,
+        _model_v07(),
+        _rank(),
+    )
+
+    assert payload["summary"]["blocking_finding_count"] == 1
+    assert payload["blocking_findings"][0]["kind"] == "outcome_evidence"
 
 
 def test_run_and_validate_front_office_failures(tmp_path):

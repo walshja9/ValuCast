@@ -39,9 +39,29 @@
 
     <section>
         <h3>Prospect Rank v1</h3>
-        <p>The <strong>Prospects board</strong> is ValuCast's own prospect ordering. It
-        combines factual current performance, age/level context, draft/signing investment,
-        and availability/sample risk into one baseball-first rank.</p>
+        <p>The <strong>Prospects board</strong> is ValuCast's own prospect ordering.
+        Top prospects are generated from a universal baseball profile first, then
+        translated into a public rank and value. The score is built from factual current
+        performance, age/level context, draft/signing investment, historical outcome
+        patterns, and availability/sample risk.</p>
+
+        <details>
+            <summary>How top prospects are generated</summary>
+            <ol>
+                <li>Start with the current eligible prospect universe and MLBAM identity.</li>
+                <li>Build each player's factual baseball profile: role, age, level,
+                    current MiLB stat line, sample size, draft/signing facts, ETA, and
+                    availability context.</li>
+                <li>Score the profile through ValuCast's prospect model and universal
+                    outcome index.</li>
+                <li>Apply sample, availability, and bucket calibration rules by group,
+                    not by name.</li>
+                <li>Rank the final scores into one universal prospect board.</li>
+            </ol>
+            <p><strong>Category Fit</strong> is a separate league-settings view. It can
+            help a user understand roster fit, but it does not generate the public
+            prospect rank.</p>
+        </details>
 
         <details>
             <summary>What can and cannot affect a prospect score</summary>

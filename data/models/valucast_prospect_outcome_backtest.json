@@ -470,11 +470,22 @@
   },
   "status": "evidence_ready",
   "validation": {
-    "blockers": [
-      "Ordinal bridge outcome gate is not active yet.",
-      "Forward archives are still collecting; no live-outcome stability review yet."
-    ],
+    "blockers": [],
     "bucket_cohort_evidence_ready": true,
+    "evidence_gates": [
+      {
+        "current": "fallback",
+        "kind": "ordinal_bridge",
+        "message": "Ordinal bridge outcome gate is not active yet.",
+        "required": "active"
+      },
+      {
+        "current": "collecting",
+        "kind": "forward_archives",
+        "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+        "required": "review_ready"
+      }
+    ],
     "forward_evidence_ready": false,
     "minimum_realized_outcome_sample_size": 2000,
     "realized_evidence_ready": true,

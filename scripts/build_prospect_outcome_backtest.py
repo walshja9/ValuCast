@@ -16,6 +16,7 @@ def main() -> None:
         f"front_office_grade={result['front_office_grade']} "
         f"score={result['front_office_score']} "
         f"blockers={result['blocker_count']} "
+        f"evidence_gates={result['evidence_gate_count']} "
         f"-> {result['artifact_path']}"
     )
 

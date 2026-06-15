@@ -19,6 +19,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_front_office_failures.json"
 REPORT_VERSION = "0.1.0"
 MAX_FRONT_OFFICE_RISKS = 25
 MAX_V07_DISAGREEMENTS = 25
+MIN_FORWARD_ARCHIVE_COMPARISONS = 7
 
 
 def _load(path: Path) -> dict:
@@ -156,6 +157,78 @@ def _v07_disagreements(model_v07: dict) -> list[dict]:
     return rows[:MAX_V07_DISAGREEMENTS]
 
 
+def _forward_archive_progress(forward_validation: dict) -> dict:
+    metrics = forward_validation.get("metrics") or {}
+    evidence_status = forward_validation.get("evidence_status") or {}
+    thresholds = evidence_status.get("thresholds") or {}
+    next_target = evidence_status.get("next_target_grade") or "A-"
+    target_threshold = thresholds.get(next_target) or {}
+    rank_count = _clean_int(metrics.get("rank_comparison_count")) or 0
+    buy_count = _clean_int(metrics.get("buy_comparison_count")) or 0
+    span_days = _clean_int(metrics.get("observation_span_days")) or 0
+    required_rank = (
+        _clean_int(target_threshold.get("minimum_rank_comparisons"))
+        or MIN_FORWARD_ARCHIVE_COMPARISONS
+    )
+    required_buy = (
+        _clean_int(target_threshold.get("minimum_buy_comparisons"))
+        or MIN_FORWARD_ARCHIVE_COMPARISONS
+    )
+    required_span = _clean_int(target_threshold.get("minimum_span_days")) or 14
+    return {
+        "status": evidence_status.get("status") or forward_validation.get("status"),
+        "next_target_grade": next_target,
+        "current_supported_grade": evidence_status.get("current_supported_grade"),
+        "rank_comparison_count": rank_count,
+        "buy_comparison_count": buy_count,
+        "observation_span_days": span_days,
+        "minimum_rank_comparisons": required_rank,
+        "minimum_buy_comparisons": required_buy,
+        "minimum_span_days": required_span,
+        "remaining_rank_comparisons": max(0, required_rank - rank_count),
+        "remaining_buy_comparisons": max(0, required_buy - buy_count),
+        "remaining_span_days": max(0, required_span - span_days),
+        "missing": target_threshold.get("missing") or [],
+    }
+
+
+def _evidence_gates(
+    outcome_backtest: dict,
+    forward_validation: dict,
+) -> tuple[list[dict], dict]:
+    validation = outcome_backtest.get("validation") or {}
+    gates = []
+    for gate in validation.get("evidence_gates") or []:
+        if isinstance(gate, dict):
+            gates.append(gate)
+
+    # Backward compatibility for older outcome artifacts that only carried cap reasons.
+    if not gates:
+        for reason in (outcome_backtest.get("front_office_track") or {}).get(
+            "cap_reasons"
+        ) or []:
+            gates.append(
+                {
+                    "kind": "front_office_cap",
+                    "message": reason,
+                    "current": "collecting",
+                    "required": "review_ready",
+                }
+            )
+
+    progress = _forward_archive_progress(forward_validation)
+    if progress["rank_comparison_count"] < MIN_FORWARD_ARCHIVE_COMPARISONS:
+        gates.append(
+            {
+                "kind": "forward_history",
+                "message": "Fewer than seven rank archive comparisons are available.",
+                "current": progress["rank_comparison_count"],
+                "required": MIN_FORWARD_ARCHIVE_COMPARISONS,
+            }
+        )
+    return gates, progress
+
+
 def build_front_office_failures(
     forward_validation: dict,
     outcome_backtest: dict,
@@ -166,21 +239,23 @@ def build_front_office_failures(
     generated = generated_at or rank_payload.get("generated_at") or datetime.now(
         timezone.utc
     ).isoformat()
-    outcome_track = outcome_backtest.get("front_office_track") or {}
     latest_rank = forward_validation.get("latest_rank_comparison") or {}
     latest_buy = forward_validation.get("latest_buy_comparison") or {}
     front_office_risks = _front_office_risks(rank_payload)
     v07_disagreements = _v07_disagreements(model_v07)
+    evidence_gates, forward_progress = _evidence_gates(
+        outcome_backtest, forward_validation
+    )
     blocking_findings = []
-    for reason in outcome_track.get("cap_reasons") or []:
-        blocking_findings.append({"kind": "front_office_cap", "message": reason})
-    if (forward_validation.get("metrics") or {}).get("rank_comparison_count", 0) < 7:
+    if outcome_backtest.get("status") != "evidence_ready":
         blocking_findings.append(
             {
-                "kind": "forward_history",
-                "message": "Fewer than seven rank archive comparisons are available.",
+                "kind": "outcome_evidence",
+                "message": "Realized outcome evidence is not ready.",
             }
         )
+    for blocker in (outcome_backtest.get("validation") or {}).get("blockers") or []:
+        blocking_findings.append({"kind": "outcome_blocker", "message": blocker})
     return {
         "artifact": "valucast_front_office_failures",
         "report_version": REPORT_VERSION,
@@ -198,12 +273,15 @@ def build_front_office_failures(
         },
         "summary": {
             "blocking_finding_count": len(blocking_findings),
+            "evidence_gate_count": len(evidence_gates),
             "front_office_risk_count": len(front_office_risks),
             "v0_7_disagreement_count": len(v07_disagreements),
             "latest_rank_bucket_count": latest_rank.get("bucket_count"),
             "latest_buy_retention_rate": latest_buy.get("retention_rate"),
         },
         "blocking_findings": blocking_findings,
+        "evidence_gates": evidence_gates,
+        "forward_archive_progress": forward_progress,
         "forward_archive_thresholds": forward_validation.get("evidence_status"),
         "latest_rank_bucket_watchlist": latest_rank.get("buckets", [])[:8],
         "latest_buy_largest_movers": latest_buy.get("largest_movers", [])[:15],
@@ -239,6 +317,7 @@ def run_front_office_failures(
         "artifact_path": str(path),
         "status": payload["status"],
         "blocking_finding_count": summary["blocking_finding_count"],
+        "evidence_gate_count": summary["evidence_gate_count"],
         "front_office_risk_count": summary["front_office_risk_count"],
         "v0_7_disagreement_count": summary["v0_7_disagreement_count"],
     }

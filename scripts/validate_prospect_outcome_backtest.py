@@ -55,6 +55,8 @@ def validate_outcome_backtest(path: Path = OUTCOME_PATH) -> tuple[dict | None, l
         problems.append("validation.realized_outcome_sample_size must be positive")
     if not isinstance(validation.get("blockers"), list):
         problems.append("validation.blockers must be a list")
+    if not isinstance(validation.get("evidence_gates"), list):
+        problems.append("validation.evidence_gates must be a list")
     return payload, problems
 
 

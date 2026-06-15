@@ -66,6 +66,7 @@ def validate_front_office_report(path: Path = REPORT_PATH) -> tuple[dict | None,
             problems.append("failure_watchlist.status is required")
         for field in (
             "blocking_finding_count",
+            "evidence_gate_count",
             "front_office_risk_count",
             "v0_7_disagreement_count",
         ):
@@ -73,6 +74,10 @@ def validate_front_office_report(path: Path = REPORT_PATH) -> tuple[dict | None,
                 problems.append(f"failure_watchlist.{field} must be an integer")
         if not isinstance(failure_watchlist.get("blocking_findings"), list):
             problems.append("failure_watchlist.blocking_findings must be a list")
+        if not isinstance(failure_watchlist.get("evidence_gates"), list):
+            problems.append("failure_watchlist.evidence_gates must be a list")
+        if not isinstance(failure_watchlist.get("forward_archive_progress"), dict):
+            problems.append("failure_watchlist.forward_archive_progress must be an object")
     return payload, problems
 
 

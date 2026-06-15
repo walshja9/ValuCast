@@ -14,6 +14,7 @@ def main() -> None:
         "ValuCast front-office failures: "
         f"status={result['status']} "
         f"blocking={result['blocking_finding_count']} "
+        f"evidence_gates={result['evidence_gate_count']} "
         f"risks={result['front_office_risk_count']} "
         f"v07_disagreements={result['v0_7_disagreement_count']} "
         f"-> {result['artifact_path']}"

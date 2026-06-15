@@ -45,6 +45,7 @@ def validate_front_office_failures(
     else:
         for field in (
             "blocking_finding_count",
+            "evidence_gate_count",
             "front_office_risk_count",
             "v0_7_disagreement_count",
         ):
@@ -52,6 +53,7 @@ def validate_front_office_failures(
                 problems.append(f"summary.{field} must be an integer")
     for field in (
         "blocking_findings",
+        "evidence_gates",
         "latest_rank_bucket_watchlist",
         "latest_buy_largest_movers",
         "front_office_risks",
@@ -59,6 +61,20 @@ def validate_front_office_failures(
     ):
         if not isinstance(payload.get(field), list):
             problems.append(f"{field} must be a list")
+    progress = payload.get("forward_archive_progress")
+    if not isinstance(progress, dict):
+        problems.append("forward_archive_progress must be an object")
+    else:
+        for field in (
+            "rank_comparison_count",
+            "buy_comparison_count",
+            "observation_span_days",
+            "remaining_rank_comparisons",
+            "remaining_buy_comparisons",
+            "remaining_span_days",
+        ):
+            if not isinstance(progress.get(field), int):
+                problems.append(f"forward_archive_progress.{field} must be an integer")
     if not isinstance(payload.get("forward_archive_thresholds"), dict):
         problems.append("forward_archive_thresholds must be an object")
     return payload, problems
@@ -81,6 +97,7 @@ def main() -> int:
     print(
         "front office failures: "
         f"blocking={summary.get('blocking_finding_count')} "
+        f"evidence_gates={summary.get('evidence_gate_count')} "
         f"risks={summary.get('front_office_risk_count')} "
         f"v07_disagreements={summary.get('v0_7_disagreement_count')}"
     )

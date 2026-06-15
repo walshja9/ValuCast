@@ -248,14 +248,29 @@ def build_outcome_backtest(
     raw_score = min(raw_score, 100)
 
     blockers = []
+    evidence_gates = []
     if dynasty_gate != "active":
         blockers.append("Universal dynasty outcome distribution has not passed both roles.")
     if adapter_gate != "active":
         blockers.append("League adapter outcome backtest has not passed both roles.")
     if model_board_gate != "active":
-        blockers.append("Ordinal bridge outcome gate is not active yet.")
+        evidence_gates.append(
+            {
+                "kind": "ordinal_bridge",
+                "message": "Ordinal bridge outcome gate is not active yet.",
+                "current": model_board_gate,
+                "required": "active",
+            }
+        )
     if forward_status != "review_ready":
-        blockers.append("Forward archives are still collecting; no live-outcome stability review yet.")
+        evidence_gates.append(
+            {
+                "kind": "forward_archives",
+                "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+                "current": forward_status,
+                "required": "review_ready",
+            }
+        )
 
     score_cap = 100
     cap_reasons = []
@@ -345,6 +360,7 @@ def build_outcome_backtest(
             "realized_evidence_ready": dynasty_gate == "active" and adapter_gate == "active",
             "bucket_cohort_evidence_ready": bucket_cohort_ready,
             "forward_evidence_ready": forward_status == "review_ready",
+            "evidence_gates": evidence_gates,
             "blockers": blockers,
         },
         "generated_dates": {
@@ -387,4 +403,5 @@ def run_outcome_backtest(
         "front_office_grade": payload["front_office_track"]["grade"],
         "front_office_score": payload["front_office_track"]["score"],
         "blocker_count": len(payload["validation"]["blockers"]),
+        "evidence_gate_count": len(payload["validation"]["evidence_gates"]),
     }

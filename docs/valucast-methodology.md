@@ -47,11 +47,12 @@ We built ValuCast's projections as a ladder of rungs, each gated by held-out val
 Prospect Rank v1 is ValuCast's own prospect ordering. It combines ValuCast-owned
 factual signals into one baseball-first rank:
 
-- current MiLB performance and sample reliability
-- age/level context
-- factual draft/signing investment
-- factual availability and sample-risk context
-- the shadow Prospect Model v0.6 and universal outcome context
+1. Start with the current eligible prospect universe and MLBAM identity.
+2. Build each player's factual baseball profile: role, age, level, current MiLB stat
+   line, sample size, draft/signing facts, ETA, and availability context.
+3. Score the profile through Prospect Model v0.6 and the universal outcome index.
+4. Apply sample, availability, and bucket calibration rules by group, not by name.
+5. Rank the final scores into one universal prospect board.
 
 DD ranks, DD values, DD value history, public prospect rankings, market signals,
 and DD adapter ranks or scores are display/comparison context only. They can be
@@ -61,6 +62,9 @@ ValuCast prospect score.
 Bucket calibration is applied by rule, not by name. Current rules cover
 lower-minors pedigree compression, thin upper-level pitcher samples, and
 upper-level hitters with full current samples but limited game impact.
+
+Category Fit is a separate league-settings view. It can help a user understand
+roster fit, but it does not generate the public prospect rank.
 
 ## Verdict ledger
 | Rung | Result |
