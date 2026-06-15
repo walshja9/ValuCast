@@ -1,0 +1,103 @@
+{
+  "artifact": "valucast_front_office_report",
+  "generated_at": "2026-06-14T20:26:06.130813+00:00",
+  "next_build_order": [
+    "Expand realized outcome backtests by bucket and cohort.",
+    "Train/compare Prospect Model v0.7 against v0.6 by bucket.",
+    "Promote uncertainty bands into every prospect explanation.",
+    "Move DD-hosted factual input production into ValuCast-owned raw jobs.",
+    "Keep the front-office report public and fail-loud when evidence regresses."
+  ],
+  "overall": {
+    "grade": "A-",
+    "score": 90,
+    "target": "A+ product/pipeline/independence/prospect credibility; B front-office track."
+  },
+  "pillars": [
+    {
+      "evidence": {
+        "public_snapshot_ready": true,
+        "quality_governor_ready": true,
+        "row_count": null,
+        "surface_readiness": {
+          "buys": true,
+          "dynasty": true,
+          "prospects": true
+        }
+      },
+      "grade": "A",
+      "name": "Product readiness",
+      "score": 95,
+      "status": "public_ready"
+    },
+    {
+      "evidence": {
+        "duplicate_identity_count": 0,
+        "required_fields_complete": true,
+        "same_day_freshness": true
+      },
+      "grade": "A-",
+      "name": "Data pipeline readiness",
+      "score": 92,
+      "status": "same_day_fresh"
+    },
+    {
+      "evidence": {
+        "direct_raw_ownership_score": 1.0,
+        "last_external_trust_boundary": {
+          "consumer_side_gates": [
+            "sync_dd_prospect_inputs",
+            "Prospect Model validators",
+            "Prospect Rank v1 validators"
+          ],
+          "current_boundary": "DD-hosted factual input contract",
+          "desired_boundary": "ValuCast-owned raw ingestion and factual contract",
+          "remaining_trust_assumption": "ValuCast currently trusts the upstream producer to label factual fields honestly before ValuCast re-validates the contract."
+        },
+        "raw_data_independence_complete": false
+      },
+      "grade": "B+",
+      "name": "Independence",
+      "score": 88,
+      "status": "boundary_hardened"
+    },
+    {
+      "evidence": {
+        "outcome_grade": "B",
+        "outcome_score": 84,
+        "v07_ready_for_backtest": true,
+        "v07_top200_factual_context_coverage": 1.0
+      },
+      "grade": "A-",
+      "name": "Prospect credibility",
+      "score": 90,
+      "status": "historical_evidence_ready"
+    },
+    {
+      "evidence": {
+        "buy_comparison_count": 1,
+        "buys_monitor_status": "collecting",
+        "current_grade": "B",
+        "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
+        "observation_span_days": 1,
+        "target_grade": "B"
+      },
+      "grade": "B",
+      "name": "MLB front-office track",
+      "score": 84,
+      "status": "in_progress"
+    }
+  ],
+  "report_version": "0.1.0",
+  "source_policy": {
+    "dd_ranks_used": false,
+    "dd_values_used": false,
+    "external_rankings_used": false,
+    "feeds_buy_score": false,
+    "feeds_model_score": false,
+    "feeds_public_rank": false,
+    "kind": "readiness_report",
+    "market_values_used": false
+  },
+  "status": "front_office_track_active"
+}

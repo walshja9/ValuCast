@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Front Office Track | ValuCast{% endblock %}
+{% block content %}
+<article class="front-office-report">
+    <div class="topline">
+        <h2>Front Office Track</h2>
+        <a href="/" class="back">&larr; Back to rankings</a>
+    </div>
+
+    {% if not report %}
+    <section class="glass">
+        <h3>Report unavailable</h3>
+        <p>The front-office readiness report will appear after the next data build.</p>
+    </section>
+    {% else %}
+    <section class="front-office-hero glass">
+        <div>
+            <span class="eyebrow">ValuCast readiness</span>
+            <h3>{{ report.overall.grade }} overall</h3>
+            <p>{{ report.overall.target }}</p>
+        </div>
+        <div class="front-office-score">
+            <span>{{ report.overall.score }}</span>
+            <small>/100</small>
+        </div>
+    </section>
+
+    <section class="front-office-grid">
+        {% for pillar in report.pillars %}
+        <article class="front-office-card glass">
+            <div class="front-office-card-head">
+                <h3>{{ pillar.name }}</h3>
+                <span class="grade-chip">{{ pillar.grade }}</span>
+            </div>
+            <p class="front-office-status">{{ pillar.status | replace("_", " ") | title }}</p>
+            <dl>
+                {% for key, value in pillar.evidence.items() %}
+                {% if value is string or value is number or value is boolean %}
+                <div>
+                    <dt>{{ key | replace("_", " ") | title }}</dt>
+                    <dd>{{ value }}</dd>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </dl>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="glass">
+        <h3>Next Build Order</h3>
+        <ol class="front-office-next">
+            {% for item in report.next_build_order %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+    {% endif %}
+</article>
+{% endblock %}

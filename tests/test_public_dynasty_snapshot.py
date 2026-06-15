@@ -442,6 +442,14 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
             "bb_pct": 9.8,
             "bb_minus_k_pct": -3.1,
         },
+        "uncertainty": {
+            "version": "0.1.0",
+            "kind": "display_only_score_interval",
+            "band": "moderate",
+            "lower": 48.0,
+            "upper": 62.0,
+            "score_effect": "none",
+        },
     }
     payload = build_snapshot(
         rank_payload,
@@ -472,6 +480,7 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
         {"label": "ISO", "value": "0.261"},
         {"label": "BB-K", "value": "-3.1%"},
     )
+    assert row.uncertainty_label == "Moderate band: 48.0-62.0"
     assert row.why_rank_chips == (
         {
             "label": "Impact bat",

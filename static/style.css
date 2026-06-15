@@ -297,6 +297,26 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .methodology summary { cursor: pointer; font-weight: 600; color: var(--c-text); }
 .methodology details[open] summary { margin-bottom: 0.5rem; }
 .methodology details code { background: var(--surface-2); padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.85rem; }
+
+.front-office-report { max-width: 1100px; margin: 0 auto; display: grid; gap: 1rem; }
+.front-office-hero { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.1rem; }
+.front-office-hero .eyebrow { color: var(--c-green); font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.front-office-hero h3 { font-size: clamp(2rem, 7vw, 4rem); margin: .2rem 0; }
+.front-office-score { text-align: right; color: var(--c-green); font-weight: 900; }
+.front-office-score span { font-size: clamp(2.4rem, 8vw, 5rem); line-height: 1; }
+.front-office-score small { color: var(--c-muted); font-size: .9rem; }
+.front-office-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .85rem; }
+.front-office-card { padding: .95rem; }
+.front-office-card-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.front-office-card h3 { margin: 0; font-size: .95rem; }
+.grade-chip { border: 1px solid rgba(52, 211, 153, .35); background: rgba(52, 211, 153, .12); color: var(--c-green); border-radius: 999px; padding: .2rem .5rem; font-weight: 900; }
+.front-office-status { color: var(--c-muted); font-size: .8rem; margin: .35rem 0 .65rem; }
+.front-office-card dl { display: grid; gap: .4rem; margin: 0; }
+.front-office-card dl div { display: flex; justify-content: space-between; gap: .75rem; border-top: 1px solid var(--c-border); padding-top: .4rem; }
+.front-office-card dt { color: var(--c-muted); font-size: .72rem; }
+.front-office-card dd { margin: 0; text-align: right; font-weight: 800; }
+.front-office-next { margin: .5rem 0 0; padding-left: 1.2rem; }
+.front-office-next li { margin: .35rem 0; }
 .methodology .ledger td:first-child { white-space: nowrap; }
 .provenance-table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; font-size: 0.9rem; }
 .provenance-table th, .provenance-table td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--c-border); }

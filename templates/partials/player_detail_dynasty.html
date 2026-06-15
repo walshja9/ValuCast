@@ -86,6 +86,9 @@
                 {% if row.factual_skill_label %}
                 <div class="stat-item"><span class="stat-label">Skill Read</span><span class="stat-value">{{ row.factual_skill_label }}</span></div>
                 {% endif %}
+                {% if row.uncertainty_label %}
+                <div class="stat-item"><span class="stat-label">Uncertainty</span><span class="stat-value">{{ row.uncertainty_label }}</span></div>
+                {% endif %}
                 {% for item in row.factual_context_stat_items %}
                 <div class="stat-item"><span class="stat-label">{{ item.label }}</span><span class="stat-value">{{ item.value }}</span></div>
                 {% endfor %}

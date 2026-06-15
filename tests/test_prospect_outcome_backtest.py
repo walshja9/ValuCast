@@ -1,0 +1,111 @@
+"""Tests for the unified prospect outcome evidence artifact."""
+import json
+
+from prospects.outcome_backtest import build_outcome_backtest
+from prospects.outcome_backtest import run_outcome_backtest
+from scripts.validate_prospect_outcome_backtest import validate_outcome_backtest
+
+
+def _role(sample=300):
+    return {
+        "role_research_gate": "active",
+        "sample_size": sample,
+        "fold_count": 3,
+        "candidate_rank_concordance": 0.7,
+        "baseline_rank_concordance": 0.65,
+        "candidate_multiclass_brier": 0.18,
+        "baseline_multiclass_brier": 0.20,
+        "candidate_top_quartile_precision": 0.35,
+        "baseline_top_quartile_precision": 0.30,
+    }
+
+
+def _prospect_model():
+    return {
+        "status": "shadow_only",
+        "candidate_count": 100,
+        "board_gate": {"status": "fallback"},
+        "impact_board_gate": {"status": "active"},
+    }
+
+
+def _dynasty_backtest():
+    return {
+        "generated_at": "2026-06-14T12:00:00+00:00",
+        "promotion": {"dynasty_layer_research_gate": "active"},
+        "roles": {"hitter": _role(1100), "pitcher": _role(1120)},
+    }
+
+
+def _adapter_backtest():
+    return {
+        "generated_at": "2026-06-14T12:00:00+00:00",
+        "promotion": {"adapter_research_gate": "active"},
+        "roles": {"hitter": _role(1090), "pitcher": _role(1070)},
+    }
+
+
+def _forward_validation():
+    return {
+        "generated_at": "2026-06-14T12:00:00+00:00",
+        "status": "collecting",
+        "metrics": {"rank_comparison_count": 1},
+        "recommendations": ["Keep collecting."],
+    }
+
+
+def _model_v07():
+    return {
+        "generated_at": "2026-06-14T12:00:00+00:00",
+        "status": "shadow_preview",
+        "model_version": "0.7.0-preview.1",
+        "validation": {"ready_for_backtest": True, "blockers": []},
+    }
+
+
+def test_outcome_backtest_separates_realized_evidence_from_forward_observation():
+    payload = build_outcome_backtest(
+        _prospect_model(),
+        _dynasty_backtest(),
+        _adapter_backtest(),
+        _forward_validation(),
+        _model_v07(),
+    )
+
+    assert payload["status"] == "evidence_ready"
+    assert payload["evidence"]["dynasty_fixed_horizon"]["status"] == "active"
+    assert payload["evidence"]["adapter_fixed_horizon"]["status"] == "active"
+    assert payload["evidence"]["forward_observation"][
+        "is_realized_outcome_accuracy_evidence"
+    ] is False
+    assert payload["source_policy"]["feeds_model_score"] is False
+    assert payload["front_office_track"]["grade"] in {"B-", "B", "B+", "A-", "A"}
+
+
+def test_run_and_validate_outcome_backtest(tmp_path):
+    paths = {}
+    payloads = {
+        "model": _prospect_model(),
+        "dynasty": _dynasty_backtest(),
+        "adapter": _adapter_backtest(),
+        "forward": _forward_validation(),
+        "v07": _model_v07(),
+    }
+    for name, payload in payloads.items():
+        paths[name] = tmp_path / f"{name}.json"
+        paths[name].write_text(json.dumps(payload), encoding="utf-8")
+    artifact_path = tmp_path / "outcome.json"
+
+    result = run_outcome_backtest(
+        prospect_model_path=paths["model"],
+        dynasty_backtest_path=paths["dynasty"],
+        adapter_backtest_path=paths["adapter"],
+        forward_validation_path=paths["forward"],
+        model_v07_path=paths["v07"],
+        artifact_path=artifact_path,
+    )
+    payload, problems = validate_outcome_backtest(artifact_path)
+
+    assert result["status"] == "evidence_ready"
+    assert payload["artifact"] == "valucast_prospect_outcome_backtest"
+    assert problems == []

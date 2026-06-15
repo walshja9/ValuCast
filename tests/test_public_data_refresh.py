@@ -216,6 +216,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "VALUCAST_BUYS_MONITOR": tmp_path / "valucast_buys_monitor.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
         "PROSPECT_MODEL_V07": tmp_path / "prospect_model_v07.json",
+        "PROSPECT_OUTCOME_BACKTEST": tmp_path / "prospect_outcome_backtest.json",
+        "RAW_DATA_INDEPENDENCE_AUDIT": tmp_path / "raw_data_independence.json",
+        "FRONT_OFFICE_REPORT": tmp_path / "front_office_report.json",
         "PROSPECT_AVAILABILITY": tmp_path / "prospect_availability.json",
         "PROSPECT_CALIBRATION_REPORT": tmp_path / "prospect_calibration_report.json",
         "PROSPECT_FORWARD_VALIDATION": tmp_path / "prospect_forward_validation.json",
@@ -260,6 +263,15 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_MODEL_V07"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PROSPECT_OUTCOME_BACKTEST"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["RAW_DATA_INDEPENDENCE_AUDIT"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["FRONT_OFFICE_REPORT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_AVAILABILITY"].write_text(
@@ -307,11 +319,17 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/build_prospect_calibration_report.py" in workflow
     assert "python scripts/build_prospect_forward_validation.py" in workflow
     assert "python scripts/build_valucast_buys_monitor.py" in workflow
+    assert "python scripts/build_prospect_outcome_backtest.py" in workflow
+    assert "python scripts/build_raw_data_independence_audit.py" in workflow
+    assert "python scripts/build_front_office_report.py" in workflow
     assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_model_v07.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
     assert "python scripts/validate_prospect_forward_validation.py" in workflow
+    assert "python scripts/validate_prospect_outcome_backtest.py" in workflow
+    assert "python scripts/validate_raw_data_independence_audit.py" in workflow
     assert "python scripts/validate_valucast_buys_monitor.py" in workflow
+    assert "python scripts/validate_front_office_report.py" in workflow
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/models/valucast_mlb_availability.json" in workflow
     assert "data/models/valucast_mlb_roster_status.json" in workflow
@@ -326,6 +344,9 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_prospect_calibration_report.json" in workflow
     assert "data/models/valucast_prospect_forward_validation.json" in workflow
     assert "data/models/valucast_prospect_buys_monitor.json" in workflow
+    assert "data/models/valucast_prospect_outcome_backtest.json" in workflow
+    assert "data/models/valucast_raw_data_independence_audit.json" in workflow
+    assert "data/models/valucast_front_office_report.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ github.event_name == 'workflow_dispatch' "

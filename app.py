@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+import json
 import math
 import os
 import sys
@@ -1501,6 +1502,16 @@ def methodology():
         hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),
     )
+
+
+@app.route("/front-office")
+def front_office_report():
+    path = Path(__file__).parent / "data" / "models" / "valucast_front_office_report.json"
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        report = None
+    return render_template("front_office.html", report=report)
 
 
 def _value_map_players(rows):

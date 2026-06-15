@@ -17,6 +17,9 @@ from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
+OUTCOME_BACKTEST_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.json"
+)
 
 MODEL_NAME = "ValuCast Prospect Model v0.7 Preview"
 MODEL_VERSION = "0.7.0-preview.1"
@@ -139,6 +142,7 @@ def _coverage_rate(candidates: list[dict], key: str, limit: int) -> float:
 
 def build_model_v07_preview(
     rank_payload: dict,
+    outcome_backtest: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated = generated_at or rank_payload.get("generated_at") or datetime.now(
@@ -153,6 +157,10 @@ def build_model_v07_preview(
         blockers.append("Top-200 factual-current context coverage is below threshold.")
     if availability_coverage < MIN_TOP200_AVAILABILITY_COVERAGE:
         blockers.append("Top-200 availability context coverage is below threshold.")
+    outcome_validation = (outcome_backtest or {}).get("validation") or {}
+    outcome_track = (outcome_backtest or {}).get("front_office_track") or {}
+    if outcome_backtest and outcome_validation.get("realized_evidence_ready") is not True:
+        blockers.append("Outcome evidence layer is not ready for v0.7 backtesting.")
 
     return {
         "artifact": "valucast_prospect_model_v0_7_preview",
@@ -176,6 +184,7 @@ def build_model_v07_preview(
             "feeds_live_valucast_rank": False,
             "score_mutation": "none",
             "purpose": "Feature-readiness preview for Prospect Model v0.7.",
+            "requires_outcome_backtest": True,
         },
         "feature_families": {
             "current_performance": [
@@ -201,6 +210,10 @@ def build_model_v07_preview(
         "input_artifacts": {
             "prospect_rank_v1_version": rank_payload.get("rank_version"),
             "prospect_rank_v1_status": rank_payload.get("status"),
+            "outcome_backtest_version": (outcome_backtest or {}).get(
+                "report_version"
+            ),
+            "outcome_backtest_grade": outcome_track.get("grade"),
             "ranked_count": rank_payload.get("ranked_count")
             or len(rank_payload.get("board") or []),
         },
@@ -215,6 +228,16 @@ def build_model_v07_preview(
             ),
             "min_top200_availability_coverage": MIN_TOP200_AVAILABILITY_COVERAGE,
             "blockers": blockers,
+        },
+        "outcome_evidence": {
+            "present": bool(outcome_backtest),
+            "front_office_track": outcome_track or None,
+            "realized_evidence_ready": outcome_validation.get(
+                "realized_evidence_ready"
+            ),
+            "forward_evidence_ready": outcome_validation.get(
+                "forward_evidence_ready"
+            ),
         },
         "candidates": candidates,
     }
@@ -231,9 +254,18 @@ def write_model_v07_preview(payload: dict, path: Path = ARTIFACT_PATH) -> Path:
 def run_model_v07_preview(
     rank_path: Path = RANK_V1_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    outcome_backtest_path: Path | None = OUTCOME_BACKTEST_PATH,
 ) -> dict:
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
-    payload = build_model_v07_preview(rank_payload)
+    outcome_backtest = (
+        json.loads(outcome_backtest_path.read_text(encoding="utf-8"))
+        if outcome_backtest_path is not None and outcome_backtest_path.exists()
+        else None
+    )
+    payload = build_model_v07_preview(
+        rank_payload,
+        outcome_backtest=outcome_backtest,
+    )
     path = write_model_v07_preview(payload, artifact_path)
     validation = payload["validation"]
     return {

@@ -88008,6 +88008,8 @@
   },
   "generated_at": "2026-06-14T20:26:06.130813+00:00",
   "input_artifacts": {
+    "outcome_backtest_grade": "B",
+    "outcome_backtest_version": "0.1.0",
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.6",
     "ranked_count": 2744
@@ -88016,10 +88018,28 @@
     "feeds_live_valucast_rank": false,
     "purpose": "Feature-readiness preview for Prospect Model v0.7.",
     "replaces_v0_6": false,
+    "requires_outcome_backtest": true,
     "score_mutation": "none"
   },
   "model_name": "ValuCast Prospect Model v0.7 Preview",
   "model_version": "0.7.0-preview.1",
+  "outcome_evidence": {
+    "forward_evidence_ready": false,
+    "front_office_track": {
+      "cap_reasons": [
+        "Ordinal bridge is still partial.",
+        "Forward observations are not review-ready yet."
+      ],
+      "grade": "B",
+      "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
+      "score": 84,
+      "score_cap": 84,
+      "target_grade": "B",
+      "uncapped_score": 91
+    },
+    "present": true,
+    "realized_evidence_ready": true
+  },
   "source_policy": {
     "dd_ranks_used": false,
     "dd_values_used": false,

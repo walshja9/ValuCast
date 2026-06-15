@@ -192,6 +192,21 @@ class PublicSnapshotRow:
         return stat_items(self.factual_current_context)
 
     @property
+    def uncertainty_context(self) -> dict:
+        raw = self.prospect_components.get("uncertainty")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def uncertainty_label(self) -> str | None:
+        context = self.uncertainty_context
+        band = str(context.get("band") or "").replace("_", " ").title()
+        lower = _clean_float(context.get("lower"))
+        upper = _clean_float(context.get("upper"))
+        if lower is None or upper is None:
+            return band or None
+        return f"{band or 'Model'} band: {lower:.1f}-{upper:.1f}"
+
+    @property
     def why_rank_chips(self) -> tuple[dict[str, str], ...]:
         return why_rank_chips(self.prospect_components, self.role)
 

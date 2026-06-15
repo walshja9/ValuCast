@@ -33,6 +33,7 @@ PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 BUCKET_CALIBRATION_VERSION = "0.2.3"
 FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
+UNCERTAINTY_VERSION = "0.1.0"
 UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
 LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.5
 THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
@@ -93,6 +94,19 @@ IDENTITY_ONLY_NEUTRAL_RELIABILITY = 10.0
 MISSING_INVESTMENT_CONTEXT_SCORE = 25.0
 MIN_PUBLIC_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 120
+SCORE_SOURCE_UNCERTAINTY_WIDTH = {
+    "prospect_model_v0_6": 7.0,
+    PEDIGREE_SCORE_SOURCE: 12.0,
+    "universal_fallback": 14.0,
+    "identity_only_fallback": 20.0,
+}
+CONFIDENCE_UNCERTAINTY_ADJUSTMENT = {
+    "high": -2.0,
+    "medium": 0.0,
+    "moderate": 1.0,
+    "low": 4.0,
+}
+CAUTION_SKILL_BANDS = {"thin", "limited", "low_impact"}
 
 PROHIBITED_SCORE_INPUTS = [
     "DD dynasty_rank",
@@ -819,6 +833,67 @@ def _confidence(source: str, model_profile: dict | None, reliability: float | No
     return "medium"
 
 
+def _uncertainty_component(
+    score: float,
+    source: str,
+    confidence: str,
+    components: dict,
+) -> dict:
+    """Attach a display-only uncertainty band around the final score."""
+    reliability = _clean_float(components.get("sample_reliability"))
+    availability_discount = _clean_float(
+        components.get("availability_risk_discount")
+    ) or 0.0
+    factual_context = components.get("factual_current_context")
+    skill_band = (
+        str((factual_context or {}).get("skill_band") or "").lower()
+        if isinstance(factual_context, dict)
+        else ""
+    )
+
+    width = SCORE_SOURCE_UNCERTAINTY_WIDTH.get(source, 14.0)
+    width += CONFIDENCE_UNCERTAINTY_ADJUSTMENT.get(confidence, 2.0)
+    if reliability is None:
+        width += 3.0
+    elif reliability >= 70.0:
+        width -= 1.0
+    elif reliability < 25.0:
+        width += 4.0
+    elif reliability < 45.0:
+        width += 2.0
+    if availability_discount > 0:
+        width += min(5.0, availability_discount * 100.0)
+    if skill_band in CAUTION_SKILL_BANDS:
+        width += 2.0
+
+    width = round(max(4.0, min(24.0, width)), 1)
+    lower = round(max(0.0, score - width), 2)
+    upper = round(min(100.0, score + width), 2)
+    if width <= 8.0:
+        band = "tight"
+    elif width <= 14.0:
+        band = "moderate"
+    else:
+        band = "wide"
+    return {
+        "version": UNCERTAINTY_VERSION,
+        "kind": "display_only_score_interval",
+        "band": band,
+        "width": width,
+        "lower": lower,
+        "upper": upper,
+        "score": round(score, 2),
+        "drivers": {
+            "score_source": source,
+            "confidence": confidence,
+            "sample_reliability": _round(reliability),
+            "availability_risk_discount": _round(availability_discount, 3),
+            "skill_band": skill_band or None,
+        },
+        "score_effect": "none",
+    }
+
+
 def _score_source_sort_order(source: str | None) -> int:
     return {
         "prospect_model_v0_6": 0,
@@ -1037,6 +1112,15 @@ def build_prospect_rank_v1(
             model_profile,
             components.get("sample_reliability"),
         )
+        components = {
+            **components,
+            "uncertainty": _uncertainty_component(
+                score,
+                source,
+                confidence,
+                components,
+            ),
+        }
         display_age = (availability_profile or {}).get("age")
         if display_age is None:
             display_age = universe_row.get("age")

@@ -24,6 +24,13 @@ VALUCAST_BUYS_MONITOR = (
 )
 VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
 PROSPECT_MODEL_V07 = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
+PROSPECT_OUTCOME_BACKTEST = (
+    ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.json"
+)
+RAW_DATA_INDEPENDENCE_AUDIT = (
+    ROOT / "data" / "models" / "valucast_raw_data_independence_audit.json"
+)
+FRONT_OFFICE_REPORT = ROOT / "data" / "models" / "valucast_front_office_report.json"
 PROSPECT_AVAILABILITY = (
     ROOT / "data" / "models" / "valucast_prospect_availability.json"
 )
@@ -61,9 +68,12 @@ def validate_public_data(expected_date: str) -> list[str]:
         (PROSPECT_FORWARD_VALIDATION, "generated_at"),
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
         (PROSPECT_MODEL_V07, "generated_at"),
+        (PROSPECT_OUTCOME_BACKTEST, "generated_at"),
+        (RAW_DATA_INDEPENDENCE_AUDIT, "generated_at"),
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_BUYS_MONITOR, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
+        (FRONT_OFFICE_REPORT, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),

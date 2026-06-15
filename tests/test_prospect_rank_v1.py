@@ -414,6 +414,11 @@ def test_rank_v1_exposes_factual_current_context_for_hitter_components():
     assert payload["rank_contract"]["factual_current_context"]["source"] == (
         "validated_prospect_input_contract_current_rows"
     )
+    uncertainty = row["components"]["uncertainty"]
+    assert uncertainty["kind"] == "display_only_score_interval"
+    assert uncertainty["score_effect"] == "none"
+    assert uncertainty["band"] in {"tight", "moderate", "wide"}
+    assert uncertainty["lower"] < row["score"] < uncertainty["upper"]
 
 
 def test_rank_v1_exposes_factual_current_context_for_pitcher_components():

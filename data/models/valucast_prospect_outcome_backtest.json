@@ -1,0 +1,189 @@
+{
+  "artifact": "valucast_prospect_outcome_backtest",
+  "evidence": {
+    "adapter_fixed_horizon": {
+      "promotion": {
+        "adapter_research_gate": "active",
+        "feeds_live_dd_value": false,
+        "live_block_reason": "Historical adapter evidence must pass for both roles, then dated forward archives must demonstrate stability before any capped influence.",
+        "live_dd_value_influence": "blocked",
+        "next_allowed_step": "separate_dd_shadow_comparison",
+        "reason": "Both role-specific DD 7x7 adapters passed the ordering, top-quartile, and temporal-stability guards."
+      },
+      "role_gates": {
+        "hitter": "active",
+        "pitcher": "active"
+      },
+      "roles": [
+        {
+          "baseline_multiclass_brier": null,
+          "baseline_rank_concordance": 0.7248,
+          "baseline_top_quartile_precision": 0.339933,
+          "candidate_multiclass_brier": null,
+          "candidate_rank_concordance": 0.779116,
+          "candidate_top_quartile_precision": 0.373563,
+          "fold_count": 3,
+          "research_gate": "active",
+          "role": "hitter",
+          "sample_size": 1091
+        },
+        {
+          "baseline_multiclass_brier": null,
+          "baseline_rank_concordance": 0.468691,
+          "baseline_top_quartile_precision": 0.246068,
+          "candidate_multiclass_brier": null,
+          "candidate_rank_concordance": 0.490276,
+          "candidate_top_quartile_precision": 0.255657,
+          "fold_count": 3,
+          "research_gate": "active",
+          "role": "pitcher",
+          "sample_size": 1069
+        }
+      ],
+      "sample_size": 2160,
+      "status": "active"
+    },
+    "dynasty_fixed_horizon": {
+      "promotion": {
+        "dynasty_layer_research_gate": "active",
+        "feeds_live_dd_value": false,
+        "feeds_live_valucast_rank": false,
+        "live_consumer": "blocked",
+        "next_allowed_step": "dated_forward_shadow_observation",
+        "reason": "Both role distributions beat level-age priors without aggregate or fold-level ordering/distribution regression."
+      },
+      "role_gates": {
+        "hitter": "active",
+        "pitcher": "active"
+      },
+      "roles": [
+        {
+          "baseline_multiclass_brier": 0.167698,
+          "baseline_rank_concordance": 0.734378,
+          "baseline_top_quartile_precision": null,
+          "candidate_multiclass_brier": 0.157715,
+          "candidate_rank_concordance": 0.78786,
+          "candidate_top_quartile_precision": null,
+          "fold_count": 3,
+          "research_gate": "active",
+          "role": "hitter",
+          "sample_size": 1091
+        },
+        {
+          "baseline_multiclass_brier": 0.227713,
+          "baseline_rank_concordance": 0.67293,
+          "baseline_top_quartile_precision": null,
+          "candidate_multiclass_brier": 0.221842,
+          "candidate_rank_concordance": 0.701403,
+          "candidate_top_quartile_precision": null,
+          "fold_count": 3,
+          "research_gate": "active",
+          "role": "pitcher",
+          "sample_size": 1127
+        }
+      ],
+      "sample_size": 2218,
+      "status": "active"
+    },
+    "forward_observation": {
+      "is_realized_outcome_accuracy_evidence": false,
+      "metrics": {
+        "buy_comparison_count": 1,
+        "latest_rank_bucket_count": 23,
+        "observation_span_days": 1,
+        "rank_comparison_count": 1
+      },
+      "recommendations": [
+        "Review top-50 availability-risk buckets before changing individual names."
+      ],
+      "status": "collecting"
+    },
+    "model_v07_readiness": {
+      "model_version": "0.7.0-preview.1",
+      "status": "shadow_preview",
+      "validation": {
+        "blockers": [],
+        "candidate_count": 2744,
+        "min_top200_availability_coverage": 0.95,
+        "min_top200_factual_context_coverage": 0.95,
+        "ready_for_backtest": true,
+        "top200_availability_coverage": 1.0,
+        "top200_factual_context_coverage": 1.0,
+        "top_n": 200
+      }
+    },
+    "ordinal_bridge_walk_forward": {
+      "board_gate": {
+        "activated_at": null,
+        "baseline": "historical_neighbors_25",
+        "baseline_score": 0.21697,
+        "cv_method": "walk_forward",
+        "improvement_pct": -0.3968,
+        "metric": "outcome_score_mae",
+        "model_score": 0.217831,
+        "reason": "does not beat historical_neighbors_25: -0.40% < required 2.0%",
+        "sample_size": 977,
+        "status": "fallback",
+        "validated_through": "2019"
+      },
+      "candidate_count": 867,
+      "impact_board_gate": {
+        "activated_at": "2026-06-13T00:11:54.589323+00:00",
+        "baseline": "canonical_historical_neighbors_25",
+        "baseline_score": 0.227304,
+        "cv_method": "walk_forward",
+        "improvement_pct": 2.4262,
+        "metric": "category_impact_mae",
+        "model_score": 0.221789,
+        "reason": "beats canonical_historical_neighbors_25 by 2.43% OOS (category_impact_mae)",
+        "sample_size": 977,
+        "status": "active",
+        "validated_through": "2019"
+      },
+      "status": "partial"
+    }
+  },
+  "front_office_track": {
+    "cap_reasons": [
+      "Ordinal bridge is still partial.",
+      "Forward observations are not review-ready yet."
+    ],
+    "grade": "B",
+    "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
+    "score": 84,
+    "score_cap": 84,
+    "target_grade": "B",
+    "uncapped_score": 91
+  },
+  "generated_at": "2026-06-14T20:26:06.130813+00:00",
+  "generated_dates": {
+    "adapter_backtest": "2026-06-14",
+    "dynasty_backtest": "2026-06-14",
+    "forward_validation": "2026-06-14",
+    "model_v07": "2026-06-14",
+    "prospect_model": null
+  },
+  "report_name": "ValuCast Prospect Outcome Evidence",
+  "report_version": "0.1.0",
+  "source_policy": {
+    "dd_ranks_used": false,
+    "dd_values_used": false,
+    "external_rankings_used": false,
+    "feeds_buy_score": false,
+    "feeds_model_score": false,
+    "feeds_public_rank": false,
+    "kind": "realized_outcome_and_observe_only_evidence",
+    "market_values_used": false
+  },
+  "status": "evidence_ready",
+  "validation": {
+    "blockers": [
+      "Ordinal bridge outcome gate is not active yet.",
+      "Forward archives are still collecting; no live-outcome stability review yet."
+    ],
+    "forward_evidence_ready": false,
+    "minimum_realized_outcome_sample_size": 2000,
+    "realized_evidence_ready": true,
+    "realized_outcome_sample_size": 2218
+  }
+}
