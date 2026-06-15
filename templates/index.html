@@ -143,7 +143,7 @@
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
-        <span class="config-summary">Prospect rankings include source ranks, breakout indicators, and MiLB stats.{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ dd_generated_at[:10] }}{% endif %}</span>
         {# No visible knobs on this horizon, so the form must carry the league
            params or a shared URL's divider resets on the first filter change. #}
         {% if league_settings %}
@@ -162,8 +162,8 @@
         <a class="map-link" href="/map">Map</a>
         <a class="map-link" href="/buys">Buys</a>
         <span class="graphic-actions" aria-label="Prospect graphic actions">
-            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10</a>
-            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20</a>
+            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10 Graphic</a>
+            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20 Graphic</a>
         </span>
         <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
     </div>

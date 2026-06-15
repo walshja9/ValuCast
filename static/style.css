@@ -17,6 +17,13 @@
   --c-focus-ring: rgba(110,161,255,.28);   /* translucent blue — alpha can't suffix a var() */
   --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
   --radius-sm: 6px; --radius: 8px; --radius-lg: 10px;
+  --surface-glass: rgba(22, 23, 41, .72);
+  --surface-panel: rgba(28, 30, 55, .82);
+  --surface-panel-strong: rgba(35, 36, 64, .92);
+  --shadow-soft: 0 16px 44px rgba(0, 0, 0, .32);
+  --shadow-lift: 0 20px 58px rgba(0, 0, 0, .42);
+  --ring-prospect: rgba(52, 211, 153, .34);
+  --ring-blue: rgba(110, 161, 255, .30);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1695,4 +1702,479 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .buys-row { grid-template-columns: 1.5rem 32px minmax(0, 1fr) auto; }
     .buys-thumb { width: 32px; height: 32px; }
     .buys-chip, .buys-spark { display: none; }
+}
+
+/* ---- Theme v2 polish layer ---- */
+body {
+    background: #090b14;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+}
+
+body::before {
+    background:
+        radial-gradient(42% 34% at 12% 2%, rgba(79, 134, 247, .28), transparent 72%),
+        radial-gradient(38% 34% at 94% 14%, rgba(167, 139, 250, .24), transparent 72%),
+        radial-gradient(46% 38% at 78% 100%, rgba(45, 212, 160, .18), transparent 72%),
+        radial-gradient(30% 24% at 24% 82%, rgba(251, 191, 36, .08), transparent 70%),
+        linear-gradient(165deg, #12152c 0%, #080a13 52%, #0f1228 100%);
+}
+
+main {
+    padding-top: clamp(.9rem, 2vw, 1.45rem);
+}
+
+.site-header {
+    position: relative;
+    background: rgba(13, 15, 28, .74);
+    border-bottom-color: rgba(110, 161, 255, .18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .10),
+        0 12px 40px rgba(0, 0, 0, .28);
+}
+
+.site-header h1 {
+    letter-spacing: .07em;
+}
+
+.glass,
+.rank-toolbar,
+.setup-panel,
+.category-fit-panel,
+.map-heading,
+.value-map-shell,
+.buys-heading,
+.buys-list,
+.buys-preview {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .065), rgba(255, 255, 255, .015) 48%),
+        var(--surface-glass);
+    border-color: rgba(255, 255, 255, .13);
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, .10);
+}
+
+.rank-toolbar {
+    gap: .55rem;
+    padding: .65rem .75rem;
+    border-radius: 14px;
+}
+
+.horizon-tabs,
+.mode-selector {
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), 0 10px 28px rgba(0, 0, 0, .18);
+}
+
+.htab,
+.mode-btn,
+.rank-by-toggle span,
+.pool-btn span,
+.source-opt > span,
+.seg-opt > span {
+    transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.htab:hover,
+.mode-btn:hover,
+.rank-by-toggle label:hover span,
+.pool-btn:hover span,
+.source-opt:hover > span,
+.seg-opt:hover > span {
+    background: rgba(110, 161, 255, .11);
+    color: var(--c-text);
+    text-decoration: none;
+}
+
+.export-btn,
+.map-link,
+.customize-toggle,
+.toolbar-filters-btn,
+.import-btn,
+.preset-btn {
+    border-radius: 999px;
+    font-weight: 800;
+    letter-spacing: .01em;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+    transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+.export-btn:hover,
+.map-link:hover,
+.customize-toggle:hover,
+.toolbar-filters-btn:hover,
+.import-btn:hover,
+.preset-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.rank-toolbar .graphic-actions {
+    gap: .5rem;
+}
+
+.rank-toolbar .graphic-btn {
+    background: rgba(52, 211, 153, .10);
+    border-color: rgba(52, 211, 153, .34);
+    color: #8ef8c7;
+}
+
+.rank-toolbar .graphic-btn:hover {
+    background: rgba(52, 211, 153, .18);
+    border-color: rgba(52, 211, 153, .62);
+    color: #d1fae5;
+}
+
+.search-input,
+.position-select,
+.league-url-input {
+    border-radius: 999px;
+    background: rgba(15, 17, 31, .78);
+    border-color: rgba(148, 163, 184, .22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+.results-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 28px;
+    color: rgba(231, 233, 244, .66);
+    letter-spacing: .01em;
+}
+
+.rankings-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .005) 45%),
+        rgba(17, 19, 35, .72);
+    border-color: rgba(255, 255, 255, .11);
+    box-shadow: var(--shadow-soft);
+}
+
+.rankings-table > thead th {
+    background: rgba(17, 19, 35, .84);
+    border-bottom-color: rgba(110, 161, 255, .22);
+    color: rgba(231, 233, 244, .82);
+}
+
+.rankings-table td {
+    border-bottom-color: rgba(148, 163, 184, .10);
+}
+
+.player-row {
+    transition: background .16s ease, box-shadow .16s ease;
+}
+
+.player-row:hover {
+    background: linear-gradient(90deg, rgba(79, 134, 247, .13), rgba(52, 211, 153, .055));
+}
+
+.tier-break {
+    border-top-color: rgba(110, 161, 255, .72) !important;
+}
+
+.pos-rank,
+.prospect-rank-badge,
+.prospect-badge,
+.tier-badge,
+.confidence-chip,
+.headline-tier,
+.headline-range,
+.sample-risk-badge,
+.pct-chip,
+.fit-score,
+.buys-score {
+    border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+.pos-rank {
+    background: rgba(110, 161, 255, .10);
+    border: 1px solid rgba(110, 161, 255, .16);
+}
+
+.tier-badge {
+    padding: .08rem .42rem;
+}
+
+.detail-row td {
+    background: rgba(8, 10, 20, .58);
+}
+
+.player-detail {
+    padding: 1.05rem 1.35rem;
+    border-left-color: var(--c-prospect);
+    background:
+        radial-gradient(circle at 0 0, rgba(52, 211, 153, .10), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, 0) 44%);
+}
+
+.dynasty-card-header {
+    padding-bottom: .85rem;
+    border-bottom: 1px solid rgba(148, 163, 184, .14);
+}
+
+.detail-header h3 {
+    font-size: 1.06rem;
+    letter-spacing: -.01em;
+}
+
+.headline-value {
+    padding: .5rem .65rem;
+    border: 1px solid rgba(52, 211, 153, .22);
+    border-radius: 14px;
+    background: rgba(52, 211, 153, .08);
+}
+
+.dynasty-detail .detail-section {
+    border-radius: 14px;
+}
+
+.prospect-profile-card,
+.peak-projection-card {
+    padding: .9rem;
+    border: 1px solid rgba(255, 255, 255, .10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 10px 30px rgba(0, 0, 0, .16);
+}
+
+.prospect-profile-card {
+    background:
+        radial-gradient(circle at 5% 2%, rgba(52, 211, 153, .16), transparent 33%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015) 45%),
+        var(--surface-panel);
+    border-color: rgba(52, 211, 153, .24);
+}
+
+.peak-projection-card {
+    background:
+        radial-gradient(circle at 100% 0, rgba(110, 161, 255, .16), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .01) 48%),
+        var(--surface-panel);
+    border-color: rgba(110, 161, 255, .20);
+}
+
+.profile-card-identity {
+    font-size: .93rem;
+    line-height: 1.55;
+}
+
+.prospect-profile-bar {
+    grid-template-columns: 60px minmax(130px, 1fr) 64px;
+}
+
+.profile-bar-track {
+    height: 20px;
+    border-radius: 999px;
+    background: rgba(39, 48, 74, .88);
+}
+
+.profile-bar-fill {
+    border-radius: 999px;
+}
+
+.profile-bar-num {
+    min-width: 28px;
+    background: rgba(8, 10, 20, .92);
+}
+
+.skill-shape-item,
+.stat-item,
+.source-summary-item {
+    border-radius: 10px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .015) 48%),
+        rgba(35, 36, 64, .72);
+}
+
+.skill-shape-item.plus {
+    border-color: rgba(52, 211, 153, .35);
+    background:
+        linear-gradient(180deg, rgba(52, 211, 153, .12), rgba(52, 211, 153, .055)),
+        rgba(26, 39, 45, .70);
+}
+
+.skill-shape-item.risk {
+    border-color: rgba(251, 191, 36, .38);
+    background:
+        linear-gradient(180deg, rgba(251, 191, 36, .12), rgba(251, 191, 36, .04)),
+        rgba(45, 38, 31, .70);
+}
+
+.compact-context-details summary,
+.market-context-details > summary,
+.public-board-details summary {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.translated-section {
+    padding-top: .1rem;
+}
+
+.translated-section .stat-grid,
+.prospect-sample-context .stat-grid {
+    gap: .55rem;
+}
+
+.buys-heading {
+    box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, .10);
+}
+
+.buys-row {
+    border-bottom-color: rgba(148, 163, 184, .12);
+}
+
+.buys-row:hover {
+    background: linear-gradient(90deg, rgba(52, 211, 153, .09), rgba(110, 161, 255, .055));
+}
+
+@media (max-width: 640px) {
+    main {
+        padding: .7rem .62rem;
+    }
+
+    .site-header {
+        padding: .65rem .85rem;
+    }
+
+    .site-header h1 {
+        font-size: 1.22rem;
+    }
+
+    .rank-toolbar {
+        padding: .62rem;
+        border-radius: 14px;
+    }
+
+    .rank-toolbar .graphic-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .rank-toolbar .graphic-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+    }
+
+    .rankings-table > tbody > tr.player-row {
+        border-radius: 13px;
+        margin-bottom: .48rem;
+        padding: .58rem .68rem .62rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .015) 48%),
+            rgba(22, 23, 41, .72);
+        border-color: rgba(255, 255, 255, .12);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .08);
+    }
+
+    .rankings-table td.col-rank {
+        top: .58rem;
+        right: .68rem;
+        color: rgba(231, 233, 244, .58);
+        font-size: .76rem;
+        font-weight: 800;
+    }
+
+    .rankings-table td.col-name {
+        font-size: .98rem;
+        padding-right: 2.35rem;
+    }
+
+    .rankings-table td.col-value {
+        margin-top: .12rem;
+    }
+
+    .mobile-stat-strip {
+        gap: .28rem;
+        margin-top: .36rem;
+    }
+
+    .mobile-stat {
+        min-height: 1.35rem;
+        padding: .16rem .42rem;
+        background: rgba(110, 161, 255, .08);
+        border-color: rgba(110, 161, 255, .16);
+        font-size: .78rem;
+    }
+
+    .rankings-table > tbody > tr.detail-row {
+        margin: -.24rem 0 .58rem;
+    }
+
+    .rankings-table > tbody > tr.detail-row > td {
+        border-radius: 14px;
+        border-color: rgba(52, 211, 153, .18);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, .25);
+    }
+
+    .player-detail {
+        padding: .85rem;
+    }
+
+    .dynasty-card-header {
+        gap: .7rem;
+    }
+
+    .dynasty-headline {
+        justify-content: flex-start;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .headline-value {
+        min-width: 94px;
+    }
+
+    .prospect-profile-card,
+    .peak-projection-card {
+        padding: .72rem;
+    }
+
+    .prospect-profile-top,
+    .peak-projection-head,
+    .skill-shape-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .profile-card-badges {
+        justify-content: flex-start;
+    }
+
+    .prospect-profile-bar {
+        grid-template-columns: 54px minmax(0, 1fr) 48px;
+        gap: .4rem;
+    }
+
+    .profile-bar-label {
+        font-size: .72rem;
+    }
+
+    .profile-bar-value {
+        font-size: .74rem;
+    }
+
+    .skill-shape-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .skill-shape-grade {
+        font-size: 1.15rem;
+    }
+
+    .translated-section .stat-grid,
+    .prospect-sample-context .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .market-context-details {
+        padding-top: .2rem;
+    }
 }
