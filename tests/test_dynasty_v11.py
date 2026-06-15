@@ -60,7 +60,8 @@ class TestDynastyV11UI(unittest.TestCase):
     def test_prospect_card_groups_stats_and_hides_null_level(self):
         response = self.client.get("/player/dd_prospect_future_bat?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Market context (not used in ValuCast score)", response.data)
+        self.assertIn(b"External board context (not used in ValuCast score)", response.data)
+        self.assertNotIn(b"Market context (not used in ValuCast score)", response.data)
         self.assertIn(b"External/public boards and DD context are display-only", response.data)
         self.assertIn(b"ValuCast Rank", response.data)
         self.assertIn(b"ValuCast model rank", response.data)

@@ -204,8 +204,8 @@
                 {% if row.current_level_sample_label %}
                 <div class="stat-item"><span class="stat-label">Current Level</span><span class="stat-value">{{ row.current_level_sample_label }}</span></div>
                 {% endif %}
-                {% if row.availability_sample_label %}
-                <div class="stat-item"><span class="stat-label">{{ '2026 Total' if row.has_split_level_sample else 'Current Sample' }}</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
+                {% if row.availability_sample_label and row.has_split_level_sample %}
+                <div class="stat-item"><span class="stat-label">2026 Total</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
                 {% endif %}
                 {% if row.availability_risk_discount %}
                 <div class="stat-item"><span class="stat-label">Risk Adjustment</span><span class="stat-value">-{{ "%.1f%%" | format(row.availability_risk_discount * 100) }}</span></div>
@@ -214,12 +214,13 @@
                 <div class="stat-item"><span class="stat-label">Model Context</span><span class="stat-value">{{ row.bucket_calibration_label }}</span></div>
                 {% endif %}
             </div>
-            {% if row.factual_context_note %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
+            {% if row.factual_context_note and not has_skill_card %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
             {% if row.graduation_context_note %}<p class="sample-context-note">{{ row.graduation_context_note }}</p>{% endif %}
-            {% if row.availability_note %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
+            {% if row.availability_note and (row.availability_status_label != 'Available' or row.availability_risk_discount) %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
             {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
             {% if row.uncertainty_note %}
-            <div class="uncertainty-explainer">
+            <details class="uncertainty-explainer compact-context-details">
+                <summary>Why this range?</summary>
                 <p class="sample-context-note">{{ row.uncertainty_note }}</p>
                 {% if row.uncertainty_driver_items %}
                 <div class="uncertainty-driver-row">
@@ -228,75 +229,9 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        {% if row.source_ranks %}
-        <details class="detail-section source-evidence market-context-details">
-            <summary><span>Market context (not used in ValuCast score)</span>
-                {% if row.source_divergence is not none and row.source_divergence > 50 %}
-                <span class="source-spread" title="Public sources disagree">Spread {{ row.source_divergence | round | int }}</span>
-                {% endif %}
-            </summary>
-            <p class="market-context-note">
-                External/public boards and DD context are display-only. They do not feed ValuCast rank or value.
-            </p>
-            <div class="source-summary">
-                {% if row.prospect_rank is not none %}
-                <div class="source-summary-item dd-rank-view">
-                    <span class="stat-label">ValuCast Rank</span>
-                    <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
-                    <span class="source-summary-note">ValuCast model rank</span>
-                </div>
-                {% endif %}
-                {% if row.public_source_consensus is not none %}
-                <div class="source-summary-item public-consensus">
-                    <span class="stat-label">Public Consensus</span>
-                    <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
-                    <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
-                </div>
-                {% endif %}
-                {% if row.milb_performance_rank is not none %}
-                <div class="source-summary-item milb-edge">
-                    <span class="stat-label">MiLB Performance</span>
-                    <span class="source-summary-rank">#{{ row.milb_performance_rank | int if row.milb_performance_rank is number else row.milb_performance_rank }}</span>
-                    <span class="source-summary-note">Proprietary performance signal</span>
-                </div>
-                {% endif %}
-            </div>
-            {% set public = row.public_source_ranks %}
-            {% if public | length >= 2 %}
-            {% set ranks = public.values() | list %}
-            {% set lo = ranks | min %}
-            {% set hi = ranks | max %}
-            {% set span = (hi - lo) if hi > lo else 1 %}
-            <div class="spread-strip">
-                <div class="spread-rail">
-                    {% for source, rank in public.items() %}
-                    <span class="spread-dot" style="left: {{ ((rank - lo) / span * 100) | round(1) }}%" title="{{ source | upper }} #{{ rank | int }}"></span>
-                    {% endfor %}
-                    {% if row.milb_performance_rank is not none and row.milb_performance_rank >= lo and row.milb_performance_rank <= hi %}
-                    <span class="spread-dot ours" style="left: {{ ((row.milb_performance_rank - lo) / span * 100) | round(1) }}%" title="MiLB performance #{{ row.milb_performance_rank | int }}"></span>
-                    {% endif %}
-                </div>
-                <span class="spread-bounds">P#{{ lo | int }}-P#{{ hi | int }}</span>
-                {% if hi - lo <= 15 %}<span class="spread-chip tight">Tight consensus</span>
-                {% elif hi - lo >= 40 %}<span class="spread-chip split">Sources split</span>{% endif %}
-            </div>
-            {% endif %}
-            {% if row.public_source_ranks %}
-            <details class="public-board-details">
-                <summary>Individual external boards</summary>
-                <div class="public-board-list">
-                    {% for source, rank in row.public_source_ranks.items() %}
-                    <span><strong>{{ source | upper }}</strong> #{{ rank | int }}</span>
-                    {% endfor %}
-                </div>
             </details>
             {% endif %}
-        </details>
+        </div>
         {% endif %}
 
         {% if row.level == 'MLB' and row.mlb_stat_line %}
@@ -405,6 +340,72 @@
             </div>
             <p class="stat-caption">Only K%, BB%, ISO (hitters) and K/9, BB/9, K-BB% (pitchers) survive the minors-to-MLB jump reliably; other stats are deliberately not translated. Small samples are regressed toward MLB average.</p>
         </div>
+        {% endif %}
+
+        {% if row.source_ranks %}
+        <details class="detail-section source-evidence market-context-details">
+            <summary><span>External board context (not used in ValuCast score)</span>
+                {% if row.source_divergence is not none and row.source_divergence > 50 %}
+                <span class="source-spread" title="Public sources disagree">Spread {{ row.source_divergence | round | int }}</span>
+                {% endif %}
+            </summary>
+            <p class="market-context-note">
+                External/public boards and DD context are display-only. They do not feed ValuCast rank or value.
+            </p>
+            <div class="source-summary">
+                {% if row.prospect_rank is not none %}
+                <div class="source-summary-item dd-rank-view">
+                    <span class="stat-label">ValuCast Rank</span>
+                    <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
+                    <span class="source-summary-note">ValuCast model rank</span>
+                </div>
+                {% endif %}
+                {% if row.public_source_consensus is not none %}
+                <div class="source-summary-item public-consensus">
+                    <span class="stat-label">Public Consensus</span>
+                    <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
+                    <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
+                </div>
+                {% endif %}
+                {% if row.milb_performance_rank is not none %}
+                <div class="source-summary-item milb-edge">
+                    <span class="stat-label">MiLB Performance</span>
+                    <span class="source-summary-rank">#{{ row.milb_performance_rank | int if row.milb_performance_rank is number else row.milb_performance_rank }}</span>
+                    <span class="source-summary-note">Proprietary performance signal</span>
+                </div>
+                {% endif %}
+            </div>
+            {% set public = row.public_source_ranks %}
+            {% if public | length >= 2 %}
+            {% set ranks = public.values() | list %}
+            {% set lo = ranks | min %}
+            {% set hi = ranks | max %}
+            {% set span = (hi - lo) if hi > lo else 1 %}
+            <div class="spread-strip">
+                <div class="spread-rail">
+                    {% for source, rank in public.items() %}
+                    <span class="spread-dot" style="left: {{ ((rank - lo) / span * 100) | round(1) }}%" title="{{ source | upper }} #{{ rank | int }}"></span>
+                    {% endfor %}
+                    {% if row.milb_performance_rank is not none and row.milb_performance_rank >= lo and row.milb_performance_rank <= hi %}
+                    <span class="spread-dot ours" style="left: {{ ((row.milb_performance_rank - lo) / span * 100) | round(1) }}%" title="MiLB performance #{{ row.milb_performance_rank | int }}"></span>
+                    {% endif %}
+                </div>
+                <span class="spread-bounds">P#{{ lo | int }}-P#{{ hi | int }}</span>
+                {% if hi - lo <= 15 %}<span class="spread-chip tight">Tight consensus</span>
+                {% elif hi - lo >= 40 %}<span class="spread-chip split">Sources split</span>{% endif %}
+            </div>
+            {% endif %}
+            {% if row.public_source_ranks %}
+            <details class="public-board-details">
+                <summary>Individual external boards</summary>
+                <div class="public-board-list">
+                    {% for source, rank in row.public_source_ranks.items() %}
+                    <span><strong>{{ source | upper }}</strong> #{{ rank | int }}</span>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+        </details>
         {% endif %}
 
         {% if statcast_groups %}

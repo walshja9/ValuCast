@@ -643,6 +643,32 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     )
 
 
+def test_split_level_sample_ignores_rounding_noise(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    prospect = next(row for row in payload["players"] if row["id"] == "vc_prospect_1_hitter")
+    prospect["context"]["stat_line_sample"] = 200.0
+    prospect["context"]["stat_line_sample_unit"] = "PA"
+    prospect["stat_line_translated"] = {
+        "level_label": "AA",
+        "sample": 200.2,
+        "sample_unit": "PA",
+        "season": 2026,
+        "stats": {"OPS": 0.760},
+    }
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.has_split_level_sample is False
+    assert row.season_total_sample_label is None
+    assert row.sample_context_label == "AA sample: 200 PA"
+
+
 def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):
     rank_payload = _rank_payload()
     rank_payload["board"][1]["positions"] = ["P"]

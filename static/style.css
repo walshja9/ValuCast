@@ -1518,6 +1518,15 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .translated-section .stat-grid { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
 .sample-context-note { margin: .35rem 0 0; color: var(--c-muted); font-size: .78rem; line-height: 1.45; }
 .uncertainty-explainer { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid rgba(148, 163, 184, .18); }
+.compact-context-details summary {
+    width: fit-content;
+    cursor: pointer;
+    color: var(--c-muted);
+    font-size: .72rem;
+    font-weight: 800;
+}
+.compact-context-details summary:hover { color: var(--c-blue-strong); }
+.compact-context-details[open] summary { color: var(--c-blue-strong); }
 .uncertainty-driver-row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .45rem; }
 .uncertainty-driver-row span { border: 1px solid rgba(148, 163, 184, .22); border-radius: 999px; color: var(--c-muted); font-size: .72rem; padding: .25rem .55rem; }
 .identity-line { margin-top: .25rem; max-width: 720px; color: var(--c-muted); font-size: .85rem; }

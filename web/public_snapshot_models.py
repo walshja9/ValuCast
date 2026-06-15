@@ -204,7 +204,8 @@ class PublicSnapshotRow:
         current_unit = self.context.get("stat_line_sample_unit")
         if total is None or current is None or not unit or unit != current_unit:
             return False
-        return total > current + 0.05 and bool(levels)
+        threshold = 1.0 if str(unit).upper() == "PA" else 0.5
+        return total > current + threshold and bool(levels)
 
     @property
     def season_total_sample_label(self) -> str | None:
