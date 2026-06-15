@@ -305,6 +305,15 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .front-office-score { text-align: right; color: var(--c-green); font-weight: 900; }
 .front-office-score span { font-size: clamp(2.4rem, 8vw, 5rem); line-height: 1; }
 .front-office-score small { color: var(--c-muted); font-size: .9rem; }
+.front-office-watchlist { padding: 1rem; display: grid; gap: .85rem; }
+.front-office-watchlist .eyebrow { color: var(--c-green); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.front-office-watchlist h3 { margin: .15rem 0 0; font-size: 1.1rem; }
+.front-office-watchlist-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }
+.front-office-watchlist-stats div { border: 1px solid var(--c-border); border-radius: .85rem; background: rgba(255, 255, 255, .035); padding: .75rem; }
+.front-office-watchlist-stats span { display: block; color: var(--c-green); font-size: 1.45rem; line-height: 1; font-weight: 900; }
+.front-office-watchlist-stats small { color: var(--c-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+.front-office-failures { margin: 0; padding-left: 1.2rem; color: var(--c-muted); }
+.front-office-failures li { margin: .25rem 0; }
 .front-office-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: .85rem; }
 .front-office-card { padding: .95rem; }
 .front-office-card-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }

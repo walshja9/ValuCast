@@ -80,6 +80,22 @@ def _buys_monitor():
     }
 
 
+def _failures():
+    return {
+        "status": "watchlist_active",
+        "summary": {
+            "blocking_finding_count": 2,
+            "front_office_risk_count": 4,
+            "v0_7_disagreement_count": 3,
+            "latest_rank_bucket_count": 6,
+            "latest_buy_retention_rate": 0.55,
+        },
+        "blocking_findings": [
+            {"kind": "front_office_cap", "message": "Forward observations are young."}
+        ],
+    }
+
+
 def test_front_office_report_grades_five_pillars_without_feeding_scores():
     payload = build_front_office_report(
         _snapshot(),
@@ -88,6 +104,7 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
         _v07(),
         _raw(),
         _buys_monitor(),
+        _failures(),
     )
 
     assert payload["artifact"] == "valucast_front_office_report"
@@ -104,6 +121,8 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
     pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
     assert pillars["Independence"]["grade"] == "A"
     assert pillars["MLB front-office track"]["grade"] == "B+"
+    assert payload["failure_watchlist"]["status"] == "watchlist_active"
+    assert payload["failure_watchlist"]["v0_7_disagreement_count"] == 3
 
 
 def test_front_office_report_promotes_supported_pillars_to_a_plus():
@@ -121,6 +140,7 @@ def test_front_office_report_promotes_supported_pillars_to_a_plus():
         _v07(),
         raw,
         _buys_monitor(),
+        _failures(),
     )
     pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
 
@@ -140,6 +160,7 @@ def test_run_and_validate_front_office_report(tmp_path):
         "v07": _v07(),
         "raw": _raw(),
         "buys": _buys_monitor(),
+        "failures": _failures(),
     }.items():
         files[name] = tmp_path / f"{name}.json"
         files[name].write_text(json.dumps(payload), encoding="utf-8")
@@ -152,6 +173,7 @@ def test_run_and_validate_front_office_report(tmp_path):
         model_v07_path=files["v07"],
         raw_independence_path=files["raw"],
         buys_monitor_path=files["buys"],
+        front_office_failures_path=files["failures"],
         artifact_path=artifact_path,
     )
     payload, problems = validate_front_office_report(artifact_path)

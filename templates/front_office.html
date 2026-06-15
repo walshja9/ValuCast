@@ -25,6 +25,39 @@
         </div>
     </section>
 
+    {% if report.failure_watchlist %}
+    <section class="front-office-watchlist glass">
+        <div class="front-office-card-head">
+            <div>
+                <span class="eyebrow">Evidence watchlist</span>
+                <h3>What still blocks the front-office grade</h3>
+            </div>
+            <span class="grade-chip">{{ report.failure_watchlist.status | replace("_", " ") | title }}</span>
+        </div>
+        <div class="front-office-watchlist-stats">
+            <div>
+                <span>{{ report.failure_watchlist.blocking_finding_count }}</span>
+                <small>Blocking findings</small>
+            </div>
+            <div>
+                <span>{{ report.failure_watchlist.front_office_risk_count }}</span>
+                <small>Risk flags</small>
+            </div>
+            <div>
+                <span>{{ report.failure_watchlist.v0_7_disagreement_count }}</span>
+                <small>v0.7 disagreements</small>
+            </div>
+        </div>
+        {% if report.failure_watchlist.blocking_findings %}
+        <ul class="front-office-failures">
+            {% for finding in report.failure_watchlist.blocking_findings %}
+            <li>{{ finding.message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </section>
+    {% endif %}
+
     <section class="front-office-grid">
         {% for pillar in report.pillars %}
         <article class="front-office-card glass">

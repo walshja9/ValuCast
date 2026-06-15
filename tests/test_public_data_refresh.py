@@ -220,6 +220,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "PROSPECT_OUTCOME_BACKTEST": tmp_path / "prospect_outcome_backtest.json",
         "RAW_DATA_INDEPENDENCE_AUDIT": tmp_path / "raw_data_independence.json",
         "FRONT_OFFICE_REPORT": tmp_path / "front_office_report.json",
+        "FRONT_OFFICE_FAILURES": tmp_path / "front_office_failures.json",
         "PROSPECT_AVAILABILITY": tmp_path / "prospect_availability.json",
         "PROSPECT_CALIBRATION_REPORT": tmp_path / "prospect_calibration_report.json",
         "PROSPECT_FORWARD_VALIDATION": tmp_path / "prospect_forward_validation.json",
@@ -278,6 +279,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths["FRONT_OFFICE_REPORT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
+    paths["FRONT_OFFICE_FAILURES"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
     paths["PROSPECT_AVAILABILITY"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
@@ -327,12 +331,14 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/build_valucast_buys_monitor.py" in workflow
     assert "python scripts/build_prospect_outcome_backtest.py" in workflow
     assert "python scripts/build_raw_data_independence_audit.py" in workflow
+    assert "python scripts/build_front_office_failures.py" in workflow
     assert "python scripts/build_front_office_report.py" in workflow
     assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_model_v07.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
     assert "python scripts/validate_prospect_forward_validation.py" in workflow
     assert "python scripts/validate_prospect_outcome_backtest.py" in workflow
+    assert "python scripts/validate_front_office_failures.py" in workflow
     assert "python scripts/validate_raw_data_independence_audit.py" in workflow
     assert "python scripts/validate_valucast_buys_monitor.py" in workflow
     assert "python scripts/validate_front_office_report.py" in workflow
@@ -352,6 +358,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_prospect_forward_validation.json" in workflow
     assert "data/models/valucast_prospect_buys_monitor.json" in workflow
     assert "data/models/valucast_prospect_outcome_backtest.json" in workflow
+    assert "data/models/valucast_front_office_failures.json" in workflow
     assert "data/models/valucast_raw_data_independence_audit.json" in workflow
     assert "data/models/valucast_front_office_report.json" in workflow
     assert (

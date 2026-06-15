@@ -26,6 +26,26 @@ REPORT_VERSION = "0.1.0"
 
 MIN_REVIEW_COMPARISONS = 7
 MIN_REVIEW_SPAN_DAYS = 14
+GRADE_THRESHOLDS = {
+    "A-": {
+        "minimum_rank_comparisons": 7,
+        "minimum_buy_comparisons": 7,
+        "minimum_span_days": 14,
+        "minimum_buy_retention_rate": 0.45,
+    },
+    "A": {
+        "minimum_rank_comparisons": 14,
+        "minimum_buy_comparisons": 14,
+        "minimum_span_days": 30,
+        "minimum_buy_retention_rate": 0.55,
+    },
+    "A+": {
+        "minimum_rank_comparisons": 30,
+        "minimum_buy_comparisons": 30,
+        "minimum_span_days": 60,
+        "minimum_buy_retention_rate": 0.60,
+    },
+}
 TOP_BUY_BOARD_SIZE = 40
 LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
@@ -363,6 +383,73 @@ def _recommendations(rank_comparisons: list[dict], buy_comparisons: list[dict]) 
     return recommendations
 
 
+def _evidence_status(
+    rank_comparisons: list[dict],
+    buy_comparisons: list[dict],
+    span_days: int,
+) -> dict:
+    latest_buy = buy_comparisons[-1] if buy_comparisons else {}
+    retention_rate = latest_buy.get("retention_rate")
+    grades = {}
+    achieved = None
+    for grade, thresholds in GRADE_THRESHOLDS.items():
+        missing = []
+        if len(rank_comparisons) < thresholds["minimum_rank_comparisons"]:
+            missing.append(
+                {
+                    "metric": "rank_comparison_count",
+                    "current": len(rank_comparisons),
+                    "required": thresholds["minimum_rank_comparisons"],
+                }
+            )
+        if len(buy_comparisons) < thresholds["minimum_buy_comparisons"]:
+            missing.append(
+                {
+                    "metric": "buy_comparison_count",
+                    "current": len(buy_comparisons),
+                    "required": thresholds["minimum_buy_comparisons"],
+                }
+            )
+        if span_days < thresholds["minimum_span_days"]:
+            missing.append(
+                {
+                    "metric": "observation_span_days",
+                    "current": span_days,
+                    "required": thresholds["minimum_span_days"],
+                }
+            )
+        if retention_rate is None or retention_rate < thresholds["minimum_buy_retention_rate"]:
+            missing.append(
+                {
+                    "metric": "latest_top40_buy_retention_rate",
+                    "current": retention_rate,
+                    "required": thresholds["minimum_buy_retention_rate"],
+                }
+            )
+        passed = not missing
+        if passed:
+            achieved = grade
+        grades[grade] = {
+            "passed": passed,
+            "missing": missing,
+            **thresholds,
+        }
+    return {
+        "status": "review_ready" if grades["A-"]["passed"] else "collecting",
+        "current_supported_grade": achieved,
+        "next_target_grade": (
+            "A-"
+            if achieved is None
+            else "A"
+            if achieved == "A-"
+            else "A+"
+            if achieved == "A"
+            else None
+        ),
+        "thresholds": grades,
+    }
+
+
 def build_forward_validation_report(
     rank_payloads: list[dict],
     buy_payloads: list[dict] | None = None,
@@ -378,10 +465,12 @@ def build_forward_validation_report(
         for previous, current in zip(buy_payloads, buy_payloads[1:])
     ]
     span_days = _span_days(rank_payloads)
-    review_ready = (
-        len(rank_comparisons) >= MIN_REVIEW_COMPARISONS
-        and span_days >= MIN_REVIEW_SPAN_DAYS
+    evidence_status = _evidence_status(
+        rank_comparisons,
+        buy_comparisons,
+        span_days,
     )
+    review_ready = evidence_status["status"] == "review_ready"
     status = "review_ready" if review_ready else "collecting"
     latest_rank = rank_payloads[-1] if rank_payloads else {}
     latest_buy = buy_payloads[-1] if buy_payloads else {}
@@ -409,6 +498,7 @@ def build_forward_validation_report(
             "minimum_review_comparisons": MIN_REVIEW_COMPARISONS,
             "minimum_review_span_days": MIN_REVIEW_SPAN_DAYS,
             "bucket_shape": "role|level_band|score_source|availability_status",
+            "grade_thresholds": GRADE_THRESHOLDS,
         },
         "input_artifacts": {
             "rank_archive_count": len(rank_payloads),
@@ -428,6 +518,7 @@ def build_forward_validation_report(
         },
         "latest_rank_comparison": rank_comparisons[-1] if rank_comparisons else None,
         "latest_buy_comparison": buy_comparisons[-1] if buy_comparisons else None,
+        "evidence_status": evidence_status,
         "rank_comparisons": rank_comparisons,
         "buy_comparisons": buy_comparisons,
         "recommendations": _recommendations(rank_comparisons, buy_comparisons),

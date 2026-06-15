@@ -230,6 +230,7 @@ def build_outcome_backtest(
         "adapter_research_gate"
     )
     forward_status = forward_validation.get("status")
+    forward_evidence_status = forward_validation.get("evidence_status") or {}
     v07_validation = model_v07.get("validation") or {}
     bucket_cohort = _bucket_cohort_evidence(dynasty_backtest, adapter_backtest)
     bucket_cohort_ready = bucket_cohort["status"] == "ready"
@@ -291,6 +292,13 @@ def build_outcome_backtest(
             "cap_reasons": cap_reasons,
             "grade": _grade(score),
             "target_grade": "A-",
+            "forward_supported_grade": forward_evidence_status.get(
+                "current_supported_grade"
+            ),
+            "forward_next_target_grade": forward_evidence_status.get(
+                "next_target_grade"
+            ),
+            "forward_thresholds": forward_evidence_status.get("thresholds"),
             "interpretation": (
                 "Strong public-model evidence with real historical outcome support; "
                 "not a club-grade system because proprietary scouting, medical, "

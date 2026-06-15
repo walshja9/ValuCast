@@ -74,6 +74,7 @@ jobs:
           python scripts/build_valucast_buys_monitor.py
           python scripts/build_prospect_outcome_backtest.py
           python scripts/build_prospect_model_v07.py
+          python scripts/build_front_office_failures.py
           python scripts/build_raw_data_independence_audit.py
           python scripts/build_public_dynasty_snapshot.py
           python scripts/build_valucast_quality_governor.py
@@ -92,6 +93,7 @@ jobs:
           python scripts/validate_prospect_calibration_report.py
           python scripts/validate_prospect_forward_validation.py
           python scripts/validate_prospect_outcome_backtest.py
+          python scripts/validate_front_office_failures.py
           python scripts/validate_raw_data_independence_audit.py
           python scripts/validate_valucast_buys.py
           python scripts/validate_valucast_buys_monitor.py
@@ -135,6 +137,7 @@ jobs:
             data/models/valucast_prospect_forward_validation.json \
             data/models/valucast_prospect_model_v0_7.json \
             data/models/valucast_prospect_outcome_backtest.json \
+            data/models/valucast_front_office_failures.json \
             data/models/valucast_raw_data_independence_audit.json \
             data/models/valucast_front_office_report.json \
             data/models/valucast_prospect_dynasty_backtest.json \

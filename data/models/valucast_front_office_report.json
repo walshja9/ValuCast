@@ -1,5 +1,27 @@
 {
   "artifact": "valucast_front_office_report",
+  "failure_watchlist": {
+    "blocking_finding_count": 3,
+    "blocking_findings": [
+      {
+        "kind": "front_office_cap",
+        "message": "Ordinal bridge is still partial; bucket/cohort evidence caps the grade."
+      },
+      {
+        "kind": "front_office_cap",
+        "message": "Forward observations are not review-ready yet."
+      },
+      {
+        "kind": "forward_history",
+        "message": "Fewer than seven rank archive comparisons are available."
+      }
+    ],
+    "front_office_risk_count": 25,
+    "latest_buy_retention_rate": 0.7,
+    "latest_rank_bucket_count": 23,
+    "status": "watchlist_active",
+    "v0_7_disagreement_count": 25
+  },
   "generated_at": "2026-06-14T00:00:00+00:00",
   "next_build_order": [
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
@@ -90,6 +112,82 @@
           "Forward observations are not review-ready yet."
         ],
         "current_grade": "B+",
+        "forward_next_target_grade": "A-",
+        "forward_supported_grade": null,
+        "forward_thresholds": {
+          "A": {
+            "minimum_buy_comparisons": 14,
+            "minimum_buy_retention_rate": 0.55,
+            "minimum_rank_comparisons": 14,
+            "minimum_span_days": 30,
+            "missing": [
+              {
+                "current": 1,
+                "metric": "rank_comparison_count",
+                "required": 14
+              },
+              {
+                "current": 1,
+                "metric": "buy_comparison_count",
+                "required": 14
+              },
+              {
+                "current": 1,
+                "metric": "observation_span_days",
+                "required": 30
+              }
+            ],
+            "passed": false
+          },
+          "A+": {
+            "minimum_buy_comparisons": 30,
+            "minimum_buy_retention_rate": 0.6,
+            "minimum_rank_comparisons": 30,
+            "minimum_span_days": 60,
+            "missing": [
+              {
+                "current": 1,
+                "metric": "rank_comparison_count",
+                "required": 30
+              },
+              {
+                "current": 1,
+                "metric": "buy_comparison_count",
+                "required": 30
+              },
+              {
+                "current": 1,
+                "metric": "observation_span_days",
+                "required": 60
+              }
+            ],
+            "passed": false
+          },
+          "A-": {
+            "minimum_buy_comparisons": 7,
+            "minimum_buy_retention_rate": 0.45,
+            "minimum_rank_comparisons": 7,
+            "minimum_span_days": 14,
+            "missing": [
+              {
+                "current": 1,
+                "metric": "rank_comparison_count",
+                "required": 7
+              },
+              {
+                "current": 1,
+                "metric": "buy_comparison_count",
+                "required": 7
+              },
+              {
+                "current": 1,
+                "metric": "observation_span_days",
+                "required": 14
+              }
+            ],
+            "passed": false
+          }
+        },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
         "observation_span_days": 1,
         "score_cap": 87,

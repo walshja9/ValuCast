@@ -132,6 +132,12 @@ def test_forward_validation_report_is_observe_only_until_enough_archive_span():
     assert report["observation_contract"]["is_realized_outcome_accuracy_evidence"] is False
     assert report["metrics"]["rank_comparison_count"] == 1
     assert report["latest_rank_comparison"]["buckets"]
+    assert report["evidence_status"]["status"] == "collecting"
+    assert report["evidence_status"]["next_target_grade"] == "A-"
+    assert report["evidence_status"]["thresholds"]["A-"]["passed"] is False
+    assert report["observation_contract"]["grade_thresholds"]["A-"][
+        "minimum_rank_comparisons"
+    ] == 7
 
 
 def test_run_forward_validation_report_writes_valid_artifact(tmp_path):

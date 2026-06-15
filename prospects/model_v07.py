@@ -27,6 +27,17 @@ MODEL_STATUS = "shadow_preview"
 MIN_TOP200_FACTUAL_CONTEXT_COVERAGE = 0.95
 MIN_TOP200_AVAILABILITY_COVERAGE = 0.95
 MIN_BUCKET_COMPARISON_COUNT = 6
+PROMOTION_DELTA_REVIEW_THRESHOLD = 3.0
+SKILL_BAND_DELTAS = {
+    "impact": 2.4,
+    "starter_volume": 2.2,
+    "bat_missing": 1.4,
+    "balanced": 0.6,
+    "mixed": -0.7,
+    "low_impact": -2.0,
+    "limited": -2.2,
+    "thin": -3.0,
+}
 
 
 def _clean_float(value: Any) -> float | None:
@@ -47,6 +58,10 @@ def _date_part(value: Any) -> str | None:
         return datetime.fromisoformat(text.replace("Z", "+00:00")).date().isoformat()
     except ValueError:
         return text[:10] if len(text) >= 10 else None
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
 
 
 def _components(row: dict) -> dict:
@@ -127,17 +142,78 @@ def _candidate_features(row: dict) -> dict:
     return features
 
 
+def _investment_score(value: Any) -> float | None:
+    if isinstance(value, dict):
+        for key in ("score", "draft_pick_score", "investment_score"):
+            numeric = _clean_float(value.get(key))
+            if numeric is not None:
+                return numeric
+        return None
+    return _clean_float(value)
+
+
+def _shadow_delta(row: dict, features: dict) -> float:
+    role = str(row.get("role") or "")
+    delta = SKILL_BAND_DELTAS.get(
+        str(features.get("current_skill_band") or "").lower(),
+        0.0,
+    )
+    reliability = _clean_float(features.get("sample_reliability"))
+    if reliability is not None:
+        delta += _clamp((reliability - 50.0) * 0.08, -3.5, 3.5)
+    investment = _investment_score(features.get("factual_investment_context"))
+    if investment is not None:
+        delta += _clamp((investment - 50.0) * 0.035, -1.75, 1.75)
+    risk_discount = _clean_float(features.get("availability_risk_discount")) or 0.0
+    delta -= _clamp(risk_discount * 15.0, 0.0, 3.0)
+
+    if role == "hitter":
+        ops = _clean_float(features.get("ops"))
+        iso = _clean_float(features.get("iso"))
+        bb_minus_k = _clean_float(features.get("bb_minus_k_pct"))
+        if ops is not None:
+            delta += _clamp((ops - 0.780) * 7.0, -2.0, 2.0)
+        if iso is not None:
+            delta += _clamp((iso - 0.170) * 9.0, -1.25, 1.25)
+        if bb_minus_k is not None:
+            delta += _clamp(bb_minus_k * 0.08, -1.25, 1.25)
+    elif role == "pitcher":
+        k_bb = _clean_float(features.get("k_bb_pct"))
+        k_per_9 = _clean_float(features.get("k_per_9"))
+        bb_per_9 = _clean_float(features.get("bb_per_9"))
+        if k_bb is not None:
+            delta += _clamp((k_bb - 16.0) * 0.12, -2.0, 2.0)
+        if k_per_9 is not None:
+            delta += _clamp((k_per_9 - 9.0) * 0.35, -1.25, 1.25)
+        if bb_per_9 is not None:
+            delta += _clamp((3.5 - bb_per_9) * 0.35, -1.25, 1.25)
+        if features.get("starter_role") is True:
+            delta += 0.8
+
+    return round(_clamp(delta, -8.0, 8.0), 4)
+
+
 def _feature_row(row: dict) -> dict:
     components = _components(row)
+    features = _candidate_features(row)
+    rank_v1_score = _clean_float(row.get("score"))
+    shadow_delta = _shadow_delta(row, features)
+    shadow_score = (
+        round(_clamp(rank_v1_score + shadow_delta, 0.0, 100.0), 4)
+        if rank_v1_score is not None
+        else None
+    )
     return {
         "mlbam_id": row.get("mlbam_id"),
         "name": row.get("name"),
         "role": row.get("role"),
         "level": row.get("level"),
         "rank_v1_rank": row.get("rank"),
-        "rank_v1_score": _clean_float(row.get("score")),
+        "rank_v1_score": rank_v1_score,
+        "v0_7_shadow_score": shadow_score,
+        "v0_7_delta_vs_rank_v1": shadow_delta if shadow_score is not None else None,
         "score_source": row.get("score_source"),
-        "candidate_features": _candidate_features(row),
+        "candidate_features": features,
         "feature_coverage": _feature_coverage(components),
     }
 
@@ -167,12 +243,22 @@ def _bucket_comparison(
                 "bucket": bucket,
                 "count": 0,
                 "avg_rank_v1_score": 0.0,
+                "avg_v0_7_shadow_score": 0.0,
+                "avg_v0_7_delta": 0.0,
+                "positive_delta_count": 0,
+                "negative_delta_count": 0,
                 "factual_context_covered": 0,
                 "availability_context_covered": 0,
             },
         )
         entry["count"] += 1
         entry["avg_rank_v1_score"] += float(row.get("rank_v1_score") or 0.0)
+        shadow_score = _clean_float(row.get("v0_7_shadow_score")) or 0.0
+        shadow_delta = _clean_float(row.get("v0_7_delta_vs_rank_v1")) or 0.0
+        entry["avg_v0_7_shadow_score"] += shadow_score
+        entry["avg_v0_7_delta"] += shadow_delta
+        entry["positive_delta_count"] += int(shadow_delta > 0)
+        entry["negative_delta_count"] += int(shadow_delta < 0)
         coverage = row.get("feature_coverage") or {}
         entry["factual_context_covered"] += int(
             coverage.get("factual_current_context") is True
@@ -183,6 +269,14 @@ def _bucket_comparison(
     for entry in buckets.values():
         count = entry["count"] or 1
         entry["avg_rank_v1_score"] = round(entry["avg_rank_v1_score"] / count, 4)
+        entry["avg_v0_7_shadow_score"] = round(
+            entry["avg_v0_7_shadow_score"] / count,
+            4,
+        )
+        entry["avg_v0_7_delta"] = round(entry["avg_v0_7_delta"] / count, 4)
+        entry["review_required"] = (
+            abs(entry["avg_v0_7_delta"]) >= PROMOTION_DELTA_REVIEW_THRESHOLD
+        )
         entry["factual_context_coverage"] = round(
             entry.pop("factual_context_covered") / count, 4
         )
@@ -201,6 +295,7 @@ def _bucket_comparison(
         "comparison_kind": "v0_7_candidate_features_vs_rank_v1_v0_6_bucket_shape",
         "live_score_mutation": "none",
         "bucket_definition": "role|level_band|score_source|availability_status",
+        "promotion_delta_review_threshold": PROMOTION_DELTA_REVIEW_THRESHOLD,
         "minimum_bucket_count": MIN_BUCKET_COMPARISON_COUNT,
         "bucket_count": len(buckets),
         "outcome_bucket_cohort_ready": outcome_validation.get(
@@ -266,6 +361,7 @@ def build_model_v07_preview(
             "score_mutation": "none",
             "purpose": "Feature-readiness preview for Prospect Model v0.7.",
             "requires_outcome_backtest": True,
+            "scored_challenger": True,
         },
         "feature_families": {
             "current_performance": [
@@ -309,6 +405,7 @@ def build_model_v07_preview(
             ),
             "min_top200_availability_coverage": MIN_TOP200_AVAILABILITY_COVERAGE,
             "bucket_comparison_ready": bucket_comparison["status"] == "ready",
+            "scored_challenger_ready": True,
             "blockers": blockers,
         },
         "bucket_comparison": bucket_comparison,

@@ -53,6 +53,8 @@ def validate_model_v07(path: Path = MODEL_PATH) -> tuple[dict | None, list[str]]
             problems.append("model_contract.feeds_live_valucast_rank must be false")
         if contract.get("score_mutation") != "none":
             problems.append("model_contract.score_mutation must be none")
+        if contract.get("scored_challenger") is not True:
+            problems.append("model_contract.scored_challenger must be true")
 
     validation = payload.get("validation")
     if not isinstance(validation, dict):
@@ -68,6 +70,8 @@ def validate_model_v07(path: Path = MODEL_PATH) -> tuple[dict | None, list[str]]
             problems.append("top200 factual context coverage is below threshold")
         if "bucket_comparison_ready" not in validation:
             problems.append("validation.bucket_comparison_ready is required")
+        if validation.get("scored_challenger_ready") is not True:
+            problems.append("validation.scored_challenger_ready must be true")
 
     bucket_comparison = payload.get("bucket_comparison")
     if not isinstance(bucket_comparison, dict):
@@ -79,6 +83,10 @@ def validate_model_v07(path: Path = MODEL_PATH) -> tuple[dict | None, list[str]]
             problems.append("bucket_comparison.status must be ready or collecting")
         if not isinstance(bucket_comparison.get("buckets"), list):
             problems.append("bucket_comparison.buckets must be a list")
+        if bucket_comparison.get("promotion_delta_review_threshold") is None:
+            problems.append(
+                "bucket_comparison.promotion_delta_review_threshold is required"
+            )
 
     candidates = payload.get("candidates")
     if not isinstance(candidates, list) or not candidates:
@@ -98,6 +106,12 @@ def validate_model_v07(path: Path = MODEL_PATH) -> tuple[dict | None, list[str]]
                     problems.append(f"candidate {index} missing coverage key {key}")
             if not isinstance(row.get("candidate_features"), dict):
                 problems.append(f"candidate {index} candidate_features is required")
+            if row.get("v0_7_shadow_score") is None:
+                problems.append(f"candidate {index} v0_7_shadow_score is required")
+            if row.get("v0_7_delta_vs_rank_v1") is None:
+                problems.append(
+                    f"candidate {index} v0_7_delta_vs_rank_v1 is required"
+                )
 
     return payload, problems
 

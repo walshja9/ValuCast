@@ -14,6 +14,7 @@ ALLOWED_TOP_LEVEL_KEYS = {
     "artifact",
     "buy_comparisons",
     "generated_at",
+    "evidence_status",
     "input_artifacts",
     "latest_buy_comparison",
     "latest_rank_comparison",
@@ -65,6 +66,8 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
         problems.append("observation_contract must not claim realized outcome accuracy")
     if contract.get("uses_valucast_archives_only") is not True:
         problems.append("observation_contract must use ValuCast archives only")
+    if not isinstance(contract.get("grade_thresholds"), dict):
+        problems.append("observation_contract.grade_thresholds must be an object")
 
     metrics = payload.get("metrics")
     if not isinstance(metrics, dict):
@@ -84,6 +87,20 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
 
     if not isinstance(payload.get("recommendations"), list):
         problems.append("recommendations must be a list")
+
+    evidence_status = payload.get("evidence_status")
+    if not isinstance(evidence_status, dict):
+        problems.append("evidence_status must be an object")
+    else:
+        if evidence_status.get("status") != payload.get("status"):
+            problems.append("evidence_status.status must match report status")
+        thresholds = evidence_status.get("thresholds")
+        if not isinstance(thresholds, dict):
+            problems.append("evidence_status.thresholds must be an object")
+        else:
+            for grade in ("A-", "A", "A+"):
+                if grade not in thresholds:
+                    problems.append(f"evidence_status.thresholds.{grade} is required")
     return payload, problems
 
 

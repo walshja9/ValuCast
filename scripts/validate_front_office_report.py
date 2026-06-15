@@ -58,6 +58,21 @@ def validate_front_office_report(path: Path = REPORT_PATH) -> tuple[dict | None,
                 problems.append(f"missing pillar {required}")
     if not isinstance(payload.get("next_build_order"), list):
         problems.append("next_build_order must be a list")
+    failure_watchlist = payload.get("failure_watchlist")
+    if not isinstance(failure_watchlist, dict):
+        problems.append("failure_watchlist must be an object")
+    else:
+        if not failure_watchlist.get("status"):
+            problems.append("failure_watchlist.status is required")
+        for field in (
+            "blocking_finding_count",
+            "front_office_risk_count",
+            "v0_7_disagreement_count",
+        ):
+            if not isinstance(failure_watchlist.get(field), int):
+                problems.append(f"failure_watchlist.{field} must be an integer")
+        if not isinstance(failure_watchlist.get("blocking_findings"), list):
+            problems.append("failure_watchlist.blocking_findings must be a list")
     return payload, problems
 
 

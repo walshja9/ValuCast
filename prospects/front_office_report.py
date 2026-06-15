@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from prospects.buys_monitor import ARTIFACT_PATH as BUYS_MONITOR_PATH
+from prospects.front_office_failures import ARTIFACT_PATH as FRONT_OFFICE_FAILURES_PATH
 from prospects.outcome_backtest import ARTIFACT_PATH as OUTCOME_BACKTEST_PATH
 from prospects.raw_data_independence import ARTIFACT_PATH as RAW_INDEPENDENCE_PATH
 from quality.valucast_governor import ARTIFACT_PATH as QUALITY_GOVERNOR_PATH
@@ -60,6 +61,7 @@ def build_front_office_report(
     model_v07: dict,
     raw_independence: dict,
     buys_monitor: dict,
+    front_office_failures: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated = generated_at or public_snapshot.get("generated_at") or datetime.now(
@@ -75,6 +77,17 @@ def build_front_office_report(
     )
     buys_monitoring = buys_monitor.get("monitoring") or {}
     buys_validation = (buys_monitor.get("validation") or {})
+    failure_summary = (front_office_failures or {}).get("summary") or {}
+    blocking_findings = (front_office_failures or {}).get("blocking_findings") or []
+    failure_watchlist = {
+        "status": (front_office_failures or {}).get("status", "unavailable"),
+        "blocking_finding_count": failure_summary.get("blocking_finding_count", 0),
+        "front_office_risk_count": failure_summary.get("front_office_risk_count", 0),
+        "v0_7_disagreement_count": failure_summary.get("v0_7_disagreement_count", 0),
+        "latest_rank_bucket_count": failure_summary.get("latest_rank_bucket_count"),
+        "latest_buy_retention_rate": failure_summary.get("latest_buy_retention_rate"),
+        "blocking_findings": blocking_findings[:5],
+    }
     governor_ready = quality_governor.get("ready_for_public_snapshot") is True
     governor_checks = quality_governor.get("checks") or []
     governor_all_passed = bool(governor_checks) and all(
@@ -250,6 +263,13 @@ def build_front_office_report(
                 "uncapped_score": outcome_track.get("uncapped_score"),
                 "score_cap": outcome_track.get("score_cap"),
                 "cap_reasons": outcome_track.get("cap_reasons"),
+                "forward_supported_grade": outcome_track.get(
+                    "forward_supported_grade"
+                ),
+                "forward_next_target_grade": outcome_track.get(
+                    "forward_next_target_grade"
+                ),
+                "forward_thresholds": outcome_track.get("forward_thresholds"),
                 "limitations": outcome_track.get("interpretation"),
                 "buys_monitor_status": buys_monitor.get("status"),
                 "buy_comparison_count": buys_monitoring.get("buy_comparison_count"),
@@ -279,6 +299,7 @@ def build_front_office_report(
             "market_values_used": False,
         },
         "pillars": pillars,
+        "failure_watchlist": failure_watchlist,
         "next_build_order": [
             "Collect enough forward archives to move from B+ evidence to A- evidence.",
             "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -304,8 +325,14 @@ def run_front_office_report(
     model_v07_path: Path = MODEL_V07_PATH,
     raw_independence_path: Path = RAW_INDEPENDENCE_PATH,
     buys_monitor_path: Path = BUYS_MONITOR_PATH,
+    front_office_failures_path: Path = FRONT_OFFICE_FAILURES_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
+    failures = (
+        _load(front_office_failures_path)
+        if front_office_failures_path.exists()
+        else None
+    )
     payload = build_front_office_report(
         _load(public_snapshot_path),
         _load(quality_governor_path),
@@ -313,6 +340,7 @@ def run_front_office_report(
         _load(model_v07_path),
         _load(raw_independence_path),
         _load(buys_monitor_path),
+        failures,
     )
     path = write_front_office_report(payload, artifact_path)
     return {

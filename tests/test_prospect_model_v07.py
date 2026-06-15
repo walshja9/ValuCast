@@ -80,7 +80,9 @@ def test_model_v07_preview_extracts_factual_features_and_stays_shadow_only():
     assert payload["source_policy"]["feeds_live_rank"] is False
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["model_contract"]["feeds_live_valucast_rank"] is False
+    assert payload["model_contract"]["scored_challenger"] is True
     assert payload["validation"]["ready_for_backtest"] is True
+    assert payload["validation"]["scored_challenger_ready"] is True
     assert payload["validation"]["bucket_comparison_ready"] is False
     assert payload["bucket_comparison"]["status"] == "collecting"
 
@@ -88,8 +90,11 @@ def test_model_v07_preview_extracts_factual_features_and_stays_shadow_only():
     pitcher = payload["candidates"][1]
     assert hitter["candidate_features"]["ops"] == 0.976
     assert hitter["candidate_features"]["bb_minus_k_pct"] == -3.1
+    assert hitter["v0_7_shadow_score"] > hitter["rank_v1_score"]
+    assert hitter["v0_7_delta_vs_rank_v1"] > 0
     assert pitcher["candidate_features"]["k_bb_pct"] == 22.4
     assert pitcher["candidate_features"]["starter_role"] is True
+    assert pitcher["v0_7_shadow_score"] > pitcher["rank_v1_score"]
     assert hitter["feature_coverage"]["factual_current_context"] is True
     assert pitcher["feature_coverage"]["availability_context"] is True
 
@@ -151,6 +156,10 @@ def test_model_v07_bucket_comparison_is_ready_when_bucket_evidence_exists():
 
     assert payload["bucket_comparison"]["status"] == "ready"
     assert payload["validation"]["bucket_comparison_ready"] is True
+    assert any(
+        "avg_v0_7_delta" in bucket
+        for bucket in payload["bucket_comparison"]["buckets"]
+    )
 
 
 def test_model_v07_validator_rejects_live_feed_claim(tmp_path):

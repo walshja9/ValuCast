@@ -32,6 +32,9 @@ RAW_DATA_INDEPENDENCE_AUDIT = (
     ROOT / "data" / "models" / "valucast_raw_data_independence_audit.json"
 )
 FRONT_OFFICE_REPORT = ROOT / "data" / "models" / "valucast_front_office_report.json"
+FRONT_OFFICE_FAILURES = (
+    ROOT / "data" / "models" / "valucast_front_office_failures.json"
+)
 PROSPECT_AVAILABILITY = (
     ROOT / "data" / "models" / "valucast_prospect_availability.json"
 )
@@ -75,6 +78,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_BUYS_MONITOR, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
+        (FRONT_OFFICE_FAILURES, "generated_at"),
         (FRONT_OFFICE_REPORT, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
