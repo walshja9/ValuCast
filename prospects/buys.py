@@ -235,6 +235,14 @@ def _reason(terms: dict) -> str:
     }[top]
 
 
+def _availability_context(row: dict) -> dict:
+    components = row.get("components")
+    if not isinstance(components, dict):
+        return {}
+    availability = components.get("availability")
+    return availability if isinstance(availability, dict) else {}
+
+
 def _history_limited_count(rows: list[dict]) -> int:
     return sum(1 for row in rows if len(row.get("score_history") or []) < 2)
 
@@ -363,6 +371,7 @@ def build_buy_signals(
     )
     board = []
     for rank, (composite, terms, row, score_history) in enumerate(scored, 1):
+        availability = _availability_context(row)
         board.append(
             {
                 "rank": rank,
@@ -382,6 +391,10 @@ def build_buy_signals(
                 "terms": terms,
                 "reason": _reason(terms),
                 "confidence": row.get("confidence"),
+                "availability_status": availability.get("status"),
+                "availability_risk_level": availability.get("risk_level"),
+                "availability_risk_discount": availability.get("risk_discount"),
+                "availability_level": availability.get("level"),
                 "score_source": row.get("score_source"),
                 "score_history": score_history,
                 "drivers": row.get("drivers") or [],

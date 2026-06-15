@@ -571,7 +571,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_prospect_card_has_identity_percentiles_and_pool_label(self):
         response = self.client.get("/player/dd_prospect_top?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"ValuCast Skill Snapshot", response.data)
         self.assertIn(b"Current Skill Percentiles", response.data)
         self.assertIn(b"ValuCast Skill Shape", response.data)
         self.assertIn(b"not scouting grades", response.data)
@@ -603,7 +603,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_pitcher_prospect_card_uses_pitcher_pool_label(self):
         response = self.client.get("/player/dd_prospect_arm?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"ValuCast Skill Snapshot", response.data)
         self.assertIn(b"vs ValuCast pitcher pool", response.data)
         self.assertIn(b"20+ IP", response.data)
         self.assertNotIn(b"vs ValuCast hitter pool", response.data)

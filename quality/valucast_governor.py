@@ -61,6 +61,12 @@ MAX_MILB_STAT_FRESHNESS_BLOCKERS = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
+BUY_SURFACE_TOP_N = 40
+MAX_BUY_TOP40_MISSING_PUBLIC_PROSPECT_COUNT = 0
+MAX_BUY_TOP40_GRADUATED_OR_MLB_COUNT = 0
+MAX_BUY_TOP40_LEVEL_MISMATCH_COUNT = 0
+MAX_BUY_TOP40_TEAM_MISMATCH_COUNT = 0
+MAX_BUY_TOP40_UNDISCLOSED_AVAILABILITY_RISK_COUNT = 0
 
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -142,6 +148,18 @@ def _mlbam_id(row: dict) -> str | None:
     if value in (None, ""):
         return None
     return str(value)
+
+
+def _identity_key(row: dict) -> tuple[str, str] | None:
+    mlbam_id = _mlbam_id(row)
+    role = row.get("role")
+    if not mlbam_id or role not in {"hitter", "pitcher"}:
+        return None
+    return mlbam_id, str(role)
+
+
+def _team(row: dict) -> str:
+    return str(row.get("mlb_team") or row.get("team") or "").strip().upper()
 
 
 def _components(row: dict) -> dict:
@@ -1057,6 +1075,169 @@ def _prospect_elite_factual_fallback_audit(
     )
 
 
+def _buy_surface_alignment(
+    buy_signals: dict | None,
+    players: list[dict],
+    graduated_prospect_ids: set[str] | None = None,
+) -> dict:
+    board = list((buy_signals or {}).get("board") or [])[:BUY_SURFACE_TOP_N]
+    if not board:
+        return _check(
+            "buy_top40_public_surface_alignment",
+            True,
+            "ValuCast Buy surface alignment skipped because no buy board rows were provided.",
+            top_n=BUY_SURFACE_TOP_N,
+            evaluated_count=0,
+            buy_artifact_present=bool(buy_signals),
+        )
+
+    prospect_by_key = {
+        key: row
+        for row in _public_prospect_rows(players)
+        if (key := _identity_key(row)) is not None
+    }
+    public_mlb_ids = {
+        mlbam_id
+        for row in players
+        if row.get("player_type") == "mlb" and (mlbam_id := _mlbam_id(row))
+    }
+    graduated_prospect_ids = graduated_prospect_ids or set()
+    missing = []
+    graduated_or_mlb = []
+    level_mismatches = []
+    team_mismatches = []
+    undisclosed_availability = []
+
+    for row in board:
+        key = _identity_key(row)
+        if key is None:
+            missing.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "role": row.get("role"),
+                    "reason": "missing_identity",
+                }
+            )
+            continue
+
+        mlbam_id, _role = key
+        if _level(row) == "MLB" or mlbam_id in public_mlb_ids or mlbam_id in graduated_prospect_ids:
+            graduated_or_mlb.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "role": row.get("role"),
+                    "level": row.get("level"),
+                }
+            )
+            continue
+
+        public_row = prospect_by_key.get(key)
+        if public_row is None:
+            missing.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "role": row.get("role"),
+                    "reason": "not_on_public_prospect_surface",
+                }
+            )
+            continue
+
+        buy_level = _level(row)
+        public_level = _level(public_row)
+        if buy_level and public_level and buy_level != public_level:
+            level_mismatches.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "buy_level": row.get("level"),
+                    "public_level": public_row.get("level"),
+                }
+            )
+
+        buy_team = _team(row)
+        public_team = _team(public_row)
+        if buy_team and public_team and buy_team != public_team:
+            team_mismatches.append(
+                {
+                    "rank": row.get("rank"),
+                    "name": row.get("name"),
+                    "mlbam_id": row.get("mlbam_id"),
+                    "buy_team": row.get("team"),
+                    "public_team": public_row.get("mlb_team") or public_row.get("team"),
+                }
+            )
+
+        availability = _availability_component(public_row)
+        if _availability_is_risky(availability):
+            public_status = str(availability.get("status") or "").strip().lower()
+            buy_status = str(row.get("availability_status") or "").strip().lower()
+            public_discount = _clean_float(availability.get("risk_discount")) or 0.0
+            buy_discount = _clean_float(row.get("availability_risk_discount")) or 0.0
+            if not buy_status or buy_status != public_status or buy_discount < public_discount:
+                undisclosed_availability.append(
+                    {
+                        "rank": row.get("rank"),
+                        "name": row.get("name"),
+                        "mlbam_id": row.get("mlbam_id"),
+                        "public_status": availability.get("status"),
+                        "buy_status": row.get("availability_status"),
+                        "public_risk_discount": availability.get("risk_discount"),
+                        "buy_risk_discount": row.get("availability_risk_discount"),
+                    }
+                )
+
+    failures = []
+    if len(missing) > MAX_BUY_TOP40_MISSING_PUBLIC_PROSPECT_COUNT:
+        failures.append("missing_public_prospect")
+    if len(graduated_or_mlb) > MAX_BUY_TOP40_GRADUATED_OR_MLB_COUNT:
+        failures.append("graduated_or_mlb")
+    if len(level_mismatches) > MAX_BUY_TOP40_LEVEL_MISMATCH_COUNT:
+        failures.append("level_mismatch")
+    if len(team_mismatches) > MAX_BUY_TOP40_TEAM_MISMATCH_COUNT:
+        failures.append("team_mismatch")
+    if len(undisclosed_availability) > MAX_BUY_TOP40_UNDISCLOSED_AVAILABILITY_RISK_COUNT:
+        failures.append("undisclosed_availability_risk")
+    passed = not failures
+    return _check(
+        "buy_top40_public_surface_alignment",
+        passed,
+        (
+            "ValuCast Buy rows align with the public prospect surface."
+            if passed
+            else "ValuCast Buy rows have stale level/team/graduation or availability context."
+        ),
+        top_n=BUY_SURFACE_TOP_N,
+        evaluated_count=len(board),
+        missing_public_prospect_count=len(missing),
+        max_missing_public_prospect_count=MAX_BUY_TOP40_MISSING_PUBLIC_PROSPECT_COUNT,
+        graduated_or_mlb_count=len(graduated_or_mlb),
+        max_graduated_or_mlb_count=MAX_BUY_TOP40_GRADUATED_OR_MLB_COUNT,
+        level_mismatch_count=len(level_mismatches),
+        max_level_mismatch_count=MAX_BUY_TOP40_LEVEL_MISMATCH_COUNT,
+        team_mismatch_count=len(team_mismatches),
+        max_team_mismatch_count=MAX_BUY_TOP40_TEAM_MISMATCH_COUNT,
+        undisclosed_availability_risk_count=len(undisclosed_availability),
+        max_undisclosed_availability_risk_count=(
+            MAX_BUY_TOP40_UNDISCLOSED_AVAILABILITY_RISK_COUNT
+        ),
+        failures=failures,
+        samples={
+            "missing_public_prospect": missing[:8],
+            "graduated_or_mlb": graduated_or_mlb[:8],
+            "level_mismatch": level_mismatches[:8],
+            "team_mismatch": team_mismatches[:8],
+            "undisclosed_availability_risk": undisclosed_availability[:8],
+        },
+    )
+
+
 def _buy_promotion_check(
     buy_signals: dict | None,
     buy_review: dict | None,
@@ -1188,14 +1369,23 @@ def evaluate_quality_governor(
         _prospect_availability_risk_pricing(players),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
+    buy_board_checks = [
+        _buy_surface_alignment(
+            buy_signals,
+            players,
+            graduated_prospect_ids,
+        )
+    ]
     buy_check = _buy_promotion_check(
         buy_signals,
         buy_review,
         public_board_ready=public_board_ready,
     )
+    buy_checks = buy_board_checks + [buy_check]
 
     board_blockers = _blocker_messages(board_checks)
-    buy_blockers = list(dict.fromkeys(board_blockers + _blocker_messages([buy_check])))
+    buy_blockers = list(dict.fromkeys(board_blockers + _blocker_messages(buy_checks)))
+    buy_ready = all(check["status"] == "passed" for check in buy_checks)
     return {
         "artifact": "valucast_quality_governor",
         "governor_name": GOVERNOR_NAME,
@@ -1203,7 +1393,7 @@ def evaluate_quality_governor(
         "generated_at": generated_at,
         "status": "candidate_ready" if public_board_ready else "blocked",
         "ready_for_public_snapshot": public_board_ready,
-        "ready_for_buys_promotion": buy_check["status"] == "passed",
+        "ready_for_buys_promotion": buy_ready,
         "source_policy": {
             "kind": "model_output_quality_gate",
             "feeds_model_score": False,
@@ -1251,6 +1441,18 @@ def evaluate_quality_governor(
             "max_buy_history_limited_rate": MAX_BUY_HISTORY_LIMITED_RATE,
             "max_buy_top40_low_confidence_rate": MAX_BUY_TOP40_LOW_CONFIDENCE_RATE,
             "max_buy_top40_pedigree_rate": MAX_BUY_TOP40_PEDIGREE_RATE,
+            "buy_surface_top_n": BUY_SURFACE_TOP_N,
+            "max_buy_top40_missing_public_prospect_count": (
+                MAX_BUY_TOP40_MISSING_PUBLIC_PROSPECT_COUNT
+            ),
+            "max_buy_top40_graduated_or_mlb_count": (
+                MAX_BUY_TOP40_GRADUATED_OR_MLB_COUNT
+            ),
+            "max_buy_top40_level_mismatch_count": MAX_BUY_TOP40_LEVEL_MISMATCH_COUNT,
+            "max_buy_top40_team_mismatch_count": MAX_BUY_TOP40_TEAM_MISMATCH_COUNT,
+            "max_buy_top40_undisclosed_availability_risk_count": (
+                MAX_BUY_TOP40_UNDISCLOSED_AVAILABILITY_RISK_COUNT
+            ),
         },
         "metrics": {
             "public_row_count": len(players),
@@ -1276,13 +1478,13 @@ def evaluate_quality_governor(
                 ),
             },
         },
-        "checks": board_checks + [buy_check],
+        "checks": board_checks + buy_checks,
         "blockers": board_blockers,
         "buy_blockers": buy_blockers,
         "surface_readiness": {
             "dynasty": public_board_ready,
             "prospects": public_board_ready,
-            "buys": buy_check["status"] == "passed",
+            "buys": buy_ready,
         },
         "next_allowed_step": (
             "wire_public_consumers"

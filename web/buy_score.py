@@ -183,6 +183,22 @@ def graphic_reason(terms, label):
     return "Young runway"
 
 
+def _availability_reason(row):
+    status = str(row.get("availability_status") or "").strip().lower()
+    discount = row.get("availability_risk_discount")
+    try:
+        discount = float(discount)
+    except (TypeError, ValueError):
+        discount = 0.0
+    if status == "injured":
+        return "Injury risk priced"
+    if status and status not in {"available", "clear"}:
+        return "Availability priced"
+    if discount > 0:
+        return "Risk priced"
+    return None
+
+
 def build_board(rows, n=BOARD_SIZE):
     """Ranked buy list, top n. Plain dicts ready for the template."""
     scored = []
@@ -241,6 +257,7 @@ def build_valucast_board(rows, n=BOARD_SIZE):
             "gap": valucast_terms.get("buy_window", 0.0),
             "runway": valucast_terms.get("runway", 0.0),
         }
+        reason = _availability_reason(row) or row.get("reason") or "ValuCast signal"
         board.append({
             "rank": row.get("rank"),
             "id": row.get("player_id") or row.get("id"),
@@ -250,11 +267,11 @@ def build_valucast_board(rows, n=BOARD_SIZE):
             "level": row.get("level") or "-",
             "age": row.get("age"),
             "score": row.get("score"),
-            "label": row.get("reason") or "",
+            "label": reason,
             "terms": display_terms,
             "valucast_terms": valucast_terms,
             "initials": graphic_initials(row.get("name")),
-            "reason": row.get("reason") or "ValuCast signal",
+            "reason": reason,
             "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
             "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
             "value_history": display_history,

@@ -71,7 +71,7 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Individual external boards", response.data)
         self.assertNotIn(b"View individual public boards", response.data)
         self.assertIn(b"Spread 68", response.data)
-        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"ValuCast Skill Snapshot", response.data)
         self.assertIn(b"Current Skill Percentiles", response.data)
         self.assertIn(b"ValuCast Skill Shape", response.data)
         self.assertNotIn(b"Rate Stats", response.data)

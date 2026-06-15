@@ -70,7 +70,13 @@ def _prospect_rank(rows):
     }
 
 
-def _buy_signals(ready=False, history_limited_count=0, row_count=40, top_board_quality=None):
+def _buy_signals(
+    ready=False,
+    history_limited_count=0,
+    row_count=40,
+    top_board_quality=None,
+    board=None,
+):
     return {
         "generated_at": "2026-06-13T12:00:00+00:00",
         "validation": {
@@ -79,6 +85,7 @@ def _buy_signals(ready=False, history_limited_count=0, row_count=40, top_board_q
             "row_count": row_count,
             "top_board_quality": top_board_quality or {},
         },
+        "board": board or [],
     }
 
 
@@ -746,3 +753,123 @@ def test_quality_governor_blocks_availability_level_mismatch():
         in payload["blockers"]
     )
     assert check["metrics"]["level_mismatch_count"] == 1
+
+
+def test_quality_governor_blocks_buy_surface_identity_level_and_team_drift():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(10003, "Prospect 3", "hitter", 300, 8.0),
+        *prospects[:2],
+        *prospects[3:],
+    ]
+    buy_board = [
+        {
+            "rank": 1,
+            "name": "Prospect 1",
+            "mlbam_id": 10001,
+            "role": "hitter",
+            "level": "A+",
+            "team": "BOS",
+        },
+        {
+            "rank": 2,
+            "name": "Prospect 2",
+            "mlbam_id": 10002,
+            "role": "hitter",
+            "level": "AA",
+            "team": "NYY",
+        },
+        {
+            "rank": 3,
+            "name": "Prospect 3",
+            "mlbam_id": 10003,
+            "role": "hitter",
+            "level": "AAA",
+            "team": "BOS",
+        },
+        {
+            "rank": 4,
+            "name": "Missing Prospect",
+            "mlbam_id": 99999,
+            "role": "hitter",
+            "level": "AA",
+            "team": "BOS",
+        },
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=True, board=buy_board),
+        buy_review={
+            "review_status": "candidate_ready",
+            "source_policy": {"history_launch_approved": True},
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "buy_top40_public_surface_alignment"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert payload["ready_for_buys_promotion"] is False
+    assert (
+        "ValuCast Buy rows have stale level/team/graduation or availability context."
+        in payload["buy_blockers"]
+    )
+    assert check["metrics"]["level_mismatch_count"] == 1
+    assert check["metrics"]["team_mismatch_count"] == 1
+    assert check["metrics"]["graduated_or_mlb_count"] == 1
+    assert check["metrics"]["missing_public_prospect_count"] == 1
+
+
+def test_quality_governor_blocks_buy_surface_undisclosed_availability_risk():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["components"]["availability"].update(
+        {
+            "status": "injured",
+            "risk_level": "high",
+            "risk_discount": 0.1,
+            "signals": ["manual_injury_override"],
+        }
+    )
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+    buy_board = [
+        {
+            "rank": 1,
+            "name": "Prospect 1",
+            "mlbam_id": 10001,
+            "role": "hitter",
+            "level": "AA",
+            "team": "BOS",
+        }
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=True, board=buy_board),
+        buy_review={
+            "review_status": "candidate_ready",
+            "source_policy": {"history_launch_approved": True},
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "buy_top40_public_surface_alignment"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert payload["ready_for_buys_promotion"] is False
+    assert check["metrics"]["undisclosed_availability_risk_count"] == 1
+    assert check["metrics"]["samples"]["undisclosed_availability_risk"][0]["public_status"] == "injured"

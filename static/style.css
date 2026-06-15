@@ -1302,6 +1302,16 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .stat-group + .stat-group { margin-top: .75rem; }
 .stat-group h5 { margin-bottom: .3rem; color: var(--c-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
 .profile-note { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--c-muted); }
+.sample-scope-note {
+    display: inline-block;
+    margin-top: .16rem;
+    color: var(--c-text);
+    font-size: .74rem;
+    font-weight: 800;
+}
+.prospect-sample-context .stat-grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+}
 .category-strip { display: flex; flex-wrap: wrap; gap: .45rem .85rem; }
 .category-bar { display: grid; grid-template-columns: 42px 120px 42px; align-items: center; gap: .35rem; min-width: 215px; }
 .category-label { color: var(--c-muted); font-size: .75rem; font-weight: 700; text-align: right; }

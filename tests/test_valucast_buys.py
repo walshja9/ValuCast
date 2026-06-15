@@ -39,6 +39,12 @@ def _row(
             "sample_reliability": 60.0,
             "model_score": score,
             "universal_outcome_index": 45.0,
+            "availability": {
+                "status": "available",
+                "risk_level": "clear",
+                "risk_discount": 0.0,
+                "level": level,
+            },
         },
         "drivers": ["ops +0.10"],
         "context_only": {
@@ -186,6 +192,41 @@ def test_history_drives_momentum_from_valucast_scores():
 
     assert row["terms"]["momentum"] > 0.4
     assert row["score_history"] == [("2026-06-12", 53.0), ("2026-06-13", 58.0)]
+
+
+def test_buy_signals_carry_availability_disclosure():
+    rows = [_row(1, "Injury Buy", 80, 58.0)]
+    rows[0]["components"]["availability"] = {
+        "status": "injured",
+        "risk_level": "high",
+        "risk_discount": 0.1,
+        "level": "AA",
+    }
+
+    payload = build_buy_signals(_rank_payload(rows), _history())
+    row = payload["board"][0]
+
+    assert row["availability_status"] == "injured"
+    assert row["availability_risk_level"] == "high"
+    assert row["availability_risk_discount"] == 0.1
+    assert row["availability_level"] == "AA"
+    assert validate_valucast_buy_payload(payload) == []
+
+
+def test_valucast_buy_graphic_surfaces_availability_risk():
+    rows = [_row(1, "Injury Buy", 80, 58.0)]
+    rows[0]["components"]["availability"] = {
+        "status": "injured",
+        "risk_level": "high",
+        "risk_discount": 0.1,
+        "level": "AA",
+    }
+
+    payload = build_buy_signals(_rank_payload(rows), _history())
+    board = buy_score.build_valucast_board(payload["board"], n=1)
+
+    assert board[0]["reason"] == "Injury risk priced"
+    assert board[0]["label"] == "Injury risk priced"
 
 
 def test_excludes_mlb_level_and_duplicate_identities():

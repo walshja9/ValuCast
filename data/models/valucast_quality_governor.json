@@ -680,6 +680,33 @@
       "status": "passed"
     },
     {
+      "id": "buy_top40_public_surface_alignment",
+      "message": "ValuCast Buy rows align with the public prospect surface.",
+      "metrics": {
+        "evaluated_count": 40,
+        "failures": [],
+        "graduated_or_mlb_count": 0,
+        "level_mismatch_count": 0,
+        "max_graduated_or_mlb_count": 0,
+        "max_level_mismatch_count": 0,
+        "max_missing_public_prospect_count": 0,
+        "max_team_mismatch_count": 0,
+        "max_undisclosed_availability_risk_count": 0,
+        "missing_public_prospect_count": 0,
+        "samples": {
+          "graduated_or_mlb": [],
+          "level_mismatch": [],
+          "missing_public_prospect": [],
+          "team_mismatch": [],
+          "undisclosed_availability_risk": []
+        },
+        "team_mismatch_count": 0,
+        "top_n": 40,
+        "undisclosed_availability_risk_count": 0
+      },
+      "status": "passed"
+    },
+    {
       "id": "buy_promotion_gate",
       "message": "ValuCast-owned Buy signals pass promotion checks.",
       "metrics": {
@@ -704,9 +731,15 @@
     }
   ],
   "criteria": {
+    "buy_surface_top_n": 40,
     "max_buy_history_limited_rate": 0.5,
+    "max_buy_top40_graduated_or_mlb_count": 0,
+    "max_buy_top40_level_mismatch_count": 0,
     "max_buy_top40_low_confidence_rate": 0.35,
+    "max_buy_top40_missing_public_prospect_count": 0,
     "max_buy_top40_pedigree_rate": 0.35,
+    "max_buy_top40_team_mismatch_count": 0,
+    "max_buy_top40_undisclosed_availability_risk_count": 0,
     "max_elite_factual_raw_fallback_top_200": 0,
     "max_milb_stat_freshness_blockers": 0,
     "max_top25_exact_pedigree_cap_count": 3,
