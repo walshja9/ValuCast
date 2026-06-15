@@ -921,6 +921,219 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     return output.getvalue()
 
 
+def _graphic_font(size, *, bold=False, serif=False):
+    from PIL import ImageFont
+
+    candidates = []
+    if sys.platform.startswith("win"):
+        root = Path(os.environ.get("WINDIR", "C:\\Windows")) / "Fonts"
+        if serif:
+            candidates += [root / ("georgiab.ttf" if bold else "georgia.ttf")]
+        candidates += [root / ("segoeuib.ttf" if bold else "segoeui.ttf")]
+        candidates += [root / ("arialbd.ttf" if bold else "arial.ttf")]
+    if serif:
+        candidates += [
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"),
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"),
+        ]
+    candidates += [
+        Path(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+            if bold
+            else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+        ),
+        Path("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"),
+    ]
+    for candidate in candidates:
+        try:
+            return ImageFont.truetype(str(candidate), size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _graphic_text_width(draw, text, fnt):
+    box = draw.textbbox((0, 0), text, font=fnt)
+    return box[2] - box[0]
+
+
+def _graphic_fit_text(draw, text, fnt, max_width):
+    text = str(text or "")
+    if _graphic_text_width(draw, text, fnt) <= max_width:
+        return text
+    trimmed = text
+    while trimmed and _graphic_text_width(draw, trimmed + "...", fnt) > max_width:
+        trimmed = trimmed[:-1]
+    return (trimmed.rstrip() + "...") if trimmed else "..."
+
+
+def _graphic_wrap_text(draw, text, fnt, max_width, max_lines=3):
+    words = str(text or "").split()
+    lines = []
+    current = ""
+    for word in words:
+        candidate = f"{current} {word}".strip()
+        if not current or _graphic_text_width(draw, candidate, fnt) <= max_width:
+            current = candidate
+            continue
+        lines.append(current)
+        current = word
+        if len(lines) >= max_lines:
+            break
+    if current and len(lines) < max_lines:
+        lines.append(current)
+    if len(lines) == max_lines and words:
+        lines[-1] = _graphic_fit_text(draw, lines[-1], fnt, max_width)
+    return lines
+
+
+def _graphic_stat_value(value, key):
+    if not isinstance(value, (int, float)):
+        return str(value or "")
+    if key in {"avg", "obp", "slg", "ops", "iso"}:
+        return f"{value:.3f}"
+    if key in {"k_pct", "bb_pct", "k_bb_pct"}:
+        return f"{value:.1f}%"
+    if key in {"era", "whip", "k_per_9", "bb_per_9"}:
+        return f"{value:.2f}"
+    if float(value).is_integer():
+        return str(int(value))
+    return f"{value:.1f}"
+
+
+def _prospect_player_card_png(row):
+    """Render a single-prospect share card from ValuCast-owned current context."""
+    from PIL import Image, ImageDraw
+
+    stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, row)
+    profile_bars = prospect_percentiles.profile_bars(row, stat_percentiles)
+    skill_grades = prospect_percentiles.skill_grades(row, stat_percentiles)
+    identity = prospect_percentiles.identity_line(row, stat_percentiles) or ""
+    pool_label = prospect_percentiles.pool_label(row)
+    context = getattr(row, "context", None)
+    if not isinstance(context, dict):
+        context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
+    if not isinstance(context, dict):
+        context = {}
+
+    width, height = 1080, 1350
+    bg = (18, 19, 31)
+    card = (35, 36, 64)
+    card_2 = (32, 33, 58)
+    border = (45, 47, 74)
+    green = (52, 211, 153)
+    blue = (110, 161, 255)
+    cyan = (45, 212, 191)
+    amber = (251, 191, 36)
+    text = (231, 233, 244)
+    muted = (154, 161, 192)
+
+    img = Image.new("RGB", (width, height), bg)
+    draw = ImageDraw.Draw(img)
+    for y in range(height):
+        t = y / height
+        draw.line(
+            [(0, y), (width, y)],
+            fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)),
+        )
+
+    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
+    draw.text((48, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
+    draw.text((48, 82), "PLAYER CARD", fill=text, font=_graphic_font(60, bold=True))
+    subtitle = "current skill percentiles + ValuCast model context"
+    generated = _editorial_date(dd_store.generated_at)
+    if generated:
+        subtitle = f"{subtitle} - {generated}"
+    draw.text((48, 154), subtitle, fill=muted, font=_graphic_font(22))
+
+    # Identity panel
+    draw.rounded_rectangle((48, 218, 1032, 410), radius=22, fill=card, outline=border, width=2)
+    draw.ellipse((78, 258, 198, 378), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
+    initials = buy_score.graphic_initials(row.name)
+    mono = _graphic_font(46, bold=True)
+    box = draw.textbbox((0, 0), initials, font=mono)
+    draw.text((138 - (box[2] - box[0]) / 2, 318 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+
+    name_font = _graphic_font(44, bold=True)
+    draw.text((230, 252), _graphic_fit_text(draw, row.name, name_font, 510), fill=text, font=name_font)
+    meta = " - ".join(
+        piece for piece in [
+            row.team or "FA",
+            "/".join(row.positions[:2]) if row.positions else "UT",
+            row.level or "PRO",
+            f"Age {row.age}" if row.age is not None else "",
+        ]
+        if piece
+    )
+    draw.text((232, 308), _graphic_fit_text(draw, meta, _graphic_font(22), 520), fill=muted, font=_graphic_font(22))
+    draw.text((232, 346), pool_label, fill=muted, font=_graphic_font(18))
+
+    draw.rounded_rectangle((795, 250, 982, 372), radius=18, fill=card_2, outline=(54, 57, 92), width=1)
+    draw.text((820, 272), "VALUCAST", fill=muted, font=_graphic_font(16, bold=True))
+    draw.text((820, 296), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(40, bold=True))
+    rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
+    draw.text((820, 346), rank_text, fill=text, font=_graphic_font(20, bold=True))
+
+    # Skill bars
+    draw.rounded_rectangle((48, 438, 1032, 812), radius=22, fill=card, outline=border, width=2)
+    draw.text((74, 468), "CURRENT SKILL PERCENTILES", fill=text, font=_graphic_font(24, bold=True))
+    if context.get("stat_line_sample_season"):
+        sample = context.get("stat_line_sample")
+        unit = context.get("stat_line_sample_unit") or ""
+        if isinstance(sample, (int, float)):
+            sample_number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
+            sample_text = f"{sample_number} {unit}".strip()
+        else:
+            sample_text = ""
+        draw.text((74, 500), f"{context.get('stat_line_sample_season')} sample {sample_text}".strip(), fill=muted, font=_graphic_font(17, bold=True))
+
+    y = 542
+    if profile_bars:
+        for item in profile_bars[:7]:
+            pct = int(item["percentile"])
+            label = item["label"]
+            value = _graphic_stat_value(item["value"], item["key"])
+            draw.text((82, y + 8), label, fill=muted, font=_graphic_font(18, bold=True))
+            x0, y0, x1, y1 = 190, y + 6, 790, y + 28
+            draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(39, 48, 76))
+            fill = cyan if pct >= 75 else blue if pct > 25 else amber
+            draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=7, fill=fill)
+            knob_x = max(x0 + 16, min(x1 - 16, x0 + int((x1 - x0) * pct / 100)))
+            draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(13, 16, 30))
+            draw.text((knob_x - 10, y0 - 1), str(pct), fill=text, font=_graphic_font(15, bold=True))
+            draw.text((820, y + 5), value, fill=text, font=_graphic_font(20, bold=True))
+            y += 39
+    else:
+        draw.text((74, 560), "Current sample does not meet the percentile-pool threshold.", fill=muted, font=_graphic_font(22))
+
+    # Narrative + 20-80 skill shape
+    draw.rounded_rectangle((48, 840, 1032, 1132), radius=22, fill=card, outline=border, width=2)
+    draw.text((74, 870), "VALUCAST READ", fill=green, font=_graphic_font(22, bold=True))
+    read_font = _graphic_font(22)
+    for idx, line in enumerate(_graphic_wrap_text(draw, identity, read_font, 890, max_lines=4)):
+        draw.text((74, 910 + idx * 31), line, fill=text, font=read_font)
+
+    draw.text((74, 1040), "SKILL SHAPE", fill=muted, font=_graphic_font(18, bold=True))
+    for idx, skill in enumerate(skill_grades[:4]):
+        x = 74 + idx * 235
+        draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(54, 57, 92), width=1)
+        grade = int(skill["grade"])
+        color = green if grade >= 60 else amber if grade <= 40 else text
+        draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
+        draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
+        draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
+
+    # Footer
+    draw.rounded_rectangle((48, 1190, 1032, 1268), radius=14, fill=card, outline=border, width=1)
+    source = "ValuCast-owned current MiLB stat context. 20-80 shape is percentile-derived, not sourced scouting grades."
+    draw.text((70, 1212), source, fill=muted, font=_graphic_font(18))
+    draw.text((70, 1242), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
+
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
 def _build_dynasty_context(args):
     """Build template context for DD Dynasty mode."""
     pool = args.get("pool", "")
@@ -2024,6 +2237,77 @@ def prospects_share_card_png():
     response.headers["Content-Type"] = "image/png"
     response.headers["Content-Disposition"] = (
         f'inline; filename="valucast-top-{limit}-{scope}-prospects.png"'
+    )
+    return response
+
+
+@app.route("/prospects/player-card/<player_id>")
+def prospect_player_card_preview(player_id):
+    if not dd_store.is_available:
+        return "<!doctype html><title>Player card unavailable</title>", 503
+    row = dd_store.get_by_id(player_id)
+    if row is None or not row.is_prospect:
+        return "<!doctype html><title>Player card not found</title>", 404
+
+    filename_slug = "-".join(
+        piece for piece in "".join(
+            ch.lower() if ch.isalnum() else "-" for ch in row.name
+        ).split("-") if piece
+    )
+    filename = f"valucast-{filename_slug or 'prospect'}-card.png"
+    png_url = f"/prospects/player-card/{escape(player_id)}.png"
+    title = f"{row.name} | ValuCast Player Card"
+    html = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{escape(title)}</title>
+  <style>
+    body {{ margin: 0; background: #020617; color: #d1fae5; font-family: Inter, Segoe UI, Arial, sans-serif; }}
+    main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
+    .meta, .actions, .card-wrap {{ width: min(1080px, 100%); }}
+    h1 {{ margin: 0 0 4px; color: #f8fafc; font-size: 22px; }}
+    p {{ margin: 0; color: #9ca3c0; font-weight: 700; }}
+    img {{ width: 100%; height: auto; display: block; border-radius: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }}
+    .actions {{ display: flex; justify-content: flex-end; }}
+    .download {{ color: #052e2b; background: #a7f3d0; border-radius: 999px; padding: 10px 16px; text-decoration: none; font-weight: 900; }}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="meta">
+      <h1>ValuCast Player Card</h1>
+      <p>{escape(row.name)} · current skill percentiles</p>
+    </div>
+    <div class="card-wrap"><img src="{png_url}" alt="{escape(row.name)} ValuCast player card"></div>
+    <div class="actions"><a class="download" href="{png_url}" download="{escape(filename)}">Download PNG</a></div>
+  </main>
+</body>
+</html>"""
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/prospects/player-card/<player_id>.png")
+def prospect_player_card_png(player_id):
+    if not dd_store.is_available:
+        return "", 503
+    row = dd_store.get_by_id(player_id)
+    if row is None or not row.is_prospect:
+        return "", 404
+
+    png = _prospect_player_card_png(row)
+    filename_slug = "-".join(
+        piece for piece in "".join(
+            ch.lower() if ch.isalnum() else "-" for ch in row.name
+        ).split("-") if piece
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-{filename_slug or "prospect"}-card.png"'
     )
     return response
 

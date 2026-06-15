@@ -378,6 +378,42 @@ class TestDynastyMode(unittest.TestCase):
             response.headers.get("Content-Disposition", ""),
         )
 
+    def test_prospect_player_card_preview_and_png(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        row = next((r for r in dd_store.get_all() if r.is_prospect), None)
+        if row is None:
+            self.skipTest("No prospect rows available")
+
+        preview = self.client.get(f"/prospects/player-card/{row.id}")
+        self.assertEqual(preview.status_code, 200)
+        self.assertIn("text/html", preview.content_type)
+        self.assertIn(b"ValuCast Player Card", preview.data)
+        self.assertIn(f"/prospects/player-card/{row.id}.png".encode(), preview.data)
+
+        png = self.client.get(f"/prospects/player-card/{row.id}.png")
+        self.assertEqual(png.status_code, 200)
+        self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertIn("image/png", png.content_type)
+        self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
+
+    def test_prospect_detail_links_player_share_graphic(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        row = next((r for r in dd_store.get_all() if r.is_prospect), None)
+        if row is None:
+            self.skipTest("No prospect rows available")
+
+        response = self.client.get(
+            f"/player/{row.id}?mode=prospects",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Share graphic", response.data)
+        self.assertIn(f"/prospects/player-card/{row.id}".encode(), response.data)
+
     def test_prospects_compare_bar_hidden_by_default(self):
         """Compare bar element is present in DOM but starts hidden (display:none)."""
         from app import dd_store

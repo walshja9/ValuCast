@@ -71,8 +71,11 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Individual external boards", response.data)
         self.assertNotIn(b"View individual public boards", response.data)
         self.assertIn(b"Spread 68", response.data)
-        self.assertIn(b"Rate Stats", response.data)
-        self.assertIn(b"Plate Discipline", response.data)
+        self.assertIn(b"ValuCast Prospect Card", response.data)
+        self.assertIn(b"Current Skill Percentiles", response.data)
+        self.assertIn(b"ValuCast Skill Shape", response.data)
+        self.assertNotIn(b"Rate Stats", response.data)
+        self.assertNotIn(b"Plate Discipline", response.data)
         self.assertNotIn(b'<span class="stat-label">Level</span>', response.data)
 
     def test_prospects_board_uses_dd_prospect_rank_order(self):

@@ -458,7 +458,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"not scouting grades", response.data)
         self.assertIn(b"identity-line", response.data)
         self.assertIn(b'class="prospect-profile-bar"', response.data)
-        self.assertIn(b'class="pct-rail"', response.data)
+        self.assertNotIn(b'class="pct-rail"', response.data)
         self.assertIn(b"vs ValuCast hitter pool", response.data)
         self.assertIn(b"all levels", response.data)
         self.assertIn(b"100+ PA", response.data)
@@ -466,12 +466,14 @@ class TestCardIntelligenceUI(unittest.TestCase):
             b"percentile in the ValuCast prospect pool",
             response.data,
         )
-        # Called-up prospect (level MLB): the MiLB sample is flagged as pre-call-up.
-        self.assertIn(b"last MiLB sample", response.data)
+        # The rich ValuCast card owns the stat display; the old stat tiles are fallback-only.
+        self.assertNotIn(b"<h4>MiLB Stats", response.data)
+        self.assertNotIn(b"<h5>Rate Stats</h5>", response.data)
 
     def test_small_sample_card_has_tag_without_percentiles(self):
         response = self.client.get("/player/dd_prospect_small?mode=prospects", headers={"HX-Request": "true"})
         self.assertIn(b"small sample", response.data)
+        self.assertIn(b"<h4>MiLB Stats", response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
 
     def test_pitcher_prospect_card_uses_pitcher_pool_label(self):

@@ -860,7 +860,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
         border-radius: 8px; overflow: hidden;
     }
     .player-detail { padding: 0.75rem; }
-    .detail-body { grid-template-columns: 1fr; }
+    .detail-body { grid-template-columns: 1fr; gap: .95rem; }
+    .detail-section h4 { margin-bottom: .4rem; }
+    .stat-grid { gap: .42rem; }
     .pct-row { max-width: none; }
     .pct-label { flex-basis: 96px; }
     .compare-modal { width: 95%; padding: 1rem; }
@@ -1116,6 +1118,24 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     padding: .18rem .48rem;
     white-space: nowrap;
 }
+.player-share-link {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(52, 211, 153, .35);
+    border-radius: 999px;
+    background: rgba(52, 211, 153, .10);
+    color: var(--c-prospect);
+    font-size: .72rem;
+    font-weight: 900;
+    padding: .18rem .55rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.player-share-link:hover {
+    border-color: var(--c-prospect);
+    color: #d1fae5;
+    text-decoration: none;
+}
 .profile-card-identity {
     max-width: 900px;
     margin: .45rem 0 .75rem;
@@ -1312,12 +1332,16 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .dynasty-headline { justify-content: flex-start; margin-left: 0; }
     .prospect-profile-top { flex-direction: column; gap: .55rem; }
     .profile-card-badges { justify-content: flex-start; }
+    .profile-card-identity { margin: .35rem 0 .6rem; }
+    .prospect-profile-bars { gap: .32rem; }
     .prospect-profile-bar { grid-template-columns: 44px minmax(0, 1fr) 48px; gap: .35rem; }
     .profile-bar-label { font-size: .7rem; }
     .profile-bar-value { font-size: .72rem; }
     .profile-bar-caption { grid-column: 1 / 4; padding-left: 44px; }
+    .skill-shape-card { margin-top: .65rem; padding-top: .6rem; }
     .skill-shape-head { flex-direction: column; gap: .15rem; }
     .skill-shape-grid { grid-template-columns: 1fr 1fr; }
+    .skill-shape-item { padding: .45rem .52rem; }
     .fit-category-grid { grid-template-columns: 1fr; }
     .category-fit-intro { flex-direction: column; }
     .rankings-table td.col-confidence { display: none; }
@@ -1439,6 +1463,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .stat-caption { margin-top: .2rem; font-size: .7rem; line-height: 1.25; color: var(--c-muted); font-style: italic; }
 .small-sample { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: .7rem; color: var(--c-amber); background: rgba(251, 191, 36, .14); border-radius: 999px; padding: .12rem .45rem; }
 .prospect-sample-context .stat-grid { margin-bottom: .45rem; }
+.prospect-sample-context .stat-grid,
+.translated-section .stat-grid { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
 .sample-context-note { margin: .35rem 0 0; color: var(--c-muted); font-size: .78rem; line-height: 1.45; }
 .uncertainty-explainer { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid rgba(148, 163, 184, .18); }
 .uncertainty-driver-row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .45rem; }
