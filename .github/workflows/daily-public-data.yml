@@ -48,9 +48,6 @@ jobs:
       - name: Sync generated DD dynasty and buys feed
         run: python scripts/sync_dd_feed.py
 
-      - name: Sync DD factual prospect input contract
-        run: python scripts/sync_dd_prospect_inputs.py
-
       - name: Build ValuCast canonical prospect input contract
         run: python scripts/build_valucast_prospect_inputs.py
 
@@ -116,8 +113,8 @@ jobs:
           git add \
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
-            data/dd/prospect_model_inputs.json \
             data/prospects/prospect_model_inputs.json \
+            data/prospects/raw \
             data/exports/valucast_dd_prospect_lens.json \
             data/mlb/mlb_track_record_cache.json \
             data/mlb/mlb_availability_transactions_cache.json \

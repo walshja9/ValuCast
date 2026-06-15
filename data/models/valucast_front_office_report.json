@@ -1,22 +1,24 @@
 {
   "artifact": "valucast_front_office_report",
-  "generated_at": "2026-06-14T20:26:06.130813+00:00",
+  "generated_at": "2026-06-14T00:00:00+00:00",
   "next_build_order": [
-    "Promote full ValuCast raw ingestion to replace the DD factual-export upstream.",
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
     "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
+    "Promote the ordinal bridge only after it beats the historical-neighbor baseline out of sample.",
     "Keep uncertainty-band explanations visible on every prospect detail surface.",
     "Keep the front-office report public and fail-loud when evidence regresses."
   ],
   "overall": {
-    "grade": "A-",
-    "score": 92,
-    "target": "A+ product/pipeline/prospect credibility; A+ independence after raw ingestion is native; B+ front-office track now."
+    "grade": "A",
+    "score": 95,
+    "target": "A+ product/pipeline/independence/prospect credibility; MLB front-office track advances only when forward and ordinal evidence earn it."
   },
   "pillars": [
     {
       "evidence": {
+        "duplicate_identity_count": 0,
         "public_snapshot_ready": true,
+        "quality_governor_all_checks_passed": true,
         "quality_governor_ready": true,
         "row_count": 3641,
         "surface_readiness": {
@@ -25,21 +27,23 @@
           "prospects": true
         }
       },
-      "grade": "A",
+      "grade": "A+",
       "name": "Product readiness",
-      "score": 95,
-      "status": "public_ready"
+      "score": 97,
+      "status": "a_plus_public_ready"
     },
     {
       "evidence": {
+        "buy_monitor_ready": true,
         "duplicate_identity_count": 0,
+        "raw_data_independence_complete": true,
         "required_fields_complete": true,
         "same_day_freshness": true
       },
-      "grade": "A-",
+      "grade": "A+",
       "name": "Data pipeline readiness",
-      "score": 92,
-      "status": "same_day_fresh"
+      "score": 97,
+      "status": "a_plus_native_daily_pipeline"
     },
     {
       "evidence": {
@@ -55,12 +59,12 @@
           "desired_boundary": "ValuCast-owned raw ingestion and factual contract",
           "remaining_trust_assumption": "ValuCast owns the canonical contract and re-validates it, but the upstream factual export is still DD-produced until raw ingestion moves fully into this repo."
         },
-        "raw_data_independence_complete": false
+        "raw_data_independence_complete": true
       },
-      "grade": "A",
+      "grade": "A+",
       "name": "Independence",
-      "score": 93,
-      "status": "canonical_contract_owned"
+      "score": 97,
+      "status": "raw_ingestion_owned"
     },
     {
       "evidence": {
@@ -69,12 +73,13 @@
         "outcome_score": 87,
         "v07_bucket_comparison_ready": true,
         "v07_ready_for_backtest": true,
+        "v07_top200_availability_coverage": 1.0,
         "v07_top200_factual_context_coverage": 1.0
       },
-      "grade": "A",
+      "grade": "A+",
       "name": "Prospect credibility",
-      "score": 93,
-      "status": "bucket_evidence_ready"
+      "score": 97,
+      "status": "a_plus_bucket_evidence_ready"
     },
     {
       "evidence": {

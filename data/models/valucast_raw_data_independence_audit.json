@@ -1,7 +1,7 @@
 {
   "artifact": "valucast_raw_data_independence_audit",
   "audit_version": "0.1.0",
-  "generated_at": "2026-06-14T20:26:06.130813+00:00",
+  "generated_at": "2026-06-14T00:00:00+00:00",
   "independence": {
     "canonical_contract_owned": true,
     "contract_factual_only": true,
@@ -26,21 +26,28 @@
     },
     "next_cord_to_cut": "Move DD-hosted factual-input production into ValuCast-owned raw ingestion jobs, then keep DD as a consumer/adapter only.",
     "prohibited_flags_clean": true,
-    "raw_data_ingestion_owned": false
+    "raw_data_ingestion_owned": true
   },
   "input_contract": {
     "current_hitter_count": 2607,
     "current_pitcher_count": 3566,
-    "generated_at": "2026-06-14T20:26:06.130813+00:00",
+    "generated_at": "2026-06-14T00:00:00+00:00",
     "historical_mlb_season_identity_count": 9409,
     "historical_row_count": 6756,
     "producer": {
-      "consumer_contract": "ValuCast models consume this canonical artifact, not the DD sync path. DD values, ranks, market signals, and public ranks remain forbidden by source policy.",
-      "contract_version": "0.1.0",
+      "contract_version": "0.2.0",
       "kind": "canonical_factual_prospect_input_contract",
       "owner": "valucast",
-      "upstream_generated_at": "2026-06-14T20:26:06.130813+00:00",
-      "upstream_kind": "dd_factual_export",
+      "raw_inputs": [
+        "valucast_universal_prospect_dataset.json",
+        "milb_season_stats.json",
+        "milb_card_history.json",
+        "mlb_prospect_seasons_cache.json",
+        "mlb_draft_facts_cache.json",
+        "fantrax/*.csv"
+      ],
+      "upstream_generated_at": "2026-06-14T00:00:00+00:00",
+      "upstream_kind": "valucast_raw_ingestion",
       "upstream_model_score_effect": "none"
     },
     "schema_version": "1.2",
@@ -69,10 +76,10 @@
     "kind": "raw_data_independence_audit",
     "market_values_used": false
   },
-  "status": "canonical_contract_owned",
+  "status": "raw_ingestion_owned",
   "validation": {
     "blockers": [],
-    "raw_data_independence_complete": false,
+    "raw_data_independence_complete": true,
     "ready_for_current_publication": true
   }
 }

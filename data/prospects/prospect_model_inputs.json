@@ -239226,7 +239226,7 @@
     ],
     "season": 2026
   },
-  "generated_at": "2026-06-14T20:26:06.130813+00:00",
+  "generated_at": "2026-06-14T00:00:00+00:00",
   "historical": {
     "cohorts": [
       2014,
@@ -665910,12 +665910,19 @@
     }
   ],
   "producer": {
-    "consumer_contract": "ValuCast models consume this canonical artifact, not the DD sync path. DD values, ranks, market signals, and public ranks remain forbidden by source policy.",
-    "contract_version": "0.1.0",
+    "contract_version": "0.2.0",
     "kind": "canonical_factual_prospect_input_contract",
     "owner": "valucast",
-    "upstream_generated_at": "2026-06-14T20:26:06.130813+00:00",
-    "upstream_kind": "dd_factual_export",
+    "raw_inputs": [
+      "valucast_universal_prospect_dataset.json",
+      "milb_season_stats.json",
+      "milb_card_history.json",
+      "mlb_prospect_seasons_cache.json",
+      "mlb_draft_facts_cache.json",
+      "fantrax/*.csv"
+    ],
+    "upstream_generated_at": "2026-06-14T00:00:00+00:00",
+    "upstream_kind": "valucast_raw_ingestion",
     "upstream_model_score_effect": "none"
   },
   "rookie_limits": {

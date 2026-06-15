@@ -22,7 +22,10 @@ def _snapshot():
 
 
 def _governor():
-    return {"ready_for_public_snapshot": True}
+    return {
+        "ready_for_public_snapshot": True,
+        "checks": [{"id": "snapshot", "status": "passed"}],
+    }
 
 
 def _outcome():
@@ -47,6 +50,8 @@ def _v07():
             "ready_for_backtest": True,
             "bucket_comparison_ready": True,
             "top200_factual_context_coverage": 1.0,
+            "top200_availability_coverage": 1.0,
+            "blockers": [],
         }
     }
 
@@ -98,6 +103,31 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
     assert payload["overall"]["grade"] in {"B", "B+", "A-", "A", "A+"}
     pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
     assert pillars["Independence"]["grade"] == "A"
+    assert pillars["MLB front-office track"]["grade"] == "B+"
+
+
+def test_front_office_report_promotes_supported_pillars_to_a_plus():
+    snapshot = _snapshot()
+    snapshot["row_count"] = 3_500
+    snapshot["validation"]["blockers"] = []
+    snapshot["validation"]["buy_signal_blockers"] = []
+    raw = _raw()
+    raw["validation"]["raw_data_independence_complete"] = True
+
+    payload = build_front_office_report(
+        snapshot,
+        _governor(),
+        _outcome(),
+        _v07(),
+        raw,
+        _buys_monitor(),
+    )
+    pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
+
+    assert pillars["Product readiness"]["grade"] == "A+"
+    assert pillars["Data pipeline readiness"]["grade"] == "A+"
+    assert pillars["Independence"]["grade"] == "A+"
+    assert pillars["Prospect credibility"]["grade"] == "A+"
     assert pillars["MLB front-office track"]["grade"] == "B+"
 
 

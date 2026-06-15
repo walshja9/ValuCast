@@ -16,6 +16,7 @@ def main() -> None:
         f"historical={result['historical_rows']} "
         f"current={result['current_rows']} "
         f"producer={result['producer_owner']} "
+        f"upstream={result['upstream_kind']} "
         f"-> {result['artifact_path']}"
     )
 

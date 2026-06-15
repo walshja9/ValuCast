@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-UPSTREAM_DD_INPUT_PATH = ROOT / "data" / "dd" / "prospect_model_inputs.json"
 VALUCAST_INPUT_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 
 SUPPORTED_SCHEMA_SOURCES = {

@@ -27,6 +27,8 @@ def validate_valucast_prospect_inputs(
         problems.append("producer.owner must be valucast")
     if producer.get("kind") != "canonical_factual_prospect_input_contract":
         problems.append("producer.kind must be canonical_factual_prospect_input_contract")
+    if producer.get("upstream_kind") != "valucast_raw_ingestion":
+        problems.append("producer.upstream_kind must be valucast_raw_ingestion")
     if producer.get("upstream_model_score_effect") != "none":
         problems.append("producer.upstream_model_score_effect must be none")
     return payload, problems

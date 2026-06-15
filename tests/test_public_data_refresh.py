@@ -310,7 +310,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
 
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
-    assert "python scripts/sync_dd_prospect_inputs.py" in workflow
+    assert "python scripts/sync_dd_prospect_inputs.py" not in workflow
     assert "python scripts/build_valucast_prospect_inputs.py" in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/build_mlb_availability.py" in workflow
@@ -342,8 +342,8 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/mlb/mlb_availability_transactions_cache.json" in workflow
     assert "data/mlb/mlb_roster_status_cache.json" in workflow
     assert "data/mlb/mlb_track_record_cache.json" in workflow
-    assert "data/dd/prospect_model_inputs.json" in workflow
     assert "data/prospects/prospect_model_inputs.json" in workflow
+    assert "data/prospects/raw" in workflow
     assert "data/models/valucast_universal_prospect_model.json" in workflow
     assert "data/models/valucast_prospect_dynasty_layer.json" in workflow
     assert "data/models/valucast_prospect_availability.json" in workflow
@@ -359,3 +359,13 @@ def test_daily_public_workflow_requires_manual_buy_approval():
         "${{ github.event_name == 'workflow_dispatch' "
         "&& inputs.approve_valucast_buys && '1' || '0' }}"
     ) in workflow
+
+
+def test_prospect_shadow_workflow_keys_off_valucast_inputs():
+    workflow = Path(".github/workflows/prospect-shadow.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "data/prospects/prospect_model_inputs.json" in workflow
+    assert "data/prospects/raw/**" in workflow
+    assert "data/dd/prospect_model_inputs.json" not in workflow

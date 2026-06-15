@@ -4,7 +4,8 @@ on:
   push:
     branches: [master]
     paths:
-      - data/dd/prospect_model_inputs.json
+      - data/prospects/prospect_model_inputs.json
+      - data/prospects/raw/**
   workflow_dispatch:
 
 permissions:
