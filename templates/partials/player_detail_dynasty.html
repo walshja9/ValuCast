@@ -59,7 +59,7 @@
         <div class="detail-section prospect-profile-card">
             <div class="prospect-profile-top">
                 <div>
-                    <span class="profile-card-kicker">ValuCast Skill Snapshot</span>
+                    <span class="profile-card-kicker">Current Evidence</span>
                     <h4>Current Skill Percentiles</h4>
                     <p class="profile-note">
                         {{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}
@@ -92,7 +92,7 @@
             {% if skill_grades %}
             <div class="skill-shape-card">
                 <div class="skill-shape-head">
-                    <h5>ValuCast Skill Shape</h5>
+                    <h5>Current Skill Shape</h5>
                     <span>20-80 style - from current stats, not scouting grades</span>
                 </div>
                 <div class="skill-shape-grid">
@@ -109,6 +109,49 @@
             {% elif row.stat_line %}
             <p class="sample-context-note">Percentile bars require the current sample to meet the ValuCast pool threshold.</p>
             {% endif %}
+        </div>
+        {% endif %}
+
+        {% if row.has_peak_projection %}
+        <div class="detail-section peak-projection-card">
+            <div class="peak-projection-head">
+                <div>
+                    <span class="profile-card-kicker">ValuCast Peak Projection v1</span>
+                    <h4>Projected Peak Shape</h4>
+                    <p class="profile-note">{{ row.peak_projection_note }}</p>
+                </div>
+                {% if row.peak_score_label %}
+                <div class="peak-score-box">
+                    <span>Peak</span>
+                    <strong>{{ row.peak_score_label }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            <div class="stat-grid">
+                {% if row.peak_role_label %}<div class="stat-item"><span class="stat-label">Peak Role</span><span class="stat-value">{{ row.peak_role_label }}</span></div>{% endif %}
+                {% if row.peak_floor_label %}<div class="stat-item"><span class="stat-label">Floor</span><span class="stat-value">{{ row.peak_floor_label }}</span></div>{% endif %}
+                {% if row.peak_risk_label %}<div class="stat-item"><span class="stat-label">Risk</span><span class="stat-value">{{ row.peak_risk_label }}</span></div>{% endif %}
+                {% if row.peak_confidence_label %}<div class="stat-item"><span class="stat-label">Confidence</span><span class="stat-value">{{ row.peak_confidence_label }}</span></div>{% endif %}
+                {% if row.peak_eta_label %}<div class="stat-item"><span class="stat-label">Window</span><span class="stat-value">{{ row.peak_eta_label }}</span></div>{% endif %}
+            </div>
+            {% if row.peak_shape_items %}
+            <div class="skill-shape-card peak-shape-card">
+                <div class="skill-shape-head">
+                    <h5>Peak Skill Shape</h5>
+                    <span>ValuCast-owned role projection, not public grades</span>
+                </div>
+                <div class="skill-shape-grid">
+                    {% for skill in row.peak_shape_items %}
+                    <div class="skill-shape-item {{ 'plus' if skill.grade >= 60 else ('risk' if skill.grade <= 40 else '') }}">
+                        <span class="skill-shape-label">{{ skill.label }}</span>
+                        <span class="skill-shape-grade">{{ skill.grade }}</span>
+                        <span class="skill-shape-source">{{ skill.metrics }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if row.peak_projection_summary %}<p class="sample-context-note">{{ row.peak_projection_summary }}</p>{% endif %}
         </div>
         {% endif %}
 
@@ -142,7 +185,7 @@
 
         {% if row.availability_context or row.bucket_calibration_context or row.factual_current_context %}
         <div class="detail-section prospect-sample-context">
-            <h4>ValuCast Model Context</h4>
+            <h4>Confidence & Context</h4>
             <div class="stat-grid">
                 {% if row.factual_skill_label and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Skill Read</span><span class="stat-value">{{ row.factual_skill_label }}</span></div>

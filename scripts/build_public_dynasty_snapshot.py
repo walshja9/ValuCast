@@ -21,6 +21,9 @@ PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 PROSPECT_COVERAGE_AUDIT_PATH = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 )
+PROSPECT_PEAK_PROJECTION_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
+)
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
@@ -264,10 +267,13 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
 def _prospect_rows(
     rank_payload: dict,
     generated_at: str,
+    peak_projection: dict | None = None,
 ) -> list[dict]:
+    peak_lookup = _prospect_peak_projection_lookup(peak_projection)
     rows = []
     for row in rank_payload.get("board") or []:
         context = row.get("context_only") or {}
+        peak = peak_lookup.get(_identity_key(row))
         rows.append(
             {
                 "id": _snapshot_id(row),
@@ -298,6 +304,7 @@ def _prospect_rows(
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
                 "mlb_stat_line": context.get("mlb_stat_line"),
+                "peak_projection": peak,
                 "context": {
                     "kind": "optional_display_context",
                     "usage": "display_only_not_used_for_valucast_score",
@@ -320,6 +327,20 @@ def _prospect_rows(
             }
         )
     return rows
+
+
+def _prospect_peak_projection_lookup(peak_projection: dict | None) -> dict[str, dict]:
+    if not peak_projection:
+        return {}
+    validation = peak_projection.get("validation") or {}
+    if validation.get("ready_for_card_v2") is not True:
+        return {}
+    lookup = {}
+    for row in peak_projection.get("projections") or []:
+        key = _identity_key(row)
+        if key and key not in lookup:
+            lookup[key] = row
+    return lookup
 
 
 def _assign_visible_prospect_ranks(rows: list[dict]) -> list[dict]:
@@ -664,6 +685,7 @@ def build_snapshot(
     mlb_layer: dict | None = None,
     mlb_roster_status: dict | None = None,
     prospect_coverage_audit: dict | None = None,
+    prospect_peak_projection: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
     prospect_inputs: dict | None = None,
@@ -687,7 +709,11 @@ def build_snapshot(
         if mlbam_id := _mlbam_id(row):
             mlb_rows_by_id.setdefault(mlbam_id, []).append(row)
     active_mlb_ids = _active_mlb_roster_ids(mlb_roster_status)
-    all_prospect_rows = _prospect_rows(prospect_rank, generated_at)
+    all_prospect_rows = _prospect_rows(
+        prospect_rank,
+        generated_at,
+        peak_projection=prospect_peak_projection,
+    )
     graduated_prospect_rows = [
         row
         for row in all_prospect_rows
@@ -822,6 +848,17 @@ def build_snapshot(
             "prospect_coverage_audit_status": (prospect_coverage_audit or {}).get(
                 "status"
             ),
+            "prospect_peak_projection_version": (prospect_peak_projection or {}).get(
+                "projection_version"
+            ),
+            "prospect_peak_projection_status": (prospect_peak_projection or {}).get(
+                "status"
+            ),
+            "prospect_peak_projection_ready": (
+                ((prospect_peak_projection or {}).get("validation") or {}).get(
+                    "ready_for_card_v2"
+                )
+            ),
             "milb_stat_freshness_audit_version": (
                 milb_stat_freshness_audit or {}
             ).get("audit_version"),
@@ -876,6 +913,11 @@ def main() -> None:
         if PROSPECT_COVERAGE_AUDIT_PATH.exists()
         else None
     )
+    prospect_peak_projection = (
+        _load_json(PROSPECT_PEAK_PROJECTION_PATH)
+        if PROSPECT_PEAK_PROJECTION_PATH.exists()
+        else None
+    )
     buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
     buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
     payload = build_snapshot(
@@ -883,6 +925,7 @@ def main() -> None:
         mlb_layer=mlb_layer,
         mlb_roster_status=mlb_roster_status,
         prospect_coverage_audit=prospect_coverage_audit,
+        prospect_peak_projection=prospect_peak_projection,
         buy_signals=buy_signals,
         buy_review=buy_review,
         prospect_inputs=prospect_inputs,

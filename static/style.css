@@ -1282,6 +1282,45 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-size: .66rem;
     font-variant-numeric: tabular-nums;
 }
+.peak-projection-card {
+    background:
+        radial-gradient(circle at 92% 8%, rgba(110, 161, 255, .14), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0) 48%),
+        var(--surface);
+    border-color: rgba(110, 161, 255, .22);
+}
+.peak-projection-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .7rem;
+}
+.peak-projection-head h4 { margin-bottom: .1rem; }
+.peak-score-box {
+    min-width: 82px;
+    padding: .55rem .7rem;
+    border: 1px solid rgba(110, 161, 255, .28);
+    border-radius: 10px;
+    background: rgba(110, 161, 255, .08);
+    text-align: center;
+}
+.peak-score-box span {
+    display: block;
+    color: var(--c-muted);
+    font-size: .66rem;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.peak-score-box strong {
+    color: var(--c-prospect);
+    font-size: 1.45rem;
+    font-weight: 950;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+}
+.peak-shape-card { border-top-color: rgba(110, 161, 255, .18); }
 .market-context-details > summary { display: flex; align-items: center; gap: .45rem; cursor: pointer; color: var(--c-muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
 .market-context-details > summary::marker { color: var(--c-muted); }
 .market-context-note { margin: .5rem 0 .65rem; color: var(--c-muted); font-size: .82rem; line-height: 1.45; }
@@ -1352,6 +1391,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .skill-shape-head { flex-direction: column; gap: .15rem; }
     .skill-shape-grid { grid-template-columns: 1fr 1fr; }
     .skill-shape-item { padding: .45rem .52rem; }
+    .peak-projection-head { flex-direction: column; gap: .55rem; }
+    .peak-score-box { min-width: 0; text-align: left; }
     .fit-category-grid { grid-template-columns: 1fr; }
     .category-fit-intro { flex-direction: column; }
     .rankings-table td.col-confidence { display: none; }

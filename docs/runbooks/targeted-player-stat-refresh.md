@@ -37,6 +37,7 @@ python scripts\build_prospect_rank_v1.py
 python scripts\build_prospect_model_v07.py
 python scripts\build_prospect_coverage_audit.py
 python scripts\build_prospect_calibration_report.py
+python scripts\build_prospect_peak_projection.py
 python scripts\build_valucast_buys.py --with-review
 python scripts\build_prospect_forward_validation.py
 python scripts\build_valucast_buys_monitor.py
@@ -77,6 +78,7 @@ Expected result for a successful targeted refresh:
 
 ```powershell
 python scripts\validate_valucast_prospect_inputs.py
+python scripts\validate_prospect_peak_projection.py
 python scripts\validate_milb_stat_freshness_audit.py
 python scripts\validate_valucast_quality_governor.py
 python scripts\validate_pipeline_observability.py

@@ -1260,6 +1260,9 @@ def _prospect_player_card_png(row):
     stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, row)
     profile_bars = prospect_percentiles.profile_bars(row, stat_percentiles)
     skill_grades = prospect_percentiles.skill_grades(row, stat_percentiles)
+    peak_shape = tuple(getattr(row, "peak_shape_items", ()) or ())
+    shape_items = peak_shape or skill_grades
+    shape_title = "PROJECTED PEAK SHAPE" if peak_shape else "CURRENT SKILL SHAPE"
     pool_label = prospect_percentiles.pool_label(row)
     context = getattr(row, "context", None)
     if not isinstance(context, dict):
@@ -1292,7 +1295,7 @@ def _prospect_player_card_png(row):
     draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
     draw.text((48, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
     draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=_graphic_font(60, bold=True))
-    subtitle = "player skill percentiles + ValuCast read"
+    subtitle = "player skill percentiles + peak projection context"
     generated = _editorial_date(dd_store.generated_at)
     if generated:
         subtitle = f"{subtitle} - {generated}"
@@ -1352,15 +1355,15 @@ def _prospect_player_card_png(row):
     else:
         draw.text((74, 560), "Current sample does not meet the percentile-pool threshold.", fill=muted, font=_graphic_font(22))
 
-    # Narrative + 20-80 skill shape
+    # Narrative + 20-80 shape
     draw.rounded_rectangle((48, 840, 1032, 1132), radius=22, fill=card, outline=border, width=2)
     draw.text((74, 870), "VALUCAST READ", fill=green, font=_graphic_font(22, bold=True))
     read_font = _graphic_font(22)
     for idx, line in enumerate(_graphic_wrap_text(draw, identity, read_font, 890, max_lines=4)):
         draw.text((74, 910 + idx * 31), line, fill=text, font=read_font)
 
-    draw.text((74, 1040), "SKILL SHAPE", fill=muted, font=_graphic_font(18, bold=True))
-    for idx, skill in enumerate(skill_grades[:4]):
+    draw.text((74, 1040), shape_title, fill=muted, font=_graphic_font(18, bold=True))
+    for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
         draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(54, 57, 92), width=1)
         grade = int(skill["grade"])
@@ -1371,7 +1374,11 @@ def _prospect_player_card_png(row):
 
     # Footer
     draw.rounded_rectangle((48, 1190, 1032, 1268), radius=14, fill=card, outline=border, width=1)
-    source = "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
+    source = (
+        "Current bars use ValuCast-owned MiLB stats. Peak shape is role context, not public scouting grades."
+        if peak_shape
+        else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
+    )
     draw.text((70, 1212), source, fill=muted, font=_graphic_font(18))
     draw.text((70, 1242), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
 

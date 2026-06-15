@@ -214,6 +214,70 @@ def _buy_payload():
     }
 
 
+def _peak_payload():
+    return {
+        "artifact": "valucast_prospect_peak_projection_v1",
+        "projection_version": "1.0.0",
+        "status": "candidate_ready",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "ready_for_card_v2": True,
+            "projection_count": 2,
+            "top200_projection_coverage": 1.0,
+            "min_top200_projection_coverage": 0.9,
+            "duplicate_identity_count": 0,
+            "missing_shape_count": 0,
+            "blockers": [],
+        },
+        "projections": [
+            {
+                "mlbam_id": 1,
+                "name": "Model Strong",
+                "role": "hitter",
+                "rank_v1_rank": 1,
+                "rank_v1_score": 55.5,
+                "peak_score": 61.2,
+                "peak_role": "everyday_regular",
+                "ceiling_band": "everyday_regular",
+                "floor_band": "reserve_floor",
+                "risk_band": "medium",
+                "confidence": "medium",
+                "eta_window": "2027",
+                "shape": [
+                    {"label": "Hit", "grade": 65, "source": "K% / OPS"},
+                    {"label": "Power", "grade": 60, "source": "ISO / OPS"},
+                    {"label": "Approach", "grade": 55, "source": "BB% / BB-K"},
+                    {"label": "Impact", "grade": 60, "source": "OPS / ISO / score"},
+                ],
+                "summary": "Peak read: everyday regular with medium risk.",
+                "usage": "card_visual_context_not_live_rank_or_value",
+            },
+            {
+                "mlbam_id": 2,
+                "name": "Fallback Good",
+                "role": "pitcher",
+                "rank_v1_rank": 2,
+                "rank_v1_score": 45.0,
+                "peak_score": 48.2,
+                "peak_role": "multi_inning_or_setup_arm",
+                "ceiling_band": "multi_inning_or_setup_arm",
+                "floor_band": "depth_arm_floor",
+                "risk_band": "medium",
+                "confidence": "medium",
+                "eta_window": "2028",
+                "shape": [
+                    {"label": "Miss", "grade": 50, "source": "K/9"},
+                    {"label": "Command", "grade": 50, "source": "BB/9"},
+                    {"label": "Dominance", "grade": 50, "source": "K-BB%"},
+                    {"label": "Run Prevention", "grade": 50, "source": "ERA / WHIP"},
+                ],
+                "summary": "Peak read: multi inning or setup arm with medium risk.",
+                "usage": "card_visual_context_not_live_rank_or_value",
+            },
+        ],
+    }
+
+
 def _write_snapshot(tmp_path, payload):
     path = tmp_path / "snapshot.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -292,6 +356,35 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
         top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
         == COMMON_VALUE_SCALE
     )
+
+
+def test_snapshot_carries_peak_projection_card_context(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        prospect_peak_projection=_peak_payload(),
+        buy_signals=_buy_payload(),
+    )
+    problems = validate_public_snapshot_payload(payload)
+    path = _write_snapshot(tmp_path, payload)
+    store = PublicSnapshotStore(path)
+
+    assert problems == []
+    assert payload["input_artifacts"]["prospect_peak_projection_version"] == "1.0.0"
+    assert payload["input_artifacts"]["prospect_peak_projection_ready"] is True
+    prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert prospect["peak_projection"]["usage"] == "card_visual_context_not_live_rank_or_value"
+    assert prospect["peak_projection"]["peak_score"] == 61.2
+
+    row = store.get_by_id(prospect["id"])
+    assert row is not None
+    assert row.has_peak_projection is True
+    assert row.peak_score_label == "61.2"
+    assert row.peak_role_label == "Everyday Regular"
+    assert row.peak_risk_label == "Medium"
+    assert row.peak_projection_summary == "Peak read: everyday regular with medium risk."
+    assert len(row.peak_shape_items) == 4
+    assert row.peak_shape_items[0]["label"] == "Hit"
 
 
 def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():

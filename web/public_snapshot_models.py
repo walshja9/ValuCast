@@ -81,6 +81,7 @@ class PublicSnapshotRow:
     stat_line: dict | None = None
     mlb_stat_line: dict | None = None
     stat_line_translated: dict | None = None
+    peak_projection: dict | None = None
     dynasty_signal: dict | None = None
     drivers: tuple[str, ...] = ()
     context: dict = field(default_factory=dict)
@@ -308,6 +309,78 @@ class PublicSnapshotRow:
         return why_rank_chips(self.prospect_components, self.role)
 
     @property
+    def peak_projection_context(self) -> dict:
+        raw = self.peak_projection
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def has_peak_projection(self) -> bool:
+        return bool(self.peak_projection_context)
+
+    @property
+    def peak_projection_summary(self) -> str | None:
+        summary = self.peak_projection_context.get("summary")
+        return str(summary) if summary else None
+
+    @property
+    def peak_projection_note(self) -> str:
+        return (
+            "Role and skill-shape projection only. This does not change the "
+            "current ValuCast rank or dynasty value."
+        )
+
+    @property
+    def peak_score_label(self) -> str | None:
+        value = _clean_float(self.peak_projection_context.get("peak_score"))
+        return f"{value:.1f}" if value is not None else None
+
+    @property
+    def peak_role_label(self) -> str | None:
+        role = self.peak_projection_context.get("peak_role")
+        return _format_status(role)
+
+    @property
+    def peak_floor_label(self) -> str | None:
+        floor = self.peak_projection_context.get("floor_band")
+        return _format_status(floor)
+
+    @property
+    def peak_risk_label(self) -> str | None:
+        risk = self.peak_projection_context.get("risk_band")
+        return _format_status(risk)
+
+    @property
+    def peak_confidence_label(self) -> str | None:
+        confidence = self.peak_projection_context.get("confidence")
+        return _format_status(confidence)
+
+    @property
+    def peak_eta_label(self) -> str | None:
+        eta = self.peak_projection_context.get("eta_window")
+        if eta in (None, ""):
+            return None
+        return str(eta).replace("_", " ").title()
+
+    @property
+    def peak_shape_items(self) -> tuple[dict[str, str | int], ...]:
+        items = []
+        for raw in self.peak_projection_context.get("shape") or ():
+            if not isinstance(raw, dict):
+                continue
+            grade = self._coerce_int(raw.get("grade"))
+            label = raw.get("label")
+            if grade is None or not label:
+                continue
+            items.append(
+                {
+                    "label": str(label),
+                    "grade": grade,
+                    "metrics": str(raw.get("source") or ""),
+                }
+            )
+        return tuple(items)
+
+    @property
     def graduation_context(self) -> dict:
         raw = self.context.get("graduation_context")
         return raw if isinstance(raw, dict) else {}
@@ -437,6 +510,7 @@ class PublicSnapshotRow:
             stat_line=cls._coerce_dict(record.get("stat_line")),
             mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),
             stat_line_translated=cls._coerce_dict(record.get("stat_line_translated")),
+            peak_projection=cls._coerce_dict(record.get("peak_projection")),
             dynasty_signal=cls._coerce_dict(record.get("dynasty_signal")),
             drivers=tuple(str(item) for item in record.get("drivers") or ()),
             context=context,
