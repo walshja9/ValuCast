@@ -10,6 +10,7 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
+    _input_lookup,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
@@ -58,6 +59,39 @@ def _feed(extra_players=None):
         "source": "diamond_dynasties",
         "players": players,
     }
+
+
+def test_input_lookup_prefers_promoted_level_over_larger_old_stint():
+    contract = {
+        "current": {
+            "hitters": [
+                {
+                    "mlbam_id": 805796,
+                    "name": "Arjun Nimmala",
+                    "level": "A+",
+                    "age": 20,
+                    "position": "SS",
+                    "plate_appearances": 105,
+                    "sample_season": 2026,
+                    "source_kind": "current_season",
+                },
+                {
+                    "mlbam_id": 805796,
+                    "name": "Arjun Nimmala",
+                    "level": "AA",
+                    "age": 20,
+                    "position": "SS",
+                    "plate_appearances": 72,
+                    "sample_season": 2026,
+                    "source_kind": "current_season",
+                },
+            ]
+        }
+    }
+
+    selected = _input_lookup(contract)[("805796", "hitter")]
+
+    assert selected["level"] == "AA"
 
 
 def _universe(extra_players=None):

@@ -460,6 +460,7 @@ def apply_availability_adjustment(
         "risk_discount": round(discount, 4),
         "risk_basis": availability_profile.get("risk_basis"),
         "note": availability_profile.get("availability_note"),
+        "level": availability_profile.get("level"),
         "signals": list(availability_profile.get("signals") or []),
         "sample": availability_profile.get("sample"),
         "sample_unit": availability_profile.get("sample_unit"),

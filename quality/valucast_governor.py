@@ -56,6 +56,7 @@ MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
 MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT = 0
 MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT = 8
 MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT = 0
+MAX_TOP50_AVAILABILITY_LEVEL_MISMATCH_COUNT = 0
 MAX_MILB_STAT_FRESHNESS_BLOCKERS = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
@@ -848,6 +849,52 @@ def _prospect_availability_coverage(players: list[dict]) -> dict:
     )
 
 
+def _prospect_availability_level_alignment(players: list[dict]) -> dict:
+    top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
+    mismatches = []
+    evaluated = 0
+    for row in top_rows:
+        availability = _availability_component(row)
+        if not availability:
+            continue
+        evaluated += 1
+        row_level = _level(row)
+        availability_level = str(availability.get("level") or "").strip().upper()
+        if row_level and availability_level and row_level == availability_level:
+            continue
+        mismatches.append(
+            {
+                "rank": row.get("prospect_rank") or row.get("rank"),
+                "name": row.get("name"),
+                "mlbam_id": row.get("mlbam_id"),
+                "role": row.get("role"),
+                "board_level": row.get("level"),
+                "availability_level": availability.get("level"),
+                "availability_status": availability.get("status"),
+                "availability_risk_level": availability.get("risk_level"),
+            }
+        )
+    sample_ready = len(top_rows) >= PROSPECT_FALLBACK_TOP_N
+    passed = (
+        not sample_ready
+    ) or len(mismatches) <= MAX_TOP50_AVAILABILITY_LEVEL_MISMATCH_COUNT
+    return _check(
+        "prospect_top50_availability_level_alignment",
+        passed,
+        (
+            "Top prospect board level labels align with availability-selected current levels."
+            if passed
+            else "Top prospect board level labels disagree with availability-selected current level."
+        ),
+        top_n=PROSPECT_FALLBACK_TOP_N,
+        evaluated_count=evaluated,
+        level_mismatch_count=len(mismatches),
+        max_allowed_level_mismatch_count=MAX_TOP50_AVAILABILITY_LEVEL_MISMATCH_COUNT,
+        sample_ready=sample_ready,
+        samples=mismatches[:10],
+    )
+
+
 def _availability_is_risky(availability: dict) -> bool:
     risk_level = str(availability.get("risk_level") or "").strip().lower()
     status = str(availability.get("status") or "").strip().lower()
@@ -1137,6 +1184,7 @@ def evaluate_quality_governor(
         _prospect_current_stat_context_alignment(players),
         _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
         _prospect_availability_coverage(players),
+        _prospect_availability_level_alignment(players),
         _prospect_availability_risk_pricing(players),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
@@ -1191,6 +1239,9 @@ def evaluate_quality_governor(
             ),
             "max_top50_current_stat_context_mismatch_count": (
                 MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT
+            ),
+            "max_top50_availability_level_mismatch_count": (
+                MAX_TOP50_AVAILABILITY_LEVEL_MISMATCH_COUNT
             ),
             "max_milb_stat_freshness_blockers": MAX_MILB_STAT_FRESHNESS_BLOCKERS,
             "max_top50_missing_availability_count": MAX_TOP50_MISSING_AVAILABILITY_COUNT,

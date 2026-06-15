@@ -261,15 +261,15 @@ def _rookie_limits(input_contract: dict) -> dict[str, float]:
     }
 
 
-def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, float, int]:
-    """Prefer the most recent factual row before falling back to sample size."""
+def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, int, float]:
+    """Prefer fresh promoted-level factual rows before falling back to sample size."""
     season = _clean_float(row.get("sample_season")) or 0.0
     current_flag = 1 if row.get("source_kind") == "current_season" else 0
     return (
         season,
         current_flag,
-        _sample_size(row, role),
         _input_level_rank(row.get("level")),
+        _sample_size(row, role),
     )
 
 
@@ -1331,6 +1331,11 @@ def build_prospect_rank_v1(
             display_age = universe_row.get("age")
         if display_age is None:
             display_age = (layer_profile or {}).get("age")
+        display_level = (
+            (availability_profile or {}).get("level")
+            or universe_row.get("level")
+            or (layer_profile or {}).get("level")
+        )
         board.append(
             {
                 "mlbam_id": universe_row.get("mlbam_id"),
@@ -1343,7 +1348,7 @@ def build_prospect_rank_v1(
                 "positions": universe_row.get("positions") or (dd_row or {}).get("positions"),
                 "mlb_team": universe_row.get("mlb_team") or (dd_row or {}).get("mlb_team"),
                 "age": display_age,
-                "level": universe_row.get("level") or (layer_profile or {}).get("level"),
+                "level": display_level,
                 "eta": universe_row.get("eta") or (dd_row or {}).get("eta"),
                 "universe_source": universe_row.get("universe_source"),
                 "score": score,

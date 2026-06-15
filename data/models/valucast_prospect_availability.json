@@ -3530,24 +3530,26 @@
     {
       "active_row_count": 2,
       "age": 20,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Official MiLB transactions show New Hampshire placed Arjun Nimmala on the 7-day injured list on 2026-05-30.",
       "level": "AA",
       "mlbam_id": 805796,
       "name": "Arjun Nimmala",
       "normalized_name": "arjun nimmala",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "manual_override",
+      "risk_discount": 0.06,
+      "risk_level": "medium",
       "role": "hitter",
       "row_count": 2,
       "sample": 177.0,
       "sample_fetched_date": "2026-06-15",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "manual_status_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "New Hampshire Fisher Cats"
     },
     {
@@ -114619,7 +114621,7 @@
       "team": "Clearwater Threshers"
     }
   ],
-  "risk_profile_count": 1842,
+  "risk_profile_count": 1843,
   "source_policy": {
     "dd_factual_roster_status_allowed": true,
     "dd_ranks_used": false,
@@ -114634,30 +114636,30 @@
     "profile_count": 4820,
     "risk_basis_counts": {
       "current_sample_size": 1673,
-      "manual_override": 2,
-      "none": 2978,
+      "manual_override": 3,
+      "none": 2977,
       "sample_staleness": 141,
       "upstream_factual_status": 26
     },
     "risk_level_counts": {
-      "clear": 2978,
+      "clear": 2977,
       "high": 169,
-      "medium": 1673
+      "medium": 1674
     },
-    "risk_profile_count": 1842,
+    "risk_profile_count": 1843,
     "signal_counts": {
       "fantrax_roster_status_override": 26,
       "limited_upper_level_hitter_sample_under_150_pa": 213,
       "limited_upper_level_starter_workload_under_45_ip": 188,
-      "manual_status_override": 2,
+      "manual_status_override": 3,
       "prior_season_sample": 145,
       "thin_pitcher_workload_under_12_ip": 497,
       "thin_starter_workload_under_30_ip": 502,
       "thin_upper_level_hitter_sample_under_100_pa": 338
     },
     "status_counts": {
-      "available": 2978,
-      "injured": 28,
+      "available": 2977,
+      "injured": 29,
       "stale_or_inactive": 141,
       "thin_current_sample": 1673
     },
@@ -115127,8 +115129,8 @@
   "validation": {
     "current_identity_count": 4820,
     "duplicate_level_rows_collapsed": 1100,
-    "manual_override_count": 2,
-    "risk_profile_count": 1842,
+    "manual_override_count": 3,
+    "risk_profile_count": 1843,
     "unmatched_manual_override_count": 0,
     "upstream_status_count": 26
   }

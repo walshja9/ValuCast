@@ -10,6 +10,7 @@ from prospects.universal import (
     _coherent_outcome_distribution,
     _raw_target,
     _representative_season,
+    _select_current_records,
     _target_rows,
     _validation_score,
     archive_predictions,
@@ -318,6 +319,46 @@ def test_v11_contract_accepts_lower_minors_and_expanded_factual_sources():
         ]["established_probability"]["feature_names"]
     )
     assert len(selected["features"]) > len(selected["baseline_features"])
+
+
+def test_current_record_selection_prefers_promoted_level_over_larger_old_stint():
+    current = {
+        "hitters": [
+            {
+                "mlbam_id": 805796,
+                "name": "Arjun Nimmala",
+                "role": "hitter",
+                "level": "A+",
+                "age": 20,
+                "position": "SS",
+                "plate_appearances": 105,
+                "sample_season": 2026,
+                "iso": 0.242,
+                "k_pct": 22.9,
+                "bb_pct": 15.2,
+                "ops": 0.845,
+            },
+            {
+                "mlbam_id": 805796,
+                "name": "Arjun Nimmala",
+                "role": "hitter",
+                "level": "AA",
+                "age": 20,
+                "position": "SS",
+                "plate_appearances": 72,
+                "sample_season": 2026,
+                "iso": 0.061,
+                "k_pct": 22.2,
+                "bb_pct": 9.7,
+                "ops": 0.744,
+            },
+        ]
+    }
+
+    selected = _select_current_records(current, "hitter")
+
+    assert len(selected) == 1
+    assert selected[0]["level"] == "AA"
 
 
 def test_v12_contract_accepts_factual_roster_status_source():

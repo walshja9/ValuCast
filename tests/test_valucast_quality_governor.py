@@ -56,6 +56,7 @@ def _prospect_row(
                 "status": "available",
                 "risk_level": "clear",
                 "risk_discount": 0.0,
+                "level": level,
                 "signals": [],
             },
         },
@@ -714,3 +715,34 @@ def test_quality_governor_blocks_labeled_availability_risk_without_discount():
 
     assert payload["ready_for_public_snapshot"] is False
     assert "Top prospect board has unpriced availability risk." in payload["blockers"]
+
+
+def test_quality_governor_blocks_availability_level_mismatch():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["level"] = "A+"
+    prospects[0]["components"]["availability"]["level"] = "AA"
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_availability_level_alignment"
+    )
+    assert payload["ready_for_public_snapshot"] is False
+    assert (
+        "Top prospect board level labels disagree with availability-selected current level."
+        in payload["blockers"]
+    )
+    assert check["metrics"]["level_mismatch_count"] == 1

@@ -283,7 +283,17 @@ def _select_current_records(current: dict, role: str) -> list[dict]:
             continue
         key = int(record["mlbam_id"])
         incumbent = by_player.get(key)
-        if incumbent is None or _sample(record, role) > _sample(incumbent, role):
+        record_key = (
+            _num(record.get("sample_season")) or 0.0,
+            LEVEL_CODE.get(str(record.get("level") or "").upper(), -1.0),
+            _sample(record, role),
+        )
+        incumbent_key = (
+            _num((incumbent or {}).get("sample_season")) or 0.0,
+            LEVEL_CODE.get(str((incumbent or {}).get("level") or "").upper(), -1.0),
+            _sample(incumbent or {}, role),
+        )
+        if incumbent is None or record_key > incumbent_key:
             by_player[key] = record
     return list(by_player.values())
 
