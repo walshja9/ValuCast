@@ -103,15 +103,17 @@ def _contract(n_per_role=420):
                 "sv": 0,
             }]
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.2",
         "generated_at": "2026-06-12T00:00:00+00:00",
         "source_policy": {
             "kind": "factual_only",
             "sources": [
-                "prospect_outcome_dataset",
+                "valucast_universal_prospect_dataset",
                 "milb_season_stats",
                 "fantrax_mlb_actuals",
                 "mlb_prospect_seasons_cache",
+                "mlb_statsapi_draft",
+                "fantrax_roster_status",
             ],
             "external_rankings_used": False,
             "external_projections_used": False,
@@ -181,14 +183,14 @@ def test_model_module_has_no_external_rank_or_valuation_dependencies():
 def test_contract_rejects_non_factual_inputs():
     contract = _contract()
     contract["source_policy"]["external_rankings_used"] = True
-    with pytest.raises(ValueError, match="prohibited"):
+    with pytest.raises(ValueError, match="external_rankings_used"):
         validate_input_contract(contract)
 
 
 def test_contract_rejects_unexpected_source_even_when_flags_are_false():
     contract = _contract()
     contract["source_policy"]["sources"].append("external_rank")
-    with pytest.raises(ValueError, match="unexpected source"):
+    with pytest.raises(ValueError, match="sources"):
         validate_input_contract(contract)
 
 
@@ -516,5 +518,5 @@ def test_run_model_writes_artifact_and_archive(tmp_path):
 def test_load_contract_validates_schema(tmp_path):
     path = tmp_path / "bad.json"
     path.write_text(json.dumps({"schema_version": "0"}), encoding="utf-8")
-    with pytest.raises(ValueError, match="Unsupported"):
+    with pytest.raises(ValueError, match="schema_version"):
         load_input_contract(path)

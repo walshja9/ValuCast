@@ -13,8 +13,10 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.input_contract import VALUCAST_INPUT_PATH
+
 ROOT = Path(__file__).resolve().parents[1]
-INPUT_CONTRACT_PATH = ROOT / "data" / "dd" / "prospect_model_inputs.json"
+INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
 OVERRIDES_PATH = ROOT / "data" / "manual" / "prospect_availability_overrides.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 

@@ -17,6 +17,19 @@ def _role(sample=300):
         "baseline_multiclass_brier": 0.20,
         "candidate_top_quartile_precision": 0.35,
         "baseline_top_quartile_precision": 0.30,
+        "folds": [
+            {
+                "test_cohort": year,
+                "sample_size": sample // 3,
+                "candidate_multiclass_brier": 0.18,
+                "baseline_multiclass_brier": 0.20,
+                "candidate_rank_concordance": 0.70,
+                "baseline_rank_concordance": 0.65,
+                "candidate_top_quartile_precision": 0.35,
+                "baseline_top_quartile_precision": 0.30,
+            }
+            for year in (2017, 2018, 2019)
+        ],
     }
 
 
@@ -78,8 +91,10 @@ def test_outcome_backtest_separates_realized_evidence_from_forward_observation()
     assert payload["evidence"]["forward_observation"][
         "is_realized_outcome_accuracy_evidence"
     ] is False
+    assert payload["evidence"]["bucket_cohort"]["status"] == "ready"
+    assert payload["validation"]["bucket_cohort_evidence_ready"] is True
     assert payload["source_policy"]["feeds_model_score"] is False
-    assert payload["front_office_track"]["grade"] in {"B-", "B", "B+", "A-", "A"}
+    assert payload["front_office_track"]["grade"] == "B+"
 
 
 def test_run_and_validate_outcome_backtest(tmp_path):

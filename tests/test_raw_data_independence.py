@@ -25,6 +25,12 @@ def _contract():
             "market_values_used": False,
             "dynasty_values_used": False,
         },
+        "producer": {
+            "owner": "valucast",
+            "kind": "canonical_factual_prospect_input_contract",
+            "upstream_kind": "dd_factual_export",
+            "upstream_model_score_effect": "none",
+        },
         "historical": {"rows": [{}]},
         "historical_mlb_seasons": {"1_hitter": []},
         "current": {"hitters": [{}], "pitchers": [{}]},
@@ -34,13 +40,15 @@ def _contract():
 def test_raw_data_independence_audit_documents_remaining_trust_boundary():
     payload = build_raw_data_independence_audit(_contract())
 
-    assert payload["status"] == "boundary_hardened"
+    assert payload["status"] == "canonical_contract_owned"
     assert payload["validation"]["ready_for_current_publication"] is True
     assert payload["validation"]["raw_data_independence_complete"] is False
     assert payload["independence"]["contract_factual_only"] is True
+    assert payload["independence"]["canonical_contract_owned"] is True
+    assert payload["independence"]["raw_data_ingestion_owned"] is False
     assert payload["independence"]["last_external_trust_boundary"][
         "current_boundary"
-    ] == "DD-hosted factual input contract"
+    ] == "ValuCast canonical factual contract"
 
 
 def test_run_and_validate_raw_data_independence_audit(tmp_path):
@@ -54,6 +62,6 @@ def test_run_and_validate_raw_data_independence_audit(tmp_path):
     )
     payload, problems = validate_raw_data_independence(artifact_path)
 
-    assert result["status"] == "boundary_hardened"
+    assert result["status"] == "canonical_contract_owned"
     assert payload["artifact"] == "valucast_raw_data_independence_audit"
     assert problems == []

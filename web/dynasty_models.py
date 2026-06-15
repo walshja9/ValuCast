@@ -7,6 +7,8 @@ from .prospect_context import (
     context_note,
     skill_band_label,
     stat_items,
+    uncertainty_driver_items,
+    uncertainty_note,
     why_rank_chips,
 )
 
@@ -204,6 +206,14 @@ class DynastyRankingRow:
         if lower is None or upper is None:
             return band or None
         return f"{band or 'Model'} band: {lower:.1f}-{upper:.1f}"
+
+    @property
+    def uncertainty_driver_items(self) -> tuple[dict[str, str], ...]:
+        return uncertainty_driver_items(self.uncertainty_context)
+
+    @property
+    def uncertainty_note(self) -> str | None:
+        return uncertainty_note(self.uncertainty_context)
 
     @property
     def why_rank_chips(self) -> tuple[dict[str, str], ...]:

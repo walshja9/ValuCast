@@ -163,3 +163,51 @@ def why_rank_chips(components: dict | None, role: str | None = None) -> tuple[di
             }
         )
     return tuple(chips[:3])
+
+
+def uncertainty_driver_items(context: dict | None) -> tuple[dict[str, str], ...]:
+    if not isinstance(context, dict):
+        return ()
+    drivers = context.get("drivers")
+    if not isinstance(drivers, dict):
+        return ()
+    items: list[dict[str, str]] = []
+    for label, key in (
+        ("Source", "score_source"),
+        ("Confidence", "confidence"),
+        ("Sample Reliability", "sample_reliability"),
+        ("Skill Band", "skill_band"),
+        ("Risk Discount", "availability_risk_discount"),
+    ):
+        value = drivers.get(key)
+        if value in (None, ""):
+            continue
+        if key == "sample_reliability":
+            numeric = _clean_float(value)
+            value = f"{numeric:.1f}" if numeric is not None else str(value)
+        elif key == "availability_risk_discount":
+            numeric = _clean_float(value)
+            value = f"{numeric * 100:.1f}%" if numeric is not None else str(value)
+        else:
+            value = str(value).replace("_", " ").title()
+        items.append({"label": label, "value": str(value)})
+    return tuple(items)
+
+
+def uncertainty_note(context: dict | None) -> str | None:
+    if not isinstance(context, dict):
+        return None
+    band = str(context.get("band") or "").replace("_", " ").lower()
+    width = _clean_float(context.get("width"))
+    if width is None:
+        lower = _clean_float(context.get("lower"))
+        upper = _clean_float(context.get("upper"))
+        if lower is not None and upper is not None:
+            width = abs(upper - lower) / 2.0
+    if not band or width is None:
+        return None
+    return (
+        f"This is a display-only {band} uncertainty band of plus/minus "
+        f"{width:.1f} points around the current ValuCast score. It explains "
+        "confidence; it does not move the rank or value."
+    )

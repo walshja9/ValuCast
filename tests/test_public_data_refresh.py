@@ -202,6 +202,7 @@ def test_sync_prospect_inputs_rejects_invalid_service_rows(tmp_path, monkeypatch
 def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths = {
         "DD_FEED": tmp_path / "dd.json",
+        "VALUCAST_PROSPECT_INPUTS": tmp_path / "valucast_prospect_inputs.json",
         "PUBLIC_SNAPSHOT": tmp_path / "public_snapshot.json",
         "REDRAFT_METADATA": tmp_path / "metadata.json",
         "REDRAFT_CURRENT": tmp_path / "current.json",
@@ -225,6 +226,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "PROSPECT_COVERAGE_AUDIT": tmp_path / "prospect_coverage_audit.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
+    paths["VALUCAST_PROSPECT_INPUTS"].write_text(
+        json.dumps(_valid_prospect_inputs()), encoding="utf-8"
+    )
     paths["PUBLIC_SNAPSHOT"].write_text(
         json.dumps(
             {
@@ -307,12 +311,14 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
     assert "python scripts/sync_dd_prospect_inputs.py" in workflow
+    assert "python scripts/build_valucast_prospect_inputs.py" in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/build_mlb_availability.py" in workflow
     assert "python scripts/build_mlb_roster_status.py" in workflow
     assert "python scripts/validate_mlb_availability.py" in workflow
     assert "python scripts/validate_mlb_roster_status.py" in workflow
     assert "python scripts/validate_mlb_track_record.py" in workflow
+    assert "python scripts/validate_valucast_prospect_inputs.py" in workflow
     assert "python scripts/run_prospect_shadow_pipeline.py" in workflow
     assert "python scripts/build_prospect_availability.py" in workflow
     assert "python scripts/build_prospect_model_v07.py" in workflow
@@ -337,6 +343,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/mlb/mlb_roster_status_cache.json" in workflow
     assert "data/mlb/mlb_track_record_cache.json" in workflow
     assert "data/dd/prospect_model_inputs.json" in workflow
+    assert "data/prospects/prospect_model_inputs.json" in workflow
     assert "data/models/valucast_universal_prospect_model.json" in workflow
     assert "data/models/valucast_prospect_dynasty_layer.json" in workflow
     assert "data/models/valucast_prospect_availability.json" in workflow

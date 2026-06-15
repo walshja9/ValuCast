@@ -51,6 +51,9 @@ jobs:
       - name: Sync DD factual prospect input contract
         run: python scripts/sync_dd_prospect_inputs.py
 
+      - name: Build ValuCast canonical prospect input contract
+        run: python scripts/build_valucast_prospect_inputs.py
+
       - name: Build ValuCast public snapshot gate
         env:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
@@ -85,6 +88,7 @@ jobs:
           python scripts/validate_mlb_track_record.py
           python scripts/validate_mlb_availability.py
           python scripts/validate_mlb_roster_status.py
+          python scripts/validate_valucast_prospect_inputs.py
           python scripts/validate_prospect_availability.py
           python scripts/validate_prospect_model_v07.py
           python scripts/validate_prospect_coverage_audit.py
@@ -113,6 +117,7 @@ jobs:
             data/actuals/current.json \
             data/dd/dd_dynasty_feed.json \
             data/dd/prospect_model_inputs.json \
+            data/prospects/prospect_model_inputs.json \
             data/exports/valucast_dd_prospect_lens.json \
             data/mlb/mlb_track_record_cache.json \
             data/mlb/mlb_availability_transactions_cache.json \

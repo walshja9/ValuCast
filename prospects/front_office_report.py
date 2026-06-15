@@ -69,13 +69,56 @@ def build_front_office_report(
     outcome_track = outcome_backtest.get("front_office_track") or {}
     v07_validation = model_v07.get("validation") or {}
     raw_validation = raw_independence.get("validation") or {}
+    raw_evidence = raw_independence.get("independence") or {}
     raw_score = float(
-        (raw_independence.get("independence") or {}).get("direct_raw_ownership_score")
-        or 0.0
+        raw_evidence.get("direct_raw_ownership_score") or 0.0
     )
     buys_monitoring = buys_monitor.get("monitoring") or {}
     governor_ready = quality_governor.get("ready_for_public_snapshot") is True
     public_ready = snapshot_validation.get("ready_for_live_consumers") is True
+    row_count = (
+        public_snapshot.get("row_count")
+        or len(public_snapshot.get("players") or [])
+        or len(public_snapshot.get("rows") or [])
+        or None
+    )
+
+    canonical_contract_owned = raw_evidence.get("canonical_contract_owned") is True
+    raw_ingestion_owned = raw_validation.get("raw_data_independence_complete") is True
+    independence_score = (
+        97
+        if raw_ingestion_owned
+        else 93
+        if canonical_contract_owned and raw_validation.get("ready_for_current_publication")
+        else 88
+        if raw_validation.get("ready_for_current_publication")
+        else 70
+    )
+    independence_status = (
+        "raw_ingestion_owned"
+        if raw_ingestion_owned
+        else "canonical_contract_owned"
+        if canonical_contract_owned
+        else "boundary_hardened"
+        if raw_validation.get("ready_for_current_publication")
+        else "blocked"
+    )
+    bucket_cohort_ready = (
+        (outcome_backtest.get("validation") or {}).get("bucket_cohort_evidence_ready")
+        is True
+    )
+    v07_bucket_ready = v07_validation.get("bucket_comparison_ready") is True
+    prospect_score = (
+        93
+        if outcome_backtest.get("status") == "evidence_ready"
+        and v07_validation.get("ready_for_backtest")
+        and bucket_cohort_ready
+        and v07_bucket_ready
+        else 90
+        if outcome_backtest.get("status") == "evidence_ready"
+        and v07_validation.get("ready_for_backtest")
+        else 78
+    )
 
     pillars = [
         _pillar(
@@ -85,7 +128,7 @@ def build_front_office_report(
             {
                 "public_snapshot_ready": public_ready,
                 "quality_governor_ready": governor_ready,
-                "row_count": public_snapshot.get("row_count"),
+                "row_count": row_count,
                 "surface_readiness": snapshot_validation.get("surface_readiness"),
             },
         ),
@@ -105,37 +148,35 @@ def build_front_office_report(
         ),
         _pillar(
             "Independence",
-            88 if raw_validation.get("ready_for_current_publication") else 70,
-            (
-                "boundary_hardened"
-                if raw_validation.get("ready_for_current_publication")
-                else "blocked"
-            ),
+            independence_score,
+            independence_status,
             {
                 "direct_raw_ownership_score": raw_score,
+                "canonical_contract_owned": canonical_contract_owned,
                 "raw_data_independence_complete": raw_validation.get(
                     "raw_data_independence_complete"
                 ),
-                "last_external_trust_boundary": (
-                    raw_independence.get("independence") or {}
-                ).get("last_external_trust_boundary"),
+                "last_external_trust_boundary": raw_evidence.get(
+                    "last_external_trust_boundary"
+                ),
             },
         ),
         _pillar(
             "Prospect credibility",
-            90
-            if outcome_backtest.get("status") == "evidence_ready"
-            and v07_validation.get("ready_for_backtest")
-            else 78,
+            prospect_score,
             (
-                "historical_evidence_ready"
+                "bucket_evidence_ready"
+                if prospect_score >= 93
+                else "historical_evidence_ready"
                 if outcome_backtest.get("status") == "evidence_ready"
                 else "needs_more_evidence"
             ),
             {
                 "outcome_grade": outcome_track.get("grade"),
                 "outcome_score": outcome_track.get("score"),
+                "bucket_cohort_evidence_ready": bucket_cohort_ready,
                 "v07_ready_for_backtest": v07_validation.get("ready_for_backtest"),
+                "v07_bucket_comparison_ready": v07_bucket_ready,
                 "v07_top200_factual_context_coverage": v07_validation.get(
                     "top200_factual_context_coverage"
                 ),
@@ -148,6 +189,9 @@ def build_front_office_report(
             {
                 "current_grade": outcome_track.get("grade"),
                 "target_grade": outcome_track.get("target_grade"),
+                "uncapped_score": outcome_track.get("uncapped_score"),
+                "score_cap": outcome_track.get("score_cap"),
+                "cap_reasons": outcome_track.get("cap_reasons"),
                 "limitations": outcome_track.get("interpretation"),
                 "buys_monitor_status": buys_monitor.get("status"),
                 "buy_comparison_count": buys_monitoring.get("buy_comparison_count"),
@@ -164,7 +208,7 @@ def build_front_office_report(
         "overall": {
             "score": overall_score,
             "grade": _grade_from_score(overall_score),
-            "target": "A+ product/pipeline/independence/prospect credibility; B front-office track.",
+            "target": "A+ product/pipeline/prospect credibility; A+ independence after raw ingestion is native; B+ front-office track now.",
         },
         "source_policy": {
             "kind": "readiness_report",
@@ -178,10 +222,10 @@ def build_front_office_report(
         },
         "pillars": pillars,
         "next_build_order": [
-            "Expand realized outcome backtests by bucket and cohort.",
-            "Train/compare Prospect Model v0.7 against v0.6 by bucket.",
-            "Promote uncertainty bands into every prospect explanation.",
-            "Move DD-hosted factual input production into ValuCast-owned raw jobs.",
+            "Promote full ValuCast raw ingestion to replace the DD factual-export upstream.",
+            "Collect enough forward archives to move from B+ evidence to A- evidence.",
+            "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
+            "Keep uncertainty-band explanations visible on every prospect detail surface.",
             "Keep the front-office report public and fail-loud when evidence regresses.",
         ],
     }

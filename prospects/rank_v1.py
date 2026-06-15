@@ -16,12 +16,13 @@ from prospects.availability import ARTIFACT_PATH as AVAILABILITY_PATH
 from prospects.availability import apply_availability_adjustment
 from prospects.availability import availability_lookup
 from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
+from prospects.input_contract import VALUCAST_INPUT_PATH
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
-INPUT_CONTRACT_PATH = ROOT / "data" / "dd" / "prospect_model_inputs.json"
+INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
 DD_ADAPTER_PATH = ROOT / "data" / "models" / "valucast_dd_7x7_prospect_adapter.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"

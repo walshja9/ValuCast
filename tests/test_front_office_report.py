@@ -29,11 +29,15 @@ def _outcome():
     return {
         "status": "evidence_ready",
         "front_office_track": {
-            "score": 84,
-            "grade": "B",
-            "target_grade": "B",
+            "score": 87,
+            "grade": "B+",
+            "uncapped_score": 91,
+            "score_cap": 87,
+            "cap_reasons": ["Forward observations are not review-ready yet."],
+            "target_grade": "A-",
             "interpretation": "Historical evidence ready, proprietary inputs absent.",
         },
+        "validation": {"bucket_cohort_evidence_ready": True},
     }
 
 
@@ -41,6 +45,7 @@ def _v07():
     return {
         "validation": {
             "ready_for_backtest": True,
+            "bucket_comparison_ready": True,
             "top200_factual_context_coverage": 1.0,
         }
     }
@@ -53,6 +58,7 @@ def _raw():
             "raw_data_independence_complete": False,
         },
         "independence": {
+            "canonical_contract_owned": True,
             "direct_raw_ownership_score": 1.0,
             "last_external_trust_boundary": {"current_boundary": "DD-hosted"},
         },
@@ -90,6 +96,9 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
         "MLB front-office track",
     }
     assert payload["overall"]["grade"] in {"B", "B+", "A-", "A", "A+"}
+    pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
+    assert pillars["Independence"]["grade"] == "A"
+    assert pillars["MLB front-office track"]["grade"] == "B+"
 
 
 def test_run_and_validate_front_office_report(tmp_path):

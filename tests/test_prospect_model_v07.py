@@ -58,9 +58,22 @@ def _rank_payload(rows):
     }
 
 
+def _outcome_payload():
+    return {
+        "report_version": "0.1.0",
+        "front_office_track": {"grade": "B+", "score": 87},
+        "validation": {
+            "realized_evidence_ready": True,
+            "bucket_cohort_evidence_ready": True,
+            "forward_evidence_ready": False,
+        },
+    }
+
+
 def test_model_v07_preview_extracts_factual_features_and_stays_shadow_only():
     payload = build_model_v07_preview(
-        _rank_payload([_row(1), _row(2, role="pitcher")])
+        _rank_payload([_row(1), _row(2, role="pitcher")]),
+        outcome_backtest=_outcome_payload(),
     )
 
     assert payload["status"] == "shadow_preview"
@@ -68,6 +81,8 @@ def test_model_v07_preview_extracts_factual_features_and_stays_shadow_only():
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["model_contract"]["feeds_live_valucast_rank"] is False
     assert payload["validation"]["ready_for_backtest"] is True
+    assert payload["validation"]["bucket_comparison_ready"] is False
+    assert payload["bucket_comparison"]["status"] == "collecting"
 
     hitter = payload["candidates"][0]
     pitcher = payload["candidates"][1]
@@ -100,12 +115,42 @@ def test_run_and_validate_model_v07_preview(tmp_path):
         encoding="utf-8",
     )
 
-    result = run_model_v07_preview(rank_path=rank_path, artifact_path=artifact_path)
+    outcome_path = tmp_path / "outcome.json"
+    outcome_path.write_text(json.dumps(_outcome_payload()), encoding="utf-8")
+
+    result = run_model_v07_preview(
+        rank_path=rank_path,
+        artifact_path=artifact_path,
+        outcome_backtest_path=outcome_path,
+    )
     payload, problems = validate_model_v07(artifact_path)
 
     assert result["ready_for_backtest"] is True
     assert payload["artifact"] == "valucast_prospect_model_v0_7_preview"
     assert problems == []
+
+
+def test_model_v07_bucket_comparison_is_ready_when_bucket_evidence_exists():
+    rows = []
+    for rank in range(1, 31):
+        role = "pitcher" if rank % 2 else "hitter"
+        row = _row(rank, role=role)
+        row["level"] = ["A", "A+", "AA", "AAA"][rank % 4]
+        row["score_source"] = (
+            "prospect_model_v0_6" if rank % 3 else "universal_fallback"
+        )
+        row["components"]["availability"]["status"] = (
+            "available" if rank % 5 else "thin_current_sample"
+        )
+        rows.append(row)
+
+    payload = build_model_v07_preview(
+        _rank_payload(rows),
+        outcome_backtest=_outcome_payload(),
+    )
+
+    assert payload["bucket_comparison"]["status"] == "ready"
+    assert payload["validation"]["bucket_comparison_ready"] is True
 
 
 def test_model_v07_validator_rejects_live_feed_claim(tmp_path):

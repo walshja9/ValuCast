@@ -21,8 +21,16 @@ def validate_raw_data_independence(path: Path = AUDIT_PATH) -> tuple[dict | None
     problems: list[str] = []
     if payload.get("artifact") != "valucast_raw_data_independence_audit":
         problems.append("artifact must be valucast_raw_data_independence_audit")
-    if payload.get("status") not in {"boundary_hardened", "blocked"}:
-        problems.append("status must be boundary_hardened or blocked")
+    if payload.get("status") not in {
+        "blocked",
+        "boundary_hardened",
+        "canonical_contract_owned",
+        "raw_ingestion_owned",
+    }:
+        problems.append(
+            "status must be blocked, boundary_hardened, "
+            "canonical_contract_owned, or raw_ingestion_owned"
+        )
     if not payload.get("generated_at"):
         problems.append("generated_at is required")
     source_policy = payload.get("source_policy") or {}
@@ -39,13 +47,17 @@ def validate_raw_data_independence(path: Path = AUDIT_PATH) -> tuple[dict | None
     independence = payload.get("independence") or {}
     if independence.get("contract_factual_only") is not True:
         problems.append("independence.contract_factual_only must be true")
+    if independence.get("canonical_contract_owned") is not True:
+        problems.append("independence.canonical_contract_owned must be true")
     if independence.get("prohibited_flags_clean") is not True:
         problems.append("independence.prohibited_flags_clean must be true")
     if not isinstance(independence.get("last_external_trust_boundary"), dict):
         problems.append("last_external_trust_boundary must be documented")
     validation = payload.get("validation") or {}
-    if validation.get("raw_data_independence_complete") is not False:
-        problems.append("raw_data_independence_complete must be false until direct ingestion exists")
+    if not isinstance(validation.get("raw_data_independence_complete"), bool):
+        problems.append("raw_data_independence_complete must be boolean")
+    if not isinstance(independence.get("raw_data_ingestion_owned"), bool):
+        problems.append("raw_data_ingestion_owned must be boolean")
     if not isinstance(validation.get("blockers"), list):
         problems.append("validation.blockers must be a list")
     return payload, problems

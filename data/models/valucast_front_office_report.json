@@ -2,23 +2,23 @@
   "artifact": "valucast_front_office_report",
   "generated_at": "2026-06-14T20:26:06.130813+00:00",
   "next_build_order": [
-    "Expand realized outcome backtests by bucket and cohort.",
-    "Train/compare Prospect Model v0.7 against v0.6 by bucket.",
-    "Promote uncertainty bands into every prospect explanation.",
-    "Move DD-hosted factual input production into ValuCast-owned raw jobs.",
+    "Promote full ValuCast raw ingestion to replace the DD factual-export upstream.",
+    "Collect enough forward archives to move from B+ evidence to A- evidence.",
+    "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
+    "Keep uncertainty-band explanations visible on every prospect detail surface.",
     "Keep the front-office report public and fail-loud when evidence regresses."
   ],
   "overall": {
     "grade": "A-",
-    "score": 90,
-    "target": "A+ product/pipeline/independence/prospect credibility; B front-office track."
+    "score": 92,
+    "target": "A+ product/pipeline/prospect credibility; A+ independence after raw ingestion is native; B+ front-office track now."
   },
   "pillars": [
     {
       "evidence": {
         "public_snapshot_ready": true,
         "quality_governor_ready": true,
-        "row_count": null,
+        "row_count": 3641,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,
@@ -43,48 +43,57 @@
     },
     {
       "evidence": {
+        "canonical_contract_owned": true,
         "direct_raw_ownership_score": 1.0,
         "last_external_trust_boundary": {
           "consumer_side_gates": [
-            "sync_dd_prospect_inputs",
+            "build_valucast_prospect_inputs",
             "Prospect Model validators",
             "Prospect Rank v1 validators"
           ],
-          "current_boundary": "DD-hosted factual input contract",
+          "current_boundary": "ValuCast canonical factual contract",
           "desired_boundary": "ValuCast-owned raw ingestion and factual contract",
-          "remaining_trust_assumption": "ValuCast currently trusts the upstream producer to label factual fields honestly before ValuCast re-validates the contract."
+          "remaining_trust_assumption": "ValuCast owns the canonical contract and re-validates it, but the upstream factual export is still DD-produced until raw ingestion moves fully into this repo."
         },
         "raw_data_independence_complete": false
       },
-      "grade": "B+",
+      "grade": "A",
       "name": "Independence",
-      "score": 88,
-      "status": "boundary_hardened"
+      "score": 93,
+      "status": "canonical_contract_owned"
     },
     {
       "evidence": {
-        "outcome_grade": "B",
-        "outcome_score": 84,
+        "bucket_cohort_evidence_ready": true,
+        "outcome_grade": "B+",
+        "outcome_score": 87,
+        "v07_bucket_comparison_ready": true,
         "v07_ready_for_backtest": true,
         "v07_top200_factual_context_coverage": 1.0
       },
-      "grade": "A-",
+      "grade": "A",
       "name": "Prospect credibility",
-      "score": 90,
-      "status": "historical_evidence_ready"
+      "score": 93,
+      "status": "bucket_evidence_ready"
     },
     {
       "evidence": {
         "buy_comparison_count": 1,
         "buys_monitor_status": "collecting",
-        "current_grade": "B",
+        "cap_reasons": [
+          "Ordinal bridge is still partial; bucket/cohort evidence caps the grade.",
+          "Forward observations are not review-ready yet."
+        ],
+        "current_grade": "B+",
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
         "observation_span_days": 1,
-        "target_grade": "B"
+        "score_cap": 87,
+        "target_grade": "A-",
+        "uncapped_score": 91
       },
-      "grade": "B",
+      "grade": "B+",
       "name": "MLB front-office track",
-      "score": 84,
+      "score": 87,
       "status": "in_progress"
     }
   ],

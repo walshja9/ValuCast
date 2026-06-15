@@ -26,6 +26,7 @@ MODEL_VERSION = "0.7.0-preview.1"
 MODEL_STATUS = "shadow_preview"
 MIN_TOP200_FACTUAL_CONTEXT_COVERAGE = 0.95
 MIN_TOP200_AVAILABILITY_COVERAGE = 0.95
+MIN_BUCKET_COMPARISON_COUNT = 6
 
 
 def _clean_float(value: Any) -> float | None:
@@ -62,6 +63,15 @@ def _availability_status(components: dict) -> str | None:
     availability = _context(components, "availability")
     status = availability.get("status")
     return str(status) if status not in (None, "") else None
+
+
+def _level_band(level: Any) -> str:
+    value = str(level or "").upper()
+    if value in {"AA", "AAA", "MLB"}:
+        return "upper_level"
+    if value in {"DSL", "CPX", "ROK", "A", "A+", "HIGH-A"}:
+        return "lower_minors"
+    return "unknown_level"
 
 
 def _feature_coverage(components: dict) -> dict:
@@ -132,6 +142,76 @@ def _feature_row(row: dict) -> dict:
     }
 
 
+def _bucket_id(row: dict) -> str:
+    return "|".join(
+        [
+            str(row.get("role") or "unknown_role"),
+            _level_band(row.get("level")),
+            str(row.get("score_source") or "unknown_source"),
+            str((row.get("candidate_features") or {}).get("availability_status") or "missing_availability"),
+        ]
+    )
+
+
+def _bucket_comparison(
+    candidates: list[dict],
+    outcome_backtest: dict | None,
+) -> dict:
+    top_rows = candidates[:200]
+    buckets = {}
+    for row in top_rows:
+        bucket = _bucket_id(row)
+        entry = buckets.setdefault(
+            bucket,
+            {
+                "bucket": bucket,
+                "count": 0,
+                "avg_rank_v1_score": 0.0,
+                "factual_context_covered": 0,
+                "availability_context_covered": 0,
+            },
+        )
+        entry["count"] += 1
+        entry["avg_rank_v1_score"] += float(row.get("rank_v1_score") or 0.0)
+        coverage = row.get("feature_coverage") or {}
+        entry["factual_context_covered"] += int(
+            coverage.get("factual_current_context") is True
+        )
+        entry["availability_context_covered"] += int(
+            coverage.get("availability_context") is True
+        )
+    for entry in buckets.values():
+        count = entry["count"] or 1
+        entry["avg_rank_v1_score"] = round(entry["avg_rank_v1_score"] / count, 4)
+        entry["factual_context_coverage"] = round(
+            entry.pop("factual_context_covered") / count, 4
+        )
+        entry["availability_context_coverage"] = round(
+            entry.pop("availability_context_covered") / count, 4
+        )
+
+    outcome_validation = (outcome_backtest or {}).get("validation") or {}
+    ready = (
+        bool(buckets)
+        and len(buckets) >= MIN_BUCKET_COMPARISON_COUNT
+        and outcome_validation.get("bucket_cohort_evidence_ready") is True
+    )
+    return {
+        "status": "ready" if ready else "collecting",
+        "comparison_kind": "v0_7_candidate_features_vs_rank_v1_v0_6_bucket_shape",
+        "live_score_mutation": "none",
+        "bucket_definition": "role|level_band|score_source|availability_status",
+        "minimum_bucket_count": MIN_BUCKET_COMPARISON_COUNT,
+        "bucket_count": len(buckets),
+        "outcome_bucket_cohort_ready": outcome_validation.get(
+            "bucket_cohort_evidence_ready"
+        ),
+        "buckets": sorted(
+            buckets.values(), key=lambda item: (-item["count"], item["bucket"])
+        ),
+    }
+
+
 def _coverage_rate(candidates: list[dict], key: str, limit: int) -> float:
     rows = candidates[:limit]
     if not rows:
@@ -159,6 +239,7 @@ def build_model_v07_preview(
         blockers.append("Top-200 availability context coverage is below threshold.")
     outcome_validation = (outcome_backtest or {}).get("validation") or {}
     outcome_track = (outcome_backtest or {}).get("front_office_track") or {}
+    bucket_comparison = _bucket_comparison(candidates, outcome_backtest)
     if outcome_backtest and outcome_validation.get("realized_evidence_ready") is not True:
         blockers.append("Outcome evidence layer is not ready for v0.7 backtesting.")
 
@@ -227,8 +308,10 @@ def build_model_v07_preview(
                 MIN_TOP200_FACTUAL_CONTEXT_COVERAGE
             ),
             "min_top200_availability_coverage": MIN_TOP200_AVAILABILITY_COVERAGE,
+            "bucket_comparison_ready": bucket_comparison["status"] == "ready",
             "blockers": blockers,
         },
+        "bucket_comparison": bucket_comparison,
         "outcome_evidence": {
             "present": bool(outcome_backtest),
             "front_office_track": outcome_track or None,

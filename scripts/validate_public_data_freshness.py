@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DD_FEED = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
+VALUCAST_PROSPECT_INPUTS = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 REDRAFT_METADATA = ROOT / "data" / "projections" / "metadata.json"
 REDRAFT_CURRENT = ROOT / "data" / "projections" / "current.json"
 REDRAFT_ROS = ROOT / "data" / "projections" / "ros.json"
@@ -59,6 +60,7 @@ def validate_public_data(expected_date: str) -> list[str]:
 
     dated_artifacts = [
         (DD_FEED, "generated_at"),
+        (VALUCAST_PROSPECT_INPUTS, "generated_at"),
         (MLB_TRACK_RECORD, "generated_at"),
         (MLB_AVAILABILITY, "generated_at"),
         (MLB_ROSTER_STATUS, "generated_at"),

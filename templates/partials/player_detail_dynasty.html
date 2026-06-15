@@ -108,6 +108,18 @@
             {% if row.factual_context_note %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
             {% if row.availability_note %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
             {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
+            {% if row.uncertainty_note %}
+            <div class="uncertainty-explainer">
+                <p class="sample-context-note">{{ row.uncertainty_note }}</p>
+                {% if row.uncertainty_driver_items %}
+                <div class="uncertainty-driver-row">
+                    {% for item in row.uncertainty_driver_items %}
+                    <span><strong>{{ item.label }}</strong> {{ item.value }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 

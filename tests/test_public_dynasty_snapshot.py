@@ -442,15 +442,22 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
             "bb_pct": 9.8,
             "bb_minus_k_pct": -3.1,
         },
-        "uncertainty": {
-            "version": "0.1.0",
-            "kind": "display_only_score_interval",
-            "band": "moderate",
-            "lower": 48.0,
-            "upper": 62.0,
-            "score_effect": "none",
-        },
-    }
+            "uncertainty": {
+                "version": "0.1.0",
+                "kind": "display_only_score_interval",
+                "band": "moderate",
+                "lower": 48.0,
+                "upper": 62.0,
+                "score_effect": "none",
+                "drivers": {
+                    "score_source": "prospect_model_v0_6",
+                    "confidence": "medium",
+                    "sample_reliability": 63.0,
+                    "skill_band": "impact",
+                    "availability_risk_discount": 0.06,
+                },
+            },
+        }
     payload = build_snapshot(
         rank_payload,
         mlb_layer=_mlb_payload(),
@@ -481,6 +488,8 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
         {"label": "BB-K", "value": "-3.1%"},
     )
     assert row.uncertainty_label == "Moderate band: 48.0-62.0"
+    assert row.uncertainty_note is not None
+    assert row.uncertainty_driver_items[0]["label"] == "Source"
     assert row.why_rank_chips == (
         {
             "label": "Impact bat",

@@ -66,6 +66,19 @@ def validate_model_v07(path: Path = MODEL_PATH) -> tuple[dict | None, list[str]]
             "min_top200_factual_context_coverage", 1
         ):
             problems.append("top200 factual context coverage is below threshold")
+        if "bucket_comparison_ready" not in validation:
+            problems.append("validation.bucket_comparison_ready is required")
+
+    bucket_comparison = payload.get("bucket_comparison")
+    if not isinstance(bucket_comparison, dict):
+        problems.append("bucket_comparison must be an object")
+    else:
+        if bucket_comparison.get("live_score_mutation") != "none":
+            problems.append("bucket_comparison.live_score_mutation must be none")
+        if bucket_comparison.get("status") not in {"ready", "collecting"}:
+            problems.append("bucket_comparison.status must be ready or collecting")
+        if not isinstance(bucket_comparison.get("buckets"), list):
+            problems.append("bucket_comparison.buckets must be a list")
 
     candidates = payload.get("candidates")
     if not isinstance(candidates, list) or not candidates:

@@ -37,6 +37,7 @@ def build_raw_data_independence_audit(
         timezone.utc
     ).isoformat()
     policy = input_contract.get("source_policy") or {}
+    producer = input_contract.get("producer") or {}
     sources = set(policy.get("sources") or [])
     prohibited_flags = {
         "external_rankings_used": policy.get("external_rankings_used"),
@@ -58,30 +59,55 @@ def build_raw_data_independence_audit(
             "Prospect input contract contains unexpected source families: "
             + ", ".join(unexpected)
         )
+    canonical_contract_owned = (
+        producer.get("owner") == "valucast"
+        and producer.get("kind") == "canonical_factual_prospect_input_contract"
+    )
+    if not canonical_contract_owned:
+        blockers.append("ValuCast canonical prospect-input producer is missing.")
 
     direct_raw_sources_present = sorted(sources & DIRECT_RAW_TARGET_SOURCES)
+    raw_data_independence_complete = (
+        canonical_contract_owned
+        and producer.get("upstream_kind") == "valucast_raw_ingestion"
+        and producer.get("upstream_model_score_effect") == "none"
+    )
     source_boundary = {
-        "current_boundary": "DD-hosted factual input contract",
+        "current_boundary": (
+            "ValuCast canonical factual contract"
+            if canonical_contract_owned
+            else "DD-hosted factual input contract"
+        ),
         "desired_boundary": "ValuCast-owned raw ingestion and factual contract",
         "consumer_side_gates": [
-            "sync_dd_prospect_inputs",
+            "build_valucast_prospect_inputs",
             "Prospect Model validators",
             "Prospect Rank v1 validators",
         ],
         "remaining_trust_assumption": (
-            "ValuCast currently trusts the upstream producer to label factual "
-            "fields honestly before ValuCast re-validates the contract."
+            "ValuCast owns the canonical contract and re-validates it, but the "
+            "upstream factual export is still DD-produced until raw ingestion "
+            "moves fully into this repo."
         ),
     }
     direct_raw_ownership_score = round(
         len(direct_raw_sources_present) / len(DIRECT_RAW_TARGET_SOURCES),
         4,
     )
+    status = (
+        "blocked"
+        if blockers
+        else "raw_ingestion_owned"
+        if raw_data_independence_complete
+        else "canonical_contract_owned"
+        if canonical_contract_owned
+        else "boundary_hardened"
+    )
     return {
         "artifact": "valucast_raw_data_independence_audit",
         "audit_version": AUDIT_VERSION,
         "generated_at": generated,
-        "status": "boundary_hardened" if not blockers else "blocked",
+        "status": status,
         "source_policy": {
             "kind": "raw_data_independence_audit",
             "feeds_model_score": False,
@@ -94,6 +120,7 @@ def build_raw_data_independence_audit(
         "input_contract": {
             "schema_version": input_contract.get("schema_version"),
             "generated_at": input_contract.get("generated_at"),
+            "producer": producer,
             "source_policy": policy,
             "historical_row_count": len(historical.get("rows") or []),
             "current_hitter_count": len(current.get("hitters") or []),
@@ -104,10 +131,12 @@ def build_raw_data_independence_audit(
         },
         "independence": {
             "contract_factual_only": policy.get("kind") == "factual_only",
+            "canonical_contract_owned": canonical_contract_owned,
             "prohibited_flags_clean": all(value is False for value in prohibited_flags.values()),
             "expected_sources_only": not unexpected,
             "direct_raw_sources_present": direct_raw_sources_present,
             "direct_raw_ownership_score": direct_raw_ownership_score,
+            "raw_data_ingestion_owned": raw_data_independence_complete,
             "last_external_trust_boundary": source_boundary,
             "next_cord_to_cut": (
                 "Move DD-hosted factual-input production into ValuCast-owned "
@@ -116,7 +145,7 @@ def build_raw_data_independence_audit(
         },
         "validation": {
             "ready_for_current_publication": not blockers,
-            "raw_data_independence_complete": False,
+            "raw_data_independence_complete": raw_data_independence_complete,
             "blockers": blockers,
         },
     }

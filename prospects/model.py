@@ -1,4 +1,4 @@
-"""ValuCast Prospect Model, trained only from the factual DD export contract.
+"""ValuCast Prospect Model, trained only from the factual ValuCast input contract.
 
 This model is observe-only. It cannot alter the live prospect board until its
 coverage, target, and out-of-sample gates earn a separate promotion decision.
@@ -15,22 +15,16 @@ from statistics import mean, pstdev
 from zoneinfo import ZoneInfo
 
 from prospects.gate import decide_gate
+from prospects.input_contract import VALUCAST_INPUT_PATH, validate_factual_contract
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUT_PATH = ROOT / "data" / "dd" / "prospect_model_inputs.json"
+INPUT_PATH = VALUCAST_INPUT_PATH
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_model.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_model"
 
 MODEL_NAME = "ValuCast Prospect Model"
 MODEL_VERSION = "0.6.0"
 MODEL_STATUS = "shadow_only"
-INPUT_SCHEMA_VERSION = "1.0"
-ALLOWED_SOURCES = {
-    "prospect_outcome_dataset",
-    "milb_season_stats",
-    "fantrax_mlb_actuals",
-    "mlb_prospect_seasons_cache",
-}
 MATURE_THROUGH = 2019
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
@@ -121,24 +115,10 @@ SHRINK_FEATURES = {
 
 
 def validate_input_contract(contract: dict) -> None:
-    if contract.get("schema_version") != INPUT_SCHEMA_VERSION:
-        raise ValueError(
-            f"Unsupported prospect input schema {contract.get('schema_version')!r}"
-        )
-    policy = contract.get("source_policy") or {}
-    if policy.get("kind") != "factual_only":
-        raise ValueError("Prospect input contract must be factual_only")
-    if set(policy.get("sources") or []) != ALLOWED_SOURCES:
-        raise ValueError("Prospect input contract contains an unexpected source")
-    prohibited_flags = (
-        "external_rankings_used",
-        "external_projections_used",
-        "market_values_used",
-        "dynasty_values_used",
-    )
-    if any(policy.get(flag) is not False for flag in prohibited_flags):
-        raise ValueError("Prospect input contract contains prohibited model inputs")
-    for key in ("historical", "historical_mlb_seasons", "current", "mlb_service"):
+    problems = validate_factual_contract(contract)
+    if problems:
+        raise ValueError("Invalid prospect input contract: " + "; ".join(problems))
+    for key in ("historical_mlb_seasons",):
         if key not in contract:
             raise ValueError(f"Prospect input contract missing {key}")
 

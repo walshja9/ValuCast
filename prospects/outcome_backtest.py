@@ -19,6 +19,8 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.j
 REPORT_NAME = "ValuCast Prospect Outcome Evidence"
 REPORT_VERSION = "0.1.0"
 MIN_REALIZED_OUTCOME_SAMPLE = 2_000
+MIN_BUCKET_COHORT_COUNT = 8
+MIN_BUCKET_COHORT_PASS_RATE = 0.75
 
 
 def _date_part(value: Any) -> str | None:
@@ -74,6 +76,116 @@ def _role_metric_rows(payload: dict) -> list[dict]:
     return rows
 
 
+def _better_or_equal(candidate, baseline, *, lower_is_better: bool) -> bool:
+    if candidate is None or baseline is None:
+        return False
+    return candidate <= baseline if lower_is_better else candidate >= baseline
+
+
+def _cohort_rows(layer: str, payload: dict) -> list[dict]:
+    rows = []
+    for role, result in (payload.get("roles") or {}).items():
+        for fold in result.get("folds") or []:
+            if layer == "dynasty":
+                primary_passed = _better_or_equal(
+                    fold.get("candidate_multiclass_brier"),
+                    fold.get("baseline_multiclass_brier"),
+                    lower_is_better=True,
+                )
+                secondary_passed = _better_or_equal(
+                    fold.get("candidate_rank_concordance"),
+                    fold.get("baseline_rank_concordance"),
+                    lower_is_better=False,
+                )
+                metrics = {
+                    "candidate_multiclass_brier": fold.get(
+                        "candidate_multiclass_brier"
+                    ),
+                    "baseline_multiclass_brier": fold.get(
+                        "baseline_multiclass_brier"
+                    ),
+                    "candidate_rank_concordance": fold.get(
+                        "candidate_rank_concordance"
+                    ),
+                    "baseline_rank_concordance": fold.get(
+                        "baseline_rank_concordance"
+                    ),
+                }
+            else:
+                primary_passed = _better_or_equal(
+                    fold.get("candidate_rank_concordance"),
+                    fold.get("baseline_rank_concordance"),
+                    lower_is_better=False,
+                )
+                secondary_passed = _better_or_equal(
+                    fold.get("candidate_top_quartile_precision"),
+                    fold.get("baseline_top_quartile_precision"),
+                    lower_is_better=False,
+                )
+                metrics = {
+                    "candidate_rank_concordance": fold.get(
+                        "candidate_rank_concordance"
+                    ),
+                    "baseline_rank_concordance": fold.get(
+                        "baseline_rank_concordance"
+                    ),
+                    "candidate_top_quartile_precision": fold.get(
+                        "candidate_top_quartile_precision"
+                    ),
+                    "baseline_top_quartile_precision": fold.get(
+                        "baseline_top_quartile_precision"
+                    ),
+                }
+            rows.append(
+                {
+                    "bucket": f"{layer}|{role}|cohort_{fold.get('test_cohort')}",
+                    "layer": layer,
+                    "role": role,
+                    "test_cohort": fold.get("test_cohort"),
+                    "sample_size": fold.get("sample_size"),
+                    "primary_non_regression": primary_passed,
+                    "secondary_non_regression": secondary_passed,
+                    "passed": primary_passed and secondary_passed,
+                    "metrics": metrics,
+                }
+            )
+    return rows
+
+
+def _bucket_cohort_evidence(dynasty_backtest: dict, adapter_backtest: dict) -> dict:
+    rows = _cohort_rows("dynasty", dynasty_backtest) + _cohort_rows(
+        "adapter", adapter_backtest
+    )
+    passed = sum(1 for row in rows if row["passed"])
+    total = len(rows)
+    pass_rate = round(passed / total, 4) if total else 0.0
+    by_role = {}
+    for role in sorted({row["role"] for row in rows}):
+        role_rows = [row for row in rows if row["role"] == role]
+        role_passed = sum(1 for row in role_rows if row["passed"])
+        by_role[role] = {
+            "bucket_count": len(role_rows),
+            "passed_count": role_passed,
+            "pass_rate": round(role_passed / len(role_rows), 4) if role_rows else 0.0,
+        }
+    ready = (
+        total >= MIN_BUCKET_COHORT_COUNT
+        and pass_rate >= MIN_BUCKET_COHORT_PASS_RATE
+        and all(summary["pass_rate"] >= MIN_BUCKET_COHORT_PASS_RATE for summary in by_role.values())
+    )
+    return {
+        "status": "ready" if ready else "collecting",
+        "bucket_definition": "validation_layer|role|test_cohort",
+        "minimum_bucket_count": MIN_BUCKET_COHORT_COUNT,
+        "minimum_pass_rate": MIN_BUCKET_COHORT_PASS_RATE,
+        "bucket_count": total,
+        "passed_count": passed,
+        "pass_rate": pass_rate,
+        "by_role": by_role,
+        "buckets": rows,
+    }
+
+
 def _grade(score: int) -> str:
     if score >= 93:
         return "A"
@@ -119,6 +231,8 @@ def build_outcome_backtest(
     )
     forward_status = forward_validation.get("status")
     v07_validation = model_v07.get("validation") or {}
+    bucket_cohort = _bucket_cohort_evidence(dynasty_backtest, adapter_backtest)
+    bucket_cohort_ready = bucket_cohort["status"] == "ready"
 
     realized_samples = max(_role_samples(dynasty_backtest), _role_samples(adapter_backtest))
     raw_score = 0
@@ -145,10 +259,12 @@ def build_outcome_backtest(
     score_cap = 100
     cap_reasons = []
     if model_board_gate != "active":
-        score_cap = min(score_cap, 84)
-        cap_reasons.append("Ordinal bridge is still partial.")
+        score_cap = min(score_cap, 87 if bucket_cohort_ready else 84)
+        cap_reasons.append(
+            "Ordinal bridge is still partial; bucket/cohort evidence caps the grade."
+        )
     if forward_status != "review_ready":
-        score_cap = min(score_cap, 84)
+        score_cap = min(score_cap, 87 if bucket_cohort_ready else 84)
         cap_reasons.append("Forward observations are not review-ready yet.")
     score = min(raw_score, score_cap)
 
@@ -174,7 +290,7 @@ def build_outcome_backtest(
             "score_cap": score_cap if score_cap < 100 else None,
             "cap_reasons": cap_reasons,
             "grade": _grade(score),
-            "target_grade": "B",
+            "target_grade": "A-",
             "interpretation": (
                 "Strong public-model evidence with real historical outcome support; "
                 "not a club-grade system because proprietary scouting, medical, "
@@ -213,11 +329,13 @@ def build_outcome_backtest(
                 "model_version": model_v07.get("model_version"),
                 "validation": v07_validation,
             },
+            "bucket_cohort": bucket_cohort,
         },
         "validation": {
             "realized_outcome_sample_size": realized_samples,
             "minimum_realized_outcome_sample_size": MIN_REALIZED_OUTCOME_SAMPLE,
             "realized_evidence_ready": dynasty_gate == "active" and adapter_gate == "active",
+            "bucket_cohort_evidence_ready": bucket_cohort_ready,
             "forward_evidence_ready": forward_status == "review_ready",
             "blockers": blockers,
         },
