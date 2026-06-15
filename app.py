@@ -762,8 +762,10 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     def rank_label(fallback):
         return f"#{fallback}"
 
-    def hero_rank_label(fallback):
-        return f"{position.upper()}#{fallback}" if position else f"#{fallback}"
+    def hero_rank_heading(fallback):
+        if position:
+            return f"position rank #{fallback}"
+        return f"list rank #{fallback}"
 
     def value_label(row):
         try:
@@ -833,7 +835,6 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     draw.arc(arc_box, start=196, end=286, fill=(35, 44, 73), width=3)
 
     scope = f"{position.upper()} " if position else ""
-    rank_kind = f"{position.upper()} RANK" if position else "LIST RANK"
     title = f"Top {limit} {scope}Prospects"
     if search:
         title += f" | {search}"
@@ -855,36 +856,35 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         # Compact variant for position top-10s: same voice, less empty space.
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
-        draw.rounded_rectangle((48, 226, 1032, 560), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), f"{hero_rank_label(1)} - {leader}", fill=green, font=font(24, bold=True))
-        draw.ellipse((72, 315, 222, 465), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
+        draw.rounded_rectangle((48, 226, 1032, 532), radius=18, fill=card, outline=green, width=2)
+        draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
+        draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(16, bold=True))
+        draw.ellipse((72, 324, 214, 466), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
         initials = buy_score.graphic_initials(hero.name)
-        mono = font(58, bold=True)
+        mono = font(54, bold=True)
         box = draw.textbbox((0, 0), initials, font=mono)
-        draw.text((147 - (box[2] - box[0]) / 2, 390 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+        draw.text((143 - (box[2] - box[0]) / 2, 395 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
         hero_name_font = font(43, bold=True)
         hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 360)
         for line_idx, line in enumerate(hero_name_lines):
-            draw.text((250, 304 + line_idx * 50), line, fill=text, font=hero_name_font)
-        draw.text((250, 370 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 360), fill=muted, font=font(22))
-        draw.text((70, 455), hero_rank_label(1), fill=green, font=font(58, bold=True))
-        draw.text((205, 508), rank_kind, fill=muted, font=font(18, bold=True))
+            draw.text((248, 315 + line_idx * 50), line, fill=text, font=hero_name_font)
+        draw.text((248, 381 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 360), fill=muted, font=font(22))
 
         value = value_label(hero)
-        draw.rounded_rectangle((650, 314, 990, 468), radius=16, fill=(28, 30, 54), outline=border, width=2)
-        draw.text((672, 340), "VAL", fill=muted, font=font(17, bold=True))
-        draw.text((672, 367), value or "--", fill=green, font=font(45, bold=True))
+        draw.rounded_rectangle((650, 314, 990, 466), radius=16, fill=(28, 30, 54), outline=border, width=2)
+        draw.text((672, 340), "VALUCAST", fill=muted, font=font(16, bold=True))
+        draw.text((672, 369), value or "--", fill=green, font=font(45, bold=True))
         draw_chip(810, 342, overall_label(hero), fill=card, fg=text, outline=border)
         draw_chip(810, 384, "current board", fill=card, fg=muted, outline=border, fnt=font(14, bold=True))
-        spark = spark_points(hero, 660, 455, 240, 64)
+        spark = spark_points(hero, 670, 484, 260, 34)
         if spark:
             draw.line(spark[0], fill=green if spark[1] == "up" else muted, width=3, joint="curve")
-            draw.text((660, 525), "RECENT MOVEMENT", fill=muted, font=font(18, bold=True))
+            draw.text((670, 522), "RECENT MOVEMENT", fill=muted, font=font(15, bold=True))
 
         grid_rows = rows[1:10]
         cols = 3
         cell_w, cell_h = 312, 166
-        start_x, start_y = 48, 590
+        start_x, start_y = 48, 568
         for idx, row in enumerate(grid_rows):
             col, r = idx % cols, idx // cols
             x, y = start_x + col * (cell_w + 24), start_y + r * (cell_h + 18)
@@ -897,7 +897,8 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
         draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), f"{rank_label(1)} - {leader}", fill=green, font=font(22, bold=True))
+        draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
+        draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(15, bold=True))
         draw.ellipse((70, 314, 200, 444), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
         initials = buy_score.graphic_initials(hero.name)
         mono = font(52, bold=True)
@@ -908,8 +909,9 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         for line_idx, line in enumerate(hero_name_lines):
             draw.text((220, 318 + line_idx * 37), line, fill=text, font=hero_name_font)
         draw.text((220, 394 + (len(hero_name_lines) - 1) * 26), fit_text(draw, tag(hero), font(18), 165), fill=muted, font=font(18))
-        draw.text((70, 455), rank_label(1), fill=green, font=font(58, bold=True))
-        draw.text((205, 503), rank_kind, fill=muted, font=font(17, bold=True))
+        hero_value = value_label(hero)
+        draw.text((70, 455), f"VAL {hero_value or '--'}", fill=green, font=font(39, bold=True))
+        draw.text((70, 503), "VALUCAST", fill=muted, font=font(16, bold=True))
 
         supports = rows[1:5]
         for idx, row in enumerate(supports):
