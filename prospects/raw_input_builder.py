@@ -557,6 +557,26 @@ def _sample(row: dict, role: str) -> float:
     return _num(row.get(key)) or 0.0
 
 
+def _year(value) -> int | None:
+    if isinstance(value, str):
+        value = value[:4]
+    numeric = _num(value)
+    if numeric is None:
+        return None
+    return int(numeric)
+
+
+def _age_for_current_context(age, sample_season, fetched_date):
+    numeric_age = _num(age)
+    if numeric_age is None:
+        return None
+    sample_year = _year(sample_season)
+    current_year = _year(fetched_date)
+    if sample_year is not None and current_year is not None:
+        numeric_age += max(0, current_year - sample_year)
+    return int(numeric_age) if float(numeric_age).is_integer() else round(numeric_age, 1)
+
+
 def _level_rank(level: str | None) -> int:
     return {
         "AAA": 4,
@@ -578,6 +598,18 @@ def _eligible_current_row(row: dict, role: str) -> bool:
         and level in {"A", "A+", "AA", "AAA"}
         and _sample(row, role) >= MIN_CURRENT_SAMPLE[role]
     )
+
+
+def _history_blocking_current_key(row: dict, role: str) -> tuple[int, str] | None:
+    """Return a key when a fresh row proves older history is no longer eligible."""
+    mlbam_id = row.get("mlbam_id")
+    if not mlbam_id:
+        return None
+    age = _num(row.get("age"))
+    level = str(row.get("level") or "").upper()
+    if (age is not None and age > MAX_AGE) or (level and level not in {"A", "A+", "AA", "AAA"}):
+        return int(mlbam_id), role
+    return None
 
 
 def _sanitize_current_row(
@@ -603,6 +635,14 @@ def _sanitize_current_row(
     out["sample_fetched_date"] = row_fetched_date
     out["source_artifact"] = source_artifact
     out["source_kind"] = source_kind
+    if source_kind == "latest_milb_history":
+        current_age = _age_for_current_context(
+            out.get("age"),
+            sample_season,
+            row_fetched_date,
+        )
+        if current_age is not None:
+            out["age"] = current_age
     current_season = (
         _num(row_fetched_date[:4]) if isinstance(row_fetched_date, str) else None
     )
@@ -640,7 +680,15 @@ def _history_candidates(
                 "normalized_name": raw.get("normalized_name") or normalized_name,
                 "sport_id": raw.get("sport_id"),
             }
-            if not _eligible_current_row(row, role):
+            current_age = _age_for_current_context(
+                row.get("age"),
+                row.get("season"),
+                fetched_date,
+            )
+            eligibility_row = row
+            if current_age is not None:
+                eligibility_row = {**row, "age": current_age}
+            if not _eligible_current_row(eligibility_row, role):
                 continue
             key = (int(row["mlbam_id"]), role)
             candidate = _sanitize_current_row(
@@ -701,6 +749,12 @@ def _current_rows(
         for row in rows[group]
         if _eligible_current_row(row, role)
     }
+    history_blocked = {
+        key
+        for role, group in (("hitter", "hitters"), ("pitcher", "pitchers"))
+        for row in rows[group]
+        if (key := _history_blocking_current_key(row, role))
+    }
     for row in _history_candidates(
         milb_history,
         draft_facts,
@@ -709,7 +763,7 @@ def _current_rows(
     ):
         role = row["role"]
         key = (int(row["mlbam_id"]), role)
-        if key in covered:
+        if key in covered or key in history_blocked:
             continue
         rows["hitters" if role == "hitter" else "pitchers"].append(row)
         covered.add(key)

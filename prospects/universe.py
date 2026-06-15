@@ -21,6 +21,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 
 SCHEMA_VERSION = "1.0"
 AFFILIATE_MAP_VERSION = "2026-06-14.mlb-statsapi-parent-orgs"
+MAX_PROSPECT_AGE = 25
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 # Current affiliated MiLB teams from MLB Stats API parent-org metadata, plus
 # legacy affiliate names still present in historical/current factual inputs.
@@ -256,6 +257,7 @@ def build_universe(
     duplicate_keys: list[tuple[str, str]] = []
     missing_identity_count = 0
     missing_universal_count = 0
+    age_excluded = []
     players = []
 
     for profile in dynasty_layer.get("profiles") or []:
@@ -270,6 +272,21 @@ def build_universe(
         seen.add(key)
         if universal_keys and key not in universal_keys:
             missing_universal_count += 1
+        try:
+            age = float(profile.get("age"))
+        except (TypeError, ValueError):
+            age = None
+        if age is not None and age > MAX_PROSPECT_AGE:
+            age_excluded.append(
+                {
+                    "mlbam_id": int(profile["mlbam_id"]),
+                    "role": role,
+                    "name": profile.get("name"),
+                    "age": profile.get("age"),
+                    "level": profile.get("level"),
+                }
+            )
+            continue
 
         context = dd_context.get(key)
         player = {
@@ -329,6 +346,7 @@ def build_universe(
             "universal_model_status": (universal_model or {}).get("status"),
             "dd_feed_schema_version": (dd_feed or {}).get("schema_version"),
             "affiliate_map_version": AFFILIATE_MAP_VERSION,
+            "max_prospect_age": MAX_PROSPECT_AGE,
         },
         "candidate_count": len(players),
         "validation": {
@@ -336,6 +354,8 @@ def build_universe(
             "candidate_count": len(players),
             "missing_mlbam_count": 0,
             "duplicate_identity_count": 0,
+            "age_excluded_count": len(age_excluded),
+            "age_excluded_sample": age_excluded[:12],
             "missing_universal_profile_count": missing_universal_count,
             "dd_context_count": sum(1 for row in players if row.get("context_only")),
             "mlb_team_backfill_count": sum(

@@ -67,6 +67,8 @@ LIMITED_PITCHER_TRACK_RECORD_PRIOR_IP = 180.0
 LIMITED_HITTER_TRACK_RECORD_MAX_DISCOUNT = 0.16
 LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT = 0.14
 TRACK_RECORD_FLOOR_MIN_CERTAINTY = 40.0
+TRACK_RECORD_FLOOR_MIN_STABILITY_VALUE = 0.0
+TRACK_RECORD_FLOOR_MIN_ROS_VALUE = 1.0
 RELIEVER_DYNASTY_SCORE_CAP = 52.0
 MLB_AVAILABILITY_MAX_DISCOUNT = 0.12
 MLB_AVAILABILITY_HITTER_IL_DISCOUNT = 0.06
@@ -667,6 +669,23 @@ def _track_record_floor(
     return floor_score
 
 
+def _track_record_floor_blocked_reason(
+    stability: dict[str, Any] | None,
+) -> str | None:
+    if not stability:
+        return None
+    stability_value = _finite_float(stability.get("stability_adjusted_category_value"))
+    if (
+        stability_value is None
+        or stability_value > TRACK_RECORD_FLOOR_MIN_STABILITY_VALUE
+    ):
+        return None
+    ros_value = _finite_float(stability.get("ros_category_value"))
+    if ros_value is not None and ros_value > TRACK_RECORD_FLOOR_MIN_ROS_VALUE:
+        return None
+    return "weak_current_and_ros_projection"
+
+
 def _role_adjusted_score(
     player: PlayerProjection,
     score: float,
@@ -681,6 +700,7 @@ def _role_adjusted_score(
         "limited_mlb_track_record_discount": 0.0,
         "track_record_floor_score": None,
         "track_record_floor_applied": False,
+        "track_record_floor_blocked_reason": None,
         "track_record_certainty": _round(
             _finite_float((track_record_profile or {}).get("track_record_certainty"))
         ),
@@ -788,8 +808,11 @@ def _role_adjusted_score(
         adjustments["limited_mlb_track_record_discount"] = track_record_discount
     floor_score = _track_record_floor(track_record_profile)
     adjustments["track_record_floor_score"] = _round(floor_score)
+    floor_blocked_reason = _track_record_floor_blocked_reason(stability)
+    adjustments["track_record_floor_blocked_reason"] = floor_blocked_reason
     if (
         floor_score is not None
+        and floor_blocked_reason is None
         and adjusted < floor_score
         and not _is_reliever_only(player)
     ):

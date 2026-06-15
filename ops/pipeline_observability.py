@@ -27,7 +27,6 @@ QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
 VALUCAST_BUYS = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 VALUCAST_BUYS_MONITOR = ROOT / "data" / "models" / "valucast_prospect_buys_monitor.json"
 FRONT_OFFICE_FAILURES = ROOT / "data" / "models" / "valucast_front_office_failures.json"
-FRONT_OFFICE_REPORT = ROOT / "data" / "models" / "valucast_front_office_report.json"
 REDRAFT_METADATA = ROOT / "data" / "projections" / "metadata.json"
 STATCAST_PERCENTILES = ROOT / "data" / "statcast" / "percentiles.json"
 
@@ -51,7 +50,6 @@ DATED_ARTIFACTS: tuple[tuple[Path, str, str], ...] = (
     (VALUCAST_BUYS, "generated_at", "prospect_buys"),
     (VALUCAST_BUYS_MONITOR, "generated_at", "prospect_buys_monitor"),
     (FRONT_OFFICE_FAILURES, "generated_at", "front_office_failures"),
-    (FRONT_OFFICE_REPORT, "generated_at", "front_office_report"),
     (REDRAFT_METADATA, "as_of", "redraft_metadata"),
     (STATCAST_PERCENTILES, "as_of", "statcast_percentiles"),
 )

@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-06-14",
+  "generated_at": "2026-06-15",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -2631,18 +2631,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Diego Padres placed RHP Matt Waldron on the 15-day injured list. Right brachialis muscle injury.",
-      "effective_date": "2026-05-15",
-      "list_type": "15-day injured list",
+      "description": "San Diego Padres sent RHP Matt Waldron on a rehab assignment to El Paso Chihuahuas.",
+      "effective_date": "2026-06-14",
+      "list_type": null,
       "mlbam_id": 663362,
       "name": "Matt Waldron",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "San Diego Padres",
-      "transaction_date": "2026-05-15",
-      "transaction_id": 909418,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "El Paso Chihuahuas",
+      "transaction_date": "2026-06-14",
+      "transaction_id": 918466,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3591,18 +3591,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Francisco Giants placed RHP Tyler Mahle on the 15-day injured list retroactive to May 27, 2026. Left hamstring strain.",
-      "effective_date": "2026-05-27",
-      "list_type": "15-day injured list",
+      "description": "San Francisco Giants sent RHP Tyler Mahle on a rehab assignment to Sacramento River Cats.",
+      "effective_date": "2026-06-14",
+      "list_type": null,
       "mlbam_id": 641816,
       "name": "Tyler Mahle",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "San Francisco Giants",
-      "transaction_date": "2026-05-29",
-      "transaction_id": 913340,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Sacramento River Cats",
+      "transaction_date": "2026-06-14",
+      "transaction_id": 918478,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3621,18 +3621,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Los Angeles Angels placed 2B Vaughn Grissom on the 10-day injured list retroactive to June 5, 2026. Left oblique strain.",
-      "effective_date": "2026-06-05",
-      "list_type": "10-day injured list",
+      "description": "Los Angeles Angels sent 2B Vaughn Grissom on a rehab assignment to Rancho Cucamonga Quakes.",
+      "effective_date": "2026-06-14",
+      "list_type": null,
       "mlbam_id": 687093,
       "name": "Vaughn Grissom",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Los Angeles Angels",
-      "transaction_date": "2026-06-08",
-      "transaction_id": 916663,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Rancho Cucamonga Quakes",
+      "transaction_date": "2026-06-14",
+      "transaction_id": 918469,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -6321,7 +6321,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-06-14",
+    "end_date": "2026-06-15",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -6342,12 +6342,12 @@
     "available_after_il_count": 167,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 204,
+    "injured_count": 201,
     "profile_count": 420,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 49,
+    "rehab_count": 52,
     "risk_profile_count": 253,
-    "tracked_mlbam_count": 10069,
-    "transaction_count": 6530
+    "tracked_mlbam_count": 10106,
+    "transaction_count": 6548
   }
 }

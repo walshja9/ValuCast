@@ -48,8 +48,11 @@ jobs:
       - name: Sync generated DD dynasty and buys feed
         run: python scripts/sync_dd_feed.py
 
+      - name: Refresh affiliated MiLB season stats
+        run: python scripts/refresh_milb_season_stats.py
+
       - name: Build ValuCast canonical prospect input contract
-        run: python scripts/build_valucast_prospect_inputs.py
+        run: python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
 
       - name: Build ValuCast public snapshot gate
         env:

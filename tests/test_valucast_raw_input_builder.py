@@ -306,6 +306,7 @@ def test_contract_backfills_latest_milb_history_when_current_sample_is_missing()
     assert hitter["source_artifact"] == "milb_card_history"
     assert hitter["sample_season"] == 2025
     assert hitter["sample_staleness_years"] == 1
+    assert hitter["age"] == 21
     assert hitter["name"] == "Missing Hitter"
     assert hitter["ops"] == 0.850
     assert hitter["draft_pick_number"] == 20
@@ -315,6 +316,104 @@ def test_contract_backfills_latest_milb_history_when_current_sample_is_missing()
     service_ids = {(row["mlbam_id"], row["role"]) for row in payload["mlb_service"]}
     assert (303, "hitter") in service_ids
     assert (202, "pitcher") in service_ids
+
+
+def test_history_backfill_excludes_profiles_that_age_out_in_current_context():
+    current = {
+        "season": 2026,
+        "fetched_date": "2026-06-15",
+        "hitters": [],
+        "pitchers": [],
+    }
+    history = {
+        "players": {
+            "aged out hitter": [{
+                "mlbam_id": 404,
+                "name": "Aged Out Hitter",
+                "role": "hitter",
+                "season": 2025,
+                "level": "AAA",
+                "age": 25,
+                "team": "AAA Club",
+                "plate_appearances": 200,
+                "iso": 0.200,
+                "k_pct": 18.0,
+                "bb_pct": 12.0,
+                "avg": 0.280,
+                "obp": 0.370,
+                "slg": 0.480,
+            }]
+        }
+    }
+
+    payload = exporter.build_contract(
+        dataset=_historical(),
+        current=current,
+        milb_history=history,
+        mlb_seasons={},
+        generated_at="2026-06-15T00:00:00+00:00",
+    )
+
+    assert all(row["mlbam_id"] != 404 for row in payload["current"]["hitters"])
+
+
+def test_fresh_age_ineligible_row_blocks_stale_history_fallback():
+    current = {
+        "season": 2026,
+        "fetched_date": "2026-06-15",
+        "hitters": [],
+        "pitchers": [{
+            "mlbam_id": 680951,
+            "name": "Doug Nikhazy",
+            "role": "pitcher",
+            "level": "AAA",
+            "age": 26,
+            "position": "P",
+            "innings_pitched": 33.0,
+            "k_per_9": 9.3,
+            "bb_per_9": 6.8,
+            "k_bb_pct": 5.5,
+            "era": 9.00,
+            "whip": 2.03,
+        }],
+    }
+    history = {
+        "players": {
+            "doug nikhazy": [{
+                "mlbam_id": 680951,
+                "name": "Doug Nikhazy",
+                "role": "pitcher",
+                "season": 2025,
+                "level": "AAA",
+                "age": 25,
+                "team": "Columbus Clippers",
+                "innings_pitched": 86.0,
+                "k_per_9": 10.8,
+                "bb_per_9": 3.5,
+                "k_bb_pct": 18.0,
+                "era": 3.40,
+                "whip": 1.18,
+            }]
+        }
+    }
+
+    payload = exporter.build_contract(
+        dataset=_historical(),
+        current=current,
+        milb_history=history,
+        mlb_seasons={},
+        generated_at="2026-06-15T00:00:00+00:00",
+    )
+
+    rows = [
+        row
+        for row in payload["current"]["pitchers"]
+        if row["mlbam_id"] == 680951
+    ]
+    assert len(rows) == 1
+    assert rows[0]["source_kind"] == "current_season"
+    assert rows[0]["age"] == 26
+    assert not payload["mlb_service"]
 
 
 def test_contract_hides_draft_facts_not_known_by_cohort():

@@ -1,4 +1,5 @@
 """Build ValuCast's canonical prospect input contract."""
+import argparse
 from pathlib import Path
 import sys
 
@@ -7,7 +8,40 @@ sys.path.insert(0, str(ROOT))
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--refresh-service-cache",
+        action="store_true",
+        help="Fetch missing MLBAM-keyed MLB service seasons before writing the contract.",
+    )
+    parser.add_argument(
+        "--refresh-service-limit",
+        type=int,
+        default=None,
+        help="Limit missing service-cache fetches for resumable backfills.",
+    )
+    parser.add_argument(
+        "--refresh-service-workers",
+        type=int,
+        default=12,
+        help="Concurrent StatsAPI workers for --refresh-service-cache.",
+    )
+    args = parser.parse_args()
+
     from prospects.input_builder import run_valucast_prospect_input_build
+    from prospects.raw_input_builder import refresh_mlb_service_cache
+
+    if args.refresh_service_cache:
+        service_result = refresh_mlb_service_cache(
+            limit=args.refresh_service_limit,
+            max_workers=args.refresh_service_workers,
+        )
+        print(
+            "MLB service cache refresh: "
+            f"missing={service_result['missing_before']} "
+            f"fetched={service_result['fetched']} "
+            f"failed={service_result['failed']}"
+        )
 
     result = run_valucast_prospect_input_build()
     print(

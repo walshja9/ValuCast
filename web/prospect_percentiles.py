@@ -348,16 +348,16 @@ def _pitcher_parts(row, line: dict) -> tuple[str, str, str]:
         family = "pitcher-dominant-control"
     elif k_per_9 is not None and k_per_9 >= 12 and bb_per_9 is not None and bb_per_9 >= 4.5:
         skill = (
-            "He can finish hitters.",
-            "The bat-missing is strong enough to keep a rotation look alive.",
+            "The bat-missing is starter-caliber.",
+            "The swing-and-miss is real enough to keep a rotation path open.",
         )
         risk = (
-            "The walks create too many self-inflicted innings.",
-            "Strike throwing is the failure point.",
+            "The walks are the separator, not the stuff.",
+            "The stuff is ahead of the strike throwing right now.",
         )
         role = (
-            "Bullpen lean until the walks come down. The misses keep a rotation ceiling open.",
-            "The current strike throwing points to the bullpen, with starter upside still alive.",
+            "Starter upside is still alive, but the current command creates real bullpen risk.",
+            "Keep the starter path open, but the walk rate has to move before the bullpen risk fades.",
         )
         family = "pitcher-stuff-control-risk"
     elif k_per_9 is not None and k_per_9 >= 11.5:
@@ -436,6 +436,47 @@ def _pitcher_parts(row, line: dict) -> tuple[str, str, str]:
     )
 
 
+def _row_context(row) -> dict:
+    context = getattr(row, "context", None)
+    if isinstance(context, dict):
+        return context
+    metadata = getattr(row, "metadata", None)
+    if isinstance(metadata, dict) and isinstance(metadata.get("context"), dict):
+        return metadata["context"]
+    return {}
+
+
+def _availability_context(row) -> dict:
+    context = getattr(row, "availability_context", None)
+    if isinstance(context, dict):
+        return context
+    if callable(context):
+        value = context()
+        return value if isinstance(value, dict) else {}
+    return {}
+
+
+def _updated_year(row) -> int | None:
+    metadata = getattr(row, "metadata", None)
+    candidates = []
+    if isinstance(metadata, dict):
+        candidates.extend([metadata.get("last_updated"), metadata.get("updated_at")])
+    candidates.append(getattr(row, "updated_at", None))
+    for candidate in candidates:
+        text = str(candidate or "")[:4]
+        if text.isdigit():
+            return int(text)
+    return None
+
+
+def _sample_season(row, translated: dict) -> int | None:
+    season = translated.get("season") or _row_context(row).get("stat_line_sample_season")
+    try:
+        return int(float(season))
+    except (TypeError, ValueError):
+        return None
+
+
 def _sample_context(row, line: dict, from_translation: bool) -> str:
     translated = row.stat_line_translated or {}
     pitcher = _is_pitcher(row, line)
@@ -458,13 +499,34 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
     confidence = str(translated.get("confidence") or "moderate").lower()
     if confidence not in {"high", "moderate", "low"}:
         confidence = "moderate"
-    if old or low_sample:
+    context = _row_context(row)
+    source_kind = str(context.get("stat_line_source_kind") or "")
+    season = _sample_season(row, translated)
+    updated_year = _updated_year(row)
+    stale_direct_sample = (
+        source_kind == "latest_milb_history"
+        or (
+            season is not None
+            and updated_year is not None
+            and season < updated_year
+        )
+    )
+    old = old or stale_direct_sample
+    availability = _availability_context(row)
+    status = str(availability.get("status") or "").lower()
+    if old or low_sample or status == "injured":
         confidence = "low"
 
     level = _LEVEL_NAMES.get(row.level, row.level)
     sample_text = f"{sample:g} {unit}" if sample is not None else "the available sample"
+    if status == "injured":
+        if old and season:
+            return f"He is currently injured; the latest meaningful sample is from {season}, so confidence is low."
+        return "He is currently injured, so availability risk is priced into the score and confidence is low."
     if old:
-        return f"The latest meaningful sample is from {season}, so confidence is low."
+        if season:
+            return f"The latest meaningful sample is from {season}, so confidence is low."
+        return "The latest meaningful sample is prior-season context, so confidence is low."
     if low_sample:
         location = " in the latest MiLB sample" if row.level == "MLB" else (f" in {level}" if level else "")
         return f"Only {sample_text}{location}, so confidence is low."

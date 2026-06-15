@@ -22,6 +22,8 @@ def _row(
     stat_line=None,
     stat_line_translated=None,
     level=None,
+    context=None,
+    components=None,
 ):
     return DynastyRankingRow.from_feed({
         "id": row_id,
@@ -40,6 +42,8 @@ def _row(
         "stat_line": stat_line,
         "stat_line_translated": stat_line_translated,
         "level": level,
+        "context": context,
+        "components": components,
         "last_updated": "2026-06-12",
     })
 
@@ -237,6 +241,121 @@ class TestProspectPercentiles(unittest.TestCase):
         old_sample_line = prospect_percentiles.identity_line(old_sample, {})
         self.assertIn("latest meaningful sample is from 2025", old_sample_line.lower())
         self.assertIn("confidence is low", old_sample_line.lower())
+
+    def test_identity_line_calls_out_injured_stale_direct_stat_context(self):
+        row = _row(
+            "injured_stale",
+            age=20,
+            level="AA",
+            stat_line={
+                "pa": 552,
+                "avg": 0.255,
+                "obp": 0.355,
+                "slg": 0.386,
+                "ops": 0.741,
+                "iso": 0.131,
+                "k_pct": 19.6,
+                "bb_pct": 12.7,
+            },
+            context={
+                "stat_line_source_kind": "latest_milb_history",
+                "stat_line_sample_season": 2025,
+                "stat_line_sample": 552,
+                "stat_line_sample_unit": "PA",
+            },
+            components={
+                "availability": {
+                    "status": "injured",
+                    "risk_level": "high",
+                    "sample": 552,
+                    "sample_unit": "PA",
+                },
+                "availability_risk_discount": 0.12,
+                "availability_adjusted": True,
+            },
+        )
+
+        line = prospect_percentiles.identity_line(row, {})
+
+        self.assertIn("currently injured", line.lower())
+        self.assertIn("latest meaningful sample is from 2025", line.lower())
+        self.assertIn("confidence is low", line.lower())
+
+    def test_player_share_read_calls_out_injured_stale_sample_with_stats(self):
+        row = _row(
+            "walcott",
+            name="Sebastian Walcott",
+            age=20,
+            level="AA",
+            stat_line={
+                "pa": 552,
+                "avg": 0.255,
+                "obp": 0.355,
+                "slg": 0.386,
+                "ops": 0.741,
+                "iso": 0.131,
+                "k_pct": 19.6,
+                "bb_pct": 12.7,
+            },
+            context={
+                "stat_line_source_kind": "latest_milb_history",
+                "stat_line_sample_season": 2025,
+                "stat_line_sample": 552,
+                "stat_line_sample_unit": "PA",
+            },
+            components={
+                "availability": {
+                    "status": "injured",
+                    "risk_level": "high",
+                    "sample": 552,
+                    "sample_unit": "PA",
+                },
+                "availability_risk_discount": 0.12,
+                "availability_adjusted": True,
+            },
+        )
+
+        line = app_module._prospect_player_card_read(
+            row,
+            {
+                "ops": 48,
+                "iso": 38,
+                "k_pct": 77,
+                "avg": 58,
+                "obp": 58,
+                "slg": 46,
+                "bb_pct": 59,
+            },
+            row.metadata["context"],
+        )
+
+        self.assertIn("currently injured", line.lower())
+        self.assertIn("2025 MiLB sample", line)
+        self.assertIn(".255/.355/.386 line over 552 PA", line)
+
+    def test_high_miss_high_walk_pitcher_read_is_not_rule_tree_copy(self):
+        pitcher = _row(
+            "high_miss_walk_risk",
+            positions=["SP"],
+            level="AAA",
+            age=22,
+            stat_line={
+                "ip": 52,
+                "era": 4.67,
+                "whip": 1.40,
+                "k_per_9": 13.3,
+                "bb_per_9": 6.2,
+                "k_bb_pct": 18.1,
+            },
+        )
+        line = prospect_percentiles.identity_line(pitcher, {})
+
+        self.assertIn("walk", line.lower())
+        self.assertIn("starter", line.lower())
+        self.assertIn("bullpen", line.lower())
+        self.assertNotIn("failure point", line.lower())
+        self.assertNotIn("points to the bullpen", line.lower())
+        self.assertNotIn("strike throwing is", line.lower())
 
     def test_identity_line_contract_length_and_rotating_structure(self):
         rows = [
@@ -457,6 +576,11 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"ValuCast Skill Shape", response.data)
         self.assertIn(b"not scouting grades", response.data)
         self.assertIn(b"identity-line", response.data)
+        self.assertIn(b".300/.400/.550", response.data)
+        self.assertIn(b"200 PA", response.data)
+        self.assertIn(b"shape is more solid than explosive", response.data)
+        self.assertIn(b"latest MiLB sample", response.data)
+        self.assertNotIn(b"open question", response.data.lower())
         self.assertIn(b'class="prospect-profile-bar"', response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
         self.assertIn(b"vs ValuCast hitter pool", response.data)

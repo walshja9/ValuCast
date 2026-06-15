@@ -1045,6 +1045,10 @@ def _graphic_level_phrase(row):
         "AAA": "Triple-A",
         "MLB": "the majors",
     }
+    if getattr(row, "is_prospect", False) and row.level == "MLB":
+        if row.age is not None:
+            return f"At {row.age}, on the latest MiLB sample"
+        return "On the latest MiLB sample"
     level = labels.get(row.level, row.level)
     if row.age is not None and level:
         return f"At {row.age} in {level}"
@@ -1067,6 +1071,62 @@ def _graphic_sample_phrase(row, context, line):
         return ""
     number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
     return f" over {number} {unit}"
+
+
+def _graphic_context_sample_season(context):
+    try:
+        return int(float(context.get("stat_line_sample_season")))
+    except (TypeError, ValueError):
+        return None
+
+
+def _graphic_updated_year(row):
+    candidates = [
+        getattr(row, "updated_at", None),
+        getattr(row, "metadata", {}).get("updated_at") if isinstance(getattr(row, "metadata", None), dict) else None,
+        getattr(row, "metadata", {}).get("last_updated") if isinstance(getattr(row, "metadata", None), dict) else None,
+        dd_store.generated_at,
+    ]
+    for candidate in candidates:
+        text = str(candidate or "")[:4]
+        if text.isdigit():
+            return int(text)
+    return None
+
+
+def _graphic_availability_status(row):
+    context = getattr(row, "availability_context", {})
+    if isinstance(context, dict):
+        return str(context.get("status") or "").lower()
+    return ""
+
+
+def _graphic_stale_stat_context(row, context):
+    sample_season = _graphic_context_sample_season(context)
+    updated_year = _graphic_updated_year(row)
+    return (
+        context.get("stat_line_source_kind") == "latest_milb_history"
+        or (
+            sample_season is not None
+            and updated_year is not None
+            and sample_season < updated_year
+        )
+    )
+
+
+def _graphic_read_intro(row, last, core, sample, context):
+    level_phrase = _graphic_level_phrase(row)
+    sample_season = _graphic_context_sample_season(context)
+    sample_label = f"{sample_season} MiLB sample" if sample_season else "latest MiLB sample"
+    stale = _graphic_stale_stat_context(row, context)
+    injured = _graphic_availability_status(row) == "injured"
+    if injured and stale:
+        return f"{level_phrase}, {last} is currently injured; this read leans on the {sample_label}: {core}{sample}."
+    if injured:
+        return f"{level_phrase}, {last} is currently injured, with availability risk priced in; the current line is {core}{sample}."
+    if stale:
+        return f"{level_phrase}, {last} has no current stat line; this read leans on the {sample_label}: {core}{sample}."
+    return f"{level_phrase}, {last} is carrying {core}{sample}."
 
 
 def _graphic_last_name(name):
@@ -1128,7 +1188,13 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         core = " / ".join(part for part in (f"{era} ERA" if era else None, f"{whip} WHIP" if whip else None) if part)
         if not core and k9:
             core = f"{k9} K/9"
-        intro = f"{_graphic_level_phrase(row)}, {last} is showing {core or 'a usable current arm shape'}{sample}."
+        intro = _graphic_read_intro(
+            row,
+            last,
+            core or "a usable current arm shape",
+            sample,
+            context,
+        )
         strength_keys = ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
         strengths = [
             _graphic_pitcher_callout(key, line, stat_percentiles.get(key))
@@ -1154,7 +1220,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
     else:
         ops = _graphic_prose_stat(line.get("ops"), "ops")
         core = f"a {ops} OPS" if ops else "a usable current bat shape"
-    intro = f"{_graphic_level_phrase(row)}, {last} is carrying {core}{sample}."
+    intro = _graphic_read_intro(row, last, core, sample, context)
     strength_keys = ("ops", "iso", "k_pct", "avg", "obp", "slg", "bb_pct")
     strengths = [
         _graphic_hitter_callout(key, line, stat_percentiles.get(key))
@@ -2089,7 +2155,6 @@ def player_detail(player_id):
                 m: c for m in prospect_percentiles.CAPTION_METRICS
                 if (c := prospect_percentiles.caption_for(m, stat_percentiles.get(m))) is not None
             }
-            identity = prospect_percentiles.identity_line(dd_row, stat_percentiles)
             profile_bars = prospect_percentiles.profile_bars(dd_row, stat_percentiles)
             skill_grades = prospect_percentiles.skill_grades(dd_row, stat_percentiles)
             profile_stat_context = getattr(dd_row, "context", None)
@@ -2101,6 +2166,7 @@ def player_detail(player_id):
                 )
             if not isinstance(profile_stat_context, dict):
                 profile_stat_context = {}
+            identity = _prospect_player_card_read(dd_row, stat_percentiles, profile_stat_context)
             prospect_context = {
                 "stat_percentiles": stat_percentiles,
                 "stat_captions": stat_captions,

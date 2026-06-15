@@ -323,7 +323,8 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
     assert "python scripts/sync_dd_prospect_inputs.py" not in workflow
-    assert "python scripts/build_valucast_prospect_inputs.py" in workflow
+    assert "python scripts/refresh_milb_season_stats.py" in workflow
+    assert "python scripts/build_valucast_prospect_inputs.py --refresh-service-cache" in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/build_mlb_availability.py" in workflow
     assert "python scripts/build_mlb_roster_status.py" in workflow

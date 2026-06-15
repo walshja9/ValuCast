@@ -563,6 +563,53 @@ def test_mlb_layer_applies_established_track_record_floor():
     assert adjustments["track_record_certainty"] == 78.0
 
 
+def test_mlb_layer_blocks_track_record_floor_when_current_and_ros_are_weak():
+    player = _hitter(metadata={"age": 35})
+    score, adjustments = _role_adjusted_score(
+        player,
+        10.0,
+        {
+            "current_season_category_value": -1.4,
+            "ros_category_value": -1.7,
+            "stability_adjusted_category_value": -1.5,
+        },
+        {
+            "experience_band": "established",
+            "track_record_certainty": 63.0,
+            "track_record_floor_score": 50.0,
+            "volume": {"prior_mlb": 1600, "career": 1750},
+        },
+    )
+
+    assert score == 10.0
+    assert adjustments["track_record_floor_applied"] is False
+    assert adjustments["track_record_floor_score"] == 50.0
+    assert adjustments["track_record_floor_blocked_reason"] == "weak_current_and_ros_projection"
+
+
+def test_mlb_layer_allows_track_record_floor_when_ros_is_still_positive():
+    player = _hitter(metadata={"age": 34})
+    score, adjustments = _role_adjusted_score(
+        player,
+        24.0,
+        {
+            "current_season_category_value": -2.0,
+            "ros_category_value": 2.5,
+            "stability_adjusted_category_value": -0.2,
+        },
+        {
+            "experience_band": "established",
+            "track_record_certainty": 70.0,
+            "track_record_floor_score": 54.0,
+            "volume": {"prior_mlb": 2200, "career": 2500},
+        },
+    )
+
+    assert score == 54.0
+    assert adjustments["track_record_floor_applied"] is True
+    assert adjustments["track_record_floor_blocked_reason"] is None
+
+
 def test_mlb_layer_discounts_high_score_with_limited_track_record():
     player = _hitter(metadata={"age": 23})
     score, adjustments = _role_adjusted_score(

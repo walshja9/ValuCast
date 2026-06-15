@@ -138,6 +138,20 @@ def test_universe_allows_two_way_role_identities():
     }
 
 
+def test_universe_excludes_age_twenty_six_profiles():
+    profiles = [
+        _profile(mlbam_id=1, role="hitter", name="Still Prospect", age=25),
+        _profile(mlbam_id=2, role="pitcher", name="Graduated Pitcher", age=26),
+    ]
+
+    payload = build_universe(_layer(profiles), _universal(profiles), dd_feed=None)
+
+    assert payload["candidate_count"] == 1
+    assert [row["name"] for row in payload["players"]] == ["Still Prospect"]
+    assert payload["validation"]["age_excluded_count"] == 1
+    assert payload["validation"]["age_excluded_sample"][0]["name"] == "Graduated Pitcher"
+
+
 def test_dd_context_does_not_define_membership():
     extra_dd_only = {
         "id": "dd_prospect_context_only",
