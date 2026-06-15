@@ -648,6 +648,46 @@ def test_quality_governor_blocks_stale_current_stat_context():
     assert check["metrics"]["current_stat_context_mismatch_count"] == 1
 
 
+def test_quality_governor_blocks_failed_milb_stat_freshness_audit():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        milb_stat_freshness_audit={
+            "status": "blocked",
+            "generated_at": "2026-06-13T12:00:00+00:00",
+            "metrics": {
+                "current_row_count": 100,
+                "current_season_row_count": 95,
+                "targeted_row_refresh_count": 0,
+                "top50_history_fallback_count": 1,
+                "top50_stat_context_mismatch_count": 0,
+                "top200_history_fallback_count": 8,
+            },
+            "blockers": [
+                "top-50 prospect card context uses latest_milb_history fallback"
+            ],
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    assert payload["ready_for_public_snapshot"] is False
+    check = next(
+        check for check in payload["checks"] if check["id"] == "milb_stat_freshness_audit"
+    )
+    assert check["status"] == "blocked"
+    assert check["metrics"]["top50_history_fallback_count"] == 1
+
+
 def test_quality_governor_blocks_labeled_availability_risk_without_discount():
     prospects = [_prospect_row(index) for index in range(1, 51)]
     prospects[0]["components"]["availability"] = {

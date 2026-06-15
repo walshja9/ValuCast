@@ -1,0 +1,139 @@
+{
+  "artifact": "valucast_milb_stat_freshness_audit",
+  "audit_version": "0.1.0",
+  "blockers": [],
+  "criteria": {
+    "max_current_row_stale_fetch_count": 0,
+    "max_top200_history_fallback_count": 10,
+    "max_top50_history_fallback_count": 0,
+    "max_top50_stat_context_mismatch_count": 0,
+    "top200_n": 200,
+    "top50_n": 50
+  },
+  "generated_at": "2026-06-14T00:00:00+00:00",
+  "interpretation": "This artifact audits visible MiLB stat freshness only; it does not feed ValuCast ranks, values, or buy scores.",
+  "metrics": {
+    "current_default_fetched_date": "2026-06-14",
+    "current_row_count": 6173,
+    "current_row_stale_fetch_count": 0,
+    "current_season_row_count": 5664,
+    "expected_input_date": "2026-06-14",
+    "latest_milb_history_row_count": 509,
+    "targeted_row_refresh_count": 1,
+    "top200_history_fallback_count": 6,
+    "top50_history_fallback_count": 0,
+    "top50_stat_context_mismatch_count": 0
+  },
+  "samples": {
+    "stale_current_rows": [],
+    "targeted_row_refreshes": [
+      {
+        "level": "AAA",
+        "mlbam_id": 806198,
+        "name": "Cooper Pratt",
+        "role": "hitter",
+        "sample_fetched_date": "2026-06-15",
+        "source_kind": "current_season"
+      }
+    ],
+    "top200_history_fallbacks": [
+      {
+        "level": "A+",
+        "mlbam_id": 800522,
+        "name": "Josue Briceno",
+        "rank": 96,
+        "role": "hitter",
+        "sample": 244.0,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2025.0,
+        "sample_unit": "PA",
+        "score": 38.41,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      },
+      {
+        "level": "AAA",
+        "mlbam_id": 686796,
+        "name": "Blake Walston",
+        "rank": 114,
+        "role": "pitcher",
+        "sample": 65.0,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2024.0,
+        "sample_unit": "IP",
+        "score": 37.34,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      },
+      {
+        "level": "AA",
+        "mlbam_id": 806964,
+        "name": "Sebastian Walcott",
+        "rank": 128,
+        "role": "hitter",
+        "sample": 552.0,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2025.0,
+        "sample_unit": "PA",
+        "score": 36.54,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      },
+      {
+        "level": "AA",
+        "mlbam_id": 681066,
+        "name": "Ky Bush",
+        "rank": 166,
+        "role": "pitcher",
+        "sample": 80.7,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2024.0,
+        "sample_unit": "IP",
+        "score": 34.44,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      },
+      {
+        "level": "AA",
+        "mlbam_id": 685326,
+        "name": "Mccade Brown",
+        "rank": 170,
+        "role": "pitcher",
+        "sample": 43.0,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2025.0,
+        "sample_unit": "IP",
+        "score": 34.26,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      },
+      {
+        "level": "AA",
+        "mlbam_id": 703186,
+        "name": "Jarlin Susana",
+        "rank": 188,
+        "role": "pitcher",
+        "sample": 47.3,
+        "sample_fetched_date": "2026-06-14",
+        "sample_season": 2025.0,
+        "sample_unit": "IP",
+        "score": 33.52,
+        "score_source": "universal_fallback",
+        "source_kind": "latest_milb_history"
+      }
+    ],
+    "top50_history_fallbacks": [],
+    "top50_stat_context_mismatches": []
+  },
+  "source_policy": {
+    "dd_ranks_used": false,
+    "dd_values_used": false,
+    "external_rankings_used": false,
+    "feeds_buy_score": false,
+    "feeds_model_score": false,
+    "feeds_public_rank": false,
+    "kind": "display_stat_freshness_audit",
+    "market_values_used": false
+  },
+  "status": "candidate_ready"
+}

@@ -107,6 +107,32 @@ def _failures():
     }
 
 
+def _milb_freshness():
+    return {
+        "status": "candidate_ready",
+        "metrics": {
+            "top50_history_fallback_count": 0,
+            "top50_stat_context_mismatch_count": 0,
+            "top200_history_fallback_count": 6,
+            "targeted_row_refresh_count": 1,
+        },
+        "blockers": [],
+    }
+
+
+def _pipeline_observability():
+    return {
+        "status": "candidate_ready",
+        "expected_date": "2026-06-14",
+        "validation": {
+            "ready_for_daily_publication": True,
+            "date_mismatch_count": 0,
+            "missing_or_unreadable_count": 0,
+            "targeted_row_refresh_count": 1,
+        },
+    }
+
+
 def test_front_office_report_grades_five_pillars_without_feeding_scores():
     payload = build_front_office_report(
         _snapshot(),
@@ -116,6 +142,8 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
         _raw(),
         _buys_monitor(),
         _failures(),
+        _milb_freshness(),
+        _pipeline_observability(),
     )
 
     assert payload["artifact"] == "valucast_front_office_report"
@@ -136,6 +164,12 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
     assert payload["failure_watchlist"]["v0_7_disagreement_count"] == 3
     assert payload["failure_watchlist"]["evidence_gate_count"] == 2
     assert payload["failure_watchlist"]["blocking_finding_count"] == 0
+    assert payload["operations_watchlist"]["milb_stat_freshness"]["status"] == (
+        "candidate_ready"
+    )
+    assert payload["operations_watchlist"]["pipeline_observability"][
+        "targeted_row_refresh_count"
+    ] == 1
 
 
 def test_front_office_report_promotes_supported_pillars_to_a_plus():
@@ -154,6 +188,8 @@ def test_front_office_report_promotes_supported_pillars_to_a_plus():
         raw,
         _buys_monitor(),
         _failures(),
+        _milb_freshness(),
+        _pipeline_observability(),
     )
     pillars = {pillar["name"]: pillar for pillar in payload["pillars"]}
 
@@ -174,6 +210,8 @@ def test_run_and_validate_front_office_report(tmp_path):
         "raw": _raw(),
         "buys": _buys_monitor(),
         "failures": _failures(),
+        "milb": _milb_freshness(),
+        "pipeline": _pipeline_observability(),
     }.items():
         files[name] = tmp_path / f"{name}.json"
         files[name].write_text(json.dumps(payload), encoding="utf-8")
@@ -187,6 +225,8 @@ def test_run_and_validate_front_office_report(tmp_path):
         raw_independence_path=files["raw"],
         buys_monitor_path=files["buys"],
         front_office_failures_path=files["failures"],
+        milb_stat_freshness_path=files["milb"],
+        pipeline_observability_path=files["pipeline"],
         artifact_path=artifact_path,
     )
     payload, problems = validate_front_office_report(artifact_path)

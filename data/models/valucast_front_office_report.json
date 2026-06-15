@@ -69,6 +69,24 @@
     "Keep uncertainty-band explanations visible on every prospect detail surface.",
     "Keep the front-office report public and fail-loud when evidence regresses."
   ],
+  "operations_watchlist": {
+    "milb_stat_freshness": {
+      "blockers": [],
+      "status": "candidate_ready",
+      "targeted_row_refresh_count": 1,
+      "top200_history_fallback_count": 6,
+      "top50_history_fallback_count": 0,
+      "top50_stat_context_mismatch_count": 0
+    },
+    "pipeline_observability": {
+      "date_mismatch_count": 0,
+      "expected_date": "2026-06-14",
+      "missing_or_unreadable_count": 0,
+      "ready_for_daily_publication": true,
+      "status": "candidate_ready",
+      "targeted_row_refresh_count": 1
+    }
+  },
   "overall": {
     "grade": "A",
     "score": 95,
@@ -97,9 +115,12 @@
       "evidence": {
         "buy_monitor_ready": true,
         "duplicate_identity_count": 0,
+        "milb_stat_freshness_ready": true,
+        "pipeline_observability_ready": true,
         "raw_data_independence_complete": true,
         "required_fields_complete": true,
-        "same_day_freshness": true
+        "same_day_freshness": true,
+        "targeted_row_refresh_count": 1
       },
       "grade": "A+",
       "name": "Data pipeline readiness",

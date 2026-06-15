@@ -15,6 +15,12 @@ from quality.valucast_governor import ARTIFACT_PATH as QUALITY_GOVERNOR_PATH
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 MODEL_V07_PATH = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
+MILB_STAT_FRESHNESS_PATH = (
+    ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
+)
+PIPELINE_OBSERVABILITY_PATH = (
+    ROOT / "data" / "models" / "valucast_pipeline_observability.json"
+)
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_front_office_report.json"
 
 REPORT_VERSION = "0.1.0"
@@ -62,6 +68,8 @@ def build_front_office_report(
     raw_independence: dict,
     buys_monitor: dict,
     front_office_failures: dict | None = None,
+    milb_stat_freshness_audit: dict | None = None,
+    pipeline_observability: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated = generated_at or public_snapshot.get("generated_at") or datetime.now(
@@ -95,6 +103,48 @@ def build_front_office_report(
         "evidence_gates": evidence_gates[:5],
         "forward_archive_progress": forward_progress,
     }
+    milb_freshness_metrics = (milb_stat_freshness_audit or {}).get("metrics") or {}
+    milb_freshness_ready = (
+        not milb_stat_freshness_audit
+        or milb_stat_freshness_audit.get("status") == "candidate_ready"
+    )
+    pipeline_validation = (pipeline_observability or {}).get("validation") or {}
+    pipeline_observability_ready = (
+        not pipeline_observability
+        or pipeline_validation.get("ready_for_daily_publication") is True
+    )
+    operations_watchlist = {
+        "milb_stat_freshness": {
+            "status": (milb_stat_freshness_audit or {}).get("status", "unavailable"),
+            "top50_history_fallback_count": milb_freshness_metrics.get(
+                "top50_history_fallback_count"
+            ),
+            "top50_stat_context_mismatch_count": milb_freshness_metrics.get(
+                "top50_stat_context_mismatch_count"
+            ),
+            "top200_history_fallback_count": milb_freshness_metrics.get(
+                "top200_history_fallback_count"
+            ),
+            "targeted_row_refresh_count": milb_freshness_metrics.get(
+                "targeted_row_refresh_count"
+            ),
+            "blockers": (milb_stat_freshness_audit or {}).get("blockers") or [],
+        },
+        "pipeline_observability": {
+            "status": (pipeline_observability or {}).get("status", "unavailable"),
+            "expected_date": (pipeline_observability or {}).get("expected_date"),
+            "ready_for_daily_publication": pipeline_validation.get(
+                "ready_for_daily_publication"
+            ),
+            "date_mismatch_count": pipeline_validation.get("date_mismatch_count"),
+            "missing_or_unreadable_count": pipeline_validation.get(
+                "missing_or_unreadable_count"
+            ),
+            "targeted_row_refresh_count": pipeline_validation.get(
+                "targeted_row_refresh_count"
+            ),
+        },
+    }
     governor_ready = quality_governor.get("ready_for_public_snapshot") is True
     governor_checks = quality_governor.get("checks") or []
     governor_all_passed = bool(governor_checks) and all(
@@ -121,6 +171,8 @@ def build_front_office_report(
         and duplicate_identity_count == 0
         and not snapshot_validation.get("blockers")
         and not snapshot_validation.get("buy_signal_blockers")
+        and milb_freshness_ready
+        and pipeline_observability_ready
     )
 
     canonical_contract_owned = raw_evidence.get("canonical_contract_owned") is True
@@ -217,6 +269,11 @@ def build_front_office_report(
                 "duplicate_identity_count": duplicate_identity_count,
                 "raw_data_independence_complete": raw_ingestion_owned,
                 "buy_monitor_ready": buys_validation.get("ready_for_monitoring"),
+                "milb_stat_freshness_ready": milb_freshness_ready,
+                "pipeline_observability_ready": pipeline_observability_ready,
+                "targeted_row_refresh_count": operations_watchlist[
+                    "pipeline_observability"
+                ].get("targeted_row_refresh_count"),
             },
         ),
         _pillar(
@@ -317,6 +374,7 @@ def build_front_office_report(
         },
         "pillars": pillars,
         "failure_watchlist": failure_watchlist,
+        "operations_watchlist": operations_watchlist,
         "next_build_order": [
             "Collect enough forward archives to move from B+ evidence to A- evidence.",
             "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -343,6 +401,8 @@ def run_front_office_report(
     raw_independence_path: Path = RAW_INDEPENDENCE_PATH,
     buys_monitor_path: Path = BUYS_MONITOR_PATH,
     front_office_failures_path: Path = FRONT_OFFICE_FAILURES_PATH,
+    milb_stat_freshness_path: Path = MILB_STAT_FRESHNESS_PATH,
+    pipeline_observability_path: Path = PIPELINE_OBSERVABILITY_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     failures = (
@@ -358,6 +418,12 @@ def run_front_office_report(
         _load(raw_independence_path),
         _load(buys_monitor_path),
         failures,
+        _load(milb_stat_freshness_path)
+        if milb_stat_freshness_path.exists()
+        else None,
+        _load(pipeline_observability_path)
+        if pipeline_observability_path.exists()
+        else None,
     )
     path = write_front_office_report(payload, artifact_path)
     return {

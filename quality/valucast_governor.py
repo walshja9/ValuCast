@@ -23,6 +23,9 @@ PROSPECT_COVERAGE_AUDIT_PATH = (
 )
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
+MILB_STAT_FRESHNESS_AUDIT_PATH = (
+    ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
+)
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
 GOVERNOR_VERSION = "0.2.1"
@@ -53,6 +56,7 @@ MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT = 0
 MAX_TOP50_MISSING_FACTUAL_CONTEXT_COUNT = 0
 MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT = 8
 MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT = 0
+MAX_MILB_STAT_FRESHNESS_BLOCKERS = 0
 MAX_BUY_HISTORY_LIMITED_RATE = 0.50
 MAX_BUY_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_BUY_TOP40_PEDIGREE_RATE = 0.35
@@ -772,6 +776,45 @@ def _prospect_current_stat_context_alignment(players: list[dict]) -> dict:
     )
 
 
+def _milb_stat_freshness_audit_check(audit: dict | None) -> dict:
+    if not audit:
+        return _check(
+            "milb_stat_freshness_audit",
+            True,
+            "MiLB stat freshness audit skipped because no audit artifact was provided.",
+            audit_present=False,
+            max_allowed_blockers=MAX_MILB_STAT_FRESHNESS_BLOCKERS,
+        )
+    blockers = list(audit.get("blockers") or [])
+    metrics = audit.get("metrics") or {}
+    passed = (
+        audit.get("status") == "candidate_ready"
+        and len(blockers) <= MAX_MILB_STAT_FRESHNESS_BLOCKERS
+    )
+    return _check(
+        "milb_stat_freshness_audit",
+        passed,
+        (
+            "MiLB prospect-card stat freshness audit is clean."
+            if passed
+            else "MiLB prospect-card stat freshness audit blocks public promotion."
+        ),
+        audit_present=True,
+        audit_status=audit.get("status"),
+        blocker_count=len(blockers),
+        max_allowed_blockers=MAX_MILB_STAT_FRESHNESS_BLOCKERS,
+        current_row_count=metrics.get("current_row_count"),
+        current_season_row_count=metrics.get("current_season_row_count"),
+        targeted_row_refresh_count=metrics.get("targeted_row_refresh_count"),
+        top50_history_fallback_count=metrics.get("top50_history_fallback_count"),
+        top50_stat_context_mismatch_count=metrics.get(
+            "top50_stat_context_mismatch_count"
+        ),
+        top200_history_fallback_count=metrics.get("top200_history_fallback_count"),
+        blockers=blockers[:10],
+    )
+
+
 def _prospect_availability_coverage(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
     missing = [
@@ -1047,6 +1090,7 @@ def evaluate_quality_governor(
     mlb_layer: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
+    milb_stat_freshness_audit: dict | None = None,
     generated_at: str | None = None,
     graduated_prospect_ids: set[str] | None = None,
 ) -> dict:
@@ -1091,6 +1135,7 @@ def evaluate_quality_governor(
         _prospect_factual_context_coverage(players),
         _prospect_factual_context_shape(players),
         _prospect_current_stat_context_alignment(players),
+        _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
         _prospect_availability_coverage(players),
         _prospect_availability_risk_pricing(players),
     ]
@@ -1147,6 +1192,7 @@ def evaluate_quality_governor(
             "max_top50_current_stat_context_mismatch_count": (
                 MAX_TOP50_CURRENT_STAT_CONTEXT_MISMATCH_COUNT
             ),
+            "max_milb_stat_freshness_blockers": MAX_MILB_STAT_FRESHNESS_BLOCKERS,
             "max_top50_missing_availability_count": MAX_TOP50_MISSING_AVAILABILITY_COUNT,
             "max_top50_unpriced_availability_risk_count": (
                 MAX_TOP50_UNPRICED_AVAILABILITY_RISK_COUNT
@@ -1174,6 +1220,9 @@ def evaluate_quality_governor(
                 "prospect_rank": _date_part((prospect_rank or {}).get("generated_at")),
                 "buy_signals": _date_part((buy_signals or {}).get("generated_at")),
                 "buy_review": _date_part((buy_review or {}).get("generated_at")),
+                "milb_stat_freshness_audit": _date_part(
+                    (milb_stat_freshness_audit or {}).get("generated_at")
+                ),
             },
         },
         "checks": board_checks + [buy_check],
@@ -1213,6 +1262,7 @@ def run_quality_governor(
     mlb_layer_path: Path = MLB_LAYER_PATH,
     buy_signals_path: Path = BUY_SIGNALS_PATH,
     buy_review_path: Path = BUY_REVIEW_PATH,
+    milb_stat_freshness_audit_path: Path = MILB_STAT_FRESHNESS_AUDIT_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     public_snapshot = _load_optional(public_snapshot_path)
@@ -1221,6 +1271,7 @@ def run_quality_governor(
     mlb_layer = _load_optional(mlb_layer_path)
     buy_signals = _load_optional(buy_signals_path)
     buy_review = _load_optional(buy_review_path)
+    milb_stat_freshness_audit = _load_optional(milb_stat_freshness_audit_path)
     payload = evaluate_quality_governor(
         public_snapshot,
         prospect_rank=prospect_rank,
@@ -1228,6 +1279,7 @@ def run_quality_governor(
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        milb_stat_freshness_audit=milb_stat_freshness_audit,
     )
     path = write_quality_governor(payload, artifact_path)
     return {

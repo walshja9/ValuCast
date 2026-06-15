@@ -24,6 +24,12 @@ VALUCAST_BUYS_MONITOR = (
     ROOT / "data" / "models" / "valucast_prospect_buys_monitor.json"
 )
 VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
+MILB_STAT_FRESHNESS_AUDIT = (
+    ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
+)
+PIPELINE_OBSERVABILITY = (
+    ROOT / "data" / "models" / "valucast_pipeline_observability.json"
+)
 PROSPECT_MODEL_V07 = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
 PROSPECT_OUTCOME_BACKTEST = (
     ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.json"
@@ -58,6 +64,13 @@ def _iso_date(value) -> str:
     return str(value or "")[:10]
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def validate_public_data(expected_date: str) -> list[str]:
     problems: list[str] = []
 
@@ -77,7 +90,9 @@ def validate_public_data(expected_date: str) -> list[str]:
         (RAW_DATA_INDEPENDENCE_AUDIT, "generated_at"),
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_BUYS_MONITOR, "generated_at"),
+        (MILB_STAT_FRESHNESS_AUDIT, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
+        (PIPELINE_OBSERVABILITY, "generated_at"),
         (FRONT_OFFICE_FAILURES, "generated_at"),
         (FRONT_OFFICE_REPORT, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
@@ -88,12 +103,12 @@ def validate_public_data(expected_date: str) -> list[str]:
         try:
             payload = _load(path)
         except Exception as exc:  # noqa: BLE001
-            problems.append(f"{path.relative_to(ROOT)} unreadable: {exc}")
+            problems.append(f"{_display_path(path)} unreadable: {exc}")
             continue
         actual = _iso_date(payload.get(field))
         if actual != expected_date:
             problems.append(
-                f"{path.relative_to(ROOT)} {field}={actual or 'missing'}, "
+                f"{_display_path(path)} {field}={actual or 'missing'}, "
                 f"expected {expected_date}"
             )
 
@@ -102,10 +117,10 @@ def validate_public_data(expected_date: str) -> list[str]:
         try:
             payload = _load(path)
         except Exception as exc:  # noqa: BLE001
-            problems.append(f"{path.relative_to(ROOT)} unreadable: {exc}")
+            problems.append(f"{_display_path(path)} unreadable: {exc}")
             continue
         if not isinstance(payload, list) or not payload:
-            problems.append(f"{path.relative_to(ROOT)} has no player rows")
+            problems.append(f"{_display_path(path)} has no player rows")
 
     return problems
 

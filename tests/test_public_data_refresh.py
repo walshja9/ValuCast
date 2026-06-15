@@ -216,6 +216,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
         "VALUCAST_BUYS_MONITOR": tmp_path / "valucast_buys_monitor.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
+        "MILB_STAT_FRESHNESS_AUDIT": tmp_path / "milb_stat_freshness.json",
+        "PIPELINE_OBSERVABILITY": tmp_path / "pipeline_observability.json",
         "PROSPECT_MODEL_V07": tmp_path / "prospect_model_v07.json",
         "PROSPECT_OUTCOME_BACKTEST": tmp_path / "prospect_outcome_backtest.json",
         "RAW_DATA_INDEPENDENCE_AUDIT": tmp_path / "raw_data_independence.json",
@@ -265,6 +267,12 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["VALUCAST_QUALITY_GOVERNOR"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["MILB_STAT_FRESHNESS_AUDIT"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PIPELINE_OBSERVABILITY"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_MODEL_V07"].write_text(
@@ -332,6 +340,10 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/build_prospect_outcome_backtest.py" in workflow
     assert "python scripts/build_raw_data_independence_audit.py" in workflow
     assert "python scripts/build_front_office_failures.py" in workflow
+    assert "python scripts/build_milb_stat_freshness_audit.py" in workflow
+    assert "python scripts/build_pipeline_observability.py" in workflow
+    assert "python scripts/validate_milb_stat_freshness_audit.py" in workflow
+    assert "python scripts/validate_pipeline_observability.py" in workflow
     assert "python scripts/build_front_office_report.py" in workflow
     assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_model_v07.py" in workflow

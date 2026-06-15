@@ -591,6 +591,24 @@
       "status": "passed"
     },
     {
+      "id": "milb_stat_freshness_audit",
+      "message": "MiLB prospect-card stat freshness audit is clean.",
+      "metrics": {
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "blocker_count": 0,
+        "blockers": [],
+        "current_row_count": 6173,
+        "current_season_row_count": 5664,
+        "max_allowed_blockers": 0,
+        "targeted_row_refresh_count": 1,
+        "top200_history_fallback_count": 6,
+        "top50_history_fallback_count": 0,
+        "top50_stat_context_mismatch_count": 0
+      },
+      "status": "passed"
+    },
+    {
       "id": "prospect_top50_availability_coverage",
       "message": "Top prospect board has availability/risk components.",
       "metrics": {
@@ -646,6 +664,7 @@
     "max_buy_top40_low_confidence_rate": 0.35,
     "max_buy_top40_pedigree_rate": 0.35,
     "max_elite_factual_raw_fallback_top_200": 0,
+    "max_milb_stat_freshness_blockers": 0,
     "max_top25_exact_pedigree_cap_count": 3,
     "max_top25_mlb_pitcher_count": 9,
     "max_top25_mlb_reliever_count": 1,
@@ -677,6 +696,7 @@
     "generated_dates": {
       "buy_review": "2026-06-14",
       "buy_signals": "2026-06-14",
+      "milb_stat_freshness_audit": "2026-06-14",
       "mlb_layer": "2026-06-14",
       "prospect_coverage_audit": "2026-06-14",
       "prospect_rank": "2026-06-14",

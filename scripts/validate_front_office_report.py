@@ -78,6 +78,20 @@ def validate_front_office_report(path: Path = REPORT_PATH) -> tuple[dict | None,
             problems.append("failure_watchlist.evidence_gates must be a list")
         if not isinstance(failure_watchlist.get("forward_archive_progress"), dict):
             problems.append("failure_watchlist.forward_archive_progress must be an object")
+    operations_watchlist = payload.get("operations_watchlist")
+    if not isinstance(operations_watchlist, dict):
+        problems.append("operations_watchlist must be an object")
+    else:
+        milb = operations_watchlist.get("milb_stat_freshness")
+        if not isinstance(milb, dict):
+            problems.append("operations_watchlist.milb_stat_freshness must be an object")
+        elif not milb.get("status"):
+            problems.append("operations_watchlist.milb_stat_freshness.status is required")
+        pipeline = operations_watchlist.get("pipeline_observability")
+        if not isinstance(pipeline, dict):
+            problems.append("operations_watchlist.pipeline_observability must be an object")
+        elif not pipeline.get("status"):
+            problems.append("operations_watchlist.pipeline_observability.status is required")
     return payload, problems
 
 

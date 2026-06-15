@@ -10,9 +10,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
 from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
 from web.public_snapshot_store import required_field_problems  # noqa: E402
 
+PROSPECT_INPUTS_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
@@ -662,6 +664,8 @@ def build_snapshot(
     prospect_coverage_audit: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
+    prospect_inputs: dict | None = None,
+    milb_stat_freshness_audit: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = (
@@ -768,6 +772,13 @@ def build_snapshot(
     if calibration_report.get("applied"):
         _apply_common_value_scale(combined_rows, calibration_report)
     players = _assign_global_ranks(combined_rows)
+    if milb_stat_freshness_audit is None and prospect_inputs:
+        milb_stat_freshness_audit = build_milb_stat_freshness_audit(
+            prospect_inputs,
+            prospect_rank,
+            public_snapshot={"players": players},
+            generated_at=generated_at,
+        )
     quality_governor = evaluate_quality_governor(
         players,
         prospect_rank=prospect_rank,
@@ -775,6 +786,7 @@ def build_snapshot(
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        milb_stat_freshness_audit=milb_stat_freshness_audit,
         generated_at=generated_at,
         graduated_prospect_ids=graduated_ids,
     )
@@ -808,6 +820,12 @@ def build_snapshot(
             "prospect_coverage_audit_status": (prospect_coverage_audit or {}).get(
                 "status"
             ),
+            "milb_stat_freshness_audit_version": (
+                milb_stat_freshness_audit or {}
+            ).get("audit_version"),
+            "milb_stat_freshness_audit_status": (
+                milb_stat_freshness_audit or {}
+            ).get("status"),
             "prospect_rank_v1_version": prospect_rank.get("rank_version"),
             "prospect_rank_v1_status": prospect_rank.get("status"),
             "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
@@ -842,6 +860,9 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 
 def main() -> None:
     rank_payload = _load_json(PROSPECT_RANK_PATH)
+    prospect_inputs = (
+        _load_json(PROSPECT_INPUTS_PATH) if PROSPECT_INPUTS_PATH.exists() else None
+    )
     mlb_layer = _load_json(MLB_LAYER_PATH) if MLB_LAYER_PATH.exists() else None
     mlb_roster_status = (
         _load_json(MLB_ROSTER_STATUS_PATH)
@@ -862,6 +883,7 @@ def main() -> None:
         prospect_coverage_audit=prospect_coverage_audit,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        prospect_inputs=prospect_inputs,
     )
     path = write_snapshot(payload)
     validation = payload["validation"]
