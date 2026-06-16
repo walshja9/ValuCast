@@ -1188,10 +1188,10 @@ def _graphic_read_intro(row, last, core, sample, context):
     if injured and stale:
         return f"{level_phrase}, {last} is currently injured; this read leans on the {sample_label}: {core}{sample}."
     if injured:
-        return f"{level_phrase}, {last} is currently injured, with availability risk priced in; the current line is {core}{sample}."
+        return f"{level_phrase}, {last} is currently injured, so availability is a real risk; he has {core}{sample}."
     if stale:
         return f"{level_phrase}, {last} has no current stat line; this read leans on the {sample_label}: {core}{sample}."
-    return f"{level_phrase}, {last} is carrying {core}{sample}."
+    return f"{level_phrase}, {last} has put up {core}{sample}."
 
 
 def _graphic_last_name(name):
@@ -1256,7 +1256,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         intro = _graphic_read_intro(
             row,
             last,
-            core or "a usable current arm shape",
+            core or "a current arm shape",
             sample,
             context,
         )
@@ -1266,7 +1266,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
             for key in strength_keys
             if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
         ][:3]
-        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud right now."
+        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud."
         weak_key = min(
             (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
             key=lambda key: stat_percentiles[key],
@@ -1274,7 +1274,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         )
         weak = ""
         if weak_key and stat_percentiles[weak_key] <= 40:
-            weak = f" The check is {_graphic_pitcher_callout(weak_key, line, stat_percentiles[weak_key])}, so role confidence still has some drag."
+            weak = f" The drag is {_graphic_pitcher_callout(weak_key, line, stat_percentiles[weak_key])}, which still caps the role projection."
         return f"{intro} {loud}{weak}"
 
     avg = _graphic_prose_stat(line.get("avg"), "avg")
@@ -1284,7 +1284,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         core = f"a {avg}/{obp}/{slg} line"
     else:
         ops = _graphic_prose_stat(line.get("ops"), "ops")
-        core = f"a {ops} OPS" if ops else "a usable current bat shape"
+        core = f"a {ops} OPS" if ops else "a current bat shape"
     intro = _graphic_read_intro(row, last, core, sample, context)
     strength_keys = ("ops", "iso", "k_pct", "avg", "obp", "slg", "bb_pct")
     strengths = [
@@ -1292,7 +1292,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         for key in strength_keys
         if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
     ][:3]
-    loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive right now."
+    loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive."
     weak_key = min(
         (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
         key=lambda key: stat_percentiles[key],
@@ -1300,7 +1300,7 @@ def _prospect_player_card_read(row, stat_percentiles, context):
     )
     weak = ""
     if weak_key and stat_percentiles[weak_key] <= 40:
-        weak = f" The softer spot is the {_graphic_hitter_callout(weak_key, line, stat_percentiles[weak_key])}, which keeps the read from being a full green light."
+        weak = f" The check is the {_graphic_hitter_callout(weak_key, line, stat_percentiles[weak_key])}, which keeps this short of a clean everyday read."
     return f"{intro} {loud}{weak}"
 
 

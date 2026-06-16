@@ -121,7 +121,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
 
     if iso is not None and iso >= 0.250 and k_pct is not None and k_pct >= 27:
         skill = (
-            "The damage changes games.",
+            "The damage is the carrying tool.",
             "He punishes mistakes often enough to carry the bat.",
             "The power is the reason to stay on him.",
         )
@@ -608,7 +608,7 @@ def _no_sample_report(row) -> str:
             "There is no current evidence for how he gets hitters out.",
         ))
         role = _stable_choice(row, "no-sample-pitcher-role", (
-            "No rotation call is supported; the floor is organizational depth until he gives us something current to evaluate.",
+            "No rotation call is supported; the floor is organizational depth until there is a current sample to read.",
             "There is no basis for a rotation call; treat him as organizational depth until current results arrive.",
             "Hold the role call. The only supported floor today is organizational depth.",
         ))
@@ -627,7 +627,7 @@ def _no_sample_report(row) -> str:
         "There is no current evidence for how the bat produces.",
     ))
     role = _stable_choice(row, "no-sample-hitter-role", (
-        "No everyday call is supported; the floor is organizational depth until he gives us something current to evaluate.",
+        "No everyday call is supported; the floor is organizational depth until there is a current sample to read.",
         "There is no basis for an everyday call; treat him as organizational depth until current results arrive.",
         "Hold the role call. The only supported floor today is organizational depth.",
     ))
