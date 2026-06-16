@@ -181,29 +181,52 @@ function buysImageDifference(a, b) {
 }
 
 var buysHeadshotsReady;
+// Headshot verification outcome, read by the export to warn when faces fell back
+// to initials because verification could not run (e.g. CORS-tainted pixels):
+//   verified  = real face confirmed and shown
+//   generic   = legitimately no headshot (matched MLB's silhouette); initials, no warning
+//   unverified = loaded-but-unsampleable, generic-silhouette unsampleable, or failed to
+//                load -> shown as initials but NEVER confirmed; the export warns on these.
+var buysHeadshotStatus = { verified: 0, generic: 0, unverified: 0 };
 function resolveBuysHeadshots() {
     if (buysHeadshotsReady) { return buysHeadshotsReady; }
     buysHeadshotsReady = (async function () {
         var firstCard = document.querySelector('.bg-card');
         if (!firstCard) { return; }
+        var faces = Array.prototype.slice.call(document.querySelectorAll('.bg-headshot-candidate'));
         var generic = new Image();
         generic.crossOrigin = 'anonymous';
         generic.src = firstCard.dataset.genericHeadshot;
         await waitForBuysImage(generic);
-        var genericPixels;
-        try { genericPixels = sampleBuysImage(generic); } catch (err) { return; }
-        var faces = Array.prototype.slice.call(document.querySelectorAll('.bg-headshot-candidate'));
+        var genericPixels = null;
+        try { genericPixels = sampleBuysImage(generic); } catch (err) { genericPixels = null; }
         await Promise.all(faces.map(async function (face) {
             await waitForBuysImage(face);
-            if (!face.naturalWidth) { return; }
+            // Failed to load: stays a monogram, unconfirmed.
+            if (!face.naturalWidth) { face.dataset.headshotStatus = 'unverified'; return; }
+            // Could not run verification at all (generic silhouette unsampleable, e.g. CORS):
+            // we can't tell a real face from the placeholder, so flag rather than assume.
+            if (!genericPixels) { face.dataset.headshotStatus = 'unverified'; return; }
             try {
                 if (buysImageDifference(sampleBuysImage(face), genericPixels) > 3) {
                     face.classList.add('is-real');
+                    face.dataset.headshotStatus = 'verified';
+                } else {
+                    face.dataset.headshotStatus = 'generic';
                 }
             } catch (err) {
-                // Cross-origin pixel access failed; retain the intentional monogram.
+                // Cross-origin pixel access failed; retain the intentional monogram,
+                // but flag it so the export can warn this face is unconfirmed.
+                face.dataset.headshotStatus = 'unverified';
             }
         }));
+        buysHeadshotStatus = { verified: 0, generic: 0, unverified: 0 };
+        faces.forEach(function (face) {
+            var s = face.dataset.headshotStatus;
+            if (s === 'verified') { buysHeadshotStatus.verified += 1; }
+            else if (s === 'generic') { buysHeadshotStatus.generic += 1; }
+            else { buysHeadshotStatus.unverified += 1; }
+        });
     })();
     return buysHeadshotsReady;
 }
@@ -263,7 +286,11 @@ async function exportBuysGraphic() {
                 im.addEventListener('error', res, { once: true });
             });
         }));
-        var missing = imgs.filter(function (im) { return !im.naturalWidth; }).length;
+        // Headshot load/verification problems get their own warning below; here we only
+        // count NON-headshot images (logo, rasterized sparklines) that would leave blank cells.
+        var missing = imgs.filter(function (im) {
+            return !im.naturalWidth && !im.classList.contains('bg-headshot-candidate');
+        }).length;
         var canvas = await html2canvas(node, {
             scale: 2, useCORS: true, backgroundColor: '#12131f',
             width: 1080, height: 1350,
@@ -278,7 +305,10 @@ async function exportBuysGraphic() {
             a.click();
             a.remove();
             setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
-            if (missing) { fail(missing + ' image(s) failed to load — the PNG may have blank cells.'); }
+            var warnings = [];
+            if (missing) { warnings.push(missing + ' image(s) failed to load — the PNG may have blank cells.'); }
+            if (buysHeadshotStatus.unverified) { warnings.push(buysHeadshotStatus.unverified + ' headshot(s) could not be verified and were shown as initials (likely cross-origin) — real photos may exist.'); }
+            if (warnings.length) { fail(warnings.join(' ')); }
         }, 'image/png');
     } catch (err) {
         fail('Export failed — screenshot the preview instead.');
