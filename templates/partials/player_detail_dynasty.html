@@ -31,7 +31,7 @@
             <span class="detail-meta">
                 {{ row.positions | join(', ') or 'N/A' }}
                 {% if row.team %} | {{ row.team }}{% endif %}
-                {% if row.is_prospect and row.level %} | {{ row.level }}{% endif %}
+                {% if row.is_prospect and row.level %} | {{ row.card_level_label or row.level }}{% endif %}
             </span>
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
@@ -157,7 +157,7 @@
                 <div class="stat-item"><span class="stat-label">Prospect Rank</span><span class="stat-value">#{{ row.prospect_rank }}</span></div>
                 {% endif %}
                 {% if row.level and not has_skill_card %}
-                <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.level }}</span></div>
+                <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.card_level_label or row.level }}</span></div>
                 {% endif %}
                 {% if row.eta %}
                 <div class="stat-item"><span class="stat-label">ETA</span><span class="stat-value">{{ row.eta }}</span></div>

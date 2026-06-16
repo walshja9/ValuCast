@@ -669,6 +669,45 @@ def test_split_level_sample_ignores_rounding_noise(tmp_path):
     assert row.sample_context_label == "AA sample: 200 PA"
 
 
+def test_card_level_label_prefers_fresh_promoted_level_over_stale_feed(tmp_path):
+    # Promoted prospect: current-season sample is at AA, but the feed snapshot
+    # still carries the pre-promotion level. The card must show the fresh level,
+    # not the stale feed value (the header/profile-grid mismatch bug).
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "A+"
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.level == "A+"  # raw feed value preserved for provenance
+    assert row.card_level_label == "AA"  # card shows fresh current-season level
+
+
+def test_card_level_label_falls_back_to_feed_without_current_sample(tmp_path):
+    # No current-season stat line -> nothing fresher than the feed, so the card
+    # must fall back to the feed level rather than inventing a level from history.
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "A+"
+    rank_payload["board"][0]["context_only"]["stat_line_source_kind"] = "latest_milb_history"
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.card_level_label == "A+"
+
+
 def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):
     rank_payload = _rank_payload()
     rank_payload["board"][1]["positions"] = ["P"]
