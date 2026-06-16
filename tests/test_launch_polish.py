@@ -65,19 +65,19 @@ class TestLaunchPolish(unittest.TestCase):
         form = html[html.index('<form id="league-setup"'):html.index("</form>")]
         self.assertIn(secondary, form)
 
-    def test_disclosure_is_absent_off_redraft(self):
-        for path in ("/?mode=dd_dynasty", "/?mode=prospects"):
+    def test_mobile_disclosure_renders_on_all_board_horizons(self):
+        for path in ("/", "/?mode=dd_dynasty", "/?mode=prospects"):
             html = self.html(path)
-            self.assertNotIn('class="toolbar-filters-btn"', html)
-            self.assertNotIn('aria-controls="toolbar-secondary"', html)
-            self.assertNotIn('id="toolbar-secondary"', html)
+            self.assertIn('class="toolbar-filters-btn"', html)
+            self.assertIn('aria-controls="toolbar-secondary"', html)
+            self.assertIn('id="toolbar-secondary"', html)
 
     def test_disclosure_css_is_desktop_transparent_and_mobile_collapsed(self):
         css = self.html("/static/style.css")
-        self.assertIn(".rank-toolbar-redraft .toolbar-filters-btn { display: none; }", css)
-        self.assertIn(".rank-toolbar-redraft .toolbar-secondary { display: contents; }", css)
-        self.assertIn(".rank-toolbar-redraft .toolbar-secondary { display: none; }", css)
-        self.assertIn(".rank-toolbar-redraft .toolbar-secondary.open {", css)
+        self.assertIn(".rank-toolbar .toolbar-filters-btn { display: none; }", css)
+        self.assertIn(".rank-toolbar .toolbar-secondary { display: contents; }", css)
+        self.assertIn(".rank-toolbar .toolbar-secondary { display: none; }", css)
+        self.assertIn(".rank-toolbar .toolbar-secondary.open {", css)
         self.assertIn("order: 3;", css)
         self.assertIn("@media (max-width: 640px)", css)
 

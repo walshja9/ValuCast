@@ -24,7 +24,7 @@
 
 {% set confidence = row.confidence or {} %}
 {% set confidence_range = confidence.get('range') or {} %}
-<div class="player-detail dynasty-detail">
+<div class="player-detail dynasty-detail {{ 'prospect-detail' if row.is_prospect else 'mlb-detail' }}">
     <div class="detail-header dynasty-card-header">
         <div class="detail-identity">
             <h3>{{ row.name }}</h3>
@@ -59,12 +59,13 @@
         <div class="detail-section prospect-profile-card">
             <div class="prospect-profile-top">
                 <div>
-                    <span class="profile-card-kicker">Current Evidence</span>
-                    <h4>Current Skill Percentiles</h4>
+                    <span class="profile-card-kicker">The ValuCast Read</span>
+                    <h4>How His Skills Rank</h4>
                     <p class="profile-note">
                         {{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}
                         {% if row.sample_context_label %}<br><span class="sample-scope-note">{{ row.sample_context_label }}</span>{% endif %}
                     </p>
+                    <p class="profile-percentile-legend">100 = best in the ValuCast prospect pool; higher is always better, including rate stats.</p>
                 </div>
                 <div class="profile-card-badges">
                     {% if row.prospect_rank is not none %}<span>P#{{ row.prospect_rank }}</span>{% endif %}
@@ -116,7 +117,7 @@
         <div class="detail-section peak-projection-card">
             <div class="peak-projection-head">
                 <div>
-                    <span class="profile-card-kicker">ValuCast Peak Projection v1</span>
+                    <span class="profile-card-kicker">Peak Projection</span>
                     <h4>Projected Peak Shape</h4>
                 </div>
                 <p class="profile-note peak-projection-note">{{ row.peak_projection_note }}</p>
@@ -132,7 +133,7 @@
             <div class="skill-shape-card peak-shape-card">
                 <div class="skill-shape-head">
                     <h5>Peak Shape</h5>
-                    <span>ValuCast-owned role projection</span>
+                    <span>Where the skills project at peak</span>
                 </div>
                 <div class="skill-shape-grid">
                     {% for skill in row.peak_shape_items %}
@@ -152,10 +153,10 @@
         <div class="detail-section">
             <h4>Prospect Profile</h4>
             <div class="stat-grid">
-                {% if row.prospect_rank is not none %}
+                {% if row.prospect_rank is not none and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Prospect Rank</span><span class="stat-value">#{{ row.prospect_rank }}</span></div>
                 {% endif %}
-                {% if row.level %}
+                {% if row.level and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.level }}</span></div>
                 {% endif %}
                 {% if row.eta %}
@@ -319,8 +320,8 @@
         {% if row.stat_line_translated and row.stat_line_translated.get('stats') %}
         {% set tr = row.stat_line_translated %}
         <div class="detail-section translated-section">
-            <h4>Translated Rates
-                <span class="statcast-asof">{{ tr.get('level_label') or tr.get('level') }} - sticky MLB-equivalent - {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
+            <h4>MLB-Equivalent Rates
+                <span class="statcast-asof">{{ tr.get('level_label') or tr.get('level') }} - {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
                 {% if tr.get('confidence') %}<span class="pct-chip {% if tr.get('confidence') == 'low' %}low{% endif %}">{{ tr.get('confidence') }} confidence</span>{% endif %}
             </h4>
             <div class="stat-grid">
@@ -332,19 +333,19 @@
                 </div>
                 {% endfor %}
             </div>
-            <p class="stat-caption">Only the stickiest peripherals are translated. Everything else stays as current MiLB context, with small samples regressed toward MLB average.</p>
+            <p class="stat-caption">We translate only the stats that carry over from the minors. Small samples are nudged toward MLB average.</p>
         </div>
         {% endif %}
 
         {% if row.source_ranks %}
         <details class="detail-section source-evidence market-context-details">
-            <summary><span>External board context (not used in ValuCast score)</span>
+            <summary><span>External board context</span>
                 {% if row.source_divergence is not none and row.source_divergence > 50 %}
                 <span class="source-spread" title="Public sources disagree">Spread {{ row.source_divergence | round | int }}</span>
                 {% endif %}
             </summary>
             <p class="market-context-note">
-                External/public boards and DD context are display-only. They do not feed ValuCast rank or value.
+                Comparison-only context. These boards never feed ValuCast rank or value.
             </p>
             <div class="source-summary">
                 {% if row.prospect_rank is not none %}

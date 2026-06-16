@@ -267,13 +267,13 @@ def _select_buy_source(
 def _buy_source_copy(source: str) -> dict[str, str]:
     if source == "valucast_buys":
         return {
-            "label": "ValuCast-owned buy signal",
-            "note": "Independent ValuCast model signal; no DD ranks or values feed the score.",
+            "label": "ValuCast buy signal",
+            "note": "Ranks prospects by model strength, momentum, buy window, and runway.",
             "formula": "buy score = model strength + momentum + buy window + runway",
         }
     return {
-        "label": "Legacy DD-backed buy signal",
-        "note": "Transitional buy board from the DD feed; not the ValuCast-owned Buy artifact.",
+        "label": "Prospect buy signal",
+        "note": "Ranks prospects by signal strength, recent movement, and runway.",
         "formula": "buy score = momentum + breakout + market gap + runway",
     }
 
@@ -1471,7 +1471,7 @@ def _build_dynasty_context(args):
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,
         "dd_schema_version": dd_store.schema_version,
-        "as_of": store.as_of,
+        "as_of": dd_store.generated_at or store.as_of,
         "horizon": "dynasty",
         "league_settings": settings,
         "config_summary": summary,
@@ -2058,7 +2058,7 @@ def value_map():
         dd_available=dd_store.is_available,
         map_page=True,
         mode="dd_dynasty",
-        as_of=store.as_of,
+        as_of=dd_store.generated_at or store.as_of,
     )
 
 
@@ -2102,7 +2102,7 @@ def buys():
         buy_source_label=buy_source_copy["label"],
         buy_source_note=buy_source_copy["note"],
         buy_formula_note=buy_source_copy["formula"],
-        as_of=store.as_of,
+        as_of=data_generated_at or store.as_of,
     )
 
 

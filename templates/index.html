@@ -105,30 +105,33 @@
             <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
             <a class="toolbar-how-link" href="/methodology">How it works</a>
         </span>
-        <fieldset class="pool-toggle" aria-label="Player pool">
-            <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
-            <label class="pool-btn"><input type="radio" name="pool" value="prospect" {{ 'checked' if pool == 'prospect' else '' }}><span>Prospects</span></label>
-        </fieldset>
-        <select name="position" class="position-select">
-            <option value="">All Positions</option>
-            {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
-            <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
-            {% endfor %}
-        </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
-        {% if custom_cats_active %}
-        <fieldset class="rank-by-toggle" aria-label="Rank dynasty board by">
-            <label><input type="radio" name="rank_by" value="dynasty" {{ 'checked' if rank_by == 'dynasty' else '' }}><span>Rank by Dynasty $</span></label>
-            <label><input type="radio" name="rank_by" value="now" {{ 'checked' if rank_by == 'now' else '' }}><span>Now $</span></label>
-        </fieldset>
-        {% endif %}
-        <a class="map-link" href="/map">Map</a>
-        <a class="map-link" href="/buys">Buys</a>
-        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
-        <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
+        <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
+        <div id="toolbar-secondary" class="toolbar-secondary">
+            <fieldset class="pool-toggle" aria-label="Player pool">
+                <label class="pool-btn"><input type="radio" name="pool" value="" {{ 'checked' if not pool else '' }}><span>All</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="mlb" {{ 'checked' if pool == 'mlb' else '' }}><span>MLB</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="hitter" {{ 'checked' if pool == 'hitter' else '' }}><span>Hitters</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="pitcher" {{ 'checked' if pool == 'pitcher' else '' }}><span>Pitchers</span></label>
+                <label class="pool-btn"><input type="radio" name="pool" value="prospect" {{ 'checked' if pool == 'prospect' else '' }}><span>Prospects</span></label>
+            </fieldset>
+            <select name="position" class="position-select">
+                <option value="">All Positions</option>
+                {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
+                <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
+                {% endfor %}
+            </select>
+            {% if custom_cats_active %}
+            <fieldset class="rank-by-toggle" aria-label="Rank dynasty board by">
+                <label><input type="radio" name="rank_by" value="dynasty" {{ 'checked' if rank_by == 'dynasty' else '' }}><span>Rank by Dynasty $</span></label>
+                <label><input type="radio" name="rank_by" value="now" {{ 'checked' if rank_by == 'now' else '' }}><span>Now $</span></label>
+            </fieldset>
+            {% endif %}
+            <a class="map-link" href="/map">Map</a>
+            <a class="map-link" href="/buys">Buys</a>
+            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
+        </div>
     </div>
     {# Category Fit needs per-player z-scores, which only a v1.1 feed carries —
        with a v1.0 feed the panel would be a dead control surface. #}
@@ -143,7 +146,9 @@
 
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
-        <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        <span class="config-summary-line">
+            <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+        </span>
         {# No visible knobs on this horizon, so the form must carry the league
            params or a shared URL's divider resets on the first filter change. #}
         {% if league_settings %}
@@ -152,20 +157,23 @@
         <input type="hidden" name="roster" value="{{ league_settings.roster }}">
         <input type="hidden" name="pslots" value="{{ league_settings.pslots }}">
         {% endif %}
-        <select name="position" class="position-select">
-            <option value="">All Positions</option>
-            {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
-            <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
-            {% endfor %}
-        </select>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
-        <a class="map-link" href="/map">Map</a>
-        <a class="map-link" href="/buys">Buys</a>
-        <span class="graphic-actions" aria-label="Prospect graphic actions">
-            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10 Graphic</a>
-            <a class="export-btn graphic-btn" href="/prospects/share-card.png?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20 Graphic</a>
-        </span>
-        <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+        <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
+        <div id="toolbar-secondary" class="toolbar-secondary">
+            <select name="position" class="position-select">
+                <option value="">All Positions</option>
+                {% for pos in ["C","1B","2B","SS","3B","OF","DH","SP","RP"] %}
+                <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
+                {% endfor %}
+            </select>
+            <a class="map-link" href="/map">Map</a>
+            <a class="map-link" href="/buys">Buys</a>
+            <span class="graphic-actions" aria-label="Prospect graphic actions">
+                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10 Graphic</a>
+                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20 Graphic</a>
+            </span>
+            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+        </div>
     </div>
     {% endif %}
 
@@ -209,7 +217,8 @@ function toggleSetup() {
 }
 
 function toggleToolbarFilters(btn) {
-    const panel = document.getElementById('toolbar-secondary');
+    const panel = document.getElementById(btn.getAttribute('aria-controls') || 'toolbar-secondary');
+    if (!panel) return;
     panel.classList.toggle('open');
     btn.setAttribute('aria-expanded', panel.classList.contains('open'));
 }
@@ -368,7 +377,7 @@ function openProspectGraphic(e, limit) {
     const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
     params.set('limit', String(limit));
     params.set('mode', 'prospects');
-    window.open('/prospects/share-card.png?' + params.toString(), '_blank', 'noopener');
+    window.open('/prospects/share-card?' + params.toString(), '_blank', 'noopener');
 }
 
 function toggleDetail(playerId, row) {

@@ -340,6 +340,8 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn(b"Top 10 SS Prospects", response.data)
         self.assertIn(b"Download PNG", response.data)
         self.assertIn(b"/prospects/share-card.png?limit=10&amp;position=SS", response.data)
+        index = self.client.get("/?mode=prospects").data
+        self.assertIn(b"/prospects/share-card?limit=10", index)
 
     def test_prospects_position_graphic_svg(self):
         from app import dd_store

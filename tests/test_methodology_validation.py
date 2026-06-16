@@ -72,10 +72,10 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn("not by name", flat)
         self.assertIn("Category Fit", flat)
         self.assertIn("does not generate the public", flat)
-        self.assertIn("DD ranks", self.html)
-        self.assertIn("DD values", self.html)
+        self.assertIn("outside dynasty rankings", self.html)
+        self.assertIn("outside values", self.html)
         self.assertIn("public prospect rankings", self.html)
-        self.assertIn("display/comparison context only", self.html)
+        self.assertIn("comparison context only", self.html)
         self.assertIn("applied by rule, not by name", self.html)
 
     # P1 repair: the worked example is COMPUTED from the real params (drift-proof),
