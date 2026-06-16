@@ -2070,6 +2070,154 @@ def _load_artifact(path: Path) -> dict | None:
     return payload
 
 
+def _artifact_ready(payload: dict | None, *keys: str) -> bool:
+    if not payload:
+        return False
+    if not keys:
+        return True
+    cursor = payload
+    for key in keys:
+        if not isinstance(cursor, dict):
+            return False
+        cursor = cursor.get(key)
+    return bool(cursor)
+
+
+def _artifact_date(payload: dict | None) -> str | None:
+    raw = (payload or {}).get("generated_at") or (payload or {}).get("as_of")
+    return str(raw)[:10] if raw else None
+
+
+@app.route("/intelligence")
+def intelligence_hub():
+    root = Path(__file__).parent
+    models = root / "data" / "models"
+    scorecard = _load_artifact(root / "data" / "validation" / "methodology_scorecard.json")
+    quality = _load_artifact(models / "valucast_quality_governor.json")
+    repository = _load_artifact(models / "valucast_scouting_reports.json")
+    role_tracker = _load_artifact(models / "valucast_playing_time_role_tracker.json")
+    hp_sanity = _load_artifact(models / "valucast_hp_promotion_sanity_report.json")
+    peak_calibration = _load_artifact(
+        models / "valucast_prospect_peak_projection_calibration.json"
+    )
+    front_office = _load_artifact(models / "valucast_front_office_report.json")
+    pipeline = (
+        (front_office or {}).get("operations_watchlist", {}).get("pipeline_observability")
+        if isinstance((front_office or {}).get("operations_watchlist"), dict)
+        else {}
+    )
+
+    lanes = [
+        {
+            "name": "Launch Stability",
+            "status": "Ready" if _artifact_ready(quality, "ready_for_public_snapshot") else "Watch",
+            "kicker": "quality governor",
+            "copy": (
+                "Daily publish checks watch freshness, identity coverage, board shape, "
+                "Buys readiness, and stale stat context before the public surfaces move."
+            ),
+            "metric": (quality or {}).get("status", "unavailable").replace("_", " ").title(),
+            "href": "/front-office",
+            "cta": "View front-office track",
+        },
+        {
+            "name": "Scouting Report Repository",
+            "status": "Ready" if _artifact_ready(repository, "validation", "ready_for_repository") else "Watch",
+            "kicker": "player intelligence",
+            "copy": (
+                "Searchable stat-grounded prospect reads, peak notes, confidence labels, "
+                "and player-card links in one repository."
+            ),
+            "metric": f"{((repository or {}).get('summary') or {}).get('report_count', 0)} reports",
+            "href": "/scouting",
+            "cta": "Open repository",
+        },
+        {
+            "name": "Prospect Peak Projection V2",
+            "status": "Ready" if _artifact_ready(peak_calibration, "validation", "ready_for_review") else "Collecting",
+            "kicker": "role and ceiling context",
+            "copy": (
+                "Current skill shape is paired with peak role, floor, risk, confidence, "
+                "and bucket watch items without moving the live rank by hand."
+            ),
+            "metric": (
+                f"{((peak_calibration or {}).get('summary') or {}).get('bucket_count', 0)} buckets"
+            ),
+            "href": "/?mode=prospects",
+            "cta": "View prospects",
+        },
+        {
+            "name": "Player Card V2 Visuals",
+            "status": "Live" if _artifact_ready(repository) else "Watch",
+            "kicker": "cards and share graphics",
+            "copy": (
+                "Cards now center the ValuCast read, current percentiles, peak outlook, "
+                "confidence context, and shareable visual summaries."
+            ),
+            "metric": "card v2",
+            "href": "/?mode=prospects",
+            "cta": "Open cards",
+        },
+        {
+            "name": "Playing-Time / Role Tracker",
+            "status": "Ready" if _artifact_ready(role_tracker, "validation", "ready_for_role_context") else "Watch",
+            "kicker": "MLB role context",
+            "copy": (
+                "MLBAM-keyed role profiles separate active roster status, injury risk, "
+                "projected volume, and role basis from the value score."
+            ),
+            "metric": (
+                f"{((role_tracker or {}).get('summary') or {}).get('profile_count', 0)} profiles"
+            ),
+            "href": "/scouting",
+            "cta": "See role mix",
+        },
+        {
+            "name": "MLB Projection Center",
+            "status": "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Watch",
+            "kicker": "H+P model track",
+            "copy": (
+                "The ValuCast H+P source stays opt-in while the methodology page publishes "
+                "the held-out scorecard and what has not been proven yet."
+            ),
+            "metric": (scorecard or {}).get("version", "scorecard"),
+            "href": "/methodology",
+            "cta": "Read methodology",
+        },
+        {
+            "name": "League Tools",
+            "status": "Live",
+            "kicker": "custom values",
+            "copy": (
+                "Dynasty customization, league import, Category Fit, Value Map, Buys, "
+                "and CSV export are the bridge from model output to league decisions."
+            ),
+            "metric": "custom league settings",
+            "href": "/?mode=dd_dynasty",
+            "cta": "Customize values",
+        },
+    ]
+    readiness = {
+        "quality_date": _artifact_date(quality),
+        "repository_date": _artifact_date(repository),
+        "role_tracker_date": _artifact_date(role_tracker),
+        "pipeline_ready": bool(pipeline.get("ready_for_daily_publication")),
+        "pipeline_expected_date": pipeline.get("expected_date"),
+        "front_office_grade": ((front_office or {}).get("overall") or {}).get("grade"),
+        "front_office_score": ((front_office or {}).get("overall") or {}).get("score"),
+        "default_projection_source": ((hp_sanity or {}).get("promotion") or {}).get(
+            "default_source", "steamer"
+        ),
+    }
+    return render_template(
+        "intelligence.html",
+        intelligence_page=True,
+        lanes=lanes,
+        readiness=readiness,
+        as_of=readiness["quality_date"] or readiness["repository_date"],
+    )
+
+
 def _identity_key(mlbam_id, role) -> str | None:
     if mlbam_id in (None, "") or role in (None, ""):
         return None

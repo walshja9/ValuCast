@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}ValuCast Intelligence Hub{% endblock %}
+{% block content %}
+<article class="intelligence-hub">
+    <div class="topline">
+        <h2>ValuCast Intelligence Hub</h2>
+        <a href="/" class="back">&larr; Back to rankings</a>
+    </div>
+
+    <section class="intelligence-hero glass">
+        <div>
+            <span class="eyebrow">Independent model system</span>
+            <h3>Rankings are the front door. This is the engine room.</h3>
+            <p>ValuCast connects custom league values, prospect intelligence, peak-role context, role tracking, buy signals, and validation into one independent baseball model.</p>
+        </div>
+        <div class="intelligence-score">
+            <span>{{ readiness.front_office_grade or "A" }}</span>
+            <small>{% if readiness.front_office_score %}{{ readiness.front_office_score }}/100{% else %}front-office track{% endif %}</small>
+        </div>
+    </section>
+
+    <section class="intelligence-strip glass">
+        <div>
+            <dt>Public snapshot</dt>
+            <dd>{{ readiness.quality_date or "pending" }}</dd>
+        </div>
+        <div>
+            <dt>Pipeline</dt>
+            <dd>{{ "Ready" if readiness.pipeline_ready else "Watch" }}{% if readiness.pipeline_expected_date %} · {{ readiness.pipeline_expected_date }}{% endif %}</dd>
+        </div>
+        <div>
+            <dt>Projection source</dt>
+            <dd>{{ readiness.default_projection_source | title }} default</dd>
+        </div>
+        <div>
+            <dt>Scouting build</dt>
+            <dd>{{ readiness.repository_date or "pending" }}</dd>
+        </div>
+    </section>
+
+    <section class="intelligence-lanes">
+        {% for lane in lanes %}
+        <article class="intelligence-lane glass">
+            <div class="intelligence-lane-head">
+                <div>
+                    <span class="eyebrow">{{ lane.kicker }}</span>
+                    <h3>{{ lane.name }}</h3>
+                </div>
+                <span class="lane-status lane-status-{{ lane.status | lower | replace(' ', '-') }}">{{ lane.status }}</span>
+            </div>
+            <p>{{ lane.copy }}</p>
+            <div class="intelligence-lane-foot">
+                <span>{{ lane.metric }}</span>
+                <a href="{{ lane.href }}">{{ lane.cta }}</a>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="intelligence-next glass">
+        <span class="eyebrow">Build posture</span>
+        <h3>What happens next</h3>
+        <p>Keep the public app stable first, then keep widening the model's evidence: more forward archives, deeper peak-projection buckets, richer card visuals, and role context that updates with the season. The goal is not another consensus list; it is a baseball model with receipts.</p>
+    </section>
+</article>
+{% endblock %}

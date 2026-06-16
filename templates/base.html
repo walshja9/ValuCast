@@ -27,6 +27,12 @@
     <header class="site-header">
         <h1><a href="/"><img class="site-logo" src="{{ url_for('static', filename='brand/valucast-mark-64.png') }}" alt="">ValuCast</a></h1>
         <p class="tagline">Player values tuned to your league</p>
+        <nav class="site-nav" aria-label="Primary navigation">
+            <a href="/">Rankings</a>
+            <a href="/intelligence">Intelligence Hub</a>
+            <a href="/scouting">Scouting</a>
+            <a href="/methodology">Methodology</a>
+        </nav>
     </header>
     <main>
         {% block content %}{% endblock %}

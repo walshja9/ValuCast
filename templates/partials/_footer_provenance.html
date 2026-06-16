@@ -1,6 +1,8 @@
 <div class="footer-about">
     <p class="footer-how">
-        {% if scouting_page %}
+        {% if intelligence_page %}
+        ValuCast Intelligence Hub: one view of the model surfaces, quality gates, scouting reads, peak context, role tracker, projection track, and league tools.
+        {% elif scouting_page %}
         ValuCast scouting repository: stat-grounded prospect reads and MLBAM-keyed role context. These explain the model; they do not change rank or value.
         {% elif methodology_page %}
         ValuCast methodology: how our projections are built and validated. The projection source for player values is selectable on the main board.
@@ -14,23 +16,26 @@
     </p>
 </div>
 <p class="footer-data">
-    {% if methodology_page or scouting_page %}
-    <a href="/">Back to rankings</a> - <a href="/scouting">Scouting Repository</a> - <a href="/front-office">Front Office Track</a> - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    {% if methodology_page or scouting_page or intelligence_page %}
+    <a href="/">Back to rankings</a> - <a href="/intelligence">Intelligence Hub</a> - <a href="/scouting">Scouting Repository</a> - <a href="/front-office">Front Office Track</a> - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
     Data: Dynasty model + prospect feed - MLB stats from FanGraphs Steamer ROS + MLB Stats API{% if as_of %} - Updated {{ as_of }}{% endif %}
     - <a href="/methodology">How ValuCast works</a>
+    - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Repository</a>
     - <a href="/front-office">Front Office Track</a>
     - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif source == 'valucast' %}
     Data: ValuCast-built projections (public MLB historical data; hitter inputs from Baseball Savant) + MLB Stats API{% if as_of %} - Updated {{ as_of }}{% endif %}
     - <a href="/methodology">How ValuCast works</a>
+    - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Repository</a>
     - <a href="/front-office">Front Office Track</a>
     - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% else %}
     Data: FanGraphs Steamer ROS + MLB Stats API{% if as_of %} - Updated {{ as_of }}{% endif %}
     - <a href="/methodology">How ValuCast works</a>
+    - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Repository</a>
     - <a href="/front-office">Front Office Track</a>
     - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>

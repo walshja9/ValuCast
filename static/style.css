@@ -97,6 +97,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     display: flex;
     align-items: baseline;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 .site-header h1 {
     display: flex;
@@ -124,6 +125,28 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
         0 0 28px rgba(52, 211, 153, .18);
 }
 .tagline { font-size: 0.8rem; color: var(--c-muted); }
+.site-nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+.site-nav a {
+    border: 1px solid rgba(255, 255, 255, .10);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .045);
+    color: var(--c-text);
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .02em;
+    padding: .34rem .58rem;
+    text-decoration: none;
+}
+.site-nav a:hover {
+    border-color: rgba(52, 211, 153, .38);
+    color: var(--c-prospect);
+}
 
 main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
@@ -343,6 +366,165 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .front-office-card dd { margin: 0; text-align: right; font-weight: 800; }
 .front-office-next { margin: .5rem 0 0; padding-left: 1.2rem; }
 .front-office-next li { margin: .35rem 0; }
+.intelligence-hub { max-width: 1120px; margin: 0 auto; display: grid; gap: 1rem; }
+.intelligence-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem;
+    overflow: hidden;
+    position: relative;
+}
+.intelligence-hero::after {
+    content: "";
+    position: absolute;
+    right: -5rem;
+    top: -5rem;
+    width: 18rem;
+    height: 18rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(52,211,153,.20), transparent 68%);
+    pointer-events: none;
+}
+.intelligence-hero .eyebrow,
+.intelligence-lane .eyebrow,
+.intelligence-next .eyebrow {
+    color: var(--c-prospect);
+    font-size: .72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.intelligence-hero h3 {
+    max-width: 760px;
+    margin: .2rem 0 .45rem;
+    font-size: clamp(1.8rem, 5.5vw, 3.9rem);
+    line-height: .98;
+}
+.intelligence-hero p,
+.intelligence-next p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--c-muted);
+    font-size: .96rem;
+}
+.intelligence-score {
+    position: relative;
+    z-index: 1;
+    min-width: 8.5rem;
+    text-align: right;
+    color: var(--c-prospect);
+    font-weight: 950;
+}
+.intelligence-score span {
+    display: block;
+    font-size: clamp(3rem, 9vw, 5.4rem);
+    line-height: .85;
+}
+.intelligence-score small {
+    color: var(--c-muted);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.intelligence-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .65rem;
+    padding: .85rem;
+}
+.intelligence-strip div,
+.intelligence-lane,
+.intelligence-next {
+    padding: .95rem;
+}
+.intelligence-strip div {
+    border: 1px solid var(--c-border);
+    border-radius: .85rem;
+    background: rgba(255, 255, 255, .035);
+}
+.intelligence-strip dt {
+    color: var(--c-muted);
+    font-size: .68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+}
+.intelligence-strip dd {
+    margin: .2rem 0 0;
+    font-size: .95rem;
+    font-weight: 850;
+}
+.intelligence-lanes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: .85rem;
+}
+.intelligence-lane {
+    display: flex;
+    flex-direction: column;
+    min-height: 13.2rem;
+}
+.intelligence-lane-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: .75rem;
+}
+.intelligence-lane h3 {
+    margin: .15rem 0 .6rem;
+    font-size: 1.1rem;
+}
+.intelligence-lane p {
+    margin: 0;
+    color: var(--c-muted);
+    line-height: 1.45;
+}
+.lane-status {
+    border: 1px solid rgba(52, 211, 153, .35);
+    border-radius: 999px;
+    background: rgba(52, 211, 153, .10);
+    color: var(--c-prospect);
+    font-size: .68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .18rem .46rem;
+    white-space: nowrap;
+}
+.lane-status-watch,
+.lane-status-collecting,
+.lane-status-opt-in {
+    border-color: rgba(251, 191, 36, .40);
+    background: rgba(251, 191, 36, .10);
+    color: var(--c-amber);
+}
+.intelligence-lane-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    margin-top: auto;
+    padding-top: .85rem;
+}
+.intelligence-lane-foot span {
+    color: var(--c-text);
+    font-weight: 850;
+}
+.intelligence-lane-foot a {
+    border: 1px solid rgba(52, 211, 153, .35);
+    border-radius: 999px;
+    color: var(--c-prospect);
+    font-size: .75rem;
+    font-weight: 850;
+    padding: .26rem .55rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.intelligence-lane-foot a:hover {
+    background: rgba(52, 211, 153, .10);
+}
 .scouting-report { max-width: 1120px; margin: 0 auto; display: grid; gap: 1rem; }
 .scouting-hero { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.1rem; }
 .scouting-hero .eyebrow,
@@ -779,6 +961,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
     main { padding: 0.75rem; }
     .site-header { padding: 0.75rem 1rem; flex-direction: column; gap: 0.25rem; }
+    .site-nav { width: 100%; margin-left: 0; gap: .28rem; }
+    .site-nav a { flex: 1 1 auto; text-align: center; font-size: .68rem; padding: .3rem .4rem; }
     .welcome-strip {
         display: block;
         padding: .6rem 2rem .65rem .7rem;
@@ -1597,6 +1781,12 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
     .dynasty-headline { justify-content: flex-start; margin-left: 0; }
+    .intelligence-hero { flex-direction: column; align-items: flex-start; padding: .95rem; }
+    .intelligence-score { text-align: left; }
+    .intelligence-strip { grid-template-columns: 1fr 1fr; padding: .65rem; }
+    .intelligence-lanes { grid-template-columns: 1fr; }
+    .intelligence-lane { min-height: 0; }
+    .intelligence-lane-foot { align-items: flex-start; flex-direction: column; }
     .prospect-profile-top { flex-direction: column; gap: .55rem; }
     .profile-card-badges { justify-content: flex-start; }
     .profile-card-identity { margin: .35rem 0 .6rem; }

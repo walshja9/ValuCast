@@ -66,3 +66,35 @@ def test_footer_links_to_scouting_repository_from_main_page():
 
     assert response.status_code == 200
     assert 'href="/scouting">Scouting Repository</a>' in html
+    assert 'href="/intelligence">Intelligence Hub</a>' in html
+
+
+def test_intelligence_hub_renders_all_roadmap_lanes():
+    client = app.test_client()
+
+    response = client.get("/intelligence")
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "ValuCast Intelligence Hub" in html
+    assert "Launch Stability" in html
+    assert "Scouting Report Repository" in html
+    assert "Prospect Peak Projection V2" in html
+    assert "Player Card V2 Visuals" in html
+    assert "Playing-Time / Role Tracker" in html
+    assert "MLB Projection Center" in html
+    assert "League Tools" in html
+    assert "quality governor" in html
+    assert "custom league settings" in html
+
+
+def test_primary_nav_links_to_intelligence_surfaces():
+    client = app.test_client()
+
+    response = client.get("/")
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert 'href="/intelligence">Intelligence Hub</a>' in html
+    assert 'href="/scouting">Scouting</a>' in html
+    assert 'href="/methodology">Methodology</a>' in html
