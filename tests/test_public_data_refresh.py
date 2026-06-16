@@ -225,8 +225,12 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "FRONT_OFFICE_FAILURES": tmp_path / "front_office_failures.json",
         "PROSPECT_AVAILABILITY": tmp_path / "prospect_availability.json",
         "PROSPECT_CALIBRATION_REPORT": tmp_path / "prospect_calibration_report.json",
+        "PROSPECT_PEAK_PROJECTION": tmp_path / "prospect_peak_projection.json",
+        "PROSPECT_PEAK_CALIBRATION": tmp_path / "prospect_peak_calibration.json",
         "PROSPECT_FORWARD_VALIDATION": tmp_path / "prospect_forward_validation.json",
         "PROSPECT_COVERAGE_AUDIT": tmp_path / "prospect_coverage_audit.json",
+        "PLAYING_TIME_ROLE_TRACKER": tmp_path / "playing_time_role_tracker.json",
+        "SCOUTING_REPORTS": tmp_path / "scouting_reports.json",
     }
     paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
     paths["VALUCAST_PROSPECT_INPUTS"].write_text(
@@ -296,10 +300,22 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths["PROSPECT_CALIBRATION_REPORT"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
+    paths["PROSPECT_PEAK_PROJECTION"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PROSPECT_PEAK_CALIBRATION"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
     paths["PROSPECT_FORWARD_VALIDATION"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_COVERAGE_AUDIT"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PLAYING_TIME_ROLE_TRACKER"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["SCOUTING_REPORTS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     for key in ("REDRAFT_CURRENT", "REDRAFT_ROS", "ACTUALS"):
@@ -345,6 +361,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/build_prospect_availability.py" in workflow
     assert "python scripts/build_prospect_model_v07.py" in workflow
     assert "python scripts/build_prospect_calibration_report.py" in workflow
+    assert "python scripts/build_prospect_peak_calibration_report.py" in workflow
     assert "python scripts/build_prospect_forward_validation.py" in workflow
     assert "python scripts/build_valucast_buys_monitor.py" in workflow
     assert "python scripts/build_prospect_outcome_backtest.py" in workflow
@@ -359,6 +376,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_model_v07.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
+    assert "python scripts/validate_prospect_peak_calibration_report.py" in workflow
     assert "python scripts/validate_prospect_forward_validation.py" in workflow
     assert "python scripts/validate_prospect_outcome_backtest.py" in workflow
     assert "python scripts/validate_front_office_failures.py" in workflow
@@ -381,6 +399,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_prospect_availability.json" in workflow
     assert "data/models/valucast_prospect_model_v0_7.json" in workflow
     assert "data/models/valucast_prospect_calibration_report.json" in workflow
+    assert "data/models/valucast_prospect_peak_projection_calibration.json" in workflow
     assert "data/models/valucast_prospect_forward_validation.json" in workflow
     assert "data/models/valucast_prospect_buys_monitor.json" in workflow
     assert "data/models/valucast_prospect_outcome_backtest.json" in workflow

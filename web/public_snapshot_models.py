@@ -408,6 +408,55 @@ class PublicSnapshotRow:
         return str(eta).replace("_", " ").title()
 
     @property
+    def peak_delta_label(self) -> str | None:
+        value = _clean_float(self.peak_card_v2_context.get("score_delta"))
+        if value is None:
+            return None
+        sign = "+" if value > 0 else ""
+        return f"{sign}{value:.1f}"
+
+    @property
+    def peak_trajectory_label(self) -> str | None:
+        trajectory = self.peak_card_v2_context.get("trajectory")
+        if not trajectory:
+            return None
+        labels = {
+            "more_peak_than_current_value": "More peak than current value",
+            "current_value_ahead_of_peak_read": "Current value ahead of peak read",
+            "current_and_peak_aligned": "Current and peak aligned",
+        }
+        return labels.get(str(trajectory), str(trajectory).replace("_", " ").title())
+
+    @property
+    def peak_role_probability_items(self) -> tuple[dict[str, str], ...]:
+        raw = self.peak_card_v2_context.get("role_probabilities")
+        if not isinstance(raw, dict):
+            return ()
+        labels = {
+            "regular_or_better": "Regular+",
+            "bench_or_platoon": "Bench/platoon",
+            "depth_or_reserve": "Depth/reserve",
+            "starter_or_better": "Starter+",
+            "multi_inning_or_setup": "Multi-inning/setup",
+            "relief_or_depth": "Relief/depth",
+        }
+        items = []
+        for key, label in labels.items():
+            value = _clean_float(raw.get(key))
+            if value is None:
+                continue
+            pct = max(0, min(100, round(value * 100)))
+            items.append(
+                {
+                    "key": key,
+                    "label": label,
+                    "pct": pct,
+                    "value": f"{pct}%",
+                }
+            )
+        return tuple(items)
+
+    @property
     def peak_shape_items(self) -> tuple[dict[str, str | int], ...]:
         items = []
         for raw in self.peak_projection_context.get("shape") or ():

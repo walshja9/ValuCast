@@ -47,12 +47,22 @@ PROSPECT_AVAILABILITY = (
 PROSPECT_CALIBRATION_REPORT = (
     ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 )
+PROSPECT_PEAK_PROJECTION = (
+    ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
+)
+PROSPECT_PEAK_CALIBRATION = (
+    ROOT / "data" / "models" / "valucast_prospect_peak_projection_calibration.json"
+)
 PROSPECT_FORWARD_VALIDATION = (
     ROOT / "data" / "models" / "valucast_prospect_forward_validation.json"
 )
 PROSPECT_COVERAGE_AUDIT = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 )
+PLAYING_TIME_ROLE_TRACKER = (
+    ROOT / "data" / "models" / "valucast_playing_time_role_tracker.json"
+)
+SCOUTING_REPORTS = ROOT / "data" / "models" / "valucast_scouting_reports.json"
 PUBLIC_SNAPSHOT = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 
@@ -83,6 +93,8 @@ def validate_public_data(expected_date: str) -> list[str]:
         (MLB_DYNASTY_LAYER, "generated_at"),
         (PROSPECT_AVAILABILITY, "generated_at"),
         (PROSPECT_CALIBRATION_REPORT, "generated_at"),
+        (PROSPECT_PEAK_PROJECTION, "generated_at"),
+        (PROSPECT_PEAK_CALIBRATION, "generated_at"),
         (PROSPECT_FORWARD_VALIDATION, "generated_at"),
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
         (PROSPECT_MODEL_V07, "generated_at"),
@@ -95,6 +107,8 @@ def validate_public_data(expected_date: str) -> list[str]:
         (PIPELINE_OBSERVABILITY, "generated_at"),
         (FRONT_OFFICE_FAILURES, "generated_at"),
         (FRONT_OFFICE_REPORT, "generated_at"),
+        (PLAYING_TIME_ROLE_TRACKER, "generated_at"),
+        (SCOUTING_REPORTS, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),

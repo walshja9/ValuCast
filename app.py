@@ -2031,12 +2031,78 @@ def front_office_report():
     return render_template("front_office.html", report=report)
 
 
+_ARTIFACT_CACHE: dict[Path, tuple[int, dict | None]] = {}
+
+
 def _load_artifact(path: Path) -> dict | None:
+    try:
+        stamp = path.stat().st_mtime_ns
+    except OSError:
+        return None
+    cached = _ARTIFACT_CACHE.get(path)
+    if cached and cached[0] == stamp:
+        return cached[1]
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
+        _ARTIFACT_CACHE[path] = (stamp, None)
         return None
-    return payload if isinstance(payload, dict) else None
+    payload = payload if isinstance(payload, dict) else None
+    _ARTIFACT_CACHE[path] = (stamp, payload)
+    return payload
+
+
+def _identity_key(mlbam_id, role) -> str | None:
+    if mlbam_id in (None, "") or role in (None, ""):
+        return None
+    return f"{mlbam_id}_{str(role).lower()}"
+
+
+def _row_identity_key(row) -> str | None:
+    return _identity_key(getattr(row, "mlbam_id", None), getattr(row, "role", None))
+
+
+def _format_context_label(value) -> str | None:
+    if value in (None, ""):
+        return None
+    return str(value).replace("_", " ").title()
+
+
+def _indexed_artifact_rows(payload: dict | None, rows_key: str) -> dict[str, dict]:
+    rows = (payload or {}).get(rows_key) or []
+    indexed = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        key = row.get("identity_key") or _identity_key(row.get("mlbam_id"), row.get("role"))
+        if key and key not in indexed:
+            indexed[str(key)] = row
+    return indexed
+
+
+def _artifact_context_for_row(row) -> dict:
+    key = _row_identity_key(row)
+    if not key:
+        return {}
+    root = Path(__file__).parent / "data" / "models"
+    scouting = _indexed_artifact_rows(
+        _load_artifact(root / "valucast_scouting_reports.json"), "reports"
+    ).get(key)
+    role_profile = _indexed_artifact_rows(
+        _load_artifact(root / "valucast_playing_time_role_tracker.json"), "profiles"
+    ).get(key)
+    if role_profile:
+        role_profile = dict(role_profile)
+        role_profile["projected_role_label"] = _format_context_label(
+            role_profile.get("projected_role")
+        )
+        role_profile["availability_status_label"] = _format_context_label(
+            role_profile.get("availability_status")
+        )
+    return {
+        "scouting_report": scouting,
+        "role_profile": role_profile,
+    }
 
 
 @app.route("/scouting")
@@ -2050,6 +2116,9 @@ def scouting_reports():
     hp_sanity = _load_artifact(
         Path(__file__).parent / "data" / "models" / "valucast_hp_promotion_sanity_report.json"
     )
+    peak_calibration = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_prospect_peak_projection_calibration.json"
+    )
     reports = list((repository or {}).get("reports") or [])
     reports.sort(
         key=lambda row: (
@@ -2057,6 +2126,57 @@ def scouting_reports():
             str(row.get("name") or ""),
         )
     )
+    filters = {
+        "q": (request.args.get("q") or "").strip(),
+        "team": (request.args.get("team") or "").strip().upper(),
+        "role": (request.args.get("role") or "").strip().lower(),
+        "status": (request.args.get("status") or "").strip().lower(),
+    }
+    teams = sorted({str(row.get("team") or "") for row in reports if row.get("team")})
+    roles = sorted({str(row.get("role") or "") for row in reports if row.get("role")})
+    statuses = sorted(
+        {str(row.get("report_status") or "") for row in reports if row.get("report_status")}
+    )
+    if filters["q"]:
+        needle = filters["q"].lower()
+        reports = [
+            row for row in reports
+            if needle in str(row.get("name") or "").lower()
+            or needle in str(row.get("team") or "").lower()
+            or needle in " ".join(str(p) for p in row.get("positions") or ()).lower()
+        ]
+    if filters["team"]:
+        reports = [row for row in reports if str(row.get("team") or "").upper() == filters["team"]]
+    if filters["role"]:
+        reports = [row for row in reports if str(row.get("role") or "").lower() == filters["role"]]
+    if filters["status"]:
+        reports = [
+            row for row in reports
+            if str(row.get("report_status") or "").lower() == filters["status"]
+        ]
+    report_rows = []
+    for row in reports[:60]:
+        item = dict(row)
+        confidence = item.get("confidence")
+        if isinstance(confidence, dict):
+            item["confidence_label"] = _format_context_label(confidence.get("level"))
+        else:
+            item["confidence_label"] = _format_context_label(confidence)
+        source_fields = item.get("source_fields")
+        if not isinstance(source_fields, dict):
+            source_fields = {}
+        sample = source_fields.get("stat_line_sample")
+        sample_unit = source_fields.get("stat_line_sample_unit")
+        if isinstance(sample, float) and sample.is_integer():
+            sample = int(sample)
+        item["sample_label"] = (
+            f"{sample} {sample_unit}" if sample not in (None, "") and sample_unit else None
+        )
+        item["player_url"] = "/?" + urlencode(
+            {"mode": "prospects", "search": item.get("name") or ""}
+        )
+        item["status_label"] = _format_context_label(item.get("report_status"))
+        report_rows.append(item)
     role_counts = ((role_tracker or {}).get("summary") or {}).get("role_counts") or {}
     role_rows = [
         {"role": str(role).replace("_", " ").title(), "count": count}
@@ -2068,7 +2188,13 @@ def scouting_reports():
         repository=repository,
         role_tracker=role_tracker,
         hp_sanity=hp_sanity,
-        reports=reports[:30],
+        peak_calibration=peak_calibration,
+        reports=report_rows,
+        filters=filters,
+        teams=teams,
+        roles=roles,
+        statuses=statuses,
+        filtered_count=len(reports),
         role_rows=role_rows,
         as_of=(repository or {}).get("generated_at"),
     )
@@ -2254,6 +2380,7 @@ def player_detail(player_id):
             if matches:
                 extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
 
+        artifact_context = _artifact_context_for_row(dd_row)
         prospect_context = {}
         if dd_row.is_prospect:
             matches = find_outlook_projections(dd_row, match_index)
@@ -2338,6 +2465,7 @@ def player_detail(player_id):
             mlb_stats_actual_split=mlb_stats_actual_split,
             mlb_stats_ros_split=mlb_stats_ros_split,
             **prospect_context,
+            **artifact_context,
             **extras,
         )
 

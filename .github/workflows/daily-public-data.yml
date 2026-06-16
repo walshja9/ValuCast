@@ -74,6 +74,7 @@ jobs:
           python scripts/build_prospect_coverage_audit.py
           python scripts/build_prospect_calibration_report.py
           python scripts/build_prospect_peak_projection.py
+          python scripts/build_prospect_peak_calibration_report.py
           python scripts/build_valucast_buys.py
           python scripts/review_valucast_buys.py
           python scripts/build_valucast_buys.py --with-review
@@ -104,6 +105,7 @@ jobs:
           python scripts/validate_prospect_coverage_audit.py
           python scripts/validate_prospect_calibration_report.py
           python scripts/validate_prospect_peak_projection.py
+          python scripts/validate_prospect_peak_calibration_report.py
           python scripts/validate_prospect_forward_validation.py
           python scripts/validate_prospect_outcome_backtest.py
           python scripts/validate_front_office_failures.py
@@ -153,6 +155,7 @@ jobs:
             data/models/valucast_prospect_coverage_audit.json \
             data/models/valucast_prospect_calibration_report.json \
             data/models/valucast_prospect_peak_projection_v1.json \
+            data/models/valucast_prospect_peak_projection_calibration.json \
             data/models/valucast_prospect_forward_validation.json \
             data/models/valucast_prospect_model_v0_7.json \
             data/models/valucast_prospect_outcome_backtest.json \

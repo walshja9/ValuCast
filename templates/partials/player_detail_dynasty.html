@@ -132,12 +132,59 @@
             </div>
             <div class="peak-summary-strip">
                 {% if row.peak_score_label %}<span><b>Peak</b>{{ row.peak_score_label }}</span>{% endif %}
+                {% if row.peak_delta_label %}<span><b>Delta</b>{{ row.peak_delta_label }}</span>{% endif %}
                 {% if row.peak_role_label %}<span><b>Role</b>{{ row.peak_role_label }}</span>{% endif %}
                 {% if row.peak_risk_label %}<span><b>Risk</b>{{ row.peak_risk_label }}</span>{% endif %}
                 {% if row.peak_confidence_label %}<span><b>Conf</b>{{ row.peak_confidence_label }}</span>{% endif %}
                 {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
             </div>
+            {% if row.peak_trajectory_label %}<p class="peak-trajectory-note">{{ row.peak_trajectory_label }}</p>{% endif %}
+            {% if row.peak_role_probability_items %}
+            <div class="role-probability-bars">
+                {% for item in row.peak_role_probability_items %}
+                <div class="role-probability-row">
+                    <span>{{ item.label }}</span>
+                    <div class="role-probability-track" role="img" aria-label="{{ item.label }} {{ item.value }}">
+                        <i style="width: {{ item.pct }}%"></i>
+                    </div>
+                    <b>{{ item.value }}</b>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% if row.peak_projection_card_copy %}<p class="sample-context-note">{{ row.peak_projection_card_copy }}</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if scouting_report or role_profile %}
+        <div class="detail-section scouting-context-card">
+            <div class="scouting-context-head">
+                <div>
+                    <span class="profile-card-kicker">Scouting Repository</span>
+                    <h4>Role & Read</h4>
+                </div>
+                <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open repository</a>
+            </div>
+            {% if scouting_report and scouting_report.report %}
+            <p class="scouting-card-read">{{ scouting_report.report }}</p>
+            {% endif %}
+            <div class="stat-grid">
+                {% if role_profile and role_profile.projected_role_label %}
+                <div class="stat-item"><span class="stat-label">Projected Role</span><span class="stat-value">{{ role_profile.projected_role_label }}</span></div>
+                {% endif %}
+                {% if role_profile and role_profile.projected_volume is not none %}
+                <div class="stat-item"><span class="stat-label">Volume</span><span class="stat-value">{{ "%.0f" | format(role_profile.projected_volume) }} {{ role_profile.projected_volume_unit }}</span></div>
+                {% endif %}
+                {% if role_profile and role_profile.availability_status_label %}
+                <div class="stat-item"><span class="stat-label">Roster Context</span><span class="stat-value">{{ role_profile.availability_status_label }}</span></div>
+                {% endif %}
+                {% if scouting_report and scouting_report.report_status %}
+                <div class="stat-item"><span class="stat-label">Report Status</span><span class="stat-value">{{ scouting_report.report_status | replace("_", " ") | title }}</span></div>
+                {% endif %}
+            </div>
+            {% if role_profile and role_profile.role_basis %}
+            <p class="sample-context-note">{{ role_profile.role_basis | replace("_", " ") | capitalize }}.</p>
+            {% endif %}
         </div>
         {% endif %}
 
@@ -414,6 +461,31 @@
                 <div class="stat-item"><span class="stat-label">Trend</span><span class="trend-chip trend-{{ row.trend_direction or ('up' if row.trend_delta >= 0 else 'down') }}">{{ '+' if (row.trend_direction == 'up' or (not row.trend_direction and row.trend_delta >= 0)) else '-' }}{{ "%.1f" | format(row.trend_delta | abs) }}</span></div>
                 {% endif %}
             </div>
+        </div>
+        {% endif %}
+
+        {% if role_profile %}
+        <div class="detail-section scouting-context-card">
+            <div class="scouting-context-head">
+                <div>
+                    <span class="profile-card-kicker">Playing-Time Tracker</span>
+                    <h4>Projected Role</h4>
+                </div>
+            </div>
+            <div class="stat-grid">
+                {% if role_profile.projected_role_label %}
+                <div class="stat-item"><span class="stat-label">Role</span><span class="stat-value">{{ role_profile.projected_role_label }}</span></div>
+                {% endif %}
+                {% if role_profile.projected_volume is not none %}
+                <div class="stat-item"><span class="stat-label">Volume</span><span class="stat-value">{{ "%.0f" | format(role_profile.projected_volume) }} {{ role_profile.projected_volume_unit }}</span></div>
+                {% endif %}
+                {% if role_profile.availability_status_label %}
+                <div class="stat-item"><span class="stat-label">Roster Context</span><span class="stat-value">{{ role_profile.availability_status_label }}</span></div>
+                {% endif %}
+            </div>
+            {% if role_profile.role_basis %}
+            <p class="sample-context-note">{{ role_profile.role_basis | replace("_", " ") | capitalize }}.</p>
+            {% endif %}
         </div>
         {% endif %}
 

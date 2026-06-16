@@ -27,6 +27,42 @@
         </div>
     </section>
 
+    <form class="scouting-filters glass" method="get" action="/scouting">
+        <label>
+            <span>Search</span>
+            <input type="search" name="q" value="{{ filters.q }}" placeholder="Player, team, position">
+        </label>
+        <label>
+            <span>Team</span>
+            <select name="team">
+                <option value="">All teams</option>
+                {% for team in teams %}
+                <option value="{{ team }}" {% if filters.team == team %}selected{% endif %}>{{ team }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <span>Role</span>
+            <select name="role">
+                <option value="">All roles</option>
+                {% for role in roles %}
+                <option value="{{ role }}" {% if filters.role == role %}selected{% endif %}>{{ role | title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            <span>Status</span>
+            <select name="status">
+                <option value="">All statuses</option>
+                {% for status in statuses %}
+                <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status | replace("_", " ") | title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Filter</button>
+        <a href="/scouting">Reset</a>
+    </form>
+
     <section class="scouting-grid">
         <article class="scouting-card glass">
             <h3>Scouting report repository</h3>
@@ -56,6 +92,17 @@
                 <div><dt>Default promotion</dt><dd>{{ "Manual only" if promotion.human_approval_required_for_default else "Automatic" }}</dd></div>
             </dl>
         </article>
+        <article class="scouting-card glass">
+            {% set peak_summary = (peak_calibration.summary if peak_calibration else {}) or {} %}
+            {% set peak_validation = (peak_calibration.validation if peak_calibration else {}) or {} %}
+            <h3>Peak V2 calibration</h3>
+            <dl>
+                <div><dt>Status</dt><dd>{{ "Ready" if peak_validation.ready_for_review else "Unavailable" }}</dd></div>
+                <div><dt>Buckets</dt><dd>{{ peak_summary.bucket_count or 0 }}</dd></div>
+                <div><dt>Watch items</dt><dd>{{ peak_summary.watch_item_count or 0 }}</dd></div>
+                <div><dt>Rows</dt><dd>{{ peak_summary.projection_count or 0 }}</dd></div>
+            </dl>
+        </article>
     </section>
 
     {% if role_rows %}
@@ -75,14 +122,19 @@
                 <span class="eyebrow">Top prospect reads</span>
                 <h3>What the model sees</h3>
             </div>
-            <p>Stats from ValuCast-owned MiLB context. Peak notes come from the ValuCast peak-projection layer, not public scouting grades.</p>
+            <p>{{ filtered_count }} matching report{{ '' if filtered_count == 1 else 's' }}. Stats come from ValuCast-owned MiLB context; peak notes come from the peak-projection layer, not public scouting grades.</p>
         </div>
+        {% if not reports %}
+        <article class="scouting-player-card glass">
+            <p class="scouting-read">No reports match the current filters.</p>
+        </article>
+        {% endif %}
         {% for report in reports %}
         <article class="scouting-player-card glass">
             <div class="scouting-player-head">
                 <div>
                     <span class="rank-chip">P#{{ report.prospect_rank }}</span>
-                    <h4>{{ report.name }}</h4>
+                    <h4><a href="{{ report.player_url }}">{{ report.name }}</a></h4>
                     <p>{{ report.team }} &middot; {{ report.positions | join("/") }}{% if report.level %} &middot; {{ report.level }}{% endif %}{% if report.age is not none %} &middot; Age {{ report.age }}{% endif %}</p>
                 </div>
                 <div class="scouting-value">
@@ -93,9 +145,10 @@
             <p class="scouting-read">{{ report.report }}</p>
             {% if report.peak_summary %}<p class="scouting-peak">{{ report.peak_summary }}</p>{% endif %}
             <div class="scouting-meta">
-                <span>{{ report.report_status | replace("_", " ") | title }}</span>
-                <span>{{ report.source_fields.stat_line_sample }} {{ report.source_fields.stat_line_sample_unit }}</span>
-                <span>{{ report.confidence | string | title }} confidence</span>
+                <span>{{ report.status_label }}</span>
+                {% if report.sample_label %}<span>{{ report.sample_label }}</span>{% endif %}
+                {% if report.confidence_label %}<span>{{ report.confidence_label }} confidence</span>{% endif %}
+                <a href="{{ report.player_url }}">Open board</a>
             </div>
         </article>
         {% endfor %}
