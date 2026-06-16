@@ -5,10 +5,11 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 <div class="bg-card" data-generic-headshot="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/0/headshot/67/current">
     <div class="bg-head">
+        <img class="bg-mark" src="{{ url_for('static', filename='brand/valucast-mark-96.png') }}" alt="">
         <span class="bg-brand">VALUCAST</span>
         <span class="bg-title">AHEAD OF THE CURVE</span>
-        <span class="bg-sub">The 40 best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</span>
-        <span class="bg-source">Source: {{ buy_source_label }}</span>
+        <span class="bg-sub">Top 40 prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</span>
+        <span class="bg-source">{{ buy_source_label }}</span>
         <svg class="bg-arc" viewBox="0 0 330 150" aria-hidden="true">
             <path d="M318 10 C220 2 126 34 14 140" fill="none" stroke="#232c49" stroke-width="2" />
         </svg>
@@ -17,6 +18,7 @@
     {% set hero = graphic_rows[0] %}
     <div class="bg-featured">
         <article class="bg-featured-card bg-hero">
+            {% if hero.logo_url %}<img class="bg-team-mark bg-team-mark-hero" src="{{ hero.logo_url }}" crossorigin="anonymous" alt="">{% endif %}
             <span class="bg-feature-rank">#1 &middot; TOP BUY</span>
             <span class="bg-portrait bg-portrait-hero">
                 <span class="bg-monogram">{{ hero.initials }}</span>
@@ -32,7 +34,7 @@
                 <polyline points="{{ hero.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
                 <circle cx="{{ hero.spark.last_x }}" cy="{{ hero.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
             </svg>
-            <span class="bg-spark-label">30-DAY VALUE</span>
+            <span class="bg-spark-label">30-DAY SIGNAL</span>
             {% endif %}
             <span class="bg-feature-reason">{{ hero.reason }}</span>
         </article>
@@ -40,6 +42,15 @@
         <div class="bg-supporting">
             {% for p in graphic_rows[1:5] %}
             <article class="bg-featured-card bg-support-card">
+                {% set support_reason = p.reason | upper %}
+                {% if support_reason == "STILL IN THE BUY WINDOW" %}
+                    {% set support_reason = "BUY WINDOW" %}
+                {% elif support_reason == "YOUNG RUNWAY" %}
+                    {% set support_reason = "YOUNG RUNWAY" %}
+                {% elif support_reason == "HISTORY LIMITED" %}
+                    {% set support_reason = "NEW SIGNAL" %}
+                {% endif %}
+                {% if p.logo_url %}<img class="bg-team-mark bg-team-mark-support" src="{{ p.logo_url }}" crossorigin="anonymous" alt="">{% endif %}
                 <span class="bg-portrait bg-portrait-support">
                     <span class="bg-monogram">{{ p.initials }}</span>
                     <img class="bg-face bg-headshot-candidate" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="">
@@ -56,7 +67,7 @@
                     <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
                 </svg>
                 {% endif %}
-                <span class="bg-support-reason">{{ p.reason }}</span>
+                <span class="bg-support-reason">{{ support_reason }}</span>
             </article>
             {% endfor %}
         </div>
@@ -75,6 +86,6 @@
 
     <div class="bg-foot">
         <span class="bg-foot-brand">valucast.app</span>
-        <span class="bg-foot-note"><span class="bg-foot-source">{{ buy_source_label }}</span> &middot; {{ buy_formula_note }}</span>
+        <span class="bg-foot-note"><span class="bg-foot-source">{{ buy_source_label }}</span> &middot; model strength + momentum + buy window + runway</span>
     </div>
 </div>

@@ -258,6 +258,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertIn("html2canvas.min.js", html)
         self.assertIn("AHEAD OF THE CURVE", html)
         self.assertIn("Source:</strong> ValuCast buy signal", html)
+        self.assertIn('class="bg-mark"', html)
+        self.assertIn('class="bg-team-mark', html)
+        self.assertIn("Top 40 prospect buys by signal, not reputation", html)
         self.assertIn("Ranks prospects by model strength, momentum, buy window, and runway", html)
         self.assertIn("buy score = model strength + momentum + buy window + runway", html)
         # Graphic node included twice: 5 featured + 35 compact each.
