@@ -4,9 +4,13 @@
 <article class="methodology">
     <div class="topline">
         <h2>How ValuCast Works</h2>
-        <a href="/" class="back">&larr; Back to rankings</a>
+        <a href="/" class="back">&larr; Back to board</a>
     </div>
     <p class="methodology-version">As of June 2026 · {{ scorecard.version }}</p>
+
+    {% if scorecard.generated_at %}
+    <p class="methodology-version">Scorecard generated {{ scorecard.generated_at[:10] }}</p>
+    {% endif %}
 
     <div class="ataglance">
         <span class="label">At a glance — what's ours vs external</span>
@@ -16,12 +20,15 @@
             <tr><td>Hitting inputs</td><td>Baseball Savant xBA/xSLG</td></tr>
             <tr><td>Pitching model</td><td>Built &amp; validated by ValuCast — no third-party projections</td></tr>
             <tr><td>Pitching inputs</td><td>Public MLB statistics</td></tr>
-            <tr><td>Steamer board</td><td>External comparison board; fair historical benchmark pending</td></tr>
+            <tr><td>Steamer board</td><td>External comparison board; matching historical benchmark pending</td></tr>
         </table>
     </div>
 
     <section>
         <h3>What ValuCast is</h3>
+        <p>ValuCast is an independent baseball model, not a public-ranking average.
+        For prospects and ValuCast H+P, outside rankings, market values, and consensus
+        lists are comparison context only; they do not generate the score.</p>
         <p>ValuCast turns player projections into values tuned to <em>your</em> league's
         categories, weights, and roster rules. You can value players from two sources:
         <strong>Steamer</strong> (an external comparison board, and the default) or
@@ -165,7 +172,9 @@
 
     <section>
         <h3>MLB Projection Track Record — held-out scorecard</h3>
-        <p>On seasons the model never saw:</p>
+        <p>On seasons the model never saw, ValuCast made smaller errors than the
+        standard baselines in the areas shown below. The gains are mostly in rate
+        stats; playing-time and opportunity stats remain harder and are labeled that way.</p>
         <table class="provenance-table ledger">
             <tr><th>Step</th><th>Held-out result</th></tr>
             <tr>
@@ -192,7 +201,7 @@
         which it beats on held-out data. ValuCast has <strong>not yet proven</strong> it
         beats Steamer or ZiPS: we lack matching archived preseason projections for a fair,
         apples-to-apples historical backtest. So Steamer is an <strong>external comparison
-        board, with a fair historical benchmark pending</strong> — not a benchmark we've
+        board, with a matching historical benchmark pending</strong> — not a benchmark we've
         beaten.</p>
     </section>
 </article>

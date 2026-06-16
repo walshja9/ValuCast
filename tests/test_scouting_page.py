@@ -8,11 +8,11 @@ def test_scouting_page_renders_repository_and_role_tracker():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Scouting Repository" in html
+    assert "Scouting Reports" in html
     assert "What the model sees" in html
     assert "Playing-time / role tracker" in html
-    assert "H+P projection track" in html
-    assert "Peak V2 calibration" in html
+    assert "MLB Projection Source" in html
+    assert "Peak Projection Buckets" in html
     assert "not public scouting grades" in html
     assert "Open board" in html
 
@@ -38,7 +38,7 @@ def test_prospect_player_detail_surfaces_scouting_and_role_context():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Scouting Repository" in html
+    assert "Scouting Reports" in html
     assert "Role & Read" in html
     assert "Regular+" in html
 
@@ -58,14 +58,14 @@ def test_mlb_player_detail_surfaces_role_tracker_context():
     assert "Everyday Regular" in html
 
 
-def test_footer_links_to_scouting_repository_from_main_page():
+def test_footer_links_to_scouting_reports_from_main_page():
     client = app.test_client()
 
     response = client.get("/")
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert 'href="/scouting">Scouting Repository</a>' in html
+    assert 'href="/scouting">Scouting Reports</a>' in html
     assert 'href="/intelligence">Intelligence Hub</a>' in html
 
 
@@ -78,13 +78,13 @@ def test_intelligence_hub_renders_all_roadmap_lanes():
     assert response.status_code == 200
     assert "ValuCast Intelligence Hub" in html
     assert "Launch Stability" in html
-    assert "Scouting Report Repository" in html
+    assert "Scouting Reports" in html
     assert "Prospect Peak Projection V2" in html
     assert "Player Card V2 Visuals" in html
     assert "Playing-Time / Role Tracker" in html
     assert "MLB Projection Center" in html
     assert "League Tools" in html
-    assert "quality governor" in html
+    assert "publish checks" in html
     assert "custom league settings" in html
 
 
@@ -96,5 +96,7 @@ def test_primary_nav_links_to_intelligence_surfaces():
 
     assert response.status_code == 200
     assert 'href="/intelligence">Intelligence Hub</a>' in html
+    assert 'href="/buys">Buys</a>' in html
+    assert 'href="/map">Map</a>' in html
     assert 'href="/scouting">Scouting</a>' in html
     assert 'href="/methodology">Methodology</a>' in html

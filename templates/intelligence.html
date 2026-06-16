@@ -4,7 +4,7 @@
 <article class="intelligence-hub">
     <div class="topline">
         <h2>ValuCast Intelligence Hub</h2>
-        <a href="/" class="back">&larr; Back to rankings</a>
+        <a href="/" class="back">&larr; Back to board</a>
     </div>
 
     <section class="intelligence-hero glass">
@@ -22,19 +22,19 @@
     <section class="intelligence-strip glass">
         <div>
             <dt>Public snapshot</dt>
-            <dd>{{ readiness.quality_date or "pending" }}</dd>
+            <dd>{{ readiness.quality_date or "next build" }}</dd>
         </div>
         <div>
-            <dt>Pipeline</dt>
-            <dd>{{ "Ready" if readiness.pipeline_ready else "Watch" }}{% if readiness.pipeline_expected_date %} · {{ readiness.pipeline_expected_date }}{% endif %}</dd>
+            <dt>Daily build</dt>
+            <dd>{{ "Ready" if readiness.pipeline_ready else "Next build" }}{% if readiness.pipeline_expected_date %} · {{ readiness.pipeline_expected_date }}{% endif %}</dd>
         </div>
         <div>
-            <dt>Card audit</dt>
-            <dd>{{ readiness.card_audit_date or "pending" }}</dd>
+            <dt>Card health</dt>
+            <dd>{{ readiness.card_audit_date or "next build" }}</dd>
         </div>
         <div>
             <dt>Recent signal</dt>
-            <dd>{{ readiness.recent_signal_date or readiness.repository_date or "pending" }}</dd>
+            <dd>{{ readiness.recent_signal_date or readiness.repository_date or "next build" }}</dd>
         </div>
     </section>
 

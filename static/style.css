@@ -322,9 +322,18 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .source-caption a:hover { text-decoration: underline; }
 
 .methodology { max-width: 680px; margin: 0 auto; line-height: 1.6; font-size: 0.95rem; }
-.methodology .topline { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--c-border); padding-bottom: 0.4rem; }
-.methodology .topline h2 { margin: 0; }
-.methodology .back { font-size: 0.85rem; color: var(--c-blue-strong); font-weight: 600; white-space: nowrap; }
+.methodology .topline,
+.scouting-report .topline,
+.intelligence-hub .topline,
+.front-office-report .topline { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--c-border); padding-bottom: 0.4rem; }
+.methodology .topline h2,
+.scouting-report .topline h2,
+.intelligence-hub .topline h2,
+.front-office-report .topline h2 { margin: 0; }
+.methodology .back,
+.scouting-report .back,
+.intelligence-hub .back,
+.front-office-report .back { font-size: 0.85rem; color: var(--c-blue-strong); font-weight: 600; white-space: nowrap; }
 .methodology-version { color: var(--c-muted); font-size: 0.8rem; margin: 0.3rem 0 1.1rem; }
 .methodology .ataglance { background: var(--surface-2); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 0.7rem 0.9rem; margin-bottom: 1.3rem; }
 .methodology .ataglance .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c-muted); font-weight: 700; }
@@ -542,6 +551,13 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .scouting-filters a { border: 1px solid var(--c-border); border-radius: .75rem; padding: .55rem .75rem; min-height: 2.35rem; color: var(--c-text); background: rgba(255,255,255,.05); text-decoration: none; font-weight: 800; }
 .scouting-filters button { color: #06110e; background: var(--c-prospect); border-color: transparent; cursor: pointer; }
 .scouting-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .85rem; }
+.scouting-build-details { padding: .85rem; }
+.scouting-build-details summary { cursor: pointer; color: var(--c-text); font-weight: 800; }
+.scouting-build-details[open] summary { margin-bottom: .85rem; }
+.scouting-build-details .scouting-grid { margin-top: .15rem; }
+.scouting-build-details .scouting-card,
+.scouting-build-details .scouting-role-strip { border: 1px solid var(--c-border); border-radius: .85rem; background: rgba(255,255,255,.035); }
+.scouting-build-details .scouting-role-strip { margin-top: .85rem; }
 .scouting-card,
 .scouting-player-card,
 .scouting-role-strip { padding: .95rem; }

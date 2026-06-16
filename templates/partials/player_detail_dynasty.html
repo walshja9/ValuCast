@@ -116,7 +116,7 @@
             </div>
             {% endif %}
             {% elif row.stat_line %}
-            <p class="sample-context-note">Percentile bars require the current sample to meet the ValuCast pool threshold.</p>
+            <p class="sample-context-note">Not enough current sample yet to rank his skill bars against the ValuCast pool.</p>
             {% endif %}
         </div>
         {% endif %}
@@ -160,10 +160,10 @@
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
-                    <span class="profile-card-kicker">Scouting Repository</span>
+                    <span class="profile-card-kicker">Scouting Reports</span>
                     <h4>Role & Read</h4>
                 </div>
-                <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open repository</a>
+                <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open report</a>
             </div>
             {% if scouting_report and scouting_report.report %}
             <p class="scouting-card-read">{{ scouting_report.report }}</p>
@@ -179,7 +179,7 @@
                 <div class="stat-item"><span class="stat-label">Roster Context</span><span class="stat-value">{{ role_profile.availability_status_label }}</span></div>
                 {% endif %}
                 {% if scouting_report and scouting_report.report_status %}
-                <div class="stat-item"><span class="stat-label">Report Status</span><span class="stat-value">{{ scouting_report.report_status | replace("_", " ") | title }}</span></div>
+                <div class="stat-item"><span class="stat-label">Read Status</span><span class="stat-value">{{ scouting_report.report_status | replace("_", " ") | title }}</span></div>
                 {% endif %}
                 {% if recent_signal and recent_signal.movement_label %}
                 <div class="stat-item"><span class="stat-label">Recent Signal</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
@@ -188,7 +188,7 @@
                 <div class="stat-item"><span class="stat-label">Buy Signal</span><span class="stat-value">B#{{ recent_signal.buy_rank }}{% if recent_signal.buy_score is not none %} / {{ "%.0f"|format(recent_signal.buy_score) }}{% endif %}</span></div>
                 {% endif %}
                 {% if card_data_status and card_data_status.status %}
-                <div class="stat-item"><span class="stat-label">Card Data</span><span class="stat-value">{{ card_data_status.status | replace("_", " ") | title }}</span></div>
+                <div class="stat-item"><span class="stat-label">Card Health</span><span class="stat-value">{{ card_data_status.status | replace("_", " ") | title }}</span></div>
                 {% endif %}
             </div>
             {% if role_profile and role_profile.role_basis %}
@@ -534,7 +534,7 @@
 
         {% include "partials/_statcast_bars.html" %}
 
-        {% for title, stats, split in [('2026 Season Outlook', mlb_stats, mlb_stats_split), ('2026 Actual Stats', mlb_stats_actual, mlb_stats_actual_split), ('ROS Projection (Steamer)', mlb_stats_ros, mlb_stats_ros_split)] %}
+        {% for title, stats, split in [('2026 Season Outlook', mlb_stats, mlb_stats_split), ('2026 Actual Stats', mlb_stats_actual, mlb_stats_actual_split), ('Rest-of-Season Projection (Steamer)', mlb_stats_ros, mlb_stats_ros_split)] %}
         {% if stats %}
         <div class="detail-section">
             <h4>{{ title }}</h4>

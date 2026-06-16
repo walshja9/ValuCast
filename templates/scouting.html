@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Scouting Repository | ValuCast{% endblock %}
+{% block title %}Scouting Reports | ValuCast{% endblock %}
 {% block content %}
 <article class="scouting-report">
     <div class="topline">
-        <h2>Scouting Repository</h2>
-        <a href="/" class="back">&larr; Back to rankings</a>
+        <h2>Scouting Reports</h2>
+        <a href="/" class="back">&larr; Back to board</a>
     </div>
 
     {% if not repository %}
     <section class="glass">
-        <h3>Repository unavailable</h3>
-        <p>The scouting repository will appear after the next public data build.</p>
+        <h3>Reports unavailable</h3>
+        <p>The scouting reports will appear after the next public data build.</p>
     </section>
     {% else %}
     {% set summary = repository.summary or {} %}
@@ -63,81 +63,6 @@
         <a href="/scouting">Reset</a>
     </form>
 
-    <section class="scouting-grid">
-        <article class="scouting-card glass">
-            <h3>Scouting report repository</h3>
-            <dl>
-                <div><dt>Status</dt><dd>{{ "Ready" if validation.ready_for_repository else "Blocked" }}</dd></div>
-                <div><dt>Reports</dt><dd>{{ summary.report_count }}</dd></div>
-                <div><dt>Max rank</dt><dd>{{ summary.max_prospect_rank }}</dd></div>
-                <div><dt>Generated</dt><dd>{{ (repository.generated_at or "")[:10] }}</dd></div>
-            </dl>
-        </article>
-        <article class="scouting-card glass">
-            {% set role_summary = (role_tracker.summary if role_tracker else {}) or {} %}
-            <h3>Playing-time / role tracker</h3>
-            <dl>
-                <div><dt>Status</dt><dd>{{ "Ready" if role_tracker and role_tracker.validation.ready_for_role_context else "Unavailable" }}</dd></div>
-                <div><dt>Profiles</dt><dd>{{ role_summary.profile_count or 0 }}</dd></div>
-                <div><dt>Active MLB</dt><dd>{{ role_summary.active_mlb_roster_count or 0 }}</dd></div>
-                <div><dt>Injury risk</dt><dd>{{ role_summary.active_injury_risk_count or 0 }}</dd></div>
-            </dl>
-        </article>
-        <article class="scouting-card glass">
-            {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
-            <h3>H+P projection track</h3>
-            <dl>
-                <div><dt>Opt-in ready</dt><dd>{{ "Yes" if promotion.ready_for_opt_in_source else "No" }}</dd></div>
-                <div><dt>Default source</dt><dd>{{ promotion.default_source or "Steamer" }}</dd></div>
-                <div><dt>Default promotion</dt><dd>{{ "Manual only" if promotion.human_approval_required_for_default else "Automatic" }}</dd></div>
-            </dl>
-        </article>
-        <article class="scouting-card glass">
-            {% set peak_summary = (peak_calibration.summary if peak_calibration else {}) or {} %}
-            {% set peak_validation = (peak_calibration.validation if peak_calibration else {}) or {} %}
-            <h3>Peak V2 calibration</h3>
-            <dl>
-                <div><dt>Status</dt><dd>{{ "Ready" if peak_validation.ready_for_review else "Unavailable" }}</dd></div>
-                <div><dt>Buckets</dt><dd>{{ peak_summary.bucket_count or 0 }}</dd></div>
-                <div><dt>Watch items</dt><dd>{{ peak_summary.watch_item_count or 0 }}</dd></div>
-                <div><dt>Rows</dt><dd>{{ peak_summary.projection_count or 0 }}</dd></div>
-            </dl>
-        </article>
-        <article class="scouting-card glass">
-            {% set signal_summary = (recent_signal.summary if recent_signal else {}) or {} %}
-            {% set signal_validation = (recent_signal.validation if recent_signal else {}) or {} %}
-            <h3>Recent signal pipeline</h3>
-            <dl>
-                <div><dt>Status</dt><dd>{{ "Ready" if signal_validation.ready_for_recent_signal else "Collecting" }}</dd></div>
-                <div><dt>Signals</dt><dd>{{ signal_summary.signal_count or 0 }}</dd></div>
-                <div><dt>Movers</dt><dd>{{ signal_summary.top_mover_count or 0 }}</dd></div>
-                <div><dt>Archive days</dt><dd>{{ signal_summary.archive_day_span or 0 }}</dd></div>
-            </dl>
-        </article>
-        <article class="scouting-card glass">
-            {% set audit_metrics = (card_audit.metrics if card_audit else {}) or {} %}
-            {% set audit_validation = (card_audit.validation if card_audit else {}) or {} %}
-            <h3>Prospect card data audit</h3>
-            <dl>
-                <div><dt>Status</dt><dd>{{ "Ready" if audit_validation.ready_for_cards else "Watch" }}</dd></div>
-                <div><dt>Top 200</dt><dd>{{ audit_metrics.top200_count or 0 }}</dd></div>
-                <div><dt>Watch rows</dt><dd>{{ audit_metrics.top200_watch_count or 0 }}</dd></div>
-                <div><dt>Split samples</dt><dd>{{ audit_metrics.split_level_sample_count or 0 }}</dd></div>
-            </dl>
-        </article>
-    </section>
-
-    {% if role_rows %}
-    <section class="glass scouting-role-strip">
-        <h3>Projected Role Mix</h3>
-        <div class="scouting-role-grid">
-            {% for item in role_rows %}
-            <div><span>{{ item.count }}</span><small>{{ item.role }}</small></div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
     <section class="scouting-list">
         <div class="scouting-section-head">
             <div>
@@ -178,6 +103,83 @@
         </article>
         {% endfor %}
     </section>
+    <details class="scouting-build-details glass">
+        <summary>Model coverage and build health</summary>
+        <section class="scouting-grid">
+            <article class="scouting-card">
+                <h3>Scouting Reports</h3>
+                <dl>
+                    <div><dt>Status</dt><dd>{{ "Live" if validation.ready_for_repository else "Next build" }}</dd></div>
+                    <div><dt>Reports</dt><dd>{{ summary.report_count }}</dd></div>
+                    <div><dt>Max rank</dt><dd>{{ summary.max_prospect_rank }}</dd></div>
+                    <div><dt>Generated</dt><dd>{{ (repository.generated_at or "")[:10] }}</dd></div>
+                </dl>
+            </article>
+            <article class="scouting-card">
+                {% set role_summary = (role_tracker.summary if role_tracker else {}) or {} %}
+                <h3>Playing-time / role tracker</h3>
+                <dl>
+                    <div><dt>Status</dt><dd>{{ "Live" if role_tracker and role_tracker.validation.ready_for_role_context else "Next build" }}</dd></div>
+                    <div><dt>Profiles</dt><dd>{{ role_summary.profile_count or 0 }}</dd></div>
+                    <div><dt>Active MLB</dt><dd>{{ role_summary.active_mlb_roster_count or 0 }}</dd></div>
+                    <div><dt>Injury risk</dt><dd>{{ role_summary.active_injury_risk_count or 0 }}</dd></div>
+                </dl>
+            </article>
+            <article class="scouting-card">
+                {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
+                <h3>MLB Projection Source</h3>
+                <dl>
+                    <div><dt>ValuCast source</dt><dd>{{ "Available" if promotion.ready_for_opt_in_source else "Building" }}</dd></div>
+                    <div><dt>Default source</dt><dd>{{ promotion.default_source or "Steamer" }}</dd></div>
+                    <div><dt>Default setting</dt><dd>{{ "Manual only" if promotion.human_approval_required_for_default else "Automatic" }}</dd></div>
+                </dl>
+            </article>
+            <article class="scouting-card">
+                {% set peak_summary = (peak_calibration.summary if peak_calibration else {}) or {} %}
+                {% set peak_validation = (peak_calibration.validation if peak_calibration else {}) or {} %}
+                <h3>Peak Projection Buckets</h3>
+                <dl>
+                    <div><dt>Status</dt><dd>{{ "Live" if peak_validation.ready_for_review else "Next build" }}</dd></div>
+                    <div><dt>Buckets</dt><dd>{{ peak_summary.bucket_count or 0 }}</dd></div>
+                    <div><dt>Needs review</dt><dd>{{ peak_summary.watch_item_count or 0 }}</dd></div>
+                    <div><dt>Profiles</dt><dd>{{ peak_summary.projection_count or 0 }}</dd></div>
+                </dl>
+            </article>
+            <article class="scouting-card">
+                {% set signal_summary = (recent_signal.summary if recent_signal else {}) or {} %}
+                {% set signal_validation = (recent_signal.validation if recent_signal else {}) or {} %}
+                <h3>Recent Signals</h3>
+                <dl>
+                    <div><dt>Status</dt><dd>{{ "Live" if signal_validation.ready_for_recent_signal else "Collecting" }}</dd></div>
+                    <div><dt>Signals</dt><dd>{{ signal_summary.signal_count or 0 }}</dd></div>
+                    <div><dt>Movers</dt><dd>{{ signal_summary.top_mover_count or 0 }}</dd></div>
+                    <div><dt>Tracked days</dt><dd>{{ signal_summary.archive_day_span or 0 }}</dd></div>
+                </dl>
+            </article>
+            <article class="scouting-card">
+                {% set audit_metrics = (card_audit.metrics if card_audit else {}) or {} %}
+                {% set audit_validation = (card_audit.validation if card_audit else {}) or {} %}
+                <h3>Player Card Health</h3>
+                <dl>
+                    <div><dt>Status</dt><dd>{{ "Live" if audit_validation.ready_for_cards else "Needs review" }}</dd></div>
+                    <div><dt>Top 200</dt><dd>{{ audit_metrics.top200_count or 0 }}</dd></div>
+                    <div><dt>Needs review</dt><dd>{{ audit_metrics.top200_watch_count or 0 }}</dd></div>
+                    <div><dt>Level splits</dt><dd>{{ audit_metrics.split_level_sample_count or 0 }}</dd></div>
+                </dl>
+            </article>
+        </section>
+
+        {% if role_rows %}
+        <section class="scouting-role-strip">
+            <h3>Projected Role Mix</h3>
+            <div class="scouting-role-grid">
+                {% for item in role_rows %}
+                <div><span>{{ item.count }}</span><small>{{ item.role }}</small></div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </details>
     {% endif %}
 </article>
 {% endblock %}

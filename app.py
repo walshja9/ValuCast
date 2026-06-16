@@ -2142,8 +2142,8 @@ def intelligence_hub():
     lanes = [
         {
             "name": "Launch Stability",
-            "status": "Ready" if _artifact_ready(quality, "ready_for_public_snapshot") else "Watch",
-            "kicker": "quality governor",
+            "status": "Ready" if _artifact_ready(quality, "ready_for_public_snapshot") else "Next build",
+            "kicker": "publish checks",
             "copy": (
                 "Daily publish checks watch freshness, identity coverage, board shape, "
                 "Buys readiness, and stale stat context before the public surfaces move."
@@ -2153,9 +2153,9 @@ def intelligence_hub():
             "cta": "View front-office track",
         },
         {
-            "name": "Prospect Card Data Audit",
-            "status": "Ready" if _artifact_ready(card_audit, "validation", "ready_for_cards") else "Watch",
-            "kicker": "card data contract",
+            "name": "Player Card Health",
+            "status": "Ready" if _artifact_ready(card_audit, "validation", "ready_for_cards") else "Needs review",
+            "kicker": "card coverage",
             "copy": (
                 "Prospect cards now get a daily identity, level, stat-context, "
                 "graduation, and peak-projection audit before they publish."
@@ -2167,7 +2167,7 @@ def intelligence_hub():
             "cta": "Review card health",
         },
         {
-            "name": "Recent Signal Pipeline",
+            "name": "Recent Signals",
             "status": "Ready" if _artifact_ready(recent_signal, "validation", "ready_for_recent_signal") else "Collecting",
             "kicker": "why now",
             "copy": (
@@ -2181,16 +2181,16 @@ def intelligence_hub():
             "cta": "See signals",
         },
         {
-            "name": "Scouting Report Repository",
-            "status": "Ready" if _artifact_ready(repository, "validation", "ready_for_repository") else "Watch",
+            "name": "Scouting Reports",
+            "status": "Ready" if _artifact_ready(repository, "validation", "ready_for_repository") else "Next build",
             "kicker": "player intelligence",
             "copy": (
                 "Searchable stat-grounded prospect reads, peak notes, confidence labels, "
-                "and player-card links in one repository."
+                "and player-card links in one scouting surface."
             ),
             "metric": f"{((repository or {}).get('summary') or {}).get('report_count', 0)} reports",
             "href": "/scouting",
-            "cta": "Open repository",
+            "cta": "Open reports",
         },
         {
             "name": "Prospect Peak Projection V2",
@@ -2208,7 +2208,7 @@ def intelligence_hub():
         },
         {
             "name": "Player Card V2 Visuals",
-            "status": "Live" if _artifact_ready(repository) else "Watch",
+            "status": "Live" if _artifact_ready(repository) else "Next build",
             "kicker": "cards and share graphics",
             "copy": (
                 "Cards now center the ValuCast read, current percentiles, peak outlook, "
