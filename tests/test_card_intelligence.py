@@ -602,6 +602,10 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"The ValuCast Read", response.data)
         self.assertIn(b"How His Skills Rank", response.data)
+        read_pos = response.data.find(b"The ValuCast Read")
+        trend_pos = response.data.find(b"Dynasty Value Trend")
+        if trend_pos != -1:
+            self.assertLess(read_pos, trend_pos)
         self.assertIn(b"100 = best in the ValuCast prospect pool", response.data)
         self.assertIn(b"Skill Shape", response.data)
         self.assertIn(b"not scouting grades", response.data)

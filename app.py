@@ -2220,10 +2220,10 @@ def intelligence_hub():
         },
         {
             "name": "Playing-Time / Role Tracker",
-            "status": "Ready" if _artifact_ready(role_tracker, "validation", "ready_for_role_context") else "Watch",
+            "status": "Ready" if _artifact_ready(role_tracker, "validation", "ready_for_role_context") else "Next build",
             "kicker": "MLB role context",
             "copy": (
-                "MLBAM-keyed role profiles separate active roster status, injury risk, "
+                "Official MLB ID role profiles separate active roster status, injury risk, "
                 "projected volume, and role basis from the value score."
             ),
             "metric": (
@@ -2234,7 +2234,7 @@ def intelligence_hub():
         },
         {
             "name": "MLB Projection Center",
-            "status": "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Watch",
+            "status": "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Building",
             "kicker": "H+P model track",
             "copy": (
                 "The ValuCast H+P source stays opt-in while the methodology page publishes "

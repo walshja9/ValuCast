@@ -505,6 +505,16 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn(b"rankings-table", response.data)
         self.assertIn(b"col-cat", response.data)
 
+        detail = self.client.get(
+            "/player/19755?mode=categories",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(detail.status_code, 200)
+        self.assertLess(
+            detail.data.find(b"The ValuCast Read"),
+            detail.data.find(b"Category Breakdown"),
+        )
+
 
 class TestNoRosBadgeCSS(unittest.TestCase):
     def test_no_ros_badge_style_exists(self):

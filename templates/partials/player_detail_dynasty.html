@@ -51,7 +51,9 @@
     </div>
 
     <div class="detail-body">
+        {% if not row.is_prospect %}
         {% include "partials/_value_spark.html" %}
+        {% endif %}
         {% if row.is_prospect %}
         {% set card_context = profile_stat_context if profile_stat_context is defined else {} %}
         {% set has_skill_card = profile_bars is defined and profile_bars %}
@@ -119,6 +121,10 @@
             <p class="sample-context-note">Not enough current sample yet to rank his skill bars against the ValuCast pool.</p>
             {% endif %}
         </div>
+        {% endif %}
+
+        {% if row.is_prospect %}
+        {% include "partials/_value_spark.html" %}
         {% endif %}
 
         {% if row.has_peak_projection %}

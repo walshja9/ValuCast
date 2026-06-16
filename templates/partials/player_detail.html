@@ -27,6 +27,35 @@
     </div>
 
     <div class="detail-body">
+        {% set read = namespace(best_label=None, best_value=None, drag_label=None, drag_value=None) %}
+        {% for cat in active_categories %}
+            {% set cat_value = result.category_values.get(cat.id) %}
+            {% if cat_value is number %}
+                {% if read.best_value is none or cat_value > read.best_value %}
+                    {% set read.best_label = cat.label %}
+                    {% set read.best_value = cat_value %}
+                {% endif %}
+                {% if read.drag_value is none or cat_value < read.drag_value %}
+                    {% set read.drag_label = cat.label %}
+                    {% set read.drag_value = cat_value %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <div class="detail-section league-read-card">
+            <span class="profile-card-kicker">The ValuCast Read</span>
+            <h4>League Fit</h4>
+            <p>
+                ValuCast reads this as a
+                {% if result.total_value >= 5 %}clear positive
+                {% elif result.total_value > 0 %}slight positive
+                {% elif result.total_value <= -5 %}clear negative
+                {% elif result.total_value < 0 %}slight negative
+                {% else %}neutral{% endif %}
+                fit for this setup{% if read.best_label %}, with the biggest lift from {{ read.best_label }}{% endif %}{% if read.drag_label and read.drag_value is not none and read.drag_value < 0 %} and the main drag from {{ read.drag_label }}{% endif %}.
+                The table below shows the category-by-category math.
+            </p>
+        </div>
+
         <div class="detail-section">
             <h4>Category Breakdown</h4>
             <table class="detail-table">
