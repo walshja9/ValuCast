@@ -166,6 +166,36 @@ class PublicSnapshotRow:
         level = self.context.get("stat_line_level") or self.level
         return str(level) if level else None
 
+    @staticmethod
+    def _is_mlb_level(level: str | None) -> bool:
+        return str(level or "").strip().upper() == "MLB"
+
+    @property
+    def _current_season_stat_line_level_label(self) -> str | None:
+        if self.context.get("stat_line_source_kind") != "current_season":
+            return None
+        if not self.stat_line_sample_label:
+            return None
+        level = self.context.get("stat_line_level")
+        return str(level) if level else None
+
+    @property
+    def has_graduated(self) -> bool:
+        context = self.graduation_context
+        return context.get("graduated") is True or context.get("status") == "graduated"
+
+    @property
+    def card_level_label(self) -> str | None:
+        feed_level = str(self.level) if self.level else None
+        current_level = self._current_season_stat_line_level_label
+        if not self.is_prospect:
+            return feed_level
+        if self.has_graduated:
+            return "MLB"
+        if self._is_mlb_level(current_level) or self._is_mlb_level(feed_level):
+            return "MLB"
+        return current_level or feed_level
+
     @property
     def current_level_sample_label(self) -> str | None:
         sample = self.stat_line_sample_label
@@ -333,7 +363,7 @@ class PublicSnapshotRow:
 
     @property
     def peak_projection_note(self) -> str:
-        return "Display-only peak role and shape. Current rank/value unchanged."
+        return "Projected peak role and shape — context only, it doesn't change the current rank or value."
 
     @property
     def peak_score_label(self) -> str | None:

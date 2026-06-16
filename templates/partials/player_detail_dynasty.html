@@ -90,18 +90,26 @@
                 </div>
                 {% endfor %}
             </div>
-            {% if skill_grades %}
+            {% set skill_shape = skill_shape if skill_shape is defined else skill_grades %}
+            {% if skill_shape %}
+            {% set has_peak_shape = skill_shape | selectattr('peak', 'ne', none) | list | length > 0 %}
             <div class="skill-shape-card">
                 <div class="skill-shape-head">
-                    <h5>Current Skill Shape</h5>
-                    <span>20-80 style - from current stats, not scouting grades</span>
+                    <h5>Skill Shape</h5>
+                    <span>{% if has_peak_shape %}Now &rarr; projected peak &middot; {% endif %}20-80 scale from stats, not scouting grades</span>
                 </div>
-                <div class="skill-shape-grid">
-                    {% for skill in skill_grades %}
-                    <div class="skill-shape-item {{ 'plus' if skill.grade >= 60 else ('risk' if skill.grade <= 40 else '') }}">
-                        <span class="skill-shape-label">{{ skill.label }}</span>
-                        <span class="skill-shape-grade">{{ skill.grade }}</span>
-                        <span class="skill-shape-source">{{ skill.metrics }}</span>
+                <div class="skill-compare">
+                    {% for skill in skill_shape %}
+                    {% set tone = 'plus' if skill.current >= 60 else ('risk' if skill.current <= 40 else '') %}
+                    <div class="skill-compare-row">
+                        <span class="skill-compare-label">{{ skill.label }}</span>
+                        <div class="skill-compare-track" role="img" aria-label="{{ skill.label }}: now {{ skill.current }}{% if skill.peak is not none %}, projected peak {{ skill.peak }}{% endif %} on the 20-80 scale">
+                            <span class="skill-compare-fill {{ tone }}" style="width: {{ skill.current_pct }}%"></span>
+                            {% if skill.peak is not none %}<span class="skill-compare-peak" style="left: {{ skill.peak_pct }}%"></span>{% endif %}
+                            <span class="skill-compare-cur" style="left: {{ skill.current_pct }}%">{{ skill.current }}</span>
+                        </div>
+                        <span class="skill-compare-target">{% if skill.peak is not none %}&rarr;&nbsp;{{ skill.peak }}{% else %}&mdash;{% endif %}</span>
+                        <span class="skill-compare-metrics">{{ skill.metrics }}</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -118,7 +126,7 @@
             <div class="peak-projection-head">
                 <div>
                     <span class="profile-card-kicker">Peak Projection</span>
-                    <h4>Projected Peak Shape</h4>
+                    <h4>Peak Outlook</h4>
                 </div>
                 <p class="profile-note peak-projection-note">{{ row.peak_projection_note }}</p>
             </div>
@@ -129,23 +137,6 @@
                 {% if row.peak_confidence_label %}<span><b>Conf</b>{{ row.peak_confidence_label }}</span>{% endif %}
                 {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
             </div>
-            {% if row.peak_shape_items %}
-            <div class="skill-shape-card peak-shape-card">
-                <div class="skill-shape-head">
-                    <h5>Peak Shape</h5>
-                    <span>Where the skills project at peak</span>
-                </div>
-                <div class="skill-shape-grid">
-                    {% for skill in row.peak_shape_items %}
-                    <div class="skill-shape-item {{ 'plus' if skill.grade >= 60 else ('risk' if skill.grade <= 40 else '') }}">
-                        <span class="skill-shape-label">{{ skill.label }}</span>
-                        <span class="skill-shape-grade">{{ skill.grade }}</span>
-                        <span class="skill-shape-source">{{ skill.metrics }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
             {% if row.peak_projection_summary %}<p class="sample-context-note">{{ row.peak_projection_summary }}</p>{% endif %}
         </div>
         {% endif %}

@@ -74,7 +74,7 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"Spread 68", response.data)
         self.assertIn(b"The ValuCast Read", response.data)
         self.assertIn(b"How His Skills Rank", response.data)
-        self.assertIn(b"Current Skill Shape", response.data)
+        self.assertIn(b"Skill Shape", response.data)
         self.assertNotIn(b"Rate Stats", response.data)
         self.assertNotIn(b"Plate Discipline", response.data)
         self.assertNotIn(b'<span class="stat-label">Level</span>', response.data)

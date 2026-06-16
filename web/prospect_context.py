@@ -207,7 +207,7 @@ def uncertainty_note(context: dict | None) -> str | None:
     if not band or width is None:
         return None
     return (
-        f"This is a display-only {band} uncertainty band of plus/minus "
-        f"{width:.1f} points around the current ValuCast score. It explains "
-        "confidence; it does not move the rank or value."
+        f"This is a {band} uncertainty band of plus/minus "
+        f"{width:.1f} points around the current ValuCast score. It shows "
+        "confidence and doesn't move the rank or value."
     )

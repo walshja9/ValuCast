@@ -145,6 +145,35 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertTrue(all(20 <= g["grade"] <= 80 for g in grades))
         self.assertEqual(grades[0]["metrics"], "AVG / K%")
 
+    def test_skill_shape_compare_pairs_current_and_peak(self):
+        grades = (
+            {"label": "Hit", "grade": 78, "metrics": "AVG / K%"},
+            {"label": "Power", "grade": 50, "metrics": "ISO / SLG"},
+            {"label": "Production", "grade": 78, "metrics": "OPS"},
+        )
+        peak = [
+            {"label": "Hit", "grade": 80},
+            {"label": "Power", "grade": 60},
+            {"label": "Impact", "grade": 80},  # hitter peak uses Impact for Production
+        ]
+        out = prospect_percentiles.skill_shape_compare(grades, peak)
+
+        self.assertEqual([r["label"] for r in out], ["Hit", "Power", "Production"])
+        self.assertEqual(out[0]["current"], 78)
+        self.assertEqual(out[0]["peak"], 80)
+        # Production pairs to Impact via alias
+        self.assertEqual(out[2]["peak"], 80)
+        # grade 50 -> (50-20)/60*100 = 50%
+        self.assertAlmostEqual(out[1]["current_pct"], 50.0)
+        self.assertAlmostEqual(out[0]["current_pct"], (78 - 20) / 60 * 100)
+
+    def test_skill_shape_compare_without_peak_leaves_peak_none(self):
+        grades = ({"label": "Hit", "grade": 70, "metrics": "AVG / K%"},)
+        out = prospect_percentiles.skill_shape_compare(grades, [])
+        self.assertIsNone(out[0]["peak"])
+        self.assertIsNone(out[0]["peak_pct"])
+        self.assertEqual(out[0]["current"], 70)
+
     def test_caption_neutral_and_non_headline_metric(self):
         self.assertIsNone(prospect_percentiles.caption_for("ops", 50))
         self.assertIsNone(prospect_percentiles.caption_for("avg", 95))
@@ -574,7 +603,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"The ValuCast Read", response.data)
         self.assertIn(b"How His Skills Rank", response.data)
         self.assertIn(b"100 = best in the ValuCast prospect pool", response.data)
-        self.assertIn(b"Current Skill Shape", response.data)
+        self.assertIn(b"Skill Shape", response.data)
         self.assertIn(b"not scouting grades", response.data)
         self.assertIn(b"identity-line", response.data)
         self.assertIn(b".300/.400/.550", response.data)

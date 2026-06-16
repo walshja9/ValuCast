@@ -762,6 +762,42 @@ def skill_grades(row, percentiles: dict) -> tuple[dict, ...]:
     return tuple(grades)
 
 
+_PEAK_LABEL_ALIASES = {"Production": "Impact"}
+
+
+def _grade_to_pct(grade) -> float | None:
+    if grade is None:
+        return None
+    return max(0.0, min(100.0, (float(grade) - 20.0) / 60.0 * 100.0))
+
+
+def skill_shape_compare(grades, peak_items) -> tuple[dict, ...]:
+    """One row per skill: current 20-80 grade alongside its projected peak.
+
+    Pairs current grades to peak-shape items by label (with the hitter
+    Production<->Impact alias). ``peak`` is None when no peak projection
+    covers that skill. ``*_pct`` are 0-100 bar widths for the template.
+    """
+    peak_by_label = {p.get("label"): p for p in (peak_items or [])}
+    merged = []
+    for grade in grades:
+        label = grade.get("label")
+        peak = peak_by_label.get(label) or peak_by_label.get(
+            _PEAK_LABEL_ALIASES.get(label)
+        )
+        current = grade.get("grade")
+        peak_grade = peak.get("grade") if peak else None
+        merged.append({
+            "label": label,
+            "metrics": grade.get("metrics"),
+            "current": current,
+            "peak": peak_grade,
+            "current_pct": _grade_to_pct(current),
+            "peak_pct": _grade_to_pct(peak_grade),
+        })
+    return tuple(merged)
+
+
 def caption_for(metric: str, pct: int | None) -> str | None:
     """Threshold-banded caption; None in the neutral band or for non-headline metrics."""
     if pct is None or metric not in _CAPTIONS:

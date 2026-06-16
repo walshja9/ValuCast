@@ -890,9 +890,17 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             x, y = start_x + col * (cell_w + 24), start_y + r * (cell_h + 18)
             draw.rounded_rectangle((x, y, x + cell_w, y + cell_h), radius=14, fill=card_2, outline=border, width=2)
             draw.text((x + 18, y + 16), rank_label(idx + 2), fill=blue, font=font(21, bold=True))
-            draw.text((x + 18, y + 56), fit_text(draw, row.name, font(25, bold=True), 220), fill=text, font=font(25, bold=True))
-            draw.text((x + 18, y + 93), fit_text(draw, tag(row), font(17), 220), fill=muted, font=font(17))
+            draw.text((x + 18, y + 54), fit_text(draw, row.name, font(25, bold=True), 220), fill=text, font=font(25, bold=True))
+            draw.text((x + 18, y + 90), fit_text(draw, tag(row), font(17), 220), fill=muted, font=font(17))
             draw.text((x + cell_w - 86, y + 20), note_label(row), fill=muted, font=font(14, bold=True))
+            draw.line((x + 18, y + 120, x + cell_w - 18, y + 120), fill=border, width=1)
+            draw.text((x + 18, y + 132), "VALUCAST", fill=muted, font=font(13, bold=True))
+            cell_val = value_label(row) or "--"
+            cell_val_font = font(26, bold=True)
+            draw.text(
+                (x + cell_w - 18 - text_width(draw, cell_val, cell_val_font), y + 126),
+                cell_val, fill=green, font=cell_val_font,
+            )
     else:
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
@@ -929,6 +937,9 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             draw.text((x + 104, y + 78), fit_text(draw, tag(row), font(15), 160), fill=muted, font=font(15))
             draw.line((x + 16, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 16, y + 118), note_label(row), fill=muted, font=font(14, bold=True))
+            sup_val = value_label(row) or "--"
+            sup_val_font = font(22, bold=True)
+            draw.text((x + 275 - text_width(draw, sup_val, sup_val_font), y + 112), sup_val, fill=green, font=sup_val_font)
 
         rest = rows[5:20]
         cols = 3
@@ -945,13 +956,16 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
                 draw.line((x, y, x + cell_w, y), fill=border, width=1)
             draw.text((x + 14, y + 14), rank_label(idx + 6), fill=blue, font=font(19, bold=True))
             draw.text((x + cell_w - 86, y + 16), note_label(row), fill=muted, font=font(14, bold=True))
-            draw.text((x + 14, y + 50), fit_text(draw, abbrev_name(row.name), font(22, bold=True), 250), fill=text, font=font(22, bold=True))
-            draw.text((x + 14, y + 84), fit_text(draw, tag(row), font(18), 250), fill=muted, font=font(18))
+            draw.text((x + 14, y + 50), fit_text(draw, abbrev_name(row.name), font(22, bold=True), 210), fill=text, font=font(22, bold=True))
+            draw.text((x + 14, y + 84), fit_text(draw, tag(row), font(18), 230), fill=muted, font=font(18))
+            rest_val = value_label(row) or "--"
+            rest_val_font = font(20, bold=True)
+            draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
     foot_y = height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card)
     draw.text((60, foot_y + 10), "valucast.app", fill=green, font=font(22, bold=True))
-    footer = "Source: ValuCast Prospect Rank v1"
+    footer = "Source: ValuCast Prospect Rank"
     draw.text((700, foot_y + 14), fit_text(draw, footer, font(15), 300), fill=muted, font=font(15))
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -2209,6 +2223,9 @@ def player_detail(player_id):
             }
             profile_bars = prospect_percentiles.profile_bars(dd_row, stat_percentiles)
             skill_grades = prospect_percentiles.skill_grades(dd_row, stat_percentiles)
+            skill_shape = prospect_percentiles.skill_shape_compare(
+                skill_grades, getattr(dd_row, "peak_shape_items", ()) or ()
+            )
             profile_stat_context = getattr(dd_row, "context", None)
             if not isinstance(profile_stat_context, dict):
                 profile_stat_context = (
@@ -2225,6 +2242,7 @@ def player_detail(player_id):
                 "identity": identity,
                 "profile_bars": profile_bars,
                 "skill_grades": skill_grades,
+                "skill_shape": skill_shape,
                 "profile_pool_label": prospect_percentiles.pool_label(dd_row),
                 "profile_stat_context": profile_stat_context,
             }
