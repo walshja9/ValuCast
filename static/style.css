@@ -1851,7 +1851,10 @@ main {
 .rankings-table {
     border-collapse: separate;
     border-spacing: 0;
-    overflow: hidden;
+    /* clip (not hidden): rounds the corners without making the table a scroll
+       container, which would reparent the sticky <thead> and offset it by
+       --toolbar-h *from the table top*, planting the header over row 3. */
+    overflow: clip;
     border-radius: 16px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .005) 45%),
