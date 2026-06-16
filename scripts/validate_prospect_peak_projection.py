@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
+CARD_VISUAL_VERSION = "2.0.0"
 
 
 def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str]]:
@@ -48,6 +49,8 @@ def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, l
     else:
         if contract.get("projection_kind") != "peak_role_and_skill_shape_not_full_stat_forecast":
             problems.append("projection_contract.projection_kind is invalid")
+        if contract.get("card_visual_version") != CARD_VISUAL_VERSION:
+            problems.append("projection_contract.card_visual_version is invalid")
         if contract.get("feeds_live_rank") is not False:
             problems.append("projection_contract.feeds_live_rank must be false")
         if contract.get("feeds_live_value") is not False:
@@ -71,6 +74,8 @@ def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, l
             problems.append("duplicate_identity_count must be zero")
         if validation.get("missing_shape_count", 0) != 0:
             problems.append("missing_shape_count must be zero")
+        if validation.get("missing_card_v2_count", 0) != 0:
+            problems.append("missing_card_v2_count must be zero")
 
     projections = payload.get("projections")
     if not isinstance(projections, list) or not projections:
@@ -101,6 +106,16 @@ def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, l
                     problems.append(f"projection {index} missing {field}")
             if row.get("usage") != "card_visual_context_not_live_rank_or_value":
                 problems.append(f"projection {index} has invalid usage")
+            card_v2 = row.get("card_v2")
+            if not isinstance(card_v2, dict):
+                problems.append(f"projection {index} missing card_v2")
+            else:
+                if card_v2.get("visual_version") != CARD_VISUAL_VERSION:
+                    problems.append(f"projection {index} has invalid card_v2 visual_version")
+                if not isinstance(card_v2.get("role_probabilities"), dict):
+                    problems.append(f"projection {index} missing role probabilities")
+                if not card_v2.get("card_copy"):
+                    problems.append(f"projection {index} missing card_v2 card_copy")
             shape = row.get("shape")
             if not isinstance(shape, list) or len(shape) < 4:
                 problems.append(f"projection {index} shape must have at least four items")

@@ -1,0 +1,89 @@
+{
+  "artifact": "valucast_hp_promotion_sanity_report",
+  "gates": [
+    {
+      "detail": "hitters=867 pitchers=1182",
+      "name": "both_pools_present",
+      "passed": true
+    },
+    {
+      "detail": "manifest hitters=867 pitchers=1182",
+      "name": "manifest_counts_match_run",
+      "passed": true
+    },
+    {
+      "detail": "source_name=valucast",
+      "name": "source_named_valucast",
+      "passed": true
+    },
+    {
+      "detail": "duplicate_mlbam_count=0",
+      "name": "identity_keys_unique",
+      "passed": true
+    },
+    {
+      "detail": "current.json (Steamer outlook) used for names/teams/positions + active-player universe; NO projection stats copied",
+      "name": "eligibility_stats_not_copied",
+      "passed": true
+    },
+    {
+      "detail": "version=ValuCast H+P v1",
+      "name": "methodology_scorecard_present",
+      "passed": true
+    },
+    {
+      "detail": "default_source=steamer",
+      "name": "default_source_not_silently_flipped",
+      "passed": true
+    }
+  ],
+  "generated_at": "2026-06-16T04:42:49.871157+00:00",
+  "generated_by": "valucast",
+  "promotion": {
+    "default_source": "steamer",
+    "human_approval_required_for_default": true,
+    "ready_for_default_promotion": false,
+    "ready_for_opt_in_source": true,
+    "recommended_next_step": "Keep Steamer as the default redraft source until H+P is intentionally promoted after human review.",
+    "redraft_board_default": "steamer",
+    "status": "opt_in_ready"
+  },
+  "report_version": "0.1.0",
+  "run": {
+    "as_of_season": 2026,
+    "hitter_count": 867,
+    "manifest_hitter_count": 867,
+    "manifest_pitcher_count": 1182,
+    "pitcher_count": 1182,
+    "pool_counts": {
+      "hitter": 867,
+      "reliever": 855,
+      "starter": 327
+    },
+    "projection_count": 2049,
+    "run_id": "valucast_hp_2026_v1",
+    "source_name": "valucast"
+  },
+  "source_policy": {
+    "dd_ranks_used": false,
+    "dd_values_used": false,
+    "external_projection_stats_copied": false,
+    "external_projection_universe_metadata_used": true,
+    "kind": "valucast_hp_promotion_sanity",
+    "market_values_used": false,
+    "public_rankings_used": false
+  },
+  "track_record": {
+    "hitting_baseline": "classic Marcel",
+    "pitching_baseline": "persistence",
+    "scorecard_generated_at": "2026-06-15T00:00:00+00:00",
+    "scorecard_present": true,
+    "scorecard_version": "ValuCast H+P v1"
+  },
+  "validation": {
+    "blockers": [],
+    "duplicate_identity_count": 0,
+    "ready_for_default_promotion": false,
+    "ready_for_opt_in_source": true
+  }
+}

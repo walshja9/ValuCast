@@ -332,8 +332,12 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     ) in workflow
     assert "python scripts/build_mlb_track_record.py" in workflow
     assert "python scripts/build_mlb_availability.py" in workflow
+    assert "python scripts/build_hp_promotion_sanity_report.py" in workflow
+    assert "python scripts/build_playing_time_role_tracker.py" in workflow
     assert "python scripts/build_mlb_roster_status.py" in workflow
+    assert "python scripts/validate_hp_promotion_sanity_report.py" in workflow
     assert "python scripts/validate_mlb_availability.py" in workflow
+    assert "python scripts/validate_playing_time_role_tracker.py" in workflow
     assert "python scripts/validate_mlb_roster_status.py" in workflow
     assert "python scripts/validate_mlb_track_record.py" in workflow
     assert "python scripts/validate_valucast_prospect_inputs.py" in workflow
@@ -351,6 +355,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/validate_milb_stat_freshness_audit.py" in workflow
     assert "python scripts/validate_pipeline_observability.py" in workflow
     assert "python scripts/build_front_office_report.py" in workflow
+    assert "python scripts/build_scouting_repository.py" in workflow
     assert "python scripts/validate_prospect_availability.py" in workflow
     assert "python scripts/validate_prospect_model_v07.py" in workflow
     assert "python scripts/validate_prospect_calibration_report.py" in workflow
@@ -360,8 +365,11 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "python scripts/validate_raw_data_independence_audit.py" in workflow
     assert "python scripts/validate_valucast_buys_monitor.py" in workflow
     assert "python scripts/validate_front_office_report.py" in workflow
+    assert "python scripts/validate_scouting_repository.py" in workflow
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/models/valucast_mlb_availability.json" in workflow
+    assert "data/models/valucast_hp_promotion_sanity_report.json" in workflow
+    assert "data/models/valucast_playing_time_role_tracker.json" in workflow
     assert "data/models/valucast_mlb_roster_status.json" in workflow
     assert "data/mlb/mlb_availability_transactions_cache.json" in workflow
     assert "data/mlb/mlb_roster_status_cache.json" in workflow
@@ -379,6 +387,7 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_front_office_failures.json" in workflow
     assert "data/models/valucast_raw_data_independence_audit.json" in workflow
     assert "data/models/valucast_front_office_report.json" in workflow
+    assert "data/models/valucast_scouting_reports.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ github.event_name == 'workflow_dispatch' "

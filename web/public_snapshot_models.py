@@ -362,6 +362,16 @@ class PublicSnapshotRow:
         return text.replace("Peak read:", "Projection:")
 
     @property
+    def peak_card_v2_context(self) -> dict:
+        raw = self.peak_projection_context.get("card_v2")
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def peak_projection_card_copy(self) -> str | None:
+        text = self.peak_card_v2_context.get("card_copy")
+        return str(text) if text else self.peak_projection_summary
+
+    @property
     def peak_projection_note(self) -> str:
         return "Projected peak role and shape — context only, it doesn't change the current rank or value."
 

@@ -62,8 +62,10 @@ jobs:
           python scripts/backfill_projection_identities.py --projection-path projections/runs/valucast_hp_2026_v1/projections.json
           python scripts/build_mlb_track_record.py
           python scripts/build_mlb_availability.py
+          python scripts/build_hp_promotion_sanity_report.py
           python scripts/build_mlb_dynasty_layer.py
           python scripts/build_mlb_roster_status.py
+          python scripts/build_playing_time_role_tracker.py
           python scripts/run_prospect_shadow_pipeline.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_availability.py
@@ -82,6 +84,7 @@ jobs:
           python scripts/build_front_office_failures.py
           python scripts/build_raw_data_independence_audit.py
           python scripts/build_public_dynasty_snapshot.py
+          python scripts/build_scouting_repository.py
           python scripts/build_milb_stat_freshness_audit.py
           python scripts/build_valucast_quality_governor.py
           python scripts/build_pipeline_observability.py
@@ -91,7 +94,9 @@ jobs:
         run: |
           python scripts/validate_feed.py
           python scripts/validate_mlb_track_record.py
+          python scripts/validate_hp_promotion_sanity_report.py
           python scripts/validate_mlb_availability.py
+          python scripts/validate_playing_time_role_tracker.py
           python scripts/validate_mlb_roster_status.py
           python scripts/validate_valucast_prospect_inputs.py
           python scripts/validate_prospect_availability.py
@@ -109,6 +114,7 @@ jobs:
           python scripts/validate_valucast_quality_governor.py
           python scripts/validate_pipeline_observability.py
           python scripts/validate_front_office_report.py
+          python scripts/validate_scouting_repository.py
           python scripts/validate_public_dynasty_snapshot.py
           python scripts/validate_public_data_freshness.py
           python -m pytest -q \
@@ -132,6 +138,8 @@ jobs:
             data/mlb/mlb_availability_transactions_cache.json \
             data/mlb/mlb_roster_status_cache.json \
             data/models/valucast_mlb_availability.json \
+            data/models/valucast_hp_promotion_sanity_report.json \
+            data/models/valucast_playing_time_role_tracker.json \
             data/models/valucast_mlb_roster_status.json \
             data/models/valucast_mlb_dynasty_layer.json \
             data/models/valucast_mlb_track_record.json \
@@ -153,6 +161,7 @@ jobs:
             data/models/valucast_milb_stat_freshness_audit.json \
             data/models/valucast_pipeline_observability.json \
             data/models/valucast_front_office_report.json \
+            data/models/valucast_scouting_reports.json \
             data/models/valucast_prospect_dynasty_backtest.json \
             data/models/valucast_prospect_dynasty_layer.json \
             data/models/valucast_prospect_forward_shadow.json \

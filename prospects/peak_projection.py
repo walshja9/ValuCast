@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
 
 PROJECTION_VERSION = "1.0.0"
+CARD_VISUAL_VERSION = "2.0.0"
 PROJECTION_STATUS = "candidate_ready"
 ARTIFACT_NAME = "valucast_prospect_peak_projection_v1"
 MIN_TOP200_PROJECTION_COVERAGE = 0.90
@@ -301,6 +302,66 @@ def _summary(row: dict, peak_score: float, ceiling: str, risk: str) -> str:
     )
 
 
+def _role_probability(row: dict, peak_score: float, risk: str, shape_average: float) -> dict:
+    """Small deterministic role distribution for card context.
+
+    These are not calibrated scouting probabilities. They are a display layer
+    that keeps the peak read from pretending to be a single-point answer.
+    """
+    role = str(row.get("role") or "")
+    risk_penalty = {"low": 0.0, "medium": 0.10, "high": 0.20}.get(risk, 0.10)
+    top = _clamp((peak_score - 45.0) / 35.0 - risk_penalty, 0.05, 0.70)
+    floor = _clamp((52.0 - shape_average) / 40.0 + risk_penalty, 0.10, 0.70)
+    middle = max(0.05, 1.0 - top - floor)
+    total = top + middle + floor
+    labels = (
+        ("starter_or_late_inning", "useful_mlb_arm", "depth_or_relief")
+        if role == "pitcher"
+        else ("regular_or_better", "bench_or_platoon", "depth_or_reserve")
+    )
+    values = [top / total, middle / total, floor / total]
+    return {
+        label: round(value, 3)
+        for label, value in zip(labels, values)
+    }
+
+
+def _card_v2_context(
+    row: dict,
+    *,
+    rank_score: float,
+    peak_score: float,
+    ceiling: str,
+    floor: str,
+    risk: str,
+    confidence: str,
+    shape_average: float,
+) -> dict:
+    delta = round(peak_score - rank_score, 2)
+    if delta >= 4.0:
+        trend = "more_peak_than_current_value"
+    elif delta <= -4.0:
+        trend = "current_value_ahead_of_peak_read"
+    else:
+        trend = "current_and_peak_aligned"
+    return {
+        "visual_version": CARD_VISUAL_VERSION,
+        "current_score": round(rank_score, 2),
+        "peak_score": peak_score,
+        "score_delta": delta,
+        "trajectory": trend,
+        "ceiling_band": ceiling,
+        "floor_band": floor,
+        "risk_band": risk,
+        "confidence": confidence,
+        "role_probabilities": _role_probability(row, peak_score, risk, shape_average),
+        "card_copy": (
+            f"Peak view: {ceiling.replace('_', ' ')}; floor is "
+            f"{floor.replace('_', ' ')}. Risk is {risk}, confidence is {confidence}."
+        ),
+    }
+
+
 def _projection_row(row: dict) -> dict:
     rank_score = _clean_float(row.get("score")) or 0.0
     shape = _shape(row, rank_score)
@@ -313,6 +374,16 @@ def _projection_row(row: dict) -> dict:
     current = _current_context(row)
     availability = _availability(row)
     sample = _round(current.get("sample"), 1)
+    card_v2 = _card_v2_context(
+        row,
+        rank_score=rank_score,
+        peak_score=peak_score,
+        ceiling=ceiling,
+        floor=floor,
+        risk=risk,
+        confidence=confidence,
+        shape_average=shape_average,
+    )
     return {
         "mlbam_id": row.get("mlbam_id"),
         "name": row.get("name"),
@@ -331,6 +402,7 @@ def _projection_row(row: dict) -> dict:
         "eta_window": _eta_window(row),
         "shape_average": round(shape_average, 2),
         "shape": shape,
+        "card_v2": card_v2,
         "sample_context": {
             "sample": sample,
             "sample_unit": current.get("sample_unit"),
@@ -361,6 +433,11 @@ def _validation(projections: list[dict], rank_payload: dict) -> dict:
     coverage = covered / len(top200_keys) if top200_keys else 0.0
     duplicate_count = len(projected_keys) - len(set(projected_keys))
     missing_shape_count = sum(1 for row in projections if len(row.get("shape") or []) < 4)
+    missing_card_v2_count = sum(
+        1
+        for row in projections
+        if (row.get("card_v2") or {}).get("visual_version") != CARD_VISUAL_VERSION
+    )
     blockers = []
     if not projections:
         blockers.append("Peak projection artifact has no rows.")
@@ -370,6 +447,8 @@ def _validation(projections: list[dict], rank_payload: dict) -> dict:
         blockers.append("Peak projection artifact has duplicate MLBAM+role identities.")
     if missing_shape_count:
         blockers.append("Some peak projection rows are missing shape grades.")
+    if missing_card_v2_count:
+        blockers.append("Some peak projection rows are missing Card V2 context.")
     return {
         "ready_for_card_v2": not blockers,
         "projection_count": len(projections),
@@ -377,6 +456,7 @@ def _validation(projections: list[dict], rank_payload: dict) -> dict:
         "min_top200_projection_coverage": MIN_TOP200_PROJECTION_COVERAGE,
         "duplicate_identity_count": duplicate_count,
         "missing_shape_count": missing_shape_count,
+        "missing_card_v2_count": missing_card_v2_count,
         "blockers": blockers,
     }
 
@@ -401,6 +481,7 @@ def build_peak_projection(rank_payload: dict, generated_at: str | None = None) -
         "generated_by": "valucast",
         "projection_contract": {
             "projection_kind": "peak_role_and_skill_shape_not_full_stat_forecast",
+            "card_visual_version": CARD_VISUAL_VERSION,
             "feeds_live_rank": False,
             "feeds_live_value": False,
             "score_mutation": "none",

@@ -249,6 +249,15 @@ def _peak_payload():
                     {"label": "Approach", "grade": 55, "source": "BB% / BB-K"},
                     {"label": "Impact", "grade": 60, "source": "OPS / ISO / score"},
                 ],
+                "card_v2": {
+                    "visual_version": "2.0.0",
+                    "current_score": 55.5,
+                    "peak_score": 61.2,
+                    "score_delta": 5.7,
+                    "trajectory": "more_peak_than_current_value",
+                    "role_probabilities": {"regular_or_better": 0.42},
+                    "card_copy": "Peak view: everyday regular.",
+                },
                 "summary": "Peak read: everyday regular with medium risk.",
                 "usage": "card_visual_context_not_live_rank_or_value",
             },
@@ -271,6 +280,15 @@ def _peak_payload():
                     {"label": "Dominance", "grade": 50, "source": "K-BB%"},
                     {"label": "Run Prevention", "grade": 50, "source": "ERA / WHIP"},
                 ],
+                "card_v2": {
+                    "visual_version": "2.0.0",
+                    "current_score": 45.0,
+                    "peak_score": 48.2,
+                    "score_delta": 3.2,
+                    "trajectory": "current_and_peak_aligned",
+                    "role_probabilities": {"useful_mlb_arm": 0.5},
+                    "card_copy": "Peak view: multi inning arm.",
+                },
                 "summary": "Peak read: multi inning or setup arm with medium risk.",
                 "usage": "card_visual_context_not_live_rank_or_value",
             },
@@ -383,6 +401,7 @@ def test_snapshot_carries_peak_projection_card_context(tmp_path):
     assert row.peak_role_label == "Everyday Regular"
     assert row.peak_risk_label == "Medium"
     assert row.peak_projection_summary == "Projection: everyday regular with medium risk."
+    assert row.peak_projection_card_copy == "Peak view: everyday regular."
     assert len(row.peak_shape_items) == 4
     assert row.peak_shape_items[0]["label"] == "Hit"
 
