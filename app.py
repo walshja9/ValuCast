@@ -2500,6 +2500,250 @@ def value_map():
     )
 
 
+def _value_map_share_card_png(players, *, pool="all", position=None):
+    """1080x1350 ValuCast 'Ahead of the Curve' value-vs-age scatter, rendered
+    server-side to share the prospect/player share-card brand system (same
+    wordmark, date, arc, footer, sizing) with deterministic output."""
+    import io as _io
+    import math as _math
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    bg = (18, 19, 31)
+    card = (35, 36, 64)
+    border = (45, 47, 74)
+    green = (52, 211, 153)
+    text = (231, 233, 244)
+    muted = (154, 161, 192)
+    grid = (40, 42, 68)
+    group_colors = {
+        "hitter": (79, 134, 247),
+        "sp": (167, 139, 250),
+        "rp": (45, 212, 197),
+        "prospect": (52, 211, 153),
+    }
+    legend_order = [("hitter", "Hitters"), ("sp", "SP"), ("rp", "RP"), ("prospect", "Prospects")]
+
+    # Filter to match the live map exactly (value_map.html JS: pool vs player_type,
+    # position vs primary). pool 'all' keeps everything.
+    pts = []
+    for p in players:
+        if p.get("age") is None or p.get("value") is None:
+            continue
+        if pool and pool != "all" and p.get("player_type") != pool:
+            continue
+        if position and p.get("position") != position:
+            continue
+        pts.append(p)
+
+    f_word = _graphic_font(26, bold=True)
+    f_head = _graphic_font(60, bold=True)
+    f_sub = _graphic_font(22)
+    f_axis = _graphic_font(18)
+    f_axisb = _graphic_font(18, bold=True)
+    f_leg = _graphic_font(19)
+    f_lbl = _graphic_font(16, bold=True)
+    f_foot = _graphic_font(22, bold=True)
+    f_footr = _graphic_font(16)
+    f_empty = _graphic_font(28, bold=True)
+
+    img = Image.new("RGB", (width, height), bg)
+    draw = ImageDraw.Draw(img)
+    for y in range(height):
+        t = y / height
+        draw.line([(0, y), (width, y)],
+                  fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)))
+
+    # Header chrome (mirror the player card) + editorial arc.
+    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
+    _paste_brand_mark(img, 48, 32, 62)
+    draw.text((124, 38), "VALUCAST", fill=green, font=f_word)
+    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=f_head)
+    generated = _editorial_date(dd_store.generated_at)
+    sub = "Dynasty value vs age - {} players".format(len(pts))
+    if generated:
+        sub = "{} - {}".format(sub, generated)
+    draw.text((48, 154), sub, fill=muted, font=f_sub)
+
+    plot_left, plot_right = 132, 1032
+    plot_top, plot_bottom = 322, 1150
+
+    # Legend row above the plot.
+    lx = plot_left
+    ly = plot_top - 44
+    for key, label in legend_order:
+        draw.ellipse((lx, ly, lx + 16, ly + 16), fill=group_colors[key])
+        draw.text((lx + 24, ly - 2), label, fill=muted, font=f_leg)
+        lx += 24 + _graphic_text_width(draw, label, f_leg) + 34
+
+    if not pts:
+        draw.text((plot_left, (plot_top + plot_bottom) // 2), "No players match this view.",
+                  fill=muted, font=f_empty)
+    else:
+        ages = [p["age"] for p in pts]
+        values = [p["value"] for p in pts]
+        age_min = _math.floor(min(ages)) - 1
+        age_max = _math.ceil(max(ages)) + 1
+        if age_max <= age_min:
+            age_max = age_min + 1
+        value_max = max(10, _math.ceil(max(values) / 10.0) * 10)
+        aspan = float(age_max - age_min)
+
+        def x_of(age):
+            return plot_left + (age - age_min) / aspan * (plot_right - plot_left)
+
+        def y_of(val):
+            return plot_bottom - (val / value_max) * (plot_bottom - plot_top)
+
+        # Value gridlines + labels (every 25).
+        v = 0
+        while v <= value_max:
+            yy = y_of(v)
+            draw.line([(plot_left, yy), (plot_right, yy)], fill=grid, width=1)
+            lbl = str(int(v))
+            draw.text((plot_left - 14 - _graphic_text_width(draw, lbl, f_axis), yy - 10),
+                      lbl, fill=muted, font=f_axis)
+            v += 25
+        # Age gridlines + labels (every 5).
+        a = _math.ceil(age_min / 5.0) * 5
+        while a <= age_max:
+            xx = x_of(a)
+            draw.line([(xx, plot_top), (xx, plot_bottom)], fill=grid, width=1)
+            lbl = str(int(a))
+            draw.text((xx - _graphic_text_width(draw, lbl, f_axis) / 2, plot_bottom + 12),
+                      lbl, fill=muted, font=f_axis)
+            a += 5
+        draw.text((plot_left, plot_bottom + 44), "AGE", fill=muted, font=f_axisb)
+
+        # Points: draw all (lowest value first so leaders sit on top), then label
+        # only a small collision-checked leader set so the card shows the shape
+        # without becoming confetti.
+        point_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        point_draw = ImageDraw.Draw(point_layer)
+        for p in sorted(pts, key=lambda r: r["value"]):
+            cx, cy = x_of(p["age"]), y_of(p["value"])
+            col = group_colors.get(p.get("group"), muted)
+            point_draw.ellipse((cx - 3.2, cy - 3.2, cx + 3.2, cy + 3.2),
+                               fill=(*col, 178))
+        img = Image.alpha_composite(img.convert("RGBA"), point_layer).convert("RGB")
+        draw = ImageDraw.Draw(img)
+
+        occupied = []
+
+        def overlaps(box):
+            return any(
+                box[0] < other[2] and box[2] > other[0]
+                and box[1] < other[3] and box[3] > other[1]
+                for other in occupied
+            )
+
+        placed = 0
+        for p in sorted(pts, key=lambda r: r["value"], reverse=True)[:16]:
+            if placed >= 10:
+                break
+            cx, cy = x_of(p["age"]), y_of(p["value"])
+            name = p.get("name") or ""
+            bbox = draw.textbbox((0, 0), name, font=f_lbl)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            placements = (
+                (12, -18, "right"),
+                (12, 8, "right"),
+                (-12, -18, "left"),
+                (-12, 8, "left"),
+                (0, -32, "center"),
+                (0, 20, "center"),
+            )
+            chosen = None
+            for dx, dy, align in placements:
+                if align == "left":
+                    tx = cx + dx - tw
+                elif align == "center":
+                    tx = cx - tw / 2
+                else:
+                    tx = cx + dx
+                ty = cy + dy
+                box = (tx - 5, ty - 4, tx + tw + 5, ty + th + 6)
+                if (
+                    box[0] >= plot_left and box[2] <= plot_right
+                    and box[1] >= plot_top - 6 and box[3] <= plot_bottom
+                    and not overlaps(box)
+                ):
+                    chosen = (tx, ty, box)
+                    break
+            if not chosen:
+                continue
+            tx, ty, box = chosen
+            col = group_colors.get(p.get("group"), muted)
+            draw.ellipse((cx - 4.5, cy - 4.5, cx + 4.5, cy + 4.5),
+                         fill=col, outline=bg, width=2)
+            draw.line((cx, cy, tx, ty + th / 2), fill=grid, width=1)
+            draw.text((tx + 2, ty + 2), name, fill=bg, font=f_lbl)
+            draw.text((tx, ty), name, fill=text, font=f_lbl)
+            occupied.append(box)
+            placed += 1
+
+    # Footer.
+    foot_y = height - 68
+    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
+    draw.text((60, foot_y + 12), "valucast.app", fill=green, font=f_foot)
+    foot_r = "dynasty value vs age"
+    if generated:
+        foot_r = "dynasty value vs age - updated {}".format(generated)
+    draw.text((1032 - 14 - _graphic_text_width(draw, foot_r, f_footr), foot_y + 16),
+              foot_r, fill=muted, font=f_footr)
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+def _value_map_share_query(pool, position):
+    parts = []
+    if pool and pool != "all":
+        parts.append("pool=" + pool)
+    if position:
+        parts.append("position=" + position)
+    return ("?" + "&".join(parts)) if parts else ""
+
+
+@app.route("/map/share-card.png")
+def value_map_share_card_png():
+    if not dd_store.is_available:
+        return "", 503
+    pool = request.args.get("pool") or "all"
+    position = request.args.get("position") or None
+    players = _value_map_players(dd_store.get_all())
+    png = _value_map_share_card_png(players, pool=pool, position=position)
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-value-map.png"'
+    return response
+
+
+@app.route("/map/share-card")
+def value_map_share_card():
+    pool = request.args.get("pool") or "all"
+    position = request.args.get("position") or None
+    png_url = "/map/share-card.png" + _value_map_share_query(pool, position)
+    return (
+        '<!doctype html><html><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<title>ValuCast - Value Map</title>'
+        '<style>body{margin:0;background:#020617;color:#e7e9f4;'
+        'font-family:-apple-system,Segoe UI,Roboto,sans-serif;text-align:center;padding:32px 16px}'
+        'h1{font-size:1.4rem;margin:0 0 18px}'
+        'img{max-width:100%;width:540px;border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.5)}'
+        '.download{display:inline-block;margin-top:20px;padding:12px 24px;border-radius:999px;'
+        'background:#a7f3d0;color:#052e2b;font-weight:700;text-decoration:none}'
+        'a.back{display:block;margin-top:16px;color:#9aa1c0;font-size:.85rem}</style></head>'
+        '<body><h1>Ahead of the Curve - Value Map</h1>'
+        '<img src="' + png_url + '" alt="ValuCast value map">'
+        '<div><a class="download" href="' + png_url + '" download="valucast-value-map.png">Download PNG</a></div>'
+        '<a class="back" href="/map">Back to the map</a>'
+        '</body></html>'
+    )
+
+
 @app.route("/buys")
 def buys():
     """Top-40 prospect buys + the shareable 1080x1350 graphic node."""

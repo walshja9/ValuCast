@@ -369,6 +369,36 @@ class TestDynastyMode(unittest.TestCase):
             response.headers.get("Content-Disposition", ""),
         )
 
+    def test_value_map_share_card_png(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/map/share-card.png")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertIn("image/png", response.content_type)
+        self.assertIn(
+            'filename="valucast-value-map.png"',
+            response.headers.get("Content-Disposition", ""),
+        )
+
+    def test_value_map_share_card_png_filtered(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get("/map/share-card.png?pool=prospect&position=SS")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[:8], b"\x89PNG\r\n\x1a\n")
+
+    def test_value_map_share_card_preview(self):
+        response = self.client.get("/map/share-card")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response.content_type)
+        self.assertIn(b"Ahead of the Curve", response.data)
+        self.assertIn(b"Download PNG", response.data)
+        self.assertIn(b"/map/share-card.png", response.data)
+        self.assertIn(b"/map/share-card.png", self.client.get("/map").data)
+
     def test_prospects_graphic_limit_20_filename(self):
         from app import dd_store
         if not dd_store.is_available:
