@@ -12,17 +12,18 @@ and page<->params.
 """
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
-from projections.backtest.harness import rolling_origin, vs_classic
-from projections.backtest.pitching_harness import rolling_origin_pitching
-from projections.constants import PITCHER_HEADLINE_SKILL, HEADLINE_STATS
-from projections.models.marcel_params import MarcelParams
-from projections.models.pitcher_params import PitcherMarcelParams
+from projections.backtest.harness import rolling_origin, vs_classic  # noqa: E402
+from projections.backtest.pitching_harness import rolling_origin_pitching  # noqa: E402
+from projections.constants import MIN_EVAL_PA, PITCHER_HEADLINE_SKILL  # noqa: E402
+from projections.models.marcel_params import MarcelParams  # noqa: E402
+from projections.models.pitcher_params import PitcherMarcelParams  # noqa: E402
 
 # Loaders append "historical/"/"pitching/" themselves, so data_dir is projections/data.
 DATA = ROOT / "projections" / "data"
@@ -130,6 +131,7 @@ def main():
 
     artifact = {
         "as_of": "2026-06",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "version": "ValuCast H+P v1",
         "hitting": {
             "baseline": "classic Marcel",
