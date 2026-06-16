@@ -7,6 +7,7 @@ import math
 import os
 import sys
 import time
+from datetime import date
 from functools import lru_cache
 from html import escape
 from pathlib import Path
@@ -292,6 +293,26 @@ def _buy_source_copy(source: str) -> dict[str, str]:
         "note": "Ranks prospects by signal strength, recent movement, and runway.",
         "formula": "buy score = momentum + breakout + market gap + runway",
     }
+
+
+def _buy_spark_label(spark: dict | None) -> str:
+    if not spark:
+        return ""
+    try:
+        delta = float(spark.get("delta") or 0.0)
+    except (TypeError, ValueError):
+        return ""
+    direction = "UP" if delta > 0 else ("DOWN" if delta < 0 else "FLAT")
+    try:
+        first = date.fromisoformat(str(spark.get("first_date")))
+        last = date.fromisoformat(str(spark.get("last_date")))
+        days = max((last - first).days, 1)
+    except (TypeError, ValueError):
+        days = None
+    if direction == "FLAT":
+        return f"FLAT {days}D" if days else "FLAT"
+    suffix = f" IN {days}D" if days else ""
+    return f"{direction} {delta:+.1f}{suffix}"
 
 
 dd_store, dynasty_data_source = _select_dynasty_store(
@@ -2437,9 +2458,12 @@ def buys():
     buy_source_copy = _buy_source_copy(buy_data_source)
     for row in graphic_rows:
         row["spark"] = build_spark(row["value_history"])
+        row["spark_label"] = _buy_spark_label(row["spark"])
     for row in list_rows:
         if "spark" not in row:
             row["spark"] = build_spark(row["value_history"])
+        if "spark_label" not in row:
+            row["spark_label"] = _buy_spark_label(row["spark"])
     return render_template(
         "buys.html",
         list_rows=list_rows,

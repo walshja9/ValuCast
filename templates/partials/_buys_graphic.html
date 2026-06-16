@@ -34,7 +34,7 @@
                 <polyline points="{{ hero.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
                 <circle cx="{{ hero.spark.last_x }}" cy="{{ hero.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
             </svg>
-            <span class="bg-spark-label">30-DAY SIGNAL</span>
+            <span class="bg-spark-label">{{ hero.spark_label or "30-DAY SIGNAL" }}</span>
             {% endif %}
             <span class="bg-feature-reason">{{ hero.reason }}</span>
         </article>
@@ -44,7 +44,7 @@
             <article class="bg-featured-card bg-support-card">
                 {% set support_reason = p.reason | upper %}
                 {% if support_reason == "STILL IN THE BUY WINDOW" %}
-                    {% set support_reason = "BUY WINDOW" %}
+                    {% set support_reason = "WINDOW" %}
                 {% elif support_reason == "YOUNG RUNWAY" %}
                     {% set support_reason = "YOUNG RUNWAY" %}
                 {% elif support_reason == "HISTORY LIMITED" %}
@@ -67,7 +67,7 @@
                     <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
                 </svg>
                 {% endif %}
-                <span class="bg-support-reason">{{ support_reason }}</span>
+                <span class="bg-support-reason">{{ p.spark_label or support_reason }}</span>
             </article>
             {% endfor %}
         </div>
@@ -86,6 +86,6 @@
 
     <div class="bg-foot">
         <span class="bg-foot-brand">valucast.app</span>
-        <span class="bg-foot-note"><span class="bg-foot-source">{{ buy_source_label }}</span> &middot; model strength + momentum + buy window + runway</span>
+        <span class="bg-foot-note"><span class="bg-foot-source">{{ buy_source_label }}</span> &middot; buy score = model strength + momentum + buy window + runway</span>
     </div>
 </div>

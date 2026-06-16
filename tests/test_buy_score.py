@@ -220,6 +220,32 @@ class TestBoard(unittest.TestCase):
         self.assertIn("/people/0/", board[0]["headshot_url"])
         self.assertIsNone(board[0]["logo_url"])
 
+    def test_graphic_logo_aliases_include_fantasy_team_codes(self):
+        teams = {"WSN": 120, "KCR": 118, "SDP": 135, "SFG": 137, "TBR": 139}
+        rows = [
+            _row(id=team, name=f"{team} Prospect", team=team, value_history=_daily([60.0, 60.1]))
+            for team in teams
+        ]
+        board_by_team = {row["team"]: row for row in buy_score.build_board(rows)}
+        for team, team_id in teams.items():
+            self.assertIn(f"/team/{team_id}/spots/64", board_by_team[team]["logo_url"])
+
+    def test_valucast_board_graphic_logo_aliases_include_fantasy_team_codes(self):
+        rows = [{
+            "rank": 1,
+            "player_id": "clemmey",
+            "name": "Alex Clemmey",
+            "team": "WSN",
+            "positions": ["P"],
+            "level": "AA",
+            "age": 20,
+            "score": 57.0,
+            "terms": {},
+            "score_history": _daily([56.0, 56.4, 56.8, 57.0]),
+        }]
+        board = buy_score.build_valucast_board(rows)
+        self.assertIn("/team/120/spots/64", board[0]["logo_url"])
+
     def test_graphic_presentation_fields(self):
         board = buy_score.build_board(self._rows())
         self.assertEqual(board[0]["initials"], "AS")
@@ -233,6 +259,27 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(buy_score.clamp_n("25"), 25)
         self.assertEqual(buy_score.clamp_n("junk"), 40)
         self.assertEqual(buy_score.clamp_n(None), 40)
+
+
+class TestBuysGraphicCopy(unittest.TestCase):
+    def test_spark_label_turns_history_into_urgency_copy(self):
+        spark = {
+            "delta": 3.6,
+            "first_date": "2026-06-13",
+            "last_date": "2026-06-16",
+        }
+        self.assertEqual(app_module._buy_spark_label(spark), "UP +3.6 IN 3D")
+
+    def test_spark_label_handles_flat_and_missing(self):
+        self.assertEqual(
+            app_module._buy_spark_label({
+                "delta": 0,
+                "first_date": "2026-06-13",
+                "last_date": "2026-06-16",
+            }),
+            "FLAT 3D",
+        )
+        self.assertEqual(app_module._buy_spark_label(None), "")
 
 
 class _RealAppCase(unittest.TestCase):

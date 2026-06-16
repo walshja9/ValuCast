@@ -53,9 +53,10 @@ MIN_VALUCAST_BUY_SPARK_POINTS = 4
 TEAM_IDS = {
     "ARI": 109, "ATH": 133, "ATL": 144, "BAL": 110, "BOS": 111, "CHC": 112,
     "CHW": 145, "CIN": 113, "CLE": 114, "COL": 115, "DET": 116, "HOU": 117,
-    "KC": 118, "LAA": 108, "LAD": 119, "MIA": 146, "MIL": 158, "MIN": 142,
+    "KC": 118, "KCR": 118, "LAA": 108, "LAD": 119, "MIA": 146, "MIL": 158, "MIN": 142,
     "NYM": 121, "NYY": 147, "PHI": 143, "PIT": 134, "SD": 135, "SEA": 136,
-    "SF": 137, "STL": 138, "TB": 139, "TEX": 140, "TOR": 141, "WSH": 120,
+    "SDP": 135, "SF": 137, "SFG": 137, "STL": 138, "TB": 139, "TBR": 139,
+    "TEX": 140, "TOR": 141, "WSH": 120, "WSN": 120,
 }
 
 HEADSHOT_URL = ("https://img.mlbstatic.com/mlb-photos/image/upload/"

@@ -96,7 +96,7 @@
 .bg-featured-card { position: relative; box-sizing: border-box; background: #232440; border: 2px solid #2d2f4a; border-radius: 16px; overflow: hidden; }
 .bg-hero { border-color: #34d399; }
 .bg-hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 83% 73%, rgba(52, 211, 153, .16), transparent 34%); }
-.bg-team-mark { position: absolute; pointer-events: none; object-fit: contain; filter: saturate(.75); opacity: .08; }
+.bg-team-mark { position: absolute; pointer-events: none; object-fit: contain; filter: saturate(.78); opacity: .075; }
 .bg-team-mark-hero { right: -24px; bottom: -34px; width: 220px; height: 220px; }
 .bg-team-mark-support { right: -28px; bottom: -30px; width: 130px; height: 130px; }
 .bg-feature-rank { position: absolute; left: 20px; top: 16px; font-size: 22px; font-weight: 900; color: #34d399; }
@@ -124,13 +124,13 @@
 .bg-portrait-support { left: 14px; top: 16px; width: 72px; height: 72px; }
 .bg-portrait-support .bg-monogram { font-size: 28px; }
 .bg-support-rank { position: absolute; left: 100px; top: 13px; font-size: 18px; font-weight: 900; color: #6ea1ff; }
-.bg-support-name { position: absolute; left: 100px; top: 39px; right: 12px; font-size: 23px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bg-support-tag { position: absolute; left: 100px; top: 70px; right: 12px; font-size: 15px; color: #9aa1c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-support-name { position: absolute; left: 100px; top: 36px; right: 12px; max-height: 48px; font-size: 22px; line-height: 1.08; font-weight: 700; white-space: normal; overflow: hidden; }
+.bg-support-tag { position: absolute; left: 100px; top: 84px; right: 12px; font-size: 14px; color: #9aa1c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-support-card::after { content: ""; position: absolute; left: 14px; right: 14px; top: 102px; border-top: 1px solid #2d2f4a; }
 .bg-support-score { position: absolute; left: 14px; bottom: 7px; font-size: 28px; line-height: 1; font-weight: 900; color: #34d399; }
 .bg-support-score-label { position: absolute; left: 60px; bottom: 11px; font-size: 13px; color: #9aa1c0; }
-.bg-support-spark { position: absolute; left: 104px; bottom: 14px; width: 82px; height: 20px; }
-.bg-support-reason { position: absolute; right: 12px; bottom: 12px; max-width: 86px; font-size: 12px; line-height: 1; font-weight: 700; text-transform: uppercase; color: #b8bdd7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-support-spark { position: absolute; left: 101px; bottom: 12px; width: 75px; height: 18px; }
+.bg-support-reason { position: absolute; right: 12px; bottom: 12px; max-width: 98px; font-size: 11px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #b8bdd7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-grid {
     position: absolute; left: 48px; top: 562px; width: 984px; height: 700px;
     display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 100px);
