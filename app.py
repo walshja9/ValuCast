@@ -2031,6 +2031,49 @@ def front_office_report():
     return render_template("front_office.html", report=report)
 
 
+def _load_artifact(path: Path) -> dict | None:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+@app.route("/scouting")
+def scouting_reports():
+    repository = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_scouting_reports.json"
+    )
+    role_tracker = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_playing_time_role_tracker.json"
+    )
+    hp_sanity = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_hp_promotion_sanity_report.json"
+    )
+    reports = list((repository or {}).get("reports") or [])
+    reports.sort(
+        key=lambda row: (
+            int(row.get("prospect_rank") or 999999),
+            str(row.get("name") or ""),
+        )
+    )
+    role_counts = ((role_tracker or {}).get("summary") or {}).get("role_counts") or {}
+    role_rows = [
+        {"role": str(role).replace("_", " ").title(), "count": count}
+        for role, count in sorted(role_counts.items(), key=lambda item: (-item[1], item[0]))
+    ][:10]
+    return render_template(
+        "scouting.html",
+        scouting_page=True,
+        repository=repository,
+        role_tracker=role_tracker,
+        hp_sanity=hp_sanity,
+        reports=reports[:30],
+        role_rows=role_rows,
+        as_of=(repository or {}).get("generated_at"),
+    )
+
+
 def _value_map_players(rows):
     """Slim, committed-feed-only payload for the value map."""
     payload = []

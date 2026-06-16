@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Scouting Repository | ValuCast{% endblock %}
+{% block content %}
+<article class="scouting-report">
+    <div class="topline">
+        <h2>Scouting Repository</h2>
+        <a href="/" class="back">&larr; Back to rankings</a>
+    </div>
+
+    {% if not repository %}
+    <section class="glass">
+        <h3>Repository unavailable</h3>
+        <p>The scouting repository will appear after the next public data build.</p>
+    </section>
+    {% else %}
+    {% set summary = repository.summary or {} %}
+    {% set validation = repository.validation or {} %}
+    <section class="scouting-hero glass">
+        <div>
+            <span class="eyebrow">ValuCast player intelligence</span>
+            <h3>{{ summary.report_count }} reports</h3>
+            <p>Deterministic, stat-grounded reads from the current ValuCast prospect board. These reports explain the evidence; they do not change rank or value.</p>
+        </div>
+        <div class="scouting-score">
+            <span>{{ summary.top100_report_count or 0 }}</span>
+            <small>top-100 covered</small>
+        </div>
+    </section>
+
+    <section class="scouting-grid">
+        <article class="scouting-card glass">
+            <h3>Scouting report repository</h3>
+            <dl>
+                <div><dt>Status</dt><dd>{{ "Ready" if validation.ready_for_repository else "Blocked" }}</dd></div>
+                <div><dt>Reports</dt><dd>{{ summary.report_count }}</dd></div>
+                <div><dt>Max rank</dt><dd>{{ summary.max_prospect_rank }}</dd></div>
+                <div><dt>Generated</dt><dd>{{ (repository.generated_at or "")[:10] }}</dd></div>
+            </dl>
+        </article>
+        <article class="scouting-card glass">
+            {% set role_summary = (role_tracker.summary if role_tracker else {}) or {} %}
+            <h3>Playing-time / role tracker</h3>
+            <dl>
+                <div><dt>Status</dt><dd>{{ "Ready" if role_tracker and role_tracker.validation.ready_for_role_context else "Unavailable" }}</dd></div>
+                <div><dt>Profiles</dt><dd>{{ role_summary.profile_count or 0 }}</dd></div>
+                <div><dt>Active MLB</dt><dd>{{ role_summary.active_mlb_roster_count or 0 }}</dd></div>
+                <div><dt>Injury risk</dt><dd>{{ role_summary.active_injury_risk_count or 0 }}</dd></div>
+            </dl>
+        </article>
+        <article class="scouting-card glass">
+            {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
+            <h3>H+P projection track</h3>
+            <dl>
+                <div><dt>Opt-in ready</dt><dd>{{ "Yes" if promotion.ready_for_opt_in_source else "No" }}</dd></div>
+                <div><dt>Default source</dt><dd>{{ promotion.default_source or "Steamer" }}</dd></div>
+                <div><dt>Default promotion</dt><dd>{{ "Manual only" if promotion.human_approval_required_for_default else "Automatic" }}</dd></div>
+            </dl>
+        </article>
+    </section>
+
+    {% if role_rows %}
+    <section class="glass scouting-role-strip">
+        <h3>Projected Role Mix</h3>
+        <div class="scouting-role-grid">
+            {% for item in role_rows %}
+            <div><span>{{ item.count }}</span><small>{{ item.role }}</small></div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="scouting-list">
+        <div class="scouting-section-head">
+            <div>
+                <span class="eyebrow">Top prospect reads</span>
+                <h3>What the model sees</h3>
+            </div>
+            <p>Stats from ValuCast-owned MiLB context. Peak notes come from the ValuCast peak-projection layer, not public scouting grades.</p>
+        </div>
+        {% for report in reports %}
+        <article class="scouting-player-card glass">
+            <div class="scouting-player-head">
+                <div>
+                    <span class="rank-chip">P#{{ report.prospect_rank }}</span>
+                    <h4>{{ report.name }}</h4>
+                    <p>{{ report.team }} &middot; {{ report.positions | join("/") }}{% if report.level %} &middot; {{ report.level }}{% endif %}{% if report.age is not none %} &middot; Age {{ report.age }}{% endif %}</p>
+                </div>
+                <div class="scouting-value">
+                    <span>{{ "%.1f"|format(report.dynasty_value) if report.dynasty_value is not none else "—" }}</span>
+                    <small>ValuCast</small>
+                </div>
+            </div>
+            <p class="scouting-read">{{ report.report }}</p>
+            {% if report.peak_summary %}<p class="scouting-peak">{{ report.peak_summary }}</p>{% endif %}
+            <div class="scouting-meta">
+                <span>{{ report.report_status | replace("_", " ") | title }}</span>
+                <span>{{ report.source_fields.stat_line_sample }} {{ report.source_fields.stat_line_sample_unit }}</span>
+                <span>{{ report.confidence | string | title }} confidence</span>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+</article>
+{% endblock %}
