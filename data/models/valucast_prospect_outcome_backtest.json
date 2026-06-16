@@ -303,10 +303,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 2,
+        "buy_comparison_count": 3,
         "latest_rank_bucket_count": 23,
-        "observation_span_days": 2,
-        "rank_comparison_count": 2
+        "observation_span_days": 3,
+        "rank_comparison_count": 3
       },
       "recommendations": [
         "Review top-50 availability-risk buckets before changing individual names."
@@ -375,17 +375,17 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 2,
+            "current": 3,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -399,17 +399,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 2,
+            "current": 3,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -423,17 +423,17 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 2,
+            "current": 3,
             "metric": "rank_comparison_count",
             "required": 7
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "buy_comparison_count",
             "required": 7
           },
           {
-            "current": 2,
+            "current": 3,
             "metric": "observation_span_days",
             "required": 14
           }
@@ -448,12 +448,12 @@
     "target_grade": "A-",
     "uncapped_score": 91
   },
-  "generated_at": "2026-06-15T00:00:00+00:00",
+  "generated_at": "2026-06-16T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-06-15",
-    "dynasty_backtest": "2026-06-15",
-    "forward_validation": "2026-06-15",
-    "model_v07": "2026-06-15",
+    "adapter_backtest": "2026-06-16",
+    "dynasty_backtest": "2026-06-16",
+    "forward_validation": "2026-06-16",
+    "model_v07": "2026-06-16",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",

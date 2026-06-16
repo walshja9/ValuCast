@@ -69,6 +69,22 @@ _MONTH_NAMES = (
     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
 )
+_BRAND_MARK_PATH = Path(__file__).parent / "static" / "brand" / "valucast-mark-192.png"
+
+
+def _paste_brand_mark(img, x, y, size=58):
+    """Paste the ValuCast mark into a PIL graphic if the static asset exists."""
+    if not _BRAND_MARK_PATH.exists():
+        return
+    from PIL import Image, ImageDraw
+
+    mark = Image.open(_BRAND_MARK_PATH).convert("RGBA").resize(
+        (size, size), Image.Resampling.LANCZOS
+    )
+    mask = Image.new("L", (size, size), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.rounded_rectangle((0, 0, size, size), radius=max(10, size // 5), fill=255)
+    img.paste(mark, (x, y), mask)
 
 
 def _editorial_date(value):
@@ -845,7 +861,8 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     if subtitle_date:
         subtitle = f"{subtitle} - {subtitle_date}"
 
-    draw.text((48, 39), "VALUCAST", fill=green, font=font(24, bold=True))
+    _paste_brand_mark(img, 48, 34, 58)
+    draw.text((120, 39), "VALUCAST", fill=green, font=font(24, bold=True))
     draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=font(61, bold=True))
     draw.text((48, 156), fit_text(draw, subtitle, font(23), 735), fill=muted, font=font(23))
 
@@ -1344,7 +1361,8 @@ def _prospect_player_card_png(row):
         )
 
     draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
-    draw.text((48, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
+    _paste_brand_mark(img, 48, 32, 62)
+    draw.text((124, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
     draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=_graphic_font(60, bold=True))
     subtitle = "player skill percentiles + peak projection context"
     generated = _editorial_date(dd_store.generated_at)
@@ -1431,7 +1449,7 @@ def _prospect_player_card_png(row):
         else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     )
     draw.text((70, 1212), source, fill=muted, font=_graphic_font(18))
-    draw.text((70, 1242), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
+    draw.text((70, 1236), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)

@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-06-16T04:42:04.835709+00:00",
+  "generated_at": "2026-06-16T13:47:27.002102+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "public_snapshot_generated_at": "2026-06-15T00:00:00+00:00",
+    "public_snapshot_generated_at": "2026-06-16T00:00:00+00:00",
     "public_snapshot_path": "data\\public\\public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1"
   },
@@ -1734,7 +1734,7 @@
         "P"
       ],
       "prospect_rank": 58,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. No current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 35 IP in Triple-A, so confidence is moderate.",
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. No current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. Only 35 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -2334,7 +2334,7 @@
         "3B"
       ],
       "prospect_rank": 78,
-      "report": "Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. Pitchers have to come into the zone, and he makes those pitches hurt. Everyday middle-order regular; the walks give him a useful floor through a power dip. Only 98 PA in High-A, so confidence is low.",
+      "report": "Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. Pitchers have to come into the zone, and he makes those pitches hurt. Everyday middle-order regular; the walks give him a useful floor through a power dip. The sample covers 98 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -4601,6 +4601,36 @@
       "usage": "scouting_repository_context_not_live_rank_or_value"
     },
     {
+      "age": 23,
+      "confidence": {
+        "level": "medium"
+      },
+      "dynasty_value": 33.86,
+      "id": "vc_prospect_814439_hitter",
+      "level": "AAA",
+      "mlbam_id": "814439",
+      "name": "Ryan Waldschmidt",
+      "peak_summary": "Projection: bench or platoon bat with medium risk. The current bat shape is impact over 156 PA.",
+      "player_type": "prospect",
+      "positions": [
+        "CF"
+      ],
+      "prospect_rank": 154,
+      "report": "The risk is a broad but ordinary offensive line without one result that forces an everyday role. He is contributing across contact, walks and damage rather than leaning on one result. This reads as a broad-based regular outcome, with enough across-the-board value to retain a reserve floor. The sample covers 156 PA in Triple-A, so confidence is moderate.",
+      "report_status": "stat_grounded",
+      "role": "hitter",
+      "source_fields": {
+        "peak_projection": true,
+        "score_source": "prospect_model_v0_6",
+        "stat_line_sample": 156.0,
+        "stat_line_sample_season": 2026,
+        "stat_line_sample_unit": "PA",
+        "stat_line_source": "valucast_input_contract"
+      },
+      "team": "ARI",
+      "usage": "scouting_repository_context_not_live_rank_or_value"
+    },
+    {
       "age": 25,
       "confidence": {
         "level": "medium"
@@ -4615,8 +4645,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 154,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. No current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 40.7 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 155,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 40.7 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4645,8 +4675,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 155,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 36 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 156,
+      "report": "The sample covers 36 IP in Triple-A, so confidence is moderate; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4675,8 +4705,8 @@
       "positions": [
         "1B"
       ],
-      "prospect_rank": 156,
-      "report": "The sample covers 224 PA in High-A, so confidence is moderate; the damage is the carrying tool. The failure point is contact frequency. Lean everyday power bat, but the miss rate keeps a bench outcome in play.",
+      "prospect_rank": 157,
+      "report": "The damage is the carrying tool; the failure point is contact frequency. Lean everyday power bat, but the miss rate keeps a bench outcome in play. The sample covers 224 PA in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -4705,8 +4735,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 157,
-      "report": "He forces pitchers into the zone and takes the free pass; pitchers may challenge him more often until the damage improves. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 222 PA in Triple-A, so confidence is moderate.",
+      "prospect_rank": 158,
+      "report": "Pitchers may challenge him more often until the damage improves. He forces pitchers into the zone and takes the free pass. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 222 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -4735,8 +4765,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 158,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 52.3 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 159,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 52.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4765,8 +4795,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 159,
-      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 43.7 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 160,
+      "report": "The sample covers 43.7 IP in Triple-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4795,8 +4825,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 160,
-      "report": "The sample covers 60.3 IP in Triple-A, so confidence is moderate. No current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "prospect_rank": 161,
+      "report": "No current pitching rate gives him a dependable way through a lineup; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 60.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4825,8 +4855,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 161,
-      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 42 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 162,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; the current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 42 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4855,8 +4885,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 162,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 26 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 163,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. Only 26 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4885,8 +4915,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 163,
-      "report": "Second-division regular ceiling, but the current damage points to a low-impact bench floor; he controls at-bats and keeps the ball in play. The lack of damage is the limiting factor. He is 18 in Single-A over 260 PA, so confidence is low.",
+      "prospect_rank": 164,
+      "report": "He is 18 in Single-A over 260 PA, so confidence is low. He controls at-bats and keeps the ball in play. The lack of damage is the limiting factor. Second-division regular ceiling, but the current damage points to a low-impact bench floor.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -4915,8 +4945,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 164,
-      "report": "The sample covers 52.7 IP in Single-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
+      "prospect_rank": 165,
+      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 52.7 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -4945,8 +4975,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 165,
-      "report": "The current line does not identify a dependable offensive strength; the risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the sample covers 238 PA in Triple-A, so confidence is moderate.",
+      "prospect_rank": 166,
+      "report": "The risk is that an ordinary offensive line leaves no path to regular playing time; the current line does not identify a dependable offensive strength. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 238 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -4975,8 +5005,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 166,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; no current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 40 IP in High-A, so confidence is low.",
+      "prospect_rank": 167,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The sample covers 40 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5005,8 +5035,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 167,
-      "report": "Starter upside is still alive, but the current command creates real bullpen risk; the bat-missing is starter-caliber. The stuff is ahead of the strike throwing right now. He is currently injured, so availability risk is priced into the score and confidence is low.",
+      "prospect_rank": 168,
+      "report": "He is currently injured, so availability risk is priced into the score and confidence is low. The bat-missing is starter-caliber. The stuff is ahead of the strike throwing right now. Starter upside is still alive, but the current command creates real bullpen risk.",
       "report_status": "availability_context",
       "role": "pitcher",
       "source_fields": {
@@ -5035,8 +5065,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 168,
-      "report": "The sample covers 48.3 IP in Double-A, so confidence is moderate. He limits free passes and consistently forces hitters to earn contact. He does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play.",
+      "prospect_rank": 169,
+      "report": "He limits free passes and consistently forces hitters to earn contact; he does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play; the sample covers 48.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5065,8 +5095,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 169,
-      "report": "The bat-missing is starter-caliber; the stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the sample covers 33 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 170,
+      "report": "The stuff is ahead of the strike throwing right now. The bat-missing is starter-caliber. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. The sample covers 33 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5095,8 +5125,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 170,
-      "report": "He does not finish enough hitters to own the middle of a rotation. The strike throwing is the reason to keep him on a starter track. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 47.7 IP in High-A, so confidence is low.",
+      "prospect_rank": 171,
+      "report": "Back-end starter lean, with a swingman or low-leverage bullpen floor; the strike throwing is the reason to keep him on a starter track. He does not finish enough hitters to own the middle of a rotation; the sample covers 47.7 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5125,8 +5155,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 171,
-      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 35 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 172,
+      "report": "The sample covers 35 IP in High-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5155,8 +5185,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 172,
-      "report": "The sample covers 254 PA in Double-A, so confidence is moderate; no offensive result currently separates from the rest of the line. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth.",
+      "prospect_rank": 173,
+      "report": "No offensive result currently separates from the rest of the line; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 254 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5185,8 +5215,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 173,
-      "report": "No current pitching rate gives him a dependable way through a lineup; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 48 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 174,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. No current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 48 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5215,8 +5245,8 @@
       "positions": [
         "LF"
       ],
-      "prospect_rank": 174,
-      "report": "Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. The power and patience reinforce each other. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor. The sample covers 211 PA in High-A, so confidence is low.",
+      "prospect_rank": 175,
+      "report": "The likely outcome is an everyday run-producing bat, with on-base value protecting the floor; the power and patience reinforce each other. Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test; the sample covers 211 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5245,8 +5275,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 175,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result; only 34.7 IP in Single-A, so confidence is low.",
+      "prospect_rank": 176,
+      "report": "Only 34.7 IP in Single-A, so confidence is low; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5275,8 +5305,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 176,
-      "report": "The sample covers 35.7 IP in Triple-A, so confidence is moderate; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
+      "prospect_rank": 177,
+      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 35.7 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5305,8 +5335,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 177,
-      "report": "He consistently finishes at-bats with contact; the open question is damage. Everyday contact regular; high-contact bench floor. The sample covers 248 PA in Single-A, so confidence is moderate.",
+      "prospect_rank": 178,
+      "report": "The open question is damage. He consistently finishes at-bats with contact. Everyday contact regular; high-contact bench floor. The sample covers 248 PA in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5335,8 +5365,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 178,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 2 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 179,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; only 2 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5365,8 +5395,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 179,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 67.7 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 180,
+      "report": "The sample covers 67.7 IP in Triple-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5395,8 +5425,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 180,
-      "report": "The sample covers 56.3 IP in Double-A, so confidence is moderate. He misses enough bats to keep a rotation outcome open. The walks keep the starter projection from firming up. Keep developing him as a starter, with the bullpen as the fallback.",
+      "prospect_rank": 181,
+      "report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Keep developing him as a starter, with the bullpen as the fallback; the sample covers 56.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5425,8 +5455,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 181,
-      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 66 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 182,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; the current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 66 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5455,8 +5485,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 182,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; no current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 53.3 IP in Single-A, so confidence is moderate.",
+      "prospect_rank": 183,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The sample covers 53.3 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5485,8 +5515,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 183,
-      "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; no offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. He is 18 in Single-A over 207 PA, so confidence is moderate.",
+      "prospect_rank": 184,
+      "report": "He is 18 in Single-A over 207 PA, so confidence is moderate. No offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5515,8 +5545,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 184,
-      "report": "The sample covers 5.3 IP in Double-A, so confidence is moderate. The swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades.",
+      "prospect_rank": 185,
+      "report": "The swing-and-miss is real enough to keep a rotation path open; the stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the sample covers 5.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5545,8 +5575,8 @@
       "positions": [
         "RF"
       ],
-      "prospect_rank": 185,
-      "report": "The damage is the carrying tool; better pitching can keep the power in the dugout with empty swings. Lean everyday power bat, but the miss rate keeps a bench outcome in play; the sample covers 180 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 186,
+      "report": "Better pitching can keep the power in the dugout with empty swings; the damage is the carrying tool. Lean everyday power bat, but the miss rate keeps a bench outcome in play. The sample covers 180 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5575,8 +5605,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 186,
-      "report": "Pitchers do not have to change their plan for his power; he controls at-bats and keeps the ball in play. Second-division regular ceiling, but the current damage points to a low-impact bench floor. The sample covers 235 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 187,
+      "report": "Second-division regular ceiling, but the current damage points to a low-impact bench floor; he controls at-bats and keeps the ball in play. Pitchers do not have to change their plan for his power. The sample covers 235 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5605,8 +5635,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 187,
-      "report": "Keep developing him as a starter, with the bullpen as the fallback; he misses enough bats to keep a rotation outcome open. The main risk is whether the bat-missing holds against better hitters. The latest meaningful sample is from 2025, so confidence is low.",
+      "prospect_rank": 188,
+      "report": "The latest meaningful sample is from 2025, so confidence is low. He misses enough bats to keep a rotation outcome open. The main risk is whether the bat-missing holds against better hitters. Keep developing him as a starter, with the bullpen as the fallback.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5635,8 +5665,8 @@
       "positions": [
         "RF"
       ],
-      "prospect_rank": 188,
-      "report": "The sample covers 222 PA in Double-A, so confidence is moderate. No offensive result currently separates from the rest of the line. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
+      "prospect_rank": 189,
+      "report": "No offensive result currently separates from the rest of the line; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the sample covers 222 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5665,8 +5695,8 @@
       "positions": [
         "1B"
       ],
-      "prospect_rank": 189,
-      "report": "The current line does not identify a dependable offensive strength; too many plate appearances end without contact. The present outcome is below an everyday bat; a bench role requires another offensive result to emerge; only 18 PA in Double-A, so confidence is low.",
+      "prospect_rank": 190,
+      "report": "Too many plate appearances end without contact. The current line does not identify a dependable offensive strength. The present outcome is below an everyday bat; a bench role requires another offensive result to emerge. Only 18 PA in Double-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5695,8 +5725,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 190,
-      "report": "The open question is damage against better pitching. He consistently finishes at-bats with contact. Everyday contact regular, with a useful reserve floor. The sample covers 190 PA in Single-A, so confidence is moderate.",
+      "prospect_rank": 191,
+      "report": "Everyday contact regular, with a useful reserve floor; he consistently finishes at-bats with contact. The open question is damage against better pitching; the sample covers 190 PA in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5725,8 +5755,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 191,
-      "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; no offensive result currently separates from the rest of the line. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him; he is 18 in Single-A over 184 PA, so confidence is low.",
+      "prospect_rank": 192,
+      "report": "He is 18 in Single-A over 184 PA, so confidence is low; no offensive result currently separates from the rest of the line. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5755,8 +5785,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 192,
-      "report": "Only 108 PA in Triple-A, so confidence is low; the power is the reason to stay on him. Better pitching can keep the power in the dugout with empty swings. Everyday middle-order ceiling; the current contact points to a low-average bench-power floor.",
+      "prospect_rank": 193,
+      "report": "The power is the reason to stay on him; better pitching can keep the power in the dugout with empty swings. Everyday middle-order ceiling; the current contact points to a low-average bench-power floor. Only 108 PA in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5785,8 +5815,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 193,
-      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 47.3 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 194,
+      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 47.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5815,8 +5845,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 194,
-      "report": "Pitchers have little reason to avoid the zone. He consistently finishes at-bats with contact. Table-setter ceiling; the present floor is a light-hitting reserve. The sample covers 250 PA in Triple-A, so confidence is moderate.",
+      "prospect_rank": 195,
+      "report": "Table-setter ceiling; the present floor is a light-hitting reserve; he consistently finishes at-bats with contact. Pitchers have little reason to avoid the zone; the sample covers 250 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5845,8 +5875,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 195,
-      "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the current line does not identify a dependable offensive strength. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him; the sample covers 170 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 196,
+      "report": "The sample covers 170 PA in Double-A, so confidence is moderate; the current line does not identify a dependable offensive strength. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5875,8 +5905,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 196,
-      "report": "The sample covers 30.7 IP in Double-A, so confidence is moderate; he limits free passes and consistently forces hitters to earn contact. He does not finish enough hitters to own the middle of a rotation. Back-end starter lean, with a swingman or low-leverage bullpen floor.",
+      "prospect_rank": 197,
+      "report": "He limits free passes and consistently forces hitters to earn contact; he does not finish enough hitters to own the middle of a rotation. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 30.7 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5905,8 +5935,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 197,
-      "report": "He consistently finishes at-bats with contact; pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve. The sample covers 162 PA in High-A, so confidence is low.",
+      "prospect_rank": 198,
+      "report": "Pitchers have little reason to avoid the zone. He consistently finishes at-bats with contact. Table-setter ceiling; the present floor is a light-hitting reserve. The sample covers 162 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5935,8 +5965,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 198,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. No current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 54.3 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 199,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 54.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -5965,8 +5995,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 199,
-      "report": "Lean everyday power bat, but the miss rate keeps a bench outcome in play; the damage is the carrying tool. The failure point is contact frequency; the sample covers 218 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 200,
+      "report": "The sample covers 218 PA in Double-A, so confidence is moderate. The damage is the carrying tool. The failure point is contact frequency. Lean everyday power bat, but the miss rate keeps a bench outcome in play.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -5995,8 +6025,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 200,
-      "report": "The sample covers 194 PA in Triple-A, so confidence is high. The power and patience reinforce each other. The current line has no clear weakness; the risk is that the power backs up against better pitching. Everyday middle-order regular; the walks give him a useful floor through a power dip.",
+      "prospect_rank": 201,
+      "report": "The power and patience reinforce each other; the current line has no clear weakness; the risk is that the power backs up against better pitching. Everyday middle-order regular; the walks give him a useful floor through a power dip; the sample covers 194 PA in Triple-A, so confidence is high.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6025,8 +6055,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 201,
-      "report": "No current pitching rate gives him a dependable way through a lineup; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 39 IP in Single-A, so confidence is moderate.",
+      "prospect_rank": 202,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; no current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 39 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6055,8 +6085,8 @@
       "positions": [
         "RF"
       ],
-      "prospect_rank": 202,
-      "report": "Better pitching can still beat him with empty swings; the damage plays in games. Everyday power ceiling, with a volatile bench-bat floor until the contact improves. The sample covers 170 PA in Triple-A, so confidence is moderate.",
+      "prospect_rank": 203,
+      "report": "Everyday power ceiling, with a volatile bench-bat floor until the contact improves; the damage plays in games. Better pitching can still beat him with empty swings. The sample covers 170 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6085,8 +6115,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 203,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The sample covers 31.3 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 204,
+      "report": "The sample covers 31.3 IP in High-A, so confidence is moderate. No current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6115,8 +6145,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 204,
-      "report": "The sample covers 275 PA in Single-A, so confidence is moderate. He works deep counts and gets on base. The line does not show a second offensive strength at the same level. Lower-order regular ceiling; the current floor is a bench bat without more damage.",
+      "prospect_rank": 205,
+      "report": "He works deep counts and gets on base; the line does not show a second offensive strength at the same level. Lower-order regular ceiling; the current floor is a bench bat without more damage; the sample covers 275 PA in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6145,8 +6175,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 205,
-      "report": "The strike throwing is the reason to keep him on a starter track; he does not finish enough hitters to own the middle of a rotation. Back-end starter lean, with a swingman or low-leverage bullpen floor; the sample covers 49 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 206,
+      "report": "He does not finish enough hitters to own the middle of a rotation; the strike throwing is the reason to keep him on a starter track. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 49 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6175,8 +6205,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 206,
-      "report": "The risk is that an ordinary offensive line leaves no path to regular playing time; no offensive result currently separates from the rest of the line. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 274 PA in High-A, so confidence is low.",
+      "prospect_rank": 207,
+      "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; no offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. The sample covers 274 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6205,8 +6235,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 207,
-      "report": "Back-end rotation path, with a multi-inning bullpen floor; he is preventing runs and keeping traffic off the bases. The current line does not show dominant bat-missing, making the next level the key test. Only 20 IP in Single-A, so confidence is low.",
+      "prospect_rank": 208,
+      "report": "Only 20 IP in Single-A, so confidence is low. He is preventing runs and keeping traffic off the bases. The current line does not show dominant bat-missing, making the next level the key test. Back-end rotation path, with a multi-inning bullpen floor.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6235,8 +6265,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 208,
-      "report": "The sample covers 295 PA in Triple-A, so confidence is moderate. He rarely gives pitchers an easy plate appearance. The lack of damage is the limiting factor. Second-division regular ceiling, but the current damage points to a low-impact bench floor.",
+      "prospect_rank": 209,
+      "report": "He rarely gives pitchers an easy plate appearance; the lack of damage is the limiting factor. Second-division regular ceiling, but the current damage points to a low-impact bench floor; the sample covers 295 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6265,8 +6295,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 209,
-      "report": "The current line does not identify a dependable offensive strength; too many plate appearances end without contact. The present outcome is below an everyday bat; a bench role requires another offensive result to emerge; only 5 PA in High-A, so confidence is low.",
+      "prospect_rank": 210,
+      "report": "Too many plate appearances end without contact. The current line does not identify a dependable offensive strength. The present outcome is below an everyday bat; a bench role requires another offensive result to emerge. Only 5 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6295,8 +6325,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 210,
-      "report": "The risk is that an ordinary offensive line leaves no path to regular playing time. No offensive result currently separates from the rest of the line. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 233 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 211,
+      "report": "The current line does not support an everyday outcome; the floor is organizational depth; no offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time; the sample covers 233 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6325,8 +6355,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 211,
-      "report": "Keep developing him as a starter, with the bullpen as the fallback; he misses enough bats to keep a rotation outcome open. He still gives away too many counts; the sample covers 52.7 IP in Single-A, so confidence is moderate.",
+      "prospect_rank": 212,
+      "report": "The sample covers 52.7 IP in Single-A, so confidence is moderate; he misses enough bats to keep a rotation outcome open. He still gives away too many counts. Keep developing him as a starter, with the bullpen as the fallback.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6355,8 +6385,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 212,
-      "report": "The sample covers 255 PA in High-A, so confidence is low; he forces pitchers into the zone and takes the free pass. The line does not show a second offensive strength at the same level. The walks create an everyday path, but the present outcome is a reserve.",
+      "prospect_rank": 213,
+      "report": "He forces pitchers into the zone and takes the free pass; the line does not show a second offensive strength at the same level. The walks create an everyday path, but the present outcome is a reserve. The sample covers 255 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6385,8 +6415,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 213,
-      "report": "No offensive result currently separates from the rest of the line; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. He is 19 in High-A over 249 PA, so confidence is moderate.",
+      "prospect_rank": 214,
+      "report": "Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. No offensive result currently separates from the rest of the line. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. He is 19 in High-A over 249 PA, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6415,8 +6445,8 @@
       "positions": [
         "1B"
       ],
-      "prospect_rank": 214,
-      "report": "The failure point is contact frequency. The damage is the carrying tool. Everyday middle-order ceiling; the current contact points to a low-average bench-power floor. The sample covers 246 PA in Single-A, so confidence is low.",
+      "prospect_rank": 215,
+      "report": "Everyday middle-order ceiling; the current contact points to a low-average bench-power floor; the damage is the carrying tool. The failure point is contact frequency; the sample covers 246 PA in Single-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6445,8 +6475,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 215,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 52.3 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 216,
+      "report": "The sample covers 52.3 IP in High-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6475,8 +6505,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 216,
-      "report": "The sample covers 45.3 IP in Triple-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "prospect_rank": 217,
+      "report": "No current pitching rate gives him a dependable way through a lineup; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 45.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6505,8 +6535,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 217,
-      "report": "He does not give away many plate appearances; he rarely walks, leaving little margin when the contact quality backs up. Everyday contact regular, with a useful reserve floor. The sample covers 64 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 218,
+      "report": "He rarely walks, leaving little margin when the contact quality backs up. He does not give away many plate appearances. Everyday contact regular, with a useful reserve floor. The sample covers 64 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6535,8 +6565,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 218,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. No current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 58 IP in High-A, so confidence is low.",
+      "prospect_rank": 219,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 58 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6565,8 +6595,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 219,
-      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 51 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 220,
+      "report": "The sample covers 51 IP in Double-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6595,8 +6625,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 220,
-      "report": "The sample covers 148 PA in Triple-A, so confidence is high. He barely strikes out. The offensive value remains tied closely to the hit tool because he does not take many free passes. Everyday contact regular; high-contact bench floor.",
+      "prospect_rank": 221,
+      "report": "He barely strikes out; the offensive value remains tied closely to the hit tool because he does not take many free passes. Everyday contact regular; high-contact bench floor; the sample covers 148 PA in Triple-A, so confidence is high.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6625,8 +6655,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 221,
-      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 56.3 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 222,
+      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 56.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6655,8 +6685,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 222,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; no current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 60 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 223,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The sample covers 60 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6685,8 +6715,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 223,
-      "report": "Starter upside is still alive, but the current command creates real bullpen risk; the swing-and-miss is real enough to keep a rotation path open. The walks are the separator, not the stuff. He is 19 in High-A over 42.3 IP, so confidence is low.",
+      "prospect_rank": 224,
+      "report": "He is 19 in High-A over 42.3 IP, so confidence is low. The swing-and-miss is real enough to keep a rotation path open. The walks are the separator, not the stuff. Starter upside is still alive, but the current command creates real bullpen risk.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6715,8 +6745,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 224,
-      "report": "The sample covers 43.3 IP in Single-A, so confidence is moderate. He misses enough bats to keep a rotation outcome open. He still gives away too many counts. Rotation lean; the strike throwing decides whether it holds.",
+      "prospect_rank": 225,
+      "report": "He misses enough bats to keep a rotation outcome open; he still gives away too many counts. Rotation lean; the strike throwing decides whether it holds; the sample covers 43.3 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6745,8 +6775,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 225,
-      "report": "No current pitching rate gives him a dependable way through a lineup; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 57.7 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 226,
+      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; no current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 57.7 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6775,8 +6805,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 226,
-      "report": "The miss rate keeps that power from showing up consistently; there is enough power to keep pitchers honest. Everyday power ceiling, with a volatile bench-bat floor until the contact improves. He is 19 in High-A over 244 PA, so confidence is low.",
+      "prospect_rank": 227,
+      "report": "Everyday power ceiling, with a volatile bench-bat floor until the contact improves; there is enough power to keep pitchers honest. The miss rate keeps that power from showing up consistently. He is 19 in High-A over 244 PA, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6805,8 +6835,8 @@
       "positions": [
         "1B"
       ],
-      "prospect_rank": 227,
-      "report": "The power keeps a regular role open, but the present floor is a one-dimensional reserve; he is producing enough game power to matter. The line does not show a second offensive strength to protect the power. The sample covers 261 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 228,
+      "report": "The sample covers 261 PA in Double-A, so confidence is moderate. He is producing enough game power to matter. The line does not show a second offensive strength to protect the power. The power keeps a regular role open, but the present floor is a one-dimensional reserve.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6835,8 +6865,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 228,
-      "report": "The sample covers 43.3 IP in Triple-A, so confidence is moderate. He misses enough bats to keep a rotation outcome open. The walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds.",
+      "prospect_rank": 229,
+      "report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds; the sample covers 43.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6865,8 +6895,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 229,
-      "report": "The bat-missing is starter-caliber; the stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades; only 7.7 IP in High-A, so confidence is low.",
+      "prospect_rank": 230,
+      "report": "The stuff is ahead of the strike throwing right now. The bat-missing is starter-caliber. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. Only 7.7 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6895,8 +6925,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 230,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. The current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 43 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 231,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 43 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6925,8 +6955,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 231,
-      "report": "Table-setter ceiling; the present floor is a light-hitting reserve; the ball stays in play. Pitchers have little reason to avoid the zone; the sample covers 153 PA in Triple-A, so confidence is high.",
+      "prospect_rank": 232,
+      "report": "The sample covers 153 PA in Triple-A, so confidence is high; the ball stays in play. Pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -6955,8 +6985,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 232,
-      "report": "The sample covers 55 IP in Single-A, so confidence is low; he is preventing runs and keeping traffic off the bases. The results are ahead of the bat-missing, leaving less margin against better hitters. The present outcome is a back-end starter; the bullpen is the fallback.",
+      "prospect_rank": 233,
+      "report": "He is preventing runs and keeping traffic off the bases; the results are ahead of the bat-missing, leaving less margin against better hitters. The present outcome is a back-end starter; the bullpen is the fallback. The sample covers 55 IP in Single-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -6985,8 +7015,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 233,
-      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 59 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 234,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 59 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7015,8 +7045,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 234,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 55 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 235,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 55 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7045,8 +7075,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 235,
-      "report": "Everyday power ceiling, with a volatile bench-bat floor until the contact improves; he punishes mistakes when he gets the barrel there. Better pitching can still beat him with empty swings; the sample covers 237 PA in High-A, so confidence is low.",
+      "prospect_rank": 236,
+      "report": "The sample covers 237 PA in High-A, so confidence is low; he punishes mistakes when he gets the barrel there. Better pitching can still beat him with empty swings. Everyday power ceiling, with a volatile bench-bat floor until the contact improves.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7075,8 +7105,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 236,
-      "report": "The sample covers 72.7 IP in Double-A, so confidence is moderate; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "prospect_rank": 237,
+      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 72.7 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7105,8 +7135,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 237,
-      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 13.3 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 238,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 13.3 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7135,8 +7165,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 238,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. The current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 29.7 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 239,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result; only 29.7 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7165,8 +7195,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 239,
-      "report": "Back-end starter lean, with a swingman or low-leverage bullpen floor; the strike throwing is the reason to keep him on a starter track. He does not finish enough hitters to own the middle of a rotation; the sample covers 26.3 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 240,
+      "report": "The sample covers 26.3 IP in Double-A, so confidence is moderate. The strike throwing is the reason to keep him on a starter track. He does not finish enough hitters to own the middle of a rotation. Back-end starter lean, with a swingman or low-leverage bullpen floor.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7195,8 +7225,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 240,
-      "report": "Only 11.3 IP in Double-A, so confidence is low. He has a dependable way to finish hitters. The main risk is whether the bat-missing holds against better hitters. Keep developing him as a starter, with the bullpen as the fallback.",
+      "prospect_rank": 241,
+      "report": "He has a dependable way to finish hitters; the main risk is whether the bat-missing holds against better hitters. Keep developing him as a starter, with the bullpen as the fallback; only 11.3 IP in Double-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7225,8 +7255,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 241,
-      "report": "He has a dependable way to finish hitters; the strike throwing is adequate now; upper-level translation is the remaining test. Rotation lean; the strike throwing decides whether it holds; the sample covers 6 IP in High-A, so confidence is low.",
+      "prospect_rank": 242,
+      "report": "The strike throwing is adequate now; upper-level translation is the remaining test; he has a dependable way to finish hitters. Rotation lean; the strike throwing decides whether it holds. The sample covers 6 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7255,8 +7285,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 242,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; no current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 44.3 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 243,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The sample covers 44.3 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7285,8 +7315,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 243,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. Only 11.3 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 244,
+      "report": "Only 11.3 IP in Triple-A, so confidence is low. No current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7315,8 +7345,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 244,
-      "report": "The sample covers 268 PA in Double-A, so confidence is moderate. He rarely gives pitchers an easy plate appearance. The lack of damage is the limiting factor. The approach fits a reserve role today; more damage is required for everyday work.",
+      "prospect_rank": 245,
+      "report": "He rarely gives pitchers an easy plate appearance; the lack of damage is the limiting factor. The approach fits a reserve role today; more damage is required for everyday work; the sample covers 268 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7345,8 +7375,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 245,
-      "report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Keep developing him as a starter, with the bullpen as the fallback; only 20.3 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 246,
+      "report": "The walks keep the starter projection from firming up; he misses enough bats to keep a rotation outcome open. Keep developing him as a starter, with the bullpen as the fallback. Only 20.3 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7376,8 +7406,8 @@
         "SP",
         "P"
       ],
-      "prospect_rank": 246,
-      "report": "The walks are the separator, not the stuff; the bat-missing is starter-caliber. Starter upside is still alive, but the current command creates real bullpen risk. The latest meaningful sample is from 2025, so confidence is low.",
+      "prospect_rank": 247,
+      "report": "Starter upside is still alive, but the current command creates real bullpen risk; the bat-missing is starter-caliber. The walks are the separator, not the stuff. The latest meaningful sample is from 2025, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7406,8 +7436,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 247,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The sample covers 38.7 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 248,
+      "report": "The sample covers 38.7 IP in High-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7436,8 +7466,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 248,
-      "report": "The sample covers 285 PA in Single-A, so confidence is low. He consistently finishes at-bats with contact. He rarely walks, leaving little margin when the contact quality backs up. Everyday contact regular, with a useful reserve floor.",
+      "prospect_rank": 249,
+      "report": "He consistently finishes at-bats with contact; he rarely walks, leaving little margin when the contact quality backs up. Everyday contact regular, with a useful reserve floor; the sample covers 285 PA in Single-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7466,8 +7496,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 249,
-      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the latest meaningful sample is from 2025, so confidence is low.",
+      "prospect_rank": 250,
+      "report": "Neither misses nor strikes separate in the strikeout-to-walk result. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The latest meaningful sample is from 2025, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7496,8 +7526,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 250,
-      "report": "The walks are the separator, not the stuff. The bat-missing is starter-caliber. Starter upside is still alive, but the current command creates real bullpen risk. The sample covers 39.3 IP in Single-A, so confidence is moderate.",
+      "prospect_rank": 251,
+      "report": "Starter upside is still alive, but the current command creates real bullpen risk; the bat-missing is starter-caliber. The walks are the separator, not the stuff; the sample covers 39.3 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7526,8 +7556,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 251,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 38.3 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 252,
+      "report": "The sample covers 38.3 IP in Triple-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7556,8 +7586,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 252,
-      "report": "The sample covers 240 PA in Single-A, so confidence is moderate; he extends at-bats and forces pitchers into the zone. The miss rate leaves the hit tool exposed despite the walks. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor.",
+      "prospect_rank": 253,
+      "report": "He extends at-bats and forces pitchers into the zone; the miss rate leaves the hit tool exposed despite the walks. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor. The sample covers 240 PA in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7586,8 +7616,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 253,
-      "report": "The bat-missing is starter-caliber; the stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. The sample covers 32.7 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 254,
+      "report": "The stuff is ahead of the strike throwing right now. The bat-missing is starter-caliber. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. The sample covers 32.7 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7616,8 +7646,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 254,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The current line does not identify a repeatable method for retiring hitters. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 42.3 IP in Triple-A, so confidence is moderate.",
+      "prospect_rank": 255,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 42.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7646,8 +7676,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 255,
-      "report": "Everyday contact regular, with a useful reserve floor; he consistently finishes at-bats with contact. The offensive value remains tied closely to the hit tool because he does not take many free passes; the sample covers 259 PA in Single-A, so confidence is moderate.",
+      "prospect_rank": 256,
+      "report": "The sample covers 259 PA in Single-A, so confidence is moderate; he consistently finishes at-bats with contact. The offensive value remains tied closely to the hit tool because he does not take many free passes. Everyday contact regular, with a useful reserve floor.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7676,8 +7706,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 256,
-      "report": "The sample covers 51.3 IP in Triple-A, so confidence is moderate; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
+      "prospect_rank": 257,
+      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 51.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7706,8 +7736,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 257,
-      "report": "He limits free passes and consistently forces hitters to earn contact; he does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play. The sample covers 51.3 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 258,
+      "report": "He does not finish enough hitters to own the middle of a rotation. He limits free passes and consistently forces hitters to earn contact. The control supports a starter look; the lack of misses keeps the bullpen in play. The sample covers 51.3 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7736,8 +7766,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 258,
-      "report": "The miss rate keeps that power from showing up consistently. There is enough power to keep pitchers honest. The contact points to a reserve today, but the damage leaves an everyday path open. The sample covers 207 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 259,
+      "report": "The contact points to a reserve today, but the damage leaves an everyday path open; there is enough power to keep pitchers honest. The miss rate keeps that power from showing up consistently; the sample covers 207 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7766,8 +7796,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 259,
-      "report": "The likely outcome is an everyday run-producing bat, with on-base value protecting the floor; the power and patience reinforce each other. The miss rate can still make the batting average volatile; only 111 PA in Single-A, so confidence is low.",
+      "prospect_rank": 260,
+      "report": "Only 111 PA in Single-A, so confidence is low. The power and patience reinforce each other. The miss rate can still make the batting average volatile. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7796,8 +7826,8 @@
       "positions": [
         "1B"
       ],
-      "prospect_rank": 260,
-      "report": "The sample covers 224 PA in Triple-A, so confidence is high. The bat has a clear source of damage. The line does not show a second offensive strength to protect the power. The power keeps a regular role open, but the present floor is a one-dimensional reserve.",
+      "prospect_rank": 261,
+      "report": "The bat has a clear source of damage; the line does not show a second offensive strength to protect the power. The power keeps a regular role open, but the present floor is a one-dimensional reserve; the sample covers 224 PA in Triple-A, so confidence is high.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7826,8 +7856,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 261,
-      "report": "The bat-missing is starter-caliber; the stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the sample covers 30 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 262,
+      "report": "The stuff is ahead of the strike throwing right now; the bat-missing is starter-caliber. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. The sample covers 30 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7856,8 +7886,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 262,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; no current pitching rate gives him a dependable way through a lineup. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 23.7 IP in Triple-A, so confidence is low.",
+      "prospect_rank": 263,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. Only 23.7 IP in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7886,8 +7916,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 263,
-      "report": "Back-end starter lean, with a swingman or low-leverage bullpen floor; he limits free passes and consistently forces hitters to earn contact. The lack of misses leaves little margin when hitters square the ball. The sample covers 53.7 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 264,
+      "report": "The sample covers 53.7 IP in Double-A, so confidence is moderate. He limits free passes and consistently forces hitters to earn contact. The lack of misses leaves little margin when hitters square the ball. Back-end starter lean, with a swingman or low-leverage bullpen floor.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7916,8 +7946,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 264,
-      "report": "The sample covers 52.7 IP in Triple-A, so confidence is moderate. The current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "prospect_rank": 265,
+      "report": "The current line does not identify a repeatable method for retiring hitters; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 52.7 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -7946,8 +7976,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 265,
-      "report": "He controls at-bats and keeps the ball in play; the lack of damage is the limiting factor. Second-division regular ceiling, but the current damage points to a low-impact bench floor; he is 18 in Single-A over 228 PA, so confidence is moderate.",
+      "prospect_rank": 266,
+      "report": "The lack of damage is the limiting factor; he controls at-bats and keeps the ball in play. Second-division regular ceiling, but the current damage points to a low-impact bench floor. He is 18 in Single-A over 228 PA, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -7976,8 +8006,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 266,
-      "report": "He still gives away too many counts; he misses enough bats to keep a rotation outcome open. Keep developing him as a starter, with the bullpen as the fallback. The sample covers 39 IP in Single-A, so confidence is moderate.",
+      "prospect_rank": 267,
+      "report": "Keep developing him as a starter, with the bullpen as the fallback; he misses enough bats to keep a rotation outcome open. He still gives away too many counts. The sample covers 39 IP in Single-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8006,8 +8036,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 267,
-      "report": "Rotation lean; the strike throwing decides whether it holds; he misses enough bats to keep a rotation outcome open. He still gives away too many counts. The sample covers 54 IP in High-A, so confidence is low.",
+      "prospect_rank": 268,
+      "report": "The sample covers 54 IP in High-A, so confidence is low. He misses enough bats to keep a rotation outcome open. He still gives away too many counts. Rotation lean; the strike throwing decides whether it holds.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8036,8 +8066,8 @@
       "positions": [
         "2B"
       ],
-      "prospect_rank": 268,
-      "report": "He is 19 in High-A over 52 PA, so confidence is low. The ball stays in play. The current damage limits the offensive ceiling. Table-setter ceiling; the present floor is a light-hitting reserve.",
+      "prospect_rank": 269,
+      "report": "The ball stays in play; the current damage limits the offensive ceiling. Table-setter ceiling; the present floor is a light-hitting reserve; he is 19 in High-A over 52 PA, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8066,8 +8096,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 269,
-      "report": "The bat-missing is starter-caliber; the walks are the separator, not the stuff. Keep the starter path open, but the walk rate has to move before the bullpen risk fades; only 19.7 IP in Double-A, so confidence is low.",
+      "prospect_rank": 270,
+      "report": "The walks are the separator, not the stuff. The bat-missing is starter-caliber. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. Only 19.7 IP in Double-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8096,8 +8126,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 270,
-      "report": "The walks are the separator, not the stuff. The swing-and-miss is real enough to keep a rotation path open. Starter upside is still alive, but the current command creates real bullpen risk. Only 29 IP in High-A, so confidence is low.",
+      "prospect_rank": 271,
+      "report": "Starter upside is still alive, but the current command creates real bullpen risk; the swing-and-miss is real enough to keep a rotation path open. The walks are the separator, not the stuff; only 29 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8126,8 +8156,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 271,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 40.7 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 272,
+      "report": "The sample covers 40.7 IP in Double-A, so confidence is moderate; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8156,8 +8186,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 272,
-      "report": "The sample covers 63 IP in Double-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
+      "prospect_rank": 273,
+      "report": "No current pitching rate gives him a dependable way through a lineup; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 63 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8186,8 +8216,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 273,
-      "report": "The current line does not identify a dependable offensive strength; the risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 253 PA in Triple-A, so confidence is moderate.",
+      "prospect_rank": 274,
+      "report": "The risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not identify a dependable offensive strength. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 253 PA in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8216,8 +8246,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 274,
-      "report": "The stuff is ahead of the strike throwing right now. The swing-and-miss is real enough to keep a rotation path open. Keep the starter path open, but the walk rate has to move before the bullpen risk fades. The sample covers 39.7 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 275,
+      "report": "Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now; the sample covers 39.7 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8246,8 +8276,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 275,
-      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result; only 17 IP in Single-A, so confidence is low.",
+      "prospect_rank": 276,
+      "report": "Only 17 IP in Single-A, so confidence is low; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8276,8 +8306,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 276,
-      "report": "Only 113 PA in Triple-A, so confidence is low; no offensive result currently separates from the rest of the line. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth.",
+      "prospect_rank": 277,
+      "report": "No offensive result currently separates from the rest of the line; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth. Only 113 PA in Triple-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8306,8 +8336,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 277,
-      "report": "He rarely gives pitchers an easy plate appearance; the lack of damage is the limiting factor. The approach fits a reserve role today; more damage is required for everyday work. The sample covers 193 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 278,
+      "report": "The lack of damage is the limiting factor. He rarely gives pitchers an easy plate appearance. The approach fits a reserve role today; more damage is required for everyday work. The sample covers 193 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8336,8 +8366,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 278,
-      "report": "He is not finishing enough of those at-bats with contact. He extends at-bats and forces pitchers into the zone. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor. The sample covers 118 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 279,
+      "report": "On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor; he extends at-bats and forces pitchers into the zone. He is not finishing enough of those at-bats with contact; the sample covers 118 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8366,8 +8396,8 @@
       "positions": [
         "LF"
       ],
-      "prospect_rank": 279,
-      "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the current line does not identify a dependable offensive strength. The risk is that an ordinary offensive line leaves no path to regular playing time; only 70 PA in High-A, so confidence is low.",
+      "prospect_rank": 280,
+      "report": "Only 70 PA in High-A, so confidence is low. The current line does not identify a dependable offensive strength. The risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8396,8 +8426,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 280,
-      "report": "The sample covers 39.3 IP in High-A, so confidence is moderate. He misses enough bats to keep a rotation outcome open. The walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds.",
+      "prospect_rank": 281,
+      "report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds; the sample covers 39.3 IP in High-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8426,8 +8456,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 281,
-      "report": "No offensive result currently separates from the rest of the line; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the sample covers 76 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 282,
+      "report": "Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him; no offensive result currently separates from the rest of the line. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 76 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8456,8 +8486,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 282,
-      "report": "The line does not show a second offensive strength at the same level; he forces pitchers into the zone and takes the free pass. The walks create an everyday path, but the present outcome is a reserve. The sample covers 172 PA in High-A, so confidence is low.",
+      "prospect_rank": 283,
+      "report": "The walks create an everyday path, but the present outcome is a reserve; he forces pitchers into the zone and takes the free pass. The line does not show a second offensive strength at the same level. The sample covers 172 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8486,8 +8516,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 283,
-      "report": "Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the swing-and-miss is real enough to keep a rotation path open. The walks are the separator, not the stuff. The sample covers 34.7 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 284,
+      "report": "The sample covers 34.7 IP in High-A, so confidence is moderate. The swing-and-miss is real enough to keep a rotation path open. The walks are the separator, not the stuff. Keep the starter path open, but the walk rate has to move before the bullpen risk fades.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8516,8 +8546,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 284,
-      "report": "The sample covers 3.3 IP in Triple-A, so confidence is moderate. The bat-missing is starter-caliber. The walks are the separator, not the stuff. Starter upside is still alive, but the current command creates real bullpen risk.",
+      "prospect_rank": 285,
+      "report": "The bat-missing is starter-caliber; the walks are the separator, not the stuff. Starter upside is still alive, but the current command creates real bullpen risk; the sample covers 3.3 IP in Triple-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8546,8 +8576,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 285,
-      "report": "The current line does not identify a repeatable method for retiring hitters; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 51.7 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 286,
+      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 51.7 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8576,8 +8606,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 286,
-      "report": "Neither misses nor strikes separate in the strikeout-to-walk result; the current line does not identify a repeatable method for retiring hitters. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The latest meaningful sample is from 2024, so confidence is low.",
+      "prospect_rank": 287,
+      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. Neither misses nor strikes separate in the strikeout-to-walk result. The latest meaningful sample is from 2024, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8606,8 +8636,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 287,
-      "report": "Back-end rotation path, with a multi-inning bullpen floor; the current results are clean. The current line does not show dominant bat-missing, making the next level the key test. He is 20 in Double-A over 5 IP, so confidence is moderate.",
+      "prospect_rank": 288,
+      "report": "He is 20 in Double-A over 5 IP, so confidence is moderate. The current results are clean. The current line does not show dominant bat-missing, making the next level the key test. Back-end rotation path, with a multi-inning bullpen floor.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8636,8 +8666,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 288,
-      "report": "The sample covers 253 PA in Double-A, so confidence is moderate. He consistently finishes at-bats with contact. Pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve.",
+      "prospect_rank": 289,
+      "report": "He consistently finishes at-bats with contact; pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve; the sample covers 253 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8666,8 +8696,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 289,
-      "report": "He limits free passes and consistently forces hitters to earn contact; he does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play; the sample covers 58 IP in Double-A, so confidence is moderate.",
+      "prospect_rank": 290,
+      "report": "He does not finish enough hitters to own the middle of a rotation. He limits free passes and consistently forces hitters to earn contact. The control supports a starter look; the lack of misses keeps the bullpen in play. The sample covers 58 IP in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8696,8 +8726,8 @@
       "positions": [
         "CF"
       ],
-      "prospect_rank": 290,
-      "report": "The line does not show a second offensive strength at the same level. He forces pitchers into the zone and takes the free pass. The walks create an everyday path, but the present outcome is a reserve. The sample covers 108 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 291,
+      "report": "The walks create an everyday path, but the present outcome is a reserve; he forces pitchers into the zone and takes the free pass. The line does not show a second offensive strength at the same level; the sample covers 108 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8726,8 +8756,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 291,
-      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result; the sample covers 38.7 IP in High-A, so confidence is moderate.",
+      "prospect_rank": 292,
+      "report": "The sample covers 38.7 IP in High-A, so confidence is moderate; no current pitching rate gives him a dependable way through a lineup. Neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8756,8 +8786,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 292,
-      "report": "The sample covers 233 PA in Triple-A, so confidence is high; he controls at-bats and keeps the ball in play. Pitchers do not have to change their plan for his power. The approach fits a reserve role today; more damage is required for everyday work.",
+      "prospect_rank": 293,
+      "report": "He controls at-bats and keeps the ball in play; pitchers do not have to change their plan for his power. The approach fits a reserve role today; more damage is required for everyday work. The sample covers 233 PA in Triple-A, so confidence is high.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8786,8 +8816,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 293,
-      "report": "He is producing enough game power to matter; better pitching can leave him without a second way to contribute. The power keeps a regular role open, but the present floor is a one-dimensional reserve. The sample covers 107 PA in Triple-A, so confidence is high.",
+      "prospect_rank": 294,
+      "report": "Better pitching can leave him without a second way to contribute. He is producing enough game power to matter. The power keeps a regular role open, but the present floor is a one-dimensional reserve. The sample covers 107 PA in Triple-A, so confidence is high.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8816,8 +8846,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 294,
-      "report": "The risk is that better pitching reduces the walks without another loud offensive result replacing them. He works deep counts and gets on base. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 274 PA in Double-A, so confidence is moderate.",
+      "prospect_rank": 295,
+      "report": "Lower-order regular ceiling; the current floor is a bench bat without more damage; he works deep counts and gets on base. The risk is that better pitching reduces the walks without another loud offensive result replacing them; the sample covers 274 PA in Double-A, so confidence is moderate.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8846,8 +8876,8 @@
       "positions": [
         "SS"
       ],
-      "prospect_rank": 295,
-      "report": "This reads as a broad-based regular outcome, with enough across-the-board value to retain a reserve floor; he controls at-bats and does damage without leaning on one result. The risk is a broad but ordinary offensive line without one result that forces an everyday role; the sample covers 8 PA in Triple-A, so confidence is high.",
+      "prospect_rank": 296,
+      "report": "The sample covers 8 PA in Triple-A, so confidence is high; he controls at-bats and does damage without leaning on one result. The risk is a broad but ordinary offensive line without one result that forces an everyday role. This reads as a broad-based regular outcome, with enough across-the-board value to retain a reserve floor.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8876,8 +8906,8 @@
       "positions": [
         "3B"
       ],
-      "prospect_rank": 296,
-      "report": "The sample covers 221 PA in High-A, so confidence is low; he gets into damage counts without chasing his way out of them. Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. Everyday middle-order regular; the walks give him a useful floor through a power dip.",
+      "prospect_rank": 297,
+      "report": "He gets into damage counts without chasing his way out of them; nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. Everyday middle-order regular; the walks give him a useful floor through a power dip. The sample covers 221 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8906,8 +8936,8 @@
       "positions": [
         "C"
       ],
-      "prospect_rank": 297,
-      "report": "The power and patience reinforce each other; nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. Everyday middle-order regular; the walks give him a useful floor through a power dip. Only 85 PA in High-A, so confidence is low.",
+      "prospect_rank": 298,
+      "report": "Nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. The power and patience reinforce each other. Everyday middle-order regular; the walks give him a useful floor through a power dip. Only 85 PA in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -8936,8 +8966,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 298,
-      "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. No current pitching rate gives him a dependable way through a lineup. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. Only 23 IP in High-A, so confidence is low.",
+      "prospect_rank": 299,
+      "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; no current pitching rate gives him a dependable way through a lineup. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; only 23 IP in High-A, so confidence is low.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8966,8 +8996,8 @@
       "positions": [
         "P"
       ],
-      "prospect_rank": 299,
-      "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; only 28 IP in Single-A, so confidence is low.",
+      "prospect_rank": 300,
+      "report": "Only 28 IP in Single-A, so confidence is low. The current line does not identify a repeatable method for retiring hitters. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -8979,36 +9009,6 @@
         "stat_line_source": "valucast_input_contract"
       },
       "team": "KC",
-      "usage": "scouting_repository_context_not_live_rank_or_value"
-    },
-    {
-      "age": 22,
-      "confidence": {
-        "level": "medium"
-      },
-      "dynasty_value": 28.93,
-      "id": "vc_prospect_698945_hitter",
-      "level": "AA",
-      "mlbam_id": "698945",
-      "name": "Anderson De Los Santos",
-      "peak_summary": "Projection: organizational depth with medium risk. The current bat shape is balanced over 231 PA.",
-      "player_type": "prospect",
-      "positions": [
-        "1B"
-      ],
-      "prospect_rank": 300,
-      "report": "The sample covers 231 PA in Double-A, so confidence is moderate. The damage plays in games. The miss rate keeps that power from showing up consistently. Everyday power ceiling, with a volatile bench-bat floor until the contact improves.",
-      "report_status": "stat_grounded",
-      "role": "hitter",
-      "source_fields": {
-        "peak_projection": true,
-        "score_source": "prospect_model_v0_6",
-        "stat_line_sample": 231.0,
-        "stat_line_sample_season": 2026,
-        "stat_line_sample_unit": "PA",
-        "stat_line_source": "valucast_input_contract"
-      },
-      "team": "BAL",
       "usage": "scouting_repository_context_not_live_rank_or_value"
     }
   ],
