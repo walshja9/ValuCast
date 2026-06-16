@@ -48,7 +48,7 @@
                 </div>
                 <span class="lane-status lane-status-{{ lane.status | lower | replace(' ', '-') }}">{{ lane.status }}</span>
             </div>
-            <p>{{ lane.copy }}</p>
+            <p>{{ lane["copy"] }}</p>
             <div class="intelligence-lane-foot">
                 <span>{{ lane.metric }}</span>
                 <a href="{{ lane.href }}">{{ lane.cta }}</a>
