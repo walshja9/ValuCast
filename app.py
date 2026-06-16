@@ -2125,6 +2125,8 @@ def intelligence_hub():
     scorecard = _load_artifact(root / "data" / "validation" / "methodology_scorecard.json")
     quality = _load_artifact(models / "valucast_quality_governor.json")
     repository = _load_artifact(models / "valucast_scouting_reports.json")
+    recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
+    card_audit = _load_artifact(models / "valucast_prospect_card_data_audit.json")
     role_tracker = _load_artifact(models / "valucast_playing_time_role_tracker.json")
     hp_sanity = _load_artifact(models / "valucast_hp_promotion_sanity_report.json")
     peak_calibration = _load_artifact(
@@ -2149,6 +2151,34 @@ def intelligence_hub():
             "metric": (quality or {}).get("status", "unavailable").replace("_", " ").title(),
             "href": "/front-office",
             "cta": "View front-office track",
+        },
+        {
+            "name": "Prospect Card Data Audit",
+            "status": "Ready" if _artifact_ready(card_audit, "validation", "ready_for_cards") else "Watch",
+            "kicker": "card data contract",
+            "copy": (
+                "Prospect cards now get a daily identity, level, stat-context, "
+                "graduation, and peak-projection audit before they publish."
+            ),
+            "metric": (
+                f"{((card_audit or {}).get('metrics') or {}).get('top200_count', 0)} top-200 checked"
+            ),
+            "href": "/scouting",
+            "cta": "Review card health",
+        },
+        {
+            "name": "Recent Signal Pipeline",
+            "status": "Ready" if _artifact_ready(recent_signal, "validation", "ready_for_recent_signal") else "Collecting",
+            "kicker": "why now",
+            "copy": (
+                "ValuCast archives now publish score and rank movement context, "
+                "so buy graphics and reports can show who is actually moving."
+            ),
+            "metric": (
+                f"{((recent_signal or {}).get('summary') or {}).get('top_mover_count', 0)} movers"
+            ),
+            "href": "/scouting",
+            "cta": "See signals",
         },
         {
             "name": "Scouting Report Repository",
@@ -2230,6 +2260,8 @@ def intelligence_hub():
     readiness = {
         "quality_date": _artifact_date(quality),
         "repository_date": _artifact_date(repository),
+        "recent_signal_date": _artifact_date(recent_signal),
+        "card_audit_date": _artifact_date(card_audit),
         "role_tracker_date": _artifact_date(role_tracker),
         "pipeline_ready": bool(pipeline.get("ready_for_daily_publication")),
         "pipeline_expected_date": pipeline.get("expected_date"),
@@ -2284,6 +2316,12 @@ def _artifact_context_for_row(row) -> dict:
     scouting = _indexed_artifact_rows(
         _load_artifact(root / "valucast_scouting_reports.json"), "reports"
     ).get(key)
+    recent_signal = _indexed_artifact_rows(
+        _load_artifact(root / "valucast_recent_signal_report.json"), "signals"
+    ).get(key)
+    card_data_status = _indexed_artifact_rows(
+        _load_artifact(root / "valucast_prospect_card_data_audit.json"), "cards"
+    ).get(key)
     role_profile = _indexed_artifact_rows(
         _load_artifact(root / "valucast_playing_time_role_tracker.json"), "profiles"
     ).get(key)
@@ -2297,6 +2335,8 @@ def _artifact_context_for_row(row) -> dict:
         )
     return {
         "scouting_report": scouting,
+        "recent_signal": recent_signal,
+        "card_data_status": card_data_status,
         "role_profile": role_profile,
     }
 
@@ -2314,6 +2354,12 @@ def scouting_reports():
     )
     peak_calibration = _load_artifact(
         Path(__file__).parent / "data" / "models" / "valucast_prospect_peak_projection_calibration.json"
+    )
+    recent_signal = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_recent_signal_report.json"
+    )
+    card_audit = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_prospect_card_data_audit.json"
     )
     reports = list((repository or {}).get("reports") or [])
     reports.sort(
@@ -2372,6 +2418,17 @@ def scouting_reports():
             {"mode": "prospects", "search": item.get("name") or ""}
         )
         item["status_label"] = _format_context_label(item.get("report_status"))
+        recent_context = item.get("recent_signal")
+        if isinstance(recent_context, dict):
+            item["movement_label"] = recent_context.get("movement_label")
+            item["buy_rank_label"] = (
+                f"B#{recent_context.get('buy_rank')}"
+                if recent_context.get("buy_rank") not in (None, "")
+                else None
+            )
+        card_context = item.get("card_data_status")
+        if isinstance(card_context, dict):
+            item["card_status_label"] = _format_context_label(card_context.get("status"))
         report_rows.append(item)
     role_counts = ((role_tracker or {}).get("summary") or {}).get("role_counts") or {}
     role_rows = [
@@ -2385,6 +2442,8 @@ def scouting_reports():
         role_tracker=role_tracker,
         hp_sanity=hp_sanity,
         peak_calibration=peak_calibration,
+        recent_signal=recent_signal,
+        card_audit=card_audit,
         reports=report_rows,
         filters=filters,
         teams=teams,

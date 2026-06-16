@@ -103,6 +103,28 @@
                 <div><dt>Rows</dt><dd>{{ peak_summary.projection_count or 0 }}</dd></div>
             </dl>
         </article>
+        <article class="scouting-card glass">
+            {% set signal_summary = (recent_signal.summary if recent_signal else {}) or {} %}
+            {% set signal_validation = (recent_signal.validation if recent_signal else {}) or {} %}
+            <h3>Recent signal pipeline</h3>
+            <dl>
+                <div><dt>Status</dt><dd>{{ "Ready" if signal_validation.ready_for_recent_signal else "Collecting" }}</dd></div>
+                <div><dt>Signals</dt><dd>{{ signal_summary.signal_count or 0 }}</dd></div>
+                <div><dt>Movers</dt><dd>{{ signal_summary.top_mover_count or 0 }}</dd></div>
+                <div><dt>Archive days</dt><dd>{{ signal_summary.archive_day_span or 0 }}</dd></div>
+            </dl>
+        </article>
+        <article class="scouting-card glass">
+            {% set audit_metrics = (card_audit.metrics if card_audit else {}) or {} %}
+            {% set audit_validation = (card_audit.validation if card_audit else {}) or {} %}
+            <h3>Prospect card data audit</h3>
+            <dl>
+                <div><dt>Status</dt><dd>{{ "Ready" if audit_validation.ready_for_cards else "Watch" }}</dd></div>
+                <div><dt>Top 200</dt><dd>{{ audit_metrics.top200_count or 0 }}</dd></div>
+                <div><dt>Watch rows</dt><dd>{{ audit_metrics.top200_watch_count or 0 }}</dd></div>
+                <div><dt>Split samples</dt><dd>{{ audit_metrics.split_level_sample_count or 0 }}</dd></div>
+            </dl>
+        </article>
     </section>
 
     {% if role_rows %}
@@ -147,6 +169,9 @@
             <div class="scouting-meta">
                 <span>{{ report.status_label }}</span>
                 {% if report.sample_label %}<span>{{ report.sample_label }}</span>{% endif %}
+                {% if report.movement_label %}<span>{{ report.movement_label }}</span>{% endif %}
+                {% if report.buy_rank_label %}<span>{{ report.buy_rank_label }}</span>{% endif %}
+                {% if report.card_status_label %}<span>Card {{ report.card_status_label }}</span>{% endif %}
                 {% if report.confidence_label %}<span>{{ report.confidence_label }} confidence</span>{% endif %}
                 <a href="{{ report.player_url }}">Open board</a>
             </div>

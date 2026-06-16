@@ -27,6 +27,12 @@ VALUCAST_QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governo
 MILB_STAT_FRESHNESS_AUDIT = (
     ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
 )
+PROSPECT_CARD_DATA_AUDIT = (
+    ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
+)
+RECENT_SIGNAL_REPORT = (
+    ROOT / "data" / "models" / "valucast_recent_signal_report.json"
+)
 PIPELINE_OBSERVABILITY = (
     ROOT / "data" / "models" / "valucast_pipeline_observability.json"
 )
@@ -103,6 +109,8 @@ def validate_public_data(expected_date: str) -> list[str]:
         (VALUCAST_BUYS, "generated_at"),
         (VALUCAST_BUYS_MONITOR, "generated_at"),
         (MILB_STAT_FRESHNESS_AUDIT, "generated_at"),
+        (PROSPECT_CARD_DATA_AUDIT, "generated_at"),
+        (RECENT_SIGNAL_REPORT, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
         (PIPELINE_OBSERVABILITY, "generated_at"),
         (FRONT_OFFICE_FAILURES, "generated_at"),

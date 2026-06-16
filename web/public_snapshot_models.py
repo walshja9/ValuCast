@@ -373,7 +373,7 @@ class PublicSnapshotRow:
 
     @property
     def peak_projection_note(self) -> str:
-        return "Projected peak role and shape — context only, it doesn't change the current rank or value."
+        return "Projected peak role and shape - context only, it doesn't change the current rank or value."
 
     @property
     def peak_score_label(self) -> str | None:
@@ -439,6 +439,9 @@ class PublicSnapshotRow:
             "starter_or_better": "Starter+",
             "multi_inning_or_setup": "Multi-inning/setup",
             "relief_or_depth": "Relief/depth",
+            "starter_or_late_inning": "Starter/late inning",
+            "useful_mlb_arm": "Useful MLB arm",
+            "depth_or_relief": "Depth/relief",
         }
         items = []
         for key, label in labels.items():

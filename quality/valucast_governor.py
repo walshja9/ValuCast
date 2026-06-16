@@ -26,6 +26,12 @@ BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json
 MILB_STAT_FRESHNESS_AUDIT_PATH = (
     ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
 )
+PROSPECT_CARD_DATA_AUDIT_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
+)
+RECENT_SIGNAL_REPORT_PATH = (
+    ROOT / "data" / "models" / "valucast_recent_signal_report.json"
+)
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
 GOVERNOR_VERSION = "0.2.1"
@@ -834,6 +840,69 @@ def _milb_stat_freshness_audit_check(audit: dict | None) -> dict:
     )
 
 
+def _prospect_card_data_audit_check(audit: dict | None) -> dict:
+    if not audit:
+        return _check(
+            "prospect_card_data_audit",
+            True,
+            "Prospect card data audit skipped because no audit artifact was provided.",
+            audit_present=False,
+        )
+    metrics = audit.get("metrics") or {}
+    blockers = list((audit.get("validation") or {}).get("blockers") or [])
+    passed = (
+        audit.get("status") == "candidate_ready"
+        and (audit.get("validation") or {}).get("ready_for_cards") is True
+    )
+    return _check(
+        "prospect_card_data_audit",
+        passed,
+        (
+            "Prospect card identity, level, stat-context, and graduation audit is clean."
+            if passed
+            else "Prospect card data audit blocks public promotion."
+        ),
+        audit_present=True,
+        audit_status=audit.get("status"),
+        top200_count=metrics.get("top200_count"),
+        top200_watch_count=metrics.get("top200_watch_count"),
+        active_mlb_level_count=metrics.get("active_mlb_level_count"),
+        missing_stat_line_count=metrics.get("missing_stat_line_count"),
+        blockers=blockers[:10],
+    )
+
+
+def _recent_signal_report_check(report: dict | None) -> dict:
+    if not report:
+        return _check(
+            "recent_signal_report",
+            True,
+            "Recent signal report skipped because no report artifact was provided.",
+            report_present=False,
+        )
+    summary = report.get("summary") or {}
+    blockers = list((report.get("validation") or {}).get("blockers") or [])
+    passed = (
+        report.get("status") == "candidate_ready"
+        and (report.get("validation") or {}).get("ready_for_recent_signal") is True
+    )
+    return _check(
+        "recent_signal_report",
+        passed,
+        (
+            "Recent movement signal is available for cards and scouting reports."
+            if passed
+            else "Recent movement signal is not ready."
+        ),
+        report_present=True,
+        report_status=report.get("status"),
+        signal_count=summary.get("signal_count"),
+        top_mover_count=summary.get("top_mover_count"),
+        archive_day_span=summary.get("archive_day_span"),
+        blockers=blockers[:10],
+    )
+
+
 def _prospect_availability_coverage(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
     missing = [
@@ -1319,6 +1388,8 @@ def evaluate_quality_governor(
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
     milb_stat_freshness_audit: dict | None = None,
+    prospect_card_data_audit: dict | None = None,
+    recent_signal_report: dict | None = None,
     generated_at: str | None = None,
     graduated_prospect_ids: set[str] | None = None,
 ) -> dict:
@@ -1364,6 +1435,8 @@ def evaluate_quality_governor(
         _prospect_factual_context_shape(players),
         _prospect_current_stat_context_alignment(players),
         _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
+        _prospect_card_data_audit_check(prospect_card_data_audit),
+        _recent_signal_report_check(recent_signal_report),
         _prospect_availability_coverage(players),
         _prospect_availability_level_alignment(players),
         _prospect_availability_risk_pricing(players),
@@ -1476,6 +1549,12 @@ def evaluate_quality_governor(
                 "milb_stat_freshness_audit": _date_part(
                     (milb_stat_freshness_audit or {}).get("generated_at")
                 ),
+                "prospect_card_data_audit": _date_part(
+                    (prospect_card_data_audit or {}).get("generated_at")
+                ),
+                "recent_signal_report": _date_part(
+                    (recent_signal_report or {}).get("generated_at")
+                ),
             },
         },
         "checks": board_checks + buy_checks,
@@ -1516,6 +1595,8 @@ def run_quality_governor(
     buy_signals_path: Path = BUY_SIGNALS_PATH,
     buy_review_path: Path = BUY_REVIEW_PATH,
     milb_stat_freshness_audit_path: Path = MILB_STAT_FRESHNESS_AUDIT_PATH,
+    prospect_card_data_audit_path: Path = PROSPECT_CARD_DATA_AUDIT_PATH,
+    recent_signal_report_path: Path = RECENT_SIGNAL_REPORT_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     public_snapshot = _load_optional(public_snapshot_path)
@@ -1525,6 +1606,8 @@ def run_quality_governor(
     buy_signals = _load_optional(buy_signals_path)
     buy_review = _load_optional(buy_review_path)
     milb_stat_freshness_audit = _load_optional(milb_stat_freshness_audit_path)
+    prospect_card_data_audit = _load_optional(prospect_card_data_audit_path)
+    recent_signal_report = _load_optional(recent_signal_report_path)
     payload = evaluate_quality_governor(
         public_snapshot,
         prospect_rank=prospect_rank,
@@ -1533,6 +1616,8 @@ def run_quality_governor(
         buy_signals=buy_signals,
         buy_review=buy_review,
         milb_stat_freshness_audit=milb_stat_freshness_audit,
+        prospect_card_data_audit=prospect_card_data_audit,
+        recent_signal_report=recent_signal_report,
     )
     path = write_quality_governor(payload, artifact_path)
     return {

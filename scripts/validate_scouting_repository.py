@@ -72,6 +72,18 @@ def validate_scouting_repository(
                     problems.append(f"report {index} missing {field}")
             if row.get("usage") != "scouting_repository_context_not_live_rank_or_value":
                 problems.append(f"report {index} invalid usage")
+            recent_signal = row.get("recent_signal")
+            if recent_signal is not None:
+                if not isinstance(recent_signal, dict):
+                    problems.append(f"report {index} recent_signal must be an object")
+                elif recent_signal.get("usage") != "recent_valucast_signal_context_not_live_rank_or_value":
+                    problems.append(f"report {index} recent_signal invalid usage")
+            card_data_status = row.get("card_data_status")
+            if card_data_status is not None:
+                if not isinstance(card_data_status, dict):
+                    problems.append(f"report {index} card_data_status must be an object")
+                elif card_data_status.get("status") not in {"ready", "watch"}:
+                    problems.append(f"report {index} card_data_status invalid status")
             lowered = str(row.get("report") or "").lower()
             for phrase in PROHIBITED_REPORT_PHRASES:
                 if phrase in lowered:

@@ -85,8 +85,10 @@ jobs:
           python scripts/build_front_office_failures.py
           python scripts/build_raw_data_independence_audit.py
           python scripts/build_public_dynasty_snapshot.py
-          python scripts/build_scouting_repository.py
           python scripts/build_milb_stat_freshness_audit.py
+          python scripts/build_prospect_card_data_audit.py
+          python scripts/build_recent_signal_report.py
+          python scripts/build_scouting_repository.py
           python scripts/build_valucast_quality_governor.py
           python scripts/build_pipeline_observability.py
           python scripts/build_front_office_report.py
@@ -111,6 +113,8 @@ jobs:
           python scripts/validate_front_office_failures.py
           python scripts/validate_raw_data_independence_audit.py
           python scripts/validate_milb_stat_freshness_audit.py
+          python scripts/validate_prospect_card_data_audit.py
+          python scripts/validate_recent_signal_report.py
           python scripts/validate_valucast_buys.py
           python scripts/validate_valucast_buys_monitor.py
           python scripts/validate_valucast_quality_governor.py
@@ -162,6 +166,8 @@ jobs:
             data/models/valucast_front_office_failures.json \
             data/models/valucast_raw_data_independence_audit.json \
             data/models/valucast_milb_stat_freshness_audit.json \
+            data/models/valucast_prospect_card_data_audit.json \
+            data/models/valucast_recent_signal_report.json \
             data/models/valucast_pipeline_observability.json \
             data/models/valucast_front_office_report.json \
             data/models/valucast_scouting_reports.json \

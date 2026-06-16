@@ -23,6 +23,8 @@ PROSPECT_COVERAGE_AUDIT = ROOT / "data" / "models" / "valucast_prospect_coverage
 PROSPECT_CALIBRATION = ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 PROSPECT_MODEL_V07 = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.json"
 MILB_STAT_FRESHNESS = ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
+PROSPECT_CARD_DATA_AUDIT = ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
+RECENT_SIGNAL_REPORT = ROOT / "data" / "models" / "valucast_recent_signal_report.json"
 QUALITY_GOVERNOR = ROOT / "data" / "models" / "valucast_quality_governor.json"
 VALUCAST_BUYS = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 VALUCAST_BUYS_MONITOR = ROOT / "data" / "models" / "valucast_prospect_buys_monitor.json"
@@ -46,6 +48,8 @@ DATED_ARTIFACTS: tuple[tuple[Path, str, str], ...] = (
     (PROSPECT_CALIBRATION, "generated_at", "prospect_calibration_report"),
     (PROSPECT_MODEL_V07, "generated_at", "prospect_model_v0_7"),
     (MILB_STAT_FRESHNESS, "generated_at", "milb_stat_freshness_audit"),
+    (PROSPECT_CARD_DATA_AUDIT, "generated_at", "prospect_card_data_audit"),
+    (RECENT_SIGNAL_REPORT, "generated_at", "recent_signal_report"),
     (QUALITY_GOVERNOR, "generated_at", "quality_governor"),
     (VALUCAST_BUYS, "generated_at", "prospect_buys"),
     (VALUCAST_BUYS_MONITOR, "generated_at", "prospect_buys_monitor"),

@@ -156,7 +156,7 @@
         </div>
         {% endif %}
 
-        {% if scouting_report or role_profile %}
+        {% if scouting_report or role_profile or recent_signal or card_data_status %}
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
@@ -180,6 +180,15 @@
                 {% endif %}
                 {% if scouting_report and scouting_report.report_status %}
                 <div class="stat-item"><span class="stat-label">Report Status</span><span class="stat-value">{{ scouting_report.report_status | replace("_", " ") | title }}</span></div>
+                {% endif %}
+                {% if recent_signal and recent_signal.movement_label %}
+                <div class="stat-item"><span class="stat-label">Recent Signal</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
+                {% endif %}
+                {% if recent_signal and recent_signal.buy_rank %}
+                <div class="stat-item"><span class="stat-label">Buy Signal</span><span class="stat-value">B#{{ recent_signal.buy_rank }}{% if recent_signal.buy_score is not none %} / {{ "%.0f"|format(recent_signal.buy_score) }}{% endif %}</span></div>
+                {% endif %}
+                {% if card_data_status and card_data_status.status %}
+                <div class="stat-item"><span class="stat-label">Card Data</span><span class="stat-value">{{ card_data_status.status | replace("_", " ") | title }}</span></div>
                 {% endif %}
             </div>
             {% if role_profile and role_profile.role_basis %}

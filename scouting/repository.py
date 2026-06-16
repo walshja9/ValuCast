@@ -17,6 +17,8 @@ from web import prospect_percentiles
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_scouting_reports.json"
+RECENT_SIGNAL_PATH = ROOT / "data" / "models" / "valucast_recent_signal_report.json"
+CARD_DATA_AUDIT_PATH = ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
 
 ARTIFACT_NAME = "valucast_scouting_report_repository"
 REPOSITORY_VERSION = "0.1.0"
@@ -41,11 +43,59 @@ def _display_path(path: Path) -> str:
         return str(path)
 
 
-def _row_report(row) -> dict:
+def _load_optional(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _identity_key(row) -> str | None:
+    if row.mlbam_id in (None, "") or row.role in (None, ""):
+        return None
+    return f"{row.mlbam_id}_{str(row.role).lower()}"
+
+
+def _index_rows(payload: dict, rows_key: str) -> dict[str, dict]:
+    indexed = {}
+    for raw in payload.get(rows_key) or []:
+        if not isinstance(raw, dict):
+            continue
+        key = raw.get("identity_key")
+        if not key and raw.get("mlbam_id") not in (None, "") and raw.get("role"):
+            key = f"{raw['mlbam_id']}_{str(raw['role']).lower()}"
+        if key and key not in indexed:
+            indexed[str(key)] = raw
+    return indexed
+
+
+def _row_report(row, recent_signal: dict | None = None, card_data: dict | None = None) -> dict:
     text = prospect_percentiles.identity_line(row, {}) or ""
     peak = row.peak_projection_summary if row.has_peak_projection else None
+    recent_context = None
+    if recent_signal:
+        recent_context = {
+            "movement_label": recent_signal.get("movement_label"),
+            "score_delta_3d": recent_signal.get("score_delta_3d"),
+            "rank_delta_3d": recent_signal.get("rank_delta_3d"),
+            "buy_rank": recent_signal.get("buy_rank"),
+            "buy_score": recent_signal.get("buy_score"),
+            "buy_reason": recent_signal.get("buy_reason"),
+            "usage": recent_signal.get("usage"),
+        }
+    card_context = None
+    if card_data:
+        card_context = {
+            "status": card_data.get("status"),
+            "problems": list(card_data.get("problems") or []),
+            "card_level": card_data.get("card_level"),
+            "sample": card_data.get("sample"),
+            "sample_unit": card_data.get("sample_unit"),
+            "stat_line_source_kind": card_data.get("stat_line_source_kind"),
+        }
     return {
         "id": row.id,
+        "identity_key": _identity_key(row),
         "mlbam_id": str(row.mlbam_id),
         "name": row.name,
         "role": row.role,
@@ -60,6 +110,8 @@ def _row_report(row) -> dict:
         "report": text,
         "report_status": _report_status(text),
         "peak_summary": peak,
+        "recent_signal": recent_context,
+        "card_data_status": card_context,
         "source_fields": {
             "stat_line_source": row.context.get("stat_line_source"),
             "stat_line_sample": row.context.get("stat_line_sample"),
@@ -75,6 +127,8 @@ def _row_report(row) -> dict:
 def build_scouting_repository(
     *,
     snapshot_path: Path = SNAPSHOT_PATH,
+    recent_signal_path: Path = RECENT_SIGNAL_PATH,
+    card_data_audit_path: Path = CARD_DATA_AUDIT_PATH,
     generated_at: str | None = None,
     max_prospect_rank: int = DEFAULT_MAX_PROSPECT_RANK,
 ) -> dict:
@@ -90,7 +144,18 @@ def build_scouting_repository(
             and row.prospect_rank is not None
             and row.prospect_rank <= max_prospect_rank
         ]
-    reports = [_row_report(row) for row in rows]
+    recent_payload = _load_optional(recent_signal_path)
+    card_audit_payload = _load_optional(card_data_audit_path)
+    recent_index = _index_rows(recent_payload, "signals")
+    card_index = _index_rows(card_audit_payload, "cards")
+    reports = [
+        _row_report(
+            row,
+            recent_signal=recent_index.get(_identity_key(row) or ""),
+            card_data=card_index.get(_identity_key(row) or ""),
+        )
+        for row in rows
+    ]
     identity_keys = [(row["mlbam_id"], row["role"]) for row in reports]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     missing_report_count = sum(1 for row in reports if not row.get("report"))
@@ -115,6 +180,8 @@ def build_scouting_repository(
             "dd_ranks_used": False,
             "external_rankings_used_for_report": False,
             "market_values_used_for_report": False,
+            "recent_signal_used_for_context": bool(recent_index),
+            "card_data_audit_used_for_context": bool(card_index),
             "llm_generated": False,
             "feeds_live_rank": False,
             "feeds_live_value": False,
@@ -123,6 +190,10 @@ def build_scouting_repository(
             "public_snapshot_path": _display_path(snapshot_path),
             "public_snapshot_generated_at": store.generated_at,
             "public_snapshot_schema_version": store.schema_version,
+            "recent_signal_path": _display_path(recent_signal_path),
+            "recent_signal_generated_at": recent_payload.get("generated_at"),
+            "card_data_audit_path": _display_path(card_data_audit_path),
+            "card_data_audit_generated_at": card_audit_payload.get("generated_at"),
         },
         "summary": {
             "report_count": len(reports),
@@ -144,9 +215,15 @@ def build_scouting_repository(
 def run_scouting_repository(
     *,
     snapshot_path: Path = SNAPSHOT_PATH,
+    recent_signal_path: Path = RECENT_SIGNAL_PATH,
+    card_data_audit_path: Path = CARD_DATA_AUDIT_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
-    payload = build_scouting_repository(snapshot_path=snapshot_path)
+    payload = build_scouting_repository(
+        snapshot_path=snapshot_path,
+        recent_signal_path=recent_signal_path,
+        card_data_audit_path=card_data_audit_path,
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

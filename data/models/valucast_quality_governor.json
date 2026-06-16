@@ -640,6 +640,33 @@
       "status": "passed"
     },
     {
+      "id": "prospect_card_data_audit",
+      "message": "Prospect card identity, level, stat-context, and graduation audit is clean.",
+      "metrics": {
+        "active_mlb_level_count": 0,
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "blockers": [],
+        "missing_stat_line_count": 0,
+        "top200_count": 200,
+        "top200_watch_count": 0
+      },
+      "status": "passed"
+    },
+    {
+      "id": "recent_signal_report",
+      "message": "Recent movement signal is available for cards and scouting reports.",
+      "metrics": {
+        "archive_day_span": 4,
+        "blockers": [],
+        "report_present": true,
+        "report_status": "candidate_ready",
+        "signal_count": 300,
+        "top_mover_count": 25
+      },
+      "status": "passed"
+    },
+    {
       "id": "prospect_top50_availability_coverage",
       "message": "Top prospect board has availability/risk components.",
       "metrics": {
@@ -776,9 +803,11 @@
       "buy_signals": "2026-06-16",
       "milb_stat_freshness_audit": "2026-06-16",
       "mlb_layer": "2026-06-16",
+      "prospect_card_data_audit": "2026-06-16",
       "prospect_coverage_audit": "2026-06-16",
       "prospect_rank": "2026-06-16",
-      "public_snapshot": "2026-06-16"
+      "public_snapshot": "2026-06-16",
+      "recent_signal_report": "2026-06-16"
     },
     "mlb_count": 976,
     "prospect_count": 2609,

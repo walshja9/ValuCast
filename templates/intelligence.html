@@ -29,12 +29,12 @@
             <dd>{{ "Ready" if readiness.pipeline_ready else "Watch" }}{% if readiness.pipeline_expected_date %} · {{ readiness.pipeline_expected_date }}{% endif %}</dd>
         </div>
         <div>
-            <dt>Projection source</dt>
-            <dd>{{ readiness.default_projection_source | title }} default</dd>
+            <dt>Card audit</dt>
+            <dd>{{ readiness.card_audit_date or "pending" }}</dd>
         </div>
         <div>
-            <dt>Scouting build</dt>
-            <dd>{{ readiness.repository_date or "pending" }}</dd>
+            <dt>Recent signal</dt>
+            <dd>{{ readiness.recent_signal_date or readiness.repository_date or "pending" }}</dd>
         </div>
     </section>
 
