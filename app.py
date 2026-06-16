@@ -928,11 +928,15 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             x, y = start_x + col * (cell_w + 24), start_y + r * (cell_h + 18)
             draw.rounded_rectangle((x, y, x + cell_w, y + cell_h), radius=14, fill=card_2, outline=border, width=2)
             draw.text((x + 18, y + 16), rank_label(idx + 2), fill=blue, font=font(21, bold=True))
-            draw.text((x + 18, y + 54), fit_text(draw, row.name, font(25, bold=True), 220), fill=text, font=font(25, bold=True))
-            draw.text((x + 18, y + 90), fit_text(draw, tag(row), font(17), 220), fill=muted, font=font(17))
+            card_name_font = font(24, bold=True)
+            name_lines = split_name_lines(draw, row.name, card_name_font, 220)
+            for line_idx, line in enumerate(name_lines[:2]):
+                draw.text((x + 18, y + 52 + line_idx * 27), line, fill=text, font=card_name_font)
+            tag_y = y + (98 if len(name_lines) > 1 else 90)
+            draw.text((x + 18, tag_y), fit_text(draw, tag(row), font(16), 220), fill=muted, font=font(16))
             draw.text((x + cell_w - 86, y + 20), note_label(row), fill=muted, font=font(14, bold=True))
             draw.line((x + 18, y + 120, x + cell_w - 18, y + 120), fill=border, width=1)
-            draw.text((x + 18, y + 132), "VALUCAST", fill=muted, font=font(13, bold=True))
+            draw.text((x + 18, y + 132), "VAL", fill=muted, font=font(13, bold=True))
             cell_val = value_label(row) or "--"
             cell_val_font = font(26, bold=True)
             draw.text(
@@ -957,7 +961,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         draw.text((220, 394 + (len(hero_name_lines) - 1) * 26), fit_text(draw, tag(hero), font(18), 165), fill=muted, font=font(18))
         hero_value = value_label(hero)
         draw.text((70, 455), f"VAL {hero_value or '--'}", fill=green, font=font(39, bold=True))
-        draw.text((70, 503), "VALUCAST", fill=muted, font=font(16, bold=True))
+        draw.text((70, 503), "MODEL SCORE", fill=muted, font=font(16, bold=True))
 
         supports = rows[1:5]
         for idx, row in enumerate(supports):
@@ -970,9 +974,12 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             box = draw.textbbox((0, 0), initials, font=mono)
             draw.text((x + 52 - (box[2] - box[0]) / 2, y + 54 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
             draw.text((x + 104, y + 18), rank_label(idx + 2), fill=blue, font=font(19, bold=True))
-            support_name_font = font(21, bold=True)
-            draw.text((x + 104, y + 48), fit_text(draw, row.name, support_name_font, 172), fill=text, font=support_name_font)
-            draw.text((x + 104, y + 78), fit_text(draw, tag(row), font(15), 160), fill=muted, font=font(15))
+            support_name_font = font(20, bold=True)
+            support_name_lines = split_name_lines(draw, row.name, support_name_font, 172)
+            for line_idx, line in enumerate(support_name_lines[:2]):
+                draw.text((x + 104, y + 44 + line_idx * 23), line, fill=text, font=support_name_font)
+            support_tag_y = y + (89 if len(support_name_lines) > 1 else 76)
+            draw.text((x + 104, support_tag_y), fit_text(draw, tag(row), font(14), 160), fill=muted, font=font(14))
             draw.line((x + 16, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 16, y + 118), note_label(row), fill=muted, font=font(14, bold=True))
             sup_val = value_label(row) or "--"
@@ -1003,8 +1010,10 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     foot_y = height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card)
     draw.text((60, foot_y + 10), "valucast.app", fill=green, font=font(22, bold=True))
-    footer = "Source: ValuCast Prospect Rank"
-    draw.text((700, foot_y + 14), fit_text(draw, footer, font(15), 300), fill=muted, font=font(15))
+    footer = "ValuCast Prospect Rank - stats + age/level + investment + availability"
+    footer_font = font(15)
+    footer_text = fit_text(draw, footer, footer_font, 650)
+    draw.text((1032 - 14 - text_width(draw, footer_text, footer_font), foot_y + 14), footer_text, fill=muted, font=footer_font)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
