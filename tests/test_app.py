@@ -397,7 +397,9 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn(b"Ahead of the Curve", response.data)
         self.assertIn(b"Download PNG", response.data)
         self.assertIn(b"/map/share-card.png", response.data)
-        self.assertIn(b"/map/share-card.png", self.client.get("/map").data)
+        map_html = self.client.get("/map").data
+        self.assertIn(b"/map/share-card", map_html)
+        self.assertIn(b"/map/share-card.png", map_html)
 
     def test_prospects_graphic_limit_20_filename(self):
         from app import dd_store

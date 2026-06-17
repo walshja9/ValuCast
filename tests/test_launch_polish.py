@@ -132,6 +132,16 @@ class TestLaunchPolish(unittest.TestCase):
         self.assertIn("display: inline-flex", css)
         self.assertIn("flex-wrap: wrap", css)
 
+    def test_small_phone_breakpoint_tightens_dense_surfaces(self):
+        css = self.html("/static/style.css")
+        self.assertIn("@media (max-width: 400px)", css)
+        self.assertIn(".buys-row {", css)
+        self.assertIn("grid-template-columns: 1.25rem 30px minmax(0, 1fr) 44px;", css)
+        self.assertIn(".scouting-proof-strip", css)
+        self.assertIn("grid-template-columns: repeat(2, minmax(0, 1fr));", css)
+        self.assertIn(".value-map-shell", css)
+        self.assertIn("height: 58vh;", css)
+
 
 if __name__ == "__main__":
     unittest.main()

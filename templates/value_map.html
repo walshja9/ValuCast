@@ -27,13 +27,15 @@
             <option value="{{ pos }}">{{ pos }}</option>
             {% endfor %}
         </select>
-        <a class="export-btn" id="map-download" href="/map/share-card.png" download="valucast-value-map.png">Download graphic</a>
+        <a class="export-btn" id="map-preview" href="/map/share-card" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" id="map-download" href="/map/share-card.png" download="valucast-value-map.png">Download PNG</a>
     </div>
 </section>
 <script>
 (function(){
   var link=document.getElementById('map-download');
-  if(!link){return;}
+  var preview=document.getElementById('map-preview');
+  if(!link&&!preview){return;}
   function sync(){
     var poolEl=document.querySelector('input[name="map-pool"]:checked');
     var pool=poolEl?poolEl.value:'all';
@@ -42,7 +44,9 @@
     var q=[];
     if(pool&&pool!=='all'){q.push('pool='+pool);}
     if(pos){q.push('position='+pos);}
-    link.href='/map/share-card.png'+(q.length?('?'+q.join('&')):'');
+    var query=q.length?('?'+q.join('&')):'';
+    if(link){link.href='/map/share-card.png'+query;}
+    if(preview){preview.href='/map/share-card'+query;}
   }
   Array.prototype.forEach.call(document.querySelectorAll('input[name="map-pool"]'),function(r){r.addEventListener('change',sync);});
   var sel=document.getElementById('map-position');

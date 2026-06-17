@@ -27,6 +27,26 @@
         </div>
     </section>
 
+    <section class="scouting-proof-strip glass" aria-label="ValuCast intelligence coverage">
+        <div>
+            <span>{{ (role_tracker.summary.profile_count if role_tracker and role_tracker.summary else 0) or 0 }}</span>
+            <small>role profiles</small>
+        </div>
+        <div>
+            <span>{{ (peak_calibration.summary.bucket_count if peak_calibration and peak_calibration.summary else 0) or 0 }}</span>
+            <small>peak buckets</small>
+        </div>
+        <div>
+            <span>{{ (recent_signal.summary.top_mover_count if recent_signal and recent_signal.summary else 0) or 0 }}</span>
+            <small>recent movers</small>
+        </div>
+        <div>
+            {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
+            <span>{{ "Opt-in" if promotion.ready_for_opt_in_source else "Building" }}</span>
+            <small>MLB projection track</small>
+        </div>
+    </section>
+
     <form class="scouting-filters glass" method="get" action="/scouting">
         <label>
             <span>Search</span>
@@ -99,6 +119,7 @@
                 {% if report.card_status_label %}<span>Card {{ report.card_status_label }}</span>{% endif %}
                 {% if report.confidence_label %}<span>{{ report.confidence_label }} confidence</span>{% endif %}
                 <a href="{{ report.player_url }}">Open board</a>
+                {% if report.id %}<a href="/prospects/player-card/{{ report.id }}" target="_blank" rel="noopener">Share graphic</a>{% endif %}
             </div>
         </article>
         {% endfor %}
@@ -128,6 +149,9 @@
             <article class="scouting-card">
                 {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
                 <h3>MLB Projection Source</h3>
+                {% if promotion.recommended_next_step %}
+                <p class="scouting-card-note">{{ promotion.recommended_next_step }}</p>
+                {% endif %}
                 <dl>
                     <div><dt>ValuCast source</dt><dd>{{ "Available" if promotion.ready_for_opt_in_source else "Building" }}</dd></div>
                     <div><dt>Default source</dt><dd>{{ promotion.default_source or "Steamer" }}</dd></div>
@@ -138,6 +162,9 @@
                 {% set peak_summary = (peak_calibration.summary if peak_calibration else {}) or {} %}
                 {% set peak_validation = (peak_calibration.validation if peak_calibration else {}) or {} %}
                 <h3>Peak Projection Buckets</h3>
+                {% if peak_calibration and peak_calibration.watch_items %}
+                <p class="scouting-card-note">Review focus: {{ peak_calibration.watch_items[0].role | replace("_", " ") | title }} / {{ peak_calibration.watch_items[0].level_band | replace("_", " ") | title }}.</p>
+                {% endif %}
                 <dl>
                     <div><dt>Status</dt><dd>{{ "Live" if peak_validation.ready_for_review else "Next build" }}</dd></div>
                     <div><dt>Buckets</dt><dd>{{ peak_summary.bucket_count or 0 }}</dd></div>

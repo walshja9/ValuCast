@@ -26,7 +26,7 @@ class TestMethodologyValidation(unittest.TestCase):
 
     # E3: layout + progressive disclosure
     def test_layout_and_disclosure(self):
-        self.assertIn("Back to rankings", self.html)
+        self.assertIn("Back to board", self.html)
         self.assertIn("At a glance", self.html)
         self.assertIn("Prospect Rank v1", self.html)
         self.assertIn("<details", self.html)
@@ -53,6 +53,8 @@ class TestMethodologyValidation(unittest.TestCase):
         low = self.html.lower().replace("’", "'")
         self.assertIn("not yet proven", low)
         self.assertIn("benchmark pending", low)
+        self.assertIn("available as an opt-in", low)
+        self.assertIn("will not become the default", low)
         self.assertNotIn("external benchmark", low)
 
     # public page must not leak the internal own-xBA correlation figure

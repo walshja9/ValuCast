@@ -550,6 +550,10 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .scouting-filters button,
 .scouting-filters a { border: 1px solid var(--c-border); border-radius: .75rem; padding: .55rem .75rem; min-height: 2.35rem; color: var(--c-text); background: rgba(255,255,255,.05); text-decoration: none; font-weight: 800; }
 .scouting-filters button { color: #06110e; background: var(--c-prospect); border-color: transparent; cursor: pointer; }
+.scouting-proof-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; padding: .85rem; }
+.scouting-proof-strip div { border: 1px solid var(--c-border); border-radius: .85rem; background: rgba(255,255,255,.035); padding: .72rem .8rem; }
+.scouting-proof-strip span { display: block; color: var(--c-prospect); font-weight: 900; font-size: 1.35rem; line-height: 1; }
+.scouting-proof-strip small { display: block; margin-top: .3rem; color: var(--c-muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .045em; }
 .scouting-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .85rem; }
 .scouting-build-details { padding: .85rem; }
 .scouting-build-details summary { cursor: pointer; color: var(--c-text); font-weight: 800; }
@@ -564,6 +568,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .scouting-card h3,
 .scouting-role-strip h3,
 .scouting-section-head h3 { margin: 0 0 .7rem; font-size: 1rem; }
+.scouting-card-note { margin: -.2rem 0 .7rem; color: var(--c-muted); font-size: .78rem; line-height: 1.4; }
 .scouting-card dl { display: grid; gap: .4rem; margin: 0; }
 .scouting-card dl div { display: flex; justify-content: space-between; gap: .75rem; border-top: 1px solid var(--c-border); padding-top: .4rem; }
 .scouting-card dt { color: var(--c-muted); font-size: .72rem; }
@@ -1167,6 +1172,16 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     border-color: var(--c-blue);
     color: var(--c-blue);
     text-decoration: none;
+}
+.export-btn.secondary-action {
+    color: var(--c-muted);
+    border-color: rgba(154, 161, 192, .28);
+    background: rgba(154, 161, 192, .08);
+}
+.export-btn.secondary-action:hover {
+    color: var(--c-text);
+    border-color: rgba(110, 161, 255, .42);
+    background: rgba(110, 161, 255, .12);
 }
 
 .mode-btn-dynasty:has(input:checked) { background: var(--c-dynasty); color: #fff; }
@@ -2656,5 +2671,166 @@ main {
 
     .market-context-details {
         padding-top: .2rem;
+    }
+}
+
+@media (max-width: 400px) {
+    main {
+        padding: .55rem .48rem;
+    }
+
+    .site-header {
+        padding: .55rem .68rem;
+    }
+
+    .site-nav {
+        gap: .32rem;
+    }
+
+    .site-nav a {
+        font-size: .72rem;
+        padding: .28rem .44rem;
+    }
+
+    .rank-toolbar .graphic-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .rankings-table > tbody > tr.player-row {
+        padding: .52rem .58rem .58rem;
+    }
+
+    .rankings-table td.col-name {
+        padding-right: 2.25rem;
+        font-size: .94rem;
+    }
+
+    .mobile-stat {
+        font-size: .72rem;
+        padding: .14rem .36rem;
+    }
+
+    .scouting-proof-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .45rem;
+        padding: .62rem;
+    }
+
+    .scouting-proof-strip div {
+        padding: .58rem .62rem;
+    }
+
+    .scouting-proof-strip span {
+        font-size: 1.12rem;
+    }
+
+    .scouting-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .scouting-section-head,
+    .scouting-player-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scouting-value {
+        text-align: left;
+    }
+
+    .scouting-meta span,
+    .scouting-meta a,
+    .rank-chip {
+        font-size: .68rem;
+        padding: .2rem .46rem;
+    }
+
+    .map-controls .export-btn {
+        display: inline-flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .value-map-shell {
+        min-height: 390px;
+        height: 58vh;
+    }
+
+    .map-tooltip {
+        width: min(180px, calc(100vw - 28px));
+    }
+
+    .buys-heading h1 {
+        max-width: 235px;
+        font-size: 2rem;
+    }
+
+    .buys-heading-sub {
+        max-width: 250px;
+    }
+
+    .buys-list {
+        padding: .35rem .46rem;
+    }
+
+    .buys-row {
+        grid-template-columns: 1.25rem 30px minmax(0, 1fr) 44px;
+        gap: .4rem;
+        padding: .52rem .12rem;
+    }
+
+    .buys-thumb {
+        width: 30px;
+        height: 30px;
+    }
+
+    .buys-main,
+    .buys-main a,
+    .buys-tag {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .buys-score {
+        padding: .08rem .38rem;
+        font-size: .84rem;
+        text-align: center;
+    }
+
+    .prospect-profile-card,
+    .peak-projection-card,
+    .player-detail {
+        padding: .68rem;
+    }
+
+    .prospect-profile-bar {
+        grid-template-columns: 42px minmax(0, 1fr) 44px;
+        gap: .32rem;
+    }
+
+    .profile-bar-caption {
+        padding-left: 42px;
+    }
+
+    .skill-shape-item {
+        padding: .42rem .46rem;
+    }
+
+    .translated-section .stat-grid,
+    .prospect-sample-context .stat-grid,
+    .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .role-probability-row {
+        grid-template-columns: 84px minmax(0, 1fr) 34px;
+    }
+
+    .category-bar {
+        grid-template-columns: 38px minmax(84px, 1fr) 36px;
+        min-width: 0;
+        width: 100%;
     }
 }

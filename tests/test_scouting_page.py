@@ -10,11 +10,15 @@ def test_scouting_page_renders_repository_and_role_tracker():
     assert response.status_code == 200
     assert "Scouting Reports" in html
     assert "What the model sees" in html
+    assert "role profiles" in html
+    assert "peak buckets" in html
+    assert "recent movers" in html
     assert "Playing-time / role tracker" in html
     assert "MLB Projection Source" in html
     assert "Peak Projection Buckets" in html
     assert "not public scouting grades" in html
     assert "Open board" in html
+    assert "Share graphic" in html
 
 
 def test_scouting_page_filters_reports_by_query():
