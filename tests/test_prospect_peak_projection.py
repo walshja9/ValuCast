@@ -105,6 +105,77 @@ def test_peak_projection_builds_card_ready_role_and_shape_without_rank_mutation(
     }
 
 
+def _row_with_v2_inputs(rank=1):
+    row = _row(rank)
+    row["dynasty_signal"] = {
+        "role_or_better_probability": 0.6,
+        "star_ceiling_probability": 0.2,
+    }
+    row["context_only"] = {
+        "best_single_level_stat_line": {
+            "level": "AA",
+            "sample": 250,
+            "sample_unit": "PA",
+            "reason": "current_level_too_thin_best_prior_level",
+            "avg": 0.300,
+            "obp": 0.380,
+            "slg": 0.520,
+            "ops": 0.900,
+            "iso": 0.220,
+            "k_pct": 18.0,
+            "bb_pct": 11.0,
+        },
+        "stat_line_translated": {
+            "role": "hitter",
+            "season": 2026,
+            "level": "AA",
+            "level_label": "AA",
+            "sample": 250,
+            "sample_unit": "PA",
+            "low_sample": False,
+            "confidence": "moderate",
+            "stats": [
+                {"key": "k_pct", "label": "K%", "fmt": "pct", "milb": 18.0, "mlb": 20.5, "mlb_avg": 22.0},
+                {"key": "iso", "label": "ISO", "fmt": "iso", "milb": 0.220, "mlb": 0.170, "mlb_avg": 0.150},
+            ],
+        },
+    }
+    return row
+
+
+def test_peak_v2_uses_best_single_and_model_role_probabilities():
+    payload = build_peak_projection(_rank_payload([_row_with_v2_inputs(1)]))
+    proj = payload["projections"][0]
+    v2 = proj["peak_v2"]
+
+    assert v2["model_version"] == "2.0.0"
+    assert v2["status"] == "shadow_observe_only"
+    assert v2["shape_basis"] == "best_single_level"
+    assert v2["role_probability_source"] == "model_dynasty_signal"
+    probs = v2["role_probabilities"]
+    assert set(probs) == {"star_or_impact_bat", "regular_or_role_bat", "depth_or_reserve"}
+    assert abs(sum(probs.values()) - 1.0) < 1e-6
+    assert probs["star_or_impact_bat"] == 0.2  # 0.2 / 1.0 from dynasty_signal
+    assert v2["mlb_equivalent"]["rates"]["iso"]["mlb"] == 0.170
+    assert len(v2["shape"]) == 4
+    # v1 fields untouched
+    assert proj["peak_score"] > proj["rank_v1_score"]
+    assert proj["card_v2"]["role_probabilities"]["regular_or_better"] > 0
+
+    v2_summary = payload["v2"]
+    assert v2_summary["feeds_card"] is False
+    assert v2_summary["best_single_level_shape_count"] == 1
+    assert v2_summary["model_role_probability_count"] == 1
+
+
+def test_peak_v2_falls_back_when_no_owned_inputs():
+    v2 = build_peak_projection(_rank_payload([_row(1)]))["projections"][0]["peak_v2"]
+    assert v2["shape_basis"] == "current"
+    assert v2["role_probability_source"] == "heuristic_fallback"
+    assert v2["mlb_equivalent"] is None
+    assert v2["delta_vs_v1_peak_score"] == 0.0
+
+
 def test_peak_projection_thin_rows_get_neutral_shape_and_lower_confidence():
     row = _row(1)
     row["components"].pop("factual_current_context")

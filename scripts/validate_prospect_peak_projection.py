@@ -124,6 +124,25 @@ def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, l
                     grade = shape_item.get("grade") if isinstance(shape_item, dict) else None
                     if not isinstance(grade, int) or not 20 <= grade <= 80:
                         problems.append(f"projection {index} has invalid shape grade")
+            peak_v2 = row.get("peak_v2")
+            if not isinstance(peak_v2, dict):
+                problems.append(f"projection {index} missing peak_v2")
+            else:
+                if peak_v2.get("feeds_card") is True:
+                    problems.append(f"projection {index} peak_v2 must not feed the card")
+                if not isinstance(peak_v2.get("role_probabilities"), dict):
+                    problems.append(f"projection {index} peak_v2 missing role_probabilities")
+                v2_shape = peak_v2.get("shape")
+                if not isinstance(v2_shape, list) or len(v2_shape) < 4:
+                    problems.append(f"projection {index} peak_v2 shape must have at least four items")
+
+    v2_summary = payload.get("v2")
+    if not isinstance(v2_summary, dict):
+        problems.append("v2 summary must be an object")
+    else:
+        for flag in ("feeds_card", "feeds_live_rank", "feeds_live_value"):
+            if v2_summary.get(flag) is not False:
+                problems.append(f"v2.{flag} must be false")
 
     return payload, problems
 

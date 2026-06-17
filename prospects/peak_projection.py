@@ -18,9 +18,15 @@ from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
+ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_peak_projection_v1"
 
 PROJECTION_VERSION = "1.0.0"
 CARD_VISUAL_VERSION = "2.0.0"
+# Peak model v2 (shadow, observe-only): folds the now-owned MiLB translation +
+# best-single-level line into the shape, and replaces the invented role-probability
+# split with the prospect model's real dynasty_signal distribution. Lives alongside
+# v1 in the same artifact for A/B review; does NOT feed the card until promoted.
+PEAK_V2_VERSION = "2.0.0"
 PROJECTION_STATUS = "candidate_ready"
 ARTIFACT_NAME = "valucast_prospect_peak_projection_v1"
 MIN_TOP200_PROJECTION_COVERAGE = 0.90
@@ -192,11 +198,13 @@ def _pitcher_shape(current: dict, rank_score: float) -> list[dict]:
     ]
 
 
-def _shape(row: dict, rank_score: float) -> list[dict]:
-    current = _current_context(row)
-    role = str(row.get("role") or "")
-    shape = _pitcher_shape(current, rank_score) if role == "pitcher" else _hitter_shape(current, rank_score)
+def _shape_from_line(line: dict, role: str, rank_score: float) -> list[dict]:
+    shape = _pitcher_shape(line, rank_score) if role == "pitcher" else _hitter_shape(line, rank_score)
     return [item for item in shape if item.get("grade") is not None]
+
+
+def _shape(row: dict, rank_score: float) -> list[dict]:
+    return _shape_from_line(_current_context(row), str(row.get("role") or ""), rank_score)
 
 
 def _shape_average(shape: list[dict]) -> float:
@@ -362,6 +370,149 @@ def _card_v2_context(
     }
 
 
+def _context_only(row: dict) -> dict:
+    value = row.get("context_only")
+    return value if isinstance(value, dict) else {}
+
+
+def _dynasty_signal(row: dict) -> dict:
+    value = row.get("dynasty_signal")
+    return value if isinstance(value, dict) else {}
+
+
+def _best_single_line(row: dict) -> dict | None:
+    value = _context_only(row).get("best_single_level_stat_line")
+    return value if isinstance(value, dict) and value else None
+
+
+def _v2_shape_line(row: dict) -> tuple[dict, str]:
+    """Shape input for v2. When the current sample was thin, rank_v1 emits a
+    best-single-level line (a fuller same-season single-level MiLB read in the SAME
+    raw-MiLB units the shape scales expect) — grade off that instead of the thin
+    current line. Otherwise keep the current-context line (= v1 behavior)."""
+    best = _best_single_line(row)
+    if best:
+        line = dict(best)
+        if str(row.get("role") or "") != "pitcher" and "bb_minus_k_pct" not in line:
+            bb = _clean_float(best.get("bb_pct"))
+            k = _clean_float(best.get("k_pct"))
+            if bb is not None and k is not None:
+                line["bb_minus_k_pct"] = round(bb - k, 1)
+        return line, "best_single_level"
+    return _current_context(row), "current"
+
+
+def _mlb_equivalent(row: dict) -> dict | None:
+    """ValuCast-owned MLB-equivalent translation, surfaced as honest context only.
+    Deliberately NOT fed into the shape scales (which are tuned on raw-MiLB rates);
+    folding it into a graded MLB-equivalent shape is a later, recalibrated pass."""
+    translated = _context_only(row).get("stat_line_translated")
+    if not isinstance(translated, dict) or not translated:
+        return None
+    rates = {}
+    for stat in translated.get("stats") or []:
+        key = stat.get("key") if isinstance(stat, dict) else None
+        if key:
+            rates[key] = {
+                "mlb": stat.get("mlb"),
+                "milb": stat.get("milb"),
+                "mlb_avg": stat.get("mlb_avg"),
+            }
+    return {
+        "level_label": translated.get("level_label") or translated.get("level"),
+        "season": translated.get("season"),
+        "sample": translated.get("sample"),
+        "sample_unit": translated.get("sample_unit"),
+        "confidence": translated.get("confidence"),
+        "low_sample": translated.get("low_sample"),
+        "rates": rates,
+    }
+
+
+def _v2_role_probability(
+    row: dict,
+    peak_score: float,
+    risk: str,
+    shape_average: float,
+) -> tuple[dict, str]:
+    """Real role distribution from the prospect model's dynasty_signal (star ⊆
+    role-or-better ⊆ 1). Falls back to v1's heuristic split only when the signal is
+    absent (identity-only rows), tagged so the source is never ambiguous."""
+    signal = _dynasty_signal(row)
+    role_plus = _clean_float(signal.get("role_or_better_probability"))
+    star = _clean_float(signal.get("star_ceiling_probability"))
+    if role_plus is None and star is None:
+        return _role_probability(row, peak_score, risk, shape_average), "heuristic_fallback"
+    role_plus = max(0.0, min(1.0, role_plus if role_plus is not None else 0.0))
+    star = min(max(0.0, min(1.0, star if star is not None else 0.0)), role_plus)
+    regular = max(0.0, role_plus - star)
+    depth = max(0.0, 1.0 - role_plus)
+    total = star + regular + depth
+    if total <= 0:
+        return _role_probability(row, peak_score, risk, shape_average), "heuristic_fallback"
+    labels = (
+        ("frontline_or_high_leverage", "rotation_or_role_arm", "depth_or_relief")
+        if str(row.get("role") or "") == "pitcher"
+        else ("star_or_impact_bat", "regular_or_role_bat", "depth_or_reserve")
+    )
+    values = [star / total, regular / total, depth / total]
+    return {label: round(value, 3) for label, value in zip(labels, values)}, "model_dynasty_signal"
+
+
+def _peak_v2(row: dict, *, v1_peak_score: float, rank_score: float) -> dict:
+    role = str(row.get("role") or "")
+    line, basis = _v2_shape_line(row)
+    shape = _shape_from_line(line, role, rank_score)
+    shape_average = _shape_average(shape)
+    peak_score = _peak_score(row, shape_average)
+    risk = _risk_band(row, shape_average)
+    ceiling = _ceiling_band(row, peak_score)
+    floor = _floor_band(row, risk, shape_average)
+    role_probabilities, role_probability_source = _v2_role_probability(
+        row, peak_score, risk, shape_average
+    )
+    return {
+        "model_version": PEAK_V2_VERSION,
+        "status": "shadow_observe_only",
+        "shape_basis": basis,
+        "shape": shape,
+        "shape_average": round(shape_average, 2),
+        "peak_score": peak_score,
+        "peak_role": ceiling,
+        "ceiling_band": ceiling,
+        "floor_band": floor,
+        "risk_band": risk,
+        "role_probabilities": role_probabilities,
+        "role_probability_source": role_probability_source,
+        "mlb_equivalent": _mlb_equivalent(row),
+        "delta_vs_v1_peak_score": round(peak_score - v1_peak_score, 2),
+    }
+
+
+def _v2_summary(projections: list[dict]) -> dict:
+    rows = [row.get("peak_v2") for row in projections if isinstance(row.get("peak_v2"), dict)]
+    deltas = [
+        row.get("delta_vs_v1_peak_score")
+        for row in rows
+        if isinstance(row.get("delta_vs_v1_peak_score"), (int, float))
+    ]
+    model_probs = sum(1 for row in rows if row.get("role_probability_source") == "model_dynasty_signal")
+    return {
+        "model_version": PEAK_V2_VERSION,
+        "status": "shadow_observe_only",
+        "feeds_card": False,
+        "feeds_live_rank": False,
+        "feeds_live_value": False,
+        "projection_count": len(rows),
+        "best_single_level_shape_count": sum(1 for row in rows if row.get("shape_basis") == "best_single_level"),
+        "model_role_probability_count": model_probs,
+        "heuristic_role_probability_count": len(rows) - model_probs,
+        "mlb_equivalent_coverage_count": sum(1 for row in rows if row.get("mlb_equivalent")),
+        "shape_changed_vs_v1_count": sum(1 for delta in deltas if delta),
+        "avg_abs_delta_vs_v1": round(sum(abs(delta) for delta in deltas) / len(deltas), 3) if deltas else 0.0,
+    }
+
+
 def _projection_row(row: dict) -> dict:
     rank_score = _clean_float(row.get("score")) or 0.0
     shape = _shape(row, rank_score)
@@ -413,6 +564,7 @@ def _projection_row(row: dict) -> dict:
         },
         "summary": _summary(row, peak_score, ceiling, risk),
         "usage": "card_visual_context_not_live_rank_or_value",
+        "peak_v2": _peak_v2(row, v1_peak_score=peak_score, rank_score=rank_score),
     }
 
 
@@ -475,6 +627,7 @@ def build_peak_projection(rank_payload: dict, generated_at: str | None = None) -
     validation = _validation(projections, rank_payload)
     return {
         "artifact": ARTIFACT_NAME,
+        "v2": _v2_summary(projections),
         "projection_version": PROJECTION_VERSION,
         "status": PROJECTION_STATUS,
         "generated_at": generated_at,
@@ -516,9 +669,38 @@ def build_peak_projection(rank_payload: dict, generated_at: str | None = None) -
     }
 
 
+def archive_peak_projection(
+    payload: dict,
+    date_str: str,
+    archive_dir: Path = ARCHIVE_DIR,
+) -> tuple[Path, bool]:
+    """Persist the day's peak projection so the projection can later be graded
+    against realized graduation outcomes (the accountability harness builds on this).
+    Content-deduped + atomic, mirroring rank_v1.archive_rank."""
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"{date_str}.json"
+    archive = {
+        "date": date_str,
+        "projection_version": payload["projection_version"],
+        "generated_at": payload["generated_at"],
+        "projection_count": payload["validation"]["projection_count"],
+        "validation": payload["validation"],
+        "v2": payload.get("v2"),
+        "projections": payload["projections"],
+    }
+    text = json.dumps(archive, sort_keys=True, separators=(",", ":"))
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return path, False
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+    return path, True
+
+
 def run_peak_projection(
     rank_path: Path = RANK_V1_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    archive_dir: Path = ARCHIVE_DIR,
 ) -> dict:
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
     payload = build_peak_projection(rank_payload)
@@ -526,8 +708,24 @@ def run_peak_projection(
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, artifact_path)
+
+    generated_at = payload.get("generated_at")
+    parsed_now = (
+        datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+        if generated_at
+        else datetime.now(timezone.utc)
+    )
+    if parsed_now.tzinfo is None:
+        parsed_now = parsed_now.replace(tzinfo=timezone.utc)
+    archive_path, archive_changed = archive_peak_projection(
+        payload,
+        date_str=parsed_now.date().isoformat(),
+        archive_dir=archive_dir,
+    )
     return {
         "artifact_path": str(artifact_path),
+        "archive_path": str(archive_path),
+        "archive_changed": archive_changed,
         "ready_for_card_v2": payload["validation"]["ready_for_card_v2"],
         "projection_count": payload["validation"]["projection_count"],
         "top200_projection_coverage": payload["validation"]["top200_projection_coverage"],
