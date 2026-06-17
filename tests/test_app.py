@@ -468,6 +468,41 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("image/png", png.content_type)
         self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
 
+    def test_graphic_availability_badge_flags_only_real_risks(self):
+        from app import _graphic_availability_badge
+        from types import SimpleNamespace
+
+        def row(status):
+            return SimpleNamespace(availability_context={"status": status})
+
+        self.assertEqual(_graphic_availability_badge(row("injured")), "INJURED")
+        self.assertEqual(
+            _graphic_availability_badge(row("stale_or_inactive")), "INACTIVE"
+        )
+        self.assertIsNone(_graphic_availability_badge(row("available")))
+        self.assertIsNone(_graphic_availability_badge(row("thin_current_sample")))
+        self.assertIsNone(
+            _graphic_availability_badge(SimpleNamespace(availability_context={}))
+        )
+
+    def test_player_card_png_renders_for_flagged_availability_row(self):
+        from app import dd_store, _graphic_availability_badge
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        flagged = next(
+            (
+                r
+                for r in dd_store.get_all()
+                if r.is_prospect and _graphic_availability_badge(r)
+            ),
+            None,
+        )
+        if flagged is None:
+            self.skipTest("No flagged-availability prospects in snapshot")
+        png = self.client.get(f"/prospects/player-card/{flagged.id}.png")
+        self.assertEqual(png.status_code, 200)
+        self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+
     def test_prospect_player_card_read_uses_stats_not_stock_blurb(self):
         from types import SimpleNamespace
 

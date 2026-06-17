@@ -1188,6 +1188,17 @@ def _graphic_availability_status(row):
     return ""
 
 
+def _graphic_availability_badge(row):
+    """Short caution label for genuine availability risks; None otherwise.
+
+    Only injured / inactive get a share-card badge — thin-sample is a data
+    caveat already shown via the sample-context line, not an availability flag.
+    """
+    return {"injured": "INJURED", "stale_or_inactive": "INACTIVE"}.get(
+        _graphic_availability_status(row)
+    )
+
+
 def _graphic_stale_stat_context(row, context):
     sample_season = _graphic_context_sample_season(context)
     updated_year = _graphic_updated_year(row)
@@ -1402,6 +1413,19 @@ def _prospect_player_card_png(row):
     draw.text((820, 296), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(40, bold=True))
     rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
     draw.text((820, 346), rank_text, fill=text, font=_graphic_font(20, bold=True))
+
+    avail_badge = _graphic_availability_badge(row)
+    if avail_badge:
+        badge_font = _graphic_font(16, bold=True)
+        bbox = draw.textbbox((0, 0), avail_badge, font=badge_font)
+        draw.rounded_rectangle(
+            (232, 374, 232 + (bbox[2] - bbox[0]) + 26, 402),
+            radius=11,
+            fill=(60, 32, 32),
+            outline=(150, 70, 70),
+            width=1,
+        )
+        draw.text((245, 379), avail_badge, fill=amber, font=badge_font)
 
     # Skill bars
     draw.rounded_rectangle((48, 438, 1032, 812), radius=22, fill=card, outline=border, width=2)
