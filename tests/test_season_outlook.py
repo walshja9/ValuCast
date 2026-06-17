@@ -106,6 +106,24 @@ class TestFindSeasonOutlook(unittest.TestCase):
         stats, _, _ = find_season_outlook(row, projs)
         self.assertEqual(stats, {"HR": 42})
 
+    def test_known_id_mismatch_blocks_name_fallback(self):
+        # Feed carries mlbam X (absent from the projection set); the only same-name
+        # same-pool projection carries a DIFFERENT mlbam Y -> different people, so no
+        # outlook. (The Luis Baez twin-collision class: 678637 vs 800232.)
+        row = _feed_row("Luis Baez", ["OF"], mlbam_id="678637")
+        projs = [_proj("y", "Luis Baez", "hitter", ("OF",), base_id="b_other",
+                       stats={"HR": 25})]
+        projs[0].metadata["mlbam_id"] = "800232"
+        self.assertIsNone(find_season_outlook(row, projs))
+
+    def test_known_id_still_falls_back_to_unidentified_name_match(self):
+        # The guard is narrow: it only fires on a *known* id mismatch. Feed has mlbam
+        # (not in set) but the lone name match has no id of its own -> still resolves.
+        row = _feed_row("Solo Match", ["1B"], mlbam_id="999999")
+        projs = [_proj("h1", "Solo Match", "hitter", ("1B",), stats={"HR": 30})]
+        stats, _, _ = find_season_outlook(row, projs)
+        self.assertEqual(stats, {"HR": 30})
+
     def test_normalizes_case_and_whitespace(self):
         row = _feed_row("  WILL  smith ", ["C"])
         projs = [_proj("h", "Will Smith", "hitter", ("C",), stats={"HR": 20})]

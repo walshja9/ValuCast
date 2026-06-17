@@ -1337,7 +1337,10 @@ def _prospect_player_card_read(row, stat_percentiles, context):
             for key in strength_keys
             if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
         ][:3]
-        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud."
+        if not stat_percentiles:
+            loud = "The sample is too small to read the skill shape yet."
+        else:
+            loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud."
         weak_key = min(
             (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
             key=lambda key: stat_percentiles[key],
@@ -1363,7 +1366,10 @@ def _prospect_player_card_read(row, stat_percentiles, context):
         for key in strength_keys
         if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
     ][:3]
-    loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive."
+    if not stat_percentiles:
+        loud = "The sample is too small to read the skill shape yet."
+    else:
+        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive."
     weak_key = min(
         (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
         key=lambda key: stat_percentiles[key],

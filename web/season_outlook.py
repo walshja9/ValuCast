@@ -117,8 +117,15 @@ class OutlookMatchIndex:
         pitcher_side, hitter_side = _row_sides(dd_row.positions)
         compatible = [
             proj for proj in self._by_name.get(_normalize_name(dd_row.name), [])
-            if (_is_pitcher(proj) and pitcher_side)
-            or (not _is_pitcher(proj) and hitter_side)
+            if ((_is_pitcher(proj) and pitcher_side)
+                or (not _is_pitcher(proj) and hitter_side))
+            # A stable id on both sides that disagrees means a different player — never
+            # let a name match override a known-id mismatch (same-name twin collision).
+            and not (
+                feed_mlbam
+                and str(proj.metadata.get("mlbam_id") or "").strip()
+                and str(proj.metadata.get("mlbam_id") or "").strip() != feed_mlbam
+            )
         ]
         if len(compatible) <= 1:
             return compatible
