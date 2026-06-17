@@ -126,11 +126,36 @@ class TestCompareRoute(unittest.TestCase):
         response = self.client.get("/compare?p1=1&p2=2&mode=categories&cats=R,HR&pcats=K,ERA")
         self.assertEqual(response.status_code, 200)
 
-    def test_compare_disabled_for_dynasty_modes(self):
-        response = self.client.get("/compare?p1=1&p2=2&mode=dd_dynasty")
-        self.assertEqual(response.status_code, 400)
-        response = self.client.get("/compare?p1=1&p2=2&mode=prospects")
-        self.assertEqual(response.status_code, 400)
+    def test_compare_dynasty_snapshot_returns_200(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        rows = dd_store.get_all()
+        if len(rows) < 2:
+            self.skipTest("Not enough DD rows available")
+
+        response = self.client.get(
+            "/compare",
+            query_string={"mode": "dd_dynasty", "p1": rows[0].id, "p2": rows[1].id},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(rows[0].name.encode(), response.data)
+        self.assertIn(rows[1].name.encode(), response.data)
+        self.assertIn(b"Dynasty Value", response.data)
+
+    def test_compare_prospects_snapshot_returns_200(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        rows = [row for row in dd_store.get_all() if row.is_prospect]
+        if len(rows) < 2:
+            self.skipTest("Not enough prospect rows available")
+
+        response = self.client.get(
+            "/compare",
+            query_string={"mode": "prospects", "p1": rows[0].id, "p2": rows[1].id},
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 class TestPointsMode(unittest.TestCase):

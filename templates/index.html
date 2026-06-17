@@ -61,6 +61,7 @@
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
         <div id="toolbar-secondary" class="toolbar-secondary">
             <fieldset class="source-seg" aria-label="Projection source">
+                <span class="seg-label">Projection source</span>
                 <label class="source-opt">
                     <input type="radio" name="source" value="steamer" {% if (source or 'steamer') != 'valucast' %}checked{% endif %}>
                     <span>Steamer</span>
@@ -103,6 +104,7 @@
     <div class="rank-toolbar rank-toolbar-dynasty glass" id="rank-toolbar">
         <span class="config-summary-line">
             <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+            <span class="board-source">Board source: ValuCast public snapshot</span>
             <a class="toolbar-how-link" href="/methodology">How it works</a>
         </span>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
@@ -148,6 +150,7 @@
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
         <span class="config-summary-line">
             <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+            <span class="board-source">Board source: ValuCast public snapshot</span>
         </span>
         {# No visible knobs on this horizon, so the form must carry the league
            params or a shared URL's divider resets on the first filter change. #}
@@ -186,7 +189,6 @@
 </div>
 </form>
 
-{% if mode != 'dd_dynasty' and mode != 'prospects' %}
 <div id="compare-bar" class="compare-bar glass" style="display:none;">
     <span id="compare-count">0 selected</span>
     <button id="compare-btn" onclick="openCompare()" disabled>Compare</button>
@@ -194,7 +196,6 @@
 </div>
 
 <div id="compare-overlay" class="compare-overlay" style="display:none;"></div>
-{% endif %}
 
 <script>
 // Publish the (wrapping) toolbar's height so the sticky table header sits flush beneath it.

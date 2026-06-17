@@ -1,0 +1,92 @@
+<div class="compare-modal glass">
+    <div class="compare-header">
+        <h2>Player Comparison</h2>
+        <button onclick="closeCompare()" class="close-btn">&times;</button>
+    </div>
+
+    {% if r1 and r2 %}
+    {% set c1 = r1.confidence if r1.confidence is mapping else {'level': r1.confidence} %}
+    {% set c2 = r2.confidence if r2.confidence is mapping else {'level': r2.confidence} %}
+    <table class="compare-table">
+        <thead>
+            <tr>
+                <th></th>
+                <th class="compare-player">
+                    <strong>{{ r1.name }}</strong><br>
+                    <span class="detail-meta">{{ r1.positions | join(', ') if r1.positions else 'DH' }} | {{ r1.team or '' }}</span>
+                </th>
+                <th class="compare-player">
+                    <strong>{{ r2.name }}</strong><br>
+                    <span class="detail-meta">{{ r2.positions | join(', ') if r2.positions else 'DH' }} | {{ r2.team or '' }}</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="compare-total">
+                <td><strong>Dynasty Value</strong></td>
+                <td class="{{ 'val-pos' if r1.dynasty_value is not none and r2.dynasty_value is not none and r1.dynasty_value > r2.dynasty_value else ('val-neg' if r1.dynasty_value is not none and r2.dynasty_value is not none and r1.dynasty_value < r2.dynasty_value else '') }}">
+                    <strong>{% if r1.dynasty_value is not none %}{{ "%.1f" | format(r1.dynasty_value) }}{% else %}&mdash;{% endif %}</strong>
+                </td>
+                <td class="{{ 'val-pos' if r1.dynasty_value is not none and r2.dynasty_value is not none and r2.dynasty_value > r1.dynasty_value else ('val-neg' if r1.dynasty_value is not none and r2.dynasty_value is not none and r2.dynasty_value < r1.dynasty_value else '') }}">
+                    <strong>{% if r2.dynasty_value is not none %}{{ "%.1f" | format(r2.dynasty_value) }}{% else %}&mdash;{% endif %}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td>Overall Dynasty Rank</td>
+                <td class="{{ 'val-pos' if r1.dynasty_rank is not none and r2.dynasty_rank is not none and r1.dynasty_rank < r2.dynasty_rank else ('val-neg' if r1.dynasty_rank is not none and r2.dynasty_rank is not none and r1.dynasty_rank > r2.dynasty_rank else '') }}">
+                    {% if r1.dynasty_rank is not none %}{{ r1.dynasty_rank | int }}{% else %}&mdash;{% endif %}
+                </td>
+                <td class="{{ 'val-pos' if r1.dynasty_rank is not none and r2.dynasty_rank is not none and r2.dynasty_rank < r1.dynasty_rank else ('val-neg' if r1.dynasty_rank is not none and r2.dynasty_rank is not none and r2.dynasty_rank > r1.dynasty_rank else '') }}">
+                    {% if r2.dynasty_rank is not none %}{{ r2.dynasty_rank | int }}{% else %}&mdash;{% endif %}
+                </td>
+            </tr>
+            {% if mode == 'prospects' %}
+            <tr>
+                <td>Prospect Rank</td>
+                <td class="{{ 'val-pos' if r1.prospect_rank is not none and r2.prospect_rank is not none and r1.prospect_rank < r2.prospect_rank else ('val-neg' if r1.prospect_rank is not none and r2.prospect_rank is not none and r1.prospect_rank > r2.prospect_rank else '') }}">
+                    {% if r1.prospect_rank is not none %}{{ r1.prospect_rank | int }}{% else %}&mdash;{% endif %}
+                </td>
+                <td class="{{ 'val-pos' if r1.prospect_rank is not none and r2.prospect_rank is not none and r2.prospect_rank < r1.prospect_rank else ('val-neg' if r1.prospect_rank is not none and r2.prospect_rank is not none and r2.prospect_rank > r1.prospect_rank else '') }}">
+                    {% if r2.prospect_rank is not none %}{{ r2.prospect_rank | int }}{% else %}&mdash;{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Age</td>
+                <td>{% if r1.age is not none %}{{ r1.age }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if r2.age is not none %}{{ r2.age }}{% else %}&mdash;{% endif %}</td>
+            </tr>
+            {% if mode == 'prospects' %}
+            <tr>
+                <td>ETA</td>
+                <td>{% if r1.eta is not none %}{{ r1.eta }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if r2.eta is not none %}{{ r2.eta }}{% else %}&mdash;{% endif %}</td>
+            </tr>
+            {% endif %}
+            {% if mode == 'dd_dynasty' %}
+            {% set d1 = dynasty_dollars.get(r1.id, 0) or 0 %}
+            {% set d2 = dynasty_dollars.get(r2.id, 0) or 0 %}
+            <tr>
+                <td>Dynasty $</td>
+                <td class="{{ 'val-pos' if d1 > d2 else ('val-neg' if d1 < d2 else '') }}">${{ "%.0f" | format(d1) }}</td>
+                <td class="{{ 'val-pos' if d2 > d1 else ('val-neg' if d2 < d1 else '') }}">${{ "%.0f" | format(d2) }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>Tier</td>
+                <td>{% if r1.tier is not none %}T{{ r1.tier | int }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if r2.tier is not none %}T{{ r2.tier | int }}{% else %}&mdash;{% endif %}</td>
+            </tr>
+            {% if c1.get('level') or c2.get('level') %}
+            <tr>
+                <td>Confidence</td>
+                <td>{% if c1.get('level') %}{{ c1.get('level') | replace('_', ' ') | title }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if c2.get('level') %}{{ c2.get('level') | replace('_', ' ') | title }}{% else %}&mdash;{% endif %}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="error">One or both players not found.</p>
+    {% endif %}
+</div>

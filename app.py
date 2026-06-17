@@ -3202,11 +3202,25 @@ def player_detail(player_id):
 @app.route("/compare")
 def compare():
     mode = request.args.get("mode", "categories")
-    if mode in ("dd_dynasty", "prospects"):
-        return "<div class='error'>Compare is not available in this mode.</div>", 400
-
     p1_id = request.args.get("p1", "")
     p2_id = request.args.get("p2", "")
+
+    if mode in ("dd_dynasty", "prospects"):
+        ctx = _build_dynasty_context(request.args)
+        if mode == "prospects":
+            _apply_prospect_board_context(ctx, request.args)
+        rows = ctx["dd_rows"]
+        r1 = next((row for row in rows if row.id == p1_id), None)
+        r2 = next((row for row in rows if row.id == p2_id), None)
+        return render_template(
+            "partials/compare_modal_dynasty.html",
+            r1=r1,
+            r2=r2,
+            mode=mode,
+            dynasty_dollars=ctx.get("dynasty_dollars", {}),
+            now_dollars=ctx.get("now_dollars", {}),
+            dd_schema_version=ctx.get("dd_schema_version"),
+        )
 
     ctx = _build_context(request.args)
     config = ctx["config"]

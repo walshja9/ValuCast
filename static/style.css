@@ -257,6 +257,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .rank-toolbar .export-btn { margin-left: auto; }
 .rank-toolbar .customize-toggle { margin-left: 0; }
 .config-summary-line { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+.board-source { font-size: .72rem; color: var(--c-muted); }
 .toolbar-how-link { color: var(--c-muted); font-size: .74rem; font-weight: 500; white-space: nowrap; }
 .toolbar-how-link:hover { color: var(--c-blue-strong); }
 
@@ -287,6 +288,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     margin: 0;
     min-width: 0;
 }
+.seg-label { font-size: .72rem; color: var(--c-muted); align-self: center; margin-right: .4rem; }
 .source-opt { cursor: pointer; display: inline-flex; }
 .source-opt > span {
     padding: 0.4rem 0.9rem;
@@ -1072,10 +1074,18 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     }
     /* Column rules are td-qualified so they BEAT the generic direct-child td rule —
        bare .col-* selectors lose on specificity and the columns leak into the cards. */
-    .rankings-table td.col-rank { position: absolute; top: 0.55rem; right: 0.65rem; width: auto; font-size: 0.8rem; }
-    .rankings-table td.col-compare, .rankings-table td.col-cat,
+    .rankings-table td.col-rank { position: absolute; top: 0.55rem; right: 3rem; width: auto; font-size: 0.8rem; }
+    .rankings-table td.col-compare {
+        display: block;
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+        width: auto;
+    }
+    .rankings-table td.col-compare .compare-cb { width: 32px; height: 32px; }
+    .rankings-table td.col-cat,
     .rankings-table td.col-age, .rankings-table td.col-range { display: none; }
-    .rankings-table td.col-name { font-size: 0.94rem; padding-right: 2.15rem; line-height: 1.18; }
+    .rankings-table td.col-name { font-size: 0.94rem; padding-right: 4.5rem; line-height: 1.18; }
     .rankings-table td.col-name .detail-toggle { margin-right: 0.18rem; }
     .rankings-table td.col-pos, .rankings-table td.col-team,
     .rankings-table td.col-dollars, .rankings-table td.col-dollar,
