@@ -303,6 +303,7 @@ def _prospect_rows(
                 "breakout_rank_change": context.get("breakout_rank_change"),
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
+                "best_single_level_stat_line": context.get("best_single_level_stat_line"),
                 "mlb_stat_line": context.get("mlb_stat_line"),
                 "peak_projection": peak,
                 "context": {

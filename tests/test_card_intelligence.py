@@ -587,7 +587,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'class="col-eta sortable"', response.data)
         self.assertIn(b">2027</td>", response.data)
-        self.assertIn(b'colspan="7"', response.data)
+        self.assertIn(b'colspan="8"', response.data)  # +1 for the compare column
         self.assertIn(b'class="movers-strip"', response.data)
 
         htmx = self.client.get("/rankings?mode=prospects&teams=4&pslots=1")

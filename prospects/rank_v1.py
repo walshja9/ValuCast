@@ -17,11 +17,17 @@ from prospects.availability import apply_availability_adjustment
 from prospects.availability import availability_lookup
 from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.input_contract import VALUCAST_INPUT_PATH
+from prospects.milb_translation import (
+    best_single_level_stat_line,
+    translate_peripherals,
+)
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
+MILB_SEASON_STATS_PATH = ROOT / "data" / "prospects" / "raw" / "milb_season_stats.json"
+MILB_CARD_HISTORY_PATH = ROOT / "data" / "prospects" / "raw" / "milb_card_history.json"
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
 DD_ADAPTER_PATH = ROOT / "data" / "models" / "valucast_dd_7x7_prospect_adapter.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
@@ -153,6 +159,55 @@ def identity_key(mlbam_id: Any, role: str | None) -> tuple[str, str] | None:
     if mlbam_id in (None, "") or role not in {"hitter", "pitcher"}:
         return None
     return str(mlbam_id), role
+
+
+def load_milb_history_index(
+    season_stats_path: Path = MILB_SEASON_STATS_PATH,
+    card_history_path: Path = MILB_CARD_HISTORY_PATH,
+) -> dict[tuple[str, str], dict]:
+    """ValuCast-owned MiLB rows per (mlbam_id, role) for the in-house translation +
+    best-single-level (replaces the DD feed's translated fields). Current per-level
+    rows come from milb_season_stats (un-slimmed, retains every level); older seasons
+    come from milb_card_history. Newest-first so translate_peripherals reads the
+    latest season; the current season is never double-counted across the two sources."""
+    by_key_current: dict[tuple[str, str], list[dict]] = {}
+    try:
+        season_stats = json.loads(season_stats_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        season_stats = {}
+    current_season = season_stats.get("season")
+    for role_key in ("hitters", "pitchers"):
+        for row in season_stats.get(role_key, []) or []:
+            key = identity_key(row.get("mlbam_id"), row.get("role"))
+            if key is None:
+                continue
+            by_key_current.setdefault(key, []).append(
+                {**row, "season": row.get("season", current_season)}
+            )
+
+    by_key_history: dict[tuple[str, str], list[dict]] = {}
+    try:
+        card_history = json.loads(card_history_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        card_history = {}
+    for player_rows in (card_history.get("players") or {}).values():
+        for row in player_rows or []:
+            key = identity_key(row.get("mlbam_id"), row.get("role"))
+            if key is None:
+                continue
+            by_key_history.setdefault(key, []).append(row)
+
+    index: dict[tuple[str, str], dict] = {}
+    for key in set(by_key_current) | set(by_key_history):
+        current_rows = by_key_current.get(key, [])
+        history_rows = [
+            row for row in by_key_history.get(key, [])
+            if row.get("season") != current_season
+        ]
+        rows = current_rows + history_rows
+        rows.sort(key=lambda r: (r.get("season") or 0), reverse=True)
+        index[key] = {"rows": rows, "current_season": current_season}
+    return index
 
 
 def _sample_size(row: dict, role: str) -> float:
@@ -1064,6 +1119,7 @@ def _context(
     role: str | None,
     service_row: dict | None = None,
     rookie_limits: dict[str, float] | None = None,
+    milb_entry: dict | None = None,
 ) -> dict:
     dd_stat_line = (dd_row or {}).get("stat_line")
     input_stat_line = _input_stat_line(input_row, role)
@@ -1071,6 +1127,25 @@ def _context(
         _has_skill_stat(input_stat_line) or not dd_stat_line
     )
     stat_line = input_stat_line if use_input_stat_line else dd_stat_line
+
+    # ValuCast-owned MLB-equivalent translation + best-single-level, computed from
+    # ValuCast's own raw MiLB rows. Falls back to the DD feed's value only when no
+    # owned rows exist (transitional). This is the last DD read in the factual path.
+    milb_rows = (milb_entry or {}).get("rows") or []
+    owned_translated = translate_peripherals(milb_rows, role) if milb_rows else None
+    stat_line_translated = (
+        owned_translated if owned_translated is not None
+        else (dd_row or {}).get("stat_line_translated")
+    )
+    best_single = None
+    if milb_rows and stat_line:
+        best_single = best_single_level_stat_line(
+            current_line=stat_line,
+            current_level=(owned_translated or {}).get("level"),
+            history_rows=milb_rows,
+            role=role,
+            season=(milb_entry or {}).get("current_season"),
+        )
     stat_context = {}
     if use_input_stat_line:
         stat_line_source = "valucast_input_contract"
@@ -1091,7 +1166,8 @@ def _context(
         "stat_line": stat_line,
         "stat_line_source": stat_line_source,
         **stat_context,
-        "stat_line_translated": (dd_row or {}).get("stat_line_translated"),
+        "stat_line_translated": stat_line_translated,
+        "best_single_level_stat_line": best_single,
         "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
     }
     graduation = _graduation_context(service_row, role, rookie_limits or {})
@@ -1256,6 +1332,7 @@ def build_prospect_rank_v1(
     dd_adapter: dict | None = None,
     dd_feed: dict | None = None,
     prospect_availability: dict | None = None,
+    milb_history_by_key: dict | None = None,
 ) -> dict:
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
@@ -1366,6 +1443,7 @@ def build_prospect_rank_v1(
                     role,
                     service_row,
                     rookie_limits,
+                    milb_entry=(milb_history_by_key or {}).get(key),
                 ),
             }
         )
@@ -1603,6 +1681,7 @@ def run_prospect_rank_v1(
         if dd_feed_path.exists()
         else None
     )
+    milb_history_by_key = load_milb_history_index()
     payload = build_prospect_rank_v1(
         prospect_universe,
         dynasty_layer,
@@ -1611,6 +1690,7 @@ def run_prospect_rank_v1(
         dd_adapter=dd_adapter,
         dd_feed=dd_feed,
         prospect_availability=prospect_availability,
+        milb_history_by_key=milb_history_by_key,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
