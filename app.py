@@ -3219,6 +3219,7 @@ def compare():
             mode=mode,
             dynasty_dollars=ctx.get("dynasty_dollars", {}),
             now_dollars=ctx.get("now_dollars", {}),
+            tiers=ctx.get("tiers", {}),
             dd_schema_version=ctx.get("dd_schema_version"),
         )
 

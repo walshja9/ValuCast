@@ -72,10 +72,13 @@
                 <td class="{{ 'val-pos' if d2 > d1 else ('val-neg' if d2 < d1 else '') }}">${{ "%.0f" | format(d2) }}</td>
             </tr>
             {% endif %}
+            {# Match the board: fall back to the computed tier map when a row carries no own tier. #}
+            {% set t1 = (r1.tier | int(0)) or (tiers.get(r1.id, 0) | int) %}
+            {% set t2 = (r2.tier | int(0)) or (tiers.get(r2.id, 0) | int) %}
             <tr>
                 <td>Tier</td>
-                <td>{% if r1.tier is not none %}T{{ r1.tier | int }}{% else %}&mdash;{% endif %}</td>
-                <td>{% if r2.tier is not none %}T{{ r2.tier | int }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if t1 %}T{{ t1 }}{% else %}&mdash;{% endif %}</td>
+                <td>{% if t2 %}T{{ t2 }}{% else %}&mdash;{% endif %}</td>
             </tr>
             {% if c1.get('level') or c2.get('level') %}
             <tr>
