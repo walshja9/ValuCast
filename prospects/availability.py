@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import math
 import os
+from collections import Counter
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -471,19 +472,12 @@ def apply_availability_adjustment(
 
 
 def _count_by(profiles: list[dict], field: str) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for row in profiles:
-        key = str(row.get(field) or "missing")
-        counts[key] = counts.get(key, 0) + 1
+    counts = Counter(str(row.get(field) or "missing") for row in profiles)
     return {key: counts[key] for key in sorted(counts)}
 
 
 def _signal_counts(profiles: list[dict]) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for row in profiles:
-        for signal in row.get("signals") or []:
-            key = str(signal)
-            counts[key] = counts.get(key, 0) + 1
+    counts = Counter(str(signal) for row in profiles for signal in row.get("signals") or [])
     return {key: counts[key] for key in sorted(counts)}
 
 

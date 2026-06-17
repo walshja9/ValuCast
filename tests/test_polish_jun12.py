@@ -389,9 +389,10 @@ class TestGlassAndMap(_RealAppCase):
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
         self.assertIn('id="value-map"', html)
-        start = html.index('id="map-data"')
-        payload = html[html.index(">", start) + 1:html.index("</script>", start)]
-        players = json.loads(payload)
+        self.assertIn("/api/value-map-players", html)
+        api = self.client.get("/api/value-map-players")
+        self.assertEqual(api.status_code, 200)
+        players = api.get_json()["players"]
         expected = [row for row in self.dd_rows
                     if row.age is not None and row.dynasty_value is not None]
         self.assertEqual(len(players), len(expected))

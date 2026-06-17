@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#12131f">
-    <title>{% block title %}ValuCast — fantasy baseball player values tuned to your league{% endblock %}</title>
+    <title>{% block title %}ValuCast - fantasy baseball player values tuned to your league{% endblock %}</title>
     <meta name="description" content="Fantasy baseball player values tuned to your league's categories, weights, and roster rules. Redraft, dynasty, and prospect boards with a public methodology and held-out validation.">
     <link rel="icon" href="/static/favicon.ico">
     <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="ValuCast">
-    <meta property="og:title" content="ValuCast — player values tuned to your league">
-    <meta property="og:description" content="H2H categories, roto, or points — values scored for your league's settings, with a public methodology and held-out validation (including what didn't work).">
-    <meta property="og:url" content="https://valucast.app/">
-    <meta property="og:image" content="https://valucast.app/static/og-card.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:title" content="{% block og_title %}ValuCast - player values tuned to your league{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}H2H categories, roto, or points - values scored for your league's settings, with a public methodology and held-out validation.{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}https://valucast.app/{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}https://valucast.app/static/og-card.png{% endblock %}">
+    <meta property="og:image:width" content="{% block og_image_width %}1200{% endblock %}">
+    <meta property="og:image:height" content="{% block og_image_height %}630{% endblock %}">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ValuCast — player values tuned to your league">
-    <meta name="twitter:description" content="H2H categories, roto, or points — values scored for your league's settings, with a public methodology and held-out validation.">
-    <meta name="twitter:image" content="https://valucast.app/static/og-card.png">
+    <meta name="twitter:title" content="{% block twitter_title %}ValuCast - player values tuned to your league{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}H2H categories, roto, or points - values scored for your league's settings, with a public methodology and held-out validation.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}https://valucast.app/static/og-card.png{% endblock %}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
 </head>

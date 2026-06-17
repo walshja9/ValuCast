@@ -186,22 +186,11 @@ def _bucket_cohort_evidence(dynasty_backtest: dict, adapter_backtest: dict) -> d
     }
 
 
+_GRADE_BANDS = ((93, "A"), (90, "A-"), (87, "B+"), (83, "B"), (80, "B-"), (75, "C+"), (70, "C"))
+
+
 def _grade(score: int) -> str:
-    if score >= 93:
-        return "A"
-    if score >= 90:
-        return "A-"
-    if score >= 87:
-        return "B+"
-    if score >= 83:
-        return "B"
-    if score >= 80:
-        return "B-"
-    if score >= 75:
-        return "C+"
-    if score >= 70:
-        return "C"
-    return "Incomplete"
+    return next((grade for threshold, grade in _GRADE_BANDS if score >= threshold), "Incomplete")
 
 
 def build_outcome_backtest(

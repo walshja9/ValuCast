@@ -156,13 +156,6 @@ def _finite_float(value: Any) -> float | None:
     return numeric
 
 
-def _finite_int(value: Any) -> int | None:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
 def _round(value: float | None, digits: int = 2) -> float | None:
     if value is None:
         return None

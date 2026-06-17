@@ -6,6 +6,7 @@ import pytest
 
 from scripts import sync_dd_feed
 from scripts import sync_dd_prospect_inputs
+from scripts import run_daily_public_build
 from scripts import validate_public_data_freshness as freshness
 
 
@@ -343,55 +344,60 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
+    build_commands = [" ".join(step) for step in run_daily_public_build.BUILD_STEPS]
+    validate_commands = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
 
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
     assert "python scripts/sync_dd_prospect_inputs.py" not in workflow
     assert "python scripts/refresh_milb_season_stats.py" in workflow
     assert "python scripts/build_valucast_prospect_inputs.py --refresh-service-cache" in workflow
-    assert "python scripts/backfill_projection_identities.py" in workflow
+    assert "python scripts/run_daily_public_build.py --only build" in workflow
+    assert "python scripts/run_daily_public_build.py --only validate" in workflow
+    assert "scripts/backfill_projection_identities.py" in build_commands
     assert (
-        "python scripts/backfill_projection_identities.py "
+        "scripts/backfill_projection_identities.py "
         "--projection-path projections/runs/valucast_hp_2026_v1/projections.json"
-    ) in workflow
-    assert "python scripts/build_mlb_track_record.py" in workflow
-    assert "python scripts/build_mlb_availability.py" in workflow
-    assert "python scripts/build_hp_promotion_sanity_report.py" in workflow
-    assert "python scripts/build_playing_time_role_tracker.py" in workflow
-    assert "python scripts/build_mlb_roster_status.py" in workflow
-    assert "python scripts/validate_hp_promotion_sanity_report.py" in workflow
-    assert "python scripts/validate_mlb_availability.py" in workflow
-    assert "python scripts/validate_playing_time_role_tracker.py" in workflow
-    assert "python scripts/validate_mlb_roster_status.py" in workflow
-    assert "python scripts/validate_mlb_track_record.py" in workflow
-    assert "python scripts/validate_valucast_prospect_inputs.py" in workflow
-    assert "python scripts/run_prospect_shadow_pipeline.py" in workflow
-    assert "python scripts/build_prospect_availability.py" in workflow
-    assert "python scripts/build_prospect_model_v07.py" in workflow
-    assert "python scripts/build_prospect_calibration_report.py" in workflow
-    assert "python scripts/build_prospect_peak_calibration_report.py" in workflow
-    assert "python scripts/build_prospect_forward_validation.py" in workflow
-    assert "python scripts/build_valucast_buys_monitor.py" in workflow
-    assert "python scripts/build_prospect_outcome_backtest.py" in workflow
-    assert "python scripts/build_raw_data_independence_audit.py" in workflow
-    assert "python scripts/build_front_office_failures.py" in workflow
-    assert "python scripts/build_milb_stat_freshness_audit.py" in workflow
-    assert "python scripts/build_pipeline_observability.py" in workflow
-    assert "python scripts/validate_milb_stat_freshness_audit.py" in workflow
-    assert "python scripts/validate_pipeline_observability.py" in workflow
-    assert "python scripts/build_front_office_report.py" in workflow
-    assert "python scripts/build_scouting_repository.py" in workflow
-    assert "python scripts/validate_prospect_availability.py" in workflow
-    assert "python scripts/validate_prospect_model_v07.py" in workflow
-    assert "python scripts/validate_prospect_calibration_report.py" in workflow
-    assert "python scripts/validate_prospect_peak_calibration_report.py" in workflow
-    assert "python scripts/validate_prospect_forward_validation.py" in workflow
-    assert "python scripts/validate_prospect_outcome_backtest.py" in workflow
-    assert "python scripts/validate_front_office_failures.py" in workflow
-    assert "python scripts/validate_raw_data_independence_audit.py" in workflow
-    assert "python scripts/validate_valucast_buys_monitor.py" in workflow
-    assert "python scripts/validate_front_office_report.py" in workflow
-    assert "python scripts/validate_scouting_repository.py" in workflow
+    ) in build_commands
+    assert "scripts/build_mlb_track_record.py" in build_commands
+    assert "scripts/build_mlb_availability.py" in build_commands
+    assert "scripts/build_hp_promotion_sanity_report.py" in build_commands
+    assert "scripts/build_playing_time_role_tracker.py" in build_commands
+    assert "scripts/build_mlb_roster_status.py" in build_commands
+    assert "scripts/validate_hp_promotion_sanity_report.py" in validate_commands
+    assert "scripts/validate_mlb_availability.py" in validate_commands
+    assert "scripts/validate_playing_time_role_tracker.py" in validate_commands
+    assert "scripts/validate_mlb_roster_status.py" in validate_commands
+    assert "scripts/validate_mlb_track_record.py" in validate_commands
+    assert "scripts/validate_valucast_prospect_inputs.py" in validate_commands
+    assert "scripts/run_prospect_shadow_pipeline.py" in build_commands
+    assert "scripts/build_prospect_availability.py" in build_commands
+    assert "scripts/build_prospect_model_v07.py" in build_commands
+    assert build_commands.count("scripts/build_prospect_model_v07.py") == 1
+    assert "scripts/build_prospect_calibration_report.py" in build_commands
+    assert "scripts/build_prospect_peak_calibration_report.py" in build_commands
+    assert "scripts/build_prospect_forward_validation.py" in build_commands
+    assert "scripts/build_valucast_buys_monitor.py" in build_commands
+    assert "scripts/build_prospect_outcome_backtest.py" in build_commands
+    assert "scripts/build_raw_data_independence_audit.py" in build_commands
+    assert "scripts/build_front_office_failures.py" in build_commands
+    assert "scripts/build_milb_stat_freshness_audit.py" in build_commands
+    assert "scripts/build_pipeline_observability.py" in build_commands
+    assert "scripts/validate_milb_stat_freshness_audit.py" in validate_commands
+    assert "scripts/validate_pipeline_observability.py" in validate_commands
+    assert "scripts/build_front_office_report.py" in build_commands
+    assert "scripts/build_scouting_repository.py" in build_commands
+    assert "scripts/validate_prospect_availability.py" in validate_commands
+    assert "scripts/validate_prospect_model_v07.py" in validate_commands
+    assert "scripts/validate_prospect_calibration_report.py" in validate_commands
+    assert "scripts/validate_prospect_peak_calibration_report.py" in validate_commands
+    assert "scripts/validate_prospect_forward_validation.py" in validate_commands
+    assert "scripts/validate_prospect_outcome_backtest.py" in validate_commands
+    assert "scripts/validate_front_office_failures.py" in validate_commands
+    assert "scripts/validate_raw_data_independence_audit.py" in validate_commands
+    assert "scripts/validate_valucast_buys_monitor.py" in validate_commands
+    assert "scripts/validate_front_office_report.py" in validate_commands
+    assert "scripts/validate_scouting_repository.py" in validate_commands
     assert "data/models/valucast_mlb_track_record.json" in workflow
     assert "data/models/valucast_mlb_availability.json" in workflow
     assert "data/models/valucast_hp_promotion_sanity_report.json" in workflow
@@ -420,6 +426,14 @@ def test_daily_public_workflow_requires_manual_buy_approval():
         "${{ github.event_name == 'workflow_dispatch' "
         "&& inputs.approve_valucast_buys && '1' || '0' }}"
     ) in workflow
+
+
+def test_daily_public_build_orchestrator_has_no_duplicate_steps():
+    run_daily_public_build.validate_steps()
+    build_steps = [" ".join(step) for step in run_daily_public_build.BUILD_STEPS]
+    validate_steps = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
+    assert len(build_steps) == len(set(build_steps))
+    assert len(validate_steps) == len(set(validate_steps))
 
 
 def test_prospect_shadow_workflow_keys_off_valucast_inputs():

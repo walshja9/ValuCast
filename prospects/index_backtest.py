@@ -13,6 +13,7 @@ from prospects.dynasty_backtest import (
     _actual_distribution,
     _horizon_seasons,
     _predicted_distribution,
+    _weighted_fold_metric,
     build_backtest as build_dynasty_backtest,
 )
 from prospects.gate import decide_gate
@@ -55,19 +56,6 @@ def _top_quartile_star_precision(predictions: list[float], actual: list[float]) 
         if remaining <= 0:
             break
     return stars / quota
-
-
-def _weighted_fold_metric(folds: list[dict], metric: str) -> float | None:
-    available = [
-        (fold[metric], fold["sample_size"])
-        for fold in folds
-        if fold.get(metric) is not None and fold["sample_size"]
-    ]
-    if not available:
-        return None
-    return sum(value * sample for value, sample in available) / sum(
-        sample for _, sample in available
-    )
 
 
 def _score_fold(candidate: list[float], baseline: list[float], actual: list[float]) -> dict:

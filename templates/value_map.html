@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 
 {% block title %}Value Map | ValuCast{% endblock %}
+{% block og_title %}Value Map | ValuCast{% endblock %}
+{% block og_description %}Dynasty value vs age across the ValuCast player universe.{% endblock %}
+{% block og_url %}https://valucast.app/map{% endblock %}
+{% block og_image %}https://valucast.app/map/share-card.png{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1350{% endblock %}
+{% block twitter_title %}Value Map | ValuCast{% endblock %}
+{% block twitter_description %}Dynasty value vs age across the ValuCast player universe.{% endblock %}
+{% block twitter_image %}https://valucast.app/map/share-card.png{% endblock %}
 
 {% block content %}
 <nav class="horizon-tabs" aria-label="Value map navigation">
@@ -66,10 +75,10 @@
     <span class="map-legend-prospect">Prospects</span>
 </div>
 
-<script id="map-data" type="application/json">{{ players | tojson }}</script>
 <script>
 (function () {
-    const players = JSON.parse(document.getElementById('map-data').textContent);
+    let players = [];
+    const mapDataUrl = '{{ map_data_url }}';
     const svg = document.getElementById('value-map');
     const tooltip = document.getElementById('map-tooltip');
     const shell = document.querySelector('.value-map-shell');
@@ -195,7 +204,17 @@
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(render, 150);
     });
-    render();
+    async function loadPlayers() {
+        try {
+            const response = await fetch(mapDataUrl, { credentials: 'same-origin' });
+            const payload = await response.json();
+            players = payload.players || [];
+        } catch (err) {
+            players = [];
+        }
+        render();
+    }
+    loadPlayers();
 })();
 </script>
 {% endblock %}

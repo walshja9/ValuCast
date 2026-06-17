@@ -395,11 +395,45 @@ class TestDynastyMode(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/html", response.content_type)
         self.assertIn(b"Ahead of the Curve", response.data)
+        self.assertIn(b'property="og:image"', response.data)
         self.assertIn(b"Download PNG", response.data)
         self.assertIn(b"/map/share-card.png", response.data)
         map_html = self.client.get("/map").data
         self.assertIn(b"/map/share-card", map_html)
         self.assertIn(b"/map/share-card.png", map_html)
+        self.assertIn(b"/api/value-map-players", map_html)
+
+    def test_value_map_players_api(self):
+        response = self.client.get("/api/value-map-players")
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertIn("players", payload)
+        self.assertEqual(payload["count"], len(payload["players"]))
+        if payload["players"]:
+            self.assertIn("name", payload["players"][0])
+            self.assertIn("value", payload["players"][0])
+
+    def test_buys_share_card_png_and_preview(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        png = self.client.get("/buys/share-card.png")
+        self.assertEqual(png.status_code, 200)
+        self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertIn("image/png", png.content_type)
+        self.assertIn(
+            'filename="valucast-buys.png"',
+            png.headers.get("Content-Disposition", ""),
+        )
+
+        preview = self.client.get("/buys/share-card")
+        self.assertEqual(preview.status_code, 200)
+        self.assertIn(b"Ahead of the Curve", preview.data)
+        self.assertIn(b'property="og:image"', preview.data)
+        self.assertIn(b"/buys/share-card.png", preview.data)
+
+        buys_html = self.client.get("/buys").data
+        self.assertIn(b"/buys/share-card.png", buys_html)
 
     def test_prospects_graphic_limit_20_filename(self):
         from app import dd_store
@@ -425,6 +459,7 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("text/html", preview.content_type)
         self.assertIn(b"Ahead of the Curve", preview.data)
         self.assertIn(b"current skill percentiles + peak context", preview.data)
+        self.assertIn(b'property="og:image"', preview.data)
         self.assertIn(f"/prospects/player-card/{row.id}.png".encode(), preview.data)
 
         png = self.client.get(f"/prospects/player-card/{row.id}.png")

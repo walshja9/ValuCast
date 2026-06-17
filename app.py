@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import csv
 import io
 import json
@@ -49,8 +50,10 @@ from web.player_links import build_player_links
 from web.value_spark import build_spark
 from web import buy_score
 from web import prospect_percentiles
+from web.share_pages import build_share_preview_html
 
 app = Flask(__name__)
+PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
 
 
 @app.after_request
@@ -59,6 +62,17 @@ def _security_headers(response):
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     return response
+
+
+def _public_url(path):
+    """Absolute public URL for social cards and share wrappers."""
+    if not path:
+        return PUBLIC_BASE_URL
+    if path.startswith(("http://", "https://")):
+        return path
+    if not path.startswith("/"):
+        path = "/" + path
+    return PUBLIC_BASE_URL + path
 
 
 # Per-category projected-stat formatting for the rankings columns.
@@ -398,9 +412,7 @@ def _gap_tiers(rows, num_tiers=8):
         changed = True
         while changed:
             changed = False
-            tier_counts = {}
-            for _, t in tiers_list:
-                tier_counts[t] = tier_counts.get(t, 0) + 1
+            tier_counts = Counter(t for _, t in tiers_list)
             for tier_num in sorted(tier_counts.keys()):
                 if tier_counts[tier_num] < 3:
                     if tier_num == min(tier_counts.keys()):
@@ -729,43 +741,12 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
 
 def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     """Render an Ahead of the Curve-style PNG for easy posting/saving."""
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw
 
-    def font(size, *, bold=False, serif=False):
-        candidates = []
-        if sys.platform.startswith("win"):
-            root = Path(os.environ.get("WINDIR", "C:\\Windows")) / "Fonts"
-            if serif:
-                candidates += [root / ("georgiab.ttf" if bold else "georgia.ttf")]
-            candidates += [root / ("segoeuib.ttf" if bold else "segoeui.ttf")]
-            candidates += [root / ("arialbd.ttf" if bold else "arial.ttf")]
-        if serif:
-            candidates += [
-                Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"),
-                Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"),
-            ]
-        candidates += [
-            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
-            Path("DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"),
-        ]
-        for candidate in candidates:
-            try:
-                return ImageFont.truetype(str(candidate), size)
-            except OSError:
-                continue
-        return ImageFont.load_default()
-
-    def text_width(draw, text, fnt):
-        box = draw.textbbox((0, 0), text, font=fnt)
-        return box[2] - box[0]
-
-    def fit_text(draw, text, fnt, max_width):
-        if text_width(draw, text, fnt) <= max_width:
-            return text
-        trimmed = text
-        while trimmed and text_width(draw, trimmed + "...", fnt) > max_width:
-            trimmed = trimmed[:-1]
-        return (trimmed.rstrip() + "...") if trimmed else "..."
+    # ponytail: reuse the module-level graphic helpers instead of re-defining them here
+    font = _graphic_font
+    text_width = _graphic_text_width
+    fit_text = _graphic_fit_text
 
     def split_name_lines(draw, name, fnt, max_width):
         if text_width(draw, name, fnt) <= max_width:
@@ -1102,16 +1083,10 @@ def _graphic_stat_value(value, key):
 def _graphic_prose_stat(value, key):
     if not isinstance(value, (int, float)):
         return None
-    if key in {"avg", "obp", "slg", "ops", "iso"}:
-        text = f"{value:.3f}"
-        return text[1:] if text.startswith("0.") else text
-    if key in {"k_pct", "bb_pct", "k_bb_pct"}:
-        return f"{value:.1f}%"
-    if key in {"era", "whip", "k_per_9", "bb_per_9"}:
-        return f"{value:.2f}"
-    if float(value).is_integer():
-        return str(int(value))
-    return f"{value:.1f}"
+    text = _graphic_stat_value(value, key)
+    if key in {"avg", "obp", "slg", "ops", "iso"} and text.startswith("0."):
+        return text[1:]
+    return text
 
 
 def _graphic_ordinal(value):
@@ -1667,9 +1642,7 @@ def _compute_tiers(results: list[ValuationResult], num_tiers: int = 8) -> dict[s
         changed = True
         while changed:
             changed = False
-            tier_counts: dict[int, int] = {}
-            for _, t in tiers_list:
-                tier_counts[t] = tier_counts.get(t, 0) + 1
+            tier_counts = Counter(t for _, t in tiers_list)
 
             for tier_num in sorted(tier_counts.keys()):
                 if tier_counts[tier_num] < 3:
@@ -2490,14 +2463,24 @@ def value_map():
     players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
     return render_template(
         "value_map.html",
-        players=players,
         player_count=len(players),
+        map_data_url="/api/value-map-players",
         dd_generated_at=dd_store.generated_at,
         dd_available=dd_store.is_available,
         map_page=True,
         mode="dd_dynasty",
         as_of=dd_store.generated_at or store.as_of,
     )
+
+
+@app.route("/api/value-map-players")
+def value_map_players_api():
+    players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
+    return jsonify({
+        "players": players,
+        "count": len(players),
+        "generated_at": dd_store.generated_at,
+    })
 
 
 def _value_map_share_card_png(players, *, pool="all", position=None):
@@ -2725,29 +2708,33 @@ def value_map_share_card():
     pool = request.args.get("pool") or "all"
     position = request.args.get("position") or None
     png_url = "/map/share-card.png" + _value_map_share_query(pool, position)
-    return (
-        '<!doctype html><html><head><meta charset="utf-8">'
-        '<meta name="viewport" content="width=device-width, initial-scale=1">'
-        '<title>ValuCast - Value Map</title>'
-        '<style>body{margin:0;background:#020617;color:#e7e9f4;'
-        'font-family:-apple-system,Segoe UI,Roboto,sans-serif;text-align:center;padding:32px 16px}'
-        'h1{font-size:1.4rem;margin:0 0 18px}'
-        'img{max-width:100%;width:540px;border-radius:24px;box-shadow:0 18px 60px rgba(0,0,0,.5)}'
-        '.download{display:inline-block;margin-top:20px;padding:12px 24px;border-radius:999px;'
-        'background:#a7f3d0;color:#052e2b;font-weight:700;text-decoration:none}'
-        'a.back{display:block;margin-top:16px;color:#9aa1c0;font-size:.85rem}</style></head>'
-        '<body><h1>Ahead of the Curve - Value Map</h1>'
-        '<img src="' + png_url + '" alt="ValuCast value map">'
-        '<div><a class="download" href="' + png_url + '" download="valucast-value-map.png">Download PNG</a></div>'
-        '<a class="back" href="/map">Back to the map</a>'
-        '</body></html>'
+    html = build_share_preview_html(
+        title="Ahead of the Curve - Value Map",
+        subtitle="Dynasty value vs age across the ValuCast player universe",
+        png_url=png_url,
+        filename="valucast-value-map.png",
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url("/map/share-card" + _value_map_share_query(pool, position)),
+        description="Dynasty value vs age across the ValuCast player universe.",
+        image_alt="ValuCast value map",
+        back_url="/map",
+        back_label="Back to the map",
     )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
 
 
 @app.route("/buys")
 def buys():
     """Top-40 prospect buys + the shareable 1080x1350 graphic node."""
-    n = buy_score.clamp_n(request.args.get("n", buy_score.BOARD_SIZE))
+    context = _build_buys_page_context(request.args.get("n", buy_score.BOARD_SIZE))
+    return render_template("buys.html", **context)
+
+
+def _build_buys_page_context(raw_n=None):
+    """Shared buys context for the page and deterministic share-card PNG."""
+    n = buy_score.clamp_n(raw_n if raw_n is not None else buy_score.BOARD_SIZE)
     buy_store, buy_data_source = _select_buy_source(dd_store, valucast_buy_store)
     if buy_data_source == "valucast_buys" and buy_store.is_available:
         graphic_rows = buy_score.build_valucast_board(buy_store.get_all())
@@ -2776,19 +2763,230 @@ def buys():
             row["spark"] = build_spark(row["value_history"])
         if "spark_label" not in row:
             row["spark_label"] = _buy_spark_label(row["spark"])
-    return render_template(
-        "buys.html",
-        list_rows=list_rows,
-        graphic_rows=graphic_rows,
-        n=n,
-        dd_available=data_available,
-        dd_generated_at=data_generated_at,
-        buy_data_source=buy_data_source,
-        buy_source_label=buy_source_copy["label"],
-        buy_source_note=buy_source_copy["note"],
-        buy_formula_note=buy_source_copy["formula"],
-        as_of=data_generated_at or store.as_of,
+    return {
+        "list_rows": list_rows,
+        "graphic_rows": graphic_rows,
+        "n": n,
+        "dd_available": data_available,
+        "dd_generated_at": data_generated_at,
+        "buy_data_source": buy_data_source,
+        "buy_source_label": buy_source_copy["label"],
+        "buy_source_note": buy_source_copy["note"],
+        "buy_formula_note": buy_source_copy["formula"],
+        "as_of": data_generated_at or store.as_of,
+    }
+
+
+def _draw_buys_spark(draw, spark, x, y, w, h, *, up_color, down_color, flat_color):
+    if not spark:
+        return
+    points = []
+    try:
+        for pair in str(spark.get("points", "")).split():
+            px, py = pair.split(",", 1)
+            points.append((x + float(px) / spark.get("width", w) * w,
+                           y + float(py) / spark.get("height", h) * h))
+    except (AttributeError, TypeError, ValueError, ZeroDivisionError):
+        return
+    if len(points) < 2:
+        return
+    color = up_color if spark.get("direction") == "up" else (
+        down_color if spark.get("direction") == "down" else flat_color
     )
+    draw.line(points, fill=color, width=3, joint="curve")
+    lx, ly = points[-1]
+    draw.ellipse((lx - 3, ly - 3, lx + 3, ly + 3), fill=color)
+
+
+def _buys_share_card_png(
+    rows,
+    *,
+    generated_at=None,
+    source_label="ValuCast buy signal",
+    formula_note="buy score = model strength + momentum + buy window + runway",
+):
+    """Deterministic server-side Buys graphic for social crawlers and previews."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    bg = (18, 19, 31)
+    card = (35, 36, 64)
+    card_2 = (32, 33, 58)
+    border = (45, 47, 74)
+    green = (52, 211, 153)
+    blue = (110, 161, 255)
+    text = (231, 233, 244)
+    muted = (154, 161, 192)
+    red = (255, 107, 107)
+
+    f_brand = _graphic_font(24, bold=True)
+    f_title = _graphic_font(60, bold=True)
+    f_sub = _graphic_font(22)
+    f_source = _graphic_font(17, bold=True)
+    f_rank = _graphic_font(21, bold=True)
+    f_hero_score = _graphic_font(62, bold=True)
+    f_support_score = _graphic_font(29, bold=True)
+    f_cell_score = _graphic_font(22, bold=True)
+    f_name = _graphic_font(28, bold=True)
+    f_support_name = _graphic_font(22, bold=True)
+    f_cell_name = _graphic_font(19, bold=True)
+    f_tag = _graphic_font(16)
+    f_small = _graphic_font(14, bold=True)
+    f_footer = _graphic_font(21, bold=True)
+    f_footer_note = _graphic_font(17)
+
+    img = Image.new("RGB", (width, height), bg)
+    draw = ImageDraw.Draw(img)
+    for y in range(height):
+        t = y / height
+        draw.line([(0, y), (width, y)],
+                  fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)))
+    draw.arc((704, 40, 1040, 306), start=196, end=286, fill=(35, 44, 73), width=3)
+    _paste_brand_mark(img, 48, 34, 58)
+    draw.text((120, 39), "VALUCAST", fill=green, font=f_brand)
+    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=f_title)
+    date_label = _editorial_date(generated_at)
+    subtitle = "Top 40 prospect buys by signal, not reputation"
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    draw.text((48, 155), subtitle, fill=muted, font=f_sub)
+    draw.text((48, 183), source_label, fill=green, font=f_source)
+
+    def initials(name):
+        return buy_score.graphic_initials(name or "")
+
+    def split_lines(name, fnt, max_width, max_lines=2):
+        return _graphic_wrap_text(draw, name or "Unknown", fnt, max_width, max_lines=max_lines)
+
+    def tag(row):
+        pieces = [row.get("team"), row.get("pos"), row.get("level")]
+        return " - ".join(str(p) for p in pieces if p)
+
+    def draw_monogram(cx, cy, r, label, size):
+        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
+        fnt = _graphic_font(size, bold=True)
+        box = draw.textbbox((0, 0), label, font=fnt)
+        draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2),
+                  label, fill=blue, font=fnt)
+
+    hero_rows = list(rows or [])[:5]
+    grid_rows = list(rows or [])[5:40]
+    if not hero_rows:
+        draw.rounded_rectangle((48, 226, 1032, 370), radius=18, fill=card, outline=border, width=2)
+        draw.text((76, 278), "No prospect buys are available.", fill=text, font=f_name)
+    else:
+        hero = hero_rows[0]
+        draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
+        draw.text((70, 252), "#1 - TOP BUY", fill=green, font=f_rank)
+        draw_monogram(135, 381, 65, initials(hero.get("name")), 52)
+        name_lines = split_lines(hero.get("name"), _graphic_font(34, bold=True), 175)
+        for idx, line in enumerate(name_lines[:2]):
+            draw.text((220, 320 + idx * 39), line, fill=text, font=_graphic_font(34, bold=True))
+        draw.text((220, 403), _graphic_fit_text(draw, tag(hero), f_tag, 165), fill=muted, font=f_tag)
+        draw.text((70, 455), str(hero.get("score", "--")), fill=green, font=f_hero_score)
+        draw.text((155, 498), "/100", fill=muted, font=f_small)
+        _draw_buys_spark(
+            draw, hero.get("spark"), 226, 432, 130, 42,
+            up_color=green, down_color=red, flat_color=muted,
+        )
+        draw.text((226, 484), hero.get("spark_label") or "30-DAY SIGNAL", fill=muted, font=f_small)
+        draw.text((70, 515), _graphic_fit_text(draw, hero.get("reason"), f_source, 250).upper(),
+                  fill=blue, font=f_source)
+
+        for idx, row in enumerate(hero_rows[1:5]):
+            x = 435 + (idx % 2) * 307
+            y = 226 + (idx // 2) * 164
+            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=16, fill=card, outline=border, width=2)
+            draw_monogram(x + 52, y + 54, 36, initials(row.get("name")), 28)
+            draw.text((x + 100, y + 13), f"#{idx + 2}", fill=blue, font=f_rank)
+            support_lines = split_lines(row.get("name"), f_support_name, 172)
+            for line_idx, line in enumerate(support_lines[:2]):
+                draw.text((x + 100, y + 38 + line_idx * 25), line, fill=text, font=f_support_name)
+            draw.text((x + 100, y + 88), _graphic_fit_text(draw, tag(row), f_small, 160),
+                      fill=muted, font=f_small)
+            draw.line((x + 14, y + 104, x + 275, y + 104), fill=border, width=1)
+            draw.text((x + 14, y + 112), str(row.get("score", "--")), fill=green, font=f_support_score)
+            draw.text((x + 58, y + 126), "/100", fill=muted, font=_graphic_font(11))
+            _draw_buys_spark(
+                draw, row.get("spark"), x + 104, y + 117, 68, 18,
+                up_color=green, down_color=red, flat_color=muted,
+            )
+            label = row.get("spark_label") or _graphic_fit_text(draw, row.get("reason"), f_small, 90).upper()
+            draw.text((x + 183, y + 119), _graphic_fit_text(draw, label, f_small, 92),
+                      fill=muted, font=f_small)
+
+    cols = 5
+    cell_w, cell_h = 196, 100
+    start_x, start_y = 48, 562
+    for idx, row in enumerate(grid_rows[:35]):
+        col, r = idx % cols, idx // cols
+        x, y = start_x + col * cell_w, start_y + r * cell_h
+        fill = card_2 if r % 2 == 0 else bg
+        draw.rectangle((x, y, x + cell_w, y + cell_h), fill=fill)
+        if col:
+            draw.line((x, y, x, y + cell_h), fill=border, width=1)
+        if r:
+            draw.line((x, y, x + cell_w, y), fill=border, width=1)
+        draw.text((x + 10, y + 12), f"#{idx + 6}", fill=blue, font=_graphic_font(17, bold=True))
+        score = str(row.get("score", "--"))
+        draw.text((x + cell_w - 10 - _graphic_text_width(draw, score, f_cell_score), y + 10),
+                  score, fill=muted, font=f_cell_score)
+        name = row.get("name") or "Unknown"
+        parts = name.split()
+        short = f"{parts[0][0]}. {' '.join(parts[1:])}" if len(parts) > 1 else name
+        draw.text((x + 10, y + 42), _graphic_fit_text(draw, short, f_cell_name, 150),
+                  fill=text, font=f_cell_name)
+        draw.text((x + 10, y + 72), _graphic_fit_text(draw, tag(row), f_tag, 145),
+                  fill=muted, font=f_tag)
+
+    foot_y = height - 68
+    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
+    draw.text((60, foot_y + 10), "valucast.app", fill=green, font=f_footer)
+    note = f"{source_label} - {formula_note}"
+    note = _graphic_fit_text(draw, note, f_footer_note, 690)
+    draw.text((1032 - 14 - _graphic_text_width(draw, note, f_footer_note), foot_y + 14),
+              note, fill=muted, font=f_footer_note)
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/buys/share-card.png")
+def buys_share_card_png():
+    context = _build_buys_page_context()
+    if not context["dd_available"]:
+        return "", 503
+    png = _buys_share_card_png(
+        context["graphic_rows"],
+        generated_at=context["dd_generated_at"],
+        source_label=context["buy_source_label"],
+        formula_note=context["buy_formula_note"],
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-buys.png"'
+    return response
+
+
+@app.route("/buys/share-card")
+def buys_share_card():
+    html = build_share_preview_html(
+        title="Ahead of the Curve",
+        subtitle="Top prospect buys by signal, not reputation",
+        png_url="/buys/share-card.png",
+        filename="valucast-buys.png",
+        public_png_url=_public_url("/buys/share-card.png"),
+        public_page_url=_public_url("/buys/share-card"),
+        description="The top prospect buys by ValuCast signal, not reputation.",
+        image_alt="ValuCast top prospect buys",
+        back_url="/buys",
+        back_label="Back to buys",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
 
 
 @app.route("/health/ready")
@@ -3169,35 +3367,18 @@ def prospects_share_card():
     title = f"Top {limit} {position + ' ' if position else ''}Prospects"
     if search:
         title = f"{title} | {search}"
-    html = f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ahead of the Curve | {escape(filename)}</title>
-  <style>
-    body {{ margin: 0; background: #020617; color: #d1fae5; font-family: Inter, Segoe UI, Arial, sans-serif; }}
-    main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
-    .meta {{ width: min(1080px, 100%); }}
-    h1 {{ margin: 0 0 4px; color: #f8fafc; font-size: 22px; }}
-    p {{ margin: 0; color: #9ca3c0; font-weight: 700; }}
-    .card-wrap {{ width: min(1080px, 100%); }}
-    img {{ width: 100%; height: auto; display: block; border-radius: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }}
-    .actions {{ width: min(1080px, 100%); display: flex; justify-content: flex-end; }}
-    .download {{ color: #052e2b; background: #a7f3d0; border-radius: 999px; padding: 10px 16px; text-decoration: none; font-weight: 900; }}
-  </style>
-</head>
-<body>
-  <main>
-    <div class="meta">
-      <h1>Ahead of the Curve</h1>
-      <p>{escape(title)}</p>
-    </div>
-    <div class="card-wrap"><img src="{escape(png_url)}" alt="Ahead of the Curve - {escape(title)}"></div>
-    <div class="actions"><a class="download" href="{escape(png_url)}" download="{escape(filename)}">Download PNG</a></div>
-  </main>
-</body>
-</html>"""
+    html = build_share_preview_html(
+        title="Ahead of the Curve",
+        subtitle=title,
+        png_url=png_url,
+        filename=filename,
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url("/prospects/share-card?" + urlencode(params)),
+        description="ValuCast's current prospect board, filtered from the live Prospects tab.",
+        image_alt=f"Ahead of the Curve - {title}",
+        back_url="/?mode=prospects",
+        back_label="Back to prospects",
+    )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
     return response
@@ -3238,34 +3419,18 @@ def prospect_player_card_preview(player_id):
     filename = f"valucast-{filename_slug or 'prospect'}-card.png"
     png_url = f"/prospects/player-card/{escape(player_id)}.png"
     title = f"{row.name} | Ahead of the Curve"
-    html = f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{escape(title)}</title>
-  <style>
-    body {{ margin: 0; background: #020617; color: #d1fae5; font-family: Inter, Segoe UI, Arial, sans-serif; }}
-    main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
-    .meta, .actions, .card-wrap {{ width: min(1080px, 100%); }}
-    h1 {{ margin: 0 0 4px; color: #f8fafc; font-size: 22px; }}
-    p {{ margin: 0; color: #9ca3c0; font-weight: 700; }}
-    img {{ width: 100%; height: auto; display: block; border-radius: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }}
-    .actions {{ display: flex; justify-content: flex-end; }}
-    .download {{ color: #052e2b; background: #a7f3d0; border-radius: 999px; padding: 10px 16px; text-decoration: none; font-weight: 900; }}
-  </style>
-</head>
-<body>
-  <main>
-    <div class="meta">
-      <h1>Ahead of the Curve</h1>
-      <p>{escape(row.name)} - current skill percentiles + peak context</p>
-    </div>
-    <div class="card-wrap"><img src="{png_url}" alt="{escape(row.name)} ValuCast player card"></div>
-    <div class="actions"><a class="download" href="{png_url}" download="{escape(filename)}">Download PNG</a></div>
-  </main>
-</body>
-</html>"""
+    html = build_share_preview_html(
+        title=title,
+        subtitle=f"{row.name} - current skill percentiles + peak context",
+        png_url=png_url,
+        filename=filename,
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url(f"/prospects/player-card/{player_id}"),
+        description=f"{row.name} ValuCast prospect card with current skill percentiles and peak context.",
+        image_alt=f"{row.name} ValuCast player card",
+        back_url="/?mode=prospects",
+        back_label="Back to prospects",
+    )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
     return response

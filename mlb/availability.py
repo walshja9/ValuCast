@@ -140,8 +140,6 @@ def _transactions_from_cache_or_fetch(
     queries = cache.setdefault("queries", {})
     if not refresh and key in queries:
         return list(queries[key].get("transactions") or []), False
-    if key in queries and not refresh:
-        return list(queries[key].get("transactions") or []), False
 
     fetch = fetcher or _fetch_transactions
     transactions = fetch(start_date, end_date)

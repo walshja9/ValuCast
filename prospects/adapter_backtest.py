@@ -15,6 +15,7 @@ from prospects.adapters import PRESETS, project_categories
 from prospects.dynasty_backtest import (
     OUTCOME_COMPLETE_THROUGH,
     OUTCOME_HORIZON_YEARS,
+    _weighted_fold_metric,
 )
 from prospects.gate import decide_gate
 from prospects.model import _prior_predict, _rank_concordance
@@ -189,19 +190,6 @@ def _top_quartile_precision(predicted: list[float], actual: list[float]) -> floa
         predicted_weight * actual_top.get(index, 0.0)
         for index, predicted_weight in predicted_top.items()
     ) / quota
-
-
-def _weighted_fold_metric(folds: list[dict], metric: str) -> float | None:
-    available = [
-        (fold[metric], fold["sample_size"])
-        for fold in folds
-        if fold.get(metric) is not None and fold["sample_size"]
-    ]
-    if not available:
-        return None
-    return sum(value * sample for value, sample in available) / sum(
-        sample for _, sample in available
-    )
 
 
 def _temporal_stability_guard(folds: list[dict]) -> dict:

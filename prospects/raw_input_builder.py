@@ -1017,7 +1017,6 @@ def build_contract(
         "mlb_service": _service_facts(current_rows, mlb_seasons),
     }
     payload["source_policy"] = _source_policy_for_payload(payload)
-    _source_policy_for_payload(payload)
     return payload
 
 
