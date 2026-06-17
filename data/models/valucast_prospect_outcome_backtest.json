@@ -303,10 +303,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 3,
+        "buy_comparison_count": 4,
         "latest_rank_bucket_count": 23,
-        "observation_span_days": 3,
-        "rank_comparison_count": 3
+        "observation_span_days": 4,
+        "rank_comparison_count": 4
       },
       "recommendations": [
         "Review top-50 availability-risk buckets before changing individual names."
@@ -319,7 +319,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2660,
+        "candidate_count": 2668,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -375,17 +375,17 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 3,
+            "current": 4,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -399,17 +399,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 3,
+            "current": 4,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -423,17 +423,17 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 3,
+            "current": 4,
             "metric": "rank_comparison_count",
             "required": 7
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "buy_comparison_count",
             "required": 7
           },
           {
-            "current": 3,
+            "current": 4,
             "metric": "observation_span_days",
             "required": 14
           }
@@ -448,12 +448,12 @@
     "target_grade": "A-",
     "uncapped_score": 91
   },
-  "generated_at": "2026-06-16T00:00:00+00:00",
+  "generated_at": "2026-06-17T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-06-16",
-    "dynasty_backtest": "2026-06-16",
-    "forward_validation": "2026-06-16",
-    "model_v07": "2026-06-16",
+    "adapter_backtest": "2026-06-17",
+    "dynasty_backtest": "2026-06-17",
+    "forward_validation": "2026-06-17",
+    "model_v07": "2026-06-17",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",

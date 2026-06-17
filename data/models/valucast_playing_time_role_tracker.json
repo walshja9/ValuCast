@@ -1,13 +1,13 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-16T15:16:17.599136+00:00",
+  "generated_at": "2026-06-17T13:44:54.235513+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
-    "availability_generated_at": "2026-06-16",
+    "availability_generated_at": "2026-06-17",
     "projection_source": "projections/runs/valucast_hp_2026_v1/projections.json",
     "roster_status_artifact": "valucast_mlb_roster_status",
-    "roster_status_generated_at": "2026-06-16"
+    "roster_status_generated_at": "2026-06-17"
   },
   "profiles": [
     {
@@ -2323,7 +2323,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "663853_hitter",
       "mlbam_id": "663853",
       "name": "Romy Gonzalez",
@@ -2605,10 +2605,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "663728_hitter",
       "mlbam_id": "663728",
       "name": "Cal Raleigh",
@@ -2620,7 +2620,7 @@
       "projected_volume": 615.3,
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "SEA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -2726,10 +2726,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "available",
       "identity_key": "641487_hitter",
       "mlbam_id": "641487",
       "name": "J.P. Crawford",
@@ -2741,7 +2741,7 @@
       "projected_volume": 572.1,
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "SEA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -3338,7 +3338,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "669224_hitter",
       "mlbam_id": "669224",
       "name": "Austin Wells",
@@ -3642,9 +3642,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "670097_hitter",
       "mlbam_id": "670097",
       "name": "Zack Short",
@@ -3656,7 +3656,7 @@
       "projected_volume": 236.8,
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "DET",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -4289,9 +4289,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "669289_hitter",
       "mlbam_id": "669289",
       "name": "Santiago Espinal",
@@ -4304,7 +4304,7 @@
       "projected_volume": 403.1,
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "LAD",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -8586,9 +8586,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "660644_hitter",
       "mlbam_id": "660644",
       "name": "Vidal Bruj\u00e1n",
@@ -8601,7 +8601,7 @@
       "projected_volume": 275.3,
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -8707,9 +8707,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "640902_hitter",
       "mlbam_id": "640902",
       "name": "Jhonny Pereda",
@@ -8721,7 +8721,7 @@
       "projected_volume": 243.0,
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "SEA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -9921,7 +9921,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "691019_hitter",
       "mlbam_id": "691019",
       "name": "Kyle Teel",
@@ -11478,9 +11478,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "690984_hitter",
       "mlbam_id": "690984",
       "name": "Petey Halpin",
@@ -11492,7 +11492,7 @@
       "projected_volume": 204.0,
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CLE",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -14212,7 +14212,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "665052_hitter",
       "mlbam_id": "665052",
       "name": "Griffin Conine",
@@ -14249,10 +14249,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "668227_hitter",
       "mlbam_id": "668227",
       "name": "Randy Arozarena",
@@ -14264,7 +14264,7 @@
       "projected_volume": 619.3,
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "SEA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -14331,10 +14331,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "673237_hitter",
       "mlbam_id": "673237",
       "name": "Yainer Diaz",
@@ -14346,7 +14346,7 @@
       "projected_volume": 545.4,
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "HOU",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -15343,10 +15343,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "682657_hitter",
       "mlbam_id": "682657",
       "name": "Angel Mart\u00ednez",
@@ -15358,7 +15358,7 @@
       "projected_volume": 458.9,
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CLE",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -16075,10 +16075,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "669242_hitter",
       "mlbam_id": "669242",
       "name": "Tommy Edman",
@@ -16090,7 +16090,7 @@
       "projected_volume": 403.8,
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "LAD",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -17010,9 +17010,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "650859_hitter",
       "mlbam_id": "650859",
       "name": "Luis Rengifo",
@@ -17025,7 +17025,7 @@
       "projected_volume": 500.9,
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "MIL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -17299,7 +17299,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "injured",
       "identity_key": "669717_hitter",
       "mlbam_id": "669717",
       "name": "Will Wilson",
@@ -19555,9 +19555,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "681151_reliever",
       "mlbam_id": "681151",
       "name": "Jayden Murray",
@@ -19569,7 +19569,7 @@
       "projected_volume": 11.7,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "HOU",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -21627,9 +21627,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "702752_reliever",
       "mlbam_id": "702752",
       "name": "Jonathan Pintaro",
@@ -21641,7 +21641,7 @@
       "projected_volume": 0.7,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -24098,9 +24098,9 @@
     },
     {
       "active_injury_risk": true,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "injured",
       "identity_key": "694037_reliever",
       "mlbam_id": "694037",
       "name": "Daniel Palencia",
@@ -24112,7 +24112,7 @@
       "projected_volume": 37.7,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -26567,10 +26567,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "664854_reliever",
       "mlbam_id": "664854",
       "name": "Ryan Helsley",
@@ -26582,7 +26582,7 @@
       "projected_volume": 55.2,
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "BAL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -26647,10 +26647,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "641745_reliever",
       "mlbam_id": "641745",
       "name": "Brad Keller",
@@ -26662,7 +26662,7 @@
       "projected_volume": 94.4,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "PHI",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -30774,9 +30774,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "687765_reliever",
       "mlbam_id": "687765",
       "name": "Mitch Spence",
@@ -30789,7 +30789,7 @@
       "projected_volume": 121.1,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "KCR",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -30916,7 +30916,7 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
       "availability_status": "available",
       "identity_key": "676661_reliever",
@@ -30930,7 +30930,7 @@
       "projected_volume": 29.6,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "PHI",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -32767,9 +32767,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "668970_reliever",
       "mlbam_id": "668970",
       "name": "Gavin Hollowell",
@@ -32781,7 +32781,7 @@
       "projected_volume": 12.9,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -32889,7 +32889,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "691587_starter",
       "mlbam_id": "691587",
       "name": "Eury P\u00e9rez",
@@ -34211,10 +34211,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "686613_starter",
       "mlbam_id": "686613",
       "name": "Hunter Brown",
@@ -34226,7 +34226,7 @@
       "projected_volume": 172.6,
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "HOU",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -34252,10 +34252,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "673540_starter",
       "mlbam_id": "673540",
       "name": "Kodai Senga",
@@ -34267,7 +34267,7 @@
       "projected_volume": 89.7,
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -41059,7 +41059,7 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
       "availability_status": "available",
       "identity_key": "657756_reliever",
@@ -41073,7 +41073,7 @@
       "projected_volume": 27.6,
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "DET",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -41370,8 +41370,8 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 238,
-    "active_mlb_roster_count": 725,
+    "active_injury_risk_count": 234,
+    "active_mlb_roster_count": 726,
     "profile_count": 2049,
     "role_counts": {
       "bench_or_depth": 401,
