@@ -828,45 +828,27 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         return points, spark["direction"]
 
     width, height = 1080, 1350
-    bg = (18, 19, 31)
-    card = (35, 36, 64)
-    card_2 = (32, 33, 58)
-    border = (45, 47, 74)
-    green = (52, 211, 153)
-    blue = (110, 161, 255)
-    text = (231, 233, 244)
-    muted = (154, 161, 192)
+    bg = _GRAPHIC_PALETTE["bg"]
+    card = _GRAPHIC_PALETTE["card"]
+    card_2 = _GRAPHIC_PALETTE["card_2"]
+    border = _GRAPHIC_PALETTE["border"]
+    green = _GRAPHIC_PALETTE["green"]
+    blue = _GRAPHIC_PALETTE["blue"]
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
 
     img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
-    for y in range(height):
-        t = y / height
-        color = (
-            round(18 + 6 * t),
-            round(19 + 8 * t),
-            round(31 + 20 * t),
-        )
-        draw.line([(0, y), (width, y)], fill=color)
-
-    # Editorial arc from the /buys graphic.
-    arc_box = (705, 46, 1040, 312)
-    draw.arc(arc_box, start=196, end=286, fill=(35, 44, 73), width=3)
 
     scope = f"{position.upper()} " if position else ""
-    title = f"Top {limit} {scope}Prospects"
-    if search:
-        title += f" | {search}"
     subtitle_date = _editorial_date(dd_store.generated_at)
     subtitle = f"The top {limit} {scope}prospects from the current board"
     if search:
         subtitle = f"{subtitle} | {search}"
     if subtitle_date:
         subtitle = f"{subtitle} - {subtitle_date}"
-
-    _paste_brand_mark(img, 48, 34, 58)
-    draw.text((120, 39), "VALUCAST", fill=green, font=font(24, bold=True))
-    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=font(61, bold=True))
-    draw.text((48, 156), fit_text(draw, subtitle, font(23), 735), fill=muted, font=font(23))
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
 
     if not rows:
         draw.rounded_rectangle((48, 225, 1032, 360), radius=18, fill=card, outline=border, width=2)
@@ -878,11 +860,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         draw.rounded_rectangle((48, 226, 1032, 532), radius=18, fill=card, outline=green, width=2)
         draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(16, bold=True))
-        draw.ellipse((72, 324, 214, 466), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
-        initials = buy_score.graphic_initials(hero.name)
-        mono = font(54, bold=True)
-        box = draw.textbbox((0, 0), initials, font=mono)
-        draw.text((143 - (box[2] - box[0]) / 2, 395 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+        _graphic_monogram(draw, 143, 395, 71, hero.name, size=54)
         hero_name_font = font(43, bold=True)
         hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 360)
         for line_idx, line in enumerate(hero_name_lines):
@@ -930,11 +908,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
         draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(15, bold=True))
-        draw.ellipse((70, 314, 200, 444), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
-        initials = buy_score.graphic_initials(hero.name)
-        mono = font(52, bold=True)
-        box = draw.textbbox((0, 0), initials, font=mono)
-        draw.text((135 - (box[2] - box[0]) / 2, 379 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+        _graphic_monogram(draw, 135, 379, 65, hero.name, size=52)
         hero_name_font = font(31, bold=True)
         hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 170)
         for line_idx, line in enumerate(hero_name_lines):
@@ -949,11 +923,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
             draw.rounded_rectangle((x, y, x + 291, y + 149), radius=16, fill=card, outline=border, width=2)
-            draw.ellipse((x + 16, y + 18, x + 88, y + 90), fill=(28, 30, 54), outline=(54, 57, 92), width=1)
-            initials = buy_score.graphic_initials(row.name)
-            mono = font(28, bold=True)
-            box = draw.textbbox((0, 0), initials, font=mono)
-            draw.text((x + 52 - (box[2] - box[0]) / 2, y + 54 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+            _graphic_monogram(draw, x + 52, y + 54, 36, row.name, size=28)
             draw.text((x + 104, y + 18), rank_label(idx + 2), fill=blue, font=font(19, bold=True))
             support_name_font = font(20, bold=True)
             support_name_lines = split_name_lines(draw, row.name, support_name_font, 172)
@@ -988,16 +958,84 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             rest_val_font = font(20, bold=True)
             draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
-    foot_y = height - 68
-    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card)
-    draw.text((60, foot_y + 10), "valucast.app", fill=green, font=font(22, bold=True))
     footer = "ValuCast Prospect Rank - stats + age/level + investment + availability"
-    footer_font = font(15)
-    footer_text = fit_text(draw, footer, footer_font, 650)
-    draw.text((1032 - 14 - text_width(draw, footer_text, footer_font), foot_y + 14), footer_text, fill=muted, font=footer_font)
+    _graphic_footer(draw, right_note=footer)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
+
+
+_GRAPHIC_PALETTE = {
+    "bg": (18, 19, 31),
+    "card": (35, 36, 64),
+    "card_2": (32, 33, 58),
+    "border": (45, 47, 74),
+    "green": (52, 211, 153),
+    "blue": (110, 161, 255),
+    "text": (231, 233, 244),
+    "muted": (154, 161, 192),
+}
+
+
+def _graphic_fill_background(img):
+    from PIL import ImageDraw
+
+    width, height = img.size
+    draw = ImageDraw.Draw(img)
+    for y in range(height):
+        t = y / height
+        draw.line(
+            [(0, y), (width, y)],
+            fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)),
+        )
+
+
+def _graphic_header(img, draw, *, headline, subtitle, extra_line=None):
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
+    green = _GRAPHIC_PALETTE["green"]
+
+    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
+    _paste_brand_mark(img, 48, 32, size=62)
+    draw.text((124, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
+    draw.text((48, 82), headline, fill=text, font=_graphic_font(60, bold=True))
+    sub_font = _graphic_font(22)
+    draw.text((48, 154), _graphic_fit_text(draw, subtitle, sub_font, 960), fill=muted, font=sub_font)
+    if extra_line:
+        draw.text((48, 183), extra_line, fill=green, font=_graphic_font(15, bold=True))
+
+
+def _graphic_footer(draw, *, right_note=None):
+    card = _GRAPHIC_PALETTE["card"]
+    border = _GRAPHIC_PALETTE["border"]
+    muted = _GRAPHIC_PALETTE["muted"]
+
+    foot_y = 1350 - 68
+    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
+    draw.text((60, foot_y + 10), "valucast.app", fill=muted, font=_graphic_font(22))
+    if right_note:
+        note_font = _graphic_font(16)
+        draw.text(
+            (1032 - 14 - _graphic_text_width(draw, right_note, note_font), foot_y + 14),
+            right_note,
+            fill=muted,
+            font=note_font,
+        )
+
+
+def _graphic_monogram(draw, cx, cy, r, name, *, size=None):
+    blue = _GRAPHIC_PALETTE["blue"]
+    initials = buy_score.graphic_initials(name or "")
+    mono = _graphic_font(size or max(12, int(r * 0.8)), bold=True)
+
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
+    box = draw.textbbox((0, 0), initials, font=mono)
+    draw.text(
+        (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2),
+        initials,
+        fill=blue,
+        font=mono,
+    )
 
 
 def _graphic_font(size, *, bold=False, serif=False):
@@ -1356,43 +1394,30 @@ def _prospect_player_card_png(row):
     identity = _prospect_player_card_read(row, stat_percentiles, context)
 
     width, height = 1080, 1350
-    bg = (18, 19, 31)
-    card = (35, 36, 64)
-    card_2 = (32, 33, 58)
-    border = (45, 47, 74)
-    green = (52, 211, 153)
-    blue = (110, 161, 255)
+    bg = _GRAPHIC_PALETTE["bg"]
+    card = _GRAPHIC_PALETTE["card"]
+    card_2 = _GRAPHIC_PALETTE["card_2"]
+    border = _GRAPHIC_PALETTE["border"]
+    green = _GRAPHIC_PALETTE["green"]
+    blue = _GRAPHIC_PALETTE["blue"]
     cyan = (45, 212, 191)
     amber = (251, 191, 36)
-    text = (231, 233, 244)
-    muted = (154, 161, 192)
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
 
     img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
-    for y in range(height):
-        t = y / height
-        draw.line(
-            [(0, y), (width, y)],
-            fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)),
-        )
 
-    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
-    _paste_brand_mark(img, 48, 32, 62)
-    draw.text((124, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
-    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=_graphic_font(60, bold=True))
     subtitle = "player skill percentiles + peak projection context"
     generated = _editorial_date(dd_store.generated_at)
     if generated:
         subtitle = f"{subtitle} - {generated}"
-    draw.text((48, 154), subtitle, fill=muted, font=_graphic_font(22))
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
 
     # Identity panel
     draw.rounded_rectangle((48, 218, 1032, 410), radius=22, fill=card, outline=border, width=2)
-    draw.ellipse((78, 258, 198, 378), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
-    initials = buy_score.graphic_initials(row.name)
-    mono = _graphic_font(46, bold=True)
-    box = draw.textbbox((0, 0), initials, font=mono)
-    draw.text((138 - (box[2] - box[0]) / 2, 318 - (box[3] - box[1]) / 2), initials, fill=blue, font=mono)
+    _graphic_monogram(draw, 138, 318, 60, row.name, size=46)
 
     name_font = _graphic_font(44, bold=True)
     draw.text((230, 252), _graphic_fit_text(draw, row.name, name_font, 510), fill=text, font=name_font)
@@ -1470,15 +1495,12 @@ def _prospect_player_card_png(row):
         draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
         draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
 
-    # Footer
-    draw.rounded_rectangle((48, 1190, 1032, 1268), radius=14, fill=card, outline=border, width=1)
     source = (
         "Current bars use ValuCast-owned MiLB stats. Peak shape is role context, not public scouting grades."
         if peak_shape
         else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     )
-    draw.text((70, 1212), source, fill=muted, font=_graphic_font(18))
-    draw.text((70, 1236), "valucast.app", fill=green, font=_graphic_font(24, bold=True))
+    _graphic_footer(draw, right_note=source)
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -2516,12 +2538,9 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
     from PIL import Image, ImageDraw
 
     width, height = 1080, 1350
-    bg = (18, 19, 31)
-    card = (35, 36, 64)
-    border = (45, 47, 74)
-    green = (52, 211, 153)
-    text = (231, 233, 244)
-    muted = (154, 161, 192)
+    bg = _GRAPHIC_PALETTE["bg"]
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
     grid = (40, 42, 68)
     group_colors = {
         "hitter": (79, 134, 247),
@@ -2543,34 +2562,21 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
             continue
         pts.append(p)
 
-    f_word = _graphic_font(26, bold=True)
-    f_head = _graphic_font(60, bold=True)
-    f_sub = _graphic_font(22)
     f_axis = _graphic_font(18)
     f_axisb = _graphic_font(18, bold=True)
     f_leg = _graphic_font(19)
     f_lbl = _graphic_font(16, bold=True)
-    f_foot = _graphic_font(22, bold=True)
-    f_footr = _graphic_font(16)
     f_empty = _graphic_font(28, bold=True)
 
     img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
-    for y in range(height):
-        t = y / height
-        draw.line([(0, y), (width, y)],
-                  fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)))
 
-    # Header chrome (mirror the player card) + editorial arc.
-    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
-    _paste_brand_mark(img, 48, 32, 62)
-    draw.text((124, 38), "VALUCAST", fill=green, font=f_word)
-    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=f_head)
     generated = _editorial_date(dd_store.generated_at)
     sub = "Dynasty value vs age - {} players".format(len(pts))
     if generated:
         sub = "{} - {}".format(sub, generated)
-    draw.text((48, 154), sub, fill=muted, font=f_sub)
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=sub)
 
     plot_left, plot_right = 132, 1032
     plot_top, plot_bottom = 322, 1150
@@ -2689,15 +2695,10 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
             occupied.append(box)
             placed += 1
 
-    # Footer.
-    foot_y = height - 68
-    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
-    draw.text((60, foot_y + 12), "valucast.app", fill=green, font=f_foot)
     foot_r = "dynasty value vs age"
     if generated:
         foot_r = "dynasty value vs age - updated {}".format(generated)
-    draw.text((1032 - 14 - _graphic_text_width(draw, foot_r, f_footr), foot_y + 16),
-              foot_r, fill=muted, font=f_footr)
+    _graphic_footer(draw, right_note=foot_r)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -2834,19 +2835,16 @@ def _buys_share_card_png(
     from PIL import Image, ImageDraw
 
     width, height = 1080, 1350
-    bg = (18, 19, 31)
-    card = (35, 36, 64)
-    card_2 = (32, 33, 58)
-    border = (45, 47, 74)
-    green = (52, 211, 153)
-    blue = (110, 161, 255)
-    text = (231, 233, 244)
-    muted = (154, 161, 192)
+    bg = _GRAPHIC_PALETTE["bg"]
+    card = _GRAPHIC_PALETTE["card"]
+    card_2 = _GRAPHIC_PALETTE["card_2"]
+    border = _GRAPHIC_PALETTE["border"]
+    green = _GRAPHIC_PALETTE["green"]
+    blue = _GRAPHIC_PALETTE["blue"]
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
     red = (255, 107, 107)
 
-    f_brand = _graphic_font(24, bold=True)
-    f_title = _graphic_font(60, bold=True)
-    f_sub = _graphic_font(22)
     f_source = _graphic_font(17, bold=True)
     f_rank = _graphic_font(21, bold=True)
     f_hero_score = _graphic_font(62, bold=True)
@@ -2857,28 +2855,15 @@ def _buys_share_card_png(
     f_cell_name = _graphic_font(19, bold=True)
     f_tag = _graphic_font(16)
     f_small = _graphic_font(14, bold=True)
-    f_footer = _graphic_font(21, bold=True)
-    f_footer_note = _graphic_font(17)
 
     img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
-    for y in range(height):
-        t = y / height
-        draw.line([(0, y), (width, y)],
-                  fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)))
-    draw.arc((704, 40, 1040, 306), start=196, end=286, fill=(35, 44, 73), width=3)
-    _paste_brand_mark(img, 48, 34, 58)
-    draw.text((120, 39), "VALUCAST", fill=green, font=f_brand)
-    draw.text((48, 82), "AHEAD OF THE CURVE", fill=text, font=f_title)
     date_label = _editorial_date(generated_at)
     subtitle = "Top 40 prospect buys by signal, not reputation"
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
-    draw.text((48, 155), subtitle, fill=muted, font=f_sub)
-    draw.text((48, 183), source_label, fill=green, font=f_source)
-
-    def initials(name):
-        return buy_score.graphic_initials(name or "")
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, extra_line=source_label)
 
     def split_lines(name, fnt, max_width, max_lines=2):
         return _graphic_wrap_text(draw, name or "Unknown", fnt, max_width, max_lines=max_lines)
@@ -2886,13 +2871,6 @@ def _buys_share_card_png(
     def tag(row):
         pieces = [row.get("team"), row.get("pos"), row.get("level")]
         return " - ".join(str(p) for p in pieces if p)
-
-    def draw_monogram(cx, cy, r, label, size):
-        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
-        fnt = _graphic_font(size, bold=True)
-        box = draw.textbbox((0, 0), label, font=fnt)
-        draw.text((cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2),
-                  label, fill=blue, font=fnt)
 
     hero_rows = list(rows or [])[:5]
     grid_rows = list(rows or [])[5:40]
@@ -2903,7 +2881,7 @@ def _buys_share_card_png(
         hero = hero_rows[0]
         draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
         draw.text((70, 252), "#1 - TOP BUY", fill=green, font=f_rank)
-        draw_monogram(135, 381, 65, initials(hero.get("name")), 52)
+        _graphic_monogram(draw, 135, 381, 65, hero.get("name"), size=52)
         name_lines = split_lines(hero.get("name"), _graphic_font(34, bold=True), 175)
         for idx, line in enumerate(name_lines[:2]):
             draw.text((220, 320 + idx * 39), line, fill=text, font=_graphic_font(34, bold=True))
@@ -2922,7 +2900,7 @@ def _buys_share_card_png(
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
             draw.rounded_rectangle((x, y, x + 291, y + 149), radius=16, fill=card, outline=border, width=2)
-            draw_monogram(x + 52, y + 54, 36, initials(row.get("name")), 28)
+            _graphic_monogram(draw, x + 52, y + 54, 36, row.get("name"), size=28)
             draw.text((x + 100, y + 13), f"#{idx + 2}", fill=blue, font=f_rank)
             support_lines = split_lines(row.get("name"), f_support_name, 172)
             for line_idx, line in enumerate(support_lines[:2]):
@@ -2964,13 +2942,8 @@ def _buys_share_card_png(
         draw.text((x + 10, y + 72), _graphic_fit_text(draw, tag(row), f_tag, 145),
                   fill=muted, font=f_tag)
 
-    foot_y = height - 68
-    draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
-    draw.text((60, foot_y + 10), "valucast.app", fill=green, font=f_footer)
     note = f"{source_label} - {formula_note}"
-    note = _graphic_fit_text(draw, note, f_footer_note, 690)
-    draw.text((1032 - 14 - _graphic_text_width(draw, note, f_footer_note), foot_y + 14),
-              note, fill=muted, font=f_footer_note)
+    _graphic_footer(draw, right_note=note)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
