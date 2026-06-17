@@ -647,6 +647,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
 .presets {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
@@ -1047,6 +1048,10 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .rankings-table > thead { display: none; }
     .rankings-table, .rankings-table > tbody, .rankings-table > tbody > tr,
     .rankings-table > tbody > tr > td { display: block; width: 100%; }
+    /* The detail-row category breakdown and the compare modal keep real table
+       display (above), so pin them to the container width — fixed layout means
+       5/3 columns can't push the page wider than the viewport on a phone. */
+    .detail-table, .compare-table { table-layout: fixed; }
     /* Cards carry their own translucent bg — a table slab behind them would
        double-darken every card and tint the gaps between them. */
     .rankings-table { background: transparent; border: none; }
