@@ -74,6 +74,26 @@ def validate_playing_time_role_tracker(
                     problems.append(f"profile {index} missing {field}")
             if row.get("usage") != "role_context_not_live_rank_or_value":
                 problems.append(f"profile {index} invalid usage")
+            role_v2 = row.get("role_v2")
+            if not isinstance(role_v2, dict):
+                problems.append(f"profile {index} missing role_v2")
+            else:
+                if role_v2.get("feeds_card") is True:
+                    problems.append(f"profile {index} role_v2 must not feed the card")
+                if not isinstance(role_v2.get("role_probabilities"), dict) or not role_v2.get(
+                    "role_probabilities"
+                ):
+                    problems.append(f"profile {index} role_v2 missing role_probabilities")
+                if not isinstance(role_v2.get("volume_forecast"), dict):
+                    problems.append(f"profile {index} role_v2 missing volume_forecast")
+
+    v2_summary = payload.get("v2")
+    if not isinstance(v2_summary, dict):
+        problems.append("v2 summary must be an object")
+    else:
+        for flag in ("feeds_card", "feeds_live_rank", "feeds_live_value"):
+            if v2_summary.get(flag) is not False:
+                problems.append(f"v2.{flag} must be false")
     return payload, problems
 
 

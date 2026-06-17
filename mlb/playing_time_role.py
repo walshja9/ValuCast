@@ -16,10 +16,20 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECTION_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
 ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 AVAILABILITY_PATH = ROOT / "data" / "models" / "valucast_mlb_availability.json"
+DYNASTY_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_playing_time_role_tracker.json"
 
 ARTIFACT_NAME = "valucast_playing_time_role_tracker"
 TRACKER_VERSION = "0.1.0"
+ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / ARTIFACT_NAME
+
+# Role Tracker v2 (shadow, observe-only): re-expresses the coarse v1 PA/IP bucket
+# as a volume forecast with a range + a soft role probability distribution, shrunk
+# by playing-time reliability and injury risk from the dynasty layer. It does NOT
+# replace the v1 fields the card reads; it accrues alongside them for grading.
+ROLE_V2_VERSION = "2.0.0"
+DEFAULT_RELIABILITY = 50.0
+DEFAULT_CERTAINTY = 40.0
 
 
 def _load_json(path: Path) -> Any:
@@ -32,6 +42,18 @@ def _clean_float(value: Any) -> float:
     except (TypeError, ValueError):
         return 0.0
     return numeric if numeric == numeric else 0.0
+
+
+def _opt_float(value: Any) -> float | None:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if numeric == numeric else None
+
+
+def _clamp(value: float, lo: float, hi: float) -> float:
+    return max(lo, min(hi, value))
 
 
 def _mlbam_id(row: dict) -> str | None:
@@ -139,21 +161,190 @@ def _row_profile(row: dict, roster_lookup: dict[str, dict], availability_lookup:
     }
 
 
+# --- Role Tracker v2 (shadow, observe-only) --------------------------------
+
+def _dynasty_lookup(dynasty_layer: dict | None) -> dict[str, dict]:
+    """MLBAM-keyed playing-time signals from the dynasty layer."""
+    lookup: dict[str, dict] = {}
+    for row in (dynasty_layer or {}).get("players") or []:
+        value = row.get("mlbam_id")
+        if value in (None, ""):
+            continue
+        components = row.get("components") or {}
+        role_adj = components.get("role_adjustments") or {}
+        track = components.get("track_record") or {}
+        certainty = role_adj.get("track_record_certainty")
+        if certainty is None:
+            certainty = track.get("track_record_certainty")
+        lookup[str(value)] = {
+            "reliability": _opt_float(components.get("playing_time_reliability")),
+            "track_record_certainty": _opt_float(certainty),
+            "availability_risk_discount": _clean_float(
+                components.get("availability_risk_discount")
+            ),
+            "experience_band": track.get("experience_band")
+            or role_adj.get("track_record_experience_band")
+            or "unknown",
+        }
+    return lookup
+
+
+def _volume_forecast(base: float, unit: str, signals: dict, injury: bool) -> dict:
+    reliability = signals.get("reliability")
+    rel = _clamp((reliability if reliability is not None else DEFAULT_RELIABILITY) / 100.0, 0.0, 1.0)
+    risk = _clamp(signals.get("availability_risk_discount", 0.0), 0.0, 1.0)
+    uncertainty = _clamp((1.0 - rel) * 0.30 + risk * 0.50 + (0.06 if injury else 0.0), 0.06, 0.55)
+    point = base * (1.0 - 0.5 * risk - (0.04 if injury else 0.0))
+    return {
+        "unit": unit,
+        "base": round(base, 1),
+        "point": round(point, 1),
+        "low": round(point * (1.0 - uncertainty), 1),
+        # Upside is capped tighter than downside: a player rarely beats a full-season
+        # projection by much, but injury can erase most of it.
+        "high": round(point * (1.0 + uncertainty * 0.55), 1),
+        "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
+    }
+
+
+def _hitter_bucket(pa: float) -> str:
+    if pa >= 560:
+        return "everyday_regular"
+    if pa >= 430:
+        return "regular"
+    if pa >= 260:
+        return "part_time_or_strong_side"
+    return "bench_or_depth"
+
+
+def _starter_bucket(ip: float) -> str:
+    # v1 keeps a pool=="starter" arm in {workhorse, rotation_starter} only.
+    return "rotation_workhorse" if ip >= 150 else "rotation_starter"
+
+
+# Quantile fan over the volume range -> a soft role distribution. Weights sum to 1.
+_FAN = ((-1.0, 0.1), (-0.5, 0.2), (0.0, 0.4), (0.5, 0.2), (1.0, 0.1))
+
+
+def _role_distribution(pool: str, vf: dict, v1_role: str) -> tuple[dict, str]:
+    if pool == "reliever":
+        # Reliever role (leverage vs middle) is SV/HLD-driven, not forecastable from
+        # an innings range, so keep the v1 label. ponytail: soft only where volume rules.
+        return {v1_role: 1.0}, "save_hold_driven_v1_label"
+    bucket_fn = _hitter_bucket if pool == "hitter" else _starter_bucket
+    point, low, high = vf["point"], vf["low"], vf["high"]
+    down = point - low
+    up = high - point
+    dist: dict[str, float] = {}
+    for offset, weight in _FAN:
+        vol = point + (offset * down if offset < 0 else offset * up)
+        bucket = bucket_fn(vol)
+        dist[bucket] = dist.get(bucket, 0.0) + weight
+    total = sum(dist.values()) or 1.0
+    return {k: round(v / total, 3) for k, v in dist.items()}, "volume_fan"
+
+
+def _role_confidence(signals: dict, injury: bool) -> tuple[str, float]:
+    reliability = signals.get("reliability")
+    certainty = signals.get("track_record_certainty")
+    rel = reliability if reliability is not None else DEFAULT_RELIABILITY
+    cert = certainty if certainty is not None else DEFAULT_CERTAINTY
+    score = 0.55 * _clamp(rel, 0.0, 100.0) + 0.45 * _clamp(cert, 0.0, 100.0)
+    if injury:
+        score -= 8.0
+    score = _clamp(score, 0.0, 100.0)
+    band = "high" if score >= 70 else "moderate" if score >= 45 else "low"
+    return band, round(score, 1)
+
+
+def _role_v2(profile: dict, dynasty_lookup: dict[str, dict]) -> dict:
+    pool = str(profile.get("pool") or "").lower()
+    base = _clean_float(profile.get("projected_volume"))
+    unit = profile.get("projected_volume_unit") or ("PA" if pool == "hitter" else "IP")
+    injury = profile.get("active_injury_risk") is True
+    v1_role = profile.get("projected_role")
+    matched = dynasty_lookup.get(str(profile.get("mlbam_id")))
+    signals = matched or {}
+    vf = _volume_forecast(base, unit, signals, injury)
+    dist, source = _role_distribution(pool, vf, v1_role)
+    most_likely = max(dist, key=dist.get) if dist else v1_role
+    band, score = _role_confidence(signals, injury)
+    delta = "match" if most_likely == v1_role else f"shift:{v1_role}->{most_likely}"
+    return {
+        "model_version": ROLE_V2_VERSION,
+        "status": "shadow_observe_only",
+        "feeds_card": False,
+        "volume_forecast": vf,
+        "role_probabilities": dist,
+        "role_probability_source": source,
+        "most_likely_role": most_likely,
+        "role_confidence": band,
+        "confidence_score": score,
+        "signals": {
+            "reliability": signals.get("reliability"),
+            "track_record_certainty": signals.get("track_record_certainty"),
+            "availability_risk_discount": signals.get("availability_risk_discount", 0.0),
+            "active_injury_risk": injury,
+            "experience_band": signals.get("experience_band", "unknown"),
+            "dynasty_layer_matched": matched is not None,
+        },
+        "delta_vs_v1_role": delta,
+    }
+
+
+def _v2_summary(profiles: list[dict]) -> dict:
+    blocks = [profile.get("role_v2") or {} for profile in profiles]
+    confidence_counts = {"low": 0, "moderate": 0, "high": 0}
+    for block in blocks:
+        band = block.get("role_confidence")
+        if band in confidence_counts:
+            confidence_counts[band] += 1
+    return {
+        "model_version": ROLE_V2_VERSION,
+        "status": "shadow_observe_only",
+        "feeds_card": False,
+        "feeds_live_rank": False,
+        "feeds_live_value": False,
+        "profile_count": len(blocks),
+        "volume_fan_role_count": sum(
+            1 for block in blocks if block.get("role_probability_source") == "volume_fan"
+        ),
+        "save_hold_label_count": sum(
+            1
+            for block in blocks
+            if block.get("role_probability_source") == "save_hold_driven_v1_label"
+        ),
+        "dynasty_layer_matched_count": sum(
+            1 for block in blocks if (block.get("signals") or {}).get("dynasty_layer_matched")
+        ),
+        "role_shift_vs_v1_count": sum(
+            1 for block in blocks if str(block.get("delta_vs_v1_role")).startswith("shift")
+        ),
+        "confidence_counts": confidence_counts,
+    }
+
+
+# ---------------------------------------------------------------------------
+
 def build_playing_time_role_tracker(
     *,
     projections: list[dict],
     roster_status: dict | None = None,
     availability: dict | None = None,
+    dynasty_layer: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
     roster_by_id = _roster_lookup(roster_status)
     availability_by_id = _availability_lookup(availability)
+    dynasty_by_id = _dynasty_lookup(dynasty_layer)
     profiles = [
         profile
         for row in projections
         if (profile := _row_profile(row, roster_by_id, availability_by_id))
     ]
+    for profile in profiles:
+        profile["role_v2"] = _role_v2(profile, dynasty_by_id)
     identity_keys = [row["identity_key"] for row in profiles]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     active_count = sum(1 for row in profiles if row["active_mlb_roster"])
@@ -188,6 +379,8 @@ def build_playing_time_role_tracker(
             "roster_status_generated_at": (roster_status or {}).get("generated_at"),
             "availability_artifact": (availability or {}).get("artifact"),
             "availability_generated_at": (availability or {}).get("generated_at"),
+            "dynasty_layer_artifact": (dynasty_layer or {}).get("layer_name"),
+            "dynasty_layer_generated_at": (dynasty_layer or {}).get("generated_at"),
         },
         "summary": {
             "profile_count": len(profiles),
@@ -195,6 +388,7 @@ def build_playing_time_role_tracker(
             "active_injury_risk_count": injury_risk_count,
             "role_counts": role_counts,
         },
+        "v2": _v2_summary(profiles),
         "validation": {
             "ready_for_role_context": not blockers,
             "profile_count": len(profiles),
@@ -205,27 +399,65 @@ def build_playing_time_role_tracker(
     }
 
 
+def archive_playing_time_role_tracker(
+    payload: dict,
+    date_str: str,
+    archive_dir: Path = ARCHIVE_DIR,
+) -> tuple[Path, bool]:
+    """Persist the day's role tracker so v2 role/volume forecasts can later be graded
+    against realized PA/IP (the accountability harness builds on this). Content-deduped
+    + atomic, mirroring rank_v1.archive_rank — v1 shipped without an archive."""
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"{date_str}.json"
+    archive = {
+        "date": date_str,
+        "tracker_version": payload["tracker_version"],
+        "generated_at": payload["generated_at"],
+        "profile_count": payload["validation"]["profile_count"],
+        "summary": payload["summary"],
+        "v2": payload.get("v2"),
+        "profiles": payload["profiles"],
+    }
+    text = json.dumps(archive, sort_keys=True, separators=(",", ":"))
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return path, False
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+    return path, True
+
+
 def run_playing_time_role_tracker(
     *,
     projection_path: Path = PROJECTION_PATH,
     roster_status_path: Path = ROSTER_STATUS_PATH,
     availability_path: Path = AVAILABILITY_PATH,
+    dynasty_layer_path: Path = DYNASTY_LAYER_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    archive_dir: Path = ARCHIVE_DIR,
 ) -> dict:
     projections = _load_json(projection_path)
     roster_status = _load_json(roster_status_path) if roster_status_path.exists() else None
     availability = _load_json(availability_path) if availability_path.exists() else None
+    dynasty_layer = _load_json(dynasty_layer_path) if dynasty_layer_path.exists() else None
     payload = build_playing_time_role_tracker(
         projections=projections,
         roster_status=roster_status,
         availability=availability,
+        dynasty_layer=dynasty_layer,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, artifact_path)
+    date_str = str(payload["generated_at"])[:10]
+    archive_path, archive_changed = archive_playing_time_role_tracker(
+        payload, date_str, archive_dir=archive_dir
+    )
     return {
         "artifact_path": str(artifact_path),
         "ready_for_role_context": payload["validation"]["ready_for_role_context"],
         "profile_count": payload["validation"]["profile_count"],
+        "archive_path": str(archive_path),
+        "archive_changed": archive_changed,
     }
