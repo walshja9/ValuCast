@@ -92,6 +92,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
         "tests/test_public_data_refresh.py",
         "tests/test_public_dynasty_snapshot.py",
         "tests/test_valucast_quality_governor.py",
+        "tests/test_public_surfaces_smoke.py",
     ),
 ]
 
