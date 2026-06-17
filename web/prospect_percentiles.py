@@ -685,17 +685,37 @@ def percentile_for(pool: dict, metric: str, value) -> int | None:
     return max(1, min(99, round(pct)))
 
 
+def card_line(row) -> tuple[dict | None, str | None, bool]:
+    """The stat line the card reads percentiles/skill-shape from, its level label, and
+    whether it is the best-single-level fallback. Current-level line if it clears the
+    sample threshold; else the best single-level line if it clears; else (None, None,
+    False). The best line is a raw single-level line (never a translation), so it ranks
+    against the same raw pool — only labeled with its own level, not the current one."""
+    if not getattr(row, "is_prospect", False):
+        return None, None, False
+    line = row.stat_line or {}
+    role_is_pitcher = _is_pitcher(row, line)
+    min_sample = MIN_IP if role_is_pitcher else MIN_PA
+    sample = line.get("ip" if role_is_pitcher else "pa")
+    if line and isinstance(sample, (int, float)) and sample >= min_sample:
+        return line, None, False
+    best = getattr(row, "best_single_level_stat_line", None)
+    if isinstance(best, dict) and best:
+        b_sample = best.get("sample")
+        if isinstance(b_sample, (int, float)) and b_sample >= min_sample:
+            return best, best.get("level"), True
+    return None, None, False
+
+
 def card_percentiles(pool: dict, row) -> dict[str, int]:
-    """{metric: percentile} for an eligible prospect; {} otherwise."""
-    if _eligible_hitter(row):
-        metrics = HITTER_METRICS
-    elif _eligible_pitcher(row):
-        metrics = PITCHER_METRICS
-    else:
+    """{metric: percentile} for the card's selected line; {} when no line clears."""
+    line, _level, _is_best = card_line(row)
+    if line is None:
         return {}
+    metrics = PITCHER_METRICS if _is_pitcher(row, line) else HITTER_METRICS
     out = {}
     for m in metrics:
-        pct = percentile_for(pool, m, (row.stat_line or {}).get(m))
+        pct = percentile_for(pool, m, line.get(m))
         if pct is not None:
             out[m] = pct
     return out
@@ -703,10 +723,16 @@ def card_percentiles(pool: dict, row) -> dict[str, int]:
 
 def pool_label(row) -> str:
     """Display label for the percentile comparison pool."""
-    line = row.stat_line or {}
-    if _is_pitcher(row, line):
-        return f"vs ValuCast pitcher pool - all levels - {MIN_IP}+ IP"
-    return f"vs ValuCast hitter pool - all levels - {MIN_PA}+ PA"
+    line, level, is_best = card_line(row)
+    role_is_pitcher = _is_pitcher(row, line if line is not None else (row.stat_line or {}))
+    base = (
+        f"vs ValuCast pitcher pool - all levels - {MIN_IP}+ IP"
+        if role_is_pitcher
+        else f"vs ValuCast hitter pool - all levels - {MIN_PA}+ PA"
+    )
+    if is_best and level:
+        return f"{base} - best {level} read"
+    return base
 
 
 def profile_bars(row, percentiles: dict) -> tuple[dict, ...]:

@@ -1310,12 +1310,56 @@ def _graphic_pitcher_callout(key, line, pct):
     return None
 
 
+def _graphic_best_single_read(best_line, best_level, stat_percentiles, last):
+    """Read off the best single-level 2026 sample when the current level is too thin."""
+    role_is_pitcher = any(
+        key in best_line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")
+    )
+    unit = "IP" if role_is_pitcher else "PA"
+    sample = best_line.get("sample")
+    if role_is_pitcher:
+        era = _graphic_prose_stat(best_line.get("era"), "era")
+        whip = _graphic_prose_stat(best_line.get("whip"), "whip")
+        core = " / ".join(
+            part for part in (f"{era} ERA" if era else None, f"{whip} WHIP" if whip else None) if part
+        ) or "a steady arm shape"
+        keys = ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+        callouts = [
+            _graphic_pitcher_callout(key, best_line, stat_percentiles.get(key))
+            for key in keys
+            if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
+        ][:3]
+    else:
+        avg = _graphic_prose_stat(best_line.get("avg"), "avg")
+        obp = _graphic_prose_stat(best_line.get("obp"), "obp")
+        slg = _graphic_prose_stat(best_line.get("slg"), "slg")
+        if avg and obp and slg:
+            core = f"a {avg}/{obp}/{slg} line"
+        else:
+            ops = _graphic_prose_stat(best_line.get("ops"), "ops")
+            core = f"a {ops} OPS" if ops else "a steady bat shape"
+        keys = ("ops", "iso", "k_pct", "avg", "obp", "slg", "bb_pct")
+        callouts = [
+            _graphic_hitter_callout(key, best_line, stat_percentiles.get(key))
+            for key in keys
+            if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
+        ][:3]
+    loud = f" The loudest signals are {_graphic_join(callouts)}." if callouts else ""
+    return (
+        f"{last}'s current level is a thin sample, so this reads off the best 2026 look: "
+        f"{best_level} over {sample} {unit}, where he put up {core}.{loud}"
+    )
+
+
 def _prospect_player_card_read(row, stat_percentiles, context):
     line = row.stat_line or {}
     if not line:
         return prospect_percentiles.identity_line(row, stat_percentiles) or ""
 
     last = _graphic_last_name(row.name)
+    card_stat_line, best_level, is_best = prospect_percentiles.card_line(row)
+    if is_best and card_stat_line:
+        return _graphic_best_single_read(card_stat_line, best_level, stat_percentiles, last)
     sample = _graphic_sample_phrase(row, context, line)
     if any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")):
         era = _graphic_prose_stat(line.get("era"), "era")

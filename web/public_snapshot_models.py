@@ -81,6 +81,7 @@ class PublicSnapshotRow:
     stat_line: dict | None = None
     mlb_stat_line: dict | None = None
     stat_line_translated: dict | None = None
+    best_single_level_stat_line: dict | None = None
     peak_projection: dict | None = None
     drivers: tuple[str, ...] = ()
     context: dict = field(default_factory=dict)
@@ -607,6 +608,9 @@ class PublicSnapshotRow:
             stat_line=cls._coerce_dict(record.get("stat_line")),
             mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),
             stat_line_translated=cls._coerce_dict(record.get("stat_line_translated")),
+            best_single_level_stat_line=cls._coerce_dict(
+                record.get("best_single_level_stat_line")
+            ),
             peak_projection=cls._coerce_dict(record.get("peak_projection")),
             drivers=tuple(str(item) for item in record.get("drivers") or ()),
             context=context,
