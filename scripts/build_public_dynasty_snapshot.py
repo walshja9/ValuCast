@@ -16,6 +16,7 @@ from web.public_snapshot_store import required_field_problems  # noqa: E402
 
 PROSPECT_INPUTS_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
+MLB_TRACK_RECORD_PATH = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 PROSPECT_COVERAGE_AUDIT_PATH = (
@@ -39,8 +40,14 @@ MLB_COLLISION_PROMOTION_MIN_VALUE = 45.0
 MLB_COLLISION_PROMOTION_MIN_MARGIN = 15.0
 # Graduation-transition floor: a freshly called-up prospect's value should not crater to
 # a 3-PA MLB line. Floor it at this fraction of his retained prospect score, fading as
-# he accrues MLB sample (rookie-eligibility ratio -> 1).
+# he accrues MLB sample.
 GRAD_FLOOR_DISCOUNT = 0.75
+# Calendar-time decay window: the floor fully releases this many days after MLB debut
+# (~a season of MLB sample, by which point the raw MLB value stands on its own). This is a
+# taste dial like GRAD_FLOOR_DISCOUNT; the accountability harness recalibrates it once
+# graduates' realized outcomes accrue. Falls back to the rookie-eligibility ratio when no
+# debut date is known.
+GRAD_FLOOR_DECAY_DAYS = 180
 
 MIN_PROSPECT_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 150
@@ -61,6 +68,16 @@ def _date_part(value: str | None) -> str | None:
         return datetime.fromisoformat(text.replace("Z", "+00:00")).date().isoformat()
     except ValueError:
         return text[:10] if len(text) >= 10 else None
+
+
+def _parse_date(value: str | None):
+    iso = _date_part(value)
+    if not iso:
+        return None
+    try:
+        return datetime.fromisoformat(iso).date()
+    except ValueError:
+        return None
 
 
 def _positions(row: dict) -> list[str]:
@@ -132,20 +149,35 @@ def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
     return ids
 
 
+def _debut_dates_by_id(mlb_track_record: dict | None) -> dict[str, str]:
+    debut_by_id: dict[str, str] = {}
+    for profile in (mlb_track_record or {}).get("profiles") or []:
+        mlbam_id = profile.get("mlbam_id")
+        debut = profile.get("mlb_debut_date")
+        if mlbam_id in (None, "") or not debut:
+            continue
+        debut_by_id[str(mlbam_id)] = debut
+    return debut_by_id
+
+
 def _apply_graduation_transition_floor(
-    mlb_rows: list[dict], graduated_prospect_rows: list[dict]
+    mlb_rows: list[dict],
+    graduated_prospect_rows: list[dict],
+    debut_by_id: dict[str, str] | None = None,
+    as_of_date: str | None = None,
 ) -> int:
     """Keep a freshly-graduated prospect's value from cratering to a 3-PA MLB line.
 
     When a prospect is called up his prospect row is swapped for a thin MLB row whose
     value can fall near the production floor (a 3-PA debut, with the track-record floor
     blocked at the experience-band gate). Floor that MLB value at a market-discounted
-    fraction of his retained prospect score, fading as he accrues MLB sample
-    (rookie-eligibility ratio -> 1). The recovery signal — prospect score +
-    graduation_context — already lives on the graduated prospect row, so no new data is
-    needed. ponytail: rookie-ratio is the decay proxy until a debut DATE exists for true
-    time-decay; the discount absorbs the prospect/MLB 0-100 scale slop (calibration
-    reconciles the rest)."""
+    fraction of his retained prospect score, fading as he accrues MLB experience. The
+    recovery signal — prospect score + graduation_context — already lives on the graduated
+    prospect row. Decay rides CALENDAR TIME (days since MLB debut / GRAD_FLOOR_DECAY_DAYS)
+    when a debut date is known, falling back to the rookie-eligibility ratio when it is not
+    (so the floor never depends on the debut feed being present)."""
+    debut_by_id = debut_by_id or {}
+    as_of = _parse_date(as_of_date)
     floor_by_id: dict[str, dict] = {}
     for row in graduated_prospect_rows:
         mlbam_id = _mlbam_id(row)
@@ -161,11 +193,22 @@ def _apply_graduation_transition_floor(
         }
     applied = 0
     for row in mlb_rows:
-        info = floor_by_id.get(_mlbam_id(row))
+        mlbam_id = _mlbam_id(row)
+        info = floor_by_id.get(mlbam_id)
         if not info:
             continue
+        debut = debut_by_id.get(mlbam_id)
+        debut_date = _parse_date(debut)
+        if debut_date and as_of and GRAD_FLOOR_DECAY_DAYS > 0:
+            days_since_debut = max(0, (as_of - debut_date).days)
+            decay = min(1.0, days_since_debut / GRAD_FLOOR_DECAY_DAYS)
+            decay_basis = "days_since_debut"
+        else:
+            days_since_debut = None
+            decay = info["ratio"]
+            decay_basis = "rookie_eligibility_ratio_fallback"
         floor_value = round(
-            info["prospect_value"] * GRAD_FLOOR_DISCOUNT * (1.0 - info["ratio"]), 2
+            info["prospect_value"] * GRAD_FLOOR_DISCOUNT * (1.0 - decay), 2
         )
         current = _clean_float(row.get("value")) or 0.0
         row["graduation_transition"] = {
@@ -173,10 +216,14 @@ def _apply_graduation_transition_floor(
             "prospect_value": round(info["prospect_value"], 2),
             "prospect_rank": info["prospect_rank"],
             "discount": GRAD_FLOOR_DISCOUNT,
+            "decay": round(decay, 4),
+            "decay_basis": decay_basis,
+            "days_since_debut": days_since_debut,
+            "mlb_debut_date": debut,
             "rookie_ratio": info["ratio"],
             "raw_mlb_value": round(current, 2),
             "floored_value": floor_value,
-            "basis": "market_discounted_prospect_value_decaying_with_rookie_sample",
+            "basis": "market_discounted_prospect_value_decaying_on_calendar_time",
         }
         if floor_value > current:
             row["value"] = floor_value
@@ -743,6 +790,7 @@ def build_snapshot(
     prospect_rank: dict,
     mlb_layer: dict | None = None,
     mlb_roster_status: dict | None = None,
+    mlb_track_record: dict | None = None,
     prospect_coverage_audit: dict | None = None,
     prospect_peak_projection: dict | None = None,
     buy_signals: dict | None = None,
@@ -804,7 +852,10 @@ def build_snapshot(
         row for row in mlb_rows if _mlbam_id(row) not in active_prospect_ids
     ]
     graduation_transition_floor_count = _apply_graduation_transition_floor(
-        mlb_rows, graduated_prospect_rows
+        mlb_rows,
+        graduated_prospect_rows,
+        debut_by_id=_debut_dates_by_id(mlb_track_record),
+        as_of_date=generated_at,
     )
     prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
     prospects_excluded_by_mlb_identity_count = len(graduated_prospect_rows)
@@ -971,6 +1022,9 @@ def main() -> None:
         if MLB_ROSTER_STATUS_PATH.exists()
         else None
     )
+    mlb_track_record = (
+        _load_json(MLB_TRACK_RECORD_PATH) if MLB_TRACK_RECORD_PATH.exists() else None
+    )
     prospect_coverage_audit = (
         _load_json(PROSPECT_COVERAGE_AUDIT_PATH)
         if PROSPECT_COVERAGE_AUDIT_PATH.exists()
@@ -987,6 +1041,7 @@ def main() -> None:
         rank_payload,
         mlb_layer=mlb_layer,
         mlb_roster_status=mlb_roster_status,
+        mlb_track_record=mlb_track_record,
         prospect_coverage_audit=prospect_coverage_audit,
         prospect_peak_projection=prospect_peak_projection,
         buy_signals=buy_signals,

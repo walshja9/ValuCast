@@ -183,6 +183,7 @@ def _fetch_histories_bulk(mlbam_ids: Iterable[str]) -> dict[str, dict]:
             continue
         histories[str(mlbam_id)] = {
             "stats": person.get("stats") or [],
+            "mlb_debut_date": person.get("mlbDebutDate"),
         }
     return histories
 
@@ -190,6 +191,62 @@ def _fetch_histories_bulk(mlbam_ids: Iterable[str]) -> dict[str, dict]:
 def _chunks(values: list[str], size: int) -> Iterable[list[str]]:
     for index in range(0, len(values), size):
         yield values[index : index + size]
+
+
+def _fetch_debut_dates_bulk(mlbam_ids: Iterable[str]) -> dict[str, str | None]:
+    """Fetch only the MLB debut date for each id (a `fields`-limited /people call, so the
+    payloads stay tiny and never touch the stats/coverage path). Fail-soft per chunk."""
+    ids = sorted({str(value) for value in mlbam_ids if value not in (None, "")})
+    debuts: dict[str, str | None] = {}
+    for chunk in _chunks(ids, BULK_HISTORY_CHUNK_SIZE):
+        query = urlencode({"personIds": ",".join(chunk), "fields": "people,id,mlbDebutDate"})
+        request = Request(
+            f"{MLB_API_BASE}/people?{query}", headers={"User-Agent": USER_AGENT}
+        )
+        try:
+            with urlopen(request, timeout=30) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception:  # noqa: BLE001 - fail-soft; debut date is optional enrichment
+            continue
+        for person in payload.get("people") or []:
+            pid = person.get("id")
+            if pid in (None, ""):
+                continue
+            debuts[str(pid)] = person.get("mlbDebutDate")
+    return debuts
+
+
+def _backfill_debut_dates(
+    raw_by_id: dict[str, dict],
+    cache: dict,
+    *,
+    refresh_missing: bool,
+    debut_fetcher: Callable[[Iterable[str]], dict[str, Any]] | None,
+    cache_path: Path | None,
+) -> int:
+    """Patch MLB debut dates onto history payloads so the graduation-transition floor can
+    decay on calendar time instead of the rookie-eligibility ratio. Re-queries only
+    not-yet-debuted ids, so steady-state cost is tiny once debut dates are cached. The
+    payloads share object identity with the cache, so patching persists on save."""
+    if not refresh_missing or debut_fetcher is None:
+        return 0
+    need = [
+        mid
+        for mid, raw in raw_by_id.items()
+        if isinstance(raw, dict) and not raw.get("mlb_debut_date")
+    ]
+    if not need:
+        return 0
+    fetched = debut_fetcher(need)
+    patched = 0
+    for mid, debut in (fetched or {}).items():
+        raw = raw_by_id.get(str(mid))
+        if isinstance(raw, dict) and debut:
+            raw["mlb_debut_date"] = _date_part(debut)
+            patched += 1
+    if patched and cache_path is not None:
+        _save_cache(cache, cache_path)
+    return patched
 
 
 def _load_cache(path: Path) -> dict:
@@ -578,6 +635,7 @@ def _profile_from_history(
     return {
         "mlbam_id": int(mlbam_id) if str(mlbam_id).isdigit() else mlbam_id,
         "role": role,
+        "mlb_debut_date": _date_part(raw.get("mlb_debut_date")),
         "experience_band": _experience_band(role, prior_volume, career_volume),
         "track_record_certainty": _certainty_score(role, prior, career),
         "track_record_floor_score": _track_record_floor_score(role, prior, recent),
@@ -629,6 +687,7 @@ def build_mlb_track_record(
     cache: dict | None = None,
     fetcher: Callable[[str], dict] | None = None,
     bulk_fetcher: Callable[[Iterable[str]], dict[str, dict]] | None = None,
+    debut_fetcher: Callable[[Iterable[str]], dict[str, Any]] | None = None,
     refresh_missing: bool = True,
     cache_path: Path | None = None,
     fetch_limit: int | None = None,
@@ -650,6 +709,18 @@ def build_mlb_track_record(
         fetched_at=generated_at,
         cache_path=cache_path,
         fetch_limit=fetch_limit,
+    )
+    # Only reach the live debut endpoint on the genuine prod path (no injected history
+    # fetchers); tests that fake the history fetch stay offline unless they pass their own.
+    effective_debut_fetcher = debut_fetcher
+    if effective_debut_fetcher is None and fetcher is None and bulk_fetcher is None:
+        effective_debut_fetcher = _fetch_debut_dates_bulk
+    _backfill_debut_dates(
+        raw_by_id,
+        cache,
+        refresh_missing=refresh_missing,
+        debut_fetcher=effective_debut_fetcher,
+        cache_path=cache_path,
     )
 
     profiles = []
@@ -744,6 +815,7 @@ def run_mlb_track_record(
     season: int | None = None,
     fetcher: Callable[[str], dict] | None = None,
     bulk_fetcher: Callable[[Iterable[str]], dict[str, dict]] | None = None,
+    debut_fetcher: Callable[[Iterable[str]], dict[str, Any]] | None = None,
     refresh_missing: bool = True,
     fetch_limit: int | None = None,
 ) -> dict:
@@ -759,6 +831,7 @@ def run_mlb_track_record(
         cache=cache,
         fetcher=fetcher,
         bulk_fetcher=bulk_fetcher,
+        debut_fetcher=debut_fetcher,
         refresh_missing=refresh_missing,
         cache_path=cache_path,
         fetch_limit=fetch_limit,

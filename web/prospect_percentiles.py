@@ -737,7 +737,9 @@ def pool_label(row) -> str:
 
 def profile_bars(row, percentiles: dict) -> tuple[dict, ...]:
     """Ordered profile bars for the expanded player card."""
-    line = row.stat_line or {}
+    # Read the SAME line card_percentiles/pool_label use, so the displayed value matches
+    # the percentile fill and the "best {level} read" label (best-single fallback included).
+    line, _level, _is_best = card_line(row)
     if not line or not percentiles:
         return ()
     order = PITCHER_PROFILE_ORDER if _is_pitcher(row, line) else HITTER_PROFILE_ORDER
@@ -766,7 +768,7 @@ def _grade_from_pcts(pcts: list[int]) -> int | None:
 
 def skill_grades(row, percentiles: dict) -> tuple[dict, ...]:
     """20-80-style current skill shape derived from ValuCast percentiles."""
-    line = row.stat_line or {}
+    line, _level, _is_best = card_line(row)
     if not line or not percentiles:
         return ()
     specs = PITCHER_SKILL_SPECS if _is_pitcher(row, line) else HITTER_SKILL_SPECS

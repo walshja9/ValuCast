@@ -11,6 +11,7 @@ The methodology page renders from this artifact; drift-lock tests pin page<->art
 and page<->params.
 """
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,6 +30,7 @@ from projections.models.pitcher_params import PitcherMarcelParams  # noqa: E402
 DATA = ROOT / "projections" / "data"
 IDENTITY = DATA / "identity.json"
 RUN_MANIFEST = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "run_manifest.json"
+ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_projection_scorecard"
 
 # Canonical held-out SCORING block (disjoint from the 2018-19 de-noise tuning block),
 # matching the Rung-3 hitting verdict and the pitching-foundation verdict.
@@ -42,6 +44,22 @@ PIT_HISTORY = list(range(2010, max(PIT_SEASONS) + 1))   # 2010..2025
 def _require(path: Path):
     if not path.exists():
         raise SystemExit(f"FAIL: required data missing: {path}")
+
+
+def archive_scorecard(
+    payload: dict,
+    date_str: str,
+    archive_dir: Path = ARCHIVE_DIR,
+) -> tuple[Path, bool]:
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"{date_str}.json"
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return path, False
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+    return path, True
 
 
 def _shipped_alphas() -> dict:
@@ -128,10 +146,11 @@ def main():
     pit_run = rolling_origin_pitching(PIT_SEASONS, DATA, PitcherMarcelParams())
     pit_per_stat, pit_corr = _agg(pit_run["seasons"], skill_only=True)
     pit_sample = sum(s["eval_n"] for s in pit_run["seasons"])
+    generated_at = datetime.now(timezone.utc).isoformat()
 
     artifact = {
         "as_of": "2026-06",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": generated_at,
         "version": "ValuCast H+P v1",
         "hitting": {
             "baseline": "classic Marcel",
@@ -164,11 +183,14 @@ def main():
     out = ROOT / "data" / "validation" / "methodology_scorecard.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
+    date_str = datetime.fromisoformat(generated_at.replace("Z", "+00:00")).date().isoformat()
+    archive_path, archive_changed = archive_scorecard(artifact, date_str)
     print("HITTING vs classic:", artifact["hitting"]["aggregate_mae_ratio"],
           "| per-stat:", hit_per_stat, "| n:", hit_sample, "| corr_win:", hit_corr)
     print("PITCHING vs persistence (skill):", artifact["pitching"]["aggregate_mae_ratio"],
           "| per-stat:", pit_per_stat, "| n:", pit_sample, "| corr_win:", pit_corr)
     print("wrote", out)
+    print("archived", archive_path, "changed:", archive_changed)
 
 
 if __name__ == "__main__":

@@ -316,3 +316,23 @@ def test_run_mlb_track_record_fetches_missing_histories_in_bulk(tmp_path):
     assert len(cache["players"]) == 2
     assert result["profile_count"] == 2
     assert result["ready_for_mlb_dynasty_layer"] is True
+
+
+def test_track_record_backfills_mlb_debut_date():
+    raw = _raw_history(hitting=[_hitting_split(2025, 650, 560, 165, 35, 1, 38, 80)])
+    captured = {}
+
+    def debut_fetcher(mlbam_ids):
+        captured["ids"] = list(mlbam_ids)
+        return {"40": "2025-04-01T00:00:00Z"}
+
+    payload = build_mlb_track_record(
+        [_hitter_projection("40")],
+        generated_at="2026-06-13T12:00:00+00:00",
+        cache={"players": {"40": {"raw": raw}}},
+        refresh_missing=True,
+        debut_fetcher=debut_fetcher,
+    )
+
+    assert captured["ids"] == ["40"]
+    assert payload["profiles"][0]["mlb_debut_date"] == "2025-04-01"

@@ -1,9 +1,11 @@
 """Tests for the ValuCast public dynasty snapshot gate."""
 import json
+from datetime import date, timedelta
 from types import SimpleNamespace
 
 from scripts.build_public_dynasty_snapshot import (
     COMMON_VALUE_SCALE,
+    GRAD_FLOOR_DECAY_DAYS,
     GRAD_FLOOR_DISCOUNT,
     _apply_graduation_transition_floor,
     build_snapshot,
@@ -55,6 +57,27 @@ def test_graduation_floor_fades_as_rookie_eligibility_exhausts():
 
     assert applied == 0  # floor = 50 * 0.7 * (1 - 1.0) = 0, never lifts a real MLB value
     assert mlb_rows[0]["value"] == 3.0
+
+
+def test_graduation_floor_decays_on_calendar_time_when_debut_known():
+    as_of = "2026-06-13T12:00:00+00:00"
+    days = max(1, GRAD_FLOOR_DECAY_DAYS // 3)  # well inside the window for any dial value
+    debut = (date(2026, 6, 13) - timedelta(days=days)).isoformat()
+    # rookie_ratio=1.0 would zero the floor; the debut date must drive it instead.
+    graduated = [{"mlbam_id": "5", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
+    mlb_rows = [{"mlbam_id": "5", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(
+        mlb_rows, graduated, debut_by_id={"5": debut}, as_of_date=as_of
+    )
+
+    expected = round(50.0 * GRAD_FLOOR_DISCOUNT * (1 - days / GRAD_FLOOR_DECAY_DAYS), 2)
+    assert applied == 1
+    assert mlb_rows[0]["value"] == expected
+    transition = mlb_rows[0]["graduation_transition"]
+    assert transition["decay_basis"] == "days_since_debut"
+    assert transition["days_since_debut"] == days
+    assert transition["mlb_debut_date"] == debut
 
 
 def _rank_payload():

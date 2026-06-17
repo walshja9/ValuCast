@@ -22,8 +22,24 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ),
     ("scripts/build_mlb_track_record.py",),
     ("scripts/build_mlb_availability.py",),
+    ("scripts/build_validation_scorecard.py",),
     ("scripts/build_hp_promotion_sanity_report.py",),
     ("scripts/build_mlb_dynasty_layer.py",),
+    # Marcel-sourced MLB dynasty layer, observe-only shadow alongside the live (Steamer-
+    # sourced) layer. Separate artifact + archive = no live churn. The advisory comparison
+    # below scores the two; flipping the live source stays MANUAL (default-off env flag).
+    (
+        "scripts/build_mlb_dynasty_layer.py",
+        "--projection-source",
+        "valucast-hp",
+        "--artifact-path",
+        "data/models/valucast_mlb_dynasty_layer_marcel_shadow.json",
+        "--archive-dir",
+        "data/prediction_archive/valucast_mlb_dynasty_layer_marcel_shadow",
+    ),
+    # Advisory Marcel/H+P vs Steamer/ROS projection-source comparison (forward-accuracy
+    # freeze + gate). Runs after both layers so its "what would change" diff can read them.
+    ("scripts/build_mlb_projection_source_comparison.py",),
     ("scripts/build_mlb_roster_status.py",),
     ("scripts/build_playing_time_role_tracker.py",),
     ("scripts/run_prospect_shadow_pipeline.py",),
@@ -62,6 +78,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_mlb_availability.py",),
     ("scripts/validate_playing_time_role_tracker.py",),
     ("scripts/validate_mlb_roster_status.py",),
+    ("scripts/validate_mlb_projection_source_comparison.py",),
     ("scripts/validate_valucast_prospect_inputs.py",),
     ("scripts/validate_prospect_availability.py",),
     ("scripts/validate_prospect_model_v07.py",),
@@ -71,6 +88,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_prospect_peak_calibration_report.py",),
     ("scripts/validate_prospect_forward_validation.py",),
     ("scripts/validate_prospect_outcome_backtest.py",),
+    ("scripts/validate_projection_scorecard.py",),
     ("scripts/validate_prospect_shadow_promotion.py",),
     ("scripts/validate_front_office_failures.py",),
     ("scripts/validate_raw_data_independence_audit.py",),
