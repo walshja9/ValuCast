@@ -26,7 +26,7 @@ CARD_VISUAL_VERSION = "2.0.0"
 # best-single-level line into the shape, and replaces the invented role-probability
 # split with the prospect model's real dynasty_signal distribution. Lives alongside
 # v1 in the same artifact for A/B review; does NOT feed the card until promoted.
-PEAK_V2_VERSION = "2.0.0"
+PEAK_V2_VERSION = "2.1.0"
 PROJECTION_STATUS = "candidate_ready"
 ARTIFACT_NAME = "valucast_prospect_peak_projection_v1"
 MIN_TOP200_PROJECTION_COVERAGE = 0.90
@@ -435,28 +435,33 @@ def _v2_role_probability(
     risk: str,
     shape_average: float,
 ) -> tuple[dict, str]:
-    """Real role distribution from the prospect model's dynasty_signal (star ⊆
-    role-or-better ⊆ 1). Falls back to v1's heuristic split only when the signal is
-    absent (identity-only rows), tagged so the source is never ambiguous."""
+    """Cumulative outcome outlook from the prospect model's dynasty_signal:
+    P(reaches role-or-better) >= P(reaches star ceiling) BY CONSTRUCTION. We surface
+    the model's native cumulative pair instead of de-cumulating it into mutually
+    exclusive star/regular/depth buckets — that de-cumulation is what produced the
+    jarring P(star) > P(regular) displays. These are the UNCALIBRATED universal-model
+    outcome frequencies (a 25-neighbor empirical vote, ~0.04 resolution), observe-only;
+    the harness grades whether they are predictive before any card promotion. Falls back
+    to v1's heuristic role-or-better estimate when the signal is absent (identity-only
+    rows), tagged so the source is never ambiguous."""
     signal = _dynasty_signal(row)
     role_plus = _clean_float(signal.get("role_or_better_probability"))
     star = _clean_float(signal.get("star_ceiling_probability"))
     if role_plus is None and star is None:
-        return _role_probability(row, peak_score, risk, shape_average), "heuristic_fallback"
-    role_plus = max(0.0, min(1.0, role_plus if role_plus is not None else 0.0))
-    star = min(max(0.0, min(1.0, star if star is not None else 0.0)), role_plus)
-    regular = max(0.0, role_plus - star)
-    depth = max(0.0, 1.0 - role_plus)
-    total = star + regular + depth
-    if total <= 0:
-        return _role_probability(row, peak_score, risk, shape_average), "heuristic_fallback"
-    labels = (
-        ("frontline_or_high_leverage", "rotation_or_role_arm", "depth_or_relief")
-        if str(row.get("role") or "") == "pitcher"
-        else ("star_or_impact_bat", "regular_or_role_bat", "depth_or_reserve")
-    )
-    values = [star / total, regular / total, depth / total]
-    return {label: round(value, 3) for label, value in zip(labels, values)}, "model_dynasty_signal"
+        fallback = _role_probability(row, peak_score, risk, shape_average)
+        role_or_better = round(_clamp(next(iter(fallback.values()), 0.0), 0.0, 1.0), 3)
+        return {
+            "reaches_role_or_better": role_or_better,
+            "reaches_star_ceiling": None,  # no model signal -> no star estimate
+            "bust_risk": round(1.0 - role_or_better, 3),
+        }, "heuristic_fallback"
+    role_plus = _clamp(role_plus if role_plus is not None else 0.0, 0.0, 1.0)
+    star = _clamp(star if star is not None else 0.0, 0.0, role_plus)
+    return {
+        "reaches_role_or_better": round(role_plus, 3),
+        "reaches_star_ceiling": round(star, 3),
+        "bust_risk": round(1.0 - role_plus, 3),
+    }, "model_dynasty_signal"
 
 
 def _peak_v2(row: dict, *, v1_peak_score: float, rank_score: float) -> dict:
@@ -484,6 +489,7 @@ def _peak_v2(row: dict, *, v1_peak_score: float, rank_score: float) -> dict:
         "risk_band": risk,
         "role_probabilities": role_probabilities,
         "role_probability_source": role_probability_source,
+        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
         "mlb_equivalent": _mlb_equivalent(row),
         "delta_vs_v1_peak_score": round(peak_score - v1_peak_score, 2),
     }

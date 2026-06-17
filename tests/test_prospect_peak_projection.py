@@ -148,14 +148,19 @@ def test_peak_v2_uses_best_single_and_model_role_probabilities():
     proj = payload["projections"][0]
     v2 = proj["peak_v2"]
 
-    assert v2["model_version"] == "2.0.0"
+    assert v2["model_version"] == "2.1.0"
     assert v2["status"] == "shadow_observe_only"
     assert v2["shape_basis"] == "best_single_level"
     assert v2["role_probability_source"] == "model_dynasty_signal"
+    assert v2["role_probability_basis"] == "cumulative_uncalibrated_outcome_distribution"
     probs = v2["role_probabilities"]
-    assert set(probs) == {"star_or_impact_bat", "regular_or_role_bat", "depth_or_reserve"}
-    assert abs(sum(probs.values()) - 1.0) < 1e-6
-    assert probs["star_or_impact_bat"] == 0.2  # 0.2 / 1.0 from dynasty_signal
+    # Cumulative outlook: star-ceiling is a SUBSET of role-or-better, so it can never
+    # exceed it (the inversion the de-cumulated buckets used to show).
+    assert set(probs) == {"reaches_role_or_better", "reaches_star_ceiling", "bust_risk"}
+    assert probs["reaches_role_or_better"] == 0.6  # role_or_better_probability passthrough
+    assert probs["reaches_star_ceiling"] == 0.2  # star_ceiling_probability, <= role-or-better
+    assert probs["reaches_star_ceiling"] <= probs["reaches_role_or_better"]
+    assert probs["bust_risk"] == 0.4  # 1 - role_or_better
     assert v2["mlb_equivalent"]["rates"]["iso"]["mlb"] == 0.170
     assert len(v2["shape"]) == 4
     # v1 fields untouched
