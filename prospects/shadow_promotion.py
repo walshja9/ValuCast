@@ -29,11 +29,17 @@ from prospects.gate import decide_gate, validate_gate
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_BASE = ROOT / "data" / "prediction_archive"
 MODELS_DIR = ROOT / "data" / "models"
+ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 ARTIFACT_NAME = "valucast_prospect_shadow_promotion"
 ARTIFACT_PATH = MODELS_DIR / f"{ARTIFACT_NAME}.json"
 SELF_ARCHIVE_DIR = ARCHIVE_BASE / ARTIFACT_NAME
 HARNESS_VERSION = "0.1.0"
 MIN_IMPROVEMENT_PCT = 2.0
+# ponytail: fixed 2026 regular-season bounds for pro-rating a full-season forecast to
+# the realized-to-date window. Bump per season; a stale window only mis-scales an
+# interim same-season proxy, never the live card.
+SEASON_START = date(2026, 3, 26)
+SEASON_END = date(2026, 9, 28)
 
 # realized-outcome availability:
 #   same_season_actuals -> gradeable within the season once a forecast has aged
@@ -42,11 +48,11 @@ SHADOW_MODELS = [
     {
         "key": "playing_time_role_v2",
         "archive": "valucast_playing_time_role_tracker",
-        "metric": "role_volume_realized_concordance",
+        "metric": "volume_forecast_mae_vs_realized",
         "realized": "same_season_actuals",
         "min_sample": 50,
         "min_span_days": 30,
-        "lower_is_better": False,
+        "lower_is_better": True,
         "card_flag_path": "v2.feeds_card",
         "promotion_target": "playing_time_role_tracker.role_v2 -> card",
     },
@@ -95,20 +101,108 @@ def _span_days(dates: list[str]) -> int:
     return (date.fromisoformat(dates[-1]) - date.fromisoformat(dates[0])).days
 
 
-def _realized(spec: dict, dates: list[str], span: int) -> tuple[int, str]:
-    """Realized-outcome sample available to grade TODAY, and an honest status string.
+def _season_fraction(as_of: date) -> float:
+    total = (SEASON_END - SEASON_START).days
+    elapsed = (as_of - SEASON_START).days
+    return max(0.05, min(1.0, elapsed / total)) if total > 0 else 1.0
 
-    Returns 0 until a real realized-accuracy scorer is wired for this model AND the
-    evidence has accrued — grading 2-5 days of archives against incomplete outcomes
-    would be grading noise. This is the seam where per-model scorers attach."""
+
+def _load_actuals(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    try:
+        rows = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - corrupt actuals must not crash the harness
+        return {}
+    out: dict[str, dict] = {}
+    for row in rows if isinstance(rows, list) else []:
+        meta = row.get("metadata") or {}
+        mlbam_id = meta.get("mlbam_id") or row.get("mlbam_id")
+        if mlbam_id in (None, ""):
+            continue
+        stats = row.get("stats") or {}
+        out[str(mlbam_id)] = {"PA": stats.get("PA"), "IP": stats.get("IP"), "as_of": meta.get("as_of")}
+    return out
+
+
+def _score_role_v2(
+    spec: dict, archive_base: Path, actuals_path: Path, today: date
+) -> tuple[int, str, float | None, dict]:
+    """Grade the OLDEST archived role-v2 volume forecast against realized PA/IP.
+
+    Metric = mean absolute error of the volume forecast PRO-RATED to the realized window
+    (forecast * season_fraction vs actual-to-date) — pro-rating down is stable, where
+    annualizing actuals up amplifies small mid-season samples by 1/fraction. v2's
+    injury/reliability-shaved point is scored against v1's raw projection as the baseline.
+    Honest interim same-season proxy: the full season is not yet realized."""
+    none_base = {"v1_volume_point": None}
+    dates = _archive_dates(spec["archive"], archive_base)
+    if not dates:
+        return 0, "no role-tracker archive yet", None, none_base
+    earliest = dates[0]
+    horizon = (today - date.fromisoformat(earliest)).days
+    if horizon < spec["min_span_days"]:
+        return 0, f"earliest forecast {horizon}d old (<{spec['min_span_days']}d to grade)", None, none_base
+    try:
+        forecast = json.loads(
+            (archive_base / spec["archive"] / f"{earliest}.json").read_text(encoding="utf-8")
+        )
+    except Exception:  # noqa: BLE001
+        return 0, "earliest role archive unreadable", None, none_base
+    actuals = _load_actuals(actuals_path)
+    if not actuals:
+        return 0, "no realized actuals available", None, none_base
+    as_of_str = next((a["as_of"] for a in actuals.values() if a.get("as_of")), None)
+    try:
+        as_of = date.fromisoformat(as_of_str) if as_of_str else today
+    except ValueError:
+        as_of = today
+    frac = _season_fraction(as_of)
+    v1_err: list[float] = []
+    v2_err: list[float] = []
+    for profile in forecast.get("profiles") or []:
+        realized = actuals.get(str(profile.get("mlbam_id")))
+        if not realized:
+            continue
+        unit = profile.get("projected_volume_unit")
+        actual = realized.get("PA") if unit == "PA" else realized.get("IP")
+        v1_point = profile.get("projected_volume")
+        v2_point = ((profile.get("role_v2") or {}).get("volume_forecast") or {}).get("point")
+        if actual is None or v1_point in (None, 0) or v2_point is None:
+            continue
+        v1_err.append(abs(float(actual) - v1_point * frac))
+        v2_err.append(abs(float(actual) - v2_point * frac))
+    sample = len(v2_err)
+    if sample == 0:
+        return 0, f"no forecast rows from {earliest} matched realized actuals", None, none_base
+    v2_mae = round(sum(v2_err) / sample, 2)
+    v1_mae = round(sum(v1_err) / sample, 2)
+    status = (
+        f"graded {sample} forecasts from {earliest} vs actuals "
+        f"(pro-rated to season fraction {frac:.2f}); interim same-season proxy"
+    )
+    return sample, status, v2_mae, {"v1_volume_point": v1_mae}
+
+
+def _realized(
+    spec: dict, *, archive_base: Path, actuals_path: Path, today: date
+) -> tuple[int, str, float | None, dict]:
+    """Realized-outcome sample + honest status + (model_score, baselines) to grade TODAY.
+
+    Scorers attach per realized-outcome kind. Multi-year-horizon shadows stay
+    insufficient_sample until the dynasty horizon closes (years); grading a few days of
+    archives against incomplete outcomes would be grading noise."""
     realized = spec["realized"]
-    if realized == "multi_year_horizon":
-        return 0, "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available"
     if realized == "same_season_actuals":
-        if span < spec["min_span_days"]:
-            return 0, f"forecast not yet aged for a same-season realized check ({span}d/{spec['min_span_days']}d)"
-        return 0, "evidence window met; realized-accuracy scorer pending (roster status + actuals)"
-    return 0, "no realized-outcome source registered"
+        return _score_role_v2(spec, archive_base, actuals_path, today)
+    if realized == "multi_year_horizon":
+        return (
+            0,
+            "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
+            None,
+            {"prior": None},
+        )
+    return 0, "no realized-outcome source registered", None, {"prior": None}
 
 
 def _dig(obj, dotted_path: str):
@@ -135,15 +229,18 @@ def _live_card_flag(spec: dict, models_dir: Path):
 
 
 def _model_report(
-    spec: dict, *, archive_base: Path, models_dir: Path, now: str
+    spec: dict, *, archive_base: Path, models_dir: Path, actuals_path: Path, today: date, now: str
 ) -> tuple[dict, list[str]]:
     dates = _archive_dates(spec["archive"], archive_base)
     span = _span_days(dates)
-    realized_sample, realized_status = _realized(spec, dates, span)
+    horizon = (today - date.fromisoformat(dates[0])).days if dates else 0
+    realized_sample, realized_status, model_score, baselines = _realized(
+        spec, archive_base=archive_base, actuals_path=actuals_path, today=today
+    )
     gate = decide_gate(
         metric=spec["metric"],
-        model_score=None,
-        baselines={"prior_or_v1_baseline": None},
+        model_score=model_score,
+        baselines=baselines,
         sample_size=realized_sample,
         cv_method="forward_archive_vs_realized_outcome",
         validated_through=(dates[-1] if dates else None),
@@ -169,6 +266,7 @@ def _model_report(
         "observed_first": dates[0] if dates else None,
         "observed_last": dates[-1] if dates else None,
         "span_days": span,
+        "forecast_horizon_days": horizon,
         "realized_sample": realized_sample,
         "realized_status": realized_status,
         "feeds_card": card_flag,
@@ -176,7 +274,7 @@ def _model_report(
         "gradeable_when": {
             "min_sample": spec["min_sample"],
             "min_span_days": spec["min_span_days"],
-            "span_met": span >= spec["min_span_days"],
+            "horizon_met": horizon >= spec["min_span_days"],
             "sample_met": realized_sample >= spec["min_sample"],
         },
         "promotion_target": spec["promotion_target"],
@@ -188,14 +286,21 @@ def build_shadow_promotion(
     *,
     archive_base: Path = ARCHIVE_BASE,
     models_dir: Path = MODELS_DIR,
+    actuals_path: Path = ACTUALS_PATH,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
+    today = date.fromisoformat(str(generated_at)[:10])
     models: list[dict] = []
     blockers: list[str] = []
     for spec in SHADOW_MODELS:
         report, model_blockers = _model_report(
-            spec, archive_base=archive_base, models_dir=models_dir, now=generated_at
+            spec,
+            archive_base=archive_base,
+            models_dir=models_dir,
+            actuals_path=actuals_path,
+            today=today,
+            now=generated_at,
         )
         models.append(report)
         blockers.extend(model_blockers)
@@ -261,10 +366,13 @@ def run_shadow_promotion(
     *,
     archive_base: Path = ARCHIVE_BASE,
     models_dir: Path = MODELS_DIR,
+    actuals_path: Path = ACTUALS_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     self_archive_dir: Path = SELF_ARCHIVE_DIR,
 ) -> dict:
-    payload = build_shadow_promotion(archive_base=archive_base, models_dir=models_dir)
+    payload = build_shadow_promotion(
+        archive_base=archive_base, models_dir=models_dir, actuals_path=actuals_path
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
