@@ -37,6 +37,10 @@ TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
 MLB_COLLISION_PROMOTION_MAX_RANK = 75
 MLB_COLLISION_PROMOTION_MIN_VALUE = 45.0
 MLB_COLLISION_PROMOTION_MIN_MARGIN = 15.0
+# Graduation-transition floor: a freshly called-up prospect's value should not crater to
+# a 3-PA MLB line. Floor it at this fraction of his retained prospect score, fading as
+# he accrues MLB sample (rookie-eligibility ratio -> 1).
+GRAD_FLOOR_DISCOUNT = 0.75
 
 MIN_PROSPECT_COVERAGE_RATE = 0.98
 MIN_TOP_200_UNIQUE_SCORE_COUNT = 150
@@ -126,6 +130,58 @@ def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
             continue
         ids.add(str(mlbam_id))
     return ids
+
+
+def _apply_graduation_transition_floor(
+    mlb_rows: list[dict], graduated_prospect_rows: list[dict]
+) -> int:
+    """Keep a freshly-graduated prospect's value from cratering to a 3-PA MLB line.
+
+    When a prospect is called up his prospect row is swapped for a thin MLB row whose
+    value can fall near the production floor (a 3-PA debut, with the track-record floor
+    blocked at the experience-band gate). Floor that MLB value at a market-discounted
+    fraction of his retained prospect score, fading as he accrues MLB sample
+    (rookie-eligibility ratio -> 1). The recovery signal — prospect score +
+    graduation_context — already lives on the graduated prospect row, so no new data is
+    needed. ponytail: rookie-ratio is the decay proxy until a debut DATE exists for true
+    time-decay; the discount absorbs the prospect/MLB 0-100 scale slop (calibration
+    reconciles the rest)."""
+    floor_by_id: dict[str, dict] = {}
+    for row in graduated_prospect_rows:
+        mlbam_id = _mlbam_id(row)
+        prospect_value = _clean_float(row.get("value"))
+        if not mlbam_id or prospect_value is None or prospect_value <= 0:
+            continue
+        grad_context = ((row.get("context") or {}).get("graduation_context")) or {}
+        ratio = _clean_float(grad_context.get("ratio")) or 0.0
+        floor_by_id[mlbam_id] = {
+            "prospect_value": prospect_value,
+            "ratio": max(0.0, min(1.0, ratio)),
+            "prospect_rank": row.get("prospect_rank"),
+        }
+    applied = 0
+    for row in mlb_rows:
+        info = floor_by_id.get(_mlbam_id(row))
+        if not info:
+            continue
+        floor_value = round(
+            info["prospect_value"] * GRAD_FLOOR_DISCOUNT * (1.0 - info["ratio"]), 2
+        )
+        current = _clean_float(row.get("value")) or 0.0
+        row["graduation_transition"] = {
+            "applied": floor_value > current,
+            "prospect_value": round(info["prospect_value"], 2),
+            "prospect_rank": info["prospect_rank"],
+            "discount": GRAD_FLOOR_DISCOUNT,
+            "rookie_ratio": info["ratio"],
+            "raw_mlb_value": round(current, 2),
+            "floored_value": floor_value,
+            "basis": "market_discounted_prospect_value_decaying_with_rookie_sample",
+        }
+        if floor_value > current:
+            row["value"] = floor_value
+            applied += 1
+    return applied
 
 
 def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
@@ -552,6 +608,7 @@ def _validation(
     mlb_projection_rows_suppressed_by_prospect_count: int,
     mlb_projection_rows_suppressed_by_prospect_sample: list[dict],
     calibration_report: dict,
+    graduation_transition_floor_count: int = 0,
 ) -> dict:
     players = payload.get("players") or []
     identity_keys = [key for row in players if (key := _identity_key(row))]
@@ -663,6 +720,7 @@ def _validation(
         "prospects_excluded_by_mlb_identity_sample": prospects_excluded_by_mlb_identity_sample,
         "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
         "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
+        "graduation_transition_floor_count": graduation_transition_floor_count,
         "cross_universe_value_scale_calibrated": bool(calibration_report.get("applied")),
         "cross_universe_calibration": calibration_report,
         "quality_governor": quality_governor,
@@ -745,6 +803,9 @@ def build_snapshot(
     mlb_rows = [
         row for row in mlb_rows if _mlbam_id(row) not in active_prospect_ids
     ]
+    graduation_transition_floor_count = _apply_graduation_transition_floor(
+        mlb_rows, graduated_prospect_rows
+    )
     prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
     prospects_excluded_by_mlb_identity_count = len(graduated_prospect_rows)
     graduated_prospect_sample = [
@@ -886,6 +947,7 @@ def build_snapshot(
         len(suppressed_mlb_rows),
         suppressed_mlb_sample,
         calibration_report,
+        graduation_transition_floor_count,
     )
     return payload
 

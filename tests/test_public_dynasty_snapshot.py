@@ -2,11 +2,59 @@
 import json
 from types import SimpleNamespace
 
-from scripts.build_public_dynasty_snapshot import COMMON_VALUE_SCALE, build_snapshot
+from scripts.build_public_dynasty_snapshot import (
+    COMMON_VALUE_SCALE,
+    GRAD_FLOOR_DISCOUNT,
+    _apply_graduation_transition_floor,
+    build_snapshot,
+)
 from web.public_snapshot_store import (
     PublicSnapshotStore,
     validate_public_snapshot_payload,
 )
+
+
+def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
+    graduated = [
+        {
+            "mlbam_id": "806198",
+            "name": "Cooper Pratt",
+            "prospect_rank": 8,
+            "value": 50.0,  # retained prospect score
+            "context": {"graduation_context": {"ratio": 0.02}},
+        }
+    ]
+    mlb_rows = [{"mlbam_id": "806198", "name": "Cooper Pratt", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 1
+    assert mlb_rows[0]["value"] == round(50.0 * GRAD_FLOOR_DISCOUNT * (1 - 0.02), 2)
+    transition = mlb_rows[0]["graduation_transition"]
+    assert transition["applied"] is True
+    assert transition["raw_mlb_value"] == 3.0
+    assert transition["prospect_value"] == 50.0
+
+
+def test_graduation_floor_is_noop_when_mlb_value_already_exceeds_floor():
+    graduated = [{"mlbam_id": "1", "value": 40.0, "context": {"graduation_context": {"ratio": 0.0}}}]
+    mlb_rows = [{"mlbam_id": "1", "value": 60.0}]  # collision-promoted, already strong
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 0
+    assert mlb_rows[0]["value"] == 60.0
+    assert mlb_rows[0]["graduation_transition"]["applied"] is False
+
+
+def test_graduation_floor_fades_as_rookie_eligibility_exhausts():
+    graduated = [{"mlbam_id": "2", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
+    mlb_rows = [{"mlbam_id": "2", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 0  # floor = 50 * 0.7 * (1 - 1.0) = 0, never lifts a real MLB value
+    assert mlb_rows[0]["value"] == 3.0
 
 
 def _rank_payload():
