@@ -11,6 +11,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scouting import report_generator
 from web.public_snapshot_store import PublicSnapshotStore
 from web import prospect_percentiles
 
@@ -19,6 +20,7 @@ SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_scouting_reports.json"
 RECENT_SIGNAL_PATH = ROOT / "data" / "models" / "valucast_recent_signal_report.json"
 CARD_DATA_AUDIT_PATH = ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
+LLM_CACHE_PATH = ROOT / "data" / "models" / "valucast_scouting_llm_cache.json"
 
 ARTIFACT_NAME = "valucast_scouting_report_repository"
 REPOSITORY_VERSION = "0.1.0"
@@ -124,6 +126,96 @@ def _row_report(row, recent_signal: dict | None = None, card_data: dict | None =
     }
 
 
+def _llm_enabled() -> bool:
+    return os.environ.get("VALUCAST_SCOUTING_LLM", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _llm_grounding(row, percentiles: dict, pool_label: str | None) -> dict:
+    """Source-tagged, ValuCast-owned facts for the LLM read. No DD values/ranks, no
+    external rankings, no market values — only what the card already owns."""
+    grounding = {
+        "name": row.name,
+        "role": row.role,
+        "positions": list(row.positions or []),
+        "team": row.team,
+        "level": row.level,
+        "age": row.age,
+        "prospect_rank": row.prospect_rank,
+        "current_minor_league_line": row.stat_line or None,
+        "mlb_equivalent_translation": row.stat_line_translated or None,
+        "best_single_level_line": row.best_single_level_stat_line or None,
+        "current_skill_percentiles": percentiles or None,
+        "percentile_pool": pool_label,
+        "peak_projection": row.peak_projection_summary if row.has_peak_projection else None,
+        "availability": row.availability_context or None,
+        "sample_context": {
+            "sample": row.context.get("stat_line_sample"),
+            "sample_unit": row.context.get("stat_line_sample_unit"),
+            "season": row.context.get("stat_line_sample_season"),
+            "source_kind": row.context.get("stat_line_source_kind"),
+        },
+    }
+    return {key: value for key, value in grounding.items() if value not in (None, {}, [])}
+
+
+def _save_llm_cache(entries: dict) -> None:
+    LLM_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"artifact": "valucast_scouting_llm_cache", "entries": entries}
+    tmp = LLM_CACHE_PATH.with_suffix(LLM_CACHE_PATH.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    os.replace(tmp, LLM_CACHE_PATH)
+
+
+def _attach_llm_reports(rows, reports, store) -> dict:
+    """Attach a shadow `report_llm` to each report (the deterministic `report` stays the
+    published read). Grounding-hash cached so only changed reports re-call the API.
+    Offline / no key -> no calls, reports unchanged."""
+    client = report_generator.default_client()
+    if client is None:
+        return {"enabled": True, "available": False, "generated": 0, "reused": 0, "flagged": 0}
+    pool = prospect_percentiles.build_pool(store.get_all())
+    cache = _load_optional(LLM_CACHE_PATH)
+    entries = cache.get("entries") if isinstance(cache.get("entries"), dict) else {}
+    generated = reused = flagged = 0
+    fresh: dict = {}
+    for row, report in zip(rows, reports):
+        key = report.get("identity_key")
+        if not key:
+            continue
+        percentiles = prospect_percentiles.card_percentiles(pool, row)
+        grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row))
+        digest = report_generator.grounding_hash(grounding)
+        cached = entries.get(key)
+        if isinstance(cached, dict) and cached.get("hash") == digest:
+            result = cached
+            reused += 1
+        else:
+            try:
+                gen = report_generator.generate_report(grounding, client=client)
+            except Exception:  # noqa: BLE001 - one bad call must not fail the daily build
+                continue
+            if gen is None:
+                continue
+            result = {
+                "hash": digest, "text": gen["text"], "model": gen["model"],
+                "valid": gen["valid"], "hard_ok": gen["hard_ok"], "problems": gen["problems"],
+            }
+            generated += 1
+        fresh[key] = result
+        if not result.get("valid"):
+            flagged += 1
+        report["report_llm"] = {
+            "text": result["text"], "model": result["model"],
+            "valid": result["valid"], "hard_ok": result.get("hard_ok"),
+            "problems": result.get("problems"),
+        }
+    _save_llm_cache(fresh)
+    return {
+        "enabled": True, "available": True, "generated": generated,
+        "reused": reused, "flagged": flagged, "report_count": len(fresh),
+    }
+
+
 def build_scouting_repository(
     *,
     snapshot_path: Path = SNAPSHOT_PATH,
@@ -156,6 +248,9 @@ def build_scouting_repository(
         )
         for row in rows
     ]
+    llm_shadow = {"enabled": False, "available": False, "generated": 0, "reused": 0, "flagged": 0}
+    if _llm_enabled():
+        llm_shadow = _attach_llm_reports(rows, reports, store)
     identity_keys = [(row["mlbam_id"], row["role"]) for row in reports]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     missing_report_count = sum(1 for row in reports if not row.get("report"))
@@ -182,7 +277,8 @@ def build_scouting_repository(
             "market_values_used_for_report": False,
             "recent_signal_used_for_context": bool(recent_index),
             "card_data_audit_used_for_context": bool(card_index),
-            "llm_generated": False,
+            "llm_generated": False,  # published `report` stays deterministic; LLM is shadow only
+            "llm_shadow_enabled": bool(llm_shadow.get("enabled") and llm_shadow.get("available")),
             "feeds_live_rank": False,
             "feeds_live_value": False,
         },
@@ -200,6 +296,7 @@ def build_scouting_repository(
             "top100_report_count": top100_count,
             "missing_report_count": missing_report_count,
             "max_prospect_rank": max_prospect_rank,
+            "llm_shadow": llm_shadow,
         },
         "validation": {
             "ready_for_repository": not blockers,

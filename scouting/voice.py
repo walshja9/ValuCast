@@ -1,0 +1,120 @@
+"""ValuCast scouting voice — the single source the LLM prompt AND the post-gen
+validator both import. Pure data + checks; no I/O, no API, no DD imports.
+
+The voice standard is enforced two ways: (1) as the system prompt foundation for
+the LLM writer, and (2) as a deterministic post-gen guard (banned phrases + any
+number not present in the supplied grounding). ValuCast-owned; intentionally NOT
+shared with DD's scouting_voice.py / scouting_validator.py.
+"""
+from __future__ import annotations
+
+import re
+
+VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball prospect.
+
+Voice (the spine, in order, but order is flexible):
+1. Lead with the baseball read — what kind of player this is, behaviorally, not a label.
+2. Name one or two stat signals that support the read, using the numbers you are given.
+3. Be direct about the main flaw or risk. No fake balance, no hedging both ways.
+4. Optionally close with one plain sentence about confidence given the sample.
+
+Hard rules:
+- Use ONLY the data provided below. Never state a number that is not in the data.
+- Each stat is tagged with its source (current MLB line vs MiLB-equivalent translation
+  vs minor-league line vs projection). Never blend samples or present one as another.
+- Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting
+  texture that is not in the data. If the data does not show it, do not name it.
+- Thin / stale / injured samples: say so in one honest confidence sentence; never paper
+  over a small sample with a confident read.
+- Never claim ValuCast beats Steamer/ZiPS or is "the most accurate." State the read, not a
+  comparison to other systems.
+- Plain, professional, specific. No hype, no generic-AI filler, no fantasy clichés.
+- 2 to 4 sentences. No headings, no bullet points, no preamble — just the read."""
+
+# Lowercased substrings that must never appear. Single source for prompt + validator.
+BANNED_PHRASES = (
+    # generic-AI filler
+    "game-changer", "game changer", "it's important to note", "important to note",
+    "unlock", "robust", "nuanced", "moving forward", "worth monitoring",
+    # fantasy clichés
+    "intriguing", "tantalizing", "sturdy foundation", "upside is evident",
+    "high-floor", "high floor", "high-ceiling", "high ceiling", "carrying skill",
+    # leaked internal / boundary terms
+    "display-only", "artifact", "dd-backed", "adapter",
+    # accuracy/hype claims
+    "beats steamer", "most accurate", "best projection",
+)
+
+_NUMBER_RE = re.compile(r"\d+(?:\.\d+)?")
+
+
+def banned_phrase_hits(text: str) -> list[str]:
+    lowered = (text or "").lower()
+    return [phrase for phrase in BANNED_PHRASES if phrase in lowered]
+
+
+def _collect_numbers(obj) -> set[float]:
+    """Every numeric value anywhere in the grounding (stats, samples, ages, ranks,
+    percentiles) — the set a report is allowed to cite."""
+    found: set[float] = set()
+    if isinstance(obj, bool):
+        return found
+    if isinstance(obj, (int, float)):
+        found.add(float(obj))
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            found |= _collect_numbers(v)
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            found |= _collect_numbers(v)
+    elif isinstance(obj, str):
+        for token in _NUMBER_RE.findall(obj):
+            try:
+                found.add(float(token))
+            except ValueError:
+                continue
+    return found
+
+
+def _forms(value: float) -> set[float]:
+    """The forms a number could legitimately appear as: exact, 1-decimal (ERA/WHIP/K9
+    rounding like 3.36 -> 3.4), and — for >=30, so distinct ERAs don't collide — the
+    leading-zero rate form (".300" tokenized as 300 -> 0.300)."""
+    forms = {round(value, 3), round(value, 1)}
+    if value >= 30:
+        forms.add(round(value / 1000, 3))
+    return forms
+
+
+def _number_supported(value: float, allowed: set[float]) -> bool:
+    """Supported if a legitimate rounded form of the cited number matches the grounding."""
+    value_forms = _forms(value)
+    return any(value_forms & _forms(a) for a in allowed)
+
+
+def unsupported_numbers(text: str, grounding: dict) -> list[str]:
+    """Numbers in the report not traceable to the grounding (hallucination guard).
+    Soft signal — tolerant of rounding/ordinals to avoid false positives."""
+    allowed = _collect_numbers(grounding)
+    out = []
+    for token in _NUMBER_RE.findall(text or ""):
+        try:
+            value = float(token)
+        except ValueError:
+            continue
+        if not _number_supported(value, allowed):
+            out.append(token)
+    return out
+
+
+def validate_report_text(text: str, grounding: dict) -> dict:
+    """Post-gen guard. `banned` is a hard fail; `unsupported_numbers` is a soft flag
+    (tolerant), surfaced for spot-check rather than auto-discarding on rounding noise."""
+    banned = banned_phrase_hits(text)
+    numbers = unsupported_numbers(text, grounding)
+    return {
+        "banned": banned,
+        "unsupported_numbers": numbers,
+        "ok": not banned and not numbers,
+        "hard_ok": not banned,
+    }

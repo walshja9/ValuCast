@@ -62,6 +62,10 @@ jobs:
       - name: Build ValuCast public snapshot gate
         env:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
+          # Scouting V2 shadow writer: generates `report_llm` only when the secret is
+          # present (offline-safe no-op otherwise). Adding the secret = turning it on.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          VALUCAST_SCOUTING_LLM: "1"
         run: python scripts/run_daily_public_build.py --only build
 
       - name: Validate public artifacts
