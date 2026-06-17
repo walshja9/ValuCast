@@ -2,8 +2,13 @@ name: Daily public data refresh
 
 on:
   schedule:
-    # DD's VPS nightly starts at 7:00 AM ET. This runs at 9:30 AM EDT /
-    # 8:30 AM EST so the generated dynasty feed and its Render deploy can land.
+    # Primary daily public refresh: 7:30 AM ET during daylight time.
+    # DD's VPS nightly starts at 7:00 AM ET; this gives the current DD bridge
+    # time to publish while moving ValuCast's public pages earlier.
+    - cron: "30 11 * * *"
+    # Same-morning fallback: GitHub scheduled workflows are best-effort and can
+    # be delayed or skipped during congestion. This second run keeps the site
+    # from sitting on yesterday's public snapshot if the early run misses.
     - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:

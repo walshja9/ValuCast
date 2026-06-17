@@ -164,10 +164,17 @@ def build_pipeline_observability(
         "expected_date": expected,
         "schedule": {
             "workflow": ".github/workflows/daily-public-data.yml",
-            "cron_utc": "30 13 * * *",
-            "local_time_daylight": "9:30 AM ET",
-            "local_time_standard": "8:30 AM ET",
-            "upstream_dependency": "DD VPS nightly starts around 7:00 AM ET",
+            "primary_cron_utc": "30 11 * * *",
+            "fallback_cron_utc": "30 13 * * *",
+            "primary_local_time_daylight": "7:30 AM ET",
+            "fallback_local_time_daylight": "9:30 AM ET",
+            "primary_local_time_standard": "6:30 AM ET",
+            "fallback_local_time_standard": "8:30 AM ET",
+            "upstream_dependency": (
+                "DD VPS nightly starts around 7:00 AM ET while the bridge "
+                "remains in use; the fallback covers delayed upstream publish "
+                "or delayed GitHub scheduling."
+            ),
         },
         "source_policy": {
             "kind": "pipeline_observability",
