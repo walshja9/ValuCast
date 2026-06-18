@@ -2816,3 +2816,140 @@ main {
         width: 100%;
     }
 }
+
+/* Visual Constitution phase 2: senior restraint pass.
+   Rows get one primary signal: the ValuCast value. Everything else is quiet
+   structure unless it is true risk or movement. */
+.site-nav a {
+    border-radius: var(--radius-sm);
+    font-weight: 650;
+}
+
+.rankings-table th {
+    color: var(--c-muted);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: .01em;
+}
+
+.rankings-table td.col-name strong,
+.buys-main a {
+    font-weight: 650;
+}
+
+.col-value,
+.headline-value,
+.scouting-value,
+.front-office-score,
+.intelligence-score span,
+.scouting-score span {
+    font-weight: 800;
+}
+
+.col-value {
+    color: var(--c-prospect);
+}
+
+.col-dollars,
+.col-cat,
+.col-fit,
+.detail-value {
+    color: var(--c-muted);
+    font-weight: 500;
+}
+
+.pos-rank,
+.prospect-rank-badge,
+.prospect-badge,
+.tier-badge,
+.confidence-chip,
+.headline-tier,
+.headline-range,
+.sample-risk-badge,
+.pct-chip,
+.fit-score,
+.buys-score,
+.mover-chip,
+.spark-delta,
+.spread-chip {
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    font-weight: 600;
+}
+
+.pos-rank,
+.prospect-rank-badge,
+.prospect-badge,
+.tier-badge,
+.confidence-chip,
+.headline-tier,
+.headline-range,
+.pct-chip,
+.fit-score {
+    background: rgba(148, 163, 184, .10) !important;
+    border: 1px solid rgba(148, 163, 184, .16);
+    color: var(--c-muted);
+}
+
+.tier-badge {
+    padding: .06rem .34rem;
+}
+
+.rankings-table td.col-name > .tier-badge {
+    display: none;
+}
+
+.rankings-table td.col-name .pos-rank,
+.rankings-table td.col-name .prospect-rank-badge,
+.rankings-table td.col-name .prospect-badge {
+    margin-left: .18rem;
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    color: var(--c-muted);
+    font-size: .72rem;
+}
+
+.sample-risk-badge {
+    background: rgba(251, 191, 36, .10);
+    border-color: rgba(251, 191, 36, .24);
+    color: var(--c-amber);
+}
+
+.sample-risk-badge.bucket,
+.sample-risk-badge.rank-context,
+.sample-risk-badge.rank-context.positive,
+.sample-risk-badge.rank-context.neutral,
+.sample-risk-badge.rank-context.graduation {
+    background: rgba(148, 163, 184, .10);
+    border-color: rgba(148, 163, 184, .16);
+    color: var(--c-muted);
+}
+
+.sample-risk-badge.rank-context.caution {
+    background: rgba(251, 191, 36, .10);
+    border-color: rgba(251, 191, 36, .24);
+    color: var(--c-amber);
+}
+
+.rankings-table .why-rank-chips .sample-risk-badge:nth-child(n+2) {
+    display: none;
+}
+
+.headline-value {
+    border-radius: var(--radius);
+}
+
+.headline-value > span,
+.stat-label,
+.category-label,
+.mobile-stat-label,
+.scouting-value small,
+.front-office-watchlist h4,
+.front-office-watchlist-stats small,
+.scouting-proof-strip small,
+.scouting-role-grid small {
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: .01em;
+}
