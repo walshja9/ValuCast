@@ -132,7 +132,7 @@ def validate_public_data(expected_date: str) -> list[str]:
                 f"expected {expected_date}"
             )
 
-    list_artifacts = [REDRAFT_CURRENT, REDRAFT_ROS, ACTUALS]
+    list_artifacts = [REDRAFT_CURRENT, REDRAFT_ROS]
     for path in list_artifacts:
         try:
             payload = _load(path)
@@ -141,6 +141,23 @@ def validate_public_data(expected_date: str) -> list[str]:
             continue
         if not isinstance(payload, list) or not payload:
             problems.append(f"{_display_path(path)} has no player rows")
+
+    # Actuals carries its date per-row in metadata.as_of. Assert it's current so a
+    # stale current-stats scrape can't pass the gate while metadata.json re-stamps today.
+    try:
+        actuals = _load(ACTUALS)
+    except Exception as exc:  # noqa: BLE001
+        problems.append(f"{_display_path(ACTUALS)} unreadable: {exc}")
+    else:
+        if not isinstance(actuals, list) or not actuals:
+            problems.append(f"{_display_path(ACTUALS)} has no player rows")
+        else:
+            actual = _iso_date((actuals[0].get("metadata") or {}).get("as_of"))
+            if actual != expected_date:
+                problems.append(
+                    f"{_display_path(ACTUALS)} metadata.as_of={actual or 'missing'}, "
+                    f"expected {expected_date}"
+                )
 
     return problems
 

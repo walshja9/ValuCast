@@ -325,8 +325,11 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths["SCOUTING_REPORTS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
-    for key in ("REDRAFT_CURRENT", "REDRAFT_ROS", "ACTUALS"):
+    for key in ("REDRAFT_CURRENT", "REDRAFT_ROS"):
         paths[key].write_text('[{"name":"Test"}]', encoding="utf-8")
+    paths["ACTUALS"].write_text(
+        '[{"name":"Test","metadata":{"as_of":"2026-06-13"}}]', encoding="utf-8"
+    )
     monkeypatch.setattr(freshness, "ROOT", tmp_path)
     for key, path in paths.items():
         monkeypatch.setattr(freshness, key, path)
