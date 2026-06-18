@@ -1123,6 +1123,87 @@ def _graphic_wrap_text(draw, text, fnt, max_width, max_lines=3):
     return lines
 
 
+_GRAPHIC_DANGLING_READ_WORDS = {
+    "a",
+    "an",
+    "and",
+    "at",
+    "for",
+    "her",
+    "his",
+    "in",
+    "of",
+    "or",
+    "the",
+    "to",
+    "with",
+}
+
+
+def _graphic_last_sentence_boundary(text):
+    for idx in range(len(text) - 1, -1, -1):
+        char = text[idx]
+        if char not in ".!?":
+            continue
+        prev_char = text[idx - 1] if idx else ""
+        next_char = text[idx + 1] if idx + 1 < len(text) else ""
+        if prev_char.isdigit() and next_char.isdigit():
+            continue
+        if not next_char or next_char.isspace():
+            return idx
+    return -1
+
+
+def _graphic_wrap_read_text(draw, text, fnt, max_width, max_lines=4):
+    """Fit player-card prose without hard-clipping mid-thought."""
+    max_lines = max(1, int(max_lines or 1))
+    text = " ".join(str(text or "").split())
+    if not text:
+        return []
+    full_lines = _graphic_wrap_text(
+        draw, text, fnt, max_width, max_lines=max_lines + 1
+    )
+    if len(full_lines) <= max_lines:
+        return full_lines
+
+    best = ""
+    words = text.split()
+    for idx in range(1, len(words) + 1):
+        candidate = " ".join(words[:idx])
+        candidate_lines = _graphic_wrap_text(
+            draw, candidate, fnt, max_width, max_lines=max_lines + 1
+        )
+        if len(candidate_lines) > max_lines:
+            break
+        best = candidate
+
+    if not best:
+        return [_graphic_fit_text(draw, "...", fnt, max_width)]
+
+    sentence_boundary = _graphic_last_sentence_boundary(best)
+    if sentence_boundary >= 90:
+        return _graphic_wrap_text(
+            draw, best[: sentence_boundary + 1], fnt, max_width, max_lines=max_lines
+        )
+
+    clipped_words = best.rstrip(",;:").split()
+    while (
+        len(clipped_words) > 1
+        and clipped_words[-1].strip(".,;:").lower() in _GRAPHIC_DANGLING_READ_WORDS
+    ):
+        clipped_words.pop()
+    clipped = " ".join(clipped_words).rstrip(",;:")
+    lines = _graphic_wrap_text(draw, clipped, fnt, max_width, max_lines=max_lines)
+    if not lines:
+        return []
+    last = lines[-1].rstrip(".")
+    while last and _graphic_text_width(draw, last + "...", fnt) > max_width:
+        parts = last.split()
+        last = " ".join(parts[:-1]) if len(parts) > 1 else last[:-1].rstrip()
+    lines[-1] = f"{last.rstrip(',;:')}..." if last else "..."
+    return lines[:max_lines]
+
+
 def _graphic_stat_value(value, key):
     if not isinstance(value, (int, float)):
         return str(value or "")
@@ -1557,7 +1638,7 @@ def _prospect_player_card_png(row):
     draw.rounded_rectangle((48, 840, 1032, 1132), radius=22, fill=card, outline=border, width=2)
     draw.text((74, 870), "VALUCAST READ", fill=green, font=_graphic_font(22, bold=True))
     read_font = _graphic_font(22)
-    for idx, line in enumerate(_graphic_wrap_text(draw, identity, read_font, 890, max_lines=4)):
+    for idx, line in enumerate(_graphic_wrap_read_text(draw, identity, read_font, 890, max_lines=4)):
         draw.text((74, 910 + idx * 31), line, fill=text, font=read_font)
 
     draw.text((74, 1040), shape_title, fill=muted, font=_graphic_font(18, bold=True))

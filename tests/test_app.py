@@ -617,6 +617,29 @@ class TestDynastyMode(unittest.TestCase):
             "Arias owns the zone and gets to power without selling out.",
         )
 
+    def test_player_card_share_read_clamps_long_reports_cleanly(self):
+        from PIL import Image, ImageDraw
+
+        from app import _graphic_font, _graphic_wrap_read_text
+
+        draw = ImageDraw.Draw(Image.new("RGB", (1080, 1350)))
+        font = _graphic_font(22)
+        long_report = (
+            "Franklin Arias is a 20-year-old shortstop showing elite bat speed "
+            "and power projection; his .252 ISO at AA ranks in the 94th percentile "
+            "of the ValuCast hitter pool, and he's maintaining a .307 average with "
+            "a .393 OBP across 234 plate appearances this season. The primary risk "
+            "is swing-and-miss: his 13.2 K% in the current sample can still stretch "
+            "against better pitching, so the profile needs continued contact proof."
+        )
+
+        lines = _graphic_wrap_read_text(draw, long_report, font, 890, max_lines=4)
+
+        self.assertLessEqual(len(lines), 4)
+        rendered = " ".join(lines)
+        self.assertNotRegex(rendered, r"\b(in|the|and|of|a|an|to|with|his|her)$")
+        self.assertTrue(rendered.endswith((".", "!", "?", "...")))
+
     def test_player_card_sample_context_shows_current_and_combined_samples(self):
         from types import SimpleNamespace
 
