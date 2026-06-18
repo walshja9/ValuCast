@@ -327,7 +327,7 @@ def _peak_payload():
                     "score_delta": 5.7,
                     "trajectory": "more_peak_than_current_value",
                     "role_probabilities": {"regular_or_better": 0.42},
-                    "card_copy": "Peak view: everyday regular.",
+                    "card_copy": "Ceiling is everyday regular; floor is reserve.",
                 },
                 "summary": "Peak read: everyday regular with medium risk.",
                 "usage": "card_visual_context_not_live_rank_or_value",
@@ -358,7 +358,7 @@ def _peak_payload():
                     "score_delta": 3.2,
                     "trajectory": "current_and_peak_aligned",
                     "role_probabilities": {"useful_mlb_arm": 0.5},
-                    "card_copy": "Peak view: multi inning arm.",
+                    "card_copy": "Ceiling is multi inning arm; floor is depth arm.",
                 },
                 "summary": "Peak read: multi inning or setup arm with medium risk.",
                 "usage": "card_visual_context_not_live_rank_or_value",
@@ -472,7 +472,7 @@ def test_snapshot_carries_peak_projection_card_context(tmp_path):
     assert row.peak_role_label == "Everyday Regular"
     assert row.peak_risk_label == "Medium"
     assert row.peak_projection_summary == "Projection: everyday regular with medium risk."
-    assert row.peak_projection_card_copy == "Peak view: everyday regular."
+    assert row.peak_projection_card_copy == "Ceiling is everyday regular; floor is reserve."
     assert len(row.peak_shape_items) == 4
     assert row.peak_shape_items[0]["label"] == "Hit"
 

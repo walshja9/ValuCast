@@ -114,8 +114,14 @@ def validate_peak_projection(path: Path = ARTIFACT_PATH) -> tuple[dict | None, l
                     problems.append(f"projection {index} has invalid card_v2 visual_version")
                 if not isinstance(card_v2.get("role_probabilities"), dict):
                     problems.append(f"projection {index} missing role probabilities")
-                if not card_v2.get("card_copy"):
+                card_copy = str(card_v2.get("card_copy") or "")
+                if not card_copy:
                     problems.append(f"projection {index} missing card_v2 card_copy")
+                lower_copy = card_copy.lower()
+                stale_peak_view = card_copy.startswith("Peak view:")
+                repeated_floor = "floor is " in lower_copy and lower_copy.count("floor") > 1
+                if stale_peak_view or repeated_floor:
+                    problems.append(f"projection {index} has stale card_v2 card_copy")
             shape = row.get("shape")
             if not isinstance(shape, list) or len(shape) < 4:
                 problems.append(f"projection {index} shape must have at least four items")

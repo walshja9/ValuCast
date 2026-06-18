@@ -226,3 +226,15 @@ def test_peak_projection_validator_rejects_public_scouting_grade_flag(tmp_path):
     _, problems = validate_peak_projection(artifact_path)
 
     assert "source_policy.public_scouting_grades_used must be false" in problems
+
+
+def test_peak_projection_validator_rejects_stale_card_copy(tmp_path):
+    payload = build_peak_projection(_rank_payload([_row(1)]))
+    projection = payload["projections"][0]
+    projection["card_v2"]["card_copy"] = "Peak view: everyday regular; floor is reserve floor."
+    artifact_path = tmp_path / "peak.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_peak_projection(artifact_path)
+
+    assert any("stale card_v2 card_copy" in problem for problem in problems)
