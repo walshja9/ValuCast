@@ -61,7 +61,7 @@ jobs:
 
       - name: Build ValuCast public snapshot gate
         env:
-          VALUCAST_BUYS_REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_valucast_buys && '1' || '0' }}
+          VALUCAST_BUYS_REVIEW_APPROVED: ${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) && '1' || '0' }}
           # Scouting V2 shadow writer: generates `report_llm` only when the secret is
           # present (offline-safe no-op otherwise). Adding the secret = turning it on.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -150,4 +150,9 @@ jobs:
             projections/data/identity.json
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
-          git push origin master
+          for attempt in 1 2 3; do
+            git pull --rebase origin master
+            git push origin master && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1

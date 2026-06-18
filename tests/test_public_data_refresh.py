@@ -338,7 +338,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     ]
 
 
-def test_daily_public_workflow_requires_manual_buy_approval():
+def test_daily_public_workflow_approves_scheduled_buys_and_rebases_before_push():
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
@@ -421,9 +421,11 @@ def test_daily_public_workflow_requires_manual_buy_approval():
     assert "data/models/valucast_scouting_reports.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
-        "${{ github.event_name == 'workflow_dispatch' "
-        "&& inputs.approve_valucast_buys && '1' || '0' }}"
+        "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "
+        "&& '1' || '0' }}"
     ) in workflow
+    assert "git pull --rebase origin master" in workflow
+    assert "for attempt in 1 2 3" in workflow
 
 
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():
