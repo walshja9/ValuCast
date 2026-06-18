@@ -45,16 +45,29 @@
             </div>
             <div>
                 <span>{{ report.failure_watchlist.front_office_risk_count }}</span>
-                <small>Risk flags</small>
+                <small>Watch items</small>
             </div>
         </div>
         {% set progress = report.failure_watchlist.forward_archive_progress or {} %}
         {% if progress %}
         <p class="front-office-progress">
-            Next target: <strong>{{ progress.next_target_grade }}</strong>.
+            Next MLB evidence milestone: <strong>{{ progress.next_target_grade }}</strong>.
             Needs {{ progress.remaining_rank_comparisons }} more rank archive comparisons,
             {{ progress.remaining_buy_comparisons }} more buy comparisons, and
             {{ progress.remaining_span_days }} more observation days.
+        </p>
+        {% endif %}
+        {% set front_track = namespace(score_cap=None, target_grade=None) %}
+        {% for pillar in report.pillars %}
+        {% if pillar.name == "MLB front-office track" %}
+        {% set front_track.score_cap = pillar.evidence.get("score_cap") %}
+        {% set front_track.target_grade = pillar.evidence.get("target_grade") %}
+        {% endif %}
+        {% endfor %}
+        {% if front_track.score_cap %}
+        <p class="front-office-progress">
+            Current score is capped at B+ until enough forward archive evidence exists.
+            The next review target is {{ front_track.target_grade or progress.next_target_grade }}.
         </p>
         {% endif %}
         {% if report.failure_watchlist.blocking_findings %}
@@ -83,7 +96,14 @@
                 <h3>{{ pillar.name }}</h3>
                 <span class="grade-chip">{{ pillar.grade }}</span>
             </div>
-            <p class="front-office-status">{{ pillar.status | replace("_", " ") | title }}</p>
+            {% set status_label = {
+                "a_plus_public_ready": "Public-ready",
+                "a_plus_native_daily_pipeline": "Native daily pipeline",
+                "raw_ingestion_owned": "Raw ingestion owned",
+                "a_plus_bucket_evidence_ready": "Bucket evidence ready",
+                "in_progress": "In progress"
+            }.get(pillar.status, pillar.status | replace("_", " ") | title) %}
+            <p class="front-office-status">{{ status_label }}</p>
             <dl>
                 {% for key, value in pillar.evidence.items() %}
                 {% if value is string or value is number or value is boolean %}

@@ -86,10 +86,24 @@ def test_intelligence_hub_renders_all_roadmap_lanes():
     assert "Prospect Peak Projection V2" in html
     assert "Player Card V2 Visuals" in html
     assert "Playing-Time / Role Tracker" in html
-    assert "MLB Projection Center" in html
+    assert "MLB Projection Track" in html
     assert "League Tools" in html
     assert "publish checks" in html
     assert "custom league settings" in html
+
+
+def test_intelligence_hub_leads_with_user_facing_surfaces():
+    client = app.test_client()
+
+    response = client.get("/intelligence")
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert html.index("Scouting Reports") < html.index("Launch Stability")
+    assert html.index("Player Card V2 Visuals") < html.index("Launch Stability")
+    assert html.index("Recent Signals") < html.index("Launch Stability")
+    assert "MLB Projection Track" in html
+    assert "H+P model track" not in html
 
 
 def test_primary_nav_links_to_intelligence_surfaces():

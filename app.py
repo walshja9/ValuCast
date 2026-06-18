@@ -2211,7 +2211,6 @@ def _artifact_date(payload: dict | None) -> str | None:
 def intelligence_hub():
     root = Path(__file__).parent
     models = root / "data" / "models"
-    scorecard = _load_artifact(root / "data" / "validation" / "methodology_scorecard.json")
     quality = _load_artifact(models / "valucast_quality_governor.json")
     repository = _load_artifact(models / "valucast_scouting_reports.json")
     recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
@@ -2230,30 +2229,28 @@ def intelligence_hub():
 
     lanes = [
         {
-            "name": "Launch Stability",
-            "status": "Ready" if _artifact_ready(quality, "ready_for_public_snapshot") else "Next build",
-            "kicker": "publish checks",
+            "name": "Scouting Reports",
+            "status": "Ready" if _artifact_ready(repository, "validation", "ready_for_repository") else "Next build",
+            "kicker": "player intelligence",
             "copy": (
-                "Daily publish checks watch freshness, identity coverage, board shape, "
-                "Buys readiness, and stale stat context before the public surfaces move."
+                "Searchable stat-grounded prospect reads, peak notes, confidence labels, "
+                "and player-card links in one scouting surface."
             ),
-            "metric": (quality or {}).get("status", "unavailable").replace("_", " ").title(),
-            "href": "/front-office",
-            "cta": "View front-office track",
+            "metric": f"{((repository or {}).get('summary') or {}).get('report_count', 0)} reports",
+            "href": "/scouting",
+            "cta": "Open reports",
         },
         {
-            "name": "Player Card Health",
-            "status": "Ready" if _artifact_ready(card_audit, "validation", "ready_for_cards") else "Needs review",
-            "kicker": "card coverage",
+            "name": "Player Card V2 Visuals",
+            "status": "Live" if _artifact_ready(repository) else "Next build",
+            "kicker": "cards and share graphics",
             "copy": (
-                "Prospect cards now get a daily identity, level, stat-context, "
-                "graduation, and peak-projection audit before they publish."
+                "Cards now center the ValuCast read, current percentiles, peak outlook, "
+                "confidence context, and shareable visual summaries."
             ),
-            "metric": (
-                f"{((card_audit or {}).get('metrics') or {}).get('top200_count', 0)} top-200 checked"
-            ),
-            "href": "/scouting",
-            "cta": "Review card health",
+            "metric": "card v2",
+            "href": "/?mode=prospects",
+            "cta": "Open cards",
         },
         {
             "name": "Recent Signals",
@@ -2270,18 +2267,6 @@ def intelligence_hub():
             "cta": "See signals",
         },
         {
-            "name": "Scouting Reports",
-            "status": "Ready" if _artifact_ready(repository, "validation", "ready_for_repository") else "Next build",
-            "kicker": "player intelligence",
-            "copy": (
-                "Searchable stat-grounded prospect reads, peak notes, confidence labels, "
-                "and player-card links in one scouting surface."
-            ),
-            "metric": f"{((repository or {}).get('summary') or {}).get('report_count', 0)} reports",
-            "href": "/scouting",
-            "cta": "Open reports",
-        },
-        {
             "name": "Prospect Peak Projection V2",
             "status": "Ready" if _artifact_ready(peak_calibration, "validation", "ready_for_review") else "Collecting",
             "kicker": "role and ceiling context",
@@ -2296,16 +2281,42 @@ def intelligence_hub():
             "cta": "View prospects",
         },
         {
-            "name": "Player Card V2 Visuals",
-            "status": "Live" if _artifact_ready(repository) else "Next build",
-            "kicker": "cards and share graphics",
+            "name": "League Tools",
+            "status": "Live",
+            "kicker": "custom values",
             "copy": (
-                "Cards now center the ValuCast read, current percentiles, peak outlook, "
-                "confidence context, and shareable visual summaries."
+                "Dynasty customization, league import, Category Fit, Value Map, Buys, "
+                "and CSV export are the bridge from model output to league decisions."
             ),
-            "metric": "card v2",
-            "href": "/?mode=prospects",
-            "cta": "Open cards",
+            "metric": "custom league settings",
+            "href": "/?mode=dd_dynasty",
+            "cta": "Customize values",
+        },
+        {
+            "name": "Launch Stability",
+            "status": "Ready" if _artifact_ready(quality, "ready_for_public_snapshot") else "Next build",
+            "kicker": "publish checks",
+            "copy": (
+                "Daily publish checks watch freshness, identity coverage, board shape, "
+                "Buys readiness, and stale stat context before the public surfaces move."
+            ),
+            "metric": (quality or {}).get("status", "unavailable").replace("_", " ").title(),
+            "href": "/front-office",
+            "cta": "View front-office track",
+        },
+        {
+            "name": "Player Card Health",
+            "status": "Ready" if _artifact_ready(card_audit, "validation", "ready_for_cards") else "Needs review",
+            "kicker": "card coverage",
+            "copy": (
+                "Prospect cards get a daily identity, level, stat-context, "
+                "graduation, and peak-projection audit before they publish."
+            ),
+            "metric": (
+                f"{((card_audit or {}).get('metrics') or {}).get('top200_count', 0)} top-200 checked"
+            ),
+            "href": "/scouting",
+            "cta": "Review card health",
         },
         {
             "name": "Playing-Time / Role Tracker",
@@ -2322,28 +2333,16 @@ def intelligence_hub():
             "cta": "See role mix",
         },
         {
-            "name": "MLB Projection Center",
+            "name": "MLB Projection Track",
             "status": "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Building",
-            "kicker": "H+P model track",
+            "kicker": "projection evidence",
             "copy": (
-                "The ValuCast H+P source stays opt-in while the methodology page publishes "
-                "the held-out scorecard and what has not been proven yet."
+                "The ValuCast Hitter + Pitcher source stays opt-in while the methodology "
+                "page publishes the held-out scorecard and what has not been proven yet."
             ),
-            "metric": (scorecard or {}).get("version", "scorecard"),
+            "metric": "ValuCast Hitter + Pitcher v1",
             "href": "/methodology",
             "cta": "Read methodology",
-        },
-        {
-            "name": "League Tools",
-            "status": "Live",
-            "kicker": "custom values",
-            "copy": (
-                "Dynasty customization, league import, Category Fit, Value Map, Buys, "
-                "and CSV export are the bridge from model output to league decisions."
-            ),
-            "metric": "custom league settings",
-            "href": "/?mode=dd_dynasty",
-            "cta": "Customize values",
         },
     ]
     readiness = {

@@ -114,6 +114,10 @@ class TestSourceSelection(unittest.TestCase):
     def test_footer_steamer_board_unchanged(self):
         r = self.client.get("/")
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
+        self.assertIn(
+            b'Dynasty, prospects, buys, scouting reads, and peak context are ValuCast-owned model surfaces',
+            r.data,
+        )
 
     def test_caption_and_footer_refresh_oob_on_source_switch(self):
         # Both the caption and the footer live OUTSIDE #rankings-container, so an
@@ -128,6 +132,7 @@ class TestSourceSelection(unittest.TestCase):
         st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
+        self.assertIn(b'ValuCast-owned model surfaces', st)
         self.assertNotIn(self.CAPTION_ANCHOR, st)                            # caption cleared
 
     def test_methodology_page_renders_honest_statements(self):

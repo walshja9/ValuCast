@@ -245,3 +245,8 @@ def test_front_office_page_renders():
     assert "Front Office Track" in html
     assert "True blockers" in html
     assert "Evidence gates" in html
+    assert "Watch items" in html
+    assert "Risk flags" not in html
+    assert "Next MLB evidence milestone:" in html
+    assert "Current score is capped" in html
+    assert "A Plus" not in html
