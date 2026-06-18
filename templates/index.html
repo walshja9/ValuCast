@@ -7,6 +7,9 @@
       hx-trigger="change[event.target.name!=='league_url'] delay:100ms, keyup changed delay:300ms from:#search-input"
       hx-sync="this:replace">
 
+    {% if snapshot_stale %}
+    <div class="notice">Showing the most recent validated ValuCast snapshot — today's refresh hasn't published yet.</div>
+    {% endif %}
     {% if notice %}
     <div class="notice">{{ notice }}</div>
     {% endif %}

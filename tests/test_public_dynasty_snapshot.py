@@ -1068,25 +1068,39 @@ def test_accepts_valucast_owned_row_sources():
     assert not any("DD/external-derived" in problem for problem in problems)
 
 
-def test_app_selector_keeps_dd_when_snapshot_gate_closed():
+def test_app_selector_goes_unavailable_when_snapshot_not_ready_and_old():
     from app import _select_dynasty_store
 
-    dd = SimpleNamespace(is_available=True)
-    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=False)
+    snapshot = SimpleNamespace(
+        is_available=True, ready_for_live_consumers=False, generated_at="2000-01-01"
+    )
 
-    selected, source = _select_dynasty_store(dd, snapshot, use_public_snapshot=True)
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
 
-    assert selected is dd
-    assert source == "dd_feed"
+    assert source == "unavailable"
+    assert selected.is_available is False  # never DD
+
+
+def test_app_selector_serves_stale_snapshot_when_recent():
+    from app import _select_dynasty_store
+
+    recent = (date.today() - timedelta(days=1)).isoformat()
+    snapshot = SimpleNamespace(
+        is_available=True, ready_for_live_consumers=False, generated_at=recent
+    )
+
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
+
+    assert selected is snapshot
+    assert source == "valucast_public_snapshot_stale"
 
 
 def test_app_selector_can_use_ready_public_snapshot():
     from app import _select_dynasty_store
 
-    dd = SimpleNamespace(is_available=True)
     snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
 
-    selected, source = _select_dynasty_store(dd, snapshot, use_public_snapshot=True)
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
 
     assert selected is snapshot
     assert source == "valucast_public_snapshot"
@@ -1095,24 +1109,22 @@ def test_app_selector_can_use_ready_public_snapshot():
 def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
     from app import _select_dynasty_store
 
-    dd = SimpleNamespace(is_available=True)
     snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.delenv("VALUCAST_USE_PUBLIC_SNAPSHOT", raising=False)
 
-    selected, source = _select_dynasty_store(dd, snapshot)
+    selected, source = _select_dynasty_store(snapshot)
 
     assert selected is snapshot
     assert source == "valucast_public_snapshot"
 
 
-def test_app_selector_can_disable_public_snapshot_rollout(monkeypatch):
+def test_app_selector_disabled_rollout_never_serves_dd(monkeypatch):
     from app import _select_dynasty_store
 
-    dd = SimpleNamespace(is_available=True)
     snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.setenv("VALUCAST_USE_PUBLIC_SNAPSHOT", "0")
 
-    selected, source = _select_dynasty_store(dd, snapshot)
+    selected, source = _select_dynasty_store(snapshot)
 
-    assert selected is dd
-    assert source == "dd_feed"
+    assert source == "unavailable"
+    assert selected.is_available is False

@@ -384,57 +384,43 @@ def test_build_valucast_board_exposes_spark_history_after_real_history_accumulat
     assert board[0]["value_history"] == payload["board"][0]["score_history"]
 
 
-def test_buy_selector_keeps_dd_until_valucast_ready_and_snapshot_active(monkeypatch):
+def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     from app import _select_buy_source
 
-    dd = SimpleNamespace(is_available=True)
     blocked = SimpleNamespace(is_available=True, ready_for_live_consumers=False)
     ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
 
+    # Buys not ready -> unavailable, never DD.
     selected, source = _select_buy_source(
-        dd,
-        blocked,
-        use_valucast_buys=True,
-        public_snapshot_active=True,
+        blocked, use_valucast_buys=True, public_snapshot_active=True
     )
-    assert selected is dd
-    assert source == "dd_feed"
+    assert source == "unavailable"
+    assert selected.is_available is False
 
+    # Dynasty board not on the ValuCast snapshot -> unavailable, never DD.
     selected, source = _select_buy_source(
-        dd,
-        ready,
-        use_valucast_buys=True,
-        public_snapshot_active=False,
+        ready, use_valucast_buys=True, public_snapshot_active=False
     )
-    assert selected is dd
-    assert source == "dd_feed"
+    assert source == "unavailable"
 
+    # Ready + snapshot active -> ValuCast buys.
     selected, source = _select_buy_source(
-        dd,
-        ready,
-        use_valucast_buys=True,
-        public_snapshot_active=True,
+        ready, use_valucast_buys=True, public_snapshot_active=True
     )
     assert selected is ready
     assert source == "valucast_buys"
 
-    selected, source = _select_buy_source(
-        dd,
-        ready,
-        public_snapshot_active=True,
-    )
+    # Default (env unset) + snapshot active -> ValuCast buys.
+    selected, source = _select_buy_source(ready, public_snapshot_active=True)
     assert selected is ready
     assert source == "valucast_buys"
 
+    # Rollout disabled -> unavailable, never DD.
     monkeypatch.setenv("VALUCAST_USE_VALUCAST_BUYS", "0")
-    selected, source = _select_buy_source(
-        dd,
-        ready,
-        public_snapshot_active=True,
-    )
-    assert selected is dd
-    assert source == "dd_feed"
+    selected, source = _select_buy_source(ready, public_snapshot_active=True)
+    assert source == "unavailable"
+    assert selected.is_available is False
 
 
 def test_review_artifact_reports_low_overlap_but_blocks_only_history_and_approval():

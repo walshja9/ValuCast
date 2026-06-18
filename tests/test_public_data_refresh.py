@@ -202,7 +202,6 @@ def test_sync_prospect_inputs_rejects_invalid_service_rows(tmp_path, monkeypatch
 
 def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     paths = {
-        "DD_FEED": tmp_path / "dd.json",
         "VALUCAST_PROSPECT_INPUTS": tmp_path / "valucast_prospect_inputs.json",
         "PUBLIC_SNAPSHOT": tmp_path / "public_snapshot.json",
         "REDRAFT_METADATA": tmp_path / "metadata.json",
@@ -235,7 +234,6 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "PLAYING_TIME_ROLE_TRACKER": tmp_path / "playing_time_role_tracker.json",
         "SCOUTING_REPORTS": tmp_path / "scouting_reports.json",
     }
-    paths["DD_FEED"].write_text(json.dumps(_valid_feed()), encoding="utf-8")
     paths["VALUCAST_PROSPECT_INPUTS"].write_text(
         json.dumps(_valid_prospect_inputs()), encoding="utf-8"
     )

@@ -251,25 +251,42 @@ VALUCAST_BUYS_PATH = Path(os.environ.get(
 legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
+# Null-object served when no ValuCast snapshot is usable: is_available is False, so
+# routes fall through to their existing "unavailable" handling. DD is NEVER served as
+# a valuation source — only a ready or stale-but-valid ValuCast snapshot, else this.
+_UNAVAILABLE_DYNASTY_STORE = PublicSnapshotStore(
+    PUBLIC_SNAPSHOT_PATH.parent / "__no_such_snapshot__.json"
+)
+# ponytail: 7d is a taste dial — the daily build means older than this signals a
+# broken pipeline, so go unavailable rather than serve very stale values.
+MAX_SNAPSHOT_STALE_DAYS = 7
 
 
-def _select_dynasty_store(dd_candidate, snapshot_candidate, use_public_snapshot=None):
+def _within_stale_window(generated_at, max_days=MAX_SNAPSHOT_STALE_DAYS):
+    try:
+        gen = date.fromisoformat(str(generated_at)[:10])
+    except (TypeError, ValueError):
+        return False
+    return (date.today() - gen).days <= max_days
+
+
+def _select_dynasty_store(snapshot_candidate, use_public_snapshot=None):
+    """Serve a ready ValuCast snapshot, else a stale-but-valid one (labeled), else an
+    explicit unavailable state. DD is never returned as a valuation fallback."""
     enabled = (
         os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1"
         if use_public_snapshot is None
         else bool(use_public_snapshot)
     )
-    if (
-        enabled
-        and snapshot_candidate.is_available
-        and snapshot_candidate.ready_for_live_consumers
-    ):
-        return snapshot_candidate, "valucast_public_snapshot"
-    return dd_candidate, "dd_feed"
+    if enabled and snapshot_candidate.is_available:
+        if snapshot_candidate.ready_for_live_consumers:
+            return snapshot_candidate, "valucast_public_snapshot"
+        if _within_stale_window(getattr(snapshot_candidate, "generated_at", None)):
+            return snapshot_candidate, "valucast_public_snapshot_stale"
+    return _UNAVAILABLE_DYNASTY_STORE, "unavailable"
 
 
 def _select_buy_source(
-    dd_candidate,
     buy_candidate,
     *,
     use_valucast_buys=None,
@@ -292,7 +309,8 @@ def _select_buy_source(
         and buy_candidate.ready_for_live_consumers
     ):
         return buy_candidate, "valucast_buys"
-    return dd_candidate, "dd_feed"
+    # Never fall back to DD-derived buys — unavailable instead.
+    return _UNAVAILABLE_DYNASTY_STORE, "unavailable"
 
 
 def _buy_source_copy(source: str) -> dict[str, str]:
@@ -329,19 +347,20 @@ def _buy_spark_label(spark: dict | None) -> str:
     return f"{direction} {delta:+.1f}{suffix}"
 
 
-dd_store, dynasty_data_source = _select_dynasty_store(
-    legacy_dd_store, public_snapshot_store
-)
+dd_store, dynasty_data_source = _select_dynasty_store(public_snapshot_store)
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
 
-# In production (VALUCAST_REQUIRE_DD=1) treat DD as required: refuse to start if the
-# feed failed to load. With gunicorn --preload this raises in the master, so the
-# candidate deploy fails and Render keeps the prior healthy deploy live — a corrupt
-# snapshot can never replace a working deployment and blank the tabs.
-if os.environ.get("VALUCAST_REQUIRE_DD") == "1" and not legacy_dd_store.is_available:
+# Refuse to promote a deploy with no servable ValuCast snapshot: with gunicorn
+# --preload this raises in the master, so the candidate deploy fails and Render keeps
+# the prior healthy deploy live. DD is never a valuation fallback — only a ready or
+# stale-but-valid ValuCast snapshot is served, else the explicit unavailable state.
+if (
+    os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1"
+    and dynasty_data_source == "unavailable"
+):
     raise RuntimeError(
-        f"DD feed required but unavailable: {DD_FEED_PATH}. Refusing to start so the "
-        "prior healthy Render deploy stays live."
+        "No servable ValuCast snapshot (not ready and not stale-valid). Refusing to "
+        "start so the prior healthy Render deploy stays live."
     )
 
 def _compute_dynasty_dollars(rows, settings):
@@ -1968,6 +1987,7 @@ def index():
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
             _apply_prospect_board_context(ctx, request.args)
+        ctx["snapshot_stale"] = dynasty_data_source == "valucast_public_snapshot_stale"
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
@@ -2810,7 +2830,7 @@ def buys():
 def _build_buys_page_context(raw_n=None):
     """Shared buys context for the page and deterministic share-card PNG."""
     n = buy_score.clamp_n(raw_n if raw_n is not None else buy_score.BOARD_SIZE)
-    buy_store, buy_data_source = _select_buy_source(dd_store, valucast_buy_store)
+    buy_store, buy_data_source = _select_buy_source(valucast_buy_store)
     if buy_data_source == "valucast_buys" and buy_store.is_available:
         graphic_rows = buy_score.build_valucast_board(buy_store.get_all())
         # n drives the interactive list only; the 2x20 graphic always takes 40
@@ -2818,14 +2838,8 @@ def _build_buys_page_context(raw_n=None):
                      else buy_score.build_valucast_board(buy_store.get_all(), n=n))
         data_generated_at = buy_store.generated_at
         data_available = True
-    elif dd_store.is_available:
-        graphic_rows = buy_score.build_board(dd_store.get_all())
-        # n drives the interactive list only; the 2x20 graphic always takes 40
-        list_rows = (graphic_rows[:n] if n <= buy_score.BOARD_SIZE
-                     else buy_score.build_board(dd_store.get_all(), n=n))
-        data_generated_at = dd_store.generated_at
-        data_available = True
     else:
+        # No ValuCast buys ready -> explicit unavailable. Never a DD-derived board.
         graphic_rows, list_rows = [], []
         data_generated_at = None
         data_available = False
@@ -3050,7 +3064,6 @@ def health_ready():
     stores = {
         "steamer": _store_ok("steamer"),
         "valucast": _store_ok("valucast"),
-        "dd": legacy_dd_store.is_available,
     }
     if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1":
         stores["public_snapshot_ready"] = (
@@ -3076,6 +3089,7 @@ def health_ready():
             "available": valucast_buy_store.is_available,
             "ready_for_live_consumers": valucast_buy_store.ready_for_live_consumers,
         },
+        "dd_comparison_feed": {"available": legacy_dd_store.is_available},
         "dynasty_data_source": dynasty_data_source,
         "commit": os.environ.get("RENDER_GIT_COMMIT", ""),
     }

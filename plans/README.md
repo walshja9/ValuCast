@@ -52,8 +52,22 @@ classified per the requested taxonomy:
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001  | Fail-loud DD/external independence validators | P1 | M | — | DONE (Fable, 6/17; 1310 pass, ruff clean) |
-| 002  | Remove DD as a live valuation fallback + retire 3 deploy gates | P1 | M | 001 | TODO |
+| 002  | Remove DD as a live valuation fallback + retire 3 deploy gates | P1 | M | 001 | DONE (Fable, 6/17; 1311 pass, ruff clean) |
 | 003  | Strip unused DD context keys from public snapshot + tighten panel label | P2 | S | — | TODO |
+
+### 002 completion note
+
+Implemented directly by Fable (Codex still out). Decision 1 applied in full:
+`_select_dynasty_store`/`_select_buy_source` never return DD — they serve a ready
+ValuCast snapshot, a stale-but-valid one (`valucast_public_snapshot_stale`, ≤7d,
+labeled via the index.html banner), or an explicit unavailable null-object. The
+boot guard now refuses startup only when no ValuCast snapshot is servable
+(`dynasty_data_source == "unavailable"`); `VALUCAST_REQUIRE_DD` removed from app.py
+and render.yaml; `/health/ready` no longer gates on the DD feed (demoted to an
+informational `dd_comparison_feed`); the DD feed dropped from the hard freshness
+gate. DD feed sync stays (comparison-only). The legacy DD-shaped buy-board fallback
+was removed (it would have run on snapshot rows) → buys are ValuCast-or-unavailable.
+Verified: `/health/ready` 200 + ready with no DD; full suite 1311 pass; ruff clean.
 
 ### 001 completion note
 
