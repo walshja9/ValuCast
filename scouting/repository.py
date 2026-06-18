@@ -61,12 +61,13 @@ def _valid_llm_text(report: dict) -> str | None:
 
 
 def _publish_report_fields(reports: list[dict]) -> dict:
-    """Set the public report text, preferring valid LLM copy with deterministic fallback."""
+    """Set the public report text with one voice across the whole artifact."""
+    llm_texts = [_valid_llm_text(report) for report in reports]
+    publish_llm = bool(reports) and all(llm_texts)
     llm_count = 0
     deterministic_count = 0
-    for report in reports:
-        llm_text = _valid_llm_text(report)
-        if llm_text:
+    for report, llm_text in zip(reports, llm_texts):
+        if publish_llm and llm_text:
             report["published_report"] = llm_text
             report["published_report_source"] = "llm"
             llm_count += 1

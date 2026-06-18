@@ -199,6 +199,8 @@ def test_scouting_repository_rejects_wrong_pitcher_handedness_from_llm(tmp_path,
     assert pitcher["report_llm"]["valid"] is False
     assert pitcher["report_llm"]["hard_ok"] is False
     assert pitcher["report_llm"]["handedness_problems"]
+    assert payload["summary"]["llm_published_report_count"] == 0
+    assert {report["published_report_source"] for report in payload["reports"]} == {"deterministic"}
     assert pitcher["published_report_source"] == "deterministic"
     assert "right-hander" not in pitcher["published_report"]
 
@@ -238,6 +240,21 @@ def test_scouting_repository_validator_blocks_robotic_copy(tmp_path):
     _, problems = validate_scouting_repository(artifact_path)
 
     assert any("display-only" in problem for problem in problems)
+
+
+def test_scouting_repository_validator_blocks_mixed_public_report_sources(tmp_path):
+    snapshot_path = _write_snapshot(tmp_path)
+    payload = build_scouting_repository(
+        snapshot_path=snapshot_path,
+        generated_at="2026-06-16T00:00:00+00:00",
+    )
+    payload["reports"][0]["published_report_source"] = "llm"
+    artifact_path = tmp_path / "reports.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_scouting_repository(artifact_path)
+
+    assert any("mixed published_report_source" in problem for problem in problems)
 
 
 def test_scouting_repository_validator_blocks_wrong_pitcher_handedness(tmp_path):
