@@ -364,8 +364,9 @@ def _card_v2_context(
         "confidence": confidence,
         "role_probabilities": _role_probability(row, peak_score, risk, shape_average),
         "card_copy": (
-            f"Peak view: {ceiling.replace('_', ' ')}; floor is "
-            f"{floor.replace('_', ' ')}. Risk is {risk}, confidence is {confidence}."
+            f"Ceiling is {ceiling.replace('_', ' ')}; "
+            f"floor is {floor.removesuffix('_floor').replace('_', ' ')}. "
+            f"{risk.capitalize()} risk, {confidence} confidence."
         ),
     }
 

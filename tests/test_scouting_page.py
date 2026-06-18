@@ -37,7 +37,7 @@ def test_scouting_page_renders_repository_and_role_tracker():
 
     assert response.status_code == 200
     assert "Scouting Reports" in html
-    assert "What the model sees" in html
+    assert "What the reports say" in html
     assert "role profiles" in html
     assert "peak buckets" in html
     assert "recent movers" in html

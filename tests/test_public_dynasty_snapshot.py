@@ -1107,7 +1107,9 @@ def test_mlb_stat_line_by_id_maps_actuals_to_template_keys():
     actuals = [
         {"metadata": {"mlbam_id": "100"}, "pool": "hitter",
          "stats": {"PA": 26, "AVG": 0.083, "OPS": 0.487, "HR": 1, "RBI": 3, "R": 2, "SB": 0}},
-        {"metadata": {"mlbam_id": "200"}, "pool": "pitcher",
+        # Real actuals use starter/reliever pools, never a "pitcher" pool — both
+        # must normalize to the pitcher role so call-up pitcher cards populate.
+        {"metadata": {"mlbam_id": "200"}, "pool": "starter",
          "stats": {"IP": 12.0, "ERA": 3.75, "WHIP": 1.25, "SO": 14, "QS": 1, "SV": 0}},
     ]
     by_id = _mlb_stat_line_by_id(actuals)

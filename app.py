@@ -1444,7 +1444,7 @@ def _graphic_best_single_read(best_line, best_level, stat_percentiles, last):
             for key in keys
             if isinstance(stat_percentiles.get(key), int) and stat_percentiles[key] >= 70
         ][:3]
-    loud = f" The loudest signals are {_graphic_join(callouts)}." if callouts else ""
+    loud = f" He's carrying {_graphic_join(callouts)}." if callouts else ""
     return (
         f"{last}'s current level is a thin sample, so this reads off the best 2026 look: "
         f"{best_level} over {sample} {unit}, where he put up {core}.{loud}"
@@ -1487,7 +1487,7 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
         if not stat_percentiles:
             loud = "The sample is too small to read the skill shape yet."
         else:
-            loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud."
+            loud = f"He's carrying {_graphic_join(strengths)}." if strengths else "The shape is more steady than loud."
         weak_key = min(
             (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
             key=lambda key: stat_percentiles[key],
@@ -1516,7 +1516,7 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
     if not stat_percentiles:
         loud = "The sample is too small to read the skill shape yet."
     else:
-        loud = f"The loudest signals are {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive."
+        loud = f"He's carrying {_graphic_join(strengths)}." if strengths else "The shape is more solid than explosive."
     weak_key = min(
         (key for key in strength_keys if isinstance(stat_percentiles.get(key), int)),
         key=lambda key: stat_percentiles[key],
@@ -1555,9 +1555,11 @@ def _prospect_player_card_png(row):
     card_2 = _GRAPHIC_PALETTE["card_2"]
     border = _GRAPHIC_PALETTE["border"]
     green = _GRAPHIC_PALETTE["green"]
-    blue = _GRAPHIC_PALETTE["blue"]
-    cyan = (45, 212, 191)
     amber = (251, 191, 36)
+    # Savant ramp — matches the site percentile bars: red = elite, orange = solid, blue = low.
+    savant_elite = (214, 41, 28)
+    savant_good = (207, 107, 58)
+    savant_low = (54, 97, 173)
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
 
@@ -1624,7 +1626,7 @@ def _prospect_player_card_png(row):
             draw.text((82, y + 8), label, fill=muted, font=_graphic_font(18, bold=True))
             x0, y0, x1, y1 = 190, y + 6, 790, y + 28
             draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(39, 48, 76))
-            fill = cyan if pct >= 75 else blue if pct > 25 else amber
+            fill = savant_elite if pct >= 75 else savant_good if pct > 25 else savant_low
             draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=7, fill=fill)
             knob_x = max(x0 + 16, min(x1 - 16, x0 + int((x1 - x0) * pct / 100)))
             draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(13, 16, 30))
@@ -1646,7 +1648,7 @@ def _prospect_player_card_png(row):
         x = 74 + idx * 235
         draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(54, 57, 92), width=1)
         grade = int(skill["grade"])
-        color = green if grade >= 60 else amber if grade <= 40 else text
+        color = savant_elite if grade >= 60 else savant_low if grade <= 40 else text
         draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
         draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
         draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))

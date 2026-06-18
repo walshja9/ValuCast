@@ -12,6 +12,7 @@
 {% block twitter_image %}https://valucast.app/map/share-card.png{% endblock %}
 
 {% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <nav class="horizon-tabs" aria-label="Value map navigation">
     <a href="/?mode=dd_dynasty" class="htab htab-dynasty">Dynasty</a>
     <a href="/?mode=prospects" class="htab htab-prospects">Prospects</a>
@@ -22,7 +23,7 @@
 <section class="map-heading glass">
     <div>
         <h2>Value Map</h2>
-        <p>Dynasty value vs age · {{ player_count }} players{% if dd_generated_at %} · updated {{ dd_generated_at[:10] }}{% endif %}</p>
+        <p>Dynasty value vs age · {{ player_count }} players{% if dd_generated_at %} · updated {{ editorial_date(dd_generated_at) }}{% endif %}</p>
     </div>
     <div class="map-controls">
         <fieldset class="pool-toggle" aria-label="Map player pool">

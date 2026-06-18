@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}How ValuCast Works{% endblock %}
 {% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <article class="methodology">
     <div class="topline">
         <h2>How ValuCast Works</h2>
@@ -9,7 +10,7 @@
     <p class="methodology-version">As of June 2026 · {{ scorecard.version }}</p>
 
     {% if scorecard.generated_at %}
-    <p class="methodology-version">Scorecard generated {{ scorecard.generated_at[:10] }}</p>
+    <p class="methodology-version">Scorecard generated {{ editorial_date(scorecard.generated_at) }}</p>
     {% endif %}
 
     <div class="ataglance">

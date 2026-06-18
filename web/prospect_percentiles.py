@@ -339,11 +339,11 @@ def _pitcher_parts(row, line: dict) -> tuple[str, str, str]:
         )
         risk = (
             "Nothing in the current line argues against starting; the remaining risk is upper-level translation.",
-            "No current rate identifies a weakness, so the next level is the meaningful test.",
+            "Nothing in the line points to a weakness yet; the next level is the real test.",
         )
         role = (
-            "Mid-rotation lean, with a back-end starter floor on the current evidence.",
-            "This is a mid-rotation starter on the current evidence.",
+            "Mid-rotation lean, with a back-end starter floor.",
+            "This profiles as a mid-rotation starter.",
         )
         family = "pitcher-dominant-control"
     elif k_per_9 is not None and k_per_9 >= 12 and bb_per_9 is not None and bb_per_9 >= 4.5:
@@ -416,8 +416,8 @@ def _pitcher_parts(row, line: dict) -> tuple[str, str, str]:
         family = "pitcher-results"
     else:
         skill = (
-            "No current pitching rate gives him a dependable way through a lineup.",
-            "The current line does not identify a repeatable method for retiring hitters.",
+            "Nothing in the profile gives him a dependable way through a lineup yet.",
+            "There's no repeatable way to retire hitters in the line yet.",
         )
         rate_detail = "the strikeout-to-walk result" if k_bb_pct is not None else "the current strikeout and walk results"
         risk = (

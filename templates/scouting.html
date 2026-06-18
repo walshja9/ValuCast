@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Scouting Reports | ValuCast{% endblock %}
 {% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <article class="scouting-report">
     <div class="topline">
         <h2>Scouting Reports</h2>
@@ -87,9 +88,9 @@
         <div class="scouting-section-head">
             <div>
                 <span class="eyebrow">Top prospect reads</span>
-                <h3>What the model sees</h3>
+                <h3>What the reports say</h3>
             </div>
-            <p>{{ filtered_count }} matching report{{ '' if filtered_count == 1 else 's' }}. Stats come from ValuCast-owned MiLB context; peak notes come from the peak-projection layer, not public scouting grades.</p>
+            <p>{{ filtered_count }} matching report{{ '' if filtered_count == 1 else 's' }}. Stats come from ValuCast-owned MiLB context; peak notes come from the peak projection, not public scouting grades.</p>
         </div>
         {% if not reports %}
         <article class="scouting-player-card glass">
@@ -133,7 +134,7 @@
                     <div><dt>Status</dt><dd>{{ "Live" if validation.ready_for_repository else "Next build" }}</dd></div>
                     <div><dt>Reports</dt><dd>{{ summary.report_count }}</dd></div>
                     <div><dt>Max rank</dt><dd>{{ summary.max_prospect_rank }}</dd></div>
-                    <div><dt>Generated</dt><dd>{{ (repository.generated_at or "")[:10] }}</dd></div>
+                    <div><dt>Generated</dt><dd>{{ editorial_date(repository.generated_at) }}</dd></div>
                 </dl>
             </article>
             <article class="scouting-card">

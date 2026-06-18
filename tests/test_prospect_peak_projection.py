@@ -85,7 +85,10 @@ def test_peak_projection_builds_card_ready_role_and_shape_without_rank_mutation(
     assert hitter["usage"] == "card_visual_context_not_live_rank_or_value"
     assert hitter["card_v2"]["visual_version"] == "2.0.0"
     assert hitter["card_v2"]["role_probabilities"]["regular_or_better"] > 0
-    assert hitter["card_v2"]["card_copy"].startswith("Peak view:")
+    assert hitter["card_v2"]["card_copy"].startswith("Ceiling is")
+    # The floor clause must not double-print "floor" — the slug "..._floor"
+    # used to render as "floor is reserve floor". "floor" appears once now.
+    assert hitter["card_v2"]["card_copy"].lower().count("floor") == 1
     assert len(hitter["shape"]) == 4
     assert {item["label"] for item in hitter["shape"]} == {
         "Hit",

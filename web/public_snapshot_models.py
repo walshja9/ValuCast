@@ -373,7 +373,7 @@ class PublicSnapshotRow:
 
     @property
     def peak_projection_note(self) -> str:
-        return "Projected peak role and shape - context only, it doesn't change the current rank or value."
+        return "Where he projects to peak — separate from today's value."
 
     @property
     def peak_score_label(self) -> str | None:
@@ -421,9 +421,9 @@ class PublicSnapshotRow:
         if not trajectory:
             return None
         labels = {
-            "more_peak_than_current_value": "More peak than current value",
-            "current_value_ahead_of_peak_read": "Current value ahead of peak read",
-            "current_and_peak_aligned": "Current and peak aligned",
+            "more_peak_than_current_value": "More upside than today's value",
+            "current_value_ahead_of_peak_read": "Priced ahead of the peak read",
+            "current_and_peak_aligned": "Price and peak in line",
         }
         return labels.get(str(trajectory), str(trajectory).replace("_", " ").title())
 

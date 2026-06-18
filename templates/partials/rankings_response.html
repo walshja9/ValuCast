@@ -1,9 +1,10 @@
+{% from "partials/_editorial_date.html" import editorial_date %}
 <div id="source-caption" class="source-caption" hx-swap-oob="innerHTML:#source-caption">{% if source == 'valucast' and mode not in ['dd_dynasty', 'prospects'] %}{% include "partials/_source_caption.html" %}{% endif %}</div>
 <div id="footer-provenance" hx-swap-oob="innerHTML:#footer-provenance">{% include "partials/_footer_provenance.html" %}</div>
 {% if mode == 'dd_dynasty' or mode == 'prospects' %}
 {% include "partials/rankings_table_dynasty.html" %}
 {% if mode == 'dd_dynasty' %}
-<span class="config-summary" hx-swap-oob="innerHTML:.config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+<span class="config-summary" hx-swap-oob="innerHTML:.config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
 <section id="setup-panel" class="setup-panel glass" hx-swap-oob="innerHTML:#setup-panel">
     {% include "partials/setup_dynasty.html" %}
 </section>

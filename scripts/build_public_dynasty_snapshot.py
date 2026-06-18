@@ -399,11 +399,14 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
 
 # Current-season MLB line for called-up prospects, from ValuCast-owned actuals
 # (data/actuals/current.json) — replaces the retired DD feed. Template keys are
-# lowercase; actuals carry uppercase stat keys in hitter/pitcher pools.
+# lowercase; actuals carry uppercase stat keys. Actuals pools are
+# hitter / starter / reliever; prospect rows carry role hitter / pitcher, so both
+# pitcher pools normalize to the pitcher keyset and role before lookup.
 _MLB_STAT_LINE_KEYS = {
     "hitter": {"pa": "PA", "avg": "AVG", "ops": "OPS", "hr": "HR", "rbi": "RBI", "r": "R", "sb": "SB"},
     "pitcher": {"ip": "IP", "era": "ERA", "whip": "WHIP", "k": "SO", "qs": "QS", "sv": "SV"},
 }
+_POOL_TO_ROLE = {"hitter": "hitter", "starter": "pitcher", "reliever": "pitcher"}
 
 
 def _mlb_stat_line_by_id(actuals: list | None) -> dict[tuple[str, str], dict]:
@@ -412,14 +415,14 @@ def _mlb_stat_line_by_id(actuals: list | None) -> dict[tuple[str, str], dict]:
     for row in actuals or []:
         meta = row.get("metadata") or {}
         mlbam_id = meta.get("mlbam_id")
-        pool = row.get("pool")
-        keymap = _MLB_STAT_LINE_KEYS.get(pool)
+        role = _POOL_TO_ROLE.get(row.get("pool"))
+        keymap = _MLB_STAT_LINE_KEYS.get(role)
         if mlbam_id in (None, "") or keymap is None:
             continue
         stats = row.get("stats") or {}
         line = {out: stats[src] for out, src in keymap.items() if stats.get(src) is not None}
         if line:
-            by_id[(str(mlbam_id), pool)] = line
+            by_id[(str(mlbam_id), role)] = line
     return by_id
 
 

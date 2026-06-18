@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 <form id="league-setup"
       hx-get="/rankings"
       hx-target="#rankings-container"
@@ -106,7 +107,7 @@
     {% elif horizon == 'dynasty' %}
     <div class="rank-toolbar rank-toolbar-dynasty glass" id="rank-toolbar">
         <span class="config-summary-line">
-            <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+            <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
             <span class="board-source">Board source: ValuCast public snapshot</span>
             <a class="toolbar-how-link" href="/methodology">How it works</a>
         </span>
@@ -152,7 +153,7 @@
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
         <span class="config-summary-line">
-            <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ dd_generated_at[:10] }}{% endif %}</span>
+            <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
             <span class="board-source">Board source: ValuCast public snapshot</span>
         </span>
         {# No visible knobs on this horizon, so the form must carry the league

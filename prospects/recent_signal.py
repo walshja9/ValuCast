@@ -125,7 +125,7 @@ def _movement_label(score_delta: float | None, rank_delta: int | None, days: int
     if rank_delta:
         direction = "up" if rank_delta > 0 else "down"
         return f"{direction} {abs(rank_delta)} spots in {days}d"
-    return f"flat in {days}d"
+    return "holding steady"
 
 
 def _signal_row(row: dict, points: list[dict], buy_row: dict | None) -> dict:
