@@ -1,8 +1,8 @@
 {
   "artifact": "valucast_prospect_buys_monitor",
-  "generated_at": "2026-06-17T00:00:00+00:00",
+  "generated_at": "2026-06-18T00:00:00+00:00",
   "input_artifacts": {
-    "buy_generated_at": "2026-06-17T00:00:00+00:00",
+    "buy_generated_at": "2026-06-18T00:00:00+00:00",
     "buy_signal_version": "1.0.0",
     "forward_validation_report_version": "0.1.0",
     "forward_validation_status": "collecting"
@@ -17,13 +17,13 @@
   "monitor_name": "ValuCast Prospect Buys v1 Monitor",
   "monitor_version": "0.1.0",
   "monitoring": {
-    "buy_comparison_count": 4,
+    "buy_comparison_count": 5,
     "feeds_live_buys": true,
     "latest_top40_exited_count": 1,
     "latest_top40_new_count": 1,
     "latest_top40_retention_rate": 0.975,
     "next_action": "collect_more_valucast_owned_buy_observations",
-    "observation_span_days": 4,
+    "observation_span_days": 5,
     "ready_for_live_consumers": true,
     "review_ready": false
   },
