@@ -183,6 +183,21 @@ def _components(row: dict) -> dict:
     return {}
 
 
+def _is_active_callup_bridge(row: dict) -> bool:
+    context = row.get("context")
+    graduation_context = (
+        context.get("graduation_context")
+        if isinstance(context, dict)
+        else None
+    )
+    if not isinstance(graduation_context, dict):
+        graduation_context = {}
+    return (
+        row.get("active_mlb_callup_bridge") is True
+        or graduation_context.get("surface") == "active_mlb_roster_bridge"
+    )
+
+
 def _projection_stability(row: dict) -> dict:
     components = _components(row)
     stability = components.get("projection_stability")
@@ -1003,6 +1018,8 @@ def _prospect_availability_level_alignment(players: list[dict]) -> dict:
         evaluated += 1
         row_level = _level(row)
         availability_level = str(availability.get("level") or "").strip().upper()
+        if _is_active_callup_bridge(row) and row_level == "MLB" and availability_level:
+            continue
         if row_level and availability_level and row_level == availability_level:
             continue
         mismatches.append(

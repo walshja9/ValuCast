@@ -149,6 +149,35 @@ def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
     return ids
 
 
+def _active_callup_bridge_row(row: dict) -> dict:
+    """Keep a fresh MLB call-up visible while the MLB projection layer catches up."""
+    bridged = {**row}
+    previous_level = row.get("level")
+    context = dict(row.get("context") or {})
+    context["graduation_context"] = {
+        "status": "active_mlb_callup",
+        "graduated": True,
+        "surface": "active_mlb_roster_bridge",
+        "previous_level": previous_level,
+        "reason": "official_mlb_active_roster_without_mlb_projection_row",
+    }
+    drivers = [
+        driver
+        for driver in ["Active MLB roster call-up", *(row.get("drivers") or [])]
+        if driver
+    ]
+    bridged.update(
+        {
+            "level": "MLB",
+            "status": "active_mlb_callup",
+            "drivers": list(dict.fromkeys(drivers))[:6],
+            "active_mlb_callup_bridge": True,
+            "context": context,
+        }
+    )
+    return bridged
+
+
 def _debut_dates_by_id(mlb_track_record: dict | None) -> dict[str, str]:
     debut_by_id: dict[str, str] = {}
     for profile in (mlb_track_record or {}).get("profiles") or []:
@@ -656,6 +685,8 @@ def _validation(
     mlb_projection_rows_suppressed_by_prospect_sample: list[dict],
     calibration_report: dict,
     graduation_transition_floor_count: int = 0,
+    active_mlb_callup_bridge_count: int = 0,
+    active_mlb_callup_bridge_sample: list[dict] | None = None,
 ) -> dict:
     players = payload.get("players") or []
     identity_keys = [key for row in players if (key := _identity_key(row))]
@@ -765,6 +796,8 @@ def _validation(
         "quality_governor_blockers": quality_governor.get("blockers") or [],
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
         "prospects_excluded_by_mlb_identity_sample": prospects_excluded_by_mlb_identity_sample,
+        "active_mlb_callup_bridge_count": active_mlb_callup_bridge_count,
+        "active_mlb_callup_bridge_sample": active_mlb_callup_bridge_sample or [],
         "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
         "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
         "graduation_transition_floor_count": graduation_transition_floor_count,
@@ -821,10 +854,24 @@ def build_snapshot(
         generated_at,
         peak_projection=prospect_peak_projection,
     )
+    active_callup_bridge_ids = {
+        mlbam_id
+        for row in all_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id not in mlb_identity_ids
+    }
+    active_callup_bridge_rows = [
+        _active_callup_bridge_row(row)
+        for row in all_prospect_rows
+        if _mlbam_id(row) in active_callup_bridge_ids
+    ]
     graduated_prospect_rows = [
         row
         for row in all_prospect_rows
-        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        if (
+            (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+            and mlbam_id not in active_callup_bridge_ids
+        )
         or (
             mlbam_id in mlb_identity_ids
             and _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
@@ -839,6 +886,15 @@ def build_snapshot(
         row
         for row in all_prospect_rows
         if _mlbam_id(row) not in graduated_ids
+    ]
+    bridge_by_id = {
+        _mlbam_id(row): row
+        for row in active_callup_bridge_rows
+        if _mlbam_id(row)
+    }
+    prospect_rows = [
+        bridge_by_id.get(_mlbam_id(row), row)
+        for row in prospect_rows
     ]
     active_prospect_ids = {
         mlbam_id
@@ -874,6 +930,26 @@ def build_snapshot(
         }
         for row in sorted(
             graduated_prospect_rows,
+            key=lambda row: (
+                int(row.get("prospect_rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
+    active_callup_bridge_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "level": row.get("level"),
+            "previous_level": (row.get("context") or {})
+            .get("graduation_context", {})
+            .get("previous_level"),
+            "rank": row.get("prospect_rank"),
+            "reason": "active_mlb_callup_bridge",
+        }
+        for row in sorted(
+            active_callup_bridge_rows,
             key=lambda row: (
                 int(row.get("prospect_rank") or 999999),
                 str(row.get("name") or ""),
@@ -999,6 +1075,8 @@ def build_snapshot(
         suppressed_mlb_sample,
         calibration_report,
         graduation_transition_floor_count,
+        len(active_callup_bridge_rows),
+        active_callup_bridge_sample,
     )
     return payload
 

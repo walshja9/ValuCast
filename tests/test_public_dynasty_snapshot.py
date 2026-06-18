@@ -869,7 +869,7 @@ def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_
     assert payload["input_artifacts"]["mlb_roster_status_ready"] is True
 
 
-def test_snapshot_excludes_active_mlb_roster_identity_without_mlb_layer_row():
+def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
     payload = build_snapshot(
         _rank_payload(),
         mlb_layer=_mlb_payload(mlbam_id=99),
@@ -894,18 +894,30 @@ def test_snapshot_excludes_active_mlb_roster_identity_without_mlb_layer_row():
         buy_signals=_buy_payload(),
     )
 
-    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 0
+    assert payload["validation"]["active_mlb_callup_bridge_count"] == 1
     assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
     assert payload["validation"]["mlb_count"] == 1
-    assert payload["validation"]["prospect_count"] == 1
-    assert not any(row["mlbam_id"] == 1 for row in payload["players"])
-    assert payload["validation"]["prospects_excluded_by_mlb_identity_sample"][0] == {
+    assert payload["validation"]["prospect_count"] == 2
+    bridged = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert bridged["id"] == "vc_prospect_1_hitter"
+    assert bridged["player_type"] == "prospect"
+    assert bridged["level"] == "MLB"
+    assert bridged["context"]["graduation_context"] == {
+        "status": "active_mlb_callup",
+        "graduated": True,
+        "surface": "active_mlb_roster_bridge",
+        "previous_level": "AA",
+        "reason": "official_mlb_active_roster_without_mlb_projection_row",
+    }
+    assert payload["validation"]["active_mlb_callup_bridge_sample"][0] == {
         "mlbam_id": 1,
         "name": "Model Strong",
         "role": "hitter",
-        "level": "AA",
+        "level": "MLB",
+        "previous_level": "AA",
         "rank": 1,
-        "reason": "active_mlb_roster",
+        "reason": "active_mlb_callup_bridge",
     }
 
 

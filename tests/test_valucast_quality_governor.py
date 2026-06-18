@@ -834,6 +834,43 @@ def test_quality_governor_blocks_availability_level_mismatch():
     assert check["metrics"]["level_mismatch_count"] == 1
 
 
+def test_quality_governor_allows_active_callup_bridge_availability_level_mismatch():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    prospects[0]["level"] = "MLB"
+    prospects[0]["active_mlb_callup_bridge"] = True
+    prospects[0]["context"] = {
+        "graduation_context": {
+            "status": "active_mlb_callup",
+            "graduated": True,
+            "surface": "active_mlb_roster_bridge",
+            "previous_level": "AA",
+            "reason": "official_mlb_active_roster_without_mlb_projection_row",
+        }
+    }
+    prospects[0]["components"]["availability"]["level"] = "AA"
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_availability_level_alignment"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert check["metrics"]["level_mismatch_count"] == 0
+
+
 def test_quality_governor_blocks_buy_surface_identity_level_and_team_drift():
     prospects = [_prospect_row(index) for index in range(1, 51)]
     players = [

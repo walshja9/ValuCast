@@ -42,8 +42,21 @@ def _status(blockers: list[str]) -> str:
     return "blocked" if blockers else "candidate_ready"
 
 
+def _is_active_callup_bridge(row) -> bool:
+    context = row.context if isinstance(row.context, dict) else {}
+    graduation_context = context.get("graduation_context")
+    if not isinstance(graduation_context, dict):
+        graduation_context = {}
+    metadata = row.metadata if isinstance(row.metadata, dict) else {}
+    return (
+        metadata.get("active_mlb_callup_bridge") is True
+        or graduation_context.get("surface") == "active_mlb_roster_bridge"
+    )
+
+
 def _row_status(row) -> tuple[str, list[str]]:
     problems: list[str] = []
+    active_callup_bridge = _is_active_callup_bridge(row)
     if not _identity_key(row):
         problems.append("missing identity")
     if row.team in (None, ""):
@@ -52,7 +65,7 @@ def _row_status(row) -> tuple[str, list[str]]:
         problems.append("missing age")
     if not (row.card_level_label or row.level):
         problems.append("missing level")
-    if row.card_level_label == "MLB" or row.has_graduated:
+    if not active_callup_bridge and (row.card_level_label == "MLB" or row.has_graduated):
         problems.append("graduated or MLB-level prospect")
     if not row.stat_line:
         problems.append("missing stat line")
@@ -89,6 +102,7 @@ def _card_row(row) -> dict[str, Any]:
         "has_split_level_sample": row.has_split_level_sample,
         "has_peak_projection": row.has_peak_projection,
         "has_graduated": row.has_graduated,
+        "active_mlb_callup_bridge": _is_active_callup_bridge(row),
         "status": status,
         "problems": problems,
     }
@@ -128,7 +142,8 @@ def build_prospect_card_data_audit(
         blockers.append("Duplicate MLBAM+role identities are present in the prospect card pool.")
     active_top50 = [
         row for row in top50
-        if row.card_level_label == "MLB" or row.has_graduated
+        if (row.card_level_label == "MLB" or row.has_graduated)
+        and not _is_active_callup_bridge(row)
     ]
     if active_top50:
         blockers.append("Top-50 prospect cards include graduated or MLB-level players.")

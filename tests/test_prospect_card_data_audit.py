@@ -88,6 +88,33 @@ def test_prospect_card_data_audit_passes_clean_top_card(tmp_path):
     assert payload["source_policy"]["feeds_public_rank"] is False
 
 
+def test_prospect_card_data_audit_allows_active_mlb_callup_bridge(tmp_path):
+    snapshot_path = tmp_path / "snapshot.json"
+    row = _prospect(level="MLB", active_mlb_callup_bridge=True)
+    row["context"] = {
+        **row["context"],
+        "graduation_context": {
+            "status": "active_mlb_callup",
+            "graduated": True,
+            "surface": "active_mlb_roster_bridge",
+            "previous_level": "AAA",
+            "reason": "official_mlb_active_roster_without_mlb_projection_row",
+        },
+    }
+    snapshot_path.write_text(json.dumps(_snapshot([row])), encoding="utf-8")
+
+    payload = build_prospect_card_data_audit(
+        snapshot_path=snapshot_path,
+        freshness_audit_path=tmp_path / "missing_freshness.json",
+        generated_at="2026-06-16T00:00:00+00:00",
+    )
+
+    assert payload["status"] == "candidate_ready"
+    assert payload["validation"]["ready_for_cards"] is True
+    assert payload["cards"][0]["status"] == "ready"
+    assert payload["cards"][0]["has_graduated"] is True
+
+
 def test_prospect_card_data_audit_validator_catches_duplicate_identity(tmp_path):
     payload = build_prospect_card_data_audit(
         snapshot_path=tmp_path / "missing.json",
