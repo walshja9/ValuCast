@@ -142,6 +142,17 @@ def _clean_float(value: Any) -> float | None:
     return numeric
 
 
+def _hand_code(value: Any) -> str | None:
+    if isinstance(value, dict):
+        value = value.get("code") or value.get("description") or value.get("side")
+    text = str(value or "").strip().upper()
+    if text in {"L", "LEFT"} or text.startswith("LEFT "):
+        return "L"
+    if text in {"R", "RIGHT"} or text.startswith("RIGHT "):
+        return "R"
+    return None
+
+
 def _round(value: float | None, digits: int = 2) -> float | None:
     if value is None:
         return None
@@ -1161,6 +1172,8 @@ def _context(
         stat_line_source = "dd_display_context"
     else:
         stat_line_source = None
+    bats = _hand_code((input_row or {}).get("bats") or (dd_row or {}).get("bats"))
+    throws = _hand_code((input_row or {}).get("throws") or (dd_row or {}).get("throws"))
     context = {
         "has_dd_context": bool(dd_row),
         "dd_dynasty_rank": (dd_row or {}).get("dynasty_rank"),
@@ -1170,6 +1183,8 @@ def _context(
         "breakout_label": (dd_row or {}).get("breakout_label"),
         "breakout_rank_change": (dd_row or {}).get("breakout_rank_change"),
         "value_history_points": len((dd_row or {}).get("value_history") or []),
+        "bats": bats,
+        "throws": throws,
         "stat_line": stat_line,
         "stat_line_source": stat_line_source,
         **stat_context,

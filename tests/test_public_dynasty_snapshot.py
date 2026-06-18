@@ -11,6 +11,7 @@ from scripts.build_public_dynasty_snapshot import (
     build_snapshot,
 )
 from web.public_snapshot_store import (
+    PublicSnapshotRow,
     PublicSnapshotStore,
     validate_public_snapshot_payload,
 )
@@ -103,6 +104,8 @@ def _rank_payload():
                 "mlbam_id": 1,
                 "name": "Model Strong",
                 "role": "hitter",
+                "bats": "L",
+                "throws": "R",
                 "positions": ["SS"],
                 "mlb_team": "BOS",
                 "age": 20,
@@ -153,6 +156,8 @@ def _rank_payload():
                 "mlbam_id": 2,
                 "name": "Fallback Good",
                 "role": "pitcher",
+                "bats": "L",
+                "throws": "L",
                 "positions": ["SP"],
                 "mlb_team": "MIL",
                 "age": 19,
@@ -445,6 +450,22 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
         top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
         == COMMON_VALUE_SCALE
     )
+
+
+def test_public_snapshot_preserves_prospect_handedness_for_scouting():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    pitcher_record = next(row for row in payload["players"] if row["name"] == "Fallback Good")
+    assert pitcher_record["bats"] == "L"
+    assert pitcher_record["throws"] == "L"
+
+    pitcher = PublicSnapshotRow.from_snapshot(pitcher_record)
+    assert pitcher.bats == "L"
+    assert pitcher.throws == "L"
 
 
 def test_snapshot_carries_peak_projection_card_context(tmp_path):

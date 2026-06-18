@@ -444,6 +444,8 @@ def _prospect_rows(
                 "name": row.get("name"),
                 "mlbam_id": row.get("mlbam_id"),
                 "role": row.get("role"),
+                "bats": context.get("bats") or row.get("bats"),
+                "throws": context.get("throws") or row.get("throws"),
                 "positions": _positions(row),
                 "team": row.get("mlb_team") or "",
                 "mlb_team": row.get("mlb_team") or "",
@@ -479,6 +481,8 @@ def _prospect_rows(
                     # (rank_v1's internal context_only still carries them for the
                     # coverage/calibration audits).
                     "source_ranks": context.get("source_ranks"),
+                    "bats": context.get("bats") or row.get("bats"),
+                    "throws": context.get("throws") or row.get("throws"),
                     "stat_line_source": context.get("stat_line_source"),
                     "stat_line_source_kind": context.get("stat_line_source_kind"),
                     "stat_line_level": context.get("stat_line_level"),

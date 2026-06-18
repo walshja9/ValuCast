@@ -58,6 +58,8 @@ class PublicSnapshotRow:
     confidence: str | dict | None
     updated_at: str
     mlbam_id: str | None
+    bats: str | None = None
+    throws: str | None = None
     role: str | None = None
     status: str | None = None
     tier: str | int | None = None
@@ -581,6 +583,8 @@ class PublicSnapshotRow:
             confidence=cls._coerce_confidence(record.get("confidence")),
             updated_at=record["updated_at"],
             mlbam_id=str(record["mlbam_id"]) if record.get("mlbam_id") not in (None, "") else None,
+            bats=record.get("bats") or context.get("bats"),
+            throws=record.get("throws") or context.get("throws"),
             role=record.get("role"),
             status=record.get("status"),
             tier=record.get("tier"),

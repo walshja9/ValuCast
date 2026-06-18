@@ -20,6 +20,8 @@ Voice (the spine, in order, but order is flexible):
 
 Hard rules:
 - Use ONLY the data provided below. Never state a number that is not in the data.
+- If a pitcher's throws hand is provided, use it exactly. If it is missing, do
+  not mention pitcher handedness.
 - Each stat is tagged with its source (current MLB line vs MiLB-equivalent translation
   vs minor-league line vs projection). Never blend samples or present one as another.
 - Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting
@@ -46,6 +48,14 @@ BANNED_PHRASES = (
 )
 
 _NUMBER_RE = re.compile(r"\d+(?:\.\d+)?")
+_LEFT_HAND_RE = re.compile(
+    r"\b(?:left[- ]hand(?:ed|er)|lefty|southpaw|lhp)\b",
+    re.IGNORECASE,
+)
+_RIGHT_HAND_RE = re.compile(
+    r"\b(?:right[- ]hand(?:ed|er)|righty|rhp)\b",
+    re.IGNORECASE,
+)
 
 
 def banned_phrase_hits(text: str) -> list[str]:
@@ -107,14 +117,49 @@ def unsupported_numbers(text: str, grounding: dict) -> list[str]:
     return out
 
 
+def _hand_code(value) -> str | None:
+    if isinstance(value, dict):
+        value = value.get("code") or value.get("description") or value.get("side")
+    text = str(value or "").strip().upper()
+    if text in {"L", "LEFT"} or text.startswith("LEFT "):
+        return "L"
+    if text in {"R", "RIGHT"} or text.startswith("RIGHT "):
+        return "R"
+    return None
+
+
+def handedness_problems(text: str, grounding: dict) -> list[str]:
+    """Hard guard against invented or mismatched pitcher handedness."""
+    if str((grounding or {}).get("role") or "").lower() != "pitcher":
+        return []
+    mentions_left = bool(_LEFT_HAND_RE.search(text or ""))
+    mentions_right = bool(_RIGHT_HAND_RE.search(text or ""))
+    if not mentions_left and not mentions_right:
+        return []
+    throws = _hand_code(
+        (grounding or {}).get("throws")
+        or (grounding or {}).get("pitch_hand")
+        or (grounding or {}).get("throw_hand")
+    )
+    if not throws:
+        return ["pitcher handedness mentioned but throws is missing from grounding"]
+    if throws == "L" and mentions_right:
+        return ["pitcher throws L but report says right-handed"]
+    if throws == "R" and mentions_left:
+        return ["pitcher throws R but report says left-handed"]
+    return []
+
+
 def validate_report_text(text: str, grounding: dict) -> dict:
     """Post-gen guard. `banned` is a hard fail; `unsupported_numbers` is a soft flag
     (tolerant), surfaced for spot-check rather than auto-discarding on rounding noise."""
     banned = banned_phrase_hits(text)
     numbers = unsupported_numbers(text, grounding)
+    handedness = handedness_problems(text, grounding)
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
-        "ok": not banned and not numbers,
-        "hard_ok": not banned,
+        "handedness_problems": handedness,
+        "ok": not banned and not numbers and not handedness,
+        "hard_ok": not banned and not handedness,
     }

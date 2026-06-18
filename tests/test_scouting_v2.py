@@ -9,6 +9,7 @@ from scouting import report_generator, repository
 from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
+    handedness_problems,
     unsupported_numbers,
     validate_report_text,
 )
@@ -48,6 +49,35 @@ class TestVoiceGuard(unittest.TestCase):
         invented = validate_report_text("A .300 bat who sits 97 over 240 PA.", GROUNDING)
         self.assertTrue(invented["hard_ok"])     # no banned phrase
         self.assertFalse(invented["ok"])         # but an unsupported number
+
+    def test_pitcher_handedness_mismatch_is_a_hard_fail(self):
+        lefty_grounding = {
+            **GROUNDING,
+            "role": "pitcher",
+            "throws": "L",
+            "current_minor_league_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
+            "current_skill_percentiles": {"k_per_9": 88, "bb_per_9": 35},
+        }
+
+        problems = handedness_problems("A right-hander with a bat-missing fastball.", lefty_grounding)
+        self.assertTrue(problems)
+
+        result = validate_report_text("A right-hander with a 12.6 K/9 over 47.3 IP.", lefty_grounding)
+        self.assertFalse(result["ok"])
+        self.assertFalse(result["hard_ok"])
+        self.assertTrue(result["handedness_problems"])
+
+    def test_pitcher_handedness_mentions_are_blocked_when_grounding_missing(self):
+        pitcher_grounding = {
+            **GROUNDING,
+            "role": "pitcher",
+            "current_minor_league_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
+        }
+
+        result = validate_report_text("A right-hander with a 12.6 K/9 over 47.3 IP.", pitcher_grounding)
+
+        self.assertFalse(result["hard_ok"])
+        self.assertIn("missing", result["handedness_problems"][0])
 
 
 class _FakeMessages:

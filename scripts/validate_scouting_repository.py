@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scouting.repository import ARTIFACT_NAME, ARTIFACT_PATH, REPOSITORY_VERSION  # noqa: E402
+from scouting.voice import handedness_problems  # noqa: E402
 
 PROHIBITED_REPORT_PHRASES = (
     "display-only",
@@ -98,6 +99,10 @@ def validate_scouting_repository(
                     problems.append(f"report {index} contains prohibited phrase {phrase!r}")
                 if phrase in published_lowered:
                     problems.append(f"report {index} published_report contains prohibited phrase {phrase!r}")
+            for problem in handedness_problems(str(row.get("report") or ""), row):
+                problems.append(f"report {index} handedness mismatch: {problem}")
+            for problem in handedness_problems(str(row.get("published_report") or ""), row):
+                problems.append(f"report {index} published_report handedness mismatch: {problem}")
     return payload, problems
 
 

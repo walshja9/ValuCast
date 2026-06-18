@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scouting import report_generator
+from scouting.voice import handedness_problems
 from web.public_snapshot_store import PublicSnapshotStore
 from web import prospect_percentiles
 
@@ -45,6 +46,17 @@ def _valid_llm_text(report: dict) -> str | None:
     if llm.get("valid") is not True:
         return None
     text = str(llm.get("text") or "").strip()
+    handedness = handedness_problems(text, report)
+    if handedness:
+        llm["valid"] = False
+        llm["hard_ok"] = False
+        llm["handedness_problems"] = handedness
+        problems = llm.get("problems")
+        if isinstance(problems, dict):
+            problems["handedness_problems"] = handedness
+        else:
+            llm["problems"] = {"handedness_problems": handedness}
+        return None
     return text or None
 
 
@@ -88,6 +100,17 @@ def _identity_key(row) -> str | None:
     return f"{row.mlbam_id}_{str(row.role).lower()}"
 
 
+def _hand_code(value) -> str | None:
+    if isinstance(value, dict):
+        value = value.get("code") or value.get("description") or value.get("side")
+    text = str(value or "").strip().upper()
+    if text in {"L", "LEFT"} or text.startswith("LEFT "):
+        return "L"
+    if text in {"R", "RIGHT"} or text.startswith("RIGHT "):
+        return "R"
+    return None
+
+
 def _index_rows(payload: dict, rows_key: str) -> dict[str, dict]:
     indexed = {}
     for raw in payload.get(rows_key) or []:
@@ -104,6 +127,16 @@ def _index_rows(payload: dict, rows_key: str) -> dict[str, dict]:
 def _row_report(row, recent_signal: dict | None = None, card_data: dict | None = None) -> dict:
     text = prospect_percentiles.identity_line(row, {}) or ""
     peak = row.peak_projection_summary if row.has_peak_projection else None
+    bats = _hand_code(
+        getattr(row, "bats", None)
+        or row.context.get("bats")
+        or row.metadata.get("bats")
+    )
+    throws = _hand_code(
+        getattr(row, "throws", None)
+        or row.context.get("throws")
+        or row.metadata.get("throws")
+    )
     recent_context = None
     if recent_signal:
         recent_context = {
@@ -131,6 +164,8 @@ def _row_report(row, recent_signal: dict | None = None, card_data: dict | None =
         "mlbam_id": str(row.mlbam_id),
         "name": row.name,
         "role": row.role,
+        "bats": bats,
+        "throws": throws,
         "team": row.team,
         "positions": list(row.positions or []),
         "player_type": row.player_type,
@@ -166,6 +201,8 @@ def _llm_grounding(row, percentiles: dict, pool_label: str | None) -> dict:
     grounding = {
         "name": row.name,
         "role": row.role,
+        "bats": _hand_code(getattr(row, "bats", None) or row.context.get("bats")),
+        "throws": _hand_code(getattr(row, "throws", None) or row.context.get("throws")),
         "positions": list(row.positions or []),
         "team": row.team,
         "level": row.level,
@@ -240,6 +277,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             "text": result["text"], "model": result["model"],
             "valid": result["valid"], "hard_ok": result.get("hard_ok"),
             "problems": result.get("problems"),
+            "handedness_problems": (result.get("problems") or {}).get("handedness_problems"),
         }
     _save_llm_cache(fresh)
     return {
