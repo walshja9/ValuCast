@@ -27,6 +27,8 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'id="category-fit-panel"', response.data)
         self.assertIn(b'class="col-confidence"', response.data)
+        self.assertNotIn(b'class="col-range"', response.data)
+        self.assertNotIn(b">Range</button>", response.data)
         self.assertNotIn(b"Feed v", response.data)  # internal plumbing stays internal
         self.assertIn(b"Category Fit", response.data)
         self.assertIn(b"H2H Categories", response.data)

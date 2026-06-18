@@ -53,14 +53,14 @@ _RATES = {
 _VELOCITIES = {"exit_velocity", "fb_velocity"}
 _SPINS = {"fb_spin", "curve_spin"}
 
-# Savant-style diverging scale: blue (poor) -> gray (average) -> red (elite).
-_LOW = (54, 97, 173)
-_MID = (160, 163, 170)
-_HIGH = (214, 41, 28)
+# ValuCast-oriented scale: muted clay (poor) -> slate (average) -> teal (elite).
+_LOW = (207, 139, 102)
+_MID = (91, 102, 122)
+_HIGH = (52, 211, 153)
 
 
 def percentile_color(pct: int | float) -> str:
-    """Hex color for a 0-100 percentile on the Savant-style blue/gray/red scale."""
+    """Hex color for a 0-100 percentile on the ValuCast clay/slate/teal scale."""
     p = max(0.0, min(100.0, float(pct)))
     if p <= 50:
         lo, hi, t = _LOW, _MID, p / 50

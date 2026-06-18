@@ -948,7 +948,9 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             support_name_lines = split_name_lines(draw, row.name, support_name_font, 172)
             for line_idx, line in enumerate(support_name_lines[:2]):
                 draw.text((x + 104, y + 44 + line_idx * 23), line, fill=text, font=support_name_font)
-            support_tag_y = y + (89 if len(support_name_lines) > 1 else 76)
+            support_tag_y = _graphic_support_tag_y(
+                y, len(support_name_lines), one_line_offset=76, wrapped_offset=91
+            )
             draw.text((x + 104, support_tag_y), fit_text(draw, tag(row), font(14), 160), fill=muted, font=font(14))
             draw.line((x + 16, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 16, y + 118), note_label(row), fill=muted, font=font(14, bold=True))
@@ -1121,6 +1123,11 @@ def _graphic_wrap_text(draw, text, fnt, max_width, max_lines=3):
     if len(lines) == max_lines and words:
         lines[-1] = _graphic_fit_text(draw, lines[-1], fnt, max_width)
     return lines
+
+
+def _graphic_support_tag_y(base_y: int, line_count: int, *, one_line_offset: int, wrapped_offset: int) -> int:
+    """Return the tag baseline for compact share-card support cells."""
+    return base_y + (wrapped_offset if line_count > 1 else one_line_offset)
 
 
 _GRAPHIC_DANGLING_READ_WORDS = {
@@ -1556,10 +1563,10 @@ def _prospect_player_card_png(row):
     border = _GRAPHIC_PALETTE["border"]
     green = _GRAPHIC_PALETTE["green"]
     amber = (251, 191, 36)
-    # Savant ramp — matches the site percentile bars: red = elite, orange = solid, blue = low.
-    savant_elite = (214, 41, 28)
-    savant_good = (207, 107, 58)
-    savant_low = (54, 97, 173)
+    # ValuCast ramp — matches the site percentile bars: teal = elite, slate = average, clay = low.
+    bar_elite = green
+    bar_mid = (91, 102, 122)
+    bar_low = (207, 139, 102)
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
 
@@ -1626,7 +1633,7 @@ def _prospect_player_card_png(row):
             draw.text((82, y + 8), label, fill=muted, font=_graphic_font(18, bold=True))
             x0, y0, x1, y1 = 190, y + 6, 790, y + 28
             draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(39, 48, 76))
-            fill = savant_elite if pct >= 75 else savant_good if pct > 25 else savant_low
+            fill = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
             draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=7, fill=fill)
             knob_x = max(x0 + 16, min(x1 - 16, x0 + int((x1 - x0) * pct / 100)))
             draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(13, 16, 30))
@@ -1648,7 +1655,7 @@ def _prospect_player_card_png(row):
         x = 74 + idx * 235
         draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(54, 57, 92), width=1)
         grade = int(skill["grade"])
-        color = savant_elite if grade >= 60 else savant_low if grade <= 40 else text
+        color = bar_elite if grade >= 60 else bar_low if grade <= 40 else text
         draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
         draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
         draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
@@ -3100,7 +3107,10 @@ def _buys_share_card_png(
             support_lines = split_lines(row.get("name"), f_support_name, 172)
             for line_idx, line in enumerate(support_lines[:2]):
                 draw.text((x + 100, y + 38 + line_idx * 25), line, fill=text, font=f_support_name)
-            draw.text((x + 100, y + 88), _graphic_fit_text(draw, tag(row), f_small, 160),
+            tag_y = _graphic_support_tag_y(
+                y, len(support_lines), one_line_offset=80, wrapped_offset=92
+            )
+            draw.text((x + 100, tag_y), _graphic_fit_text(draw, tag(row), f_small, 160),
                       fill=muted, font=f_small)
             draw.line((x + 14, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 14, y + 112), str(row.get("score", "--")), fill=green, font=f_support_score)

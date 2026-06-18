@@ -104,17 +104,17 @@ class TestDisplayGroups(unittest.TestCase):
 
 class TestPercentileColor(unittest.TestCase):
     def test_endpoints_and_midpoint(self):
-        self.assertEqual(percentile_color(0), "#3661ad")    # blue
-        self.assertEqual(percentile_color(50), "#a0a3aa")   # gray
-        self.assertEqual(percentile_color(100), "#d6291c")  # red
+        self.assertEqual(percentile_color(0), "#cf8b66")    # muted clay
+        self.assertEqual(percentile_color(50), "#5b667a")   # slate
+        self.assertEqual(percentile_color(100), "#34d399")  # ValuCast teal
 
     def test_out_of_range_clamps(self):
         self.assertEqual(percentile_color(-10), percentile_color(0))
         self.assertEqual(percentile_color(140), percentile_color(100))
 
-    def test_monotonic_red_channel_above_50(self):
-        reds = [int(percentile_color(p)[1:3], 16) for p in (50, 60, 70, 80, 90, 100)]
-        self.assertEqual(reds, sorted(reds))
+    def test_high_percentiles_move_toward_signal_teal(self):
+        greens = [int(percentile_color(p)[3:5], 16) for p in (50, 60, 70, 80, 90, 100)]
+        self.assertEqual(greens, sorted(greens))
 
 
 class TestCuratedSpecs(unittest.TestCase):

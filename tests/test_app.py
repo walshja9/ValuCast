@@ -6,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+import app as app_module
 from app import app, _valuation_players, store
 
 
@@ -470,6 +471,12 @@ class TestDynastyMode(unittest.TestCase):
             'filename="valucast-top-20-sp-prospects.png"',
             response.headers.get("Content-Disposition", ""),
         )
+
+    def test_graphic_support_tag_y_moves_down_for_wrapped_names(self):
+        one_line_y = app_module._graphic_support_tag_y(200, 1, one_line_offset=76, wrapped_offset=92)
+        wrapped_y = app_module._graphic_support_tag_y(200, 2, one_line_offset=76, wrapped_offset=92)
+        self.assertEqual(one_line_y, 276)
+        self.assertEqual(wrapped_y, 292)
 
     def test_prospect_player_card_preview_and_png(self):
         from app import dd_store

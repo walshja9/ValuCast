@@ -1058,7 +1058,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     }
     .rankings-table td.col-compare .compare-cb { width: 32px; height: 32px; }
     .rankings-table td.col-cat,
-    .rankings-table td.col-age, .rankings-table td.col-range { display: none; }
+.rankings-table td.col-age { display: none; }
     .rankings-table td.col-name { font-size: 0.94rem; padding-right: 4.5rem; line-height: 1.18; }
     .rankings-table td.col-name .detail-toggle { margin-right: 0.18rem; }
     .rankings-table td.col-pos, .rankings-table td.col-team,
@@ -1285,9 +1285,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .risk-extreme { background: #dc2626; }
 
 .col-risk { text-align: center; white-space: nowrap; }
-.col-range { text-align: center; white-space: nowrap; font-size: 0.85rem; color: var(--c-muted); }
-
-/* Statcast percentile sliders (Savant-style) */
+/* Statcast percentile sliders */
 .statcast-section h4 { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
 .statcast-asof { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--c-muted); font-size: 0.8rem; }
 .pct-group + .pct-group { margin-top: 0.75rem; }
@@ -1461,17 +1459,17 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     width: 1px;
     background: rgba(255, 255, 255, .18);
 }
-/* Savant-style ramp: red = elite, gray = average, blue = poor (matches Statcast). */
+/* ValuCast ramp: teal = elite, slate = average, clay = poor. */
 .profile-bar-fill {
     position: absolute;
     inset: 0 auto 0 0;
     min-width: 3px;
     border-radius: 5px;
-    background: #a0a3aa;
+    background: #5b667a;
 }
-.profile-bar-fill.elite { background: #d6291c; }
-.profile-bar-fill.good { background: #cf6b3a; }
-.profile-bar-fill.risk { background: #3661ad; }
+.profile-bar-fill.elite { background: var(--c-prospect); }
+.profile-bar-fill.good { background: #2fbf9f; }
+.profile-bar-fill.risk { background: #cf8b66; }
 .profile-bar-num {
     position: absolute;
     top: 50%;
@@ -1600,10 +1598,10 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     inset: 0 auto 0 0;
     min-width: 3px;
     border-radius: 5px;
-    background: #a0a3aa;
+    background: #5b667a;
 }
-.skill-compare-fill.plus { background: #d6291c; }
-.skill-compare-fill.risk { background: #3661ad; }
+.skill-compare-fill.plus { background: var(--c-prospect); }
+.skill-compare-fill.risk { background: #cf8b66; }
 .skill-compare-peak {
     position: absolute;
     top: -3px;
