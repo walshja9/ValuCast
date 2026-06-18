@@ -247,6 +247,12 @@ def test_front_office_page_renders():
     assert "Evidence gates" in html
     assert "Watch items" in html
     assert "Risk flags" not in html
-    assert "Next MLB evidence milestone:" in html
-    assert "Current score is capped" in html
+    assert "Next evidence milestone:" in html
+    assert "MLB front-office score is capped at B+" in html
+    # Merged into one paragraph — no duplicated cap/milestone copy.
+    assert "Next MLB evidence milestone:" not in html
+    assert "Current score is capped" not in html
+    # Evidence labels are humanized, not raw JSON keys.
+    assert "Top-200 factual context coverage" in html
+    assert "V07 Top200" not in html
     assert "A Plus" not in html

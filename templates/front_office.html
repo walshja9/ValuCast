@@ -49,14 +49,6 @@
             </div>
         </div>
         {% set progress = report.failure_watchlist.forward_archive_progress or {} %}
-        {% if progress %}
-        <p class="front-office-progress">
-            Next MLB evidence milestone: <strong>{{ progress.next_target_grade }}</strong>.
-            Needs {{ progress.remaining_rank_comparisons }} more rank archive comparisons,
-            {{ progress.remaining_buy_comparisons }} more buy comparisons, and
-            {{ progress.remaining_span_days }} more observation days.
-        </p>
-        {% endif %}
         {% set front_track = namespace(score_cap=None, target_grade=None) %}
         {% for pillar in report.pillars %}
         {% if pillar.name == "MLB front-office track" %}
@@ -64,10 +56,10 @@
         {% set front_track.target_grade = pillar.evidence.get("target_grade") %}
         {% endif %}
         {% endfor %}
-        {% if front_track.score_cap %}
+        {% if front_track.score_cap or progress %}
         <p class="front-office-progress">
-            Current score is capped at B+ until enough forward archive evidence exists.
-            The next review target is {{ front_track.target_grade or progress.next_target_grade }}.
+            {% if front_track.score_cap %}MLB front-office score is capped at B+ while forward archives collect.{% endif %}
+            {% if progress %}Next evidence milestone: <strong>{{ progress.next_target_grade or front_track.target_grade }}</strong> — needs {{ progress.remaining_rank_comparisons }} more rank archive comparisons, {{ progress.remaining_buy_comparisons }} more buy comparisons, and {{ progress.remaining_span_days }} more observation days.{% endif %}
         </p>
         {% endif %}
         {% if report.failure_watchlist.blocking_findings %}
@@ -90,6 +82,21 @@
     {% endif %}
 
     <section class="front-office-grid">
+        {# Friendly labels for the few jargon/abbreviated evidence keys; the rest
+           fall back to title-cased key names. #}
+        {% set evidence_labels = {
+            "v07_top200_factual_context_coverage": "Top-200 factual context coverage",
+            "v07_top200_availability_coverage": "Top-200 availability coverage",
+            "v07_bucket_comparison_ready": "Bucket comparison ready",
+            "v07_ready_for_backtest": "Ready for backtest",
+            "milb_stat_freshness_ready": "MiLB stat freshness ready",
+            "direct_raw_ownership_score": "Raw-data ownership score",
+            "duplicate_identity_count": "Duplicate identities",
+            "forward_next_target_grade": "Forward next target",
+            "score_cap": "Score cap",
+            "target_grade": "Next review target",
+            "quality_governor_all_checks_passed": "Quality governor: all checks passed"
+        } %}
         {% for pillar in report.pillars %}
         <article class="front-office-card glass">
             <div class="front-office-card-head">
@@ -108,7 +115,7 @@
                 {% for key, value in pillar.evidence.items() %}
                 {% if value is string or value is number or value is boolean %}
                 <div>
-                    <dt>{{ key | replace("_", " ") | title }}</dt>
+                    <dt>{{ evidence_labels.get(key, key | replace("_", " ") | title) }}</dt>
                     <dd>{{ value }}</dd>
                 </div>
                 {% endif %}
