@@ -36,6 +36,8 @@ body {
     font-size: 14px;
     min-height: 100vh;
     isolation: isolate;
+    /* Aligned, engineered numerals — this is a numbers product. */
+    font-variant-numeric: tabular-nums;
 }
 /* Ambient field the glass refracts. Fixed so content scrolls OVER it — surfaces
    above are translucent; if every panel were opaque this would be invisible. */
@@ -46,12 +48,11 @@ body::before {
     z-index: -2;
     pointer-events: none;
     transform: translateZ(0);
+    /* Two quiet blooms for the glass to refract, not a four-color rainbow. */
     background:
-        radial-gradient(42% 38% at 12% 4%, rgba(79, 134, 247, .34), transparent 70%),
-        radial-gradient(36% 34% at 94% 22%, rgba(167, 139, 250, .28), transparent 70%),
-        radial-gradient(44% 40% at 76% 98%, rgba(45, 212, 160, .20), transparent 70%),
-        radial-gradient(28% 26% at 28% 76%, rgba(251, 191, 36, .10), transparent 70%),
-        linear-gradient(165deg, #161834 0%, #0e0f1a 48%, #111430 100%);
+        radial-gradient(40% 36% at 14% 2%, rgba(79, 134, 247, .16), transparent 72%),
+        radial-gradient(42% 38% at 84% 96%, rgba(45, 212, 160, .12), transparent 72%),
+        linear-gradient(165deg, #15172e 0%, #0e0f1a 52%, #101228 100%);
 }
 body::after {
     content: "";
@@ -60,13 +61,12 @@ body::after {
     z-index: -1;
     pointer-events: none;
     background:
-        radial-gradient(26% 28% at 68% 10%, rgba(110, 161, 255, .16), transparent 70%),
-        radial-gradient(24% 24% at 16% 52%, rgba(167, 139, 250, .13), transparent 70%);
-    animation: ambient-drift 75s ease-in-out infinite alternate;
+        radial-gradient(28% 30% at 70% 8%, rgba(110, 161, 255, .07), transparent 72%);
+    animation: ambient-drift 140s ease-in-out infinite alternate;
 }
 @keyframes ambient-drift {
-    from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
-    to   { transform: translate3d(2.5%, 3%, 0) scale(1.14); }
+    from { transform: translate3d(-1%, -0.75%, 0) scale(1); }
+    to   { transform: translate3d(1.25%, 1.5%, 0) scale(1.05); }
 }
 @media (prefers-reduced-motion: reduce) {
     body::after { animation: none; }
@@ -120,9 +120,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     height: 2.1rem;
     border-radius: .65rem;
     box-shadow:
-        0 0 0 1px rgba(255, 255, 255, .12),
-        0 10px 24px rgba(0, 0, 0, .26),
-        0 0 28px rgba(52, 211, 153, .18);
+        0 0 0 1px rgba(255, 255, 255, .10),
+        0 8px 20px rgba(0, 0, 0, .30);
 }
 .tagline { font-size: 0.8rem; color: var(--c-muted); }
 .site-nav {
