@@ -1370,7 +1370,10 @@ def _graphic_best_single_read(best_line, best_level, stat_percentiles, last):
     )
 
 
-def _prospect_player_card_read(row, stat_percentiles, context):
+def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=None):
+    scouting_text = _scouting_display_report_text(scouting_report)
+    if scouting_text:
+        return scouting_text
     line = row.stat_line or {}
     if not line:
         return prospect_percentiles.identity_line(row, stat_percentiles) or ""
@@ -1460,7 +1463,10 @@ def _prospect_player_card_png(row):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
     if not isinstance(context, dict):
         context = {}
-    identity = _prospect_player_card_read(row, stat_percentiles, context)
+    scouting_report = _artifact_context_for_row(row).get("scouting_report")
+    identity = _prospect_player_card_read(
+        row, stat_percentiles, context, scouting_report=scouting_report
+    )
 
     width, height = 1080, 1350
     bg = _GRAPHIC_PALETTE["bg"]
@@ -2384,6 +2390,43 @@ def _format_context_label(value) -> str | None:
     return str(value).replace("_", " ").title()
 
 
+def _valid_scouting_llm_text(report: dict | None) -> str | None:
+    if not isinstance(report, dict):
+        return None
+    llm = report.get("report_llm")
+    if not isinstance(llm, dict) or llm.get("valid") is not True:
+        return None
+    text = str(llm.get("text") or "").strip()
+    return text or None
+
+
+def _scouting_display_report_text(report: dict | None) -> str:
+    """Public scouting text, with valid LLM reports promoted and deterministic fallback."""
+    if not isinstance(report, dict):
+        return ""
+    published = str(report.get("published_report") or "").strip()
+    if published:
+        return published
+    llm_text = _valid_scouting_llm_text(report)
+    if llm_text:
+        return llm_text
+    return str(report.get("report") or "").strip()
+
+
+def _scouting_display_report(report: dict | None) -> dict | None:
+    if not isinstance(report, dict):
+        return None
+    item = dict(report)
+    item["display_report"] = _scouting_display_report_text(item)
+    if str(item.get("published_report_source") or "").strip():
+        item["display_report_source"] = str(item["published_report_source"]).strip()
+    elif _valid_scouting_llm_text(item):
+        item["display_report_source"] = "llm"
+    else:
+        item["display_report_source"] = "deterministic"
+    return item
+
+
 def _indexed_artifact_rows(payload: dict | None, rows_key: str) -> dict[str, dict]:
     rows = (payload or {}).get(rows_key) or []
     indexed = {}
@@ -2404,6 +2447,7 @@ def _artifact_context_for_row(row) -> dict:
     scouting = _indexed_artifact_rows(
         _load_artifact(root / "valucast_scouting_reports.json"), "reports"
     ).get(key)
+    scouting = _scouting_display_report(scouting)
     recent_signal = _indexed_artifact_rows(
         _load_artifact(root / "valucast_recent_signal_report.json"), "signals"
     ).get(key)
@@ -2487,6 +2531,11 @@ def scouting_reports():
     report_rows = []
     for row in reports[:60]:
         item = dict(row)
+        item["display_report"] = _scouting_display_report_text(item)
+        item["display_report_source"] = (
+            item.get("published_report_source")
+            or ("llm" if _valid_scouting_llm_text(item) else "deterministic")
+        )
         confidence = item.get("confidence")
         if isinstance(confidence, dict):
             item["confidence_label"] = _format_context_label(confidence.get("level"))

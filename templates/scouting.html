@@ -109,7 +109,7 @@
                     <small>ValuCast</small>
                 </div>
             </div>
-            <p class="scouting-read">{{ report.report }}</p>
+            <p class="scouting-read">{{ report.display_report or report.report }}</p>
             {% if report.peak_summary %}<p class="scouting-peak">{{ report.peak_summary }}</p>{% endif %}
             <div class="scouting-meta">
                 <span>{{ report.status_label }}</span>

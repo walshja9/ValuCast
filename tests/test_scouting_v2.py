@@ -97,8 +97,8 @@ class TestGenerator(unittest.TestCase):
             self.assertIsNone(report_generator.generate_report(GROUNDING))
 
 
-class TestShadowWiring(unittest.TestCase):
-    def test_attach_llm_reports_is_shadow(self):
+class TestLlmWiring(unittest.TestCase):
+    def test_attach_llm_reports_can_be_published_when_valid(self):
         row = SimpleNamespace(
             is_prospect=True, name="X", role="hitter", positions=["OF"], team="MIL",
             level="AA", age=21, prospect_rank=5,
@@ -118,7 +118,10 @@ class TestShadowWiring(unittest.TestCase):
             cached = (Path(d) / "cache.json").exists()
         self.assertTrue(res["available"])
         self.assertEqual(res["generated"], 1)
-        self.assertEqual(report["report"], "deterministic read")        # published stays deterministic
+        repository._publish_report_fields([report])
+        self.assertEqual(report["report"], "deterministic read")
+        self.assertEqual(report["published_report"], "A patient AA bat with real contact.")
+        self.assertEqual(report["published_report_source"], "llm")
         self.assertEqual(report["report_llm"]["text"], "A patient AA bat with real contact.")
         self.assertTrue(report["report_llm"]["valid"])
         self.assertTrue(cached)

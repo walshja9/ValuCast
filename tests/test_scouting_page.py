@@ -1,6 +1,34 @@
 from app import app
 
 
+def test_scouting_display_report_text_prefers_valid_llm_report():
+    from app import _scouting_display_report_text
+
+    report = {
+        "report": "Deterministic fallback.",
+        "report_llm": {
+            "valid": True,
+            "text": "A sharper Claude-written scouting read.",
+        },
+    }
+
+    assert _scouting_display_report_text(report) == "A sharper Claude-written scouting read."
+
+
+def test_scouting_display_report_text_falls_back_when_llm_invalid():
+    from app import _scouting_display_report_text
+
+    report = {
+        "report": "Deterministic fallback.",
+        "report_llm": {
+            "valid": False,
+            "text": "Do not publish this.",
+        },
+    }
+
+    assert _scouting_display_report_text(report) == "Deterministic fallback."
+
+
 def test_scouting_page_renders_repository_and_role_tracker():
     client = app.test_client()
 

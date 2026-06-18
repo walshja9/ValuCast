@@ -44,12 +44,16 @@ def validate_scouting_repository(
         "dd_ranks_used",
         "external_rankings_used_for_report",
         "market_values_used_for_report",
-        "llm_generated",
         "feeds_live_rank",
         "feeds_live_value",
     ):
         if source_policy.get(flag) is not False:
             problems.append(f"source_policy.{flag} must be false")
+    if source_policy.get("llm_generated") is True:
+        if source_policy.get("llm_generated_for_report_text_only") is not True:
+            problems.append("source_policy.llm_generated_for_report_text_only must be true")
+    elif source_policy.get("llm_generated") is not False:
+        problems.append("source_policy.llm_generated must be true or false")
 
     validation = payload.get("validation") or {}
     if validation.get("ready_for_repository") is not True:
@@ -67,9 +71,12 @@ def validate_scouting_repository(
             if key in seen:
                 problems.append(f"report {index} duplicate MLBAM+role identity")
             seen.add(key)
-            for field in ("mlbam_id", "name", "role", "report", "usage"):
+            for field in ("mlbam_id", "name", "role", "report", "published_report", "usage"):
                 if row.get(field) in (None, "", []):
                     problems.append(f"report {index} missing {field}")
+            source = row.get("published_report_source")
+            if source not in {"deterministic", "llm"}:
+                problems.append(f"report {index} invalid published_report_source")
             if row.get("usage") != "scouting_repository_context_not_live_rank_or_value":
                 problems.append(f"report {index} invalid usage")
             recent_signal = row.get("recent_signal")
@@ -85,9 +92,12 @@ def validate_scouting_repository(
                 elif card_data_status.get("status") not in {"ready", "watch"}:
                     problems.append(f"report {index} card_data_status invalid status")
             lowered = str(row.get("report") or "").lower()
+            published_lowered = str(row.get("published_report") or "").lower()
             for phrase in PROHIBITED_REPORT_PHRASES:
                 if phrase in lowered:
                     problems.append(f"report {index} contains prohibited phrase {phrase!r}")
+                if phrase in published_lowered:
+                    problems.append(f"report {index} published_report contains prohibited phrase {phrase!r}")
     return payload, problems
 
 

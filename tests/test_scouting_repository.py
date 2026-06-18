@@ -1,4 +1,7 @@
 import json
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from scouting.repository import build_scouting_repository
 from scripts.validate_scouting_repository import validate_scouting_repository
@@ -120,6 +123,44 @@ def test_scouting_repository_builds_stat_grounded_reports(tmp_path):
     assert payload["summary"]["report_count"] == 2
     assert payload["reports"][0]["report"]
     assert payload["reports"][0]["usage"] == "scouting_repository_context_not_live_rank_or_value"
+
+
+def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):
+    from scouting import report_generator, repository
+
+    class _FakeMessages:
+        def create(self, **_kwargs):
+            return SimpleNamespace(
+                content=[
+                    SimpleNamespace(
+                        type="text",
+                        text="A model-written read with the same ValuCast facts.",
+                    )
+                ]
+            )
+
+    class _FakeClient:
+        messages = _FakeMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    with patch.object(report_generator, "default_client", return_value=_FakeClient()), patch.object(
+        repository, "LLM_CACHE_PATH", Path(tmp_path) / "llm_cache.json"
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    assert payload["source_policy"]["llm_generated"] is True
+    assert payload["source_policy"]["llm_generated_for_report_text_only"] is True
+    assert payload["source_policy"]["feeds_live_rank"] is False
+    assert payload["source_policy"]["feeds_live_value"] is False
+    assert payload["summary"]["llm_published_report_count"] == 2
+    assert payload["reports"][0]["published_report"] == (
+        "A model-written read with the same ValuCast facts."
+    )
+    assert payload["reports"][0]["published_report_source"] == "llm"
 
 
 def test_scouting_repository_validator_blocks_robotic_copy(tmp_path):

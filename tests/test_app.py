@@ -571,6 +571,52 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("32nd", read)
         self.assertNotIn("open question", read.lower())
 
+    def test_prospect_player_card_read_prefers_valid_scouting_report(self):
+        from types import SimpleNamespace
+
+        from app import _prospect_player_card_read
+
+        row = SimpleNamespace(
+            name="Franklin Arias",
+            age=20,
+            level="AA",
+            stat_line={
+                "avg": 0.307,
+                "obp": 0.393,
+                "slg": 0.559,
+                "ops": 0.952,
+                "iso": 0.252,
+                "k_pct": 13.2,
+                "bb_pct": 10.7,
+                "pa": 234,
+            },
+        )
+        read = _prospect_player_card_read(
+            row,
+            {
+                "ops": 96,
+                "iso": 94,
+                "k_pct": 97,
+                "avg": 94,
+                "obp": 85,
+                "slg": 96,
+                "bb_pct": 41,
+            },
+            {"stat_line_sample": 234, "stat_line_sample_unit": "PA"},
+            scouting_report={
+                "report": "Deterministic report.",
+                "report_llm": {
+                    "valid": True,
+                    "text": "Arias owns the zone and gets to power without selling out.",
+                },
+            },
+        )
+
+        self.assertEqual(
+            read,
+            "Arias owns the zone and gets to power without selling out.",
+        )
+
     def test_player_card_sample_context_shows_current_and_combined_samples(self):
         from types import SimpleNamespace
 

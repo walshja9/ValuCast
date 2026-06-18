@@ -171,8 +171,8 @@
                 </div>
                 <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open report</a>
             </div>
-            {% if scouting_report and scouting_report.report %}
-            <p class="scouting-card-read">{{ scouting_report.report }}</p>
+            {% if scouting_report and (scouting_report.display_report or scouting_report.report) %}
+            <p class="scouting-card-read">{{ scouting_report.display_report or scouting_report.report }}</p>
             {% endif %}
             <div class="stat-grid">
                 {% if role_profile and role_profile.projected_role_label %}

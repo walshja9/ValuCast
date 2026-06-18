@@ -1,8 +1,8 @@
-"""Build a deterministic ValuCast scouting report repository.
+"""Build the ValuCast scouting report repository.
 
-The repository stores the same stat-grounded read used on player cards, keyed by
-MLBAM identity. It is intentionally deterministic for this first pass; a future
-LLM writer can consume this artifact as grounding, but cannot replace the facts.
+The repository stores a stat-grounded read keyed by MLBAM identity. When the
+optional LLM writer is enabled and passes the voice guard, its text becomes the
+published read; the deterministic stat read remains the fallback.
 """
 from __future__ import annotations
 
@@ -36,6 +36,36 @@ def _report_status(text: str | None) -> str:
     if "injured" in lowered or "availability risk" in lowered:
         return "availability_context"
     return "stat_grounded"
+
+
+def _valid_llm_text(report: dict) -> str | None:
+    llm = report.get("report_llm")
+    if not isinstance(llm, dict):
+        return None
+    if llm.get("valid") is not True:
+        return None
+    text = str(llm.get("text") or "").strip()
+    return text or None
+
+
+def _publish_report_fields(reports: list[dict]) -> dict:
+    """Set the public report text, preferring valid LLM copy with deterministic fallback."""
+    llm_count = 0
+    deterministic_count = 0
+    for report in reports:
+        llm_text = _valid_llm_text(report)
+        if llm_text:
+            report["published_report"] = llm_text
+            report["published_report_source"] = "llm"
+            llm_count += 1
+        else:
+            report["published_report"] = str(report.get("report") or "").strip()
+            report["published_report_source"] = "deterministic"
+            deterministic_count += 1
+    return {
+        "llm_published_report_count": llm_count,
+        "deterministic_published_report_count": deterministic_count,
+    }
 
 
 def _display_path(path: Path) -> str:
@@ -167,9 +197,11 @@ def _save_llm_cache(entries: dict) -> None:
 
 
 def _attach_llm_reports(rows, reports, store) -> dict:
-    """Attach a shadow `report_llm` to each report (the deterministic `report` stays the
-    published read). Grounding-hash cached so only changed reports re-call the API.
-    Offline / no key -> no calls, reports unchanged."""
+    """Attach `report_llm` to each report when available.
+
+    Grounding-hash cached so only changed reports re-call the API. Offline / no
+    key -> no calls, reports unchanged.
+    """
     client = report_generator.default_client()
     if client is None:
         return {"enabled": True, "available": False, "generated": 0, "reused": 0, "flagged": 0}
@@ -251,6 +283,7 @@ def build_scouting_repository(
     llm_shadow = {"enabled": False, "available": False, "generated": 0, "reused": 0, "flagged": 0}
     if _llm_enabled():
         llm_shadow = _attach_llm_reports(rows, reports, store)
+    publish_summary = _publish_report_fields(reports)
     identity_keys = [(row["mlbam_id"], row["role"]) for row in reports]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     missing_report_count = sum(1 for row in reports if not row.get("report"))
@@ -277,8 +310,9 @@ def build_scouting_repository(
             "market_values_used_for_report": False,
             "recent_signal_used_for_context": bool(recent_index),
             "card_data_audit_used_for_context": bool(card_index),
-            "llm_generated": False,  # published `report` stays deterministic; LLM is shadow only
-            "llm_shadow_enabled": bool(llm_shadow.get("enabled") and llm_shadow.get("available")),
+            "llm_generated": publish_summary["llm_published_report_count"] > 0,
+            "llm_generated_for_report_text_only": publish_summary["llm_published_report_count"] > 0,
+            "llm_shadow_enabled": False,
             "feeds_live_rank": False,
             "feeds_live_value": False,
         },
@@ -297,6 +331,7 @@ def build_scouting_repository(
             "missing_report_count": missing_report_count,
             "max_prospect_rank": max_prospect_rank,
             "llm_shadow": llm_shadow,
+            **publish_summary,
         },
         "validation": {
             "ready_for_repository": not blockers,
