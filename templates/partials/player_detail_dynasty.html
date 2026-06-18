@@ -138,10 +138,10 @@
             </div>
             <div class="peak-summary-strip">
                 {% if row.peak_score_label %}<span><b>Peak</b>{{ row.peak_score_label }}</span>{% endif %}
-                {% if row.peak_delta_label %}<span><b>Delta</b>{{ row.peak_delta_label }}</span>{% endif %}
+                {% if row.peak_delta_label %}<span><b>Upside</b>{{ row.peak_delta_label }}</span>{% endif %}
                 {% if row.peak_role_label %}<span><b>Role</b>{{ row.peak_role_label }}</span>{% endif %}
                 {% if row.peak_risk_label %}<span><b>Risk</b>{{ row.peak_risk_label }}</span>{% endif %}
-                {% if row.peak_confidence_label %}<span><b>Conf</b>{{ row.peak_confidence_label }}</span>{% endif %}
+                {% if row.peak_confidence_label %}<span><b>Confidence</b>{{ row.peak_confidence_label }}</span>{% endif %}
                 {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
             </div>
             {% if row.peak_trajectory_label %}<p class="peak-trajectory-note">{{ row.peak_trajectory_label }}</p>{% endif %}
@@ -184,17 +184,11 @@
                 {% if role_profile and role_profile.availability_status_label %}
                 <div class="stat-item"><span class="stat-label">Roster Context</span><span class="stat-value">{{ role_profile.availability_status_label }}</span></div>
                 {% endif %}
-                {% if scouting_report and scouting_report.report_status %}
-                <div class="stat-item"><span class="stat-label">Read Status</span><span class="stat-value">{{ scouting_report.report_status | replace("_", " ") | title }}</span></div>
-                {% endif %}
                 {% if recent_signal and recent_signal.movement_label %}
-                <div class="stat-item"><span class="stat-label">Recent Signal</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
+                <div class="stat-item"><span class="stat-label">Last 3 days</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
                 {% endif %}
                 {% if recent_signal and recent_signal.buy_rank %}
-                <div class="stat-item"><span class="stat-label">Buy Signal</span><span class="stat-value">B#{{ recent_signal.buy_rank }}{% if recent_signal.buy_score is not none %} / {{ "%.0f"|format(recent_signal.buy_score) }}{% endif %}</span></div>
-                {% endif %}
-                {% if card_data_status and card_data_status.status %}
-                <div class="stat-item"><span class="stat-label">Card Health</span><span class="stat-value">{{ card_data_status.status | replace("_", " ") | title }}</span></div>
+                <div class="stat-item"><span class="stat-label">Buy Board</span><span class="stat-value">#{{ recent_signal.buy_rank }}</span></div>
                 {% endif %}
             </div>
             {% if role_profile and role_profile.role_basis %}

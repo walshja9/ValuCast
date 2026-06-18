@@ -115,7 +115,7 @@ class TestSourceSelection(unittest.TestCase):
         r = self.client.get("/")
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
         self.assertIn(
-            b'Dynasty, prospects, buys, scouting reads, and peak context are ValuCast-owned model surfaces',
+            b'all built in-house by ValuCast',
             r.data,
         )
 
@@ -132,7 +132,7 @@ class TestSourceSelection(unittest.TestCase):
         st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
-        self.assertIn(b'ValuCast-owned model surfaces', st)
+        self.assertIn(b'all built in-house by ValuCast', st)
         self.assertNotIn(self.CAPTION_ANCHOR, st)                            # caption cleared
 
     def test_methodology_page_renders_honest_statements(self):

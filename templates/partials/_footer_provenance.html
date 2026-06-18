@@ -2,9 +2,9 @@
 <div class="footer-about">
     <p class="footer-how">
         {% if intelligence_page %}
-        ValuCast Intelligence Hub: one view of the model surfaces, quality gates, scouting reads, peak context, role tracker, projection track, and league tools.
+        ValuCast Intelligence Hub: one place for the rankings, quality gates, scouting reads, peak projections, role tracker, projection track, and league tools.
         {% elif scouting_page %}
-        ValuCast scouting reports: stat-grounded prospect reads and official MLB ID role context. These explain the model; they do not change rank or value.
+        ValuCast scouting reports: stat-grounded prospect reads and official MLB role context. These add context — they don't change a player's rank or value.
         {% elif methodology_page %}
         ValuCast methodology: how our projections are built and validated. The projection source for player values is selectable on the main board.
         {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
@@ -13,7 +13,7 @@
         ValuCast H+P projection: hitters use Savant xBA/xSLG inputs; the pitching model is fully ValuCast-built, scored against your league's categories and weights.
         {% else %}
         Redraft values use 2026 actual stats + Steamer rest-of-season projections, scored against your league's categories and weights.
-        Dynasty, prospects, buys, scouting reads, and peak context are ValuCast-owned model surfaces.
+        Dynasty values, prospect rankings, buys, scouting reads, and peak projections are all built in-house by ValuCast.
         {% endif %}
     </p>
 </div>
