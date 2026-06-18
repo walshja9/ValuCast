@@ -80,6 +80,7 @@ PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 CLEAR_AVAILABILITY_STATUSES = {"", "available", "clear"}
 CAUTION_FACTUAL_CONTEXT_BANDS = {"thin", "limited", "low_impact"}
+BEST_SINGLE_COVERED_CAUTION_BANDS = {"thin", "limited"}
 LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
 
@@ -196,6 +197,35 @@ def _availability_component(row: dict) -> dict:
 def _factual_context_component(row: dict) -> dict:
     context = _components(row).get("factual_current_context")
     return context if isinstance(context, dict) else {}
+
+
+def _has_best_single_level_stat_line(row: dict) -> bool:
+    line = row.get("best_single_level_stat_line")
+    if not isinstance(line, dict):
+        return False
+    stats = line.get("stats")
+    metadata_keys = {
+        "level",
+        "reason",
+        "sample",
+        "sample_unit",
+        "season",
+        "team",
+    }
+    has_stats = (
+        isinstance(stats, dict)
+        and bool(stats)
+        or any(
+            key not in metadata_keys and _clean_float(value) is not None
+            for key, value in line.items()
+        )
+    )
+    return (
+        bool(line.get("level"))
+        and _clean_float(line.get("sample")) is not None
+        and bool(line.get("sample_unit"))
+        and has_stats
+    )
 
 
 def _top_mlb_value_gap(players: list[dict]) -> dict:
@@ -691,12 +721,34 @@ def _prospect_factual_context_coverage(players: list[dict]) -> dict:
 def _prospect_factual_context_shape(players: list[dict]) -> dict:
     top_rows = _public_prospect_rows(players)[:PROSPECT_FALLBACK_TOP_N]
     caution_rows = []
+    best_single_covered = []
     band_counts: dict[str, int] = defaultdict(int)
     for row in top_rows:
         context = _factual_context_component(row)
         band = str(context.get("skill_band") or "missing").strip().lower()
         band_counts[band] += 1
         if band in CAUTION_FACTUAL_CONTEXT_BANDS:
+            if (
+                band in BEST_SINGLE_COVERED_CAUTION_BANDS
+                and _has_best_single_level_stat_line(row)
+            ):
+                best_single = row.get("best_single_level_stat_line") or {}
+                best_single_covered.append(
+                    {
+                        "rank": row.get("prospect_rank") or row.get("rank"),
+                        "name": row.get("name"),
+                        "mlbam_id": row.get("mlbam_id"),
+                        "role": row.get("role"),
+                        "current_level": row.get("level"),
+                        "current_skill_band": band,
+                        "current_sample": context.get("sample"),
+                        "current_sample_unit": context.get("sample_unit"),
+                        "best_level": best_single.get("level"),
+                        "best_sample": best_single.get("sample"),
+                        "best_sample_unit": best_single.get("sample_unit"),
+                    }
+                )
+                continue
             caution_rows.append(
                 {
                     "rank": row.get("prospect_rank") or row.get("rank"),
@@ -729,9 +781,11 @@ def _prospect_factual_context_shape(players: list[dict]) -> dict:
             MAX_TOP50_CAUTION_FACTUAL_CONTEXT_COUNT
         ),
         band_counts=dict(sorted(band_counts.items())),
+        best_single_level_covered_count=len(best_single_covered),
         caution_bands=sorted(CAUTION_FACTUAL_CONTEXT_BANDS),
         sample_ready=sample_ready,
         samples=caution_rows[:10],
+        best_single_level_samples=best_single_covered[:10],
     )
 
 

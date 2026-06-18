@@ -614,6 +614,85 @@ def test_quality_governor_blocks_crowded_caution_factual_context():
     assert check["metrics"]["caution_factual_context_count"] == 9
 
 
+def test_quality_governor_accepts_thin_current_rows_with_best_single_level_read():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    for row in prospects[:9]:
+        row["components"]["factual_current_context"].update(
+            {
+                "skill_band": "thin",
+                "sample": 12.0,
+                "sample_unit": "PA",
+            }
+        )
+        row["best_single_level_stat_line"] = {
+            "level": "AA",
+            "sample": 240,
+            "sample_unit": "PA",
+            "ops": 0.812,
+            "iso": 0.175,
+            "reason": "current_level_too_thin_best_prior_level",
+        }
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_factual_context_shape"
+    )
+    assert payload["ready_for_public_snapshot"] is True
+    assert check["status"] == "passed"
+    assert check["metrics"]["caution_factual_context_count"] == 0
+    assert check["metrics"]["best_single_level_covered_count"] == 9
+
+
+def test_quality_governor_still_counts_low_impact_even_with_best_single_level_read():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    for row in prospects[:9]:
+        row["components"]["factual_current_context"]["skill_band"] = "low_impact"
+        row["best_single_level_stat_line"] = {
+            "level": "AA",
+            "sample": 240,
+            "sample_unit": "PA",
+            "ops": 0.650,
+            "iso": 0.080,
+            "reason": "current_level_too_thin_best_prior_level",
+        }
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        *prospects,
+    ]
+
+    payload = evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_top50_factual_context_shape"
+    )
+    assert payload["ready_for_public_snapshot"] is False
+    assert check["metrics"]["caution_factual_context_count"] == 9
+    assert check["metrics"]["best_single_level_covered_count"] == 0
+
+
 def test_quality_governor_blocks_stale_current_stat_context():
     prospects = [_prospect_row(index) for index in range(1, 51)]
     prospects[0]["components"]["factual_current_context"].update(
