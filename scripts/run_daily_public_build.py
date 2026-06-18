@@ -102,6 +102,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_front_office_report.py",),
     ("scripts/validate_scouting_repository.py",),
     ("scripts/validate_public_dynasty_snapshot.py",),
+    ("scripts/validate_dd_independence_ratchet.py",),
     ("scripts/validate_public_data_freshness.py",),
     (
         "-m",

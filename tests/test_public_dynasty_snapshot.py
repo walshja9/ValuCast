@@ -1049,6 +1049,25 @@ def test_rejects_source_policy_that_uses_dd_values():
     )
 
 
+def test_rejects_row_score_source_that_is_dd_derived():
+    payload = build_snapshot(_rank_payload())
+    payload["players"][0]["score_source"] = "dd_dynasty_value"
+
+    problems = validate_public_snapshot_payload(payload)
+    assert any("is DD/external-derived" in problem for problem in problems)
+    assert (
+        "source_policy.dd_values_used is False but a row score is DD-derived"
+        in problems
+    )
+
+
+def test_accepts_valucast_owned_row_sources():
+    payload = build_snapshot(_rank_payload())
+
+    problems = validate_public_snapshot_payload(payload)
+    assert not any("DD/external-derived" in problem for problem in problems)
+
+
 def test_app_selector_keeps_dd_when_snapshot_gate_closed():
     from app import _select_dynasty_store
 

@@ -44,6 +44,20 @@ PROHIBITED_TRUE_FLAGS = (
     "external_rankings_used_for_score",
     "market_values_used_for_score",
 )
+# Tokens that must never appear in a SERVED value_source/score_source. The
+# independence flags above are written as literals by the builder; this list lets
+# validation DERIVE the truth from the actual rows so a DD/external-derived score
+# can't slip through while the literal still claims False. Keep in sync with the
+# copy imported by quality/valucast_governor.py.
+DD_DERIVED_SOURCE_TOKENS = (
+    "dd_", "dd-", "dynasty_value", "external", "consensus",
+    "market", "cfr", "hkb", "pipeline",
+)
+
+
+def _is_dd_derived_source(value) -> bool:
+    src = str(value or "").lower()
+    return any(token in src for token in DD_DERIVED_SOURCE_TOKENS)
 
 
 def _missing_required(value) -> bool:
@@ -113,6 +127,7 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
 
     ids = []
     identity_keys = []
+    dd_source_offenders = []
     for index, record in enumerate(players):
         if not isinstance(record, dict):
             continue
@@ -120,6 +135,10 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
             problems.append(f"players[{index}].rank must be an integer")
         if not isinstance(record.get("value"), (int, float)):
             problems.append(f"players[{index}].value must be numeric")
+        for field in ("value_source", "score_source"):
+            src = record.get(field)
+            if src and _is_dd_derived_source(src):
+                dd_source_offenders.append((index, field, str(src)))
         ids.append(record.get("id"))
         key = _identity_key(record)
         if key:
@@ -129,6 +148,16 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
         problems.append("duplicate row ids")
     if len(identity_keys) != len(set(identity_keys)):
         problems.append("duplicate MLBAM+role identities")
+
+    for index, field, src in dd_source_offenders:
+        problems.append(
+            f"players[{index}].{field} '{src}' is DD/external-derived; "
+            "ValuCast scores must be ValuCast-owned"
+        )
+    if dd_source_offenders and source_policy.get("dd_values_used") is False:
+        problems.append(
+            "source_policy.dd_values_used is False but a row score is DD-derived"
+        )
 
     validation = payload.get("validation") or {}
     quality_governor = payload.get("quality_governor") or validation.get(

@@ -51,6 +51,24 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
                 self.assertEqual(response.data[:8], PNG_MAGIC)
                 self.assertIn("image/png", response.content_type)
 
+    def test_live_dynasty_source_is_valucast_owned(self):
+        """When a ValuCast snapshot is live, the served board must be ValuCast-owned,
+        never the DD feed. Allowlist (not exact match) so the planned stale source
+        is accepted. Skips only when no snapshot is live in this checkout."""
+        import app as app_module
+        from app import public_snapshot_store
+
+        if not (
+            public_snapshot_store.is_available
+            and public_snapshot_store.ready_for_live_consumers
+        ):
+            self.skipTest("ValuCast snapshot not live in this checkout")
+        self.assertIn(
+            app_module.dynasty_data_source,
+            {"valucast_public_snapshot", "valucast_public_snapshot_stale"},
+        )
+        self.assertNotEqual(app_module.dynasty_data_source, "dd_feed")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from web.public_snapshot_store import DD_DERIVED_SOURCE_TOKENS
+
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_quality_governor.json"
 PUBLIC_SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
@@ -1380,6 +1382,33 @@ def _blocker_messages(checks: list[dict]) -> list[str]:
     ]
 
 
+def _dd_score_source_audit(players: list[dict]) -> dict:
+    """Block if any SERVED value/score originates from DD or an external board.
+
+    The snapshot's source_policy independence flags are literals; this derives the
+    truth from real row sources so a DD/external-derived score can never be served
+    while the flag still claims False. External boards (CFR/HKB/Pipeline) may be
+    DISPLAYED as comparison context but must never influence a ValuCast number.
+    """
+    offenders = [
+        (str(row.get("id")), src)
+        for row in players
+        for src in (str(row.get("value_source") or ""), str(row.get("score_source") or ""))
+        if any(token in src.lower() for token in DD_DERIVED_SOURCE_TOKENS)
+    ]
+    return _check(
+        "dd_score_source_audit",
+        passed=not offenders,
+        message=(
+            "no served score/value originates from DD or an external board"
+            if not offenders
+            else f"{len(offenders)} row score/value source is DD/external-derived"
+        ),
+        offenders=offenders[:10],
+        offender_count=len(offenders),
+    )
+
+
 def evaluate_quality_governor(
     public_snapshot_or_rows: dict | list[dict] | None,
     prospect_rank: dict | None = None,
@@ -1440,6 +1469,7 @@ def evaluate_quality_governor(
         _prospect_availability_coverage(players),
         _prospect_availability_level_alignment(players),
         _prospect_availability_risk_pricing(players),
+        _dd_score_source_audit(players),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
     buy_board_checks = [

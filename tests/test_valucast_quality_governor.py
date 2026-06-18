@@ -873,3 +873,22 @@ def test_quality_governor_blocks_buy_surface_undisclosed_availability_risk():
     assert payload["ready_for_buys_promotion"] is False
     assert check["metrics"]["undisclosed_availability_risk_count"] == 1
     assert check["metrics"]["samples"]["undisclosed_availability_risk"][0]["public_status"] == "injured"
+
+
+def test_dd_score_source_audit_blocks_dd_derived_value():
+    rows = [_prospect_row(1), _prospect_row(2)]
+    rows[0]["value_source"] = "dd_dynasty_value"
+
+    payload = evaluate_quality_governor(rows)
+    check = next(c for c in payload["checks"] if c["id"] == "dd_score_source_audit")
+    assert check["status"] == "blocked"
+    assert check["metrics"]["offender_count"] >= 1
+    assert payload["ready_for_public_snapshot"] is False
+
+
+def test_dd_score_source_audit_passes_valucast_owned_board():
+    rows = [_prospect_row(1), _prospect_row(2)]
+
+    payload = evaluate_quality_governor(rows)
+    check = next(c for c in payload["checks"] if c["id"] == "dd_score_source_audit")
+    assert check["status"] == "passed"
