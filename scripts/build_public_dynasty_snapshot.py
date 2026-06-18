@@ -27,6 +27,7 @@ PROSPECT_PEAK_PROJECTION_PATH = (
 )
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
+ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 SCHEMA_VERSION = "1.1"
@@ -396,10 +397,37 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
     return merged_rows
 
 
+# Current-season MLB line for called-up prospects, from ValuCast-owned actuals
+# (data/actuals/current.json) — replaces the retired DD feed. Template keys are
+# lowercase; actuals carry uppercase stat keys in hitter/pitcher pools.
+_MLB_STAT_LINE_KEYS = {
+    "hitter": {"pa": "PA", "avg": "AVG", "ops": "OPS", "hr": "HR", "rbi": "RBI", "r": "R", "sb": "SB"},
+    "pitcher": {"ip": "IP", "era": "ERA", "whip": "WHIP", "k": "SO", "qs": "QS", "sv": "SV"},
+}
+
+
+def _mlb_stat_line_by_id(actuals: list | None) -> dict[tuple[str, str], dict]:
+    """Current-season MLB line per (mlbam_id, role) from ValuCast-owned actuals."""
+    by_id: dict[tuple[str, str], dict] = {}
+    for row in actuals or []:
+        meta = row.get("metadata") or {}
+        mlbam_id = meta.get("mlbam_id")
+        pool = row.get("pool")
+        keymap = _MLB_STAT_LINE_KEYS.get(pool)
+        if mlbam_id in (None, "") or keymap is None:
+            continue
+        stats = row.get("stats") or {}
+        line = {out: stats[src] for out, src in keymap.items() if stats.get(src) is not None}
+        if line:
+            by_id[(str(mlbam_id), pool)] = line
+    return by_id
+
+
 def _prospect_rows(
     rank_payload: dict,
     generated_at: str,
     peak_projection: dict | None = None,
+    mlb_stat_line_by_id: dict | None = None,
 ) -> list[dict]:
     peak_lookup = _prospect_peak_projection_lookup(peak_projection)
     rows = []
@@ -436,7 +464,7 @@ def _prospect_rows(
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
                 "best_single_level_stat_line": context.get("best_single_level_stat_line"),
-                "mlb_stat_line": context.get("mlb_stat_line"),
+                "mlb_stat_line": (mlb_stat_line_by_id or {}).get((_mlbam_id(row) or "", row.get("role"))),
                 "peak_projection": peak,
                 "context": {
                     "kind": "optional_display_context",
@@ -830,6 +858,7 @@ def build_snapshot(
     buy_review: dict | None = None,
     prospect_inputs: dict | None = None,
     milb_stat_freshness_audit: dict | None = None,
+    actuals: list | None = None,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = (
@@ -853,6 +882,7 @@ def build_snapshot(
         prospect_rank,
         generated_at,
         peak_projection=prospect_peak_projection,
+        mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
     )
     active_callup_bridge_ids = {
         mlbam_id
@@ -1115,6 +1145,7 @@ def main() -> None:
     )
     buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
     buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
+    actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
     payload = build_snapshot(
         rank_payload,
         mlb_layer=mlb_layer,
@@ -1125,6 +1156,7 @@ def main() -> None:
         buy_signals=buy_signals,
         buy_review=buy_review,
         prospect_inputs=prospect_inputs,
+        actuals=actuals,
     )
     path = write_snapshot(payload)
     validation = payload["validation"]

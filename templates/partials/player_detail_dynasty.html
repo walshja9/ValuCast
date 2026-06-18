@@ -281,7 +281,7 @@
         {% if row.level == 'MLB' and row.mlb_stat_line %}
         <div class="detail-section">
             <h4>2026 MLB Stats
-                <span class="statcast-asof">current season - via Fantrax</span>
+                <span class="statcast-asof">current season - via MLB Stats API</span>
                 {% if row.mlb_stat_line.get('pa') is not none and row.mlb_stat_line.get('pa') < 100 %}<span class="small-sample">small sample - {{ row.mlb_stat_line.get('pa') | int }} PA</span>
                 {% elif row.mlb_stat_line.get('ip') is not none and row.mlb_stat_line.get('ip') < 30 %}<span class="small-sample">small sample - {{ row.mlb_stat_line.get('ip') }} IP</span>{% endif %}
             </h4>

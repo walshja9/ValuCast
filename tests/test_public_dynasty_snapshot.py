@@ -596,6 +596,10 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
         _rank_payload(),
         mlb_layer=_mlb_payload(),
         buy_signals=_buy_payload(),
+        actuals=[
+            {"metadata": {"mlbam_id": "1"}, "pool": "hitter",
+             "stats": {"PA": 12, "OPS": 0.700}},
+        ],
     )
     path = _write_snapshot(tmp_path, payload)
 
@@ -1095,6 +1099,40 @@ def test_snapshot_context_drops_unused_dd_keys_keeps_source_ranks():
         assert key not in context
     # External-board comparison context is kept (feeds the labeled panel).
     assert "source_ranks" in context
+
+
+def test_mlb_stat_line_by_id_maps_actuals_to_template_keys():
+    from scripts.build_public_dynasty_snapshot import _mlb_stat_line_by_id
+
+    actuals = [
+        {"metadata": {"mlbam_id": "100"}, "pool": "hitter",
+         "stats": {"PA": 26, "AVG": 0.083, "OPS": 0.487, "HR": 1, "RBI": 3, "R": 2, "SB": 0}},
+        {"metadata": {"mlbam_id": "200"}, "pool": "pitcher",
+         "stats": {"IP": 12.0, "ERA": 3.75, "WHIP": 1.25, "SO": 14, "QS": 1, "SV": 0}},
+    ]
+    by_id = _mlb_stat_line_by_id(actuals)
+
+    assert by_id[("100", "hitter")] == {
+        "pa": 26, "avg": 0.083, "ops": 0.487, "hr": 1, "rbi": 3, "r": 2, "sb": 0
+    }
+    assert by_id[("200", "pitcher")]["k"] == 14  # SO -> k
+    assert by_id[("200", "pitcher")]["ip"] == 12.0
+
+
+def test_snapshot_attaches_mlb_stat_line_from_actuals_not_dd_feed():
+    # A called-up prospect's current MLB line now comes from ValuCast-owned actuals,
+    # keyed by (mlbam_id, role) — replacing the retired DD feed (which left it None).
+    actuals = [
+        {"metadata": {"mlbam_id": "1"}, "pool": "hitter",
+         "stats": {"PA": 26, "AVG": 0.083, "OPS": 0.487, "HR": 1}},
+    ]
+    payload = build_snapshot(_rank_payload(), actuals=actuals)
+    row = next(p for p in payload["players"] if str(p.get("mlbam_id")) == "1")
+
+    assert row["mlb_stat_line"] == {"pa": 26, "avg": 0.083, "ops": 0.487, "hr": 1}
+    # A prospect with no actuals row stays None (no fabricated MLB line).
+    other = next(p for p in payload["players"] if str(p.get("mlbam_id")) == "2")
+    assert other["mlb_stat_line"] is None
 
 
 def test_app_selector_goes_unavailable_when_snapshot_not_ready_and_old():
