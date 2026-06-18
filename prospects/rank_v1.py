@@ -1137,6 +1137,13 @@ def _context(
         owned_translated if owned_translated is not None
         else (dd_row or {}).get("stat_line_translated")
     )
+    # Provenance so the independence claim is quantified, not asserted: owned translation,
+    # transitional DD-feed fallback, or none. (mlb_stat_line is still DD-only — see below.)
+    stat_line_translated_source = (
+        "valucast_owned" if owned_translated is not None
+        else "dd_feed_fallback" if (dd_row or {}).get("stat_line_translated")
+        else None
+    )
     best_single = None
     if milb_rows and stat_line:
         best_single = best_single_level_stat_line(
@@ -1167,8 +1174,10 @@ def _context(
         "stat_line_source": stat_line_source,
         **stat_context,
         "stat_line_translated": stat_line_translated,
+        "stat_line_translated_source": stat_line_translated_source,
         "best_single_level_stat_line": best_single,
         "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
+        "mlb_stat_line_source": "dd_feed" if (dd_row or {}).get("mlb_stat_line") else None,
     }
     graduation = _graduation_context(service_row, role, rookie_limits or {})
     if graduation:
@@ -1294,9 +1303,33 @@ def _validation(
             "Current prospect stat context did not select the newest factual current-season row."
         )
 
+    # Quantify the residual DD reads in the factual DISPLAY path so the "ValuCast-owned"
+    # claim is honest. Scoring independence already holds; this tracks translation/mlb-line
+    # provenance per row (the reviewer's "report fallback counts" over silently dropping).
+    translated_owned = translated_dd_fallback = translated_absent = mlb_stat_line_dd = 0
+    for row in board:
+        ctx = row.get("context_only") or {}
+        src = ctx.get("stat_line_translated_source")
+        if src == "valucast_owned":
+            translated_owned += 1
+        elif src == "dd_feed_fallback":
+            translated_dd_fallback += 1
+        else:
+            translated_absent += 1
+        if ctx.get("mlb_stat_line_source") == "dd_feed":
+            mlb_stat_line_dd += 1
+    dd_factual_fallback = {
+        "translated_valucast_owned": translated_owned,
+        "translated_dd_feed_fallback": translated_dd_fallback,
+        "translated_absent": translated_absent,
+        "mlb_stat_line_from_dd_feed": mlb_stat_line_dd,
+        "factual_path_fully_valucast_owned": translated_dd_fallback == 0 and mlb_stat_line_dd == 0,
+    }
+
     return {
         "public_migration_ready": not blockers,
         "ready_to_replace_dd_feed": not blockers,
+        "dd_factual_fallback": dd_factual_fallback,
         "same_day_freshness": same_day,
         "generated_dates": {
             "prospect_universe": universe_date,

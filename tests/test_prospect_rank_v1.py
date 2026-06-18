@@ -11,9 +11,29 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
     _input_lookup,
+    _validation,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
+
+
+def test_dd_factual_fallback_counts_are_reported():
+    # The factual display path still reads DD for some rows; the validation block must
+    # quantify it honestly rather than assert blanket independence.
+    board = [
+        {"score": 50, "rank": 1, "context_only": {
+            "stat_line_translated_source": "valucast_owned", "mlb_stat_line_source": None}},
+        {"score": 40, "rank": 2, "context_only": {
+            "stat_line_translated_source": "dd_feed_fallback", "mlb_stat_line_source": "dd_feed"}},
+        {"score": 30, "rank": 3, "context_only": {
+            "stat_line_translated_source": None, "mlb_stat_line_source": None}},
+    ]
+    fallback = _validation({}, {}, {}, None, board, board, [], 0, set(), 0, [])["dd_factual_fallback"]
+    assert fallback["translated_valucast_owned"] == 1
+    assert fallback["translated_dd_feed_fallback"] == 1
+    assert fallback["translated_absent"] == 1
+    assert fallback["mlb_stat_line_from_dd_feed"] == 1
+    assert fallback["factual_path_fully_valucast_owned"] is False
 
 
 def _feed(extra_players=None):

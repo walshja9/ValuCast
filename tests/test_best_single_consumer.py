@@ -9,7 +9,13 @@ Regression cases (per the 2026-06-17 best-single-level spec):
 import unittest
 from types import SimpleNamespace
 
-from web.prospect_percentiles import build_pool, card_line, card_percentiles, pool_label
+from web.prospect_percentiles import (
+    build_pool,
+    card_line,
+    card_percentiles,
+    pool_label,
+    profile_bars,
+)
 
 
 def _row(stat_line=None, best=None, positions=("OF",), is_prospect=True, translated=None):
@@ -55,6 +61,19 @@ class TestBestSingleConsumer(unittest.TestCase):
         self.assertTrue(is_best)
         self.assertTrue(card_percentiles(self.pool, r))            # percentiles come from the best line
         self.assertIn("best AA read", pool_label(r))
+
+    def test_profile_bars_thin_current_uses_best_values(self):
+        # Regression: bar VALUES must come from the SAME line the percentiles use (the
+        # best-single line), not the thin current line. Otherwise a promoted player shows
+        # best-AA percentiles sitting over thin-AAA raw values.
+        best = {"level": "AA", "sample": 250, "reason": "current_level_too_thin_best_prior_level",
+                "avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900, "iso": 0.220,
+                "k_pct": 17.0, "bb_pct": 11.0}
+        r = _row(stat_line=_hitter_line(50), best=best)   # current ops .760 (thin) vs best ops .900
+        bars = profile_bars(r, card_percentiles(self.pool, r))
+        self.assertTrue(bars)
+        for bar in bars:
+            self.assertEqual(bar["value"], best[bar["key"]])   # never the thin current value
 
     def test_neither_returns_none_and_empty_percentiles(self):
         r = _row(stat_line=_hitter_line(50), best=None)
