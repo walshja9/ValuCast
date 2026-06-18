@@ -1068,6 +1068,23 @@ def test_accepts_valucast_owned_row_sources():
     assert not any("DD/external-derived" in problem for problem in problems)
 
 
+def test_snapshot_context_drops_unused_dd_keys_keeps_source_ranks():
+    payload = build_snapshot(_rank_payload())
+    prospect = next(p for p in payload["players"] if p.get("player_type") == "prospect")
+    context = prospect["context"]
+
+    for key in (
+        "dd_dynasty_rank",
+        "dd_dynasty_value",
+        "dd_prospect_rank",
+        "has_dd_context",
+        "value_history_points",
+    ):
+        assert key not in context
+    # External-board comparison context is kept (feeds the labeled panel).
+    assert "source_ranks" in context
+
+
 def test_app_selector_goes_unavailable_when_snapshot_not_ready_and_old():
     from app import _select_dynasty_store
 

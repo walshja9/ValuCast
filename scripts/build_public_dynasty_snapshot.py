@@ -413,11 +413,12 @@ def _prospect_rows(
                     "kind": "optional_display_context",
                     "usage": "display_only_not_used_for_valucast_score",
                     "valucast_rank_v1": row.get("rank"),
-                    "dd_dynasty_rank": context.get("dd_dynasty_rank"),
-                    "dd_dynasty_value": context.get("dd_dynasty_value"),
-                    "dd_prospect_rank": context.get("dd_prospect_rank"),
+                    # External-board comparison context (CFR/HKB/Pipeline) — kept,
+                    # labeled, never feeds a ValuCast score. The DD rank/value keys are
+                    # not dropped here: no consumer reads them off the public snapshot
+                    # (rank_v1's internal context_only still carries them for the
+                    # coverage/calibration audits).
                     "source_ranks": context.get("source_ranks"),
-                    "value_history_points": context.get("value_history_points"),
                     "stat_line_source": context.get("stat_line_source"),
                     "stat_line_source_kind": context.get("stat_line_source_kind"),
                     "stat_line_level": context.get("stat_line_level"),
@@ -426,7 +427,6 @@ def _prospect_rows(
                     "stat_line_sample_unit": context.get("stat_line_sample_unit"),
                     "stat_line_sample_season": context.get("stat_line_sample_season"),
                     "graduation_context": context.get("graduation_context"),
-                    "has_dd_context": context.get("has_dd_context", False),
                 },
             }
         )

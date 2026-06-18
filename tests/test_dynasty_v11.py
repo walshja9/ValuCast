@@ -62,7 +62,7 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"External board context", response.data)
         self.assertNotIn(b"Market context (not used in ValuCast score)", response.data)
-        self.assertIn(b"Comparison-only context", response.data)
+        self.assertIn(b"not used in ValuCast score", response.data)
         self.assertIn(b"ValuCast Rank", response.data)
         self.assertIn(b"ValuCast model rank", response.data)
         self.assertIn(b"Public Consensus", response.data)

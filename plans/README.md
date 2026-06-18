@@ -53,7 +53,19 @@ classified per the requested taxonomy:
 |------|-------|----------|--------|------------|--------|
 | 001  | Fail-loud DD/external independence validators | P1 | M | — | DONE (Fable, 6/17; 1310 pass, ruff clean) |
 | 002  | Remove DD as a live valuation fallback + retire 3 deploy gates | P1 | M | 001 | DONE (Fable, 6/17; 1311 pass, ruff clean) |
-| 003  | Strip unused DD context keys from public snapshot + tighten panel label | P2 | S | — | TODO |
+| 003  | Strip unused DD context keys from public snapshot + tighten panel label | P2 | S | — | DONE (Fable, 6/17; 1312 pass, ruff clean) |
+
+### 003 completion note
+
+Implemented directly by Fable. Consumer check confirmed the `dd_*` keys are read
+only from the rank_v1 internal `context_only` (coverage/calibration audits), never
+from the public snapshot — so dropped `dd_dynasty_rank`/`dd_dynasty_value`/
+`dd_prospect_rank`/`has_dd_context`/`value_history_points` from the public snapshot
+`context` (build_public_dynasty_snapshot.py); kept `source_ranks` (feeds the labeled
+external-board panel). rank_v1 untouched, so its audit consumers are unaffected.
+External-board panel note tightened to "External board context — not used in
+ValuCast score"; confirmed `source_ranks` is never referenced in app.py (not on share
+graphics). Verified: full suite 1312 pass, ruff clean.
 
 ### 002 completion note
 
