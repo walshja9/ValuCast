@@ -54,23 +54,9 @@ body::before {
         radial-gradient(42% 38% at 84% 96%, rgba(45, 212, 160, .12), transparent 72%),
         linear-gradient(165deg, #15172e 0%, #0e0f1a 52%, #101228 100%);
 }
-body::after {
-    content: "";
-    position: fixed;
-    inset: -20%;
-    z-index: -1;
-    pointer-events: none;
-    background:
-        radial-gradient(28% 30% at 70% 8%, rgba(110, 161, 255, .07), transparent 72%);
-    animation: ambient-drift 140s ease-in-out infinite alternate;
-}
-@keyframes ambient-drift {
-    from { transform: translate3d(-1%, -0.75%, 0) scale(1); }
-    to   { transform: translate3d(1.25%, 1.5%, 0) scale(1.05); }
-}
-@media (prefers-reduced-motion: reduce) {
-    body::after { animation: none; }
-}
+/* Phase 1 (Visual Constitution): removed the animated ambient-drift bloom
+   (body::after) — it read as AI-dashboard wallpaper. The quiet body::before
+   blooms give the glass enough to refract. */
 
 a { color: var(--c-blue); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -386,17 +372,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
     overflow: hidden;
     position: relative;
 }
-.intelligence-hero::after {
-    content: "";
-    position: absolute;
-    right: -5rem;
-    top: -5rem;
-    width: 18rem;
-    height: 18rem;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(52,211,153,.20), transparent 68%);
-    pointer-events: none;
-}
+/* Phase 1: removed the decorative hero glow bloom (.intelligence-hero::after). */
 .intelligence-hero .eyebrow,
 .intelligence-lane .eyebrow,
 .intelligence-next .eyebrow {
@@ -918,11 +894,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .detail-body { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
 .detail-section h4 { font-size: 0.8rem; text-transform: uppercase; color: var(--c-muted); margin-bottom: 0.5rem; }
 .league-read-card {
-    border: 1px solid rgba(79, 134, 247, .24);
+    border: 1px solid rgba(255, 255, 255, .12);
     border-radius: 12px;
-    background:
-        radial-gradient(circle at 0 0, rgba(79, 134, 247, .12), transparent 32%),
-        rgba(255, 255, 255, .035);
+    background: rgba(255, 255, 255, .035);
     padding: .75rem .85rem;
 }
 .league-read-card p {
@@ -1387,10 +1361,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .dynasty-detail .stat-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); }
 .prospect-profile-card {
     background:
-        radial-gradient(circle at 8% 10%, rgba(52, 211, 153, .12), transparent 30%),
         linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, 0) 46%),
         var(--surface);
-    border-color: rgba(52, 211, 153, .26);
+    border-color: rgba(52, 211, 153, .22);
 }
 .prospect-profile-top {
     display: flex;
@@ -1669,10 +1642,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 }
 .peak-projection-card {
     background:
-        radial-gradient(circle at 92% 8%, rgba(110, 161, 255, .14), transparent 30%),
         linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0) 48%),
         var(--surface);
-    border-color: rgba(110, 161, 255, .22);
+    border-color: rgba(255, 255, 255, .10);
 }
 .peak-projection-head {
     display: flex;
@@ -1741,7 +1713,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--c-prospect), var(--c-blue));
+    background: var(--c-prospect);
 }
 .role-probability-row b {
     color: var(--c-text);
@@ -1750,10 +1722,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     text-align: right;
 }
 .scouting-context-card {
-    border-color: rgba(52, 211, 153, .22);
-    background:
-        radial-gradient(circle at 96% 0%, rgba(52, 211, 153, .1), transparent 30%),
-        var(--surface);
+    border-color: rgba(52, 211, 153, .20);
+    background: var(--surface);
 }
 .scouting-context-head {
     display: flex;
@@ -2130,7 +2100,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     border-bottom: 1px solid var(--c-border);
 }
 .buys-row:last-child { border-bottom: none; }
-.buys-rank { font-weight: 700; color: var(--c-blue-strong); text-align: right; }
+.buys-rank { font-weight: 700; color: var(--c-text); text-align: right; }
 .buys-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); object-fit: cover; }
 .buys-main a { font-weight: 600; }
 .buys-tag { display: block; font-size: .76rem; color: var(--c-muted); }
@@ -2174,12 +2144,12 @@ body {
 }
 
 body::before {
+    /* Quiet Lab base: a dark field with two faint cool blooms for the glass to
+       refract — not a four-color aurora wash (Phase 1). */
     background:
-        radial-gradient(42% 34% at 12% 2%, rgba(79, 134, 247, .28), transparent 72%),
-        radial-gradient(38% 34% at 94% 14%, rgba(167, 139, 250, .24), transparent 72%),
-        radial-gradient(46% 38% at 78% 100%, rgba(45, 212, 160, .18), transparent 72%),
-        radial-gradient(30% 24% at 24% 82%, rgba(251, 191, 36, .08), transparent 70%),
-        linear-gradient(165deg, #12152c 0%, #080a13 52%, #0f1228 100%);
+        radial-gradient(40% 34% at 14% 2%, rgba(79, 134, 247, .10), transparent 72%),
+        radial-gradient(42% 36% at 86% 98%, rgba(45, 212, 160, .08), transparent 72%),
+        linear-gradient(168deg, #0c0e1a 0%, #080a13 54%, #0b0e1d 100%);
 }
 
 main {
@@ -2334,7 +2304,7 @@ main {
 }
 
 .player-row:hover {
-    background: linear-gradient(90deg, rgba(79, 134, 247, .13), rgba(52, 211, 153, .055));
+    background: rgba(52, 211, 153, .08);
 }
 
 .tier-break {
@@ -2372,16 +2342,12 @@ main {
 .player-detail {
     padding: 1.05rem 1.35rem;
     border-left-color: var(--c-prospect);
-    background:
-        radial-gradient(circle at 0 0, rgba(52, 211, 153, .10), transparent 28%),
-        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, 0) 44%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, 0) 44%);
 }
 
 .player-detail.mlb-detail {
     border-left-color: var(--c-dynasty);
-    background:
-        radial-gradient(circle at 0 0, rgba(167, 139, 250, .12), transparent 28%),
-        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, 0) 44%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, 0) 44%);
 }
 
 .dynasty-card-header {
@@ -2414,18 +2380,16 @@ main {
 
 .prospect-profile-card {
     background:
-        radial-gradient(circle at 5% 2%, rgba(52, 211, 153, .16), transparent 33%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015) 45%),
         var(--surface-panel);
-    border-color: rgba(52, 211, 153, .24);
+    border-color: rgba(52, 211, 153, .22);
 }
 
 .peak-projection-card {
     background:
-        radial-gradient(circle at 100% 0, rgba(110, 161, 255, .16), transparent 34%),
         linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .01) 48%),
         var(--surface-panel);
-    border-color: rgba(110, 161, 255, .20);
+    border-color: rgba(255, 255, 255, .10);
 }
 
 .profile-card-identity {
@@ -2504,7 +2468,7 @@ main {
 }
 
 .buys-row:hover {
-    background: linear-gradient(90deg, rgba(52, 211, 153, .09), rgba(110, 161, 255, .055));
+    background: rgba(52, 211, 153, .07);
 }
 
 @media (max-width: 640px) {
