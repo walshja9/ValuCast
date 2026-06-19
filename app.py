@@ -2752,6 +2752,282 @@ def scouting_reports():
     )
 
 
+def _build_backfields_page_context():
+    root = Path(__file__).parent
+    models = root / "data" / "models"
+    recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
+    scouting_repository = _load_artifact(models / "valucast_scouting_reports.json")
+    stat_payload = _load_artifact(root / "data" / "prospects" / "raw" / "milb_season_stats.json")
+    prospect_rows = _prospect_rows()[:50] if dd_store.is_available else []
+    tiers = _prospect_tiers() if dd_store.is_available else {}
+    all_prospects = _prospect_rows() if dd_store.is_available else []
+
+    def as_float(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def fmt_value(value, digits=1):
+        number = as_float(value)
+        return "-" if number is None else f"{number:.{digits}f}"
+
+    def fmt_rate(value, digits=3):
+        number = as_float(value)
+        if number is None:
+            return "-"
+        text = f"{number:.{digits}f}"
+        return text.replace("0.", ".", 1)
+
+    def context_for(row):
+        context = getattr(row, "context", None)
+        if isinstance(context, dict):
+            return context
+        metadata = getattr(row, "metadata", None)
+        if isinstance(metadata, dict) and isinstance(metadata.get("context"), dict):
+            return metadata["context"]
+        return {}
+
+    def role_for(row):
+        role = getattr(row, "role", None) or context_for(row).get("role")
+        if role:
+            return str(role).lower()
+        positions = set(getattr(row, "positions", ()) or ())
+        return "pitcher" if positions and positions <= {"P", "SP", "RP"} else "hitter"
+
+    def identity_for(row):
+        return _identity_key(getattr(row, "mlbam_id", None), role_for(row))
+
+    def level_for(row):
+        level = getattr(row, "level", None) or context_for(row).get("stat_line_level")
+        return str(level or "").strip().upper()
+
+    def affiliate_for(row):
+        context = context_for(row)
+        return (
+            context.get("stat_line_team")
+            or getattr(row, "team", None)
+            or ""
+        )
+
+    def position_for(row):
+        positions = [str(pos) for pos in (getattr(row, "positions", ()) or ()) if pos]
+        return "/".join(positions) if positions else "-"
+
+    def eta_for(row):
+        eta = getattr(row, "eta", None)
+        return f"ETA {eta}" if eta else ""
+
+    def tier_for(row):
+        try:
+            tier = int(tiers.get(row.id, 5))
+        except (TypeError, ValueError):
+            tier = 5
+        return max(1, min(tier, 5))
+
+    def move_from_signal(signal):
+        delta = as_float((signal or {}).get("rank_delta_7d"))
+        if delta is None or delta == 0:
+            return {"direction": "flat", "label": "-"}
+        return {
+            "direction": "up" if delta > 0 else "down",
+            "label": str(int(abs(delta))) if delta.is_integer() else f"{abs(delta):.1f}",
+        }
+
+    def current_year_bucket(row):
+        label = getattr(row, "graduation_context_label", None)
+        if label:
+            return label
+        graduation = getattr(row, "graduation_context", {}) or {}
+        if graduation.get("label"):
+            return str(graduation["label"])
+        eta = getattr(row, "eta", None)
+        current_year = date.today().year
+        if eta is None:
+            return "Monitor"
+        if eta <= current_year:
+            return "This year"
+        if eta == current_year + 1:
+            return "Next year"
+        return "Later"
+
+    def short_text(text, limit=230):
+        clean = " ".join(str(text or "").split())
+        if len(clean) <= limit:
+            return clean
+        return clean[: limit - 3].rstrip() + "..."
+
+    signals = []
+    for key in ("signals", "top_movers"):
+        signals.extend(row for row in (recent_signal or {}).get(key) or [] if isinstance(row, dict))
+    signal_by_key = {
+        str(row.get("identity_key")): row
+        for row in signals
+        if row.get("identity_key")
+    }
+    signal_by_mlbam = {
+        str(row.get("mlbam_id")): row
+        for row in signals
+        if row.get("mlbam_id") not in (None, "")
+    }
+    reports_by_key = _indexed_artifact_rows(scouting_repository, "reports")
+    row_by_key = {identity_for(row): row for row in all_prospects if identity_for(row)}
+    row_by_mlbam = {
+        str(getattr(row, "mlbam_id")): row
+        for row in all_prospects
+        if getattr(row, "mlbam_id", None) not in (None, "")
+    }
+
+    rankings = []
+    for rank, row in enumerate(prospect_rows, 1):
+        key = identity_for(row)
+        signal = signal_by_key.get(key) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
+        rankings.append({
+            "rank": rank,
+            "name": row.name,
+            "url": "/?" + urlencode({"mode": "prospects", "search": row.name}),
+            "position": position_for(row),
+            "affiliate": affiliate_for(row),
+            "eta": eta_for(row),
+            "level": level_for(row) or "-",
+            "tier": tier_for(row),
+            "move": move_from_signal(signal),
+            "value": fmt_value(getattr(row, "dynasty_value", None)),
+            "has_report": bool(key and key in reports_by_key),
+        })
+
+    def riser_sort_key(row):
+        return as_float(row.get("rank_delta_7d")) or 0.0
+
+    risers = []
+    movers = [
+        row for row in (recent_signal or {}).get("top_movers") or []
+        if isinstance(row, dict) and (as_float(row.get("rank_delta_7d")) or 0) > 0
+    ]
+    for item in sorted(movers, key=riser_sort_key, reverse=True)[:5]:
+        row = (
+            row_by_key.get(str(item.get("identity_key")))
+            or row_by_mlbam.get(str(item.get("mlbam_id")))
+        )
+        level = level_for(row) if row else ""
+        positions = item.get("positions") or (getattr(row, "positions", ()) if row else ())
+        pos = "/".join(str(pos) for pos in positions if pos) or "-"
+        history = [
+            (point.get("date"), point.get("score"))
+            for point in item.get("history_points") or []
+            if isinstance(point, dict)
+        ]
+        spark = build_spark(history, width=120, height=30)
+        value = item.get("prospect_score")
+        if value is None and row is not None:
+            value = getattr(row, "dynasty_value", None)
+        risers.append({
+            "name": item.get("name") or (row.name if row else "Unknown"),
+            "meta": " / ".join(part for part in (level, pos) if part),
+            "delta": fmt_value(item.get("rank_delta_7d"), digits=0),
+            "value": fmt_value(value),
+            "spark": spark,
+        })
+
+    callups = []
+    aaa_rows = [
+        row for row in all_prospects
+        if level_for(row) == "AAA"
+    ]
+    for row in sorted(aaa_rows, key=lambda item: item.dynasty_value, reverse=True)[:4]:
+        callups.append({
+            "name": row.name,
+            "flag": " / ".join(part for part in (level_for(row), affiliate_for(row)) if part),
+            "eta": current_year_bucket(row),
+            "value": fmt_value(getattr(row, "dynasty_value", None)),
+        })
+
+    def leader(rows, stat_key, label, *, high=True, value_format=fmt_value):
+        qualified = [
+            row for row in rows
+            if as_float(row.get(stat_key)) is not None
+        ]
+        if not qualified:
+            return None
+        winner = sorted(
+            qualified,
+            key=lambda row: as_float(row.get(stat_key)) or 0.0,
+            reverse=high,
+        )[0]
+        return {
+            "stat": label,
+            "name": winner.get("name") or "Unknown",
+            "level": winner.get("level") or "",
+            "team": winner.get("team") or "",
+            "value": value_format(winner.get(stat_key)),
+        }
+
+    hitters = [
+        row for row in (stat_payload or {}).get("hitters") or []
+        if isinstance(row, dict) and (as_float(row.get("plate_appearances")) or 0) >= 50
+    ]
+    pitchers = [
+        row for row in (stat_payload or {}).get("pitchers") or []
+        if isinstance(row, dict) and (as_float(row.get("innings_pitched")) or 0) >= 20
+    ]
+    hitting_stats = [
+        leader(hitters, "ops", "OPS", value_format=lambda value: fmt_rate(value, 3)),
+        leader(hitters, "iso", "ISO", value_format=lambda value: fmt_rate(value, 3)),
+        leader(hitters, "stolen_bases", "SB", value_format=lambda value: fmt_value(value, 0)),
+    ]
+    pitching_stats = [
+        leader(pitchers, "k_per_9", "K9", value_format=lambda value: fmt_value(value, 1)),
+        leader(pitchers, "era", "ERA", high=False, value_format=lambda value: fmt_value(value, 2)),
+        leader(pitchers, "whip", "WHIP", high=False, value_format=lambda value: fmt_value(value, 2)),
+    ]
+
+    def report_date(row):
+        return (
+            row.get("published_at")
+            or row.get("updated_at")
+            or row.get("generated_at")
+            or (scouting_repository or {}).get("generated_at")
+        )
+
+    report_items = [
+        dict(row) for row in (scouting_repository or {}).get("reports") or []
+        if isinstance(row, dict)
+    ]
+    report_items.sort(key=lambda row: int(row.get("prospect_rank") or 999999))
+    report_items.sort(key=lambda row: str(report_date(row) or ""), reverse=True)
+    scouting_reports = []
+    for row in report_items[:3]:
+        positions = "/".join(str(pos) for pos in row.get("positions") or () if pos)
+        meta_parts = [positions, row.get("level"), row.get("team")]
+        scouting_reports.append({
+            "tag": _format_context_label(row.get("report_status")) or "Report",
+            "date": report_date(row),
+            "name": row.get("name") or "Unknown",
+            "meta": " / ".join(str(part) for part in meta_parts if part),
+            "line": short_text(_scouting_display_report_text(row)),
+        })
+
+    return {
+        "backfields_page": True,
+        "mode": "prospects",
+        "as_of": dd_store.generated_at,
+        "dd_available": dd_store.is_available,
+        "rankings": rankings,
+        "risers": risers,
+        "callups": callups,
+        "stats": {
+            "hitting": [row for row in hitting_stats if row],
+            "pitching": [row for row in pitching_stats if row],
+        },
+        "scouting_reports": scouting_reports,
+    }
+
+
+@app.route("/backfields")
+def backfields():
+    return render_template("backfields.html", **_build_backfields_page_context())
+
+
 def _value_map_players(rows):
     """Slim, committed-feed-only payload for the value map."""
     payload = []

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+
+{% block title %}Backfields | ValuCast{% endblock %}
+{% block og_title %}Backfields | ValuCast{% endblock %}
+{% block og_description %}Prospects, call-ups, risers, and minor-league signal in one place.{% endblock %}
+{% block og_url %}https://valucast.app/backfields{% endblock %}
+{% block twitter_title %}Backfields | ValuCast{% endblock %}
+{% block twitter_description %}Prospects, call-ups, risers, and minor-league signal in one place.{% endblock %}
+
+{% block content %}
+<article class="backfields-page">
+    <header class="bf-hero">
+        <div class="bf-hero-copy">
+            <p class="bf-eyebrow">Minor Leagues</p>
+            <h1>Backfields</h1>
+            <p class="bf-tagline">Prospects, call-ups, risers, and minor-league signal in one place.</p>
+        </div>
+        <div class="bf-hero-actions">
+            {% if as_of %}<span class="bf-freshness">Values updated {{ editorial_date(as_of) }}</span>{% endif %}
+            <a class="bf-share" href="/prospects/share-card">Share this board</a>
+        </div>
+        <nav class="bf-anchor-tabs" aria-label="Backfields sections">
+            <a href="#rankings">Rankings</a>
+            <a href="#ahead-of-the-curve">Ahead of the Curve</a>
+            <a href="#call-up-desk">Call-Up Desk</a>
+            <a href="#stats">Stats</a>
+        </nav>
+    </header>
+
+    <section id="ahead-of-the-curve" class="bf-section bf-risers-section" aria-labelledby="bf-risers-title">
+        <div class="bf-section-head">
+            <h2 id="bf-risers-title">Ahead of the Curve</h2>
+            <p>Biggest risers this week</p>
+        </div>
+        {% if risers %}
+        <div class="bf-risers-strip" aria-label="Biggest prospect risers">
+            {% for riser in risers %}
+            <article class="bf-riser-card">
+                <div class="bf-riser-top">
+                    <div>
+                        <h3>{{ riser.name }}</h3>
+                        <p>{{ riser.meta }}</p>
+                    </div>
+                    <span class="bf-move bf-move-up">&#9650; {{ riser.delta }}</span>
+                </div>
+                {% if riser.spark %}
+                <svg class="bf-spark" viewBox="0 0 {{ riser.spark.width }} {{ riser.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
+                    <polyline points="{{ riser.spark.points }}" fill="none" vector-effect="non-scaling-stroke"></polyline>
+                    <circle cx="{{ riser.spark.last_x }}" cy="{{ riser.spark.last_y }}" r="2.4"></circle>
+                </svg>
+                {% else %}
+                <span class="bf-spark bf-spark-empty" aria-hidden="true"></span>
+                {% endif %}
+                <div class="bf-riser-value">
+                    <span>Value</span>
+                    <strong>{{ riser.value }}</strong>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="bf-empty">No risers available yet.</p>
+        {% endif %}
+    </section>
+
+    <div class="bf-main-grid">
+        <section id="rankings" class="bf-section bf-rankings-section" aria-labelledby="bf-rankings-title">
+            <div class="bf-section-head bf-rankings-head">
+                <h2 id="bf-rankings-title">Rankings</h2>
+                <div class="bf-filter-pills" aria-label="Filter rankings by level">
+                    {% for level in ["All", "AAA", "AA", "A+", "A"] %}
+                    <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-bf-level="{{ level }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ level }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="bf-table-card">
+                <div class="bf-table-head" role="row">
+                    <span>#</span>
+                    <span>Player</span>
+                    <span>Level</span>
+                    <span>Move</span>
+                    <span>Value</span>
+                </div>
+                {% if rankings %}
+                {% for row in rankings %}
+                <article class="bf-rank-row bf-tier-{{ row.tier }}" data-bf-row-level="{{ row.level }}">
+                    <span class="bf-rank">{{ row.rank }}</span>
+                    <div class="bf-player">
+                        <div class="bf-player-name">
+                            <a href="{{ row.url }}">{{ row.name }}</a>
+                            {% if row.has_report %}<a class="bf-report-badge" href="/scouting?q={{ row.name | urlencode }}">Report</a>{% endif %}
+                        </div>
+                        <p class="bf-player-meta">
+                            <span>{{ row.position }}</span>
+                            {% if row.affiliate %}<span class="bf-meta-accent">{{ row.affiliate }}</span>{% endif %}
+                            {% if row.eta %}<span>{{ row.eta }}</span>{% endif %}
+                        </p>
+                    </div>
+                    <span class="bf-level">{{ row.level }}</span>
+                    <span class="bf-move bf-move-{{ row.move.direction }}">
+                        {% if row.move.direction == "up" %}&#9650; {{ row.move.label }}
+                        {% elif row.move.direction == "down" %}&#9660; {{ row.move.label }}
+                        {% else %}{{ row.move.label }}{% endif %}
+                    </span>
+                    <span class="bf-value">{{ row.value }}</span>
+                </article>
+                {% endfor %}
+                {% else %}
+                <p class="bf-empty">Prospect rankings will appear after the next public build.</p>
+                {% endif %}
+                <a class="bf-table-footer" href="/rankings?mode=prospects">View full top 100</a>
+            </div>
+        </section>
+
+        <aside class="bf-rail" aria-label="Backfields side rail">
+            <section id="call-up-desk" class="bf-rail-card" aria-labelledby="bf-callups-title">
+                <div class="bf-card-head">
+                    <div>
+                        <h2 id="bf-callups-title">Call-Up Desk</h2>
+                        <p>Knocking on the door</p>
+                    </div>
+                    <span class="bf-live-dot" aria-hidden="true"></span>
+                </div>
+                {% if callups %}
+                <div class="bf-callup-list">
+                    {% for player in callups %}
+                    <article class="bf-callup-row">
+                        <div>
+                            <h3>{{ player.name }}</h3>
+                            <p>{{ player.flag }}</p>
+                        </div>
+                        <span>{{ player.eta }}</span>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="bf-empty">No AAA call-up candidates available.</p>
+                {% endif %}
+            </section>
+
+            <section id="stats" class="bf-rail-card" aria-labelledby="bf-stats-title">
+                <div class="bf-card-head">
+                    <div>
+                        <h2 id="bf-stats-title">Stats</h2>
+                        <p>Minors leaders</p>
+                    </div>
+                </div>
+                <div class="bf-stat-tabs" role="tablist" aria-label="Stat leader type">
+                    <button type="button" class="bf-stat-tab is-active" data-bf-stat-tab="hitting" aria-pressed="true">Hitting</button>
+                    <button type="button" class="bf-stat-tab" data-bf-stat-tab="pitching" aria-pressed="false">Pitching</button>
+                </div>
+                {% for kind in ["hitting", "pitching"] %}
+                <div class="bf-stat-panel" data-bf-stat-panel="{{ kind }}" {% if kind == "pitching" %}hidden{% endif %}>
+                    {% if stats[kind] %}
+                    {% for leader in stats[kind] %}
+                    <article class="bf-stat-row">
+                        <span>{{ leader.stat }}</span>
+                        <div>
+                            <h3>{{ leader.name }}</h3>
+                            <p>{{ leader.level }}{% if leader.team %} / {{ leader.team }}{% endif %}</p>
+                        </div>
+                        <strong>{{ leader.value }}</strong>
+                    </article>
+                    {% endfor %}
+                    {% else %}
+                    <p class="bf-empty">Stats leaders will appear after the next data build.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </section>
+        </aside>
+    </div>
+
+    <section class="bf-section bf-scouting-feed" aria-labelledby="bf-scouting-title">
+        <div class="bf-section-head">
+            <h2 id="bf-scouting-title">Scouting Reports</h2>
+            <p>Latest looks</p>
+        </div>
+        {% if scouting_reports %}
+        <div class="bf-report-grid">
+            {% for report in scouting_reports %}
+            <article class="bf-report-card">
+                <div class="bf-report-top">
+                    <span>{{ report.tag }}</span>
+                    {% if report.date %}<time datetime="{{ report.date[:10] }}">{{ editorial_date(report.date) }}</time>{% endif %}
+                </div>
+                <h3>{{ report.name }}</h3>
+                <p class="bf-report-meta">{{ report.meta }}</p>
+                <p class="bf-report-line">{{ report.line }}</p>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="bf-empty">No reports yet - first looks land here.</p>
+        {% endif %}
+    </section>
+
+    <footer class="bf-footer-strip">
+        <span>ValuCast and Backfields</span>
+        <em>Ahead of the Curve.</em>
+    </footer>
+
+    <script>
+    (function () {
+        var page = document.querySelector('.backfields-page');
+        if (!page) { return; }
+        page.querySelectorAll('[data-bf-level]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var level = btn.getAttribute('data-bf-level');
+                page.querySelectorAll('[data-bf-level]').forEach(function (pill) {
+                    var active = pill === btn;
+                    pill.classList.toggle('is-active', active);
+                    pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+                page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
+                    row.hidden = level !== 'All' && row.getAttribute('data-bf-row-level') !== level;
+                });
+            });
+        });
+        page.querySelectorAll('[data-bf-stat-tab]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = btn.getAttribute('data-bf-stat-tab');
+                page.querySelectorAll('[data-bf-stat-tab]').forEach(function (tab) {
+                    var active = tab === btn;
+                    tab.classList.toggle('is-active', active);
+                    tab.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+                page.querySelectorAll('[data-bf-stat-panel]').forEach(function (panel) {
+                    panel.hidden = panel.getAttribute('data-bf-stat-panel') !== target;
+                });
+            });
+        });
+    }());
+    </script>
+</article>
+{% endblock %}

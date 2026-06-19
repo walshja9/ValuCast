@@ -3116,3 +3116,594 @@ main {
 .player-row.tier-3::before { background: #8a93a4; }
 .player-row.tier-4::before { background: #5e6678; }
 .player-row.tier-5::before { background: #3e465a; }
+
+/* ============================================================
+   Backfields MVP — warm dialect, scoped to the prospect/minors hub
+   ============================================================ */
+
+.backfields-page { --bf-bg: #100E0A; --bf-panel: #15110c; --bf-panel-2: #1b160f; --bf-line: rgba(200, 146, 63, .22); --bf-amber: #C8923F; --bf-signal: var(--c-signal); --bf-clay: var(--c-clay); --bf-text: var(--c-text); --bf-muted: #8a8172; --bf-muted-2: #5f574c; --bf-slate: #5e6678; --bf-platinum: #e6eaf1; }
+
+body:has(.backfields-page) {
+    background:
+        radial-gradient(circle at 78% -10%, rgba(200, 146, 63, .10), transparent 34rem),
+        radial-gradient(circle at 70% 8%, rgba(52, 226, 196, .08), transparent 28rem),
+        var(--bf-bg);
+}
+
+body:has(.backfields-page) .site-nav a[aria-current="page"] {
+    background: rgba(200, 146, 63, .18);
+    border-color: rgba(200, 146, 63, .34);
+    color: var(--bf-text);
+}
+
+.backfields-page {
+    position: relative;
+    width: min(1180px, calc(100vw - 2rem));
+    margin: 0 auto 3rem;
+    padding: clamp(1rem, 2vw, 1.65rem);
+    color: var(--bf-text);
+    background:
+        linear-gradient(115deg, rgba(16, 14, 10, .97), rgba(16, 14, 10, .91)),
+        var(--bf-bg);
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, .34);
+    overflow: hidden;
+}
+
+.backfields-page::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 42%;
+    height: 220px;
+    pointer-events: none;
+    background:
+        linear-gradient(156deg, transparent 42%, rgba(52, 226, 196, .32) 43%, rgba(52, 226, 196, .08) 44%, transparent 45%),
+        radial-gradient(circle at 95% 14%, rgba(52, 226, 196, .34), transparent 2.2rem);
+    opacity: .55;
+}
+
+.backfields-page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .08;
+    background-image:
+        linear-gradient(rgba(200, 146, 63, .72) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 146, 63, .72) 1px, transparent 1px);
+    background-size: 100% 42px, 42px 100%;
+    mask-image: linear-gradient(to bottom, transparent, #000 12%, transparent 72%);
+}
+
+.backfields-page > * {
+    position: relative;
+    z-index: 1;
+}
+
+.backfields-page a {
+    color: inherit;
+}
+
+.backfields-page .bf-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.5rem;
+    padding: .8rem 0 1.35rem;
+    border-bottom: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-eyebrow,
+.backfields-page .bf-section-head p,
+.backfields-page .bf-freshness,
+.backfields-page .bf-table-head,
+.backfields-page .bf-card-head p,
+.backfields-page .bf-footer-strip span,
+.backfields-page .bf-report-top,
+.backfields-page .bf-riser-value span {
+    color: var(--bf-amber);
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.backfields-page h1 {
+    margin: .15rem 0 .35rem;
+    color: var(--bf-text);
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 4.2rem);
+    line-height: .95;
+    letter-spacing: -.04em;
+}
+
+.backfields-page h2,
+.backfields-page h3 {
+    font-family: var(--font-display);
+    letter-spacing: -.02em;
+}
+
+.backfields-page h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.backfields-page h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.backfields-page p {
+    margin: 0;
+}
+
+.backfields-page .bf-tagline {
+    max-width: 58ch;
+    color: #b9ad9b;
+    font-size: 1rem;
+}
+
+.backfields-page .bf-hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: end;
+    gap: .65rem;
+}
+
+.backfields-page .bf-share,
+.backfields-page .bf-table-footer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: .42rem .75rem;
+    color: var(--bf-signal);
+    background: transparent;
+    border: 1px solid rgba(52, 226, 196, .32);
+    border-radius: var(--radius);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.backfields-page .bf-anchor-tabs {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: .35rem;
+}
+
+.backfields-page .bf-anchor-tabs a {
+    padding: .35rem 0;
+    color: var(--bf-muted);
+    border-bottom: 2px solid transparent;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.backfields-page .bf-anchor-tabs a:first-child,
+.backfields-page .bf-anchor-tabs a:hover {
+    color: var(--bf-text);
+    border-bottom-color: var(--bf-signal);
+}
+
+.backfields-page .bf-section {
+    margin-top: 1.5rem;
+}
+
+.backfields-page .bf-section-head,
+.backfields-page .bf-rankings-head,
+.backfields-page .bf-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.backfields-page .bf-section-head p,
+.backfields-page .bf-card-head p {
+    color: var(--bf-muted);
+    letter-spacing: .08em;
+}
+
+.backfields-page .bf-risers-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .7rem;
+    margin-top: .75rem;
+    overflow-x: auto;
+    padding-bottom: .15rem;
+}
+
+.backfields-page .bf-riser-card,
+.backfields-page .bf-table-card,
+.backfields-page .bf-rail-card,
+.backfields-page .bf-report-card {
+    background: rgba(21, 17, 12, .86);
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .24);
+}
+
+.backfields-page .bf-riser-card {
+    min-width: 170px;
+    padding: .72rem .76rem;
+}
+
+.backfields-page .bf-riser-top {
+    display: flex;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.backfields-page .bf-riser-card h3,
+.backfields-page .bf-player-name a,
+.backfields-page .bf-callup-row h3,
+.backfields-page .bf-stat-row h3,
+.backfields-page .bf-report-card h3 {
+    color: var(--bf-text);
+    text-decoration: none;
+}
+
+.backfields-page .bf-riser-card p,
+.backfields-page .bf-player-meta,
+.backfields-page .bf-callup-row p,
+.backfields-page .bf-stat-row p,
+.backfields-page .bf-report-meta {
+    color: var(--bf-muted);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+}
+
+.backfields-page .bf-meta-accent,
+.backfields-page .bf-level,
+.backfields-page .bf-callup-row p,
+.backfields-page .bf-stat-row span,
+.backfields-page .bf-report-top span {
+    color: var(--bf-amber);
+}
+
+.backfields-page .bf-move {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.backfields-page .bf-move-up { color: var(--bf-signal); }
+.backfields-page .bf-move-down { color: var(--bf-clay); }
+.backfields-page .bf-move-flat { color: var(--bf-muted); }
+
+.backfields-page .bf-spark {
+    display: block;
+    width: 100%;
+    height: 30px;
+    margin: .7rem 0 .45rem;
+}
+
+.backfields-page .bf-spark polyline,
+.backfields-page .bf-spark circle {
+    stroke: var(--bf-signal);
+    fill: var(--bf-signal);
+    stroke-width: 2;
+}
+
+.backfields-page .bf-riser-value {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+}
+
+.backfields-page .bf-riser-value strong {
+    color: var(--bf-signal);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.backfields-page .bf-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    gap: 1rem;
+    align-items: start;
+    margin-top: 1.55rem;
+}
+
+.backfields-page .bf-filter-pills,
+.backfields-page .bf-stat-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.backfields-page .bf-pill,
+.backfields-page .bf-stat-tab {
+    min-height: 34px;
+    padding: .32rem .58rem;
+    color: var(--bf-muted);
+    background: rgba(21, 17, 12, .65);
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    font-weight: 650;
+}
+
+.backfields-page .bf-pill.is-active,
+.backfields-page .bf-stat-tab.is-active {
+    color: #0b0d13;
+    background: var(--bf-amber);
+    border-color: var(--bf-amber);
+}
+
+.backfields-page .bf-table-card {
+    margin-top: .7rem;
+    overflow: hidden;
+}
+
+.backfields-page .bf-table-head,
+.backfields-page .bf-rank-row {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) 76px 72px 76px;
+    align-items: center;
+    gap: .7rem;
+    padding: .58rem .72rem;
+}
+
+.backfields-page .bf-table-head {
+    color: var(--bf-muted);
+    border-bottom: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-rank-row {
+    position: relative;
+    min-height: 64px;
+    border-bottom: 1px solid rgba(200, 146, 63, .10);
+}
+
+.backfields-page .bf-rank-row::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--bf-slate);
+}
+
+.backfields-page .bf-tier-1::before { background: var(--bf-platinum); }
+.backfields-page .bf-tier-2::before { background: #b9c0ce; }
+.backfields-page .bf-tier-3::before { background: #8a93a4; }
+.backfields-page .bf-tier-4::before { background: var(--bf-slate); }
+.backfields-page .bf-tier-5::before { background: #3e465a; }
+
+.backfields-page .bf-rank {
+    color: var(--bf-muted);
+    font-family: var(--font-mono);
+}
+
+.backfields-page .bf-player-name {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    min-width: 0;
+}
+
+.backfields-page .bf-player-name a:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 650;
+}
+
+.backfields-page .bf-report-badge {
+    flex: 0 0 auto;
+    padding: .08rem .28rem;
+    color: var(--bf-muted);
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: .62rem;
+    font-weight: 650;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.backfields-page .bf-player-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+}
+
+.backfields-page .bf-value { color: var(--bf-signal); font-family: var(--font-display); font-size: 1.18rem; font-weight: 700; text-align: right; }
+.backfields-page .bf-level { font-family: var(--font-mono); font-weight: 650; }
+
+.backfields-page .bf-table-footer {
+    width: calc(100% - 1.4rem);
+    margin: .72rem;
+    color: var(--bf-muted);
+    border-color: var(--bf-line);
+}
+
+.backfields-page .bf-rail {
+    display: grid;
+    gap: .9rem;
+}
+
+.backfields-page .bf-rail-card {
+    padding: .85rem;
+}
+
+.backfields-page .bf-live-dot {
+    width: .42rem;
+    height: .42rem;
+    background: var(--bf-signal);
+    border-radius: 999px;
+    box-shadow: 0 0 14px rgba(52, 226, 196, .45);
+}
+
+.backfields-page .bf-callup-list,
+.backfields-page .bf-stat-panel {
+    margin-top: .8rem;
+}
+
+.backfields-page .bf-callup-row,
+.backfields-page .bf-stat-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .8rem;
+    align-items: center;
+    padding: .6rem 0;
+    border-top: 1px solid rgba(200, 146, 63, .10);
+}
+
+.backfields-page .bf-callup-row > span,
+.backfields-page .bf-stat-row strong {
+    color: var(--bf-signal);
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.backfields-page .bf-stat-row {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+}
+
+.backfields-page .bf-stat-tabs {
+    margin-top: .75rem;
+}
+
+.backfields-page .bf-scouting-feed {
+    margin-top: 1.75rem;
+}
+
+.backfields-page .bf-report-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+    margin-top: .7rem;
+}
+
+.backfields-page .bf-report-card {
+    padding: .82rem;
+}
+
+.backfields-page .bf-report-top {
+    display: flex;
+    justify-content: space-between;
+    gap: .75rem;
+    color: var(--bf-muted);
+}
+
+.backfields-page .bf-report-line {
+    margin-top: .55rem;
+    color: #c7bcaa;
+    line-height: 1.45;
+}
+
+.backfields-page .bf-empty {
+    padding: .85rem;
+    color: var(--bf-muted);
+    background: rgba(21, 17, 12, .62);
+    border: 1px dashed var(--bf-line);
+    border-radius: var(--radius);
+}
+
+.backfields-page .bf-footer-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.55rem;
+    padding-top: .9rem;
+    color: var(--bf-muted);
+    border-top: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-footer-strip em {
+    color: var(--bf-signal);
+    font-style: italic;
+    font-weight: 650;
+}
+
+@media (max-width: 900px) {
+    .backfields-page .bf-hero,
+    .backfields-page .bf-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .backfields-page .bf-hero-actions {
+        align-items: flex-start;
+    }
+
+    .backfields-page .bf-risers-strip {
+        display: flex;
+        scroll-snap-type: x mandatory;
+    }
+
+    .backfields-page .bf-riser-card {
+        flex: 0 0 min(78vw, 240px);
+        scroll-snap-align: start;
+    }
+
+    .backfields-page .bf-report-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .backfields-page {
+        width: min(100vw - .7rem, 430px);
+        padding: .8rem;
+        border-radius: var(--radius);
+    }
+
+    .backfields-page .bf-anchor-tabs {
+        gap: .35rem;
+    }
+
+    .backfields-page .bf-anchor-tabs a,
+    .backfields-page .bf-pill,
+    .backfields-page .bf-stat-tab {
+        min-height: 40px;
+        padding: .42rem .58rem;
+    }
+
+    .backfields-page .bf-section-head,
+    .backfields-page .bf-rankings-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .backfields-page .bf-table-head {
+        display: none;
+    }
+
+    .backfields-page .bf-rank-row {
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        gap: .55rem;
+        padding: .68rem .58rem;
+    }
+
+    .backfields-page .bf-level {
+        display: none;
+    }
+
+    .backfields-page .bf-move {
+        grid-column: 2;
+        font-size: .72rem;
+    }
+
+    .backfields-page .bf-value {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+        align-self: center;
+    }
+
+    .backfields-page .bf-player-meta {
+        font-size: .66rem;
+    }
+
+    .backfields-page .bf-footer-strip {
+        flex-direction: column;
+    }
+}

@@ -22,6 +22,7 @@ PNG_ROUTES = (
 HTML_ROUTES = (
     "/buys",
     "/map",
+    "/backfields",
 )
 
 
