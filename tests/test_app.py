@@ -897,6 +897,11 @@ class TestPlayingTimeFilter(unittest.TestCase):
         response = self.client.get("/?search=Brady+Ebel")
         self.assertIn(b"Brady Ebel", response.data)
 
+    def test_inactive_projection_only_player_not_readded_by_search(self):
+        # Search can bypass PA/IP floors, but not official inactive/rehab context.
+        response = self.client.get("/?search=Jason+Foley")
+        self.assertNotIn(b"Add Jason Foley to compare", response.data)
+
     def test_qualifying_player_still_shown(self):
         # End-to-end sanity: a real everyday player still appears by default.
         response = self.client.get("/")

@@ -135,6 +135,7 @@ DATA_PATH = Path(__file__).parent / "data" / "projections" / "current.json"
 VALUCAST_HP_PATH = (
     Path(__file__).parent / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
 )
+MLB_AVAILABILITY_PATH = Path(__file__).parent / "data" / "models" / "valucast_mlb_availability.json"
 CATALOG = ProjectionCatalog(
     {"steamer": str(DATA_PATH), "valucast": str(VALUCAST_HP_PATH)}, default="steamer")
 store = CATALOG.store_for("steamer")   # module-level default (kept for existing imports)
@@ -219,6 +220,48 @@ MIN_HITTER_PA = 100
 MIN_SP_IP = 40
 MIN_RP_IP = 20
 
+_PROJECTION_ONLY_UNAVAILABLE_STATUSES = {"injured", "rehab"}
+
+
+@lru_cache(maxsize=1)
+def _mlb_availability_by_id():
+    if not MLB_AVAILABILITY_PATH.exists():
+        return {}
+    try:
+        payload = json.loads(MLB_AVAILABILITY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    out = {}
+    for row in payload.get("profiles") or []:
+        mlbam_id = row.get("mlbam_id")
+        if mlbam_id in (None, ""):
+            continue
+        out[str(mlbam_id)] = row
+    return out
+
+
+def _has_current_actual_stats(player):
+    return bool((player.metadata or {}).get("stats_actual"))
+
+
+def _mlbam_id(player):
+    value = (player.metadata or {}).get("mlbam_id")
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
+def _is_live_redraft_projection(player):
+    """Projection-only rows on IL/rehab should not become live redraft cards."""
+    if _has_current_actual_stats(player):
+        return True
+    mlbam_id = _mlbam_id(player)
+    if not mlbam_id:
+        return True
+    profile = _mlb_availability_by_id().get(mlbam_id) or {}
+    status = str(profile.get("status") or "").lower()
+    return status not in _PROJECTION_ONLY_UNAVAILABLE_STATUSES
+
 
 def _valuation_players(always_keep=None, active_store=None):
     """Engine input: all projections minus sub-threshold filler.
@@ -228,13 +271,14 @@ def _valuation_players(always_keep=None, active_store=None):
     on shared base_id inside filter_by_playing_time. `active_store` defaults to the
     module Steamer store (so existing callers/imports are unchanged).
     """
-    return filter_by_playing_time(
+    players = filter_by_playing_time(
         (active_store or store).get_all(),
         hitter_pa=MIN_HITTER_PA,
         sp_ip=MIN_SP_IP,
         rp_ip=MIN_RP_IP,
         always_keep=always_keep or frozenset(),
     )
+    return [player for player in players if _is_live_redraft_projection(player)]
 
 
 # Load DD Dynasty feed once at startup
