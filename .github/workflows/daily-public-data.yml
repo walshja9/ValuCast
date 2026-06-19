@@ -111,6 +111,7 @@ jobs:
             data/models/valucast_prospect_shadow_promotion.json \
             data/models/valucast_front_office_failures.json \
             data/models/valucast_raw_data_independence_audit.json \
+            data/models/dd_independence_baseline.json \
             data/models/valucast_milb_stat_freshness_audit.json \
             data/models/valucast_prospect_card_data_audit.json \
             data/models/valucast_recent_signal_report.json \
@@ -150,6 +151,9 @@ jobs:
             data/statcast/percentiles.json \
             data/validation/methodology_scorecard.json \
             projections/data/identity.json
+          if [ -f data/models/valucast_scouting_llm_cache.json ]; then
+            git add data/models/valucast_scouting_llm_cache.json
+          fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
           for attempt in 1 2 3; do
