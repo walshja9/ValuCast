@@ -77,6 +77,24 @@ def _input_contract():
     }
 
 
+def _official_il_profile(
+    mlbam_id=30,
+    status="injured",
+    active_injury_risk=True,
+    description="60-day IL: Tommy John surgery.",
+):
+    return {
+        "mlbam_id": mlbam_id,
+        "status": status,
+        "active_injury_risk": active_injury_risk,
+        "list_type": "60-day IL",
+        "description": description,
+        "effective_date": "2026-03-27",
+        "name": "Thin AAA Starter",
+        "team": "MIA",
+    }
+
+
 def test_availability_collapses_multi_level_samples_before_pricing_risk():
     payload = build_prospect_availability(_input_contract())
 
@@ -190,6 +208,93 @@ def test_availability_applies_upstream_factual_roster_status():
     assert "fantrax_roster_status_override" in pitcher["signals"]
     assert pitcher["availability_note"] == "Fantrax roster status is Inj Res."
     assert payload["validation"]["upstream_status_count"] == 1
+
+
+def test_official_mlb_il_injured_prospect_overrides_stale_sample():
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["sample_staleness_years"] = 1
+
+    payload = build_prospect_availability(
+        contract,
+        il_lookup={"30": _official_il_profile()},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["status"] == "injured"
+    assert pitcher["risk_basis"] == "official_mlb_il"
+    assert pitcher["risk_discount"] == 0.30
+    assert pitcher["signals"] == ["official_mlb_il_override"]
+    assert pitcher["availability_note"] == "60-day IL: Tommy John surgery."
+
+
+def test_official_mlb_short_term_il_uses_short_discount():
+    payload = build_prospect_availability(
+        _input_contract(),
+        il_lookup={
+            "30": _official_il_profile(
+                description="10-day IL: right shoulder inflammation.",
+            )
+            | {"list_type": "10-day injured list"}
+        },
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["status"] == "injured"
+    assert pitcher["risk_basis"] == "official_mlb_il"
+    assert pitcher["risk_discount"] == 0.12
+    assert pitcher["signals"] == ["official_mlb_il_override"]
+
+
+def test_manual_override_wins_over_official_mlb_il():
+    payload = build_prospect_availability(
+        _input_contract(),
+        overrides={
+            "overrides": [
+                {
+                    "mlbam_id": 30,
+                    "role": "pitcher",
+                    "status": "injured",
+                    "note": "Manual status remains authoritative.",
+                    "risk_discount": 0.09,
+                }
+            ]
+        },
+        il_lookup={"30": _official_il_profile()},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["status"] == "injured"
+    assert pitcher["risk_basis"] == "manual_override"
+    assert pitcher["risk_discount"] == 0.09
+    assert "manual_status_override" in pitcher["signals"]
+    assert "official_mlb_il_override" not in pitcher["signals"]
+    assert pitcher["availability_note"] == "Manual status remains authoritative."
+
+
+def test_official_mlb_rehab_status_does_not_trigger_il_join():
+    payload = build_prospect_availability(
+        _input_contract(),
+        il_lookup={"20": _official_il_profile(mlbam_id=20, status="rehab")},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 20)
+
+    assert pitcher["status"] == "available"
+    assert pitcher["risk_basis"] == "none"
+    assert pitcher["risk_discount"] == 0.0
+    assert "official_mlb_il_override" not in pitcher["signals"]
+
+
+def test_prospect_absent_from_official_mlb_il_lookup_is_unaffected():
+    payload = build_prospect_availability(
+        _input_contract(),
+        il_lookup={"999": _official_il_profile(mlbam_id=999)},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["status"] == "thin_current_sample"
+    assert pitcher["risk_basis"] == "current_sample_size"
+    assert pitcher["risk_discount"] == 0.06
+    assert "official_mlb_il_override" not in pitcher["signals"]
 
 
 def test_apply_availability_adjustment_keeps_original_score_explainable():

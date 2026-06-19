@@ -14,17 +14,33 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from mlb.availability import availability_lookup as mlb_availability_lookup
 from prospects.input_contract import VALUCAST_INPUT_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
 OVERRIDES_PATH = ROOT / "data" / "manual" / "prospect_availability_overrides.json"
+MLB_AVAILABILITY_PATH = ROOT / "data" / "models" / "valucast_mlb_availability.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
 ARTIFACT_VERSION = "0.3.0"
 
 MAX_RISK_DISCOUNT = 0.12
+SEVERE_IL_DISCOUNT = 0.30
+SHORT_IL_DISCOUNT = 0.12
+MAX_IL_RISK_DISCOUNT = 0.40
+SEVERE_IL_KEYWORDS = (
+    "surgery",
+    "tommy john",
+    "ucl",
+    "acl",
+    "achilles",
+    "labrum",
+    "tear",
+    "season-ending",
+    "season ending",
+)
 STALE_MODERATE_DAYS = 14
 STALE_HIGH_DAYS = 28
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
@@ -289,6 +305,37 @@ def _override_signal(role: str, override: dict | None) -> tuple[float, list[str]
     return discount, signals, status, str(note) if note not in (None, "") else None
 
 
+def _il_severity_discount(list_type: str, description: str) -> float:
+    text = f"{list_type} {description}".lower()
+    if (
+        "60-day" in text
+        or "60 day" in text
+        or any(k in text for k in SEVERE_IL_KEYWORDS)
+    ):
+        return SEVERE_IL_DISCOUNT
+    return SHORT_IL_DISCOUNT
+
+
+def _official_il_signal(mlbam_id: str, il_lookup: dict | None) -> tuple[float, list[str], str | None, str | None]:
+    profile = (il_lookup or {}).get(str(mlbam_id)) or (il_lookup or {}).get(mlbam_id)
+    if not profile:
+        return 0.0, [], None, None
+    status = str(profile.get("status") or "").strip().lower()
+    if status != "injured" or profile.get("active_injury_risk") is not True:
+        return 0.0, [], None, None
+    list_type = str(profile.get("list_type") or "")
+    description = str(profile.get("description") or "")
+    discount = _il_severity_discount(list_type, description)
+    note = description.strip()
+    if not note:
+        team = profile.get("team") or "MLB"
+        name = profile.get("name") or f"MLBAM {mlbam_id}"
+        list_type = profile.get("list_type") or "IL"
+        effective_date = profile.get("effective_date") or "unknown date"
+        note = f"{team} placed {name} on the {list_type} ({effective_date})"
+    return discount, ["official_mlb_il_override"], "injured", note
+
+
 def _row_status(row: dict) -> str | None:
     status = str(row.get("availability_status") or "").strip().lower()
     if status:
@@ -346,10 +393,12 @@ def _risk_basis(
     sample_discount: float,
     stale_discount: float,
     upstream_discount: float,
+    il_discount: float,
     override_discount: float,
 ) -> str:
     discounts = {
         "manual_override": override_discount,
+        "official_mlb_il": il_discount,
         "upstream_factual_status": upstream_discount,
         "sample_staleness": stale_discount,
         "current_sample_size": sample_discount,
@@ -363,6 +412,7 @@ def _profile(
     rows: list[dict],
     generated_at: str | None,
     override: dict | None,
+    il_lookup: dict | None = None,
 ) -> dict:
     mlbam_id, role = key
     active_rows = _active_sample_rows(rows)
@@ -384,26 +434,48 @@ def _profile(
     upstream_discount, upstream_signals, upstream_status, upstream_note = (
         _upstream_status_signal(role, active_rows)
     )
+    il_discount, il_signals, il_status, il_note = _official_il_signal(
+        mlbam_id,
+        il_lookup,
+    )
     override_discount, override_signals, override_status, override_note = _override_signal(
         role,
         override,
     )
+    if override_discount > 0.0 or override_status:
+        il_discount, il_signals, il_status, il_note = 0.0, [], None, None
     override_age = _clean_int((override or {}).get("age"))
     signals = list(
         dict.fromkeys(
-            sample_signals + stale_signals + upstream_signals + override_signals
+            sample_signals
+            + stale_signals
+            + upstream_signals
+            + il_signals
+            + override_signals
         )
     )
-    risk_discount = min(
-        MAX_RISK_DISCOUNT,
-        max(0.0, sample_discount, stale_discount, upstream_discount, override_discount),
+    risk_discount = max(
+        min(
+            MAX_RISK_DISCOUNT,
+            max(
+                0.0,
+                sample_discount,
+                stale_discount,
+                upstream_discount,
+                override_discount,
+            ),
+        ),
+        min(MAX_IL_RISK_DISCOUNT, il_discount),
     )
     risk_basis = _risk_basis(
         sample_discount,
         stale_discount,
         upstream_discount,
+        il_discount,
         override_discount,
     )
+    if risk_basis == "official_mlb_il":
+        signals = il_signals
     return {
         "mlbam_id": _clean_int(mlbam_id) or mlbam_id,
         "role": role,
@@ -420,8 +492,8 @@ def _profile(
         "risk_discount": round(risk_discount, 4),
         "risk_basis": risk_basis,
         "risk_level": _risk_level(risk_discount),
-        "status": _status(signals, override_status or upstream_status),
-        "availability_note": override_note or upstream_note or (
+        "status": _status(signals, override_status or il_status or upstream_status),
+        "availability_note": override_note or il_note or upstream_note or (
             "; ".join(signals).replace("_", " ") if signals else "Current sample is active."
         ),
         "signals": signals,
@@ -527,6 +599,7 @@ def build_prospect_availability(
     input_contract: dict,
     overrides: dict | list[dict] | None = None,
     generated_at: str | None = None,
+    il_lookup: dict | None = None,
 ) -> dict:
     generated_at = generated_at or input_contract.get("generated_at") or datetime.now(
         timezone.utc
@@ -539,7 +612,7 @@ def build_prospect_availability(
 
     override_by_key = _override_entries(overrides)
     profiles = [
-        _profile(key, rows, generated_at, override_by_key.get(key))
+        _profile(key, rows, generated_at, override_by_key.get(key), il_lookup or {})
         for key, rows in sorted(
             grouped.items(),
             key=lambda item: (
@@ -619,11 +692,25 @@ def write_prospect_availability(payload: dict, path: Path = ARTIFACT_PATH) -> Pa
 def run_prospect_availability(
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     overrides_path: Path | None = OVERRIDES_PATH,
+    mlb_availability_path: Path | None = MLB_AVAILABILITY_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
     overrides = _load_optional(overrides_path)
-    payload = build_prospect_availability(input_contract, overrides=overrides)
+    raw_mlb_availability = _load_optional(mlb_availability_path)
+    raw_profiles = (
+        raw_mlb_availability.get("profiles")
+        if isinstance(raw_mlb_availability, dict)
+        else None
+    )
+    il_lookup = (
+        mlb_availability_lookup({"profiles": raw_profiles}) if raw_profiles else {}
+    )
+    payload = build_prospect_availability(
+        input_contract,
+        overrides=overrides,
+        il_lookup=il_lookup,
+    )
     path = write_prospect_availability(payload, artifact_path)
     return {
         "artifact_path": str(path),

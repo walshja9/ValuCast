@@ -9,12 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from prospects.availability import MAX_IL_RISK_DISCOUNT  # noqa: E402
+
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 ALLOWED_RISK_BASIS = {
     "none",
     "current_sample_size",
     "sample_staleness",
     "upstream_factual_status",
+    "official_mlb_il",
     "manual_override",
 }
 EXPECTED_STATUS_BY_BASIS = {
@@ -22,6 +25,7 @@ EXPECTED_STATUS_BY_BASIS = {
     "current_sample_size": {"thin_current_sample"},
     "sample_staleness": {"stale_or_inactive"},
     "upstream_factual_status": {"injured", "inactive", "restricted", "rehab", "il"},
+    "official_mlb_il": {"injured"},
     "manual_override": {"injured", "inactive", "restricted", "rehab", "il"},
 }
 
@@ -77,9 +81,10 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
         elif risk_basis not in ALLOWED_RISK_BASIS:
             problems.append(f"profiles[{index}].risk_basis is invalid")
         discount = row.get("risk_discount")
+        risk_cap = MAX_IL_RISK_DISCOUNT if risk_basis == "official_mlb_il" else max_discount
         if not isinstance(discount, (int, float)) or isinstance(discount, bool):
             problems.append(f"profiles[{index}].risk_discount must be numeric")
-        elif discount < 0 or discount > max_discount:
+        elif discount < 0 or discount > risk_cap:
             problems.append(f"profiles[{index}].risk_discount is out of bounds")
         elif discount > 0:
             risk_count += 1

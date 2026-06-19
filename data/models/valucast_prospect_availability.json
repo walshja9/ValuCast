@@ -553,24 +553,26 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Toronto Blue Jays placed RF Addison Barger on the 10-day injured list retroactive to May 10, 2026. Right elbow inflammation.",
       "level": "A",
       "mlbam_id": 680718,
       "name": "Addison Barger",
       "normalized_name": "addison barger",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 10.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Dunedin Blue Jays"
     },
     {
@@ -2824,14 +2826,14 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "prior season sample",
+      "availability_note": "Cleveland Guardians placed LF Angel Mart\u00ednez on the 10-day injured list. Left foot non-displaced fracture.",
       "level": "AAA",
       "mlbam_id": 682657,
       "name": "Angel Martinez",
       "normalized_name": "angel martinez",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -2840,10 +2842,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Columbus Clippers"
     },
     {
@@ -3898,15 +3900,15 @@
     {
       "active_row_count": 1,
       "age": 30,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Chicago White Sox placed LF Austin Hays on the 60-day injured list. Left calf strain.",
       "level": "AAA",
       "mlbam_id": 669720,
       "name": "Austin Hays",
       "normalized_name": "austin hays",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 34.0,
@@ -3914,10 +3916,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -5220,15 +5222,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Houston Astros placed SS Braden Shewmake on the 10-day injured list retroactive to May 31, 2026. Right adductor strain.",
       "level": "AAA",
       "mlbam_id": 669699,
       "name": "Braden Shewmake",
       "normalized_name": "braden shewmake",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 36.0,
@@ -5236,10 +5238,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Scranton/Wilkes-Barre RailRiders"
     },
     {
@@ -6024,14 +6026,14 @@
     {
       "active_row_count": 1,
       "age": 29,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Seattle Mariners placed 3B Brendan Donovan on the 10-day injured list retroactive to May 16, 2026. Left groin muscle strain.",
       "level": "AA",
       "mlbam_id": 680977,
       "name": "Brendan Donovan",
       "normalized_name": "brendan donovan",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -6040,8 +6042,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -9958,14 +9959,14 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "limited upper level hitter sample under 150 pa; prior season sample",
+      "availability_note": "Cleveland Guardians placed RF Chase DeLauter on the 10-day injured list retroactive to June 14, 2026. Right side rib fracture.",
       "level": "AAA",
       "mlbam_id": 800050,
       "name": "Chase Delauter",
       "normalized_name": "chase delauter",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -9974,11 +9975,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "limited_upper_level_hitter_sample_under_150_pa",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Columbus Clippers"
     },
     {
@@ -12127,15 +12127,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Texas Rangers placed SS Corey Seager on the 7-day injured list retroactive to June 12, 2026. Concussion.",
       "level": "AA",
       "mlbam_id": 608369,
       "name": "Corey Seager",
       "normalized_name": "corey seager",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 5.0,
@@ -12143,10 +12143,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Frisco RoughRiders"
     },
     {
@@ -14043,15 +14043,15 @@
     {
       "active_row_count": 2,
       "age": 26,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Athletics placed CF Denzel Clarke on the 60-day injured list. Mid foot bone bruise in right foot.",
       "level": "AAA",
       "mlbam_id": 672016,
       "name": "Denzel Clarke",
       "normalized_name": "denzel clarke",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 8.0,
@@ -14059,10 +14059,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Las Vegas Aviators"
     },
     {
@@ -16812,14 +16812,14 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "prior season sample",
+      "availability_note": "Cincinnati Reds placed SS Elly De La Cruz on the 10-day injured list. Right hamstring strain.",
       "level": "AAA",
       "mlbam_id": 682829,
       "name": "Elly De La Cruz",
       "normalized_name": "elly de la cruz",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -16828,10 +16828,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Louisville Bats"
     },
     {
@@ -17169,14 +17169,14 @@
     {
       "active_row_count": 1,
       "age": 34,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Los Angeles Dodgers placed 1B Enrique Hern\u00e1ndez on the 10-day injured list. Left oblique strain.",
       "level": "AAA",
       "mlbam_id": 571771,
       "name": "Enrique Hern\u00e1ndez",
       "normalized_name": "enrique hernandez",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -17185,8 +17185,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -18018,14 +18017,14 @@
     {
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "limited upper level hitter sample under 150 pa; prior season sample",
+      "availability_note": "Texas Rangers placed CF Evan Carter on the 10-day injured list. Right oblique strain.",
       "level": "AAA",
       "mlbam_id": 694497,
       "name": "Evan Carter",
       "normalized_name": "evan carter",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -18034,25 +18033,24 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "limited_upper_level_hitter_sample_under_150_pa",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Chicago White Sox placed RF Everson Pereira on the 7-day injured list. Concussion.",
       "level": "AAA",
       "mlbam_id": 677592,
       "name": "Everson Pereira",
       "normalized_name": "everson pereira",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 22.0,
@@ -18060,10 +18058,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -19408,15 +19406,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Tampa Bay Rays placed LF Gavin Lux on the 60-day injured list. Right shoulder impingement.",
       "level": "AAA",
       "mlbam_id": 666158,
       "name": "Gavin Lux",
       "normalized_name": "gavin lux",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 90.0,
@@ -19424,10 +19422,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Durham Bulls"
     },
     {
@@ -19782,15 +19780,15 @@
     {
       "active_row_count": 1,
       "age": 29,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Detroit Tigers placed 2B Gleyber Torres on the 10-day injured list retroactive to June 16, 2026. Left oblique strain.",
       "level": "AAA",
       "mlbam_id": 650402,
       "name": "Gleyber Torres",
       "normalized_name": "gleyber torres",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 7.0,
@@ -19798,10 +19796,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Toledo Mud Hens"
     },
     {
@@ -20214,24 +20212,26 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Los Angeles Angels placed C Gustavo Campero on the 10-day injured list. Right hand fracture.",
       "level": "AA",
       "mlbam_id": 672569,
       "name": "Gustavo Campero",
       "normalized_name": "gustavo campero",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 193.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Rocket City Trash Pandas"
     },
     {
@@ -20381,15 +20381,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "San Francisco Giants placed CF Harrison Bader on the 10-day injured list. Left plantar fasciitis.",
       "level": "AAA",
       "mlbam_id": 664056,
       "name": "Harrison Bader",
       "normalized_name": "harrison bader",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 23.0,
@@ -20397,10 +20397,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Sacramento River Cats"
     },
     {
@@ -27338,15 +27338,15 @@
     {
       "active_row_count": 2,
       "age": 32,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "New York Mets placed 1B Jorge Polanco on the 60-day injured list. Right wrist contusion.",
       "level": "AAA",
       "mlbam_id": 593871,
       "name": "Jorge Polanco",
       "normalized_name": "jorge polanco",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 17.0,
@@ -27354,10 +27354,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Syracuse Mets"
     },
     {
@@ -31465,15 +31465,15 @@
     {
       "active_row_count": 1,
       "age": 20,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Pittsburgh Pirates placed SS Konnor Griffin on the 10-day injured list. Right elbow strain.",
       "level": "AAA",
       "mlbam_id": 804606,
       "name": "Konnor Griffin",
       "normalized_name": "konnor griffin",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 21.0,
@@ -31481,10 +31481,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Indianapolis Indians"
     },
     {
@@ -31938,24 +31938,26 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Houston Astros placed 1B LaMonte Wade Jr. on the 10-day injured list. Right hamstring strain.",
       "level": "AAA",
       "mlbam_id": 664774,
       "name": "LaMonte Wade Jr.",
       "normalized_name": "lamonte wade jr",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 201.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -36037,24 +36039,26 @@
     {
       "active_row_count": 1,
       "age": 30,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Texas Rangers placed CF Michael Helman on the 10-day injured list.",
       "level": "AAA",
       "mlbam_id": 680737,
       "name": "Michael Helman",
       "normalized_name": "michael helman",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 152.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
@@ -37512,15 +37516,15 @@
     {
       "active_row_count": 1,
       "age": 27,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Houston Astros placed SS Nick Allen on the 10-day injured list. Left hamstring strain.",
       "level": "AA",
       "mlbam_id": 669397,
       "name": "Nick Allen",
       "normalized_name": "nick allen",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 9.0,
@@ -37528,10 +37532,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Corpus Christi Hooks"
     },
     {
@@ -38079,24 +38083,26 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Boston Red Sox placed 3B Nick Sogard on the 10-day injured list retroactive to May 31, 2026. Right oblique strain.",
       "level": "AAA",
       "mlbam_id": 686765,
       "name": "Nick Sogard",
       "normalized_name": "nick sogard",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 168.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Worcester Red Sox"
     },
     {
@@ -40350,15 +40356,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "St. Louis Cardinals placed 3B Ram\u00f3n Ur\u00edas on the 60-day injured list. Right elbow lateral epicondylitis.",
       "level": "AAA",
       "mlbam_id": 602104,
       "name": "Ram\u00f3n Ur\u00edas",
       "normalized_name": "ramon urias",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 7.0,
@@ -40366,10 +40372,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Memphis Redbirds"
     },
     {
@@ -41381,14 +41387,14 @@
     {
       "active_row_count": 1,
       "age": 22,
-      "availability_note": "prior season sample",
+      "availability_note": "Boston Red Sox placed LF Roman Anthony on the 10-day injured list retroactive to May 5, 2026. Right wrist sprain.",
       "level": "AAA",
       "mlbam_id": 701350,
       "name": "Roman Anthony",
       "normalized_name": "roman anthony",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.08,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -41397,10 +41403,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Worcester Red Sox"
     },
     {
@@ -43149,15 +43155,15 @@
     {
       "active_row_count": 2,
       "age": 31,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Atlanta Braves transferred C Sean Murphy from the 10-day injured list to the 60-day injured list. Fractured left middle finger.",
       "level": "AAA",
       "mlbam_id": 669221,
       "name": "Sean Murphy",
       "normalized_name": "sean murphy",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 49.0,
@@ -43165,10 +43171,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Gwinnett Stripers"
     },
     {
@@ -43292,15 +43298,15 @@
     {
       "active_row_count": 1,
       "age": 27,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Los Angeles Angels placed C Sebasti\u00e1n Rivero on the 10-day injured list. Left hamate fracture.",
       "level": "AAA",
       "mlbam_id": 665861,
       "name": "Sebasti\u00e1n Rivero",
       "normalized_name": "sebastian rivero",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 51.0,
@@ -43308,10 +43314,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Salt Lake Bees"
     },
     {
@@ -44311,15 +44317,15 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Chicago White Sox transferred LF Tanner Murray from the 10-day injured list to the 60-day injured list. Left shoulder dislocation.",
       "level": "AAA",
       "mlbam_id": 695020,
       "name": "Tanner Murray",
       "normalized_name": "tanner murray",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
       "sample": 30.0,
@@ -44327,10 +44333,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -47458,15 +47464,15 @@
     {
       "active_row_count": 2,
       "age": 27,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Seattle Mariners transferred 3B Will Wilson from the 10-day injured list to the 60-day injured list. Left thumb fracture.",
       "level": "AAA",
       "mlbam_id": 669717,
       "name": "Will Wilson",
       "normalized_name": "will wilson",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 67.0,
@@ -47474,10 +47480,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Tacoma Rainiers"
     },
     {
@@ -50790,14 +50796,14 @@
     {
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "prior season sample",
+      "availability_note": "Atlanta Braves transferred RHP AJ Smith-Shawver from the 15-day injured list to the 60-day injured list. Right elbow reconstruction.",
       "level": "AAA",
       "mlbam_id": 700363,
       "name": "Aj Smith Shawver",
       "normalized_name": "aj smith shawver",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -50806,10 +50812,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Gwinnett Stripers"
     },
     {
@@ -54666,15 +54672,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Detroit Tigers placed LHP Bailey Horn on the 60-day injured list. Left elbow arthroscopy recovery.",
       "level": "A",
       "mlbam_id": 690544,
       "name": "Bailey Horn",
       "normalized_name": "bailey horn",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 1.7,
@@ -54682,10 +54688,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Lakeland Flying Tigers"
     },
     {
@@ -55122,14 +55128,14 @@
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Los Angeles Angels placed RHP Ben Joyce on the 60-day injured list. Right shoulder inflammation.",
       "level": "A",
       "mlbam_id": 690829,
       "name": "Ben Joyce",
       "normalized_name": "ben joyce",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
@@ -55138,8 +55144,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -55317,15 +55322,15 @@
     {
       "active_row_count": 2,
       "age": 31,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Houston Astros placed LHP Bennett Sousa on the 15-day injured list retroactive to May 6, 2026. Left elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 656986,
       "name": "Bennett Sousa",
       "normalized_name": "bennett sousa",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
       "sample": 3.7,
@@ -55333,10 +55338,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Sugar Land Space Cowboys"
     },
     {
@@ -55778,14 +55783,14 @@
     {
       "active_row_count": 2,
       "age": 33,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Los Angeles Dodgers transferred LHP Blake Snell from the 15-day injured list to the 60-day injured list. Left elbow loose bodies.",
       "level": "AAA",
       "mlbam_id": 605483,
       "name": "Blake Snell",
       "normalized_name": "blake snell",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
@@ -55794,8 +55799,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -55827,14 +55831,14 @@
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "prior season sample",
+      "availability_note": "Arizona Diamondbacks placed LHP Blake Walston on the 60-day injured list. Left UCL surgery.",
       "level": "AAA",
       "mlbam_id": 686796,
       "name": "Blake Walston",
       "normalized_name": "blake walston",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -55843,10 +55847,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Reno Aces"
     },
     {
@@ -56134,15 +56138,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Houston Astros placed SS Braden Shewmake on the 10-day injured list retroactive to May 31, 2026. Right adductor strain.",
       "level": "AAA",
       "mlbam_id": 669699,
       "name": "Braden Shewmake",
       "normalized_name": "braden shewmake",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 0.3,
@@ -56150,10 +56154,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Scranton/Wilkes-Barre RailRiders"
     },
     {
@@ -57983,24 +57987,26 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Milwaukee Brewers transferred LHP Brian Fitzpatrick from the 15-day injured list to the 60-day injured list. Left elbow injury.",
       "level": "AAA",
       "mlbam_id": 702153,
       "name": "Brian Fitzpatrick",
       "normalized_name": "brian fitzpatrick",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 16.0,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "IP",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Nashville Sounds"
     },
     {
@@ -58367,15 +58373,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Athletics transferred RHP Brooks Kriske from the 15-day injured list to the 60-day injured list. Right shoulder impingement.",
       "level": "AAA",
       "mlbam_id": 621139,
       "name": "Brooks Kriske",
       "normalized_name": "brooks kriske",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 16.0,
@@ -58383,10 +58389,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Las Vegas Aviators"
     },
     {
@@ -58415,14 +58421,14 @@
     {
       "active_row_count": 1,
       "age": 27,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Los Angeles Dodgers placed RHP Brusdar Graterol on the 60-day injured list.",
       "level": "AAA",
       "mlbam_id": 660813,
       "name": "Brusdar Graterol",
       "normalized_name": "brusdar graterol",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -58431,8 +58437,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -59130,15 +59135,15 @@
     {
       "active_row_count": 1,
       "age": 36,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Detroit Tigers placed RHP Burch Smith on the 15-day injured list. Right shoulder inflammation.",
       "level": "AAA",
       "mlbam_id": 572143,
       "name": "Burch Smith",
       "normalized_name": "burch smith",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 10.0,
@@ -59146,10 +59151,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Toledo Mud Hens"
     },
     {
@@ -59439,14 +59444,14 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Chicago Cubs transferred RHP Cade Horton from the 15-day injured list to the 60-day injured list. Right forearm strain.",
       "level": "AAA",
       "mlbam_id": 690990,
       "name": "Cade Horton",
       "normalized_name": "cade horton",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -59455,9 +59460,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "prior_season_sample",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
       "status": "injured",
@@ -59514,15 +59517,15 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Baltimore Orioles placed LHP Cade Povich on the 15-day injured list. Left elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 700249,
       "name": "Cade Povich",
       "normalized_name": "cade povich",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 16.0,
@@ -59530,10 +59533,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Norfolk Tides"
     },
     {
@@ -60860,14 +60863,14 @@
     {
       "active_row_count": 1,
       "age": 33,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Kansas City Royals placed RHP Carlos Est\u00e9vez on the 60-day injured list. Left foot contusion.",
       "level": "AAA",
       "mlbam_id": 608032,
       "name": "Carlos Est\u00e9vez",
       "normalized_name": "carlos estevez",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -60876,8 +60879,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -61072,15 +61074,15 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Milwaukee Brewers placed RHP Carlos Rodriguez on the 15-day injured list retroactive to May 31, 2026.",
       "level": "AAA",
       "mlbam_id": 692230,
       "name": "Carlos Rodriguez",
       "normalized_name": "carlos rodriguez",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 24.7,
@@ -61088,10 +61090,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Nashville Sounds"
     },
     {
@@ -61617,15 +61619,15 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Texas Rangers transferred RHP Carter Baumler from the 15-day injured list to the 60-day injured list. Right intercostal strain.",
       "level": "AAA",
       "mlbam_id": 691945,
       "name": "Carter Baumler",
       "normalized_name": "carter baumler",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
       "sample": 3.0,
@@ -61633,10 +61635,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
@@ -62424,14 +62426,14 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "thin starter workload under 30 ip; prior season sample",
+      "availability_note": "Colorado Rockies transferred RHP Chase Dollander from the 15-day injured list to the 60-day injured list. Right elbow strain.",
       "level": "AAA",
       "mlbam_id": 801403,
       "name": "Chase Dollander",
       "normalized_name": "chase dollander",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -62440,11 +62442,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Albuquerque Isotopes"
     },
     {
@@ -62936,15 +62937,15 @@
     {
       "active_row_count": 2,
       "age": 35,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Pittsburgh Pirates transferred RHP Chris Devenski from the 15-day injured list to the 60-day injured list.",
       "level": "AAA",
       "mlbam_id": 606965,
       "name": "Chris Devenski",
       "normalized_name": "chris devenski",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
       "sample": 10.7,
@@ -62952,10 +62953,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Indianapolis Indians"
     },
     {
@@ -63009,15 +63010,15 @@
     {
       "active_row_count": 1,
       "age": 40,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Texas Rangers placed RHP Chris Martin on the 15-day injured list retroactive to May 31, 2026. Right shoulder impingement.",
       "level": "AAA",
       "mlbam_id": 455119,
       "name": "Chris Martin",
       "normalized_name": "chris martin",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 2.7,
@@ -63025,10 +63026,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
@@ -63516,15 +63517,15 @@
     {
       "active_row_count": 1,
       "age": 27,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "New York Mets placed RHP Christian Scott on the 15-day injured list retroactive to June 12, 2026. Right hip impingement.",
       "level": "AAA",
       "mlbam_id": 681035,
       "name": "Christian Scott",
       "normalized_name": "christian scott",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 13.7,
@@ -63532,10 +63533,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Syracuse Mets"
     },
     {
@@ -63900,15 +63901,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Texas Rangers transferred LHP Cody Bradford from the 15-day injured list to the 60-day injured list. Left elbow surgery rehab.",
       "level": "AAA",
       "mlbam_id": 674003,
       "name": "Cody Bradford",
       "normalized_name": "cody bradford",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 2.0,
@@ -63916,10 +63917,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
@@ -64326,14 +64327,14 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Kansas City Royals placed LHP Cole Ragans on the 60-day injured list. Left elbow impingement.",
       "level": "AAA",
       "mlbam_id": 666142,
       "name": "Cole Ragans",
       "normalized_name": "cole ragans",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -64342,8 +64343,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -64569,15 +64569,15 @@
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "limited upper level starter workload under 45 ip",
+      "availability_note": "Milwaukee Brewers placed RHP Coleman Crow on the 15-day injured list retroactive to June 10, 2026. Right forearm flexor strain.",
       "level": "AAA",
       "mlbam_id": 689441,
       "name": "Coleman Crow",
       "normalized_name": "coleman crow",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.03,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 35.0,
@@ -64585,10 +64585,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "limited_upper_level_starter_workload_under_45_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Nashville Sounds"
     },
     {
@@ -65654,14 +65654,14 @@
     {
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "limited upper level starter workload under 45 ip; prior season sample",
+      "availability_note": "Arizona Diamondbacks placed RHP Cristian Mena on the 60-day injured list. Right shoulder strain.",
       "level": "AAA",
       "mlbam_id": 691441,
       "name": "Cristian Mena",
       "normalized_name": "cristian mena",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -65670,11 +65670,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "limited_upper_level_starter_workload_under_45_ip",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Reno Aces"
     },
     {
@@ -66499,15 +66498,15 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Chicago Cubs placed RHP Daniel Palencia on the 15-day injured list. Right elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 694037,
       "name": "Daniel Palencia",
       "normalized_name": "daniel palencia",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 0.7,
@@ -66515,10 +66514,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Iowa Cubs"
     },
     {
@@ -67503,13 +67502,13 @@
     {
       "active_row_count": 1,
       "age": 30,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Baltimore Orioles placed RHP Dean Kremer on the 15-day injured list retroactive to April 20, 2026. Right quad strain.",
       "level": "AAA",
       "mlbam_id": 665152,
       "name": "Dean Kremer",
       "normalized_name": "dean kremer",
       "present": true,
-      "risk_basis": "upstream_factual_status",
+      "risk_basis": "official_mlb_il",
       "risk_discount": 0.12,
       "risk_level": "high",
       "role": "pitcher",
@@ -67519,8 +67518,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -68865,14 +68863,14 @@
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "prior season sample",
+      "availability_note": "Chicago White Sox transferred RHP Drew Thorpe from the 15-day injured list to the 60-day injured list. Recovery from Tommy John surgery.",
       "level": "AA",
       "mlbam_id": 689672,
       "name": "Drew Thorpe",
       "normalized_name": "drew thorpe",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -68881,10 +68879,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Birmingham Barons"
     },
     {
@@ -70003,14 +70001,14 @@
     {
       "active_row_count": 2,
       "age": 28,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Tampa Bay Rays placed RHP Edwin Uceta on the 60-day injured list. Right shoulder impingement.",
       "level": "AAA",
       "mlbam_id": 670955,
       "name": "Edwin Uceta",
       "normalized_name": "edwin uceta",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
@@ -70019,8 +70017,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -73345,15 +73342,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Minnesota Twins transferred RHP Garrett Acton from the 15-day injured list to the 60-day injured list. Right shoulder strain.",
       "level": "AAA",
       "mlbam_id": 670183,
       "name": "Garrett Acton",
       "normalized_name": "garrett acton",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 2.3,
@@ -73361,10 +73358,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Jacksonville Jumbo Shrimp"
     },
     {
@@ -74655,15 +74652,15 @@
     {
       "active_row_count": 1,
       "age": 26,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Los Angeles Angels placed RHP Grayson Rodriguez on the 15-day injured list. Low back inflammation.",
       "level": "A",
       "mlbam_id": 680570,
       "name": "Grayson Rodriguez",
       "normalized_name": "grayson rodriguez",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 4.7,
@@ -74671,10 +74668,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Rancho Cucamonga Quakes"
     },
     {
@@ -78124,14 +78121,14 @@
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "thin starter workload under 30 ip; prior season sample",
+      "availability_note": "Los Angeles Angels transferred RHP Jack Kochanowicz from the 15-day injured list to the 60-day injured list. Right elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 686799,
       "name": "Jack Kochanowicz",
       "normalized_name": "jack kochanowicz",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -78140,11 +78137,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Salt Lake Bees"
     },
     {
@@ -82517,15 +82513,15 @@
     {
       "active_row_count": 2,
       "age": 27,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "San Diego Padres placed RHP Jeremiah Estrada on the 15-day injured list retroactive to June 3, 2026. Right knee inflammation.",
       "level": "AAA",
       "mlbam_id": 669093,
       "name": "Jeremiah Estrada",
       "normalized_name": "jeremiah estrada",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
       "sample": 2.0,
@@ -82533,10 +82529,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "El Paso Chihuahuas"
     },
     {
@@ -82659,15 +82655,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Tampa Bay Rays placed RHP Jesse Scholtens on the 15-day injured list. Right wrist sprain.",
       "level": "AAA",
       "mlbam_id": 669947,
       "name": "Jesse Scholtens",
       "normalized_name": "jesse scholtens",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 5.0,
@@ -82675,10 +82671,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Durham Bulls"
     },
     {
@@ -83565,15 +83561,15 @@
     {
       "active_row_count": 1,
       "age": 35,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Toronto Blue Jays transferred LHP Joe Mantiply from the 15-day injured list to the 60-day injured list. Left knee inflammation.",
       "level": "AAA",
       "mlbam_id": 573009,
       "name": "Joe Mantiply",
       "normalized_name": "joe mantiply",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 3.7,
@@ -83581,10 +83577,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Buffalo Bisons"
     },
     {
@@ -83928,15 +83924,15 @@
     {
       "active_row_count": 1,
       "age": 29,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "San Francisco Giants placed RHP Joel Peguero on the 60-day injured list. Left hamstring strain.",
       "level": "AAA",
       "mlbam_id": 666711,
       "name": "Joel Peguero",
       "normalized_name": "joel peguero",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 9.3,
@@ -83944,10 +83940,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Sacramento River Cats"
     },
     {
@@ -84857,15 +84853,15 @@
     {
       "active_row_count": 1,
       "age": 29,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Tampa Bay Rays transferred RHP Jonathan Heasley from the 15-day injured list to the 60-day injured list.",
       "level": "AAA",
       "mlbam_id": 669169,
       "name": "Jonathan Heasley",
       "normalized_name": "jonathan heasley",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 27.7,
@@ -84873,10 +84869,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Durham Bulls"
     },
     {
@@ -85237,15 +85233,15 @@
     {
       "active_row_count": 1,
       "age": 27,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Chicago White Sox transferred RHP Jordan Leasure from the 15-day injured list to the 60-day injured list. Right flexor strain.",
       "level": "AAA",
       "mlbam_id": 673929,
       "name": "Jordan Leasure",
       "normalized_name": "jordan leasure",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 4.3,
@@ -85253,10 +85249,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -86739,24 +86735,26 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "Current sample is active.",
+      "availability_note": "Miami Marlins placed RHP Josh Ekness on the 15-day injured list retroactive to May 29, 2026. Right calf strain.",
       "level": "AAA",
       "mlbam_id": 694795,
       "name": "Josh Ekness",
       "normalized_name": "josh ekness",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 16.3,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "IP",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Jacksonville Jumbo Shrimp"
     },
     {
@@ -87336,15 +87334,15 @@
     {
       "active_row_count": 2,
       "age": 32,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Toronto Blue Jays placed RHP Jos\u00e9 Berr\u00edos on the 60-day injured list. Right elbow stress fracture.",
       "level": "AAA",
       "mlbam_id": 621244,
       "name": "Jos\u00e9 Berr\u00edos",
       "normalized_name": "jose berrios",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
       "sample": 14.4,
@@ -87352,10 +87350,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Buffalo Bisons"
     },
     {
@@ -90748,15 +90746,15 @@
     {
       "active_row_count": 1,
       "age": 30,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Boston Red Sox placed RHP Kutter Crawford on the 60-day injured list.",
       "level": "AAA",
       "mlbam_id": 676710,
       "name": "Kutter Crawford",
       "normalized_name": "kutter crawford",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 3.0,
@@ -90764,10 +90762,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Worcester Red Sox"
     },
     {
@@ -92170,13 +92168,13 @@
     {
       "active_row_count": 1,
       "age": 24,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Milwaukee Brewers placed RHP Logan Henderson on the 15-day injured list retroactive to May 23, 2026. Low back strain.",
       "level": "AAA",
       "mlbam_id": 701656,
       "name": "Logan Henderson",
       "normalized_name": "logan henderson",
       "present": true,
-      "risk_basis": "upstream_factual_status",
+      "risk_basis": "official_mlb_il",
       "risk_discount": 0.12,
       "risk_level": "high",
       "role": "pitcher",
@@ -92186,8 +92184,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -95771,13 +95768,13 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Seattle Mariners placed RHP Matt Brash on the 15-day injured list retroactive to June 9, 2026. Right lat strain.",
       "level": "AAA",
       "mlbam_id": 666374,
       "name": "Matt Brash",
       "normalized_name": "matt brash",
       "present": true,
-      "risk_basis": "upstream_factual_status",
+      "risk_basis": "official_mlb_il",
       "risk_discount": 0.12,
       "risk_level": "high",
       "role": "pitcher",
@@ -95787,8 +95784,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -96537,15 +96533,15 @@
     {
       "active_row_count": 1,
       "age": 41,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Toronto Blue Jays placed RHP Max Scherzer on the 15-day injured list retroactive to June 14, 2026. Back spasms.",
       "level": "AAA",
       "mlbam_id": 453286,
       "name": "Max Scherzer",
       "normalized_name": "max scherzer",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 6.7,
@@ -96553,23 +96549,23 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Buffalo Bisons"
     },
     {
       "active_row_count": 1,
       "age": 25,
-      "availability_note": "limited upper level starter workload under 45 ip; prior season sample",
+      "availability_note": "Colorado Rockies transferred RHP McCade Brown from the 15-day injured list to the 60-day injured list. Right shoulder inflammation.",
       "level": "AA",
       "mlbam_id": 685326,
       "name": "Mccade Brown",
       "normalized_name": "mccade brown",
       "present": true,
-      "risk_basis": "sample_staleness",
-      "risk_discount": 0.1,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -96578,11 +96574,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "limited_upper_level_starter_workload_under_45_ip",
-        "prior_season_sample"
+        "official_mlb_il_override"
       ],
       "source_kind": "latest_milb_history",
-      "status": "stale_or_inactive",
+      "status": "injured",
       "team": "Hartford Yard Goats"
     },
     {
@@ -102064,14 +102059,14 @@
     {
       "active_row_count": 2,
       "age": 25,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Milwaukee Brewers placed RHP Quinn Priester on the 60-day injured list. Right thoracic outlet syndrome.",
       "level": "AAA",
       "mlbam_id": 682990,
       "name": "Quinn Priester",
       "normalized_name": "quinn priester",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 3,
@@ -102080,8 +102075,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -103489,15 +103483,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Chicago Cubs placed LHP Riley Martin on the 15-day injured list retroactive to April 24, 2026. Left elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 702303,
       "name": "Riley Martin",
       "normalized_name": "riley martin",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 3.0,
@@ -103505,10 +103499,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Iowa Cubs"
     },
     {
@@ -103685,15 +103679,15 @@
     {
       "active_row_count": 1,
       "age": 34,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Milwaukee Brewers placed LHP Rob Zastryzny on the 15-day injured list retroactive to May 31, 2026. Left trapezius strain.",
       "level": "AAA",
       "mlbam_id": 642239,
       "name": "Rob Zastryzny",
       "normalized_name": "rob zastryzny",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 6.3,
@@ -103701,10 +103695,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Nashville Sounds"
     },
     {
@@ -103781,14 +103775,14 @@
     {
       "active_row_count": 1,
       "age": 22,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Miami Marlins transferred LHP Robby Snelling from the 15-day injured list to the 60-day injured list.",
       "level": "AAA",
       "mlbam_id": 702281,
       "name": "Robby Snelling",
       "normalized_name": "robby snelling",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
@@ -103797,8 +103791,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -104641,24 +104634,26 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Current sample is active.",
+      "availability_note": "St. Louis Cardinals placed RHP Ryan Fernandez on the 15-day injured list retroactive to June 3, 2026. Low back pain.",
       "level": "AAA",
       "mlbam_id": 681676,
       "name": "Ryan Fernandez",
       "normalized_name": "ryan fernandez",
       "present": true,
-      "risk_basis": "none",
-      "risk_discount": 0.0,
-      "risk_level": "clear",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 14.7,
       "sample_fetched_date": "2026-06-19",
       "sample_staleness_days": 0,
       "sample_unit": "IP",
-      "signals": [],
+      "signals": [
+        "official_mlb_il_override"
+      ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Memphis Redbirds"
     },
     {
@@ -107583,14 +107578,14 @@
     {
       "active_row_count": 2,
       "age": 27,
-      "availability_note": "Fantrax roster status is Inj Res.",
+      "availability_note": "Atlanta Braves transferred RHP Spencer Strider from the 15-day injured list to the 60-day injured list. Right elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 675911,
       "name": "Spencer Strider",
       "normalized_name": "spencer strider",
       "present": true,
-      "risk_basis": "upstream_factual_status",
-      "risk_discount": 0.12,
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "pitcher",
       "row_count": 2,
@@ -107599,8 +107594,7 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip",
-        "fantrax_roster_status_override"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
       "status": "injured",
@@ -108319,15 +108313,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Colorado Rockies placed RHP Tanner Gordon on the 15-day injured list retroactive to June 2, 2026. Right hip impingement.",
       "level": "AAA",
       "mlbam_id": 685299,
       "name": "Tanner Gordon",
       "normalized_name": "tanner gordon",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 16.3,
@@ -108335,10 +108329,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Albuquerque Isotopes"
     },
     {
@@ -111167,15 +111161,15 @@
     {
       "active_row_count": 1,
       "age": 32,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Chicago White Sox placed LHP Tyler Gilbert on the 15-day injured list. Left shoulder impingement.",
       "level": "AAA",
       "mlbam_id": 656457,
       "name": "Tyler Gilbert",
       "normalized_name": "tyler gilbert",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 23.3,
@@ -111183,10 +111177,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Charlotte Knights"
     },
     {
@@ -112426,15 +112420,15 @@
     {
       "active_row_count": 1,
       "age": 22,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Colorado Rockies transferred LHP Welinton Herrera from the 15-day injured list to the 60-day injured list. Left elbow inflammation.",
       "level": "AAA",
       "mlbam_id": 700327,
       "name": "Welinton Herrera",
       "normalized_name": "welinton herrera",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.3,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 22.7,
@@ -112442,10 +112436,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Albuquerque Isotopes"
     },
     {
@@ -112570,15 +112564,15 @@
     {
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "thin starter workload under 30 ip",
+      "availability_note": "Pittsburgh Pirates placed RHP Wilber Dotel on the 15-day injured list. Right lat muscle strain.",
       "level": "AAA",
       "mlbam_id": 696062,
       "name": "Wilber Dotel",
       "normalized_name": "wilber dotel",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 23.7,
@@ -112586,10 +112580,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_starter_workload_under_30_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Indianapolis Indians"
     },
     {
@@ -115752,7 +115746,7 @@
       "team": "Clearwater Threshers"
     }
   ],
-  "risk_profile_count": 1821,
+  "risk_profile_count": 1829,
   "source_policy": {
     "dd_factual_roster_status_allowed": true,
     "dd_ranks_used": false,
@@ -115766,487 +115760,461 @@
   "summary": {
     "profile_count": 4871,
     "risk_basis_counts": {
-      "current_sample_size": 1653,
+      "current_sample_size": 1606,
       "manual_override": 3,
-      "none": 3050,
-      "sample_staleness": 135,
-      "upstream_factual_status": 30
+      "none": 3042,
+      "official_mlb_il": 82,
+      "sample_staleness": 123,
+      "upstream_factual_status": 15
     },
     "risk_level_counts": {
-      "clear": 3050,
-      "high": 167,
-      "medium": 1654
+      "clear": 3042,
+      "high": 222,
+      "medium": 1607
     },
-    "risk_profile_count": 1821,
+    "risk_profile_count": 1829,
     "signal_counts": {
-      "fantrax_roster_status_override": 30,
-      "limited_upper_level_hitter_sample_under_150_pa": 209,
-      "limited_upper_level_starter_workload_under_45_ip": 182,
+      "fantrax_roster_status_override": 15,
+      "limited_upper_level_hitter_sample_under_150_pa": 207,
+      "limited_upper_level_starter_workload_under_45_ip": 179,
       "manual_status_override": 3,
-      "prior_season_sample": 139,
-      "thin_pitcher_workload_under_12_ip": 505,
-      "thin_starter_workload_under_30_ip": 493,
-      "thin_upper_level_hitter_sample_under_100_pa": 331
+      "official_mlb_il_override": 82,
+      "prior_season_sample": 126,
+      "thin_pitcher_workload_under_12_ip": 489,
+      "thin_starter_workload_under_30_ip": 464,
+      "thin_upper_level_hitter_sample_under_100_pa": 313
     },
     "status_counts": {
-      "available": 3050,
-      "injured": 33,
-      "stale_or_inactive": 135,
-      "thin_current_sample": 1653
+      "available": 3042,
+      "injured": 100,
+      "stale_or_inactive": 123,
+      "thin_current_sample": 1606
     },
     "top_risk_profiles": [
       {
-        "availability_note": "Official MiLB transactions show Frisco placed Sebastian Walcott on the 60-day injured list on 2026-03-18 after a UCL injury expected to cost most or all of 2026.",
-        "level": "AA",
-        "mlbam_id": 806964,
-        "name": "Sebastian Walcott",
-        "risk_basis": "manual_override",
-        "risk_discount": 0.12,
+        "availability_note": "Chicago White Sox placed LF Austin Hays on the 60-day injured list. Left calf strain.",
+        "level": "AAA",
+        "mlbam_id": 669720,
+        "name": "Austin Hays",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "hitter",
-        "sample": 552.0,
+        "sample": 34.0,
         "sample_unit": "PA",
         "signals": [
-          "prior_season_sample",
-          "manual_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Frisco RoughRiders"
+        "team": "Charlotte Knights"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "A",
-        "mlbam_id": 690829,
-        "name": "Ben Joyce",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 4.0,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_pitcher_workload_under_12_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Rancho Cucamonga Quakes"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Athletics placed CF Denzel Clarke on the 60-day injured list. Mid foot bone bruise in right foot.",
         "level": "AAA",
-        "mlbam_id": 605483,
-        "name": "Blake Snell",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 672016,
+        "name": "Denzel Clarke",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
-        "role": "pitcher",
+        "role": "hitter",
         "sample": 8.0,
-        "sample_unit": "IP",
+        "sample_unit": "PA",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Oklahoma City Comets"
+        "team": "Las Vegas Aviators"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "A+",
-        "mlbam_id": 605540,
-        "name": "Brandon Woodruff",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 5.3,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Wisconsin Timber Rattlers"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Tampa Bay Rays placed LF Gavin Lux on the 60-day injured list. Right shoulder impingement.",
         "level": "AAA",
-        "mlbam_id": 660813,
-        "name": "Brusdar Graterol",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 666158,
+        "name": "Gavin Lux",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
-        "role": "pitcher",
-        "sample": 3.3,
-        "sample_unit": "IP",
+        "role": "hitter",
+        "sample": 90.0,
+        "sample_unit": "PA",
         "signals": [
-          "thin_pitcher_workload_under_12_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Oklahoma City Comets"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 690990,
-        "name": "Cade Horton",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 29.0,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "prior_season_sample",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Iowa Cubs"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 608032,
-        "name": "Carlos Est\u00e9vez",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 0.7,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_pitcher_workload_under_12_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Omaha Storm Chasers"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 666142,
-        "name": "Cole Ragans",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 4.3,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Omaha Storm Chasers"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "A",
-        "mlbam_id": 687792,
-        "name": "DJ Herz",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 2.7,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Fredericksburg Nationals"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 665152,
-        "name": "Dean Kremer",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 9.3,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Norfolk Tides"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 670955,
-        "name": "Edwin Uceta",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 4.3,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_pitcher_workload_under_12_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
         "team": "Durham Bulls"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "New York Mets placed 1B Jorge Polanco on the 60-day injured list. Right wrist contusion.",
         "level": "AAA",
-        "mlbam_id": 691587,
-        "name": "Eury P\u00e9rez",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 593871,
+        "name": "Jorge Polanco",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
-        "role": "pitcher",
-        "sample": 3.7,
-        "sample_unit": "IP",
+        "role": "hitter",
+        "sample": 17.0,
+        "sample_unit": "PA",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Jacksonville Jumbo Shrimp"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 686613,
-        "name": "Hunter Brown",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 14.3,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "Sugar Land Space Cowboys"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 696070,
-        "name": "Kendry Rojas",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 17.6,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
-        ],
-        "status": "injured",
-        "team": "St. Paul Saints"
-      },
-      {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 673540,
-        "name": "Kodai Senga",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 18.0,
-        "sample_unit": "IP",
-        "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
         "team": "Syracuse Mets"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "St. Louis Cardinals placed 3B Ram\u00f3n Ur\u00edas on the 60-day injured list. Right elbow lateral epicondylitis.",
         "level": "AAA",
-        "mlbam_id": 663460,
-        "name": "Kris Bubic",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 602104,
+        "name": "Ram\u00f3n Ur\u00edas",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
-        "role": "pitcher",
-        "sample": 1.3,
-        "sample_unit": "IP",
+        "role": "hitter",
+        "sample": 7.0,
+        "sample_unit": "PA",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Omaha Storm Chasers"
+        "team": "Memphis Redbirds"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Atlanta Braves transferred C Sean Murphy from the 10-day injured list to the 60-day injured list. Fractured left middle finger.",
         "level": "AAA",
-        "mlbam_id": 688138,
-        "name": "Logan Evans",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 669221,
+        "name": "Sean Murphy",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
-        "role": "pitcher",
-        "sample": 44.0,
-        "sample_unit": "IP",
+        "role": "hitter",
+        "sample": 49.0,
+        "sample_unit": "PA",
         "signals": [
-          "limited_upper_level_starter_workload_under_45_ip",
-          "prior_season_sample",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Gwinnett Stripers"
+      },
+      {
+        "availability_note": "Chicago White Sox transferred LF Tanner Murray from the 10-day injured list to the 60-day injured list. Left shoulder dislocation.",
+        "level": "AAA",
+        "mlbam_id": 695020,
+        "name": "Tanner Murray",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "hitter",
+        "sample": 30.0,
+        "sample_unit": "PA",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Charlotte Knights"
+      },
+      {
+        "availability_note": "Seattle Mariners transferred 3B Will Wilson from the 10-day injured list to the 60-day injured list. Left thumb fracture.",
+        "level": "AAA",
+        "mlbam_id": 669717,
+        "name": "Will Wilson",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "hitter",
+        "sample": 67.0,
+        "sample_unit": "PA",
+        "signals": [
+          "official_mlb_il_override"
         ],
         "status": "injured",
         "team": "Tacoma Rainiers"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Atlanta Braves transferred RHP AJ Smith-Shawver from the 15-day injured list to the 60-day injured list. Right elbow reconstruction.",
         "level": "AAA",
-        "mlbam_id": 701656,
-        "name": "Logan Henderson",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 700363,
+        "name": "Aj Smith Shawver",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
-        "sample": 17.7,
+        "sample": 87.0,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Nashville Sounds"
+        "team": "Gwinnett Stripers"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 666374,
-        "name": "Matt Brash",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "availability_note": "Detroit Tigers placed LHP Bailey Horn on the 60-day injured list. Left elbow arthroscopy recovery.",
+        "level": "A",
+        "mlbam_id": 690544,
+        "name": "Bailey Horn",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
         "sample": 1.7,
         "sample_unit": "IP",
         "signals": [
-          "thin_pitcher_workload_under_12_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Tacoma Rainiers"
+        "team": "Lakeland Flying Tigers"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
-        "level": "AAA",
-        "mlbam_id": 571510,
-        "name": "Matthew Boyd",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "availability_note": "Los Angeles Angels placed RHP Ben Joyce on the 60-day injured list. Right shoulder inflammation.",
+        "level": "A",
+        "mlbam_id": 690829,
+        "name": "Ben Joyce",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
-        "sample": 12.7,
+        "sample": 4.0,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Iowa Cubs"
+        "team": "Rancho Cucamonga Quakes"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Los Angeles Dodgers transferred LHP Blake Snell from the 15-day injured list to the 60-day injured list. Left elbow loose bodies.",
         "level": "AAA",
-        "mlbam_id": 690953,
-        "name": "Mick Abel",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 605483,
+        "name": "Blake Snell",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
         "sample": 8.0,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "St. Paul Saints"
+        "team": "Oklahoma City Comets"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Arizona Diamondbacks placed LHP Blake Walston on the 60-day injured list. Left UCL surgery.",
         "level": "AAA",
-        "mlbam_id": 682990,
-        "name": "Quinn Priester",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 686796,
+        "name": "Blake Walston",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
-        "sample": 10.0,
+        "sample": 65.0,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Reno Aces"
+      },
+      {
+        "availability_note": "Milwaukee Brewers transferred LHP Brian Fitzpatrick from the 15-day injured list to the 60-day injured list. Left elbow injury.",
+        "level": "AAA",
+        "mlbam_id": 702153,
+        "name": "Brian Fitzpatrick",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 16.0,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
         ],
         "status": "injured",
         "team": "Nashville Sounds"
       },
       {
-        "availability_note": "Official MLB transactions show Ricky Tiedemann on Buffalo's 7-day injured list on 2026-03-27, after 2024 Tommy John surgery and a 2025 injured-list season.",
-        "level": "AA",
-        "mlbam_id": 694357,
-        "name": "Ricky Tiedemann",
-        "risk_basis": "manual_override",
-        "risk_discount": 0.12,
+        "availability_note": "Athletics transferred RHP Brooks Kriske from the 15-day injured list to the 60-day injured list. Right shoulder impingement.",
+        "level": "AAA",
+        "mlbam_id": 621139,
+        "name": "Brooks Kriske",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
-        "sample": 32.0,
+        "sample": 16.0,
         "sample_unit": "IP",
         "signals": [
-          "limited_upper_level_starter_workload_under_45_ip",
-          "prior_season_sample",
-          "manual_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "New Hampshire Fisher Cats"
+        "team": "Las Vegas Aviators"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Los Angeles Dodgers placed RHP Brusdar Graterol on the 60-day injured list.",
         "level": "AAA",
-        "mlbam_id": 702281,
-        "name": "Robby Snelling",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 660813,
+        "name": "Brusdar Graterol",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 3.3,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Oklahoma City Comets"
+      },
+      {
+        "availability_note": "Chicago Cubs transferred RHP Cade Horton from the 15-day injured list to the 60-day injured list. Right forearm strain.",
+        "level": "AAA",
+        "mlbam_id": 690990,
+        "name": "Cade Horton",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
         "sample": 29.0,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Jacksonville Jumbo Shrimp"
+        "team": "Iowa Cubs"
       },
       {
-        "availability_note": "Fantrax roster status is Inj Res.",
+        "availability_note": "Kansas City Royals placed RHP Carlos Est\u00e9vez on the 60-day injured list. Left foot contusion.",
         "level": "AAA",
-        "mlbam_id": 675911,
-        "name": "Spencer Strider",
-        "risk_basis": "upstream_factual_status",
-        "risk_discount": 0.12,
+        "mlbam_id": 608032,
+        "name": "Carlos Est\u00e9vez",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
         "risk_level": "high",
         "role": "pitcher",
-        "sample": 12.6,
+        "sample": 0.7,
         "sample_unit": "IP",
         "signals": [
-          "thin_starter_workload_under_30_ip",
-          "fantrax_roster_status_override"
+          "official_mlb_il_override"
         ],
         "status": "injured",
-        "team": "Gwinnett Stripers"
+        "team": "Omaha Storm Chasers"
+      },
+      {
+        "availability_note": "Texas Rangers transferred RHP Carter Baumler from the 15-day injured list to the 60-day injured list. Right intercostal strain.",
+        "level": "AAA",
+        "mlbam_id": 691945,
+        "name": "Carter Baumler",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 3.0,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Round Rock Express"
+      },
+      {
+        "availability_note": "Colorado Rockies transferred RHP Chase Dollander from the 15-day injured list to the 60-day injured list. Right elbow strain.",
+        "level": "AAA",
+        "mlbam_id": 801403,
+        "name": "Chase Dollander",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 15.333,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Albuquerque Isotopes"
+      },
+      {
+        "availability_note": "Pittsburgh Pirates transferred RHP Chris Devenski from the 15-day injured list to the 60-day injured list.",
+        "level": "AAA",
+        "mlbam_id": 606965,
+        "name": "Chris Devenski",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 10.7,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Indianapolis Indians"
+      },
+      {
+        "availability_note": "Texas Rangers transferred LHP Cody Bradford from the 15-day injured list to the 60-day injured list. Left elbow surgery rehab.",
+        "level": "AAA",
+        "mlbam_id": 674003,
+        "name": "Cody Bradford",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 2.0,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Round Rock Express"
+      },
+      {
+        "availability_note": "Kansas City Royals placed LHP Cole Ragans on the 60-day injured list. Left elbow impingement.",
+        "level": "AAA",
+        "mlbam_id": 666142,
+        "name": "Cole Ragans",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 4.3,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Omaha Storm Chasers"
+      },
+      {
+        "availability_note": "Arizona Diamondbacks placed RHP Cristian Mena on the 60-day injured list. Right shoulder strain.",
+        "level": "AAA",
+        "mlbam_id": 691441,
+        "name": "Cristian Mena",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 44.667,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Reno Aces"
+      },
+      {
+        "availability_note": "Chicago White Sox transferred RHP Drew Thorpe from the 15-day injured list to the 60-day injured list. Recovery from Tommy John surgery.",
+        "level": "AA",
+        "mlbam_id": 689672,
+        "name": "Drew Thorpe",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 60.0,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Birmingham Barons"
       }
     ]
   },
@@ -116264,8 +116232,8 @@
     "current_identity_count": 4871,
     "duplicate_level_rows_collapsed": 1166,
     "manual_override_count": 3,
-    "risk_profile_count": 1821,
+    "risk_profile_count": 1829,
     "unmatched_manual_override_count": 0,
-    "upstream_status_count": 30
+    "upstream_status_count": 15
   }
 }
