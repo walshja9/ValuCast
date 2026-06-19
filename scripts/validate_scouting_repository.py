@@ -67,7 +67,7 @@ def validate_scouting_repository(
         problems.append("reports must be a non-empty list")
     else:
         seen = set()
-        for index, row in enumerate(reports[:300], 1):
+        for index, row in enumerate(reports, 1):
             key = (str(row.get("mlbam_id")), str(row.get("role")))
             if key in seen:
                 problems.append(f"report {index} duplicate MLBAM+role identity")

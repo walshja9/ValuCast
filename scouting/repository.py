@@ -25,7 +25,7 @@ LLM_CACHE_PATH = ROOT / "data" / "models" / "valucast_scouting_llm_cache.json"
 
 ARTIFACT_NAME = "valucast_scouting_report_repository"
 REPOSITORY_VERSION = "0.1.0"
-DEFAULT_MAX_PROSPECT_RANK = 300
+DEFAULT_MAX_PROSPECT_RANK = 500
 
 
 def _report_status(text: str | None) -> str:

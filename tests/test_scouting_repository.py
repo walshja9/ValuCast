@@ -129,6 +129,45 @@ def test_scouting_repository_builds_stat_grounded_reports(tmp_path):
     assert payload["reports"][0]["usage"] == "scouting_repository_context_not_live_rank_or_value"
 
 
+def test_scouting_repository_default_covers_deeper_prospect_cards(tmp_path):
+    snapshot_path = _write_snapshot(tmp_path)
+    data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    deep_card = json.loads(json.dumps(data["players"][0]))
+    deep_card.update(
+        {
+            "id": "vc_prospect_384_hitter",
+            "name": "Deep Card",
+            "mlbam_id": 384,
+            "rank": 384,
+            "prospect_rank": 384,
+            "value": 27.2,
+        }
+    )
+    outside_coverage = json.loads(json.dumps(data["players"][0]))
+    outside_coverage.update(
+        {
+            "id": "vc_prospect_501_hitter",
+            "name": "Outside Coverage",
+            "mlbam_id": 501,
+            "rank": 501,
+            "prospect_rank": 501,
+            "value": 18.0,
+        }
+    )
+    data["players"].extend([deep_card, outside_coverage])
+    snapshot_path.write_text(json.dumps(data), encoding="utf-8")
+
+    payload = build_scouting_repository(
+        snapshot_path=snapshot_path,
+        generated_at="2026-06-16T00:00:00+00:00",
+    )
+
+    names = {report["name"] for report in payload["reports"]}
+    assert payload["summary"]["max_prospect_rank"] == 500
+    assert "Deep Card" in names
+    assert "Outside Coverage" not in names
+
+
 def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):
     from scouting import report_generator, repository
 
@@ -305,6 +344,42 @@ def test_scouting_repository_validator_blocks_llm_source_without_valid_guard(tmp
     _, problems = validate_scouting_repository(artifact_path)
 
     assert any("published as llm without valid report_llm" in problem for problem in problems)
+
+
+def test_scouting_repository_validator_checks_reports_beyond_old_top_300(tmp_path):
+    snapshot_path = _write_snapshot(tmp_path)
+    payload = build_scouting_repository(
+        snapshot_path=snapshot_path,
+        generated_at="2026-06-16T00:00:00+00:00",
+    )
+    base_report = payload["reports"][0]
+    payload["reports"] = []
+    for index in range(301):
+        report = json.loads(json.dumps(base_report))
+        report.update(
+            {
+                "mlbam_id": 1000 + index,
+                "name": f"Report {index + 1}",
+                "prospect_rank": index + 1,
+            }
+        )
+        payload["reports"].append(report)
+    payload["reports"][-1]["published_report_source"] = "llm"
+    payload["reports"][-1]["published_report"] = "Bad unguarded LLM text."
+    payload["reports"][-1]["report_llm"] = {
+        "text": "Bad unguarded LLM text.",
+        "valid": False,
+        "hard_ok": False,
+        "model": "test",
+    }
+    payload["summary"]["report_count"] = len(payload["reports"])
+    payload["validation"]["report_count"] = len(payload["reports"])
+    artifact_path = tmp_path / "reports.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_scouting_repository(artifact_path)
+
+    assert any("report 301 published as llm without valid report_llm" in problem for problem in problems)
 
 
 def test_scouting_repository_validator_blocks_wrong_pitcher_handedness(tmp_path):
