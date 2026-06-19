@@ -2,13 +2,15 @@ name: Daily public data refresh
 
 on:
   schedule:
-    # Primary daily public refresh: 7:30 AM ET during daylight time.
-    # DD's VPS nightly starts at 7:00 AM ET; this gives the current DD bridge
-    # time to publish while moving ValuCast's public pages earlier.
+    # Primary daily public refresh: 6:45 AM ET during daylight time.
+    # This gives ValuCast enough buffer to publish fresh public pages and
+    # share graphics before 8:00 AM ET.
+    - cron: "45 10 * * *"
+    # Same-morning fallback before 8:00 AM ET if GitHub's early scheduled
+    # workflow is delayed or skipped during congestion.
     - cron: "30 11 * * *"
-    # Same-morning fallback: GitHub scheduled workflows are best-effort and can
-    # be delayed or skipped during congestion. This second run keeps the site
-    # from sitting on yesterday's public snapshot if the early run misses.
+    # Late safety fallback: GitHub scheduled workflows are best-effort, so keep
+    # one later run to recover if both pre-8 refreshes miss.
     - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
