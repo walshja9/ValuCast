@@ -401,13 +401,11 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
-        "unsupported_numbers": [
-          "17"
-        ]
+        "ok": true,
+        "unsupported_numbers": []
       },
-      "text": "Angel Genao is a young shortstop still swinging through too much contact in AAA, striking out in 20.3% of his plate appearances while posting a .256 AVG with modest .17 ISO power. His walk rate (7.7%) and resulting .315 OBP rank in the bottom quartile of the player pool, leaving little margin for a swing-and-miss approach to work. The MLB-equivalent translation projects him at 21.7% K and .135 ISO at the major-league level, which would be below-average for a position player; organizational depth fits the profile given the current tools and 143-PA sample.",
-      "valid": false
+      "text": "Angel Genao is a shortstop contact-challenged but power-ready at the plate\u2014a 22-year-old caught between high strikeout rates and modest barrels. His AAA line shows .256 AVG with .426 SLG and 20.3% K%, while his MLB-equivalent translation pegs him at a 21.7% strikeout rate against just .135 ISO\u2014well below average power on the big stage. The core risk is the strikeout volume (75th percentile in whiffs) combined with below-average walk rate (15th percentile BB%), a profile that leaves little margin for error at the plate. The 143-PA sample is active and clean, but the bat shape remains genuinely mixed.",
+      "valid": true
     },
     "694211_hitter": {
       "hard_ok": true,
@@ -697,13 +695,11 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
-        "unsupported_numbers": [
-          "18.2"
-        ]
+        "ok": true,
+        "unsupported_numbers": []
       },
-      "text": "Ben Kudrna is a 23-year-old right-handed starter showing wildly elevated walk rates at the AAA level, with 18.0 BB/9 on a 2-inning sample. His K/9 of 9.0 does not offset the command issues\u2014his K-BB% sits at -18.2%, indicating significantly more free passes than strikeouts. The sample is dangerously thin (2 innings as of mid-June 2026), making any read on true stuff or health speculative; wait for sustained workload before drawing conclusions.",
-      "valid": false
+      "text": "Ben Kudrna is a right-handed pitcher working through early-season command issues at AAA, posting an 18.0 BB/9 and 3.0 WHIP over just 2 innings. His strikeout stuff is respectable\u20149.0 K/9 in this current sample translates to 8.6 K/9 in MLB-equivalent terms\u2014but the walk rate is severe and disqualifies him as reliable depth right now. This is a thin, fresh sample (2 IP, no staleness) that offers almost no predictive power; confidence in any read here is legitimately low.",
+      "valid": true
     },
     "695684_pitcher": {
       "hard_ok": true,
@@ -1896,20 +1892,18 @@
       "valid": true
     },
     "800325_hitter": {
-      "hard_ok": false,
+      "hard_ok": true,
       "hash": "e9f06b2bd698211f4c10e2e0d4b1d9d3",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
-        "banned": [
-          "robust"
-        ],
+        "banned": [],
         "handedness_problems": [],
-        "hard_ok": false,
-        "ok": false,
+        "hard_ok": true,
+        "ok": true,
         "unsupported_numbers": []
       },
-      "text": "Luis Lara is a high-contact center fielder who works counts and reaches base at an elite rate; his .314 AVG and .425 OBP rank in the 96th percentile across the minor-league pool, supported by a 15.6% BB% that sits at the 82nd percentile. The power is modest at .138 ISO (43rd percentile), and the translated MLB line shows strikeout risk creeping up to 17.6% K%, a meaningful concern for sustained big-league performance. The 288 PA sample is current and robust, providing solid confidence in the contact profile and plate discipline.",
-      "valid": false
+      "text": "Luis Lara is a high-contact, patient hitter working at AAA with elite bat control and a disciplined approach. His .314 AVG and .425 OBP sit at the 96th percentile for contact and on-base ability, supported by a 13.5 K% that ranks in the 96th percentile. The power is modest at .138 ISO (43rd percentile), and the MLB-equivalent translation suggests his strikeout rate will climb to 17.6% against big-league velocity\u2014a real friction point for a player whose profile depends on making contact. This is a live 288 PA sample from an active AAA stint with no staleness, supporting confidence in the bat management, though the power ceiling remains a legitimate question mark.",
+      "valid": true
     },
     "800338_pitcher": {
       "hard_ok": true,
@@ -2117,11 +2111,10 @@
         "hard_ok": true,
         "ok": false,
         "unsupported_numbers": [
-          "31",
-          "10"
+          "31"
         ]
       },
-      "text": "Jake Cunningham is a power-heavy righthanded hitter who trades contact for leverage\u2014he's generating .597 SLG and .31 ISO (98th and 99th percentiles respectively) while striking out 32.5%, well above league average. The elite slugging and isolated power metrics anchor a .984 OPS across 212 plate appearances at A+. The strikeout rate is the real problem: even after MLB-equivalent translation that already assumes some regression, he projects to 31.6 K%, nearly 10 points above big-league average, which will cap his floor and create extended dry spells regardless of power output. With only 212 PA in a live sample, there is meaningful volatility in how his contact profile settles at the next level.",
+      "text": "Jake Cunningham is a high-leverage power hitter who generates elite slugging (.597 SLG, 98th percentile) on the back of truly exceptional isolated power (.31 ISO, 99th percentile), but he's strikeout-prone at 32.5% K%, which translates to 31.6% at the MLB level\u2014well above the 22% average and a core concern for his consistency. His walk rate (13.2%) provides some offset to the whiffs, and the 212 PA sample is current and clean, so the bat shape is live, but contact management will determine whether this power can play in the majors or becomes an exploitable weakness.",
       "valid": false
     },
     "801594_pitcher": {
