@@ -8,6 +8,7 @@ DYNASTY_TEMPLATE = (
     ROOT / "templates" / "partials" / "player_detail_dynasty.html"
 ).read_text(encoding="utf-8")
 SCOUTING_TEMPLATE = (ROOT / "templates" / "scouting.html").read_text(encoding="utf-8")
+STATCAST_STORE = (ROOT / "web" / "statcast_store.py").read_text(encoding="utf-8")
 
 
 def _blocks(selector: str) -> list[str]:
@@ -140,6 +141,39 @@ def test_data_bars_use_slate_teal_clay_not_functional_blue():
         assert "110, 161, 255" not in block, selector
     # off-token teal retired from the profile skill bars
     assert "#2bcdb2" not in _last_block(".profile-bar-fill.good")
+
+
+def test_bar_grammar_tokens_are_defined():
+    for token in ["--bar-h", "--bar-h-rail", "--bar-radius", "--bar-rail"]:
+        assert token in CSS
+
+
+def test_data_bar_tracks_share_bar_grammar_tokens():
+    selectors = [
+        ".profile-bar-track",
+        ".skill-compare-track",
+        ".pct-rail",
+        ".pct-track",
+        ".role-probability-track",
+        ".zbar",
+        ".spread-rail",
+    ]
+
+    for selector in selectors:
+        block = _last_block(selector)
+        assert "var(--bar-rail)" in block, selector
+        assert "var(--bar-radius)" in block, selector
+        assert "999px" not in block, selector
+        assert "#24262d" not in block, selector
+        assert "rgba(39, 48, 74" not in block, selector
+
+
+def test_statcast_percentile_ramp_matches_bar_palette_tokens():
+    for token_tuple in ["(52, 226, 196)", "(94, 102, 120)", "(204, 138, 102)"]:
+        assert token_tuple in STATCAST_STORE
+
+    for retired in ["(52, 211, 153)", "#34d399", "(91, 102, 122)", "#5b667a"]:
+        assert retired not in STATCAST_STORE
 
 
 def test_prospect_profile_badges_only_hold_share_graphic_link():

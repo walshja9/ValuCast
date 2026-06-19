@@ -104,9 +104,9 @@ class TestDisplayGroups(unittest.TestCase):
 
 class TestPercentileColor(unittest.TestCase):
     def test_endpoints_and_midpoint(self):
-        self.assertEqual(percentile_color(0), "#cf8b66")    # muted clay
-        self.assertEqual(percentile_color(50), "#5b667a")   # slate
-        self.assertEqual(percentile_color(100), "#34d399")  # ValuCast teal
+        self.assertEqual(percentile_color(0), "#cc8a66")    # token clay
+        self.assertEqual(percentile_color(50), "#5e6678")   # token slate
+        self.assertEqual(percentile_color(100), "#34e2c4")  # token teal
 
     def test_out_of_range_clamps(self):
         self.assertEqual(percentile_color(-10), percentile_color(0))

@@ -54,9 +54,9 @@ _VELOCITIES = {"exit_velocity", "fb_velocity"}
 _SPINS = {"fb_spin", "curve_spin"}
 
 # ValuCast-oriented scale: muted clay (poor) -> slate (average) -> teal (elite).
-_LOW = (207, 139, 102)
-_MID = (91, 102, 122)
-_HIGH = (52, 211, 153)
+_LOW = (204, 138, 102)   # #cc8a66  --c-clay
+_MID = (94, 102, 120)    # #5e6678  --c-slate
+_HIGH = (52, 226, 196)   # #34e2c4  --c-signal
 
 
 def percentile_color(pct: int | float) -> str:

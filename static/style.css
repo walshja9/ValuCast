@@ -46,6 +46,15 @@
   /* Radius — 3 steps: 4px data/chips, 8px cards/panels, full = toggles/status only */
   --radius-sm: 4px; --radius: 8px; --radius-lg: 8px;
 
+  /* Bar grammar (Wave 2D) — one shared language for every data bar/rail.
+     Two heights (prominent labeled bar vs compact inline rail), one radius
+     (999px pills retired on data), one muted rail. Fills are always the
+     teal/slate/clay tokens, never raw literals. */
+  --bar-h: 18px;        /* prominent labeled bars: profile percentile, skill-compare */
+  --bar-h-rail: 6px;    /* compact inline rails: pct-rail, statcast, role, zbar, spread */
+  --bar-radius: 4px;
+  --bar-rail: #23252c;
+
   --surface-glass: rgba(18, 19, 24, .72);
   --surface-panel: rgba(24, 25, 31, .82);
   --surface-panel-strong: rgba(31, 33, 40, .92);
@@ -1344,8 +1353,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .pct-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.2rem 0; max-width: 560px; }
 .pct-label { display: flex; gap: .35rem; flex: 0 0 165px; font-size: 0.8rem; color: var(--c-text); }
 .pct-raw { margin-left: auto; color: var(--c-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.pct-track { position: relative; flex: 1; height: 8px; background: #23252c; border-radius: 4px; }
-.pct-fill { height: 100%; border-radius: 4px; min-width: 4px; }
+.pct-track { position: relative; flex: 1; height: var(--bar-h-rail); background: var(--bar-rail); border-radius: var(--bar-radius); }
+.pct-fill { height: 100%; border-radius: var(--bar-radius); min-width: 4px; }
 .pct-num {
     position: absolute; top: 50%;
     left: clamp(11px, var(--pct, 0%), calc(100% - 11px));
@@ -1362,11 +1371,11 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 /* Diverging z-score bars in the category breakdown */
 .zbar-cell { width: 84px; min-width: 56px; }
-.zbar { position: relative; height: 8px; background: #23252c; border-radius: 4px; }
+.zbar { position: relative; height: var(--bar-h-rail); background: var(--bar-rail); border-radius: var(--bar-radius); }
 .zbar::before { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--c-border-strong); }
 .zbar-fill { position: absolute; top: 0; bottom: 0; max-width: 50%; }
-.zbar-fill.pos { left: 50%; background: var(--c-pos); border-radius: 0 4px 4px 0; }
-.zbar-fill.neg { right: 50%; background: var(--c-neg); border-radius: 4px 0 0 4px; }
+.zbar-fill.pos { left: 50%; background: var(--c-pos); border-radius: 0 var(--bar-radius) var(--bar-radius) 0; }
+.zbar-fill.neg { right: 50%; background: var(--c-neg); border-radius: var(--bar-radius) 0 0 var(--bar-radius); }
 
 .risk-block {
     margin-top: 0.5rem;
@@ -1513,11 +1522,11 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     inset: 0 auto 0 0;
     min-width: 3px;
     border-radius: 5px;
-    background: #5e6678;
+    background: var(--c-slate);
 }
 .profile-bar-fill.elite { background: var(--c-prospect); }
 .profile-bar-fill.good { background: var(--c-prospect); }  /* was off-token #2bcdb2 */
-.profile-bar-fill.risk { background: #cf8b66; }
+.profile-bar-fill.risk { background: var(--c-clay); }
 .profile-bar-num {
     position: absolute;
     top: 50%;
@@ -1636,20 +1645,20 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 }
 .skill-compare-track {
     position: relative;
-    height: 18px;
-    border-radius: 5px;
-    background: #24262d;
+    height: var(--bar-h);
+    border-radius: var(--bar-radius);
+    background: var(--bar-rail);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04);
 }
 .skill-compare-fill {
     position: absolute;
     inset: 0 auto 0 0;
     min-width: 3px;
-    border-radius: 5px;
-    background: #5e6678;
+    border-radius: var(--bar-radius);
+    background: var(--c-slate);
 }
 .skill-compare-fill.plus { background: var(--c-prospect); }
-.skill-compare-fill.risk { background: #cf8b66; }
+.skill-compare-fill.risk { background: var(--c-clay); }
 .skill-compare-peak {
     position: absolute;
     top: -3px;
@@ -1751,9 +1760,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-weight: 600;
 }
 .role-probability-track {
-    height: 8px;
-    border-radius: 999px;
-    background: rgba(148, 163, 184, .14);   /* slate track, not functional blue */
+    height: var(--bar-h-rail);
+    border-radius: var(--bar-radius);
+    background: var(--bar-rail);
     overflow: hidden;
 }
 .role-probability-track i {
@@ -1998,8 +2007,8 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 }
 
 /* Percentile rails on stat tiles */
-.pct-rail { position: relative; height: 4px; margin-top: .3rem; background: #23252c; border-radius: 2px; overflow: hidden; }
-.pct-rail-fill { position: absolute; inset: 0 auto 0 0; background: var(--c-slate); border-radius: 2px; }
+.pct-rail { position: relative; height: var(--bar-h-rail); margin-top: .3rem; background: var(--bar-rail); border-radius: var(--bar-radius); overflow: hidden; }
+.pct-rail-fill { position: absolute; inset: 0 auto 0 0; background: var(--c-slate); border-radius: var(--bar-radius); }
 .pct-rail-fill.good { background: var(--c-pos); }
 .pct-rail-fill.bad { background: var(--c-neg); }
 .pct-ord { margin-top: .15rem; font-size: .68rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
@@ -2034,7 +2043,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 /* Consensus spread strip */
 .spread-strip { display: flex; align-items: center; gap: .55rem; margin-top: .55rem; }
-.spread-rail { position: relative; flex: 1; max-width: 340px; height: 6px; background: #23252c; border-radius: 3px; }
+.spread-rail { position: relative; flex: 1; max-width: 340px; height: var(--bar-h-rail); background: var(--bar-rail); border-radius: var(--bar-radius); }
 .spread-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--c-slate); border: 2px solid var(--surface); }
 .spread-dot.ours { background: var(--c-prospect); border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); }
 .spread-bounds { font-size: .72rem; color: var(--c-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -2455,13 +2464,13 @@ main {
 }
 
 .profile-bar-track {
-    height: 20px;
-    border-radius: 999px;
-    background: rgba(39, 48, 74, .88);
+    height: var(--bar-h);
+    border-radius: var(--bar-radius);
+    background: var(--bar-rail);
 }
 
 .profile-bar-fill {
-    border-radius: 999px;
+    border-radius: var(--bar-radius);
 }
 
 .profile-bar-num {
