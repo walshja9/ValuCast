@@ -33,6 +33,7 @@
   --c-clay: #cc8a66;           /* decline — replaces alarm red */
   --c-neg: var(--c-clay);
   --c-slate: #5e6678;          /* avg tier, inactive bars, structural ticks */
+  --c-positive-muted: #6f7b8f;  /* secondary good/status, never the live signal */
 
   --c-focus-ring: rgba(110,161,255,.28);   /* translucent blue — alpha can't suffix a var() */
 
@@ -2999,6 +3000,46 @@ main {
 .rankings-table .why-rank-chips .sample-risk-badge:nth-child(n+2) {
     display: none;
 }
+
+/* ============================================================
+   Phase 2B: accent containment
+   ============================================================ */
+
+/* Active controls use the mode tint. Blue remains functional, and teal stays
+   reserved for value/live signal rather than generic selected state. */
+.mode-btn:has(input:checked) { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.htab.on { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.htab-prospects.on { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.seg-opt:has(input:checked) > span { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.source-opt:has(input:checked) > span { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.pool-btn:has(input:checked) { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.preset-btn.active { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.mode-btn-prospects:has(input:checked) { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+.rank-by-toggle input:checked + span { background: rgba(167, 139, 250, .14); border-color: rgba(167, 139, 250, .34); color: var(--c-dynasty); }
+
+/* Functional actions are affordances, not signal. */
+.rank-toolbar .graphic-btn {
+    background: var(--surface-2);
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+}
+
+.rank-toolbar .graphic-btn:hover {
+    background: #23252c;
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+}
+
+.scouting-filters button {
+    background: var(--surface-2);
+    border-color: var(--c-border-strong);
+    color: var(--c-text);
+}
+
+/* Secondary status stays quiet. Signal teal should not leak into context chips. */
+.rank-chip { color: var(--c-muted); }
+.confidence-high { background: rgba(111, 123, 143, .14); color: var(--c-muted); }
+.spread-chip.tight { background: rgba(111, 123, 143, .14); color: var(--c-muted); }
 
 .headline-value {
     border-radius: var(--radius);
