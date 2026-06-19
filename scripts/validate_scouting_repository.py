@@ -67,7 +67,6 @@ def validate_scouting_repository(
         problems.append("reports must be a non-empty list")
     else:
         seen = set()
-        published_sources = set()
         for index, row in enumerate(reports[:300], 1):
             key = (str(row.get("mlbam_id")), str(row.get("role")))
             if key in seen:
@@ -79,8 +78,18 @@ def validate_scouting_repository(
             source = row.get("published_report_source")
             if source not in {"deterministic", "llm"}:
                 problems.append(f"report {index} invalid published_report_source")
-            else:
-                published_sources.add(source)
+            elif source == "llm":
+                llm_report = row.get("report_llm")
+                if (
+                    not isinstance(llm_report, dict)
+                    or llm_report.get("valid") is not True
+                    or llm_report.get("hard_ok") is not True
+                ):
+                    problems.append(f"report {index} published as llm without valid report_llm")
+                elif str(row.get("published_report") or "").strip() != str(
+                    llm_report.get("text") or ""
+                ).strip():
+                    problems.append(f"report {index} llm published_report must match report_llm.text")
             if row.get("usage") != "scouting_repository_context_not_live_rank_or_value":
                 problems.append(f"report {index} invalid usage")
             recent_signal = row.get("recent_signal")
@@ -106,10 +115,6 @@ def validate_scouting_repository(
                 problems.append(f"report {index} handedness mismatch: {problem}")
             for problem in handedness_problems(str(row.get("published_report") or ""), row):
                 problems.append(f"report {index} published_report handedness mismatch: {problem}")
-        if len(published_sources) > 1:
-            problems.append(
-                "mixed published_report_source values are not allowed; publish one scouting voice"
-            )
     return payload, problems
 
 
