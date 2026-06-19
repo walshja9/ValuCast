@@ -306,15 +306,19 @@ class TestBuysRoute(_RealAppCase):
         self.assertIn("AHEAD OF THE CURVE", html)
         self.assertIn("Source:</strong> ValuCast buy signal", html)
         self.assertIn('class="bg-mark"', html)
-        self.assertIn('class="bg-team-mark', html)
+        # Phase 2 retune: poster team-logo watermark removed from the share graphic.
+        self.assertNotIn('class="bg-team-mark', html)
         self.assertIn("Top 40 prospect buys by signal, not reputation", html)
         self.assertIn("Ranks prospects by model strength, momentum, buy window, and runway", html)
         self.assertIn("buy score = model strength + momentum + buy window + runway", html)
         # Graphic node included twice: 5 featured + 35 compact each.
         self.assertEqual(html.count('class="bg-featured-card'), 10)
         self.assertEqual(html.count('class="bg-cell"'), 70)
-        self.assertEqual(html.count('class="bg-face bg-headshot-candidate"'), 10)
-        self.assertEqual(html.count('class="bg-monogram"'), 10)
+        # Phase 2 retune: monogram/headshot avatars removed; cards lead with the name.
+        self.assertEqual(html.count('class="bg-face bg-headshot-candidate"'), 0)
+        self.assertEqual(html.count('class="bg-monogram"'), 0)
+        self.assertEqual(html.count('class="bg-hero-name"'), 2)
+        self.assertEqual(html.count('class="bg-support-name"'), 8)
         self.assertEqual(html.count('class="buys-row"'), 40)
 
     def test_n_shrinks_list_but_never_the_graphic(self):

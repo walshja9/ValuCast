@@ -756,20 +756,18 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
         "</linearGradient>",
         "</defs>",
         '<rect width="1080" height="100%" fill="url(#bg)"/>',
-        '<circle cx="905" cy="96" r="225" fill="#34e2c4" opacity=".07"/>',
-        '<circle cx="148" cy="972" r="305" fill="#34e2c4" opacity=".05"/>',
-        '<path d="M690 84 C812 24 928 18 1052 58" fill="none" stroke="#34e2c4" stroke-width="4" opacity=".55"/>',
-        '<path d="M690 118 C824 56 944 50 1052 90" fill="none" stroke="#1c7a6c" stroke-width="2" opacity=".5"/>',
-        '<text x="64" y="62" fill="#34e2c4" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="5">VALUCAST</text>',
-        '<text x="64" y="125" fill="#f4f5f8" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="-1">Ahead of the Curve</text>',
+        '<path d="M828 70 C912 30 996 28 1052 64" fill="none" stroke="#34e2c4" stroke-width="3" opacity=".55"/>',
+        '<path d="M828 100 C916 60 996 58 1052 92" fill="none" stroke="#1c7a6c" stroke-width="2" opacity=".5"/>',
+        '<text x="64" y="58" fill="#34e2c4" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="4">VALUCAST</text>',
+        '<text x="64" y="90" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="0">Ahead of the Curve</text>',
         f'<text x="68" y="174" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="32" font-weight="600">{escape(title)}</text>',
         f'<text x="68" y="207" fill="#9197a6" font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="500">Filtered from the current prospect board | Updated {escape(updated)}</text>',
     ]
 
     if not rows:
         parts.extend([
-            '<rect x="72" y="255" width="952" height="108" rx="16" fill="#000000" opacity=".20"/>',
-            '<rect x="64" y="245" width="952" height="108" rx="16" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
+            '<rect x="72" y="255" width="952" height="108" rx="10" fill="#000000" opacity=".20"/>',
+            '<rect x="64" y="245" width="952" height="108" rx="10" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
             '<text x="112" y="310" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="600">No prospects found for this filter.</text>',
         ])
     else:
@@ -785,13 +783,13 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
             detail_size = 15 if limit == 10 else 12
             rank_box = card_h - 12
             parts.extend([
-                f'<rect x="70" y="{y + 7}" width="952" height="{card_h}" rx="14" fill="#000000" opacity=".18"/>',
-                f'<rect x="64" y="{y}" width="952" height="{card_h}" rx="14" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
-                f'<rect x="82" y="{y + 6}" width="{rank_box}" height="{rank_box}" rx="10" fill="#23252c"/>',
+                f'<rect x="70" y="{y + 7}" width="952" height="{card_h}" rx="10" fill="#000000" opacity=".18"/>',
+                f'<rect x="64" y="{y}" width="952" height="{card_h}" rx="10" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
+                f'<rect x="82" y="{y + 6}" width="{rank_box}" height="{rank_box}" rx="8" fill="#23252c"/>',
                 f'<text x="{82 + rank_box / 2}" y="{y + card_h / 2 + 9}" text-anchor="middle" fill="#cfd3e0" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 22}" font-weight="700">#{rank}</text>',
                 f'<text x="154" y="{y + (31 if limit == 10 else 24)}" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="{name_size}" font-weight="600">{escape(row.name)}</text>',
                 f'<text x="154" y="{y + (57 if limit == 10 else 41)}" fill="#9197a6" font-family="JetBrains Mono,Consolas,monospace" font-size="{detail_size}" font-weight="500">{escape(detail)}</text>',
-                f'<text x="842" y="{y + card_h / 2 + 8}" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 21}" font-weight="600">{escape(rank_kind)}</text>',
+                f'<text x="842" y="{y + card_h / 2 + 8}" fill="#9197a6" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 21}" font-weight="600">{escape(rank_kind)}</text>',
             ])
 
     parts.extend([
@@ -868,7 +866,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         fnt = fnt or font(15, bold=True)
         pad_x = 13
         chip_w = text_width(draw, label, fnt) + pad_x * 2
-        draw.rounded_rectangle((x, y, x + chip_w, y + 31), radius=15, fill=fill, outline=outline, width=1)
+        draw.rounded_rectangle((x, y, x + chip_w, y + 31), radius=8, fill=fill, outline=outline, width=1)
         draw.text((x + pad_x, y + 7), label, fill=fg, font=fnt)
         return x + chip_w + 8
 
@@ -914,28 +912,27 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
 
     if not rows:
-        draw.rounded_rectangle((48, 225, 1032, 360), radius=18, fill=card, outline=border, width=2)
+        draw.rounded_rectangle((48, 225, 1032, 360), radius=10, fill=card, outline=border, width=1)
         draw.text((76, 276), "No prospects found for this filter.", fill=text, font=font(30, bold=True))
     elif limit <= 10:
         # Compact variant for position top-10s: same voice, less empty space.
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
-        draw.rounded_rectangle((48, 226, 1032, 532), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
+        draw.rounded_rectangle((48, 226, 1032, 532), radius=10, fill=card, outline=border, width=1)
+        draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(16, bold=True))
-        _graphic_monogram(draw, 143, 395, 71, hero.name, size=54)
         hero_name_font = font(43, bold=True)
-        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 360)
+        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 540)
         for line_idx, line in enumerate(hero_name_lines):
-            draw.text((248, 315 + line_idx * 50), line, fill=text, font=hero_name_font)
-        draw.text((248, 381 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 360), fill=muted, font=font(22))
+            draw.text((70, 320 + line_idx * 50), line, fill=text, font=hero_name_font)
+        draw.text((70, 386 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(20, mono=True), 540), fill=muted, font=font(20, mono=True))
 
         value = value_label(hero)
-        draw.rounded_rectangle((650, 314, 990, 466), radius=16, fill=(24, 26, 32), outline=border, width=2)
-        draw.text((672, 340), "VALUCAST", fill=muted, font=font(16, bold=True))
-        draw.text((672, 369), value or "--", fill=green, font=font(45, bold=True))
-        draw_chip(810, 342, overall_label(hero), fill=card, fg=text, outline=border)
-        draw_chip(810, 384, "current board", fill=card, fg=muted, outline=border, fnt=font(14, bold=True))
+        draw.rounded_rectangle((650, 320, 990, 462), radius=10, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
+        draw.text((672, 342), "VALUCAST VALUE", fill=muted, font=font(15, bold=True))
+        draw.text((672, 366), value or "--", fill=green, font=font(46, bold=True, mono=True))
+        draw_chip(810, 350, overall_label(hero), fill=card, fg=muted, outline=border)
+        draw_chip(810, 392, "current board", fill=card, fg=muted, outline=border, fnt=font(14, bold=True))
         spark = spark_points(hero, 670, 484, 260, 34)
         if spark:
             draw.line(spark[0], fill=green if spark[1] == "up" else muted, width=3, joint="curve")
@@ -948,7 +945,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         for idx, row in enumerate(grid_rows):
             col, r = idx % cols, idx // cols
             x, y = start_x + col * (cell_w + 24), start_y + r * (cell_h + 18)
-            draw.rounded_rectangle((x, y, x + cell_w, y + cell_h), radius=14, fill=card_2, outline=border, width=2)
+            draw.rounded_rectangle((x, y, x + cell_w, y + cell_h), radius=8, fill=card_2, outline=border, width=1)
             draw.text((x + 18, y + 16), rank_label(idx + 2), fill=blue, font=font(21, bold=True))
             card_name_font = font(24, bold=True)
             name_lines = split_name_lines(draw, row.name, card_name_font, 220)
@@ -960,7 +957,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             draw.line((x + 18, y + 120, x + cell_w - 18, y + 120), fill=border, width=1)
             draw.text((x + 18, y + 132), "VAL", fill=muted, font=font(13, bold=True))
             cell_val = value_label(row) or "--"
-            cell_val_font = font(26, bold=True)
+            cell_val_font = font(26, bold=True, mono=True)
             draw.text(
                 (x + cell_w - 18 - text_width(draw, cell_val, cell_val_font), y + 126),
                 cell_val, fill=green, font=cell_val_font,
@@ -968,38 +965,36 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     else:
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
-        draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), leader, fill=green, font=font(22, bold=True))
+        draw.rounded_rectangle((48, 226, 418, 540), radius=10, fill=card, outline=border, width=1)
+        draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(15, bold=True))
-        _graphic_monogram(draw, 135, 379, 65, hero.name, size=52)
         hero_name_font = font(31, bold=True)
-        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 170)
+        hero_name_lines = split_name_lines(draw, hero.name, hero_name_font, 320)
         for line_idx, line in enumerate(hero_name_lines):
-            draw.text((220, 318 + line_idx * 37), line, fill=text, font=hero_name_font)
-        draw.text((220, 394 + (len(hero_name_lines) - 1) * 26), fit_text(draw, tag(hero), font(18), 165), fill=muted, font=font(18))
+            draw.text((70, 322 + line_idx * 37), line, fill=text, font=hero_name_font)
+        draw.text((70, 398 + (len(hero_name_lines) - 1) * 26), fit_text(draw, tag(hero), font(18, mono=True), 320), fill=muted, font=font(18, mono=True))
         hero_value = value_label(hero)
-        draw.text((70, 455), f"VAL {hero_value or '--'}", fill=green, font=font(39, bold=True))
+        draw.text((70, 455), f"VAL {hero_value or '--'}", fill=green, font=font(39, bold=True, mono=True))
         draw.text((70, 503), "MODEL SCORE", fill=muted, font=font(16, bold=True))
 
         supports = rows[1:5]
         for idx, row in enumerate(supports):
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
-            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=16, fill=card, outline=border, width=2)
-            _graphic_monogram(draw, x + 52, y + 54, 36, row.name, size=28)
-            draw.text((x + 104, y + 18), rank_label(idx + 2), fill=blue, font=font(19, bold=True))
+            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=10, fill=card, outline=border, width=1)
+            draw.text((x + 18, y + 18), rank_label(idx + 2), fill=blue, font=font(19, bold=True))
             support_name_font = font(20, bold=True)
-            support_name_lines = split_name_lines(draw, row.name, support_name_font, 172)
+            support_name_lines = split_name_lines(draw, row.name, support_name_font, 250)
             for line_idx, line in enumerate(support_name_lines[:2]):
-                draw.text((x + 104, y + 44 + line_idx * 23), line, fill=text, font=support_name_font)
+                draw.text((x + 18, y + 44 + line_idx * 23), line, fill=text, font=support_name_font)
             support_tag_y = _graphic_support_tag_y(
                 y, len(support_name_lines), one_line_offset=76, wrapped_offset=91
             )
-            draw.text((x + 104, support_tag_y), fit_text(draw, tag(row), font(14), 160), fill=muted, font=font(14))
+            draw.text((x + 18, support_tag_y), fit_text(draw, tag(row), font(14, mono=True), 250), fill=muted, font=font(14, mono=True))
             draw.line((x + 16, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 16, y + 118), note_label(row), fill=muted, font=font(14, bold=True))
             sup_val = value_label(row) or "--"
-            sup_val_font = font(22, bold=True)
+            sup_val_font = font(22, bold=True, mono=True)
             draw.text((x + 275 - text_width(draw, sup_val, sup_val_font), y + 112), sup_val, fill=green, font=sup_val_font)
 
         rest = rows[5:20]
@@ -1020,7 +1015,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             draw.text((x + 14, y + 50), fit_text(draw, abbrev_name(row.name), font(22, bold=True), 210), fill=text, font=font(22, bold=True))
             draw.text((x + 14, y + 84), fit_text(draw, tag(row), font(18), 230), fill=muted, font=font(18))
             rest_val = value_label(row) or "--"
-            rest_val_font = font(20, bold=True)
+            rest_val_font = font(20, bold=True, mono=True)
             draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
     footer = "ValuCast Prospect Rank - stats + age/level + investment + availability"
@@ -1065,14 +1060,16 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None):
     muted = _GRAPHIC_PALETTE["muted"]
     green = _GRAPHIC_PALETTE["green"]
 
-    # One strong arc motif — "Ahead of the Curve" in signal teal, with a faint echo.
-    draw.arc((690, 28, 1050, 333), start=196, end=288, fill=(52, 226, 196), width=4)
-    draw.arc((690, 60, 1050, 305), start=200, end=284, fill=(28, 120, 108), width=2)
-    _paste_brand_mark(img, 48, 32, size=62)
-    draw.text((124, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
-    draw.text((48, 82), headline, fill=text, font=_graphic_font(60, bold=True))
+    # Compact brand lockup, not a billboard — this is an exported app surface.
+    # "Ahead of the Curve" brands the graphic without dominating the player.
+    # (headline arg kept for call-site compatibility; the tagline is fixed.)
+    draw.arc((792, 26, 1052, 250), start=200, end=300, fill=(52, 226, 196), width=3)
+    draw.arc((792, 48, 1052, 228), start=204, end=296, fill=(28, 120, 108), width=2)
+    _paste_brand_mark(img, 48, 42, size=52)
+    draw.text((116, 48), "VALUCAST", fill=green, font=_graphic_font(28, bold=True))
+    draw.text((118, 86), "Ahead of the Curve", fill=muted, font=_graphic_font(18, bold=True))
     sub_font = _graphic_font(22)
-    draw.text((48, 154), _graphic_fit_text(draw, subtitle, sub_font, 960), fill=muted, font=sub_font)
+    draw.text((48, 152), _graphic_fit_text(draw, subtitle, sub_font, 940), fill=text, font=sub_font)
     if extra_line:
         draw.text((48, 183), extra_line, fill=green, font=_graphic_font(15, bold=True))
 
@@ -1638,8 +1635,8 @@ def _prospect_player_card_png(row):
     amber = (251, 191, 36)
     # ValuCast ramp — matches the site percentile bars: teal = elite, slate = average, clay = low.
     bar_elite = green
-    bar_mid = (91, 102, 122)
-    bar_low = (207, 139, 102)
+    bar_mid = _GRAPHIC_PALETTE["slate"]
+    bar_low = _GRAPHIC_PALETTE["clay"]
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
 
@@ -1653,12 +1650,12 @@ def _prospect_player_card_png(row):
         subtitle = f"{subtitle} - {generated}"
     _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
 
-    # Identity panel
-    draw.rounded_rectangle((48, 218, 1032, 410), radius=22, fill=card, outline=border, width=2)
-    _graphic_monogram(draw, 138, 318, 60, row.name, size=46)
+    # Identity row — flat panel, name leads (no monogram). Value folds into an
+    # app-style faint-teal chip (label over number), not a separate boxed module.
+    draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
 
-    name_font = _graphic_font(44, bold=True)
-    draw.text((230, 252), _graphic_fit_text(draw, row.name, name_font, 510), fill=text, font=name_font)
+    name_font = _graphic_font(48, bold=True)
+    draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 600), fill=text, font=name_font)
     meta = " - ".join(
         piece for piece in [
             row.team or "FA",
@@ -1668,31 +1665,31 @@ def _prospect_player_card_png(row):
         ]
         if piece
     )
-    draw.text((232, 308), _graphic_fit_text(draw, meta, _graphic_font(22), 520), fill=muted, font=_graphic_font(22))
-    draw.text((232, 346), pool_label, fill=muted, font=_graphic_font(18))
+    draw.text((76, 314), _graphic_fit_text(draw, meta, _graphic_font(22, mono=True), 600), fill=muted, font=_graphic_font(22, mono=True))
+    draw.text((76, 350), _graphic_fit_text(draw, pool_label, _graphic_font(18, mono=True), 600), fill=muted, font=_graphic_font(18, mono=True))
 
-    draw.rounded_rectangle((795, 250, 982, 372), radius=18, fill=card_2, outline=(44, 46, 54), width=1)
-    draw.text((820, 272), "VALUCAST", fill=muted, font=_graphic_font(16, bold=True))
-    draw.text((820, 296), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(40, bold=True, mono=True))
+    draw.rounded_rectangle((806, 250, 984, 360), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
+    draw.text((824, 266), "VALUCAST VALUE", fill=muted, font=_graphic_font(13, bold=True))
+    draw.text((824, 286), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(38, bold=True, mono=True))
     rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
-    draw.text((820, 346), rank_text, fill=text, font=_graphic_font(20, bold=True))
+    draw.text((824, 332), rank_text, fill=muted, font=_graphic_font(16, bold=True, mono=True))
 
     avail_badge = _graphic_availability_badge(row)
     if avail_badge:
-        badge_font = _graphic_font(16, bold=True)
+        badge_font = _graphic_font(15, bold=True)
         bbox = draw.textbbox((0, 0), avail_badge, font=badge_font)
         draw.rounded_rectangle(
-            (232, 374, 232 + (bbox[2] - bbox[0]) + 26, 402),
-            radius=11,
+            (76, 378, 76 + (bbox[2] - bbox[0]) + 24, 404),
+            radius=6,
             fill=(46, 36, 28),
             outline=(150, 110, 78),
             width=1,
         )
-        draw.text((245, 379), avail_badge, fill=amber, font=badge_font)
+        draw.text((88, 382), avail_badge, fill=amber, font=badge_font)
 
     # Skill bars
-    draw.rounded_rectangle((48, 438, 1032, 812), radius=22, fill=card, outline=border, width=2)
-    draw.text((74, 468), "CURRENT SKILL PERCENTILES", fill=text, font=_graphic_font(24, bold=True))
+    draw.rounded_rectangle((48, 438, 1032, 812), radius=10, fill=card, outline=border, width=1)
+    draw.text((74, 468), "CURRENT SKILL PERCENTILES", fill=muted, font=_graphic_font(20, bold=True))
     sample_context = _graphic_sample_context_label(row, context)
     if sample_context:
         draw.text((74, 500), _graphic_fit_text(draw, sample_context, _graphic_font(17, bold=True), 890), fill=muted, font=_graphic_font(17, bold=True))
@@ -1703,22 +1700,22 @@ def _prospect_player_card_png(row):
             pct = int(item["percentile"])
             label = item["label"]
             value = _graphic_stat_value(item["value"], item["key"])
-            draw.text((82, y + 8), label, fill=muted, font=_graphic_font(18, bold=True))
-            x0, y0, x1, y1 = 190, y + 6, 790, y + 28
-            draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(30, 32, 40))
+            draw.text((82, y + 6), label, fill=muted, font=_graphic_font(18, bold=True))
+            x0, y0, x1, y1 = 190, y + 9, 762, y + 23
+            draw.rounded_rectangle((x0, y0, x1, y1), radius=4, fill=(30, 32, 40))
             fill = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
-            draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=7, fill=fill)
-            knob_x = max(x0 + 16, min(x1 - 16, x0 + int((x1 - x0) * pct / 100)))
-            draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(10, 11, 15))
-            draw.text((knob_x - 10, y0 - 1), str(pct), fill=text, font=_graphic_font(15, bold=True))
-            draw.text((820, y + 5), value, fill=text, font=_graphic_font(20, bold=True))
+            draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=4, fill=fill)
+            knob_x = max(x0 + 14, min(x1 - 14, x0 + int((x1 - x0) * pct / 100)))
+            draw.rounded_rectangle((knob_x - 18, y0 - 3, knob_x + 18, y1 + 3), radius=4, fill=(10, 11, 15))
+            draw.text((knob_x - 10, y0 - 2), str(pct), fill=text, font=_graphic_font(14, bold=True))
+            draw.text((792, y + 1), value, fill=text, font=_graphic_font(20, bold=True, mono=True))
             y += 39
     else:
         draw.text((74, 560), "Current sample does not meet the percentile-pool threshold.", fill=muted, font=_graphic_font(22))
 
     # Narrative + 20-80 shape
-    draw.rounded_rectangle((48, 840, 1032, 1132), radius=22, fill=card, outline=border, width=2)
-    draw.text((74, 870), "VALUCAST READ", fill=green, font=_graphic_font(22, bold=True))
+    draw.rounded_rectangle((48, 840, 1032, 1132), radius=10, fill=card, outline=border, width=1)
+    draw.text((74, 870), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
     read_font = _graphic_font(22)
     for idx, line in enumerate(_graphic_wrap_read_text(draw, identity, read_font, 890, max_lines=4)):
         draw.text((74, 910 + idx * 31), line, fill=text, font=read_font)
@@ -2827,7 +2824,7 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
     # are muted slate tones so the scatter reads as structure, not a rainbow.
     group_colors = {
         "hitter": (110, 124, 152),
-        "sp": (138, 126, 158),
+        "sp": (150, 130, 116),
         "rp": (96, 142, 150),
         "prospect": (52, 226, 196),
     }
@@ -3152,17 +3149,16 @@ def _buys_share_card_png(
     hero_rows = list(rows or [])[:5]
     grid_rows = list(rows or [])[5:40]
     if not hero_rows:
-        draw.rounded_rectangle((48, 226, 1032, 370), radius=18, fill=card, outline=border, width=2)
+        draw.rounded_rectangle((48, 226, 1032, 370), radius=10, fill=card, outline=border, width=1)
         draw.text((76, 278), "No prospect buys are available.", fill=text, font=f_name)
     else:
         hero = hero_rows[0]
-        draw.rounded_rectangle((48, 226, 418, 540), radius=18, fill=card, outline=green, width=2)
-        draw.text((70, 252), "#1 - TOP BUY", fill=green, font=f_rank)
-        _graphic_monogram(draw, 135, 381, 65, hero.get("name"), size=52)
-        name_lines = split_lines(hero.get("name"), _graphic_font(34, bold=True), 175)
+        draw.rounded_rectangle((48, 226, 418, 540), radius=10, fill=card, outline=border, width=1)
+        draw.text((70, 252), "#1 - TOP BUY", fill=muted, font=f_rank)
+        name_lines = split_lines(hero.get("name"), _graphic_font(34, bold=True), 320)
         for idx, line in enumerate(name_lines[:2]):
-            draw.text((220, 320 + idx * 39), line, fill=text, font=_graphic_font(34, bold=True))
-        draw.text((220, 403), _graphic_fit_text(draw, tag(hero), f_tag, 165), fill=muted, font=f_tag)
+            draw.text((70, 320 + idx * 39), line, fill=text, font=_graphic_font(34, bold=True))
+        draw.text((70, 403), _graphic_fit_text(draw, tag(hero), _graphic_font(16, mono=True), 320), fill=muted, font=_graphic_font(16, mono=True))
         draw.text((70, 455), str(hero.get("score", "--")), fill=green, font=f_hero_score)
         draw.text((155, 498), "/100", fill=muted, font=f_small)
         _draw_buys_spark(
@@ -3176,16 +3172,15 @@ def _buys_share_card_png(
         for idx, row in enumerate(hero_rows[1:5]):
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
-            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=16, fill=card, outline=border, width=2)
-            _graphic_monogram(draw, x + 52, y + 54, 36, row.get("name"), size=28)
-            draw.text((x + 100, y + 13), f"#{idx + 2}", fill=blue, font=f_rank)
-            support_lines = split_lines(row.get("name"), f_support_name, 172)
+            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=10, fill=card, outline=border, width=1)
+            draw.text((x + 18, y + 13), f"#{idx + 2}", fill=blue, font=f_rank)
+            support_lines = split_lines(row.get("name"), f_support_name, 250)
             for line_idx, line in enumerate(support_lines[:2]):
-                draw.text((x + 100, y + 38 + line_idx * 25), line, fill=text, font=f_support_name)
+                draw.text((x + 18, y + 38 + line_idx * 25), line, fill=text, font=f_support_name)
             tag_y = _graphic_support_tag_y(
                 y, len(support_lines), one_line_offset=80, wrapped_offset=92
             )
-            draw.text((x + 100, tag_y), _graphic_fit_text(draw, tag(row), f_small, 160),
+            draw.text((x + 18, tag_y), _graphic_fit_text(draw, tag(row), f_small, 250),
                       fill=muted, font=f_small)
             draw.line((x + 14, y + 104, x + 275, y + 104), fill=border, width=1)
             draw.text((x + 14, y + 112), str(row.get("score", "--")), fill=green, font=f_support_score)

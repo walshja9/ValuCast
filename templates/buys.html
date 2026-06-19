@@ -94,33 +94,33 @@
     font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 .bg-hero-score, .bg-support-score, .bg-cell-score, .bg-feature-rank,
-.bg-support-rank, .bg-rank, .bg-monogram {
+.bg-support-rank, .bg-rank, .bg-feature-tag, .bg-support-tag, .bg-tag {
     font-family: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
 }
 .bg-head { position: absolute; inset: 0 0 auto 0; height: 206px; }
-.bg-mark { position: absolute; left: 48px; top: 34px; width: 46px; height: 46px; border-radius: 12px; }
-.bg-brand { position: absolute; left: 106px; top: 43px; font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #34e2c4; }
-.bg-title { position: absolute; left: 48px; top: 84px; font-size: 59px; font-weight: 700; letter-spacing: -.5px; line-height: 1.05; }
-.bg-sub { position: absolute; left: 48px; top: 156px; font-size: 21px; color: #9197a6; }
-.bg-source { position: absolute; left: 48px; top: 184px; font-size: 16px; color: #34e2c4; font-weight: 600; }
-.bg-arc { position: absolute; right: 48px; top: 40px; width: 330px; height: 150px; }
+.bg-mark { position: absolute; left: 48px; top: 42px; width: 52px; height: 52px; border-radius: 12px; }
+.bg-brand { position: absolute; left: 116px; top: 48px; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #34e2c4; }
+.bg-title { position: absolute; left: 118px; top: 86px; font-size: 18px; font-weight: 700; letter-spacing: 0; line-height: 1.05; color: #9197a6; }
+.bg-sub { position: absolute; left: 48px; top: 152px; font-size: 22px; color: #e8e9ee; }
+.bg-source { position: absolute; left: 48px; top: 183px; font-size: 15px; color: #34e2c4; font-weight: 600; }
+.bg-arc { position: absolute; right: 48px; top: 28px; width: 240px; height: 130px; }
 .bg-arc path { fill: none; stroke: rgba(52, 226, 196, .55); stroke-width: 3px; }
 .bg-featured { position: absolute; left: 48px; top: 226px; width: 984px; height: 314px; display: grid; grid-template-columns: 370px 598px; gap: 16px; }
-.bg-featured-card { position: relative; box-sizing: border-box; background: #15161b; border: 1px solid #2a2c34; border-radius: 12px; overflow: hidden; }
-.bg-hero { border-color: #34e2c4; }
+.bg-featured-card { position: relative; box-sizing: border-box; background: #15161b; border: 1px solid #2a2c34; border-radius: 10px; overflow: hidden; }
+.bg-hero { border-color: #2a2c34; }
 .bg-hero::before { content: none; }
 .bg-team-mark { position: absolute; pointer-events: none; object-fit: contain; filter: saturate(.7); opacity: .07; }
 .bg-team-mark-hero { right: -24px; bottom: -34px; width: 220px; height: 220px; }
 .bg-team-mark-support { right: -28px; bottom: -30px; width: 130px; height: 130px; }
-.bg-feature-rank { position: absolute; left: 20px; top: 16px; font-size: 22px; font-weight: 700; color: #34e2c4; }
+.bg-feature-rank { position: absolute; left: 20px; top: 16px; font-size: 20px; font-weight: 700; color: #9197a6; }
 .bg-portrait { position: absolute; display: block; border-radius: 50%; overflow: hidden; background: #1a1c22; border: 1px solid #2e313a; }
 .bg-portrait-hero { left: 20px; top: 61px; width: 130px; height: 130px; }
 .bg-monogram { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #8a92a6; font-weight: 700; }
 .bg-portrait-hero .bg-monogram { font-size: 52px; }
 .bg-face { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; opacity: 0; }
 .bg-face.is-real { opacity: 1; }
-.bg-hero-name { position: absolute; left: 171px; top: 64px; width: 177px; font-size: 34px; line-height: 1.13; font-weight: 600; }
-.bg-feature-tag { position: absolute; left: 171px; top: 148px; width: 177px; font-size: 18px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-hero-name { position: absolute; left: 20px; top: 70px; width: 330px; font-size: 34px; line-height: 1.13; font-weight: 600; }
+.bg-feature-tag { position: absolute; left: 20px; top: 150px; width: 330px; font-size: 18px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-hero-score { position: absolute; left: 20px; top: 199px; font-size: 62px; line-height: 1; font-weight: 700; color: #34e2c4; }
 .bg-score-label { position: absolute; left: 106px; top: 241px; font-size: 16px; font-weight: 500; color: #9197a6; }
 .bg-feature-spark { overflow: visible; }
@@ -136,9 +136,9 @@
 .bg-supporting { display: grid; grid-template-columns: repeat(2, 291px); grid-template-rows: repeat(2, 149px); gap: 16px; }
 .bg-portrait-support { left: 14px; top: 16px; width: 72px; height: 72px; }
 .bg-portrait-support .bg-monogram { font-size: 28px; }
-.bg-support-rank { position: absolute; left: 100px; top: 13px; font-size: 18px; font-weight: 700; color: #8a92a6; }
-.bg-support-name { position: absolute; left: 100px; top: 36px; right: 12px; max-height: 48px; font-size: 22px; line-height: 1.08; font-weight: 600; white-space: normal; overflow: hidden; }
-.bg-support-tag { position: absolute; left: 100px; top: 84px; right: 12px; font-size: 14px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-support-rank { position: absolute; left: 14px; top: 13px; font-size: 18px; font-weight: 700; color: #8a92a6; }
+.bg-support-name { position: absolute; left: 14px; top: 36px; right: 12px; max-height: 48px; font-size: 22px; line-height: 1.08; font-weight: 600; white-space: normal; overflow: hidden; }
+.bg-support-tag { position: absolute; left: 14px; top: 84px; right: 12px; font-size: 14px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-support-card::after { content: ""; position: absolute; left: 14px; right: 14px; top: 102px; border-top: 1px solid #2a2c34; }
 .bg-support-score { position: absolute; left: 14px; bottom: 7px; font-size: 28px; line-height: 1; font-weight: 700; color: #34e2c4; }
 .bg-support-score-label { position: absolute; left: 60px; bottom: 11px; font-size: 13px; color: #9197a6; }
@@ -175,75 +175,6 @@ function waitForBuysImage(im) {
     });
 }
 
-function sampleBuysImage(im) {
-    var canvas = document.createElement('canvas');
-    canvas.width = 16; canvas.height = 16;
-    var ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(im, 0, 0, 16, 16);
-    return ctx.getImageData(0, 0, 16, 16).data;
-}
-
-function buysImageDifference(a, b) {
-    var total = 0;
-    for (var i = 0; i < a.length; i += 4) {
-        total += Math.abs(a[i] - b[i]);
-        total += Math.abs(a[i + 1] - b[i + 1]);
-        total += Math.abs(a[i + 2] - b[i + 2]);
-    }
-    return total / (a.length * 0.75);
-}
-
-var buysHeadshotsReady;
-// Headshot verification outcome, read by the export to warn when faces fell back
-// to initials because verification could not run (e.g. CORS-tainted pixels):
-//   verified  = real face confirmed and shown
-//   generic   = legitimately no headshot (matched MLB's silhouette); initials, no warning
-//   unverified = loaded-but-unsampleable, generic-silhouette unsampleable, or failed to
-//                load -> shown as initials but NEVER confirmed; the export warns on these.
-var buysHeadshotStatus = { verified: 0, generic: 0, unverified: 0 };
-function resolveBuysHeadshots() {
-    if (buysHeadshotsReady) { return buysHeadshotsReady; }
-    buysHeadshotsReady = (async function () {
-        var firstCard = document.querySelector('.bg-card');
-        if (!firstCard) { return; }
-        var faces = Array.prototype.slice.call(document.querySelectorAll('.bg-headshot-candidate'));
-        var generic = new Image();
-        generic.crossOrigin = 'anonymous';
-        generic.src = firstCard.dataset.genericHeadshot;
-        await waitForBuysImage(generic);
-        var genericPixels = null;
-        try { genericPixels = sampleBuysImage(generic); } catch (err) { genericPixels = null; }
-        await Promise.all(faces.map(async function (face) {
-            await waitForBuysImage(face);
-            // Failed to load: stays a monogram, unconfirmed.
-            if (!face.naturalWidth) { face.dataset.headshotStatus = 'unverified'; return; }
-            // Could not run verification at all (generic silhouette unsampleable, e.g. CORS):
-            // we can't tell a real face from the placeholder, so flag rather than assume.
-            if (!genericPixels) { face.dataset.headshotStatus = 'unverified'; return; }
-            try {
-                if (buysImageDifference(sampleBuysImage(face), genericPixels) > 3) {
-                    face.classList.add('is-real');
-                    face.dataset.headshotStatus = 'verified';
-                } else {
-                    face.dataset.headshotStatus = 'generic';
-                }
-            } catch (err) {
-                // Cross-origin pixel access failed; retain the intentional monogram,
-                // but flag it so the export can warn this face is unconfirmed.
-                face.dataset.headshotStatus = 'unverified';
-            }
-        }));
-        buysHeadshotStatus = { verified: 0, generic: 0, unverified: 0 };
-        faces.forEach(function (face) {
-            var s = face.dataset.headshotStatus;
-            if (s === 'verified') { buysHeadshotStatus.verified += 1; }
-            else if (s === 'generic') { buysHeadshotStatus.generic += 1; }
-            else { buysHeadshotStatus.unverified += 1; }
-        });
-    })();
-    return buysHeadshotsReady;
-}
-
 async function rasterizeBuysSvgs(node) {
     var svgs = Array.prototype.slice.call(node.querySelectorAll('svg'));
     await Promise.all(svgs.map(async function (svg) {
@@ -278,7 +209,6 @@ function scaleBuysPreview() {
 }
 window.addEventListener('resize', scaleBuysPreview);
 document.getElementById('buys-preview-details').addEventListener('toggle', scaleBuysPreview);
-resolveBuysHeadshots();
 
 async function exportBuysGraphic() {
     var btn = document.getElementById('buys-export-btn');
@@ -288,7 +218,6 @@ async function exportBuysGraphic() {
     btn.disabled = true; btn.textContent = 'Rendering…';
     try {
         await document.fonts.ready;
-        await resolveBuysHeadshots();
         var node = document.querySelector('#buys-graphic .bg-card');
         await rasterizeBuysSvgs(node);
         var imgs = Array.prototype.slice.call(node.querySelectorAll('img'));
@@ -299,10 +228,9 @@ async function exportBuysGraphic() {
                 im.addEventListener('error', res, { once: true });
             });
         }));
-        // Headshot load/verification problems get their own warning below; here we only
-        // count NON-headshot images (logo, rasterized sparklines) that would leave blank cells.
+        // Count images (logo, rasterized sparklines) that would leave blank cells.
         var missing = imgs.filter(function (im) {
-            return !im.naturalWidth && !im.classList.contains('bg-headshot-candidate');
+            return !im.naturalWidth;
         }).length;
         var canvas = await html2canvas(node, {
             scale: 2, useCORS: true, backgroundColor: '#12131f',
@@ -320,7 +248,6 @@ async function exportBuysGraphic() {
             setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
             var warnings = [];
             if (missing) { warnings.push(missing + ' image(s) failed to load — the PNG may have blank cells.'); }
-            if (buysHeadshotStatus.unverified) { warnings.push(buysHeadshotStatus.unverified + ' headshot(s) could not be verified and were shown as initials (likely cross-origin) — real photos may exist.'); }
             if (warnings.length) { fail(warnings.join(' ')); }
         }, 'image/png');
     } catch (err) {

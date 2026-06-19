@@ -1,13 +1,11 @@
 {# 1080x1350 shareable buys card. Included twice on /buys: off-canvas as the
-   html2canvas export target, and scaled inside the preview. Real headshots
-   are revealed by buys.html after they are checked against MLB's generic
-   silhouette; the monogram underneath is the intentional fallback. #}
+   html2canvas export target, and scaled inside the preview. #}
 {% from "partials/_editorial_date.html" import editorial_date %}
-<div class="bg-card" data-generic-headshot="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/0/headshot/67/current">
+<div class="bg-card">
     <div class="bg-head">
         <img class="bg-mark" src="{{ url_for('static', filename='brand/valucast-mark-96.png') }}" alt="">
         <span class="bg-brand">VALUCAST</span>
-        <span class="bg-title">AHEAD OF THE CURVE</span>
+        <span class="bg-title">Ahead of the Curve</span>
         <span class="bg-sub">Top 40 prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</span>
         <span class="bg-source">{{ buy_source_label }}</span>
         <svg class="bg-arc" viewBox="0 0 330 150" aria-hidden="true">
@@ -18,12 +16,7 @@
     {% set hero = graphic_rows[0] %}
     <div class="bg-featured">
         <article class="bg-featured-card bg-hero">
-            {% if hero.logo_url %}<img class="bg-team-mark bg-team-mark-hero" src="{{ hero.logo_url }}" crossorigin="anonymous" alt="">{% endif %}
             <span class="bg-feature-rank">#1 &middot; TOP BUY</span>
-            <span class="bg-portrait bg-portrait-hero">
-                <span class="bg-monogram">{{ hero.initials }}</span>
-                <img class="bg-face bg-headshot-candidate" src="{{ hero.headshot_url }}" crossorigin="anonymous" alt="">
-            </span>
             <span class="bg-hero-name">{{ hero.name }}</span>
             <span class="bg-feature-tag">{{ hero.team }} &middot; {{ hero.pos }} &middot; {{ hero.level }}</span>
             <span class="bg-hero-score">{{ hero.score | round | int }}</span>
@@ -50,11 +43,6 @@
                 {% elif support_reason == "HISTORY LIMITED" %}
                     {% set support_reason = "NEW SIGNAL" %}
                 {% endif %}
-                {% if p.logo_url %}<img class="bg-team-mark bg-team-mark-support" src="{{ p.logo_url }}" crossorigin="anonymous" alt="">{% endif %}
-                <span class="bg-portrait bg-portrait-support">
-                    <span class="bg-monogram">{{ p.initials }}</span>
-                    <img class="bg-face bg-headshot-candidate" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="">
-                </span>
                 <span class="bg-support-rank">#{{ p.rank }}</span>
                 <span class="bg-support-name">{{ p.name }}</span>
                 <span class="bg-support-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
