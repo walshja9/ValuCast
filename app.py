@@ -3263,9 +3263,11 @@ def buys_share_card():
 
 @app.route("/health/ready")
 def health_ready():
-    """Readiness probe (Render healthCheckPath). 200 only when all three projection
-    stores are available, else 503 — so a deploy missing any data store is never
-    promoted over the prior healthy one. Also reports the deployed git revision."""
+    """Readiness probe (Render healthCheckPath). 200 only when the core public
+    surfaces are servable (projection stores + dynasty snapshot), else 503 — so a
+    deploy missing core data is never promoted over the prior healthy one. Buys
+    readiness is reported but does NOT gate health: a governor block on /buys must
+    not fail the deploy of Board/Map/Scouting. Also reports the deployed git rev."""
     def _store_ok(source):
         try:
             return CATALOG.store_for(source).player_count > 0
@@ -3281,12 +3283,14 @@ def health_ready():
             public_snapshot_store.is_available
             and public_snapshot_store.ready_for_live_consumers
         )
-    if os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1":
-        stores["valucast_buys_ready"] = (
-            valucast_buy_store.is_available
-            and valucast_buy_store.ready_for_live_consumers
-            and dynasty_data_source == "valucast_public_snapshot"
-        )
+    # Buys readiness is informational only — a governor block on /buys must not
+    # fail health and block the deploy. ponytail: reported, never gating.
+    buys_live = (
+        os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1"
+        and valucast_buy_store.is_available
+        and valucast_buy_store.ready_for_live_consumers
+        and dynasty_data_source == "valucast_public_snapshot"
+    )
     ready = all(stores.values())
     body = {
         "ready": ready,
@@ -3299,6 +3303,7 @@ def health_ready():
         "valucast_buys": {
             "available": valucast_buy_store.is_available,
             "ready_for_live_consumers": valucast_buy_store.ready_for_live_consumers,
+            "live": buys_live,
         },
         "dd_comparison_feed": {"available": legacy_dd_store.is_available},
         "dynasty_data_source": dynasty_data_source,
