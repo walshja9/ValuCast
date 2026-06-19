@@ -89,76 +89,80 @@
 .bg-card {
     width: 1080px; height: 1350px;
     position: relative; overflow: hidden;
-    background: linear-gradient(165deg, #12131f 0%, #1a1b2e 55%, #181c33 100%);
-    color: #e7e9f4;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(165deg, #0b0c0f 0%, #15161b 55%, #0a0b0e 100%);
+    color: #e8e9ee;
+    font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.bg-hero-score, .bg-support-score, .bg-cell-score, .bg-feature-rank,
+.bg-support-rank, .bg-rank, .bg-monogram {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
 }
 .bg-head { position: absolute; inset: 0 0 auto 0; height: 206px; }
 .bg-mark { position: absolute; left: 48px; top: 34px; width: 46px; height: 46px; border-radius: 12px; }
-.bg-brand { position: absolute; left: 106px; top: 43px; font-size: 24px; font-weight: 800; letter-spacing: 1px; color: #34d399; }
-.bg-title { position: absolute; left: 48px; top: 84px; font-size: 59px; font-weight: 900; letter-spacing: .5px; line-height: 1.05; }
-.bg-sub { position: absolute; left: 48px; top: 156px; font-size: 21px; color: #b8bdd7; }
-.bg-source { position: absolute; left: 48px; top: 184px; font-size: 16px; color: #34d399; font-weight: 800; }
+.bg-brand { position: absolute; left: 106px; top: 43px; font-size: 24px; font-weight: 700; letter-spacing: 1px; color: #34e2c4; }
+.bg-title { position: absolute; left: 48px; top: 84px; font-size: 59px; font-weight: 700; letter-spacing: -.5px; line-height: 1.05; }
+.bg-sub { position: absolute; left: 48px; top: 156px; font-size: 21px; color: #9197a6; }
+.bg-source { position: absolute; left: 48px; top: 184px; font-size: 16px; color: #34e2c4; font-weight: 600; }
 .bg-arc { position: absolute; right: 48px; top: 40px; width: 330px; height: 150px; }
-.bg-arc path { fill: none; stroke: #232c49; stroke-width: 2px; }
+.bg-arc path { fill: none; stroke: rgba(52, 226, 196, .55); stroke-width: 3px; }
 .bg-featured { position: absolute; left: 48px; top: 226px; width: 984px; height: 314px; display: grid; grid-template-columns: 370px 598px; gap: 16px; }
-.bg-featured-card { position: relative; box-sizing: border-box; background: #232440; border: 2px solid #2d2f4a; border-radius: 16px; overflow: hidden; }
-.bg-hero { border-color: #34d399; }
-.bg-hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 83% 73%, rgba(52, 211, 153, .16), transparent 34%); }
-.bg-team-mark { position: absolute; pointer-events: none; object-fit: contain; filter: saturate(.78); opacity: .075; }
+.bg-featured-card { position: relative; box-sizing: border-box; background: #15161b; border: 1px solid #2a2c34; border-radius: 12px; overflow: hidden; }
+.bg-hero { border-color: #34e2c4; }
+.bg-hero::before { content: none; }
+.bg-team-mark { position: absolute; pointer-events: none; object-fit: contain; filter: saturate(.7); opacity: .07; }
 .bg-team-mark-hero { right: -24px; bottom: -34px; width: 220px; height: 220px; }
 .bg-team-mark-support { right: -28px; bottom: -30px; width: 130px; height: 130px; }
-.bg-feature-rank { position: absolute; left: 20px; top: 16px; font-size: 22px; font-weight: 900; color: #34d399; }
-.bg-portrait { position: absolute; display: block; border-radius: 50%; overflow: hidden; background: #1c1e36; border: 1px solid #36395c; }
+.bg-feature-rank { position: absolute; left: 20px; top: 16px; font-size: 22px; font-weight: 700; color: #34e2c4; }
+.bg-portrait { position: absolute; display: block; border-radius: 50%; overflow: hidden; background: #1a1c22; border: 1px solid #2e313a; }
 .bg-portrait-hero { left: 20px; top: 61px; width: 130px; height: 130px; }
-.bg-monogram { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #6ea1ff; font-weight: 900; }
+.bg-monogram { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #8a92a6; font-weight: 700; }
 .bg-portrait-hero .bg-monogram { font-size: 52px; }
 .bg-face { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; opacity: 0; }
 .bg-face.is-real { opacity: 1; }
-.bg-hero-name { position: absolute; left: 171px; top: 64px; width: 177px; font-size: 34px; line-height: 1.13; font-weight: 700; }
-.bg-feature-tag { position: absolute; left: 171px; top: 148px; width: 177px; font-size: 18px; color: #9aa1c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bg-hero-score { position: absolute; left: 20px; top: 199px; font-size: 62px; line-height: 1; font-weight: 900; color: #34d399; }
-.bg-score-label { position: absolute; left: 106px; top: 241px; font-size: 16px; font-weight: 600; color: #9aa1c0; }
+.bg-hero-name { position: absolute; left: 171px; top: 64px; width: 177px; font-size: 34px; line-height: 1.13; font-weight: 600; }
+.bg-feature-tag { position: absolute; left: 171px; top: 148px; width: 177px; font-size: 18px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-hero-score { position: absolute; left: 20px; top: 199px; font-size: 62px; line-height: 1; font-weight: 700; color: #34e2c4; }
+.bg-score-label { position: absolute; left: 106px; top: 241px; font-size: 16px; font-weight: 500; color: #9197a6; }
 .bg-feature-spark { overflow: visible; }
-.bg-feature-spark polyline { stroke: #9aa1c0; stroke-width: 2; }
-.bg-feature-spark circle { fill: #9aa1c0; }
-.bg-feature-spark.up polyline { stroke: #34d399; }
-.bg-feature-spark.up circle { fill: #34d399; }
-.bg-feature-spark.down polyline { stroke: #ff6b6b; }
-.bg-feature-spark.down circle { fill: #ff6b6b; }
+.bg-feature-spark polyline { stroke: #9197a6; stroke-width: 2; }
+.bg-feature-spark circle { fill: #9197a6; }
+.bg-feature-spark.up polyline { stroke: #34e2c4; }
+.bg-feature-spark.up circle { fill: #34e2c4; }
+.bg-feature-spark.down polyline { stroke: #cc8a66; }
+.bg-feature-spark.down circle { fill: #cc8a66; }
 .bg-hero-spark { position: absolute; left: 188px; top: 208px; width: 154px; height: 42px; }
-.bg-spark-label { position: absolute; left: 188px; top: 259px; font-size: 15px; font-weight: 700; color: #9aa1c0; letter-spacing: .4px; }
-.bg-feature-reason { position: absolute; left: 20px; bottom: 10px; font-size: 16px; font-weight: 700; text-transform: uppercase; color: #6ea1ff; }
+.bg-spark-label { position: absolute; left: 188px; top: 259px; font-size: 15px; font-weight: 600; color: #9197a6; letter-spacing: .4px; }
+.bg-feature-reason { position: absolute; left: 20px; bottom: 10px; font-size: 16px; font-weight: 600; text-transform: uppercase; color: #8a92a6; }
 .bg-supporting { display: grid; grid-template-columns: repeat(2, 291px); grid-template-rows: repeat(2, 149px); gap: 16px; }
 .bg-portrait-support { left: 14px; top: 16px; width: 72px; height: 72px; }
 .bg-portrait-support .bg-monogram { font-size: 28px; }
-.bg-support-rank { position: absolute; left: 100px; top: 13px; font-size: 18px; font-weight: 900; color: #6ea1ff; }
-.bg-support-name { position: absolute; left: 100px; top: 36px; right: 12px; max-height: 48px; font-size: 22px; line-height: 1.08; font-weight: 700; white-space: normal; overflow: hidden; }
-.bg-support-tag { position: absolute; left: 100px; top: 84px; right: 12px; font-size: 14px; color: #9aa1c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bg-support-card::after { content: ""; position: absolute; left: 14px; right: 14px; top: 102px; border-top: 1px solid #2d2f4a; }
-.bg-support-score { position: absolute; left: 14px; bottom: 7px; font-size: 28px; line-height: 1; font-weight: 900; color: #34d399; }
-.bg-support-score-label { position: absolute; left: 60px; bottom: 11px; font-size: 13px; color: #9aa1c0; }
+.bg-support-rank { position: absolute; left: 100px; top: 13px; font-size: 18px; font-weight: 700; color: #8a92a6; }
+.bg-support-name { position: absolute; left: 100px; top: 36px; right: 12px; max-height: 48px; font-size: 22px; line-height: 1.08; font-weight: 600; white-space: normal; overflow: hidden; }
+.bg-support-tag { position: absolute; left: 100px; top: 84px; right: 12px; font-size: 14px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-support-card::after { content: ""; position: absolute; left: 14px; right: 14px; top: 102px; border-top: 1px solid #2a2c34; }
+.bg-support-score { position: absolute; left: 14px; bottom: 7px; font-size: 28px; line-height: 1; font-weight: 700; color: #34e2c4; }
+.bg-support-score-label { position: absolute; left: 60px; bottom: 11px; font-size: 13px; color: #9197a6; }
 .bg-support-spark { position: absolute; left: 101px; bottom: 12px; width: 75px; height: 18px; }
-.bg-support-reason { position: absolute; right: 12px; bottom: 12px; max-width: 98px; font-size: 11px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #b8bdd7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-support-reason { position: absolute; right: 12px; bottom: 12px; max-width: 98px; font-size: 11px; line-height: 1; font-weight: 600; text-transform: uppercase; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bg-grid {
     position: absolute; left: 48px; top: 562px; width: 984px; height: 700px;
     display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(7, 100px);
-    border-radius: 10px; overflow: hidden;
+    border-radius: 8px; overflow: hidden;
 }
-.bg-cell { position: relative; box-sizing: border-box; min-width: 0; padding: 14px 10px; border-right: 1px solid #2d2f4a; }
+.bg-cell { position: relative; box-sizing: border-box; min-width: 0; padding: 14px 10px; border-right: 1px solid #2a2c34; }
 .bg-cell:nth-child(-n+5),
 .bg-cell:nth-child(n+11):nth-child(-n+15),
 .bg-cell:nth-child(n+21):nth-child(-n+25),
-.bg-cell:nth-child(n+31) { background: #20213a; }
+.bg-cell:nth-child(n+31) { background: #16171c; }
 .bg-cell:nth-child(5n) { border-right: 0; }
-.bg-rank { position: absolute; left: 10px; top: 14px; font-size: 17px; font-weight: 800; color: #6ea1ff; }
-.bg-cell-score { position: absolute; right: 10px; top: 10px; font-size: 22px; font-weight: 800; color: #9aa1c0; }
-.bg-name { position: absolute; left: 10px; right: 10px; top: 40px; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bg-tag { position: absolute; left: 10px; top: 69px; font-size: 17px; color: #9aa1c0; }
-.bg-foot { position: absolute; left: 48px; right: 48px; bottom: 22px; height: 48px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 0 16px; background: #232440; border: 1px solid #2d2f4a; border-radius: 10px; }
-.bg-foot-brand { font-size: 22px; font-weight: 800; color: #34d399; }
-.bg-foot-note { min-width: 0; font-size: 18px; color: #b8bdd7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bg-foot-source { color: #34d399; font-weight: 800; }
+.bg-rank { position: absolute; left: 10px; top: 14px; font-size: 17px; font-weight: 600; color: #8a92a6; }
+.bg-cell-score { position: absolute; right: 10px; top: 10px; font-size: 22px; font-weight: 600; color: #34e2c4; }
+.bg-name { position: absolute; left: 10px; right: 10px; top: 40px; font-size: 20px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-tag { position: absolute; left: 10px; top: 69px; font-size: 17px; color: #9197a6; }
+.bg-foot { position: absolute; left: 48px; right: 48px; bottom: 22px; height: 48px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 0 16px; background: #15161b; border: 1px solid #2a2c34; border-radius: 8px; }
+.bg-foot-brand { font-size: 22px; font-weight: 700; color: #34e2c4; }
+.bg-foot-note { min-width: 0; font-size: 18px; color: #9197a6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-foot-source { color: #34e2c4; font-weight: 600; }
 </style>
 
 <script src="{{ url_for('static', filename='html2canvas.min.js') }}"></script>

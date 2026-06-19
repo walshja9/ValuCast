@@ -11,7 +11,7 @@
         <span class="bg-sub">Top 40 prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</span>
         <span class="bg-source">{{ buy_source_label }}</span>
         <svg class="bg-arc" viewBox="0 0 330 150" aria-hidden="true">
-            <path d="M318 10 C220 2 126 34 14 140" fill="none" stroke="#232c49" stroke-width="2" />
+            <path d="M318 10 C220 2 126 34 14 140" fill="none" stroke="rgba(52, 226, 196, .55)" stroke-width="3" />
         </svg>
     </div>
 
@@ -30,7 +30,7 @@
             <span class="bg-score-label">/100</span>
             {% if hero.spark %}
             <svg class="bg-feature-spark bg-hero-spark {{ hero.spark.direction }}" viewBox="0 0 {{ hero.spark.width }} {{ hero.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
-                {% set spark_color = '#34d399' if hero.spark.direction == 'up' else '#ff6b6b' if hero.spark.direction == 'down' else '#9aa1c0' %}
+                {% set spark_color = '#34e2c4' if hero.spark.direction == 'up' else '#cc8a66' if hero.spark.direction == 'down' else '#9197a6' %}
                 <polyline points="{{ hero.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
                 <circle cx="{{ hero.spark.last_x }}" cy="{{ hero.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
             </svg>
@@ -62,7 +62,7 @@
                 <span class="bg-support-score-label">/100</span>
                 {% if p.spark %}
                 <svg class="bg-feature-spark bg-support-spark {{ p.spark.direction }}" viewBox="0 0 {{ p.spark.width }} {{ p.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
-                    {% set spark_color = '#34d399' if p.spark.direction == 'up' else '#ff6b6b' if p.spark.direction == 'down' else '#9aa1c0' %}
+                    {% set spark_color = '#34e2c4' if p.spark.direction == 'up' else '#cc8a66' if p.spark.direction == 'down' else '#9197a6' %}
                     <polyline points="{{ p.spark.points }}" fill="none" stroke="{{ spark_color }}" stroke-width="2" vector-effect="non-scaling-stroke" />
                     <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
                 </svg>

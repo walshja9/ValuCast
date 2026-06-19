@@ -702,31 +702,31 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="{escape(title)}">',
         "<defs>",
         '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">',
-        '<stop offset="0%" stop-color="#031f1b"/>',
-        '<stop offset="48%" stop-color="#064e3b"/>',
-        '<stop offset="100%" stop-color="#111827"/>',
+        '<stop offset="0%" stop-color="#0b0c0f"/>',
+        '<stop offset="55%" stop-color="#15161b"/>',
+        '<stop offset="100%" stop-color="#0a0b0e"/>',
         "</linearGradient>",
         '<linearGradient id="card" x1="0" y1="0" x2="1" y2="0">',
-        '<stop offset="0%" stop-color="#f8fffb"/>',
-        '<stop offset="100%" stop-color="#ecfdf5"/>',
+        '<stop offset="0%" stop-color="#1d1f26"/>',
+        '<stop offset="100%" stop-color="#15161b"/>',
         "</linearGradient>",
         "</defs>",
         '<rect width="1080" height="100%" fill="url(#bg)"/>',
-        '<circle cx="905" cy="96" r="225" fill="#34d399" opacity=".12"/>',
-        '<circle cx="148" cy="972" r="305" fill="#10b981" opacity=".09"/>',
-        '<path d="M710 88 C818 34 920 28 1040 62" fill="none" stroke="#a7f3d0" stroke-width="4" opacity=".35"/>',
-        '<path d="M710 116 C828 58 940 52 1040 88" fill="none" stroke="#34d399" stroke-width="3" opacity=".35"/>',
-        '<text x="64" y="62" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="900" letter-spacing="5">VALUCAST</text>',
-        '<text x="64" y="125" fill="#ffffff" font-family="Georgia,Times New Roman,serif" font-size="62" font-weight="900">Ahead of the Curve</text>',
-        f'<text x="68" y="174" fill="#a7f3d0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="32" font-weight="850">{escape(title)}</text>',
-        f'<text x="68" y="207" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="650">Filtered from the current prospect board | Updated {escape(updated)}</text>',
+        '<circle cx="905" cy="96" r="225" fill="#34e2c4" opacity=".07"/>',
+        '<circle cx="148" cy="972" r="305" fill="#34e2c4" opacity=".05"/>',
+        '<path d="M690 84 C812 24 928 18 1052 58" fill="none" stroke="#34e2c4" stroke-width="4" opacity=".55"/>',
+        '<path d="M690 118 C824 56 944 50 1052 90" fill="none" stroke="#1c7a6c" stroke-width="2" opacity=".5"/>',
+        '<text x="64" y="62" fill="#34e2c4" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="5">VALUCAST</text>',
+        '<text x="64" y="125" fill="#f4f5f8" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="-1">Ahead of the Curve</text>',
+        f'<text x="68" y="174" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="32" font-weight="600">{escape(title)}</text>',
+        f'<text x="68" y="207" fill="#9197a6" font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="500">Filtered from the current prospect board | Updated {escape(updated)}</text>',
     ]
 
     if not rows:
         parts.extend([
-            '<rect x="72" y="255" width="952" height="108" rx="22" fill="#000000" opacity=".20"/>',
-            '<rect x="64" y="245" width="952" height="108" rx="22" fill="url(#card)"/>',
-            '<text x="112" y="310" fill="#065f46" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="30" font-weight="900">No prospects found for this filter.</text>',
+            '<rect x="72" y="255" width="952" height="108" rx="16" fill="#000000" opacity=".20"/>',
+            '<rect x="64" y="245" width="952" height="108" rx="16" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
+            '<text x="112" y="310" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="600">No prospects found for this filter.</text>',
         ])
     else:
         for i, row in enumerate(rows):
@@ -741,18 +741,18 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
             detail_size = 15 if limit == 10 else 12
             rank_box = card_h - 12
             parts.extend([
-                f'<rect x="70" y="{y + 7}" width="952" height="{card_h}" rx="19" fill="#000000" opacity=".18"/>',
-                f'<rect x="64" y="{y}" width="952" height="{card_h}" rx="19" fill="url(#card)"/>',
-                f'<rect x="82" y="{y + 6}" width="{rank_box}" height="{rank_box}" rx="14" fill="#064e3b"/>',
-                f'<text x="{82 + rank_box / 2}" y="{y + card_h / 2 + 9}" text-anchor="middle" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{18 if limit == 20 else 22}" font-weight="950">#{rank}</text>',
-                f'<text x="154" y="{y + (31 if limit == 10 else 24)}" fill="#0f172a" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{name_size}" font-weight="900">{escape(row.name)}</text>',
-                f'<text x="154" y="{y + (57 if limit == 10 else 41)}" fill="#64748b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{detail_size}" font-weight="700">{escape(detail)}</text>',
-                f'<text x="842" y="{y + card_h / 2 + 8}" fill="#065f46" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="{18 if limit == 20 else 21}" font-weight="900">{escape(rank_kind)}</text>',
+                f'<rect x="70" y="{y + 7}" width="952" height="{card_h}" rx="14" fill="#000000" opacity=".18"/>',
+                f'<rect x="64" y="{y}" width="952" height="{card_h}" rx="14" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
+                f'<rect x="82" y="{y + 6}" width="{rank_box}" height="{rank_box}" rx="10" fill="#23252c"/>',
+                f'<text x="{82 + rank_box / 2}" y="{y + card_h / 2 + 9}" text-anchor="middle" fill="#cfd3e0" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 22}" font-weight="700">#{rank}</text>',
+                f'<text x="154" y="{y + (31 if limit == 10 else 24)}" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="{name_size}" font-weight="600">{escape(row.name)}</text>',
+                f'<text x="154" y="{y + (57 if limit == 10 else 41)}" fill="#9197a6" font-family="JetBrains Mono,Consolas,monospace" font-size="{detail_size}" font-weight="500">{escape(detail)}</text>',
+                f'<text x="842" y="{y + card_h / 2 + 8}" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 21}" font-weight="600">{escape(rank_kind)}</text>',
             ])
 
     parts.extend([
-        f'<text x="64" y="{height - 44}" fill="#d1fae5" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="16" font-weight="750">Generated from the Prospects tab filters. Rank numbers are local to this graphic.</text>',
-        f'<text x="64" y="{height - 20}" fill="#86efac" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="700">valucast.app</text>',
+        f'<text x="64" y="{height - 44}" fill="#9197a6" font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="500">Generated from the Prospects tab filters. Rank numbers are local to this graphic.</text>',
+        f'<text x="64" y="{height - 20}" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="14" font-weight="600">valucast.app</text>',
         "</svg>",
     ])
     return "".join(parts)
@@ -818,7 +818,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     def draw_chip(x, y, label, *, fill=None, fg=None, outline=None, fnt=None):
         if not label:
             return x
-        fill = fill or (28, 30, 54)
+        fill = fill or (24, 26, 32)
         fg = fg or muted
         outline = outline or border
         fnt = fnt or font(15, bold=True)
@@ -887,7 +887,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
         draw.text((248, 381 + (len(hero_name_lines) - 1) * 44), fit_text(draw, tag(hero, age=True), font(22), 360), fill=muted, font=font(22))
 
         value = value_label(hero)
-        draw.rounded_rectangle((650, 314, 990, 466), radius=16, fill=(28, 30, 54), outline=border, width=2)
+        draw.rounded_rectangle((650, 314, 990, 466), radius=16, fill=(24, 26, 32), outline=border, width=2)
         draw.text((672, 340), "VALUCAST", fill=muted, font=font(16, bold=True))
         draw.text((672, 369), value or "--", fill=green, font=font(45, bold=True))
         draw_chip(810, 342, overall_label(hero), fill=card, fg=text, outline=border)
@@ -987,14 +987,19 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
 
 
 _GRAPHIC_PALETTE = {
-    "bg": (18, 19, 31),
-    "card": (35, 36, 64),
-    "card_2": (32, 33, 58),
-    "border": (45, 47, 74),
-    "green": (52, 211, 153),
-    "blue": (110, 161, 255),
-    "text": (231, 233, 244),
-    "muted": (154, 161, 192),
+    # Phase 2 Broadcast Board — neutral cool-black base, teal = the one signal,
+    # slate = structure/ranks (no functional blue in a static graphic), clay = decline.
+    "bg": (11, 12, 15),
+    "card": (21, 22, 27),
+    "card_2": (28, 30, 37),
+    "border": (42, 44, 52),
+    "green": (52, 226, 196),   # legacy key, now teal — repaints every old green accent
+    "teal": (52, 226, 196),
+    "blue": (138, 146, 168),   # legacy key, now slate — ranks/monograms are structural
+    "slate": (94, 102, 120),
+    "clay": (204, 138, 102),
+    "text": (231, 233, 240),
+    "muted": (150, 151, 166),
 }
 
 
@@ -1007,7 +1012,7 @@ def _graphic_fill_background(img):
         t = y / height
         draw.line(
             [(0, y), (width, y)],
-            fill=(round(18 + 6 * t), round(19 + 8 * t), round(31 + 20 * t)),
+            fill=(round(11 + 5 * t), round(12 + 5 * t), round(15 + 7 * t)),
         )
 
 
@@ -1016,7 +1021,9 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None):
     muted = _GRAPHIC_PALETTE["muted"]
     green = _GRAPHIC_PALETTE["green"]
 
-    draw.arc((690, 40, 1050, 325), start=198, end=286, fill=(35, 44, 73), width=3)
+    # One strong arc motif — "Ahead of the Curve" in signal teal, with a faint echo.
+    draw.arc((690, 28, 1050, 333), start=196, end=288, fill=(52, 226, 196), width=4)
+    draw.arc((690, 60, 1050, 305), start=200, end=284, fill=(28, 120, 108), width=2)
     _paste_brand_mark(img, 48, 32, size=62)
     draw.text((124, 38), "VALUCAST", fill=green, font=_graphic_font(26, bold=True))
     draw.text((48, 82), headline, fill=text, font=_graphic_font(60, bold=True))
@@ -1047,9 +1054,9 @@ def _graphic_footer(draw, *, right_note=None):
 def _graphic_monogram(draw, cx, cy, r, name, *, size=None):
     blue = _GRAPHIC_PALETTE["blue"]
     initials = buy_score.graphic_initials(name or "")
-    mono = _graphic_font(size or max(12, int(r * 0.8)), bold=True)
+    mono = _graphic_font(size or max(12, int(r * 0.8)), bold=True, mono=True)
 
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(28, 30, 54), outline=(54, 57, 92), width=2)
+    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(24, 26, 32), outline=(44, 46, 54), width=2)
     box = draw.textbbox((0, 0), initials, font=mono)
     draw.text(
         (cx - (box[2] - box[0]) / 2, cy - (box[3] - box[1]) / 2),
@@ -1059,8 +1066,30 @@ def _graphic_monogram(draw, cx, cy, r, name, *, size=None):
     )
 
 
-def _graphic_font(size, *, bold=False, serif=False):
+_GRAPHIC_FONT_DIR = Path(__file__).parent / "static" / "fonts"
+_GRAPHIC_BRAND_FONTS = {
+    "display": _GRAPHIC_FONT_DIR / "SpaceGrotesk[wght].ttf",
+    "mono": _GRAPHIC_FONT_DIR / "JetBrainsMono[wght].ttf",
+}
+
+
+def _graphic_font(size, *, bold=False, serif=False, mono=False):
     from PIL import ImageFont
+
+    # Brand fonts first — Broadcast Board parity (Space Grotesk display / JetBrains Mono figures).
+    # Variable TTFs: set the weight axis numerically (robust across instance-name sets);
+    # fall back silently to the system/DejaVu stack if the font or axis is unavailable.
+    brand = _GRAPHIC_BRAND_FONTS["mono" if mono else "display"]
+    if brand.exists():
+        try:
+            font = ImageFont.truetype(str(brand), size)
+            try:
+                font.set_variation_by_axes([700 if bold else 500])
+            except Exception:
+                pass
+            return font
+        except OSError:
+            pass
 
     candidates = []
     if sys.platform.startswith("win"):
@@ -1598,9 +1627,9 @@ def _prospect_player_card_png(row):
     draw.text((232, 308), _graphic_fit_text(draw, meta, _graphic_font(22), 520), fill=muted, font=_graphic_font(22))
     draw.text((232, 346), pool_label, fill=muted, font=_graphic_font(18))
 
-    draw.rounded_rectangle((795, 250, 982, 372), radius=18, fill=card_2, outline=(54, 57, 92), width=1)
+    draw.rounded_rectangle((795, 250, 982, 372), radius=18, fill=card_2, outline=(44, 46, 54), width=1)
     draw.text((820, 272), "VALUCAST", fill=muted, font=_graphic_font(16, bold=True))
-    draw.text((820, 296), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(40, bold=True))
+    draw.text((820, 296), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(40, bold=True, mono=True))
     rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
     draw.text((820, 346), rank_text, fill=text, font=_graphic_font(20, bold=True))
 
@@ -1611,8 +1640,8 @@ def _prospect_player_card_png(row):
         draw.rounded_rectangle(
             (232, 374, 232 + (bbox[2] - bbox[0]) + 26, 402),
             radius=11,
-            fill=(60, 32, 32),
-            outline=(150, 70, 70),
+            fill=(46, 36, 28),
+            outline=(150, 110, 78),
             width=1,
         )
         draw.text((245, 379), avail_badge, fill=amber, font=badge_font)
@@ -1632,11 +1661,11 @@ def _prospect_player_card_png(row):
             value = _graphic_stat_value(item["value"], item["key"])
             draw.text((82, y + 8), label, fill=muted, font=_graphic_font(18, bold=True))
             x0, y0, x1, y1 = 190, y + 6, 790, y + 28
-            draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(39, 48, 76))
+            draw.rounded_rectangle((x0, y0, x1, y1), radius=7, fill=(30, 32, 40))
             fill = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
             draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=7, fill=fill)
             knob_x = max(x0 + 16, min(x1 - 16, x0 + int((x1 - x0) * pct / 100)))
-            draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(13, 16, 30))
+            draw.rounded_rectangle((knob_x - 22, y0 - 2, knob_x + 22, y1 + 2), radius=12, fill=(10, 11, 15))
             draw.text((knob_x - 10, y0 - 1), str(pct), fill=text, font=_graphic_font(15, bold=True))
             draw.text((820, y + 5), value, fill=text, font=_graphic_font(20, bold=True))
             y += 39
@@ -1653,7 +1682,7 @@ def _prospect_player_card_png(row):
     draw.text((74, 1040), shape_title, fill=muted, font=_graphic_font(18, bold=True))
     for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
-        draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(54, 57, 92), width=1)
+        draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
         grade = int(skill["grade"])
         color = bar_elite if grade >= 60 else bar_low if grade <= 40 else text
         draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
@@ -2749,12 +2778,14 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
     bg = _GRAPHIC_PALETTE["bg"]
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
-    grid = (40, 42, 68)
+    grid = (30, 32, 40)
+    # Restrained cool family — teal is the one signal (prospects/future); the rest
+    # are muted slate tones so the scatter reads as structure, not a rainbow.
     group_colors = {
-        "hitter": (79, 134, 247),
-        "sp": (167, 139, 250),
-        "rp": (45, 212, 197),
-        "prospect": (52, 211, 153),
+        "hitter": (110, 124, 152),
+        "sp": (138, 126, 158),
+        "rp": (96, 142, 150),
+        "prospect": (52, 226, 196),
     }
     legend_order = [("hitter", "Hitters"), ("sp", "SP"), ("rp", "RP"), ("prospect", "Prospects")]
 
@@ -3045,13 +3076,13 @@ def _buys_share_card_png(
     blue = _GRAPHIC_PALETTE["blue"]
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
-    red = (255, 107, 107)
+    red = (204, 138, 102)
 
     f_source = _graphic_font(17, bold=True)
     f_rank = _graphic_font(21, bold=True)
-    f_hero_score = _graphic_font(62, bold=True)
-    f_support_score = _graphic_font(29, bold=True)
-    f_cell_score = _graphic_font(22, bold=True)
+    f_hero_score = _graphic_font(62, bold=True, mono=True)
+    f_support_score = _graphic_font(29, bold=True, mono=True)
+    f_cell_score = _graphic_font(22, bold=True, mono=True)
     f_name = _graphic_font(28, bold=True)
     f_support_name = _graphic_font(22, bold=True)
     f_cell_name = _graphic_font(19, bold=True)
@@ -3138,7 +3169,7 @@ def _buys_share_card_png(
         draw.text((x + 10, y + 12), f"#{idx + 6}", fill=blue, font=_graphic_font(17, bold=True))
         score = str(row.get("score", "--"))
         draw.text((x + cell_w - 10 - _graphic_text_width(draw, score, f_cell_score), y + 10),
-                  score, fill=muted, font=f_cell_score)
+                  score, fill=green, font=f_cell_score)
         name = row.get("name") or "Unknown"
         parts = name.split()
         short = f"{parts[0][0]}. {' '.join(parts[1:])}" if len(parts) > 1 else name

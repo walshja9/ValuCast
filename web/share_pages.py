@@ -49,15 +49,15 @@ def build_share_preview_html(
   <meta name="twitter:description" content="{safe_description}">
   <meta name="twitter:image" content="{safe_public_png_url}">
   <style>
-    body {{ margin: 0; background: #020617; color: #d1fae5; font-family: Inter, Segoe UI, Arial, sans-serif; }}
+    body {{ margin: 0; background: #0b0c0f; color: #e8e9ee; font-family: "Space Grotesk", system-ui, "Segoe UI", Helvetica, Arial, sans-serif; }}
     main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
     .meta, .actions, .card-wrap {{ width: min(1080px, 100%); }}
-    h1 {{ margin: 0 0 4px; color: #f8fafc; font-size: 22px; }}
-    p {{ margin: 0; color: #9ca3c0; font-weight: 700; }}
-    img {{ width: 100%; height: auto; display: block; border-radius: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.45); }}
+    h1 {{ margin: 0 0 4px; color: #f4f5f8; font-size: 22px; font-weight: 600; }}
+    p {{ margin: 0; color: #9197a6; font-weight: 500; }}
+    img {{ width: 100%; height: auto; display: block; border-radius: 16px; box-shadow: 0 24px 80px rgba(0,0,0,.5); }}
     .actions {{ display: flex; justify-content: flex-end; gap: 12px; align-items: center; }}
-    .download {{ color: #052e2b; background: #a7f3d0; border-radius: 999px; padding: 10px 16px; text-decoration: none; font-weight: 900; }}
-    .back {{ color: #9ca3c0; text-decoration: none; font-weight: 800; }}
+    .download {{ color: #06231e; background: #34e2c4; border-radius: 8px; padding: 10px 16px; text-decoration: none; font-weight: 700; }}
+    .back {{ color: #9197a6; text-decoration: none; font-weight: 600; }}
   </style>
 </head>
 <body>
