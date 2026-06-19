@@ -82,12 +82,18 @@ class TestVoiceGuard(unittest.TestCase):
 
 class _FakeMessages:
     def __init__(self, text):
-        self.text = text
+        if isinstance(text, (list, tuple)):
+            self.responses = list(text)
+        else:
+            self.responses = [text]
         self.kwargs = None
+        self.calls = 0
 
     def create(self, **kwargs):
         self.kwargs = kwargs
-        return SimpleNamespace(content=[SimpleNamespace(type="text", text=self.text)])
+        index = min(self.calls, len(self.responses) - 1)
+        self.calls += 1
+        return SimpleNamespace(content=[SimpleNamespace(type="text", text=self.responses[index])])
 
 
 class _FakeClient:
@@ -120,6 +126,22 @@ class TestGenerator(unittest.TestCase):
         result = report_generator.generate_report(GROUNDING, client=client)
         self.assertFalse(result["valid"])
         self.assertFalse(result["hard_ok"])
+
+    def test_generate_retries_invalid_numeric_format(self):
+        client = _FakeClient([
+            "A patient AA bat with a 22.0% ISO over 240 PA.",
+            "A patient AA bat with a .220 ISO over 240 PA.",
+        ])
+
+        result = report_generator.generate_report(GROUNDING, client=client)
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(client.messages.calls, 2)
+        self.assertEqual(result["text"], "A patient AA bat with a .220 ISO over 240 PA.")
+
+    def test_voice_prompt_preserves_decimal_rate_format(self):
+        self.assertIn("AVG/OBP/SLG/OPS/ISO", VOICE_PROMPT)
+        self.assertIn("decimal form", VOICE_PROMPT)
 
     def test_offline_returns_none(self):
         # No client + no available default client -> None (caller keeps deterministic).
@@ -155,6 +177,36 @@ class TestLlmWiring(unittest.TestCase):
         self.assertEqual(report["report_llm"]["text"], "A patient AA bat with real contact.")
         self.assertTrue(report["report_llm"]["valid"])
         self.assertTrue(cached)
+
+    def test_attach_llm_reports_regenerates_invalid_cached_entry(self):
+        row = SimpleNamespace(
+            is_prospect=True, name="X", role="hitter", positions=["OF"], team="MIL",
+            level="AA", age=21, prospect_rank=5,
+            stat_line={"pa": 240, "avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900,
+                       "iso": 0.220, "k_pct": 18.0, "bb_pct": 10.0},
+            stat_line_translated=None, best_single_level_stat_line=None,
+            has_peak_projection=False, peak_projection_summary=None,
+            availability_context={}, context={},
+        )
+        report = {"identity_key": "1_hitter", "report": "deterministic read"}
+        store = SimpleNamespace(get_all=lambda: [row])
+        with tempfile.TemporaryDirectory() as d:
+            cache_path = Path(d) / "cache.json"
+            cache_path.write_text(
+                '{"artifact":"valucast_scouting_llm_cache","entries":{"1_hitter":'
+                '{"hash":"will-be-patched","text":"bad","model":"test",'
+                '"valid":false,"hard_ok":true,"problems":{"unsupported_numbers":["22.0"]}}}}',
+                encoding="utf-8",
+            )
+            with patch.object(report_generator, "grounding_hash", return_value="will-be-patched"), \
+                    patch.object(report_generator, "default_client",
+                                 return_value=_FakeClient("A patient AA bat with a .220 ISO.")), \
+                    patch.object(repository, "LLM_CACHE_PATH", cache_path):
+                res = repository._attach_llm_reports([row], [report], store)
+
+        self.assertEqual(res["reused"], 0)
+        self.assertEqual(res["generated"], 1)
+        self.assertEqual(report["report_llm"]["text"], "A patient AA bat with a .220 ISO.")
 
 
 if __name__ == "__main__":

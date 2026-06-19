@@ -256,7 +256,11 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row))
         digest = report_generator.grounding_hash(grounding)
         cached = entries.get(key)
-        if isinstance(cached, dict) and cached.get("hash") == digest:
+        if (
+            isinstance(cached, dict)
+            and cached.get("hash") == digest
+            and cached.get("valid") is True
+        ):
             result = cached
             reused += 1
         else:

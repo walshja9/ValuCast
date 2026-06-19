@@ -20,6 +20,8 @@ Voice (the spine, in order, but order is flexible):
 
 Hard rules:
 - Use ONLY the data provided below. Never state a number that is not in the data.
+- When citing AVG/OBP/SLG/OPS/ISO, use decimal form exactly like .252, not 25.2%.
+  Only BB%, K%, K-BB%, percentiles, and similar percentage stats use percent wording.
 - If a pitcher's throws hand is provided, use it exactly. If it is missing, do
   not mention pitcher handedness.
 - Each stat is tagged with its source (current MLB line vs MiLB-equivalent translation

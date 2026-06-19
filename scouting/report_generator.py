@@ -14,6 +14,7 @@ from scouting.voice import VOICE_PROMPT, validate_report_text
 
 DEFAULT_MODEL = os.environ.get("VALUCAST_SCOUTING_MODEL", "claude-haiku-4-5-20251001")
 MAX_TOKENS = 320
+MAX_ATTEMPTS = 2
 
 
 def grounding_hash(grounding: dict) -> str:
@@ -51,7 +52,13 @@ def _extract_text(response) -> str:
     return "".join(parts).strip()
 
 
-def generate_report(grounding: dict, *, client=None, model: str = DEFAULT_MODEL) -> dict | None:
+def generate_report(
+    grounding: dict,
+    *,
+    client=None,
+    model: str = DEFAULT_MODEL,
+    max_attempts: int = MAX_ATTEMPTS,
+) -> dict | None:
     """LLM read + voice guard, or None when no client is available (offline / no key).
 
     `client` is injectable for tests; default lazily builds an Anthropic client from
@@ -59,18 +66,24 @@ def generate_report(grounding: dict, *, client=None, model: str = DEFAULT_MODEL)
     client = client if client is not None else default_client()
     if client is None:
         return None
-    response = client.messages.create(
-        model=model,
-        max_tokens=MAX_TOKENS,
-        system=VOICE_PROMPT,
-        messages=[{"role": "user", "content": build_prompt(grounding)}],
-    )
-    text = _extract_text(response)
-    guard = validate_report_text(text, grounding)
-    return {
-        "text": text,
-        "model": model,
-        "valid": guard["ok"],
-        "hard_ok": guard["hard_ok"],
-        "problems": guard,
-    }
+    attempts = max(1, int(max_attempts or 1))
+    last: dict | None = None
+    for _ in range(attempts):
+        response = client.messages.create(
+            model=model,
+            max_tokens=MAX_TOKENS,
+            system=VOICE_PROMPT,
+            messages=[{"role": "user", "content": build_prompt(grounding)}],
+        )
+        text = _extract_text(response)
+        guard = validate_report_text(text, grounding)
+        last = {
+            "text": text,
+            "model": model,
+            "valid": guard["ok"],
+            "hard_ok": guard["hard_ok"],
+            "problems": guard,
+        }
+        if guard["ok"]:
+            return last
+    return last
