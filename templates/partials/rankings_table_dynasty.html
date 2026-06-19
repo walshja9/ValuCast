@@ -54,7 +54,7 @@
         {# App-side z's (stat-space, matched projections) with feed z_scores
            as the fallback — the producer has never emitted the field. #}
         {% set z_row = (dyn_z_map or {}).get(row.id) or row.z_scores %}
-        <tr class="player-row {% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
+        <tr class="player-row {% if computed_tier %}tier-{{ [computed_tier, 5] | min }} {% endif %}{% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
             data-player-id="{{ row.id }}"
             data-dynasty-rank="{{ row.dynasty_rank }}"
             data-original-index="{{ loop.index0 }}"

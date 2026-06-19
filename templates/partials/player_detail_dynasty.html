@@ -37,15 +37,21 @@
         </div>
         <div class="dynasty-headline">
             <span class="headline-value"><span>Dynasty Value</span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            {% set headline_context = namespace(parts=[]) %}
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
-            <span class="headline-range">Range {{ "%.0f" | format(confidence_range.get('low')) }}-{{ "%.0f" | format(confidence_range.get('high')) }}</span>
+            {% set headline_context.parts = headline_context.parts + ["Range " ~ ("%.0f" | format(confidence_range.get('low'))) ~ "–" ~ ("%.0f" | format(confidence_range.get('high')))] %}
             {% endif %}
-            {% if row.tier is not none %}<span class="headline-tier">Tier {{ row.tier }}</span>{% endif %}
+            {% if row.tier is not none %}
+            {% set headline_context.parts = headline_context.parts + ["Tier " ~ row.tier] %}
+            {% endif %}
+            {% if row.eta %}
+            {% set headline_context.parts = headline_context.parts + ["ETA " ~ row.eta] %}
+            {% endif %}
             {% if confidence.get('level') %}
-            <span class="confidence-chip confidence-{{ confidence.get('level') }}">
-                {{ confidence.get('level') | replace('_', ' ') | title }}
-                {% if confidence.get('score') is not none %} {{ confidence.get('score') | round | int }}{% endif %}
-            </span>
+            {% set headline_context.parts = headline_context.parts + [(confidence.get('level') | replace('_', ' ') | title) ~ " confidence"] %}
+            {% endif %}
+            {% if headline_context.parts %}
+            <span class="headline-context">{{ headline_context.parts | join("  ·  ") }}</span>
             {% endif %}
         </div>
     </div>
@@ -70,9 +76,6 @@
                     <p class="profile-percentile-legend">100 = best in the ValuCast prospect pool; higher is always better, including rate stats.</p>
                 </div>
                 <div class="profile-card-badges">
-                    {% if row.prospect_rank is not none %}<span>P#{{ row.prospect_rank }}</span>{% endif %}
-                    <span>VAL {{ "%.1f" | format(row.dynasty_value) }}</span>
-                    {% if row.tier is not none %}<span>T{{ row.tier }}</span>{% endif %}
                     <a class="player-share-link" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
                 </div>
             </div>
@@ -205,9 +208,6 @@
                 {% endif %}
                 {% if row.level and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Level</span><span class="stat-value">{{ row.card_level_label or row.level }}</span></div>
-                {% endif %}
-                {% if row.eta %}
-                <div class="stat-item"><span class="stat-label">ETA</span><span class="stat-value">{{ row.eta }}</span></div>
                 {% endif %}
                 {% if row.age is not none %}
                 <div class="stat-item"><span class="stat-label">Age</span><span class="stat-value">{{ row.age }}</span></div>

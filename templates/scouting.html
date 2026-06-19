@@ -113,12 +113,13 @@
             <p class="scouting-read">{{ report.display_report or report.report }}</p>
             {% if report.peak_summary %}<p class="scouting-peak">{{ report.peak_summary }}</p>{% endif %}
             <div class="scouting-meta">
-                <span>{{ report.status_label }}</span>
-                {% if report.sample_label %}<span>{{ report.sample_label }}</span>{% endif %}
-                {% if report.movement_label %}<span>{{ report.movement_label }}</span>{% endif %}
-                {% if report.buy_rank_label %}<span>{{ report.buy_rank_label }}</span>{% endif %}
-                {% if report.card_status_label %}<span>Card {{ report.card_status_label }}</span>{% endif %}
-                {% if report.confidence_label %}<span>{{ report.confidence_label }} confidence</span>{% endif %}
+                {% set scouting_meta = namespace(parts=[report.status_label]) %}
+                {% if report.sample_label %}{% set scouting_meta.parts = scouting_meta.parts + [report.sample_label] %}{% endif %}
+                {% if report.movement_label %}{% set scouting_meta.parts = scouting_meta.parts + [report.movement_label] %}{% endif %}
+                {% if report.buy_rank_label %}{% set scouting_meta.parts = scouting_meta.parts + [report.buy_rank_label] %}{% endif %}
+                {% if report.card_status_label %}{% set scouting_meta.parts = scouting_meta.parts + ["Card " ~ report.card_status_label] %}{% endif %}
+                {% if report.confidence_label %}{% set scouting_meta.parts = scouting_meta.parts + [report.confidence_label ~ " confidence"] %}{% endif %}
+                <span class="scouting-meta-line">{{ scouting_meta.parts | join("  ·  ") }}</span>
                 <a href="{{ report.player_url }}">Open board</a>
                 {% if report.id %}<a href="/prospects/player-card/{{ report.id }}" target="_blank" rel="noopener">Share graphic</a>{% endif %}
             </div>

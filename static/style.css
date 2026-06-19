@@ -616,11 +616,11 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .scouting-value small { color: var(--c-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; }
 .scouting-read { margin: .8rem 0 0; line-height: 1.5; }
 .scouting-peak { margin: .55rem 0 0; color: var(--c-muted); font-size: .88rem; line-height: 1.4; }
-.scouting-meta { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .75rem; }
-.scouting-meta span,
-.scouting-meta a,
+.scouting-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .65rem; margin-top: .75rem; }
+.scouting-meta span { min-width: 0; color: var(--c-muted); font-family: var(--font-mono); font-size: .74rem; line-height: 1.4; overflow-wrap: anywhere; }
+.scouting-meta a { color: var(--c-blue); font-size: .74rem; font-weight: 650; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
+.scouting-meta a:hover { color: var(--c-blue-strong); }
 .rank-chip { display: inline-flex; align-items: center; border: 1px solid var(--c-border); border-radius: 999px; padding: .24rem .55rem; background: rgba(255,255,255,.04); color: var(--c-muted); font-size: .74rem; font-weight: 600; text-decoration: none; }
-.scouting-meta a:hover { color: var(--c-prospect); border-color: rgba(52,226,196,.45); }
 .rank-chip { color: var(--c-prospect); }
 .methodology .ledger td:first-child { white-space: nowrap; }
 .provenance-table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; font-size: 0.9rem; }
@@ -1516,7 +1516,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     background: #5e6678;
 }
 .profile-bar-fill.elite { background: var(--c-prospect); }
-.profile-bar-fill.good { background: #2bcdb2; }
+.profile-bar-fill.good { background: var(--c-prospect); }  /* was off-token #2bcdb2 */
 .profile-bar-fill.risk { background: #cf8b66; }
 .profile-bar-num {
     position: absolute;
@@ -1753,7 +1753,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .role-probability-track {
     height: 8px;
     border-radius: 999px;
-    background: rgba(110, 161, 255, .14);
+    background: rgba(148, 163, 184, .14);   /* slate track, not functional blue */
     overflow: hidden;
 }
 .role-probability-track i {
@@ -1999,7 +1999,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 /* Percentile rails on stat tiles */
 .pct-rail { position: relative; height: 4px; margin-top: .3rem; background: #23252c; border-radius: 2px; overflow: hidden; }
-.pct-rail-fill { position: absolute; inset: 0 auto 0 0; background: var(--c-blue); border-radius: 2px; }
+.pct-rail-fill { position: absolute; inset: 0 auto 0 0; background: var(--c-slate); border-radius: 2px; }
 .pct-rail-fill.good { background: var(--c-pos); }
 .pct-rail-fill.bad { background: var(--c-neg); }
 .pct-ord { margin-top: .15rem; font-size: .68rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
@@ -2035,7 +2035,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 /* Consensus spread strip */
 .spread-strip { display: flex; align-items: center; gap: .55rem; margin-top: .55rem; }
 .spread-rail { position: relative; flex: 1; max-width: 340px; height: 6px; background: #23252c; border-radius: 3px; }
-.spread-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--c-blue); border: 2px solid var(--surface); }
+.spread-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--c-slate); border: 2px solid var(--surface); }
 .spread-dot.ours { background: var(--c-prospect); border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); }
 .spread-bounds { font-size: .72rem; color: var(--c-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .spread-chip { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .15rem .5rem; white-space: nowrap; }
@@ -2361,7 +2361,7 @@ main {
 }
 
 .tier-break {
-    border-top-color: rgba(110, 161, 255, .72) !important;
+    border-top-color: var(--c-slate) !important;   /* tier group edge stays slate, not blue */
 }
 
 .pos-rank,
@@ -2766,8 +2766,14 @@ main {
         text-align: left;
     }
 
-    .scouting-meta span,
-    .scouting-meta a,
+    .scouting-meta {
+        gap: .35rem .55rem;
+    }
+
+    .scouting-meta :is(span, a) {
+        font-size: .68rem;
+    }
+
     .rank-chip {
         font-size: .68rem;
         padding: .2rem .46rem;
@@ -2901,6 +2907,9 @@ main {
 .buys-main a {
     font-weight: 650;
 }
+
+/* Name-links read as text, not the functional blue (the whole row/card is the click target). */
+.buys-main a { color: var(--c-text); }
 
 .col-value,
 .headline-value,
@@ -3045,6 +3054,20 @@ main {
     border-radius: var(--radius);
 }
 
+.headline-context {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: min(100%, 560px);
+    color: var(--c-muted);
+    font-family: var(--font-mono);
+    font-size: .74rem;
+    font-weight: 500;
+    line-height: 1.35;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
 .headline-value > span,
 .stat-label,
 .category-label,
@@ -3058,3 +3081,29 @@ main {
     text-transform: none;
     letter-spacing: .01em;
 }
+
+@media (max-width: 640px) {
+    .dynasty-headline :is(.headline-context) {
+        max-width: 100%;
+        text-align: left;
+    }
+}
+
+/* Phase 2 Wave 2C — tier as a 3px left-edge luminance tick (T1 brightest → T5 darkest),
+   not a colored badge. One mechanism covers desktop table rows and the mobile card
+   view (both position:relative). Untiered rows get the slate default. Tiers >5 clamp
+   to tier-5 in the template. */
+.player-row { position: relative; }
+.player-row::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--c-slate);
+    pointer-events: none;
+}
+.player-row.tier-1::before { background: #e6eaf1; }
+.player-row.tier-2::before { background: #b9c0ce; }
+.player-row.tier-3::before { background: #8a93a4; }
+.player-row.tier-4::before { background: #5e6678; }
+.player-row.tier-5::before { background: #3e465a; }
