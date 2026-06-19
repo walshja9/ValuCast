@@ -295,6 +295,18 @@ def _availability():
     }
 
 
+def _mlb_roster_status(active_ids=None, *, ready=True):
+    return {
+        "artifact": "valucast_mlb_roster_status",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {"ready_for_public_snapshot": ready},
+        "profiles": [
+            {"mlbam_id": mlbam_id, "active_mlb_roster": True}
+            for mlbam_id in (active_ids or [])
+        ],
+    }
+
+
 def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
     payload = build_prospect_rank_v1(
         _universe(),
@@ -316,6 +328,28 @@ def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
     assert payload["rank_contract"]["dd_values_used_for_score"] is False
     assert payload["rank_contract"]["external_rankings_used_for_score"] is False
     assert payload["rank_contract"]["prohibited_score_inputs"] == PROHIBITED_SCORE_INPUTS
+
+
+def test_rank_v1_excludes_active_mlb_roster_identities():
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        mlb_roster_status=_mlb_roster_status([1]),
+        require_mlb_roster_status=True,
+    )
+
+    board_ids = {row["mlbam_id"] for row in payload["board"]}
+
+    assert 1 not in board_ids
+    assert 2 in board_ids
+    assert payload["candidate_count"] == 2
+    assert payload["ranked_count"] == 1
+    assert payload["validation"]["mlb_roster_status_ready"] is True
+    assert payload["validation"]["active_mlb_roster_excluded_count"] == 1
+    assert payload["validation"]["active_mlb_roster_overlap_count"] == 0
+    assert payload["validation"]["coverage_rate"] == 1.0
 
 
 def test_rank_v1_applies_bounded_availability_discount():
@@ -1017,6 +1051,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     model_path = tmp_path / "model.json"
     input_path = tmp_path / "input.json"
     availability_path = tmp_path / "availability.json"
+    roster_status_path = tmp_path / "roster_status.json"
     adapter_path = tmp_path / "adapter.json"
     artifact_path = tmp_path / "rank.json"
 
@@ -1026,6 +1061,10 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
     input_path.write_text(json.dumps(_input_contract()), encoding="utf-8")
     availability_path.write_text(json.dumps(_availability()), encoding="utf-8")
+    roster_status_path.write_text(
+        json.dumps(_mlb_roster_status()),
+        encoding="utf-8",
+    )
     adapter_path.write_text(json.dumps(_adapter()), encoding="utf-8")
 
     result = run_prospect_rank_v1(
@@ -1034,6 +1073,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         prospect_model_path=model_path,
         input_contract_path=input_path,
         availability_path=availability_path,
+        mlb_roster_status_path=roster_status_path,
         dd_adapter_path=adapter_path,
         dd_feed_path=feed_path,
         artifact_path=artifact_path,

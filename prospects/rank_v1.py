@@ -12,6 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from mlb.roster_status import ARTIFACT_PATH as MLB_ROSTER_STATUS_PATH
+from mlb.roster_status import active_roster_lookup
 from prospects.availability import ARTIFACT_PATH as AVAILABILITY_PATH
 from prospects.availability import apply_availability_adjustment
 from prospects.availability import availability_lookup
@@ -34,7 +36,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1"
-RANK_VERSION = "0.2.7"
+RANK_VERSION = "0.2.8"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
@@ -1290,6 +1292,10 @@ def _validation(
     unmatched_layer_keys: set[tuple[str, str]],
     identity_only_fallback_count: int,
     current_stat_context_mismatches: list[dict],
+    active_mlb_roster_ids: set[str] | None = None,
+    active_mlb_roster_excluded_count: int = 0,
+    mlb_roster_status_ready: bool = False,
+    require_mlb_roster_status: bool = False,
 ) -> dict:
     universe_date = _generated_date(prospect_universe)
     feed_date = _generated_date(dd_feed or {})
@@ -1298,8 +1304,20 @@ def _validation(
     same_day = bool(universe_date and layer_date and input_date) and len(
         {universe_date, layer_date, input_date}
     ) == 1
-    coverage_rate = round(len(board) / len(prospect_rows), 4) if prospect_rows else 0.0
+    eligible_prospect_row_count = max(
+        len(prospect_rows) - active_mlb_roster_excluded_count,
+        0,
+    )
+    coverage_rate = (
+        round(len(board) / eligible_prospect_row_count, 4)
+        if eligible_prospect_row_count
+        else 0.0
+    )
     top_200_scores = {row["score"] for row in board[:200]}
+    active_mlb_roster_ids = active_mlb_roster_ids or set()
+    active_mlb_roster_overlap_count = sum(
+        1 for row in board if str(row.get("mlbam_id")) in active_mlb_roster_ids
+    )
     blockers = []
     if coverage_rate < MIN_PUBLIC_COVERAGE_RATE:
         blockers.append(
@@ -1317,6 +1335,12 @@ def _validation(
         blockers.append(
             "Current prospect stat context did not select the newest factual current-season row."
         )
+    if require_mlb_roster_status and not mlb_roster_status_ready:
+        blockers.append(
+            "MLB roster status artifact is required for active-roster prospect exclusion."
+        )
+    if active_mlb_roster_overlap_count:
+        blockers.append("Active MLB roster identities remain on the prospect board.")
 
     # Quantify the residual DD reads in the factual DISPLAY path so the "ValuCast-owned"
     # claim is honest. Scoring independence already holds; this tracks translation/mlb-line
@@ -1357,6 +1381,9 @@ def _validation(
         "missing_mlbam_count": missing_mlbam_count,
         "unmatched_dynasty_layer_count": len(unmatched_layer_keys),
         "identity_only_fallback_count": identity_only_fallback_count,
+        "mlb_roster_status_ready": mlb_roster_status_ready,
+        "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
+        "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
         "current_stat_context_mismatch_count": len(current_stat_context_mismatches),
         "current_stat_context_mismatch_sample": current_stat_context_mismatches[:20],
         "coverage_rate": coverage_rate,
@@ -1381,6 +1408,8 @@ def build_prospect_rank_v1(
     dd_feed: dict | None = None,
     prospect_availability: dict | None = None,
     milb_history_by_key: dict | None = None,
+    mlb_roster_status: dict | None = None,
+    require_mlb_roster_status: bool = False,
 ) -> dict:
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
@@ -1389,6 +1418,11 @@ def build_prospect_rank_v1(
     service_by_key = _service_lookup(input_contract)
     rookie_limits = _rookie_limits(input_contract)
     availability_by_key = availability_lookup(prospect_availability)
+    active_roster_by_mlbam = active_roster_lookup(mlb_roster_status)
+    active_mlb_roster_ids = set(active_roster_by_mlbam)
+    mlb_roster_status_ready = bool(
+        (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
+    )
     adapter_by_key = _adapter_lookup(dd_adapter)
     dd_context_by_key = _dd_context_lookup(dd_feed)
 
@@ -1398,6 +1432,7 @@ def build_prospect_rank_v1(
     missing_mlbam_count = 0
     unmatched_layer_keys: set[tuple[str, str]] = set()
     identity_only_fallback_count = 0
+    active_mlb_roster_excluded_count = 0
     board = []
 
     for universe_row in rows:
@@ -1405,6 +1440,9 @@ def build_prospect_rank_v1(
         key = identity_key(universe_row.get("mlbam_id"), role)
         if key is None:
             missing_mlbam_count += 1
+            continue
+        if key[0] in active_mlb_roster_ids:
+            active_mlb_roster_excluded_count += 1
             continue
         if key in seen:
             duplicate_keys.append(key)
@@ -1520,6 +1558,10 @@ def build_prospect_rank_v1(
         unmatched_layer_keys,
         identity_only_fallback_count,
         _current_stat_context_mismatches(board, expected_current_stat_by_key),
+        active_mlb_roster_ids=active_mlb_roster_ids,
+        active_mlb_roster_excluded_count=active_mlb_roster_excluded_count,
+        mlb_roster_status_ready=mlb_roster_status_ready,
+        require_mlb_roster_status=require_mlb_roster_status,
     )
     coverage_repair_needed = (
         validation["coverage_rate"] < MIN_PUBLIC_COVERAGE_RATE
@@ -1705,6 +1747,7 @@ def run_prospect_rank_v1(
     prospect_model_path: Path = PROSPECT_MODEL_PATH,
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     availability_path: Path | None = AVAILABILITY_PATH,
+    mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
     dd_adapter_path: Path = DD_ADAPTER_PATH,
     dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
@@ -1717,6 +1760,11 @@ def run_prospect_rank_v1(
     prospect_availability = (
         json.loads(availability_path.read_text(encoding="utf-8"))
         if availability_path is not None and availability_path.exists()
+        else None
+    )
+    mlb_roster_status = (
+        json.loads(mlb_roster_status_path.read_text(encoding="utf-8"))
+        if mlb_roster_status_path is not None and mlb_roster_status_path.exists()
         else None
     )
     dd_adapter = (
@@ -1739,6 +1787,8 @@ def run_prospect_rank_v1(
         dd_feed=dd_feed,
         prospect_availability=prospect_availability,
         milb_history_by_key=milb_history_by_key,
+        mlb_roster_status=mlb_roster_status,
+        require_mlb_roster_status=True,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
