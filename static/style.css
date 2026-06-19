@@ -391,7 +391,7 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .front-office-report { max-width: 1100px; margin: 0 auto; display: grid; gap: 1rem; }
 .front-office-hero { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.1rem; }
 .front-office-hero .eyebrow { color: var(--c-muted); font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
-.front-office-hero h3 { font-size: clamp(2rem, 7vw, 4rem); margin: .2rem 0; }
+.front-office-hero h3 { font-size: 1.35rem; margin: .2rem 0; }  /* grade is a label; the teal /100 score is the single hero */
 .front-office-score { text-align: right; color: var(--c-prospect); font-weight: 700; text-shadow: 0 0 16px rgba(52, 226, 196, .38); }  /* live-score teal glow */
 .front-office-score span { font-size: clamp(2.4rem, 8vw, 5rem); line-height: 1; }
 .front-office-score small { color: var(--c-muted); font-size: .9rem; }
@@ -2937,8 +2937,8 @@ main {
 .col-cat,
 .col-fit,
 .detail-value {
-    color: var(--c-muted);
-    font-weight: 500;
+    font-size: 1.05rem;
+    font-weight: 700;   /* the value is the card's hero — keep its val-pos/val-neg teal/clay, not muted */
 }
 
 .pos-rank,

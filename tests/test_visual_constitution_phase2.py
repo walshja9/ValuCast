@@ -143,6 +143,13 @@ def test_data_bars_use_slate_teal_clay_not_functional_blue():
     assert "#2bcdb2" not in _last_block(".profile-bar-fill.good")
 
 
+def test_redraft_detail_value_is_the_hero_not_muted():
+    # Wave 2E: the redraft card value is the hero metric — keep its val-pos/val-neg
+    # teal/clay, not the Phase-2 muted grey it was demoted to.
+    block = _last_block(".detail-value")
+    assert "var(--c-muted)" not in block
+
+
 def test_bar_grammar_tokens_are_defined():
     for token in ["--bar-h", "--bar-h-rail", "--bar-radius", "--bar-rail"]:
         assert token in CSS
