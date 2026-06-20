@@ -81,7 +81,11 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
         elif risk_basis not in ALLOWED_RISK_BASIS:
             problems.append(f"profiles[{index}].risk_basis is invalid")
         discount = row.get("risk_discount")
-        risk_cap = MAX_IL_RISK_DISCOUNT if risk_basis == "official_mlb_il" else max_discount
+        risk_cap = (
+            MAX_IL_RISK_DISCOUNT
+            if risk_basis in ("official_mlb_il", "manual_override")
+            else max_discount
+        )
         if not isinstance(discount, (int, float)) or isinstance(discount, bool):
             problems.append(f"profiles[{index}].risk_discount must be numeric")
         elif discount < 0 or discount > risk_cap:

@@ -2,6 +2,7 @@
 import json
 
 from prospects.availability import (
+    MAX_IL_RISK_DISCOUNT,
     MAX_RISK_DISCOUNT,
     apply_availability_adjustment,
     build_prospect_availability,
@@ -181,12 +182,34 @@ def test_availability_applies_manual_status_overrides_with_bounded_discount():
     hitter = next(row for row in payload["profiles"] if row["mlbam_id"] == 10)
 
     assert hitter["status"] == "injured"
-    assert hitter["risk_discount"] == MAX_RISK_DISCOUNT
+    assert hitter["risk_discount"] == MAX_IL_RISK_DISCOUNT
     assert hitter["risk_basis"] == "manual_override"
     assert hitter["risk_level"] == "high"
     assert hitter["age"] == 24
     assert hitter["availability_note"] == "Verified manual test status."
     assert payload["validation"]["manual_override_count"] == 1
+
+
+def test_manual_override_discount_uses_il_cap():
+    payload = build_prospect_availability(
+        _input_contract(),
+        overrides={
+            "overrides": [
+                {
+                    "mlbam_id": 10,
+                    "role": "hitter",
+                    "status": "injured",
+                    "note": "Severe manual injury override.",
+                    "risk_discount": 0.30,
+                }
+            ]
+        },
+    )
+
+    hitter = next(row for row in payload["profiles"] if row["mlbam_id"] == 10)
+
+    assert hitter["risk_discount"] == 0.30
+    assert hitter["risk_basis"] == "manual_override"
 
 
 def test_availability_applies_upstream_factual_roster_status():

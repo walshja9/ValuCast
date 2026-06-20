@@ -3533,8 +3533,8 @@
       "normalized_name": "arjun nimmala",
       "present": true,
       "risk_basis": "manual_override",
-      "risk_discount": 0.06,
-      "risk_level": "medium",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 177.0,
@@ -43279,7 +43279,7 @@
       "normalized_name": "sebastian walcott",
       "present": true,
       "risk_basis": "manual_override",
-      "risk_discount": 0.12,
+      "risk_discount": 0.3,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -115769,8 +115769,8 @@
     },
     "risk_level_counts": {
       "clear": 3042,
-      "high": 222,
-      "medium": 1607
+      "high": 223,
+      "medium": 1606
     },
     "risk_profile_count": 1829,
     "signal_counts": {
@@ -115892,6 +115892,24 @@
         ],
         "status": "injured",
         "team": "Gwinnett Stripers"
+      },
+      {
+        "availability_note": "Official MiLB transactions show Frisco placed Sebastian Walcott on the 60-day injured list on 2026-03-18 after a UCL injury expected to cost most or all of 2026.",
+        "level": "AA",
+        "mlbam_id": 806964,
+        "name": "Sebastian Walcott",
+        "risk_basis": "manual_override",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "hitter",
+        "sample": 552.0,
+        "sample_unit": "PA",
+        "signals": [
+          "prior_season_sample",
+          "manual_status_override"
+        ],
+        "status": "injured",
+        "team": "Frisco RoughRiders"
       },
       {
         "availability_note": "Chicago White Sox transferred LF Tanner Murray from the 10-day injured list to the 60-day injured list. Left shoulder dislocation.",
@@ -116198,23 +116216,6 @@
         ],
         "status": "injured",
         "team": "Reno Aces"
-      },
-      {
-        "availability_note": "Chicago White Sox transferred RHP Drew Thorpe from the 15-day injured list to the 60-day injured list. Recovery from Tommy John surgery.",
-        "level": "AA",
-        "mlbam_id": 689672,
-        "name": "Drew Thorpe",
-        "risk_basis": "official_mlb_il",
-        "risk_discount": 0.3,
-        "risk_level": "high",
-        "role": "pitcher",
-        "sample": 60.0,
-        "sample_unit": "IP",
-        "signals": [
-          "official_mlb_il_override"
-        ],
-        "status": "injured",
-        "team": "Birmingham Barons"
       }
     ]
   },

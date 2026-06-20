@@ -462,10 +462,10 @@ def _profile(
                 sample_discount,
                 stale_discount,
                 upstream_discount,
-                override_discount,
             ),
         ),
         min(MAX_IL_RISK_DISCOUNT, il_discount),
+        min(MAX_IL_RISK_DISCOUNT, override_discount),
     )
     risk_basis = _risk_basis(
         sample_discount,
