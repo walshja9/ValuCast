@@ -3339,12 +3339,31 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 }
 
 .backfields-page .bf-riser-card h3,
-.backfields-page .bf-player-name a,
+.backfields-page .bf-player-name .bf-player-link,
 .backfields-page .bf-callup-row h3,
 .backfields-page .bf-stat-row h3,
 .backfields-page .bf-report-card h3 {
     color: var(--bf-text);
     text-decoration: none;
+}
+
+.backfields-page .bf-player-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.backfields-page .bf-player-link:hover,
+.backfields-page .bf-player-link:focus-visible {
+    color: var(--bf-text);
+    text-decoration: underline;
+    text-decoration-color: var(--bf-signal);
+    text-underline-offset: 3px;
+}
+
+.backfields-page .bf-player-link:focus-visible {
+    outline: 1px solid var(--bf-signal);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 .backfields-page .bf-riser-card p,
@@ -3489,7 +3508,7 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     min-width: 0;
 }
 
-.backfields-page .bf-player-name a:first-child {
+.backfields-page .bf-player-name .bf-player-link {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

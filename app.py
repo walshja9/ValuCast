@@ -2857,6 +2857,18 @@ def _build_backfields_page_context():
             return clean
         return clean[: limit - 3].rstrip() + "..."
 
+    def player_url(name):
+        clean = " ".join(str(name or "").split())
+        if not clean:
+            return "/?mode=prospects"
+        return "/?" + urlencode({"mode": "prospects", "search": clean})
+
+    def report_url(name):
+        clean = " ".join(str(name or "").split())
+        if not clean:
+            return "/scouting"
+        return "/scouting?" + urlencode({"q": clean})
+
     signals = []
     for key in ("signals", "top_movers"):
         signals.extend(row for row in (recent_signal or {}).get(key) or [] if isinstance(row, dict))
@@ -2885,7 +2897,8 @@ def _build_backfields_page_context():
         rankings.append({
             "rank": rank,
             "name": row.name,
-            "url": "/?" + urlencode({"mode": "prospects", "search": row.name}),
+            "url": player_url(row.name),
+            "report_url": report_url(row.name),
             "position": position_for(row),
             "affiliate": affiliate_for(row),
             "eta": eta_for(row),
@@ -2921,8 +2934,10 @@ def _build_backfields_page_context():
         value = item.get("prospect_score")
         if value is None and row is not None:
             value = getattr(row, "dynasty_value", None)
+        name = item.get("name") or (row.name if row else "Unknown")
         risers.append({
-            "name": item.get("name") or (row.name if row else "Unknown"),
+            "name": name,
+            "url": player_url(name),
             "meta": " / ".join(part for part in (level, pos) if part),
             "delta": fmt_value(item.get("rank_delta_7d"), digits=0),
             "value": fmt_value(value),
@@ -2937,6 +2952,7 @@ def _build_backfields_page_context():
     for row in sorted(aaa_rows, key=lambda item: item.dynasty_value, reverse=True)[:4]:
         callups.append({
             "name": row.name,
+            "url": player_url(row.name),
             "flag": " / ".join(part for part in (level_for(row), affiliate_for(row)) if part),
             "eta": current_year_bucket(row),
             "value": fmt_value(getattr(row, "dynasty_value", None)),
@@ -2954,9 +2970,11 @@ def _build_backfields_page_context():
             key=lambda row: as_float(row.get(stat_key)) or 0.0,
             reverse=high,
         )[0]
+        name = winner.get("name") or "Unknown"
         return {
             "stat": label,
-            "name": winner.get("name") or "Unknown",
+            "name": name,
+            "url": player_url(name),
             "level": winner.get("level") or "",
             "team": winner.get("team") or "",
             "value": value_format(winner.get(stat_key)),
@@ -2999,10 +3017,12 @@ def _build_backfields_page_context():
     for row in report_items[:3]:
         positions = "/".join(str(pos) for pos in row.get("positions") or () if pos)
         meta_parts = [positions, row.get("level"), row.get("team")]
+        name = row.get("name") or "Unknown"
         scouting_reports.append({
             "tag": _format_context_label(row.get("report_status")) or "Report",
             "date": report_date(row),
-            "name": row.get("name") or "Unknown",
+            "name": name,
+            "url": player_url(name),
             "meta": " / ".join(str(part) for part in meta_parts if part),
             "line": short_text(_scouting_display_report_text(row)),
         })

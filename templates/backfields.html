@@ -39,7 +39,7 @@
             <article class="bf-riser-card">
                 <div class="bf-riser-top">
                     <div>
-                        <h3>{{ riser.name }}</h3>
+                        <h3><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a></h3>
                         <p>{{ riser.meta }}</p>
                     </div>
                     <span class="bf-move bf-move-up">&#9650; {{ riser.delta }}</span>
@@ -88,8 +88,8 @@
                     <span class="bf-rank">{{ row.rank }}</span>
                     <div class="bf-player">
                         <div class="bf-player-name">
-                            <a href="{{ row.url }}">{{ row.name }}</a>
-                            {% if row.has_report %}<a class="bf-report-badge" href="/scouting?q={{ row.name | urlencode }}">Report</a>{% endif %}
+                            <a class="bf-player-link" href="{{ row.url }}">{{ row.name }}</a>
+                            {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                         </div>
                         <p class="bf-player-meta">
                             <span>{{ row.position }}</span>
@@ -109,7 +109,7 @@
                 {% else %}
                 <p class="bf-empty">Prospect rankings will appear after the next public build.</p>
                 {% endif %}
-                <a class="bf-table-footer" href="/rankings?mode=prospects">View full top 100</a>
+                <a class="bf-table-footer" href="/?mode=prospects">View full top 100</a>
             </div>
         </section>
 
@@ -127,7 +127,7 @@
                     {% for player in callups %}
                     <article class="bf-callup-row">
                         <div>
-                            <h3>{{ player.name }}</h3>
+                            <h3><a class="bf-player-link" href="{{ player.url }}">{{ player.name }}</a></h3>
                             <p>{{ player.flag }}</p>
                         </div>
                         <span>{{ player.eta }}</span>
@@ -157,7 +157,7 @@
                     <article class="bf-stat-row">
                         <span>{{ leader.stat }}</span>
                         <div>
-                            <h3>{{ leader.name }}</h3>
+                            <h3><a class="bf-player-link" href="{{ leader.url }}">{{ leader.name }}</a></h3>
                             <p>{{ leader.level }}{% if leader.team %} / {{ leader.team }}{% endif %}</p>
                         </div>
                         <strong>{{ leader.value }}</strong>
@@ -185,7 +185,7 @@
                     <span>{{ report.tag }}</span>
                     {% if report.date %}<time datetime="{{ report.date[:10] }}">{{ editorial_date(report.date) }}</time>{% endif %}
                 </div>
-                <h3>{{ report.name }}</h3>
+                <h3><a class="bf-player-link" href="{{ report.url }}">{{ report.name }}</a></h3>
                 <p class="bf-report-meta">{{ report.meta }}</p>
                 <p class="bf-report-line">{{ report.line }}</p>
             </article>
