@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scouting import report_generator
-from scouting.voice import handedness_problems
+from scouting.voice import handedness_problems, validate_report_text
 from web.public_snapshot_store import PublicSnapshotStore
 from web import prospect_percentiles
 
@@ -261,6 +261,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             "available": False,
             "generated": 0,
             "reused": 0,
+            "reused_stale": 0,
             "flagged": 0,
             "skipped_due_to_budget": 0,
             "generation_limit": generation_limit,
@@ -268,7 +269,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
     pool = prospect_percentiles.build_pool(store.get_all())
     cache = _load_optional(LLM_CACHE_PATH)
     entries = cache.get("entries") if isinstance(cache.get("entries"), dict) else {}
-    generated = reused = flagged = skipped_due_to_budget = 0
+    generated = reused = reused_stale = flagged = skipped_due_to_budget = 0
     fresh: dict = dict(entries)
     for row, report in zip(rows, reports):
         key = report.get("identity_key")
@@ -278,6 +279,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row))
         digest = report_generator.grounding_hash(grounding)
         cached = entries.get(key)
+        result = None
         if (
             isinstance(cached, dict)
             and cached.get("hash") == digest
@@ -285,7 +287,19 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         ):
             result = cached
             reused += 1
-        else:
+        elif isinstance(cached, dict) and cached.get("valid") is True and cached.get("text"):
+            guard = validate_report_text(cached["text"], grounding)
+            if guard["ok"]:
+                result = {
+                    **cached,
+                    "hash": digest,
+                    "valid": True,
+                    "hard_ok": guard["hard_ok"],
+                    "problems": guard,
+                    "reused_against_updated_grounding": True,
+                }
+                reused_stale += 1
+        if result is None:
             if generation_limit is not None and generated >= generation_limit:
                 skipped_due_to_budget += 1
                 continue
@@ -312,7 +326,8 @@ def _attach_llm_reports(rows, reports, store) -> dict:
     _save_llm_cache(fresh)
     return {
         "enabled": True, "available": True, "generated": generated,
-        "reused": reused, "flagged": flagged, "skipped_due_to_budget": skipped_due_to_budget,
+        "reused": reused, "reused_stale": reused_stale, "flagged": flagged,
+        "skipped_due_to_budget": skipped_due_to_budget,
         "generation_limit": generation_limit, "report_count": len(fresh),
     }
 
@@ -354,6 +369,7 @@ def build_scouting_repository(
         "available": False,
         "generated": 0,
         "reused": 0,
+        "reused_stale": 0,
         "flagged": 0,
         "skipped_due_to_budget": 0,
         "generation_limit": None,

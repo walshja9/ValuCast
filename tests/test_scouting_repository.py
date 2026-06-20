@@ -356,6 +356,74 @@ def test_scouting_repository_reuses_cached_llm_when_generation_budget_is_zero(
     assert pitcher["published_report_source"] == "deterministic"
 
 
+def test_scouting_repository_reuses_stale_cache_only_when_it_still_validates(
+    tmp_path, monkeypatch
+):
+    from scouting import report_generator, repository
+
+    class _FailMessages:
+        def create(self, **_kwargs):
+            raise AssertionError("generation budget should prevent API calls")
+
+    class _FakeClient:
+        messages = _FailMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    cache_path = Path(tmp_path) / "llm_cache.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "artifact": "valucast_scouting_llm_cache",
+                "entries": {
+                    "1_hitter": {
+                        "hash": "old",
+                        "text": (
+                            "Model Strong is a left-handed AA hitter with a .976 OPS "
+                            "over 224 PA."
+                        ),
+                        "model": "test",
+                        "valid": True,
+                        "hard_ok": True,
+                        "problems": {"ok": True, "hard_ok": True},
+                    },
+                    "2_pitcher": {
+                        "hash": "old",
+                        "text": (
+                            "Starter Arm is a left-handed pitcher with a made-up "
+                            "99.9 K/9."
+                        ),
+                        "model": "test",
+                        "valid": True,
+                        "hard_ok": True,
+                        "problems": {"ok": True, "hard_ok": True},
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM_MAX_GENERATE", "0")
+    with (
+        patch.object(report_generator, "default_client", return_value=_FakeClient()),
+        patch.object(report_generator, "grounding_hash", return_value="new"),
+        patch.object(repository, "LLM_CACHE_PATH", cache_path),
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    assert payload["summary"]["llm_shadow"]["generated"] == 0
+    assert payload["summary"]["llm_shadow"]["reused"] == 0
+    assert payload["summary"]["llm_shadow"]["reused_stale"] == 1
+    assert payload["summary"]["llm_shadow"]["skipped_due_to_budget"] == 1
+    hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
+    pitcher = next(report for report in payload["reports"] if report["name"] == "Starter Arm")
+    assert hitter["published_report_source"] == "llm"
+    assert pitcher["published_report_source"] == "deterministic"
+
+
 def test_scouting_repository_publish_rechecks_stale_llm_handedness():
     from scouting import repository
 

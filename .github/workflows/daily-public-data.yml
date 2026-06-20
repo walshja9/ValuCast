@@ -68,7 +68,7 @@ jobs:
           # present (offline-safe no-op otherwise). Adding the secret = turning it on.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           VALUCAST_SCOUTING_LLM: "1"
-          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "10"
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "50"
           VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "8"
         run: python scripts/run_daily_public_build.py --only build
 
