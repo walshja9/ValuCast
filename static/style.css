@@ -3319,6 +3319,7 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 
 .backfields-page .bf-riser-card,
 .backfields-page .bf-table-card,
+.backfields-page .bf-detail-drawer,
 .backfields-page .bf-rail-card,
 .backfields-page .bf-report-card {
     background: rgba(21, 17, 12, .86);
@@ -3422,6 +3423,59 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     font-weight: 700;
 }
 
+.backfields-page .bf-detail-drawer {
+    margin-top: 1.15rem;
+    overflow: hidden;
+}
+
+.backfields-page .bf-detail-drawer[hidden] {
+    display: none;
+}
+
+.backfields-page .bf-detail-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .7rem .85rem;
+    border-bottom: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-detail-drawer-head span {
+    display: block;
+    color: var(--bf-amber);
+    font-family: var(--font-mono);
+    font-size: .66rem;
+    font-weight: 650;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.backfields-page .bf-detail-drawer-head strong {
+    display: block;
+    margin-top: .12rem;
+    color: var(--bf-text);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: -.02em;
+}
+
+.backfields-page .bf-detail-drawer-head button {
+    min-height: 34px;
+    padding: .32rem .58rem;
+    color: var(--bf-muted);
+    background: transparent;
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    font-weight: 650;
+}
+
+.backfields-page .bf-detail-drawer-body {
+    padding: .9rem;
+}
+
 .backfields-page .bf-main-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
@@ -3474,6 +3528,26 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-table-head {
     color: var(--bf-muted);
     border-bottom: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-table-head button {
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: left;
+    text-transform: inherit;
+}
+
+.backfields-page .bf-table-head button[data-bf-sort="value"],
+.backfields-page .bf-table-head button[data-bf-sort="move"] {
+    text-align: right;
+}
+
+.backfields-page .bf-table-head button.is-active {
+    color: var(--bf-text);
 }
 
 .backfields-page .bf-rank-row {

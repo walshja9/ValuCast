@@ -15,6 +15,10 @@ def _prospect_url(name):
     return "/?" + urlencode({"mode": "prospects", "search": name})
 
 
+def _detail_url(player_id):
+    return f"/player/{player_id}?mode=prospects"
+
+
 def _scouting_url(name):
     return "/scouting?" + urlencode({"q": name})
 
@@ -75,7 +79,19 @@ def test_backfields_degrades_when_artifacts_are_missing(monkeypatch):
     assert "No reports yet - first looks land here." in html
 
 
-def test_backfields_context_links_visible_names_to_prospect_board():
+def test_backfields_ahead_of_curve_uses_live_buys_graphic_source():
+    ctx = app_module._build_backfields_page_context()
+    buys_ctx = app_module._build_buys_page_context()
+
+    expected = [row["name"] for row in buys_ctx["graphic_rows"][:5]]
+    actual = [row["name"] for row in ctx["risers"][:5]]
+
+    assert expected
+    assert actual == expected
+    assert all(row["source"] == "valucast_buys" for row in ctx["risers"])
+
+
+def test_backfields_context_links_visible_names_to_inline_player_detail():
     ctx = app_module._build_backfields_page_context()
 
     samples = []
@@ -88,7 +104,8 @@ def test_backfields_context_links_visible_names_to_prospect_board():
 
     assert samples
     for item in samples:
-        assert item["url"] == _prospect_url(item["name"])
+        assert item["url"] == _detail_url(item["id"])
+        assert item["detail_url"] == _detail_url(item["id"])
 
     report_rows = [row for row in ctx["rankings"] if row.get("has_report")]
     assert report_rows
@@ -101,6 +118,27 @@ def test_backfields_player_links_and_report_links_are_distinct():
 
     assert response.status_code == 200
     assert 'class="bf-player-link"' in html
+    assert 'data-bf-detail-url="/player/' in html
+    assert 'data-bf-detail-panel' in html
     assert 'href="/?mode=prospects">View full top 100</a>' in html
     assert "/rankings?mode=prospects" not in html
     assert 'class="bf-report-badge" href="/scouting?' in html
+
+
+def test_backfields_rankings_are_client_sortable():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    for sort_key in ("rank", "player", "level", "move", "value"):
+        assert f'data-bf-sort="{sort_key}"' in html
+    assert "sortRows(sortKey)" in html
+    assert "var defaultDir = sortKey === 'value' || sortKey === 'move' ? 'desc' : 'asc';" in html
+    assert "data-bf-sort-value" in html
+
+
+def test_backfields_callup_desk_and_stats_are_deeper_than_reference_stub():
+    ctx = app_module._build_backfields_page_context()
+
+    assert len(ctx["callups"]) >= 8
+    assert len(ctx["stats"]["hitting"]) >= 8
+    assert len(ctx["stats"]["pitching"]) >= 8

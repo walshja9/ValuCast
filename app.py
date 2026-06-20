@@ -12,7 +12,7 @@ from datetime import date
 from functools import lru_cache
 from html import escape
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from flask import Flask, render_template, request, make_response, jsonify, redirect
 
@@ -2857,11 +2857,24 @@ def _build_backfields_page_context():
             return clean
         return clean[: limit - 3].rstrip() + "..."
 
-    def player_url(name):
+    def player_search_url(name):
         clean = " ".join(str(name or "").split())
         if not clean:
             return "/?mode=prospects"
         return "/?" + urlencode({"mode": "prospects", "search": clean})
+
+    def player_detail_url(player_id, name=None):
+        if player_id not in (None, ""):
+            return f"/player/{quote(str(player_id), safe='')}?mode=prospects"
+        return player_search_url(name)
+
+    def player_link_fields(name, player_id):
+        url = player_detail_url(player_id, name)
+        return {
+            "id": str(player_id or ""),
+            "url": url,
+            "detail_url": url,
+        }
 
     def report_url(name):
         clean = " ".join(str(name or "").split())
@@ -2889,15 +2902,37 @@ def _build_backfields_page_context():
         for row in all_prospects
         if getattr(row, "mlbam_id", None) not in (None, "")
     }
+    rows_by_name = {}
+    duplicate_names = set()
+    for row in all_prospects:
+        clean_name = str(getattr(row, "name", "") or "").strip().casefold()
+        if not clean_name:
+            continue
+        if clean_name in rows_by_name:
+            duplicate_names.add(clean_name)
+        else:
+            rows_by_name[clean_name] = row
+    for name in duplicate_names:
+        rows_by_name.pop(name, None)
+
+    def row_for_raw_stat(raw_row):
+        mlbam = raw_row.get("mlbam_id")
+        if mlbam not in (None, ""):
+            row = row_by_mlbam.get(str(mlbam))
+            if row is not None:
+                return row
+        clean_name = str(raw_row.get("name") or "").strip().casefold()
+        return rows_by_name.get(clean_name)
 
     rankings = []
     for rank, row in enumerate(prospect_rows, 1):
         key = identity_for(row)
         signal = signal_by_key.get(key) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
+        link_fields = player_link_fields(row.name, row.id)
         rankings.append({
             "rank": rank,
             "name": row.name,
-            "url": player_url(row.name),
+            **link_fields,
             "report_url": report_url(row.name),
             "position": position_for(row),
             "affiliate": affiliate_for(row),
@@ -2905,42 +2940,39 @@ def _build_backfields_page_context():
             "level": level_for(row) or "-",
             "tier": tier_for(row),
             "move": move_from_signal(signal),
+            "move_sort": as_float((signal or {}).get("rank_delta_7d")) or 0.0,
             "value": fmt_value(getattr(row, "dynasty_value", None)),
+            "value_sort": as_float(getattr(row, "dynasty_value", None)) or 0.0,
             "has_report": bool(key and key in reports_by_key),
         })
 
-    def riser_sort_key(row):
-        return as_float(row.get("rank_delta_7d")) or 0.0
-
     risers = []
-    movers = [
-        row for row in (recent_signal or {}).get("top_movers") or []
-        if isinstance(row, dict) and (as_float(row.get("rank_delta_7d")) or 0) > 0
-    ]
-    for item in sorted(movers, key=riser_sort_key, reverse=True)[:5]:
+    buys_context = _build_buys_page_context(buy_score.BOARD_SIZE)
+    for item in (buys_context.get("graphic_rows") or [])[:5]:
         row = (
-            row_by_key.get(str(item.get("identity_key")))
-            or row_by_mlbam.get(str(item.get("mlbam_id")))
+            dd_store.get_by_id(str(item.get("id")))
+            if item.get("id") not in (None, "")
+            else None
         )
-        level = level_for(row) if row else ""
-        positions = item.get("positions") or (getattr(row, "positions", ()) if row else ())
-        pos = "/".join(str(pos) for pos in positions if pos) or "-"
-        history = [
-            (point.get("date"), point.get("score"))
-            for point in item.get("history_points") or []
-            if isinstance(point, dict)
-        ]
-        spark = build_spark(history, width=120, height=30)
-        value = item.get("prospect_score")
-        if value is None and row is not None:
-            value = getattr(row, "dynasty_value", None)
+        player_id = item.get("id") or (row.id if row else None)
+        spark = item.get("spark") or build_spark(item.get("value_history"), width=120, height=30)
+        spark_label = item.get("spark_label") or _buy_spark_label(spark)
+        direction = str((spark or {}).get("direction") or "flat")
+        move_label = str(spark_label or "-")
+        for prefix in ("UP ", "DOWN "):
+            if move_label.startswith(prefix):
+                move_label = move_label[len(prefix):]
         name = item.get("name") or (row.name if row else "Unknown")
         risers.append({
             "name": name,
-            "url": player_url(name),
-            "meta": " / ".join(part for part in (level, pos) if part),
-            "delta": fmt_value(item.get("rank_delta_7d"), digits=0),
-            "value": fmt_value(value),
+            **player_link_fields(name, player_id),
+            "source": buys_context.get("buy_data_source"),
+            "meta": " / ".join(str(part) for part in (item.get("level"), item.get("pos")) if part),
+            "move": {
+                "direction": direction if direction in {"up", "down"} else "flat",
+                "label": move_label,
+            },
+            "value": fmt_value(item.get("score")),
             "spark": spark,
         })
 
@@ -2949,36 +2981,42 @@ def _build_backfields_page_context():
         row for row in all_prospects
         if level_for(row) == "AAA"
     ]
-    for row in sorted(aaa_rows, key=lambda item: item.dynasty_value, reverse=True)[:4]:
+    for row in sorted(aaa_rows, key=lambda item: item.dynasty_value, reverse=True)[:10]:
         callups.append({
             "name": row.name,
-            "url": player_url(row.name),
+            **player_link_fields(row.name, row.id),
             "flag": " / ".join(part for part in (level_for(row), affiliate_for(row)) if part),
             "eta": current_year_bucket(row),
             "value": fmt_value(getattr(row, "dynasty_value", None)),
         })
 
-    def leader(rows, stat_key, label, *, high=True, value_format=fmt_value):
+    def leaders(rows, stat_key, label, *, high=True, value_format=fmt_value, limit=2):
         qualified = [
             row for row in rows
-            if as_float(row.get(stat_key)) is not None
+            if as_float(row.get(stat_key)) is not None and row_for_raw_stat(row) is not None
         ]
         if not qualified:
-            return None
-        winner = sorted(
+            return []
+        winners = sorted(
             qualified,
             key=lambda row: as_float(row.get(stat_key)) or 0.0,
             reverse=high,
-        )[0]
-        name = winner.get("name") or "Unknown"
-        return {
-            "stat": label,
-            "name": name,
-            "url": player_url(name),
-            "level": winner.get("level") or "",
-            "team": winner.get("team") or "",
-            "value": value_format(winner.get(stat_key)),
-        }
+        )[:limit]
+        rows_out = []
+        for winner in winners:
+            app_row = row_for_raw_stat(winner)
+            if app_row is None:
+                continue
+            name = winner.get("name") or app_row.name or "Unknown"
+            rows_out.append({
+                "stat": label,
+                "name": name,
+                **player_link_fields(name, app_row.id),
+                "level": winner.get("level") or "",
+                "team": winner.get("team") or "",
+                "value": value_format(winner.get(stat_key)),
+            })
+        return rows_out
 
     hitters = [
         row for row in (stat_payload or {}).get("hitters") or []
@@ -2988,16 +3026,22 @@ def _build_backfields_page_context():
         row for row in (stat_payload or {}).get("pitchers") or []
         if isinstance(row, dict) and (as_float(row.get("innings_pitched")) or 0) >= 20
     ]
-    hitting_stats = [
-        leader(hitters, "ops", "OPS", value_format=lambda value: fmt_rate(value, 3)),
-        leader(hitters, "iso", "ISO", value_format=lambda value: fmt_rate(value, 3)),
-        leader(hitters, "stolen_bases", "SB", value_format=lambda value: fmt_value(value, 0)),
-    ]
-    pitching_stats = [
-        leader(pitchers, "k_per_9", "K9", value_format=lambda value: fmt_value(value, 1)),
-        leader(pitchers, "era", "ERA", high=False, value_format=lambda value: fmt_value(value, 2)),
-        leader(pitchers, "whip", "WHIP", high=False, value_format=lambda value: fmt_value(value, 2)),
-    ]
+    hitting_stats = []
+    for stat_key, label, kwargs in (
+        ("ops", "OPS", {"value_format": lambda value: fmt_rate(value, 3)}),
+        ("iso", "ISO", {"value_format": lambda value: fmt_rate(value, 3)}),
+        ("stolen_bases", "SB", {"value_format": lambda value: fmt_value(value, 0)}),
+        ("obp", "OBP", {"value_format": lambda value: fmt_rate(value, 3)}),
+    ):
+        hitting_stats.extend(leaders(hitters, stat_key, label, **kwargs))
+    pitching_stats = []
+    for stat_key, label, kwargs in (
+        ("k_per_9", "K9", {"value_format": lambda value: fmt_value(value, 1)}),
+        ("k_bb_pct", "K-BB%", {"value_format": lambda value: f"{fmt_value(value, 1)}%"}),
+        ("era", "ERA", {"high": False, "value_format": lambda value: fmt_value(value, 2)}),
+        ("whip", "WHIP", {"high": False, "value_format": lambda value: fmt_value(value, 2)}),
+    ):
+        pitching_stats.extend(leaders(pitchers, stat_key, label, **kwargs))
 
     def report_date(row):
         return (
@@ -3015,6 +3059,11 @@ def _build_backfields_page_context():
     report_items.sort(key=lambda row: str(report_date(row) or ""), reverse=True)
     scouting_reports = []
     for row in report_items[:3]:
+        linked_row = (
+            row_by_key.get(str(row.get("identity_key")))
+            or row_by_mlbam.get(str(row.get("mlbam_id")))
+            or rows_by_name.get(str(row.get("name") or "").strip().casefold())
+        )
         positions = "/".join(str(pos) for pos in row.get("positions") or () if pos)
         meta_parts = [positions, row.get("level"), row.get("team")]
         name = row.get("name") or "Unknown"
@@ -3022,7 +3071,7 @@ def _build_backfields_page_context():
             "tag": _format_context_label(row.get("report_status")) or "Report",
             "date": report_date(row),
             "name": name,
-            "url": player_url(name),
+            **player_link_fields(name, getattr(linked_row, "id", None)),
             "meta": " / ".join(str(part) for part in meta_parts if part),
             "line": short_text(_scouting_display_report_text(row)),
         })
@@ -3036,8 +3085,8 @@ def _build_backfields_page_context():
         "risers": risers,
         "callups": callups,
         "stats": {
-            "hitting": [row for row in hitting_stats if row],
-            "pitching": [row for row in pitching_stats if row],
+            "hitting": hitting_stats,
+            "pitching": pitching_stats,
         },
         "scouting_reports": scouting_reports,
     }

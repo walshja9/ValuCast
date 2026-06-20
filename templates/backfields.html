@@ -39,10 +39,14 @@
             <article class="bf-riser-card">
                 <div class="bf-riser-top">
                     <div>
-                        <h3><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a></h3>
+                        <h3><a class="bf-player-link" href="{{ riser.url }}" data-bf-detail-url="{{ riser.detail_url }}" data-bf-player-name="{{ riser.name }}">{{ riser.name }}</a></h3>
                         <p>{{ riser.meta }}</p>
                     </div>
-                    <span class="bf-move bf-move-up">&#9650; {{ riser.delta }}</span>
+                    <span class="bf-move bf-move-{{ riser.move.direction }}">
+                        {% if riser.move.direction == "up" %}&#9650; {{ riser.move.label }}
+                        {% elif riser.move.direction == "down" %}&#9660; {{ riser.move.label }}
+                        {% else %}{{ riser.move.label }}{% endif %}
+                    </span>
                 </div>
                 {% if riser.spark %}
                 <svg class="bf-spark" viewBox="0 0 {{ riser.spark.width }} {{ riser.spark.height }}" preserveAspectRatio="none" aria-hidden="true">
@@ -64,6 +68,17 @@
         {% endif %}
     </section>
 
+    <section class="bf-detail-drawer" data-bf-detail-panel hidden aria-live="polite">
+        <div class="bf-detail-drawer-head">
+            <div>
+                <span>Backfields detail</span>
+                <strong data-bf-detail-title>Player card</strong>
+            </div>
+            <button type="button" data-bf-detail-close>Close</button>
+        </div>
+        <div class="bf-detail-drawer-body" data-bf-detail-body></div>
+    </section>
+
     <div class="bf-main-grid">
         <section id="rankings" class="bf-section bf-rankings-section" aria-labelledby="bf-rankings-title">
             <div class="bf-section-head bf-rankings-head">
@@ -74,21 +89,27 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="bf-table-card">
+            <div class="bf-table-card" data-bf-table data-bf-sort-current="rank" data-bf-sort-dir="asc">
                 <div class="bf-table-head" role="row">
-                    <span>#</span>
-                    <span>Player</span>
-                    <span>Level</span>
-                    <span>Move</span>
-                    <span>Value</span>
+                    <button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button>
+                    <button type="button" data-bf-sort="player">Player</button>
+                    <button type="button" data-bf-sort="level">Level</button>
+                    <button type="button" data-bf-sort="move">Move</button>
+                    <button type="button" data-bf-sort="value">Value</button>
                 </div>
                 {% if rankings %}
                 {% for row in rankings %}
-                <article class="bf-rank-row bf-tier-{{ row.tier }}" data-bf-row-level="{{ row.level }}">
+                <article class="bf-rank-row bf-tier-{{ row.tier }}"
+                    data-bf-row-level="{{ row.level }}"
+                    data-bf-sort-rank="{{ row.rank }}"
+                    data-bf-sort-player="{{ row.name|lower }}"
+                    data-bf-sort-level="{{ row.level }}"
+                    data-bf-sort-move="{{ row.move_sort }}"
+                    data-bf-sort-value="{{ row.value_sort }}">
                     <span class="bf-rank">{{ row.rank }}</span>
                     <div class="bf-player">
                         <div class="bf-player-name">
-                            <a class="bf-player-link" href="{{ row.url }}">{{ row.name }}</a>
+                            <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}">{{ row.name }}</a>
                             {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                         </div>
                         <p class="bf-player-meta">
@@ -127,7 +148,7 @@
                     {% for player in callups %}
                     <article class="bf-callup-row">
                         <div>
-                            <h3><a class="bf-player-link" href="{{ player.url }}">{{ player.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}">{{ player.name }}</a></h3>
                             <p>{{ player.flag }}</p>
                         </div>
                         <span>{{ player.eta }}</span>
@@ -157,7 +178,7 @@
                     <article class="bf-stat-row">
                         <span>{{ leader.stat }}</span>
                         <div>
-                            <h3><a class="bf-player-link" href="{{ leader.url }}">{{ leader.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ leader.url }}" data-bf-detail-url="{{ leader.detail_url }}" data-bf-player-name="{{ leader.name }}">{{ leader.name }}</a></h3>
                             <p>{{ leader.level }}{% if leader.team %} / {{ leader.team }}{% endif %}</p>
                         </div>
                         <strong>{{ leader.value }}</strong>
@@ -185,7 +206,7 @@
                     <span>{{ report.tag }}</span>
                     {% if report.date %}<time datetime="{{ report.date[:10] }}">{{ editorial_date(report.date) }}</time>{% endif %}
                 </div>
-                <h3><a class="bf-player-link" href="{{ report.url }}">{{ report.name }}</a></h3>
+                <h3><a class="bf-player-link" href="{{ report.url }}" data-bf-detail-url="{{ report.detail_url }}" data-bf-player-name="{{ report.name }}">{{ report.name }}</a></h3>
                 <p class="bf-report-meta">{{ report.meta }}</p>
                 <p class="bf-report-line">{{ report.line }}</p>
             </article>
@@ -205,6 +226,88 @@
     (function () {
         var page = document.querySelector('.backfields-page');
         if (!page) { return; }
+        var table = page.querySelector('[data-bf-table]');
+        var tableFooter = page.querySelector('.bf-table-footer');
+        var detailPanel = page.querySelector('[data-bf-detail-panel]');
+        var detailTitle = page.querySelector('[data-bf-detail-title]');
+        var detailBody = page.querySelector('[data-bf-detail-body]');
+
+        function sortValue(row, sortKey) {
+            var value = row.getAttribute('data-bf-sort-' + sortKey) || '';
+            if (sortKey === 'rank' || sortKey === 'move' || sortKey === 'value') {
+                var number = Number(value);
+                return Number.isFinite(number) ? number : 0;
+            }
+            return value.toLowerCase();
+        }
+
+        function sortRows(sortKey) {
+            if (!table) { return; }
+            var current = table.getAttribute('data-bf-sort-current');
+            var defaultDir = sortKey === 'value' || sortKey === 'move' ? 'desc' : 'asc';
+            var dir = current === sortKey
+                ? (table.getAttribute('data-bf-sort-dir') === 'asc' ? 'desc' : 'asc')
+                : defaultDir;
+            var rows = Array.prototype.slice.call(table.querySelectorAll('.bf-rank-row'));
+            rows.sort(function (a, b) {
+                var av = sortValue(a, sortKey);
+                var bv = sortValue(b, sortKey);
+                if (av < bv) { return dir === 'asc' ? -1 : 1; }
+                if (av > bv) { return dir === 'asc' ? 1 : -1; }
+                return Number(a.getAttribute('data-bf-sort-rank') || 0) - Number(b.getAttribute('data-bf-sort-rank') || 0);
+            });
+            rows.forEach(function (row) { table.insertBefore(row, tableFooter); });
+            table.setAttribute('data-bf-sort-current', sortKey);
+            table.setAttribute('data-bf-sort-dir', dir);
+            table.querySelectorAll('[data-bf-sort]').forEach(function (btn) {
+                var active = btn.getAttribute('data-bf-sort') === sortKey;
+                btn.classList.toggle('is-active', active);
+                btn.setAttribute('aria-sort', active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+            });
+        }
+
+        page.querySelectorAll('[data-bf-sort]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                sortRows(btn.getAttribute('data-bf-sort'));
+            });
+        });
+
+        page.querySelectorAll('[data-bf-detail-url]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (!detailPanel || !detailBody) { window.location.href = link.href; return; }
+                var title = link.getAttribute('data-bf-player-name') || link.textContent.trim() || 'Player card';
+                detailPanel.hidden = false;
+                if (detailTitle) { detailTitle.textContent = title; }
+                detailBody.textContent = '';
+                var loading = document.createElement('p');
+                loading.className = 'bf-empty';
+                loading.textContent = 'Loading ' + title + '...';
+                detailBody.appendChild(loading);
+                fetch(link.getAttribute('data-bf-detail-url'), { headers: { 'HX-Request': 'true' } })
+                    .then(function (response) {
+                        if (!response.ok) { throw new Error('Unable to load player detail'); }
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        detailBody.innerHTML = html;
+                        detailPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+                    })
+                    .catch(function () {
+                        detailBody.textContent = '';
+                        var fallback = document.createElement('p');
+                        fallback.className = 'bf-empty';
+                        fallback.textContent = 'Could not load this player card. Open the board and search for ' + title + '.';
+                        detailBody.appendChild(fallback);
+                    });
+            });
+        });
+        page.querySelectorAll('[data-bf-detail-close]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (detailPanel) { detailPanel.hidden = true; }
+                if (detailBody) { detailBody.innerHTML = ''; }
+            });
+        });
         page.querySelectorAll('[data-bf-level]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var level = btn.getAttribute('data-bf-level');
