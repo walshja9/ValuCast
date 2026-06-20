@@ -427,6 +427,8 @@ def test_daily_public_workflow_approves_scheduled_buys_and_rebases_before_push()
         "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "
         "&& '1' || '0' }}"
     ) in workflow
+    assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "10"' in workflow
+    assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "8"' in workflow
     assert "git pull --rebase origin master" in workflow
     assert "for attempt in 1 2 3" in workflow
 

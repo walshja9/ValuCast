@@ -22,6 +22,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_scouting_reports.json"
 RECENT_SIGNAL_PATH = ROOT / "data" / "models" / "valucast_recent_signal_report.json"
 CARD_DATA_AUDIT_PATH = ROOT / "data" / "models" / "valucast_prospect_card_data_audit.json"
 LLM_CACHE_PATH = ROOT / "data" / "models" / "valucast_scouting_llm_cache.json"
+DEFAULT_LLM_MAX_GENERATE = 25
 
 ARTIFACT_NAME = "valucast_scouting_report_repository"
 REPOSITORY_VERSION = "0.1.0"
@@ -195,6 +196,19 @@ def _llm_enabled() -> bool:
     return os.environ.get("VALUCAST_SCOUTING_LLM", "").strip().lower() in ("1", "true", "yes", "on")
 
 
+def _llm_generation_limit() -> int | None:
+    raw = os.environ.get("VALUCAST_SCOUTING_LLM_MAX_GENERATE")
+    if raw is None or raw.strip() == "":
+        return DEFAULT_LLM_MAX_GENERATE
+    value = raw.strip().lower()
+    if value in {"all", "none", "unbounded", "unlimited"}:
+        return None
+    try:
+        return max(0, int(value))
+    except ValueError:
+        return DEFAULT_LLM_MAX_GENERATE
+
+
 def _llm_grounding(row, percentiles: dict, pool_label: str | None) -> dict:
     """Source-tagged, ValuCast-owned facts for the LLM read. No DD values/ranks, no
     external rankings, no market values — only what the card already owns."""
@@ -239,14 +253,23 @@ def _attach_llm_reports(rows, reports, store) -> dict:
     Grounding-hash cached so only changed reports re-call the API. Offline / no
     key -> no calls, reports unchanged.
     """
+    generation_limit = _llm_generation_limit()
     client = report_generator.default_client()
     if client is None:
-        return {"enabled": True, "available": False, "generated": 0, "reused": 0, "flagged": 0}
+        return {
+            "enabled": True,
+            "available": False,
+            "generated": 0,
+            "reused": 0,
+            "flagged": 0,
+            "skipped_due_to_budget": 0,
+            "generation_limit": generation_limit,
+        }
     pool = prospect_percentiles.build_pool(store.get_all())
     cache = _load_optional(LLM_CACHE_PATH)
     entries = cache.get("entries") if isinstance(cache.get("entries"), dict) else {}
-    generated = reused = flagged = 0
-    fresh: dict = {}
+    generated = reused = flagged = skipped_due_to_budget = 0
+    fresh: dict = dict(entries)
     for row, report in zip(rows, reports):
         key = report.get("identity_key")
         if not key:
@@ -263,6 +286,9 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             result = cached
             reused += 1
         else:
+            if generation_limit is not None and generated >= generation_limit:
+                skipped_due_to_budget += 1
+                continue
             try:
                 gen = report_generator.generate_report(grounding, client=client)
             except Exception:  # noqa: BLE001 - one bad call must not fail the daily build
@@ -286,7 +312,8 @@ def _attach_llm_reports(rows, reports, store) -> dict:
     _save_llm_cache(fresh)
     return {
         "enabled": True, "available": True, "generated": generated,
-        "reused": reused, "flagged": flagged, "report_count": len(fresh),
+        "reused": reused, "flagged": flagged, "skipped_due_to_budget": skipped_due_to_budget,
+        "generation_limit": generation_limit, "report_count": len(fresh),
     }
 
 
@@ -322,7 +349,15 @@ def build_scouting_repository(
         )
         for row in rows
     ]
-    llm_shadow = {"enabled": False, "available": False, "generated": 0, "reused": 0, "flagged": 0}
+    llm_shadow = {
+        "enabled": False,
+        "available": False,
+        "generated": 0,
+        "reused": 0,
+        "flagged": 0,
+        "skipped_due_to_budget": 0,
+        "generation_limit": None,
+    }
     if _llm_enabled():
         llm_shadow = _attach_llm_reports(rows, reports, store)
     publish_summary = _publish_report_fields(reports)

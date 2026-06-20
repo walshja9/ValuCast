@@ -15,6 +15,7 @@ from scouting.voice import VOICE_PROMPT, validate_report_text
 DEFAULT_MODEL = os.environ.get("VALUCAST_SCOUTING_MODEL", "claude-haiku-4-5-20251001")
 MAX_TOKENS = 320
 MAX_ATTEMPTS = 2
+DEFAULT_TIMEOUT_SECONDS = 20.0
 
 
 def grounding_hash(grounding: dict) -> str:
@@ -41,7 +42,12 @@ def default_client():
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
         return None
-    return anthropic.Anthropic(api_key=key)
+    raw_timeout = os.environ.get("VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS", "")
+    try:
+        timeout = max(1.0, float(raw_timeout)) if raw_timeout.strip() else DEFAULT_TIMEOUT_SECONDS
+    except ValueError:
+        timeout = DEFAULT_TIMEOUT_SECONDS
+    return anthropic.Anthropic(api_key=key, timeout=timeout)
 
 
 def _extract_text(response) -> str:
