@@ -11,6 +11,12 @@ def _html(path):
     return response, response.data.decode("utf-8")
 
 
+def _site_nav(html):
+    match = re.search(r'<nav class="site-nav"[^>]*>(.*?)</nav>', html, re.S)
+    assert match
+    return match.group(1)
+
+
 def _prospect_url(name):
     return "/?" + urlencode({"mode": "prospects", "search": name})
 
@@ -34,7 +40,9 @@ def test_backfields_route_returns_200():
 def test_backfields_nav_link_and_active_state():
     response, html = _html("/")
     assert response.status_code == 200
-    assert 'href="/backfields">Backfields' in html
+    nav = _site_nav(html)
+    assert 'href="/backfields">Backfields' in nav
+    assert 'href="/buys">Buys' not in nav
 
     response, html = _html("/backfields")
     assert response.status_code == 200
@@ -79,16 +87,55 @@ def test_backfields_degrades_when_artifacts_are_missing(monkeypatch):
     assert "No reports yet - first looks land here." in html
 
 
-def test_backfields_ahead_of_curve_uses_live_buys_graphic_source():
-    ctx = app_module._build_backfields_page_context()
-    buys_ctx = app_module._build_buys_page_context()
+def test_backfields_ahead_of_curve_uses_live_buys_graphic_source(monkeypatch):
+    graphic_rows = [
+        {
+            "id": "buy-1",
+            "name": "Buy Signal One",
+            "team": "SEA",
+            "pos": "SS",
+            "level": "AA",
+            "score": 57.2,
+            "spark": {"points": "0,10 40,5 80,0"},
+            "spark_label": "up +1.2 in 7d",
+        },
+        {
+            "id": "buy-2",
+            "name": "Buy Signal Two",
+            "team": "BOS",
+            "pos": "OF",
+            "level": "A+",
+            "score": 55.8,
+            "spark": {"points": "0,10 40,7 80,2"},
+            "spark_label": "up +0.5 in 7d",
+        },
+    ]
+    monkeypatch.setattr(
+        app_module,
+        "_build_buys_page_context",
+        lambda *_args, **_kwargs: {
+            "graphic_rows": graphic_rows,
+            "buy_data_source": "valucast_buys",
+        },
+    )
 
-    expected = [row["name"] for row in buys_ctx["graphic_rows"][:5]]
+    ctx = app_module._build_backfields_page_context()
+
+    expected = [row["name"] for row in graphic_rows]
     actual = [row["name"] for row in ctx["risers"][:5]]
 
-    assert expected
     assert actual == expected
     assert all(row["source"] == "valucast_buys" for row in ctx["risers"])
+
+
+def test_backfields_ahead_of_curve_is_the_buy_signal_entry_point():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert "Top buy signals from the current board" in html
+    assert "Biggest risers this week" not in html
+    assert 'href="/buys"' in html
+    assert "Full Ahead of the Curve board" in html
 
 
 def test_backfields_context_links_visible_names_to_inline_player_detail():

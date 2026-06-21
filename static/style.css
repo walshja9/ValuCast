@@ -3308,6 +3308,17 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     letter-spacing: .08em;
 }
 
+.backfields-page .bf-section-link {
+    color: var(--bf-signal);
+    font-size: .84rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.backfields-page .bf-section-link:hover {
+    text-decoration: underline;
+}
+
 .backfields-page .bf-risers-strip {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
