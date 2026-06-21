@@ -3396,6 +3396,11 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-move-down { color: var(--bf-clay); }
 .backfields-page .bf-move-flat { color: var(--bf-muted); }
 
+.backfields-page .bf-callup-row .bf-callup-why {
+    margin-top: .18rem;
+    color: var(--bf-muted);
+}
+
 .backfields-page .bf-spark {
     display: block;
     width: 100%;
@@ -3651,11 +3656,20 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     border-top: 1px solid rgba(200, 146, 63, .10);
 }
 
-.backfields-page .bf-callup-row > span,
 .backfields-page .bf-stat-row strong {
     color: var(--bf-signal);
     font-family: var(--font-mono);
     font-weight: 700;
+}
+
+.backfields-page .bf-callup-status {
+    max-width: 7.5rem;
+    color: var(--bf-muted);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    font-weight: 650;
+    line-height: 1.15;
+    text-align: right;
 }
 
 .backfields-page .bf-stat-row {

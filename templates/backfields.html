@@ -150,8 +150,9 @@
                         <div>
                             <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}">{{ player.name }}</a></h3>
                             <p>{{ player.flag }}</p>
+                            <p class="bf-callup-why">{{ player.why }}</p>
                         </div>
-                        <span>{{ player.eta }}</span>
+                        <span class="bf-callup-status">{{ player.status }}</span>
                     </article>
                     {% endfor %}
                 </div>

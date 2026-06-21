@@ -2977,17 +2977,56 @@ def _build_backfields_page_context():
         })
 
     callups = []
-    aaa_rows = [
+    callup_rows = [
         row for row in all_prospects
-        if level_for(row) == "AAA"
+        if level_for(row) in {"AAA", "AA"}
     ]
-    for row in sorted(aaa_rows, key=lambda item: item.dynasty_value, reverse=True)[:10]:
+    eta_points = {
+        "This year": 28.0,
+        "Next year": 12.0,
+        "Monitor": 4.0,
+        "Later": 0.0,
+    }
+    level_points = {"AAA": 36.0, "AA": 12.0}
+
+    def callup_sort_score(row):
+        signal = signal_by_key.get(identity_for(row)) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
+        move = as_float((signal or {}).get("rank_delta_7d")) or 0.0
+        bucket = current_year_bucket(row)
+        return (
+            level_points.get(level_for(row), 0.0)
+            + eta_points.get(bucket, 0.0)
+            + (as_float(getattr(row, "dynasty_value", None)) or 0.0)
+            + max(move, 0.0) * 1.5
+        )
+
+    def callup_status(row):
+        level = level_for(row)
+        bucket = current_year_bucket(row)
+        if level == "AAA" and bucket == "This year":
+            return "On the doorstep"
+        if level == "AAA" or bucket in {"This year", "Next year"}:
+            return "Near-term watch"
+        return "Monitor"
+
+    for row in sorted(callup_rows, key=callup_sort_score, reverse=True)[:14]:
+        signal = signal_by_key.get(identity_for(row)) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
+        move = move_from_signal(signal)
+        value = fmt_value(getattr(row, "dynasty_value", None))
+        why_parts = [level_for(row), current_year_bucket(row), f"Val {value}"]
+        if move["direction"] == "up":
+            why_parts.append(f"up {move['label']}")
+        elif move["direction"] == "down":
+            why_parts.append(f"down {move['label']}")
         callups.append({
             "name": row.name,
             **player_link_fields(row.name, row.id),
             "flag": " / ".join(part for part in (level_for(row), affiliate_for(row)) if part),
             "eta": current_year_bucket(row),
-            "value": fmt_value(getattr(row, "dynasty_value", None)),
+            "status": callup_status(row),
+            "sort_score": round(callup_sort_score(row), 2),
+            "why": " - ".join(part for part in why_parts if part),
+            "value": value,
         })
 
     def leaders(rows, stat_key, label, *, high=True, value_format=fmt_value, limit=2):
@@ -3030,7 +3069,9 @@ def _build_backfields_page_context():
     for stat_key, label, kwargs in (
         ("ops", "OPS", {"value_format": lambda value: fmt_rate(value, 3)}),
         ("iso", "ISO", {"value_format": lambda value: fmt_rate(value, 3)}),
+        ("home_runs", "HR", {"value_format": lambda value: fmt_value(value, 0)}),
         ("stolen_bases", "SB", {"value_format": lambda value: fmt_value(value, 0)}),
+        ("avg", "AVG", {"value_format": lambda value: fmt_rate(value, 3)}),
         ("obp", "OBP", {"value_format": lambda value: fmt_rate(value, 3)}),
     ):
         hitting_stats.extend(leaders(hitters, stat_key, label, **kwargs))
@@ -3040,6 +3081,8 @@ def _build_backfields_page_context():
         ("k_bb_pct", "K-BB%", {"value_format": lambda value: f"{fmt_value(value, 1)}%"}),
         ("era", "ERA", {"high": False, "value_format": lambda value: fmt_value(value, 2)}),
         ("whip", "WHIP", {"high": False, "value_format": lambda value: fmt_value(value, 2)}),
+        ("bb_per_9", "BB9", {"high": False, "value_format": lambda value: fmt_value(value, 1)}),
+        ("innings_pitched", "IP", {"value_format": lambda value: fmt_value(value, 1)}),
     ):
         pitching_stats.extend(leaders(pitchers, stat_key, label, **kwargs))
 
@@ -3058,7 +3101,7 @@ def _build_backfields_page_context():
     report_items.sort(key=lambda row: int(row.get("prospect_rank") or 999999))
     report_items.sort(key=lambda row: str(report_date(row) or ""), reverse=True)
     scouting_reports = []
-    for row in report_items[:3]:
+    for row in report_items[:6]:
         linked_row = (
             row_by_key.get(str(row.get("identity_key")))
             or row_by_mlbam.get(str(row.get("mlbam_id")))

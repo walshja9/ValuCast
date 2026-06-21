@@ -139,6 +139,28 @@ def test_backfields_rankings_are_client_sortable():
 def test_backfields_callup_desk_and_stats_are_deeper_than_reference_stub():
     ctx = app_module._build_backfields_page_context()
 
-    assert len(ctx["callups"]) >= 8
-    assert len(ctx["stats"]["hitting"]) >= 8
-    assert len(ctx["stats"]["pitching"]) >= 8
+    assert len(ctx["callups"]) >= 12
+    assert len(ctx["stats"]["hitting"]) >= 12
+    assert len(ctx["stats"]["pitching"]) >= 12
+
+
+def test_backfields_callup_desk_explains_why_each_player_is_listed():
+    ctx = app_module._build_backfields_page_context()
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert 'class="bf-callup-why"' in html
+    assert 'class="bf-callup-status"' in html
+    assert ctx["callups"]
+    for player in ctx["callups"][:8]:
+        assert player["sort_score"] > 0
+        assert player["status"] in {"On the doorstep", "Near-term watch", "Monitor"}
+        assert player["why"]
+        assert player["value"] in player["why"]
+        assert player["why"] in html
+
+
+def test_backfields_scouting_feed_has_enough_latest_looks():
+    ctx = app_module._build_backfields_page_context()
+
+    assert len(ctx["scouting_reports"]) >= 6
