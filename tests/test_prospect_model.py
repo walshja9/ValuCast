@@ -9,12 +9,13 @@ from prospects.model import (
     _active_impact_categories,
     _canonical_impact_feature_vector,
     _category_value,
+    _feature_vector,
     _fit_prediction_model,
     _historical_rows,
     _historical_impact_rows,
-    _impact_feature_vector,
     _impact_references,
     _impact_target,
+    _outcome_feature_vector,
     _prediction_drivers,
     _predict_model,
     _regress_current_features,
@@ -206,6 +207,16 @@ def test_historical_rows_deduplicate_player_before_walk_forward():
     assert out[0]["level"] == "AAA"
 
 
+def test_historical_outcome_rows_keep_original_neighbor_baseline_features():
+    rows = [_historical("hitter", 2015, 1, "star", level="A+", age=20)]
+
+    out = _historical_rows(rows, "hitter")
+
+    assert out[0]["level"] == "A+"
+    assert "baseline_features" in out[0]
+    assert len(out[0]["features"]) > len(out[0]["baseline_features"])
+
+
 def test_walk_forward_is_player_grouped_and_never_trains_on_future_cohorts():
     rows = _historical_rows(_contract()["historical"]["rows"], "hitter")
     validation = _walk_forward(rows)
@@ -248,6 +259,8 @@ def test_role_training_emits_valid_honest_gate():
         "level_age_prior",
         "historical_neighbors_25",
     }
+    assert result["model_kind"] == "hurdle_ridge"
+    assert result["prediction_model"]["model_kind"] == "hurdle_ridge"
 
 
 def test_partial_impact_axis_values_reliever_season_without_starter_volume():
@@ -406,12 +419,21 @@ def test_prediction_drivers_use_hurdle_score_and_group_aaa_translation():
     assert "ops_x_level" not in by_name
 
 
-def test_hitter_translation_interactions_do_not_change_canonical_features():
-    base = [0.2, 20.0, 10.0, 0.8, 1.0, 1.0]
-    canonical = _canonical_impact_feature_vector(base, "hitter")
-    expanded = _impact_feature_vector(base, "hitter")
-    assert expanded[: len(canonical)] == canonical
-    assert len(expanded) > len(canonical)
+def test_impact_rows_train_on_rich_features_with_canonical_knn_baseline():
+    record = _historical("hitter", 2015, 1, "star", level="A+", age=20)
+    refs = _impact_references({})
+
+    rows = _historical_impact_rows([record], "hitter", {}, refs)
+
+    # The impact axis now trains on the same rich factual vector as the outcome
+    # axis, so the validated predictor and the shipped predictor share inputs.
+    assert rows[0]["features"] == _outcome_feature_vector(record, "hitter")
+    # The simple fixed-interaction vector is preserved, distinct and smaller,
+    # as the canonical kNN baseline the impact gate must still beat.
+    assert rows[0]["baseline_features"] == _canonical_impact_feature_vector(
+        _feature_vector(record, "hitter"), "hitter"
+    )
+    assert len(rows[0]["baseline_features"]) < len(rows[0]["features"])
 
 
 def test_shadow_output_is_valucast_owned_and_service_gated():
@@ -450,6 +472,18 @@ def test_impact_drivers_do_not_use_plain_ridge_driver_weights():
     ] == [
         (row["expected_category_impact_score"], row["impact_drivers"])
         for row in before
+    ]
+
+
+def test_outcome_scores_use_validated_prediction_model_not_driver_weights():
+    contract = _contract()
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    before = score_current(contract, payload["roles"], payload["impact_roles"])
+    for role_model in payload["roles"].values():
+        role_model["weights"] = [999.0 for _ in role_model["weights"]]
+    after = score_current(contract, payload["roles"], payload["impact_roles"])
+    assert [row["expected_outcome_score"] for row in after] == [
+        row["expected_outcome_score"] for row in before
     ]
 
 
