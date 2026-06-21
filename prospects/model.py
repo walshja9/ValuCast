@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import os
 from bisect import bisect_right
 from datetime import datetime, timezone
@@ -29,8 +30,15 @@ MATURE_THROUGH = 2019
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
 SAMPLE_REGRESSION = {"hitter": 200.0, "pitcher": 50.0}
-LEVEL_CODE = {"AA": 0.0, "AAA": 1.0}
-EXPECTED_AGE = {"AA": 22.5, "AAA": 24.0}
+# Level vocabulary for stat-based scoring. A/A+ were added so the model scores
+# lower-minors prospects on their current line instead of falling back to
+# pedigree (which mechanically forced low confidence). Codes preserve the
+# existing AA/AAA feature values and keep strict level ordering A < A+ < AA <
+# AAA (the historical de-dupe keeps each player's highest level). EXPECTED_AGE
+# encodes the on-track prospect age per level (~2y below the population median),
+# matching the existing AA/AAA convention.
+LEVEL_CODE = {"A": -2.0, "A+": -1.0, "AA": 0.0, "AAA": 1.0}
+EXPECTED_AGE = {"A": 20.0, "A+": 21.0, "AA": 22.5, "AAA": 24.0}
 OUTCOME_TARGET = {"bust": 0.0, "role": 0.5, "star": 1.0}
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
@@ -52,6 +60,62 @@ FEATURE_NAMES = {
         "is_starter",
     ),
 }
+OUTCOME_FEATURE_NAMES = {
+    "hitter": FEATURE_NAMES["hitter"]
+    + (
+        "avg",
+        "obp",
+        "slg",
+        "babip",
+        "hr_per_600_pa",
+        "sb_per_600_pa",
+        "bb_minus_k_pct",
+        "bb_to_k_ratio",
+        "log_pa",
+        "iso_x_youth",
+        "ops_x_youth",
+        "discipline_x_youth",
+        "iso_x_ops",
+        "iso_x_discipline",
+        "ops_x_discipline",
+        "iso_x_level",
+        "ops_x_level",
+        "k_pct_x_level",
+        "bb_pct_x_level",
+    ),
+    "pitcher": FEATURE_NAMES["pitcher"]
+    + (
+        "k_to_bb_per_9",
+        "hr_per_9",
+        "h_per_9",
+        "walks_per_9_raw",
+        "start_rate",
+        "log_ip",
+        "batters_faced_per_ip",
+        "k_bb_pct_x_youth",
+        "era_x_youth",
+        "whip_x_youth",
+        "starter_x_youth",
+        "era_x_whip",
+        "k_per_9_x_level",
+        "bb_per_9_x_level",
+        "k_bb_pct_x_level",
+        "era_x_level",
+        "whip_x_level",
+        "rule4_drafted",
+        "draft_record_known",
+        "pick_value",
+        "inverse_draft_pick",
+        "inverse_draft_round",
+        "log_signing_bonus",
+        "college_drafted",
+        "prep_drafted",
+        "bats_left",
+        "bats_switch",
+        "throws_left",
+    ),
+}
+OUTCOME_MODEL_KIND = {"hitter": "hurdle_ridge", "pitcher": "hurdle_ridge"}
 IMPACT_FEATURE_NAMES = {
     "hitter": FEATURE_NAMES["hitter"]
     + (
@@ -136,6 +200,30 @@ def _num(value):
         return None
 
 
+def _zero_num(value) -> float:
+    return float(_num(value) or 0.0)
+
+
+def _safe_ratio(numerator, denominator, default: float = 0.0) -> float:
+    denominator = _num(denominator)
+    if not denominator:
+        return default
+    return float(_num(numerator) or 0.0) / denominator
+
+
+def _safe_log1p(value) -> float:
+    value = _num(value) or 0.0
+    if value <= 0:
+        return 0.0
+    return float(math.log1p(value))
+
+
+def _truthy(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y"}
+
+
 def _sample(record: dict, role: str) -> float:
     key = "plate_appearances" if role == "hitter" else "innings_pitched"
     return _num(record.get(key)) or 0.0
@@ -177,6 +265,81 @@ def _feature_vector(record: dict, role: str) -> list[float] | None:
             1.0 if record.get("is_starter") else 0.0,
         ]
     return None if any(value is None for value in values) else [float(v) for v in values]
+
+
+def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
+    base = _feature_vector(record, role)
+    if base is None:
+        return None
+    if role == "hitter":
+        iso, strikeout_pct, walk_pct, ops, youth, level = base
+        plate_appearances = _sample(record, role)
+        discipline = walk_pct - strikeout_pct
+        extra = [
+            _zero_num(record.get("avg")),
+            _zero_num(record.get("obp")),
+            _zero_num(record.get("slg")),
+            _zero_num(record.get("babip")),
+            _safe_ratio(record.get("hr"), plate_appearances, 0.0) * 600.0,
+            _safe_ratio(record.get("sb"), plate_appearances, 0.0) * 600.0,
+            discipline,
+            walk_pct / (strikeout_pct + 1.0),
+            _safe_log1p(plate_appearances),
+            iso * youth,
+            ops * youth,
+            discipline * youth,
+            iso * ops,
+            iso * discipline,
+            ops * discipline,
+            iso * level,
+            ops * level,
+            strikeout_pct * level,
+            walk_pct * level,
+        ]
+    else:
+        k_per_9, bb_per_9, k_bb_pct, era, whip, youth, level, is_starter = base
+        innings = _sample(record, role)
+        draft_pick = _zero_num(record.get("draft_pick_number"))
+        draft_round = _zero_num(record.get("draft_round"))
+        bonus = _zero_num(record.get("signing_bonus"))
+        school_type = str(record.get("school_type") or "").strip().lower()
+        bats = str(record.get("bats") or record.get("bat_side") or "").strip().upper()
+        throws = (
+            str(record.get("throws") or record.get("throwing_hand") or "")
+            .strip()
+            .upper()
+        )
+        extra = [
+            k_per_9 / (bb_per_9 + 1.0),
+            _zero_num(record.get("hr_per_9")),
+            _zero_num(record.get("h_per_9")),
+            _zero_num(record.get("walks_per_9")),
+            _safe_ratio(record.get("games_started"), record.get("games"), is_starter),
+            _safe_log1p(innings),
+            _safe_ratio(record.get("batters_faced"), innings, 0.0),
+            k_bb_pct * youth,
+            era * youth,
+            whip * youth,
+            is_starter * youth,
+            era * whip,
+            k_per_9 * level,
+            bb_per_9 * level,
+            k_bb_pct * level,
+            era * level,
+            whip * level,
+            1.0 if _truthy(record.get("rule4_drafted")) else 0.0,
+            1.0 if _truthy(record.get("draft_record_known")) else 0.0,
+            _zero_num(record.get("pick_value")),
+            1.0 / (draft_pick or 999.0),
+            1.0 / (draft_round or 99.0),
+            _safe_log1p(bonus),
+            1.0 if school_type == "college" else 0.0,
+            1.0 if school_type == "prep" else 0.0,
+            1.0 if bats == "L" else 0.0,
+            1.0 if bats == "S" else 0.0,
+            1.0 if throws == "L" else 0.0,
+        ]
+    return [float(value) for value in base + extra]
 
 
 def _canonical_impact_feature_vector(base: list[float], role: str) -> list[float]:
@@ -333,8 +496,9 @@ def _historical_rows(
             continue
         if not record.get("mlbam_id") or (_num(record.get("age")) or 99) > MAX_AGE:
             continue
-        features = _feature_vector(record, role)
-        if features is None:
+        baseline_features = _feature_vector(record, role)
+        features = _outcome_feature_vector(record, role)
+        if baseline_features is None or features is None:
             continue
         eligible.append(
             {
@@ -343,6 +507,7 @@ def _historical_rows(
                 "level": str(record.get("level") or "").upper(),
                 "age": int(record.get("age") or 0),
                 "features": features,
+                "baseline_features": baseline_features,
                 "target": OUTCOME_TARGET[record["outcome"]],
             }
         )
@@ -520,15 +685,18 @@ def _prior_predict(prior: dict, row: dict) -> float:
     return float(prior["cells"].get(key, prior["overall"]))
 
 
-def _fit_neighbors(rows: list[dict]) -> dict | None:
+def _fit_neighbors(rows: list[dict], feature_key: str = "features") -> dict | None:
     if not rows:
         return None
-    columns = list(zip(*(row["features"] for row in rows)))
+    columns = list(zip(*(row[feature_key] for row in rows)))
     means = [mean(column) for column in columns]
     stds = [pstdev(column) or 1.0 for column in columns]
     return {
         "features": [
-            [(value - center) / spread for value, center, spread in zip(row["features"], means, stds)]
+            [
+                (value - center) / spread
+                for value, center, spread in zip(row[feature_key], means, stds)
+            ]
             for row in rows
         ],
         "targets": [row["target"] for row in rows],
@@ -570,6 +738,7 @@ def _walk_forward(
     role_rows: list[dict],
     model_kind: str = "ridge",
     ridge_lambda: float = RIDGE_LAMBDA,
+    neighbor_feature_key: str = "features",
 ) -> dict:
     model_predictions, prior_predictions = [], []
     neighbor_predictions, canonical_neighbor_predictions, targets = [], [], []
@@ -579,7 +748,7 @@ def _walk_forward(
         train = [row for row in role_rows if row["cohort_year"] < test_year]
         test = [row for row in role_rows if row["cohort_year"] == test_year]
         model = _fit_prediction_model(train, model_kind, ridge_lambda)
-        neighbors = _fit_neighbors(train)
+        neighbors = _fit_neighbors(train, neighbor_feature_key)
         canonical_train = [
             {**row, "features": row.get("baseline_features", row["features"])}
             for row in train
@@ -599,7 +768,9 @@ def _walk_forward(
         for row in test:
             model_predictions.append(_predict_model(model, row["features"]))
             prior_predictions.append(_prior_predict(prior, row))
-            neighbor_predictions.append(_neighbor_predict(neighbors, row["features"]))
+            neighbor_predictions.append(
+                _neighbor_predict(neighbors, row.get(neighbor_feature_key, row["features"]))
+            )
             canonical_neighbor_predictions.append(
                 _neighbor_predict(
                     canonical_neighbors,
@@ -628,7 +799,13 @@ def _walk_forward(
 
 def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> dict:
     rows = _historical_rows(dataset_rows, role)
-    validation = _walk_forward(rows)
+    model_kind = OUTCOME_MODEL_KIND[role]
+    validation = _walk_forward(
+        rows,
+        model_kind,
+        RIDGE_LAMBDA,
+        neighbor_feature_key="baseline_features",
+    )
     now = now or datetime.now(timezone.utc).isoformat()
     gate = decide_gate(
         metric="outcome_score_mae",
@@ -645,15 +822,19 @@ def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> d
         lower_is_better=True,
         now=now,
     )
-    model = _fit_ridge(rows)
-    if model is None:
+    prediction_model = _fit_prediction_model(rows, model_kind, RIDGE_LAMBDA)
+    driver_model = _fit_ridge(rows)
+    if prediction_model is None or driver_model is None:
         raise ValueError(f"Could not fit {role} model from {len(rows)} rows")
     return {
         "role": role,
-        "feature_names": list(FEATURE_NAMES[role]),
-        "weights": [round(value, 8) for value in model["weights"]],
-        "means": [round(value, 8) for value in model["means"]],
-        "stds": [round(value, 8) for value in model["stds"]],
+        "model_kind": model_kind,
+        "ridge_lambda": RIDGE_LAMBDA,
+        "feature_names": list(OUTCOME_FEATURE_NAMES[role]),
+        "prediction_model": _rounded_prediction_model(prediction_model),
+        "weights": [round(value, 8) for value in driver_model["weights"]],
+        "means": [round(value, 8) for value in driver_model["means"]],
+        "stds": [round(value, 8) for value in driver_model["stds"]],
         "training_sample": len(rows),
         "validation_sample": len(validation["targets"]),
         "model_mae": round(validation["model_mae"], 6),
@@ -831,21 +1012,20 @@ def score_current(
     for role in ("hitter", "pitcher"):
         role_model = role_models[role]
         impact_model = impact_models[role]
-        runtime = {
-            "weights": role_model["weights"],
-            "means": role_model["means"],
-            "stds": role_model["stds"],
-        }
+        outcome_runtime = {**role_model["prediction_model"]}
         impact_runtime = {**impact_model["prediction_model"]}
         for record in _select_current_records(current, role):
             service_fact = service.get((int(record["mlbam_id"]), role))
             if service_fact is None or service_fact.get("graduated"):
                 continue
             raw = _feature_vector(record, role)
-            if raw is None:
+            outcome_raw = _outcome_feature_vector(record, role)
+            if raw is None or outcome_raw is None:
                 continue
             sample = _sample(record, role)
-            regressed, reliability = _regress_current_features(raw, role_model, role, sample)
+            regressed, reliability = _regress_current_features(
+                outcome_raw, role_model, role, sample
+            )
             impact_base, _ = _regress_current_features(raw, impact_model, role, sample)
             impact_features = _impact_feature_vector(impact_base, role)
             if reliability >= 0.60:
@@ -868,13 +1048,19 @@ def score_current(
                     "sample_unit": "PA" if role == "hitter" else "IP",
                     "sample_reliability": round(reliability, 3),
                     "confidence": confidence,
-                    "expected_outcome_score": round(_predict(runtime, regressed), 4),
+                    "expected_outcome_score": round(
+                        _predict_model(outcome_runtime, regressed), 4
+                    ),
                     "expected_category_impact_score": round(
                         _predict_model(impact_runtime, impact_features), 4
                     ),
                     "role_gate": role_model["gate"]["status"],
                     "impact_gate": impact_model["gate"]["status"],
-                    "drivers": _drivers(role_model, regressed, FEATURE_NAMES[role]),
+                    "drivers": _prediction_drivers(
+                        outcome_runtime,
+                        regressed,
+                        OUTCOME_FEATURE_NAMES[role],
+                    ),
                     "impact_drivers": _prediction_drivers(
                         impact_runtime,
                         impact_features,

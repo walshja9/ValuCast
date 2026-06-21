@@ -206,6 +206,16 @@ def test_historical_rows_deduplicate_player_before_walk_forward():
     assert out[0]["level"] == "AAA"
 
 
+def test_historical_outcome_rows_keep_original_neighbor_baseline_features():
+    rows = [_historical("hitter", 2015, 1, "star", level="A+", age=20)]
+
+    out = _historical_rows(rows, "hitter")
+
+    assert out[0]["level"] == "A+"
+    assert "baseline_features" in out[0]
+    assert len(out[0]["features"]) > len(out[0]["baseline_features"])
+
+
 def test_walk_forward_is_player_grouped_and_never_trains_on_future_cohorts():
     rows = _historical_rows(_contract()["historical"]["rows"], "hitter")
     validation = _walk_forward(rows)
@@ -248,6 +258,8 @@ def test_role_training_emits_valid_honest_gate():
         "level_age_prior",
         "historical_neighbors_25",
     }
+    assert result["model_kind"] == "hurdle_ridge"
+    assert result["prediction_model"]["model_kind"] == "hurdle_ridge"
 
 
 def test_partial_impact_axis_values_reliever_season_without_starter_volume():
@@ -450,6 +462,18 @@ def test_impact_drivers_do_not_use_plain_ridge_driver_weights():
     ] == [
         (row["expected_category_impact_score"], row["impact_drivers"])
         for row in before
+    ]
+
+
+def test_outcome_scores_use_validated_prediction_model_not_driver_weights():
+    contract = _contract()
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    before = score_current(contract, payload["roles"], payload["impact_roles"])
+    for role_model in payload["roles"].values():
+        role_model["weights"] = [999.0 for _ in role_model["weights"]]
+    after = score_current(contract, payload["roles"], payload["impact_roles"])
+    assert [row["expected_outcome_score"] for row in after] == [
+        row["expected_outcome_score"] for row in before
     ]
 
 
