@@ -180,3 +180,13 @@ jobs:
             sleep $((attempt * 5))
           done
           exit 1
+
+      - name: Trigger Render deploy
+        # Render's dashboard auto-deploy toggle keeps disabling itself, leaving
+        # the live app on stale data even after a successful refresh. Fire the
+        # service deploy hook directly so publishing never depends on that
+        # toggle. Dormant until RENDER_DEPLOY_HOOK_URL is set as a repo secret.
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
