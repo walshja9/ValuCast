@@ -3667,10 +3667,15 @@ def health_ready():
         "valucast": _store_ok("valucast"),
     }
     if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1":
-        stores["public_snapshot_ready"] = (
-            public_snapshot_store.is_available
-            and public_snapshot_store.ready_for_live_consumers
-        )
+        # Gate the deploy on the snapshot being SERVABLE (valid + present), not on
+        # live-readiness. When the quality governor withholds live consumption
+        # (e.g. "risky prospect bucket concentration"), the dynasty/prospect
+        # routes fall back to stale-snapshot mode and still return 200 — so the
+        # core surfaces (Board, Map, Scouting) and the daily refresh must still
+        # deploy rather than freezing the whole site on the prior build. The
+        # live-readiness flag stays reported under "public_snapshot" below for
+        # observability; it gates what those pages show, never the deploy.
+        stores["public_snapshot_available"] = public_snapshot_store.is_available
     # Buys readiness is informational only — a governor block on /buys must not
     # fail health and block the deploy. ponytail: reported, never gating.
     buys_live = (

@@ -77,6 +77,28 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.get_json()["valucast_buys"]["live"])
 
+    def test_health_ready_survives_snapshot_governor_block(self):
+        """A quality-governor block on the public snapshot (available but not
+        live-ready, e.g. "risky prospect bucket concentration") must NOT fail
+        readiness. The site serves in stale-snapshot mode, so the deploy has to
+        go live rather than freezing the whole app — and the date — on the prior
+        build. Guards the health gate against re-coupling to live-readiness."""
+        import app as app_module
+
+        base = self.client.get("/health/ready").get_json()["stores"]
+        if not (base.get("steamer") and base.get("valucast")):
+            self.skipTest("base projection stores not available in this checkout")
+        blocked_snapshot = types.SimpleNamespace(
+            is_available=True, ready_for_live_consumers=False
+        )
+        with mock.patch.object(app_module, "public_snapshot_store", blocked_snapshot):
+            response = self.client.get("/health/ready")
+        self.assertEqual(response.status_code, 200)
+        body = response.get_json()
+        self.assertTrue(body["ready"])
+        self.assertTrue(body["stores"]["public_snapshot_available"])
+        self.assertFalse(body["public_snapshot"]["ready_for_live_consumers"])
+
     def test_live_dynasty_source_is_valucast_owned(self):
         """When a ValuCast snapshot is live, the served board must be ValuCast-owned,
         never the DD feed. Allowlist (not exact match) so the planned stale source
