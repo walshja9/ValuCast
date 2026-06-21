@@ -116,30 +116,11 @@ OUTCOME_FEATURE_NAMES = {
     ),
 }
 OUTCOME_MODEL_KIND = {"hitter": "hurdle_ridge", "pitcher": "hurdle_ridge"}
-IMPACT_FEATURE_NAMES = {
-    "hitter": FEATURE_NAMES["hitter"]
-    + (
-        "iso_x_youth",
-        "ops_x_youth",
-        "discipline_x_youth",
-        "iso_x_ops",
-        "iso_x_discipline",
-        "ops_x_discipline",
-        "iso_x_level",
-        "ops_x_level",
-        "k_pct_x_level",
-        "bb_pct_x_level",
-    ),
-    "pitcher": FEATURE_NAMES["pitcher"]
-    + (
-        "k_bb_ratio",
-        "k_bb_pct_x_youth",
-        "era_x_youth",
-        "whip_x_youth",
-        "starter_x_youth",
-        "era_x_whip",
-    ),
-}
+# The fantasy-impact axis shares the rich factual feature vector with the
+# outcome axis (OUTCOME_FEATURE_NAMES). Both axes are best predicted from the
+# same minor-league line + pedigree signal; only the regression target differs.
+# The simple fixed-interaction vector below is retained solely as the canonical
+# kNN baseline the impact gate must beat.
 IMPACT_DRIVER_GROUPS = {
     "hitter": {
         "aaa_translation": (
@@ -365,23 +346,6 @@ def _canonical_impact_feature_vector(base: list[float], role: str) -> list[float
     return base + extra
 
 
-def _impact_feature_vector(base: list[float], role: str) -> list[float]:
-    """Add restrained translation interactions for the fantasy-impact axis."""
-    features = _canonical_impact_feature_vector(base, role)
-    if role != "hitter":
-        return features
-    iso, strikeout_pct, walk_pct, ops, _youth, level = base
-    discipline = walk_pct - strikeout_pct
-    return features + [
-        iso * discipline,
-        ops * discipline,
-        iso * level,
-        ops * level,
-        strikeout_pct * level,
-        walk_pct * level,
-    ]
-
-
 def _category_value(season: dict, category: str) -> float | None:
     """Return a canonical league-category value from factual season fields."""
     if category == "sv_hld":
@@ -536,7 +500,8 @@ def _historical_impact_rows(
         if not record.get("mlbam_id") or (_num(record.get("age")) or 99) > MAX_AGE:
             continue
         base = _feature_vector(record, role)
-        if base is None:
+        outcome_features = _outcome_feature_vector(record, role)
+        if base is None or outcome_features is None:
             continue
         eligible.append(
             {
@@ -544,7 +509,7 @@ def _historical_impact_rows(
                 "cohort_year": int(record["cohort_year"]),
                 "level": str(record.get("level") or "").upper(),
                 "age": int(record.get("age") or 0),
-                "features": _impact_feature_vector(base, role),
+                "features": outcome_features,
                 "baseline_features": _canonical_impact_feature_vector(base, role),
                 "target": _impact_target(record, role, seasons_by_player, references),
             }
@@ -856,7 +821,7 @@ def train_impact_role(
     rows = _historical_impact_rows(
         dataset_rows, role, seasons_by_player, references
     )
-    model_kind = "hurdle_ridge" if role == "hitter" else "ridge"
+    model_kind = "hurdle_ridge"
     ridge_lambda = HITTER_IMPACT_RIDGE_LAMBDA if role == "hitter" else RIDGE_LAMBDA
     validation = _walk_forward(rows, model_kind, ridge_lambda)
     now = now or datetime.now(timezone.utc).isoformat()
@@ -886,7 +851,7 @@ def train_impact_role(
         "role": role,
         "model_kind": model_kind,
         "ridge_lambda": ridge_lambda,
-        "feature_names": list(IMPACT_FEATURE_NAMES[role]),
+        "feature_names": list(OUTCOME_FEATURE_NAMES[role]),
         "prediction_model": _rounded_prediction_model(prediction_model),
         "weights": [round(value, 8) for value in driver_model["weights"]],
         "means": [round(value, 8) for value in driver_model["means"]],
@@ -1026,8 +991,9 @@ def score_current(
             regressed, reliability = _regress_current_features(
                 outcome_raw, role_model, role, sample
             )
-            impact_base, _ = _regress_current_features(raw, impact_model, role, sample)
-            impact_features = _impact_feature_vector(impact_base, role)
+            impact_features, _ = _regress_current_features(
+                outcome_raw, impact_model, role, sample
+            )
             if reliability >= 0.60:
                 confidence = "high"
             elif reliability >= 0.35:
@@ -1064,7 +1030,7 @@ def score_current(
                     "impact_drivers": _prediction_drivers(
                         impact_runtime,
                         impact_features,
-                        IMPACT_FEATURE_NAMES[role],
+                        OUTCOME_FEATURE_NAMES[role],
                         IMPACT_DRIVER_GROUPS[role],
                     ),
                 }

@@ -145,6 +145,44 @@ required 2% (`model_score=0.171666`, `canonical_historical_neighbors_25`
 baseline `0.174119`). The front-office outcome backtest therefore improves from
 the A/A+ foundation regression, but it does **not** earn the A-level claim yet.
 
+### Impact-gate result (2026-06-21, follow-up)
+
+The category-impact gate is now **active**. Root cause of the 1.41%: the impact
+model was starved — pitchers used plain ridge over only six fixed interactions
+(none of the draft-pedigree / rate / handedness signal that made the *outcome*
+pitcher model beat kNN by 9.68%), and hitters used a thin interaction set.
+
+Fix: the impact axis now trains on the **same rich factual feature vector** as
+the outcome axis (`_outcome_feature_vector`), with **hurdle-ridge for both
+roles**. The simple fixed-interaction vector (`_canonical_impact_feature_vector`)
+is retained, untouched, as the canonical kNN baseline the gate must beat — and
+the `historical_neighbors_25` baseline is deliberately left on the *rich*
+features (the strictest honest test: the parametric model must beat a kNN armed
+with identical inputs). `score_current` regresses and predicts the impact axis
+through the serialized `prediction_model`, mirroring the outcome path exactly.
+
+Frozen walk-forward result (temp artifact build):
+
+| predictor | pooled MAE | status |
+|---|---:|---|
+| impact model | 0.167010 | active |
+| historical_neighbors_25 (rich kNN) | 0.172373 | baseline (binding) |
+| canonical_historical_neighbors_25 | 0.174119 | baseline |
+| level_age_prior | 0.198944 | baseline |
+
+Pooled improvement vs the binding baseline = **3.11%** OOS (`sample_size=2901`),
+clearing the 2% bar. Per-role: hitters +1.17%, pitchers +5.78%. Against the
+canonical kNN the margin is **+4.08%**, so the win holds under either baseline.
+
+**Grade impact:** with both `board_gate` and `impact_board_gate` active, the
+front-office backtest scores **97 uncapped (A+)**, capped to **B+ / 87**. The
+only remaining cap is *"Forward observations are not review-ready yet"* — a
+time-based evidence-collection milestone (`forward_validation` must reach
+`review_ready`), **not** a modeling lever. So B+/87 is the modeling ceiling with
+A/A+ included; the grade jumps toward A+ automatically once forward archives
+mature. This delivers the issue's secondary criterion (impact gate active →
+recover 15 pts → at least B+ with A/A+ included): B−/82 → **B+/87**.
+
 ---
 
 ## 5. Success criteria (measurable)
@@ -278,5 +316,7 @@ Each idea must be validated through `_walk_forward` and shipped through
 - Data artifacts under `data/models/` and `data/prediction_archive/` are **not**
   regenerated on this branch (kept at `master` baseline). Run the harness in
   section 7 to regenerate; expect C+ until the outcome/impact gates improve.
-- Reference grades: baseline (AA/AAA only) **B+ (87)**; A/A+ added today
-  **C+ (76)**; theoretical max if both gates active **A (97 uncapped)**.
+- Reference grades: baseline (AA/AAA only) **B+ (87)**; A/A+ added, gates
+  fallback **C+ (76)**; A/A+ + outcome gate only **B- (82)**; A/A+ + **both
+  gates active** (current) **B+ (87)**, capped from **97 uncapped (A+)** solely
+  by the forward-archive milestone.

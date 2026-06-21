@@ -9,12 +9,13 @@ from prospects.model import (
     _active_impact_categories,
     _canonical_impact_feature_vector,
     _category_value,
+    _feature_vector,
     _fit_prediction_model,
     _historical_rows,
     _historical_impact_rows,
-    _impact_feature_vector,
     _impact_references,
     _impact_target,
+    _outcome_feature_vector,
     _prediction_drivers,
     _predict_model,
     _regress_current_features,
@@ -418,12 +419,21 @@ def test_prediction_drivers_use_hurdle_score_and_group_aaa_translation():
     assert "ops_x_level" not in by_name
 
 
-def test_hitter_translation_interactions_do_not_change_canonical_features():
-    base = [0.2, 20.0, 10.0, 0.8, 1.0, 1.0]
-    canonical = _canonical_impact_feature_vector(base, "hitter")
-    expanded = _impact_feature_vector(base, "hitter")
-    assert expanded[: len(canonical)] == canonical
-    assert len(expanded) > len(canonical)
+def test_impact_rows_train_on_rich_features_with_canonical_knn_baseline():
+    record = _historical("hitter", 2015, 1, "star", level="A+", age=20)
+    refs = _impact_references({})
+
+    rows = _historical_impact_rows([record], "hitter", {}, refs)
+
+    # The impact axis now trains on the same rich factual vector as the outcome
+    # axis, so the validated predictor and the shipped predictor share inputs.
+    assert rows[0]["features"] == _outcome_feature_vector(record, "hitter")
+    # The simple fixed-interaction vector is preserved, distinct and smaller,
+    # as the canonical kNN baseline the impact gate must still beat.
+    assert rows[0]["baseline_features"] == _canonical_impact_feature_vector(
+        _feature_vector(record, "hitter"), "hitter"
+    )
+    assert len(rows[0]["baseline_features"]) < len(rows[0]["features"])
 
 
 def test_shadow_output_is_valucast_owned_and_service_gated():
