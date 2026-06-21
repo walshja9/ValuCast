@@ -142,7 +142,8 @@ def test_primary_nav_links_to_intelligence_surfaces():
 
     assert response.status_code == 200
     assert 'href="/intelligence">Intelligence Hub</a>' in html
-    assert 'href="/buys">Buys</a>' in html
+    assert 'href="/backfields">Backfields</a>' in html
+    assert 'href="/buys">Buys</a>' not in html
     assert 'href="/map">Map</a>' in html
     assert 'href="/scouting">Scouting</a>' in html
     assert 'href="/methodology">Methodology</a>' in html

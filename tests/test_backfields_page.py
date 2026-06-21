@@ -49,6 +49,16 @@ def test_backfields_nav_link_and_active_state():
     assert re.search(r'<a href="/backfields"\s+aria-current="page">Backfields</a>', html)
 
 
+def test_prospect_neighbor_navigation_points_to_backfields():
+    for path in ("/buys", "/map"):
+        response, html = _html(path)
+        assert response.status_code in {200, 503}
+        if response.status_code == 503:
+            continue
+        assert 'href="/backfields" class="htab htab-prospects">Backfields</a>' in html
+        assert 'href="/?mode=prospects" class="htab htab-prospects">Prospects</a>' not in html
+
+
 def test_backfields_section_anchors_present():
     response, html = _html("/backfields")
 
@@ -167,7 +177,8 @@ def test_backfields_player_links_and_report_links_are_distinct():
     assert 'class="bf-player-link"' in html
     assert 'data-bf-detail-url="/player/' in html
     assert 'data-bf-detail-panel' in html
-    assert 'href="/?mode=prospects">View full top 100</a>' in html
+    assert "Showing top 100" in html
+    assert 'href="/?mode=prospects">View full top 100</a>' not in html
     assert "/rankings?mode=prospects" not in html
     assert 'class="bf-report-badge" href="/scouting?' in html
 

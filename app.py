@@ -2758,7 +2758,7 @@ def _build_backfields_page_context():
     recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
     scouting_repository = _load_artifact(models / "valucast_scouting_reports.json")
     stat_payload = _load_artifact(root / "data" / "prospects" / "raw" / "milb_season_stats.json")
-    prospect_rows = _prospect_rows()[:50] if dd_store.is_available else []
+    prospect_rows = _prospect_rows()[:100] if dd_store.is_available else []
     tiers = _prospect_tiers() if dd_store.is_available else {}
     all_prospects = _prospect_rows() if dd_store.is_available else []
 

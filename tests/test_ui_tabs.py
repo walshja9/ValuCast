@@ -24,7 +24,10 @@ class TestTabMarkup(unittest.TestCase):
     def test_horizon_tabs_are_links(self):
         html = self.client.get("/").data.decode("utf-8")
         self.assertIn('href="/?mode=dd_dynasty"', html)
-        self.assertIn('href="/?mode=prospects"', html)
+        self.assertIn('href="/backfields"', html)
+        horizon_nav = re.search(r'<nav class="horizon-tabs"[^>]*>(.*?)</nav>', html, re.S).group(1)
+        self.assertNotIn('href="/?mode=prospects"', horizon_nav)
+        self.assertIn(">Backfields</a>", horizon_nav)
         self.assertIn('class="horizon-tabs"', html)
         self.assertIn('aria-current="page"', html)
 
