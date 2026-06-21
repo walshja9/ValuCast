@@ -429,8 +429,8 @@ def test_daily_public_workflow_approves_scheduled_buys_and_rebases_before_push()
     ) in workflow
     assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "50"' in workflow
     assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "8"' in workflow
-    assert "git pull --rebase origin master" in workflow
-    assert "for attempt in 1 2 3" in workflow
+    assert "git rebase -X theirs origin/master" in workflow
+    assert "for attempt in 1 2 3 4 5" in workflow
 
 
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():

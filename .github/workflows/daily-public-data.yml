@@ -2,15 +2,19 @@ name: Daily public data refresh
 
 on:
   schedule:
-    # Primary daily public refresh: 6:45 AM ET during daylight time.
-    # This gives ValuCast enough buffer to publish fresh public pages and
-    # share graphics before 8:00 AM ET.
-    - cron: "45 10 * * *"
-    # Same-morning fallback before 8:00 AM ET if GitHub's early scheduled
-    # workflow is delayed or skipped during congestion.
-    - cron: "30 11 * * *"
-    # Late safety fallback: GitHub scheduled workflows are best-effort, so keep
-    # one later run to recover if both pre-8 refreshes miss.
+    # GitHub scheduled workflows are best-effort: runs are routinely delayed
+    # 30-60+ min or dropped entirely during congestion (the 10:45 UTC primary
+    # was silently skipped on 2026-06-21). Stack several morning attempts with
+    # off-the-half-hour minutes so at least one lands fresh public data before
+    # the 8:00 AM ET (12:00 UTC) share window even when the earlier ones miss.
+    #
+    # Primary refresh: 5:50 AM ET during daylight time. The early start absorbs
+    # a delayed run plus the ~25-30 min build and still finishes before 8 AM ET.
+    - cron: "50 9 * * *"
+    # Same-morning fallbacks before 8:00 AM ET if an earlier run is skipped.
+    - cron: "40 10 * * *"
+    - cron: "20 11 * * *"
+    # Late safety fallback to recover if every pre-8 refresh misses.
     - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
@@ -30,7 +34,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The LLM scouting build alone can run ~25-30 min on a cold cache. A 30-min
+    # job cap let it get cancelled mid-build (no commit, app stuck a day behind),
+    # so give the whole pipeline real headroom.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
         with:
@@ -158,9 +165,18 @@ jobs:
           fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
-          for attempt in 1 2 3; do
-            git pull --rebase origin master
+          # Publish with retries. A manual dispatch racing the schedule can move
+          # origin/master between our fetch and push; a rejected push then left
+          # the old "pull --rebase; push" loop wedged mid-rebase and the job
+          # failed without committing (app stuck a day behind). On rejection,
+          # rebase our freshly generated data onto origin and retry. -X theirs
+          # keeps THIS run's artifacts when a data file changed on both sides
+          # (in a rebase, "theirs" is the commit being replayed = ours).
+          for attempt in 1 2 3 4 5; do
             git push origin master && exit 0
+            echo "push attempt $attempt rejected; rebasing on origin/master"
+            git fetch origin master
+            git rebase -X theirs origin/master || git rebase --abort
             sleep $((attempt * 5))
           done
           exit 1
