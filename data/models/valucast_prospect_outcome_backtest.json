@@ -331,38 +331,37 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": null,
+        "activated_at": "2026-06-21T23:34:06.029833+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.21697,
+        "baseline_score": 0.140745,
         "cv_method": "walk_forward",
-        "improvement_pct": -0.3968,
+        "improvement_pct": 5.6105,
         "metric": "outcome_score_mae",
-        "model_score": 0.217831,
-        "reason": "does not beat historical_neighbors_25: -0.40% < required 2.0%",
-        "sample_size": 977,
-        "status": "fallback",
-        "validated_through": "2019"
-      },
-      "candidate_count": 867,
-      "impact_board_gate": {
-        "activated_at": "2026-06-13T00:11:54.589323+00:00",
-        "baseline": "canonical_historical_neighbors_25",
-        "baseline_score": 0.227304,
-        "cv_method": "walk_forward",
-        "improvement_pct": 2.4262,
-        "metric": "category_impact_mae",
-        "model_score": 0.221789,
-        "reason": "beats canonical_historical_neighbors_25 by 2.43% OOS (category_impact_mae)",
-        "sample_size": 977,
+        "model_score": 0.132848,
+        "reason": "beats historical_neighbors_25 by 5.61% OOS (outcome_score_mae)",
+        "sample_size": 2901,
         "status": "active",
         "validated_through": "2019"
       },
-      "status": "partial"
+      "candidate_count": 2710,
+      "impact_board_gate": {
+        "activated_at": "2026-06-21T23:34:06.029833+00:00",
+        "baseline": "historical_neighbors_25",
+        "baseline_score": 0.172373,
+        "cv_method": "walk_forward",
+        "improvement_pct": 3.1112,
+        "metric": "category_impact_mae",
+        "model_score": 0.16701,
+        "reason": "beats historical_neighbors_25 by 3.11% OOS (category_impact_mae)",
+        "sample_size": 2901,
+        "status": "active",
+        "validated_through": "2019"
+      },
+      "status": "active"
     }
   },
   "front_office_track": {
     "cap_reasons": [
-      "Ordinal bridge is still partial; bucket/cohort evidence caps the grade.",
       "Forward observations are not review-ready yet."
     ],
     "forward_next_target_grade": "A-",
@@ -436,7 +435,7 @@
     "score": 87,
     "score_cap": 87,
     "target_grade": "A-",
-    "uncapped_score": 91
+    "uncapped_score": 97
   },
   "generated_at": "2026-06-21T00:00:00+00:00",
   "generated_dates": {
@@ -463,12 +462,6 @@
     "blockers": [],
     "bucket_cohort_evidence_ready": true,
     "evidence_gates": [
-      {
-        "current": "fallback",
-        "kind": "ordinal_bridge",
-        "message": "Ordinal bridge outcome gate is not active yet.",
-        "required": "active"
-      },
       {
         "current": "collecting",
         "kind": "forward_archives",
