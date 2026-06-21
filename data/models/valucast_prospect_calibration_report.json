@@ -32,13 +32,13 @@
     "availability_watchlist_count_top50": 4,
     "bands": {
       "100": {
-        "availability_adjusted_count": 13,
-        "availability_adjusted_rate": 0.13,
+        "availability_adjusted_count": 12,
+        "availability_adjusted_rate": 0.12,
         "availability_status_counts": {
-          "available": 87,
+          "available": 88,
           "injured": 3,
           "stale_or_inactive": 1,
-          "thin_current_sample": 9
+          "thin_current_sample": 8
         },
         "evaluated_count": 100,
         "fallback_count": 16,
@@ -58,53 +58,53 @@
           "pitcher": 30,
           "unknown": 0
         },
-        "score_average": 42.2965,
-        "score_max": 58.8,
+        "score_average": 42.2673,
+        "score_max": 58.82,
         "score_min": 36.74,
         "score_source_counts": {
           "prospect_model_v0_6": 66,
           "prospect_pedigree_v0_7": 18,
           "universal_fallback": 16
         },
-        "thin_current_sample_count": 9,
+        "thin_current_sample_count": 8,
         "top_n": 100
       },
       "200": {
-        "availability_adjusted_count": 28,
-        "availability_adjusted_rate": 0.14,
+        "availability_adjusted_count": 27,
+        "availability_adjusted_rate": 0.135,
         "availability_status_counts": {
-          "available": 172,
+          "available": 173,
           "injured": 5,
           "stale_or_inactive": 1,
-          "thin_current_sample": 22
+          "thin_current_sample": 21
         },
         "evaluated_count": 200,
-        "fallback_count": 58,
-        "fallback_rate": 0.29,
+        "fallback_count": 60,
+        "fallback_rate": 0.3,
         "level_counts": {
           "A": 24,
-          "A+": 39,
-          "AA": 60,
-          "AAA": 77
+          "A+": 41,
+          "AA": 59,
+          "AAA": 76
         },
         "max_availability_risk_discount": 0.12,
         "pedigree_count": 18,
         "pedigree_rate": 0.09,
-        "pitcher_rate": 0.4,
+        "pitcher_rate": 0.39,
         "role_counts": {
-          "hitter": 120,
-          "pitcher": 80,
+          "hitter": 122,
+          "pitcher": 78,
           "unknown": 0
         },
-        "score_average": 38.3056,
-        "score_max": 58.8,
-        "score_min": 32.41,
+        "score_average": 38.2874,
+        "score_max": 58.82,
+        "score_min": 32.42,
         "score_source_counts": {
-          "prospect_model_v0_6": 124,
+          "prospect_model_v0_6": 122,
           "prospect_pedigree_v0_7": 18,
-          "universal_fallback": 58
+          "universal_fallback": 60
         },
-        "thin_current_sample_count": 22,
+        "thin_current_sample_count": 21,
         "top_n": 200
       },
       "25": {
@@ -132,8 +132,8 @@
           "pitcher": 5,
           "unknown": 0
         },
-        "score_average": 48.4876,
-        "score_max": 58.8,
+        "score_average": 48.516,
+        "score_max": 58.82,
         "score_min": 43.66,
         "score_source_counts": {
           "prospect_model_v0_6": 21,
@@ -168,8 +168,8 @@
           "pitcher": 11,
           "unknown": 0
         },
-        "score_average": 45.6312,
-        "score_max": 58.8,
+        "score_average": 45.6344,
+        "score_max": 58.82,
         "score_min": 41.75,
         "score_source_counts": {
           "prospect_model_v0_6": 30,
@@ -182,55 +182,55 @@
     },
     "bucket_metrics": [
       {
-        "average_sample": 228.2059,
-        "average_score": 21.975,
+        "average_sample": 228.8099,
+        "average_score": 21.9194,
         "bucket": "hitter|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 216,
-          "AAA": 124
+          "AA": 217,
+          "AAA": 125
         },
         "role": "hitter",
-        "row_count": 340,
+        "row_count": 342,
         "score_source": "prospect_model_v0_6",
         "top100_count": 36,
-        "top200_count": 58,
+        "top200_count": 59,
         "top25_count": 15,
         "top50_count": 18,
         "top_rank": 1
       },
       {
-        "average_sample": 42.5936,
-        "average_score": 18.7979,
+        "average_sample": 42.5904,
+        "average_score": 18.8132,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 173,
+          "AA": 174,
           "AAA": 107
         },
         "role": "pitcher",
-        "row_count": 280,
+        "row_count": 281,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 20,
-        "top200_count": 46,
+        "top100_count": 21,
+        "top200_count": 44,
         "top25_count": 4,
         "top50_count": 8,
         "top_rank": 2
       },
       {
-        "average_sample": 114.1266,
-        "average_score": 14.2133,
+        "average_sample": 113.5325,
+        "average_score": 14.2595,
         "bucket": "hitter|upper_level|prospect_model_v0_6|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 53,
-          "AAA": 26
+          "AA": 52,
+          "AAA": 25
         },
         "role": "hitter",
-        "row_count": 79,
+        "row_count": 77,
         "score_source": "prospect_model_v0_6",
         "top100_count": 2,
         "top200_count": 3,
@@ -239,8 +239,8 @@
         "top_rank": 11
       },
       {
-        "average_sample": 229.2,
-        "average_score": 43.4513,
+        "average_sample": 230.1333,
+        "average_score": 43.4547,
         "bucket": "hitter|lower_minors|prospect_pedigree_v0_7|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
@@ -255,23 +255,23 @@
         "top200_count": 15,
         "top25_count": 4,
         "top50_count": 15,
-        "top_rank": 20
+        "top_rank": 21
       },
       {
-        "average_sample": 33.1029,
-        "average_score": 19.6616,
+        "average_sample": 33.1465,
+        "average_score": 19.4307,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 59,
-          "AAA": 44
+          "AA": 58,
+          "AAA": 43
         },
         "role": "pitcher",
-        "row_count": 103,
+        "row_count": 101,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 6,
-        "top200_count": 14,
+        "top100_count": 5,
+        "top200_count": 13,
         "top25_count": 1,
         "top50_count": 2,
         "top_rank": 22
@@ -295,8 +295,8 @@
         "top_rank": 38
       },
       {
-        "average_sample": 207.55,
-        "average_score": 17.702,
+        "average_sample": 208.25,
+        "average_score": 17.7475,
         "bucket": "hitter|upper_level|universal_fallback|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
@@ -314,20 +314,20 @@
         "top_rank": 46
       },
       {
-        "average_sample": 182.8198,
-        "average_score": 16.0411,
+        "average_sample": 183.2562,
+        "average_score": 16.0202,
         "bucket": "hitter|lower_minors|universal_fallback|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
         "level_counts": {
-          "A": 357,
+          "A": 360,
           "A+": 370
         },
         "role": "hitter",
-        "row_count": 727,
+        "row_count": 730,
         "score_source": "universal_fallback",
         "top100_count": 11,
-        "top200_count": 33,
+        "top200_count": 34,
         "top25_count": 0,
         "top50_count": 3,
         "top_rank": 47
@@ -366,7 +366,7 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 75
+        "top_rank": 74
       },
       {
         "average_sample": 210.1,
@@ -385,7 +385,7 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 79
+        "top_rank": 78
       },
       {
         "average_sample": 24.7,
@@ -403,7 +403,7 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 80
+        "top_rank": 79
       },
       {
         "average_sample": 287.5,
@@ -444,33 +444,33 @@
         "top_rank": 101
       },
       {
-        "average_sample": 35.6171,
-        "average_score": 13.9786,
+        "average_sample": 35.7427,
+        "average_score": 14.017,
         "bucket": "pitcher|lower_minors|universal_fallback|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
         "level_counts": {
-          "A": 321,
-          "A+": 391
+          "A": 323,
+          "A+": 392
         },
         "role": "pitcher",
-        "row_count": 712,
+        "row_count": 715,
         "score_source": "universal_fallback",
         "top100_count": 0,
-        "top200_count": 11,
+        "top200_count": 12,
         "top25_count": 0,
         "top50_count": 0,
         "top_rank": 121
       },
       {
-        "average_sample": 105.075,
-        "average_score": 12.55,
+        "average_sample": 105.675,
+        "average_score": 12.8875,
         "bucket": "hitter|upper_level|universal_fallback|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 25,
-          "AAA": 15
+          "AA": 24,
+          "AAA": 16
         },
         "role": "hitter",
         "row_count": 40,
@@ -479,11 +479,11 @@
         "top200_count": 2,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 153
+        "top_rank": 150
       },
       {
-        "average_sample": 16.3439,
-        "average_score": 19.6546,
+        "average_sample": 16.7024,
+        "average_score": 19.6649,
         "bucket": "pitcher|upper_level|universal_fallback|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "upper_level",
@@ -498,26 +498,26 @@
         "top200_count": 2,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 177
+        "top_rank": 178
       },
       {
-        "average_sample": 31.8701,
-        "average_score": 12.243,
+        "average_sample": 31.8873,
+        "average_score": 12.0909,
         "bucket": "pitcher|upper_level|universal_fallback|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
         "level_counts": {
-          "AA": 52,
+          "AA": 54,
           "AAA": 25
         },
         "role": "pitcher",
-        "row_count": 77,
+        "row_count": 79,
         "score_source": "universal_fallback",
         "top100_count": 0,
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 187
+        "top_rank": 189
       },
       {
         "average_sample": 52.9555,
@@ -536,26 +536,26 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 248
+        "top_rank": 247
       },
       {
-        "average_sample": 21.1143,
-        "average_score": 14.5782,
+        "average_sample": 20.8855,
+        "average_score": 14.6514,
         "bucket": "pitcher|lower_minors|universal_fallback|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "lower_minors",
         "level_counts": {
-          "A": 78,
-          "A+": 41
+          "A": 77,
+          "A+": 40
         },
         "role": "pitcher",
-        "row_count": 119,
+        "row_count": 117,
         "score_source": "universal_fallback",
         "top100_count": 0,
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 277
+        "top_rank": 276
       },
       {
         "average_sample": 277.8,
@@ -593,7 +593,7 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 453
+        "top_rank": 451
       },
       {
         "average_sample": 4.0,
@@ -611,15 +611,15 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 2576
+        "top_rank": 2583
       }
     ],
-    "bucket_tuning_flag_count": 2,
+    "bucket_tuning_flag_count": 1,
     "context_disagreement_count_top50": 24,
-    "fallback_watchlist_count_top200": 58,
+    "fallback_watchlist_count_top200": 60,
     "pedigree_watchlist_count_top50": 15,
-    "row_count": 2647,
-    "tuning_flag_count": 2
+    "row_count": 2652,
+    "tuning_flag_count": 1
   },
   "recommendations": [
     "Expand current factual coverage for low-confidence top-board buckets before hand-tuning names.",
@@ -638,13 +638,6 @@
   },
   "status": "needs_review",
   "tuning_flags": [
-    {
-      "actual": 0.4,
-      "id": "top50_low_confidence_rate",
-      "message": "Top-50 contains too many low-confidence prospect profiles.",
-      "severity": "review",
-      "threshold": 0.38
-    },
     {
       "actual": 15,
       "bucket": "hitter/pitcher|lower_minors|prospect_pedigree_v0_7|any",
@@ -693,7 +686,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 74,
         "dd_rank_gap_context": 27,
         "level": "A+",
@@ -756,7 +749,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 155,
         "dd_rank_gap_context": 106,
         "level": "A",
@@ -787,7 +780,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 116,
         "dd_rank_gap_context": 66,
         "level": "A+",
@@ -800,8 +793,8 @@
         ],
         "rank": 50,
         "role": "hitter",
-        "sample": 276.0,
-        "sample_reliability": 33.1,
+        "sample": 280.0,
+        "sample_reliability": 34.0,
         "sample_unit": "PA",
         "score": 41.75,
         "score_source": "universal_fallback",
@@ -818,7 +811,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 134,
         "dd_rank_gap_context": 83,
         "level": "A+",
@@ -850,7 +843,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",
@@ -861,7 +854,7 @@
         "positions": [
           "SS"
         ],
-        "rank": 60,
+        "rank": 59,
         "role": "hitter",
         "sample": 213.0,
         "sample_reliability": 51.6,
@@ -876,7 +869,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 150,
         "dd_rank_gap_context": 88,
         "level": "A",
@@ -902,42 +895,12 @@
         }
       },
       {
-        "age": 22,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "low",
-        "dd_prospect_rank_context": 198,
-        "dd_rank_gap_context": 133,
-        "level": "A+",
-        "mlb_team": "CLE",
-        "mlbam_id": 830239,
-        "model_score": null,
-        "name": "Aaron Walton",
-        "positions": [
-          "CF"
-        ],
-        "rank": 65,
-        "role": "hitter",
-        "sample": 280.0,
-        "sample_reliability": 58.3,
-        "sample_unit": "PA",
-        "score": 39.99,
-        "score_source": "universal_fallback",
-        "source_ranks_context": {
-          "cfr": 1073,
-          "cfr_raw": 1075.0,
-          "milb_perf": 87
-        }
-      },
-      {
         "age": 18,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 132,
         "dd_rank_gap_context": 66,
         "level": "A",
@@ -968,7 +931,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 224,
         "dd_rank_gap_context": 152,
         "level": "A+",
@@ -1033,9 +996,9 @@
           "prior_season_sample"
         ],
         "availability_status": "stale_or_inactive",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 22,
-        "dd_rank_gap_context": -57,
+        "dd_rank_gap_context": -56,
         "level": "A+",
         "mlb_team": "DET",
         "mlbam_id": 800522,
@@ -1045,7 +1008,7 @@
           "C",
           "1B"
         ],
-        "rank": 79,
+        "rank": 78,
         "role": "hitter",
         "sample": 244.0,
         "sample_reliability": 55.0,
@@ -1065,7 +1028,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",
@@ -1076,7 +1039,7 @@
         "positions": [
           "SS"
         ],
-        "rank": 85,
+        "rank": 83,
         "role": "hitter",
         "sample": 224.0,
         "sample_reliability": 52.8,
@@ -1091,9 +1054,39 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
+        "dd_prospect_rank_context": 198,
+        "dd_rank_gap_context": 106,
+        "level": "A+",
+        "mlb_team": "CLE",
+        "mlbam_id": 830239,
+        "model_score": null,
+        "name": "Aaron Walton",
+        "positions": [
+          "CF"
+        ],
+        "rank": 92,
+        "role": "hitter",
+        "sample": 285.0,
+        "sample_reliability": 58.8,
+        "sample_unit": "PA",
+        "score": 37.0,
+        "score_source": "universal_fallback",
+        "source_ranks_context": {
+          "cfr": 1073,
+          "cfr_raw": 1075.0,
+          "milb_perf": 87
+        }
+      },
+      {
+        "age": 22,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
         "dd_prospect_rank_context": 253,
-        "dd_rank_gap_context": 159,
+        "dd_rank_gap_context": 160,
         "level": "A+",
         "mlb_team": "BAL",
         "mlbam_id": 809372,
@@ -1102,7 +1095,7 @@
         "positions": [
           "1B"
         ],
-        "rank": 94,
+        "rank": 93,
         "role": "hitter",
         "sample": 243.0,
         "sample_reliability": 54.9,
@@ -1125,7 +1118,7 @@
           "manual_status_override"
         ],
         "availability_status": "injured",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 5,
         "dd_rank_gap_context": -95,
         "level": "AA",
@@ -1159,7 +1152,7 @@
           "official_mlb_il_override"
         ],
         "availability_status": "injured",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "AAA",
@@ -1183,7 +1176,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 31,
         "dd_rank_gap_context": -72,
         "level": "A+",
@@ -1215,7 +1208,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1241,7 +1234,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 341,
         "dd_rank_gap_context": 233,
         "level": "A+",
@@ -1271,7 +1264,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 136,
         "dd_rank_gap_context": 25,
         "level": "A",
@@ -1303,9 +1296,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 107,
-        "dd_rank_gap_context": -8,
+        "dd_rank_gap_context": -7,
         "level": "A+",
         "mlb_team": "ATL",
         "mlbam_id": 807080,
@@ -1314,12 +1307,12 @@
         "positions": [
           "CF"
         ],
-        "rank": 115,
+        "rank": 114,
         "role": "hitter",
-        "sample": 279.0,
-        "sample_reliability": 58.2,
+        "sample": 284.0,
+        "sample_reliability": 58.7,
         "sample_unit": "PA",
-        "score": 35.99,
+        "score": 36.04,
         "score_source": "universal_fallback",
         "source_ranks_context": {
           "cfr": 124,
@@ -1334,7 +1327,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1360,7 +1353,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 265,
         "dd_rank_gap_context": 145,
         "level": "A",
@@ -1390,7 +1383,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 85,
         "dd_rank_gap_context": -36,
         "level": "A+",
@@ -1422,7 +1415,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",
@@ -1448,7 +1441,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 19,
         "dd_rank_gap_context": -107,
         "level": "A+",
@@ -1480,9 +1473,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 362,
-        "dd_rank_gap_context": 233,
+        "dd_rank_gap_context": 232,
         "level": "A+",
         "mlb_team": "BOS",
         "mlbam_id": 702517,
@@ -1491,12 +1484,12 @@
         "positions": [
           "2B"
         ],
-        "rank": 129,
+        "rank": 130,
         "role": "hitter",
-        "sample": 209.0,
-        "sample_reliability": 51.1,
+        "sample": 213.0,
+        "sample_reliability": 51.6,
         "sample_unit": "PA",
-        "score": 35.11,
+        "score": 35.16,
         "score_source": "universal_fallback",
         "source_ranks_context": {
           "cfr": 933,
@@ -1510,9 +1503,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 186,
-        "dd_rank_gap_context": 55,
+        "dd_rank_gap_context": 53,
         "level": "A+",
         "mlb_team": "KCR",
         "mlbam_id": 815789,
@@ -1521,7 +1514,7 @@
         "positions": [
           "P"
         ],
-        "rank": 131,
+        "rank": 133,
         "role": "pitcher",
         "sample": 58.0,
         "sample_reliability": 53.7,
@@ -1536,75 +1529,12 @@
         }
       },
       {
-        "age": 19,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "low",
-        "dd_prospect_rank_context": 174,
-        "dd_rank_gap_context": 41,
-        "level": "A+",
-        "mlb_team": "ATL",
-        "mlbam_id": 816111,
-        "model_score": null,
-        "name": "Tate Southisene",
-        "positions": [
-          "SS"
-        ],
-        "rank": 133,
-        "role": "hitter",
-        "sample": 290.0,
-        "sample_reliability": 20.0,
-        "sample_unit": "PA",
-        "score": 34.94,
-        "score_source": "universal_fallback",
-        "source_ranks_context": {
-          "cfr": 413,
-          "cfr_raw": 413.0,
-          "hkb": 214,
-          "milb_perf": 89
-        }
-      },
-      {
-        "age": 19,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "low",
-        "dd_prospect_rank_context": 130,
-        "dd_rank_gap_context": -4,
-        "level": "A+",
-        "mlb_team": "BOS",
-        "mlbam_id": 821100,
-        "model_score": null,
-        "name": "Justin Gonzales",
-        "positions": [
-          "RF"
-        ],
-        "rank": 134,
-        "role": "hitter",
-        "sample": 254.0,
-        "sample_reliability": 55.9,
-        "sample_unit": "PA",
-        "score": 34.93,
-        "score_source": "universal_fallback",
-        "source_ranks_context": {
-          "cfr": 147,
-          "cfr_raw": 147.0,
-          "hkb": 100,
-          "milb_perf": 162,
-          "pipeline": 95
-        }
-      },
-      {
         "age": 18,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1615,7 +1545,7 @@
         "positions": [
           "2B"
         ],
-        "rank": 138,
+        "rank": 137,
         "role": "hitter",
         "sample": 242.0,
         "sample_reliability": 54.8,
@@ -1630,7 +1560,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1641,7 +1571,7 @@
         "positions": [
           "3B"
         ],
-        "rank": 140,
+        "rank": 139,
         "role": "hitter",
         "sample": 227.0,
         "sample_reliability": 53.2,
@@ -1656,7 +1586,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1667,7 +1597,7 @@
         "positions": [
           "3B"
         ],
-        "rank": 151,
+        "rank": 148,
         "role": "hitter",
         "sample": 274.0,
         "sample_reliability": 57.8,
@@ -1684,7 +1614,7 @@
           "limited_upper_level_hitter_sample_under_150_pa"
         ],
         "availability_status": "thin_current_sample",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "AA",
@@ -1695,7 +1625,7 @@
         "positions": [
           "CF"
         ],
-        "rank": 153,
+        "rank": 150,
         "role": "hitter",
         "sample": 143.0,
         "sample_reliability": 23.4,
@@ -1721,7 +1651,7 @@
         "positions": [
           "C"
         ],
-        "rank": 155,
+        "rank": 152,
         "role": "hitter",
         "sample": 234.0,
         "sample_reliability": 52.0,
@@ -1736,7 +1666,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1747,10 +1677,36 @@
         "positions": [
           "CF"
         ],
-        "rank": 157,
+        "rank": 154,
         "role": "hitter",
         "sample": 296.0,
         "sample_reliability": 59.7,
+        "sample_unit": "PA",
+        "score": 33.79,
+        "score_source": "universal_fallback",
+        "source_ranks_context": null
+      },
+      {
+        "age": 21,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
+        "dd_prospect_rank_context": null,
+        "dd_rank_gap_context": null,
+        "level": "A+",
+        "mlb_team": "BOS",
+        "mlbam_id": 805082,
+        "model_score": null,
+        "name": "Ronny Hernandez",
+        "positions": [
+          "C"
+        ],
+        "rank": 155,
+        "role": "hitter",
+        "sample": 83.0,
+        "sample_reliability": 29.3,
         "sample_unit": "PA",
         "score": 33.79,
         "score_source": "universal_fallback",
@@ -1762,7 +1718,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1773,7 +1729,7 @@
         "positions": [
           "CF"
         ],
-        "rank": 162,
+        "rank": 160,
         "role": "hitter",
         "sample": 284.0,
         "sample_reliability": 58.7,
@@ -1788,7 +1744,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -1799,7 +1755,7 @@
         "positions": [
           "P"
         ],
-        "rank": 163,
+        "rank": 161,
         "role": "pitcher",
         "sample": 58.7,
         "sample_reliability": 54.0,
@@ -1814,9 +1770,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 145,
-        "dd_rank_gap_context": -21,
+        "dd_rank_gap_context": -18,
         "level": "A",
         "mlb_team": "NYM",
         "mlbam_id": 829033,
@@ -1825,12 +1781,12 @@
         "positions": [
           "SS"
         ],
-        "rank": 166,
+        "rank": 163,
         "role": "hitter",
-        "sample": 275.0,
-        "sample_reliability": 57.9,
+        "sample": 280.0,
+        "sample_reliability": 58.3,
         "sample_unit": "PA",
-        "score": 33.61,
+        "score": 33.65,
         "score_source": "universal_fallback",
         "source_ranks_context": {
           "cfr": 763,
@@ -1840,14 +1796,45 @@
         }
       },
       {
+        "age": 19,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
+        "dd_prospect_rank_context": 174,
+        "dd_rank_gap_context": 7,
+        "level": "A+",
+        "mlb_team": "ATL",
+        "mlbam_id": 816111,
+        "model_score": null,
+        "name": "Tate Southisene",
+        "positions": [
+          "SS"
+        ],
+        "rank": 167,
+        "role": "hitter",
+        "sample": 295.0,
+        "sample_reliability": 21.6,
+        "sample_unit": "PA",
+        "score": 33.58,
+        "score_source": "universal_fallback",
+        "source_ranks_context": {
+          "cfr": 413,
+          "cfr_raw": 413.0,
+          "hkb": 214,
+          "milb_perf": 89
+        }
+      },
+      {
         "age": 20,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 181,
-        "dd_rank_gap_context": 12,
+        "dd_rank_gap_context": 13,
         "level": "A+",
         "mlb_team": "CLE",
         "mlbam_id": 815785,
@@ -1856,7 +1843,7 @@
         "positions": [
           "P"
         ],
-        "rank": 169,
+        "rank": 168,
         "role": "pitcher",
         "sample": 53.7,
         "sample_reliability": 51.8,
@@ -1876,9 +1863,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 126,
-        "dd_rank_gap_context": -44,
+        "dd_rank_gap_context": -43,
         "level": "A+",
         "mlb_team": "SDP",
         "mlbam_id": 824026,
@@ -1887,7 +1874,7 @@
         "positions": [
           "P"
         ],
-        "rank": 170,
+        "rank": 169,
         "role": "pitcher",
         "sample": 42.0,
         "sample_reliability": 45.7,
@@ -1902,12 +1889,44 @@
         }
       },
       {
+        "age": 19,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
+        "dd_prospect_rank_context": 130,
+        "dd_rank_gap_context": -41,
+        "level": "A+",
+        "mlb_team": "BOS",
+        "mlbam_id": 821100,
+        "model_score": null,
+        "name": "Justin Gonzales",
+        "positions": [
+          "RF"
+        ],
+        "rank": 171,
+        "role": "hitter",
+        "sample": 259.0,
+        "sample_reliability": 56.4,
+        "sample_unit": "PA",
+        "score": 33.46,
+        "score_source": "universal_fallback",
+        "source_ranks_context": {
+          "cfr": 147,
+          "cfr_raw": 147.0,
+          "hkb": 100,
+          "milb_perf": 162,
+          "pipeline": 95
+        }
+      },
+      {
         "age": 20,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",
@@ -1918,7 +1937,7 @@
         "positions": [
           "P"
         ],
-        "rank": 171,
+        "rank": 172,
         "role": "pitcher",
         "sample": 53.3,
         "sample_reliability": 51.6,
@@ -1933,7 +1952,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",
@@ -1944,7 +1963,7 @@
         "positions": [
           "P"
         ],
-        "rank": 172,
+        "rank": 173,
         "role": "pitcher",
         "sample": 37.7,
         "sample_reliability": 43.0,
@@ -1959,9 +1978,9 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 257,
-        "dd_rank_gap_context": 83,
+        "dd_rank_gap_context": 82,
         "level": "A+",
         "mlb_team": "MIN",
         "mlbam_id": 815598,
@@ -1970,7 +1989,7 @@
         "positions": [
           "P"
         ],
-        "rank": 174,
+        "rank": 175,
         "role": "pitcher",
         "sample": 33.0,
         "sample_reliability": 39.8,
@@ -1984,14 +2003,44 @@
         }
       },
       {
+        "age": 20,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
+        "dd_prospect_rank_context": 204,
+        "dd_rank_gap_context": 28,
+        "level": "A",
+        "mlb_team": "PHI",
+        "mlbam_id": 808232,
+        "model_score": null,
+        "name": "Alirio Ferrebus",
+        "positions": [
+          "DH"
+        ],
+        "rank": 176,
+        "role": "hitter",
+        "sample": 243.0,
+        "sample_reliability": 54.9,
+        "sample_unit": "PA",
+        "score": 33.31,
+        "score_source": "universal_fallback",
+        "source_ranks_context": {
+          "cfr": 515,
+          "cfr_raw": 516.0,
+          "milb_perf": 103
+        }
+      },
+      {
         "age": 21,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 95,
-        "dd_rank_gap_context": -80,
+        "dd_rank_gap_context": -82,
         "level": "A+",
         "mlb_team": "SEA",
         "mlbam_id": 806071,
@@ -2000,7 +2049,7 @@
         "positions": [
           "CF"
         ],
-        "rank": 175,
+        "rank": 177,
         "role": "hitter",
         "sample": 300.0,
         "sample_reliability": 60.0,
@@ -2016,36 +2065,6 @@
         }
       },
       {
-        "age": 20,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "low",
-        "dd_prospect_rank_context": 204,
-        "dd_rank_gap_context": 28,
-        "level": "A",
-        "mlb_team": "PHI",
-        "mlbam_id": 808232,
-        "model_score": null,
-        "name": "Alirio Ferrebus",
-        "positions": [
-          "DH"
-        ],
-        "rank": 176,
-        "role": "hitter",
-        "sample": 239.0,
-        "sample_reliability": 54.4,
-        "sample_unit": "PA",
-        "score": 33.26,
-        "score_source": "universal_fallback",
-        "source_ranks_context": {
-          "cfr": 515,
-          "cfr_raw": 516.0,
-          "milb_perf": 103
-        }
-      },
-      {
         "age": 22,
         "availability_risk_discount": 0.03,
         "availability_risk_level": "medium",
@@ -2053,9 +2072,9 @@
           "limited_upper_level_starter_workload_under_45_ip"
         ],
         "availability_status": "thin_current_sample",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 73,
-        "dd_rank_gap_context": -104,
+        "dd_rank_gap_context": -105,
         "level": "AA",
         "mlb_team": "PHI",
         "mlbam_id": 805906,
@@ -2064,7 +2083,7 @@
         "positions": [
           "P"
         ],
-        "rank": 177,
+        "rank": 178,
         "role": "pitcher",
         "sample": 43.3,
         "sample_reliability": 25.4,
@@ -2109,32 +2128,6 @@
           "hkb": 177,
           "milb_perf": 43
         }
-      },
-      {
-        "age": 20,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "low",
-        "dd_prospect_rank_context": null,
-        "dd_rank_gap_context": null,
-        "level": "A",
-        "mlb_team": "LAA",
-        "mlbam_id": 807281,
-        "model_score": null,
-        "name": "Trey Gregory-Alford",
-        "positions": [
-          "P"
-        ],
-        "rank": 180,
-        "role": "pitcher",
-        "sample": 58.3,
-        "sample_reliability": 53.8,
-        "sample_unit": "IP",
-        "score": 33.15,
-        "score_source": "universal_fallback",
-        "source_ranks_context": null
       }
     ],
     "top50_availability_adjusted": [
@@ -2312,7 +2305,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 188,
         "dd_rank_gap_context": 154,
         "disagreement_direction": "valucast_higher",
@@ -2344,7 +2337,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 175,
         "dd_rank_gap_context": 140,
         "disagreement_direction": "valucast_higher",
@@ -2445,7 +2438,7 @@
         "availability_status": "available",
         "confidence": "medium",
         "dd_prospect_rank_context": 161,
-        "dd_rank_gap_context": 118,
+        "dd_rank_gap_context": 119,
         "disagreement_direction": "valucast_higher",
         "level": "AAA",
         "mlb_team": "ATL",
@@ -2455,7 +2448,7 @@
         "positions": [
           "P"
         ],
-        "rank": 43,
+        "rank": 42,
         "role": "pitcher",
         "sample": 69.4,
         "sample_reliability": 49.3,
@@ -2507,7 +2500,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 146,
         "dd_rank_gap_context": 110,
         "disagreement_direction": "valucast_higher",
@@ -2539,7 +2532,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 155,
         "dd_rank_gap_context": 106,
         "disagreement_direction": "valucast_higher",
@@ -2571,7 +2564,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 127,
         "dd_rank_gap_context": 97,
         "disagreement_direction": "valucast_higher",
@@ -2599,6 +2592,38 @@
         }
       },
       {
+        "age": 21,
+        "availability_risk_discount": 0.0,
+        "availability_risk_level": "clear",
+        "availability_signals": [],
+        "availability_status": "available",
+        "confidence": "medium",
+        "dd_prospect_rank_context": 113,
+        "dd_rank_gap_context": 96,
+        "disagreement_direction": "valucast_higher",
+        "level": "AA",
+        "mlb_team": "CLE",
+        "mlbam_id": 702693,
+        "model_score": 48.25,
+        "name": "Jaison Chourio",
+        "positions": [
+          "CF"
+        ],
+        "rank": 17,
+        "role": "hitter",
+        "sample": 226.0,
+        "sample_reliability": 38.3,
+        "sample_unit": "PA",
+        "score": 45.92,
+        "score_source": "prospect_model_v0_6",
+        "source_ranks_context": {
+          "cfr": 190,
+          "cfr_raw": 190.0,
+          "hkb": 92,
+          "milb_perf": 45
+        }
+      },
+      {
         "age": 23,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
@@ -2606,7 +2631,7 @@
         "availability_status": "available",
         "confidence": "medium",
         "dd_prospect_rank_context": 137,
-        "dd_rank_gap_context": 96,
+        "dd_rank_gap_context": 93,
         "disagreement_direction": "valucast_higher",
         "level": "AAA",
         "mlb_team": "NYY",
@@ -2616,12 +2641,12 @@
         "positions": [
           "P"
         ],
-        "rank": 41,
+        "rank": 44,
         "role": "pitcher",
-        "sample": 60.3,
-        "sample_reliability": 54.7,
+        "sample": 61.3,
+        "sample_reliability": 55.1,
         "sample_unit": "IP",
-        "score": 42.75,
+        "score": 42.16,
         "score_source": "prospect_model_v0_6",
         "source_ranks_context": {
           "cfr": 235,
@@ -2632,44 +2657,12 @@
         }
       },
       {
-        "age": 21,
-        "availability_risk_discount": 0.0,
-        "availability_risk_level": "clear",
-        "availability_signals": [],
-        "availability_status": "available",
-        "confidence": "medium",
-        "dd_prospect_rank_context": 113,
-        "dd_rank_gap_context": 95,
-        "disagreement_direction": "valucast_higher",
-        "level": "AA",
-        "mlb_team": "CLE",
-        "mlbam_id": 702693,
-        "model_score": 48.25,
-        "name": "Jaison Chourio",
-        "positions": [
-          "CF"
-        ],
-        "rank": 18,
-        "role": "hitter",
-        "sample": 222.0,
-        "sample_reliability": 37.5,
-        "sample_unit": "PA",
-        "score": 45.59,
-        "score_source": "prospect_model_v0_6",
-        "source_ranks_context": {
-          "cfr": 190,
-          "cfr_raw": 190.0,
-          "hkb": 92,
-          "milb_perf": 45
-        }
-      },
-      {
         "age": 22,
         "availability_risk_discount": 0.0,
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 121,
         "dd_rank_gap_context": 89,
         "disagreement_direction": "valucast_higher",
@@ -2702,7 +2695,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 119,
         "dd_rank_gap_context": 88,
         "disagreement_direction": "valucast_higher",
@@ -2735,7 +2728,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 120,
         "dd_rank_gap_context": 87,
         "disagreement_direction": "valucast_higher",
@@ -2834,7 +2827,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 116,
         "dd_rank_gap_context": 66,
         "disagreement_direction": "valucast_higher",
@@ -2848,8 +2841,8 @@
         ],
         "rank": 50,
         "role": "hitter",
-        "sample": 276.0,
-        "sample_reliability": 33.1,
+        "sample": 280.0,
+        "sample_reliability": 34.0,
         "sample_unit": "PA",
         "score": 41.75,
         "score_source": "universal_fallback",
@@ -2933,7 +2926,7 @@
         "availability_status": "available",
         "confidence": "medium",
         "dd_prospect_rank_context": 59,
-        "dd_rank_gap_context": 38,
+        "dd_rank_gap_context": 39,
         "disagreement_direction": "valucast_higher",
         "level": "AAA",
         "mlb_team": "CIN",
@@ -2943,12 +2936,12 @@
         "positions": [
           "RF"
         ],
-        "rank": 21,
+        "rank": 20,
         "role": "hitter",
-        "sample": 327.0,
-        "sample_reliability": 62.0,
+        "sample": 331.0,
+        "sample_reliability": 62.3,
         "sample_unit": "PA",
-        "score": 44.54,
+        "score": 44.85,
         "score_source": "prospect_model_v0_6",
         "source_ranks_context": {
           "cfr": 58,
@@ -2996,7 +2989,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 61,
         "dd_rank_gap_context": 32,
         "disagreement_direction": "valucast_higher",
@@ -3065,7 +3058,7 @@
         "availability_status": "available",
         "confidence": "low",
         "dd_prospect_rank_context": 15,
-        "dd_rank_gap_context": -5,
+        "dd_rank_gap_context": -6,
         "level": "A+",
         "mlb_team": "WSN",
         "mlbam_id": 816113,
@@ -3074,9 +3067,9 @@
         "positions": [
           "SS"
         ],
-        "rank": 20,
+        "rank": 21,
         "role": "hitter",
-        "sample": 277.0,
+        "sample": 281.0,
         "sample_reliability": 53.7,
         "sample_unit": "PA",
         "score": 44.7,
@@ -3095,7 +3088,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 34,
         "dd_rank_gap_context": 11,
         "level": "A+",
@@ -3108,10 +3101,10 @@
         ],
         "rank": 23,
         "role": "hitter",
-        "sample": 260.0,
-        "sample_reliability": 56.5,
+        "sample": 265.0,
+        "sample_reliability": 57.0,
         "sample_unit": "PA",
-        "score": 43.72,
+        "score": 43.73,
         "score_source": "prospect_pedigree_v0_7",
         "source_ranks_context": {
           "cfr": 63,
@@ -3127,7 +3120,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A",
@@ -3153,7 +3146,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 21,
         "dd_rank_gap_context": -4,
         "level": "A",
@@ -3185,7 +3178,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 46,
         "dd_rank_gap_context": 20,
         "level": "A",
@@ -3198,10 +3191,10 @@
         ],
         "rank": 26,
         "role": "hitter",
-        "sample": 257.0,
-        "sample_reliability": 56.2,
+        "sample": 262.0,
+        "sample_reliability": 56.7,
         "sample_unit": "PA",
-        "score": 43.58,
+        "score": 43.62,
         "score_source": "prospect_pedigree_v0_7",
         "source_ranks_context": {
           "cfr": 1223,
@@ -3249,7 +3242,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 61,
         "dd_rank_gap_context": 32,
         "level": "A+",
@@ -3281,7 +3274,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 127,
         "dd_rank_gap_context": 97,
         "level": "A",
@@ -3313,7 +3306,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 119,
         "dd_rank_gap_context": 88,
         "level": "A",
@@ -3345,7 +3338,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 121,
         "dd_rank_gap_context": 89,
         "level": "A+",
@@ -3377,7 +3370,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 120,
         "dd_rank_gap_context": 87,
         "level": "A+",
@@ -3409,7 +3402,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 188,
         "dd_rank_gap_context": 154,
         "level": "A+",
@@ -3440,7 +3433,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 175,
         "dd_rank_gap_context": 140,
         "level": "A+",
@@ -3471,7 +3464,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": 146,
         "dd_rank_gap_context": 110,
         "level": "A",
@@ -3502,7 +3495,7 @@
         "availability_risk_level": "clear",
         "availability_signals": [],
         "availability_status": "available",
-        "confidence": "low",
+        "confidence": "medium",
         "dd_prospect_rank_context": null,
         "dd_rank_gap_context": null,
         "level": "A+",

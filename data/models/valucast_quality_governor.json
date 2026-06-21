@@ -1,12 +1,7 @@
 {
   "artifact": "valucast_quality_governor",
-  "blockers": [
-    "Top prospect board has a risky bucket concentration."
-  ],
-  "buy_blockers": [
-    "Top prospect board has a risky bucket concentration.",
-    "ValuCast-owned Buy signals are not approved for public promotion."
-  ],
+  "blockers": [],
+  "buy_blockers": [],
   "checks": [
     {
       "id": "mlb_top_value_gap",
@@ -65,15 +60,15 @@
               "SP"
             ],
             "rank": 3,
-            "value": 96.6
+            "value": 96.87
           },
           {
             "name": "Cristopher S\u00e1nchez",
             "positions": [
               "SP"
             ],
-            "rank": 10,
-            "value": 73.93
+            "rank": 9,
+            "value": 74.17
           },
           {
             "name": "Jacob Misiorowski",
@@ -82,7 +77,7 @@
               "RP"
             ],
             "rank": 11,
-            "value": 72.86
+            "value": 73.06
           },
           {
             "name": "Chase Burns",
@@ -90,16 +85,16 @@
               "SP",
               "RP"
             ],
-            "rank": 17,
-            "value": 65.11
+            "rank": 16,
+            "value": 65.75
           },
           {
             "name": "Yoshinobu Yamamoto",
             "positions": [
               "SP"
             ],
-            "rank": 22,
-            "value": 60.43
+            "rank": 23,
+            "value": 60.63
           }
         ],
         "reliever_count": 0,
@@ -170,14 +165,14 @@
         "samples": [
           {
             "name": "Eli Willits",
-            "rank": 20,
+            "rank": 21,
             "score": 44.7,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
             "name": "Theo Gillen",
             "rank": 23,
-            "score": 43.72,
+            "score": 43.73,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
@@ -195,7 +190,7 @@
           {
             "name": "JoJo Parker",
             "rank": 26,
-            "score": 43.58,
+            "score": 43.62,
             "score_source": "prospect_pedigree_v0_7"
           },
           {
@@ -235,14 +230,12 @@
     },
     {
       "id": "prospect_top50_bucket_shape",
-      "message": "Top prospect board has a risky bucket concentration.",
+      "message": "Top prospect board bucket shape is within publication limits.",
       "metrics": {
         "evaluated_count": 50,
-        "failures": [
-          "low_confidence_rate"
-        ],
-        "low_confidence_count": 20,
-        "low_confidence_rate": 0.4,
+        "failures": [],
+        "low_confidence_count": 4,
+        "low_confidence_rate": 0.08,
         "lower_minors_pedigree_count": 15,
         "max_low_confidence_rate": 0.38,
         "max_lower_minors_pedigree_count": 15,
@@ -253,31 +246,7 @@
             {
               "confidence": "low",
               "name": "Eli Willits",
-              "rank": 20,
-              "score_source": "prospect_pedigree_v0_7"
-            },
-            {
-              "confidence": "low",
-              "name": "Theo Gillen",
-              "rank": 23,
-              "score_source": "prospect_pedigree_v0_7"
-            },
-            {
-              "confidence": "low",
-              "name": "Daniel Pierce",
-              "rank": 24,
-              "score_source": "prospect_pedigree_v0_7"
-            },
-            {
-              "confidence": "low",
-              "name": "Ethan Holliday",
-              "rank": 25,
-              "score_source": "prospect_pedigree_v0_7"
-            },
-            {
-              "confidence": "low",
-              "name": "JoJo Parker",
-              "rank": 26,
+              "rank": 21,
               "score_source": "prospect_pedigree_v0_7"
             },
             {
@@ -288,22 +257,22 @@
             },
             {
               "confidence": "low",
-              "name": "Bryce Rainer",
-              "rank": 29,
-              "score_source": "prospect_pedigree_v0_7"
+              "name": "Andrew Fischer",
+              "rank": 46,
+              "score_source": "universal_fallback"
             },
             {
               "confidence": "low",
-              "name": "Billy Carlson",
-              "rank": 30,
-              "score_source": "prospect_pedigree_v0_7"
+              "name": "Caleb Bonemer",
+              "rank": 48,
+              "score_source": "universal_fallback"
             }
           ],
           "lower_minors_pedigree": [
             {
               "level": "A+",
               "name": "Eli Willits",
-              "rank": 20,
+              "rank": 21,
               "score_source": "prospect_pedigree_v0_7"
             },
             {
@@ -371,7 +340,7 @@
         "thin_upper_level_pitcher_count": 2,
         "top_n": 50
       },
-      "status": "blocked"
+      "status": "passed"
     },
     {
       "id": "prospect_top25_neutral_investment_rate",
@@ -457,12 +426,12 @@
             "best_sample": 232,
             "best_sample_unit": "PA",
             "current_level": "A+",
-            "current_sample": 45.0,
+            "current_sample": 49.0,
             "current_sample_unit": "PA",
             "current_skill_band": "thin",
             "mlbam_id": 816113,
             "name": "Eli Willits",
-            "rank": 20,
+            "rank": 21,
             "role": "hitter"
           },
           {
@@ -587,8 +556,8 @@
         "audit_status": "candidate_ready",
         "blocker_count": 0,
         "blockers": [],
-        "current_row_count": 6083,
-        "current_season_row_count": 5857,
+        "current_row_count": 6098,
+        "current_season_row_count": 5872,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 3,
@@ -702,7 +671,7 @@
     },
     {
       "id": "buy_promotion_gate",
-      "message": "ValuCast-owned Buy signals are not approved for public promotion.",
+      "message": "ValuCast-owned Buy signals pass promotion checks.",
       "metrics": {
         "buy_artifact_present": true,
         "buy_review_present": true,
@@ -711,17 +680,17 @@
         "history_limited_count": 0,
         "history_limited_rate": 0.0,
         "history_ready": true,
-        "low_confidence_rate": 0.1,
+        "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
         "max_low_confidence_rate": 0.35,
         "max_pedigree_rate": 0.35,
-        "pedigree_rate": 0.1,
-        "public_board_ready": false,
+        "pedigree_rate": 0.125,
+        "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 828
+        "row_count": 827
       },
-      "status": "blocked"
+      "status": "passed"
     }
   ],
   "criteria": {
@@ -776,13 +745,13 @@
       "public_snapshot": "2026-06-21",
       "recent_signal_report": "2026-06-21"
     },
-    "mlb_count": 975,
-    "prospect_count": 2647,
-    "public_row_count": 3622
+    "mlb_count": 974,
+    "prospect_count": 2652,
+    "public_row_count": 3626
   },
-  "next_allowed_step": "repair_model_quality_before_public_promotion",
-  "ready_for_buys_promotion": false,
-  "ready_for_public_snapshot": false,
+  "next_allowed_step": "wire_public_consumers",
+  "ready_for_buys_promotion": true,
+  "ready_for_public_snapshot": true,
   "source_policy": {
     "dd_ranks_used_for_model_score": false,
     "dd_values_used_for_model_score": false,
@@ -790,10 +759,10 @@
     "feeds_model_score": false,
     "kind": "model_output_quality_gate"
   },
-  "status": "blocked",
+  "status": "candidate_ready",
   "surface_readiness": {
-    "buys": false,
-    "dynasty": false,
-    "prospects": false
+    "buys": true,
+    "dynasty": true,
+    "prospects": true
   }
 }
