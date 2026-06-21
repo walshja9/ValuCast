@@ -40,7 +40,7 @@
       "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 1.0,
+    "latest_buy_retention_rate": 0.975,
     "latest_rank_bucket_count": 23,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
@@ -72,28 +72,28 @@
     }
   },
   "overall": {
-    "grade": "A",
-    "score": 95,
+    "grade": "A-",
+    "score": 90,
     "target": "A+ product/pipeline/independence/prospect credibility; MLB front-office track advances only when forward and ordinal evidence earn it."
   },
   "pillars": [
     {
       "evidence": {
         "duplicate_identity_count": 0,
-        "public_snapshot_ready": true,
-        "quality_governor_all_checks_passed": true,
-        "quality_governor_ready": true,
-        "row_count": 3621,
+        "public_snapshot_ready": false,
+        "quality_governor_all_checks_passed": false,
+        "quality_governor_ready": false,
+        "row_count": 3622,
         "surface_readiness": {
-          "buys": true,
-          "dynasty": true,
-          "prospects": true
+          "buys": false,
+          "dynasty": false,
+          "prospects": false
         }
       },
-      "grade": "A+",
+      "grade": "C+",
       "name": "Product readiness",
-      "score": 97,
-      "status": "a_plus_public_ready"
+      "score": 78,
+      "status": "needs_work"
     },
     {
       "evidence": {
@@ -106,10 +106,10 @@
         "same_day_freshness": true,
         "targeted_row_refresh_count": 0
       },
-      "grade": "A+",
+      "grade": "A-",
       "name": "Data pipeline readiness",
-      "score": 97,
-      "status": "a_plus_native_daily_pipeline"
+      "score": 92,
+      "status": "same_day_fresh"
     },
     {
       "evidence": {
