@@ -29,8 +29,15 @@ MATURE_THROUGH = 2019
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
 SAMPLE_REGRESSION = {"hitter": 200.0, "pitcher": 50.0}
-LEVEL_CODE = {"AA": 0.0, "AAA": 1.0}
-EXPECTED_AGE = {"AA": 22.5, "AAA": 24.0}
+# Level vocabulary for stat-based scoring. A/A+ were added so the model scores
+# lower-minors prospects on their current line instead of falling back to
+# pedigree (which mechanically forced low confidence). Codes preserve the
+# existing AA/AAA feature values and keep strict level ordering A < A+ < AA <
+# AAA (the historical de-dupe keeps each player's highest level). EXPECTED_AGE
+# encodes the on-track prospect age per level (~2y below the population median),
+# matching the existing AA/AAA convention.
+LEVEL_CODE = {"A": -2.0, "A+": -1.0, "AA": 0.0, "AAA": 1.0}
+EXPECTED_AGE = {"A": 20.0, "A+": 21.0, "AA": 22.5, "AAA": 24.0}
 OUTCOME_TARGET = {"bust": 0.0, "role": 0.5, "star": 1.0}
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
