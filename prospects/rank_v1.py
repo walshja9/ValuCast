@@ -1028,9 +1028,24 @@ def _bucket_calibration_adjustment(
     return round(adjusted_score, 2), next_components
 
 
-def _confidence(source: str, model_profile: dict | None, reliability: float | None) -> str:
+def _confidence(
+    source: str,
+    model_profile: dict | None,
+    reliability: float | None,
+    current_context: dict | None = None,
+) -> str:
     if source in {PEDIGREE_SCORE_SOURCE, "universal_fallback", "identity_only_fallback"}:
-        return "low"
+        # A pedigree/fallback SCORE no longer forces "low" confidence on its own.
+        # The model leans on pedigree for lower-minors value, but a prospect with
+        # a substantial current-season line (e.g. 150+ PA at A-ball) is not "low
+        # confidence" just because of that scoring choice. Only genuinely thin
+        # samples (band "thin": <50 PA / <15 IP) or players with no current line
+        # stay "low"; a real current sample earns "medium" (never "high", since
+        # the value itself is still pedigree-led).
+        band = str((current_context or {}).get("skill_band") or "").lower()
+        if not current_context or band == "thin":
+            return "low"
+        return "medium"
     role_gate = (model_profile or {}).get("role_gate")
     impact_gate = (model_profile or {}).get("impact_gate")
     if role_gate == "active" and impact_gate == "active" and (reliability or 0.0) >= 45:
@@ -1481,6 +1496,7 @@ def build_prospect_rank_v1(
             source,
             model_profile,
             components.get("sample_reliability"),
+            components.get("factual_current_context"),
         )
         components = {
             **components,

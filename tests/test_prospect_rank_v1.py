@@ -836,7 +836,10 @@ def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
     row = next(item for item in payload["board"] if item["name"] == "Fallback Good")
 
     assert row["score_source"] == "prospect_pedigree_v0_7"
-    assert row["confidence"] == "low"
+    # Pedigree-led value no longer forces "low" confidence: with a substantial
+    # current sample (220 PA) the read is "medium" even though scoring leans on
+    # pedigree. Genuinely thin samples still read "low" (see test below).
+    assert row["confidence"] == "medium"
     assert row["components"]["factual_investment_context"] >= 90
     assert row["components"]["age_level_context"] > 80
     assert row["components"]["pedigree_score_cap"] >= 48
@@ -844,6 +847,37 @@ def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
     assert row["components"]["bucket_calibration"]["bucket"] == "lower_minors_pedigree_score_source"
     assert row["score"] > 41.75
     assert row["score"] < row["components"]["pedigree_score_cap"]
+
+
+def test_pedigree_confidence_tracks_current_sample_not_score_source():
+    """A pedigree-scored prospect with a real current sample reads "medium";
+    a genuinely thin sample (<50 PA) still reads "low". Confidence reflects the
+    current evidence, not the fact that value is pedigree-led."""
+    thin = _input_contract()
+    thin["current"]["hitters"][1].update(
+        {"age": 18, "level": "A", "plate_appearances": 40,
+         "draft_pick_number": 1, "signing_bonus": 8_200_000,
+         "school_type": "high_school"}
+    )
+    thin_payload = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), thin, dd_feed=_feed()
+    )
+    thin_row = next(r for r in thin_payload["board"] if r["name"] == "Fallback Good")
+    assert thin_row["score_source"] == "prospect_pedigree_v0_7"
+    assert thin_row["confidence"] == "low"
+
+    full = _input_contract()
+    full["current"]["hitters"][1].update(
+        {"age": 18, "level": "A", "plate_appearances": 220,
+         "draft_pick_number": 1, "signing_bonus": 8_200_000,
+         "school_type": "high_school"}
+    )
+    full_payload = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), full, dd_feed=_feed()
+    )
+    full_row = next(r for r in full_payload["board"] if r["name"] == "Fallback Good")
+    assert full_row["score_source"] == "prospect_pedigree_v0_7"
+    assert full_row["confidence"] == "medium"
 
 
 def test_rank_v1_applies_lower_minors_pedigree_bucket_calibration():
