@@ -145,5 +145,6 @@ def test_primary_nav_links_to_intelligence_surfaces():
     assert 'href="/backfields">Backfields</a>' in html
     assert 'href="/buys">Buys</a>' not in html
     assert 'href="/map">Map</a>' in html
-    assert 'href="/scouting">Scouting</a>' in html
+    # Scouting is consolidated into Backfields; no longer a top-nav item.
+    assert 'href="/scouting">Scouting</a>' not in html
     assert 'href="/methodology">Methodology</a>' in html

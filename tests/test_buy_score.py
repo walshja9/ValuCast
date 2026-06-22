@@ -346,11 +346,13 @@ class TestBuysRoute(_RealAppCase):
         self.assertNotIn('class="bg-cell"', html)
 
     def test_nav_links_present(self):
-        self.assertIn('href="/buys"',
+        # Buys is consolidated under Backfields, the prospect-hub nav entry
+        # point present on every page; the standalone /buys link was retired.
+        self.assertIn('href="/backfields"',
                       self.client.get("/map").data.decode("utf-8"))
         for mode in ("dd_dynasty", "prospects"):
             html = self.client.get(f"/?mode={mode}").data.decode("utf-8")
-            self.assertIn('href="/buys"', html)
+            self.assertIn('href="/backfields"', html)
 
 
 if __name__ == "__main__":
