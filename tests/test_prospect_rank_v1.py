@@ -1018,23 +1018,52 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
         },
     }
 
+    availability = {
+        "artifact": "valucast_prospect_availability",
+        "artifact_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "profile_count": 1,
+        "profiles": [
+            {
+                "mlbam_id": 3,
+                "role": "pitcher",
+                "status": "thin_current_sample",
+                "risk_level": "medium",
+                "risk_discount": 0.03,
+                "availability_note": "Thin sample.",
+                "signals": ["limited_upper_level_starter_workload_under_45_ip"],
+                "sample": 24.2,
+                "sample_unit": "IP",
+                "sample_fetched_date": "2026-06-13",
+                "sample_staleness_days": 0,
+                "present": True,
+            }
+        ],
+    }
+
     payload = build_prospect_rank_v1(
         universe,
         dynasty_layer,
         prospect_model,
         input_contract,
+        prospect_availability=availability,
     )
 
     row = payload["board"][0]
     calibration = row["components"]["bucket_calibration"]
 
+    # A thin upper-level pitcher sample is ranked by a lower-confidence bound:
+    # the score is pulled down by a penalty that scales with (1 - reliability),
+    # using the same thin_current_sample signal the quality governor checks.
     assert row["score_source"] == "prospect_model_v0_6"
     assert calibration["version"] == BUCKET_CALIBRATION_VERSION
-    assert calibration["bucket"] == "upper_level_thin_pitcher_model_sample"
-    assert calibration["adjustment"] == -2.0
-    assert calibration["rules"][0]["sample_threshold"] == 30.0
+    assert calibration["bucket"] == "thin_current_sample_confidence"
+    # Meaningfully larger than the old token -2.0 flat adjustment.
+    assert calibration["adjustment"] <= -5.0
+    assert calibration["rules"][0]["bucket"] == "thin_current_sample_confidence"
     assert row["score"] == round(
-        row["components"]["score_before_bucket_calibration"] - 2.0,
+        row["components"]["score_before_bucket_calibration"]
+        + calibration["adjustment"],
         2,
     )
 

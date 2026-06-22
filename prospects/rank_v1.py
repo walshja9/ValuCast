@@ -51,6 +51,12 @@ UPPER_LEVEL_BUCKETS = {"AA", "AAA", "MLB"}
 LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT = -3.5
 THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP = 30.0
 THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
+# Confidence-adjusted ranking: a thin current sample is penalized continuously by
+# (1 - sample_reliability), so an unproven profile is ranked by a lower-confidence
+# bound and sorts behind players with fuller evidence. Gated on the SAME
+# "thin_current_sample" availability signal the quality governor's top-50
+# bucket-shape check uses, so the board and the guardrail stay aligned.
+THIN_SAMPLE_CONFIDENCE_PENALTY_MAX = 28.0
 UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA = 200.0
 UPPER_LEVEL_HITTER_LOW_IMPACT_ISO = 0.100
 UPPER_LEVEL_HITTER_LOW_IMPACT_OPS = 0.720
@@ -944,30 +950,39 @@ def _bucket_calibration_adjustment(
     if sample is None:
         sample = _sample_size(input_row or {}, str(role or ""))
         sample_unit = "IP" if role == "pitcher" else "PA"
+    reliability = _clean_float(components.get("sample_reliability"))
+    status = str(availability.get("status") or "")
     if (
-        source == "prospect_model_v0_6"
-        and role == "pitcher"
-        and level in {"AA", "AAA"}
-        and sample_unit == "IP"
-        and sample < THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP
+        source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
+        and status == "thin_current_sample"
+        and reliability is not None
     ):
-        adjustments.append(
-            {
-                "bucket": "upper_level_thin_pitcher_model_sample",
-                "label": "Thin upper-level pitcher sample",
-                "level": level,
-                "role": role,
-                "score_source": source,
-                "sample": round(sample, 3),
-                "sample_unit": sample_unit,
-                "sample_threshold": THIN_UPPER_LEVEL_PITCHER_SAMPLE_IP,
-                "adjustment": THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT,
-                "reason": (
-                    "Upper-level pitcher model scores with fewer than 30 current IP "
-                    "are kept slightly behind fuller pitching samples."
-                ),
-            }
-        )
+        # The penalty scales with how little evidence exists (1 - reliability),
+        # so a 2-IP line drops far more than a near-full one. This catches the
+        # governor's failing "thin upper-level pitcher" bucket (e.g. an AAA arm
+        # under 45 IP) plus any other thin-sample profile floating up on model
+        # or pedigree strength, role-agnostically.
+        thinness = max(0.0, min(1.0, 1.0 - reliability / 100.0))
+        penalty = -round(THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness, 2)
+        if penalty < 0:
+            adjustments.append(
+                {
+                    "bucket": "thin_current_sample_confidence",
+                    "label": "Thin current sample",
+                    "level": level,
+                    "role": role,
+                    "score_source": source,
+                    "sample": round(sample, 3) if sample is not None else None,
+                    "sample_unit": sample_unit or None,
+                    "sample_reliability": round(reliability, 2),
+                    "adjustment": penalty,
+                    "reason": (
+                        "Thin current samples are ranked by a lower-confidence-bound "
+                        "score so unproven profiles sort behind players with fuller "
+                        "evidence; the penalty scales with sample reliability."
+                    ),
+                }
+            )
 
     iso = _clean_float((input_row or {}).get("iso"))
     ops = _clean_float((input_row or {}).get("ops"))
