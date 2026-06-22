@@ -9,7 +9,7 @@ The new functional addition is MLB-organization prospect share graphics. ValuCas
 ## Goals
 
 - Make Backfields the single prospect front door.
-- Remove top-nav redundancy between `Backfields`, `Buys`, `Scouting`, and the old prospects board.
+- Remove the remaining top-nav redundancy between `Backfields`, `Scouting`, and the old prospects board. `Buys` has already been removed from the top nav and should stay demoted.
 - Keep `/buys`, `/scouting`, and `/?mode=prospects` alive as deep routes and engines.
 - Add MLB-organization team boards inside Backfields.
 - Add shareable MLB-organization `Top 10` and `Top 20` prospect graphics.
@@ -30,7 +30,7 @@ The new functional addition is MLB-organization prospect share graphics. ValuCas
 Backfields already has the right foundation:
 
 - Header nav includes Backfields.
-- Buys and Scouting have been partially consolidated behind Backfields.
+- Buys has already been demoted from the top nav; Scouting still appears there and should move behind Backfields.
 - Backfields Ahead of the Curve uses the live Buys graphic source.
 - Visible player names open inline player detail.
 - `Report` links stay distinct and open scouting report search.
@@ -49,7 +49,7 @@ Primary nav should become:
 - `Intelligence Hub`
 - `Methodology`
 
-`Buys` and `Scouting` should be removed from the top nav. They remain accessible as:
+`Scouting` should be removed from the top nav. `Buys` should remain out of the top nav. Both remain accessible as:
 
 - Backfields `Ahead of the Curve` section -> `/buys`
 - Backfields `Latest Reports` / `Scouting Reports` section -> `/scouting`
@@ -78,7 +78,7 @@ Behavior:
 
 - Show an MLB organization selector.
 - Default state can show the first few organizations with strong current signal, or a compact selector only.
-- Selecting an organization filters ValuCast prospect rows to that organization.
+- Selecting an organization filters ValuCast prospect rows to that MLB organization.
 - Display the organization's top prospects in ValuCast prospect order.
 - Show latest scouting reports for that organization when available.
 - Show Call-Up Desk candidates for that organization when available.
@@ -98,7 +98,35 @@ Where space is tight, use team abbreviations in metadata:
 - `CLE`
 - `LAD`
 
-The source of truth for team membership should be the same team/org field already used by the Scouting page and public snapshot context. If a player has only an affiliate team and no MLB org, exclude them from team boards rather than guessing.
+## Organization Source And Normalization
+
+Team Boards must group by MLB organization, not minor-league affiliate.
+
+Use `row.team` as the grouping key. In the current public snapshot this is the MLB organization abbreviation (`BOS`, `LAD`, `MIL`, etc.) and it matches the scouting report `team` field. Do not group on Backfields' current `affiliate_for(row)` display helper, because that prefers `context.stat_line_team` and returns minor-league affiliates such as `Portland Sea Dogs` or `St. Paul Saints`.
+
+Keep affiliate as row display context only. A team-board row can show `level / affiliate` so users know where the player is playing, but filtering and URLs are always MLB-org based.
+
+Normalize organization aliases before grouping and routing:
+
+- `KCR` -> `KC`
+- `ATH` remains `ATH` unless the data source has already switched to another Athletics abbreviation.
+- `FA` is not an MLB organization and should be excluded from Team Boards.
+
+The route param should resolve aliases. For example, `/backfields/team/KCR` should serve the canonical `KC` board or redirect to `/backfields/team/KC`; it should not create a separate partial Royals board.
+
+If a player has only an affiliate team and no MLB org, exclude them from team boards rather than guessing.
+
+## Team Board Data Source
+
+Team Boards must use the full prospect pool, not the top-200 public board slice.
+
+The existing `_prospect_rows()` helper intentionally caps results at 200 for public board display. That cap is too shallow for organization Top 20 graphics; most teams would not have 20 prospects in the top-200 slice. Build Team Boards from the full prospect universe, equivalent to `dd_store.filter(pool="prospect")`, sorted by the same ValuCast prospect order used by the public board:
+
+1. rows with a `prospect_rank` first,
+2. ascending `prospect_rank` when present,
+3. ascending `dynasty_rank` as fallback.
+
+Then filter by canonical MLB organization and compute `org_rank` within that filtered set. This keeps team Top 10/20 graphics feasible and honest while preserving ValuCast prospect order.
 
 ## Routes
 
@@ -112,7 +140,7 @@ Recommended routes:
 /backfields/team/<org>/share-card.png?n=20
 ```
 
-`<org>` should accept existing MLB abbreviations from the snapshot/scouting context. Unknown organizations should return a clean 404 page, not an empty graphic.
+`<org>` should accept existing MLB abbreviations from the snapshot/scouting context plus the aliases above. Unknown organizations should return a clean 404 page, not an empty graphic.
 
 The HTML preview route, `/backfields/team/<org>/share-card`, should render the selected organization's share card with download buttons for Top 10 and Top 20.
 
@@ -186,12 +214,15 @@ Each team row should include:
 - `rank`
 - `org_rank`
 - `team`
+- `affiliate`
 - `position`
 - `level`
 - `value`
 - `value_sort`
 - `move`
 - `has_report`
+
+`team` is the canonical MLB organization key used for grouping and routing. `affiliate` is display-only minor-league context. `org_rank` is computed inside the filtered organization set; it is not present in the raw data.
 
 The same row-shaping helper should feed:
 
@@ -213,10 +244,14 @@ This prevents the page and share graphic from drifting.
 
 Add focused tests for:
 
-- Top nav no longer includes top-level `/buys` or `/scouting`.
+- Top nav does not include top-level `/scouting`, and `/buys` remains absent from top nav.
 - Backfields still links to `/buys` and `/scouting` as deeper surfaces.
 - Backfields includes a `Team Boards` section.
 - Team selector options are derived from real team/org values.
+- Team Boards group on MLB org (`row.team`), not MiLB affiliate.
+- `KCR` and `KC` resolve to one canonical Royals board.
+- `FA` rows do not appear in Team Boards.
+- Team Top 20 routes source from the full prospect pool, not the top-200 board slice.
 - `/backfields/team/<org>` returns 200 for a known organization.
 - Unknown org returns 404 or the existing clean not-found page.
 - Team row names link to player detail.
@@ -241,7 +276,7 @@ Keep tests focused; do not snapshot entire HTML pages.
 ## Acceptance Criteria
 
 - A new visitor can start from top nav and understand Backfields is the prospect hub.
-- There is no top-nav competition from `Buys` or `Scouting`.
+- There is no top-nav competition from `Scouting`, and `Buys` remains demoted behind Backfields.
 - Backfields still exposes the full Ahead of the Curve board and scouting archive as drill-down links.
 - A user can select an MLB organization and generate a Top 10 or Top 20 prospect graphic.
 - The organization graphic matches current ValuCast share-graphic quality.
