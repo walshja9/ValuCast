@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import urlencode
@@ -383,6 +384,49 @@ def test_team_board_does_not_assign_org_from_historical_affiliate(monkeypatch):
     assert app_module._team_board_org_for(rows[0]) is None
     with pytest.raises(KeyError):
         app_module._build_team_board_context("TOR", limit=20)
+
+
+def test_team_board_includes_org_callups_and_reports(monkeypatch):
+    rows = [
+        _row("Portland Guy", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
+        _row("Worcester Guy", "BOS", prospect_rank=2, dynasty_rank=2, value=55),
+        _row("Kansas City Guy", "KCR", prospect_rank=3, dynasty_rank=3, value=50),
+    ]
+    rows[0].level = "AAA"
+    rows[0].eta = date.today().year  # This year -> On the doorstep
+    repository = {
+        "generated_at": "2026-06-22",
+        "reports": [
+            {
+                "identity_key": "name:portland guy|team:BOS",
+                "name": "Portland Guy",
+                "positions": ["SS"],
+                "level": "AAA",
+                "team": "BOS",
+                "report_status": "fresh_look",
+                "report": "Smooth actions, advanced bat.",
+            }
+        ],
+    }
+    monkeypatch.setattr(app_module, "_team_board_prospect_rows", lambda rows_arg=None: rows)
+    monkeypatch.setattr(app_module, "_team_board_movements", lambda: {})
+    monkeypatch.setattr(app_module, "_load_artifact", lambda _path: repository)
+
+    board = app_module._build_team_board_context("BOS", limit=20)
+
+    callup_names = [c["name"] for c in board["callups"]]
+    assert "Portland Guy" in callup_names
+    assert "Kansas City Guy" not in callup_names  # org-filtered
+    doorstep = next(c for c in board["callups"] if c["name"] == "Portland Guy")
+    assert doorstep["status"] == "On the doorstep"
+
+    assert [r["name"] for r in board["reports"]] == ["Portland Guy"]
+    assert board["reports"][0]["line"] == "Smooth actions, advanced bat."
+    assert board["reports"][0]["report_url"] == _scouting_url("Portland Guy")
+
+    empty = app_module._build_team_board_context()
+    assert empty["callups"] == []
+    assert empty["reports"] == []
 
 
 def test_team_board_current_roster_org_reads_unique_fantrax_team(tmp_path, monkeypatch):

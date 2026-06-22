@@ -3581,6 +3581,46 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     overflow: hidden;
 }
 
+.backfields-page .bf-team-extras {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: .85rem;
+    padding: .85rem;
+    border-top: 1px solid var(--bf-line);
+}
+
+.backfields-page .bf-team-extra h4 {
+    margin: 0 0 .5rem;
+    font-size: .82rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--bf-muted);
+}
+
+.backfields-page .bf-team-extra-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .5rem;
+}
+
+.backfields-page .bf-team-extra-list li {
+    display: grid;
+    gap: .12rem;
+}
+
+.backfields-page .bf-team-extra-list small {
+    color: var(--bf-muted);
+}
+
+.backfields-page .bf-team-extra-tag {
+    font-size: .72rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--bf-accent, #d8b46a);
+}
+
 .backfields-page *,
 .backfields-page *::before,
 .backfields-page *::after {

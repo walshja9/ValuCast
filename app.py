@@ -3266,6 +3266,97 @@ def _team_board_row(row, org_rank, movements, reports_by_key):
     }
 
 
+_TEAM_BOARD_CALLUP_LEVELS = {"AAA", "AA"}
+_TEAM_BOARD_LEVEL_POINTS = {"AAA": 36.0, "AA": 12.0}
+_TEAM_BOARD_ETA_POINTS = {"This year": 28.0, "Next year": 12.0, "Monitor": 4.0, "Later": 0.0}
+
+
+def _team_board_year_bucket(row):
+    label = getattr(row, "graduation_context_label", None)
+    if label:
+        return str(label)
+    graduation = getattr(row, "graduation_context", {}) or {}
+    if graduation.get("label"):
+        return str(graduation["label"])
+    eta = getattr(row, "eta", None)
+    try:
+        eta_year = int(eta)
+    except (TypeError, ValueError):
+        return "Monitor"
+    current_year = date.today().year
+    if eta_year <= current_year:
+        return "This year"
+    if eta_year == current_year + 1:
+        return "Next year"
+    return "Later"
+
+
+def _team_board_callup_score(row, movements):
+    move = _team_board_move_from_signal(_team_board_signal_for(row, movements))
+    return (
+        _TEAM_BOARD_LEVEL_POINTS.get(_team_board_level(row), 0.0)
+        + _TEAM_BOARD_ETA_POINTS.get(_team_board_year_bucket(row), 0.0)
+        + (_team_board_value(row) or 0.0)
+        + max(move["sort"], 0.0) * 1.5
+    )
+
+
+def _team_board_callup_status(row):
+    level = _team_board_level(row)
+    bucket = _team_board_year_bucket(row)
+    if level == "AAA" and bucket == "This year":
+        return "On the doorstep"
+    if level == "AAA" or bucket in {"This year", "Next year"}:
+        return "Near-term watch"
+    return "Monitor"
+
+
+def _team_board_callups(org_rows, movements, *, limit=5):
+    candidates = [row for row in org_rows if _team_board_level(row) in _TEAM_BOARD_CALLUP_LEVELS]
+    candidates.sort(key=lambda row: _team_board_callup_score(row, movements), reverse=True)
+    callups = []
+    for row in candidates[:limit]:
+        move = _team_board_move_from_signal(_team_board_signal_for(row, movements))
+        callups.append({
+            "name": getattr(row, "name", None) or "Unknown",
+            "url": _team_board_player_url(row),
+            "level": _team_board_level(row),
+            "affiliate": _team_board_affiliate(row),
+            "eta": _team_board_year_bucket(row),
+            "status": _team_board_callup_status(row),
+            "move": move,
+            "value": _team_board_fmt_value(_team_board_value(row)),
+        })
+    return callups
+
+
+def _team_board_reports(org_rows, reports_by_key, repository, *, limit=5):
+    reports = []
+    seen = set()
+    for row in org_rows:
+        report = next((reports_by_key[key] for key in _team_board_identity_keys(row) if key in reports_by_key), None)
+        if report is None or id(report) in seen:
+            continue
+        seen.add(id(report))
+        name = report.get("name") or getattr(row, "name", None) or "Unknown"
+        positions = "/".join(str(pos) for pos in report.get("positions") or () if pos)
+        line = " ".join(str(_scouting_display_report_text(report) or "").split())
+        if len(line) > 230:
+            line = line[:227].rstrip() + "..."
+        reports.append({
+            "tag": _format_context_label(report.get("report_status")) or "Report",
+            "date": report.get("published_at") or report.get("updated_at") or report.get("generated_at") or (repository or {}).get("generated_at"),
+            "name": name,
+            "url": _team_board_player_url(row),
+            "report_url": _team_board_report_url(name),
+            "meta": " / ".join(str(part) for part in (positions, report.get("level"), report.get("team")) if part),
+            "line": line,
+        })
+        if len(reports) >= limit:
+            break
+    return reports
+
+
 def _build_team_board_context(org=None, limit=20):
     rows = _team_board_prospect_rows()
     grouped = {}
@@ -3288,6 +3379,8 @@ def _build_team_board_context(org=None, limit=20):
         "teams": teams,
         "selected": None,
         "rows": [],
+        "callups": [],
+        "reports": [],
         "limit": limit,
     }
     if org is None:
@@ -3295,7 +3388,8 @@ def _build_team_board_context(org=None, limit=20):
     canonical = _canonical_team_board_org(org)
     if canonical is None or canonical not in grouped:
         raise KeyError(org)
-    selected_rows = grouped[canonical][:limit]
+    org_rows = grouped[canonical]
+    selected_rows = org_rows[:limit]
     scouting_repository = _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_scouting_reports.json")
     reports_by_key = _indexed_artifact_rows(scouting_repository, "reports")
     movements = _team_board_movements()
@@ -3303,13 +3397,15 @@ def _build_team_board_context(org=None, limit=20):
         "selected": {
             "org": canonical,
             "name": _team_board_org_name(canonical),
-            "count": len(grouped[canonical]),
+            "count": len(org_rows),
             "url": f"/backfields/team/{quote(canonical, safe='')}",
         },
         "rows": [
             _team_board_row(row, idx, movements, reports_by_key)
             for idx, row in enumerate(selected_rows, 1)
         ],
+        "callups": _team_board_callups(org_rows, movements),
+        "reports": _team_board_reports(org_rows, reports_by_key, scouting_repository),
     })
     return context
 

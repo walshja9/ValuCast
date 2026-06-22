@@ -271,6 +271,40 @@
                 <span class="bf-value">{{ row.value }}</span>
             </article>
             {% endfor %}
+            <div class="bf-team-extras">
+                <div class="bf-team-extra">
+                    <h4>Call-up watch</h4>
+                    {% if team_boards.callups %}
+                    <ul class="bf-team-extra-list">
+                        {% for callup in team_boards.callups %}
+                        <li>
+                            <a class="bf-player-link" href="{{ callup.url }}">{{ callup.name }}</a>
+                            <span class="bf-team-extra-tag">{{ callup.status }}</span>
+                            <small>{{ callup.level }}{% if callup.eta %} / {{ callup.eta }}{% endif %} · Val {{ callup.value }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="bf-empty">No AAA/AA names in this system yet.</p>
+                    {% endif %}
+                </div>
+                <div class="bf-team-extra">
+                    <h4>Scouting reports</h4>
+                    {% if team_boards.reports %}
+                    <ul class="bf-team-extra-list">
+                        {% for report in team_boards.reports %}
+                        <li>
+                            <a class="bf-player-link" href="{{ report.report_url }}">{{ report.name }}</a>
+                            <span class="bf-team-extra-tag">{{ report.tag }}</span>
+                            <small>{{ report.line }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="bf-empty">No scouting reports for this system yet.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
         {% else %}
         <div class="bf-team-card">
