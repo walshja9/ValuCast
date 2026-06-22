@@ -3508,20 +3508,20 @@ def _team_board_share_card_png(board, *, limit):
     draw = ImageDraw.Draw(img)
     selected = board["selected"]
     date_label = _editorial_date(dd_store.generated_at)
-    subtitle = f"{selected['name']} top {limit} prospects - {date_label}"
+    subtitle = f"{selected['org']} Team Board - {date_label}"
     _graphic_header(
         img,
         draw,
         headline="Backfields",
         subtitle=subtitle,
-        extra_line="ValuCast prospect order",
+        extra_line="ValuCast team board",
     )
 
-    title_font = _graphic_font(42, bold=True)
+    title_font = _graphic_font(46, bold=True)
     label_font = _graphic_font(15, bold=True, mono=True)
-    name_font = _graphic_font(26, bold=True)
-    meta_font = _graphic_font(17, mono=True)
-    value_font = _graphic_font(28, bold=True, mono=True)
+    name_font = _graphic_font(24 if limit == 20 else 26, bold=True)
+    meta_font = _graphic_font(16, mono=True)
+    value_font = _graphic_font(30, bold=True, mono=True)
     small_font = _graphic_font(15, bold=True, mono=True)
 
     text = palette["text"]
@@ -3529,56 +3529,79 @@ def _team_board_share_card_png(board, *, limit):
     teal = palette["teal"]
     clay = palette["clay"]
     slate = palette["slate"]
-    border = palette["border"]
-    card = palette["card"]
-    card_2 = palette["card_2"]
+    amber = (200, 146, 63)
+    warm_card = (17, 16, 14)
+    warm_card_2 = (22, 21, 18)
+    warm_border = (58, 45, 28)
+    warm_rule = (42, 32, 21)
 
-    draw.text((48, 236), selected["name"], fill=text, font=title_font)
-    draw.text((48, 288), f"{selected['count']} prospects in the ValuCast pool", fill=muted, font=meta_font)
-    draw.text((48, 344), "#", fill=slate, font=label_font)
-    draw.text((118, 344), "PLAYER", fill=slate, font=label_font)
-    draw.text((756, 344), "LEVEL", fill=slate, font=label_font)
-    draw.text((876, 344), "VALUE", fill=slate, font=label_font)
-    draw.line((48, 378, 1032, 378), fill=border, width=1)
+    draw.text((48, 226), "BACKFIELDS TEAM BOARD", fill=amber, font=label_font)
+    draw.text((48, 256), selected["name"], fill=text, font=title_font)
+    deck = f"Top {limit} prospects · {selected['count']} prospects in pool · ValuCast order"
+    draw.text((48, 314), _graphic_fit_text(draw, deck, meta_font, 820), fill=muted, font=meta_font)
 
-    y = 394
-    row_h = 40 if limit == 20 else 66
+    header_y = 360
+    table_x1, table_x2 = 48, 1032
+    row_h = 40 if limit == 20 else 68
+    y = 392
     rows = board["rows"][:limit]
+    table_bottom = y + row_h * max(1, len(rows))
+    draw.rounded_rectangle(
+        (table_x1, header_y - 10, table_x2, table_bottom + 8),
+        radius=10,
+        fill=warm_card,
+        outline=warm_border,
+        width=1,
+    )
+    draw.text((64, header_y), "#", fill=slate, font=label_font)
+    draw.text((118, header_y), "PLAYER", fill=slate, font=label_font)
+    draw.text((666, header_y), "POS", fill=slate, font=label_font)
+    draw.text((728, header_y), "LEVEL", fill=slate, font=label_font)
+    draw.text((804, header_y), "MOVE", fill=slate, font=label_font)
+    draw.text((906, header_y), "VALUE", fill=slate, font=label_font)
+    draw.line((table_x1, header_y + 28, table_x2, header_y + 28), fill=warm_border, width=1)
+
     for idx, row in enumerate(rows, 1):
-        fill = card if idx % 2 else card_2
-        draw.rounded_rectangle((48, y, 1032, y + row_h - 8), radius=8, fill=fill, outline=border, width=1)
-        draw.rectangle((48, y, 52, y + row_h - 8), fill=slate)
+        fill = warm_card if idx % 2 else warm_card_2
+        draw.rectangle((table_x1 + 1, y, table_x2 - 1, y + row_h), fill=fill)
+        draw.line((table_x1, y + row_h, table_x2, y + row_h), fill=warm_rule, width=1)
+        draw.rectangle((table_x1, y, table_x1 + 4, y + row_h), fill=slate)
         rank_text = str(idx)
-        draw.text((70, y + 12), rank_text, fill=muted, font=meta_font)
-        name_y = y + (8 if limit == 20 else 12)
+        draw.text((68, y + 12), rank_text, fill=muted, font=meta_font)
+        name_y = y + (7 if limit == 20 else 10)
         draw.text(
             (118, name_y),
-            _graphic_fit_text(draw, row["name"], name_font, 430),
+            _graphic_fit_text(draw, row["name"], name_font, 470),
             fill=text,
             font=name_font,
         )
-        meta = " - ".join(part for part in (row["position"], row["affiliate"], row["eta"]) if part)
-        if meta:
+        meta = row["eta"]
+        if meta and limit != 20:
             draw.text(
                 (118, name_y + 29),
-                _graphic_fit_text(draw, meta, meta_font, 520),
+                _graphic_fit_text(draw, meta, meta_font, 500),
                 fill=muted,
                 font=meta_font,
             )
-        draw.text((756, y + 20), row["level"], fill=muted, font=meta_font)
+        draw.text((666, y + 13), row["position"], fill=muted, font=meta_font)
+        draw.text((728, y + 13), row["level"], fill=amber, font=meta_font)
         move = row.get("move") or {}
         if move.get("direction") == "up":
-            move_text, move_color = f"UP {move.get('label')}", teal
+            label = str(move.get("label") or "").strip()
+            move_text = f"▲ {label if label.startswith('+') else '+' + label}" if label else "▲"
+            move_color = teal
         elif move.get("direction") == "down":
-            move_text, move_color = f"DOWN {move.get('label')}", clay
+            label = str(move.get("label") or "").strip()
+            move_text = f"▼ {label if label.startswith('-') else '-' + label}" if label else "▼"
+            move_color = clay
         else:
             move_text, move_color = "-", muted
-        draw.text((820, y + 20), move_text, fill=move_color, font=small_font)
+        draw.text((804, y + 13), move_text, fill=move_color, font=small_font)
         val = str(row["value"])
-        draw.text((1032 - 18 - _graphic_text_width(draw, val, value_font), y + 14), val, fill=teal, font=value_font)
+        draw.text((table_x2 - 20 - _graphic_text_width(draw, val, value_font), y + 8), val, fill=teal, font=value_font)
         y += row_h
 
-    footer = f"{selected['org']} top {limit} - ValuCast prospect order"
+    footer = f"{selected['org']} team board · top {limit} · ValuCast order"
     _graphic_footer(draw, right_note=footer)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)

@@ -388,6 +388,20 @@ def test_team_board_share_png_rejects_invalid_n():
     assert response.status_code == 400
 
 
+def test_team_board_share_png_renderer_uses_compact_backfields_export_language():
+    source = Path("app.py").read_text(encoding="utf-8")
+    start = source.index("def _team_board_share_card_png")
+    end = source.index('@app.route("/backfields/team/<org>/share-card.png")', start)
+    block = source[start:end]
+
+    assert "ValuCast team board" in block
+    assert "prospects in pool" in block
+    assert "BACKFIELDS TEAM BOARD" in block
+    assert 'row["affiliate"]' not in block
+    assert 'f"UP {move.get' not in block
+    assert 'f"DOWN {move.get' not in block
+
+
 def test_backfields_callup_desk_explains_why_each_player_is_listed():
     ctx = app_module._build_backfields_page_context()
     response, html = _html("/backfields")
