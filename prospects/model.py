@@ -157,6 +157,32 @@ SHRINK_FEATURES = {
     "hitter": {"iso", "k_pct", "bb_pct", "ops"},
     "pitcher": {"k_per_9", "bb_per_9", "k_bb_pct", "era", "whip"},
 }
+# Structural, sample-independent facts: age, level, sample-size proxies, role,
+# and draft pedigree. Every OTHER feature in the (rich) scoring vector is
+# performance-derived and MUST be shrunk toward the model mean by current-sample
+# reliability — otherwise a small-sample rate/discipline outlier (e.g. an extreme
+# BB/K in 50 PA at A-ball) sails into the model unregressed and saturates the
+# score. Shrink-by-default; only these names are held fixed.
+NON_SHRINK_FEATURES = {
+    "youth",
+    "level",
+    "log_pa",
+    "log_ip",
+    "is_starter",
+    "start_rate",
+    "starter_x_youth",
+    "rule4_drafted",
+    "draft_record_known",
+    "pick_value",
+    "inverse_draft_pick",
+    "inverse_draft_round",
+    "log_signing_bonus",
+    "college_drafted",
+    "prep_drafted",
+    "bats_left",
+    "bats_switch",
+    "throws_left",
+}
 
 
 def validate_input_contract(contract: dict) -> None:
@@ -897,11 +923,20 @@ def _regress_current_features(
     features: list[float], role_model: dict, role: str, sample: float
 ) -> tuple[list[float], float]:
     reliability = sample / (sample + SAMPLE_REGRESSION[role])
+    # Shrink every performance-derived feature in the scoring vector toward its
+    # training mean by reliability. The vector is the rich OUTCOME feature set,
+    # so we walk the model's own feature_names (falling back to the base names),
+    # holding only the structural facts in NON_SHRINK_FEATURES fixed.
+    feature_names = role_model.get("feature_names") or FEATURE_NAMES[role]
+    means = role_model["means"]
     out = list(features)
-    for index, name in enumerate(FEATURE_NAMES[role]):
-        if name in SHRINK_FEATURES[role]:
-            center = float(role_model["means"][index])
-            out[index] = center + reliability * (out[index] - center)
+    for index, name in enumerate(feature_names):
+        if index >= len(out) or index >= len(means):
+            break
+        if name in NON_SHRINK_FEATURES:
+            continue
+        center = float(means[index])
+        out[index] = center + reliability * (out[index] - center)
     return out, reliability
 
 

@@ -6,6 +6,7 @@ import pytest
 
 from prospects.gate import validate_gate
 from prospects.model import (
+    OUTCOME_FEATURE_NAMES,
     _active_impact_categories,
     _canonical_impact_feature_vector,
     _category_value,
@@ -249,6 +250,31 @@ def test_partial_season_features_regress_toward_training_mean():
     assert low_reliability < high_reliability
     assert abs(low[0] - role_model["means"][0]) < abs(high[0] - role_model["means"][0])
     assert low[4:] == raw[4:]
+
+
+def test_rich_outcome_features_regress_toward_mean_on_small_samples():
+    # Regression guard for the A-ball saturation bug: every performance-derived
+    # feature in the RICH scoring vector (not just the 6 base stats) must shrink
+    # toward the model mean by sample reliability. A small-sample discipline
+    # outlier like bb_to_k_ratio otherwise sails in raw and saturates the score
+    # (Bruin Agbayani ranked #2 on 51 PA at Single-A before this).
+    names = OUTCOME_FEATURE_NAMES["hitter"]
+    role_model = {"feature_names": list(names), "means": [0.0] * len(names)}
+    raw = [5.0] * len(names)
+
+    low, low_reliability = _regress_current_features(raw, role_model, "hitter", 50)
+    high, high_reliability = _regress_current_features(raw, role_model, "hitter", 2000)
+    assert low_reliability < high_reliability
+
+    for rich in ("bb_to_k_ratio", "bb_minus_k_pct", "obp", "ops_x_youth"):
+        idx = names.index(rich)
+        assert low[idx] < raw[idx], f"{rich} not shrunk"
+        assert abs(low[idx]) < abs(high[idx]), f"{rich} small sample not pulled harder"
+
+    # Structural facts stay fixed regardless of sample size.
+    for structural in ("youth", "level"):
+        idx = names.index(structural)
+        assert low[idx] == raw[idx] == high[idx]
 
 
 def test_role_training_emits_valid_honest_gate():
