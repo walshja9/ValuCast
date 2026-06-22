@@ -51,6 +51,7 @@ from web.value_spark import build_spark
 from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
+from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 
 app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
@@ -2817,6 +2818,30 @@ def _team_board_context_for(row):
     return {}
 
 
+def _team_board_org_for(row):
+    """Resolve the current MLB org for a Backfields row.
+
+    The public snapshot can carry a stale MLB org after a trade. Current MiLB
+    affiliate context is fresher, so prefer the affiliate-to-parent map before
+    falling back to snapshot org fields.
+    """
+    context = _team_board_context_for(row)
+    affiliate = str(context.get("stat_line_team") or "").strip()
+    if affiliate:
+        org = _canonical_team_board_org(MINOR_TEAM_MLB_AFFILIATES.get(affiliate))
+        if org:
+            return org
+    for key in ("mlb_team", "current_org", "org", "parent_org"):
+        org = _canonical_team_board_org(context.get(key))
+        if org:
+            return org
+    for attr in ("team", "mlb_team"):
+        org = _canonical_team_board_org(getattr(row, attr, None))
+        if org:
+            return org
+    return None
+
+
 def _team_board_as_float(value):
     try:
         return float(value)
@@ -2862,7 +2887,7 @@ def _team_board_identity_keys(row):
     mlbam = getattr(row, "mlbam_id", None)
     if mlbam not in (None, ""):
         keys.append(f"mlbam:{mlbam}")
-    org = _canonical_team_board_org(getattr(row, "team", None))
+    org = _team_board_org_for(row)
     name = str(getattr(row, "name", "") or "").strip().casefold()
     if name and org:
         keys.append(f"name:{name}|team:{org}")
@@ -2891,7 +2916,7 @@ def _team_board_prospect_rows(rows=None):
         rows = dd_store.filter(pool="prospect")
     rows = [
         row for row in rows
-        if _canonical_team_board_org(getattr(row, "team", None)) is not None
+        if _team_board_org_for(row) is not None
     ]
     return sorted(rows, key=_team_board_prospect_sort_key)
 
@@ -2972,7 +2997,7 @@ def _team_board_report_url(name):
 def _team_board_row(row, org_rank, movements, reports_by_key):
     signal = _team_board_signal_for(row, movements)
     move = _team_board_move_from_signal(signal)
-    org = _canonical_team_board_org(getattr(row, "team", None))
+    org = _team_board_org_for(row)
     player_url = _team_board_player_url(row)
     value = _team_board_value(row)
     has_report = any(key in reports_by_key for key in _team_board_identity_keys(row))
@@ -3005,7 +3030,7 @@ def _build_team_board_context(org=None, limit=20):
     rows = _team_board_prospect_rows()
     grouped = {}
     for row in rows:
-        canonical = _canonical_team_board_org(getattr(row, "team", None))
+        canonical = _team_board_org_for(row)
         if canonical is None:
             continue
         grouped.setdefault(canonical, []).append(row)

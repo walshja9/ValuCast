@@ -3,6 +3,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import urlencode
 
+import pytest
+
 import app as app_module
 from app import app
 
@@ -313,6 +315,25 @@ def test_team_board_context_groups_by_mlb_org_not_affiliate(monkeypatch):
 
     all_teams = {team["org"] for team in board["teams"]}
     assert "FA" not in all_teams
+
+
+def test_team_board_prefers_current_affiliate_org_over_stale_snapshot_team(monkeypatch):
+    rows = [
+        _row("David Sandlin", "BOS", prospect_rank=1, dynasty_rank=1, value=40),
+    ]
+    rows[0].context = {"stat_line_team": "Charlotte Knights"}
+
+    monkeypatch.setattr(app_module, "_team_board_prospect_rows", lambda rows_arg=None: rows)
+    monkeypatch.setattr(app_module, "_team_board_movements", lambda: {})
+
+    white_sox = app_module._build_team_board_context("CHW", limit=20)
+    assert white_sox["selected"]["org"] == "CHW"
+    assert [row["name"] for row in white_sox["rows"]] == ["David Sandlin"]
+    assert white_sox["rows"][0]["team"] == "CHW"
+    assert white_sox["rows"][0]["affiliate"] == "Charlotte Knights"
+
+    with pytest.raises(KeyError):
+        app_module._build_team_board_context("BOS", limit=20)
 
 
 def test_backfields_exposes_team_boards_module():
