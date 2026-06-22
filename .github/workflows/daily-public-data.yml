@@ -38,6 +38,11 @@ jobs:
     # job cap let it get cancelled mid-build (no commit, app stuck a day behind),
     # so give the whole pipeline real headroom.
     timeout-minutes: 60
+    # Hoisted to job level so the deploy step's `if` guard can actually read it.
+    # A step-level env is NOT visible to that same step's `if`, which silently
+    # skipped the old deploy step and left the live app a day behind.
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -185,8 +190,9 @@ jobs:
         # Render's dashboard auto-deploy toggle keeps disabling itself, leaving
         # the live app on stale data even after a successful refresh. Fire the
         # service deploy hook directly so publishing never depends on that
-        # toggle. Dormant until RENDER_DEPLOY_HOOK_URL is set as a repo secret.
+        # toggle. The guard reads the job-level RENDER_DEPLOY_HOOK_URL env (a
+        # step-level env is NOT visible to its own `if`, which silently skipped
+        # this step before). Dormant until that repo secret is set; -f makes a
+        # non-2xx response fail the job instead of silently no-op'ing.
         if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
