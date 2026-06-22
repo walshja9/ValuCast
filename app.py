@@ -5048,6 +5048,100 @@ def dynasty_share_card_svg():
     return response
 
 
+# --- Redraft board share graphics (adapt ValuationResult to the shared renderer) ---
+_REDRAFT_PITCHER_POS = {"SP", "RP", "P"}
+
+
+class _RedraftShareRow:
+    """Adapt a ValuationResult to the attributes the share renderer reads."""
+
+    def __init__(self, result):
+        player = result.player
+        meta = player.metadata or {}
+        if player.pool == PlayerPool.HITTER:
+            positions = [p for p in player.positions if p not in _REDRAFT_PITCHER_POS]
+        else:
+            positions = list(player.positions)
+        self.name = player.name
+        self.positions = positions or ["DH"]
+        self.team = meta.get("team") or "FA"
+        self.age = meta.get("age")
+        self.value = round(result.total_value, 1)
+        self.value_history = []   # redraft has no daily history -> no sparkline
+        self.level = "MLB"
+        self.status = "mlb"
+        self.prospect_rank = None
+        self.eta = None
+        self.confidence = {}
+
+
+def _redraft_share_labels(ctx, args):
+    mode = (ctx.get("mode") or "categories").replace("_", " ").title()
+    src = (args.get("source") or "steamer").title()
+    return mode, src
+
+
+@app.route("/redraft/share-card.png")
+def redraft_share_card_png():
+    limit = _prospect_share_limit(request.args)
+    ctx = _build_context(request.args)
+    rows = [_RedraftShareRow(r) for r in (ctx.get("results") or [])[:limit]]
+    mode, src = _redraft_share_labels(ctx, request.args)
+    png = _prospect_graphic_png(
+        rows,
+        limit=limit,
+        noun="Redraft",
+        hero_kicker="TOP REDRAFT VALUE",
+        footer_note=f"ValuCast Redraft - {mode} ({src})",
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-redraft-top-{limit}.png"'
+    )
+    return response
+
+
+@app.route("/redraft/share-card")
+def redraft_share_card():
+    limit = _prospect_share_limit(request.args)
+    ctx = _build_context(request.args)
+    mode, src = _redraft_share_labels(ctx, request.args)
+    params = request.args.to_dict()
+    params["limit"] = limit
+    png_url = "/redraft/share-card.png?" + urlencode(params)
+    title = f"Top {limit} Redraft - {mode} ({src})"
+    html = build_share_preview_html(
+        title="Ahead of the Curve",
+        subtitle=title,
+        png_url=png_url,
+        filename=f"valucast-redraft-top-{limit}.png",
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url("/redraft/share-card?" + urlencode(params)),
+        description="ValuCast redraft values, from the live board.",
+        image_alt=f"Ahead of the Curve - {title}",
+        back_url="/",
+        back_label="Back to redraft",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/redraft/share-card.svg")
+def redraft_share_card_svg():
+    limit = _prospect_share_limit(request.args)
+    ctx = _build_context(request.args)
+    rows = [_RedraftShareRow(r) for r in (ctx.get("results") or [])[:limit]]
+    svg = _prospect_graphic_svg(rows, limit=limit, noun="Redraft")
+    response = make_response(svg)
+    response.headers["Content-Type"] = "image/svg+xml; charset=utf-8"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-redraft-top-{limit}.svg"'
+    )
+    return response
+
+
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5001))

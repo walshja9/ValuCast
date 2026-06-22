@@ -398,6 +398,19 @@ class TestDynastyMode(unittest.TestCase):
         index = self.client.get("/?mode=dd_dynasty").data
         self.assertIn(b"/dynasty/share-card?limit=50", index)
 
+    def test_redraft_share_card_graphic(self):
+        preview = self.client.get("/redraft/share-card?limit=50")
+        self.assertEqual(preview.status_code, 200)
+        self.assertIn("text/html", preview.content_type)
+        self.assertIn(b"Top 50 Redraft", preview.data)
+        self.assertIn(b"/redraft/share-card.png?limit=50", preview.data)
+        for limit in (20, 50, 100):
+            png = self.client.get(f"/redraft/share-card.png?limit={limit}")
+            self.assertEqual(png.status_code, 200)
+            self.assertIn("image/png", png.content_type)
+        index = self.client.get("/").data
+        self.assertIn(b"/redraft/share-card?limit=50", index)
+
     def test_prospects_position_graphic_png(self):
         from app import dd_store
         if not dd_store.is_available:

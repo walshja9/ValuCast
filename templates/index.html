@@ -87,6 +87,11 @@
             </select>
             <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <span class="graphic-actions" aria-label="Redraft graphic actions">
+                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=20" target="_blank" onclick="openRedraftGraphic(event, 20)">Generate Top 20 Graphic</a>
+                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=50" target="_blank" onclick="openRedraftGraphic(event, 50)">Generate Top 50 Graphic</a>
+                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=100" target="_blank" onclick="openRedraftGraphic(event, 100)">Generate Top 100 Graphic</a>
+            </span>
             <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
         </div>
     </div>
@@ -401,6 +406,14 @@ function openDynastyGraphic(e, limit) {
         if (cur.get(k)) params.set(k, cur.get(k));
     });
     window.open('/dynasty/share-card?' + params.toString(), '_blank', 'noopener');
+}
+
+function openRedraftGraphic(e, limit) {
+    e.preventDefault();
+    // Carry the current scoring mode / source / league config from the board URL.
+    const params = new URLSearchParams(window.location.search);
+    params.set('limit', String(limit));
+    window.open('/redraft/share-card?' + params.toString(), '_blank', 'noopener');
 }
 
 function toggleDetail(playerId, row) {
