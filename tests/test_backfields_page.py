@@ -336,6 +336,45 @@ def test_team_board_prefers_current_affiliate_org_over_stale_snapshot_team(monke
         app_module._build_team_board_context("BOS", limit=20)
 
 
+def test_team_board_prefers_current_roster_org_over_historical_affiliate(monkeypatch):
+    rows = [
+        _row("Brandon Clarke", "BOS", prospect_rank=1, dynasty_rank=1, value=40),
+    ]
+    rows[0].context = {
+        "stat_line_team": "Greenville Drive",
+        "stat_line_sample_season": 2025,
+        "stat_line_source_kind": "latest_milb_history",
+    }
+
+    monkeypatch.setattr(app_module, "_team_board_prospect_rows", lambda rows_arg=None: rows)
+    monkeypatch.setattr(app_module, "_team_board_movements", lambda: {})
+    monkeypatch.setattr(app_module, "_team_board_current_roster_org", lambda row: "STL", raising=False)
+
+    cardinals = app_module._build_team_board_context("STL", limit=20)
+    assert cardinals["selected"]["org"] == "STL"
+    assert [row["name"] for row in cardinals["rows"]] == ["Brandon Clarke"]
+    assert cardinals["rows"][0]["team"] == "STL"
+    assert cardinals["rows"][0]["affiliate"] == "Greenville Drive"
+
+    with pytest.raises(KeyError):
+        app_module._build_team_board_context("BOS", limit=20)
+
+
+def test_team_board_current_roster_org_reads_unique_fantrax_team(tmp_path, monkeypatch):
+    path = tmp_path / "fantrax.csv"
+    path.write_text(
+        '"ID","Player","Team","Position","Roster Status"\n'
+        '"*1*","Brandon Clarke","STL","SP","Minors"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(app_module, "_TEAM_BOARD_FANTRAX_FILES", (path,))
+    app_module._team_board_current_roster_org_lookup.cache_clear()
+    try:
+        assert app_module._team_board_current_roster_org(_row("Brandon Clarke", "BOS")) == "STL"
+    finally:
+        app_module._team_board_current_roster_org_lookup.cache_clear()
+
+
 def test_backfields_exposes_team_boards_module():
     response, html = _html("/backfields")
 

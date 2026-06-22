@@ -2789,6 +2789,18 @@ _TEAM_BOARD_ORG_NAMES = {
     "TOR": "Toronto Blue Jays",
     "WSN": "Washington Nationals",
 }
+_TEAM_BOARD_FANTRAX_FILES = (
+    Path(__file__).parent / "data" / "prospects" / "raw" / "fantrax" / "Fantrax-Players-Diamond Dynasties-OwnedHitters.csv",
+    Path(__file__).parent / "data" / "prospects" / "raw" / "fantrax" / "Fantrax-Players-Diamond Dynasties-OwnedPitchers.csv",
+)
+
+
+def _team_board_normalized_name(name):
+    text = str(name or "").strip()
+    if not text:
+        return ""
+    text = text.replace(".", "").replace("'", "").replace("\u2019", "").replace("-", " ")
+    return " ".join(text.split()).casefold()
 
 
 def _canonical_team_board_org(value):
@@ -2808,6 +2820,31 @@ def _team_board_org_name(org):
     return _TEAM_BOARD_ORG_NAMES.get(str(org or "").upper(), str(org or "").upper())
 
 
+@lru_cache(maxsize=1)
+def _team_board_current_roster_org_lookup():
+    by_name = {}
+    for path in _TEAM_BOARD_FANTRAX_FILES:
+        if not path.exists():
+            continue
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            for row in csv.DictReader(handle):
+                name = _team_board_normalized_name(row.get("Player"))
+                org = _canonical_team_board_org(row.get("Team"))
+                if name and org:
+                    by_name.setdefault(name, set()).add(org)
+    return {
+        name: next(iter(orgs))
+        for name, orgs in by_name.items()
+        if len(orgs) == 1
+    }
+
+
+def _team_board_current_roster_org(row):
+    return _team_board_current_roster_org_lookup().get(
+        _team_board_normalized_name(getattr(row, "name", None))
+    )
+
+
 def _team_board_context_for(row):
     context = getattr(row, "context", None)
     if isinstance(context, dict):
@@ -2821,10 +2858,14 @@ def _team_board_context_for(row):
 def _team_board_org_for(row):
     """Resolve the current MLB org for a Backfields row.
 
-    The public snapshot can carry a stale MLB org after a trade. Current MiLB
-    affiliate context is fresher, so prefer the affiliate-to-parent map before
-    falling back to snapshot org fields.
+    The public snapshot and MiLB stat line can each be stale in different ways:
+    row.team may lag a trade, while stat_line_team can be an older affiliate
+    from historical MiLB context. Prefer the current Fantrax roster org when it
+    is uniquely available, then use affiliate and snapshot fallbacks.
     """
+    roster_org = _team_board_current_roster_org(row)
+    if roster_org:
+        return roster_org
     context = _team_board_context_for(row)
     affiliate = str(context.get("stat_line_team") or "").strip()
     if affiliate:
