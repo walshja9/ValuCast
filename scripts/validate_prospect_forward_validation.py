@@ -9,15 +9,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from prospects.buys import PROSPECT_BUYS_EPOCH
+
 REPORT_PATH = ROOT / "data" / "models" / "valucast_prospect_forward_validation.json"
 ALLOWED_TOP_LEVEL_KEYS = {
     "artifact",
     "buy_comparisons",
+    "epoch",
     "generated_at",
     "evidence_status",
     "input_artifacts",
     "latest_buy_comparison",
     "latest_rank_comparison",
+    "masked_cross_epoch_count",
     "metrics",
     "observation_contract",
     "rank_comparisons",
@@ -41,6 +45,11 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
         problems.append(f"unexpected top-level keys: {', '.join(unexpected)}")
     if payload.get("artifact") != "valucast_prospect_forward_validation":
         problems.append("artifact must be valucast_prospect_forward_validation")
+    if payload.get("epoch") != PROSPECT_BUYS_EPOCH:
+        problems.append(f"epoch must be {PROSPECT_BUYS_EPOCH}")
+    masked_count = payload.get("masked_cross_epoch_count")
+    if not isinstance(masked_count, int) or masked_count < 0:
+        problems.append("masked_cross_epoch_count must be a non-negative integer")
     if payload.get("status") not in {"collecting", "review_ready"}:
         problems.append("status must be collecting or review_ready")
     if not payload.get("generated_at"):
