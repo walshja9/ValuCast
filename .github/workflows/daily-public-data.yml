@@ -48,6 +48,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Sync to latest origin/master
+        # checkout pins the SHA that triggered this run, but a serialized earlier
+        # run (concurrency only serializes execution, not the checkout ref) may have
+        # pushed since. Build on the absolute latest so the post-build push is a
+        # fast-forward and never has to merge generated artifacts across runs.
+        run: |
+          git fetch origin
+          git checkout -B master origin/master
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
@@ -172,21 +181,17 @@ jobs:
           fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
-          # Publish with retries. A manual dispatch racing the schedule can move
-          # origin/master between our fetch and push; a rejected push then left
-          # the old "pull --rebase; push" loop wedged mid-rebase and the job
-          # failed without committing (app stuck a day behind). On rejection,
-          # rebase our freshly generated data onto origin and retry. -X theirs
-          # keeps THIS run's artifacts when a data file changed on both sides
-          # (in a rebase, "theirs" is the commit being replayed = ours).
-          for attempt in 1 2 3 4 5; do
-            git push origin master && exit 0
-            echo "push attempt $attempt rejected; rebasing on origin/master"
-            git fetch origin master
-            git rebase -X theirs origin/master || git rebase --abort
-            sleep $((attempt * 5))
-          done
-          exit 1
+          # We synced to the latest origin/master right after checkout and built on
+          # it, so this push is normally a fast-forward. If something pushed during
+          # the ~25-min build, FAIL LOUD instead of rebase-merging: the old
+          # `rebase -X theirs origin/master` silently dropped this run's freshly
+          # built artifacts. No conflict ever fired (the generated JSON auto-merged
+          # cleanly), so the -X tiebreaker never engaged and the clean 3-way merge
+          # just kept origin's side of every file the racing run had already
+          # written -- publishing an internally inconsistent board (fresh model,
+          # stale rank_v1). A failed job is recoverable and the next synced run
+          # republishes a complete set; a silently corrupt board is not.
+          git push origin master
 
       - name: Trigger Render deploy
         # Render's dashboard auto-deploy toggle keeps disabling itself, leaving
