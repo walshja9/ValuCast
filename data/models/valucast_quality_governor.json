@@ -1,12 +1,10 @@
 {
   "artifact": "valucast_quality_governor",
   "blockers": [
-    "Top prospect board has a risky bucket concentration.",
     "MiLB prospect-card stat freshness audit blocks public promotion.",
     "Prospect card data audit blocks public promotion."
   ],
   "buy_blockers": [
-    "Top prospect board has a risky bucket concentration.",
     "MiLB prospect-card stat freshness audit blocks public promotion.",
     "Prospect card data audit blocks public promotion.",
     "ValuCast-owned Buy signals are not approved for public promotion."
@@ -94,7 +92,7 @@
               "SP",
               "RP"
             ],
-            "rank": 20,
+            "rank": 19,
             "value": 65.84
           }
         ],
@@ -170,12 +168,10 @@
     },
     {
       "id": "prospect_top50_bucket_shape",
-      "message": "Top prospect board has a risky bucket concentration.",
+      "message": "Top prospect board bucket shape is within publication limits.",
       "metrics": {
         "evaluated_count": 50,
-        "failures": [
-          "thin_upper_level_pitcher_count"
-        ],
+        "failures": [],
         "low_confidence_count": 0,
         "low_confidence_rate": 0.0,
         "lower_minors_pedigree_count": 0,
@@ -189,16 +185,8 @@
           "thin_upper_level_pitchers": [
             {
               "level": "AAA",
-              "name": "Gabriel Hughes",
-              "rank": 8,
-              "sample": 40.7,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            },
-            {
-              "level": "AAA",
               "name": "Tink Hence",
-              "rank": 15,
+              "rank": 42,
               "sample": 13.3,
               "sample_unit": "IP",
               "score_source": "prospect_model_v0_6"
@@ -206,41 +194,17 @@
             {
               "level": "AAA",
               "name": "Ben Kudrna",
-              "rank": 18,
+              "rank": 46,
               "sample": 2.0,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            },
-            {
-              "level": "AAA",
-              "name": "Braden Nett",
-              "rank": 25,
-              "sample": 9.3,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            },
-            {
-              "level": "AA",
-              "name": "Frank Mozzicato",
-              "rank": 42,
-              "sample": 42.7,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            },
-            {
-              "level": "AA",
-              "name": "Peter Heubeck",
-              "rank": 43,
-              "sample": 11.7,
               "sample_unit": "IP",
               "score_source": "prospect_model_v0_6"
             }
           ]
         },
-        "thin_upper_level_pitcher_count": 6,
+        "thin_upper_level_pitcher_count": 2,
         "top_n": 50
       },
-      "status": "blocked"
+      "status": "passed"
     },
     {
       "id": "prospect_top25_neutral_investment_rate",
@@ -301,41 +265,55 @@
         "band_counts": {
           "balanced": 6,
           "bat_missing": 7,
-          "impact": 13,
+          "impact": 16,
           "limited": 2,
-          "mixed": 5,
+          "mixed": 4,
           "starter_volume": 12,
-          "thin": 5
+          "thin": 3
         },
-        "best_single_level_covered_count": 0,
-        "best_single_level_samples": [],
+        "best_single_level_covered_count": 1,
+        "best_single_level_samples": [
+          {
+            "best_level": "A",
+            "best_sample": 232,
+            "best_sample_unit": "PA",
+            "current_level": "A+",
+            "current_sample": 49.0,
+            "current_sample_unit": "PA",
+            "current_skill_band": "thin",
+            "mlbam_id": 816113,
+            "name": "Eli Willits",
+            "rank": 47,
+            "role": "hitter"
+          }
+        ],
         "caution_bands": [
           "limited",
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 7,
+        "caution_factual_context_count": 4,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
         "samples": [
           {
             "level": "A+",
-            "mlbam_id": 803285,
-            "name": "Tyler Bremner",
-            "rank": 3,
+            "mlbam_id": 815825,
+            "name": "Seth Hernandez",
+            "rank": 4,
             "role": "pitcher",
-            "sample": 28.0,
+            "sample": 29.3,
             "sample_unit": "IP",
             "skill_band": "limited"
           },
           {
             "level": "A+",
-            "mlbam_id": 815825,
-            "name": "Seth Hernandez",
-            "rank": 5,
+            "mlbam_id": 803285,
+            "name": "Tyler Bremner",
+            "rank": 12,
             "role": "pitcher",
-            "sample": 29.3,
+            "sample": 28.0,
             "sample_unit": "IP",
             "skill_band": "limited"
           },
@@ -343,7 +321,7 @@
             "level": "AAA",
             "mlbam_id": 693311,
             "name": "Tink Hence",
-            "rank": 15,
+            "rank": 42,
             "role": "pitcher",
             "sample": 13.3,
             "sample_unit": "IP",
@@ -353,39 +331,9 @@
             "level": "AAA",
             "mlbam_id": 695667,
             "name": "Ben Kudrna",
-            "rank": 18,
+            "rank": 46,
             "role": "pitcher",
             "sample": 2.0,
-            "sample_unit": "IP",
-            "skill_band": "thin"
-          },
-          {
-            "level": "AAA",
-            "mlbam_id": 804556,
-            "name": "Braden Nett",
-            "rank": 25,
-            "role": "pitcher",
-            "sample": 9.3,
-            "sample_unit": "IP",
-            "skill_band": "thin"
-          },
-          {
-            "level": "AA",
-            "mlbam_id": 695646,
-            "name": "Peter Heubeck",
-            "rank": 43,
-            "role": "pitcher",
-            "sample": 11.7,
-            "sample_unit": "IP",
-            "skill_band": "thin"
-          },
-          {
-            "level": "A",
-            "mlbam_id": 800611,
-            "name": "Noble Meyer",
-            "rank": 48,
-            "role": "pitcher",
-            "sample": 3.0,
             "sample_unit": "IP",
             "skill_band": "thin"
           }
@@ -399,7 +347,7 @@
       "message": "Top prospect board stat lines align with current factual context.",
       "metrics": {
         "current_stat_context_mismatch_count": 0,
-        "evaluated_count": 41,
+        "evaluated_count": 40,
         "max_allowed_current_stat_context_mismatch_count": 0,
         "sample_ready": true,
         "samples": [],
@@ -422,8 +370,8 @@
         "current_season_row_count": 5891,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 24,
-        "top50_history_fallback_count": 9,
+        "top200_history_fallback_count": 25,
+        "top50_history_fallback_count": 10,
         "top50_stat_context_mismatch_count": 0
       },
       "status": "blocked"
@@ -489,7 +437,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 19,
+        "priced_availability_risk_count": 13,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,

@@ -125483,6 +125483,161 @@
     {
       "age": 26,
       "components": {
+        "age_adjustment": 1.335,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": true,
+          "effective_date": "2026-06-22",
+          "list_type": null,
+          "note": "Toronto Blue Jays sent 2B Lenyn Sosa on a rehab assignment to FCL Blue Jays.",
+          "present": true,
+          "risk_discount": 0.04,
+          "risk_level": "medium",
+          "score_before_availability_adjustment": 6.61,
+          "source": "official_mlb_statsapi_transactions",
+          "status": "rehab",
+          "transaction_date": "2026-06-22",
+          "transaction_id": 920919
+        },
+        "availability_adjusted": true,
+        "availability_risk_discount": 0.04,
+        "dynasty_horizon_value": -1.6664,
+        "horizon_years": [
+          {
+            "age": 26,
+            "age_factor": 1.0,
+            "projected_value": -2.4144,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 27,
+            "age_factor": 0.9363,
+            "projected_value": -1.2868,
+            "reliability_factor": 0.5692,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 28,
+            "age_factor": 0.8664,
+            "projected_value": -0.6777,
+            "reliability_factor": 0.324,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 56.92,
+        "production_score": 3.96,
+        "projection_stability": {
+          "current_season_category_value": -2.8,
+          "ros_category_value": -1.836,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 7.3868,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -2.4144,
+          "stability_adjustment": 0.3856,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 6.61,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 53.99,
+          "track_record_experience_band": "partial_track_record",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": 44.29,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "score_before_availability_adjustment": 6.61,
+        "season_category_value": -2.4144,
+        "track_record": {
+          "experience_band": "partial_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 53.99,
+          "track_record_floor_score": 44.29,
+          "volume": {
+            "career": 1239.0,
+            "current_season": 117.0,
+            "prior_mlb": 1122.0,
+            "recent_3yr_prior": 1086.0
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "R -1.05",
+        "RBI -1.04",
+        "HR -0.93",
+        "SB -0.83",
+        "playing time reliability 57"
+      ],
+      "dynasty_horizon_value": -1.6664,
+      "id": "vc_mlb_672820_hitter",
+      "mlb_team": "TOR",
+      "mlbam_id": 672820,
+      "name": "Lenyn Sosa",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "2B"
+      ],
+      "projection_value": -2.4144,
+      "rank": 855,
+      "role": "hitter",
+      "score": 6.35,
+      "stat_line": {
+        "category_values": {
+          "AVG": -0.6559,
+          "ERA": 0.0,
+          "HR": -0.934,
+          "K": 0.0,
+          "R": -1.0464,
+          "RBI": -1.0416,
+          "SB": -0.831,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2144,
+          "ERA": null,
+          "HR": 3.548,
+          "K": null,
+          "R": 19.401,
+          "RBI": 18.513,
+          "SB": 0.393,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.214,
+          "HR": 3.548,
+          "OBP": 0.236,
+          "OPS": 0.564,
+          "PA": 198.226,
+          "R": 19.401,
+          "RBI": 18.513,
+          "SB": 0.393
+        }
+      },
+      "team": "TOR",
+      "value": 6.35,
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_4"
+    },
+    {
+      "age": 26,
+      "components": {
         "age_adjustment": 1.225,
         "age_adjustment_status": "applied",
         "age_source": "valucast_identity_birth_date",
@@ -125588,7 +125743,7 @@
         "RP"
       ],
       "projection_value": -2.401,
-      "rank": 855,
+      "rank": 856,
       "role": "pitcher",
       "score": 6.33,
       "stat_line": {
@@ -125731,7 +125886,7 @@
         "3B"
       ],
       "projection_value": -2.4485,
-      "rank": 856,
+      "rank": 857,
       "role": "hitter",
       "score": 6.32,
       "stat_line": {
@@ -125874,7 +126029,7 @@
         "OF"
       ],
       "projection_value": -2.3189,
-      "rank": 857,
+      "rank": 858,
       "role": "hitter",
       "score": 6.3,
       "stat_line": {
@@ -126018,7 +126173,7 @@
         "DH"
       ],
       "projection_value": -2.4625,
-      "rank": 858,
+      "rank": 859,
       "role": "hitter",
       "score": 6.27,
       "stat_line": {
@@ -126161,7 +126316,7 @@
         "RP"
       ],
       "projection_value": -2.423,
-      "rank": 859,
+      "rank": 860,
       "role": "pitcher",
       "score": 6.24,
       "stat_line": {
@@ -126203,161 +126358,6 @@
       },
       "team": "ATH",
       "value": 6.24,
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_4"
-    },
-    {
-      "age": 26,
-      "components": {
-        "age_adjustment": 1.335,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-05-27",
-          "list_type": "10-day injured list",
-          "note": "Toronto Blue Jays placed 2B Lenyn Sosa on the 10-day injured list retroactive to May 27, 2026. Right wrist contusion.",
-          "present": true,
-          "risk_discount": 0.06,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 6.61,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-05-28",
-          "transaction_id": 912487
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.06,
-        "dynasty_horizon_value": -1.6664,
-        "horizon_years": [
-          {
-            "age": 26,
-            "age_factor": 1.0,
-            "projected_value": -2.4144,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 27,
-            "age_factor": 0.9363,
-            "projected_value": -1.2868,
-            "reliability_factor": 0.5692,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 28,
-            "age_factor": 0.8664,
-            "projected_value": -0.6777,
-            "reliability_factor": 0.324,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 56.92,
-        "production_score": 3.96,
-        "projection_stability": {
-          "current_season_category_value": -2.8,
-          "ros_category_value": -1.836,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 7.3868,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -2.4144,
-          "stability_adjustment": 0.3856,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 6.61,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 53.99,
-          "track_record_experience_band": "partial_track_record",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": 44.29,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 6.61,
-        "season_category_value": -2.4144,
-        "track_record": {
-          "experience_band": "partial_track_record",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 53.99,
-          "track_record_floor_score": 44.29,
-          "volume": {
-            "career": 1239.0,
-            "current_season": 117.0,
-            "prior_mlb": 1122.0,
-            "recent_3yr_prior": 1086.0
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "R -1.05",
-        "RBI -1.04",
-        "HR -0.93",
-        "SB -0.83",
-        "playing time reliability 57"
-      ],
-      "dynasty_horizon_value": -1.6664,
-      "id": "vc_mlb_672820_hitter",
-      "mlb_team": "TOR",
-      "mlbam_id": 672820,
-      "name": "Lenyn Sosa",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "2B"
-      ],
-      "projection_value": -2.4144,
-      "rank": 860,
-      "role": "hitter",
-      "score": 6.21,
-      "stat_line": {
-        "category_values": {
-          "AVG": -0.6559,
-          "ERA": 0.0,
-          "HR": -0.934,
-          "K": 0.0,
-          "R": -1.0464,
-          "RBI": -1.0416,
-          "SB": -0.831,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2144,
-          "ERA": null,
-          "HR": 3.548,
-          "K": null,
-          "R": 19.401,
-          "RBI": 18.513,
-          "SB": 0.393,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.214,
-          "HR": 3.548,
-          "OBP": 0.236,
-          "OPS": 0.564,
-          "PA": 198.226,
-          "R": 19.401,
-          "RBI": 18.513,
-          "SB": 0.393
-        }
-      },
-      "team": "TOR",
-      "value": 6.21,
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_4"
     },

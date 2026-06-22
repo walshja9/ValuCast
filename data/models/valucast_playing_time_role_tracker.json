@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-22T13:15:12.441797+00:00",
+  "generated_at": "2026-06-22T14:31:30.605691+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -30273,7 +30273,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "672820_hitter",
       "mlbam_id": "672820",
       "name": "Lenyn Sosa",
@@ -30299,7 +30299,7 @@
         "role_probability_source": "volume_fan",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.06,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
           "reliability": 56.92,
@@ -30309,9 +30309,9 @@
         "volume_forecast": {
           "base": 508.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 530.3,
-          "low": 369.5,
-          "point": 473.3,
+          "high": 533.4,
+          "low": 378.3,
+          "point": 478.4,
           "unit": "PA"
         }
       },
