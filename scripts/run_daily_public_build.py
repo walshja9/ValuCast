@@ -43,6 +43,10 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_mlb_roster_status.py",),
     ("scripts/build_playing_time_role_tracker.py",),
     ("scripts/run_prospect_shadow_pipeline.py",),
+    # Re-score the proprietary prospect model from the day's fresh inputs BEFORE
+    # the universe/rank consumers read it. Without this the model artifact froze
+    # at an old manual build and the board served stale (saturated) scores.
+    ("scripts/build_prospect_model.py",),
     ("scripts/build_prospect_universe.py",),
     ("scripts/build_prospect_availability.py",),
     ("scripts/build_prospect_rank_v1.py",),
