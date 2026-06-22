@@ -2391,21 +2391,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Chicago White Sox sent C Kyle Teel on a rehab assignment to Charlotte Knights.",
-      "effective_date": "2026-06-16",
-      "list_type": null,
-      "mlbam_id": 691019,
-      "name": "Kyle Teel",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Charlotte Knights",
-      "transaction_date": "2026-06-16",
-      "transaction_id": 919200,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Houston Astros placed 1B LaMonte Wade Jr. on the 10-day injured list. Right hamstring strain.",
       "effective_date": "2026-06-09",
       "list_type": "10-day injured list",
@@ -5391,6 +5376,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Chicago White Sox activated C Kyle Teel from the 60-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "60-day injured list",
+      "mlbam_id": 691019,
+      "name": "Kyle Teel",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Chicago White Sox",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 920956,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "St. Louis Cardinals activated LF Lars Nootbaar from the 60-day injured list.",
       "effective_date": "2026-06-05",
       "list_type": "60-day injured list",
@@ -6564,15 +6564,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 188,
+    "available_after_il_count": 189,
     "blockers": [],
     "duplicate_identity_count": 0,
     "injured_count": 199,
     "profile_count": 435,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 48,
-    "risk_profile_count": 247,
+    "rehab_count": 47,
+    "risk_profile_count": 246,
     "tracked_mlbam_count": 10182,
-    "transaction_count": 6860
+    "transaction_count": 6864
   }
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-22T14:31:26.573816+00:00",
+  "generated_at": "2026-06-22T19:13:44.665027+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.4.0",
   "limitations": [],
@@ -69056,6 +69056,159 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_4"
     },
     {
+      "age": 24,
+      "components": {
+        "age_adjustment": 1.4967,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-06-22",
+          "list_type": "60-day injured list",
+          "note": "Chicago White Sox activated C Kyle Teel from the 60-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-06-22",
+          "transaction_id": 920956
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "dynasty_horizon_value": 0.8906,
+        "horizon_years": [
+          {
+            "age": 24,
+            "age_factor": 1.0,
+            "projected_value": 1.1615,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 25,
+            "age_factor": 0.9488,
+            "projected_value": 0.7704,
+            "reliability_factor": 0.6991,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 26,
+            "age_factor": 0.892,
+            "projected_value": 0.5064,
+            "reliability_factor": 0.4887,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 69.91,
+        "production_score": 10.5,
+        "projection_stability": {
+          "current_season_category_value": 1.1615,
+          "ros_category_value": null,
+          "ros_stability_weight": 0.0,
+          "ros_true_talent_annualization_scale": null,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 1.1615,
+          "stability_adjustment": 0.0,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 13.47,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 23.22,
+          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": null,
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": 1.1615,
+        "track_record": {
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 23.22,
+          "track_record_floor_score": 47.12,
+          "volume": {
+            "career": 297.0,
+            "current_season": 0.0,
+            "prior_mlb": 297.0,
+            "recent_3yr_prior": 297.0
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "AVG +0.62",
+        "R +0.27",
+        "SB -0.23",
+        "HR +0.22",
+        "playing time reliability 70"
+      ],
+      "dynasty_horizon_value": 0.8906,
+      "id": "vc_mlb_691019_hitter",
+      "mlb_team": "CHW",
+      "mlbam_id": 691019,
+      "name": "Kyle Teel",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "C"
+      ],
+      "projection_value": 1.1615,
+      "rank": 470,
+      "role": "hitter",
+      "score": 13.47,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.6158,
+          "ERA": 0.0,
+          "HR": 0.2244,
+          "K": 0.0,
+          "R": 0.2659,
+          "RBI": 0.2145,
+          "SB": -0.2278,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2557,
+          "ERA": null,
+          "HR": 11.6497,
+          "K": null,
+          "R": 43.4822,
+          "RBI": 40.9266,
+          "SB": 5.0845,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_hp_projection_run",
+        "stats": {
+          "AVG": 0.256,
+          "HR": 11.65,
+          "OBP": 0.347,
+          "OPS": 0.774,
+          "PA": 348.5,
+          "R": 43.482,
+          "RBI": 40.927,
+          "SB": 5.085
+        }
+      },
+      "team": "CHW",
+      "value": 13.47,
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_4"
+    },
+    {
       "age": 35,
       "components": {
         "age_adjustment": 0.5433,
@@ -69143,7 +69296,7 @@
         "RP"
       ],
       "projection_value": 1.0598,
-      "rank": 470,
+      "rank": 471,
       "role": "pitcher",
       "score": 13.47,
       "stat_line": {
@@ -69288,7 +69441,7 @@
         "OF"
       ],
       "projection_value": 1.086,
-      "rank": 471,
+      "rank": 472,
       "role": "hitter",
       "score": 13.36,
       "stat_line": {
@@ -69443,7 +69596,7 @@
         "OF"
       ],
       "projection_value": 1.4161,
-      "rank": 472,
+      "rank": 473,
       "role": "hitter",
       "score": 13.32,
       "stat_line": {
@@ -69588,7 +69741,7 @@
         "SP"
       ],
       "projection_value": 1.7055,
-      "rank": 473,
+      "rank": 474,
       "role": "pitcher",
       "score": 13.14,
       "stat_line": {
@@ -69732,7 +69885,7 @@
         "RP"
       ],
       "projection_value": 1.0948,
-      "rank": 474,
+      "rank": 475,
       "role": "pitcher",
       "score": 13.08,
       "stat_line": {
@@ -69866,7 +70019,7 @@
         "OF"
       ],
       "projection_value": 1.0485,
-      "rank": 475,
+      "rank": 476,
       "role": "hitter",
       "score": 12.98,
       "stat_line": {
@@ -70012,7 +70165,7 @@
         "RP"
       ],
       "projection_value": 1.2701,
-      "rank": 476,
+      "rank": 477,
       "role": "pitcher",
       "score": 12.96,
       "stat_line": {
@@ -70055,161 +70208,6 @@
       },
       "team": "HOU",
       "value": 12.96,
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_4"
-    },
-    {
-      "age": 24,
-      "components": {
-        "age_adjustment": 1.4967,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-06-16",
-          "list_type": null,
-          "note": "Chicago White Sox sent C Kyle Teel on a rehab assignment to Charlotte Knights.",
-          "present": true,
-          "risk_discount": 0.04,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 13.47,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "rehab",
-          "transaction_date": "2026-06-16",
-          "transaction_id": 919200
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.04,
-        "dynasty_horizon_value": 0.8906,
-        "horizon_years": [
-          {
-            "age": 24,
-            "age_factor": 1.0,
-            "projected_value": 1.1615,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 25,
-            "age_factor": 0.9488,
-            "projected_value": 0.7704,
-            "reliability_factor": 0.6991,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 26,
-            "age_factor": 0.892,
-            "projected_value": 0.5064,
-            "reliability_factor": 0.4887,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 69.91,
-        "production_score": 10.5,
-        "projection_stability": {
-          "current_season_category_value": 1.1615,
-          "ros_category_value": null,
-          "ros_stability_weight": 0.0,
-          "ros_true_talent_annualization_scale": null,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 1.1615,
-          "stability_adjustment": 0.0,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 13.47,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 23.22,
-          "track_record_experience_band": "current_year_only_or_limited",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 13.47,
-        "season_category_value": 1.1615,
-        "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 23.22,
-          "track_record_floor_score": 47.12,
-          "volume": {
-            "career": 297.0,
-            "current_season": 0.0,
-            "prior_mlb": 297.0,
-            "recent_3yr_prior": 297.0
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "AVG +0.62",
-        "R +0.27",
-        "SB -0.23",
-        "HR +0.22",
-        "playing time reliability 70"
-      ],
-      "dynasty_horizon_value": 0.8906,
-      "id": "vc_mlb_691019_hitter",
-      "mlb_team": "CHW",
-      "mlbam_id": 691019,
-      "name": "Kyle Teel",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "C"
-      ],
-      "projection_value": 1.1615,
-      "rank": 477,
-      "role": "hitter",
-      "score": 12.93,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.6158,
-          "ERA": 0.0,
-          "HR": 0.2244,
-          "K": 0.0,
-          "R": 0.2659,
-          "RBI": 0.2145,
-          "SB": -0.2278,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2557,
-          "ERA": null,
-          "HR": 11.6497,
-          "K": null,
-          "R": 43.4822,
-          "RBI": 40.9266,
-          "SB": 5.0845,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_hp_projection_run",
-        "stats": {
-          "AVG": 0.256,
-          "HR": 11.65,
-          "OBP": 0.347,
-          "OPS": 0.774,
-          "PA": 348.5,
-          "R": 43.482,
-          "RBI": 40.927,
-          "SB": 5.085
-        }
-      },
-      "team": "CHW",
-      "value": 12.93,
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_4"
     },
@@ -227287,11 +227285,11 @@
     "age_coverage_count": 1607,
     "age_coverage_rate": 1.0,
     "age_coverage_threshold": 0.95,
-    "availability_adjusted_count": 212,
+    "availability_adjusted_count": 211,
     "availability_present": true,
     "availability_profile_count": 435,
     "availability_ready": true,
-    "availability_risk_profile_count": 247,
+    "availability_risk_profile_count": 246,
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 1607,

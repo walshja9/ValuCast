@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-22T14:31:30.605691+00:00",
+  "generated_at": "2026-06-22T19:13:49.103299+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -5476,9 +5476,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "700337_hitter",
       "mlbam_id": "700337",
       "name": "Edgar Quero",
@@ -5519,7 +5519,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CHW",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -24270,10 +24270,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "691019_hitter",
       "mlbam_id": "691019",
       "name": "Kyle Teel",
@@ -24286,20 +24286,19 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 33.3,
+        "confidence_score": 41.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "part_time_or_strong_side",
         "role_confidence": "low",
         "role_probabilities": {
-          "bench_or_depth": 0.1,
-          "part_time_or_strong_side": 0.9
+          "part_time_or_strong_side": 1.0
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 56.07,
@@ -24309,13 +24308,13 @@
         "volume_forecast": {
           "base": 348.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 365.7,
-          "low": 258.2,
-          "point": 327.6,
+          "high": 373.8,
+          "low": 302.6,
+          "point": 348.5,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CHW",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -80678,9 +80677,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "694350_reliever",
       "mlbam_id": "694350",
       "name": "Zach Brzykcy",
@@ -80721,7 +80720,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "MIA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101034,9 +101033,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "676974_starter",
       "mlbam_id": "676974",
       "name": "Max Meyer",
@@ -101077,7 +101076,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "MIA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101142,7 +101141,7 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 233,
+    "active_injury_risk_count": 232,
     "active_mlb_roster_count": 727,
     "profile_count": 2049,
     "role_counts": {

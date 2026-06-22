@@ -303,14 +303,13 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 9,
-        "latest_rank_bucket_count": 14,
-        "observation_span_days": 9,
-        "rank_comparison_count": 9
+        "buy_comparison_count": 0,
+        "latest_rank_bucket_count": 0,
+        "observation_span_days": 0,
+        "rank_comparison_count": 0
       },
       "recommendations": [
-        "Review top-50 availability-risk buckets before changing individual names.",
-        "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
+        "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
       ],
       "status": "collecting"
     },
@@ -320,7 +319,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2655,
+        "candidate_count": 2635,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -332,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-22T14:31:32.792435+00:00",
+        "activated_at": "2026-06-22T19:19:53.530414+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -346,7 +345,7 @@
       },
       "candidate_count": 2712,
       "impact_board_gate": {
-        "activated_at": "2026-06-22T14:31:32.792435+00:00",
+        "activated_at": "2026-06-22T19:19:53.530414+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.172373,
         "cv_method": "walk_forward",
@@ -375,22 +374,22 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 9,
+            "current": 0,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 9,
+            "current": 0,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 9,
+            "current": 0,
             "metric": "observation_span_days",
             "required": 30
           },
           {
-            "current": 0.025,
+            "current": null,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.55
           }
@@ -404,22 +403,22 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 9,
+            "current": 0,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 9,
+            "current": 0,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 9,
+            "current": 0,
             "metric": "observation_span_days",
             "required": 60
           },
           {
-            "current": 0.025,
+            "current": null,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.6
           }
@@ -433,12 +432,22 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 9,
+            "current": 0,
+            "metric": "rank_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
+            "metric": "buy_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
             "metric": "observation_span_days",
             "required": 14
           },
           {
-            "current": 0.025,
+            "current": null,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.45
           }
