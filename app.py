@@ -2845,6 +2845,17 @@ def _team_board_current_roster_org(row):
     )
 
 
+def _team_board_affiliate_context_is_current(context):
+    season = None
+    for key in ("stat_line_sample_season", "stat_line_season", "season"):
+        try:
+            season = int(float(context.get(key)))
+            break
+        except (TypeError, ValueError):
+            continue
+    return season is None or season >= date.today().year
+
+
 def _team_board_context_for(row):
     context = getattr(row, "context", None)
     if isinstance(context, dict):
@@ -2868,7 +2879,7 @@ def _team_board_org_for(row):
         return roster_org
     context = _team_board_context_for(row)
     affiliate = str(context.get("stat_line_team") or "").strip()
-    if affiliate:
+    if affiliate and _team_board_affiliate_context_is_current(context):
         org = _canonical_team_board_org(MINOR_TEAM_MLB_AFFILIATES.get(affiliate))
         if org:
             return org

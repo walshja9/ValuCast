@@ -360,6 +360,25 @@ def test_team_board_prefers_current_roster_org_over_historical_affiliate(monkeyp
         app_module._build_team_board_context("BOS", limit=20)
 
 
+def test_team_board_does_not_assign_org_from_historical_affiliate(monkeypatch):
+    rows = [
+        _row("Orelvis Martinez", "FA", prospect_rank=1, dynasty_rank=1, value=40),
+    ]
+    rows[0].context = {
+        "stat_line_team": "Buffalo Bisons",
+        "stat_line_sample_season": 2025,
+        "stat_line_source_kind": "latest_milb_history",
+    }
+
+    monkeypatch.setattr(app_module, "_team_board_prospect_rows", lambda rows_arg=None: rows)
+    monkeypatch.setattr(app_module, "_team_board_movements", lambda: {})
+    monkeypatch.setattr(app_module, "_team_board_current_roster_org", lambda row: None)
+
+    assert app_module._team_board_org_for(rows[0]) is None
+    with pytest.raises(KeyError):
+        app_module._build_team_board_context("TOR", limit=20)
+
+
 def test_team_board_current_roster_org_reads_unique_fantrax_team(tmp_path, monkeypatch):
     path = tmp_path / "fantrax.csv"
     path.write_text(
