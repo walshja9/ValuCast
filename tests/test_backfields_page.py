@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.parse import urlencode
 
 import app as app_module
@@ -27,6 +28,35 @@ def _detail_url(player_id):
 
 def _scouting_url(name):
     return "/scouting?" + urlencode({"q": name})
+
+
+def _team_board_org_from_backfields():
+    response, html = _html("/backfields")
+    assert response.status_code == 200
+    marker = 'href="/backfields/team/'
+    start = html.index(marker) + len(marker)
+    return html[start : html.index('"', start)]
+
+
+def _row(name, team, prospect_rank=None, dynasty_rank=None, value=0):
+    return SimpleNamespace(
+        id=name.lower().replace(" ", "-"),
+        mlbam_id=None,
+        name=name,
+        team=team,
+        positions=("SS",),
+        position="SS",
+        level="AA",
+        prospect_rank=prospect_rank,
+        dynasty_rank=dynasty_rank,
+        dynasty_value=value,
+        value=value,
+        age=20,
+        eta=2027,
+        context={},
+        metadata={},
+        source_ranks={},
+    )
 
 
 def test_backfields_route_returns_200():
@@ -59,11 +89,31 @@ def test_prospect_neighbor_navigation_points_to_backfields():
         assert 'href="/?mode=prospects" class="htab htab-prospects">Prospects</a>' not in html
 
 
+def test_primary_nav_uses_backfields_as_prospect_hub():
+    response, html = _html("/")
+    assert response.status_code == 200
+    nav_start = html.index('<nav class="site-nav"')
+    nav_end = html.index("</nav>", nav_start)
+    nav_html = html[nav_start:nav_end]
+
+    assert 'href="/backfields"' in nav_html
+    assert 'href="/buys"' not in nav_html
+    assert 'href="/scouting"' not in nav_html
+
+
+def test_backfields_keeps_buys_and_scouting_as_deep_links():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert 'href="/buys"' in html
+    assert 'href="/scouting' in html
+
+
 def test_backfields_section_anchors_present():
     response, html = _html("/backfields")
 
     assert response.status_code == 200
-    for anchor in ("rankings", "ahead-of-the-curve", "call-up-desk", "stats"):
+    for anchor in ("rankings", "ahead-of-the-curve", "call-up-desk", "stats", "team-boards"):
         assert f'id="{anchor}"' in html
 
 
@@ -200,6 +250,121 @@ def test_backfields_callup_desk_and_stats_are_deeper_than_reference_stub():
     assert len(ctx["callups"]) >= 12
     assert len(ctx["stats"]["hitting"]) >= 12
     assert len(ctx["stats"]["pitching"]) >= 12
+
+
+def test_team_board_org_normalization():
+    assert app_module._canonical_team_board_org("KC") == "KC"
+    assert app_module._canonical_team_board_org("KCR") == "KC"
+    assert app_module._canonical_team_board_org("kcr") == "KC"
+    assert app_module._canonical_team_board_org("ATH") == "ATH"
+    assert app_module._canonical_team_board_org("FA") is None
+    assert app_module._canonical_team_board_org("") is None
+    assert app_module._canonical_team_board_org(None) is None
+
+
+def test_team_board_pool_uses_full_prospect_pool_not_top_200_slice():
+    rows = [
+        _row("Top Public", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
+        _row("Deep Prospect", "BOS", prospect_rank=650, dynasty_rank=650, value=12),
+    ]
+
+    ordered = app_module._team_board_prospect_rows(rows)
+
+    assert [row.name for row in ordered] == ["Top Public", "Deep Prospect"]
+    assert len(ordered) == 2
+
+
+def test_team_board_sort_places_ranked_rows_before_fallback_rows():
+    rows = [
+        _row("Dynasty Only", "BOS", prospect_rank=None, dynasty_rank=20, value=20),
+        _row("Ranked Prospect", "BOS", prospect_rank=5, dynasty_rank=50, value=50),
+    ]
+
+    ordered = app_module._team_board_prospect_rows(rows)
+
+    assert [row.name for row in ordered] == ["Ranked Prospect", "Dynasty Only"]
+
+
+def test_team_board_context_groups_by_mlb_org_not_affiliate(monkeypatch):
+    rows = [
+        _row("Portland Guy", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
+        _row("Worcester Guy", "BOS", prospect_rank=2, dynasty_rank=2, value=55),
+        _row("Kansas City Guy", "KCR", prospect_rank=3, dynasty_rank=3, value=50),
+        _row("Free Agent Guy", "FA", prospect_rank=4, dynasty_rank=4, value=45),
+    ]
+    rows[0].context = {"stat_line_team": "Portland Sea Dogs"}
+    rows[1].context = {"stat_line_team": "Worcester Red Sox"}
+    rows[2].context = {"stat_line_team": "Omaha Storm Chasers"}
+
+    monkeypatch.setattr(app_module, "_team_board_prospect_rows", lambda rows_arg=None: rows)
+    monkeypatch.setattr(app_module, "_team_board_movements", lambda: {})
+
+    board = app_module._build_team_board_context("BOS", limit=20)
+    assert board["selected"]["org"] == "BOS"
+    assert [row["name"] for row in board["rows"]] == ["Portland Guy", "Worcester Guy"]
+    assert board["rows"][0]["affiliate"] == "Portland Sea Dogs"
+    assert board["rows"][0]["team"] == "BOS"
+    assert board["rows"][0]["org_rank"] == 1
+    assert board["rows"][1]["org_rank"] == 2
+
+    kc_board = app_module._build_team_board_context("KCR", limit=20)
+    assert kc_board["selected"]["org"] == "KC"
+    assert [row["name"] for row in kc_board["rows"]] == ["Kansas City Guy"]
+
+    all_teams = {team["org"] for team in board["teams"]}
+    assert "FA" not in all_teams
+
+
+def test_backfields_exposes_team_boards_module():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert "Team Boards" in html
+    assert "/backfields/team/" in html
+
+
+def test_team_board_route_serves_known_org_and_alias():
+    org = _team_board_org_from_backfields()
+
+    response, html = _html(f"/backfields/team/{org}")
+    assert response.status_code == 200
+    assert "Team Boards" in html
+
+    alias_response, _ = _html("/backfields/team/KCR")
+    assert alias_response.status_code == 200
+
+
+def test_unknown_team_board_returns_404():
+    response, _ = _html("/backfields/team/NOTREAL")
+
+    assert response.status_code == 404
+
+
+def test_team_board_share_preview_and_png():
+    org = _team_board_org_from_backfields()
+
+    preview, preview_html = _html(f"/backfields/team/{org}/share-card")
+    assert preview.status_code == 200
+    assert "Download Top 10 PNG" in preview_html
+    assert "Download Top 20 PNG" in preview_html
+    assert "ValuCast prospect order" in preview_html
+    assert "consensus" not in preview_html.lower()
+
+    png = app.test_client().get(f"/backfields/team/{org}/share-card.png?n=10")
+    assert png.status_code == 200
+    assert png.content_type == "image/png"
+    assert png.data.startswith(b"\x89PNG")
+
+    png_20 = app.test_client().get(f"/backfields/team/{org}/share-card.png?n=20")
+    assert png_20.status_code == 200
+    assert png_20.data.startswith(b"\x89PNG")
+
+
+def test_team_board_share_png_rejects_invalid_n():
+    org = _team_board_org_from_backfields()
+    response = app.test_client().get(f"/backfields/team/{org}/share-card.png?n=11")
+
+    assert response.status_code == 400
 
 
 def test_backfields_callup_desk_explains_why_each_player_is_listed():

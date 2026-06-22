@@ -14,7 +14,7 @@ from html import escape
 from pathlib import Path
 from urllib.parse import quote, urlencode
 
-from flask import Flask, render_template, request, make_response, jsonify, redirect
+from flask import Flask, abort, render_template, request, make_response, jsonify, redirect
 
 from dataclasses import replace as dc_replace
 
@@ -2752,6 +2752,303 @@ def scouting_reports():
     )
 
 
+_TEAM_BOARD_ORG_ALIASES = {
+    "KCR": "KC",
+}
+_TEAM_BOARD_EXCLUDED_ORGS = {"FA"}
+_TEAM_BOARD_ORG_NAMES = {
+    "ARI": "Arizona Diamondbacks",
+    "ATH": "Athletics",
+    "ATL": "Atlanta Braves",
+    "BAL": "Baltimore Orioles",
+    "BOS": "Boston Red Sox",
+    "CHC": "Chicago Cubs",
+    "CHW": "Chicago White Sox",
+    "CIN": "Cincinnati Reds",
+    "CLE": "Cleveland Guardians",
+    "COL": "Colorado Rockies",
+    "DET": "Detroit Tigers",
+    "HOU": "Houston Astros",
+    "KC": "Kansas City Royals",
+    "LAA": "Los Angeles Angels",
+    "LAD": "Los Angeles Dodgers",
+    "MIA": "Miami Marlins",
+    "MIL": "Milwaukee Brewers",
+    "MIN": "Minnesota Twins",
+    "NYM": "New York Mets",
+    "NYY": "New York Yankees",
+    "PHI": "Philadelphia Phillies",
+    "PIT": "Pittsburgh Pirates",
+    "SDP": "San Diego Padres",
+    "SEA": "Seattle Mariners",
+    "SFG": "San Francisco Giants",
+    "STL": "St. Louis Cardinals",
+    "TBR": "Tampa Bay Rays",
+    "TEX": "Texas Rangers",
+    "TOR": "Toronto Blue Jays",
+    "WSN": "Washington Nationals",
+}
+
+
+def _canonical_team_board_org(value):
+    """Return the MLB org key used for Backfields team boards."""
+    if value in (None, ""):
+        return None
+    org = str(value).strip().upper()
+    if not org:
+        return None
+    org = _TEAM_BOARD_ORG_ALIASES.get(org, org)
+    if org in _TEAM_BOARD_EXCLUDED_ORGS:
+        return None
+    return org
+
+
+def _team_board_org_name(org):
+    return _TEAM_BOARD_ORG_NAMES.get(str(org or "").upper(), str(org or "").upper())
+
+
+def _team_board_context_for(row):
+    context = getattr(row, "context", None)
+    if isinstance(context, dict):
+        return context
+    metadata = getattr(row, "metadata", None)
+    if isinstance(metadata, dict) and isinstance(metadata.get("context"), dict):
+        return metadata["context"]
+    return {}
+
+
+def _team_board_as_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _team_board_rank_value(value):
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return 10_000_000
+    return number if number > 0 else 10_000_000
+
+
+def _team_board_value(row):
+    for attr in ("dynasty_value", "value", "score"):
+        number = _team_board_as_float(getattr(row, attr, None))
+        if number is not None:
+            return number
+    return None
+
+
+def _team_board_fmt_value(value):
+    number = _team_board_as_float(value)
+    return "-" if number is None else f"{number:.1f}"
+
+
+def _team_board_role(row):
+    context = _team_board_context_for(row)
+    role = getattr(row, "role", None) or context.get("role")
+    if role:
+        return str(role).lower()
+    positions = set(getattr(row, "positions", ()) or ())
+    return "pitcher" if positions and positions <= {"P", "SP", "RP"} else "hitter"
+
+
+def _team_board_identity_keys(row):
+    keys = []
+    identity = _identity_key(getattr(row, "mlbam_id", None), _team_board_role(row))
+    if identity:
+        keys.append(str(identity))
+    mlbam = getattr(row, "mlbam_id", None)
+    if mlbam not in (None, ""):
+        keys.append(f"mlbam:{mlbam}")
+    org = _canonical_team_board_org(getattr(row, "team", None))
+    name = str(getattr(row, "name", "") or "").strip().casefold()
+    if name and org:
+        keys.append(f"name:{name}|team:{org}")
+    return keys
+
+
+def _team_board_prospect_sort_key(row):
+    prospect_rank = _team_board_rank_value(getattr(row, "prospect_rank", None))
+    dynasty_rank = _team_board_rank_value(getattr(row, "dynasty_rank", None))
+    value = _team_board_value(row)
+    name = str(getattr(row, "name", "") or "").casefold()
+    return (
+        0 if prospect_rank < 10_000_000 else 1,
+        prospect_rank,
+        dynasty_rank,
+        -(value or 0.0),
+        name,
+    )
+
+
+def _team_board_prospect_rows(rows=None):
+    """Full prospect pool for org boards; intentionally not the public top-200 slice."""
+    if rows is None:
+        if not dd_store.is_available:
+            return []
+        rows = dd_store.filter(pool="prospect")
+    rows = [
+        row for row in rows
+        if _canonical_team_board_org(getattr(row, "team", None)) is not None
+    ]
+    return sorted(rows, key=_team_board_prospect_sort_key)
+
+
+def _team_board_movements():
+    payload = _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_recent_signal_report.json")
+    signals = []
+    for key in ("signals", "top_movers"):
+        signals.extend(row for row in (payload or {}).get(key) or [] if isinstance(row, dict))
+    by_key = {}
+    for row in signals:
+        if row.get("identity_key"):
+            by_key[str(row["identity_key"])] = row
+        if row.get("mlbam_id") not in (None, ""):
+            by_key[f"mlbam:{row['mlbam_id']}"] = row
+        org = _canonical_team_board_org(row.get("team"))
+        name = str(row.get("name") or "").strip().casefold()
+        if name and org:
+            by_key[f"name:{name}|team:{org}"] = row
+    return by_key
+
+
+def _team_board_move_from_signal(signal):
+    delta = _team_board_as_float((signal or {}).get("rank_delta_7d"))
+    if delta is None:
+        delta = _team_board_as_float((signal or {}).get("rank_delta"))
+    if delta is None or delta == 0:
+        return {"direction": "flat", "label": "-", "sort": 0.0}
+    label = str(int(abs(delta))) if float(delta).is_integer() else f"{abs(delta):.1f}"
+    return {
+        "direction": "up" if delta > 0 else "down",
+        "label": label,
+        "sort": float(delta),
+    }
+
+
+def _team_board_signal_for(row, movements):
+    for key in _team_board_identity_keys(row):
+        if key in movements:
+            return movements[key]
+    return None
+
+
+def _team_board_position(row):
+    positions = [str(pos) for pos in (getattr(row, "positions", ()) or ()) if pos]
+    return "/".join(positions) if positions else (str(getattr(row, "position", "") or "") or "-")
+
+
+def _team_board_level(row):
+    context = _team_board_context_for(row)
+    level = context.get("stat_line_level") or getattr(row, "level", None)
+    return str(level or "").strip().upper() or "-"
+
+
+def _team_board_affiliate(row):
+    context = _team_board_context_for(row)
+    return str(context.get("stat_line_team") or "").strip()
+
+
+def _team_board_eta(row):
+    eta = getattr(row, "eta", None)
+    return f"ETA {eta}" if eta not in (None, "") else ""
+
+
+def _team_board_player_url(row):
+    player_id = getattr(row, "id", None)
+    if player_id not in (None, ""):
+        return f"/player/{quote(str(player_id), safe='')}?mode=prospects"
+    name = str(getattr(row, "name", "") or "").strip()
+    return "/?mode=prospects" if not name else "/?" + urlencode({"mode": "prospects", "search": name})
+
+
+def _team_board_report_url(name):
+    clean = " ".join(str(name or "").split())
+    return "/scouting" if not clean else "/scouting?" + urlencode({"q": clean})
+
+
+def _team_board_row(row, org_rank, movements, reports_by_key):
+    signal = _team_board_signal_for(row, movements)
+    move = _team_board_move_from_signal(signal)
+    org = _canonical_team_board_org(getattr(row, "team", None))
+    player_url = _team_board_player_url(row)
+    value = _team_board_value(row)
+    has_report = any(key in reports_by_key for key in _team_board_identity_keys(row))
+    name = getattr(row, "name", None) or "Unknown"
+    affiliate = _team_board_affiliate(row)
+    return {
+        "org_rank": org_rank,
+        "name": name,
+        "id": str(getattr(row, "id", "") or ""),
+        "team": org,
+        "team_name": _team_board_org_name(org),
+        "position": _team_board_position(row),
+        "level": _team_board_level(row),
+        "affiliate": affiliate,
+        "eta": _team_board_eta(row),
+        "meta": " / ".join(part for part in (_team_board_position(row), affiliate, _team_board_eta(row)) if part),
+        "url": player_url,
+        "detail_url": player_url,
+        "report_url": _team_board_report_url(name),
+        "has_report": has_report,
+        "move": move,
+        "move_sort": move["sort"],
+        "value": _team_board_fmt_value(value),
+        "value_sort": value or 0.0,
+        "prospect_rank": getattr(row, "prospect_rank", None),
+    }
+
+
+def _build_team_board_context(org=None, limit=20):
+    rows = _team_board_prospect_rows()
+    grouped = {}
+    for row in rows:
+        canonical = _canonical_team_board_org(getattr(row, "team", None))
+        if canonical is None:
+            continue
+        grouped.setdefault(canonical, []).append(row)
+    teams = [
+        {
+            "org": key,
+            "name": _team_board_org_name(key),
+            "count": len(value),
+            "url": f"/backfields/team/{quote(key, safe='')}",
+        }
+        for key, value in grouped.items()
+    ]
+    teams.sort(key=lambda row: row["name"])
+    context = {
+        "teams": teams,
+        "selected": None,
+        "rows": [],
+        "limit": limit,
+    }
+    if org is None:
+        return context
+    canonical = _canonical_team_board_org(org)
+    if canonical is None or canonical not in grouped:
+        raise KeyError(org)
+    selected_rows = grouped[canonical][:limit]
+    scouting_repository = _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_scouting_reports.json")
+    reports_by_key = _indexed_artifact_rows(scouting_repository, "reports")
+    movements = _team_board_movements()
+    context.update({
+        "selected": {
+            "org": canonical,
+            "name": _team_board_org_name(canonical),
+            "count": len(grouped[canonical]),
+            "url": f"/backfields/team/{quote(canonical, safe='')}",
+        },
+        "rows": [
+            _team_board_row(row, idx, movements, reports_by_key)
+            for idx, row in enumerate(selected_rows, 1)
+        ],
+    })
+    return context
+
+
 def _build_backfields_page_context():
     root = Path(__file__).parent
     models = root / "data" / "models"
@@ -3131,6 +3428,7 @@ def _build_backfields_page_context():
             "hitting": hitting_stats,
             "pitching": pitching_stats,
         },
+        "team_boards": _build_team_board_context(),
         "scouting_reports": scouting_reports,
     }
 
@@ -3138,6 +3436,142 @@ def _build_backfields_page_context():
 @app.route("/backfields")
 def backfields():
     return render_template("backfields.html", **_build_backfields_page_context())
+
+
+@app.route("/backfields/team/<org>")
+def backfields_team(org):
+    try:
+        context = _build_backfields_page_context()
+        context["team_boards"] = _build_team_board_context(org, limit=20)
+    except KeyError:
+        abort(404)
+    return render_template("backfields.html", **context)
+
+
+@app.route("/backfields/team/<org>/share-card")
+def backfields_team_share_card(org):
+    try:
+        board = _build_team_board_context(org, limit=20)
+    except KeyError:
+        abort(404)
+    return render_template(
+        "backfields_team_share.html",
+        backfields_page=True,
+        mode="prospects",
+        as_of=dd_store.generated_at,
+        board=board,
+    )
+
+
+def _team_board_share_limit():
+    raw = request.args.get("n", "10")
+    try:
+        limit = int(raw)
+    except (TypeError, ValueError):
+        abort(400)
+    if limit not in {10, 20}:
+        abort(400)
+    return limit
+
+
+def _team_board_share_card_png(board, *, limit):
+    from PIL import Image, ImageDraw
+
+    palette = _GRAPHIC_PALETTE
+    img = Image.new("RGB", (1080, 1350), palette["bg"])
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    selected = board["selected"]
+    date_label = _editorial_date(dd_store.generated_at)
+    subtitle = f"{selected['name']} top {limit} prospects - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="Backfields",
+        subtitle=subtitle,
+        extra_line="ValuCast prospect order",
+    )
+
+    title_font = _graphic_font(42, bold=True)
+    label_font = _graphic_font(15, bold=True, mono=True)
+    name_font = _graphic_font(26, bold=True)
+    meta_font = _graphic_font(17, mono=True)
+    value_font = _graphic_font(28, bold=True, mono=True)
+    small_font = _graphic_font(15, bold=True, mono=True)
+
+    text = palette["text"]
+    muted = palette["muted"]
+    teal = palette["teal"]
+    clay = palette["clay"]
+    slate = palette["slate"]
+    border = palette["border"]
+    card = palette["card"]
+    card_2 = palette["card_2"]
+
+    draw.text((48, 236), selected["name"], fill=text, font=title_font)
+    draw.text((48, 288), f"{selected['count']} prospects in the ValuCast pool", fill=muted, font=meta_font)
+    draw.text((48, 344), "#", fill=slate, font=label_font)
+    draw.text((118, 344), "PLAYER", fill=slate, font=label_font)
+    draw.text((756, 344), "LEVEL", fill=slate, font=label_font)
+    draw.text((876, 344), "VALUE", fill=slate, font=label_font)
+    draw.line((48, 378, 1032, 378), fill=border, width=1)
+
+    y = 394
+    row_h = 40 if limit == 20 else 66
+    rows = board["rows"][:limit]
+    for idx, row in enumerate(rows, 1):
+        fill = card if idx % 2 else card_2
+        draw.rounded_rectangle((48, y, 1032, y + row_h - 8), radius=8, fill=fill, outline=border, width=1)
+        draw.rectangle((48, y, 52, y + row_h - 8), fill=slate)
+        rank_text = str(idx)
+        draw.text((70, y + 12), rank_text, fill=muted, font=meta_font)
+        name_y = y + (8 if limit == 20 else 12)
+        draw.text(
+            (118, name_y),
+            _graphic_fit_text(draw, row["name"], name_font, 430),
+            fill=text,
+            font=name_font,
+        )
+        meta = " - ".join(part for part in (row["position"], row["affiliate"], row["eta"]) if part)
+        if meta:
+            draw.text(
+                (118, name_y + 29),
+                _graphic_fit_text(draw, meta, meta_font, 520),
+                fill=muted,
+                font=meta_font,
+            )
+        draw.text((756, y + 20), row["level"], fill=muted, font=meta_font)
+        move = row.get("move") or {}
+        if move.get("direction") == "up":
+            move_text, move_color = f"UP {move.get('label')}", teal
+        elif move.get("direction") == "down":
+            move_text, move_color = f"DOWN {move.get('label')}", clay
+        else:
+            move_text, move_color = "-", muted
+        draw.text((820, y + 20), move_text, fill=move_color, font=small_font)
+        val = str(row["value"])
+        draw.text((1032 - 18 - _graphic_text_width(draw, val, value_font), y + 14), val, fill=teal, font=value_font)
+        y += row_h
+
+    footer = f"{selected['org']} top {limit} - ValuCast prospect order"
+    _graphic_footer(draw, right_note=footer)
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
+@app.route("/backfields/team/<org>/share-card.png")
+def backfields_team_share_card_png(org):
+    limit = _team_board_share_limit()
+    try:
+        board = _build_team_board_context(org, limit=limit)
+    except KeyError:
+        abort(404)
+    response = make_response(_team_board_share_card_png(board, limit=limit))
+    response.headers["Content-Type"] = "image/png"
+    filename = f"valucast-{board['selected']['org'].lower()}-top-{limit}-prospects.png"
+    response.headers["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response
 
 
 def _value_map_players(rows):
