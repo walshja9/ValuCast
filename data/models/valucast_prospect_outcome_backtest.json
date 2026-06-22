@@ -303,13 +303,14 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 8,
-        "latest_rank_bucket_count": 23,
-        "observation_span_days": 8,
-        "rank_comparison_count": 8
+        "buy_comparison_count": 9,
+        "latest_rank_bucket_count": 16,
+        "observation_span_days": 9,
+        "rank_comparison_count": 9
       },
       "recommendations": [
-        "Review top-50 availability-risk buckets before changing individual names."
+        "Review top-50 availability-risk buckets before changing individual names.",
+        "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
       ],
       "status": "collecting"
     },
@@ -319,7 +320,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2652,
+        "candidate_count": 2655,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -374,19 +375,24 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 8,
+            "current": 9,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 8,
+            "current": 9,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 8,
+            "current": 9,
             "metric": "observation_span_days",
             "required": 30
+          },
+          {
+            "current": 0.075,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.55
           }
         ],
         "passed": false
@@ -398,19 +404,24 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 8,
+            "current": 9,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 8,
+            "current": 9,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 8,
+            "current": 9,
             "metric": "observation_span_days",
             "required": 60
+          },
+          {
+            "current": 0.075,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.6
           }
         ],
         "passed": false
@@ -422,9 +433,14 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 8,
+            "current": 9,
             "metric": "observation_span_days",
             "required": 14
+          },
+          {
+            "current": 0.075,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.45
           }
         ],
         "passed": false
@@ -437,12 +453,12 @@
     "target_grade": "A-",
     "uncapped_score": 97
   },
-  "generated_at": "2026-06-21T00:00:00+00:00",
+  "generated_at": "2026-06-22T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-06-21",
-    "dynasty_backtest": "2026-06-21",
-    "forward_validation": "2026-06-21",
-    "model_v07": "2026-06-21",
+    "adapter_backtest": "2026-06-22",
+    "dynasty_backtest": "2026-06-22",
+    "forward_validation": "2026-06-22",
+    "model_v07": "2026-06-22",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",

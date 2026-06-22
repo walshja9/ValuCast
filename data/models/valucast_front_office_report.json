@@ -3,14 +3,8 @@
   "failure_watchlist": {
     "blocking_finding_count": 0,
     "blocking_findings": [],
-    "evidence_gate_count": 2,
+    "evidence_gate_count": 1,
     "evidence_gates": [
-      {
-        "current": "fallback",
-        "kind": "ordinal_bridge",
-        "message": "Ordinal bridge outcome gate is not active yet.",
-        "required": "active"
-      },
       {
         "current": "collecting",
         "kind": "forward_archives",
@@ -19,33 +13,38 @@
       }
     ],
     "forward_archive_progress": {
-      "buy_comparison_count": 8,
+      "buy_comparison_count": 9,
       "current_supported_grade": null,
       "minimum_buy_comparisons": 7,
       "minimum_rank_comparisons": 7,
       "minimum_span_days": 14,
       "missing": [
         {
-          "current": 8,
+          "current": 9,
           "metric": "observation_span_days",
           "required": 14
+        },
+        {
+          "current": 0.075,
+          "metric": "latest_top40_buy_retention_rate",
+          "required": 0.45
         }
       ],
       "next_target_grade": "A-",
-      "observation_span_days": 8,
-      "rank_comparison_count": 8,
+      "observation_span_days": 9,
+      "rank_comparison_count": 9,
       "remaining_buy_comparisons": 0,
       "remaining_rank_comparisons": 0,
-      "remaining_span_days": 6,
+      "remaining_span_days": 5,
       "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.975,
-    "latest_rank_bucket_count": 23,
+    "latest_buy_retention_rate": 0.075,
+    "latest_rank_bucket_count": 16,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-06-21T00:00:00+00:00",
+  "generated_at": "2026-06-22T00:00:00+00:00",
   "next_build_order": [
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
     "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -55,16 +54,19 @@
   ],
   "operations_watchlist": {
     "milb_stat_freshness": {
-      "blockers": [],
-      "status": "candidate_ready",
+      "blockers": [
+        "top-50 prospect card context uses latest_milb_history fallback",
+        "top-200 prospect board has too many MiLB history fallbacks"
+      ],
+      "status": "blocked",
       "targeted_row_refresh_count": 0,
-      "top200_history_fallback_count": 3,
-      "top50_history_fallback_count": 0,
+      "top200_history_fallback_count": 37,
+      "top50_history_fallback_count": 4,
       "top50_stat_context_mismatch_count": 0
     },
     "pipeline_observability": {
       "date_mismatch_count": 0,
-      "expected_date": "2026-06-21",
+      "expected_date": "2026-06-22",
       "missing_or_unreadable_count": 0,
       "ready_for_daily_publication": true,
       "status": "candidate_ready",
@@ -72,44 +74,44 @@
     }
   },
   "overall": {
-    "grade": "A",
-    "score": 95,
+    "grade": "A-",
+    "score": 90,
     "target": "A+ product/pipeline/independence/prospect credibility; MLB front-office track advances only when forward and ordinal evidence earn it."
   },
   "pillars": [
     {
       "evidence": {
         "duplicate_identity_count": 0,
-        "public_snapshot_ready": true,
-        "quality_governor_all_checks_passed": true,
-        "quality_governor_ready": true,
+        "public_snapshot_ready": false,
+        "quality_governor_all_checks_passed": false,
+        "quality_governor_ready": false,
         "row_count": 3626,
         "surface_readiness": {
-          "buys": true,
-          "dynasty": true,
-          "prospects": true
+          "buys": false,
+          "dynasty": false,
+          "prospects": false
         }
       },
-      "grade": "A+",
+      "grade": "C+",
       "name": "Product readiness",
-      "score": 97,
-      "status": "a_plus_public_ready"
+      "score": 78,
+      "status": "needs_work"
     },
     {
       "evidence": {
-        "buy_monitor_ready": true,
+        "buy_monitor_ready": false,
         "duplicate_identity_count": 0,
-        "milb_stat_freshness_ready": true,
+        "milb_stat_freshness_ready": false,
         "pipeline_observability_ready": true,
         "raw_data_independence_complete": true,
         "required_fields_complete": true,
         "same_day_freshness": true,
         "targeted_row_refresh_count": 0
       },
-      "grade": "A+",
+      "grade": "A-",
       "name": "Data pipeline readiness",
-      "score": 97,
-      "status": "a_plus_native_daily_pipeline"
+      "score": 92,
+      "status": "same_day_fresh"
     },
     {
       "evidence": {
@@ -149,21 +151,14 @@
     },
     {
       "evidence": {
-        "buy_comparison_count": 8,
+        "buy_comparison_count": 9,
         "buy_comparisons_needed": 0,
-        "buys_monitor_status": "collecting",
+        "buys_monitor_status": "blocked",
         "cap_reasons": [
-          "Ordinal bridge is still partial; bucket/cohort evidence caps the grade.",
           "Forward observations are not review-ready yet."
         ],
         "current_grade": "B+",
         "evidence_gates": [
-          {
-            "current": "fallback",
-            "kind": "ordinal_bridge",
-            "message": "Ordinal bridge outcome gate is not active yet.",
-            "required": "active"
-          },
           {
             "current": "collecting",
             "kind": "forward_archives",
@@ -181,19 +176,24 @@
             "minimum_span_days": 30,
             "missing": [
               {
-                "current": 8,
+                "current": 9,
                 "metric": "rank_comparison_count",
                 "required": 14
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "buy_comparison_count",
                 "required": 14
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "observation_span_days",
                 "required": 30
+              },
+              {
+                "current": 0.075,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.55
               }
             ],
             "passed": false
@@ -205,19 +205,24 @@
             "minimum_span_days": 60,
             "missing": [
               {
-                "current": 8,
+                "current": 9,
                 "metric": "rank_comparison_count",
                 "required": 30
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "buy_comparison_count",
                 "required": 30
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "observation_span_days",
                 "required": 60
+              },
+              {
+                "current": 0.075,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.6
               }
             ],
             "passed": false
@@ -229,21 +234,26 @@
             "minimum_span_days": 14,
             "missing": [
               {
-                "current": 8,
+                "current": 9,
                 "metric": "observation_span_days",
                 "required": 14
+              },
+              {
+                "current": 0.075,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.45
               }
             ],
             "passed": false
           }
         },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-        "observation_days_needed": 6,
-        "observation_span_days": 8,
+        "observation_days_needed": 5,
+        "observation_span_days": 9,
         "rank_comparisons_needed": 0,
         "score_cap": 87,
         "target_grade": "A-",
-        "uncapped_score": 91
+        "uncapped_score": 97
       },
       "grade": "B+",
       "name": "MLB front-office track",
