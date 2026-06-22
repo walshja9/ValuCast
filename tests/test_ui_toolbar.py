@@ -39,7 +39,11 @@ class TestToolbar(unittest.TestCase):
         self.assertNotIn('name="source"', html)
         self.assertIn("Generate Top 10", html)
         self.assertIn("Generate Top 20", html)
+        self.assertIn("Generate Top 50", html)
+        self.assertIn("Generate Top 100", html)
         self.assertIn("/prospects/share-card?limit=10", html)
+        self.assertIn("/prospects/share-card?limit=50", html)
+        self.assertIn("/prospects/share-card?limit=100", html)
         self.assertIn("openProspectGraphic", html)
 
     def test_scoring_switch_updates_display_slot_oob(self):

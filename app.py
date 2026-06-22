@@ -741,16 +741,46 @@ def _apply_prospect_board_context(ctx, args):
 def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
     """Render an Ahead of the Curve-style SVG share graphic."""
     width = 1080
-    row_height = 58 if limit == 20 else 78
     header_height = 245
     footer_height = 92
-    height = header_height + max(len(rows), 1) * row_height + footer_height
+    dense = limit >= 50
+    if dense:
+        cols = 2 if limit <= 50 else 5
+        cell_h = 42 if cols == 2 else 52
+        dense_rows = max(1, math.ceil(len(rows) / cols))
+        height = header_height + dense_rows * cell_h + footer_height
+    else:
+        row_height = 58 if limit == 20 else 78
+        height = header_height + max(len(rows), 1) * row_height + footer_height
     scope = f"{position} " if position else ""
     title = f"Top {limit} {scope}Prospects"
     if search:
         title += f" | {search}"
     updated = dd_store.generated_at[:10] if dd_store.generated_at else "current feed"
     rank_kind = f"{position.upper()} RANK" if position else "LIST RANK"
+
+    def svg_value_label(row):
+        try:
+            return f"{float(row.value):.1f}"
+        except (TypeError, ValueError):
+            return "--"
+
+    def svg_abbrev_name(name):
+        parts = (name or "").split()
+        if len(parts) > 1:
+            return f"{parts[0][0]}. {' '.join(parts[1:])}"
+        return name or "Unknown"
+
+    def svg_clip(label, max_chars):
+        label = str(label or "")
+        return label if len(label) <= max_chars else label[: max_chars - 3].rstrip() + "..."
+
+    def svg_tag(row):
+        pieces = ["/".join(row.positions[:2]) if row.positions else "UT"]
+        lvl = row.level or ("MLB" if row.status == "mlb" else "PRO")
+        if lvl:
+            pieces.append(str(lvl))
+        return " ".join(pieces)
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" aria-label="{escape(title)}">',
@@ -780,6 +810,47 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
             '<rect x="64" y="245" width="952" height="108" rx="10" fill="url(#card)" stroke="#2a2c34" stroke-width="1"/>',
             '<text x="112" y="310" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="30" font-weight="600">No prospects found for this filter.</text>',
         ])
+    elif dense:
+        cols = 2 if limit <= 50 else 5
+        cell_w = 984 / cols
+        cell_h = 42 if cols == 2 else 52
+        n_rows = max(1, math.ceil(len(rows) / cols))
+        table_h = n_rows * cell_h
+        start_x, start_y = 48, header_height
+        parts.append(
+            f'<rect x="{start_x}" y="{start_y}" width="984" height="{table_h}" fill="#0b0c0f" stroke="#2a2c34" stroke-width="1"/>'
+        )
+        for i, row in enumerate(rows):
+            # Column-major: 1..n_rows down the first column, then the next.
+            col, r = i // n_rows, i % n_rows
+            x, y = start_x + col * cell_w, start_y + r * cell_h
+            fill = "#1c1e25" if r % 2 == 0 else "#0b0c0f"
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y}" width="{cell_w:.1f}" height="{cell_h}" fill="{fill}"/>'
+            )
+            if col:
+                parts.append(
+                    f'<line x1="{x:.1f}" y1="{y}" x2="{x:.1f}" y2="{y + cell_h}" stroke="#2a2c34" stroke-width="1"/>'
+                )
+            if r:
+                parts.append(
+                    f'<line x1="{x:.1f}" y1="{y}" x2="{x + cell_w:.1f}" y2="{y}" stroke="#2a2c34" stroke-width="1"/>'
+                )
+            rank = i + 1
+            value = svg_value_label(row)
+            if cols == 2:
+                parts.extend([
+                    f'<text x="{x + 12:.1f}" y="{y + 27}" fill="#8a92a8" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="15" font-weight="700">#{rank}</text>',
+                    f'<text x="{x + 68:.1f}" y="{y + 27}" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="600">{escape(svg_clip(row.name, 26))}</text>',
+                    f'<text x="{x + 292:.1f}" y="{y + 27}" fill="#9197a6" font-family="JetBrains Mono,Consolas,monospace" font-size="12" font-weight="500">{escape(svg_clip(svg_tag(row), 12))}</text>',
+                    f'<text x="{x + cell_w - 12:.1f}" y="{y + 27}" text-anchor="end" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="16" font-weight="700">{escape(value)}</text>',
+                ])
+            else:
+                parts.extend([
+                    f'<text x="{x + 10:.1f}" y="{y + 30}" fill="#8a92a8" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" font-weight="700">#{rank}</text>',
+                    f'<text x="{x + 48:.1f}" y="{y + 30}" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="13" font-weight="600">{escape(svg_clip(svg_abbrev_name(row.name), 12))}</text>',
+                    f'<text x="{x + cell_w - 10:.1f}" y="{y + 30}" text-anchor="end" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="13" font-weight="700">{escape(value)}</text>',
+                ])
     else:
         for i, row in enumerate(rows):
             y = header_height + i * row_height
@@ -839,9 +910,16 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     def level_text(row):
         return row.level or ("MLB" if row.status == "mlb" else "PRO")
 
-    def tag(row, *, age=False):
-        pieces = [row.team or "FA", "/".join(row.positions[:2]) if row.positions else "UT"]
+    def tag(row, *, age=False, compact=False):
+        positions = "/".join(row.positions[:2]) if row.positions else "UT"
         lvl = level_text(row)
+        if compact:
+            # Position + level only (drop team) for tight dense cells.
+            pieces = [positions]
+            if lvl:
+                pieces.append(str(lvl))
+            return " - ".join(pieces)
+        pieces = [row.team or "FA", positions]
         if lvl:
             pieces.append(str(lvl))
         if age and row.age is not None:
@@ -914,12 +992,80 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
 
     scope = f"{position.upper()} " if position else ""
     subtitle_date = _editorial_date(dd_store.generated_at)
-    subtitle = f"The top {limit} {scope}prospects from the current board"
+    subtitle = f"Top {limit} {scope}Prospects from the current board"
     if search:
         subtitle = f"{subtitle} | {search}"
     if subtitle_date:
         subtitle = f"{subtitle} - {subtitle_date}"
     _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
+
+    def draw_dense_prospect_grid(
+        grid_rows,
+        *,
+        cols,
+        cell_w,
+        cell_h,
+        start_x,
+        start_y,
+        show_tag=False,
+        full_name=False,
+        rank_size=14,
+        name_size=14,
+        tag_size=12,
+        score_size=14,
+    ):
+        row_count = max(1, math.ceil(len(grid_rows) / cols))
+        table_w = cols * cell_w
+        table_h = row_count * cell_h
+        draw.rectangle((start_x, start_y, start_x + table_w, start_y + table_h), fill=bg, outline=border, width=1)
+
+        rank_font = font(rank_size, bold=True)
+        name_font = font(name_size, bold=True)
+        tag_font = font(tag_size, mono=True)
+        score_font = font(score_size, bold=True, mono=True)
+
+        for slot in range(row_count * cols):
+            # Column-major: fill the first column top-to-bottom (ranks 1..row_count),
+            # then the next column -- so a Top-50 reads 1-25 | 26-50 down each column.
+            col, r = slot // row_count, slot % row_count
+            x, y = start_x + col * cell_w, start_y + r * cell_h
+            fill = card_2 if r % 2 == 0 else bg
+            draw.rectangle((x, y, x + cell_w, y + cell_h), fill=fill)
+            if col:
+                draw.line((x, y, x, y + cell_h), fill=border, width=1)
+            if r:
+                draw.line((x, y, x + cell_w, y), fill=border, width=1)
+            if slot >= len(grid_rows):
+                continue
+
+            row = grid_rows[slot]
+            row_rank = slot + 1
+            rank_text = rank_label(row_rank)
+            score = value_label(row) or "--"
+            # Wider right margin on the 2-col (tagged) layout so the value clears the
+            # column divider instead of creeping into the next column.
+            score_margin = 16 if show_tag else 10
+            score_x = x + cell_w - score_margin - text_width(draw, score, score_font)
+            text_y = y + max(8, (cell_h - name_size) // 2 - 1)
+
+            draw.text((x + 10, text_y), rank_text, fill=blue, font=rank_font)
+            draw.text((score_x, text_y - 1), score, fill=green, font=score_font)
+
+            name_x = x + (68 if show_tag else 48)
+            if show_tag:
+                tag_x = x + cell_w - 142
+                # Bound the tag so it always stops short of the value (no overlap).
+                tag_text = fit_text(draw, tag(row, compact=True), tag_font, max(36, score_x - tag_x - 10))
+                draw.text((tag_x, text_y + 2), tag_text, fill=muted, font=tag_font)
+                name_max = max(72, tag_x - name_x - 10)
+            else:
+                name_max = max(54, score_x - name_x - 8)
+            draw.text(
+                (name_x, text_y),
+                fit_text(draw, row.name if full_name else abbrev_name(row.name), name_font, name_max),
+                fill=text,
+                font=name_font,
+            )
 
     if not rows:
         draw.rounded_rectangle((48, 225, 1032, 360), radius=10, fill=card, outline=border, width=1)
@@ -972,6 +1118,35 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
                 (x + cell_w - 18 - text_width(draw, cell_val, cell_val_font), y + 126),
                 cell_val, fill=green, font=cell_val_font,
             )
+    elif limit >= 50:
+        if limit <= 50:
+            draw_dense_prospect_grid(
+                rows,
+                cols=2,
+                cell_w=492,
+                cell_h=41,
+                start_x=48,
+                start_y=226,
+                show_tag=True,
+                full_name=True,
+                rank_size=15,
+                name_size=16,
+                tag_size=12,
+                score_size=16,
+            )
+        else:
+            draw_dense_prospect_grid(
+                rows,
+                cols=5,
+                cell_w=196,
+                cell_h=52,
+                start_x=48,
+                start_y=226,
+                show_tag=False,
+                rank_size=13,
+                name_size=13,
+                score_size=13,
+            )
     else:
         hero = rows[0]
         leader = "POSITION LEADER" if position else "TOP PROSPECT"
@@ -1022,7 +1197,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
                 draw.line((x, y, x + cell_w, y), fill=border, width=1)
             draw.text((x + 14, y + 14), rank_label(idx + 6), fill=blue, font=font(19, bold=True))
             draw.text((x + cell_w - 86, y + 16), note_label(row), fill=muted, font=font(14, bold=True))
-            draw.text((x + 14, y + 50), fit_text(draw, abbrev_name(row.name), font(22, bold=True), 210), fill=text, font=font(22, bold=True))
+            draw.text((x + 14, y + 50), fit_text(draw, row.name, font(22, bold=True), 290), fill=text, font=font(22, bold=True))
             draw.text((x + 14, y + 84), fit_text(draw, tag(row), font(18), 230), fill=muted, font=font(18))
             rest_val = value_label(row) or "--"
             rest_val_font = font(20, bold=True, mono=True)
@@ -4623,8 +4798,16 @@ def export_csv():
     return response
 
 
+def _prospect_share_limit(args):
+    try:
+        limit = int(args.get("limit", 10))
+    except (TypeError, ValueError):
+        return 10
+    return limit if limit in {10, 20, 50, 100} else 10
+
+
 def _prospect_graphic_payload():
-    limit = 20 if request.args.get("limit") == "20" else 10
+    limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
     rows = _prospect_rows(position=position, search=search)[:limit]
@@ -4639,7 +4822,7 @@ def prospects_share_card():
     if not dd_store.is_available:
         return "<!doctype html><title>Prospect graphic unavailable</title>", 503
 
-    limit = 20 if request.args.get("limit") == "20" else 10
+    limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
     params = {"limit": limit}
@@ -4675,7 +4858,7 @@ def prospects_share_card_png():
     if not dd_store.is_available:
         return "", 503
 
-    limit = 20 if request.args.get("limit") == "20" else 10
+    limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
     rows = _prospect_rows(position=position, search=search)[:limit]

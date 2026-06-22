@@ -472,6 +472,31 @@ class TestDynastyMode(unittest.TestCase):
             response.headers.get("Content-Disposition", ""),
         )
 
+    def test_prospects_graphic_extended_limits_png_and_preview(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+
+        top20 = self.client.get("/prospects/share-card.png?limit=20")
+        self.assertEqual(top20.status_code, 200)
+
+        for limit in (50, 100):
+            png = self.client.get(f"/prospects/share-card.png?limit={limit}")
+            self.assertEqual(png.status_code, 200)
+            self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+            self.assertIn("image/png", png.content_type)
+            self.assertGreater(len(png.data), len(top20.data))
+            self.assertIn(
+                f'filename="valucast-top-{limit}-all-prospects.png"',
+                png.headers.get("Content-Disposition", ""),
+            )
+
+            preview = self.client.get(f"/prospects/share-card?limit={limit}")
+            self.assertEqual(preview.status_code, 200)
+            self.assertIn("text/html", preview.content_type)
+            self.assertIn(f"Top {limit} Prospects".encode(), preview.data)
+            self.assertIn(f"/prospects/share-card.png?limit={limit}".encode(), preview.data)
+
     def test_graphic_support_tag_y_moves_down_for_wrapped_names(self):
         one_line_y = app_module._graphic_support_tag_y(200, 1, one_line_offset=76, wrapped_offset=92)
         wrapped_y = app_module._graphic_support_tag_y(200, 2, one_line_offset=76, wrapped_offset=92)
