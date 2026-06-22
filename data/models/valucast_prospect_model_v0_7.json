@@ -91608,19 +91608,24 @@
           "minimum_span_days": 30,
           "missing": [
             {
-              "current": 8,
+              "current": 9,
               "metric": "rank_comparison_count",
               "required": 14
             },
             {
-              "current": 8,
+              "current": 9,
               "metric": "buy_comparison_count",
               "required": 14
             },
             {
-              "current": 8,
+              "current": 9,
               "metric": "observation_span_days",
               "required": 30
+            },
+            {
+              "current": 0.075,
+              "metric": "latest_top40_buy_retention_rate",
+              "required": 0.55
             }
           ],
           "passed": false
@@ -91632,19 +91637,24 @@
           "minimum_span_days": 60,
           "missing": [
             {
-              "current": 8,
+              "current": 9,
               "metric": "rank_comparison_count",
               "required": 30
             },
             {
-              "current": 8,
+              "current": 9,
               "metric": "buy_comparison_count",
               "required": 30
             },
             {
-              "current": 8,
+              "current": 9,
               "metric": "observation_span_days",
               "required": 60
+            },
+            {
+              "current": 0.075,
+              "metric": "latest_top40_buy_retention_rate",
+              "required": 0.6
             }
           ],
           "passed": false
@@ -91656,9 +91666,14 @@
           "minimum_span_days": 14,
           "missing": [
             {
-              "current": 8,
+              "current": 9,
               "metric": "observation_span_days",
               "required": 14
+            },
+            {
+              "current": 0.075,
+              "metric": "latest_top40_buy_retention_rate",
+              "required": 0.45
             }
           ],
           "passed": false
