@@ -341,7 +341,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     ]
 
 
-def test_daily_public_workflow_approves_scheduled_buys_and_rebases_before_push():
+def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
@@ -429,8 +429,14 @@ def test_daily_public_workflow_approves_scheduled_buys_and_rebases_before_push()
     ) in workflow
     assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "50"' in workflow
     assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "8"' in workflow
-    assert "git rebase -X theirs origin/master" in workflow
-    assert "for attempt in 1 2 3 4 5" in workflow
+    # 379015c replaced the cross-run rebase-merge recovery (which silently dropped
+    # this run's freshly built artifacts) with: sync to the latest origin/master
+    # right after checkout, build on it, then a single fail-loud push. Assert the
+    # new contract AND that the old rebase/retry recovery is gone for good.
+    assert "git checkout -B master origin/master" in workflow
+    assert "git push origin master" in workflow
+    assert "git rebase" not in workflow
+    assert "for attempt in" not in workflow
 
 
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():

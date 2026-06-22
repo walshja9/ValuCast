@@ -226,6 +226,7 @@ def _input_contract():
                 {
                     "mlbam_id": 1,
                     "name": "Model Strong",
+                    "source_kind": "current_season",
                     "plate_appearances": 200,
                     "draft_pick_number": 10,
                     "signing_bonus": 4_000_000,
@@ -233,6 +234,7 @@ def _input_contract():
                 {
                     "mlbam_id": 2,
                     "name": "Fallback Good",
+                    "source_kind": "current_season",
                     "plate_appearances": 150,
                 },
             ],
@@ -944,6 +946,43 @@ def test_rank_v1_does_not_bucket_adjust_upper_level_pedigree_profiles():
     assert "bucket_calibration" not in row["components"]
 
 
+def test_rank_v1_excludes_two_season_stale_prospects_from_board():
+    # A prospect whose newest stat line is two or more seasons old hasn't played
+    # competitively in a full year-plus, so they leave the board entirely. A
+    # one-season-stale prospect still ranks (just penalized behind current
+    # evidence). The exclusion is counted so coverage stays honest.
+    input_contract = _input_contract()
+    input_contract["current"]["hitters"][1].update(
+        {
+            "source_kind": "latest_milb_history",
+            "sample_staleness_years": 2,
+        }
+    )
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+    )
+
+    board_ids = {row["mlbam_id"] for row in payload["board"]}
+    assert 2 not in board_ids
+    assert 1 in board_ids
+    assert payload["validation"]["stale_inactive_excluded_count"] == 1
+
+    # One season stale stays on the board.
+    one_stale = _input_contract()
+    one_stale["current"]["hitters"][1].update(
+        {"source_kind": "latest_milb_history", "sample_staleness_years": 1}
+    )
+    one_payload = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), one_stale
+    )
+    assert 2 in {row["mlbam_id"] for row in one_payload["board"]}
+    assert one_payload["validation"]["stale_inactive_excluded_count"] == 0
+
+
 def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     universe = {
         "schema_version": "1.0",
@@ -1010,6 +1049,7 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
                 {
                     "mlbam_id": 3,
                     "name": "Thin Upper Pitcher",
+                    "source_kind": "current_season",
                     "age": 21,
                     "level": "AAA",
                     "innings_pitched": 24.2,

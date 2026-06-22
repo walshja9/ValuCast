@@ -57,6 +57,23 @@ THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
 # "thin_current_sample" availability signal the quality governor's top-50
 # bucket-shape check uses, so the board and the guardrail stay aligned.
 THIN_SAMPLE_CONFIDENCE_PENALTY_MAX = 28.0
+# A prospect whose displayed stat line falls back to a prior-season MiLB sample
+# (factual_current_context.source_kind != "current_season") has NO current-season
+# evidence at all -- almost always an injured/inactive upper-level arm. They must
+# not headline the public board on a year-old line, so they take a flat confidence
+# penalty (distinct from the graded thin-sample rule above, which needs a current
+# sample to scale against). Magnitude calibrated against the live score curve so no
+# such prospect lands in the top-50 and <=10 remain in the top-200 -- the exact
+# thresholds the milb_stat_freshness / prospect_card_data audits gate on -- with
+# margin. Self-heals: when a current-season line is selected the penalty lifts.
+NO_CURRENT_SEASON_ACTIVITY_PENALTY = 20.0
+# A prospect whose most recent stat line is two or more seasons stale hasn't
+# played competitively in a full year-plus -- not a rankable prospect, so they
+# leave the board entirely (mirroring the active-MLB-roster exclusion) rather
+# than just taking the penalty above. Self-heals: a current-season line puts them
+# straight back on. One-season-stale arms still rank, just behind current
+# evidence via NO_CURRENT_SEASON_ACTIVITY_PENALTY.
+INACTIVE_BOARD_EXCLUSION_STALENESS_YEARS = 2
 UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA = 200.0
 UPPER_LEVEL_HITTER_LOW_IMPACT_ISO = 0.100
 UPPER_LEVEL_HITTER_LOW_IMPACT_OPS = 0.720
@@ -928,6 +945,29 @@ def _bucket_calibration_adjustment(
     )
     adjustments = []
 
+    # Match the milb_stat_freshness / prospect_card_data audit predicate exactly:
+    # a row is a "history fallback" unless its factual context is current_season
+    # (missing context counts as a fallback too). Penalize the same population so
+    # the board ordering and the publish gate never disagree.
+    factual = components.get("factual_current_context")
+    factual = factual if isinstance(factual, dict) else {}
+    if factual.get("source_kind") != "current_season":
+        adjustments.append(
+            {
+                "bucket": "no_current_season_activity",
+                "label": "No current-season stat line",
+                "level": level,
+                "role": role,
+                "source_kind": factual.get("source_kind") or "missing",
+                "adjustment": -NO_CURRENT_SEASON_ACTIVITY_PENALTY,
+                "reason": (
+                    "No current-season MiLB stat line: the card leans on a prior "
+                    "season sample, so the profile is ranked behind players with "
+                    "current-season evidence."
+                ),
+            }
+        )
+
     if source == PEDIGREE_SCORE_SOURCE and level not in UPPER_LEVEL_BUCKETS:
         adjustments.append(
             {
@@ -1324,6 +1364,7 @@ def _validation(
     current_stat_context_mismatches: list[dict],
     active_mlb_roster_ids: set[str] | None = None,
     active_mlb_roster_excluded_count: int = 0,
+    stale_inactive_excluded_count: int = 0,
     mlb_roster_status_ready: bool = False,
     require_mlb_roster_status: bool = False,
 ) -> dict:
@@ -1335,7 +1376,9 @@ def _validation(
         {universe_date, layer_date, input_date}
     ) == 1
     eligible_prospect_row_count = max(
-        len(prospect_rows) - active_mlb_roster_excluded_count,
+        len(prospect_rows)
+        - active_mlb_roster_excluded_count
+        - stale_inactive_excluded_count,
         0,
     )
     coverage_rate = (
@@ -1413,6 +1456,7 @@ def _validation(
         "identity_only_fallback_count": identity_only_fallback_count,
         "mlb_roster_status_ready": mlb_roster_status_ready,
         "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
+        "stale_inactive_excluded_count": stale_inactive_excluded_count,
         "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
         "current_stat_context_mismatch_count": len(current_stat_context_mismatches),
         "current_stat_context_mismatch_sample": current_stat_context_mismatches[:20],
@@ -1463,6 +1507,7 @@ def build_prospect_rank_v1(
     unmatched_layer_keys: set[tuple[str, str]] = set()
     identity_only_fallback_count = 0
     active_mlb_roster_excluded_count = 0
+    stale_inactive_excluded_count = 0
     board = []
 
     for universe_row in rows:
@@ -1482,6 +1527,13 @@ def build_prospect_rank_v1(
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
+        staleness_years = _clean_float((input_row or {}).get("sample_staleness_years"))
+        if (
+            staleness_years is not None
+            and staleness_years >= INACTIVE_BOARD_EXCLUSION_STALENESS_YEARS
+        ):
+            stale_inactive_excluded_count += 1
+            continue
         service_row = service_by_key.get(key)
         availability_profile = availability_by_key.get(key)
         if layer_profile:
@@ -1591,6 +1643,7 @@ def build_prospect_rank_v1(
         _current_stat_context_mismatches(board, expected_current_stat_by_key),
         active_mlb_roster_ids=active_mlb_roster_ids,
         active_mlb_roster_excluded_count=active_mlb_roster_excluded_count,
+        stale_inactive_excluded_count=stale_inactive_excluded_count,
         mlb_roster_status_ready=mlb_roster_status_ready,
         require_mlb_roster_status=require_mlb_roster_status,
     )
