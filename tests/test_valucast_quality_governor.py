@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from prospects.rank_v1 import _model_lookup, _model_score
 from quality.valucast_governor import evaluate_quality_governor
 
 QUALITY_GOVERNOR_PATH = Path("data/models/valucast_quality_governor.json")
@@ -132,6 +133,81 @@ def _coverage_audit(elite_fallback_top200=0):
         },
         "elite_factual_raw_fallback_misses": samples,
     }
+
+
+def test_prospect_rank_model_lookup_quantile_normalizes_scores_across_roles():
+    prospect_model = {
+        "ranked": [
+            {
+                "mlbam_id": 1,
+                "role": "hitter",
+                "expected_outcome_score": 0.10,
+                "expected_category_impact_score": 0.05,
+            },
+            {
+                "mlbam_id": 2,
+                "role": "hitter",
+                "expected_outcome_score": 0.20,
+                "expected_category_impact_score": 0.15,
+            },
+            {
+                "mlbam_id": 3,
+                "role": "hitter",
+                "expected_outcome_score": 0.30,
+                "expected_category_impact_score": 0.25,
+            },
+            {
+                "mlbam_id": 4,
+                "role": "hitter",
+                "expected_outcome_score": 0.60,
+                "expected_category_impact_score": 0.55,
+            },
+            {
+                "mlbam_id": 11,
+                "role": "pitcher",
+                "expected_outcome_score": 0.05,
+                "expected_category_impact_score": 0.04,
+            },
+            {
+                "mlbam_id": 12,
+                "role": "pitcher",
+                "expected_outcome_score": 0.25,
+                "expected_category_impact_score": 0.20,
+            },
+            {
+                "mlbam_id": 13,
+                "role": "pitcher",
+                "expected_outcome_score": 0.40,
+                "expected_category_impact_score": 0.35,
+            },
+            {
+                "mlbam_id": 14,
+                "role": "pitcher",
+                "expected_outcome_score": 0.99,
+                "expected_category_impact_score": 0.88,
+            },
+        ]
+    }
+
+    lookup = _model_lookup(prospect_model)
+    top_hitter = lookup[("4", "hitter")]
+    top_pitcher = lookup[("14", "pitcher")]
+    second_hitter = lookup[("2", "hitter")]
+    second_pitcher = lookup[("12", "pitcher")]
+
+    assert top_hitter["expected_outcome_score"] == 0.60
+    assert top_hitter["expected_category_impact_score"] == 0.55
+    assert top_hitter["expected_outcome_score_role_percentile"] == 0.8
+    assert top_hitter["expected_outcome_score_role_quantile_normalized"] == 0.52
+    assert top_hitter["expected_category_impact_score_role_quantile_normalized"] == 0.47
+    assert top_pitcher["expected_outcome_score_role_percentile"] == 0.8
+    assert top_pitcher["expected_outcome_score_role_quantile_normalized"] == 0.52
+    assert top_pitcher["expected_category_impact_score_role_quantile_normalized"] == 0.47
+    assert (
+        second_hitter["expected_outcome_score_role_quantile_normalized"]
+        == second_pitcher["expected_outcome_score_role_quantile_normalized"]
+    )
+    assert _model_score(top_hitter) == _model_score(top_pitcher)
 
 
 def test_quality_governor_passes_clean_synthetic_board_but_keeps_buys_separate():
@@ -462,6 +538,59 @@ def test_quality_governor_blocks_pitcher_heavy_top_dynasty_board():
 
     assert payload["ready_for_public_snapshot"] is False
     assert "Top MLB dynasty board is too pitcher/reliever-heavy for public promotion." in payload["blockers"]
+
+
+def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
+    balanced_prospects = [
+        _prospect_row(
+            index,
+            role="pitcher" if index <= 5 or 31 <= index <= 40 else "hitter",
+        )
+        for index in range(1, 51)
+    ]
+    crowded_prospects = [
+        _prospect_row(index, role="pitcher" if index <= 8 else "hitter")
+        for index in range(1, 51)
+    ]
+
+    def evaluate(prospects):
+        return evaluate_quality_governor(
+            [
+                _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+                _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+                *prospects,
+            ],
+            prospect_rank=_prospect_rank(prospects),
+            prospect_coverage_audit=_coverage_audit(),
+            buy_signals=_buy_signals(ready=False),
+            buy_review={"review_status": "blocked"},
+            generated_at="2026-06-13T12:00:00+00:00",
+        )
+
+    balanced_payload = evaluate(balanced_prospects)
+    balanced_check = next(
+        check
+        for check in balanced_payload["checks"]
+        if check["id"] == "prospect_top_board_role_shape"
+    )
+    assert balanced_payload["ready_for_public_snapshot"] is True
+    assert balanced_check["status"] == "passed"
+    assert balanced_check["metrics"]["top25_pitcher_count"] == 5
+    assert balanced_check["metrics"]["top50_pitcher_rate"] == 0.3
+
+    crowded_payload = evaluate(crowded_prospects)
+    crowded_check = next(
+        check
+        for check in crowded_payload["checks"]
+        if check["id"] == "prospect_top_board_role_shape"
+    )
+    assert crowded_payload["ready_for_public_snapshot"] is False
+    assert crowded_check["status"] == "blocked"
+    assert crowded_check["metrics"]["top25_pitcher_count"] == 8
+    assert (
+        "Top prospect board is too pitcher-heavy for public promotion."
+        in crowded_payload["blockers"]
+    )
 
 
 def test_quality_governor_blocks_pedigree_only_top50_crowding():

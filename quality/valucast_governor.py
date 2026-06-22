@@ -13,6 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.calibration_report import (
+    MAX_TOP25_PITCHER_COUNT as MAX_TOP25_PROSPECT_PITCHER_COUNT,
+)
+from prospects.calibration_report import (
+    MAX_TOP50_PITCHER_RATE as MAX_TOP50_PROSPECT_PITCHER_RATE,
+)
 from web.public_snapshot_store import DD_DERIVED_SOURCE_TOKENS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -402,6 +408,65 @@ def _mlb_top_board_role_shape(players: list[dict]) -> dict:
                 "value": row.get("value"),
             }
             for row in reliever_rows[:10]
+        ],
+    )
+
+
+def _prospect_top_board_role_shape(
+    prospect_rank: dict | None,
+    players: list[dict],
+) -> dict:
+    top_rows = _prospect_rank_rows(prospect_rank)
+    if not top_rows:
+        top_rows = _public_prospect_rows(players)
+    top_rows.sort(
+        key=lambda row: (
+            _clean_int(row.get("rank") or row.get("prospect_rank")) or 999999,
+            str(row.get("name") or ""),
+            str(row.get("mlbam_id") or ""),
+        )
+    )
+    top25_rows = top_rows[:PROSPECT_INVESTMENT_TOP_N]
+    top50_rows = top_rows[:PROSPECT_FALLBACK_TOP_N]
+    top25_pitcher_rows = [row for row in top25_rows if _is_pitcher_row(row)]
+    top50_pitcher_rows = [row for row in top50_rows if _is_pitcher_row(row)]
+    top25_ready = len(top25_rows) >= PROSPECT_INVESTMENT_TOP_N
+    top50_ready = len(top50_rows) >= PROSPECT_FALLBACK_TOP_N
+    top50_pitcher_rate = (
+        round(len(top50_pitcher_rows) / len(top50_rows), 4) if top50_rows else 0.0
+    )
+    passed = (
+        (not top25_ready or len(top25_pitcher_rows) <= MAX_TOP25_PROSPECT_PITCHER_COUNT)
+        and (not top50_ready or top50_pitcher_rate <= MAX_TOP50_PROSPECT_PITCHER_RATE)
+    )
+    return _check(
+        "prospect_top_board_role_shape",
+        passed,
+        (
+            "Top prospect board role shape is within publication limits."
+            if passed
+            else "Top prospect board is too pitcher-heavy for public promotion."
+        ),
+        top25_n=PROSPECT_INVESTMENT_TOP_N,
+        top50_n=PROSPECT_FALLBACK_TOP_N,
+        top25_evaluated_count=len(top25_rows),
+        top50_evaluated_count=len(top50_rows),
+        top25_pitcher_count=len(top25_pitcher_rows),
+        max_top25_pitcher_count=MAX_TOP25_PROSPECT_PITCHER_COUNT,
+        top50_pitcher_count=len(top50_pitcher_rows),
+        top50_pitcher_rate=top50_pitcher_rate,
+        max_top50_pitcher_rate=MAX_TOP50_PROSPECT_PITCHER_RATE,
+        top25_sample_ready=top25_ready,
+        top50_sample_ready=top50_ready,
+        pitcher_samples=[
+            {
+                "rank": row.get("rank") or row.get("prospect_rank"),
+                "name": row.get("name"),
+                "role": row.get("role"),
+                "score": row.get("score") or row.get("value"),
+                "mlbam_id": row.get("mlbam_id"),
+            }
+            for row in top50_pitcher_rows[:10]
         ],
     )
 
@@ -1518,6 +1583,7 @@ def evaluate_quality_governor(
         _top_mlb_value_gap(players),
         _mlb_projection_stability_outliers(players),
         _mlb_top_board_role_shape(players),
+        _prospect_top_board_role_shape(prospect_rank, players),
         _two_way_policy(players),
         _prospect_rank_surface_suppression(
             prospect_rank,
@@ -1586,6 +1652,8 @@ def evaluate_quality_governor(
             "max_top_mlb_ros_stability_weight": MAX_TOP_MLB_ROS_STABILITY_WEIGHT,
             "two_way_policy_rank_limit": TWO_WAY_POLICY_RANK_LIMIT,
             "max_top50_fallback_rate": MAX_TOP50_FALLBACK_RATE,
+            "max_top25_prospect_pitcher_count": MAX_TOP25_PROSPECT_PITCHER_COUNT,
+            "max_top50_prospect_pitcher_rate": MAX_TOP50_PROSPECT_PITCHER_RATE,
             "max_top50_pedigree_rate": MAX_TOP50_PEDIGREE_RATE,
             "max_top50_low_confidence_rate": MAX_TOP50_LOW_CONFIDENCE_RATE,
             "max_top50_lower_minors_pedigree_count": MAX_TOP50_LOWER_MINORS_PEDIGREE_COUNT,

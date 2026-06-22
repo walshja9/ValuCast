@@ -99,6 +99,9 @@ MODEL_COMPONENT_WEIGHTS = {
     "expected_outcome_score": 0.58,
     "expected_category_impact_score": 0.42,
 }
+MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION = "role_quantile_to_pooled_v0_1"
+MODEL_SCORE_QUANTILE_NORMALIZED_SUFFIX = "_role_quantile_normalized"
+MODEL_SCORE_QUANTILE_PERCENTILE_SUFFIX = "_role_percentile"
 SCORE_WEIGHTS = {
     "prospect_model_v0_6": {
         "model_score": 0.76,
@@ -277,8 +280,14 @@ def _generated_date(payload: dict) -> str | None:
 
 
 def _model_lookup(prospect_model: dict) -> dict[tuple[str, str], dict]:
-    lookup = {}
+    rows = []
     for row in prospect_model.get("ranked") or []:
+        key = identity_key(row.get("mlbam_id"), row.get("role"))
+        if key:
+            rows.append(dict(row))
+    _apply_role_quantile_model_score_normalization(rows)
+    lookup = {}
+    for row in rows:
         key = identity_key(row.get("mlbam_id"), row.get("role"))
         if key:
             lookup[key] = row
@@ -622,11 +631,111 @@ def _dd_context_lookup(dd_feed: dict | None) -> dict[tuple[str, str], dict]:
     return lookup
 
 
+def _model_score_field_normalized_key(field: str) -> str:
+    return f"{field}{MODEL_SCORE_QUANTILE_NORMALIZED_SUFFIX}"
+
+
+def _model_score_field_percentile_key(field: str) -> str:
+    return f"{field}{MODEL_SCORE_QUANTILE_PERCENTILE_SUFFIX}"
+
+
+def _model_score_tiebreak_key(row: dict) -> tuple[int, int | str, str]:
+    mlbam_id = row.get("mlbam_id")
+    try:
+        return (0, int(mlbam_id), str(row.get("role") or ""))
+    except (TypeError, ValueError):
+        return (1, str(mlbam_id or ""), str(row.get("role") or ""))
+
+
+def _pooled_quantile_value(sorted_values: list[float], percentile: float) -> float | None:
+    if not sorted_values:
+        return None
+    if len(sorted_values) == 1:
+        return sorted_values[0]
+    percentile = max(0.0, min(1.0, percentile))
+    position = percentile * (len(sorted_values) - 1)
+    lower_index = int(math.floor(position))
+    upper_index = int(math.ceil(position))
+    if lower_index == upper_index:
+        return sorted_values[lower_index]
+    lower = sorted_values[lower_index]
+    upper = sorted_values[upper_index]
+    return lower + (upper - lower) * (position - lower_index)
+
+
+def _apply_role_quantile_model_score_normalization(rows: list[dict]) -> None:
+    for field in MODEL_COMPONENT_WEIGHTS:
+        scored_rows = [
+            row
+            for row in rows
+            if row.get("role") in {"hitter", "pitcher"}
+            and _clean_float(row.get(field)) is not None
+        ]
+        pooled_values = sorted(_clean_float(row.get(field)) for row in scored_rows)
+        if not pooled_values:
+            continue
+        for role in ("hitter", "pitcher"):
+            role_rows = [row for row in scored_rows if row.get("role") == role]
+            role_rows.sort(
+                key=lambda row: (
+                    _clean_float(row.get(field)) or 0.0,
+                    _model_score_tiebreak_key(row),
+                )
+            )
+            role_count = len(role_rows)
+            for index, row in enumerate(role_rows):
+                percentile = (index + 1) / (role_count + 1)
+                normalized = _pooled_quantile_value(pooled_values, percentile)
+                if normalized is None:
+                    continue
+                row[_model_score_field_percentile_key(field)] = round(percentile, 6)
+                row[_model_score_field_normalized_key(field)] = round(normalized, 6)
+
+
+def _model_score_component_value(model_profile: dict, field: str) -> float | None:
+    normalized = _clean_float(
+        model_profile.get(_model_score_field_normalized_key(field))
+    )
+    if normalized is not None:
+        return normalized
+    return _clean_float(model_profile.get(field))
+
+
+def _model_score_normalization_component(model_profile: dict | None) -> dict | None:
+    if not model_profile:
+        return None
+    fields = {}
+    for field in MODEL_COMPONENT_WEIGHTS:
+        normalized = _clean_float(
+            model_profile.get(_model_score_field_normalized_key(field))
+        )
+        if normalized is None:
+            continue
+        fields[field] = {
+            "raw": _round(_clean_float(model_profile.get(field)), 6),
+            "normalized": _round(normalized, 6),
+            "role_percentile": _round(
+                _clean_float(model_profile.get(_model_score_field_percentile_key(field))),
+                6,
+            ),
+        }
+    if not fields:
+        return None
+    return {
+        "version": MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION,
+        "method": "within_role_percentile_to_pooled_distribution",
+        "fields": fields,
+    }
+
+
 def _model_score(model_profile: dict | None) -> float | None:
     if not model_profile:
         return None
-    outcome = _clean_float(model_profile.get("expected_outcome_score"))
-    impact = _clean_float(model_profile.get("expected_category_impact_score"))
+    outcome = _model_score_component_value(model_profile, "expected_outcome_score")
+    impact = _model_score_component_value(
+        model_profile,
+        "expected_category_impact_score",
+    )
     if outcome is None and impact is None:
         return None
     if outcome is None:
@@ -916,6 +1025,9 @@ def _score_components(
         ),
         "sample_reliability": _round(reliability_score),
     }
+    normalization_component = _model_score_normalization_component(model_profile)
+    if normalization_component:
+        components["model_score_normalization"] = normalization_component
     if current_context:
         components["factual_current_context"] = current_context
     if source == "universal_fallback":
@@ -923,6 +1035,33 @@ def _score_components(
     if pedigree_components:
         components.update(pedigree_components)
     return round(score, 2), source, components
+
+
+def _board_model_score_normalization_rows(
+    rows: list[dict],
+    model_by_key: dict[tuple[str, str], dict],
+    input_by_key: dict[tuple[str, str], dict],
+    active_mlb_roster_ids: set[str],
+) -> list[dict]:
+    normalization_rows = []
+    seen: set[tuple[str, str]] = set()
+    for universe_row in rows:
+        role = universe_row.get("role")
+        key = identity_key(universe_row.get("mlbam_id"), role)
+        if key is None or key in seen or key[0] in active_mlb_roster_ids:
+            continue
+        seen.add(key)
+        input_row = input_by_key.get(key)
+        staleness_years = _clean_float((input_row or {}).get("sample_staleness_years"))
+        if (
+            staleness_years is not None
+            and staleness_years >= INACTIVE_BOARD_EXCLUSION_STALENESS_YEARS
+        ):
+            continue
+        model_profile = model_by_key.get(key)
+        if model_profile:
+            normalization_rows.append(model_profile)
+    return normalization_rows
 
 
 def _bucket_calibration_adjustment(
@@ -1501,6 +1640,14 @@ def build_prospect_rank_v1(
     dd_context_by_key = _dd_context_lookup(dd_feed)
 
     rows = _universe_rows(prospect_universe)
+    _apply_role_quantile_model_score_normalization(
+        _board_model_score_normalization_rows(
+            rows,
+            model_by_key,
+            input_by_key,
+            active_mlb_roster_ids,
+        )
+    )
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_mlbam_count = 0
