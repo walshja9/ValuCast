@@ -382,6 +382,22 @@ class TestDynastyMode(unittest.TestCase):
         self.assertNotIn(b">DV<", response.data)
         self.assertNotIn(b"PROSPECT RANK", response.data)
 
+    def test_dynasty_share_card_graphic(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        preview = self.client.get("/dynasty/share-card?limit=50")
+        self.assertEqual(preview.status_code, 200)
+        self.assertIn("text/html", preview.content_type)
+        self.assertIn(b"Top 50 Dynasty", preview.data)
+        self.assertIn(b"/dynasty/share-card.png?limit=50", preview.data)
+        for limit in (20, 50, 100):
+            png = self.client.get(f"/dynasty/share-card.png?limit={limit}")
+            self.assertEqual(png.status_code, 200)
+            self.assertIn("image/png", png.content_type)
+        index = self.client.get("/?mode=dd_dynasty").data
+        self.assertIn(b"/dynasty/share-card?limit=50", index)
+
     def test_prospects_position_graphic_png(self):
         from app import dd_store
         if not dd_store.is_available:

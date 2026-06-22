@@ -738,7 +738,7 @@ def _apply_prospect_board_context(ctx, args):
         else []
     )
 
-def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
+def _prospect_graphic_svg(rows, *, limit, position=None, search=None, noun="Prospects", footer_note=None):
     """Render an Ahead of the Curve-style SVG share graphic."""
     width = 1080
     header_height = 245
@@ -753,7 +753,7 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
         row_height = 58 if limit == 20 else 78
         height = header_height + max(len(rows), 1) * row_height + footer_height
     scope = f"{position} " if position else ""
-    title = f"Top {limit} {scope}Prospects"
+    title = f"Top {limit} {scope}{noun}"
     if search:
         title += f" | {search}"
     updated = dd_store.generated_at[:10] if dd_store.generated_at else "current feed"
@@ -881,8 +881,12 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None):
     return "".join(parts)
 
 
-def _prospect_graphic_png(rows, *, limit, position=None, search=None):
-    """Render an Ahead of the Curve-style PNG for easy posting/saving."""
+def _prospect_graphic_png(rows, *, limit, position=None, search=None, noun="Prospects", hero_kicker=None, footer_note=None):
+    """Render an Ahead of the Curve-style PNG for easy posting/saving.
+
+    noun/hero_kicker/footer_note let other ranked boards (Dynasty, Redraft) reuse
+    this renderer with their own labels; defaults keep the prospect output identical.
+    """
     from PIL import Image, ImageDraw
 
     # ponytail: reuse the module-level graphic helpers instead of re-defining them here
@@ -992,7 +996,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
 
     scope = f"{position.upper()} " if position else ""
     subtitle_date = _editorial_date(dd_store.generated_at)
-    subtitle = f"Top {limit} {scope}Prospects from the current board"
+    subtitle = f"Top {limit} {scope}{noun} from the current board"
     if search:
         subtitle = f"{subtitle} | {search}"
     if subtitle_date:
@@ -1073,7 +1077,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
     elif limit <= 10:
         # Compact variant for position top-10s: same voice, less empty space.
         hero = rows[0]
-        leader = "POSITION LEADER" if position else "TOP PROSPECT"
+        leader = hero_kicker or ("POSITION LEADER" if position else "TOP PROSPECT")
         draw.rounded_rectangle((48, 226, 1032, 532), radius=10, fill=card, outline=border, width=1)
         draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(16, bold=True))
@@ -1149,7 +1153,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             )
     else:
         hero = rows[0]
-        leader = "POSITION LEADER" if position else "TOP PROSPECT"
+        leader = hero_kicker or ("POSITION LEADER" if position else "TOP PROSPECT")
         draw.rounded_rectangle((48, 226, 418, 540), radius=10, fill=card, outline=border, width=1)
         draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(15, bold=True))
@@ -1203,7 +1207,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None):
             rest_val_font = font(20, bold=True, mono=True)
             draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
-    footer = "ValuCast Prospect Rank - stats + age/level + investment + availability"
+    footer = footer_note or "ValuCast Prospect Rank - stats + age/level + investment + availability"
     _graphic_footer(draw, right_note=footer)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -4937,6 +4941,110 @@ def prospects_graphic():
     response = make_response(svg)
     response.headers["Content-Type"] = "image/svg+xml; charset=utf-8"
     response.headers["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response
+
+
+# --- Dynasty board share graphics (reuse the prospect renderer with Dynasty labels) ---
+DYNASTY_SHARE_FOOTER = "ValuCast Dynasty Rank - value, age, position, role"
+
+
+def _dynasty_share_rows(pool=None, position=None, search=None):
+    rows = dd_store.filter(pool or None, position or None, search or None)
+    return sorted(
+        rows, key=lambda r: (r.dynasty_rank if r.dynasty_rank is not None else 999999)
+    )
+
+
+def _dynasty_share_scope(pool, position):
+    parts = []
+    if pool and pool.lower() not in ("all", ""):
+        parts.append(pool)
+    if position:
+        parts.append(position)
+    return " ".join(parts)
+
+
+@app.route("/dynasty/share-card")
+def dynasty_share_card():
+    if not dd_store.is_available:
+        return "<!doctype html><title>Dynasty graphic unavailable</title>", 503
+    limit = _prospect_share_limit(request.args)
+    pool = request.args.get("pool") or None
+    position = request.args.get("position") or None
+    search = request.args.get("search") or None
+    params = {"limit": limit}
+    if pool:
+        params["pool"] = pool
+    if position:
+        params["position"] = position
+    if search:
+        params["search"] = search
+    png_url = "/dynasty/share-card.png?" + urlencode(params)
+    scope = _dynasty_share_scope(pool, position)
+    title = f"Top {limit} {scope + ' ' if scope else ''}Dynasty"
+    if search:
+        title = f"{title} | {search}"
+    html = build_share_preview_html(
+        title="Ahead of the Curve",
+        subtitle=title,
+        png_url=png_url,
+        filename=f"valucast-dynasty-top-{limit}.png",
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url("/dynasty/share-card?" + urlencode(params)),
+        description="ValuCast's current dynasty board, from the live Dynasty tab.",
+        image_alt=f"Ahead of the Curve - {title}",
+        back_url="/?mode=dd_dynasty",
+        back_label="Back to dynasty",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/dynasty/share-card.png")
+def dynasty_share_card_png():
+    if not dd_store.is_available:
+        return "", 503
+    limit = _prospect_share_limit(request.args)
+    pool = request.args.get("pool") or None
+    position = request.args.get("position") or None
+    search = request.args.get("search") or None
+    rows = _dynasty_share_rows(pool, position, search)[:limit]
+    png = _prospect_graphic_png(
+        rows,
+        limit=limit,
+        position=position,
+        search=search,
+        noun="Dynasty",
+        hero_kicker="TOP DYNASTY ASSET",
+        footer_note=DYNASTY_SHARE_FOOTER,
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-dynasty-top-{limit}.png"'
+    )
+    return response
+
+
+@app.route("/dynasty/share-card.svg")
+def dynasty_share_card_svg():
+    if not dd_store.is_available:
+        return "<svg xmlns='http://www.w3.org/2000/svg'></svg>", 503
+    limit = _prospect_share_limit(request.args)
+    pool = request.args.get("pool") or None
+    position = request.args.get("position") or None
+    search = request.args.get("search") or None
+    rows = _dynasty_share_rows(pool, position, search)[:limit]
+    svg = _prospect_graphic_svg(
+        rows, limit=limit, position=position, search=search, noun="Dynasty",
+        footer_note=DYNASTY_SHARE_FOOTER,
+    )
+    response = make_response(svg)
+    response.headers["Content-Type"] = "image/svg+xml; charset=utf-8"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-dynasty-top-{limit}.svg"'
+    )
     return response
 
 
