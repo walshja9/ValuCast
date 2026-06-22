@@ -25,13 +25,17 @@
             <a href="#ahead-of-the-curve">Ahead of the Curve</a>
             <a href="#call-up-desk">Call-Up Desk</a>
             <a href="#stats">Stats</a>
+            <a href="#team-boards">Team Boards</a>
         </nav>
     </header>
 
     <section id="ahead-of-the-curve" class="bf-section bf-risers-section" aria-labelledby="bf-risers-title">
         <div class="bf-section-head">
-            <h2 id="bf-risers-title">Ahead of the Curve</h2>
-            <p>Biggest risers this week</p>
+            <div>
+                <h2 id="bf-risers-title">Ahead of the Curve</h2>
+                <p>Biggest risers this week</p>
+            </div>
+            <a class="bf-section-link" href="/buys">Open full Buys board</a>
         </div>
         {% if risers %}
         <div class="bf-risers-strip" aria-label="Biggest prospect risers">
@@ -194,10 +198,88 @@
         </aside>
     </div>
 
+    <section id="team-boards" class="bf-section bf-team-boards" aria-labelledby="bf-team-boards-title">
+        <div class="bf-section-head">
+            <div>
+                <h2 id="bf-team-boards-title">Team Boards</h2>
+                <p>Top prospects by MLB organization</p>
+            </div>
+            {% if team_boards.selected %}
+            <a class="bf-section-link" href="/backfields/team/{{ team_boards.selected.org }}/share-card">Share {{ team_boards.selected.org }} board</a>
+            {% endif %}
+        </div>
+        {% if team_boards.teams %}
+        <div class="bf-team-picker" aria-label="Choose an MLB organization">
+            {% for team in team_boards.teams %}
+            <a class="bf-team-pill{% if team_boards.selected and team.org == team_boards.selected.org %} is-active{% endif %}"
+               href="{{ team.url }}"
+               aria-current="{{ 'page' if team_boards.selected and team.org == team_boards.selected.org else 'false' }}">
+                <span>{{ team.org }}</span>
+                <small>{{ team.count }}</small>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if team_boards.selected %}
+        <div class="bf-team-board-card">
+            <div class="bf-team-title">
+                <div>
+                    <h3>{{ team_boards.selected.name }}</h3>
+                    <p>{{ team_boards.selected.count }} prospects in the ValuCast pool · ValuCast prospect order</p>
+                </div>
+                <a class="bf-section-link" href="/backfields/team/{{ team_boards.selected.org }}/share-card.png?n=20">Download Top 20 PNG</a>
+            </div>
+            <div class="bf-table-head" role="row">
+                <span>#</span>
+                <span>Player</span>
+                <span>Level</span>
+                <span>Move</span>
+                <span>Value</span>
+            </div>
+            {% for row in team_boards.rows %}
+            <article class="bf-rank-row bf-team-row"
+                data-bf-row-level="{{ row.level }}"
+                data-bf-sort-rank="{{ row.org_rank }}"
+                data-bf-sort-player="{{ row.name|lower }}"
+                data-bf-sort-level="{{ row.level }}"
+                data-bf-sort-move="{{ row.move_sort }}"
+                data-bf-sort-value="{{ row.value_sort }}">
+                <span class="bf-rank">{{ row.org_rank }}</span>
+                <div class="bf-player">
+                    <div class="bf-player-name">
+                        <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}">{{ row.name }}</a>
+                        {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
+                    </div>
+                    <p class="bf-player-meta">
+                        <span>{{ row.position }}</span>
+                        {% if row.affiliate %}<span class="bf-meta-accent">{{ row.affiliate }}</span>{% endif %}
+                        {% if row.eta %}<span>{{ row.eta }}</span>{% endif %}
+                    </p>
+                </div>
+                <span class="bf-level">{{ row.level }}</span>
+                <span class="bf-move bf-move-{{ row.move.direction }}">
+                    {% if row.move.direction == "up" %}&#9650; {{ row.move.label }}
+                    {% elif row.move.direction == "down" %}&#9660; {{ row.move.label }}
+                    {% else %}{{ row.move.label }}{% endif %}
+                </span>
+                <span class="bf-value">{{ row.value }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bf-team-card">
+            <p>Pick an organization to open its top 20 prospects, scouting links, and share graphic.</p>
+        </div>
+        {% endif %}
+    </section>
+
     <section class="bf-section bf-scouting-feed" aria-labelledby="bf-scouting-title">
         <div class="bf-section-head">
-            <h2 id="bf-scouting-title">Scouting Reports</h2>
-            <p>Latest looks</p>
+            <div>
+                <h2 id="bf-scouting-title">Scouting Reports</h2>
+                <p>Latest looks</p>
+            </div>
+            <a class="bf-section-link" href="/scouting">Open all scouting reports</a>
         </div>
         {% if scouting_reports %}
         <div class="bf-report-grid">

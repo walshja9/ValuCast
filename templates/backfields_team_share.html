@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+
+{% block title %}{{ board.selected.name }} prospects | Backfields{% endblock %}
+{% block og_title %}{{ board.selected.name }} prospects | ValuCast Backfields{% endblock %}
+{% block og_description %}Top prospects for {{ board.selected.name }} by ValuCast prospect order.{% endblock %}
+{% block og_url %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card{% endblock %}
+{% block og_image %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card.png?n=10{% endblock %}
+{% block twitter_title %}{{ board.selected.name }} prospects | ValuCast{% endblock %}
+{% block twitter_description %}Top prospects for {{ board.selected.name }} by ValuCast prospect order.{% endblock %}
+{% block twitter_image %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card.png?n=10{% endblock %}
+
+{% block content %}
+<article class="backfields-page bf-share-preview">
+    <header class="bf-hero">
+        <div class="bf-hero-copy">
+            <p class="bf-eyebrow">Backfields Team Board</p>
+            <h1>{{ board.selected.name }}</h1>
+            <p class="bf-tagline">ValuCast prospect order for {{ board.selected.org }}. This is the same model order used in Backfields.</p>
+        </div>
+        <div class="bf-hero-actions">
+            {% if as_of %}<span class="bf-freshness">Values updated {{ editorial_date(as_of) }}</span>{% endif %}
+            <a class="bf-share" href="/backfields/team/{{ board.selected.org }}">Open team board</a>
+        </div>
+    </header>
+
+    <section class="bf-section">
+        <div class="bf-section-head">
+            <div>
+                <h2>Share graphic</h2>
+                <p>ValuCast prospect order</p>
+            </div>
+            <a class="bf-section-link" href="/backfields">Back to Backfields</a>
+        </div>
+        <div class="bf-share-actions">
+            <a class="bf-action" href="/backfields/team/{{ board.selected.org }}/share-card.png?n=10" download>Download Top 10 PNG</a>
+            <a class="bf-action" href="/backfields/team/{{ board.selected.org }}/share-card.png?n=20" download>Download Top 20 PNG</a>
+        </div>
+        <div class="bf-team-board-card">
+            <div class="bf-table-head" role="row">
+                <span>#</span>
+                <span>Player</span>
+                <span>Level</span>
+                <span>Move</span>
+                <span>Value</span>
+            </div>
+            {% for row in board.rows[:10] %}
+            <article class="bf-rank-row bf-team-row">
+                <span class="bf-rank">{{ row.org_rank }}</span>
+                <div class="bf-player">
+                    <div class="bf-player-name">
+                        <a class="bf-player-link" href="{{ row.url }}">{{ row.name }}</a>
+                    </div>
+                    <p class="bf-player-meta">
+                        <span>{{ row.position }}</span>
+                        {% if row.affiliate %}<span class="bf-meta-accent">{{ row.affiliate }}</span>{% endif %}
+                        {% if row.eta %}<span>{{ row.eta }}</span>{% endif %}
+                    </p>
+                </div>
+                <span class="bf-level">{{ row.level }}</span>
+                <span class="bf-move bf-move-{{ row.move.direction }}">
+                    {% if row.move.direction == "up" %}&#9650; {{ row.move.label }}
+                    {% elif row.move.direction == "down" %}&#9660; {{ row.move.label }}
+                    {% else %}{{ row.move.label }}{% endif %}
+                </span>
+                <span class="bf-value">{{ row.value }}</span>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+</article>
+{% endblock %}
