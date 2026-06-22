@@ -18,7 +18,11 @@
         </div>
         <div class="bf-hero-actions">
             {% if as_of %}<span class="bf-freshness">Values updated {{ editorial_date(as_of) }}</span>{% endif %}
-            <a class="bf-share" href="/prospects/share-card">Share this board</a>
+            <span class="bf-share-actions" aria-label="Share the prospect board">
+                <a class="bf-share" href="/prospects/share-card?limit=20" target="_blank">Share Top 20</a>
+                <a class="bf-share" href="/prospects/share-card?limit=50" target="_blank">Share Top 50</a>
+                <a class="bf-share" href="/prospects/share-card?limit=100" target="_blank">Share Top 100</a>
+            </span>
         </div>
         <nav class="bf-anchor-tabs" aria-label="Backfields sections">
             <a href="#rankings">Rankings</a>
