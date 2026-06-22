@@ -27,6 +27,9 @@ BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json
 
 SIGNAL_NAME = "ValuCast Prospect Buy Signals"
 SIGNAL_VERSION = "1.0.0"
+# Bumping this constant on any future re-baseline deliberately resets the
+# forward-validation evidence clock.
+PROSPECT_BUYS_EPOCH = "2026-06-22-role-normalization"
 SIGNAL_RELEASE = "valucast_prospect_buys_v1"
 LOCKED_RELEASE_STATUS = "locked"
 MAX_HISTORY_LIMITED_RATE = 0.50
@@ -461,6 +464,7 @@ def build_buy_signals(
         "status": "shadow_only",
         "signal_name": SIGNAL_NAME,
         "signal_version": SIGNAL_VERSION,
+        "epoch": PROSPECT_BUYS_EPOCH,
         "generated_at": generated_at,
         "source_policy": {
             "kind": "valucast_owned_prospect_buy_signals",
@@ -545,6 +549,7 @@ def archive_buy_signals(
     archive = {
         "date": date_str,
         "signal_version": payload["signal_version"],
+        "epoch": payload.get("epoch"),
         "generated_at": payload["generated_at"],
         "validation": payload["validation"],
         "board": payload["board"],

@@ -15,7 +15,10 @@ from pathlib import Path
 from statistics import median
 from typing import Any
 
-from prospects.buys import ARCHIVE_DIR as BUY_ARCHIVE_DIR
+from prospects.buys import (
+    ARCHIVE_DIR as BUY_ARCHIVE_DIR,
+    PROSPECT_BUYS_EPOCH,
+)
 from prospects.rank_v1 import ARCHIVE_DIR as RANK_ARCHIVE_DIR
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -99,6 +102,59 @@ def _load_archive_payloads(directory: Path) -> list[dict]:
         payloads.append(payload)
     payloads.sort(key=lambda payload: str(payload.get("date") or ""))
     return payloads
+
+
+def _payload_date(payload: dict) -> str | None:
+    return _date_part(payload.get("date") or payload.get("generated_at"))
+
+
+def _epoch_by_date(payloads: list[dict]) -> dict[str, str]:
+    epochs = {}
+    for payload in payloads:
+        date = _payload_date(payload)
+        epoch = payload.get("epoch")
+        if date and isinstance(epoch, str):
+            epochs[date] = epoch
+    return epochs
+
+
+def _with_propagated_rank_epochs(
+    rank_payloads: list[dict],
+    buy_payloads: list[dict],
+) -> list[dict]:
+    buy_epochs = _epoch_by_date(buy_payloads)
+    stamped = []
+    for payload in rank_payloads:
+        if payload.get("epoch") is not None:
+            stamped.append(payload)
+            continue
+        epoch = buy_epochs.get(_payload_date(payload))
+        if epoch is None:
+            stamped.append(payload)
+            continue
+        stamped_payload = dict(payload)
+        stamped_payload["epoch"] = epoch
+        stamped.append(stamped_payload)
+    return stamped
+
+
+def _is_current_epoch(payload: dict) -> bool:
+    return payload.get("epoch") == PROSPECT_BUYS_EPOCH
+
+
+def _current_epoch_payloads(payloads: list[dict]) -> list[dict]:
+    return [payload for payload in payloads if _is_current_epoch(payload)]
+
+
+def _current_epoch_comparisons(payloads: list[dict], compare) -> tuple[list[dict], int]:
+    comparisons = []
+    masked_count = 0
+    for previous, current in zip(payloads, payloads[1:]):
+        if _is_current_epoch(previous) and _is_current_epoch(current):
+            comparisons.append(compare(previous, current))
+        else:
+            masked_count += 1
+    return comparisons, masked_count
 
 
 def _identity_key(row: dict) -> tuple[str, str] | None:
@@ -456,15 +512,17 @@ def build_forward_validation_report(
     generated_at: str | None = None,
 ) -> dict:
     buy_payloads = buy_payloads or []
-    rank_comparisons = [
-        compare_rank_archives(previous, current)
-        for previous, current in zip(rank_payloads, rank_payloads[1:])
-    ]
-    buy_comparisons = [
-        compare_buy_archives(previous, current)
-        for previous, current in zip(buy_payloads, buy_payloads[1:])
-    ]
-    span_days = _span_days(rank_payloads)
+    rank_payloads = _with_propagated_rank_epochs(rank_payloads, buy_payloads)
+    rank_comparisons, masked_rank_count = _current_epoch_comparisons(
+        rank_payloads,
+        compare_rank_archives,
+    )
+    buy_comparisons, masked_buy_count = _current_epoch_comparisons(
+        buy_payloads,
+        compare_buy_archives,
+    )
+    span_days = _span_days(_current_epoch_payloads(rank_payloads))
+    masked_cross_epoch_count = masked_rank_count + masked_buy_count
     evidence_status = _evidence_status(
         rank_comparisons,
         buy_comparisons,
@@ -478,10 +536,12 @@ def build_forward_validation_report(
         "artifact": "valucast_prospect_forward_validation",
         "report_name": REPORT_NAME,
         "report_version": REPORT_VERSION,
+        "epoch": PROSPECT_BUYS_EPOCH,
         "generated_at": generated_at
         or latest_rank.get("generated_at")
         or datetime.now(timezone.utc).isoformat(),
         "status": status,
+        "masked_cross_epoch_count": masked_cross_epoch_count,
         "source_policy": {
             "kind": "observe_only_forward_bucket_validation",
             "feeds_model_score": False,

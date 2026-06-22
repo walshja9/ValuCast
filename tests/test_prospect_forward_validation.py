@@ -7,6 +7,7 @@ from prospects.forward_validation import (
     compare_rank_archives,
     run_forward_validation_report,
 )
+from prospects.buys import PROSPECT_BUYS_EPOCH
 from scripts.validate_prospect_forward_validation import validate_report
 
 
@@ -37,13 +38,16 @@ def _rank_row(
     }
 
 
-def _rank_payload(date_str, rows):
-    return {
+def _rank_payload(date_str, rows, epoch=None):
+    payload = {
         "date": date_str,
         "generated_at": f"{date_str}T12:00:00+00:00",
         "rank_version": "test",
         "board": rows,
     }
+    if epoch is not None:
+        payload["epoch"] = epoch
+    return payload
 
 
 def _buy_row(mlbam_id, name, rank, score, role="hitter"):
@@ -56,13 +60,16 @@ def _buy_row(mlbam_id, name, rank, score, role="hitter"):
     }
 
 
-def _buy_payload(date_str, rows):
-    return {
+def _buy_payload(date_str, rows, epoch=None):
+    payload = {
         "date": date_str,
         "generated_at": f"{date_str}T12:00:00+00:00",
         "signal_version": "1.0.0",
         "board": rows,
     }
+    if epoch is not None:
+        payload["epoch"] = epoch
+    return payload
 
 
 def test_rank_archive_comparison_groups_movement_by_current_bucket():
@@ -114,14 +121,66 @@ def test_buy_archive_comparison_tracks_top40_retention():
     assert comparison["exited_top_count"] == 20
 
 
+def test_forward_validation_masks_non_current_epoch_pairs():
+    old_epoch = "2026-06-21-outcome-gates"
+    rank_payloads = [
+        _rank_payload("2026-06-20", [_rank_row(1, "A", 1, 60.0)]),
+        _rank_payload("2026-06-21", [_rank_row(1, "A", 2, 59.0)], epoch=old_epoch),
+        _rank_payload(
+            "2026-06-22",
+            [_rank_row(1, "A", 3, 58.0)],
+        ),
+        _rank_payload(
+            "2026-06-23",
+            [_rank_row(1, "A", 4, 57.0)],
+        ),
+    ]
+    buy_payloads = [
+        _buy_payload("2026-06-20", [_buy_row(1, "A", 1, 60.0)]),
+        _buy_payload("2026-06-21", [_buy_row(1, "A", 1, 59.0)], epoch=old_epoch),
+        _buy_payload(
+            "2026-06-22",
+            [_buy_row(1, "A", 1, 58.0)],
+            epoch=PROSPECT_BUYS_EPOCH,
+        ),
+        _buy_payload(
+            "2026-06-23",
+            [_buy_row(1, "A", 1, 57.0)],
+            epoch=PROSPECT_BUYS_EPOCH,
+        ),
+    ]
+
+    report = build_forward_validation_report(rank_payloads, buy_payloads)
+
+    assert report["epoch"] == PROSPECT_BUYS_EPOCH
+    assert report["metrics"]["rank_comparison_count"] == 1
+    assert report["metrics"]["buy_comparison_count"] == 1
+    assert report["metrics"]["observation_span_days"] == 1
+    assert report["masked_cross_epoch_count"] == 4
+    assert report["rank_comparisons"][0]["previous_date"] == "2026-06-22"
+    assert report["rank_comparisons"][0]["current_date"] == "2026-06-23"
+    assert report["buy_comparisons"][0]["previous_date"] == "2026-06-22"
+    assert report["buy_comparisons"][0]["current_date"] == "2026-06-23"
+    assert report["latest_rank_comparison"] == report["rank_comparisons"][0]
+    assert report["latest_buy_comparison"] == report["buy_comparisons"][0]
+
+
 def test_forward_validation_report_is_observe_only_until_enough_archive_span():
     rank_payloads = [
         _rank_payload("2026-06-13", [_rank_row(1, "A", 1, 60.0)]),
         _rank_payload("2026-06-14", [_rank_row(1, "A", 2, 59.0)]),
     ]
     buy_payloads = [
-        _buy_payload("2026-06-13", [_buy_row(1, "A", 1, 60.0)]),
-        _buy_payload("2026-06-14", [_buy_row(1, "A", 1, 59.0)]),
+        _buy_payload(
+            "2026-06-13",
+            [_buy_row(1, "A", 1, 60.0)],
+            epoch=PROSPECT_BUYS_EPOCH,
+        ),
+        _buy_payload(
+            "2026-06-14",
+            [_buy_row(1, "A", 1, 59.0)],
+            epoch=PROSPECT_BUYS_EPOCH,
+        ),
     ]
 
     report = build_forward_validation_report(rank_payloads, buy_payloads)
@@ -154,11 +213,23 @@ def test_run_forward_validation_report_writes_valid_artifact(tmp_path):
         encoding="utf-8",
     )
     (buy_dir / "2026-06-13.json").write_text(
-        json.dumps(_buy_payload("2026-06-13", [_buy_row(1, "A", 1, 60.0)])),
+        json.dumps(
+            _buy_payload(
+                "2026-06-13",
+                [_buy_row(1, "A", 1, 60.0)],
+                epoch=PROSPECT_BUYS_EPOCH,
+            )
+        ),
         encoding="utf-8",
     )
     (buy_dir / "2026-06-14.json").write_text(
-        json.dumps(_buy_payload("2026-06-14", [_buy_row(1, "A", 1, 59.0)])),
+        json.dumps(
+            _buy_payload(
+                "2026-06-14",
+                [_buy_row(1, "A", 1, 59.0)],
+                epoch=PROSPECT_BUYS_EPOCH,
+            )
+        ),
         encoding="utf-8",
     )
     artifact_path = tmp_path / "forward-validation.json"
