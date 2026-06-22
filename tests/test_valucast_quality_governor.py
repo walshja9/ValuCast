@@ -1,6 +1,27 @@
 """Tests for the ValuCast public model quality governor."""
 
+import json
+from pathlib import Path
+
 from quality.valucast_governor import evaluate_quality_governor
+
+QUALITY_GOVERNOR_PATH = Path("data/models/valucast_quality_governor.json")
+PROSPECT_TOP50_BUCKET_SHAPE_CHECK_ID = "prospect_top50_bucket_shape"
+
+
+def _assert_prospect_top50_bucket_shape_passed(governor):
+    check = next(
+        (
+            check
+            for check in governor.get("checks", [])
+            if check.get("id") == PROSPECT_TOP50_BUCKET_SHAPE_CHECK_ID
+        ),
+        None,
+    )
+    assert check is not None
+    assert "thin_upper_level_pitcher_count" in check.get("metrics", {})
+    assert check.get("status") == "passed", check
+    return check
 
 
 def _mlb_row(mlbam_id, name, role, rank, value, positions=None):
@@ -1008,3 +1029,30 @@ def test_dd_score_source_audit_passes_valucast_owned_board():
     payload = evaluate_quality_governor(rows)
     check = next(c for c in payload["checks"] if c["id"] == "dd_score_source_audit")
     assert check["status"] == "passed"
+
+
+def test_public_quality_governor_prospect_top50_bucket_shape_passes_current_artifact():
+    governor = json.loads(QUALITY_GOVERNOR_PATH.read_text())
+
+    _assert_prospect_top50_bucket_shape_passed(governor)
+
+
+def test_public_quality_governor_prospect_top50_bucket_shape_guard_flags_breach():
+    governor = {
+        "checks": [
+            {
+                "id": PROSPECT_TOP50_BUCKET_SHAPE_CHECK_ID,
+                "message": "Top prospect board has a risky bucket concentration.",
+                "status": "blocked",
+                "metrics": {"thin_upper_level_pitcher_count": 5},
+            }
+        ]
+    }
+
+    failed = False
+    try:
+        _assert_prospect_top50_bucket_shape_passed(governor)
+    except AssertionError:
+        failed = True
+
+    assert failed
