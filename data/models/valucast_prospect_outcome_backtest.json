@@ -304,7 +304,7 @@
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
         "buy_comparison_count": 9,
-        "latest_rank_bucket_count": 16,
+        "latest_rank_bucket_count": 14,
         "observation_span_days": 9,
         "rank_comparison_count": 9
       },
@@ -332,7 +332,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-21T23:34:06.029833+00:00",
+        "activated_at": "2026-06-22T12:37:40.171859+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -344,9 +344,9 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2710,
+      "candidate_count": 2712,
       "impact_board_gate": {
-        "activated_at": "2026-06-21T23:34:06.029833+00:00",
+        "activated_at": "2026-06-22T12:37:40.171859+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.172373,
         "cv_method": "walk_forward",
@@ -390,7 +390,7 @@
             "required": 30
           },
           {
-            "current": 0.075,
+            "current": 0.025,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.55
           }
@@ -419,7 +419,7 @@
             "required": 60
           },
           {
-            "current": 0.075,
+            "current": 0.025,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.6
           }
@@ -438,7 +438,7 @@
             "required": 14
           },
           {
-            "current": 0.075,
+            "current": 0.025,
             "metric": "latest_top40_buy_retention_rate",
             "required": 0.45
           }

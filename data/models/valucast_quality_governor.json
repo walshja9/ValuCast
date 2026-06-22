@@ -1,10 +1,12 @@
 {
   "artifact": "valucast_quality_governor",
   "blockers": [
+    "Top prospect board has a risky bucket concentration.",
     "MiLB prospect-card stat freshness audit blocks public promotion.",
     "Prospect card data audit blocks public promotion."
   ],
   "buy_blockers": [
+    "Top prospect board has a risky bucket concentration.",
     "MiLB prospect-card stat freshness audit blocks public promotion.",
     "Prospect card data audit blocks public promotion.",
     "ValuCast-owned Buy signals are not approved for public promotion."
@@ -50,7 +52,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 4,
+        "pitcher_count": 5,
         "pitcher_samples": [
           {
             "name": "Shohei Ohtani",
@@ -74,7 +76,7 @@
             "positions": [
               "SP"
             ],
-            "rank": 12,
+            "rank": 10,
             "value": 73.73
           },
           {
@@ -83,8 +85,17 @@
               "SP",
               "RP"
             ],
-            "rank": 14,
+            "rank": 12,
             "value": 72.71
+          },
+          {
+            "name": "Chase Burns",
+            "positions": [
+              "SP",
+              "RP"
+            ],
+            "rank": 20,
+            "value": 65.84
           }
         ],
         "reliever_count": 0,
@@ -159,10 +170,12 @@
     },
     {
       "id": "prospect_top50_bucket_shape",
-      "message": "Top prospect board bucket shape is within publication limits.",
+      "message": "Top prospect board has a risky bucket concentration.",
       "metrics": {
         "evaluated_count": 50,
-        "failures": [],
+        "failures": [
+          "thin_upper_level_pitcher_count"
+        ],
         "low_confidence_count": 0,
         "low_confidence_rate": 0.0,
         "lower_minors_pedigree_count": 0,
@@ -177,7 +190,7 @@
             {
               "level": "AAA",
               "name": "Gabriel Hughes",
-              "rank": 22,
+              "rank": 8,
               "sample": 40.7,
               "sample_unit": "IP",
               "score_source": "prospect_model_v0_6"
@@ -185,17 +198,49 @@
             {
               "level": "AAA",
               "name": "Tink Hence",
-              "rank": 42,
+              "rank": 15,
               "sample": 13.3,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AAA",
+              "name": "Ben Kudrna",
+              "rank": 18,
+              "sample": 2.0,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AAA",
+              "name": "Braden Nett",
+              "rank": 25,
+              "sample": 9.3,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AA",
+              "name": "Frank Mozzicato",
+              "rank": 42,
+              "sample": 42.7,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            },
+            {
+              "level": "AA",
+              "name": "Peter Heubeck",
+              "rank": 43,
+              "sample": 11.7,
               "sample_unit": "IP",
               "score_source": "prospect_model_v0_6"
             }
           ]
         },
-        "thin_upper_level_pitcher_count": 2,
+        "thin_upper_level_pitcher_count": 6,
         "top_n": 50
       },
-      "status": "passed"
+      "status": "blocked"
     },
     {
       "id": "prospect_top25_neutral_investment_rate",
@@ -254,49 +299,22 @@
       "message": "Top prospect board factual context shape is within publication limits.",
       "metrics": {
         "band_counts": {
-          "balanced": 10,
-          "bat_missing": 5,
-          "impact": 17,
-          "limited": 3,
-          "mixed": 6,
-          "starter_volume": 5,
-          "thin": 4
+          "balanced": 6,
+          "bat_missing": 7,
+          "impact": 13,
+          "limited": 2,
+          "mixed": 5,
+          "starter_volume": 12,
+          "thin": 5
         },
-        "best_single_level_covered_count": 2,
-        "best_single_level_samples": [
-          {
-            "best_level": "A",
-            "best_sample": 232,
-            "best_sample_unit": "PA",
-            "current_level": "A+",
-            "current_sample": 49.0,
-            "current_sample_unit": "PA",
-            "current_skill_band": "thin",
-            "mlbam_id": 816113,
-            "name": "Eli Willits",
-            "rank": 23,
-            "role": "hitter"
-          },
-          {
-            "best_level": "A+",
-            "best_sample": 237,
-            "best_sample_unit": "PA",
-            "current_level": "AA",
-            "current_sample": 47.0,
-            "current_sample_unit": "PA",
-            "current_skill_band": "thin",
-            "mlbam_id": 803849,
-            "name": "Devin Fitz-Gerald",
-            "rank": 41,
-            "role": "hitter"
-          }
-        ],
+        "best_single_level_covered_count": 0,
+        "best_single_level_samples": [],
         "caution_bands": [
           "limited",
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 5,
+        "caution_factual_context_count": 7,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
@@ -315,7 +333,7 @@
             "level": "A+",
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 17,
+            "rank": 5,
             "role": "pitcher",
             "sample": 29.3,
             "sample_unit": "IP",
@@ -325,29 +343,49 @@
             "level": "AAA",
             "mlbam_id": 693311,
             "name": "Tink Hence",
-            "rank": 42,
+            "rank": 15,
             "role": "pitcher",
             "sample": 13.3,
             "sample_unit": "IP",
             "skill_band": "thin"
           },
           {
-            "level": "A+",
-            "mlbam_id": 805809,
-            "name": "Travis Sykora",
-            "rank": 47,
+            "level": "AAA",
+            "mlbam_id": 695667,
+            "name": "Ben Kudrna",
+            "rank": 18,
             "role": "pitcher",
-            "sample": 29.7,
+            "sample": 2.0,
             "sample_unit": "IP",
-            "skill_band": "limited"
+            "skill_band": "thin"
           },
           {
-            "level": "A+",
-            "mlbam_id": 813536,
-            "name": "Juan Valera",
-            "rank": 48,
+            "level": "AAA",
+            "mlbam_id": 804556,
+            "name": "Braden Nett",
+            "rank": 25,
             "role": "pitcher",
             "sample": 9.3,
+            "sample_unit": "IP",
+            "skill_band": "thin"
+          },
+          {
+            "level": "AA",
+            "mlbam_id": 695646,
+            "name": "Peter Heubeck",
+            "rank": 43,
+            "role": "pitcher",
+            "sample": 11.7,
+            "sample_unit": "IP",
+            "skill_band": "thin"
+          },
+          {
+            "level": "A",
+            "mlbam_id": 800611,
+            "name": "Noble Meyer",
+            "rank": 48,
+            "role": "pitcher",
+            "sample": 3.0,
             "sample_unit": "IP",
             "skill_band": "thin"
           }
@@ -361,7 +399,7 @@
       "message": "Top prospect board stat lines align with current factual context.",
       "metrics": {
         "current_stat_context_mismatch_count": 0,
-        "evaluated_count": 46,
+        "evaluated_count": 41,
         "max_allowed_current_stat_context_mismatch_count": 0,
         "sample_ready": true,
         "samples": [],
@@ -384,8 +422,8 @@
         "current_season_row_count": 5891,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 37,
-        "top50_history_fallback_count": 4,
+        "top200_history_fallback_count": 24,
+        "top50_history_fallback_count": 9,
         "top50_stat_context_mismatch_count": 0
       },
       "status": "blocked"
@@ -451,7 +489,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 11,
+        "priced_availability_risk_count": 19,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,
@@ -503,8 +541,8 @@
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 0,
-        "history_limited_rate": 0.0,
+        "history_limited_count": 2,
+        "history_limited_rate": 0.0008,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
@@ -514,7 +552,7 @@
         "public_board_ready": false,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 2653
+        "row_count": 2655
       },
       "status": "blocked"
     }
