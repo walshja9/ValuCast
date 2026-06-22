@@ -103,11 +103,11 @@ def test_primary_nav_uses_backfields_as_prospect_hub():
     assert 'href="/scouting"' not in nav_html
 
 
-def test_backfields_keeps_buys_and_scouting_as_deep_links():
+def test_backfields_hides_held_buys_but_keeps_scouting_deep_link():
     response, html = _html("/backfields")
 
     assert response.status_code == 200
-    assert 'href="/buys"' in html
+    assert 'href="/buys"' not in html
     assert 'href="/scouting' in html
 
 
@@ -115,8 +115,9 @@ def test_backfields_section_anchors_present():
     response, html = _html("/backfields")
 
     assert response.status_code == 200
-    for anchor in ("rankings", "ahead-of-the-curve", "call-up-desk", "stats", "team-boards"):
+    for anchor in ("rankings", "call-up-desk", "stats", "team-boards"):
         assert f'id="{anchor}"' in html
+    assert 'id="ahead-of-the-curve"' not in html
 
 
 def test_backfields_warm_css_is_scoped():
@@ -191,7 +192,12 @@ def test_backfields_ahead_of_curve_uses_live_buys_graphic_source(monkeypatch):
 
 
 def test_backfields_ahead_of_curve_is_the_buy_signal_entry_point():
-    response, html = _html("/backfields")
+    original = app_module.AHEAD_OF_THE_CURVE_HOLD
+    app_module.AHEAD_OF_THE_CURVE_HOLD = False
+    try:
+        response, html = _html("/backfields")
+    finally:
+        app_module.AHEAD_OF_THE_CURVE_HOLD = original
 
     assert response.status_code == 200
     assert "Top buy signals from the current board" in html

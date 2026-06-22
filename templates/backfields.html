@@ -22,13 +22,16 @@
         </div>
         <nav class="bf-anchor-tabs" aria-label="Backfields sections">
             <a href="#rankings">Rankings</a>
+            {% if not aotc_hold %}
             <a href="#ahead-of-the-curve">Ahead of the Curve</a>
+            {% endif %}
             <a href="#call-up-desk">Call-Up Desk</a>
             <a href="#stats">Stats</a>
             <a href="#team-boards">Team Boards</a>
         </nav>
     </header>
 
+    {% if not aotc_hold %}
     <section id="ahead-of-the-curve" class="bf-section bf-risers-section" aria-labelledby="bf-risers-title">
         <div class="bf-section-head">
             <h2 id="bf-risers-title">Ahead of the Curve</h2>
@@ -69,6 +72,7 @@
         <p class="bf-empty">No risers available yet.</p>
         {% endif %}
     </section>
+    {% endif %}
 
     <section class="bf-detail-drawer" data-bf-detail-panel hidden aria-live="polite">
         <div class="bf-detail-drawer-head">
@@ -300,7 +304,9 @@
 
     <footer class="bf-footer-strip">
         <span>ValuCast and Backfields</span>
+        {% if not aotc_hold %}
         <em>Ahead of the Curve.</em>
+        {% endif %}
     </footer>
 
     <script>

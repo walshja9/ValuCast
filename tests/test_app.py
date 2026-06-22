@@ -440,26 +440,26 @@ class TestDynastyMode(unittest.TestCase):
             self.assertIn("value", payload["players"][0])
 
     def test_buys_share_card_png_and_preview(self):
-        from app import dd_store
-        if not dd_store.is_available:
-            self.skipTest("DD feed not available")
         png = self.client.get("/buys/share-card.png")
         self.assertEqual(png.status_code, 200)
         self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
         self.assertIn("image/png", png.content_type)
         self.assertIn(
-            'filename="valucast-buys.png"',
+            'filename="valucast-aotc-hold.png"',
             png.headers.get("Content-Disposition", ""),
         )
 
         preview = self.client.get("/buys/share-card")
         self.assertEqual(preview.status_code, 200)
         self.assertIn(b"Ahead of the Curve", preview.data)
+        self.assertIn(b"returns later this week", preview.data)
         self.assertIn(b'property="og:image"', preview.data)
         self.assertIn(b"/buys/share-card.png", preview.data)
 
         buys_html = self.client.get("/buys").data
         self.assertIn(b"/buys/share-card.png", buys_html)
+        self.assertIn(b"Ahead of the Curve returns later this week", buys_html)
+        self.assertNotIn(b'class="buys-row"', buys_html)
 
     def test_prospects_graphic_limit_20_filename(self):
         from app import dd_store

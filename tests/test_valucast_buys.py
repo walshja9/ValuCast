@@ -385,11 +385,13 @@ def test_build_valucast_board_exposes_spark_history_after_real_history_accumulat
 
 
 def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
-    from app import _select_buy_source
+    import app as app_module
 
     blocked = SimpleNamespace(is_available=True, ready_for_live_consumers=False)
     ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
+    _select_buy_source = app_module._select_buy_source
 
     # Buys not ready -> unavailable, never DD.
     selected, source = _select_buy_source(
@@ -419,6 +421,14 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     # Rollout disabled -> unavailable, never DD.
     monkeypatch.setenv("VALUCAST_USE_VALUCAST_BUYS", "0")
     selected, source = _select_buy_source(ready, public_snapshot_active=True)
+    assert source == "unavailable"
+    assert selected.is_available is False
+
+    # Public AOTC hold overrides ready data and keeps the public surface dark.
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    selected, source = _select_buy_source(
+        ready, use_valucast_buys=True, public_snapshot_active=True
+    )
     assert source == "unavailable"
     assert selected.is_available is False
 

@@ -294,7 +294,8 @@ class _RealAppCase(unittest.TestCase):
 
 class TestBuysRoute(_RealAppCase):
     def test_page_renders_list_and_graphic(self):
-        with mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+             mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
             r = self.client.get("/buys")
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
@@ -322,7 +323,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertEqual(html.count('class="buys-row"'), 40)
 
     def test_n_shrinks_list_but_never_the_graphic(self):
-        html = self.client.get("/buys?n=10").data.decode("utf-8")
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+             mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
+            html = self.client.get("/buys?n=10").data.decode("utf-8")
         self.assertEqual(html.count('class="buys-row"'), 10)
         self.assertEqual(html.count('class="bg-featured-card'), 10)
         self.assertEqual(html.count('class="bg-cell"'), 70)
@@ -337,7 +340,8 @@ class TestBuysRoute(_RealAppCase):
 
     def test_dd_unavailable_fallback(self):
         stub = SimpleNamespace(is_available=False, generated_at=None)
-        with mock.patch.object(app_module, "dd_store", stub), \
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+             mock.patch.object(app_module, "dd_store", stub), \
              mock.patch.object(app_module, "valucast_buy_store", stub):
             r = self.client.get("/buys")
         self.assertEqual(r.status_code, 200)
@@ -353,6 +357,48 @@ class TestBuysRoute(_RealAppCase):
         for mode in ("dd_dynasty", "prospects"):
             html = self.client.get(f"/?mode={mode}").data.decode("utf-8")
             self.assertIn('href="/backfields"', html)
+
+    def test_aotc_hold_renders_intentional_hold_state(self):
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", True), \
+             mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
+            r = self.client.get("/buys")
+
+        self.assertEqual(r.status_code, 200)
+        html = r.data.decode("utf-8")
+        self.assertIn("Ahead of the Curve returns later this week", html)
+        self.assertIn("Ahead of the Curve | ValuCast", html)
+        self.assertNotIn('class="buys-row"', html)
+        self.assertNotIn('class="bg-cell"', html)
+        self.assertNotIn("Boston Bateman", html)
+        self.assertNotIn("Juneiker Caceres", html)
+
+    def test_aotc_hold_hides_public_navigation_and_backfields_surface(self):
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", True):
+            map_html = self.client.get("/map").data.decode("utf-8")
+            backfields_html = self.client.get("/backfields").data.decode("utf-8")
+
+        self.assertNotIn('href="/buys"', map_html)
+        self.assertNotIn('href="/buys"', backfields_html)
+        self.assertNotIn('id="ahead-of-the-curve"', backfields_html)
+        self.assertNotIn("Ahead of the Curve", backfields_html)
+
+    def test_aotc_hold_is_reversible_by_single_flag(self):
+        if (
+            not app_module.valucast_buy_store.is_available
+            or not app_module.valucast_buy_store.ready_for_live_consumers
+        ):
+            self.skipTest("ValuCast buys feed not available")
+
+        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+             mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
+            buys_html = self.client.get("/buys").data.decode("utf-8")
+            map_html = self.client.get("/map").data.decode("utf-8")
+            backfields_html = self.client.get("/backfields").data.decode("utf-8")
+
+        self.assertIn('class="buys-row"', buys_html)
+        self.assertIn('href="/buys"', map_html)
+        self.assertIn('id="ahead-of-the-curve"', backfields_html)
+        self.assertIn("Full Ahead of the Curve board", backfields_html)
 
 
 if __name__ == "__main__":

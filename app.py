@@ -55,6 +55,8 @@ from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 
 app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
+# Deliberate public hold of the buys/AOTC surface until release; flip to False (and redeploy) to re-enable.
+AHEAD_OF_THE_CURVE_HOLD = True
 
 
 @app.after_request
@@ -63,6 +65,11 @@ def _security_headers(response):
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     return response
+
+
+@app.context_processor
+def _aotc_hold_context():
+    return {"aotc_hold": AHEAD_OF_THE_CURVE_HOLD}
 
 
 def _public_url(path):
@@ -337,6 +344,8 @@ def _select_buy_source(
     use_valucast_buys=None,
     public_snapshot_active=None,
 ):
+    if AHEAD_OF_THE_CURVE_HOLD:
+        return _UNAVAILABLE_DYNASTY_STORE, "unavailable"
     enabled = (
         os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1"
         if use_valucast_buys is None
@@ -3994,6 +4003,8 @@ def _build_buys_page_context(raw_n=None):
         "buy_source_label": buy_source_copy["label"],
         "buy_source_note": buy_source_copy["note"],
         "buy_formula_note": buy_source_copy["formula"],
+        "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
+        "aotc_hold_message": "Ahead of the Curve returns later this week",
         "as_of": data_generated_at or store.as_of,
     }
 
@@ -4147,9 +4158,60 @@ def _buys_share_card_png(
     return out.getvalue()
 
 
+def _buys_hold_share_card_png():
+    """Branded AOTC placeholder for the public OG image while buys are held."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    bg = _GRAPHIC_PALETTE["bg"]
+    card = _GRAPHIC_PALETTE["card"]
+    border = _GRAPHIC_PALETTE["border"]
+    green = _GRAPHIC_PALETTE["green"]
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    _graphic_header(
+        img,
+        draw,
+        headline="AHEAD OF THE CURVE",
+        subtitle="Prospect buy signals return later this week",
+        extra_line="ValuCast prospect board",
+    )
+
+    panel = (120, 500, 960, 850)
+    draw.rounded_rectangle(panel, radius=18, fill=card, outline=border, width=2)
+
+    title_font = _graphic_font(58, bold=True)
+    sub_font = _graphic_font(28)
+    small_font = _graphic_font(18, bold=True)
+
+    def centered(label, y, font, fill):
+        draw.text(((width - _graphic_text_width(draw, label, font)) / 2, y), label, fill=fill, font=font)
+
+    centered("AHEAD OF THE CURVE", 585, title_font, text)
+    centered("returns later this week", 670, sub_font, green)
+    centered("The public buys surface is intentionally held.", 740, small_font, muted)
+
+    _graphic_footer(draw, right_note="Returns later this week")
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
 @app.route("/buys/share-card.png")
 def buys_share_card_png():
     context = _build_buys_page_context()
+    if context.get("aotc_hold"):
+        png = _buys_hold_share_card_png()
+        response = make_response(png)
+        response.headers["Content-Type"] = "image/png"
+        response.headers["Content-Disposition"] = 'inline; filename="valucast-aotc-hold.png"'
+        return response
     if not context["dd_available"]:
         return "", 503
     png = _buys_share_card_png(
@@ -4166,17 +4228,21 @@ def buys_share_card_png():
 
 @app.route("/buys/share-card")
 def buys_share_card():
+    held = AHEAD_OF_THE_CURVE_HOLD
     html = build_share_preview_html(
         title="Ahead of the Curve",
-        subtitle="Top prospect buys by signal, not reputation",
+        subtitle=("Returns later this week" if held
+                  else "Top prospect buys by signal, not reputation"),
         png_url="/buys/share-card.png",
-        filename="valucast-buys.png",
+        filename=("valucast-aotc-hold.png" if held else "valucast-buys.png"),
         public_png_url=_public_url("/buys/share-card.png"),
         public_page_url=_public_url("/buys/share-card"),
-        description="The top prospect buys by ValuCast signal, not reputation.",
-        image_alt="ValuCast top prospect buys",
+        description=("Ahead of the Curve returns later this week."
+                     if held else "The top prospect buys by ValuCast signal, not reputation."),
+        image_alt=("ValuCast Ahead of the Curve hold card" if held
+                   else "ValuCast top prospect buys"),
         back_url="/buys",
-        back_label="Back to buys",
+        back_label="Back to Ahead of the Curve",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -4217,6 +4283,7 @@ def health_ready():
         and valucast_buy_store.is_available
         and valucast_buy_store.ready_for_live_consumers
         and dynasty_data_source == "valucast_public_snapshot"
+        and not AHEAD_OF_THE_CURVE_HOLD
     )
     ready = all(stores.values())
     body = {
