@@ -318,10 +318,10 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
         )
         extra = [
             k_per_9 / (bb_per_9 + 1.0),
-            _zero_num(record.get("hr_per_9")),
-            _zero_num(record.get("h_per_9")),
-            _zero_num(record.get("walks_per_9")),
-            _safe_ratio(record.get("games_started"), record.get("games"), is_starter),
+            _safe_ratio(record.get("home_runs"), innings, 0.0) * 9.0,
+            _safe_ratio(record.get("hits"), innings, 0.0) * 9.0,
+            _safe_ratio(record.get("walks"), innings, 0.0) * 9.0,
+            _safe_ratio(record.get("games_started"), record.get("games", record.get("games_played")), is_starter),
             _safe_log1p(innings),
             _safe_ratio(record.get("batters_faced"), innings, 0.0),
             k_bb_pct * youth,
