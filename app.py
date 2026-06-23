@@ -303,6 +303,37 @@ VALUCAST_BUYS_PATH = Path(os.environ.get(
 legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
+
+# Universal prospect profiles loaded ONCE at startup (9.4MB) for the live
+# settings-aware re-ranking adapter — never read per-request. Keyed
+# (int(mlbam_id), role) -> profile, mirroring prospects.forward_shadow._profile_index.
+# If the artifact is missing/empty the feature degrades to unavailable and the
+# board still serves its default order (every path returns 200).
+UNIVERSAL_PROSPECT_MODEL_PATH = Path(os.environ.get(
+    "VALUCAST_UNIVERSAL_PROSPECT_MODEL_PATH",
+    str(Path(__file__).parent / "data" / "models" / "valucast_universal_prospect_model.json"),
+))
+
+
+def _load_universal_prospect_profiles(path):
+    """Return ((mlbam_id:int, role) -> profile, available:bool)."""
+    try:
+        snapshot = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}, False
+    index = {}
+    for profile in snapshot.get("profiles") or []:
+        mlbam_id = profile.get("mlbam_id")
+        role = profile.get("role")
+        if not isinstance(mlbam_id, int) or role not in {"hitter", "pitcher"}:
+            continue
+        index.setdefault((mlbam_id, role), profile)
+    return index, bool(index)
+
+
+_UNIVERSAL_PROSPECT_PROFILES, _UNIVERSAL_PROSPECT_AVAILABLE = (
+    _load_universal_prospect_profiles(UNIVERSAL_PROSPECT_MODEL_PATH)
+)
 # Null-object served when no ValuCast snapshot is usable: is_available is False, so
 # routes fall through to their existing "unavailable" handling. DD is NEVER served as
 # a valuation source — only a ready or stale-but-valid ValuCast snapshot, else this.
@@ -719,9 +750,101 @@ def _custom_dynasty_values(cats, pcats, teams, budget):
     return mapped
 
 
+# Board vocabulary uses SV_HLD / K_BB; the adapter vocabulary uses SV+HLD / K/BB.
+# FIT_QUERY_ALIASES already maps adapter -> board (SV+HLD -> SV_HLD); invert it for
+# board -> adapter so the memoized re-scorer can hand the adapter its own keys.
+_BOARD_TO_ADAPTER_CATEGORY = {board: adapter for adapter, board in FIT_QUERY_ALIASES.items()}
+
+# Prospect-board presets, sourced from the shipped adapter PRESETS so the board and
+# the adapter never drift. Categories are stored in board vocabulary (the URL/state
+# contract); _custom_prospect_ranks canonicalizes them back to adapter vocabulary.
+
+
+def _to_board_category(name):
+    return FIT_QUERY_ALIASES.get(name, name)
+
+
+def _to_adapter_category(name):
+    return _BOARD_TO_ADAPTER_CATEGORY.get(name, name)
+
+
+def _prospect_preset_cats(preset_key):
+    """Return ((cat, weight), ...) pairs in board vocabulary for a preset.
+
+    Weights (including the negative signs on SO/ERA/WHIP/L) come straight from the
+    shipped adapter PRESETS, so the board never re-derives or drifts from them.
+    """
+    from prospects.adapters import PRESETS as _ADAPTER_PRESETS
+    preset = _ADAPTER_PRESETS[preset_key]
+    cats = tuple((_to_board_category(cat), weight) for cat, weight in preset["hitter"].items())
+    pcats = tuple((_to_board_category(cat), weight) for cat, weight in preset["pitcher"].items())
+    return cats, pcats
+
+
+PROSPECT_CATEGORY_PRESETS = {
+    "dd_7x7": "Diamond Dynasties 7x7",
+    "roto_5x5": "Standard 5x5",
+}
+
+
+@lru_cache(maxsize=16)
+def _custom_prospect_ranks(cats_tuple, pcats_tuple):
+    """Settings-aware adapter re-rank over the universal prospect pool.
+
+    cats_tuple/pcats_tuple are (category, weight) pairs in BOARD vocabulary. They
+    are canonicalized to the adapter vocabulary (SV_HLD -> SV+HLD, K_BB -> K/BB),
+    fed to the within-role adapter, and returned as
+    {(mlbam_id:int, role): {"adapter_rank","adapter_score"}} plus per-role
+    status / missing_categories. Inputs are hashable tuples so the cache is keyed
+    by the actual category set. The adapter output is a downstream VIEW only and is
+    never fed back into the universal index or rank_v1.
+    """
+    from prospects.adapters import adapt_categories
+    hitter_cats = {_to_adapter_category(cat): weight for cat, weight in cats_tuple}
+    pitcher_cats = {_to_adapter_category(cat): weight for cat, weight in pcats_tuple}
+    profiles = list(_UNIVERSAL_PROSPECT_PROFILES.values())
+    result = adapt_categories(
+        profiles,
+        name="prospect_board",
+        categories={"hitter": hitter_cats, "pitcher": pitcher_cats},
+    )
+    ranks = {}
+    role_status = {}
+    for role in ("hitter", "pitcher"):
+        role_result = result["roles"][role]
+        role_status[role] = {
+            "status": role_result["status"],
+            "missing_categories": role_result.get("missing_categories") or [],
+        }
+        for player in role_result["players"]:
+            mlbam_id = player.get("mlbam_id")
+            adapter_rank = player.get("adapter_rank")
+            if not isinstance(mlbam_id, int) or adapter_rank is None:
+                continue
+            ranks[(mlbam_id, role)] = {
+                "adapter_rank": adapter_rank,
+                "adapter_score": player.get("adapter_score"),
+            }
+    return {"ranks": ranks, "role_status": role_status}
+
+
+def _prospect_category_state(args):
+    """Canonical prospect re-ranking params (Slice 1: presets only).
+
+    Returns (cats, pcats, custom_active, preset_label). A garbage preset falls
+    back to the default board (custom_active False) so every path serves 200.
+    """
+    preset_key = (args.get("preset") or "").strip()
+    rank_by = args.get("rank_by", "default")
+    if preset_key not in PROSPECT_CATEGORY_PRESETS or rank_by != "league":
+        return (), (), False, ""
+    cats, pcats = _prospect_preset_cats(preset_key)
+    return cats, pcats, True, PROSPECT_CATEGORY_PRESETS[preset_key]
+
+
 def _apply_prospect_board_context(ctx, args):
     """Apply dedicated prospect-board rows and metadata to a DD context."""
-    ctx["dd_rows"] = _prospect_rows(
+    rows = _prospect_rows(
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
     )
@@ -737,6 +860,62 @@ def _apply_prospect_board_context(ctx, args):
         if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
         else []
     )
+
+    # Live settings-aware re-ranking (presets only in Slice 1). Re-ranking is a
+    # downstream VIEW: it never touches dynasty_value, P#, or the prospect score.
+    cats, pcats, custom_active, preset_label = _prospect_category_state(args)
+    ctx["custom_cats_active"] = False
+    ctx["prospect_preset"] = (args.get("preset") or "").strip()
+    ctx["prospect_rank_by"] = "league" if custom_active else "default"
+    ctx["prospect_preset_label"] = preset_label
+    if custom_active and _UNIVERSAL_PROSPECT_AVAILABLE:
+        scored = _custom_prospect_ranks(cats, pcats)
+        role_status = scored["role_status"]
+        missing = sorted({
+            cat
+            for role in ("hitter", "pitcher")
+            if role_status[role]["status"] == "insufficient_category_coverage"
+            for cat in role_status[role]["missing_categories"]
+        })
+        if missing:
+            # Refuse partial coverage: keep the DEFAULT order and tell the user
+            # which categories the universal model cannot rank (roto_5x5 hits this
+            # because the model has no W / SV projections).
+            ctx["coverage_notice"] = (
+                f"{preset_label} re-ranking needs categories ValuCast's prospect "
+                f"model doesn't project yet ({', '.join(missing)}). Showing the "
+                "default prospect order."
+            )
+        else:
+            adapter_ranks = {}
+            for row in rows:
+                key = _prospect_adapter_key(row)
+                hit = scored["ranks"].get(key) if key else None
+                if hit:
+                    adapter_ranks[row.id] = hit["adapter_rank"]
+            # Re-sort by adapter rank; rows with no profile sort LAST in their
+            # existing default order.
+            rows = sorted(
+                rows,
+                key=lambda r: (r.id not in adapter_ranks,
+                               adapter_ranks.get(r.id, 0)),
+            )
+            ctx["league_adapter_ranks"] = adapter_ranks
+            ctx["custom_cats_active"] = True
+    ctx["dd_rows"] = rows
+
+
+def _prospect_adapter_key(row):
+    """(int(mlbam_id), role) join key for a prospect row, or None when unusable."""
+    mlbam_id = getattr(row, "mlbam_id", None)
+    role = getattr(row, "role", None)
+    if mlbam_id in (None, "") or role not in {"hitter", "pitcher"}:
+        return None
+    try:
+        return (int(mlbam_id), role)
+    except (TypeError, ValueError):
+        return None
+
 
 def _prospect_graphic_svg(rows, *, limit, position=None, search=None, noun="Prospects", footer_note=None):
     """Render an Ahead of the Curve-style SVG share graphic."""
@@ -2379,10 +2558,14 @@ def rankings():
             value = request.args.get(name)
             if value:
                 params[name] = value
-        for name in ("cats", "pcats", "rank_by"):
+        for name in ("cats", "pcats", "rank_by", "preset"):
             values = request.args.getlist(name)
             if values:
-                params[name] = ",".join(parse_list(values)) if name != "rank_by" else values[0]
+                params[name] = (
+                    ",".join(parse_list(values))
+                    if name in ("cats", "pcats")
+                    else values[0]
+                )
         url_params = urlencode({k: v for k, v in params.items() if v})
         push_url = f"/?{url_params}" if url_params else "/"
         response.headers["HX-Replace-Url"] = push_url

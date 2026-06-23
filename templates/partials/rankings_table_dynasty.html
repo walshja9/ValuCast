@@ -1,4 +1,10 @@
 {% set v11 = dd_schema_version == '1.1' %}
+{% if mode == 'prospects' and coverage_notice %}
+<div class="notice coverage-notice" role="status">{{ coverage_notice }}</div>
+{% endif %}
+{% if mode == 'prospects' and custom_cats_active %}
+<p class="profile-note prospect-rerank-caption">Re-ranked for your league's categories ({{ prospect_preset_label }}) from ValuCast's factual prospect projections — within hitters and pitchers separately. Not a dollar value.</p>
+{% endif %}
 {% if mode == 'prospects' and prospect_movers %}
 <div class="movers-strip" aria-label="Biggest prospect rank movers">
     <span class="movers-label">Movers</span>
@@ -16,7 +22,8 @@
 
 {# Category Fit and Confidence render only from a v1.1 feed — with a
    v1.0 feed they'd be a dead column and an always-empty one. #}
-{% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else (8 if v11 else 7)) + 1 %}
+{% set prospect_rerank = mode == 'prospects' and custom_cats_active %}
+{% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings">
     <thead>
@@ -36,6 +43,7 @@
             {% if v11 %}
             <th class="col-confidence">Confidence</th>
             {% endif %}
+            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank, not a value or dollar amount">Your League #</th>{% endif %}
             <th class="col-compare"></th>
         </tr>
     </thead>
@@ -46,8 +54,10 @@
         {% set display_tier = row.tier if row.tier is not none else computed_tier %}
         {% set prev_computed_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else computed_tier %}
         {% set confidence = row.confidence or {} %}
-        {% set this_rank = row.prospect_rank if mode == 'prospects' else row.dynasty_rank %}
-        {% set prev_rank = (dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0 %}
+        {# When re-ranked the displayed order is the adapter order, so the cutoff
+           divider must follow the displayed position, not the model P#. #}
+        {% set this_rank = loop.index if prospect_rerank else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
+        {% set prev_rank = loop.index0 if prospect_rerank else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
         {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
         <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} {% if mode == 'prospects' %}prospect slots{% else %}rostered{% endif %})</td></tr>
         {% endif %}
@@ -118,6 +128,7 @@
                 {% endif %}
             </td>
             {% endif %}
+            {% if prospect_rerank %}<td class="col-league-rank">{% set lr = (league_adapter_ranks or {}).get(row.id) %}{% if lr %}{{ lr }}{% else %}—{% endif %}</td>{% endif %}
             <td class="col-compare">
                 <button type="button" class="compare-cb" aria-label="Add {{ row.name }} to compare" onclick="event.stopPropagation(); toggleCompare('{{ row.id }}', this)">+</button>
             </td>
