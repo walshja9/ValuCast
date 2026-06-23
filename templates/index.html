@@ -181,7 +181,7 @@
         <select name="preset" id="prospect-preset" class="position-select" aria-label="Score for your league"
                 onchange="document.getElementById('prospect-rank-by').value = this.value ? 'league' : 'default'; if (this.value) { (document.getElementById('prospect-category-fit')||{}).querySelectorAll && document.getElementById('prospect-category-fit').querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){cb.checked=false;}); }">
             <option value="">Default order (P#)</option>
-            <option value="dd_7x7" {{ 'selected' if prospect_preset == 'dd_7x7' else '' }}>Diamond Dynasties 7x7</option>
+            <option value="dd_7x7" {{ 'selected' if prospect_preset == 'dd_7x7' else '' }}>7x7</option>
             <option value="roto_5x5" {{ 'selected' if prospect_preset == 'roto_5x5' else '' }}>Standard 5x5</option>
         </select>
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>

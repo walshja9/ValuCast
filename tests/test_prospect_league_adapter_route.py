@@ -147,7 +147,7 @@ class TestProspectCategoryStateAndRescorer(unittest.TestCase):
             type("A", (), {"get": lambda self, k, d=None: args.get(k, d)})()
         )
         self.assertTrue(active)
-        self.assertEqual(label, "Diamond Dynasties 7x7")
+        self.assertEqual(label, "7x7")
         pcat_keys = dict(pcats)
         # Board vocabulary in the URL/state contract: SV_HLD / K_BB, not SV+HLD.
         self.assertIn("SV_HLD", pcat_keys)

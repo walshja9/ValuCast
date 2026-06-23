@@ -782,7 +782,7 @@ def _prospect_preset_cats(preset_key):
 
 
 PROSPECT_CATEGORY_PRESETS = {
-    "dd_7x7": "Diamond Dynasties 7x7",
+    "dd_7x7": "7x7",
     "roto_5x5": "Standard 5x5",
 }
 
