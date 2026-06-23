@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T11:43:35.836339+00:00",
+  "generated_at": "2026-06-23T12:20:20.027944+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.4.0",
   "limitations": [],
@@ -88322,28 +88322,18 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 9.93,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 60.1,
-          "track_record_experience_band": "established",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": 49.62,
+          "track_record_floor_score": null,
           "young_hitter_volatility_discount": 0.0,
           "young_sp_volatility_discount": 0.0
         },
         "score_before_availability_adjustment": 9.93,
         "season_category_value": 0.1159,
         "track_record": {
-          "experience_band": "established",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 60.1,
-          "track_record_floor_score": 49.62,
-          "volume": {
-            "career": 516.0,
-            "current_season": 0.0,
-            "prior_mlb": 516.0,
-            "recent_3yr_prior": 165.0
-          }
+          "present": false
         }
       },
       "confidence": "medium",
@@ -153001,8 +152991,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 6.54,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 30.95,
-          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -153012,17 +153002,7 @@
         "score_before_availability_adjustment": 6.54,
         "season_category_value": -0.9587,
         "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 30.95,
-          "track_record_floor_score": 38.21,
-          "volume": {
-            "career": 154.667,
-            "current_season": 3.667,
-            "prior_mlb": 151.0,
-            "recent_3yr_prior": 76.667
-          }
+          "present": false
         }
       },
       "confidence": "medium",
@@ -220154,8 +220134,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 3.25,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 22.81,
-          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -220164,17 +220144,7 @@
         },
         "season_category_value": -2.2046,
         "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 22.81,
-          "track_record_floor_score": 33.61,
-          "volume": {
-            "career": 105.333,
-            "current_season": 7.333,
-            "prior_mlb": 98.0,
-            "recent_3yr_prior": 98.0
-          }
+          "present": false
         }
       },
       "confidence": "medium",
@@ -227289,7 +227259,7 @@
     "row_count": 1607,
     "track_record_coverage_rate": 0.997,
     "track_record_present": true,
-    "track_record_profile_count": 994,
+    "track_record_profile_count": 990,
     "track_record_ready": true
   },
   "value_contract": {
