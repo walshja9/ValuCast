@@ -140,13 +140,23 @@ All built mostly from assets we already own.
 
 ## Build plan (sequenced; each phase gated)
 
-**Phase 1 — Fix the hitter gate (engine integrity first).** Move the hitter outcome+impact
-sub-models from linear ridge toward a gradient-boosted/ensemble approach (or otherwise) so they
-**clear their own ≥2% OOS gate** (today they fall back to 25-NN). Gate on the existing
-`prospects/gate.py` discipline; ship shadow→active only if it beats the baseline. Won't break
-the shared ~0.26 ceiling — the goal is to stand on validated ground before branding. *If it
-can't clear the gate, ship honestly as the kNN fallback — do not market a sophisticated hitter
-model that's really nearest-neighbor.*
+**Phase 1 — Hitter gate: RESOLVED 6/23 (no build).** Investigated three ways (diagnosis →
+training-window experiment → paired bootstrap) and the conclusion is firm: the hitter gate is
+**correctly conservative, not broken.** The hitter outcome/impact sub-models honestly sit at
++0.5%/+1.1% over a 25-NN baseline (bar +2%), and a paired bootstrap shows that edge is
+**statistically indistinguishable from zero — the hitter model and the kNN are tied.** No fix
+clears it: (a) capacity — a hand-rolled GBT lifts to ~+1.6% honest, still short, and would fall
+back anyway; (b) features — adding pedigree *hurt* (−20%, missing-data noise); (c) data — there
+are no pre-2014 cohorts to add, and relaxing maturity to fold in 2021/2022 degrades the gate
+monotonically (+0.51%→+0.37%→−0.33%) because model and kNN rise together ("lifts both, no
+gain"); 2020 is a COVID hole. And the repo is **strictly dependency-free** (no numpy/sklearn) so
+a GBM library is off the table regardless. **Decision: keep `MATURE_THROUGH=2019`, accept the
+kNN-fallback as validated ground, do NOT lower the bar.** Engine-integrity prerequisite is MET —
+the model is honestly validated; for hitters that honest answer is a strong nearest-neighbor
+model. Hitter-prospect outcomes are genuinely neighbor-y; there is no separable signal left to
+capture. This is the fourth independent confirmation that the prospect *accuracy* frontier is
+closed — which is exactly why the strategy is settings-aware + provably-early, not accuracy.
+Proceed to Phase 2.
 
 **Phase 2 — Promote settings-aware adapters shadow→live.** Surface `adapters.py` per-league
 prospect rankings as a URL-driven user feature (mirror the existing dynasty league
