@@ -134,11 +134,32 @@ def _reconstruct(rates: dict[str, float], usage: dict[str, float]) -> dict[str, 
     return out
 
 
+def compute_cfip(prior_snapshots: Sequence[Sequence[dict]]) -> float | None:
+    """League FIP constant: IP-weighted league ERA minus league raw FIP over the
+    given pre-target snapshots only (leakage-safe). A pitcher's ERA is then derived
+    from projected FIP as raw_fip + cFIP. Returns None when there is no IP."""
+    tot = {"ER": 0.0, "HR": 0.0, "BB": 0.0, "HBP": 0.0, "K": 0.0, "IP": 0.0}
+    for snap in prior_snapshots:
+        for r in snap:
+            ip = float(r.get("IP") or 0.0)
+            if ip <= 0:
+                continue
+            tot["IP"] += ip
+            for c in ("ER", "HR", "BB", "HBP", "K"):
+                tot[c] += float(r.get(c, 0) or 0.0)
+    if tot["IP"] <= 0:
+        return None
+    league_era = 9.0 * tot["ER"] / tot["IP"]
+    raw_fip = (13.0 * tot["HR"] + 3.0 * (tot["BB"] + tot["HBP"]) - 2.0 * tot["K"]) / tot["IP"]
+    return league_era - raw_fip
+
+
 def project_pitcher(
     prior_seasons: Sequence[dict | None],
     league_rates: dict[str, float],
     role_factors: dict[str, float],
     params: PitcherMarcelParams,
+    cfip: float | None = None,
 ) -> dict:
     """Project one pitcher: SP-line and RP-line, blend by p_sp, reconstruct cats,
     primary-pool export row. prior_seasons offset-aligned (newest-first, None gaps)."""
@@ -163,7 +184,17 @@ def project_pitcher(
     blended["SV_HLD"] = blended.get("SV", 0.0) + blended.get("HLD", 0.0)
 
     ip = blended["IP"]
-    blended["ERA"] = round(9 * blended["ER"] / ip, 3) if ip > 0 else 0.0
+    if getattr(params, "era_from_fip", True) and cfip is not None and ip > 0:
+        # ERA from projected FIP (the K/BB/HBP/HR the model already projects well)
+        # beats the noisy ER-rate prior. Recompute ER from FIP-ERA so the
+        # 9*ER/IP == ERA identity still holds for any downstream consumer.
+        raw_fip = (13.0 * blended["HR"] + 3.0 * (blended["BB"] + blended["HBP"])
+                   - 2.0 * blended["K"]) / ip
+        era = max(0.0, raw_fip + cfip)
+        blended["ER"] = era * ip / 9.0
+        blended["ERA"] = round(era, 3)
+    else:
+        blended["ERA"] = round(9 * blended["ER"] / ip, 3) if ip > 0 else 0.0
     blended["WHIP"] = round((blended["BB"] + blended["H_ALLOWED"]) / ip, 3) if ip > 0 else 0.0
     blended["K_9"] = round(9 * blended["K"] / ip, 3) if ip > 0 else 0.0
     blended["BB_9"] = round(9 * blended["BB"] / ip, 3) if ip > 0 else 0.0
@@ -200,6 +231,7 @@ def build_pitcher_projections(
     BF_FLOOR = 100  # league-rate/role-factor sample floor (per-BF stability)
     weights = params.season_weights[: len(snaps)]
     league = compute_pitcher_league_rates(snaps, weights=weights, bf_floor=BF_FLOOR)
+    cfip = compute_cfip(snaps)   # leakage-safe: prior seasons (< target) only
     wide = [load_pitching_season(s, data_dir)
             for s in available_pitching_seasons(data_dir) if s < target_season]
     role_factors = compute_role_factors(wide, bf_floor=BF_FLOOR)
@@ -214,7 +246,7 @@ def build_pitcher_projections(
         prior_seasons = [m.get(mlbam_id) for m in index_maps]
         if all(s is None for s in prior_seasons):
             continue
-        proj = project_pitcher(prior_seasons, league, role_factors, params)
+        proj = project_pitcher(prior_seasons, league, role_factors, params, cfip=cfip)
         proj["name"] = mlbam_id  # identity-name wiring is a follow-up; id-keyed for now
         if proj["metadata"]["mixed_role"]:
             proj["positions"] = ["SP", "RP"]   # mixed arm: eligible both ways

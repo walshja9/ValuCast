@@ -117,6 +117,31 @@ class TestProjectPitcher(unittest.TestCase):
         self.assertGreater(out["stats"]["IP"], 0)
         self.assertAlmostEqual(out["metadata"]["p_sp"], 0.5, places=2)
 
+    def test_era_from_fip_when_cfip_supplied(self):
+        prior = [{"mlbam_id": "800", "BF": 750, "IP": 180.0, "ER": 70, "H_ALLOWED": 150,
+                  "BB": 45, "HBP": 5, "K": 220, "HR": 18, "GS": 30, "G": 30,
+                  "SV": 0, "HLD": 0, "QS": 18, "W": 14} for _ in range(3)]
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        cfip = 3.1
+        s = project_pitcher(prior, league, f, PitcherMarcelParams(), cfip=cfip)["stats"]
+        ip = s["IP"]
+        raw_fip = (13 * s["HR"] + 3 * (s["BB"] + s["HBP"]) - 2 * s["K"]) / ip
+        self.assertAlmostEqual(s["ERA"], round(max(0.0, raw_fip + cfip), 3), places=3)
+        # ER recomputed from FIP-ERA so the 9*ER/IP == ERA identity still holds
+        self.assertAlmostEqual(s["ERA"], round(9 * s["ER"] / s["IP"], 3), places=3)
+
+    def test_era_from_fip_flag_off_ignores_cfip(self):
+        prior = [{"mlbam_id": "801", "BF": 750, "IP": 180.0, "ER": 70, "H_ALLOWED": 150,
+                  "BB": 45, "HBP": 5, "K": 220, "HR": 18, "GS": 30, "G": 30,
+                  "SV": 0, "HLD": 0, "QS": 18, "W": 14} for _ in range(3)]
+        league = {c: 0.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        f = {c: 1.0 for c in ("K","BB","H_ALLOWED","HR","ER","HBP")}
+        off = PitcherMarcelParams(era_from_fip=False)
+        with_cfip = project_pitcher(prior, league, f, off, cfip=3.1)["stats"]["ERA"]
+        without = project_pitcher(prior, league, f, off)["stats"]["ERA"]
+        self.assertAlmostEqual(with_cfip, without, places=5)  # cfip ignored when flag off
+
 
 class TestBuildPitcherProjections(unittest.TestCase):
     def test_build_from_backbone(self):
