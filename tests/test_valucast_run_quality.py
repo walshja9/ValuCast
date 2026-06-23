@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 
-RUN = Path(__file__).parent.parent / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+RUN = Path(__file__).parent.parent / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 
 
 class TestValucastRunQuality(unittest.TestCase):

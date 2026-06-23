@@ -1,0 +1,38 @@
+{
+  "as_of_season": 2026,
+  "components": {
+    "hitters": {
+      "alpha_contact": 0.75,
+      "alpha_power": 0.5,
+      "gamma": 0.0,
+      "inputs": "consumes Savant xBA/xSLG (not our own xBA)",
+      "model": "valucast_marcel_statcast",
+      "model_version": 1,
+      "prior_seasons": [
+        2023,
+        2024,
+        2025
+      ],
+      "verdict": "held-out 2020-25 mean MAE ratio 0.979; AVG/OBP/SLG/OPS 4-6% lift; HR neutral"
+    },
+    "pitchers": {
+      "cfip_2026": 3.1856,
+      "era_method": "projected_fip_plus_cfip",
+      "inputs": "fully in-house, no Statcast",
+      "model": "valucast_pitching_marcel",
+      "model_version": 1,
+      "n_reg": 300.0,
+      "prior_seasons": [
+        2023,
+        2024,
+        2025
+      ],
+      "verdict": "held-out 2020-25 skill mean MAE ratio 0.821 vs persistence"
+    }
+  },
+  "eligibility_source": "current.json (Steamer outlook) used for names/teams/positions + active-player universe; NO projection stats copied",
+  "hitter_count": 867,
+  "pitcher_count": 1182,
+  "run_id": "valucast_hp_2026_v2",
+  "source_name": "valucast"
+}

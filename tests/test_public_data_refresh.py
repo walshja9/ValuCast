@@ -358,7 +358,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "scripts/backfill_projection_identities.py" in build_commands
     assert (
         "scripts/backfill_projection_identities.py "
-        "--projection-path projections/runs/valucast_hp_2026_v1/projections.json"
+        "--projection-path projections/runs/valucast_hp_2026_v2/projections.json"
     ) in build_commands
     assert "scripts/build_mlb_track_record.py" in build_commands
     assert "scripts/build_mlb_availability.py" in build_commands

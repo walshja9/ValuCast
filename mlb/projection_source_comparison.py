@@ -20,7 +20,7 @@ from pathlib import Path
 from prospects.gate import decide_gate, validate_gate
 
 ROOT = Path(__file__).resolve().parents[1]
-MARCEL_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+MARCEL_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 STEAMER_ROS_PATH = ROOT / "data" / "projections" / "ros.json"
 ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 LIVE_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
@@ -126,7 +126,7 @@ def build_freeze(marcel_rows: list[dict], steamer_rows: list[dict], generated_at
         "comparison_version": COMPARISON_VERSION,
         "sources": {
             "valucast_hp": {
-                "source": "projections/runs/valucast_hp_2026_v1/projections.json",
+                "source": "projections/runs/valucast_hp_2026_v2/projections.json",
                 "kind": "valucast_hp_projection_run",
                 "coverage": _coverage(marcel),
                 "rate_lines": marcel,

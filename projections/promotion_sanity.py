@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
-MANIFEST_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "run_manifest.json"
+RUN_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
+MANIFEST_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "run_manifest.json"
 SCORECARD_PATH = ROOT / "data" / "validation" / "methodology_scorecard.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_hp_promotion_sanity_report.json"
 

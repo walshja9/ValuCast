@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-PROJECTION_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+PROJECTION_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 AVAILABILITY_PATH = ROOT / "data" / "models" / "valucast_mlb_availability.json"
 DYNASTY_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
@@ -374,7 +374,7 @@ def build_playing_time_role_tracker(
             "feeds_live_value": False,
         },
         "input_artifacts": {
-            "projection_source": "projections/runs/valucast_hp_2026_v1/projections.json",
+            "projection_source": "projections/runs/valucast_hp_2026_v2/projections.json",
             "roster_status_artifact": (roster_status or {}).get("artifact"),
             "roster_status_generated_at": (roster_status or {}).get("generated_at"),
             "availability_artifact": (availability or {}).get("artifact"),

@@ -18,7 +18,7 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     (
         "scripts/backfill_projection_identities.py",
         "--projection-path",
-        "projections/runs/valucast_hp_2026_v1/projections.json",
+        "projections/runs/valucast_hp_2026_v2/projections.json",
     ),
     ("scripts/build_mlb_track_record.py",),
     ("scripts/build_mlb_availability.py",),

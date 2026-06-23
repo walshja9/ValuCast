@@ -141,7 +141,7 @@ def format_stat(value, cat_id):
 # opt-in combined in-house source. App only LOADS committed runs — no runtime model.
 DATA_PATH = Path(__file__).parent / "data" / "projections" / "current.json"
 VALUCAST_HP_PATH = (
-    Path(__file__).parent / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+    Path(__file__).parent / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 )
 MLB_AVAILABILITY_PATH = Path(__file__).parent / "data" / "models" / "valucast_mlb_availability.json"
 CATALOG = ProjectionCatalog(

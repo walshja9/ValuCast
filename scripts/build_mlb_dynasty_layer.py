@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from mlb.dynasty import run_mlb_dynasty_layer  # noqa: E402
 
 
-VALUCAST_HP_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "projections.json"
+VALUCAST_HP_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 # Manual, default-OFF live-source flip. The daily live build calls this with no source arg,
 # so the live MLB dynasty layer reads Steamer (`current`) until someone explicitly sets the
 # env flag to `valucast-hp` after reviewing the advisory projection-source comparison. The
@@ -59,7 +59,7 @@ def main() -> None:
         kwargs.update(
             {
                 "projection_path": VALUCAST_HP_PATH,
-                "projection_source": "projections/runs/valucast_hp_2026_v1/projections.json",
+                "projection_source": "projections/runs/valucast_hp_2026_v2/projections.json",
                 "projection_source_kind": "valucast_hp_projection_run",
             }
         )

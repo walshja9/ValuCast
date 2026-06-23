@@ -29,7 +29,7 @@ from projections.models.pitcher_params import PitcherMarcelParams  # noqa: E402
 # Loaders append "historical/"/"pitching/" themselves, so data_dir is projections/data.
 DATA = ROOT / "projections" / "data"
 IDENTITY = DATA / "identity.json"
-RUN_MANIFEST = ROOT / "projections" / "runs" / "valucast_hp_2026_v1" / "run_manifest.json"
+RUN_MANIFEST = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "run_manifest.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_projection_scorecard"
 
 # Canonical held-out SCORING block (disjoint from the 2018-19 de-noise tuning block),
