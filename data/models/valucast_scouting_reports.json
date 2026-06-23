@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-06-23T12:21:32.891654+00:00",
+  "generated_at": "2026-06-23T14:20:22.055635+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-06-23T12:21:30.183389+00:00",
+    "card_data_audit_generated_at": "2026-06-23T14:20:19.551977+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
     "public_snapshot_generated_at": "2026-06-23T00:00:00+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-06-23T12:21:30.555510+00:00",
+    "recent_signal_generated_at": "2026-06-23T14:20:19.862615+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -984,10 +984,10 @@
           "hard_ok": true,
           "ok": false,
           "unsupported_numbers": [
-            "18"
+            "25"
           ]
         },
-        "text": "Charlie Condon is a power hitter who controls the strike zone at a high level\u2014his 15.2% BB% ranks in the 79th percentile\u2014and has flashed elite raw power, translating to .18 ISO at MLB equivalence in a 302 PA AAA sample. The core risk is swing-and-miss: his 23.2% K% will likely stay at or above league average even if he reaches the majors, limiting his batting average upside despite the power. This is a present, fresh sample with high-confidence translation, so the power-and-patience skill read holds weight.",
+        "text": "Charlie Condon is a high-leverage power bat who walks at an elite rate but chases hard enough that strikeout risk remains real. In 302 AAA plate appearances, he's posted .512 SLG and .397 OBP on .262 AVG\u2014driven by 93rd-percentile ISO (.25) and 79th-percentile BB% at 15.2%, though his 23.2% K% sits at the 59th percentile. The batting average collapse is the tangible risk; he's got the power and selectivity to profile as an everyday regular, but the contact problem will need to tighten or his ceiling becomes a platooning slugger. The sample is current and substantial, so the read has real ground.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -3154,22 +3154,6 @@
         "usage": "recent_valucast_signal_context_not_live_rank_or_value"
       },
       "report": "Only 9.3 IP in Triple-A, so confidence is low. He misses enough bats to keep a rotation outcome open. He still gives away too many counts. Keep developing him as a starter, with the bullpen as the fallback.",
-      "report_llm": {
-        "handedness_problems": [],
-        "hard_ok": true,
-        "model": "claude-haiku-4-5-20251001",
-        "problems": {
-          "banned": [],
-          "handedness_problems": [],
-          "hard_ok": true,
-          "ok": false,
-          "unsupported_numbers": [
-            "5.9"
-          ]
-        },
-        "text": "Braden Nett is a 24-year-old starter getting hit hard early in his AAA debut, with a 8.68 ERA and 2.36 WHIP over just 9.3 innings. His control is the immediate concern\u2014a 14.5 BB/9 paired with an 11.6 K/9 creates a -5.9 K-BB%, which on his minor-league line translates to roughly a 5.1 BB/9 in MLB equivalency, well above league average. The sample is too thin to draw firm conclusions, but the walk rate and overall inefficiency raise real flags about command and secondary stuff at the upper minor-league level.",
-        "valid": false
-      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -17261,22 +17245,6 @@
         "usage": "recent_valucast_signal_context_not_live_rank_or_value"
       },
       "report": "He does not give away many plate appearances; he rarely walks, leaving little margin when the contact quality backs up. Everyday contact regular, with a useful reserve floor; the sample covers 281 PA in Double-A, so confidence is moderate.",
-      "report_llm": {
-        "handedness_problems": [],
-        "hard_ok": true,
-        "model": "claude-haiku-4-5-20251001",
-        "problems": {
-          "banned": [],
-          "handedness_problems": [],
-          "hard_ok": true,
-          "ok": false,
-          "unsupported_numbers": [
-            "28"
-          ]
-        },
-        "text": "Cayden Wallace is a contact-plus power bat operating deep in the minor league zone, with elite-tier raw strength metrics but constrained on-base production. His .579 SLG and .28 ISO (98th percentile) anchor a .936 OPS across 281 AA plate appearances, yet a modest .357 OBP and 7.8% BB rate signal limited ability to work counts or draw free passes\u2014a structural gap that will constrain his ceiling. When translated to MLB context, his strikeout rate rises from 16.4% to an estimated 20.2%, which sits below average but matters more if the walk rate stays suppressed. The sample is current and sizable, but the gap between slugging strength and offensive patience is the central risk to whether this power carries in a lower-leverage role.",
-        "valid": false
-      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -22522,7 +22490,7 @@
             "19"
           ]
         },
-        "text": "Josh Rivera is a high-strikeout bat with inconsistent contact who can generate power when he makes contact but lacks the plate discipline to stay competitive at the Triple-A level. His 29.8% K% translates to 27.6% in MLB equivalency, well above league average, while his 6.9% BB% sits below average and leaves no margin for error. The core problem is naked: a .23 AVG and .283 OBP that signal too much empty swing for a prospect whose ISO at .19 is respectable but not enough to overcome the whiffs. Small sample context matters here, but the strikeout rate and weak on-base profile are already clear signals.",
+        "text": "Josh Rivera is a 25-year-old shortstop who hits for power but struggles with both contact and plate discipline at the AAA level. His .19 ISO ranks 74th percentile among the hitter pool, but he's striking out at 29.8% while walking in just 6.9% of his plate appearances\u2014well below league average discipline. The central risk is contact: a .23 AVG and .283 OBP built on a 36th percentile batting average signal a hitter caught between two approaches, with 245 plate appearances giving enough evidence to trust the trend.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -22882,7 +22850,7 @@
             "13"
           ]
         },
-        "text": "Jos\u00e9 Mej\u00eda is a young second baseman showing disciplined plate judgment but swinging and missing at a concerning clip. His 13.2% BB% is solid for age 20, and he's working counts: the minor-league line shows .36 OBP. The problem is a 19.3% K% that translates to 22.2% at the MLB level\u2014well above league average\u2014paired with just .13 ISO, leaving him dependent on contact quality he hasn't yet demonstrated. This is a 114 PA sample in real time, so the strikeout rate needs to stabilize before projection confidence rises.",
+        "text": "Jos\u00e9 Mej\u00eda is a 20-year-old second baseman with a high strikeout rate who is slowly building the plate discipline to offset it. He's at 19.3% K in the current A+ sample (114 PA), which translates to roughly 22% in the majors\u2014above average\u2014but he's also walking in 13.2% of his PA, a strength that keeps his .36 OBP competitive for his age. The main risk is raw power; his .13 ISO ranks just 37th percentile in the ValuCast pool, and the translated MLB power (.123 ISO) sits notably below league average, making him structurally limited as a middle-infielder offensive producer. The sample is live and untroubled, though 114 PA is still the early frame for a young minor leaguer.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -23326,8 +23294,8 @@
         "3B"
       ],
       "prospect_rank": 383,
-      "published_report": "The likely outcome is a second-division regular who contributes across categories, with a useful bench-bat floor; he controls at-bats and does damage without leaning on one result. No single result is loud enough to carry the bat through regression elsewhere. The sample covers 221 PA in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "Ramon Mendoza is a contact-oriented right-handed hitter operating at AAA with a .302 AVG and strong pitch recognition (10.0 BB%), posting a .371 OBP over a solid 221-PA sample. His 92nd-percentile batting average and 74th-percentile OBP mask a real constraint: a 20.4 K% and .160 ISO that translate to just 22.0% strikeout rate and .138 ISO at the MLB level\u2014power well below average and insufficient to carry a profile missing the walk rate (8.9% MLB equivalent) that would anchor a utility bat. The profile reads as a fringe organizational contributor without the offensive shape needed to carve out regular playing time in the majors.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The likely outcome is a second-division regular who contributes across categories, with a useful bench-bat floor; he controls at-bats and does damage without leaning on one result. No single result is loud enough to carry the bat through regression elsewhere. The sample covers 221 PA in Triple-A, so confidence is high.",
       "report_llm": {
@@ -23338,13 +23306,11 @@
           "banned": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "ok": false,
-          "unsupported_numbers": [
-            "16"
-          ]
+          "ok": true,
+          "unsupported_numbers": []
         },
-        "text": "Ramon Mendoza is a line-drive contact hitter who makes frequent contact and posts solid on-base numbers, but lacks the power development needed to profile as a core asset. His .302 AVG and .371 OBP in 221 AAA plate appearances (92nd and 74th percentiles, respectively) reflect consistent bat control, but the .16 ISO (57th percentile) and 20.4% K rate (74th percentile) signal someone who will struggle to generate plus exit velos in an MLB environment\u2014translating to a .138 ISO at the big-league level. The strikeout rate and modest power ceiling point to a utility-type future rather than an everyday starter. With a fresh, live sample and high-confidence translation, this read reflects current performance; the path forward depends on whether the approach deepens power generation in upcoming competition.",
-        "valid": false
+        "text": "Ramon Mendoza is a contact-oriented right-handed hitter operating at AAA with a .302 AVG and strong pitch recognition (10.0 BB%), posting a .371 OBP over a solid 221-PA sample. His 92nd-percentile batting average and 74th-percentile OBP mask a real constraint: a 20.4 K% and .160 ISO that translate to just 22.0% strikeout rate and .138 ISO at the MLB level\u2014power well below average and insufficient to carry a profile missing the walk rate (8.9% MLB equivalent) that would anchor a utility bat. The profile reads as a fringe organizational contributor without the offensive shape needed to carve out regular playing time in the majors.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -24705,25 +24671,23 @@
         "SS"
       ],
       "prospect_rank": 410,
-      "published_report": "The miss rate keeps that power from showing up consistently. The damage plays in games. Everyday power ceiling, with a volatile bench-bat floor until the contact improves. The sample covers 192 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Bryce Rainer is a young left-handed hitter with impressive raw power and patience\u2014he sits at the 76th percentile in ISO and 63rd in BB%\u2014but the strikeout rate is a genuine problem, running 34.4% in his current A+ sample and translating to 34.8% at the MLB level. At 20 and only 192 PA into the season, there's clear upside in his ability to take walks and drive the ball, but contact consistency remains the central question mark; the strikeout intensity will need to compress significantly for that power to play in games. The sample is fresh and solid enough to trust the shape.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The miss rate keeps that power from showing up consistently. The damage plays in games. Everyday power ceiling, with a volatile bench-bat floor until the contact improves. The sample covers 192 PA in High-A, so confidence is low.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "model": "claude-haiku-4-5-20251001",
         "problems": {
-          "banned": [
-            "unlock"
-          ],
+          "banned": [],
           "handedness_problems": [],
-          "hard_ok": false,
-          "ok": false,
+          "hard_ok": true,
+          "ok": true,
           "unsupported_numbers": []
         },
-        "text": "Bryce Rainer is a high-strikeout, high-walk left-handed hitter still building consistency at A+, with more whiff than present-day production supports. His 34.4% K rate and 13.0% BB rate frame a player chasing power upside (.182 ISO, 70th percentile) but missing too often to unlock it\u2014the strikeout rate sits at just the 8th percentile among all minor-league hitters. At 20 with only 192 PA, this remains a developmental read; the walk rate and ISO percentiles hint at tools, but the strikeout volume is the real story and the main barrier to offensive stability.",
-        "valid": false
+        "text": "Bryce Rainer is a young left-handed hitter with impressive raw power and patience\u2014he sits at the 76th percentile in ISO and 63rd in BB%\u2014but the strikeout rate is a genuine problem, running 34.4% in his current A+ sample and translating to 34.8% at the MLB level. At 20 and only 192 PA into the season, there's clear upside in his ability to take walks and drive the ball, but contact consistency remains the central question mark; the strikeout intensity will need to compress significantly for that power to play in games. The sample is fresh and solid enough to trust the shape.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -24809,10 +24773,24 @@
         "P"
       ],
       "prospect_rank": 412,
-      "published_report": "The sample covers 47 IP in Double-A, so confidence is moderate; nothing in the profile gives him a dependable way through a lineup yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
-      "published_report_source": "deterministic",
+      "published_report": "Wyatt Crowell is a left-handed pitcher who pounds strikes but lives dangerously high in the zone, generating 10.3 K/9 (62nd percentile) while yielding 7.1 BB/9 (15th percentile). His 5.94 ERA and 1.77 WHIP reflect the cost of that walk rate\u2014the MLB-equivalent translation projects 5.5 BB/9, still well above the 3.2 league average. Control is the defining liability here; until he tightens command, the strikeout stuff alone cannot sustain results at higher levels. Sample is current and adequate at 47 innings, though the depth-arm ceiling depends heavily on whether he can locate better.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 47 IP in Double-A, so confidence is moderate; nothing in the profile gives him a dependable way through a lineup yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Wyatt Crowell is a left-handed pitcher who pounds strikes but lives dangerously high in the zone, generating 10.3 K/9 (62nd percentile) while yielding 7.1 BB/9 (15th percentile). His 5.94 ERA and 1.77 WHIP reflect the cost of that walk rate\u2014the MLB-equivalent translation projects 5.5 BB/9, still well above the 3.2 league average. Control is the defining liability here; until he tightens command, the strikeout stuff alone cannot sustain results at higher levels. Sample is current and adequate at 47 innings, though the depth-arm ceiling depends heavily on whether he can locate better.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -24902,6 +24880,22 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "The risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not identify a dependable offensive strength. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 206 PA in Triple-A, so confidence is high.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": false,
+          "unsupported_numbers": [
+            "15"
+          ]
+        },
+        "text": "Tanner Schobel is a contact-dependent middle infielder showing below-average power and above-average plate discipline, but struggling to generate consistent hard contact at the AAA level. His .118 ISO ranks in the 31st percentile despite an 11.7% walk rate (52nd percentile), and his .247 AVG / .345 OBP / .365 SLG translate to roughly .122 ISO at the MLB level\u2014well below the .15 league average. The core risk is simple: he's 25, has logged 206 PA at triple-A, and lacks the bat speed or gap production to profile as a regular. The current sample is live and sufficient, but the bat shape is mixed.",
+        "valid": false
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -24935,10 +24929,24 @@
         "P"
       ],
       "prospect_rank": 415,
-      "published_report": "Starter upside is still alive, but the current command creates real bullpen risk; the swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now; only 13.7 IP in Double-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Chris Cortez is a high-walk right-handed pitcher stuck in a control crisis\u2014posting 11.6 BB/9 in his MLB-equivalent translation while his strikeout rate (K/9 of 8.1 MLB-equiv) cannot compensate for the damage. The minor-league line shows the same pattern: 9.2 BB/9 against 12.5 K/9, a K-BB% of just 7.4% that sits well below league average. This is a command problem, not stuff\u2014he whiffs enough to stay afloat only if he can locate, which he is not doing now. The current sample is just 13.7 innings, so this read carries low confidence; if the walks persist over a fuller body of work, he will not hold prospect value.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Starter upside is still alive, but the current command creates real bullpen risk; the swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now; only 13.7 IP in Double-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Chris Cortez is a high-walk right-handed pitcher stuck in a control crisis\u2014posting 11.6 BB/9 in his MLB-equivalent translation while his strikeout rate (K/9 of 8.1 MLB-equiv) cannot compensate for the damage. The minor-league line shows the same pattern: 9.2 BB/9 against 12.5 K/9, a K-BB% of just 7.4% that sits well below league average. This is a command problem, not stuff\u2014he whiffs enough to stay afloat only if he can locate, which he is not doing now. The current sample is just 13.7 innings, so this read carries low confidence; if the walks persist over a fuller body of work, he will not hold prospect value.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25046,10 +25054,24 @@
         "P"
       ],
       "prospect_rank": 418,
-      "published_report": "Neither misses nor strikes separate in the strikeout-to-walk result. Nothing in the profile gives him a dependable way through a lineup yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 29.3 IP in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "Henry Williams is a right-handed pitcher throwing into a walk problem that's swallowing his strikeout upside. His MLB-equivalent profile shows 7.4 K/9 paired with 4.2 BB/9\u2014strikeout rates below league average and walk rates well above it\u2014which translates to a 9.0% K-BB%, far short of the 13.5% MLB median. The core flaw is command; he's sitting at the 24th percentile in BB/9 and 12th percentile in ERA over a still-active 29.3 inning sample, with a 1.88 WHIP that leaves no margin for variance. At 24 with a profile this raw and volatile, depth-arm upside exists only if the walk rate compresses sharply.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Neither misses nor strikes separate in the strikeout-to-walk result. Nothing in the profile gives him a dependable way through a lineup yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 29.3 IP in Triple-A, so confidence is high.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Henry Williams is a right-handed pitcher throwing into a walk problem that's swallowing his strikeout upside. His MLB-equivalent profile shows 7.4 K/9 paired with 4.2 BB/9\u2014strikeout rates below league average and walk rates well above it\u2014which translates to a 9.0% K-BB%, far short of the 13.5% MLB median. The core flaw is command; he's sitting at the 24th percentile in BB/9 and 12th percentile in ERA over a still-active 29.3 inning sample, with a 1.88 WHIP that leaves no margin for variance. At 24 with a profile this raw and volatile, depth-arm upside exists only if the walk rate compresses sharply.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25120,10 +25142,24 @@
         "LF"
       ],
       "prospect_rank": 420,
-      "published_report": "The sample covers 274 PA in Double-A, so confidence is moderate. The current line does not identify a dependable offensive strength. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth.",
-      "published_report_source": "deterministic",
+      "published_report": "Carter Trice is a 23-year-old left fielder generating moderate power in a strikeout-prone profile. His AA line shows .196 ISO (76th percentile) on 23% K rate, backed by an 11.3% walk rate that translates to just 9.3% in the majors\u2014too passive for a hitter who doesn't miss many barrels. The core risk is a .250 AVG on 274 PA with an OBP of .336, suggesting the power alone won't carry a below-average hit tool at the MLB level. Sample is current and live, but organizational depth rather than a developmental breakout appears the ceiling here.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 274 PA in Double-A, so confidence is moderate. The current line does not identify a dependable offensive strength. Without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Carter Trice is a 23-year-old left fielder generating moderate power in a strikeout-prone profile. His AA line shows .196 ISO (76th percentile) on 23% K rate, backed by an 11.3% walk rate that translates to just 9.3% in the majors\u2014too passive for a hitter who doesn't miss many barrels. The core risk is a .250 AVG on 274 PA with an OBP of .336, suggesting the power alone won't carry a below-average hit tool at the MLB level. Sample is current and live, but organizational depth rather than a developmental breakout appears the ceiling here.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25157,10 +25193,24 @@
         "P"
       ],
       "prospect_rank": 421,
-      "published_report": "Nothing in the profile gives him a dependable way through a lineup yet; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 58.7 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Payton Martin is a high-walk right-handed pitcher running a command deficit that overshadows his solid strikeout rate. His AA minor-league line shows 7.2 K/9 paired with a 4.3 BB/9, yielding a K-BB% of 7.5%\u2014well below league average and ranking him in just the 22nd percentile for that differential. The walk rate is the binding constraint; at 4.1 BB/9 in MLB equivalent, he sits above the 3.2 big-league average and will need material improvement to stick as a starter. The current 58.7-inning sample is fresh and ongoing, but it's still early in the season to forecast sustained change.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Nothing in the profile gives him a dependable way through a lineup yet; neither misses nor strikes separate in the strikeout-to-walk result. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 58.7 IP in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Payton Martin is a high-walk right-handed pitcher running a command deficit that overshadows his solid strikeout rate. His AA minor-league line shows 7.2 K/9 paired with a 4.3 BB/9, yielding a K-BB% of 7.5%\u2014well below league average and ranking him in just the 22nd percentile for that differential. The walk rate is the binding constraint; at 4.1 BB/9 in MLB equivalent, he sits above the 3.2 big-league average and will need material improvement to stick as a starter. The current 58.7-inning sample is fresh and ongoing, but it's still early in the season to forecast sustained change.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25194,10 +25244,24 @@
         "SS"
       ],
       "prospect_rank": 422,
-      "published_report": "The miss rate leaves the hit tool exposed despite the walks; he reaches base without chasing his way out of counts. The walks keep an everyday path open, but the contact points to a narrow reserve role today. The sample covers 251 PA in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "DJ Layton is a 19-year-old shortstop who is walking at an elite rate (18.3% BB%, 94th percentile) while generating modest power (ISO .145, 47th percentile) in A-ball. The strikeout rate is the real problem\u2014at 28.3% K%, he's well above league average and sits only at the 30th percentile, suggesting the bat control needed to capitalize on his plate discipline hasn't arrived yet. With 251 plate appearances of current data and low confidence on his A-ball translation to the majors, Layton profiles as a disciplined but high-swing-and-miss prospect whose path requires significant contact improvement.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The miss rate leaves the hit tool exposed despite the walks; he reaches base without chasing his way out of counts. The walks keep an everyday path open, but the contact points to a narrow reserve role today. The sample covers 251 PA in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "DJ Layton is a 19-year-old shortstop who is walking at an elite rate (18.3% BB%, 94th percentile) while generating modest power (ISO .145, 47th percentile) in A-ball. The strikeout rate is the real problem\u2014at 28.3% K%, he's well above league average and sits only at the 30th percentile, suggesting the bat control needed to capitalize on his plate discipline hasn't arrived yet. With 251 plate appearances of current data and low confidence on his A-ball translation to the majors, Layton profiles as a disciplined but high-swing-and-miss prospect whose path requires significant contact improvement.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25231,10 +25295,24 @@
         "C"
       ],
       "prospect_rank": 423,
-      "published_report": "The walks keep an everyday path open, but the contact points to a narrow reserve role today; he reaches base without chasing his way out of counts. He is not finishing enough of those at-bats with contact. The sample covers 242 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Luke Stevenson is a left-handed hitter walking at an elite rate (22.7% BB%) but striking out in the bottom quartile of his peer pool (26.9% K%) while producing minimal contact damage (.217 AVG, .161 ISO). The 99th-percentile walk rate is genuine, but the hit tool is severely lagging\u2014he's punching out on roughly one-quarter of his swings and generating just organizational-type power in a 242 PA A+ sample. With the contact profile this light, the walk rate alone cannot sustain on-base value at the next level; the bat needs immediate measurable improvement to move past depth innings. 242 PA is a fair early look, but this shape is high-risk.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The walks keep an everyday path open, but the contact points to a narrow reserve role today; he reaches base without chasing his way out of counts. He is not finishing enough of those at-bats with contact. The sample covers 242 PA in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Luke Stevenson is a left-handed hitter walking at an elite rate (22.7% BB%) but striking out in the bottom quartile of his peer pool (26.9% K%) while producing minimal contact damage (.217 AVG, .161 ISO). The 99th-percentile walk rate is genuine, but the hit tool is severely lagging\u2014he's punching out on roughly one-quarter of his swings and generating just organizational-type power in a 242 PA A+ sample. With the contact profile this light, the walk rate alone cannot sustain on-base value at the next level; the bat needs immediate measurable improvement to move past depth innings. 242 PA is a fair early look, but this shape is high-risk.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25268,10 +25346,24 @@
         "RF"
       ],
       "prospect_rank": 424,
-      "published_report": "The sample covers 53 PA in Double-A, so confidence is moderate. The bat has a clear source of damage. Better pitching can leave him without a second way to contribute. Everyday power ceiling; the current floor is a bench bat used for damage.",
-      "published_report_source": "deterministic",
+      "published_report": "Devin Taylor shows elite plate discipline paired with legitimate power \u2014 a 18.9% BB rate and .436 SLG at A+ anchored a .425 OBP across 254 PA there, with walk rate and OBP both in the 95th percentile. His current AA stint (53 PA) reveals concerning balance: .308 AVG and .558 SLG mask a collapse to 1.9% BB rate while maintaining a 22.6% K rate, stripping away the selectivity that made him work at the level below. The walk-rate cliff and tiny current sample create real doubt about whether the A+ profile travels, though his ISO percentile (47th) suggests the power may be more modest than the slugging line indicates.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 53 PA in Double-A, so confidence is moderate. The bat has a clear source of damage. Better pitching can leave him without a second way to contribute. Everyday power ceiling; the current floor is a bench bat used for damage.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Devin Taylor shows elite plate discipline paired with legitimate power \u2014 a 18.9% BB rate and .436 SLG at A+ anchored a .425 OBP across 254 PA there, with walk rate and OBP both in the 95th percentile. His current AA stint (53 PA) reveals concerning balance: .308 AVG and .558 SLG mask a collapse to 1.9% BB rate while maintaining a 22.6% K rate, stripping away the selectivity that made him work at the level below. The walk-rate cliff and tiny current sample create real doubt about whether the A+ profile travels, though his ISO percentile (47th) suggests the power may be more modest than the slugging line indicates.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25305,10 +25397,24 @@
         "SS"
       ],
       "prospect_rank": 425,
-      "published_report": "The current line does not identify a dependable offensive strength; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth; he is 19 in High-A over 115 PA, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Emil Morales is a young shortstop who can drive the baseball but strikes out heavily, hitting .214/.287/.388 over 115 PA at A+ with a 27.8% K rate that ranks in the bottom third of the ValuCast pool. His 66th-percentile ISO (.174) and hard-hit potential suggest legitimate gap power, but an 11th-percentile OBP and league-leading contact problems are overwhelming that tool; the strikeout rate translates to 29.9% at the MLB level, well above league average. At 19 with only 115 plate appearances on the board, this is still a profile in formation, but he needs to prove he can make consistent contact before the power becomes a value-add.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The current line does not identify a dependable offensive strength; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current line does not support an everyday outcome; the floor is organizational depth; he is 19 in High-A over 115 PA, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Emil Morales is a young shortstop who can drive the baseball but strikes out heavily, hitting .214/.287/.388 over 115 PA at A+ with a 27.8% K rate that ranks in the bottom third of the ValuCast pool. His 66th-percentile ISO (.174) and hard-hit potential suggest legitimate gap power, but an 11th-percentile OBP and league-leading contact problems are overwhelming that tool; the strikeout rate translates to 29.9% at the MLB level, well above league average. At 19 with only 115 plate appearances on the board, this is still a profile in formation, but he needs to prove he can make consistent contact before the power becomes a value-add.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25342,10 +25448,24 @@
         "SS"
       ],
       "prospect_rank": 426,
-      "published_report": "The line does not show a second offensive strength at the same level; he works deep counts and gets on base. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 265 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Elijah Hainline is a high-contact, walk-heavy hitter who generates moderate power but struggles to convert contact into batting average. His 17.7% BB rate (92nd percentile) and .403 OBP anchor a profile built on patience, yet his .251 AVG and 24.5% K rate limit offensive floor\u2014he's striking out more than the MLB average despite solid discipline. The power (ISO .179) sits just below league-average in translated terms, leaving little margin for error if the strikeouts don't decline. At 265 PA in an active AA sample, the profile reads as a potential utility infielder with organizational depth, but the batting-average drag and mid-range power require proof he can tighten the strikeout rate at the next level.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The line does not show a second offensive strength at the same level; he works deep counts and gets on base. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 265 PA in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Elijah Hainline is a high-contact, walk-heavy hitter who generates moderate power but struggles to convert contact into batting average. His 17.7% BB rate (92nd percentile) and .403 OBP anchor a profile built on patience, yet his .251 AVG and 24.5% K rate limit offensive floor\u2014he's striking out more than the MLB average despite solid discipline. The power (ISO .179) sits just below league-average in translated terms, leaving little margin for error if the strikeouts don't decline. At 265 PA in an active AA sample, the profile reads as a potential utility infielder with organizational depth, but the batting-average drag and mid-range power require proof he can tighten the strikeout rate at the next level.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25379,10 +25499,24 @@
         "2B"
       ],
       "prospect_rank": 427,
-      "published_report": "Second-division regular ceiling, but the current damage points to a low-impact bench floor; he controls at-bats and keeps the ball in play. Pitchers do not have to change their plan for his power. The sample covers 248 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Yamal Encarnacion is a 22-year-old second baseman operating as a high-strikeout, low-power bat at AA, with a strikeout rate translating to 21.6% at the MLB level against an 8.5% league average. His .253 AVG and .106 ISO at AA rank him in the 24th percentile for power production and 60th for batting average in the prospect pool, while his 18.5% K% (82nd percentile) severely undermines both his contact rate and ability to drive the ball. The main constraint is that he lacks the offensive juice or plate discipline to profile as more than organizational depth; his 10.1% BB% doesn't offset a swing that generates weak contact and misses too often. The sample is current and adequate, so this read carries moderate confidence.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Second-division regular ceiling, but the current damage points to a low-impact bench floor; he controls at-bats and keeps the ball in play. Pitchers do not have to change their plan for his power. The sample covers 248 PA in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Yamal Encarnacion is a 22-year-old second baseman operating as a high-strikeout, low-power bat at AA, with a strikeout rate translating to 21.6% at the MLB level against an 8.5% league average. His .253 AVG and .106 ISO at AA rank him in the 24th percentile for power production and 60th for batting average in the prospect pool, while his 18.5% K% (82nd percentile) severely undermines both his contact rate and ability to drive the ball. The main constraint is that he lacks the offensive juice or plate discipline to profile as more than organizational depth; his 10.1% BB% doesn't offset a swing that generates weak contact and misses too often. The sample is current and adequate, so this read carries moderate confidence.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25494,6 +25628,23 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "Pitchers have little reason to avoid the zone. The ball stays in play. Table-setter ceiling; the present floor is a light-hitting reserve. The sample covers 199 PA in Triple-A, so confidence is high.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": false,
+          "unsupported_numbers": [
+            "12",
+            "15"
+          ]
+        },
+        "text": "Caden Connor is a left-handed hitter whose discipline appears intact but whose raw power production is lagging at the upper minors. Through 199 PA at AAA, he's striking out in the 91st percentile (15.6%) while posting a .12 ISO that ranks only 31st\u2014well below the .15 MLB average the translation projects he'd need. The lack of impact in the box is the real constraint; strikeout rate alone doesn't disqualify prospects, but when paired with power that doesn't match his level, the offensive ceiling narrows to organizational depth rather than prospect leverage.",
+        "valid": false
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25578,10 +25729,24 @@
         "1B"
       ],
       "prospect_rank": 432,
-      "published_report": "The sample covers 268 PA in Single-A, so confidence is low; the damage is the carrying tool. The failure point is contact frequency. Everyday middle-order ceiling; the current contact points to a low-average bench-power floor.",
-      "published_report_source": "deterministic",
+      "published_report": "Easton Shelton is a 20-year-old power-first hitter with exceptional bat speed and leverage; his .620 slugging and .341 ISO rank in the 99th percentile despite operating in A-ball. The underlying read is loud: he strikes out at 36.6%, well above the 22% MLB average even after translation to 37.7%, which is the main developmental obstacle and a meaningful drag on offensive floor. His walk rate (12.7%) and contact quality are genuine strengths, but the swing-and-miss is severe enough at this stage that consistency and on-base reliability remain unproven questions. The 268 PA sample is current and clean, but translating elite raw power in A-ball to sustained major-league production requires demonstrable strikeout management.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 268 PA in Single-A, so confidence is low; the damage is the carrying tool. The failure point is contact frequency. Everyday middle-order ceiling; the current contact points to a low-average bench-power floor.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Easton Shelton is a 20-year-old power-first hitter with exceptional bat speed and leverage; his .620 slugging and .341 ISO rank in the 99th percentile despite operating in A-ball. The underlying read is loud: he strikes out at 36.6%, well above the 22% MLB average even after translation to 37.7%, which is the main developmental obstacle and a meaningful drag on offensive floor. His walk rate (12.7%) and contact quality are genuine strengths, but the swing-and-miss is severe enough at this stage that consistency and on-base reliability remain unproven questions. The 268 PA sample is current and clean, but translating elite raw power in A-ball to sustained major-league production requires demonstrable strikeout management.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25615,10 +25780,24 @@
         "RF"
       ],
       "prospect_rank": 433,
-      "published_report": "The current line does not identify a dependable offensive strength; the risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 291 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Isaiah Drake is a left-handed hitter with moderate raw power but a strikeout problem that is eating into his ability to produce consistent contact. His minor-league line shows 26.5% K rate against just 10.0% BB%, and his MLB-equivalent translation projects that strikeout rate only climbing to 28.6%\u2014well above the MLB average of 22.0%\u2014while his ISO shrinks from .162 to a below-average .126 at the majors. The core flaw is a swing that chases and misses too much; even with league-average walk rate, he is giving away at-bats and power upside. At 20 years old in A+ ball with 291 plate appearances, the sample is live but early, so there is room for mechanical adjustments to reduce the chase rate.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The current line does not identify a dependable offensive strength; the risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 291 PA in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Isaiah Drake is a left-handed hitter with moderate raw power but a strikeout problem that is eating into his ability to produce consistent contact. His minor-league line shows 26.5% K rate against just 10.0% BB%, and his MLB-equivalent translation projects that strikeout rate only climbing to 28.6%\u2014well above the MLB average of 22.0%\u2014while his ISO shrinks from .162 to a below-average .126 at the majors. The core flaw is a swing that chases and misses too much; even with league-average walk rate, he is giving away at-bats and power upside. At 20 years old in A+ ball with 291 plate appearances, the sample is live but early, so there is room for mechanical adjustments to reduce the chase rate.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -25689,10 +25868,24 @@
         "P"
       ],
       "prospect_rank": 435,
-      "published_report": "Starter upside is still alive, but the current command creates real bullpen risk; the bat-missing is starter-caliber. The walks are the separator, not the stuff; the sample covers 44.3 IP in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Talon Haley is a high-strikeout, high-walk left-hander operating in Low-A with clear bat-missing ability but volatile command. His 12.4 K/9 (87th percentile) and 19.1% K-BB% (84th percentile) show real swing-and-miss chops, but the 4.7 BB/9 and 5.48 ERA reveal a pitcher who cannot yet consistently repeat his delivery or locate in the zone. The walk rate is the core problem\u2014it undercuts the strikeout advantage and inflates his ERA to well below average for the level. The 44.3-inning sample is current and clean, though still brief enough that command trends remain unsettled.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Starter upside is still alive, but the current command creates real bullpen risk; the bat-missing is starter-caliber. The walks are the separator, not the stuff; the sample covers 44.3 IP in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Talon Haley is a high-strikeout, high-walk left-hander operating in Low-A with clear bat-missing ability but volatile command. His 12.4 K/9 (87th percentile) and 19.1% K-BB% (84th percentile) show real swing-and-miss chops, but the 4.7 BB/9 and 5.48 ERA reveal a pitcher who cannot yet consistently repeat his delivery or locate in the zone. The walk rate is the core problem\u2014it undercuts the strikeout advantage and inflates his ERA to well below average for the level. The 44.3-inning sample is current and clean, though still brief enough that command trends remain unsettled.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25726,10 +25919,24 @@
         "P"
       ],
       "prospect_rank": 436,
-      "published_report": "The sample covers 45.3 IP in Single-A, so confidence is low; the swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades.",
-      "published_report_source": "deterministic",
+      "published_report": "Keyner Martinez is a young power arm\u201498th percentile K/9 at 14.5 per nine innings over 45 innings at A-ball\u2014who misses bats at an elite rate relative to his peer group. His 22.1% K-BB% ranks 92nd percentile, but a 6.0 BB/9 is a serious control problem that translates to an MLB-equivalent 5.4 BB/9, well above league average. The walk rate is the limiting factor on his ceiling; without meaningful improvement in command, he profiles as a back-of-the-rotation starter or high-leverage relief option at best. The sample is current and clean, but only 45 innings leaves real volatility in both the strikeout rate and the walk rate going forward.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 45.3 IP in Single-A, so confidence is low; the swing-and-miss is real enough to keep a rotation path open. The stuff is ahead of the strike throwing right now. Keep the starter path open, but the walk rate has to move before the bullpen risk fades.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Keyner Martinez is a young power arm\u201498th percentile K/9 at 14.5 per nine innings over 45 innings at A-ball\u2014who misses bats at an elite rate relative to his peer group. His 22.1% K-BB% ranks 92nd percentile, but a 6.0 BB/9 is a serious control problem that translates to an MLB-equivalent 5.4 BB/9, well above league average. The walk rate is the limiting factor on his ceiling; without meaningful improvement in command, he profiles as a back-of-the-rotation starter or high-leverage relief option at best. The sample is current and clean, but only 45 innings leaves real volatility in both the strikeout rate and the walk rate going forward.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25814,10 +26021,24 @@
         "P"
       ],
       "prospect_rank": 438,
-      "published_report": "Neither misses nor strikes separate in the strikeout-to-walk result. Nothing in the profile gives him a dependable way through a lineup yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 59.7 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Patrick Copen is a right-handed pitcher generating weak command and elevated walk rates at AA, with a 6.34 ERA and 6.6 BB/9 that rank in the 19th and 32nd percentiles respectively among his peer group. He does miss bats at 10.4 K/9 (63rd percentile), but the 1.61 WHIP and 9.1% K-BB% expose how often free passes undercut his strikeout stuff\u2014when translated to MLB equivalent, his 5.5 BB/9 projection still sits well above league average (3.2). The core risk is control, not stuff; without meaningful improvement in walk rate, a high-velocity arm alone won't sustain rotation depth. The sample is current and adequate, but command this leaky tends to persist.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Neither misses nor strikes separate in the strikeout-to-walk result. Nothing in the profile gives him a dependable way through a lineup yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 59.7 IP in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Patrick Copen is a right-handed pitcher generating weak command and elevated walk rates at AA, with a 6.34 ERA and 6.6 BB/9 that rank in the 19th and 32nd percentiles respectively among his peer group. He does miss bats at 10.4 K/9 (63rd percentile), but the 1.61 WHIP and 9.1% K-BB% expose how often free passes undercut his strikeout stuff\u2014when translated to MLB equivalent, his 5.5 BB/9 projection still sits well above league average (3.2). The core risk is control, not stuff; without meaningful improvement in walk rate, a high-velocity arm alone won't sustain rotation depth. The sample is current and adequate, but command this leaky tends to persist.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25851,10 +26072,24 @@
         "P"
       ],
       "prospect_rank": 439,
-      "published_report": "Keep developing him as a starter, with the bullpen as the fallback; he has a dependable way to finish hitters. He still gives away too many counts; the sample covers 40 IP in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Jagger Beck is a 19-year-old right-hander generating swing-and-miss at a strong rate\u201411.7 K/9 ranks 80th percentile in the ValuCast pitcher pool\u2014while maintaining excellent K-BB% (21.6%, 90th percentile) through tight walk control at 3.6 BB/9. The chief risk is that MLB translation downgrades his strikeout rate meaningfully to 8.2 K/9, closing the skill gap between him and average, while his walk rate ticks up to 3.9 BB/9 in the majors. This is a 40-inning sample in active play, so the read reflects early-season feel without the depth of conviction that comes with volume.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Keep developing him as a starter, with the bullpen as the fallback; he has a dependable way to finish hitters. He still gives away too many counts; the sample covers 40 IP in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Jagger Beck is a 19-year-old right-hander generating swing-and-miss at a strong rate\u201411.7 K/9 ranks 80th percentile in the ValuCast pitcher pool\u2014while maintaining excellent K-BB% (21.6%, 90th percentile) through tight walk control at 3.6 BB/9. The chief risk is that MLB translation downgrades his strikeout rate meaningfully to 8.2 K/9, closing the skill gap between him and average, while his walk rate ticks up to 3.9 BB/9 in the majors. This is a 40-inning sample in active play, so the read reflects early-season feel without the depth of conviction that comes with volume.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -25925,10 +26160,24 @@
         "RF"
       ],
       "prospect_rank": 441,
-      "published_report": "He barely strikes out; pitchers have little reason to avoid the zone. The contact gives him an everyday path, but the current damage points to a bench floor; the sample covers 303 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Trevor Cohen is a contact-oriented left-handed hitter who prioritizes discipline over power at this stage. His .296 AVG and .386 OBP reflect elite contact skill (90th percentile in AVG), supported by a 12.5% BB rate and only 14.2% K%, both well above typical A+ baselines. The core weakness is bat speed or leverage: his .139 ISO ranks just 44th percentile and projects to only .117 in MLB equivalent, well below league average. With 303 PA of current A+ data and a low-confidence MLB translation, the read here is a patient, singles-based operator with a ceiling limited by power\u2014useful as organizational depth but without the upside for regular impact.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "He barely strikes out; pitchers have little reason to avoid the zone. The contact gives him an everyday path, but the current damage points to a bench floor; the sample covers 303 PA in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Trevor Cohen is a contact-oriented left-handed hitter who prioritizes discipline over power at this stage. His .296 AVG and .386 OBP reflect elite contact skill (90th percentile in AVG), supported by a 12.5% BB rate and only 14.2% K%, both well above typical A+ baselines. The core weakness is bat speed or leverage: his .139 ISO ranks just 44th percentile and projects to only .117 in MLB equivalent, well below league average. With 303 PA of current A+ data and a low-confidence MLB translation, the read here is a patient, singles-based operator with a ceiling limited by power\u2014useful as organizational depth but without the upside for regular impact.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26013,10 +26262,24 @@
         "SS"
       ],
       "prospect_rank": 443,
-      "published_report": "The contact gives him an everyday path, but the current damage points to a bench floor; the ball stays in play. The current damage limits the offensive ceiling. The sample covers 299 PA in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "Josh Kasevich is a contact-oriented right-handed hitter who rarely strikes out but generates minimal power and hasn't yet developed the plate discipline needed to elevate his overall value. At AAA, he's posting a .273 AVG with just 10.0% BB% and 12.0% K%, but an ISO of only .075 ranks in the 10th percentile\u2014well below the power profile needed for a shortstop at the MLB level. The modest 299-PA sample is fresh and sufficient, but the combination of weak isolation and modest walk rate projects him as organizational depth rather than impact production.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The contact gives him an everyday path, but the current damage points to a bench floor; the ball stays in play. The current damage limits the offensive ceiling. The sample covers 299 PA in Triple-A, so confidence is high.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Josh Kasevich is a contact-oriented right-handed hitter who rarely strikes out but generates minimal power and hasn't yet developed the plate discipline needed to elevate his overall value. At AAA, he's posting a .273 AVG with just 10.0% BB% and 12.0% K%, but an ISO of only .075 ranks in the 10th percentile\u2014well below the power profile needed for a shortstop at the MLB level. The modest 299-PA sample is fresh and sufficient, but the combination of weak isolation and modest walk rate projects him as organizational depth rather than impact production.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26050,10 +26313,24 @@
         "2B"
       ],
       "prospect_rank": 444,
-      "published_report": "The sample covers 223 PA in Single-A, so confidence is low. No offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not support an everyday outcome; the floor is organizational depth.",
-      "published_report_source": "deterministic",
+      "published_report": "Ramiro Dominguez is a 19-year-old second baseman showing power projection but tied in knots against velocity; his minor-league line carries a .194 ISO (75th percentile) offset by an 18.4% strikeout rate (82nd percentile, worst-side). The contact floor is the real problem\u2014a .222 AVG and .350 OBP in 223 A-level plate appearances signal he is not yet making consistent contact, which will matter as he climbs. Sample is current and clean, but the K-to-ISO ratio is young-player volatility we need to see stabilize.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 223 PA in Single-A, so confidence is low. No offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not support an everyday outcome; the floor is organizational depth.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Ramiro Dominguez is a 19-year-old second baseman showing power projection but tied in knots against velocity; his minor-league line carries a .194 ISO (75th percentile) offset by an 18.4% strikeout rate (82nd percentile, worst-side). The contact floor is the real problem\u2014a .222 AVG and .350 OBP in 223 A-level plate appearances signal he is not yet making consistent contact, which will matter as he climbs. Sample is current and clean, but the K-to-ISO ratio is young-player volatility we need to see stabilize.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26087,10 +26364,24 @@
         "P"
       ],
       "prospect_rank": 445,
-      "published_report": "The strike throwing is the reason to keep him on a starter track; he does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play; the sample covers 73.3 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Jake Brooks is a control-first right-hander showing elite walk rate (1.8 BB/9, 97th percentile) and solid strikeout-to-walk separators (16.3 K-BB%, 72nd percentile) at AA. His 8.0 K/9 trails the pitcher pool and translates to just 7.4 K/9 in MLB terms, which falls short of league average; the strikeout floor is the real constraint on his ceiling. The 4.17 ERA and clean walk profile suggest a back-of-rotation starter if the stuff catches up, but with 73.3 innings on a current sample, there's substance here to monitor.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The strike throwing is the reason to keep him on a starter track; he does not finish enough hitters to own the middle of a rotation. The control supports a starter look; the lack of misses keeps the bullpen in play; the sample covers 73.3 IP in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Jake Brooks is a control-first right-hander showing elite walk rate (1.8 BB/9, 97th percentile) and solid strikeout-to-walk separators (16.3 K-BB%, 72nd percentile) at AA. His 8.0 K/9 trails the pitcher pool and translates to just 7.4 K/9 in MLB terms, which falls short of league average; the strikeout floor is the real constraint on his ceiling. The 4.17 ERA and clean walk profile suggest a back-of-rotation starter if the stuff catches up, but with 73.3 innings on a current sample, there's substance here to monitor.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -26124,10 +26415,24 @@
         "P"
       ],
       "prospect_rank": 446,
-      "published_report": "The stuff is ahead of the strike throwing right now; the swing-and-miss is real enough to keep a rotation path open. Starter upside is still alive, but the current command creates real bullpen risk. The sample covers 29 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Kiefer Lord is a pure strikeout arm with elite whiff stuff\u201414.6 K/9 at A+ ranks in the 98th percentile\u2014but he is bleeding walks at a rate (6.2 BB/9, 23rd percentile) that overwhelms his upside. His K-BB% of 19.7% and ERA of 6.21 reflect a pitcher who can miss bats but lacks the command and/or pitch sequencing to harness it, and the 1.79 WHIP underscores how often he is putting runners on base. The sample is small and active; the translation to MLB (4.7 BB/9, 9.5 K/9) suggests the control issues would persist at the major-league level even with modest velocity gains.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The stuff is ahead of the strike throwing right now; the swing-and-miss is real enough to keep a rotation path open. Starter upside is still alive, but the current command creates real bullpen risk. The sample covers 29 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Kiefer Lord is a pure strikeout arm with elite whiff stuff\u201414.6 K/9 at A+ ranks in the 98th percentile\u2014but he is bleeding walks at a rate (6.2 BB/9, 23rd percentile) that overwhelms his upside. His K-BB% of 19.7% and ERA of 6.21 reflect a pitcher who can miss bats but lacks the command and/or pitch sequencing to harness it, and the 1.79 WHIP underscores how often he is putting runners on base. The sample is small and active; the translation to MLB (4.7 BB/9, 9.5 K/9) suggests the control issues would persist at the major-league level even with modest velocity gains.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -26212,10 +26517,24 @@
         "C"
       ],
       "prospect_rank": 448,
-      "published_report": "The sample covers 258 PA in High-A, so confidence is low. He controls at-bats and does damage without leaning on one result. No single result is loud enough to carry the bat through regression elsewhere. The likely outcome is a second-division regular who contributes across categories, with a useful bench-bat floor.",
-      "published_report_source": "deterministic",
+      "published_report": "Ramon Ramirez is a catcher with loud raw power\u2014.487 SLG and .202 ISO are 85th-percentile marks\u2014but a strikeout problem that limits how often he makes contact. At 21.3% K rate over 258 PA, he's striking out well above league average, which translates to a projected 24.6% K% at the MLB level and dampens the value of that pop. The on-base skills are thin (9.3% BB%, 65th percentile OBP), so he needs the bat speed and loft to play. Confident read from a live, present sample.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 258 PA in High-A, so confidence is low. He controls at-bats and does damage without leaning on one result. No single result is loud enough to carry the bat through regression elsewhere. The likely outcome is a second-division regular who contributes across categories, with a useful bench-bat floor.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Ramon Ramirez is a catcher with loud raw power\u2014.487 SLG and .202 ISO are 85th-percentile marks\u2014but a strikeout problem that limits how often he makes contact. At 21.3% K rate over 258 PA, he's striking out well above league average, which translates to a projected 24.6% K% at the MLB level and dampens the value of that pop. The on-base skills are thin (9.3% BB%, 65th percentile OBP), so he needs the bat speed and loft to play. Confident read from a live, present sample.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26249,10 +26568,24 @@
         "P"
       ],
       "prospect_rank": 449,
-      "published_report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 57.7 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Rory Fox is a young right-handed starter showing sharp walk suppression\u201485th percentile in BB/9 at 3.0\u2014but surfacing with control that hasn't yet translated to results. His 5.46 ERA sits at just the 37th percentile despite a respectable 16.4% K-BB% (73rd percentile), signaling that he's leaving too many runners in scoring position or facing hard contact. The 9.5 K/9 (48th percentile) won't carry a depth arm through sustained innings if the ERA gap persists. Sample is live and reasonably sized at 57.7 IP, but his command advantage hasn't closed the execution gap yet.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 57.7 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Rory Fox is a young right-handed starter showing sharp walk suppression\u201485th percentile in BB/9 at 3.0\u2014but surfacing with control that hasn't yet translated to results. His 5.46 ERA sits at just the 37th percentile despite a respectable 16.4% K-BB% (73rd percentile), signaling that he's leaving too many runners in scoring position or facing hard contact. The 9.5 K/9 (48th percentile) won't carry a depth arm through sustained innings if the ERA gap persists. Sample is live and reasonably sized at 57.7 IP, but his command advantage hasn't closed the execution gap yet.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -26290,6 +26623,22 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "The risk is that an ordinary offensive line leaves no path to regular playing time. The current line does not identify a dependable offensive strength. The current line does not support an everyday outcome; the floor is organizational depth. The sample covers 274 PA in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": false,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [
+            "unlock"
+          ],
+          "handedness_problems": [],
+          "hard_ok": false,
+          "ok": false,
+          "unsupported_numbers": []
+        },
+        "text": "Alex Ram\u00edrez is a high-contact, lower-walk right fielder who generates above-average bat-speed power but lacks the plate discipline to unlock consistent offensive value. He's hitting .290 with .456 SLG (76th percentile ISO) across 274 PA at AA, but his 18.6% K-rate masks a 6.6% BB-rate that projects to only 6.9% at the MLB level\u2014well below the 8.5% average and in the 8th percentile. The main risk is that his offensive profile depends entirely on in-zone contact; any command-targeted pitching or velocity he hasn't yet faced will expose how little he works counts in his favor. Sample is current and adequate.",
+        "valid": false
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26360,10 +26709,24 @@
         "3B"
       ],
       "prospect_rank": 452,
-      "published_report": "The sample covers 278 PA in Single-A, so confidence is low; he extends at-bats and forces pitchers into the zone. He is not finishing enough of those at-bats with contact. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor.",
-      "published_report_source": "deterministic",
+      "published_report": "Coy James is a 19-year-old third baseman showing elite plate discipline (15.1% BB%) but limited contact quality so far\u2014a high-walk, high-strikeout profile (.224 AVG, 26.3% K%) typical of young hitters still learning the zone. His power stroke exists (.162 ISO, 59th percentile) but the strikeout rate will need to compress as he advances for the walk rate to remain an asset rather than a byproduct of poor contact. With 278 PA at A-ball in an active season, there is real information here, though projecting his hit tool maturation remains inherently uncertain at this age.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 278 PA in Single-A, so confidence is low; he extends at-bats and forces pitchers into the zone. He is not finishing enough of those at-bats with contact. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Coy James is a 19-year-old third baseman showing elite plate discipline (15.1% BB%) but limited contact quality so far\u2014a high-walk, high-strikeout profile (.224 AVG, 26.3% K%) typical of young hitters still learning the zone. His power stroke exists (.162 ISO, 59th percentile) but the strikeout rate will need to compress as he advances for the walk rate to remain an asset rather than a byproduct of poor contact. With 278 PA at A-ball in an active season, there is real information here, though projecting his hit tool maturation remains inherently uncertain at this age.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26397,10 +26760,24 @@
         "P"
       ],
       "prospect_rank": 453,
-      "published_report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds. Only 32.3 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Anderson Brito is a 21-year-old right-hander hitting the zone with elite strikeout stuff but loose command in early A+ exposure. His 11.7 K/9 ranks 80th percentile while his 5.8 BB/9 sits just 28th, and that 1.55 WHIP telegraphs the walk problem despite a 3.34 ERA over 32.3 innings. The real concern is control\u2014his K-BB% of 14.4% is solid (61st percentile), but he's giving away baserunners at a rate that won't stick at higher levels. This is a thin sample in real time with low translation confidence; the strikeout ceiling is real, but the walk rate has to compress before we know what he actually is.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "He misses enough bats to keep a rotation outcome open; the walks keep the starter projection from firming up. Rotation lean; the strike throwing decides whether it holds. Only 32.3 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Anderson Brito is a 21-year-old right-hander hitting the zone with elite strikeout stuff but loose command in early A+ exposure. His 11.7 K/9 ranks 80th percentile while his 5.8 BB/9 sits just 28th, and that 1.55 WHIP telegraphs the walk problem despite a 3.34 ERA over 32.3 innings. The real concern is control\u2014his K-BB% of 14.4% is solid (61st percentile), but he's giving away baserunners at a rate that won't stick at higher levels. This is a thin sample in real time with low translation confidence; the strikeout ceiling is real, but the walk rate has to compress before we know what he actually is.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -26485,10 +26862,24 @@
         "RF"
       ],
       "prospect_rank": 455,
-      "published_report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; no offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time; the sample covers 252 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Dylan Campbell is a high-strikeout power hitter whose plate discipline is still a question mark in AA. His ISO of .203 sits at the 79th percentile, but that raw power comes wrapped in a 23.4% strikeout rate and an obp of .303 that ranks just 19th percentile\u2014he's chasing too much to put runners in scoring position. The translated MLB line shows the problem will likely persist (K% 24.7%, BB% 8.6%), making him a depth piece contingent on the power playing up further. With 252 PA active and recent, there's enough to trust the profile, but the hit tool remains the blocker.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The current outcome is below a regular role, with a bench path dependent on one offensive result separating; no offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time; the sample covers 252 PA in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Dylan Campbell is a high-strikeout power hitter whose plate discipline is still a question mark in AA. His ISO of .203 sits at the 79th percentile, but that raw power comes wrapped in a 23.4% strikeout rate and an obp of .303 that ranks just 19th percentile\u2014he's chasing too much to put runners in scoring position. The translated MLB line shows the problem will likely persist (K% 24.7%, BB% 8.6%), making him a depth piece contingent on the power playing up further. With 252 PA active and recent, there's enough to trust the profile, but the hit tool remains the blocker.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26688,6 +27079,22 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "The sample covers 178 PA in Triple-A, so confidence is high. No offensive result currently separates from the rest of the line. The risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": false,
+          "unsupported_numbers": [
+            "07"
+          ]
+        },
+        "text": "Homer Bush Jr. is a high-strikeout hitter who has yet to establish consistent contact or power at AAA. His minor-league line shows .218 AVG and .07 ISO over 178 PA, with a 27.0% K% ranking in the 36th percentile; even when translated to MLB equivalents, the strikeout rate rises to 25.7% while ISO remains anemic at .104. The core issue is that he's neither making enough contact nor generating enough leverage when he does, producing an .587 OPS that ranks in the bottom tier. This is a thin organizational depth profile with significant questions about whether the swing can develop into everyday utility.",
+        "valid": false
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26721,10 +27128,24 @@
         "SS"
       ],
       "prospect_rank": 461,
-      "published_report": "He consistently finishes at-bats with contact; pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve; the sample covers 160 PA in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Jordan Yost is a 19-year-old shortstop working through a very high strikeout phase\u201413.1% K-rate in the minors translates to 20.1% at the MLB level, well above average. He's managing decent contact discipline with a 12.5% BB-rate and .375 OBP, but the power is thin (.106 ISO, 24th percentile) and his overall slash of .250/.375/.356 (.731 OPS) lacks thump for any position. The strikeout rate is the main concern at his age and stage; with only 160 PA in this sample, confidence remains low on whether this is developmental volatility or a structural swing issue.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "He consistently finishes at-bats with contact; pitchers have little reason to avoid the zone. Table-setter ceiling; the present floor is a light-hitting reserve; the sample covers 160 PA in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Jordan Yost is a 19-year-old shortstop working through a very high strikeout phase\u201413.1% K-rate in the minors translates to 20.1% at the MLB level, well above average. He's managing decent contact discipline with a 12.5% BB-rate and .375 OBP, but the power is thin (.106 ISO, 24th percentile) and his overall slash of .250/.375/.356 (.731 OPS) lacks thump for any position. The strikeout rate is the main concern at his age and stage; with only 160 PA in this sample, confidence remains low on whether this is developmental volatility or a structural swing issue.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26758,10 +27179,24 @@
         "3B"
       ],
       "prospect_rank": 462,
-      "published_report": "The miss rate leaves the hit tool exposed despite the walks; he reaches base without chasing his way out of counts. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor. The sample covers 239 PA in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Xavier Neyens is a 19-year-old left-handed hitter with an elite eye at the plate but severe strikeout issues that are drowning his contact quality. He posted a 22.6% BB% (99th percentile) and .418 OBP against a 33.1% K% (11th percentile), translating to a modest MLB-equivalent .124 ISO\u2014well below league average despite flashes of power upside. The core problem is simple: he's chasing or missing at a rate that limits hard contact, and his .236 AVG over 239 PA shows he is not yet controlling the zone well enough to be a reliable hitter. Sample is fresh and sizable enough to trust the read, though age and level mean volatility remains.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The miss rate leaves the hit tool exposed despite the walks; he reaches base without chasing his way out of counts. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor. The sample covers 239 PA in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Xavier Neyens is a 19-year-old left-handed hitter with an elite eye at the plate but severe strikeout issues that are drowning his contact quality. He posted a 22.6% BB% (99th percentile) and .418 OBP against a 33.1% K% (11th percentile), translating to a modest MLB-equivalent .124 ISO\u2014well below league average despite flashes of power upside. The core problem is simple: he's chasing or missing at a rate that limits hard contact, and his .236 AVG over 239 PA shows he is not yet controlling the zone well enough to be a reliable hitter. Sample is fresh and sizable enough to trust the read, though age and level mean volatility remains.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -26795,10 +27230,24 @@
         "P"
       ],
       "prospect_rank": 463,
-      "published_report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; nothing in the profile gives him a dependable way through a lineup yet. Neither misses nor strikes separate in the strikeout-to-walk result. Only 37.7 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Brock Porter is a high-strikeout, high-walk right-hander early in his A+ run\u2014he's posting 10.0 K/9 against 6.7 BB/9, which translates to an 8.1 K/9, 5.3 BB/9 shape at the MLB level. The walk rate is the immediate problem: he sits in the 19th percentile for BB/9 and 26th for K-BB%, meaning he's bleeding baserunners faster than typical arms at his volume. The sample is fresh and live but stays thin at 37.7 innings, so the ERA (2.87, 87th percentile) may not anchor confidence yet.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; nothing in the profile gives him a dependable way through a lineup yet. Neither misses nor strikes separate in the strikeout-to-walk result. Only 37.7 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Brock Porter is a high-strikeout, high-walk right-hander early in his A+ run\u2014he's posting 10.0 K/9 against 6.7 BB/9, which translates to an 8.1 K/9, 5.3 BB/9 shape at the MLB level. The walk rate is the immediate problem: he sits in the 19th percentile for BB/9 and 26th for K-BB%, meaning he's bleeding baserunners faster than typical arms at his volume. The sample is fresh and live but stays thin at 37.7 innings, so the ERA (2.87, 87th percentile) may not anchor confidence yet.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -26906,10 +27355,24 @@
         "1B"
       ],
       "prospect_rank": 466,
-      "published_report": "The failure point is contact frequency; the damage is the carrying tool. Lean everyday power bat, but the miss rate keeps a bench outcome in play. The sample covers 247 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Victor Figueroa is a 22-year-old left-handed first baseman who can hit for loud power but operates with a strikeout-heavy swing\u2014he's posting .606 slugging and .337 ISO (99th percentile) against a 31.6% strikeout rate (17th percentile) in 247 plate appearances at A+. His walk rate sits at 10.5%, solid for the level, but his .269 average and .348 OBP show the contact struggles that come with his approach; the MLB-equivalent translation suggests he'd carry a 31.7% K rate and .194 ISO at the major-league level, well below the thresholds for impact production. The combination of elite raw power and poor hit tool leaves him in organizational depth territory rather than prospect movement. Sample is current and substantial enough to trust the shape.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The failure point is contact frequency; the damage is the carrying tool. Lean everyday power bat, but the miss rate keeps a bench outcome in play. The sample covers 247 PA in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Victor Figueroa is a 22-year-old left-handed first baseman who can hit for loud power but operates with a strikeout-heavy swing\u2014he's posting .606 slugging and .337 ISO (99th percentile) against a 31.6% strikeout rate (17th percentile) in 247 plate appearances at A+. His walk rate sits at 10.5%, solid for the level, but his .269 average and .348 OBP show the contact struggles that come with his approach; the MLB-equivalent translation suggests he'd carry a 31.7% K rate and .194 ISO at the major-league level, well below the thresholds for impact production. The combination of elite raw power and poor hit tool leaves him in organizational depth territory rather than prospect movement. Sample is current and substantial enough to trust the shape.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -27021,6 +27484,22 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "The current line does not identify a dependable offensive strength; the miss rate gives the bat very little margin. The present outcome is below an everyday bat; a bench role requires another offensive result to emerge; the sample covers 265 PA in Triple-A, so confidence is high.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": false,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [
+            "unlock"
+          ],
+          "handedness_problems": [],
+          "hard_ok": false,
+          "ok": false,
+          "unsupported_numbers": []
+        },
+        "text": "Kristian Robinson is a right-handed right fielder whose bat control and walk rate are holding up in AAA\u2014he sits at a 71st-percentile OBP (.367) on 12.8% BB%\u2014but the strikeout burden is real and persistent. His 30.2% K% and modest ISO of .162 (59th percentile) translate to a 28% strikeout rate and .138 ISO at the MLB level, both unfavorable for a prospect without elite speed or positional scarcity. The core risk is that he's a high-strikeout, low-power bat in the minors; there's no hidden upside here to unlock. This is a 265 PA look at a depth option with a ceiling as a fourth or fifth outfielder.",
+        "valid": false
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -27128,10 +27607,24 @@
         "P"
       ],
       "prospect_rank": 472,
-      "published_report": "The sample covers 31.7 IP in Double-A, so confidence is moderate; the current results are clean. The results are ahead of the bat-missing, leaving less margin against better hitters. Back-end rotation path, with a multi-inning bullpen floor.",
-      "published_report_source": "deterministic",
+      "published_report": "Dalton Pence is a left-handed pitcher showing elite command and contact management in short-season AA action, evidenced by a 2.56 ERA (91st percentile) and 1.04 WHIP (94th percentile) across 31.7 IP. His 8.2 K/9 and 2.8 BB/9 sit at the 24th and 88th percentiles respectively, indicating strong control but modest strikeout production for a prospect profile. The primary risk is insufficient swing-and-miss; his MLB translation of 8.0 K/9 is below-average MLB rate, which limits ceiling if fastball velocity or secondary pitches don't develop further. Small active sample warrants patience before projecting sustained depth-role utility.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 31.7 IP in Double-A, so confidence is moderate; the current results are clean. The results are ahead of the bat-missing, leaving less margin against better hitters. Back-end rotation path, with a multi-inning bullpen floor.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Dalton Pence is a left-handed pitcher showing elite command and contact management in short-season AA action, evidenced by a 2.56 ERA (91st percentile) and 1.04 WHIP (94th percentile) across 31.7 IP. His 8.2 K/9 and 2.8 BB/9 sit at the 24th and 88th percentiles respectively, indicating strong control but modest strikeout production for a prospect profile. The primary risk is insufficient swing-and-miss; his MLB translation of 8.0 K/9 is below-average MLB rate, which limits ceiling if fastball velocity or secondary pitches don't develop further. Small active sample warrants patience before projecting sustained depth-role utility.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27165,10 +27658,24 @@
         "C"
       ],
       "prospect_rank": 473,
-      "published_report": "The power and patience reinforce each other; nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor. The sample covers 210 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Bennett Thompson is a high-contact, high-walk hitter running a 99th-percentile approach at A+, getting on base at elite rates (.495 OBP) with surprising pop (.536 SLG, .222 ISO). His 25.7% walk rate and 17.1% strikeout rate anchor a disciplined profile that translates to a projected 14.9% BB% and 21.7% K% in MLB context. The main risk is that power plays down sharply in translation\u2014from .222 ISO to .150 MLB-equivalent\u2014and catcher depth of role limits ceiling, leaving this as a bench or platoon outcome even if the bat stays intact. The 210 PA sample is current and clean, but early in the season.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The power and patience reinforce each other; nothing in the current line gives pitchers an obvious way to attack him; upper-level translation is the remaining test. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor. The sample covers 210 PA in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Bennett Thompson is a high-contact, high-walk hitter running a 99th-percentile approach at A+, getting on base at elite rates (.495 OBP) with surprising pop (.536 SLG, .222 ISO). His 25.7% walk rate and 17.1% strikeout rate anchor a disciplined profile that translates to a projected 14.9% BB% and 21.7% K% in MLB context. The main risk is that power plays down sharply in translation\u2014from .222 ISO to .150 MLB-equivalent\u2014and catcher depth of role limits ceiling, leaving this as a bench or platoon outcome even if the bat stays intact. The 210 PA sample is current and clean, but early in the season.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -27202,10 +27709,24 @@
         "P"
       ],
       "prospect_rank": 474,
-      "published_report": "The lack of misses leaves little margin when hitters square the ball. He limits free passes and consistently forces hitters to earn contact. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 60 IP in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Manuel Genao is a 20-year-old right-hander showing uncommon walk discipline for his age and level, paired with middling strikeout stuff. His 2.2 BB/9 ranks 94th percentile among the pitcher pool, and his K-BB% of 19.1% sits 84th percentile, but his K/9 of 9.6 is only 50th percentile\u2014he's keeping the ball in the zone without generating swings-and-misses. The main risk is that low strikeout rate; when translated to MLB equivalents, his stuff projects to 3.1 BB/9 and 7.4 K/9, both closer to below-average fastball-dependent outcomes. Sample is current and live at 60 IP with no stale data, but confidence in the projection is low given the level and the marginal stuff relative to age.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The lack of misses leaves little margin when hitters square the ball. He limits free passes and consistently forces hitters to earn contact. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 60 IP in Single-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Manuel Genao is a 20-year-old right-hander showing uncommon walk discipline for his age and level, paired with middling strikeout stuff. His 2.2 BB/9 ranks 94th percentile among the pitcher pool, and his K-BB% of 19.1% sits 84th percentile, but his K/9 of 9.6 is only 50th percentile\u2014he's keeping the ball in the zone without generating swings-and-misses. The main risk is that low strikeout rate; when translated to MLB equivalents, his stuff projects to 3.1 BB/9 and 7.4 K/9, both closer to below-average fastball-dependent outcomes. Sample is current and live at 60 IP with no stale data, but confidence in the projection is low given the level and the marginal stuff relative to age.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27350,10 +27871,24 @@
         "P"
       ],
       "prospect_rank": 478,
-      "published_report": "Neither misses nor strikes separate in the strikeout-to-walk result. There's no repeatable way to retire hitters in the line yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 41.3 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Jacob Bresnahan is a left-handed pitcher mixing strikeouts and walks at a respectable rate\u201410.4 K/9 and 4.8 BB/9 over 41.3 innings at A+\u2014without yet showing the clean command edge needed for a plus major-league outcome. His K-BB% of 14.7 percentile ranks at 63rd, and his 3.92 ERA places him at the 71st percentile for his peer group, but the walk rate sits at the 47th percentile, signaling he's giving up free bases at a clip that will limit ceiling. The sample is current and live, but at 41 innings, too thin to finalize the read on whether his strikeout stuff translates or his control hardens at higher levels.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Neither misses nor strikes separate in the strikeout-to-walk result. There's no repeatable way to retire hitters in the line yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 41.3 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Jacob Bresnahan is a left-handed pitcher mixing strikeouts and walks at a respectable rate\u201410.4 K/9 and 4.8 BB/9 over 41.3 innings at A+\u2014without yet showing the clean command edge needed for a plus major-league outcome. His K-BB% of 14.7 percentile ranks at 63rd, and his 3.92 ERA places him at the 71st percentile for his peer group, but the walk rate sits at the 47th percentile, signaling he's giving up free bases at a clip that will limit ceiling. The sample is current and live, but at 41 innings, too thin to finalize the read on whether his strikeout stuff translates or his control hardens at higher levels.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27387,10 +27922,24 @@
         "P"
       ],
       "prospect_rank": 479,
-      "published_report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; nothing in the profile gives him a dependable way through a lineup yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; only 35 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "David Hagaman is a high-strikeout arm operating with poor command at A+, generating an 11.3 K/9 (76th percentile) but walking 6.2 per 9 (23rd percentile). His 4.37 ERA and 1.74 WHIP reflect a pitcher who punches out hitters but leaves too many on base; the K-BB% of 12.0% ranks only 46th, showing the strikeouts are not translating to efficient pitching. The main flaw is control\u2014that 6.2 BB/9 is a significant liability and will cap his ceiling unless it tightens considerably. Small sample at 35 IP limits confidence, but the walk rate is the immediate tell on whether this electric arm can stick.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; nothing in the profile gives him a dependable way through a lineup yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; only 35 IP in High-A, so confidence is low.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "David Hagaman is a high-strikeout arm operating with poor command at A+, generating an 11.3 K/9 (76th percentile) but walking 6.2 per 9 (23rd percentile). His 4.37 ERA and 1.74 WHIP reflect a pitcher who punches out hitters but leaves too many on base; the K-BB% of 12.0% ranks only 46th, showing the strikeouts are not translating to efficient pitching. The main flaw is control\u2014that 6.2 BB/9 is a significant liability and will cap his ceiling unless it tightens considerably. Small sample at 35 IP limits confidence, but the walk rate is the immediate tell on whether this electric arm can stick.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27424,10 +27973,24 @@
         "RF"
       ],
       "prospect_rank": 480,
-      "published_report": "The sample covers 270 PA in Single-A, so confidence is low. He reaches base without chasing his way out of counts. The miss rate leaves the hit tool exposed despite the walks. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor.",
-      "published_report_source": "deterministic",
+      "published_report": "Jaden Fauske is a 19-year-old left-handed hitter who shows strong plate discipline\u2014a 15.6% walk rate (82nd percentile)\u2014but has not yet translated that into consistent contact or power at A-ball. His .246 average and 27.0% strikeout rate mark the core problem: he's chasing a disciplined approach without the bat control to back it up, and an MLB-equivalent translation projects that strikeout rate would climb to 30.3% against professional pitching. The 270 PA sample is fresh and sufficient, but the mixed bat shape and organizational-depth projection suggest he needs to prove he can cut strikeouts and drive the ball before prospect standing improves.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 270 PA in Single-A, so confidence is low. He reaches base without chasing his way out of counts. The miss rate leaves the hit tool exposed despite the walks. On-base regular ceiling; the current miss rate leaves a walk-dependent bench floor.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Jaden Fauske is a 19-year-old left-handed hitter who shows strong plate discipline\u2014a 15.6% walk rate (82nd percentile)\u2014but has not yet translated that into consistent contact or power at A-ball. His .246 average and 27.0% strikeout rate mark the core problem: he's chasing a disciplined approach without the bat control to back it up, and an MLB-equivalent translation projects that strikeout rate would climb to 30.3% against professional pitching. The 270 PA sample is fresh and sufficient, but the mixed bat shape and organizational-depth projection suggest he needs to prove he can cut strikeouts and drive the ball before prospect standing improves.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -27461,10 +28024,24 @@
         "P"
       ],
       "prospect_rank": 481,
-      "published_report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 35.3 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Austin Cates is a right-hander running modest strikeout rates (8.4 K/9 at AA, 27th percentile) paired with above-average command issues (4.8 BB/9, 47th percentile), resulting in a K-BB% of 9.3% that sits well below average. The MLB-equivalent translation projects 7.6 K/9 and 4.3 BB/9, both figures that underperform league average and suggest limited margin for error as a starter. The main risk is that his walk rate will not compress as he faces higher competition, and his strikeout floor remains modest relative to the control cost. This is a modest current sample at 35.3 IP with moderate translation confidence, so the read carries appropriate uncertainty.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 35.3 IP in Double-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Austin Cates is a right-hander running modest strikeout rates (8.4 K/9 at AA, 27th percentile) paired with above-average command issues (4.8 BB/9, 47th percentile), resulting in a K-BB% of 9.3% that sits well below average. The MLB-equivalent translation projects 7.6 K/9 and 4.3 BB/9, both figures that underperform league average and suggest limited margin for error as a starter. The main risk is that his walk rate will not compress as he faces higher competition, and his strikeout floor remains modest relative to the control cost. This is a modest current sample at 35.3 IP with moderate translation confidence, so the read carries appropriate uncertainty.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27498,10 +28075,24 @@
         "P"
       ],
       "prospect_rank": 482,
-      "published_report": "Neither misses nor strikes separate in the strikeout-to-walk result; nothing in the profile gives him a dependable way through a lineup yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 14 IP in Triple-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Brandt Thompson is a high-strikeout, high-walk right-hander who whiffs batters at an elite rate but struggles to minimize free passes in a way that limits his floor. His AA line shows 11.41 K/9 (78th percentile) paired with 3.95 BB/9, and the K-BB% of 19.0% (83rd percentile) reflects occasional dominance mixed with command inconsistency. The main risk is that walk rate\u2014his current AAA sample of 14 IP sits at just 2.6 BB/9, but the 55-inning AAA+AA translation projects 3.6 BB/9 at the MLB level, which is above average and constrains his upside despite the strikeout prowess. The AAA sample is too thin to override the AA data, so confidence in any immediate application is limited.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Neither misses nor strikes separate in the strikeout-to-walk result; nothing in the profile gives him a dependable way through a lineup yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. The sample covers 14 IP in Triple-A, so confidence is moderate.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Brandt Thompson is a high-strikeout, high-walk right-hander who whiffs batters at an elite rate but struggles to minimize free passes in a way that limits his floor. His AA line shows 11.41 K/9 (78th percentile) paired with 3.95 BB/9, and the K-BB% of 19.0% (83rd percentile) reflects occasional dominance mixed with command inconsistency. The main risk is that walk rate\u2014his current AAA sample of 14 IP sits at just 2.6 BB/9, but the 55-inning AAA+AA translation projects 3.6 BB/9 at the MLB level, which is above average and constrains his upside despite the strikeout prowess. The AAA sample is too thin to override the AA data, so confidence in any immediate application is limited.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -27586,10 +28177,24 @@
         "P"
       ],
       "prospect_rank": 484,
-      "published_report": "The sample covers 29.7 IP in Triple-A, so confidence is high. There's no repeatable way to retire hitters in the line yet. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
-      "published_report_source": "deterministic",
+      "published_report": "Lucas Braun shows modest command but lacks the strikeout stuff to operate efficiently at the Triple-A level\u2014his MLB-equivalent 7.1 K/9 and 3.0 BB/9 translate to a K-BB% around 10.5%, well below the 13.5% major-league average and ranking in just the 21st percentile among ValuCast pitchers. His 4.85 ERA and 1.52 WHIP across 29.7 innings reflect contact-dependent results that will not hold in upper-level play. The main risk is a lack of dominant pitch production; without significant velocity or movement profile gains, he will struggle to miss bats or work ahead in counts. This is a fresh sample with good volume context, but the skill ceiling is that of a back-end depth arm.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 29.7 IP in Triple-A, so confidence is high. There's no repeatable way to retire hitters in the line yet. Neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-haiku-4-5-20251001",
+        "problems": {
+          "banned": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "ok": true,
+          "unsupported_numbers": []
+        },
+        "text": "Lucas Braun shows modest command but lacks the strikeout stuff to operate efficiently at the Triple-A level\u2014his MLB-equivalent 7.1 K/9 and 3.0 BB/9 translate to a K-BB% around 10.5%, well below the 13.5% major-league average and ranking in just the 21st percentile among ValuCast pitchers. His 4.85 ERA and 1.52 WHIP across 29.7 innings reflect contact-dependent results that will not hold in upper-level play. The main risk is a lack of dominant pitch production; without significant velocity or movement profile gains, he will struggle to miss bats or work ahead in counts. This is a fresh sample with good volume context, but the skill ceiling is that of a back-end depth arm.",
+        "valid": true
+      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -28241,18 +28846,18 @@
     "recent_signal_used_for_context": true
   },
   "summary": {
-    "deterministic_published_report_count": 86,
-    "llm_published_report_count": 414,
+    "deterministic_published_report_count": 44,
+    "llm_published_report_count": 456,
     "llm_shadow": {
       "available": true,
       "enabled": true,
-      "flagged": 7,
+      "flagged": 8,
       "generated": 50,
       "generation_limit": 50,
-      "report_count": 636,
-      "reused": 371,
+      "report_count": 658,
+      "reused": 414,
       "reused_stale": 0,
-      "skipped_due_to_budget": 79
+      "skipped_due_to_budget": 14
     },
     "max_prospect_rank": 500,
     "missing_report_count": 0,
