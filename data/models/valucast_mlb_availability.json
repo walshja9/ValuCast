@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-06-22",
+  "generated_at": "2026-06-23",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -486,21 +486,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Milwaukee Brewers sent RHP Brandon Woodruff on a rehab assignment to Wisconsin Timber Rattlers.",
-      "effective_date": "2026-06-16",
-      "list_type": null,
-      "mlbam_id": 605540,
-      "name": "Brandon Woodruff",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Wisconsin Timber Rattlers",
-      "transaction_date": "2026-06-16",
-      "transaction_id": 918994,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Detroit Tigers transferred LHP Brant Hurter from the 15-day injured list to the 60-day injured list. Lumbar spine inflammation.",
       "effective_date": "2026-05-29",
       "list_type": "60-day injured list",
@@ -573,21 +558,6 @@
       "transaction_id": 917076,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Los Angeles Dodgers sent RHP Brock Stewart on a rehab assignment to Ontario Tower Buzzers.",
-      "effective_date": "2026-06-12",
-      "list_type": null,
-      "mlbam_id": 592779,
-      "name": "Brock Stewart",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Ontario Tower Buzzers",
-      "transaction_date": "2026-06-12",
-      "transaction_id": 917808,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2091,21 +2061,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Los Angeles Angels placed DH Jorge Soler on the 10-day injured list retroactive to June 4, 2026. Left oblique strain.",
-      "effective_date": "2026-06-04",
-      "list_type": "10-day injured list",
-      "mlbam_id": 624585,
-      "name": "Jorge Soler",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Los Angeles Angels",
-      "transaction_date": "2026-06-06",
-      "transaction_id": 916412,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Colorado Rockies transferred LHP Jose Quintana from the 15-day injured list to the 60-day injured list. Left elbow sprain.",
       "effective_date": "2026-05-28",
       "list_type": "60-day injured list",
@@ -2343,21 +2298,6 @@
       "transaction_id": 910919,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Philadelphia Phillies sent LHP Kyle Backhus on a rehab assignment to Lehigh Valley IronPigs.",
-      "effective_date": "2026-06-09",
-      "list_type": null,
-      "mlbam_id": 679775,
-      "name": "Kyle Backhus",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Lehigh Valley IronPigs",
-      "transaction_date": "2026-06-09",
-      "transaction_id": 917048,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2691,21 +2631,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Colorado Rockies sent LF Mickey Moniak on a rehab assignment to Albuquerque Isotopes.",
-      "effective_date": "2026-06-18",
-      "list_type": null,
-      "mlbam_id": 666160,
-      "name": "Mickey Moniak",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Albuquerque Isotopes",
-      "transaction_date": "2026-06-18",
-      "transaction_id": 919901,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Los Angeles Angels placed CF Mike Trout on the 10-day injured list. Right hamstring strain.",
       "effective_date": "2026-06-18",
       "list_type": "10-day injured list",
@@ -2866,21 +2791,6 @@
       "team": "Portland Sea Dogs",
       "transaction_date": "2026-06-17",
       "transaction_id": 919531,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Cincinnati Reds sent RHP Pierce Johnson on a rehab assignment to Louisville Bats.",
-      "effective_date": "2026-06-18",
-      "list_type": null,
-      "mlbam_id": 572955,
-      "name": "Pierce Johnson",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Louisville Bats",
-      "transaction_date": "2026-06-18",
-      "transaction_id": 920166,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -3931,6 +3841,36 @@
       "team": "Colorado Rockies",
       "transaction_date": "2026-04-04",
       "transaction_id": 897186,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Milwaukee Brewers activated RHP Brandon Woodruff from the 15-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "15-day injured list",
+      "mlbam_id": 605540,
+      "name": "Brandon Woodruff",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921049,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Los Angeles Dodgers activated RHP Brock Stewart from the 15-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "15-day injured list",
+      "mlbam_id": 592779,
+      "name": "Brock Stewart",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Los Angeles Dodgers",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921064,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -5136,6 +5076,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Los Angeles Angels activated DH Jorge Soler from the 10-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "10-day injured list",
+      "mlbam_id": 624585,
+      "name": "Jorge Soler",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Los Angeles Angels",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921091,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Houston Astros activated 2B Jose Altuve from the 10-day injured list.",
       "effective_date": "2026-06-05",
       "list_type": "10-day injured list",
@@ -5341,6 +5296,21 @@
       "team": "New York Mets",
       "transaction_date": "2026-06-16",
       "transaction_id": 918937,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Philadelphia Phillies activated LHP Kyle Backhus from the 15-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "15-day injured list",
+      "mlbam_id": 679775,
+      "name": "Kyle Backhus",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Philadelphia Phillies",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921028,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -5661,6 +5631,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Colorado Rockies activated LF Mickey Moniak from the 10-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "10-day injured list",
+      "mlbam_id": 666160,
+      "name": "Mickey Moniak",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Colorado Rockies",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921088,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "San Diego Padres activated DH Miguel Andujar from the 10-day injured list.",
       "effective_date": "2026-06-21",
       "list_type": "10-day injured list",
@@ -5866,6 +5851,21 @@
       "team": "Chicago Cubs",
       "transaction_date": "2026-04-27",
       "transaction_id": 903422,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Cincinnati Reds activated RHP Pierce Johnson from the 15-day injured list.",
+      "effective_date": "2026-06-22",
+      "list_type": "15-day injured list",
+      "mlbam_id": 572955,
+      "name": "Pierce Johnson",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Cincinnati Reds",
+      "transaction_date": "2026-06-22",
+      "transaction_id": 921033,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6546,7 +6546,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-06-22",
+    "end_date": "2026-06-23",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -6564,15 +6564,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 189,
+    "available_after_il_count": 195,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 199,
+    "injured_count": 198,
     "profile_count": 435,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 47,
-    "risk_profile_count": 246,
+    "rehab_count": 42,
+    "risk_profile_count": 240,
     "tracked_mlbam_count": 10182,
-    "transaction_count": 6864
+    "transaction_count": 6895
   }
 }

@@ -303,13 +303,13 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 0,
-        "latest_rank_bucket_count": 0,
-        "observation_span_days": 0,
-        "rank_comparison_count": 0
+        "buy_comparison_count": 1,
+        "latest_rank_bucket_count": 14,
+        "observation_span_days": 1,
+        "rank_comparison_count": 1
       },
       "recommendations": [
-        "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
+        "Review top-50 availability-risk buckets before changing individual names."
       ],
       "status": "collecting"
     },
@@ -319,7 +319,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2635,
+        "candidate_count": 2638,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -331,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-22T19:19:53.530414+00:00",
+        "activated_at": "2026-06-23T10:57:36.833087+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -345,7 +345,7 @@
       },
       "candidate_count": 2712,
       "impact_board_gate": {
-        "activated_at": "2026-06-22T19:19:53.530414+00:00",
+        "activated_at": "2026-06-23T10:57:36.833087+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.172373,
         "cv_method": "walk_forward",
@@ -374,24 +374,19 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 0,
+            "current": 1,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "observation_span_days",
             "required": 30
-          },
-          {
-            "current": null,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.55
           }
         ],
         "passed": false
@@ -403,24 +398,19 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 0,
+            "current": 1,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "observation_span_days",
             "required": 60
-          },
-          {
-            "current": null,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.6
           }
         ],
         "passed": false
@@ -432,24 +422,19 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 0,
+            "current": 1,
             "metric": "rank_comparison_count",
             "required": 7
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "buy_comparison_count",
             "required": 7
           },
           {
-            "current": 0,
+            "current": 1,
             "metric": "observation_span_days",
             "required": 14
-          },
-          {
-            "current": null,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.45
           }
         ],
         "passed": false
@@ -462,12 +447,12 @@
     "target_grade": "A-",
     "uncapped_score": 97
   },
-  "generated_at": "2026-06-22T00:00:00+00:00",
+  "generated_at": "2026-06-23T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-06-22",
-    "dynasty_backtest": "2026-06-22",
-    "forward_validation": "2026-06-22",
-    "model_v07": "2026-06-22",
+    "adapter_backtest": "2026-06-23",
+    "dynasty_backtest": "2026-06-23",
+    "forward_validation": "2026-06-23",
+    "model_v07": "2026-06-23",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
