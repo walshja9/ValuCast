@@ -452,6 +452,15 @@ def test_backfields_exposes_team_boards_module():
     assert "/backfields/team/" in html
 
 
+def test_team_board_card_offers_top_10_and_top_20_downloads():
+    org = _team_board_org_from_backfields()
+    response, html = _html(f"/backfields/team/{org}")
+
+    assert response.status_code == 200
+    assert f'href="/backfields/team/{org}/share-card.png?n=10">Download Top 10 PNG' in html
+    assert f'href="/backfields/team/{org}/share-card.png?n=20">Download Top 20 PNG' in html
+
+
 def test_team_board_route_serves_known_org_and_alias():
     org = _team_board_org_from_backfields()
 
