@@ -146,15 +146,17 @@ training-window experiment → paired bootstrap) and the conclusion is firm: the
 +0.5%/+1.1% over a 25-NN baseline (bar +2%), and a paired bootstrap shows that edge is
 **statistically indistinguishable from zero — the hitter model and the kNN are tied.** No fix
 clears it: (a) capacity — a hand-rolled GBT lifts to ~+1.6% honest, still short, and would fall
-back anyway; (b) features — adding pedigree *hurt* (−20%, missing-data noise); (c) data — there
-are no pre-2014 cohorts to add, and relaxing maturity to fold in 2021/2022 degrades the gate
-monotonically (+0.51%→+0.37%→−0.33%) because model and kNN rise together ("lifts both, no
-gain"); 2020 is a COVID hole. And the repo is **strictly dependency-free** (no numpy/sklearn) so
+back anyway; (b) features — adding pedigree *hurt* (−20%, missing-data noise); (c) data — relaxing
+maturity to fold in 2021/2022 degrades the gate (model and kNN rise together), AND *acquiring*
+pre-2014 cohorts (2009-2013 fetched + rebuilt, ~doubling the star sample to ~192) ALSO fails —
+matched-window impact stays flat (~+1.1%) as model and kNN fall together, the gap shrinks not
+closes, every bootstrap CI spans zero; 2020 is a COVID hole. (Pre-2014 MiLB IS acquirable via
+MLB Stats API — just not a gate-closer.) And the repo is **strictly dependency-free** (no numpy/sklearn) so
 a GBM library is off the table regardless. **Decision: keep `MATURE_THROUGH=2019`, accept the
 kNN-fallback as validated ground, do NOT lower the bar.** Engine-integrity prerequisite is MET —
 the model is honestly validated; for hitters that honest answer is a strong nearest-neighbor
 model. Hitter-prospect outcomes are genuinely neighbor-y; there is no separable signal left to
-capture. This is the fourth independent confirmation that the prospect *accuracy* frontier is
+capture. This is the fifth independent confirmation that the prospect *accuracy* frontier is
 closed — which is exactly why the strategy is settings-aware + provably-early, not accuracy.
 Proceed to Phase 2.
 
