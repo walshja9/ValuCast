@@ -341,7 +341,7 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
             1.0 / (draft_round or 99.0),
             _safe_log1p(bonus),
             1.0 if school_type == "college" else 0.0,
-            1.0 if school_type == "prep" else 0.0,
+            1.0 if school_type in ("prep", "high_school", "highschool", "hs") else 0.0,
             1.0 if bats == "L" else 0.0,
             1.0 if bats == "S" else 0.0,
             1.0 if throws == "L" else 0.0,
