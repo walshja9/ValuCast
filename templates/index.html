@@ -175,10 +175,11 @@
         {% endif %}
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
         {# Re-rank the prospect board for a league's categories. Choosing a preset
-           sets rank_by=league; "Default order" clears it back to the model's P#. #}
+           sets rank_by=league and clears any custom category chips; "Default
+           order" clears it back to the model's P#. #}
         <input type="hidden" name="rank_by" id="prospect-rank-by" value="{{ 'league' if custom_cats_active else 'default' }}">
         <select name="preset" id="prospect-preset" class="position-select" aria-label="Score for your league"
-                onchange="document.getElementById('prospect-rank-by').value = this.value ? 'league' : 'default';">
+                onchange="document.getElementById('prospect-rank-by').value = this.value ? 'league' : 'default'; if (this.value) { (document.getElementById('prospect-category-fit')||{}).querySelectorAll && document.getElementById('prospect-category-fit').querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){cb.checked=false;}); }">
             <option value="">Default order (P#)</option>
             <option value="dd_7x7" {{ 'selected' if prospect_preset == 'dd_7x7' else '' }}>Diamond Dynasties 7x7</option>
             <option value="roto_5x5" {{ 'selected' if prospect_preset == 'roto_5x5' else '' }}>Standard 5x5</option>
@@ -202,6 +203,10 @@
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         </div>
     </div>
+    {# Arbitrary custom-category re-ranking, restricted to the categories the
+       prospect model can actually project. Coexists with the presets above —
+       selecting chips clears the preset and vice versa. #}
+    {% include "partials/prospect_category_fit.html" %}
     {% endif %}
 
 <div id="rankings-container">

@@ -1,0 +1,70 @@
+{# Arbitrary custom category re-ranking for the prospect board. Mirrors
+   dynasty_category_fit.html, but offers ONLY the categories ValuCast's prospect
+   model can project (prospect_supported_cats / _pcats, board vocabulary). The
+   "not yet projected" hint names the recognized league cats the model can't do
+   yet (W, SV) so users understand why they're absent. Selecting any chip submits
+   cats/pcats and flips rank_by to league; clearing all reverts to the model P#. #}
+{% set cat_labels = {
+    'PA':'PA','R':'R','HR':'HR','RBI':'RBI','SB':'SB','AVG':'AVG','OPS':'OPS','SO':'SO',
+    'IP':'IP','K':'K','QS':'QS','SV_HLD':'SV + HLD','ERA':'ERA','WHIP':'WHIP',
+    'K_BB':'K/BB','L':'L'
+} %}
+<section class="category-fit-panel prospect-category-fit" id="prospect-category-fit" aria-labelledby="prospect-fit-heading">
+    <div class="category-fit-intro">
+        <div>
+            <h3 id="prospect-fit-heading">Score for your league</h3>
+            <p>Re-rank the visible prospects for your league's categories, within hitters and pitchers separately, from ValuCast's factual prospect projections. This is not a dollar value and never changes a prospect's ValuCast score.</p>
+        </div>
+        <button type="button" class="preset-btn reset-fit-btn" onclick="resetProspectFit()">Default order (P#)</button>
+    </div>
+    <div class="fit-category-grid">
+        <div>
+            <h4>Hitting</h4>
+            {% for cat in prospect_supported_cats %}
+            <label class="fit-category">
+                <input type="checkbox" name="cats" value="{{ cat }}"
+                       {{ 'checked' if cat in (prospect_selected_cats or []) else '' }}
+                       onchange="prospectFitChanged()">
+                <span>{{ cat_labels.get(cat, cat) }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <div>
+            <h4>Pitching</h4>
+            {% for cat in prospect_supported_pcats %}
+            <label class="fit-category">
+                <input type="checkbox" name="pcats" value="{{ cat }}"
+                       {{ 'checked' if cat in (prospect_selected_pcats or []) else '' }}
+                       onchange="prospectFitChanged()">
+                <span>{{ cat_labels.get(cat, cat) }}</span>
+            </label>
+            {% endfor %}
+            <p class="fit-not-projected" aria-label="Categories not yet projected">Not yet projected: W, SV</p>
+        </div>
+    </div>
+</section>
+<script>
+// Flip rank_by to league whenever any prospect category chip is selected, and
+// clear the preset (chips and presets are mutually exclusive entry points).
+function prospectFitChanged() {
+    var panel = document.getElementById('prospect-category-fit');
+    var any = panel && panel.querySelector('input[type=checkbox]:checked');
+    var rankBy = document.getElementById('prospect-rank-by');
+    var preset = document.getElementById('prospect-preset');
+    if (preset) { preset.value = ''; }
+    if (rankBy) { rankBy.value = any ? 'league' : 'default'; }
+}
+function resetProspectFit() {
+    var panel = document.getElementById('prospect-category-fit');
+    if (panel) {
+        panel.querySelectorAll('input[type=checkbox]:checked').forEach(function (cb) {
+            cb.checked = false;
+        });
+    }
+    var preset = document.getElementById('prospect-preset');
+    if (preset) { preset.value = ''; }
+    var rankBy = document.getElementById('prospect-rank-by');
+    if (rankBy) { rankBy.value = 'default'; }
+    if (window.htmx) { htmx.trigger(document.getElementById('league-setup'), 'change'); }
+}
+</script>

@@ -787,6 +787,47 @@ PROSPECT_CATEGORY_PRESETS = {
 }
 
 
+def _prospect_canonical_signs():
+    """Per-category sign (+1/-1) in board vocabulary for arbitrary user picks.
+
+    Signs are DERIVED from the shipped adapter PRESETS — every category's
+    direction is consistent across presets (lower-is-better cats like ERA/WHIP/SO/L
+    carry a negative weight), so the board never invents one. The few supported
+    categories absent from any preset (the PA / IP volume anchors) are not flips in
+    the existing dynasty fit machinery either, so they default to +1 like every
+    other counting stat. Keyed by board vocabulary (SV_HLD / K_BB) to match the
+    URL/state contract.
+    """
+    from prospects.adapters import PRESETS as _ADAPTER_PRESETS
+    signs = {}
+    for preset in _ADAPTER_PRESETS.values():
+        for role in ("hitter", "pitcher"):
+            for cat, weight in preset[role].items():
+                signs[_to_board_category(cat)] = 1 if weight >= 0 else -1
+    return signs
+
+
+_PROSPECT_CANONICAL_SIGNS = _prospect_canonical_signs()
+
+
+def _prospect_supported_cats():
+    """SUPPORTED prospect categories in board vocabulary, split by role.
+
+    The adapter's projectable universe (prospects.adapters.SUPPORTED_CATEGORIES)
+    mapped to board vocabulary — the allowlist for arbitrary user picks and the UI
+    chips. Anything outside this set cannot be projected, so it is dropped from
+    custom selections (and the coverage guard catches any that slip through).
+    """
+    from prospects.adapters import SUPPORTED_CATEGORIES as _SUPPORTED
+    return {
+        role: {_to_board_category(cat) for cat in cats}
+        for role, cats in _SUPPORTED.items()
+    }
+
+
+_PROSPECT_SUPPORTED_CATS = _prospect_supported_cats()
+
+
 @lru_cache(maxsize=16)
 def _custom_prospect_ranks(cats_tuple, pcats_tuple):
     """Settings-aware adapter re-rank over the universal prospect pool.
@@ -828,18 +869,56 @@ def _custom_prospect_ranks(cats_tuple, pcats_tuple):
     return {"ranks": ranks, "role_status": role_status}
 
 
-def _prospect_category_state(args):
-    """Canonical prospect re-ranking params (Slice 1: presets only).
+def _prospect_custom_cats(args):
+    """Arbitrary user-picked prospect cats/pcats as ((cat, weight), ...) pairs.
 
-    Returns (cats, pcats, custom_active, preset_label). A garbage preset falls
-    back to the default board (custom_active False) so every path serves 200.
+    Reads cats/pcats from the URL in board vocabulary (comma-separated, like the
+    dynasty path) and attaches the canonical sign (magnitude 1.0) so
+    lower-is-better cats re-rank correctly. Pure garbage (anything outside the
+    recognized league vocabulary FIT_CATS/FIT_PCATS) is dropped here; a recognized
+    league category the model cannot project (e.g. a hand-edited W / SV) is kept so
+    the adapter's coverage guard in _apply_prospect_board_context explains why the
+    board can't re-rank and keeps the default order. The UI chips only ever offer
+    the SUPPORTED set, so normal selections never reach that guard.
     """
-    preset_key = (args.get("preset") or "").strip()
+    picked_cats = parse_list(args.getlist("cats"))
+    picked_pcats = parse_list(args.getlist("pcats"))
+    cats = tuple(
+        (cat, float(_PROSPECT_CANONICAL_SIGNS.get(cat, 1)))
+        for cat in picked_cats
+        if cat in FIT_CATS
+    )
+    pcats = tuple(
+        (cat, float(_PROSPECT_CANONICAL_SIGNS.get(cat, 1)))
+        for cat in picked_pcats
+        if cat in FIT_PCATS
+    )
+    return cats, pcats
+
+
+def _prospect_category_state(args):
+    """Canonical prospect re-ranking params (presets or arbitrary custom cats).
+
+    Returns (cats, pcats, custom_active, preset_label). With rank_by=league a
+    named preset wins; otherwise arbitrary cats/pcats (board vocabulary) flow
+    through with canonical signs and a "Custom" label. A garbage preset or an
+    empty/unsupported custom set falls back to the default board (custom_active
+    False) so every path serves 200.
+    """
     rank_by = args.get("rank_by", "default")
-    if preset_key not in PROSPECT_CATEGORY_PRESETS or rank_by != "league":
+    if rank_by != "league":
         return (), (), False, ""
-    cats, pcats = _prospect_preset_cats(preset_key)
-    return cats, pcats, True, PROSPECT_CATEGORY_PRESETS[preset_key]
+    preset_key = (args.get("preset") or "").strip()
+    if preset_key in PROSPECT_CATEGORY_PRESETS:
+        cats, pcats = _prospect_preset_cats(preset_key)
+        return cats, pcats, True, PROSPECT_CATEGORY_PRESETS[preset_key]
+    if preset_key:
+        # A named-but-unknown preset is garbage, not an invitation to read cats.
+        return (), (), False, ""
+    cats, pcats = _prospect_custom_cats(args)
+    if not cats and not pcats:
+        return (), (), False, ""
+    return cats, pcats, True, "Custom"
 
 
 def _apply_prospect_board_context(ctx, args):
@@ -861,13 +940,19 @@ def _apply_prospect_board_context(ctx, args):
         else []
     )
 
-    # Live settings-aware re-ranking (presets only in Slice 1). Re-ranking is a
-    # downstream VIEW: it never touches dynasty_value, P#, or the prospect score.
+    # Live settings-aware re-ranking (presets OR arbitrary custom cats). Re-ranking
+    # is a downstream VIEW: it never touches dynasty_value, P#, or the prospect
+    # score, and only orders within hitters and pitchers separately.
     cats, pcats, custom_active, preset_label = _prospect_category_state(args)
     ctx["custom_cats_active"] = False
     ctx["prospect_preset"] = (args.get("preset") or "").strip()
     ctx["prospect_rank_by"] = "league" if custom_active else "default"
     ctx["prospect_preset_label"] = preset_label
+    # Board-vocabulary allowlist + selection echo for the custom category chips.
+    ctx["prospect_supported_cats"] = sorted(_PROSPECT_SUPPORTED_CATS["hitter"])
+    ctx["prospect_supported_pcats"] = sorted(_PROSPECT_SUPPORTED_CATS["pitcher"])
+    ctx["prospect_selected_cats"] = {cat for cat, _ in cats}
+    ctx["prospect_selected_pcats"] = {cat for cat, _ in pcats}
     if custom_active and _UNIVERSAL_PROSPECT_AVAILABLE:
         scored = _custom_prospect_ranks(cats, pcats)
         role_status = scored["role_status"]
