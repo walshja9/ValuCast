@@ -73,17 +73,17 @@
       "top50_stat_context_mismatch_count": 0
     },
     "pipeline_observability": {
-      "date_mismatch_count": 1,
+      "date_mismatch_count": 0,
       "expected_date": "2026-06-23",
       "missing_or_unreadable_count": 0,
-      "ready_for_daily_publication": false,
-      "status": "blocked",
+      "ready_for_daily_publication": true,
+      "status": "candidate_ready",
       "targeted_row_refresh_count": 0
     }
   },
   "overall": {
     "grade": "A",
-    "score": 94,
+    "score": 95,
     "target": "A+ product/pipeline/independence/prospect credibility; MLB front-office track advances only when forward and ordinal evidence earn it."
   },
   "pillars": [
@@ -110,16 +110,16 @@
         "buy_monitor_ready": true,
         "duplicate_identity_count": 0,
         "milb_stat_freshness_ready": true,
-        "pipeline_observability_ready": false,
+        "pipeline_observability_ready": true,
         "raw_data_independence_complete": true,
         "required_fields_complete": true,
         "same_day_freshness": true,
         "targeted_row_refresh_count": 0
       },
-      "grade": "A-",
+      "grade": "A+",
       "name": "Data pipeline readiness",
-      "score": 92,
-      "status": "same_day_fresh"
+      "score": 97,
+      "status": "a_plus_native_daily_pipeline"
     },
     {
       "evidence": {
