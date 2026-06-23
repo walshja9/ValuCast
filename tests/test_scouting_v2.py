@@ -37,6 +37,39 @@ class TestVoiceGuard(unittest.TestCase):
         text = "Sits 97 mph with the fastball."   # 97 is nowhere in the grounding
         self.assertIn("97", unsupported_numbers(text, GROUNDING))
 
+    def test_leading_dot_two_digit_rate_supported(self):
+        # Regression: ".22" used to tokenize as 22 and fail to match grounding's 0.220
+        # (the >=30 leading-zero workaround only caught 3-digit forms like ".220"),
+        # which silently discarded otherwise-correct LLM reports to deterministic copy.
+        text = "Real game power — a .22 ISO with an 11.0% walk rate over 240 PA."
+        self.assertEqual(unsupported_numbers(text, GROUNDING), [])
+        self.assertTrue(validate_report_text(text, GROUNDING)["ok"])
+
+    def test_llm_grounding_includes_peak_detail_and_rank_movement(self):
+        base = dict(
+            name="Test", role="hitter", positions=["SS"], team="BOS", level="AA", age=21,
+            prospect_rank=12, context={}, metadata={}, bats=None, throws=None,
+            stat_line={"avg": 0.300}, stat_line_translated=None, best_single_level_stat_line=None,
+            availability_context=None, has_peak_projection=True,
+            peak_projection_summary="impact regular",
+            peak_role_label="everyday regular", peak_floor_label="bench bat",
+            peak_eta_label="2027", peak_trajectory_label="ahead of current value",
+            peak_shape_items=[{"label": "Power", "grade": 55}],
+            peak_role_probability_items=[{"label": "star", "pct": 18}],
+        )
+        g = repository._llm_grounding(
+            SimpleNamespace(**base), {}, "AA hitters",
+            recent_signal={"movement_label": "rising", "score_delta_3d": 1.2, "rank_delta_3d": 5},
+        )
+        self.assertEqual(g["peak_projection_detail"]["role_ceiling"], "everyday regular")
+        self.assertEqual(g["peak_projection_detail"]["floor"], "bench bat")
+        self.assertEqual(g["valucast_rank_movement"]["direction"], "rising")
+        # absent (filtered) when there's no peak projection and no movement
+        g2 = repository._llm_grounding(
+            SimpleNamespace(**{**base, "has_peak_projection": False}), {}, "AA hitters")
+        self.assertNotIn("peak_projection_detail", g2)
+        self.assertNotIn("valucast_rank_movement", g2)
+
     def test_validate_combines_hard_and_soft(self):
         clean = validate_report_text("A .300 hitter over 240 PA with a 96th-pct OPS.", GROUNDING)
         self.assertTrue(clean["ok"])

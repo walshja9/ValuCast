@@ -28,6 +28,10 @@ Hard rules:
   vs minor-league line vs projection). Never blend samples or present one as another.
 - Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting
   texture that is not in the data. If the data does not show it, do not name it.
+- If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may
+  describe the ceiling and floor in plain words, clearly as a projection — never as current production.
+- If a ValuCast ranking-movement note is provided, you may add one sentence noting the player is
+  rising or cooling in ValuCast's rankings — label it as ranking movement, never as a change in his stats.
 - Thin / stale / injured samples: say so in one honest confidence sentence; never paper
   over a small sample with a confident read.
 - Never claim ValuCast beats Steamer/ZiPS or is "the most accurate." State the read, not a
@@ -49,7 +53,10 @@ BANNED_PHRASES = (
     "beats steamer", "most accurate", "best projection",
 )
 
-_NUMBER_RE = re.compile(r"\d+(?:\.\d+)?")
+# Leading-dot decimals (".28", ".070") are captured AS decimals (0.28, 0.07) — the
+# alternative is ordered first so a rate written without a leading zero is read at its
+# true value instead of tokenizing ".28" -> 28 (which never matched grounding's 0.28).
+_NUMBER_RE = re.compile(r"\.\d+|\d+(?:\.\d+)?")
 _LEFT_HAND_RE = re.compile(
     r"\b(?:left[- ]hand(?:ed|er)|lefty|southpaw|lhp)\b",
     re.IGNORECASE,

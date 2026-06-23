@@ -209,9 +209,27 @@ def _llm_generation_limit() -> int | None:
         return DEFAULT_LLM_MAX_GENERATE
 
 
-def _llm_grounding(row, percentiles: dict, pool_label: str | None) -> dict:
+def _llm_grounding(row, percentiles: dict, pool_label: str | None,
+                   recent_signal: dict | None = None) -> dict:
     """Source-tagged, ValuCast-owned facts for the LLM read. No DD values/ranks, no
     external rankings, no market values — only what the card already owns."""
+    peak_detail = None
+    if row.has_peak_projection:
+        peak_detail = {key: value for key, value in {
+            "role_ceiling": getattr(row, "peak_role_label", None),
+            "floor": getattr(row, "peak_floor_label", None),
+            "eta": getattr(row, "peak_eta_label", None),
+            "trajectory_vs_current": getattr(row, "peak_trajectory_label", None),
+            "skill_shape": getattr(row, "peak_shape_items", None),
+            "role_probabilities": getattr(row, "peak_role_probability_items", None),
+        }.items() if value not in (None, {}, [], "")} or None
+    rank_movement = None
+    if recent_signal and recent_signal.get("movement_label"):
+        rank_movement = {key: value for key, value in {
+            "direction": recent_signal.get("movement_label"),
+            "score_delta_3d": recent_signal.get("score_delta_3d"),
+            "rank_delta_3d": recent_signal.get("rank_delta_3d"),
+        }.items() if value not in (None, "")} or None
     grounding = {
         "name": row.name,
         "role": row.role,
@@ -228,6 +246,8 @@ def _llm_grounding(row, percentiles: dict, pool_label: str | None) -> dict:
         "current_skill_percentiles": percentiles or None,
         "percentile_pool": pool_label,
         "peak_projection": row.peak_projection_summary if row.has_peak_projection else None,
+        "peak_projection_detail": peak_detail,
+        "valucast_rank_movement": rank_movement,
         "availability": row.availability_context or None,
         "sample_context": {
             "sample": row.context.get("stat_line_sample"),
@@ -276,7 +296,8 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         if not key:
             continue
         percentiles = prospect_percentiles.card_percentiles(pool, row)
-        grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row))
+        grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row),
+                                   recent_signal=report.get("recent_signal"))
         digest = report_generator.grounding_hash(grounding)
         cached = entries.get(key)
         result = None
