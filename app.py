@@ -4116,6 +4116,8 @@ def _build_backfields_page_context():
             "consensus_rank": int(consensus_rank),
             "divergence": int(divergence),
             "board_count": int(board_count) if board_count is not None else 0,
+            "ahead_since": row.get("ahead_since"),
+            "days_ahead": int(row.get("days_ahead") or 0),
         })
 
     return {

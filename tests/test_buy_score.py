@@ -379,8 +379,12 @@ class TestBuysRoute(_RealAppCase):
 
         self.assertNotIn('href="/buys"', map_html)
         self.assertNotIn('href="/buys"', backfields_html)
+        # The held surface is the /buys "Ahead of the Curve" buy-signals board (its
+        # risers section + the /buys link). The Backfields divergence list is a
+        # separate, live surface intentionally branded "Ahead of the Curve", so the
+        # hold gates the buy-board section -- not the brand string outright.
         self.assertNotIn('id="ahead-of-the-curve"', backfields_html)
-        self.assertNotIn("Ahead of the Curve", backfields_html)
+        self.assertNotIn("Full Ahead of the Curve board", backfields_html)
 
     def test_aotc_hold_is_reversible_by_single_flag(self):
         if (

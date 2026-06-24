@@ -93,6 +93,9 @@
                     <span class="bf-consensus-badge">+{{ call.divergence }}</span>
                 </div>
                 <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
+                {% if call.days_ahead %}
+                <p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field since {{ call.ahead_since }}">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>
+                {% endif %}
                 <p class="bf-consensus-meta">{{ call.board_count }} board{{ '' if call.board_count == 1 else 's' }}</p>
             </article>
             {% endfor %}

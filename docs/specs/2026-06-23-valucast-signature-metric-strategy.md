@@ -180,6 +180,17 @@ why OOPSY/PARS get cited).
 divergence baseline that powers "ahead of consensus" + a context chip. **Policy: display/context
 only — never enters the score** (`PROHIBITED_SCORE_INPUTS`). Gate any use with a fresh
 incremental-lift test (prior gate: grades add ~0 incremental lift to the score anyway).
+**SHIPPED 6/23-24:** FanGraphs FV/tool-grade committed snapshot, card panel + model-vs-scouts
+disagreement flag, FV strip on the share card. Display/context only; never in the score.
+
+## Parked / maybe (not committed)
+
+- **"Model + Scouts" blended view (MAYBE, 6/24).** A separate, clearly-labeled view that blends
+  the independent ValuCast rank with FanGraphs FV for users who want consensus baked in — sitting
+  *beside* the core rank, never replacing it. Parked deliberately: feeding FV into the core score
+  is prohibited (it would destroy the "ahead of the curve" signal and violate independence), and
+  grades gated out on accuracy anyway. Revisit only as an optional secondary surface if there's
+  demand; the core rank stays FV-free.
 
 ---
 

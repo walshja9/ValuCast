@@ -23,6 +23,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_ahead_of_consensus.json"
+ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 ARTIFACT_NAME = "valucast_ahead_of_consensus"
 SIGNAL_VERSION = "0.1.0"
@@ -143,6 +144,41 @@ def _is_guarded(row: dict) -> bool:
     )
 
 
+def _earliest_ahead_dates() -> dict:
+    """{identity_key: earliest ISO date ValuCast ranked the player ahead of the
+    public field}. Scans the dated board archive and re-applies the SAME divergence
+    guard, so a receipt reads "ValuCast has been ahead since this date" -- provable
+    and timestamped (the brand wedge). Fail-soft: no archive -> {}."""
+    earliest: dict[str, str] = {}
+    try:
+        files = sorted(ARCHIVE_DIR.glob("*.json"))
+    except Exception:  # noqa: BLE001
+        return earliest
+    for path in files:  # ascending date -> first hit is the earliest
+        date = path.stem
+        try:
+            board = (json.loads(path.read_text(encoding="utf-8")) or {}).get("board") or []
+        except (OSError, ValueError):
+            continue
+        for raw in board:
+            if not isinstance(raw, dict):
+                continue
+            cand = _divergence_row(raw)
+            if cand and _is_guarded(cand) and cand["identity_key"] not in earliest:
+                earliest[cand["identity_key"]] = date
+    return earliest
+
+
+def _days_between(start: str | None, end: str) -> int:
+    if not start:
+        return 0
+    try:
+        from datetime import date
+        return max(0, (date.fromisoformat(end) - date.fromisoformat(start)).days)
+    except ValueError:
+        return 0
+
+
 def build_ahead_of_consensus_report(
     *,
     rank_path: Path = RANK_PATH,
@@ -164,6 +200,14 @@ def build_ahead_of_consensus_report(
         key=lambda row: (row["divergence"], -(row.get("valucast_rank") or 999999)),
         reverse=True,
     )[:MAX_AHEAD_ROWS]
+    # Receipts: how long ValuCast has held each player ahead of the field (provable
+    # via the dated board archive). Accrues over time -- thin while the archive is young.
+    earliest_ahead = _earliest_ahead_dates()
+    today = generated_at[:10]
+    for row in ahead:
+        since = earliest_ahead.get(row["identity_key"])
+        row["ahead_since"] = since
+        row["days_ahead"] = _days_between(since, today)
     divergence_by_identity = {
         row["identity_key"]: {
             "valucast_rank": row["valucast_rank"],

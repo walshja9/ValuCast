@@ -3982,4 +3982,6 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-consensus-top h3 { margin: 0; font-size: 1rem; font-family: var(--font-display); }
 .backfields-page .bf-consensus-badge { font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem; color: var(--bf-signal); text-shadow: 0 0 14px rgba(52, 226, 196, .32); }
 .backfields-page .bf-consensus-line { margin: .45rem 0 .2rem; font-family: var(--font-mono); font-size: .82rem; color: var(--bf-text); }
+.backfields-page .bf-consensus-receipt { margin: .1rem 0 .2rem; font-family: var(--font-mono); font-size: .72rem; color: var(--bf-signal); }
+.backfields-page .bf-consensus-receipt::before { content: "\2713  "; font-weight: 700; }
 .backfields-page .bf-consensus-meta { margin: 0; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bf-muted); }
