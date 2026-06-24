@@ -612,6 +612,29 @@ def _history_blocking_current_key(row: dict, role: str) -> tuple[int, str] | Non
     return None
 
 
+def _backfill_draft_facts(payload: dict) -> None:
+    """Idempotent guarantee that every current row carries its cache draft facts.
+
+    The primary merge in _sanitize_current_row already does this locally, but a
+    CI-only build quirk drops it for some latest_milb_history rows (Miller et al.),
+    so this closes the gap regardless of build path. No-op when already merged.
+    Draft facts feed only the existing pedigree feature -- independence unaffected.
+    """
+    draft_facts = _load_optional_json(DRAFT_FACTS_PATH)
+    if not draft_facts:
+        return
+    current = payload.get("current") or {}
+    for group in ("hitters", "pitchers"):
+        for row in current.get(group) or []:
+            try:
+                key = str(int(row.get("mlbam_id")))
+            except (TypeError, ValueError):
+                continue
+            for field, value in _only(draft_facts.get(key, {}), _DRAFT_FIELDS).items():
+                if row.get(field) is None:
+                    row[field] = value
+
+
 def _sanitize_current_row(
     row: dict,
     role: str,
@@ -1016,6 +1039,7 @@ def build_contract(
         },
         "mlb_service": _service_facts(current_rows, mlb_seasons),
     }
+    _backfill_draft_facts(payload)
     payload["source_policy"] = _source_policy_for_payload(payload)
     return payload
 
