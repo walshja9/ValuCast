@@ -15,6 +15,7 @@ rank inside 300, and a divergence of at least 25.
 from __future__ import annotations
 
 import json
+import math
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -153,6 +154,16 @@ def _is_guarded(row: dict) -> bool:
     )
 
 
+def _conviction(row: dict) -> float:
+    """log(consensus_rank / valucast_rank) -- "how many times higher we rate him",
+    on the log scale rank perception actually uses. Higher = a stronger early call."""
+    consensus = row.get("consensus_rank")
+    valucast = row.get("valucast_rank")
+    if consensus and valucast and valucast > 0 and consensus > 0:
+        return math.log(consensus / valucast)
+    return 0.0
+
+
 def _earliest_ahead_dates() -> dict:
     """{identity_key: earliest ISO date ValuCast ranked the player ahead of the
     public field}. Scans the dated board archive and re-applies the SAME divergence
@@ -204,9 +215,15 @@ def build_ahead_of_consensus_report(
         )
         if candidate is not None
     ]
+    # Rank the showcase by CONVICTION, not raw gap. Rank perception is logarithmic:
+    # ValuCast #3 vs a field median of #73 (a 24x call on a marquee name) is a far
+    # stronger "ahead of the curve" receipt than #148 vs #443 (a 3x deep-board gap),
+    # even though the raw divergence is smaller (+70 vs +295). Sorting by raw
+    # divergence buried the best calls; log(consensus/valucast) surfaces them while
+    # still rewarding magnitude. The displayed "+N divergence" per row is unchanged.
     ahead = sorted(
         [row for row in rows if _is_guarded(row)],
-        key=lambda row: (row["divergence"], -(row.get("valucast_rank") or 999999)),
+        key=lambda row: (_conviction(row), row["divergence"]),
         reverse=True,
     )[:MAX_AHEAD_ROWS]
     # Receipts: how long ValuCast has held each player ahead of the field (provable
