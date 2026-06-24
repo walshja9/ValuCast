@@ -1,7 +1,14 @@
 {
   "artifact": "valucast_quality_governor",
-  "blockers": [],
-  "buy_blockers": [],
+  "blockers": [
+    "Top prospect board is too pitcher-heavy for public promotion.",
+    "MiLB prospect-card stat freshness audit blocks public promotion."
+  ],
+  "buy_blockers": [
+    "Top prospect board is too pitcher-heavy for public promotion.",
+    "MiLB prospect-card stat freshness audit blocks public promotion.",
+    "ValuCast-owned Buy signals are not approved for public promotion."
+  ],
   "checks": [
     {
       "id": "mlb_top_value_gap",
@@ -60,7 +67,7 @@
               "SP"
             ],
             "rank": 3,
-            "value": 96.39
+            "value": 96.73
           },
           {
             "name": "Cristopher S\u00e1nchez",
@@ -68,7 +75,7 @@
               "SP"
             ],
             "rank": 11,
-            "value": 73.46
+            "value": 73.73
           },
           {
             "name": "Jacob Misiorowski",
@@ -76,8 +83,8 @@
               "SP",
               "RP"
             ],
-            "rank": 13,
-            "value": 72.53
+            "rank": 12,
+            "value": 72.81
           },
           {
             "name": "Chase Burns",
@@ -85,8 +92,8 @@
               "SP",
               "RP"
             ],
-            "rank": 19,
-            "value": 65.99
+            "rank": 18,
+            "value": 66.23
           }
         ],
         "reliever_count": 0,
@@ -97,7 +104,7 @@
     },
     {
       "id": "prospect_top_board_role_shape",
-      "message": "Top prospect board role shape is within publication limits.",
+      "message": "Top prospect board is too pitcher-heavy for public promotion.",
       "metrics": {
         "max_top25_pitcher_count": 7,
         "max_top50_pitcher_rate": 0.3,
@@ -105,85 +112,85 @@
           {
             "mlbam_id": 807739,
             "name": "Kade Anderson",
-            "rank": 2,
+            "rank": 1,
             "role": "pitcher",
-            "score": 73.15
+            "score": 73.81
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
-            "rank": 5,
+            "rank": 4,
             "role": "pitcher",
-            "score": 62.33
+            "score": 62.82
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
-            "rank": 7,
+            "rank": 6,
             "role": "pitcher",
-            "score": 60.61
+            "score": 61.98
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
-            "rank": 10,
+            "rank": 7,
             "role": "pitcher",
-            "score": 55.58
+            "score": 56.87
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 11,
+            "rank": 10,
             "role": "pitcher",
-            "score": 54.58
-          },
-          {
-            "mlbam_id": 702566,
-            "name": "Owen Murphy",
-            "rank": 17,
-            "role": "pitcher",
-            "score": 49.44
+            "score": 54.95
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
-            "rank": 19,
+            "rank": 15,
             "role": "pitcher",
-            "score": 49.02
+            "score": 51.91
           },
           {
-            "mlbam_id": 815549,
-            "name": "Ryan Sloan",
-            "rank": 26,
+            "mlbam_id": 702566,
+            "name": "Owen Murphy",
+            "rank": 16,
             "role": "pitcher",
-            "score": 45.85
+            "score": 49.58
           },
           {
-            "mlbam_id": 807284,
-            "name": "Cam Caminiti",
-            "rank": 28,
+            "mlbam_id": 803285,
+            "name": "Tyler Bremner",
+            "rank": 23,
             "role": "pitcher",
-            "score": 45.48
+            "score": 47.07
           },
           {
             "mlbam_id": 701388,
             "name": "Jurrangelo Cijntje",
-            "rank": 33,
+            "rank": 26,
             "role": "pitcher",
-            "score": 44.21
+            "score": 45.79
+          },
+          {
+            "mlbam_id": 815549,
+            "name": "Ryan Sloan",
+            "rank": 27,
+            "role": "pitcher",
+            "score": 45.54
           }
         ],
         "top25_evaluated_count": 25,
         "top25_n": 25,
-        "top25_pitcher_count": 7,
+        "top25_pitcher_count": 8,
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 14,
-        "top50_pitcher_rate": 0.28,
+        "top50_pitcher_count": 15,
+        "top50_pitcher_rate": 0.3,
         "top50_sample_ready": true
       },
-      "status": "passed"
+      "status": "blocked"
     },
     {
       "id": "two_way_identity_policy",
@@ -265,26 +272,9 @@
         "samples": {
           "low_confidence": [],
           "lower_minors_pedigree": [],
-          "thin_upper_level_pitchers": [
-            {
-              "level": "AAA",
-              "name": "Braden Nett",
-              "rank": 48,
-              "sample": 9.3,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            },
-            {
-              "level": "AAA",
-              "name": "Tink Hence",
-              "rank": 49,
-              "sample": 13.3,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ]
+          "thin_upper_level_pitchers": []
         },
-        "thin_upper_level_pitcher_count": 2,
+        "thin_upper_level_pitcher_count": 0,
         "top_n": 50
       },
       "status": "passed"
@@ -347,14 +337,14 @@
       "metrics": {
         "band_counts": {
           "balanced": 8,
-          "bat_missing": 2,
+          "bat_missing": 3,
           "impact": 20,
           "limited": 2,
-          "mixed": 5,
-          "starter_volume": 7,
-          "thin": 6
+          "mixed": 6,
+          "starter_volume": 8,
+          "thin": 3
         },
-        "best_single_level_covered_count": 4,
+        "best_single_level_covered_count": 2,
         "best_single_level_samples": [
           {
             "best_level": "AA",
@@ -366,33 +356,7 @@
             "current_skill_band": "thin",
             "mlbam_id": 694211,
             "name": "Manuel Pena",
-            "rank": 36,
-            "role": "hitter"
-          },
-          {
-            "best_level": "A",
-            "best_sample": 232,
-            "best_sample_unit": "PA",
-            "current_level": "A+",
-            "current_sample": 49.0,
-            "current_sample_unit": "PA",
-            "current_skill_band": "thin",
-            "mlbam_id": 816113,
-            "name": "Eli Willits",
             "rank": 44,
-            "role": "hitter"
-          },
-          {
-            "best_level": "A+",
-            "best_sample": 237,
-            "best_sample_unit": "PA",
-            "current_level": "AA",
-            "current_sample": 47.0,
-            "current_sample_unit": "PA",
-            "current_skill_band": "thin",
-            "mlbam_id": 803849,
-            "name": "Devin Fitz-Gerald",
-            "rank": 45,
             "role": "hitter"
           },
           {
@@ -405,7 +369,7 @@
             "current_skill_band": "thin",
             "mlbam_id": 815352,
             "name": "Caleb Bonemer",
-            "rank": 47,
+            "rank": 45,
             "role": "hitter"
           }
         ],
@@ -414,7 +378,7 @@
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 4,
+        "caution_factual_context_count": 3,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
@@ -423,41 +387,31 @@
             "level": "A+",
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 11,
+            "rank": 10,
             "role": "pitcher",
             "sample": 29.3,
             "sample_unit": "IP",
             "skill_band": "limited"
           },
           {
+            "level": "AAA",
+            "mlbam_id": 691783,
+            "name": "Jordan Lawlar",
+            "rank": 18,
+            "role": "hitter",
+            "sample": 23.0,
+            "sample_unit": "PA",
+            "skill_band": "thin"
+          },
+          {
             "level": "A+",
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
-            "rank": 35,
+            "rank": 23,
             "role": "pitcher",
             "sample": 28.0,
             "sample_unit": "IP",
             "skill_band": "limited"
-          },
-          {
-            "level": "AAA",
-            "mlbam_id": 804556,
-            "name": "Braden Nett",
-            "rank": 48,
-            "role": "pitcher",
-            "sample": 9.3,
-            "sample_unit": "IP",
-            "skill_band": "thin"
-          },
-          {
-            "level": "AAA",
-            "mlbam_id": 693311,
-            "name": "Tink Hence",
-            "rank": 49,
-            "role": "pitcher",
-            "sample": 13.3,
-            "sample_unit": "IP",
-            "skill_band": "thin"
           }
         ],
         "top_n": 50
@@ -479,21 +433,23 @@
     },
     {
       "id": "milb_stat_freshness_audit",
-      "message": "MiLB prospect-card stat freshness audit is clean.",
+      "message": "MiLB prospect-card stat freshness audit blocks public promotion.",
       "metrics": {
         "audit_present": true,
-        "audit_status": "candidate_ready",
-        "blocker_count": 0,
-        "blockers": [],
-        "current_row_count": 6117,
-        "current_season_row_count": 5891,
+        "audit_status": "blocked",
+        "blocker_count": 1,
+        "blockers": [
+          "top-200 prospect board has too many MiLB history fallbacks"
+        ],
+        "current_row_count": 6138,
+        "current_season_row_count": 5912,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 0,
+        "top200_history_fallback_count": 12,
         "top50_history_fallback_count": 0,
         "top50_stat_context_mismatch_count": 0
       },
-      "status": "passed"
+      "status": "blocked"
     },
     {
       "id": "prospect_card_data_audit",
@@ -513,7 +469,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 11,
+        "archive_day_span": 12,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -554,7 +510,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 3,
+        "priced_availability_risk_count": 2,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,
@@ -600,26 +556,26 @@
     },
     {
       "id": "buy_promotion_gate",
-      "message": "ValuCast-owned Buy signals pass promotion checks.",
+      "message": "ValuCast-owned Buy signals are not approved for public promotion.",
       "metrics": {
         "buy_artifact_present": true,
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 0,
-        "history_limited_rate": 0.0,
+        "history_limited_count": 7,
+        "history_limited_rate": 0.0026,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
         "max_low_confidence_rate": 0.35,
         "max_pedigree_rate": 0.35,
         "pedigree_rate": 0.0,
-        "public_board_ready": true,
+        "public_board_ready": false,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 2638
+        "row_count": 2645
       },
-      "status": "passed"
+      "status": "blocked"
     }
   ],
   "criteria": {
@@ -661,28 +617,28 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-23T00:00:00+00:00",
+  "generated_at": "2026-06-24T00:00:00+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.1",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-06-23",
-      "buy_signals": "2026-06-23",
-      "milb_stat_freshness_audit": "2026-06-23",
-      "mlb_layer": "2026-06-23",
-      "prospect_card_data_audit": "2026-06-23",
-      "prospect_coverage_audit": "2026-06-23",
-      "prospect_rank": "2026-06-23",
-      "public_snapshot": "2026-06-23",
-      "recent_signal_report": "2026-06-23"
+      "buy_review": "2026-06-24",
+      "buy_signals": "2026-06-24",
+      "milb_stat_freshness_audit": "2026-06-24",
+      "mlb_layer": "2026-06-24",
+      "prospect_card_data_audit": "2026-06-24",
+      "prospect_coverage_audit": "2026-06-24",
+      "prospect_rank": "2026-06-24",
+      "public_snapshot": "2026-06-24",
+      "recent_signal_report": "2026-06-24"
     },
     "mlb_count": 965,
-    "prospect_count": 2638,
-    "public_row_count": 3603
+    "prospect_count": 2645,
+    "public_row_count": 3610
   },
-  "next_allowed_step": "wire_public_consumers",
-  "ready_for_buys_promotion": true,
-  "ready_for_public_snapshot": true,
+  "next_allowed_step": "repair_model_quality_before_public_promotion",
+  "ready_for_buys_promotion": false,
+  "ready_for_public_snapshot": false,
   "source_policy": {
     "dd_ranks_used_for_model_score": false,
     "dd_values_used_for_model_score": false,
@@ -690,10 +646,10 @@
     "feeds_model_score": false,
     "kind": "model_output_quality_gate"
   },
-  "status": "candidate_ready",
+  "status": "blocked",
   "surface_readiness": {
-    "buys": true,
-    "dynasty": true,
-    "prospects": true
+    "buys": false,
+    "dynasty": false,
+    "prospects": false
   }
 }
