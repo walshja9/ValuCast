@@ -19,16 +19,17 @@
   "monitoring": {
     "buy_comparison_count": 2,
     "feeds_live_buys": true,
-    "latest_top40_exited_count": 20,
-    "latest_top40_new_count": 20,
-    "latest_top40_retention_rate": 0.5,
+    "latest_top40_exited_count": 21,
+    "latest_top40_new_count": 21,
+    "latest_top40_retention_rate": 0.475,
     "next_action": "collect_more_valucast_owned_buy_observations",
     "observation_span_days": 2,
     "ready_for_live_consumers": true,
     "review_ready": false
   },
   "recommendations": [
-    "Review top-50 availability-risk buckets before changing individual names."
+    "Review top-50 availability-risk buckets before changing individual names.",
+    "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
   ],
   "source_policy": {
     "dd_ranks_used": false,

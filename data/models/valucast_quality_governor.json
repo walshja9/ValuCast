@@ -16,13 +16,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 0.89,
+        "gap": 0.9,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 677951,
           "name": "Bobby Witt Jr.",
           "rank": 2,
-          "value": 99.11
+          "value": 99.1
         },
         "top": {
           "mlbam_id": 660271,
@@ -69,7 +69,7 @@
               "SP"
             ],
             "rank": 3,
-            "value": 96.34
+            "value": 96.69
           },
           {
             "name": "Cristopher S\u00e1nchez",
@@ -77,7 +77,7 @@
               "SP"
             ],
             "rank": 11,
-            "value": 73.6
+            "value": 73.86
           },
           {
             "name": "Jacob Misiorowski",
@@ -86,7 +86,7 @@
               "RP"
             ],
             "rank": 12,
-            "value": 72.61
+            "value": 72.82
           },
           {
             "name": "Chase Burns",
@@ -95,7 +95,7 @@
               "RP"
             ],
             "rank": 18,
-            "value": 66.24
+            "value": 66.43
           }
         ],
         "reliever_count": 0,
@@ -116,42 +116,42 @@
             "name": "Kade Anderson",
             "rank": 1,
             "role": "pitcher",
-            "score": 73.81
+            "score": 74.32
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
             "rank": 5,
             "role": "pitcher",
-            "score": 62.41
+            "score": 62.19
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 6,
             "role": "pitcher",
-            "score": 61.76
+            "score": 61.32
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
-            "rank": 8,
+            "rank": 9,
             "role": "pitcher",
-            "score": 56.85
+            "score": 56.65
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 10,
+            "rank": 11,
             "role": "pitcher",
-            "score": 55.18
+            "score": 54.96
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
             "rank": 16,
             "role": "pitcher",
-            "score": 51.83
+            "score": 51.65
           },
           {
             "mlbam_id": 702566,
@@ -163,23 +163,23 @@
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
-            "rank": 22,
+            "rank": 23,
             "role": "pitcher",
-            "score": 47.07
+            "score": 46.89
           },
           {
             "mlbam_id": 701388,
             "name": "Jurrangelo Cijntje",
-            "rank": 25,
+            "rank": 24,
             "role": "pitcher",
-            "score": 46.53
+            "score": 46.55
           },
           {
-            "mlbam_id": 807284,
-            "name": "Cam Caminiti",
-            "rank": 26,
+            "mlbam_id": 815549,
+            "name": "Ryan Sloan",
+            "rank": 27,
             "role": "pitcher",
-            "score": 45.61
+            "score": 45.39
           }
         ],
         "top25_evaluated_count": 25,
@@ -274,18 +274,9 @@
         "samples": {
           "low_confidence": [],
           "lower_minors_pedigree": [],
-          "thin_upper_level_pitchers": [
-            {
-              "level": "AAA",
-              "name": "Gabriel Hughes",
-              "rank": 49,
-              "sample": 40.7,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ]
+          "thin_upper_level_pitchers": []
         },
-        "thin_upper_level_pitcher_count": 1,
+        "thin_upper_level_pitcher_count": 0,
         "top_n": 50
       },
       "status": "passed"
@@ -348,14 +339,14 @@
       "metrics": {
         "band_counts": {
           "balanced": 8,
-          "bat_missing": 5,
-          "impact": 19,
+          "bat_missing": 3,
+          "impact": 18,
           "limited": 2,
           "mixed": 6,
-          "starter_volume": 8,
-          "thin": 2
+          "starter_volume": 9,
+          "thin": 4
         },
-        "best_single_level_covered_count": 2,
+        "best_single_level_covered_count": 3,
         "best_single_level_samples": [
           {
             "best_level": "A+",
@@ -380,7 +371,20 @@
             "current_skill_band": "thin",
             "mlbam_id": 694211,
             "name": "Manuel Pena",
-            "rank": 42,
+            "rank": 43,
+            "role": "hitter"
+          },
+          {
+            "best_level": "A+",
+            "best_sample": 278,
+            "best_sample_unit": "PA",
+            "current_level": "AA",
+            "current_sample": 30.0,
+            "current_sample_unit": "PA",
+            "current_skill_band": "thin",
+            "mlbam_id": 815352,
+            "name": "Caleb Bonemer",
+            "rank": 50,
             "role": "hitter"
           }
         ],
@@ -389,7 +393,7 @@
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 2,
+        "caution_factual_context_count": 3,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
@@ -398,7 +402,7 @@
             "level": "A+",
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 10,
+            "rank": 11,
             "role": "pitcher",
             "sample": 29.3,
             "sample_unit": "IP",
@@ -408,11 +412,21 @@
             "level": "A+",
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
-            "rank": 22,
+            "rank": 23,
             "role": "pitcher",
             "sample": 28.0,
             "sample_unit": "IP",
             "skill_band": "limited"
+          },
+          {
+            "level": "A",
+            "mlbam_id": 800611,
+            "name": "Noble Meyer",
+            "rank": 35,
+            "role": "pitcher",
+            "sample": 3.0,
+            "sample_unit": "IP",
+            "skill_band": "thin"
           }
         ],
         "top_n": 50
@@ -636,9 +650,9 @@
       "public_snapshot": "2026-06-24",
       "recent_signal_report": "2026-06-24"
     },
-    "mlb_count": 967,
+    "mlb_count": 968,
     "prospect_count": 2647,
-    "public_row_count": 3614
+    "public_row_count": 3615
   },
   "next_allowed_step": "repair_model_quality_before_public_promotion",
   "ready_for_buys_promotion": false,

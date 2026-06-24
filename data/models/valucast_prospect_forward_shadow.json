@@ -2536,6 +2536,22 @@
           "role": "hitter"
         },
         {
+          "absolute_change": 0.28,
+          "current_expected_factual_outcome_tier": 0.28,
+          "mlbam_id": 695695,
+          "name": "Tyson Neighbors",
+          "previous_expected_factual_outcome_tier": 0.0,
+          "role": "pitcher"
+        },
+        {
+          "absolute_change": 0.24,
+          "current_expected_factual_outcome_tier": 0.56,
+          "mlbam_id": 801517,
+          "name": "Spencer Giesting",
+          "previous_expected_factual_outcome_tier": 0.32,
+          "role": "pitcher"
+        },
+        {
           "absolute_change": 0.2,
           "current_expected_factual_outcome_tier": 0.64,
           "mlbam_id": 691728,
@@ -2550,6 +2566,14 @@
           "name": "Gavin Fien",
           "previous_expected_factual_outcome_tier": 0.4,
           "role": "hitter"
+        },
+        {
+          "absolute_change": 0.2,
+          "current_expected_factual_outcome_tier": 0.24,
+          "mlbam_id": 701680,
+          "name": "Rj Sales",
+          "previous_expected_factual_outcome_tier": 0.44,
+          "role": "pitcher"
         },
         {
           "absolute_change": 0.16,
@@ -2606,6 +2630,14 @@
           "name": "Rafe Perich",
           "previous_expected_factual_outcome_tier": 0.08,
           "role": "hitter"
+        },
+        {
+          "absolute_change": 0.16,
+          "current_expected_factual_outcome_tier": 0.64,
+          "mlbam_id": 694393,
+          "name": "Jaxon Wiggins",
+          "previous_expected_factual_outcome_tier": 0.48,
+          "role": "pitcher"
         },
         {
           "absolute_change": 0.16,
@@ -2694,38 +2726,6 @@
           "name": "Nehomar Ochoa Jr.",
           "previous_expected_factual_outcome_tier": 0.2,
           "role": "hitter"
-        },
-        {
-          "absolute_change": 0.12,
-          "current_expected_factual_outcome_tier": 0.44,
-          "mlbam_id": 808234,
-          "name": "Eduardo Quintero",
-          "previous_expected_factual_outcome_tier": 0.32,
-          "role": "hitter"
-        },
-        {
-          "absolute_change": 0.12,
-          "current_expected_factual_outcome_tier": 0.2,
-          "mlbam_id": 809331,
-          "name": "Brian Sanchez",
-          "previous_expected_factual_outcome_tier": 0.08,
-          "role": "hitter"
-        },
-        {
-          "absolute_change": 0.12,
-          "current_expected_factual_outcome_tier": 0.6,
-          "mlbam_id": 815816,
-          "name": "Brady Ebel",
-          "previous_expected_factual_outcome_tier": 0.48,
-          "role": "hitter"
-        },
-        {
-          "absolute_change": 0.12,
-          "current_expected_factual_outcome_tier": 0.48,
-          "mlbam_id": 815929,
-          "name": "Jhonny Level",
-          "previous_expected_factual_outcome_tier": 0.6,
-          "role": "hitter"
         }
       ],
       "new_identity_count": 11,
@@ -2745,9 +2745,9 @@
           "p90_absolute_change": 0.04
         },
         "outcome_uncertainty": {
-          "max_absolute_change": 0.4164,
+          "max_absolute_change": 0.4821,
           "median_absolute_change": 0.0,
-          "p90_absolute_change": 0.0515
+          "p90_absolute_change": 0.0553
         },
         "role_or_better_probability": {
           "max_absolute_change": 0.24,
@@ -2755,7 +2755,7 @@
           "p90_absolute_change": 0.04
         },
         "star_ceiling_probability": {
-          "max_absolute_change": 0.08,
+          "max_absolute_change": 0.16,
           "median_absolute_change": 0.0,
           "p90_absolute_change": 0.0
         }
@@ -5915,10 +5915,87 @@
       },
       "largest_rank_movers": [
         {
-          "absolute_rank_change": 575,
-          "absolute_score_change": 1.3268,
-          "current_rank": 929,
-          "current_score": -0.7397,
+          "absolute_rank_change": 1184,
+          "absolute_score_change": 4.615,
+          "current_rank": 1320,
+          "current_score": -2.6468,
+          "mlbam_id": 695646,
+          "name": "Peter Heubeck",
+          "previous_rank": 136,
+          "previous_score": 1.9682,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 1142,
+          "absolute_score_change": 3.7228,
+          "current_rank": 1296,
+          "current_score": -1.9518,
+          "mlbam_id": 805809,
+          "name": "Travis Sykora",
+          "previous_rank": 154,
+          "previous_score": 1.771,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 1079,
+          "absolute_score_change": 3.0505,
+          "current_rank": 147,
+          "current_score": 1.8494,
+          "mlbam_id": 801517,
+          "name": "Spencer Giesting",
+          "previous_rank": 1226,
+          "previous_score": -1.2011,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 852,
+          "absolute_score_change": 3.2516,
+          "current_rank": 475,
+          "current_score": 0.1805,
+          "mlbam_id": 811290,
+          "name": "Jaden Hamm",
+          "previous_rank": 1327,
+          "previous_score": -3.0711,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 713,
+          "absolute_score_change": 4.5665,
+          "current_rank": 56,
+          "current_score": 4.1939,
+          "mlbam_id": 689958,
+          "name": "Andrew Walters",
+          "previous_rank": 769,
+          "previous_score": -0.3726,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 599,
+          "absolute_score_change": 3.2549,
+          "current_rank": 685,
+          "current_score": -0.2453,
+          "mlbam_id": 800611,
+          "name": "Noble Meyer",
+          "previous_rank": 86,
+          "previous_score": 3.0096,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 570,
+          "absolute_score_change": 1.3344,
+          "current_rank": 369,
+          "current_score": 0.5464,
+          "mlbam_id": 695695,
+          "name": "Tyson Neighbors",
+          "previous_rank": 939,
+          "previous_score": -0.788,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 564,
+          "absolute_score_change": 1.2752,
+          "current_rank": 918,
+          "current_score": -0.6881,
           "mlbam_id": 691384,
           "name": "Luis Perales",
           "previous_rank": 354,
@@ -5926,10 +6003,21 @@
           "role": "pitcher"
         },
         {
-          "absolute_rank_change": 550,
-          "absolute_score_change": 1.0666,
-          "current_rank": 1251,
-          "current_score": -1.3324,
+          "absolute_rank_change": 547,
+          "absolute_score_change": 2.3198,
+          "current_rank": 770,
+          "current_score": -0.3882,
+          "mlbam_id": 809100,
+          "name": "Ixan Henderson",
+          "previous_rank": 1317,
+          "previous_score": -2.708,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 547,
+          "absolute_score_change": 1.032,
+          "current_rank": 1248,
+          "current_score": -1.2978,
           "mlbam_id": 805871,
           "name": "Joel Hurtado",
           "previous_rank": 701,
@@ -5937,10 +6025,21 @@
           "role": "pitcher"
         },
         {
-          "absolute_rank_change": 458,
-          "absolute_score_change": 0.9685,
-          "current_rank": 855,
-          "current_score": -0.5482,
+          "absolute_rank_change": 472,
+          "absolute_score_change": 0.9363,
+          "current_rank": 907,
+          "current_score": -0.649,
+          "mlbam_id": 694633,
+          "name": "Chase Hampton",
+          "previous_rank": 435,
+          "previous_score": 0.2873,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 463,
+          "absolute_score_change": 0.9869,
+          "current_rank": 860,
+          "current_score": -0.5666,
           "mlbam_id": 804940,
           "name": "Nelson Keljo",
           "previous_rank": 397,
@@ -5949,9 +6048,9 @@
         },
         {
           "absolute_rank_change": 443,
-          "absolute_score_change": 1.407,
+          "absolute_score_change": 1.4062,
           "current_rank": 681,
-          "current_score": -0.2406,
+          "current_score": -0.2398,
           "mlbam_id": 828749,
           "name": "Jack Eshleman",
           "previous_rank": 238,
@@ -5960,9 +6059,9 @@
         },
         {
           "absolute_rank_change": 433,
-          "absolute_score_change": 0.7082,
+          "absolute_score_change": 0.7134,
           "current_rank": 1223,
-          "current_score": -1.1217,
+          "current_score": -1.1269,
           "mlbam_id": 682989,
           "name": "Victor Mederos",
           "previous_rank": 790,
@@ -5970,10 +6069,10 @@
           "role": "pitcher"
         },
         {
-          "absolute_rank_change": 412,
-          "absolute_score_change": 0.5022,
-          "current_rank": 1187,
-          "current_score": -0.8941,
+          "absolute_rank_change": 407,
+          "absolute_score_change": 0.4761,
+          "current_rank": 1182,
+          "current_score": -0.868,
           "mlbam_id": 800018,
           "name": "Chen Zhong-Ao Zhuang",
           "previous_rank": 775,
@@ -5982,9 +6081,9 @@
         },
         {
           "absolute_rank_change": 371,
-          "absolute_score_change": 1.7592,
+          "absolute_score_change": 1.7648,
           "current_rank": 531,
-          "current_score": -0.8579,
+          "current_score": -0.8523,
           "mlbam_id": 825927,
           "name": "Rafe Perich",
           "previous_rank": 902,
@@ -5993,9 +6092,9 @@
         },
         {
           "absolute_rank_change": 369,
-          "absolute_score_change": 1.4903,
+          "absolute_score_change": 1.4836,
           "current_rank": 986,
-          "current_score": -2.8311,
+          "current_score": -2.8244,
           "mlbam_id": 801346,
           "name": "Luis Hernandez",
           "previous_rank": 617,
@@ -6003,10 +6102,21 @@
           "role": "hitter"
         },
         {
-          "absolute_rank_change": 361,
-          "absolute_score_change": 1.3806,
-          "current_rank": 1012,
-          "current_score": -2.8906,
+          "absolute_rank_change": 365,
+          "absolute_score_change": 1.4261,
+          "current_rank": 934,
+          "current_score": -0.7568,
+          "mlbam_id": 686628,
+          "name": "Blake Burkhalter",
+          "previous_rank": 1299,
+          "previous_score": -2.1829,
+          "role": "pitcher"
+        },
+        {
+          "absolute_rank_change": 360,
+          "absolute_score_change": 1.374,
+          "current_rank": 1011,
+          "current_score": -2.884,
           "mlbam_id": 834681,
           "name": "Matthew Miura",
           "previous_rank": 651,
@@ -6014,10 +6124,10 @@
           "role": "hitter"
         },
         {
-          "absolute_rank_change": 351,
-          "absolute_score_change": 0.7653,
-          "current_rank": 588,
-          "current_score": -0.0227,
+          "absolute_rank_change": 360,
+          "absolute_score_change": 0.7723,
+          "current_rank": 579,
+          "current_score": -0.0157,
           "mlbam_id": 823862,
           "name": "Angel Perez",
           "previous_rank": 939,
@@ -6026,9 +6136,9 @@
         },
         {
           "absolute_rank_change": 349,
-          "absolute_score_change": 1.2993,
+          "absolute_score_change": 1.3038,
           "current_rank": 656,
-          "current_score": -1.5627,
+          "current_score": -1.5582,
           "mlbam_id": 806306,
           "name": "Cameron Decker",
           "previous_rank": 1005,
@@ -6036,10 +6146,10 @@
           "role": "hitter"
         },
         {
-          "absolute_rank_change": 336,
-          "absolute_score_change": 1.1645,
-          "current_rank": 713,
-          "current_score": -1.7823,
+          "absolute_rank_change": 338,
+          "absolute_score_change": 1.1719,
+          "current_rank": 711,
+          "current_score": -1.7749,
           "mlbam_id": 809331,
           "name": "Brian Sanchez",
           "previous_rank": 1049,
@@ -6047,21 +6157,10 @@
           "role": "hitter"
         },
         {
-          "absolute_rank_change": 309,
-          "absolute_score_change": 1.5697,
-          "current_rank": 482,
-          "current_score": -0.541,
-          "mlbam_id": 700681,
-          "name": "Nick Lorusso",
-          "previous_rank": 791,
-          "previous_score": -2.1107,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 309,
-          "absolute_score_change": 0.4146,
-          "current_rank": 1211,
-          "current_score": -1.0759,
+          "absolute_rank_change": 312,
+          "absolute_score_change": 0.417,
+          "current_rank": 1214,
+          "current_score": -1.0783,
           "mlbam_id": 822459,
           "name": "Matthew Watson",
           "previous_rank": 902,
@@ -6069,125 +6168,26 @@
           "role": "pitcher"
         },
         {
-          "absolute_rank_change": 289,
-          "absolute_score_change": 1.3328,
-          "current_rank": 812,
-          "current_score": -2.1696,
-          "mlbam_id": 828395,
-          "name": "Jason Schiavone",
-          "previous_rank": 523,
-          "previous_score": -0.8368,
+          "absolute_rank_change": 309,
+          "absolute_score_change": 1.5747,
+          "current_rank": 482,
+          "current_score": -0.536,
+          "mlbam_id": 700681,
+          "name": "Nick Lorusso",
+          "previous_rank": 791,
+          "previous_score": -2.1107,
           "role": "hitter"
         },
         {
-          "absolute_rank_change": 285,
-          "absolute_score_change": 0.5258,
-          "current_rank": 789,
-          "current_score": -0.4155,
+          "absolute_rank_change": 299,
+          "absolute_score_change": 0.5532,
+          "current_rank": 803,
+          "current_score": -0.4429,
           "mlbam_id": 694968,
           "name": "Jack Mahoney",
           "previous_rank": 504,
           "previous_score": 0.1103,
           "role": "pitcher"
-        },
-        {
-          "absolute_rank_change": 283,
-          "absolute_score_change": 1.344,
-          "current_rank": 799,
-          "current_score": -2.1289,
-          "mlbam_id": 815818,
-          "name": "Gavin Fien",
-          "previous_rank": 516,
-          "previous_score": -0.7849,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 279,
-          "absolute_score_change": 1.3075,
-          "current_rank": 183,
-          "current_score": 1.5185,
-          "mlbam_id": 807284,
-          "name": "Cam Caminiti",
-          "previous_rank": 462,
-          "previous_score": 0.211,
-          "role": "pitcher"
-        },
-        {
-          "absolute_rank_change": 266,
-          "absolute_score_change": 1.1273,
-          "current_rank": 601,
-          "current_score": -1.3313,
-          "mlbam_id": 694552,
-          "name": "Jack Payton",
-          "previous_rank": 867,
-          "previous_score": -2.4586,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 265,
-          "absolute_score_change": 2.408,
-          "current_rank": 337,
-          "current_score": 1.1373,
-          "mlbam_id": 683546,
-          "name": "Albert Fabian",
-          "previous_rank": 602,
-          "previous_score": -1.2707,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 260,
-          "absolute_score_change": 1.1511,
-          "current_rank": 466,
-          "current_score": 0.2084,
-          "mlbam_id": 694788,
-          "name": "Carlson Reed",
-          "previous_rank": 206,
-          "previous_score": 1.3595,
-          "role": "pitcher"
-        },
-        {
-          "absolute_rank_change": 252,
-          "absolute_score_change": 2.0095,
-          "current_rank": 360,
-          "current_score": 0.6892,
-          "mlbam_id": 800448,
-          "name": "Echedry Vargas",
-          "previous_rank": 612,
-          "previous_score": -1.3203,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 247,
-          "absolute_score_change": 1.1787,
-          "current_rank": 525,
-          "current_score": -0.8249,
-          "mlbam_id": 701527,
-          "name": "Mike Sirota",
-          "previous_rank": 772,
-          "previous_score": -2.0036,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 239,
-          "absolute_score_change": 0.9911,
-          "current_rank": 934,
-          "current_score": -2.7148,
-          "mlbam_id": 806959,
-          "name": "Joendry Vargas",
-          "previous_rank": 695,
-          "previous_score": -1.7237,
-          "role": "hitter"
-        },
-        {
-          "absolute_rank_change": 235,
-          "absolute_score_change": 1.5566,
-          "current_rank": 413,
-          "current_score": 0.0595,
-          "mlbam_id": 814442,
-          "name": "Ivan Brethowr",
-          "previous_rank": 648,
-          "previous_score": -1.4971,
-          "role": "hitter"
         }
       ],
       "new_identity_count": 11,
@@ -6196,18 +6196,18 @@
       "previous_candidate_count": 2658,
       "previous_date": "2026-06-23",
       "rank_movement": {
-        "max_absolute_change": 575,
-        "median_absolute_change": 6.0,
-        "p90_absolute_change": 52
+        "max_absolute_change": 1184,
+        "median_absolute_change": 7.0,
+        "p90_absolute_change": 56
       },
       "score_movement": {
-        "max_absolute_change": 9.4987,
-        "median_absolute_change": 0.0139,
-        "p90_absolute_change": 0.5697
+        "max_absolute_change": 9.4965,
+        "median_absolute_change": 0.0194,
+        "p90_absolute_change": 0.5991
       }
     }
   ],
-  "generated_at": "2026-06-24T10:52:31.648780+00:00",
+  "generated_at": "2026-06-24T13:07:31.158922+00:00",
   "index_comparisons": [
     {
       "current_candidate_count": 2744,
@@ -9344,10 +9344,21 @@
       },
       "largest_rank_movers": [
         {
+          "absolute_index_change": 14.0,
+          "absolute_rank_change": 1573,
+          "current_index": 14.0,
+          "current_rank": 741,
+          "mlbam_id": 695695,
+          "name": "Tyson Neighbors",
+          "previous_index": 0.0,
+          "previous_rank": 2314,
+          "role": "pitcher"
+        },
+        {
           "absolute_index_change": 16.0,
-          "absolute_rank_change": 874,
+          "absolute_rank_change": 875,
           "current_index": 10.0,
-          "current_rank": 1022,
+          "current_rank": 1023,
           "mlbam_id": 815617,
           "name": "Kayson Cunningham",
           "previous_index": 26.0,
@@ -9366,10 +9377,21 @@
           "role": "hitter"
         },
         {
+          "absolute_index_change": 6.0,
+          "absolute_rank_change": 750,
+          "current_index": 8.0,
+          "current_rank": 1208,
+          "mlbam_id": 689958,
+          "name": "Andrew Walters",
+          "previous_index": 2.0,
+          "previous_rank": 1958,
+          "role": "pitcher"
+        },
+        {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 693,
+          "absolute_rank_change": 694,
           "current_index": 0.0,
-          "current_rank": 2320,
+          "current_rank": 2321,
           "mlbam_id": 800140,
           "name": "Kendry Chirinos",
           "previous_index": 4.0,
@@ -9378,9 +9400,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 693,
+          "absolute_rank_change": 694,
           "current_index": 0.0,
-          "current_rank": 2320,
+          "current_rank": 2321,
           "mlbam_id": 801592,
           "name": "Zander Darby",
           "previous_index": 4.0,
@@ -9389,9 +9411,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 672,
+          "absolute_rank_change": 670,
           "current_index": 4.0,
-          "current_rank": 1642,
+          "current_rank": 1644,
           "mlbam_id": 808516,
           "name": "Andres Valor",
           "previous_index": 0.0,
@@ -9400,9 +9422,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 672,
+          "absolute_rank_change": 670,
           "current_index": 4.0,
-          "current_rank": 1642,
+          "current_rank": 1644,
           "mlbam_id": 829670,
           "name": "Brayden Smith",
           "previous_index": 0.0,
@@ -9411,9 +9433,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 672,
+          "absolute_rank_change": 670,
           "current_index": 4.0,
-          "current_rank": 1642,
+          "current_rank": 1644,
           "mlbam_id": 695656,
           "name": "Devin Futrell",
           "previous_index": 0.0,
@@ -9422,9 +9444,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 672,
+          "absolute_rank_change": 670,
           "current_index": 4.0,
-          "current_rank": 1642,
+          "current_rank": 1644,
           "mlbam_id": 823862,
           "name": "Angel Perez",
           "previous_index": 0.0,
@@ -9433,9 +9455,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 672,
+          "absolute_rank_change": 670,
           "current_index": 4.0,
-          "current_rank": 1642,
+          "current_rank": 1644,
           "mlbam_id": 823892,
           "name": "Adrian Heredia",
           "previous_index": 0.0,
@@ -9444,9 +9466,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 616,
+          "absolute_rank_change": 619,
           "current_index": 2.0,
-          "current_rank": 1973,
+          "current_rank": 1976,
           "mlbam_id": 804944,
           "name": "Jackson Lovich",
           "previous_index": 6.0,
@@ -9455,9 +9477,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 616,
+          "absolute_rank_change": 619,
           "current_index": 2.0,
-          "current_rank": 1973,
+          "current_rank": 1976,
           "mlbam_id": 834681,
           "name": "Matthew Miura",
           "previous_index": 6.0,
@@ -9466,9 +9488,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 616,
+          "absolute_rank_change": 619,
           "current_index": 2.0,
-          "current_rank": 1973,
+          "current_rank": 1976,
           "mlbam_id": 828749,
           "name": "Jack Eshleman",
           "previous_index": 6.0,
@@ -9477,9 +9499,9 @@
         },
         {
           "absolute_index_change": 6.0,
-          "absolute_rank_change": 605,
+          "absolute_rank_change": 604,
           "current_index": 10.0,
-          "current_rank": 1022,
+          "current_rank": 1023,
           "mlbam_id": 683546,
           "name": "Albert Fabian",
           "previous_index": 4.0,
@@ -9488,9 +9510,9 @@
         },
         {
           "absolute_index_change": 6.0,
-          "absolute_rank_change": 605,
+          "absolute_rank_change": 604,
           "current_index": 10.0,
-          "current_rank": 1022,
+          "current_rank": 1023,
           "mlbam_id": 806306,
           "name": "Cameron Decker",
           "previous_index": 4.0,
@@ -9499,9 +9521,9 @@
         },
         {
           "absolute_index_change": 6.0,
-          "absolute_rank_change": 605,
+          "absolute_rank_change": 604,
           "current_index": 10.0,
-          "current_rank": 1022,
+          "current_rank": 1023,
           "mlbam_id": 809331,
           "name": "Brian Sanchez",
           "previous_index": 4.0,
@@ -9510,9 +9532,9 @@
         },
         {
           "absolute_index_change": 10.0,
-          "absolute_rank_change": 588,
+          "absolute_rank_change": 589,
           "current_index": 10.0,
-          "current_rank": 1022,
+          "current_rank": 1023,
           "mlbam_id": 815818,
           "name": "Gavin Fien",
           "previous_index": 20.0,
@@ -9521,9 +9543,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 587,
+          "absolute_rank_change": 585,
           "current_index": 6.0,
-          "current_rank": 1371,
+          "current_rank": 1373,
           "mlbam_id": 700341,
           "name": "Kenny Castillo",
           "previous_index": 2.0,
@@ -9532,9 +9554,9 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 587,
+          "absolute_rank_change": 585,
           "current_index": 6.0,
-          "current_rank": 1371,
+          "current_rank": 1373,
           "mlbam_id": 808381,
           "name": "Enyervert Perez",
           "previous_index": 2.0,
@@ -9543,14 +9565,36 @@
         },
         {
           "absolute_index_change": 4.0,
-          "absolute_rank_change": 587,
+          "absolute_rank_change": 585,
           "current_index": 6.0,
-          "current_rank": 1371,
+          "current_rank": 1373,
           "mlbam_id": 815654,
           "name": "Eli Lovich",
           "previous_index": 2.0,
           "previous_rank": 1958,
           "role": "hitter"
+        },
+        {
+          "absolute_index_change": 10.0,
+          "absolute_rank_change": 550,
+          "current_index": 12.0,
+          "current_rank": 865,
+          "mlbam_id": 701680,
+          "name": "Rj Sales",
+          "previous_index": 22.0,
+          "previous_rank": 315,
+          "role": "pitcher"
+        },
+        {
+          "absolute_index_change": 12.0,
+          "absolute_rank_change": 543,
+          "current_index": 28.0,
+          "current_rank": 111,
+          "mlbam_id": 801517,
+          "name": "Spencer Giesting",
+          "previous_index": 16.0,
+          "previous_rank": 654,
+          "role": "pitcher"
         },
         {
           "absolute_index_change": 6.0,
@@ -9573,50 +9617,6 @@
           "previous_index": 6.0,
           "previous_rank": 1357,
           "role": "hitter"
-        },
-        {
-          "absolute_index_change": 8.0,
-          "absolute_rank_change": 485,
-          "current_index": 10.0,
-          "current_rank": 1022,
-          "mlbam_id": 703177,
-          "name": "Jhonny Severino",
-          "previous_index": 18.0,
-          "previous_rank": 537,
-          "role": "hitter"
-        },
-        {
-          "absolute_index_change": 6.0,
-          "absolute_rank_change": 462,
-          "current_index": 8.0,
-          "current_rank": 1207,
-          "mlbam_id": 701616,
-          "name": "Caleb Lomavita",
-          "previous_index": 14.0,
-          "previous_rank": 745,
-          "role": "hitter"
-        },
-        {
-          "absolute_index_change": 6.0,
-          "absolute_rank_change": 462,
-          "current_index": 8.0,
-          "current_rank": 1207,
-          "mlbam_id": 700933,
-          "name": "Chris Cortez",
-          "previous_index": 14.0,
-          "previous_rank": 745,
-          "role": "pitcher"
-        },
-        {
-          "absolute_index_change": 4.0,
-          "absolute_rank_change": 446,
-          "current_index": 4.0,
-          "current_rank": 1642,
-          "mlbam_id": 703161,
-          "name": "Alexis Hernandez",
-          "previous_index": 8.0,
-          "previous_rank": 1196,
-          "role": "hitter"
         }
       ],
       "new_identity_count": 11,
@@ -9625,9 +9625,9 @@
       "previous_candidate_count": 2712,
       "previous_date": "2026-06-23",
       "rank_movement": {
-        "max_absolute_change": 874,
-        "median_absolute_change": 10.0,
-        "p90_absolute_change": 109
+        "max_absolute_change": 1573,
+        "median_absolute_change": 12.0,
+        "p90_absolute_change": 116
       }
     }
   ],
@@ -9675,6 +9675,22 @@
         "role": "hitter"
       },
       {
+        "absolute_change": 0.28,
+        "current_expected_factual_outcome_tier": 0.28,
+        "mlbam_id": 695695,
+        "name": "Tyson Neighbors",
+        "previous_expected_factual_outcome_tier": 0.0,
+        "role": "pitcher"
+      },
+      {
+        "absolute_change": 0.24,
+        "current_expected_factual_outcome_tier": 0.56,
+        "mlbam_id": 801517,
+        "name": "Spencer Giesting",
+        "previous_expected_factual_outcome_tier": 0.32,
+        "role": "pitcher"
+      },
+      {
         "absolute_change": 0.2,
         "current_expected_factual_outcome_tier": 0.64,
         "mlbam_id": 691728,
@@ -9689,6 +9705,14 @@
         "name": "Gavin Fien",
         "previous_expected_factual_outcome_tier": 0.4,
         "role": "hitter"
+      },
+      {
+        "absolute_change": 0.2,
+        "current_expected_factual_outcome_tier": 0.24,
+        "mlbam_id": 701680,
+        "name": "Rj Sales",
+        "previous_expected_factual_outcome_tier": 0.44,
+        "role": "pitcher"
       },
       {
         "absolute_change": 0.16,
@@ -9745,6 +9769,14 @@
         "name": "Rafe Perich",
         "previous_expected_factual_outcome_tier": 0.08,
         "role": "hitter"
+      },
+      {
+        "absolute_change": 0.16,
+        "current_expected_factual_outcome_tier": 0.64,
+        "mlbam_id": 694393,
+        "name": "Jaxon Wiggins",
+        "previous_expected_factual_outcome_tier": 0.48,
+        "role": "pitcher"
       },
       {
         "absolute_change": 0.16,
@@ -9833,38 +9865,6 @@
         "name": "Nehomar Ochoa Jr.",
         "previous_expected_factual_outcome_tier": 0.2,
         "role": "hitter"
-      },
-      {
-        "absolute_change": 0.12,
-        "current_expected_factual_outcome_tier": 0.44,
-        "mlbam_id": 808234,
-        "name": "Eduardo Quintero",
-        "previous_expected_factual_outcome_tier": 0.32,
-        "role": "hitter"
-      },
-      {
-        "absolute_change": 0.12,
-        "current_expected_factual_outcome_tier": 0.2,
-        "mlbam_id": 809331,
-        "name": "Brian Sanchez",
-        "previous_expected_factual_outcome_tier": 0.08,
-        "role": "hitter"
-      },
-      {
-        "absolute_change": 0.12,
-        "current_expected_factual_outcome_tier": 0.6,
-        "mlbam_id": 815816,
-        "name": "Brady Ebel",
-        "previous_expected_factual_outcome_tier": 0.48,
-        "role": "hitter"
-      },
-      {
-        "absolute_change": 0.12,
-        "current_expected_factual_outcome_tier": 0.48,
-        "mlbam_id": 815929,
-        "name": "Jhonny Level",
-        "previous_expected_factual_outcome_tier": 0.6,
-        "role": "hitter"
       }
     ],
     "new_identity_count": 11,
@@ -9884,9 +9884,9 @@
         "p90_absolute_change": 0.04
       },
       "outcome_uncertainty": {
-        "max_absolute_change": 0.4164,
+        "max_absolute_change": 0.4821,
         "median_absolute_change": 0.0,
-        "p90_absolute_change": 0.0515
+        "p90_absolute_change": 0.0553
       },
       "role_or_better_probability": {
         "max_absolute_change": 0.24,
@@ -9894,7 +9894,7 @@
         "p90_absolute_change": 0.04
       },
       "star_ceiling_probability": {
-        "max_absolute_change": 0.08,
+        "max_absolute_change": 0.16,
         "median_absolute_change": 0.0,
         "p90_absolute_change": 0.0
       }
@@ -9922,10 +9922,87 @@
     },
     "largest_rank_movers": [
       {
-        "absolute_rank_change": 575,
-        "absolute_score_change": 1.3268,
-        "current_rank": 929,
-        "current_score": -0.7397,
+        "absolute_rank_change": 1184,
+        "absolute_score_change": 4.615,
+        "current_rank": 1320,
+        "current_score": -2.6468,
+        "mlbam_id": 695646,
+        "name": "Peter Heubeck",
+        "previous_rank": 136,
+        "previous_score": 1.9682,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 1142,
+        "absolute_score_change": 3.7228,
+        "current_rank": 1296,
+        "current_score": -1.9518,
+        "mlbam_id": 805809,
+        "name": "Travis Sykora",
+        "previous_rank": 154,
+        "previous_score": 1.771,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 1079,
+        "absolute_score_change": 3.0505,
+        "current_rank": 147,
+        "current_score": 1.8494,
+        "mlbam_id": 801517,
+        "name": "Spencer Giesting",
+        "previous_rank": 1226,
+        "previous_score": -1.2011,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 852,
+        "absolute_score_change": 3.2516,
+        "current_rank": 475,
+        "current_score": 0.1805,
+        "mlbam_id": 811290,
+        "name": "Jaden Hamm",
+        "previous_rank": 1327,
+        "previous_score": -3.0711,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 713,
+        "absolute_score_change": 4.5665,
+        "current_rank": 56,
+        "current_score": 4.1939,
+        "mlbam_id": 689958,
+        "name": "Andrew Walters",
+        "previous_rank": 769,
+        "previous_score": -0.3726,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 599,
+        "absolute_score_change": 3.2549,
+        "current_rank": 685,
+        "current_score": -0.2453,
+        "mlbam_id": 800611,
+        "name": "Noble Meyer",
+        "previous_rank": 86,
+        "previous_score": 3.0096,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 570,
+        "absolute_score_change": 1.3344,
+        "current_rank": 369,
+        "current_score": 0.5464,
+        "mlbam_id": 695695,
+        "name": "Tyson Neighbors",
+        "previous_rank": 939,
+        "previous_score": -0.788,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 564,
+        "absolute_score_change": 1.2752,
+        "current_rank": 918,
+        "current_score": -0.6881,
         "mlbam_id": 691384,
         "name": "Luis Perales",
         "previous_rank": 354,
@@ -9933,10 +10010,21 @@
         "role": "pitcher"
       },
       {
-        "absolute_rank_change": 550,
-        "absolute_score_change": 1.0666,
-        "current_rank": 1251,
-        "current_score": -1.3324,
+        "absolute_rank_change": 547,
+        "absolute_score_change": 2.3198,
+        "current_rank": 770,
+        "current_score": -0.3882,
+        "mlbam_id": 809100,
+        "name": "Ixan Henderson",
+        "previous_rank": 1317,
+        "previous_score": -2.708,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 547,
+        "absolute_score_change": 1.032,
+        "current_rank": 1248,
+        "current_score": -1.2978,
         "mlbam_id": 805871,
         "name": "Joel Hurtado",
         "previous_rank": 701,
@@ -9944,10 +10032,21 @@
         "role": "pitcher"
       },
       {
-        "absolute_rank_change": 458,
-        "absolute_score_change": 0.9685,
-        "current_rank": 855,
-        "current_score": -0.5482,
+        "absolute_rank_change": 472,
+        "absolute_score_change": 0.9363,
+        "current_rank": 907,
+        "current_score": -0.649,
+        "mlbam_id": 694633,
+        "name": "Chase Hampton",
+        "previous_rank": 435,
+        "previous_score": 0.2873,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 463,
+        "absolute_score_change": 0.9869,
+        "current_rank": 860,
+        "current_score": -0.5666,
         "mlbam_id": 804940,
         "name": "Nelson Keljo",
         "previous_rank": 397,
@@ -9956,9 +10055,9 @@
       },
       {
         "absolute_rank_change": 443,
-        "absolute_score_change": 1.407,
+        "absolute_score_change": 1.4062,
         "current_rank": 681,
-        "current_score": -0.2406,
+        "current_score": -0.2398,
         "mlbam_id": 828749,
         "name": "Jack Eshleman",
         "previous_rank": 238,
@@ -9967,9 +10066,9 @@
       },
       {
         "absolute_rank_change": 433,
-        "absolute_score_change": 0.7082,
+        "absolute_score_change": 0.7134,
         "current_rank": 1223,
-        "current_score": -1.1217,
+        "current_score": -1.1269,
         "mlbam_id": 682989,
         "name": "Victor Mederos",
         "previous_rank": 790,
@@ -9977,10 +10076,10 @@
         "role": "pitcher"
       },
       {
-        "absolute_rank_change": 412,
-        "absolute_score_change": 0.5022,
-        "current_rank": 1187,
-        "current_score": -0.8941,
+        "absolute_rank_change": 407,
+        "absolute_score_change": 0.4761,
+        "current_rank": 1182,
+        "current_score": -0.868,
         "mlbam_id": 800018,
         "name": "Chen Zhong-Ao Zhuang",
         "previous_rank": 775,
@@ -9989,9 +10088,9 @@
       },
       {
         "absolute_rank_change": 371,
-        "absolute_score_change": 1.7592,
+        "absolute_score_change": 1.7648,
         "current_rank": 531,
-        "current_score": -0.8579,
+        "current_score": -0.8523,
         "mlbam_id": 825927,
         "name": "Rafe Perich",
         "previous_rank": 902,
@@ -10000,9 +10099,9 @@
       },
       {
         "absolute_rank_change": 369,
-        "absolute_score_change": 1.4903,
+        "absolute_score_change": 1.4836,
         "current_rank": 986,
-        "current_score": -2.8311,
+        "current_score": -2.8244,
         "mlbam_id": 801346,
         "name": "Luis Hernandez",
         "previous_rank": 617,
@@ -10010,10 +10109,21 @@
         "role": "hitter"
       },
       {
-        "absolute_rank_change": 361,
-        "absolute_score_change": 1.3806,
-        "current_rank": 1012,
-        "current_score": -2.8906,
+        "absolute_rank_change": 365,
+        "absolute_score_change": 1.4261,
+        "current_rank": 934,
+        "current_score": -0.7568,
+        "mlbam_id": 686628,
+        "name": "Blake Burkhalter",
+        "previous_rank": 1299,
+        "previous_score": -2.1829,
+        "role": "pitcher"
+      },
+      {
+        "absolute_rank_change": 360,
+        "absolute_score_change": 1.374,
+        "current_rank": 1011,
+        "current_score": -2.884,
         "mlbam_id": 834681,
         "name": "Matthew Miura",
         "previous_rank": 651,
@@ -10021,10 +10131,10 @@
         "role": "hitter"
       },
       {
-        "absolute_rank_change": 351,
-        "absolute_score_change": 0.7653,
-        "current_rank": 588,
-        "current_score": -0.0227,
+        "absolute_rank_change": 360,
+        "absolute_score_change": 0.7723,
+        "current_rank": 579,
+        "current_score": -0.0157,
         "mlbam_id": 823862,
         "name": "Angel Perez",
         "previous_rank": 939,
@@ -10033,9 +10143,9 @@
       },
       {
         "absolute_rank_change": 349,
-        "absolute_score_change": 1.2993,
+        "absolute_score_change": 1.3038,
         "current_rank": 656,
-        "current_score": -1.5627,
+        "current_score": -1.5582,
         "mlbam_id": 806306,
         "name": "Cameron Decker",
         "previous_rank": 1005,
@@ -10043,10 +10153,10 @@
         "role": "hitter"
       },
       {
-        "absolute_rank_change": 336,
-        "absolute_score_change": 1.1645,
-        "current_rank": 713,
-        "current_score": -1.7823,
+        "absolute_rank_change": 338,
+        "absolute_score_change": 1.1719,
+        "current_rank": 711,
+        "current_score": -1.7749,
         "mlbam_id": 809331,
         "name": "Brian Sanchez",
         "previous_rank": 1049,
@@ -10054,21 +10164,10 @@
         "role": "hitter"
       },
       {
-        "absolute_rank_change": 309,
-        "absolute_score_change": 1.5697,
-        "current_rank": 482,
-        "current_score": -0.541,
-        "mlbam_id": 700681,
-        "name": "Nick Lorusso",
-        "previous_rank": 791,
-        "previous_score": -2.1107,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 309,
-        "absolute_score_change": 0.4146,
-        "current_rank": 1211,
-        "current_score": -1.0759,
+        "absolute_rank_change": 312,
+        "absolute_score_change": 0.417,
+        "current_rank": 1214,
+        "current_score": -1.0783,
         "mlbam_id": 822459,
         "name": "Matthew Watson",
         "previous_rank": 902,
@@ -10076,125 +10175,26 @@
         "role": "pitcher"
       },
       {
-        "absolute_rank_change": 289,
-        "absolute_score_change": 1.3328,
-        "current_rank": 812,
-        "current_score": -2.1696,
-        "mlbam_id": 828395,
-        "name": "Jason Schiavone",
-        "previous_rank": 523,
-        "previous_score": -0.8368,
+        "absolute_rank_change": 309,
+        "absolute_score_change": 1.5747,
+        "current_rank": 482,
+        "current_score": -0.536,
+        "mlbam_id": 700681,
+        "name": "Nick Lorusso",
+        "previous_rank": 791,
+        "previous_score": -2.1107,
         "role": "hitter"
       },
       {
-        "absolute_rank_change": 285,
-        "absolute_score_change": 0.5258,
-        "current_rank": 789,
-        "current_score": -0.4155,
+        "absolute_rank_change": 299,
+        "absolute_score_change": 0.5532,
+        "current_rank": 803,
+        "current_score": -0.4429,
         "mlbam_id": 694968,
         "name": "Jack Mahoney",
         "previous_rank": 504,
         "previous_score": 0.1103,
         "role": "pitcher"
-      },
-      {
-        "absolute_rank_change": 283,
-        "absolute_score_change": 1.344,
-        "current_rank": 799,
-        "current_score": -2.1289,
-        "mlbam_id": 815818,
-        "name": "Gavin Fien",
-        "previous_rank": 516,
-        "previous_score": -0.7849,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 279,
-        "absolute_score_change": 1.3075,
-        "current_rank": 183,
-        "current_score": 1.5185,
-        "mlbam_id": 807284,
-        "name": "Cam Caminiti",
-        "previous_rank": 462,
-        "previous_score": 0.211,
-        "role": "pitcher"
-      },
-      {
-        "absolute_rank_change": 266,
-        "absolute_score_change": 1.1273,
-        "current_rank": 601,
-        "current_score": -1.3313,
-        "mlbam_id": 694552,
-        "name": "Jack Payton",
-        "previous_rank": 867,
-        "previous_score": -2.4586,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 265,
-        "absolute_score_change": 2.408,
-        "current_rank": 337,
-        "current_score": 1.1373,
-        "mlbam_id": 683546,
-        "name": "Albert Fabian",
-        "previous_rank": 602,
-        "previous_score": -1.2707,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 260,
-        "absolute_score_change": 1.1511,
-        "current_rank": 466,
-        "current_score": 0.2084,
-        "mlbam_id": 694788,
-        "name": "Carlson Reed",
-        "previous_rank": 206,
-        "previous_score": 1.3595,
-        "role": "pitcher"
-      },
-      {
-        "absolute_rank_change": 252,
-        "absolute_score_change": 2.0095,
-        "current_rank": 360,
-        "current_score": 0.6892,
-        "mlbam_id": 800448,
-        "name": "Echedry Vargas",
-        "previous_rank": 612,
-        "previous_score": -1.3203,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 247,
-        "absolute_score_change": 1.1787,
-        "current_rank": 525,
-        "current_score": -0.8249,
-        "mlbam_id": 701527,
-        "name": "Mike Sirota",
-        "previous_rank": 772,
-        "previous_score": -2.0036,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 239,
-        "absolute_score_change": 0.9911,
-        "current_rank": 934,
-        "current_score": -2.7148,
-        "mlbam_id": 806959,
-        "name": "Joendry Vargas",
-        "previous_rank": 695,
-        "previous_score": -1.7237,
-        "role": "hitter"
-      },
-      {
-        "absolute_rank_change": 235,
-        "absolute_score_change": 1.5566,
-        "current_rank": 413,
-        "current_score": 0.0595,
-        "mlbam_id": 814442,
-        "name": "Ivan Brethowr",
-        "previous_rank": 648,
-        "previous_score": -1.4971,
-        "role": "hitter"
       }
     ],
     "new_identity_count": 11,
@@ -10203,14 +10203,14 @@
     "previous_candidate_count": 2658,
     "previous_date": "2026-06-23",
     "rank_movement": {
-      "max_absolute_change": 575,
-      "median_absolute_change": 6.0,
-      "p90_absolute_change": 52
+      "max_absolute_change": 1184,
+      "median_absolute_change": 7.0,
+      "p90_absolute_change": 56
     },
     "score_movement": {
-      "max_absolute_change": 9.4987,
-      "median_absolute_change": 0.0139,
-      "p90_absolute_change": 0.5697
+      "max_absolute_change": 9.4965,
+      "median_absolute_change": 0.0194,
+      "p90_absolute_change": 0.5991
     }
   },
   "latest_index_comparison": {
@@ -10238,10 +10238,21 @@
     },
     "largest_rank_movers": [
       {
+        "absolute_index_change": 14.0,
+        "absolute_rank_change": 1573,
+        "current_index": 14.0,
+        "current_rank": 741,
+        "mlbam_id": 695695,
+        "name": "Tyson Neighbors",
+        "previous_index": 0.0,
+        "previous_rank": 2314,
+        "role": "pitcher"
+      },
+      {
         "absolute_index_change": 16.0,
-        "absolute_rank_change": 874,
+        "absolute_rank_change": 875,
         "current_index": 10.0,
-        "current_rank": 1022,
+        "current_rank": 1023,
         "mlbam_id": 815617,
         "name": "Kayson Cunningham",
         "previous_index": 26.0,
@@ -10260,10 +10271,21 @@
         "role": "hitter"
       },
       {
+        "absolute_index_change": 6.0,
+        "absolute_rank_change": 750,
+        "current_index": 8.0,
+        "current_rank": 1208,
+        "mlbam_id": 689958,
+        "name": "Andrew Walters",
+        "previous_index": 2.0,
+        "previous_rank": 1958,
+        "role": "pitcher"
+      },
+      {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 693,
+        "absolute_rank_change": 694,
         "current_index": 0.0,
-        "current_rank": 2320,
+        "current_rank": 2321,
         "mlbam_id": 800140,
         "name": "Kendry Chirinos",
         "previous_index": 4.0,
@@ -10272,9 +10294,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 693,
+        "absolute_rank_change": 694,
         "current_index": 0.0,
-        "current_rank": 2320,
+        "current_rank": 2321,
         "mlbam_id": 801592,
         "name": "Zander Darby",
         "previous_index": 4.0,
@@ -10283,9 +10305,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 672,
+        "absolute_rank_change": 670,
         "current_index": 4.0,
-        "current_rank": 1642,
+        "current_rank": 1644,
         "mlbam_id": 808516,
         "name": "Andres Valor",
         "previous_index": 0.0,
@@ -10294,9 +10316,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 672,
+        "absolute_rank_change": 670,
         "current_index": 4.0,
-        "current_rank": 1642,
+        "current_rank": 1644,
         "mlbam_id": 829670,
         "name": "Brayden Smith",
         "previous_index": 0.0,
@@ -10305,9 +10327,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 672,
+        "absolute_rank_change": 670,
         "current_index": 4.0,
-        "current_rank": 1642,
+        "current_rank": 1644,
         "mlbam_id": 695656,
         "name": "Devin Futrell",
         "previous_index": 0.0,
@@ -10316,9 +10338,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 672,
+        "absolute_rank_change": 670,
         "current_index": 4.0,
-        "current_rank": 1642,
+        "current_rank": 1644,
         "mlbam_id": 823862,
         "name": "Angel Perez",
         "previous_index": 0.0,
@@ -10327,9 +10349,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 672,
+        "absolute_rank_change": 670,
         "current_index": 4.0,
-        "current_rank": 1642,
+        "current_rank": 1644,
         "mlbam_id": 823892,
         "name": "Adrian Heredia",
         "previous_index": 0.0,
@@ -10338,9 +10360,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 616,
+        "absolute_rank_change": 619,
         "current_index": 2.0,
-        "current_rank": 1973,
+        "current_rank": 1976,
         "mlbam_id": 804944,
         "name": "Jackson Lovich",
         "previous_index": 6.0,
@@ -10349,9 +10371,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 616,
+        "absolute_rank_change": 619,
         "current_index": 2.0,
-        "current_rank": 1973,
+        "current_rank": 1976,
         "mlbam_id": 834681,
         "name": "Matthew Miura",
         "previous_index": 6.0,
@@ -10360,9 +10382,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 616,
+        "absolute_rank_change": 619,
         "current_index": 2.0,
-        "current_rank": 1973,
+        "current_rank": 1976,
         "mlbam_id": 828749,
         "name": "Jack Eshleman",
         "previous_index": 6.0,
@@ -10371,9 +10393,9 @@
       },
       {
         "absolute_index_change": 6.0,
-        "absolute_rank_change": 605,
+        "absolute_rank_change": 604,
         "current_index": 10.0,
-        "current_rank": 1022,
+        "current_rank": 1023,
         "mlbam_id": 683546,
         "name": "Albert Fabian",
         "previous_index": 4.0,
@@ -10382,9 +10404,9 @@
       },
       {
         "absolute_index_change": 6.0,
-        "absolute_rank_change": 605,
+        "absolute_rank_change": 604,
         "current_index": 10.0,
-        "current_rank": 1022,
+        "current_rank": 1023,
         "mlbam_id": 806306,
         "name": "Cameron Decker",
         "previous_index": 4.0,
@@ -10393,9 +10415,9 @@
       },
       {
         "absolute_index_change": 6.0,
-        "absolute_rank_change": 605,
+        "absolute_rank_change": 604,
         "current_index": 10.0,
-        "current_rank": 1022,
+        "current_rank": 1023,
         "mlbam_id": 809331,
         "name": "Brian Sanchez",
         "previous_index": 4.0,
@@ -10404,9 +10426,9 @@
       },
       {
         "absolute_index_change": 10.0,
-        "absolute_rank_change": 588,
+        "absolute_rank_change": 589,
         "current_index": 10.0,
-        "current_rank": 1022,
+        "current_rank": 1023,
         "mlbam_id": 815818,
         "name": "Gavin Fien",
         "previous_index": 20.0,
@@ -10415,9 +10437,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 587,
+        "absolute_rank_change": 585,
         "current_index": 6.0,
-        "current_rank": 1371,
+        "current_rank": 1373,
         "mlbam_id": 700341,
         "name": "Kenny Castillo",
         "previous_index": 2.0,
@@ -10426,9 +10448,9 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 587,
+        "absolute_rank_change": 585,
         "current_index": 6.0,
-        "current_rank": 1371,
+        "current_rank": 1373,
         "mlbam_id": 808381,
         "name": "Enyervert Perez",
         "previous_index": 2.0,
@@ -10437,14 +10459,36 @@
       },
       {
         "absolute_index_change": 4.0,
-        "absolute_rank_change": 587,
+        "absolute_rank_change": 585,
         "current_index": 6.0,
-        "current_rank": 1371,
+        "current_rank": 1373,
         "mlbam_id": 815654,
         "name": "Eli Lovich",
         "previous_index": 2.0,
         "previous_rank": 1958,
         "role": "hitter"
+      },
+      {
+        "absolute_index_change": 10.0,
+        "absolute_rank_change": 550,
+        "current_index": 12.0,
+        "current_rank": 865,
+        "mlbam_id": 701680,
+        "name": "Rj Sales",
+        "previous_index": 22.0,
+        "previous_rank": 315,
+        "role": "pitcher"
+      },
+      {
+        "absolute_index_change": 12.0,
+        "absolute_rank_change": 543,
+        "current_index": 28.0,
+        "current_rank": 111,
+        "mlbam_id": 801517,
+        "name": "Spencer Giesting",
+        "previous_index": 16.0,
+        "previous_rank": 654,
+        "role": "pitcher"
       },
       {
         "absolute_index_change": 6.0,
@@ -10467,50 +10511,6 @@
         "previous_index": 6.0,
         "previous_rank": 1357,
         "role": "hitter"
-      },
-      {
-        "absolute_index_change": 8.0,
-        "absolute_rank_change": 485,
-        "current_index": 10.0,
-        "current_rank": 1022,
-        "mlbam_id": 703177,
-        "name": "Jhonny Severino",
-        "previous_index": 18.0,
-        "previous_rank": 537,
-        "role": "hitter"
-      },
-      {
-        "absolute_index_change": 6.0,
-        "absolute_rank_change": 462,
-        "current_index": 8.0,
-        "current_rank": 1207,
-        "mlbam_id": 701616,
-        "name": "Caleb Lomavita",
-        "previous_index": 14.0,
-        "previous_rank": 745,
-        "role": "hitter"
-      },
-      {
-        "absolute_index_change": 6.0,
-        "absolute_rank_change": 462,
-        "current_index": 8.0,
-        "current_rank": 1207,
-        "mlbam_id": 700933,
-        "name": "Chris Cortez",
-        "previous_index": 14.0,
-        "previous_rank": 745,
-        "role": "pitcher"
-      },
-      {
-        "absolute_index_change": 4.0,
-        "absolute_rank_change": 446,
-        "current_index": 4.0,
-        "current_rank": 1642,
-        "mlbam_id": 703161,
-        "name": "Alexis Hernandez",
-        "previous_index": 8.0,
-        "previous_rank": 1196,
-        "role": "hitter"
       }
     ],
     "new_identity_count": 11,
@@ -10519,9 +10519,9 @@
     "previous_candidate_count": 2712,
     "previous_date": "2026-06-23",
     "rank_movement": {
-      "max_absolute_change": 874,
-      "median_absolute_change": 10.0,
-      "p90_absolute_change": 109
+      "max_absolute_change": 1573,
+      "median_absolute_change": 12.0,
+      "p90_absolute_change": 116
     }
   },
   "observation_contract": {
