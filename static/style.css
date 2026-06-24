@@ -3961,3 +3961,25 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
         flex: 0 0 auto;
     }
 }
+
+/* ── FanGraphs scouting panel (player card) — structured grades, not a raw list ── */
+.prospect-fangraphs .fg-asof { font-family: var(--font-mono); font-size: .72rem; color: var(--c-muted); letter-spacing: .04em; font-weight: 500; }
+.prospect-fangraphs .fg-fv-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .45rem 0 .7rem; }
+.prospect-fangraphs .fg-fv-grade { font-family: var(--font-display); font-size: 1.35rem; font-weight: 800; line-height: 1; color: var(--c-signal); text-shadow: 0 0 14px rgba(52, 226, 196, .32); }
+.prospect-fangraphs .fg-rank, .prospect-fangraphs .fg-org { font-family: var(--font-mono); font-size: .76rem; color: var(--c-muted); border: 1px solid var(--c-border); border-radius: 999px; padding: .12rem .5rem; }
+.prospect-fangraphs .fg-flag { margin-left: auto; font-family: var(--font-mono); font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .18rem .55rem; border-radius: 999px; }
+.prospect-fangraphs .fg-flag.model-high { color: var(--c-signal); border: 1px solid rgba(52, 226, 196, .5); background: rgba(52, 226, 196, .08); }
+.prospect-fangraphs .fg-flag.scout-high { color: var(--c-amber); border: 1px solid rgba(251, 191, 36, .45); background: rgba(251, 191, 36, .08); }
+.prospect-fangraphs .fg-grade-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); gap: .4rem; margin: 0 0 .5rem; }
+.prospect-fangraphs .fg-grade { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; background: var(--surface-2); border: 1px solid var(--c-border); border-radius: 6px; padding: .3rem .55rem; font-family: var(--font-mono); font-size: .82rem; color: var(--c-text); }
+.prospect-fangraphs .fg-grade strong { color: var(--c-muted); font-weight: 600; font-size: .68rem; text-transform: uppercase; letter-spacing: .03em; }
+.prospect-fangraphs .market-context-note { color: var(--c-muted); font-size: .74rem; margin: 0; }
+
+/* ── "Ahead of the Curve" divergence cards (Backfields) — broadcast-board styling ── */
+.backfields-page .bf-consensus-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: .7rem; margin-top: .8rem; }
+.backfields-page .bf-consensus-card { background: rgba(21, 17, 12, .86); border: 1px solid var(--bf-line); border-left: 3px solid var(--bf-signal); border-radius: var(--radius); box-shadow: 0 14px 34px rgba(0, 0, 0, .24); padding: .72rem .8rem; }
+.backfields-page .bf-consensus-top { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.backfields-page .bf-consensus-top h3 { margin: 0; font-size: 1rem; font-family: var(--font-display); }
+.backfields-page .bf-consensus-badge { font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem; color: var(--bf-signal); text-shadow: 0 0 14px rgba(52, 226, 196, .32); }
+.backfields-page .bf-consensus-line { margin: .45rem 0 .2rem; font-family: var(--font-mono); font-size: .82rem; color: var(--bf-text); }
+.backfields-page .bf-consensus-meta { margin: 0; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bf-muted); }

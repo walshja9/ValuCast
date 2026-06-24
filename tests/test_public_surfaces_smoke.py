@@ -48,7 +48,7 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
                 self.assertEqual(self.client.get(route).status_code, 200)
 
     def test_prospect_player_detail_renders(self):
-        """A prospect /player/<id> must stay 200 with the Ahead of Consensus
+        """A prospect /player/<id> must stay 200 with the Ahead of the Curve
         badge surface live — guards the divergence chip + backfields wiring."""
         if not self._dd_ready():
             self.skipTest("DD feed not available")
