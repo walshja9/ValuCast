@@ -372,6 +372,37 @@ def _manual_graduated_ids() -> set[str]:
         return set()
 
 
+STS_CONSENSUS_PATH = ROOT / "data" / "sts" / "sts_consensus_snapshot.json"
+FG_FV_SNAPSHOT_PATH = ROOT / "data" / "fangraphs" / "fg_fv_snapshot.json"
+
+
+def _snapshot_by_mlbam(path: Path) -> dict:
+    """players_by_mlbam from a committed consensus/grade snapshot; {} if missing."""
+    try:
+        return (json.loads(path.read_text(encoding="utf-8")) or {}).get("players_by_mlbam") or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _merge_external_consensus(row: dict, mlbam, sts_by_mlbam: dict, fg_by_mlbam: dict) -> None:
+    """Blend STS Formulated Consensus + the FanGraphs ordinal into a board row's
+    context_only.source_ranks, so the public consensus = median of pipeline + hkb
+    + sts + fg_ord. Display/divergence reference only -- never a score input
+    (consistent with the existing pass-through pipeline/hkb ranks)."""
+    context = row.get("context_only")
+    if not isinstance(context, dict):
+        return
+    source_ranks = dict(context.get("source_ranks") or {})
+    sts = sts_by_mlbam.get(str(mlbam)) or {}
+    if sts.get("sts_rank") is not None:
+        source_ranks["sts"] = sts["sts_rank"]
+    fg = fg_by_mlbam.get(str(mlbam)) or {}
+    if fg.get("fg_top100") is not None:
+        source_ranks["fg_ord"] = fg["fg_top100"]
+    if source_ranks:
+        context["source_ranks"] = source_ranks
+
+
 def _rookie_limits(input_contract: dict) -> dict[str, float]:
     raw = input_contract.get("rookie_limits") or {}
     return {
@@ -1722,6 +1753,8 @@ def build_prospect_rank_v1(
     active_roster_by_mlbam = active_roster_lookup(mlb_roster_status)
     active_mlb_roster_ids = set(active_roster_by_mlbam)
     manual_graduated_ids = _manual_graduated_ids()
+    sts_by_mlbam = _snapshot_by_mlbam(STS_CONSENSUS_PATH)
+    fg_by_mlbam = _snapshot_by_mlbam(FG_FV_SNAPSHOT_PATH)
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
@@ -1856,6 +1889,7 @@ def build_prospect_rank_v1(
                 ),
             }
         )
+        _merge_external_consensus(board[-1], key[0], sts_by_mlbam, fg_by_mlbam)
 
     board.sort(
         key=lambda row: (

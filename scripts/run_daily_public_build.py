@@ -68,6 +68,7 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_milb_stat_freshness_audit.py",),
     ("scripts/build_prospect_card_data_audit.py",),
     ("scripts/build_recent_signal_report.py",),
+    ("scripts/build_sts_consensus_snapshot.py", "--write"),
     ("scripts/build_fangraphs_fv_snapshot.py", "--write"),
     ("scripts/build_ahead_of_consensus.py",),
     ("scripts/build_scouting_repository.py",),

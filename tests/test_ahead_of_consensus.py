@@ -92,17 +92,28 @@ def test_deep_single_board_is_excluded(tmp_path):
     assert payload["divergence_by_identity"] == {}
 
 
-def test_two_board_strong_valucast_is_included(tmp_path):
+def test_two_in_cap_boards_strong_valucast_is_included(tmp_path):
     payload = _build(
         tmp_path,
-        [_row(3, "Owen Murphy", "pitcher", 166, {"pipeline": 1000, "hkb": 1042})],
+        [_row(3, "Owen Murphy", "pitcher", 166, {"pipeline": 250, "hkb": 280})],
     )
     rows = payload["ahead_of_consensus"]
     assert [row["name"] for row in rows] == ["Owen Murphy"]
     assert rows[0]["board_count"] == 2
-    assert rows[0]["divergence"] == 1021 - 166
+    assert rows[0]["divergence"] == 265 - 166  # median(250, 280) - 166
     # The card badge index carries the same guarded call.
     assert "3_pitcher" in payload["divergence_by_identity"]
+
+
+def test_boards_beyond_consensus_cap_are_excluded(tmp_path):
+    # Deep-list ranks (sts/cfr run thousands deep) past the cap don't count as
+    # top-prospect consensus, so a call backed only by capped-out boards drops.
+    payload = _build(
+        tmp_path,
+        [_row(3, "Deep Pair", "pitcher", 166, {"pipeline": 1000, "hkb": 1042})],
+    )
+    assert payload["ahead_of_consensus"] == []
+    assert payload["divergence_by_identity"] == {}
 
 
 def test_no_consensus_row_is_excluded_and_no_badge(tmp_path):
@@ -137,7 +148,7 @@ def test_within_role_role_is_preserved(tmp_path):
         tmp_path,
         [
             _row(7, "Bat Call", "hitter", 40, {"pipeline": 200, "hkb": 220}),
-            _row(8, "Arm Call", "pitcher", 60, {"pipeline": 300, "hkb": 320}),
+            _row(8, "Arm Call", "pitcher", 60, {"pipeline": 280, "hkb": 295}),
         ],
     )
     by_role = {row["name"]: row["role"] for row in payload["ahead_of_consensus"]}

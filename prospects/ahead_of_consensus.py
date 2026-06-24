@@ -39,6 +39,11 @@ MIN_BOARDS = 2
 MAX_VALUCAST_RANK = 300
 MIN_DIVERGENCE = 25
 MAX_AHEAD_ROWS = 25
+# Boards have different depths (pipeline ~100, hkb ~650, sts/cfr run thousands
+# deep). Only count a board rank inside the top-prospect ceiling so a deep-list
+# rank (e.g. sts #1760) can't poison the median; deeper than this = "that board
+# doesn't rate him a top prospect", which simply doesn't contribute.
+CONSENSUS_RANK_CAP = 300
 
 
 def _load(path: Path) -> dict:
@@ -87,7 +92,9 @@ def _public_source_ranks(source_ranks: dict) -> dict:
     return {
         source: rank
         for source, rank in (source_ranks or {}).items()
-        if source not in _INTERNAL_SOURCES and isinstance(rank, (int, float))
+        if source not in _INTERNAL_SOURCES
+        and isinstance(rank, (int, float))
+        and rank <= CONSENSUS_RANK_CAP
     }
 
 
