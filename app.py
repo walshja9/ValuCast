@@ -2074,6 +2074,7 @@ def _prospect_player_card_png(row):
     shape_items = peak_shape or skill_grades
     shape_title = "PROJECTED PEAK SHAPE" if peak_shape else "CURRENT SKILL SHAPE"
     pool_label = prospect_percentiles.pool_label(row)
+    fg_scouting = fg_fv.get(getattr(row, "mlbam_id", None))
     context = getattr(row, "context", None)
     if not isinstance(context, dict):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
@@ -2187,6 +2188,35 @@ def _prospect_player_card_png(row):
         draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
         draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
         draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
+
+    # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
+    # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
+    # Skipped when the player has no FG board entry.
+    if fg_scouting and fg_scouting.get("fv"):
+        draw.rounded_rectangle((48, 1146, 1032, 1272), radius=10, fill=card, outline=border, width=1)
+        draw.text((74, 1160), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
+                  fill=muted, font=_graphic_font(14, bold=True))
+        draw.text((74, 1186), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
+        org = fg_scouting.get("org")
+        org_rk = fg_scouting.get("fg_org_rank")
+        if org:
+            org_label = f"{org}" + (f" - org #{int(org_rk)}" if org_rk else "")
+            draw.text((74, 1238), org_label, fill=muted, font=_graphic_font(16, mono=True))
+        hit_g = fg_scouting.get("hit_grades") or {}
+        pit_g = fg_scouting.get("pitch_grades") or {}
+        if hit_g:
+            tools = [("HIT", hit_g.get("Hit")), ("GAME PWR", hit_g.get("Game Pwr")),
+                     ("RAW PWR", hit_g.get("Raw Pwr")), ("SPD", hit_g.get("Spd")), ("FLD", hit_g.get("Fld"))]
+        else:
+            tools = [("FB", pit_g.get("FB")), ("SL", pit_g.get("SL")), ("CB", pit_g.get("CB")),
+                     ("CH", pit_g.get("CH")), ("CMD", pit_g.get("CMD"))]
+        tx = 290
+        for label, val in tools:
+            if not val:
+                continue
+            draw.text((tx, 1184), label, fill=muted, font=_graphic_font(13, bold=True))
+            draw.text((tx, 1204), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
+            tx += 150
 
     source = (
         "Current bars use ValuCast-owned MiLB stats. Peak shape is role context, not public scouting grades."
@@ -4051,6 +4081,20 @@ def _build_backfields_page_context():
             "line": short_text(_scouting_display_report_text(row)),
         })
 
+    # The artifact carries only mlbam+role; the player-detail route resolves the
+    # row's real id (e.g. vc_prospect_<mlbam>_<role>), so map it from the store
+    # rather than passing the raw mlbam (which 404s -> "could not load card").
+    prospect_id_by_key = {}
+    try:
+        for store_row in dd_store.get_all():
+            mid = getattr(store_row, "mlbam_id", None)
+            rl = getattr(store_row, "role", None)
+            rid = getattr(store_row, "id", None)
+            if mid and rl and rid:
+                prospect_id_by_key[(str(mid), str(rl))] = rid
+    except Exception:  # noqa: BLE001
+        prospect_id_by_key = {}
+
     ahead_of_consensus = []
     for row in (ahead_of_consensus_artifact or {}).get("ahead_of_consensus") or []:
         if not isinstance(row, dict):
@@ -4062,9 +4106,12 @@ def _build_backfields_page_context():
             continue
         board_count = as_float(row.get("board_count"))
         name = row.get("name") or "Unknown"
+        resolved_id = prospect_id_by_key.get(
+            (str(row.get("mlbam_id")), str(row.get("role")))
+        )
         ahead_of_consensus.append({
             "name": name,
-            **player_link_fields(name, row.get("mlbam_id")),
+            **player_link_fields(name, resolved_id or row.get("mlbam_id")),
             "valucast_rank": int(valucast_rank),
             "consensus_rank": int(consensus_rank),
             "divergence": int(divergence),

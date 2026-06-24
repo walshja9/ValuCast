@@ -353,6 +353,21 @@ def _service_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
     return lookup
 
 
+MANUAL_GRADUATION_PATH = ROOT / "data" / "manual" / "prospect_graduation_overrides.json"
+
+
+def _manual_graduated_ids() -> set[str]:
+    """mlbam_ids manually graduated off the board -- service-time graduates the
+    AB/IP rookie rule misses (e.g. a player past the 45-day MLB rule whose career
+    AB stays under the limit). Fail-soft: missing/bad file -> empty set."""
+    try:
+        raw = json.loads(MANUAL_GRADUATION_PATH.read_text(encoding="utf-8"))
+        ids = raw.get("graduated_mlbam_ids")
+        return {str(x) for x in ids} if isinstance(ids, list) else set()
+    except (OSError, ValueError):
+        return set()
+
+
 def _rookie_limits(input_contract: dict) -> dict[str, float]:
     raw = input_contract.get("rookie_limits") or {}
     return {
@@ -1571,6 +1586,7 @@ def _validation(
     active_mlb_roster_ids: set[str] | None = None,
     active_mlb_roster_excluded_count: int = 0,
     stale_inactive_excluded_count: int = 0,
+    manual_graduated_excluded_count: int = 0,
     mlb_roster_status_ready: bool = False,
     require_mlb_roster_status: bool = False,
 ) -> dict:
@@ -1584,7 +1600,8 @@ def _validation(
     eligible_prospect_row_count = max(
         len(prospect_rows)
         - active_mlb_roster_excluded_count
-        - stale_inactive_excluded_count,
+        - stale_inactive_excluded_count
+        - manual_graduated_excluded_count,
         0,
     )
     coverage_rate = (
@@ -1700,6 +1717,7 @@ def build_prospect_rank_v1(
     availability_by_key = availability_lookup(prospect_availability)
     active_roster_by_mlbam = active_roster_lookup(mlb_roster_status)
     active_mlb_roster_ids = set(active_roster_by_mlbam)
+    manual_graduated_ids = _manual_graduated_ids()
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
@@ -1722,6 +1740,7 @@ def build_prospect_rank_v1(
     identity_only_fallback_count = 0
     active_mlb_roster_excluded_count = 0
     stale_inactive_excluded_count = 0
+    manual_graduated_excluded_count = 0
     board = []
 
     for universe_row in rows:
@@ -1732,6 +1751,9 @@ def build_prospect_rank_v1(
             continue
         if key[0] in active_mlb_roster_ids:
             active_mlb_roster_excluded_count += 1
+            continue
+        if key[0] in manual_graduated_ids:
+            manual_graduated_excluded_count += 1
             continue
         if key in seen:
             duplicate_keys.append(key)
@@ -1858,6 +1880,7 @@ def build_prospect_rank_v1(
         active_mlb_roster_ids=active_mlb_roster_ids,
         active_mlb_roster_excluded_count=active_mlb_roster_excluded_count,
         stale_inactive_excluded_count=stale_inactive_excluded_count,
+        manual_graduated_excluded_count=manual_graduated_excluded_count,
         mlb_roster_status_ready=mlb_roster_status_ready,
         require_mlb_roster_status=require_mlb_roster_status,
     )
