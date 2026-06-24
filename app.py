@@ -4359,6 +4359,143 @@ def backfields_team_share_card_png(org):
     return response
 
 
+# Positional share cards: (label, role, position codes). Hitter groups match on
+# eligibility (a 1B/OF shows on both). Prospect pitchers carry no SP/RP split in
+# the feed (all tagged "P"), so there is one combined Pitcher group.
+_POSITION_SHARE_GROUPS = {
+    "c": ("Catcher", "hitter", ("C",)),
+    "1b": ("First Base", "hitter", ("1B",)),
+    "2b": ("Second Base", "hitter", ("2B",)),
+    "3b": ("Third Base", "hitter", ("3B",)),
+    "ss": ("Shortstop", "hitter", ("SS",)),
+    "of": ("Outfield", "hitter", ("OF", "LF", "CF", "RF")),
+    "p": ("Pitching", "pitcher", ("P", "SP", "RP")),
+}
+
+
+def _positional_prospect_rows(position, limit):
+    """Top-`limit` prospects eligible at `position`, in board (prospect_rank) order."""
+    _, role, codes = _POSITION_SHARE_GROUPS[position]
+    rows = sorted(
+        dd_store.filter(pool="prospect"),
+        key=lambda r: (r.prospect_rank is None, r.prospect_rank or r.dynasty_rank or 99999),
+    )
+    out = []
+    for row in rows:
+        if getattr(row, "role", None) != role:
+            continue
+        # Hitters filter by position eligibility; pitchers are a single pool.
+        if role == "hitter" and not any(code in (row.positions or ()) for code in codes):
+            continue
+        out.append(row)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _positional_share_card_png(rows, *, position, limit):
+    from PIL import Image, ImageDraw
+
+    palette = _GRAPHIC_PALETTE
+    label, _role, _codes = _POSITION_SHARE_GROUPS[position]
+    img = Image.new("RGB", (1080, 1350), palette["bg"])
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    date_label = _editorial_date(dd_store.generated_at)
+    _graphic_header(
+        img,
+        draw,
+        headline="ValuCast",
+        subtitle="Ahead of the Curve",
+        extra_line=f"Prospect rankings · {date_label}",
+    )
+
+    title_font = _graphic_font(46, bold=True)
+    label_font = _graphic_font(15, bold=True, mono=True)
+    name_font = _graphic_font(24, bold=True)
+    meta_font = _graphic_font(16, mono=True)
+    value_font = _graphic_font(30, bold=True, mono=True)
+    small_font = _graphic_font(15, bold=True, mono=True)
+
+    text, muted, teal, slate = (
+        palette["text"], palette["muted"], palette["teal"], palette["slate"],
+    )
+    amber = (200, 146, 63)
+    warm_card, warm_card_2 = (17, 16, 14), (22, 21, 18)
+    warm_border, warm_rule = (58, 45, 28), (42, 32, 21)
+
+    draw.text((48, 226), f"TOP {len(rows)} {label.upper()}", fill=amber, font=label_font)
+    draw.text((48, 256), f"{label} Prospects", fill=text, font=title_font)
+    deck = f"ValuCast board · {date_label} · teal = ahead of consensus"
+    draw.text((48, 314), _graphic_fit_text(draw, deck, meta_font, 900), fill=muted, font=meta_font)
+
+    # Divergence map (mlbam_role -> +N) so the brand marker rides on the card.
+    divergence = (
+        _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus.json")
+        or {}
+    ).get("divergence_by_identity") or {}
+
+    header_y, y, row_h = 360, 392, 44
+    table_x1, table_x2 = 48, 1032
+    table_bottom = y + row_h * max(1, len(rows))
+    draw.rounded_rectangle(
+        (table_x1, header_y - 10, table_x2, table_bottom + 8),
+        radius=10, fill=warm_card, outline=warm_border, width=1,
+    )
+    draw.text((64, header_y), "#", fill=slate, font=label_font)
+    draw.text((118, header_y), "PLAYER", fill=slate, font=label_font)
+    draw.text((648, header_y), "OVERALL", fill=slate, font=label_font)
+    draw.text((772, header_y), "AHEAD", fill=slate, font=label_font)
+    draw.text((906, header_y), "VALUE", fill=slate, font=label_font)
+    draw.line((table_x1, header_y + 28, table_x2, header_y + 28), fill=warm_border, width=1)
+
+    for idx, row in enumerate(rows, 1):
+        fill = warm_card if idx % 2 else warm_card_2
+        draw.rectangle((table_x1 + 1, y, table_x2 - 1, y + row_h), fill=fill)
+        draw.line((table_x1, y + row_h, table_x2, y + row_h), fill=warm_rule, width=1)
+        draw.rectangle((table_x1, y, table_x1 + 4, y + row_h), fill=slate)
+        key = _identity_key(getattr(row, "mlbam_id", None), getattr(row, "role", None))
+        ahead = divergence.get(key) if key else None
+        name_color = teal if ahead else text
+        draw.text((68, y + 14), str(idx), fill=muted, font=meta_font)
+        name_meta = " · ".join(p for p in (row.team, str(row.age) if row.age else None) if p)
+        draw.text((118, y + 6), _graphic_fit_text(draw, row.name, name_font, 500), fill=name_color, font=name_font)
+        if name_meta:
+            draw.text((118, y + 26), name_meta, fill=muted, font=_graphic_font(13, mono=True))
+        overall = f"#{row.prospect_rank}" if row.prospect_rank else "-"
+        draw.text((648, y + 15), overall, fill=muted, font=meta_font)
+        ahead_text = f"+{ahead['divergence']}" if ahead else "-"
+        draw.text((772, y + 15), ahead_text, fill=teal if ahead else muted, font=small_font)
+        val = f"{row.dynasty_value:.1f}" if row.dynasty_value is not None else "-"
+        draw.text((table_x2 - 20 - _graphic_text_width(draw, val, value_font), y + 8), val, fill=teal, font=value_font)
+        y += row_h
+
+    _graphic_footer(draw, right_note=f"Top {len(rows)} {label} · ValuCast order")
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
+@app.route("/share/prospects/<position>.png")
+def positional_share_card_png(position):
+    position = (position or "").lower()
+    if position not in _POSITION_SHARE_GROUPS or not dd_store.is_available:
+        abort(404)
+    try:
+        limit = max(5, min(25, int(request.args.get("n", 20))))
+    except (TypeError, ValueError):
+        limit = 20
+    rows = _positional_prospect_rows(position, limit)
+    if not rows:
+        abort(404)
+    response = make_response(_positional_share_card_png(rows, position=position, limit=limit))
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-top-{len(rows)}-{position}-prospects.png"'
+    )
+    return response
+
+
 def _value_map_players(rows):
     """Slim, committed-feed-only payload for the value map."""
     payload = []
