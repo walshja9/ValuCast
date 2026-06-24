@@ -165,7 +165,7 @@
         </div>
         {% endif %}
 
-        {% if scouting_report or role_profile or recent_signal or card_data_status %}
+        {% if scouting_report or role_profile or recent_signal or recent_form or card_data_status %}
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
@@ -189,6 +189,9 @@
                 {% endif %}
                 {% if recent_signal and recent_signal.movement_label %}
                 <div class="stat-item"><span class="stat-label">Last 3 days</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
+                {% endif %}
+                {% if recent_form and recent_form.momentum_label %}
+                <div class="stat-item"><span class="stat-label">Recent form</span><span class="stat-value momentum-{{ 'heating' if recent_form.momentum_label == 'Heating Up' else ('cooling' if recent_form.momentum_label == 'Cooling Off' else 'steady') }}">{{ recent_form.momentum_label }}<span class="momentum-window"> · last {{ recent_form.window_days or 30 }}d vs season</span></span></div>
                 {% endif %}
                 {% if recent_signal and recent_signal.buy_rank %}
                 <div class="stat-item"><span class="stat-label">Buy Board</span><span class="stat-value">#{{ recent_signal.buy_rank }}</span></div>

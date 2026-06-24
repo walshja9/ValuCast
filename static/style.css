@@ -2041,6 +2041,19 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .mover-chip.down { color: var(--c-neg); }
 .mover-delta { font-variant-numeric: tabular-nums; }
 
+/* Recent-form momentum chips (display-only: trailing-window MiLB form vs season) */
+.momentum-chip { display: inline-flex; align-items: center; gap: .25rem; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: .12rem .5rem; white-space: nowrap; border: 1px solid transparent; }
+.momentum-chip.heating { color: var(--c-signal); background: rgba(52, 226, 196, .14); border-color: rgba(52, 226, 196, .30); }
+.momentum-chip.cooling { color: #7fb2ff; background: rgba(96, 165, 250, .12); border-color: rgba(96, 165, 250, .28); }
+.stat-value.momentum-heating { color: var(--c-signal); }
+.stat-value.momentum-cooling { color: #7fb2ff; }
+.stat-value.momentum-steady { color: var(--c-muted); }
+.momentum-window { color: var(--c-muted); font-weight: 500; font-size: .9em; }
+
+/* Freshness badge -- visible "data is fresh" cue under the horizon tabs */
+.freshness-badge { display: inline-flex; align-items: center; gap: .4rem; font-size: .74rem; font-weight: 600; color: var(--c-muted); margin: .2rem 0 var(--space-2); }
+.freshness-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--c-signal); box-shadow: 0 0 0 3px rgba(52, 226, 196, .18); }
+
 /* Consensus spread strip */
 .spread-strip { display: flex; align-items: center; gap: .55rem; margin-top: .55rem; }
 .spread-rail { position: relative; flex: 1; max-width: 340px; height: var(--bar-h-rail); background: var(--bar-rail); border-radius: var(--bar-radius); }

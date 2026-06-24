@@ -25,6 +25,12 @@
         {% endif %}
     </nav>
 
+    {% if dd_generated_at %}
+    <div class="freshness-badge" title="Board data last refreshed {{ editorial_date(dd_generated_at) }}">
+        <span class="freshness-dot" aria-hidden="true"></span>Updated {{ dd_generated_at | humanize_since }}
+    </div>
+    {% endif %}
+
     {% if horizon in ['redraft', 'dynasty'] %}
     {% include "partials/_welcome_strip.html" %}
     {% endif %}

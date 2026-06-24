@@ -32,6 +32,9 @@ PROSPECT_CARD_DATA_AUDIT = (
 RECENT_SIGNAL_REPORT = (
     ROOT / "data" / "models" / "valucast_recent_signal_report.json"
 )
+RECENT_FORM_SIGNAL = (
+    ROOT / "data" / "models" / "valucast_recent_form_signal.json"
+)
 PIPELINE_OBSERVABILITY = (
     ROOT / "data" / "models" / "valucast_pipeline_observability.json"
 )
@@ -109,6 +112,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (MILB_STAT_FRESHNESS_AUDIT, "generated_at"),
         (PROSPECT_CARD_DATA_AUDIT, "generated_at"),
         (RECENT_SIGNAL_REPORT, "generated_at"),
+        (RECENT_FORM_SIGNAL, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
         (PIPELINE_OBSERVABILITY, "generated_at"),
         (FRONT_OFFICE_FAILURES, "generated_at"),

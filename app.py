@@ -138,6 +138,27 @@ def format_stat(value, cat_id):
         return f"{value:.1f}"
     return f"{value:.0f}"
 
+
+@app.template_filter("humanize_since")
+def humanize_since(value):
+    """Relative freshness, e.g. 'just now' / '8h ago' / 'yesterday' / '3 days ago'."""
+    if not value:
+        return ""
+    from datetime import datetime, timezone
+    try:
+        ts = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return ""
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    secs = (datetime.now(timezone.utc) - ts).total_seconds()
+    if secs < 3600:
+        return "just now"
+    if secs < 86400:
+        return f"{int(secs // 3600)}h ago"
+    days = int(secs // 86400)
+    return "yesterday" if days == 1 else f"{days} days ago"
+
 # Projection sources. Steamer (season outlook) is the default; ValuCast H+P is the
 # opt-in combined in-house source. App only LOADS committed runs — no runtime model.
 DATA_PATH = Path(__file__).parent / "data" / "projections" / "current.json"
@@ -944,6 +965,21 @@ def _apply_prospect_board_context(ctx, args):
         if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
         else []
     )
+    # Recent-form momentum chips: only the prominent movers (top-25 heating/cooling)
+    # earn a board chip so it stays meaningful. Display-only -- never touches score.
+    recent_form = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_recent_form_signal.json"
+    ) or {}
+    form_by_key = {}
+    for entry in (recent_form.get("heating_up") or []) + (recent_form.get("cooling_off") or []):
+        key = _identity_key(entry.get("mlbam_id"), entry.get("role"))
+        if key:
+            form_by_key[key] = entry
+    ctx["momentum_by_id"] = {
+        row.id: form_by_key[key]
+        for row in rows
+        if (key := _row_identity_key(row)) in form_by_key
+    }
 
     # Live settings-aware re-ranking (presets OR arbitrary custom cats). Re-ranking
     # is a downstream VIEW: it never touches dynasty_value, P#, or the prospect
@@ -3103,6 +3139,9 @@ def _artifact_context_for_row(row) -> dict:
     recent_signal = _indexed_artifact_rows(
         _load_artifact(root / "valucast_recent_signal_report.json"), "signals"
     ).get(key)
+    recent_form = (
+        (_load_artifact(root / "valucast_recent_form_signal.json") or {}).get("by_identity") or {}
+    ).get(key)
     card_data_status = _indexed_artifact_rows(
         _load_artifact(root / "valucast_prospect_card_data_audit.json"), "cards"
     ).get(key)
@@ -3120,6 +3159,7 @@ def _artifact_context_for_row(row) -> dict:
     return {
         "scouting_report": scouting,
         "recent_signal": recent_signal,
+        "recent_form": recent_form,
         "card_data_status": card_data_status,
         "role_profile": role_profile,
     }

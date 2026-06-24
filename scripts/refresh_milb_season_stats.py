@@ -8,13 +8,14 @@ import re
 import unicodedata
 import urllib.parse
 import urllib.request
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "prospects" / "raw"
 OUTPUT_PATH = RAW_DIR / "milb_season_stats.json"
+RECENT_OUTPUT_PATH = RAW_DIR / "milb_recent_stats.json"
 
 SPORT_LEVELS = {
     11: "AAA",
@@ -72,17 +73,27 @@ def _innings(value: Any, default: float = 0.0) -> float:
         return default
 
 
-def _fetch_splits(group: str, sport_id: int, season: int) -> list[dict]:
-    query = urllib.parse.urlencode(
-        {
-            "stats": "season",
-            "group": group,
-            "season": season,
-            "sportIds": sport_id,
-            "playerPool": "ALL",
-            "limit": 10000,
-        }
-    )
+def _fetch_splits(
+    group: str,
+    sport_id: int,
+    season: int,
+    *,
+    stats_type: str = "season",
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[dict]:
+    params = {
+        "stats": stats_type,
+        "group": group,
+        "season": season,
+        "sportIds": sport_id,
+        "playerPool": "ALL",
+        "limit": 10000,
+    }
+    if stats_type == "byDateRange":
+        params["startDate"] = start_date
+        params["endDate"] = end_date
+    query = urllib.parse.urlencode(params)
     request = urllib.request.Request(
         f"https://statsapi.mlb.com/api/v1/stats?{query}",
         headers={"User-Agent": "ValuCast MiLB season-stat refresh"},
@@ -181,30 +192,83 @@ def build_milb_season_stats(
     *,
     season: int | None = None,
     fetched_date: str | None = None,
+    stats_type: str = "season",
+    window_days: int = 30,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    generated_at: str | None = None,
 ) -> dict:
     season = season or date.today().year
     fetched_date = fetched_date or date.today().isoformat()
+    if stats_type not in {"season", "byDateRange"}:
+        raise ValueError("stats_type must be season or byDateRange")
+    if stats_type == "byDateRange":
+        start_date, end_date = _resolve_date_range(
+            fetched_date=fetched_date,
+            window_days=window_days,
+            start_date=start_date,
+            end_date=end_date,
+        )
     hitters: list[dict] = []
     pitchers: list[dict] = []
     for sport_id in SPORT_LEVELS:
+        fetch_kwargs = {}
+        if stats_type == "byDateRange":
+            fetch_kwargs = {
+                "stats_type": stats_type,
+                "start_date": start_date,
+                "end_date": end_date,
+            }
         hitters.extend(
             _hitter_row(split, sport_id, fetched_date)
-            for split in _fetch_splits("hitting", sport_id, season)
+            for split in _fetch_splits("hitting", sport_id, season, **fetch_kwargs)
         )
         pitchers.extend(
             _pitcher_row(split, sport_id, fetched_date)
-            for split in _fetch_splits("pitching", sport_id, season)
+            for split in _fetch_splits("pitching", sport_id, season, **fetch_kwargs)
         )
     hitters.sort(key=lambda row: (row["sport_id"], row["name"], row["mlbam_id"]))
     pitchers.sort(key=lambda row: (row["sport_id"], row["name"], row["mlbam_id"]))
-    return {
+    payload = {
         "season": season,
         "fetched_date": fetched_date,
-        "source": "mlb_statsapi_season_stats",
+        "source": "mlb_statsapi_byDateRange" if stats_type == "byDateRange" else "mlb_statsapi_season_stats",
         "sport_levels": {str(key): value for key, value in SPORT_LEVELS.items()},
         "hitters": hitters,
         "pitchers": pitchers,
     }
+    if stats_type == "byDateRange":
+        payload.update(
+            {
+                "generated_at": generated_at or datetime.now(timezone.utc).isoformat(),
+                "window_days": window_days,
+                "start_date": start_date,
+                "end_date": end_date,
+            }
+        )
+    return payload
+
+
+def _resolve_date_range(
+    *,
+    fetched_date: str,
+    window_days: int,
+    start_date: str | None,
+    end_date: str | None,
+) -> tuple[str, str]:
+    if window_days < 1:
+        raise ValueError("window_days must be positive")
+    if end_date:
+        end = date.fromisoformat(end_date)
+    else:
+        end = date.fromisoformat(fetched_date)
+    if start_date:
+        start = date.fromisoformat(start_date)
+    else:
+        start = end - timedelta(days=window_days - 1)
+    if start > end:
+        raise ValueError("start_date must be on or before end_date")
+    return start.isoformat(), end.isoformat()
 
 
 def write_milb_season_stats(payload: dict, path: Path = OUTPUT_PATH) -> Path:
@@ -219,18 +283,31 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--season", type=int, default=date.today().year)
     parser.add_argument("--fetched-date", default=date.today().isoformat())
-    parser.add_argument("--output", type=Path, default=OUTPUT_PATH)
+    parser.add_argument("--stats-type", choices=("season", "byDateRange"), default="season")
+    parser.add_argument("--window-days", type=int, default=30)
+    parser.add_argument("--start-date")
+    parser.add_argument("--end-date")
+    parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    output_path = args.output or (
+        RECENT_OUTPUT_PATH if args.stats_type == "byDateRange" else OUTPUT_PATH
+    )
 
     payload = build_milb_season_stats(
         season=args.season,
         fetched_date=args.fetched_date,
+        stats_type=args.stats_type,
+        window_days=args.window_days,
+        start_date=args.start_date,
+        end_date=args.end_date,
     )
-    path = write_milb_season_stats(payload, args.output)
+    path = write_milb_season_stats(payload, output_path)
     print(
         "MiLB season stats refresh: "
         f"season={payload['season']} "
         f"fetched_date={payload['fetched_date']} "
+        f"stats_type={args.stats_type} "
+        f"window={payload.get('start_date', '')}:{payload.get('end_date', '')} "
         f"hitters={len(payload['hitters'])} "
         f"pitchers={len(payload['pitchers'])} "
         f"-> {path}"

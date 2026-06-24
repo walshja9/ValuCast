@@ -92,6 +92,10 @@
                     {% endfor %}
                 </span>
                 {% endif %}
+                {% set mo = momentum_by_id.get(row.id) if momentum_by_id else None %}
+                {% if mo and mo.momentum_label in ['Heating Up', 'Cooling Off'] %}
+                <span class="momentum-chip {{ 'heating' if mo.momentum_label == 'Heating Up' else 'cooling' }}" title="Recent {{ mo.window_days or 30 }}-day MiLB form vs season line">{{ '▲' if mo.momentum_label == 'Heating Up' else '▼' }} {{ mo.momentum_label }}</span>
+                {% endif %}
                 {% if mode == 'prospects' and row.graduation_context_label %}
                 <span class="sample-risk-badge rank-context graduation" title="{{ row.graduation_context_note or 'Near MLB rookie-limit graduation.' }}">{{ row.graduation_context_label }}</span>
                 {% endif %}
