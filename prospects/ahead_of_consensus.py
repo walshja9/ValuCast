@@ -42,8 +42,10 @@ MAX_AHEAD_ROWS = 25
 # Boards have different depths (pipeline ~100, hkb ~650, sts/cfr run thousands
 # deep). Only count a board rank inside the top-prospect ceiling so a deep-list
 # rank (e.g. sts #1760) can't poison the median; deeper than this = "that board
-# doesn't rate him a top prospect", which simply doesn't contribute.
-CONSENSUS_RANK_CAP = 300
+# doesn't rate him a top prospect", which simply doesn't contribute. 600 matches
+# PL+/HKB's real prospect-board depth -- deep enough to keep legit mid-board
+# divergences, shallow enough to exclude the thousands-deep formula tails.
+CONSENSUS_RANK_CAP = 600
 
 
 def _load(path: Path) -> dict:

@@ -17,9 +17,9 @@ from .prospect_context import (
 # excluded from the public-consensus surfaces. cfr is also excluded: it is a deep
 # stat-formula list (scale ~1-5700) that poisons a median against top-N boards.
 _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
-# Only count ranks inside the top-prospect ceiling so deep-list ranks (sts/fg run
-# thousands deep) can't poison the median consensus.
-_CONSENSUS_RANK_CAP = 300
+# Only count ranks inside the top-prospect ceiling (600, ~PL+/HKB depth) so
+# deep-list ranks (sts/fg run thousands deep) can't poison the median consensus.
+_CONSENSUS_RANK_CAP = 600
 
 
 def _clean_float(raw) -> float | None:

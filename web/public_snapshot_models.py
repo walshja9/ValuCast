@@ -21,8 +21,8 @@ from .prospect_context import (
 # top-N scouting/market boards, so it poisons a median consensus — excluded.
 _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 # Boards run to different depths; only count a rank inside the top-prospect
-# ceiling so a deep-list rank (e.g. sts/fg thousands deep) can't poison the median.
-_CONSENSUS_RANK_CAP = 300
+# ceiling (600, ~PL+/HKB depth) so deep-list ranks can't poison the median.
+_CONSENSUS_RANK_CAP = 600
 
 
 def _clean_float(raw) -> float | None:
