@@ -68,7 +68,8 @@ class TestDynastyV11UI(unittest.TestCase):
         self.assertIn(b"ValuCast Rank", response.data)
         self.assertIn(b"ValuCast model rank", response.data)
         self.assertIn(b"Public Consensus", response.data)
-        self.assertIn(b"~P#18", response.data)
+        # cfr is excluded from the consensus, so it's the median of pipeline(18)+hkb(42).
+        self.assertIn(b"~P#30", response.data)
         self.assertIn(b"MiLB Performance", response.data)
         self.assertIn(b"Proprietary performance signal", response.data)
         self.assertIn(b"Individual external boards", response.data)

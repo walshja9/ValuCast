@@ -422,6 +422,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "data/models/valucast_raw_data_independence_audit.json" in workflow
     assert "data/models/valucast_front_office_report.json" in workflow
     assert "data/models/valucast_scouting_reports.json" in workflow
+    assert "data/models/valucast_ahead_of_consensus.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "

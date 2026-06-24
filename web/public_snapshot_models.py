@@ -17,7 +17,9 @@ from .prospect_context import (
 )
 
 
-_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr_raw"})
+# cfr is a deep stat-formula list (scale ~1-5700) on a different axis than the
+# top-N scouting/market boards, so it poisons a median consensus — excluded.
+_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 
 
 def _clean_float(raw) -> float | None:

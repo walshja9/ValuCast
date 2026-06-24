@@ -46,6 +46,7 @@ from web.season_outlook import (
     split_outlook,
 )
 from web.statcast_store import StatcastStore
+from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
 from web.value_spark import build_spark
 from web import buy_score
@@ -151,6 +152,10 @@ store = CATALOG.store_for("steamer")   # module-level default (kept for existing
 # Committed Statcast percentile snapshot (Baseball Savant) for player cards.
 # Missing artifact -> cards simply render without the percentile section.
 statcast = StatcastStore()
+
+# Committed FanGraphs FV + tool-grade snapshot (The Board) for player cards.
+# Display-only scouting reference; never feeds rank/value/score (independence).
+fg_fv = FgFvStore()
 
 _PITCHER_POOLS = (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER)
 
@@ -3682,6 +3687,7 @@ def _build_backfields_page_context():
     root = Path(__file__).parent
     models = root / "data" / "models"
     recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
+    ahead_of_consensus_artifact = _load_artifact(models / "valucast_ahead_of_consensus.json")
     scouting_repository = _load_artifact(models / "valucast_scouting_reports.json")
     stat_payload = _load_artifact(root / "data" / "prospects" / "raw" / "milb_season_stats.json")
     prospect_rows = _prospect_rows()[:100] if dd_store.is_available else []
@@ -4045,6 +4051,26 @@ def _build_backfields_page_context():
             "line": short_text(_scouting_display_report_text(row)),
         })
 
+    ahead_of_consensus = []
+    for row in (ahead_of_consensus_artifact or {}).get("ahead_of_consensus") or []:
+        if not isinstance(row, dict):
+            continue
+        valucast_rank = as_float(row.get("valucast_rank"))
+        consensus_rank = as_float(row.get("consensus_rank"))
+        divergence = as_float(row.get("divergence"))
+        if valucast_rank is None or consensus_rank is None or divergence is None:
+            continue
+        board_count = as_float(row.get("board_count"))
+        name = row.get("name") or "Unknown"
+        ahead_of_consensus.append({
+            "name": name,
+            **player_link_fields(name, row.get("mlbam_id")),
+            "valucast_rank": int(valucast_rank),
+            "consensus_rank": int(consensus_rank),
+            "divergence": int(divergence),
+            "board_count": int(board_count) if board_count is not None else 0,
+        })
+
     return {
         "backfields_page": True,
         "mode": "prospects",
@@ -4059,6 +4085,7 @@ def _build_backfields_page_context():
         },
         "team_boards": _build_team_board_context(),
         "scouting_reports": scouting_reports,
+        "ahead_of_consensus": ahead_of_consensus,
     }
 
 
@@ -4978,6 +5005,7 @@ def player_detail(player_id):
             mlb_stats_split=mlb_stats_split,
             mlb_stats_actual_split=mlb_stats_actual_split,
             mlb_stats_ros_split=mlb_stats_ros_split,
+            fangraphs=fg_fv.get(getattr(dd_row, "mlbam_id", None)),
             **prospect_context,
             **artifact_context,
             **extras,

@@ -438,7 +438,9 @@ class TestProspectPercentiles(unittest.TestCase):
 
 
 class TestPublicSourceRanks(unittest.TestCase):
-    def test_cfr_raw_is_not_a_public_board(self):
+    def test_cfr_and_internal_signals_excluded_from_public_boards(self):
+        # cfr (deep stat-formula list) and cfr_raw/milb_perf (internal) are all
+        # excluded; only the top-N scouting/market boards count in the consensus.
         row = _row(
             "sources",
             source_ranks={
@@ -449,7 +451,7 @@ class TestPublicSourceRanks(unittest.TestCase):
                 "milb_perf": 2,
             },
         )
-        self.assertEqual(row.public_source_ranks, {"pipeline": 10, "cfr": 20, "hkb": 30})
+        self.assertEqual(row.public_source_ranks, {"pipeline": 10, "hkb": 30})
         self.assertEqual(row.public_source_consensus, 20)
 
 

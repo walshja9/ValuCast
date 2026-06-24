@@ -14,8 +14,9 @@ from .prospect_context import (
 
 
 # DD-internal model signals — not independent public boards, so they are
-# excluded from the public-consensus surfaces.
-_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr_raw"})
+# excluded from the public-consensus surfaces. cfr is also excluded: it is a deep
+# stat-formula list (scale ~1-5700) that poisons a median against top-N boards.
+_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 
 
 def _clean_float(raw) -> float | None:

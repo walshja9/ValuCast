@@ -47,6 +47,25 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
             with self.subTest(route=route):
                 self.assertEqual(self.client.get(route).status_code, 200)
 
+    def test_prospect_player_detail_renders(self):
+        """A prospect /player/<id> must stay 200 with the Ahead of Consensus
+        badge surface live — guards the divergence chip + backfields wiring."""
+        if not self._dd_ready():
+            self.skipTest("DD feed not available")
+        from app import _prospect_rows
+
+        rows = [row for row in _prospect_rows() if getattr(row, "id", None)]
+        if not rows:
+            self.skipTest("no prospect rows available in this checkout")
+        player_id = rows[0].id
+        # The full-page request redirects to search by design; the card itself
+        # renders on the HTMX partial request, which is what carries the chip.
+        response = self.client.get(
+            f"/player/{player_id}?mode=prospects",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_public_png_routes_return_png(self):
         if not self._dd_ready():
             self.skipTest("DD feed not available")

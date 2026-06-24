@@ -409,6 +409,9 @@
                     <span class="stat-label">Public Consensus</span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
                     <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
+                    {% if row.prospect_rank is not none and (row.public_source_consensus - row.prospect_rank) >= 25 %}
+                    <span class="source-ahead-chip" title="ValuCast ranks this player ahead of the public field">Ahead of Consensus +{{ row.public_source_consensus - row.prospect_rank }}</span>
+                    {% endif %}
                 </div>
                 {% endif %}
                 {% if row.milb_performance_rank is not none %}
@@ -450,6 +453,39 @@
             </details>
             {% endif %}
         </details>
+        {% endif %}
+
+        {% if fangraphs %}
+        <div class="detail-section prospect-fangraphs">
+            <h4>FanGraphs Scouting <span class="fg-asof">via The Board &middot; FV scale 20-80</span></h4>
+            <div class="fg-fv-summary">
+                <span class="fg-fv-grade">FV {{ fangraphs.fv }}</span>
+                {% if fangraphs.fg_top100 %}<span class="fg-rank">FG #{{ fangraphs.fg_top100 }}</span>{% endif %}
+                {% if fangraphs.org %}<span class="fg-org">{{ fangraphs.org }}{% if fangraphs.fg_org_rank %} &middot; org #{{ fangraphs.fg_org_rank }}{% endif %}</span>{% endif %}
+                {% if fangraphs.fv_num is not none and row.prospect_rank is not none %}
+                    {% if row.prospect_rank <= 50 and fangraphs.fv_num <= 42.5 %}
+                    <span class="fg-flag model-high" title="ValuCast ranks this player well above his FanGraphs grade">Model-high vs scouts</span>
+                    {% elif row.prospect_rank >= 250 and fangraphs.fv_num >= 55 %}
+                    <span class="fg-flag scout-high" title="FanGraphs grades this player well above ValuCast's rank">Scout-favored, model-cool</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% if fangraphs.hit_grades %}
+            <div class="fg-grade-list">
+                {% for label, grade in fangraphs.hit_grades.items() %}
+                <span class="fg-grade"><strong>{{ label }}</strong> {{ grade }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if fangraphs.pitch_grades %}
+            <div class="fg-grade-list">
+                {% for label, grade in fangraphs.pitch_grades.items() %}
+                <span class="fg-grade"><strong>{{ label }}</strong> {{ grade }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <p class="market-context-note">FanGraphs Future Value &amp; tool grades &mdash; scouting reference only, never used in ValuCast rank or value.</p>
+        </div>
         {% endif %}
 
         {% if statcast_groups %}

@@ -67,8 +67,9 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.breakout_label, "steady")
         self.assertIsNotNone(row.stat_line)
         self.assertEqual(row.source_divergence, 55)
-        self.assertEqual(row.public_source_ranks, {"pipeline": 6, "cfr": 9.0, "hkb": 7})
-        self.assertEqual(row.public_source_consensus, 7)
+        # cfr is excluded from the public consensus (deep stat-formula scale).
+        self.assertEqual(row.public_source_ranks, {"pipeline": 6, "hkb": 7})
+        self.assertEqual(row.public_source_consensus, 6)
         self.assertIsNone(row.milb_performance_rank)
 
     def test_from_feed_prospect_sample_context_properties(self):
