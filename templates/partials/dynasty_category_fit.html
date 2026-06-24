@@ -1,4 +1,4 @@
-<section class="category-fit-panel" id="category-fit-panel" aria-labelledby="category-fit-heading">
+{% if not preset_value_enabled|default(false) %}<section class="category-fit-panel" id="category-fit-panel" aria-labelledby="category-fit-heading">
     <div class="category-fit-intro">
         <div>
             <h3 id="category-fit-heading">Category Fit</h3>
@@ -44,4 +44,38 @@
             {% endfor %}
         </div>
     </div>
+</section>{% endif %}
+{% if preset_value_enabled|default(false) %}
+<section class="category-fit-panel" id="preset-value-panel" aria-labelledby="preset-value-heading">
+    <div class="category-fit-intro">
+        <div>
+            <h3 id="preset-value-heading">League scoring</h3>
+            <p>Values and ranks below are scored for your league's categories.</p>
+        </div>
+    </div>
+    <input type="hidden" name="preset" id="dynasty-preset-input" value="{{ active_preset or '5x5' }}">
+    {% set preset_labels = {
+        '5x5': '5x5',
+        'obp': 'OBP',
+        '6x6': '6x6',
+        'sv_hld': 'SV+HLD',
+        '7x7': '7x7',
+        '7x7_ops': '7x7 OPS',
+        'points': 'Points',
+    } %}
+    <div class="fit-presets" aria-label="League scoring presets">
+        {% for preset_id in dynasty_value_presets %}
+        {% set is_active = active_preset == preset_id or (not active_preset and preset_id == '5x5') %}
+        <button type="button"
+                class="preset-btn {{ 'active' if is_active else '' }}"
+                data-value-preset="{{ preset_id }}"
+                hx-get="/rankings"
+                hx-target="#rankings-container"
+                hx-include="closest form"
+                hx-sync="closest form:replace"
+                hx-vals='{"preset":"{{ preset_id }}"}'
+                onclick="setDynastyValuePreset('{{ preset_id }}', this)">{% if preset_id == '5x5' %}Default ({{ preset_labels[preset_id] }}){% else %}{{ preset_labels[preset_id] }}{% endif %}</button>
+        {% endfor %}
+    </div>
 </section>
+{% endif %}

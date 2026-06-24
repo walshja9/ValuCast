@@ -7,6 +7,7 @@ from scripts.build_public_dynasty_snapshot import (
     COMMON_VALUE_SCALE,
     GRAD_FLOOR_DECAY_DAYS,
     GRAD_FLOOR_DISCOUNT,
+    TWO_WAY_SECONDARY_VALUE_WEIGHT,
     _apply_graduation_transition_floor,
     build_snapshot,
 )
@@ -15,6 +16,9 @@ from web.public_snapshot_store import (
     PublicSnapshotStore,
     validate_public_snapshot_payload,
 )
+
+
+PRESET_IDS = ("5x5", "obp", "6x6", "sv_hld", "7x7", "7x7_ops", "points")
 
 
 def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
@@ -500,6 +504,33 @@ def test_snapshot_carries_peak_projection_card_context(tmp_path):
 
 def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
     mlb_layer = _ready_mlb_payload()
+    hitter_presets = {
+        "5x5": 60.0,
+        "obp": 61.0,
+        "6x6": 70.0,
+        "sv_hld": 55.0,
+        "7x7": 65.0,
+        "7x7_ops": 66.0,
+        "points": 80.0,
+    }
+    pitcher_presets = {
+        "5x5": 40.0,
+        "obp": 30.0,
+        "6x6": 40.0,
+        "sv_hld": 50.0,
+        "7x7": 45.0,
+        "7x7_ops": 47.0,
+        "points": 50.0,
+    }
+    star_presets = {
+        "5x5": 90.0,
+        "obp": 88.0,
+        "6x6": 91.0,
+        "sv_hld": 87.0,
+        "7x7": 89.0,
+        "7x7_ops": 90.0,
+        "points": 92.0,
+    }
     mlb_layer["players"] = [
         {
             **mlb_layer["players"][0],
@@ -509,6 +540,7 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
             "role": "hitter",
             "positions": ["DH"],
             "value": 60.0,
+            "value_by_preset": hitter_presets,
             "rank": 1,
         },
         {
@@ -519,6 +551,7 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
             "role": "pitcher",
             "positions": ["SP"],
             "value": 40.0,
+            "value_by_preset": pitcher_presets,
             "rank": 2,
         },
         {
@@ -527,6 +560,7 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
             "name": "MLB Star",
             "mlbam_id": 99,
             "value": 90.0,
+            "value_by_preset": star_presets,
             "rank": 3,
         },
     ]
@@ -547,11 +581,33 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
     assert row["role"] == "two_way"
     assert row["positions"] == ["DH", "SP"]
     assert row["value"] == 86.0
+    assert set(row["value_by_preset"]) == set(PRESET_IDS)
+    assert row["value_by_preset"] == {
+        preset: round(
+            min(
+                100.0,
+                hitter_presets[preset]
+                + TWO_WAY_SECONDARY_VALUE_WEIGHT * pitcher_presets[preset],
+            ),
+            2,
+        )
+        for preset in PRESET_IDS
+    }
     assert row["context"]["kind"] == "valucast_mlb_two_way_context"
     assert {item["role"] for item in row["context"]["role_components"]} == {
         "hitter",
         "pitcher",
     }
+    assert all(
+        set(player["value_by_preset"]) == set(PRESET_IDS)
+        for player in payload["players"]
+        if player["player_type"] == "mlb"
+    )
+    assert all(
+        "value_by_preset" not in player or player["value_by_preset"] == {}
+        for player in payload["players"]
+        if player["player_type"] == "prospect"
+    )
     assert payload["validation"]["duplicate_identity_count"] == 0
     assert not any("two-way" in blocker for blocker in payload["validation"]["blockers"])
 
@@ -650,6 +706,36 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
         "stats": {"OPS": 0.760},
     }
     assert row.mlb_stat_line == {"pa": 12, "ops": 0.700}
+
+
+def test_public_snapshot_row_uses_preset_value_with_default_fallback():
+    record = {
+        "id": "vc_mlb_99_hitter",
+        "player_type": "mlb",
+        "name": "MLB Star",
+        "mlbam_id": 99,
+        "role": "hitter",
+        "positions": ["SS"],
+        "team": "BOS",
+        "age": 24,
+        "rank": 1,
+        "value": 90.0,
+        "value_by_preset": {"sv_hld": 83.5},
+        "value_scale": "0_100_valucast_dynasty_score",
+        "value_source": "valucast_mlb_dynasty_horizon_v0_2",
+        "confidence": "high",
+        "updated_at": "2026-06-13T12:00:00+00:00",
+    }
+
+    row = PublicSnapshotRow.from_snapshot(record)
+    empty_preset_row = PublicSnapshotRow.from_snapshot(
+        {**record, "id": "vc_mlb_98_hitter", "value_by_preset": {}}
+    )
+
+    assert row.value_for("sv_hld") == 83.5
+    assert row.value_for(None) == row.value
+    assert row.value_for("unknown") == row.value
+    assert empty_preset_row.value_for("sv_hld") == empty_preset_row.value
 
 
 def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):

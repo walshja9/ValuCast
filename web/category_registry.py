@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import OrderedDict
+
 from league_values.models import CategorySpec, Direction, PlayerPool, PointRule
 
 
@@ -113,6 +115,68 @@ CATEGORY_PRESETS: dict[str, dict[str, list[str]]] = {
 
 DEFAULT_CATS = CATEGORY_PRESETS["5x5"]["cats"]
 DEFAULT_PCATS = CATEGORY_PRESETS["5x5"]["pcats"]
+
+
+DYNASTY_VALUE_PRESETS = OrderedDict(
+    (
+        (
+            "5x5",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "AVG"],
+                "pcats": ["W", "SV", "K", "ERA", "WHIP"],
+            },
+        ),
+        (
+            "obp",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "OBP"],
+                "pcats": ["W", "SV", "K", "ERA", "WHIP"],
+            },
+        ),
+        (
+            "6x6",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "AVG", "OBP"],
+                "pcats": ["W", "QS", "SV", "K", "ERA", "WHIP"],
+            },
+        ),
+        (
+            "sv_hld",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "AVG"],
+                "pcats": ["W", "SV_HLD", "K", "ERA", "WHIP"],
+            },
+        ),
+        (
+            "7x7",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "AVG", "OBP", "SO"],
+                "pcats": ["W", "QS", "SV", "HLD", "K", "ERA", "WHIP"],
+            },
+        ),
+        (
+            "7x7_ops",
+            {
+                "mode": "categories",
+                "cats": ["R", "HR", "RBI", "SB", "AVG", "OPS", "SO"],
+                "pcats": ["W", "QS", "SV_HLD", "K", "ERA", "WHIP", "K_BB"],
+            },
+        ),
+        ("points", {"mode": "points"}),
+    )
+)
+
+
+def expected_category_count(preset_id: str) -> int | None:
+    preset = DYNASTY_VALUE_PRESETS.get(preset_id)
+    if not preset or preset.get("mode") == "points":
+        return None
+    return len(preset.get("cats", ())) + len(preset.get("pcats", ()))
 
 
 # --- Points Presets ---

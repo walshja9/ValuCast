@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -5,9 +6,12 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+import app as app_module
 from app import _compute_dynasty_dollars, _compute_dynasty_tiers
 from web.dynasty_models import DynastyRankingRow
 from web.league_settings import LeagueSettings
+from web.public_snapshot_models import PublicSnapshotRow
+from werkzeug.datastructures import MultiDict
 
 
 def _row(i, value):
@@ -16,6 +20,53 @@ def _row(i, value):
         team="NYY", age=27, dynasty_rank=i, dynasty_value=value,
         status="mlb", mlbam_id=None,
     )
+
+
+def _snapshot_row(row_id, name, rank, value, positions=("OF",), player_type="mlb",
+                  value_by_preset=None):
+    return PublicSnapshotRow(
+        id=row_id,
+        name=name,
+        player_type=player_type,
+        positions=positions,
+        team="NYY",
+        age=27,
+        rank=rank,
+        value=value,
+        value_scale="0_150",
+        value_source="test",
+        confidence=None,
+        updated_at="2026-06-24",
+        mlbam_id=None,
+        value_by_preset=value_by_preset or {},
+    )
+
+
+class _PresetValueStore:
+    is_available = True
+    generated_at = "2026-06-24T00:00:00Z"
+    schema_version = "1.1"
+
+    def __init__(self, rows):
+        self._rows = sorted(rows, key=lambda row: row.dynasty_rank)
+
+    def get_all(self):
+        return list(self._rows)
+
+    def filter(self, player_type=None, position=None, search=None, pool=None):
+        rows = self._rows
+        if player_type:
+            rows = [row for row in rows if row.player_type == player_type]
+        if pool == "prospect":
+            rows = [row for row in rows if row.is_prospect]
+        elif pool == "mlb":
+            rows = [row for row in rows if not row.is_prospect]
+        if position:
+            rows = [row for row in rows if position in row.positions]
+        if search:
+            query = search.lower()
+            rows = [row for row in rows if query in row.name.lower()]
+        return list(rows)
 
 
 class TestDynastyDollars(unittest.TestCase):
@@ -79,6 +130,101 @@ class TestTierPool(unittest.TestCase):
         for i in range(21, 31):
             self.assertEqual(tiers[f"p{i}"], max_tier)
         self.assertNotIn(0, tiers.values())
+
+
+class TestDynastyPresetValueContext(unittest.TestCase):
+    def setUp(self):
+        self.original_store = app_module.dd_store
+        self.original_flag = os.environ.get("VALUCAST_DYNASTY_PRESET_VALUE")
+        app_module.dd_store = _PresetValueStore([
+            _snapshot_row("ace", "Default Ace", 1, 120.0, positions=("SP",),
+                          value_by_preset={"5x5": 120.0, "sv_hld": 95.0}),
+            _snapshot_row("bat", "Default Bat", 2, 110.0,
+                          value_by_preset={"5x5": 110.0, "sv_hld": 100.0}),
+            _snapshot_row("prospect", "Fallback Prospect", 3, 80.0,
+                          player_type="prospect"),
+            _snapshot_row("reliever", "Hold Reliever", 4, 70.0, positions=("RP",),
+                          value_by_preset={"5x5": 70.0, "sv_hld": 140.0}),
+        ])
+        self.z_patch = patch("app._dynasty_z_map", return_value={})
+        self.z_patch.start()
+
+    def tearDown(self):
+        self.z_patch.stop()
+        app_module.dd_store = self.original_store
+        if self.original_flag is None:
+            os.environ.pop("VALUCAST_DYNASTY_PRESET_VALUE", None)
+        else:
+            os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = self.original_flag
+
+    def _set_flag(self, enabled):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1" if enabled else "0"
+
+    def _context(self, *pairs):
+        args = MultiDict([
+            ("teams", "2"),
+            ("budget", "100"),
+            ("roster", "2"),
+            *pairs,
+        ])
+        return app_module._build_dynasty_context(args)
+
+    def _ids(self, ctx):
+        return [row.id for row in ctx["dd_rows"]]
+
+    def _assert_same_board(self, left, right):
+        self.assertEqual(left["dynasty_dollars"], right["dynasty_dollars"])
+        self.assertEqual(left["tiers"], right["tiers"])
+        self.assertEqual(self._ids(left), self._ids(right))
+
+    def test_enabled_sv_hld_preset_moves_reliever_dollars_and_order(self):
+        self._set_flag(True)
+        default = self._context()
+        sv_hld = self._context(("preset", "sv_hld"))
+
+        self.assertEqual(sv_hld["active_preset"], "sv_hld")
+        self.assertTrue(sv_hld["preset_value_enabled"])
+        self.assertFalse(sv_hld["custom_cats_active"])
+        self.assertEqual(sv_hld["dynasty_value_presets"],
+                         ["5x5", "obp", "6x6", "sv_hld", "7x7", "7x7_ops", "points"])
+        self.assertGreater(
+            sv_hld["dynasty_dollars"]["reliever"],
+            default["dynasty_dollars"]["reliever"],
+        )
+        self.assertGreater(
+            self._ids(default).index("reliever"),
+            self._ids(sv_hld).index("reliever"),
+        )
+        self.assertEqual(self._ids(sv_hld)[0], "reliever")
+        self.assertEqual(sv_hld["preset_rank_by_id"]["reliever"], 1)
+
+    def test_enabled_5x5_preset_matches_default_order_and_dollars(self):
+        self._set_flag(True)
+        default = self._context()
+        five_by_five = self._context(("preset", "5x5"))
+
+        self.assertEqual(five_by_five["active_preset"], "5x5")
+        self._assert_same_board(five_by_five, default)
+
+    def test_flag_off_sv_hld_preset_matches_default(self):
+        self._set_flag(False)
+        default = self._context()
+        sv_hld = self._context(("preset", "sv_hld"))
+
+        self.assertIsNone(sv_hld["active_preset"])
+        self.assertFalse(sv_hld["preset_value_enabled"])
+        self.assertEqual(sv_hld["preset_rank_by_id"], {})
+        self._assert_same_board(sv_hld, default)
+
+    def test_unknown_preset_with_flag_on_matches_default(self):
+        self._set_flag(True)
+        default = self._context()
+        garbage = self._context(("preset", "garbage"))
+
+        self.assertIsNone(garbage["active_preset"])
+        self.assertTrue(garbage["preset_value_enabled"])
+        self.assertEqual(garbage["preset_rank_by_id"], {})
+        self._assert_same_board(garbage, default)
 
 
 from app import app as flask_app
@@ -167,6 +313,91 @@ class TestDynastyRoutes(unittest.TestCase):
         self.assertNotIn(b'class="customize-toggle"', r.data)
         r2 = self.client.get("/rankings?mode=prospects")
         self.assertNotIn(b'hx-swap-oob="innerHTML:#setup-panel"', r2.data)
+
+
+class TestDynastyPresetValueTemplates(unittest.TestCase):
+    def setUp(self):
+        self.client = flask_app.test_client()
+        flask_app.config["TESTING"] = True
+        self.original_store = app_module.dd_store
+        self.original_flag = os.environ.get("VALUCAST_DYNASTY_PRESET_VALUE")
+        app_module.dd_store = _PresetValueStore([
+            _snapshot_row("ace", "Default Ace", 1, 120.0, positions=("SP",),
+                          value_by_preset={"5x5": 120.0, "sv_hld": 95.0}),
+            _snapshot_row("bat", "Default Bat", 2, 110.0,
+                          value_by_preset={"5x5": 110.0, "sv_hld": 100.0}),
+            _snapshot_row("prospect", "Fallback Prospect", 3, 80.0,
+                          player_type="prospect"),
+            _snapshot_row("reliever", "Hold Reliever", 4, 70.0, positions=("RP",),
+                          value_by_preset={"5x5": 70.0, "sv_hld": 140.0}),
+        ])
+        self.z_patch = patch("app._dynasty_z_map", return_value={})
+        self.z_patch.start()
+
+    def tearDown(self):
+        self.z_patch.stop()
+        app_module.dd_store = self.original_store
+        if self.original_flag is None:
+            os.environ.pop("VALUCAST_DYNASTY_PRESET_VALUE", None)
+        else:
+            os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = self.original_flag
+
+    def _row_fragment(self, body, player_name):
+        marker = f"<strong>{player_name}</strong>"
+        name_at = body.index(marker)
+        row_start = body.rfind('<tr class="player-row', 0, name_at)
+        row_end = body.index("</tr>", name_at)
+        return body[row_start:row_end]
+
+    def _button_fragment(self, body, preset_id):
+        marker = f'data-value-preset="{preset_id}"'
+        start = body.index(marker)
+        button_start = body.rfind("<button", 0, start)
+        button_end = body.index("</button>", start)
+        return body[button_start:button_end]
+
+    def test_flag_on_sv_hld_renders_server_preset_selector(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"
+
+        response = self.client.get("/?mode=dd_dynasty&preset=sv_hld")
+        body = response.data.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="preset-value-panel"', body)
+        self.assertIn("League scoring", body)
+        self.assertIn("Values and ranks below are scored for your league's categories.", body)
+        self.assertIn('data-value-preset="sv_hld"', body)
+        self.assertIn("active", self._button_fragment(body, "sv_hld"))
+        self.assertNotIn('id="category-fit-panel"', body)
+        self.assertNotIn('class="fit-category-grid"', body)
+        self.assertNotIn("long-term ValuCast value does not change", body)
+
+    def test_flag_on_sv_hld_value_column_uses_preset_value(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"
+
+        response = self.client.get("/?mode=dd_dynasty&preset=sv_hld")
+        body = response.data.decode("utf-8")
+        row = self._row_fragment(body, "Hold Reliever")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<td class="col-value val-pos">140.0</td>', row)
+        self.assertNotIn('<td class="col-value val-pos">70.0</td>', row)
+
+    def test_flag_off_renders_old_category_fit_and_default_value(self):
+        os.environ.pop("VALUCAST_DYNASTY_PRESET_VALUE", None)
+
+        response = self.client.get("/?mode=dd_dynasty&preset=sv_hld")
+        body = response.data.decode("utf-8")
+        row = self._row_fragment(body, "Hold Reliever")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="category-fit-panel"', body)
+        self.assertIn('data-fit-preset="svh"', body)
+        self.assertIn('class="fit-category-grid"', body)
+        self.assertIn("long-term ValuCast value does not change", body)
+        self.assertNotIn('id="preset-value-panel"', body)
+        self.assertIn('<td class="col-value val-pos">70.0</td>', row)
+        self.assertNotIn('<td class="col-value val-pos">140.0</td>', row)
 
 
 class TestLeagueImportRoute(unittest.TestCase):

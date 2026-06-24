@@ -520,6 +520,15 @@ function refreshLoadedFitDetails() {
     });
 }
 
+function setDynastyValuePreset(presetName, button) {
+    const input = document.getElementById('dynasty-preset-input');
+    if (input) input.value = presetName;
+    document.querySelectorAll('[data-value-preset]').forEach(presetButton => {
+        presetButton.classList.toggle('active', presetButton.dataset.valuePreset === presetName);
+    });
+    if (button) button.classList.add('active');
+}
+
 function applyFitPreset(presetName) {
     activeFitPreset = presetName;
     const preset = FIT_PRESETS[presetName];
@@ -551,6 +560,7 @@ function pairedAppend(tbody, row) {
 }
 
 function updateCategoryFit() {
+    if (document.getElementById('preset-value-panel')) return;
     const table = document.querySelector('.dynasty-rankings');
     if (!table || !table.querySelector('.col-fit')) return;
     const rows = Array.from(table.querySelectorAll('tbody > tr.player-row'));
@@ -626,10 +636,11 @@ function resetDynastyOrder() {
 }
 
 const requestedFitPreset = new URLSearchParams(window.location.search).get('fit');
-if (document.getElementById('category-fit-panel')) {
+if (document.getElementById('category-fit-panel') && !document.getElementById('preset-value-panel')) {
     applyFitPreset(FIT_PRESETS[requestedFitPreset] ? requestedFitPreset : 'h2h');
 }
 document.body.addEventListener('htmx:afterSwap', function () {
+    if (document.getElementById('preset-value-panel')) return;
     if (!document.getElementById('category-fit-panel')) return;
     if (activeFitPreset === 'dynasty') resetDynastyOrder();
     else updateCategoryFit();

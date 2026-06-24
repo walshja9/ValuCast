@@ -28,6 +28,7 @@ from web.category_registry import (
     HITTING_CATEGORIES,
     PITCHING_CATEGORIES,
     CATEGORY_PRESETS,
+    DYNASTY_VALUE_PRESETS,
     POINTS_PRESETS,
     DEFAULT_CATS,
     DEFAULT_PCATS,
@@ -474,7 +475,7 @@ if (
         "start so the prior healthy Render deploy stays live."
     )
 
-def _compute_dynasty_dollars(rows, settings):
+def _compute_dynasty_dollars(rows, settings, value_of=None):
     """Replacement-adjusted auction dollars for a league shaped by `settings`.
 
     Rostered pool = top (teams x roster) by dynasty value. Replacement value =
@@ -482,14 +483,15 @@ def _compute_dynasty_dollars(rows, settings):
     remaining budget is split proportionally to value ABOVE replacement.
     Below the cutoff = $0. Total payout == teams x budget (the league's cash), except the degenerate all-equal-values pool where only the $1 floors are paid.
     """
-    ordered = sorted(rows, key=lambda r: r.dynasty_value, reverse=True)
+    value_of = value_of or (lambda r: r.dynasty_value)
+    ordered = sorted(rows, key=value_of, reverse=True)
     cutoff = min(settings.roster_cutoff, len(ordered))
     rostered, bench = ordered[:cutoff], ordered[cutoff:]
     dollars = {r.id: 0.0 for r in bench}
     if not rostered:
         return dollars
-    replacement = rostered[-1].dynasty_value
-    surplus = {r.id: r.dynasty_value - replacement for r in rostered}
+    replacement = value_of(rostered[-1])
+    surplus = {r.id: value_of(r) - replacement for r in rostered}
     total_surplus = sum(surplus.values())
     spendable = settings.total_budget - len(rostered)  # $1 floor reserved each
     for r in rostered:
@@ -501,33 +503,35 @@ def _compute_dynasty_dollars(rows, settings):
 DYNASTY_ELITE_FLOOR = 140.0
 
 
-def _compute_dynasty_tiers(rows, num_tiers=8):
+def _compute_dynasty_tiers(rows, num_tiers=8, value_of=None):
     """Assign tiers from dynasty value gaps.
 
     Values >= DYNASTY_ELITE_FLOOR (the 140+ band on the 0-150 scale) are always
     tier 1 — elite is an absolute badge, never merged into the tier below by the
     min-3 rule. Gap-based tiering applies below the floor, starting at tier 2.
     """
+    value_of = value_of or (lambda r: r.dynasty_value)
     if len(rows) < 2:
         return {r.id: 1 for r in rows}
-    elite = [r for r in rows if r.dynasty_value >= DYNASTY_ELITE_FLOOR]
+    elite = [r for r in rows if value_of(r) >= DYNASTY_ELITE_FLOOR]
     if not elite:
-        return _gap_tiers(rows, num_tiers)
+        return _gap_tiers(rows, num_tiers, value_of=value_of)
     tiers = {r.id: 1 for r in elite}
-    rest = [r for r in rows if r.dynasty_value < DYNASTY_ELITE_FLOOR]
+    rest = [r for r in rows if value_of(r) < DYNASTY_ELITE_FLOOR]
     if rest:
-        for pid, t in _gap_tiers(rest, num_tiers - 1).items():
+        for pid, t in _gap_tiers(rest, num_tiers - 1, value_of=value_of).items():
             tiers[pid] = t + 1
     return tiers
 
 
-def _gap_tiers(rows, num_tiers=8):
+def _gap_tiers(rows, num_tiers=8, value_of=None):
     """Gap-based tiering with the min-3-per-tier merge rule."""
+    value_of = value_of or (lambda r: r.dynasty_value)
     if len(rows) < 2:
         return {r.id: 1 for r in rows}
     gaps = []
     for i in range(len(rows) - 1):
-        gap = rows[i].dynasty_value - rows[i + 1].dynasty_value
+        gap = value_of(rows[i]) - value_of(rows[i + 1])
         if gap > 0:
             gaps.append((gap, i))
     sorted_gaps = sorted(gaps, key=lambda x: x[0], reverse=True)
@@ -562,24 +566,29 @@ def _gap_tiers(rows, num_tiers=8):
     return {pid: t for pid, t in tiers_list}
 
 
-def _dynasty_tiers_for(rows, settings):
+def _dynasty_tiers_for(rows, settings, value_of=None):
     """Tiers over the rostered pool; below-cutoff rows are lumped into the LAST
     tier (never 0 — the template renders tier badges and 'T0' is nonsense)."""
-    ordered = sorted(rows, key=lambda r: r.dynasty_value, reverse=True)
+    value_of = value_of or (lambda r: r.dynasty_value)
+    ordered = sorted(rows, key=value_of, reverse=True)
     cutoff = min(settings.roster_cutoff, len(ordered))
     pool, bench = ordered[:cutoff], ordered[cutoff:]
-    tiers = _compute_dynasty_tiers(pool)
+    tiers = _compute_dynasty_tiers(pool, value_of=value_of)
     last = max(tiers.values()) if tiers else 1
     for r in bench:
         tiers[r.id] = last
     return tiers
 
 
-def _dynasty_metadata(settings):
+def _dynasty_metadata(settings, value_of=None):
     """Dynasty $ and tiers computed on the FULL DD universe shaped by league
     settings, so they don't change when the displayed rows are filtered."""
-    all_rows = sorted(dd_store.get_all(), key=lambda r: r.dynasty_value, reverse=True)
-    return _compute_dynasty_dollars(all_rows, settings), _dynasty_tiers_for(all_rows, settings)
+    value_of = value_of or (lambda r: r.dynasty_value)
+    all_rows = sorted(dd_store.get_all(), key=value_of, reverse=True)
+    return (
+        _compute_dynasty_dollars(all_rows, settings, value_of=value_of),
+        _dynasty_tiers_for(all_rows, settings, value_of=value_of),
+    )
 
 
 FIT_CATS = ("R", "HR", "RBI", "SB", "AVG", "OBP", "OPS", "SLG", "H", "BB",
@@ -2287,12 +2296,25 @@ def _build_dynasty_context(args):
     rank_by = args.get("rank_by", "dynasty")
     if rank_by not in ("dynasty", "now") or not custom_cats_active:
         rank_by = "dynasty"
+    raw_preset = args.get("preset")
+    preset_value_enabled = os.environ.get("VALUCAST_DYNASTY_PRESET_VALUE", "0") == "1"
+    active_preset = (
+        raw_preset
+        if (preset_value_enabled and raw_preset in DYNASTY_VALUE_PRESETS)
+        else None
+    )
+    value_of = (lambda r: r.value_for(active_preset)) if active_preset else None
     rows = dd_store.filter(pool=pool or None, position=position or None, search=search or None)
     now_dollars = (
         _custom_dynasty_values(tuple(cats), tuple(pcats), settings.teams, settings.budget)
         if custom_cats_active else {}
     )
-    if rank_by == "now":
+    if active_preset:
+        rows = sorted(
+            rows,
+            key=lambda row: (-value_of(row), row.dynasty_rank, row.name),
+        )
+    elif rank_by == "now":
         rows = sorted(
             rows,
             key=lambda row: (
@@ -2302,7 +2324,17 @@ def _build_dynasty_context(args):
             ),
         )
     rows = rows[:200]
-    dynasty_dollars, tiers = _dynasty_metadata(settings)
+    if active_preset:
+        preset_rank_rows = sorted(
+            dd_store.get_all(),
+            key=lambda row: (-value_of(row), row.dynasty_rank, row.name),
+        )
+        preset_rank_by_id = {
+            row.id: position for position, row in enumerate(preset_rank_rows, 1)
+        }
+    else:
+        preset_rank_by_id = {}
+    dynasty_dollars, tiers = _dynasty_metadata(settings, value_of=value_of)
     summary = f"{settings.summary()} · {_dynasty_category_summary(cats, pcats)}"
     return {
         "mode": "dd_dynasty",
@@ -2320,6 +2352,10 @@ def _build_dynasty_context(args):
         "hitting_categories": HITTING_CATEGORIES,
         "pitching_categories": PITCHING_CATEGORIES,
         "category_presets": DYNASTY_CATEGORY_PRESETS,
+        "active_preset": active_preset,
+        "preset_rank_by_id": preset_rank_by_id,
+        "preset_value_enabled": preset_value_enabled,
+        "dynasty_value_presets": list(DYNASTY_VALUE_PRESETS),
         "tiers": tiers,
         "dd_available": dd_store.is_available,
         "dd_generated_at": dd_store.generated_at,

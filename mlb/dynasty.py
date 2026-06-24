@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from league_values.engine import ValuationEngine
-from league_values.models import PlayerPool, PlayerProjection, ValuationResult
+from league_values.models import LeagueConfig, PlayerPool, PlayerProjection, ValuationResult
 from league_values.playing_time import filter_by_playing_time
 from league_values.post_processors import AgeCurve, VolumeMultiplier
 from mlb.availability import (
@@ -24,6 +24,7 @@ from mlb.availability import (
 )
 from projections.data.identity import age_for, load_identity_store
 from web.config_builder import build_config
+from web.category_registry import DYNASTY_VALUE_PRESETS, expected_category_count
 from web.projection_store import ProjectionStore
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +35,7 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.5.0"
+LAYER_VERSION = "0.6.0"
 VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_5"
 
 MIN_HITTER_PA = 100
@@ -517,8 +518,12 @@ def _ros_players(players: Iterable[PlayerProjection]) -> list[PlayerProjection]:
 def _ros_lookup(
     engine: ValuationEngine,
     players: Iterable[PlayerProjection],
+    league: LeagueConfig | None = None,
 ) -> dict[tuple[str, str], ValuationResult]:
-    ros_results = engine.value_players(_ros_players(players), build_config(mode="categories"))
+    ros_results = engine.value_players(
+        _ros_players(players),
+        league or build_config(mode="categories"),
+    )
     return {
         key: result
         for result in ros_results
@@ -865,6 +870,111 @@ def _dedupe_results(results: Iterable[ValuationResult]) -> tuple[list[ValuationR
     return list(by_key.values()), missing_identity_count, duplicate_identity_count
 
 
+def _dynasty_preset_league(preset_id: str) -> LeagueConfig:
+    preset = DYNASTY_VALUE_PRESETS[preset_id]
+    league = build_config(**preset)
+    expected_count = expected_category_count(preset_id)
+    if expected_count is not None and len(league.categories) != expected_count:
+        raise ValueError(
+            f"Dynasty preset {preset_id!r} resolved {len(league.categories)} "
+            f"categories; expected {expected_count}."
+        )
+    return league
+
+
+def _scores_for_config(
+    engine: ValuationEngine,
+    eligible: Iterable[PlayerProjection],
+    league: LeagueConfig,
+    season: int,
+    track_record_by_key: dict[tuple[str, str], dict] | None = None,
+    availability_by_mlbam: dict[str, dict] | None = None,
+    details: dict[str, Any] | None = None,
+) -> dict[tuple[str, str], float]:
+    players = list(eligible)
+    track_record_by_key = track_record_by_key or {}
+    availability_by_mlbam = availability_by_mlbam or {}
+
+    results = engine.value_players(players, league)
+    ros_by_key = _ros_lookup(engine, players, league)
+    stability_by_player_id: dict[str, dict[str, Any]] = {}
+    adjusted_results = []
+    for result in results:
+        adjusted, stability = _stability_adjusted_result(result, ros_by_key)
+        adjusted_results.append(adjusted)
+        stability_by_player_id[adjusted.player.id] = stability
+
+    deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(adjusted_results)
+    horizon_rows = [
+        (result, _horizon_profile(result, season))
+        for result in deduped
+    ]
+    values = [horizon["value"] for _, horizon in horizon_rows]
+    floor = _percentile(values, 0.05)
+    ceiling = max(values) if values else floor
+
+    score_by_key: dict[tuple[str, str], float] = {}
+    rows = []
+    for result, horizon in horizon_rows:
+        key = identity_key(result.player)
+        track_record_profile = track_record_by_key.get(key) if key else None
+        production_score = _scale_value(horizon["value"], floor, ceiling)
+        if _role(result.player) == "pitcher":
+            production_score *= PITCHER_PRODUCTION_ANCHOR
+        reliability = _playing_time_reliability(result.player)
+        score = (
+            PRODUCTION_WEIGHT * production_score
+            + RELIABILITY_WEIGHT * reliability
+        )
+        score, role_adjustments = _role_adjusted_score(
+            result.player,
+            score,
+            stability_by_player_id.get(result.player.id),
+            track_record_profile,
+        )
+        availability_profile = availability_by_mlbam.get(
+            str(result.player.metadata.get("mlbam_id"))
+        )
+        score, availability_component = _availability_adjusted_score(
+            result.player,
+            score,
+            availability_profile,
+        )
+        if key:
+            score_by_key[key] = round(score, 2)
+        rows.append(
+            (
+                score,
+                production_score,
+                horizon,
+                result,
+                role_adjustments,
+                track_record_profile,
+                availability_component,
+            )
+        )
+
+    if details is not None:
+        rows.sort(
+            key=lambda item: (
+                -item[0],
+                -item[2]["value"],
+                str(item[3].player.name),
+                str(item[3].player.metadata.get("mlbam_id") or ""),
+            )
+        )
+        details.update(
+            {
+                "rows": rows,
+                "stability_by_player_id": stability_by_player_id,
+                "missing_identity_count": missing_identity_count,
+                "duplicate_identity_count": duplicate_identity_count,
+            }
+        )
+
+    return score_by_key
+
+
 def _row(
     result: ValuationResult,
     score: float,
@@ -980,73 +1090,40 @@ def build_mlb_dynasty_layer(
             VolumeMultiplier(),
         ]
     )
-    league = build_config(mode="categories")
-    results = engine.value_players(eligible, league)
-    ros_by_key = _ros_lookup(engine, eligible)
-    stability_by_player_id: dict[str, dict[str, Any]] = {}
-    adjusted_results = []
-    for result in results:
-        adjusted, stability = _stability_adjusted_result(result, ros_by_key)
-        adjusted_results.append(adjusted)
-        stability_by_player_id[adjusted.player.id] = stability
-    deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(adjusted_results)
-    horizon_rows = [
-        (result, _horizon_profile(result, season))
-        for result in deduped
-    ]
-    values = [horizon["value"] for _, horizon in horizon_rows]
-    floor = _percentile(values, 0.05)
-    ceiling = max(values) if values else floor
-
-    rows = []
-    for result, horizon in horizon_rows:
-        key = identity_key(result.player)
-        track_record_profile = track_record_by_key.get(key) if key else None
-        production_score = _scale_value(horizon["value"], floor, ceiling)
-        # Pitcher-tier anchor (cross-role calibration). Hitters are untouched.
-        if _role(result.player) == "pitcher":
-            production_score *= PITCHER_PRODUCTION_ANCHOR
-        reliability = _playing_time_reliability(result.player)
-        score = (
-            PRODUCTION_WEIGHT * production_score
-            + RELIABILITY_WEIGHT * reliability
-        )
-        score, role_adjustments = _role_adjusted_score(
-            result.player,
-            score,
-            stability_by_player_id.get(result.player.id),
-            track_record_profile,
-        )
-        availability_profile = availability_by_mlbam.get(
-            str(result.player.metadata.get("mlbam_id"))
-        )
-        score, availability_component = _availability_adjusted_score(
-            result.player,
-            score,
-            availability_profile,
-        )
-        rows.append(
-            (
-                score,
-                production_score,
-                horizon,
-                result,
-                role_adjustments,
-                track_record_profile,
-                availability_component,
-            )
+    preset_ids = list(DYNASTY_VALUE_PRESETS)
+    preset_leagues = {
+        preset_id: _dynasty_preset_league(preset_id)
+        for preset_id in preset_ids
+    }
+    preset_scores: dict[str, dict[tuple[str, str], float]] = {}
+    default_details: dict[str, Any] = {}
+    for preset_id in preset_ids:
+        preset_scores[preset_id] = _scores_for_config(
+            engine,
+            eligible,
+            preset_leagues[preset_id],
+            season,
+            track_record_by_key,
+            availability_by_mlbam,
+            default_details if preset_id == "5x5" else None,
         )
 
-    rows.sort(
-        key=lambda item: (
-            -item[0],
-            -item[2]["value"],
-            str(item[3].player.name),
-            str(item[3].player.metadata.get("mlbam_id") or ""),
-        )
-    )
-    board = [
-        _row(
+    rows = default_details.get("rows", [])
+    stability_by_player_id = default_details.get("stability_by_player_id", {})
+    missing_identity_count = default_details.get("missing_identity_count", 0)
+    duplicate_identity_count = default_details.get("duplicate_identity_count", 0)
+
+    board = []
+    for rank, (
+        score,
+        production_score,
+        horizon,
+        result,
+        role_adjustments,
+        track_record_profile,
+        availability_component,
+    ) in enumerate(rows, 1):
+        row = _row(
             result,
             score,
             production_score,
@@ -1058,16 +1135,12 @@ def build_mlb_dynasty_layer(
             availability_component,
             projection_source_kind,
         )
-        for rank, (
-            score,
-            production_score,
-            horizon,
-            result,
-            role_adjustments,
-            track_record_profile,
-            availability_component,
-        ) in enumerate(rows, 1)
-    ]
+        key = identity_key(result.player)
+        row["value_by_preset"] = {
+            preset_id: round(preset_scores[preset_id].get(key, row["value"]), 2)
+            for preset_id in preset_ids
+        }
+        board.append(row)
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0
     availability_adjusted_count = sum(
@@ -1102,6 +1175,7 @@ def build_mlb_dynasty_layer(
         "layer_name": LAYER_NAME,
         "layer_version": LAYER_VERSION,
         "generated_at": generated_at,
+        "value_by_preset_menu": preset_ids,
         "source_policy": {
             "kind": "valucast_mlb_projection_value",
             "projection_source": projection_source,

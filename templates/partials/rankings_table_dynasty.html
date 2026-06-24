@@ -1,4 +1,5 @@
 {% set v11 = dd_schema_version == '1.1' %}
+{% set _ap = active_preset|default(None) %}
 {% if mode == 'prospects' and coverage_notice %}
 <div class="notice coverage-notice" role="status">{{ coverage_notice }}</div>
 {% endif %}
@@ -54,6 +55,7 @@
         {% set display_tier = row.tier if row.tier is not none else computed_tier %}
         {% set prev_computed_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else computed_tier %}
         {% set confidence = row.confidence or {} %}
+        {% set _pr = (preset_rank_by_id|default({})).get(row.id) if _ap else None %}
         {# When re-ranked the displayed order is the adapter order, so the cutoff
            divider must follow the displayed position, not the model P#. #}
         {% set this_rank = loop.index if prospect_rerank else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
@@ -74,7 +76,7 @@
                 {% if mode == 'prospects' and row.prospect_rank %}
                     {{ row.prospect_rank }}
                 {% else %}
-                    {{ row.dynasty_rank }}
+                    {{ _pr or row.dynasty_rank }}
                 {% endif %}
             </td>
             <td class="col-name">
@@ -122,7 +124,8 @@
             <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>
             <td class="col-team">{{ row.team or '—' }}</td>
             <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
-            <td class="col-value val-pos">{{ "%.1f" | format(row.dynasty_value) }}</td>
+            {% set _value = row.value_for(_ap) if row.value_for is defined else row.dynasty_value %}
+            <td class="col-value val-pos">{{ "%.1f" | format(_value) }}</td>
             {% if mode == 'prospects' %}<td class="col-eta">{{ row.eta or '—' }}</td>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>

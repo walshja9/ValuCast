@@ -63,6 +63,7 @@ class PublicSnapshotRow:
     confidence: str | dict | None
     updated_at: str
     mlbam_id: str | None
+    value_by_preset: dict = field(default_factory=dict)
     bats: str | None = None
     throws: str | None = None
     role: str | None = None
@@ -100,6 +101,11 @@ class PublicSnapshotRow:
 
     @property
     def dynasty_value(self) -> float:
+        return self.value
+
+    def value_for(self, preset: str | None) -> float:
+        if preset and preset in self.value_by_preset:
+            return self.value_by_preset[preset]
         return self.value
 
     @property
@@ -590,6 +596,7 @@ class PublicSnapshotRow:
             confidence=cls._coerce_confidence(record.get("confidence")),
             updated_at=record["updated_at"],
             mlbam_id=str(record["mlbam_id"]) if record.get("mlbam_id") not in (None, "") else None,
+            value_by_preset=dict(record.get("value_by_preset") or {}),
             bats=record.get("bats") or context.get("bats"),
             throws=record.get("throws") or context.get("throws"),
             role=record.get("role"),

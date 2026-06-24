@@ -283,6 +283,7 @@ def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
                 "age": row.get("age"),
                 "rank": row.get("rank"),
                 "value": row.get("value"),
+                "value_by_preset": row.get("value_by_preset") or {},
                 "value_scale": row.get("value_scale"),
                 "value_source": row.get("value_source"),
                 "confidence": row.get("confidence"),
@@ -345,6 +346,24 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
             100.0,
             primary_value + TWO_WAY_SECONDARY_VALUE_WEIGHT * secondary_value,
         )
+        primary_vbp = primary.get("value_by_preset") or {}
+        if not isinstance(primary_vbp, dict):
+            primary_vbp = {}
+        combined_vbp = {}
+        for preset_id in primary_vbp:
+            secondary_vbp = sum(
+                _clean_float((row.get("value_by_preset") or {}).get(preset_id)) or 0.0
+                for row in ordered[1:]
+                if isinstance(row.get("value_by_preset") or {}, dict)
+            )
+            combined_vbp[preset_id] = round(
+                min(
+                    100.0,
+                    (_clean_float(primary_vbp.get(preset_id)) or 0.0)
+                    + TWO_WAY_SECONDARY_VALUE_WEIGHT * secondary_vbp,
+                ),
+                2,
+            )
         positions = []
         for row in ordered:
             for position in row.get("positions") or []:
@@ -387,6 +406,7 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
             "role": "two_way",
             "positions": positions or primary.get("positions") or [],
             "value": round(combined_value, 2),
+            "value_by_preset": combined_vbp,
             "value_source": TWO_WAY_VALUE_SOURCE,
             "confidence": _combined_confidence(ordered),
             "drivers": drivers[:6],
