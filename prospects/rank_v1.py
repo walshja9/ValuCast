@@ -357,13 +357,17 @@ MANUAL_GRADUATION_PATH = ROOT / "data" / "manual" / "prospect_graduation_overrid
 
 
 def _manual_graduated_ids() -> set[str]:
-    """mlbam_ids manually graduated off the board -- service-time graduates the
-    AB/IP rookie rule misses (e.g. a player past the 45-day MLB rule whose career
-    AB stays under the limit). Fail-soft: missing/bad file -> empty set."""
+    """mlbam_ids manually removed from the board. Covers both service-time
+    graduates the AB/IP rookie rule misses AND rookie-eligible but aged-out /
+    quad-A profiles no longer ranked as prospects. Fail-soft: bad file -> empty."""
     try:
         raw = json.loads(MANUAL_GRADUATION_PATH.read_text(encoding="utf-8"))
-        ids = raw.get("graduated_mlbam_ids")
-        return {str(x) for x in ids} if isinstance(ids, list) else set()
+        out: set[str] = set()
+        for key in ("graduated_mlbam_ids", "excluded_mlbam_ids"):
+            ids = raw.get(key)
+            if isinstance(ids, list):
+                out.update(str(x) for x in ids)
+        return out
     except (OSError, ValueError):
         return set()
 

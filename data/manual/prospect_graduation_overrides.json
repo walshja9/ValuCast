@@ -1,7 +1,9 @@
 {
-  "_doc": "Manual prospect graduations for players the AB/IP rookie rule misses -- e.g. service-time graduates (45-day MLB rule) whose career AB stays under 131. These mlbam_ids are dropped from the prospect board. Curated; review when adding.",
+  "_doc": "Manual board removals the model's automatic rules miss. graduated_mlbam_ids = service-time graduates the AB/IP rookie rule misses (45-day MLB rule, career AB under 131). excluded_mlbam_ids = rookie-eligible but aged-out / quad-A profiles that are no longer ranked prospects on any consensus board. Both are dropped from the prospect board. Curated; document each in notes.",
   "graduated_mlbam_ids": ["691783"],
+  "excluded_mlbam_ids": ["691728"],
   "notes": {
-    "691783": "Jordan Lawlar -- debuted 2023 with multiple MLB call-ups; graduated on MLB service time (45-day rule) and dropped from FanGraphs' board, though career AB sits ~121 so the AB-only rule keeps him eligible. Manual graduation."
+    "691783": "Jordan Lawlar -- debuted 2023 with multiple MLB call-ups; graduated on MLB service time (45-day rule) and dropped from FanGraphs' board, though career AB sits ~121 so the AB-only rule keeps him eligible. Manual graduation.",
+    "691728": "Zac Veen -- rookie-eligible and mashing AAA, but a 24yo repeating the level (FV40+, off every consensus prospect board since 2023). A quad-A profile, not a dynasty prospect; ValuCast's stats-forward model over-rates the raw production. Manual exclusion."
   }
 }
