@@ -34,8 +34,8 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.4.0"
-VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_4"
+LAYER_VERSION = "0.5.0"
+VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_5"
 
 MIN_HITTER_PA = 100
 MIN_SP_IP = 40
@@ -43,6 +43,16 @@ MIN_RP_IP = 20
 
 PRODUCTION_WEIGHT = 0.95
 RELIABILITY_WEIGHT = 0.05
+# Cross-role calibration. The per-role z-sum value engine prices the pitcher TIER
+# too high vs elite bats on the pooled production scale -- mid-tier aces (Sanchez,
+# Misiorowski) crept above Soto in the #9-18 band. A single pitcher-tier anchor on
+# the pooled production score demotes the pitcher tier relative to hitters while
+# preserving within-pitcher order and leaving every hitter value EXACTLY unchanged.
+# Reversible: 1.0 == prior behavior. ponytail: a calibration judgment (mirrors the
+# prospect cross-role quantile-norm), not outcome-gated; tuned to the minimum that
+# fixes the band while keeping elite arms (Skenes) in the top tier.
+CROSS_ROLE_CALIBRATION_VERSION = "pitcher_tier_anchor_v0_1"
+PITCHER_PRODUCTION_ANCHOR = 0.92
 ROS_STABILITY_BASE_WEIGHT = 0.35
 ROS_STABILITY_MAX_WEIGHT = 0.70
 ROS_STABILITY_UNDERPERFORMANCE_WEIGHT = 0.40
@@ -875,8 +885,15 @@ def _row(
     reliability = _playing_time_reliability(player)
     drivers = _category_drivers(result)
     drivers.append(f"playing time reliability {reliability:.0f}")
+    _anchor = PITCHER_PRODUCTION_ANCHOR if role == "pitcher" else 1.0
     components = {
         "production_score": round(production_score, 2),
+        "cross_role_calibration": {
+            "method": "pitcher_tier_production_anchor",
+            "version": CROSS_ROLE_CALIBRATION_VERSION,
+            "anchor": _anchor,
+            "pre_anchor_production_score": round(production_score / _anchor, 2) if _anchor else round(production_score, 2),
+        },
         "playing_time_reliability": reliability,
         "season_category_value": round(result.total_value, 4),
         "dynasty_horizon_value": round(horizon["value"], 4),
@@ -986,6 +1003,9 @@ def build_mlb_dynasty_layer(
         key = identity_key(result.player)
         track_record_profile = track_record_by_key.get(key) if key else None
         production_score = _scale_value(horizon["value"], floor, ceiling)
+        # Pitcher-tier anchor (cross-role calibration). Hitters are untouched.
+        if _role(result.player) == "pitcher":
+            production_score *= PITCHER_PRODUCTION_ANCHOR
         reliability = _playing_time_reliability(result.player)
         score = (
             PRODUCTION_WEIGHT * production_score

@@ -160,10 +160,21 @@ capture. This is the fifth independent confirmation that the prospect *accuracy*
 closed — which is exactly why the strategy is settings-aware + provably-early, not accuracy.
 Proceed to Phase 2.
 
-**Phase 2 — Promote settings-aware adapters shadow→live.** Surface `adapters.py` per-league
-prospect rankings as a URL-driven user feature (mirror the existing dynasty league
-customization). Frame the wedge precisely: *arbitrary custom scoring on dynasty peak prospect
-value.* Governor/anchor-guarded; refuse partial category coverage (already enforced).
+**Phase 2 — Promote settings-aware adapters shadow→live. NEXT (confirmed 6/24).** Surface
+`adapters.py` per-league prospect rankings as a URL-driven user feature (mirror the existing
+dynasty league customization). Frame the wedge precisely: *arbitrary custom scoring on dynasty
+peak prospect value.* Governor/anchor-guarded; refuse partial category coverage (already enforced).
+
+  **6/24 scope clarification (this is the "dynasty/redraft values pass"):** today the dynasty
+  board shows a fixed VAL/$ plus a *client-side* "Category Fit" that only RE-RANKS the visible
+  pool by current-category z-context — "long-term ValuCast value does not change" (per the panel
+  copy), and it dashes out whenever stat context is missing. The real wedge is making the **value
+  itself settings-aware**: the dollar value MOVES with league scoring (a SB specialist worth more
+  $ in a SB league, an OBP bat worth more in an OBP league), for BOTH **dynasty (peak)** and
+  **redraft (current-season)** — driven by the adapters/engine, replacing the shallow re-rank.
+  This is what OOPSY (one neutral number) and PL+ (list-side only) structurally cannot match.
+  NOTE (6/24): Alex confirmed this is the item but suspects there may have ALSO been a separate
+  values-related roadmap item — flagged for the "what's left" sweep to surface.
 
 **Phase 3 — Build the divergence / receipts layer ("Ahead of Consensus").** Read-only; score
 stays 100% ValuCast (independence firewall untouched). Compute `divergence = consensus_rank −
@@ -182,6 +193,33 @@ only — never enters the score** (`PROHIBITED_SCORE_INPUTS`). Gate any use with
 incremental-lift test (prior gate: grades add ~0 incremental lift to the score anyway).
 **SHIPPED 6/23-24:** FanGraphs FV/tool-grade committed snapshot, card panel + model-vs-scouts
 disagreement flag, FV strip on the share card. Display/context only; never in the score.
+
+## Backlog — confirmed dynasty-VALUES items (unscheduled, 6/24)
+
+Surfaced by the 6/24 "what's left" sweep and confirmed by Alex as roadmap items he
+wanted tracked (the values work he half-remembered beyond Phase 2):
+
+- **General Dynasty ("Phase G").** Generalize the dynasty *value* model beyond the DD
+  7×7 format to arbitrary dynasty leagues (scoring categories + roster + depth). Sibling
+  to Phase 2: Phase 2 makes *prospect* value settings-aware; Phase G extends
+  settings-awareness across the full MLB+prospect dynasty valuation so the value is
+  portable to any league. Shares the adapter/missing-outcome groundwork with Phase 2
+  (5×5/points/OBP coverage is blocked on universal W + standalone-SV outcomes).
+
+- **Dynasty-board pitcher-tilt calibration (`mlb/dynasty.py`). SHIPPED 6/24.** Symptom:
+  Cristopher Sánchez / Misiorowski sat above Soto in the #9-18 band. Root cause: the
+  combine point (`:980-988`) min-maxes the pooled per-role z-sum values on RAW MAGNITUDE,
+  and the deeper pitcher pool's top is dense/high, so mid-tier aces priced near elite bats.
+  ⚠️ The prospect "within_role_percentile_to_pooled_distribution" fix does NOT port here —
+  it makes the tilt WORSE (percentile equalization preserves within-role rank, and the
+  pitcher pool simply has more extreme top performers by count). Instead shipped a single
+  `PITCHER_PRODUCTION_ANCHOR = 0.92` on the pitcher production score (hitters EXACTLY
+  unchanged; within-pitcher order preserved; reversible at 1.0; `LAYER_VERSION` 0.4→0.5,
+  `cross_role_calibration` metadata emitted per row). Tuned to the gentlest anchor with a
+  durable margin: Soto now clears Sánchez/Misiorowski by ~1.7pt, Skenes holds #5, 4 pitchers
+  in top-25 (governor `mlb_top_board_role_shape` passes). Inherited by the Marcel-shadow
+  layer. Calibration judgment (ponytail), not outcome-gated. The MLB dynasty board is now
+  postable. **NOTE: Kurtz #3 (a HITTER-side aggressive value) is a separate open item.**
 
 ## Parked / maybe (not committed)
 
