@@ -8,6 +8,14 @@ _NONE_RESULT = {"momentum_score": None, "momentum_label": None}
 _HITTER_MIN_PA = 40.0
 _PITCHER_MIN_IP = 10.0
 
+# Display-selectivity threshold. Calibrated against the live board so ~17% of
+# scored prospects flag as moving; the original 0.6 flagged a noisy ~44%, which
+# made "Heating Up" meaningless. This is DISPLAY calibration, NOT outcome
+# calibration -- there is no historical trailing-window dataset to validate
+# momentum against realized outcomes (same blocker as the thin-sample outcome
+# gate), so momentum must never feed the score until that backtest exists.
+MOMENTUM_LABEL_THRESHOLD = 1.2
+
 
 def _clean_float(value: Any) -> float | None:
     try:
@@ -56,9 +64,9 @@ def _weighted_score(terms: tuple[tuple[float, float | None], ...]) -> float | No
 def _label(score: float | None) -> str | None:
     if score is None:
         return None
-    if score >= 0.6:
+    if score >= MOMENTUM_LABEL_THRESHOLD:
         return "Heating Up"
-    if score <= -0.6:
+    if score <= -MOMENTUM_LABEL_THRESHOLD:
         return "Cooling Off"
     return "Steady"
 

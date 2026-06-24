@@ -980,6 +980,17 @@ def _apply_prospect_board_context(ctx, args):
         for row in rows
         if (key := _row_identity_key(row)) in form_by_key
     }
+    # Same-day call-up pulse: board prospects already on a fresh MLB active roster
+    # (called up after the morning build). Display-only "Called up" badge.
+    call_up = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+    ) or {}
+    call_up_by_key = call_up.get("by_identity") or {}
+    ctx["call_up_by_id"] = {
+        row.id: call_up_by_key[key]
+        for row in rows
+        if (key := _row_identity_key(row)) in call_up_by_key
+    }
 
     # Live settings-aware re-ranking (presets OR arbitrary custom cats). Re-ranking
     # is a downstream VIEW: it never touches dynasty_value, P#, or the prospect
@@ -3142,6 +3153,9 @@ def _artifact_context_for_row(row) -> dict:
     recent_form = (
         (_load_artifact(root / "valucast_recent_form_signal.json") or {}).get("by_identity") or {}
     ).get(key)
+    call_up = (
+        (_load_artifact(root / "valucast_call_up_pulse.json") or {}).get("by_identity") or {}
+    ).get(key)
     card_data_status = _indexed_artifact_rows(
         _load_artifact(root / "valucast_prospect_card_data_audit.json"), "cards"
     ).get(key)
@@ -3160,6 +3174,7 @@ def _artifact_context_for_row(row) -> dict:
         "scouting_report": scouting,
         "recent_signal": recent_signal,
         "recent_form": recent_form,
+        "call_up": call_up,
         "card_data_status": card_data_status,
         "role_profile": role_profile,
     }

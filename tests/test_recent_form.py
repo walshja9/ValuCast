@@ -108,5 +108,8 @@ def test_missing_rate_fields_are_skipped_and_renormalized():
 
     result = compute_momentum(season, recent, "pitcher")
 
-    assert result["momentum_label"] == "Heating Up"
+    # Renormalization check: k_per_9 + era are None on the season side, so those
+    # terms drop and the weights renormalize over k_bb_pct + bb_per_9 -> score 1.0.
+    # 1.0 is below the 1.2 display threshold, so the label is Steady.
+    assert result["momentum_label"] == "Steady"
     assert result["momentum_score"] == pytest.approx(1.0)

@@ -2050,6 +2050,10 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .stat-value.momentum-steady { color: var(--c-muted); }
 .momentum-window { color: var(--c-muted); font-weight: 500; font-size: .9em; }
 
+/* Same-day call-up pulse -- the high-visibility "just promoted" event (filled to pop) */
+.callup-chip { display: inline-flex; align-items: center; border-radius: 999px; font-size: .68rem; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; padding: .12rem .55rem; white-space: nowrap; color: #06231e; background: var(--c-signal); }
+.stat-value.stat-value-callup { color: var(--c-signal); font-weight: 700; }
+
 /* Freshness badge -- visible "data is fresh" cue under the horizon tabs */
 .freshness-badge { display: inline-flex; align-items: center; gap: .4rem; font-size: .74rem; font-weight: 600; color: var(--c-muted); margin: .2rem 0 var(--space-2); }
 .freshness-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--c-signal); box-shadow: 0 0 0 3px rgba(52, 226, 196, .18); }

@@ -92,6 +92,10 @@
                     {% endfor %}
                 </span>
                 {% endif %}
+                {% set cu = call_up_by_id.get(row.id) if call_up_by_id else None %}
+                {% if cu %}
+                <span class="callup-chip" title="On a fresh MLB active roster ({{ cu.mlb_team or 'MLB' }}) -- the board graduates him next build">Called up{% if cu.mlb_team %} · {{ cu.mlb_team }}{% endif %}</span>
+                {% endif %}
                 {% set mo = momentum_by_id.get(row.id) if momentum_by_id else None %}
                 {% if mo and mo.momentum_label in ['Heating Up', 'Cooling Off'] %}
                 <span class="momentum-chip {{ 'heating' if mo.momentum_label == 'Heating Up' else 'cooling' }}" title="Recent {{ mo.window_days or 30 }}-day MiLB form vs season line">{{ '▲' if mo.momentum_label == 'Heating Up' else '▼' }} {{ mo.momentum_label }}</span>

@@ -1,0 +1,74 @@
+name: Afternoon roster pulse
+
+# Same-day call-up reflection. The morning build excludes active-MLB-roster ids,
+# so a prospect called up mid-day stays on the board (with no signal) until the
+# next morning. This light afternoon pass re-fetches active rosters and rebuilds
+# the call-up pulse so the highest-visibility prospect event -- a promotion --
+# shows the same day. It does NOT rebuild the full board (that stays the morning
+# build's); it only refreshes roster status + the display-only pulse + deploys.
+
+on:
+  schedule:
+    # 20:00 UTC = 4:00 PM ET (EDT) -- after most day-of call-ups/lineups post,
+    # before evening games. Best-effort like all GitHub schedules.
+    - cron: "0 20 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  # Share the daily refresh's group so publishing serializes -- never two pushes
+  # to master at once.
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  pulse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Sync to latest origin/master
+        run: |
+          git fetch origin
+          git checkout -B master origin/master
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      # The roster + pulse scripts are stdlib-only and add ROOT to sys.path, so no
+      # dependency install is needed -- keeps this pass fast.
+      - name: Refresh active MLB roster status
+        run: python scripts/build_mlb_roster_status.py
+
+      - name: Rebuild same-day call-up pulse
+        run: python scripts/build_call_up_pulse.py
+
+      - name: Validate call-up pulse
+        run: python scripts/validate_call_up_pulse.py
+
+      - name: Commit and publish call-up pulse
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/models/valucast_mlb_roster_status.json \
+            data/mlb/mlb_roster_status_cache.json \
+            data/prediction_archive/valucast_mlb_roster_status \
+            data/models/valucast_call_up_pulse.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: afternoon call-up pulse $(date -u +%Y-%m-%dT%H:%MZ)"
+          # We synced to latest origin/master and only touch roster/pulse artifacts,
+          # so this is normally a fast-forward. Fail loud rather than auto-merging.
+          git push origin master
+
+      - name: Trigger Render deploy
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
