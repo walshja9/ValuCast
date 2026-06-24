@@ -71,4 +71,6 @@ jobs:
 
       - name: Trigger Render deploy
         if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+        # --retry-all-errors so a transient Render 5xx (e.g. a deploy already in
+        # progress) retries instead of failing the whole job.
+        run: curl -fsS --retry 5 --retry-all-errors --retry-delay 10 -X POST "$RENDER_DEPLOY_HOOK_URL"

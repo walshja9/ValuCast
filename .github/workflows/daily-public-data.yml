@@ -208,6 +208,8 @@ jobs:
         # toggle. The guard reads the job-level RENDER_DEPLOY_HOOK_URL env (a
         # step-level env is NOT visible to its own `if`, which silently skipped
         # this step before). Dormant until that repo secret is set; -f makes a
-        # non-2xx response fail the job instead of silently no-op'ing.
+        # non-2xx response fail the job instead of silently no-op'ing, and
+        # --retry-all-errors rides out a transient Render 5xx (e.g. a deploy
+        # already in progress) instead of failing the refresh on a blip.
         if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+        run: curl -fsS --retry 5 --retry-all-errors --retry-delay 10 -X POST "$RENDER_DEPLOY_HOOK_URL"
