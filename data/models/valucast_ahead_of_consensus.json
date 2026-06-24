@@ -45,14 +45,14 @@
       },
       "consensus_rank": 102,
       "days_ahead": 2,
-      "divergence": 78,
+      "divergence": 77,
       "identity_key": "701388_pitcher",
       "mlbam_id": "701388",
       "name": "Jurrangelo Cijntje",
       "role": "pitcher",
       "team": "STL",
       "usage": "ahead_of_consensus_context_not_live_rank_or_value",
-      "valucast_rank": 24
+      "valucast_rank": 25
     },
     {
       "ahead_since": "2026-06-13",
@@ -163,6 +163,24 @@
       "valucast_rank": 59
     },
     {
+      "ahead_since": "2026-06-13",
+      "board_count": 2,
+      "boards": {
+        "hkb": 163,
+        "pipeline": 92
+      },
+      "consensus_rank": 128,
+      "days_ahead": 11,
+      "divergence": 35,
+      "identity_key": "827734_pitcher",
+      "mlbam_id": "827734",
+      "name": "Wei-En Lin",
+      "role": "pitcher",
+      "team": "ATH",
+      "usage": "ahead_of_consensus_context_not_live_rank_or_value",
+      "valucast_rank": 93
+    },
+    {
       "ahead_since": "2026-06-21",
       "board_count": 2,
       "boards": {
@@ -179,24 +197,6 @@
       "team": "LAA",
       "usage": "ahead_of_consensus_context_not_live_rank_or_value",
       "valucast_rank": 22
-    },
-    {
-      "ahead_since": "2026-06-13",
-      "board_count": 2,
-      "boards": {
-        "hkb": 163,
-        "pipeline": 92
-      },
-      "consensus_rank": 128,
-      "days_ahead": 11,
-      "divergence": 34,
-      "identity_key": "827734_pitcher",
-      "mlbam_id": "827734",
-      "name": "Wei-En Lin",
-      "role": "pitcher",
-      "team": "ATH",
-      "usage": "ahead_of_consensus_context_not_live_rank_or_value",
-      "valucast_rank": 94
     },
     {
       "ahead_since": "2026-06-21",
@@ -271,6 +271,24 @@
       "valucast_rank": 60
     },
     {
+      "ahead_since": "2026-06-22",
+      "board_count": 2,
+      "boards": {
+        "hkb": 29,
+        "pipeline": 67
+      },
+      "consensus_rank": 48,
+      "days_ahead": 2,
+      "divergence": 25,
+      "identity_key": "695491_hitter",
+      "mlbam_id": "695491",
+      "name": "Joshua B\u00e1ez",
+      "role": "hitter",
+      "team": "STL",
+      "usage": "ahead_of_consensus_context_not_live_rank_or_value",
+      "valucast_rank": 23
+    },
+    {
       "ahead_since": "2026-06-13",
       "board_count": 2,
       "boards": {
@@ -297,6 +315,12 @@
       "divergence": 49,
       "valucast_rank": 55
     },
+    "695491_hitter": {
+      "board_count": 2,
+      "consensus_rank": 48,
+      "divergence": 25,
+      "valucast_rank": 23
+    },
     "696146_pitcher": {
       "board_count": 2,
       "consensus_rank": 54,
@@ -312,8 +336,8 @@
     "701388_pitcher": {
       "board_count": 2,
       "consensus_rank": 102,
-      "divergence": 78,
-      "valucast_rank": 24
+      "divergence": 77,
+      "valucast_rank": 25
     },
     "702518_hitter": {
       "board_count": 2,
@@ -378,8 +402,8 @@
     "827734_pitcher": {
       "board_count": 2,
       "consensus_rank": 128,
-      "divergence": 34,
-      "valucast_rank": 94
+      "divergence": 35,
+      "valucast_rank": 93
     },
     "828244_pitcher": {
       "board_count": 2,
@@ -388,7 +412,7 @@
       "valucast_rank": 40
     }
   },
-  "generated_at": "2026-06-24T04:51:30.651415+00:00",
+  "generated_at": "2026-06-24T10:53:48.324916+00:00",
   "generated_by": "valucast",
   "guards": {
     "max_ahead_rows": 25,
@@ -414,8 +438,8 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "ahead_count": 16,
-    "badge_count": 16,
+    "ahead_count": 17,
+    "badge_count": 17,
     "evaluated_count": 2647
   },
   "validation": {
