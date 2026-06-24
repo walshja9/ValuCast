@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-24T13:45:07.337991+00:00",
+  "generated_at": "2026-06-24T14:17:15.981132+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -52914,9 +52914,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "702752_reliever",
       "mlbam_id": "702752",
       "name": "Jonathan Pintaro",
@@ -52957,7 +52957,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101141,7 +101141,7 @@
   },
   "summary": {
     "active_injury_risk_count": 223,
-    "active_mlb_roster_count": 730,
+    "active_mlb_roster_count": 731,
     "profile_count": 2049,
     "role_counts": {
       "bench_or_depth": 401,

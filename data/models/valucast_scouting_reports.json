@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-06-24T13:46:20.106644+00:00",
+  "generated_at": "2026-06-24T14:18:29.844363+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-06-24T13:46:14.364750+00:00",
+    "card_data_audit_generated_at": "2026-06-24T14:18:23.879196+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
     "public_snapshot_generated_at": "2026-06-24T00:00:00+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-06-24T13:46:14.748754+00:00",
+    "recent_signal_generated_at": "2026-06-24T14:18:24.264350+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -4815,10 +4815,11 @@
           "hard_ok": true,
           "ok": false,
           "unsupported_numbers": [
+            "15",
             "5.9"
           ]
         },
-        "text": "Braden Nett is a strike-thrower working to harness his stuff as a depth arm rather than a rotation piece\u2014K/9 of 11.6 and K-BB% of -5.9 show he's got the raw fastball but no command yet. His 14.5 BB/9 over 9.3 innings at AAA is the real problem; even translating to MLB-equivalent 5.1 BB/9, that's well above the depth-arm threshold and signals control work remains unfinished. ValuCast projects a useful MLB arm outcome with 81% probability, but the sample is too thin and recent decline is steep\u2014confidence here is low until he strings together a longer, cleaner look at the level.",
+        "text": "Braden Nett is a command-challenged starter prospect whose strikeout stuff (11.6 K/9 minor-league rate) vastly outpaces his ability to find the zone\u2014he's walking nearly 15 per 9 and sits at a K-BB% of -5.9 over an extremely thin 9.3 innings at AAA. The core flaw is control; even translated to MLB equivalents, his walk rate (5.1 BB/9) sits well above league average, and his dominance metrics (35-grade K-BB%) suggest he'll consistently pitch from behind in counts. This sample is too small to draw firm conclusions, and ValuCast's ranking has cooled 3 spots in recent updates, reflecting the volatility inherent in a starter with fewer than 30 innings.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -29345,10 +29346,10 @@
       "available": true,
       "enabled": true,
       "flagged": 1,
-      "generated": 16,
+      "generated": 1,
       "generation_limit": 50,
       "report_count": 691,
-      "reused": 484,
+      "reused": 499,
       "reused_stale": 0,
       "skipped_due_to_budget": 0
     },
