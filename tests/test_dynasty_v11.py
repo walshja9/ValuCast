@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import unittest
 import urllib.parse
@@ -23,6 +24,10 @@ class TestDynastyV11UI(unittest.TestCase):
         app_module.dd_store = cls.original_store
 
     def test_v11_store_and_category_fit_controls_render(self):
+        # The old Category Fit panel is the flag-OFF path now that preset
+        # values default ON; this documents that flag-off rendering.
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "0"
+        self.addCleanup(os.environ.pop, "VALUCAST_DYNASTY_PRESET_VALUE", None)
         response = self.client.get("/?mode=dd_dynasty")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'id="category-fit-panel"', response.data)

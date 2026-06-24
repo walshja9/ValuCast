@@ -794,7 +794,7 @@ class TestConfidenceIntegration(unittest.TestCase):
         response = self.client.get("/?mode=dd_dynasty")
         if dd_store.schema_version == "1.1":
             self.assertIn(b'class="col-confidence"', response.data)
-            self.assertIn(b'id="category-fit-panel"', response.data)
+            self.assertIn(b'id="preset-value-panel"', response.data)
         else:
             # v1.0 feed carries no confidence/z-scores: the columns and the
             # Category Fit panel must not render as dead UI. (The inline JS

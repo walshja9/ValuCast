@@ -384,7 +384,7 @@ class TestDynastyPresetValueTemplates(unittest.TestCase):
         self.assertNotIn('<td class="col-value val-pos">70.0</td>', row)
 
     def test_flag_off_renders_old_category_fit_and_default_value(self):
-        os.environ.pop("VALUCAST_DYNASTY_PRESET_VALUE", None)
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "0"
 
         response = self.client.get("/?mode=dd_dynasty&preset=sv_hld")
         body = response.data.decode("utf-8")

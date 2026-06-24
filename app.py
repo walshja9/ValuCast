@@ -2297,7 +2297,7 @@ def _build_dynasty_context(args):
     if rank_by not in ("dynasty", "now") or not custom_cats_active:
         rank_by = "dynasty"
     raw_preset = args.get("preset")
-    preset_value_enabled = os.environ.get("VALUCAST_DYNASTY_PRESET_VALUE", "0") == "1"
+    preset_value_enabled = os.environ.get("VALUCAST_DYNASTY_PRESET_VALUE", "1") == "1"
     active_preset = (
         raw_preset
         if (preset_value_enabled and raw_preset in DYNASTY_VALUE_PRESETS)
