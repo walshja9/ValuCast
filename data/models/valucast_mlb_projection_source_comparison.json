@@ -33,13 +33,13 @@
     "cv_method": "forward_actuals_vs_oldest_frozen_pure_projection",
     "improvement_pct": null,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
-    "model_score": 1.2081,
+    "model_score": 1.2082,
     "reason": "forward horizon 6d < required 30d",
     "sample_size": 0,
     "status": "insufficient_sample",
     "validated_through": "2026-06-24"
   },
-  "generated_at": "2026-06-24T04:00:25.467162+00:00",
+  "generated_at": "2026-06-24T04:24:27.984600+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -49,50 +49,50 @@
   "marcel_beats_steamer": false,
   "scores": {
     "marcel_mae": {
-      "AVG": 0.03258,
-      "ERA": 1.26969,
-      "OBP": 0.03381,
-      "OPS": 0.09443,
+      "AVG": 0.03263,
+      "ERA": 1.26889,
+      "OBP": 0.03386,
+      "OPS": 0.09447,
       "SLG": 0.06786,
-      "WHIP": 0.21423
+      "WHIP": 0.21436
     },
-    "marcel_mean_ratio_vs_steamer": 1.2081,
+    "marcel_mean_ratio_vs_steamer": 1.2082,
     "per_stat_ratio": {
-      "AVG": 1.1903,
-      "ERA": 1.1936,
-      "OBP": 1.1708,
-      "OPS": 1.2302,
-      "SLG": 1.2651,
-      "WHIP": 1.1988
+      "AVG": 1.19,
+      "ERA": 1.1941,
+      "OBP": 1.1701,
+      "OPS": 1.2299,
+      "SLG": 1.2652,
+      "WHIP": 1.1997
     },
     "steamer_mae": {
-      "AVG": 0.02737,
-      "ERA": 1.06373,
-      "OBP": 0.02888,
-      "OPS": 0.07676,
-      "SLG": 0.05364,
-      "WHIP": 0.17871
+      "AVG": 0.02742,
+      "ERA": 1.06259,
+      "OBP": 0.02894,
+      "OPS": 0.07681,
+      "SLG": 0.05363,
+      "WHIP": 0.17868
     }
   },
   "status": "shadow_only",
   "what_would_change": [
     {
-      "live_value": 72.96,
+      "live_value": 72.97,
       "marcel_value": 11.77,
       "mlbam_id": "694819",
       "name": "Jacob Misiorowski",
       "only_in": null,
       "role": "pitcher",
-      "value_delta": -61.19
+      "value_delta": -61.2
     },
     {
-      "live_value": 66.39,
+      "live_value": 66.4,
       "marcel_value": 7.5,
       "mlbam_id": "695505",
       "name": "Chase Burns",
       "only_in": null,
       "role": "pitcher",
-      "value_delta": -58.89
+      "value_delta": -58.9
     },
     {
       "live_value": 57.5,
@@ -104,13 +104,13 @@
       "value_delta": -57.5
     },
     {
-      "live_value": 53.04,
+      "live_value": 53.03,
       "marcel_value": null,
       "mlbam_id": "805808",
       "name": "Kevin McGonigle",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -53.04
+      "value_delta": -53.03
     },
     {
       "live_value": 59.74,
