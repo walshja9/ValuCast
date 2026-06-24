@@ -176,6 +176,34 @@ peak prospect value.* Governor/anchor-guarded; refuse partial category coverage 
   NOTE (6/24): Alex confirmed this is the item but suspects there may have ALSO been a separate
   values-related roadmap item — flagged for the "what's left" sweep to surface.
 
+  **INVESTIGATION 6/24 (plan ready to execute):**
+  - REDRAFT is ALREADY fully settings-aware. `/?mode=categories|roto|points` runs the user's
+    cats/pcats/weights through `build_config`→`engine.value_players` per request; the engine
+    z-scores by category, so SB/OBP value already moves (proven: tests/test_engine.py
+    test_category_configuration_changes_rankings). Gap there is only that `_compute_dollar_values`
+    (app.py) ignores roster depth (flat 12/$200) — a minor completion, not the wedge. Action:
+    ADVERTISE it; optionally add roster-depth to redraft $.
+  - DYNASTY PEAK value is BAKED at build with a FIXED default 5×5 (`mlb/dynasty.py` build_config
+    mode="categories" → horizon → snapshot). Per-request categories can't reach it. The only
+    per-request category-aware dynasty number today is `now_dollars` (`_custom_dynasty_values`,
+    CURRENT-season, secondary column). "Category Fit" is client-side display re-rank only.
+  - ⚠️ CORRECTNESS TRAP: the prospect within-role-percentile→pooled fix does NOT port (same
+    finding as the dynasty pitcher-tilt). Naive per-request peak re-valuation must reproduce the
+    horizon + PITCHER_PRODUCTION_ANCHOR + pooled min-max exactly or numbers disagree with the
+    snapshot; per-request full-pool horizon also risks the Render ~30s ceiling (2 workers).
+  - RECOMMENDED BUILD = precompute peak value under a SMALL MENU of presets (5×5, OBP/OPS,
+    points, SV+HLD, 6×6) AT BUILD TIME in mlb/dynasty.py (reuses the exact pipeline → no math
+    drift, no per-request cost), store per-player `value_by_preset`, serve by preset (dict
+    lookup), make the Category-Fit presets swap the real value. Flag-gated/reversible.
+  - PROSPECT side: covered presets (dd_7x7 + any ⊆ adapter SUPPORTED_CATEGORIES) can become a
+    settings-aware value (currently rank-only); 5×5/points BLOCKED until universal W + standalone
+    SV outcomes exist; DD-7×7 live value gated on the adapter top-quartile-precision guard.
+  - Critical files: mlb/dynasty.py (build loop ~:967-1018, the value→horizon→scale→anchor block
+    to loop per preset), web/config_builder.py build_config, web/category_registry.py presets,
+    app.py _build_dynasty_context / _custom_dynasty_values, templates rankings_table_dynasty.html
+    + the Category-Fit JS to retire under flag. Tests: test_engine, test_dynasty_customization,
+    test_config_builder, test_league_settings.
+
 **Phase 3 — Build the divergence / receipts layer ("Ahead of Consensus").** Read-only; score
 stays 100% ValuCast (independence firewall untouched). Compute `divergence = consensus_rank −
 valucast_rank` from existing `_source_rank_min`/context-only plumbing; surface an "Ahead of
