@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-24T14:17:15.981132+00:00",
+  "generated_at": "2026-06-24T22:43:55.424273+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -145,8 +145,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.96,
-          "track_record_certainty": 81.72
+          "reliability": 82.05,
+          "track_record_certainty": 81.73
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -263,10 +263,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "596019_hitter",
       "mlbam_id": "596019",
       "name": "Francisco Lindor",
@@ -279,20 +279,19 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 72.7,
+        "confidence_score": 80.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "everyday_regular",
         "role_confidence": "high",
         "role_probabilities": {
-          "everyday_regular": 0.7,
-          "regular": 0.3
+          "everyday_regular": 1.0
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 75.24,
@@ -302,13 +301,13 @@
         "volume_forecast": {
           "base": 634.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 647.4,
-          "low": 504.7,
-          "point": 596.8,
+          "high": 660.8,
+          "low": 587.7,
+          "point": 634.9,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -380,7 +379,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 78.9,
+        "confidence_score": 79.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -396,8 +395,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.99,
-          "track_record_certainty": 75.09
+          "reliability": 82.1,
+          "track_record_certainty": 75.1
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -593,8 +592,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.93,
-          "track_record_certainty": 58.83
+          "reliability": 81.03,
+          "track_record_certainty": 58.85
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -1616,7 +1615,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 56.6,
+        "confidence_score": 56.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -1631,8 +1630,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 80.93,
-          "track_record_certainty": 26.92
+          "reliability": 80.98,
+          "track_record_certainty": 26.94
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -1764,7 +1763,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 49.6,
+        "confidence_score": 49.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -1780,15 +1779,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.32,
-          "track_record_certainty": 18.15
+          "reliability": 75.44,
+          "track_record_certainty": 18.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 278.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 289.3,
-          "low": 257.4,
+          "low": 257.5,
           "point": 278.0,
           "unit": "PA"
         }
@@ -2959,7 +2958,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 65.8,
+        "confidence_score": 65.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -2974,15 +2973,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 73.79,
-          "track_record_certainty": 56.06
+          "reliability": 73.88,
+          "track_record_certainty": 56.07
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 476.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 497.5,
-          "low": 439.4,
+          "low": 439.5,
           "point": 476.9,
           "unit": "PA"
         }
@@ -4000,7 +3999,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 70.6,
+        "confidence_score": 70.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -4015,15 +4014,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 61.4,
+          "reliability": 61.79,
           "track_record_certainty": 81.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 491.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 523.1,
-          "low": 434.8,
+          "high": 522.8,
+          "low": 435.4,
           "point": 491.8,
           "unit": "PA"
         }
@@ -4744,7 +4743,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 48.7,
+        "confidence_score": 49.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -4760,15 +4759,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 56.58,
-          "track_record_certainty": 38.99
+          "reliability": 57.08,
+          "track_record_certainty": 39.03
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 281.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 301.9,
-          "low": 245.0,
+          "high": 301.6,
+          "low": 245.4,
           "point": 281.7,
           "unit": "PA"
         }
@@ -5029,9 +5028,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "642350_hitter",
       "mlbam_id": "642350",
       "name": "Jose Siri",
@@ -5073,7 +5072,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "LAA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -5259,15 +5258,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.65,
-          "track_record_certainty": 64.83
+          "reliability": 79.76,
+          "track_record_certainty": 64.84
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 464.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 480.1,
-          "low": 436.1,
+          "high": 480.0,
+          "low": 436.3,
           "point": 464.5,
           "unit": "PA"
         }
@@ -5342,7 +5341,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.2,
+        "confidence_score": 66.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -5358,15 +5357,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 79.28,
-          "track_record_certainty": 50.22
+          "reliability": 79.37,
+          "track_record_certainty": 50.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 435.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 450.6,
-          "low": 408.6,
+          "high": 450.5,
+          "low": 408.7,
           "point": 435.7,
           "unit": "PA"
         }
@@ -5950,15 +5949,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 73.18,
-          "track_record_certainty": 6.04
+          "reliability": 73.27,
+          "track_record_certainty": 6.08
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 206.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 215.1,
-          "low": 189.4,
+          "low": 189.5,
           "point": 206.0,
           "unit": "PA"
         }
@@ -7040,8 +7039,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.46,
-          "track_record_certainty": 53.52
+          "reliability": 81.55,
+          "track_record_certainty": 53.54
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -7685,7 +7684,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 72.87,
+          "reliability": 72.92,
           "track_record_certainty": 89.96
         },
         "status": "shadow_observe_only",
@@ -7818,7 +7817,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 54.7,
+        "confidence_score": 54.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7833,15 +7832,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.7,
-          "track_record_certainty": 33.84
+          "reliability": 71.86,
+          "track_record_certainty": 33.87
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 351.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 367.9,
-          "low": 321.7,
+          "high": 367.8,
+          "low": 321.8,
           "point": 351.5,
           "unit": "PA"
         }
@@ -7966,7 +7965,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 70.5,
+        "confidence_score": 70.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7981,15 +7980,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 71.8,
-          "track_record_certainty": 68.8
+          "reliability": 72.01,
+          "track_record_certainty": 68.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 342.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 358.9,
-          "low": 313.9,
+          "high": 358.7,
+          "low": 314.1,
           "point": 342.9,
           "unit": "PA"
         }
@@ -8715,7 +8714,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 80.7,
+        "confidence_score": 80.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -8731,15 +8730,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.25,
+          "reliability": 77.39,
           "track_record_certainty": 85.0
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 414.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 430.5,
-          "low": 386.6,
+          "high": 430.4,
+          "low": 386.8,
           "point": 414.9,
           "unit": "PA"
         }
@@ -8899,9 +8898,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "670097_hitter",
       "mlbam_id": "670097",
       "name": "Zack Short",
@@ -8942,7 +8941,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "DET",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -9013,7 +9012,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 36.2,
+        "confidence_score": 36.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9028,15 +9027,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 61.22,
-          "track_record_certainty": 5.54
+          "reliability": 61.61,
+          "track_record_certainty": 5.63
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 221.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 235.7,
-          "low": 195.7,
+          "high": 235.5,
+          "low": 196.0,
           "point": 221.5,
           "unit": "PA"
         }
@@ -9408,7 +9407,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 49.0,
+        "confidence_score": 49.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9423,15 +9422,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 68.02,
-          "track_record_certainty": 25.66
+          "reliability": 68.29,
+          "track_record_certainty": 25.72
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 347.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 365.3,
-          "low": 313.7,
+          "high": 365.2,
+          "low": 314.0,
           "point": 347.0,
           "unit": "PA"
         }
@@ -9507,7 +9506,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.3,
+        "confidence_score": 40.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9522,15 +9521,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 55.83,
-          "track_record_certainty": 21.33
+          "reliability": 56.21,
+          "track_record_certainty": 21.38
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 237.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 254.3,
-          "low": 205.6,
+          "high": 254.1,
+          "low": 205.9,
           "point": 237.0,
           "unit": "PA"
         }
@@ -9900,7 +9899,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.5,
+        "confidence_score": 66.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9915,8 +9914,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.37,
-          "track_record_certainty": 49.55
+          "reliability": 80.5,
+          "track_record_certainty": 49.58
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -10827,10 +10826,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "available",
       "identity_key": "641755_hitter",
       "mlbam_id": "641755",
       "name": "Tyler Kinley",
@@ -10841,7 +10840,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 57.8,
+        "confidence_score": 65.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -10852,8 +10851,8 @@
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.1,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
           "reliability": 74.32,
@@ -10863,13 +10862,13 @@
         "volume_forecast": {
           "base": 200.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 200.7,
-          "low": 148.0,
-          "point": 182.0,
+          "high": 208.5,
+          "low": 184.6,
+          "point": 200.0,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -12266,10 +12265,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
+      "active_injury_risk": false,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "677595_hitter",
       "mlbam_id": "677595",
       "name": "Ronny Mauricio",
@@ -12283,19 +12282,19 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 37.5,
+        "confidence_score": 45.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "part_time_or_strong_side",
-        "role_confidence": "low",
+        "role_confidence": "moderate",
         "role_probabilities": {
-          "bench_or_depth": 0.3,
-          "part_time_or_strong_side": 0.7
+          "bench_or_depth": 0.1,
+          "part_time_or_strong_side": 0.9
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
+          "active_injury_risk": false,
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": false,
           "experience_band": "unknown",
@@ -12306,9 +12305,9 @@
         "volume_forecast": {
           "base": 292.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 312.7,
-          "low": 221.5,
-          "point": 280.3,
+          "high": 316.1,
+          "low": 248.2,
+          "point": 292.0,
           "unit": "PA"
         }
       },
@@ -12582,7 +12581,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.4,
+        "confidence_score": 62.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12597,15 +12596,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 77.98,
-          "track_record_certainty": 43.45
+          "reliability": 78.07,
+          "track_record_certainty": 43.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 481.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 498.6,
-          "low": 449.3,
+          "high": 498.5,
+          "low": 449.4,
           "point": 481.1,
           "unit": "PA"
         }
@@ -12632,7 +12631,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 59.9,
+        "confidence_score": 60.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12648,15 +12647,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.75,
-          "track_record_certainty": 41.74
+          "reliability": 74.87,
+          "track_record_certainty": 41.77
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 433.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 451.1,
-          "low": 400.3,
+          "low": 400.4,
           "point": 433.1,
           "unit": "PA"
         }
@@ -12780,7 +12779,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.4,
+        "confidence_score": 62.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12796,15 +12795,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 69.95,
-          "track_record_certainty": 53.26
+          "reliability": 70.25,
+          "track_record_certainty": 53.29
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 452.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 474.7,
-          "low": 411.5,
+          "high": 474.5,
+          "low": 411.9,
           "point": 452.3,
           "unit": "PA"
         }
@@ -12830,7 +12829,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 80.2,
+        "confidence_score": 80.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12845,7 +12844,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.81,
+          "reliability": 76.91,
           "track_record_certainty": 84.43
         },
         "status": "shadow_observe_only",
@@ -12853,7 +12852,7 @@
           "base": 487.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 505.8,
-          "low": 453.3,
+          "low": 453.5,
           "point": 487.2,
           "unit": "PA"
         }
@@ -13030,7 +13029,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 52.2,
+        "confidence_score": 52.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13045,15 +13044,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.36,
-          "track_record_certainty": 28.79
+          "reliability": 71.52,
+          "track_record_certainty": 28.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 351.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 368.2,
-          "low": 321.4,
+          "high": 368.1,
+          "low": 321.6,
           "point": 351.6,
           "unit": "PA"
         }
@@ -13277,7 +13276,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 69.4,
+        "confidence_score": 69.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13293,8 +13292,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.76,
-          "track_record_certainty": 54.31
+          "reliability": 81.87,
+          "track_record_certainty": 54.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -13378,7 +13377,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 45.6,
+        "confidence_score": 45.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13394,15 +13393,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 47.94,
-          "track_record_certainty": 42.8
+          "reliability": 48.48,
+          "track_record_certainty": 42.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 288.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 313.4,
-          "low": 243.5,
+          "high": 313.1,
+          "low": 244.0,
           "point": 288.6,
           "unit": "PA"
         }
@@ -14174,7 +14173,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 61.2,
+        "confidence_score": 61.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -14189,15 +14188,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 63.73,
-          "track_record_certainty": 58.15
+          "reliability": 63.99,
+          "track_record_certainty": 58.17
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 354.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 375.7,
-          "low": 315.9,
+          "high": 375.6,
+          "low": 316.2,
           "point": 354.5,
           "unit": "PA"
         }
@@ -15165,7 +15164,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 39.5,
+        "confidence_score": 39.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15180,15 +15179,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 52.03,
-          "track_record_certainty": 24.2
+          "reliability": 52.64,
+          "track_record_certainty": 24.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 207.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 223.4,
-          "low": 177.2,
+          "high": 223.2,
+          "low": 177.6,
           "point": 207.0,
           "unit": "PA"
         }
@@ -15527,15 +15526,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.25,
-          "track_record_certainty": 52.93
+          "reliability": 72.35,
+          "track_record_certainty": 52.94
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 433.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 452.9,
-          "low": 397.0,
+          "low": 397.2,
           "point": 433.1,
           "unit": "PA"
         }
@@ -15612,7 +15611,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 79.6,
+        "confidence_score": 79.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15627,15 +15626,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.04,
+          "reliability": 76.19,
           "track_record_certainty": 83.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 397.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 413.6,
-          "low": 369.3,
+          "high": 413.5,
+          "low": 369.5,
           "point": 397.9,
           "unit": "PA"
         }
@@ -15925,8 +15924,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.65,
-          "track_record_certainty": 52.77
+          "reliability": 81.74,
+          "track_record_certainty": 52.8
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -15959,7 +15958,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 68.7,
+        "confidence_score": 68.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15974,15 +15973,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 75.22,
-          "track_record_certainty": 60.67
+          "reliability": 75.43,
+          "track_record_certainty": 60.69
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 360.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 375.2,
-          "low": 333.7,
+          "high": 375.1,
+          "low": 333.9,
           "point": 360.5,
           "unit": "PA"
         }
@@ -16355,7 +16354,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 59.7,
+        "confidence_score": 60.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -16371,15 +16370,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 56.95,
-          "track_record_certainty": 63.17
+          "reliability": 57.44,
+          "track_record_certainty": 63.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 277.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 297.3,
-          "low": 241.7,
+          "high": 297.1,
+          "low": 242.2,
           "point": 277.6,
           "unit": "PA"
         }
@@ -17941,7 +17940,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.0,
+        "confidence_score": 50.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -17956,14 +17955,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 64.6,
-          "track_record_certainty": 32.26
+          "reliability": 64.68,
+          "track_record_certainty": 32.27
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 311.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 329.3,
+          "high": 329.2,
           "low": 278.1,
           "point": 311.1,
           "unit": "PA"
@@ -18605,15 +18604,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 56.68,
+          "reliability": 56.81,
           "track_record_certainty": 73.08
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 258.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 277.0,
-          "low": 224.9,
+          "high": 276.9,
+          "low": 225.0,
           "point": 258.5,
           "unit": "PA"
         }
@@ -18786,7 +18785,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.9,
+        "confidence_score": 67.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -18802,15 +18801,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 77.05,
-          "track_record_certainty": 54.43
+          "reliability": 77.19,
+          "track_record_certainty": 54.45
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 542.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 562.7,
-          "low": 504.9,
+          "high": 562.6,
+          "low": 505.1,
           "point": 542.2,
           "unit": "PA"
         }
@@ -19086,7 +19085,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 59.2,
+        "confidence_score": 59.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19102,15 +19101,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 77.53,
-          "track_record_certainty": 36.83
+          "reliability": 77.6,
+          "track_record_certainty": 36.85
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 453.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 469.8,
-          "low": 422.5,
+          "high": 469.7,
+          "low": 422.6,
           "point": 453.0,
           "unit": "PA"
         }
@@ -19383,7 +19382,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 31.1,
+        "confidence_score": 31.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19399,15 +19398,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 43.45,
-          "track_record_certainty": 16.11
+          "reliability": 44.29,
+          "track_record_certainty": 16.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 292.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 319.2,
-          "low": 242.5,
+          "high": 318.8,
+          "low": 243.2,
           "point": 292.0,
           "unit": "PA"
         }
@@ -20570,7 +20569,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 54.3,
+        "confidence_score": 54.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -20585,15 +20584,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 54.29,
-          "track_record_certainty": 54.42
+          "reliability": 54.84,
+          "track_record_certainty": 54.45
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 342.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 368.5,
-          "low": 295.7,
+          "high": 368.2,
+          "low": 296.3,
           "point": 342.7,
           "unit": "PA"
         }
@@ -21216,7 +21215,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.8,
+        "confidence_score": 62.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -21232,15 +21231,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 71.87,
-          "track_record_certainty": 51.72
+          "reliability": 72.08,
+          "track_record_certainty": 51.75
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 436.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 456.3,
-          "low": 399.3,
+          "high": 456.2,
+          "low": 399.6,
           "point": 436.1,
           "unit": "PA"
         }
@@ -22765,8 +22764,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.66,
-          "track_record_certainty": 74.88
+          "reliability": 82.74,
+          "track_record_certainty": 74.89
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -23058,8 +23057,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 72.26,
-          "track_record_certainty": 28.76
+          "reliability": 72.31,
+          "track_record_certainty": 28.78
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -24288,7 +24287,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 44.0,
+        "confidence_score": 44.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24303,15 +24302,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 60.98,
-          "track_record_certainty": 23.29
+          "reliability": 61.18,
+          "track_record_certainty": 23.32
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 348.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 370.9,
-          "low": 307.7,
+          "high": 370.8,
+          "low": 307.9,
           "point": 348.5,
           "unit": "PA"
         }
@@ -24635,7 +24634,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 44.1,
+        "confidence_score": 44.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24650,8 +24649,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 74.19,
-          "track_record_certainty": 7.35
+          "reliability": 74.28,
+          "track_record_certainty": 7.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -25655,10 +25654,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "641857_hitter",
       "mlbam_id": "641857",
       "name": "Ryan McMahon",
@@ -25671,20 +25670,20 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 77.3,
+        "confidence_score": 69.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "regular",
-        "role_confidence": "high",
+        "role_confidence": "moderate",
         "role_probabilities": {
-          "everyday_regular": 0.3,
-          "regular": 0.7
+          "everyday_regular": 0.1,
+          "regular": 0.9
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.06,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 73.12,
@@ -25694,13 +25693,13 @@
         "volume_forecast": {
           "base": 557.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 582.2,
-          "low": 512.5,
-          "point": 557.5,
+          "high": 567.1,
+          "low": 430.0,
+          "point": 518.5,
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "NYY",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -27012,7 +27011,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.7,
+        "confidence_score": 66.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -27028,15 +27027,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.63,
-          "track_record_certainty": 52.17
+          "reliability": 78.76,
+          "track_record_certainty": 52.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 449.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 465.2,
-          "low": 420.6,
+          "high": 465.1,
+          "low": 420.8,
           "point": 449.4,
           "unit": "PA"
         }
@@ -28370,7 +28369,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.83,
+          "reliability": 80.92,
           "track_record_certainty": 87.85
         },
         "status": "shadow_observe_only",
@@ -28469,14 +28468,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.01,
-          "track_record_certainty": 60.82
+          "reliability": 74.05,
+          "track_record_certainty": 60.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 472.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 492.6,
+          "high": 492.5,
           "low": 435.5,
           "point": 472.3,
           "unit": "PA"
@@ -28934,9 +28933,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "665828_hitter",
       "mlbam_id": "665828",
       "name": "Oswaldo Cabrera",
@@ -28979,7 +28978,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYY",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -29447,7 +29446,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 81.3,
+        "confidence_score": 81.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29462,7 +29461,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.16,
+          "reliability": 81.25,
           "track_record_certainty": 81.54
         },
         "status": "shadow_observe_only",
@@ -29595,7 +29594,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 67.5,
+        "confidence_score": 67.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29611,8 +29610,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.71,
-          "track_record_certainty": 51.38
+          "reliability": 80.81,
+          "track_record_certainty": 51.4
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -29841,7 +29840,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 69.2,
+        "confidence_score": 69.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29857,15 +29856,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.17,
-          "track_record_certainty": 58.32
+          "reliability": 78.3,
+          "track_record_certainty": 58.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 542.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 562.2,
-          "low": 507.2,
+          "high": 562.1,
+          "low": 507.4,
           "point": 542.7,
           "unit": "PA"
         }
@@ -29906,8 +29905,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.65,
-          "track_record_certainty": 82.13
+          "reliability": 81.76,
+          "track_record_certainty": 82.14
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -29940,7 +29939,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 72.1,
+        "confidence_score": 72.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29955,8 +29954,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.82,
-          "track_record_certainty": 60.25
+          "reliability": 81.89,
+          "track_record_certainty": 60.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -30832,7 +30831,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 76.6,
+        "confidence_score": 76.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -30847,8 +30846,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.57,
-          "track_record_certainty": 69.36
+          "reliability": 82.65,
+          "track_record_certainty": 69.37
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -31147,15 +31146,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 57.18,
-          "track_record_certainty": 40.94
+          "reliability": 57.3,
+          "track_record_certainty": 40.95
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 218.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 233.4,
-          "low": 190.0,
+          "low": 190.1,
           "point": 218.0,
           "unit": "PA"
         }
@@ -31232,7 +31231,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 67.1,
+        "confidence_score": 67.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -31247,15 +31246,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.52,
-          "track_record_certainty": 55.68
+          "reliability": 76.63,
+          "track_record_certainty": 55.7
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 338.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 351.1,
-          "low": 314.2,
+          "high": 351.0,
+          "low": 314.3,
           "point": 338.0,
           "unit": "PA"
         }
@@ -31332,7 +31331,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.3,
+        "confidence_score": 50.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -31348,15 +31347,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 63.86,
-          "track_record_certainty": 33.73
+          "reliability": 64.12,
+          "track_record_certainty": 33.77
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 424.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 449.8,
-          "low": 378.5,
+          "high": 449.6,
+          "low": 378.8,
           "point": 424.5,
           "unit": "PA"
         }
@@ -31875,7 +31874,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 69.9,
+        "confidence_score": 70.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -31891,8 +31890,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.07,
-          "track_record_certainty": 57.46
+          "reliability": 80.2,
+          "track_record_certainty": 57.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -32272,7 +32271,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 76.9,
+        "confidence_score": 77.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -32287,8 +32286,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.06,
-          "track_record_certainty": 73.05
+          "reliability": 80.14,
+          "track_record_certainty": 73.06
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -32369,7 +32368,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 77.3,
+        "confidence_score": 77.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -32384,15 +32383,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.07,
-          "track_record_certainty": 78.82
+          "reliability": 76.81,
+          "track_record_certainty": 78.84
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 200.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 207.9,
-          "low": 185.6,
+          "high": 207.7,
+          "low": 186.1,
           "point": 200.0,
           "unit": "PA"
         }
@@ -33110,7 +33109,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 48.8,
+        "confidence_score": 48.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33126,15 +33125,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.25,
-          "track_record_certainty": 15.3
+          "reliability": 76.4,
+          "track_record_certainty": 15.36
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 259.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 269.1,
-          "low": 240.5,
+          "low": 240.7,
           "point": 259.0,
           "unit": "PA"
         }
@@ -33160,7 +33159,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.8,
+        "confidence_score": 51.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33175,15 +33174,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 58.47,
-          "track_record_certainty": 41.49
+          "reliability": 58.81,
+          "track_record_certainty": 41.52
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 317.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 339.5,
-          "low": 278.1,
+          "high": 339.3,
+          "low": 278.4,
           "point": 317.7,
           "unit": "PA"
         }
@@ -33360,7 +33359,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 36.3,
+        "confidence_score": 36.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33375,15 +33374,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 59.16,
-          "track_record_certainty": 8.28
+          "reliability": 59.6,
+          "track_record_certainty": 8.36
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 200.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 213.5,
-          "low": 175.5,
+          "high": 213.3,
+          "low": 175.8,
           "point": 200.0,
           "unit": "PA"
         }
@@ -33559,7 +33558,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 40.8,
+        "confidence_score": 41.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33575,15 +33574,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 59.66,
-          "track_record_certainty": 17.75
+          "reliability": 59.99,
+          "track_record_certainty": 17.79
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 288.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 307.2,
-          "low": 253.1,
+          "high": 307.0,
+          "low": 253.4,
           "point": 288.0,
           "unit": "PA"
         }
@@ -34153,7 +34152,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 80.1,
+        "confidence_score": 80.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34169,8 +34168,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.28,
-          "track_record_certainty": 77.45
+          "reliability": 82.37,
+          "track_record_certainty": 77.46
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -34799,7 +34798,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.3,
+        "confidence_score": 42.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34815,15 +34814,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 63.97,
-          "track_record_certainty": 15.78
+          "reliability": 64.31,
+          "track_record_certainty": 15.85
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 251.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 266.9,
-          "low": 224.7,
+          "high": 266.7,
+          "low": 224.9,
           "point": 251.9,
           "unit": "PA"
         }
@@ -36403,14 +36402,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 77.9,
-          "track_record_certainty": 12.02
+          "reliability": 77.93,
+          "track_record_certainty": 12.04
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 234.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 243.1,
+          "high": 243.0,
           "low": 219.0,
           "point": 234.5,
           "unit": "PA"
@@ -36980,7 +36979,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 76.0,
+        "confidence_score": 76.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -36996,8 +36995,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.63,
-          "track_record_certainty": 70.44
+          "reliability": 80.7,
+          "track_record_certainty": 70.45
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -37179,7 +37178,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 48.6,
+        "confidence_score": 48.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -37195,15 +37194,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.12,
-          "track_record_certainty": 16.28
+          "reliability": 75.21,
+          "track_record_certainty": 16.31
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 268.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 279.0,
-          "low": 248.0,
+          "low": 248.1,
           "point": 268.0,
           "unit": "PA"
         }
@@ -37742,15 +37741,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.63,
-          "track_record_certainty": 70.37
+          "reliability": 79.77,
+          "track_record_certainty": 70.38
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 584.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 603.6,
-          "low": 548.3,
+          "high": 603.5,
+          "low": 548.6,
           "point": 584.0,
           "unit": "PA"
         }
@@ -38240,15 +38239,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 65.01,
-          "track_record_certainty": 14.22
+          "reliability": 65.09,
+          "track_record_certainty": 14.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 257.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 272.2,
-          "low": 230.3,
+          "high": 272.1,
+          "low": 230.4,
           "point": 257.3,
           "unit": "PA"
         }
@@ -38623,7 +38622,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 77.4,
+        "confidence_score": 77.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -38638,15 +38637,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 78.55,
-          "track_record_certainty": 75.97
+          "reliability": 78.7,
+          "track_record_certainty": 75.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 490.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 507.9,
-          "low": 458.9,
+          "high": 507.7,
+          "low": 459.2,
           "point": 490.5,
           "unit": "PA"
         }
@@ -38806,9 +38805,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "666139_hitter",
       "mlbam_id": "666139",
       "name": "Josh Lowe",
@@ -38821,7 +38820,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 63.3,
+        "confidence_score": 63.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -38837,20 +38836,20 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 65.01,
-          "track_record_certainty": 61.3
+          "reliability": 65.33,
+          "track_record_certainty": 61.32
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 456.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 482.5,
-          "low": 408.3,
+          "high": 482.3,
+          "low": 408.8,
           "point": 456.2,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "LAA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -39021,7 +39020,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 55.0,
+        "confidence_score": 55.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -39036,8 +39035,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 80.22,
-          "track_record_certainty": 24.19
+          "reliability": 80.3,
+          "track_record_certainty": 24.22
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -39319,7 +39318,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 61.0,
+        "confidence_score": 61.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -39335,8 +39334,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 80.28,
-          "track_record_certainty": 37.48
+          "reliability": 80.33,
+          "track_record_certainty": 37.5
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -39617,7 +39616,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 54.7,
+        "confidence_score": 54.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -39632,15 +39631,15 @@
           "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.72,
-          "track_record_certainty": 52.89
+          "reliability": 70.95,
+          "track_record_certainty": 52.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 372.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 382.7,
-          "low": 291.5,
+          "high": 382.5,
+          "low": 291.8,
           "point": 350.3,
           "unit": "PA"
         }
@@ -39863,7 +39862,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 38.7,
+        "confidence_score": 38.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -39878,15 +39877,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 59.94,
-          "track_record_certainty": 12.66
+          "reliability": 60.15,
+          "track_record_certainty": 12.7
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 223.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 238.3,
-          "low": 196.6,
+          "high": 238.2,
+          "low": 196.8,
           "point": 223.5,
           "unit": "PA"
         }
@@ -40380,14 +40379,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.67,
-          "track_record_certainty": 15.92
+          "reliability": 75.71,
+          "track_record_certainty": 15.94
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 260.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 271.0,
+          "high": 270.9,
           "low": 241.5,
           "point": 260.5,
           "unit": "PA"
@@ -40514,7 +40513,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 31.7,
+        "confidence_score": 31.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40529,15 +40528,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 51.89,
-          "track_record_certainty": 7.08
+          "reliability": 52.19,
+          "track_record_certainty": 7.12
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 208.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 225.5,
-          "low": 178.7,
+          "high": 225.4,
+          "low": 178.9,
           "point": 208.9,
           "unit": "PA"
         }
@@ -40909,7 +40908,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 63.2,
+        "confidence_score": 63.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40925,15 +40924,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 68.47,
-          "track_record_certainty": 56.86
+          "reliability": 68.67,
+          "track_record_certainty": 56.88
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 470.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 495.3,
-          "low": 426.3,
+          "high": 495.1,
+          "low": 426.5,
           "point": 470.8,
           "unit": "PA"
         }
@@ -41059,7 +41058,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 62.9,
+        "confidence_score": 63.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -41074,15 +41073,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.2,
-          "track_record_certainty": 46.55
+          "reliability": 76.35,
+          "track_record_certainty": 46.58
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 333.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 346.7,
-          "low": 309.8,
+          "high": 346.6,
+          "low": 309.9,
           "point": 333.6,
           "unit": "PA"
         }
@@ -41354,7 +41353,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 45.3,
+        "confidence_score": 45.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -41369,15 +41368,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 66.59,
-          "track_record_certainty": 19.2
+          "reliability": 66.81,
+          "track_record_certainty": 19.25
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 291.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 307.6,
-          "low": 262.3,
+          "high": 307.5,
+          "low": 262.5,
           "point": 291.5,
           "unit": "PA"
         }
@@ -41850,7 +41849,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 52.9,
+        "confidence_score": 53.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -41866,15 +41865,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 63.34,
-          "track_record_certainty": 40.07
+          "reliability": 63.69,
+          "track_record_certainty": 40.11
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 287.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 305.2,
-          "low": 256.1,
+          "high": 305.0,
+          "low": 256.4,
           "point": 287.8,
           "unit": "PA"
         }
@@ -42000,7 +41999,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 70.8,
+        "confidence_score": 70.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -42016,8 +42015,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.57,
-          "track_record_certainty": 57.6
+          "reliability": 81.68,
+          "track_record_certainty": 57.62
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -42417,15 +42416,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.8,
-          "track_record_certainty": 84.38
+          "reliability": 79.91,
+          "track_record_certainty": 84.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 581.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 601.2,
-          "low": 546.5,
+          "high": 601.1,
+          "low": 546.7,
           "point": 581.8,
           "unit": "PA"
         }
@@ -42451,7 +42450,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 77.2,
+        "confidence_score": 77.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -42467,15 +42466,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 75.45,
-          "track_record_certainty": 79.3
+          "reliability": 75.57,
+          "track_record_certainty": 79.31
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 415.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 432.5,
-          "low": 385.1,
+          "low": 385.2,
           "point": 415.7,
           "unit": "PA"
         }
@@ -42566,7 +42565,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.47,
+          "reliability": 81.56,
           "track_record_certainty": 81.87
         },
         "status": "shadow_observe_only",
@@ -42666,8 +42665,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.55,
-          "track_record_certainty": 44.67
+          "reliability": 81.57,
+          "track_record_certainty": 44.68
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -44275,7 +44274,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 54.2,
+        "confidence_score": 54.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -44290,8 +44289,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.56,
-          "track_record_certainty": 26.89
+          "reliability": 76.83,
+          "track_record_certainty": 26.93
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -45312,7 +45311,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 66.9,
+        "confidence_score": 67.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -45327,8 +45326,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.15,
-          "track_record_certainty": 50.68
+          "reliability": 80.41,
+          "track_record_certainty": 50.74
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -45937,9 +45936,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "678020_reliever",
       "mlbam_id": "678020",
       "name": "Seth Halvorsen",
@@ -45980,7 +45979,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "COL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -46149,7 +46148,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 66.8,
+        "confidence_score": 67.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -46164,15 +46163,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 63.44,
-          "track_record_certainty": 70.84
+          "reliability": 64.02,
+          "track_record_certainty": 70.86
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 52.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 55.7,
-          "low": 46.7,
+          "high": 55.6,
+          "low": 46.8,
           "point": 52.5,
           "unit": "IP"
         }
@@ -46592,7 +46591,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 44.0,
+        "confidence_score": 44.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -46607,15 +46606,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 73.09,
-          "track_record_certainty": 8.51
+          "reliability": 73.8,
+          "track_record_certainty": 8.62
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 24.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 25.4,
-          "low": 22.3,
+          "low": 22.4,
           "point": 24.3,
           "unit": "IP"
         }
@@ -48491,9 +48490,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "592826_starter",
       "mlbam_id": "592826",
       "name": "Vince Velasquez",
@@ -48534,7 +48533,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -49523,9 +49522,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "663941_reliever",
       "mlbam_id": "663941",
       "name": "Tristan Beck",
@@ -49566,7 +49565,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "SFG",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -52929,7 +52928,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 35.5,
+        "confidence_score": 36.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -52944,8 +52943,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 63.78,
-          "track_record_certainty": 0.91
+          "reliability": 65.05,
+          "track_record_certainty": 1.05
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -53814,7 +53813,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 77.3,
+        "confidence_score": 77.7,
         "delta_vs_v1_role": "shift:rotation_workhorse->rotation_starter",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -53830,15 +53829,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.07,
-          "track_record_certainty": 78.82
+          "reliability": 76.81,
+          "track_record_certainty": 78.84
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 144.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 150.4,
-          "low": 134.3,
+          "high": 150.2,
+          "low": 134.6,
           "point": 144.7,
           "unit": "IP"
         }
@@ -54636,9 +54635,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "687223_starter",
       "mlbam_id": "687223",
       "name": "Carson Palmquist",
@@ -54679,7 +54678,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "WSN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -54896,7 +54895,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 74.8,
+        "confidence_score": 75.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -54912,15 +54911,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 73.55,
-          "track_record_certainty": 76.4
+          "reliability": 74.16,
+          "track_record_certainty": 76.42
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 157.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 164.3,
-          "low": 144.9,
+          "high": 164.1,
+          "low": 145.2,
           "point": 157.4,
           "unit": "IP"
         }
@@ -54946,7 +54945,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 46.8,
+        "confidence_score": 46.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -54961,14 +54960,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.83,
-          "track_record_certainty": 16.12
+          "reliability": 72.09,
+          "track_record_certainty": 16.15
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 31.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 32.7,
+          "high": 32.6,
           "low": 28.6,
           "point": 31.2,
           "unit": "IP"
@@ -57368,7 +57367,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.26,
+          "reliability": 70.4,
           "track_record_certainty": 52.73
         },
         "status": "shadow_observe_only",
@@ -57746,7 +57745,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 42.8,
+        "confidence_score": 43.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -57761,8 +57760,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 69.39,
-          "track_record_certainty": 10.34
+          "reliability": 70.0,
+          "track_record_certainty": 10.41
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -59363,7 +59362,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 74.9,
+        "confidence_score": 75.3,
         "delta_vs_v1_role": "shift:rotation_workhorse->rotation_starter",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -59379,15 +59378,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.29,
-          "track_record_certainty": 69.62
+          "reliability": 79.85,
+          "track_record_certainty": 69.67
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 147.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 152.0,
-          "low": 137.9,
+          "high": 151.9,
+          "low": 138.1,
           "point": 147.0,
           "unit": "IP"
         }
@@ -61460,9 +61459,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "682842_reliever",
       "mlbam_id": "682842",
       "name": "Abner Uribe",
@@ -61503,7 +61502,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "MIL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -63442,7 +63441,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 58.0,
+        "confidence_score": 58.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -63457,8 +63456,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 75.92,
-          "track_record_certainty": 36.17
+          "reliability": 76.3,
+          "track_record_certainty": 36.22
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -66290,7 +66289,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
       "role_v2": {
-        "confidence_score": 59.2,
+        "confidence_score": 59.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -66305,8 +66304,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.19,
-          "track_record_certainty": 40.77
+          "reliability": 74.41,
+          "track_record_certainty": 40.79
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -67174,7 +67173,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 43.9,
+        "confidence_score": 44.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -67189,15 +67188,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 63.24,
-          "track_record_certainty": 20.27
+          "reliability": 64.12,
+          "track_record_certainty": 20.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 40.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 42.6,
-          "low": 35.8,
+          "low": 35.9,
           "point": 40.2,
           "unit": "IP"
         }
@@ -68255,7 +68254,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 46.6,
+        "confidence_score": 46.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -68270,15 +68269,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.26,
-          "track_record_certainty": 12.77
+          "reliability": 74.59,
+          "track_record_certainty": 12.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 42.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 44.1,
-          "low": 39.0,
+          "low": 39.1,
           "point": 42.3,
           "unit": "IP"
         }
@@ -68796,7 +68795,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 43.1,
+        "confidence_score": 43.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -68811,8 +68810,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 71.29,
-          "track_record_certainty": 8.65
+          "reliability": 71.56,
+          "track_record_certainty": 8.69
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -68830,9 +68829,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "641656_reliever",
       "mlbam_id": "641656",
       "name": "Ian Hamilton",
@@ -68873,7 +68872,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "ATL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -69270,10 +69269,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "available",
+      "availability_status": "injured",
       "identity_key": "665795_starter",
       "mlbam_id": "665795",
       "name": "Edward Cabrera",
@@ -69286,7 +69285,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 67.2,
+        "confidence_score": 59.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -69297,8 +69296,8 @@
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.1,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
           "reliability": 75.61,
@@ -69308,13 +69307,13 @@
         "volume_forecast": {
           "base": 113.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 118.4,
-          "low": 105.5,
-          "point": 113.8,
+          "high": 114.0,
+          "low": 84.6,
+          "point": 103.6,
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -71241,9 +71240,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "621053_reliever",
       "mlbam_id": "621053",
       "name": "Tyler Ferguson",
@@ -71256,7 +71255,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 38.7,
+        "confidence_score": 40.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -71271,20 +71270,20 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 50.37,
-          "track_record_certainty": 24.54
+          "reliability": 52.71,
+          "track_record_certainty": 24.63
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 55.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 59.6,
-          "low": 46.9,
+          "high": 59.4,
+          "low": 47.3,
           "point": 55.1,
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -71602,7 +71601,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.3,
+        "confidence_score": 63.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -71617,15 +71616,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 61.38,
-          "track_record_certainty": 65.6
+          "reliability": 61.71,
+          "track_record_certainty": 65.62
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 103.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 110.0,
-          "low": 91.4,
+          "high": 109.9,
+          "low": 91.5,
           "point": 103.4,
           "unit": "IP"
         }
@@ -73716,7 +73715,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 58.3,
+        "confidence_score": 59.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -73731,15 +73730,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 64.87,
-          "track_record_certainty": 50.22
+          "reliability": 66.19,
+          "track_record_certainty": 50.32
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 98.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 104.3,
-          "low": 88.2,
+          "high": 104.1,
+          "low": 88.6,
           "point": 98.6,
           "unit": "IP"
         }
@@ -74059,7 +74058,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 51.1,
+        "confidence_score": 51.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -74074,15 +74073,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 79.29,
-          "track_record_certainty": 16.61
+          "reliability": 79.84,
+          "track_record_certainty": 16.86
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 48.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 49.6,
-          "low": 45.0,
+          "low": 45.1,
           "point": 48.0,
           "unit": "IP"
         }
@@ -74437,9 +74436,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "608723_reliever",
       "mlbam_id": "608723",
       "name": "Austin Voth",
@@ -74480,7 +74479,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "TOR",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -74599,7 +74598,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 48.9,
+        "confidence_score": 49.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -74614,8 +74613,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.12,
-          "track_record_certainty": 21.66
+          "reliability": 71.53,
+          "track_record_certainty": 21.71
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -75582,7 +75581,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 45.6,
+        "confidence_score": 45.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -75597,8 +75596,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 47.94,
-          "track_record_certainty": 42.8
+          "reliability": 48.48,
+          "track_record_certainty": 42.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -76270,7 +76269,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 59.5,
+        "confidence_score": 59.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -76285,8 +76284,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.51,
-          "track_record_certainty": 43.52
+          "reliability": 72.88,
+          "track_record_certainty": 43.55
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -78514,9 +78513,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "701121_reliever",
       "mlbam_id": "701121",
       "name": "Logan VanWey",
@@ -78557,7 +78556,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "HOU",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -78775,7 +78774,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 50.6,
+        "confidence_score": 50.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -78790,15 +78789,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.72,
-          "track_record_certainty": 19.86
+          "reliability": 76.01,
+          "track_record_certainty": 19.9
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 18.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 19.4,
-          "low": 17.3,
+          "low": 17.4,
           "point": 18.7,
           "unit": "IP"
         }
@@ -79856,7 +79855,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 48.3,
+        "confidence_score": 48.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -79871,15 +79870,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.48,
-          "track_record_certainty": 16.22
+          "reliability": 74.8,
+          "track_record_certainty": 16.27
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 7.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 7.5,
-          "low": 6.6,
+          "low": 6.7,
           "point": 7.2,
           "unit": "IP"
         }
@@ -80137,9 +80136,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "668970_reliever",
       "mlbam_id": "668970",
       "name": "Gavin Hollowell",
@@ -80180,7 +80179,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -80430,10 +80429,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "691587_starter",
       "mlbam_id": "691587",
       "name": "Eury P\u00e9rez",
@@ -80446,7 +80445,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 50.0,
+        "confidence_score": 58.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -80457,24 +80456,24 @@
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.8,
-          "track_record_certainty": 37.49
+          "reliability": 75.44,
+          "track_record_certainty": 37.63
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 93.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 95.7,
-          "low": 74.5,
-          "point": 88.2,
+          "high": 97.6,
+          "low": 86.9,
+          "point": 93.8,
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "MIA",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -81316,7 +81315,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "689017_starter",
       "mlbam_id": "689017",
       "name": "Landon Knack",
@@ -81461,7 +81460,7 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
       "availability_status": "available",
       "identity_key": "687606_reliever",
@@ -81504,7 +81503,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "WSN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -83571,10 +83570,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "676962_starter",
       "mlbam_id": "676962",
       "name": "Ben Brown",
@@ -83588,7 +83587,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 57.8,
+        "confidence_score": 49.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -83599,8 +83598,8 @@
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.1,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 76.71,
@@ -83610,13 +83609,13 @@
         "volume_forecast": {
           "base": 82.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 86.1,
-          "low": 77.1,
-          "point": 82.9,
+          "high": 82.9,
+          "low": 61.9,
+          "point": 75.4,
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CHC",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -85341,9 +85340,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "676467_starter",
       "mlbam_id": "676467",
       "name": "Colton Gordon",
@@ -85384,7 +85383,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "HOU",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -85800,7 +85799,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 47.3,
+        "confidence_score": 47.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -85815,15 +85814,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 70.17,
-          "track_record_certainty": 19.34
+          "reliability": 70.75,
+          "track_record_certainty": 19.4
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 62.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 65.2,
-          "low": 56.5,
+          "high": 65.1,
+          "low": 56.7,
           "point": 62.1,
           "unit": "IP"
         }
@@ -86339,7 +86338,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 64.0,
+        "confidence_score": 64.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -86354,15 +86353,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.38,
-          "track_record_certainty": 48.93
+          "reliability": 76.74,
+          "track_record_certainty": 48.96
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 41.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 43.5,
-          "low": 38.9,
+          "low": 39.0,
           "point": 41.9,
           "unit": "IP"
         }
@@ -86421,10 +86420,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "641816_starter",
       "mlbam_id": "641816",
       "name": "Tyler Mahle",
@@ -86437,19 +86436,19 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 64.8,
+        "confidence_score": 72.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "rotation_starter",
-        "role_confidence": "moderate",
+        "role_confidence": "high",
         "role_probabilities": {
           "rotation_starter": 1.0
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 73.6,
@@ -86459,13 +86458,13 @@
         "volume_forecast": {
           "base": 44.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 45.1,
-          "low": 34.9,
-          "point": 41.5,
+          "high": 46.0,
+          "low": 40.6,
+          "point": 44.1,
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "SFG",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -88454,7 +88453,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.5,
+        "confidence_score": 63.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -88469,15 +88468,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.08,
-          "track_record_certainty": 52.93
+          "reliability": 72.46,
+          "track_record_certainty": 52.95
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 47.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 49.8,
-          "low": 43.6,
+          "low": 43.7,
           "point": 47.6,
           "unit": "IP"
         }
@@ -88896,7 +88895,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.0,
+        "confidence_score": 63.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -88911,8 +88910,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.2,
-          "track_record_certainty": 46.87
+          "reliability": 76.48,
+          "track_record_certainty": 46.89
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -89420,10 +89419,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "677955_reliever",
       "mlbam_id": "677955",
       "name": "Jaden Hill",
@@ -89436,19 +89435,19 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 46.5,
+        "confidence_score": 38.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "middle_relief",
-        "role_confidence": "moderate",
+        "role_confidence": "low",
         "role_probabilities": {
           "middle_relief": 1.0
         },
         "role_probability_source": "save_hold_driven_v1_label",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.1,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
           "reliability": 74.54,
@@ -89458,13 +89457,13 @@
         "volume_forecast": {
           "base": 21.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 22.6,
-          "low": 20.0,
-          "point": 21.7,
+          "high": 21.8,
+          "low": 16.1,
+          "point": 19.7,
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "COL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -90307,10 +90306,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "available",
       "identity_key": "641755_reliever",
       "mlbam_id": "641755",
       "name": "Tyler Kinley",
@@ -90323,7 +90322,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 57.8,
+        "confidence_score": 65.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -90334,8 +90333,8 @@
         },
         "role_probability_source": "save_hold_driven_v1_label",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.1,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
           "reliability": 74.32,
@@ -90345,13 +90344,13 @@
         "volume_forecast": {
           "base": 55.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 55.2,
-          "low": 40.7,
-          "point": 50.0,
+          "high": 57.3,
+          "low": 50.8,
+          "point": 55.0,
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "ATL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -90520,7 +90519,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
       "role_v2": {
-        "confidence_score": 60.9,
+        "confidence_score": 61.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -90535,15 +90534,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.93,
-          "track_record_certainty": 46.24
+          "reliability": 73.29,
+          "track_record_certainty": 46.27
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 51.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 53.8,
-          "low": 47.3,
+          "low": 47.4,
           "point": 51.5,
           "unit": "IP"
         }
@@ -90701,9 +90700,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "471911_starter",
       "mlbam_id": "471911",
       "name": "Carlos Carrasco",
@@ -90744,7 +90743,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "ATL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -92620,9 +92619,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "692030_reliever",
       "mlbam_id": "692030",
       "name": "Jose Corniell",
@@ -92663,7 +92662,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "TEX",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -94705,7 +94704,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 80.2,
+        "confidence_score": 80.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -94720,15 +94719,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 78.85,
-          "track_record_certainty": 81.96
+          "reliability": 79.43,
+          "track_record_certainty": 81.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 72.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 75.2,
-          "low": 68.1,
+          "low": 68.2,
           "point": 72.7,
           "unit": "IP"
         }
@@ -97557,7 +97556,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 71.3,
+        "confidence_score": 71.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -97572,8 +97571,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.02,
-          "track_record_certainty": 60.56
+          "reliability": 80.53,
+          "track_record_certainty": 60.64
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -98772,9 +98771,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "681892_reliever",
       "mlbam_id": "681892",
       "name": "Kody Funderburk",
@@ -98815,7 +98814,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "MIN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -99146,15 +99145,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.33,
+          "reliability": 76.37,
           "track_record_certainty": 69.54
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 162.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 169.2,
-          "low": 151.2,
+          "high": 169.1,
+          "low": 151.3,
           "point": 162.8,
           "unit": "IP"
         }
@@ -101140,8 +101139,8 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 223,
-    "active_mlb_roster_count": 731,
+    "active_injury_risk_count": 221,
+    "active_mlb_roster_count": 733,
     "profile_count": 2049,
     "role_counts": {
       "bench_or_depth": 401,
