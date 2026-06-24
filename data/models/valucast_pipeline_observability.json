@@ -10,12 +10,12 @@
       "value": "2026-06-24T00:00:00+00:00"
     },
     {
-      "date": "2026-06-23",
+      "date": "2026-06-24",
       "field": "generated_at",
       "label": "dd_feed",
-      "matches_expected_date": false,
+      "matches_expected_date": true,
       "path": "data/dd/dd_dynasty_feed.json",
-      "value": "2026-06-23T11:06:57"
+      "value": "2026-06-24T11:07:29"
     },
     {
       "date": "2026-06-24",
@@ -111,7 +111,7 @@
       "label": "prospect_card_data_audit",
       "matches_expected_date": true,
       "path": "data/models/valucast_prospect_card_data_audit.json",
-      "value": "2026-06-24T12:17:56.835782+00:00"
+      "value": "2026-06-24T12:47:52.595611+00:00"
     },
     {
       "date": "2026-06-24",
@@ -119,7 +119,7 @@
       "label": "recent_signal_report",
       "matches_expected_date": true,
       "path": "data/models/valucast_recent_signal_report.json",
-      "value": "2026-06-24T12:17:57.251301+00:00"
+      "value": "2026-06-24T12:47:52.976116+00:00"
     },
     {
       "date": "2026-06-24",
@@ -170,16 +170,7 @@
       "value": "2026-06-24"
     }
   ],
-  "date_mismatches": [
-    {
-      "date": "2026-06-23",
-      "field": "generated_at",
-      "label": "dd_feed",
-      "matches_expected_date": false,
-      "path": "data/dd/dd_dynasty_feed.json",
-      "value": "2026-06-23T11:06:57"
-    }
-  ],
+  "date_mismatches": [],
   "expected_date": "2026-06-24",
   "generated_at": "2026-06-24T00:00:00+00:00",
   "interpretation": "This artifact explains daily pipeline freshness and timing. It is observe-only and never feeds ValuCast ranks, values, or buy scores.",
@@ -205,13 +196,13 @@
     "kind": "pipeline_observability",
     "market_values_used": false
   },
-  "status": "blocked",
+  "status": "candidate_ready",
   "targeted_row_refreshes": [],
   "validation": {
     "artifact_count": 21,
-    "date_mismatch_count": 1,
+    "date_mismatch_count": 0,
     "missing_or_unreadable_count": 0,
-    "ready_for_daily_publication": false,
+    "ready_for_daily_publication": true,
     "targeted_row_refresh_count": 0
   }
 }

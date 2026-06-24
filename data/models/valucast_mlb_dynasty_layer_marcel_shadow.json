@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T12:16:44.830212+00:00",
+  "generated_at": "2026-06-24T12:46:39.949940+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.4.0",
   "limitations": [],
@@ -53704,8 +53704,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 29.15,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 32.36,
+          "track_record_experience_band": "current_year_only_or_limited",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": null,
           "track_record_floor_score": null,
@@ -53714,7 +53714,17 @@
         },
         "season_category_value": 4.9797,
         "track_record": {
-          "present": false
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 32.36,
+          "track_record_floor_score": 41.73,
+          "volume": {
+            "career": 169.0,
+            "current_season": 9.333,
+            "prior_mlb": 159.667,
+            "recent_3yr_prior": 159.667
+          }
         }
       },
       "confidence": "medium",
@@ -113724,17 +113734,27 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 7.28,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 57.61,
+          "track_record_experience_band": "established",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": null,
+          "track_record_floor_score": 40.39,
           "young_hitter_volatility_discount": 0.0,
           "young_sp_volatility_discount": 0.0
         },
         "season_category_value": -0.8261,
         "track_record": {
-          "present": false
+          "experience_band": "established",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 57.61,
+          "track_record_floor_score": 40.39,
+          "volume": {
+            "career": 472.0,
+            "current_season": 10.0,
+            "prior_mlb": 462.0,
+            "recent_3yr_prior": 95.667
+          }
         }
       },
       "confidence": "medium",
@@ -153328,8 +153348,8 @@
           "reliever_score_cap": null,
           "score_before_role_adjustment": 6.03,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 36.97,
-          "track_record_experience_band": "partial_track_record",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -153339,17 +153359,7 @@
         "score_before_availability_adjustment": 6.03,
         "season_category_value": -1.0673,
         "track_record": {
-          "experience_band": "partial_track_record",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 36.97,
-          "track_record_floor_score": 37.14,
-          "volume": {
-            "career": 216.0,
-            "current_season": 23.333,
-            "prior_mlb": 192.667,
-            "recent_3yr_prior": 192.667
-          }
+          "present": false
         }
       },
       "confidence": "low",
@@ -227265,7 +227275,7 @@
     "row_count": 1607,
     "track_record_coverage_rate": 0.998,
     "track_record_present": true,
-    "track_record_profile_count": 992,
+    "track_record_profile_count": 991,
     "track_record_ready": true
   },
   "value_contract": {
