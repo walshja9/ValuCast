@@ -4002,3 +4002,9 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-consensus-receipt { margin: .1rem 0 .2rem; font-family: var(--font-mono); font-size: .72rem; color: var(--bf-signal); }
 .backfields-page .bf-consensus-receipt::before { content: "\2713  "; font-weight: 700; }
 .backfields-page .bf-consensus-meta { margin: 0; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bf-muted); }
+
+/* Ahead-of-the-Curve track record (earliness scorecard, gated until credible) */
+.backfields-page .bf-aotc-record { display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--bf-hairline, rgba(255,255,255,.08)); }
+.backfields-page .bf-aotc-record-stat { font-size: .78rem; color: var(--bf-text); }
+.backfields-page .bf-aotc-record-stat strong { color: var(--bf-signal); font-variant-numeric: tabular-nums; }
+.backfields-page .bf-aotc-record-note { font-size: .72rem; color: var(--bf-muted); font-style: italic; }

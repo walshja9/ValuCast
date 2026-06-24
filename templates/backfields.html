@@ -83,6 +83,18 @@
         <div class="bf-section-head">
             <h2 id="bf-consensus-title">Ahead of the Curve</h2>
             <p>ValuCast ranks these higher than the public field</p>
+            {% set sc = aotc_scorecard.summary if aotc_scorecard else None %}
+            {% set sc_gate = aotc_scorecard.gate if aotc_scorecard else None %}
+            {% if sc and sc.ever_flagged %}
+            <div class="bf-aotc-record" aria-label="Ahead of the Curve track record">
+                <span class="bf-aotc-record-stat"><strong>{{ sc.ever_flagged }}</strong> early calls tracked since {{ sc.first_call_date }}</span>
+                {% if sc_gate and sc_gate.publishable and sc.catch_up_hit_rate is not none %}
+                <span class="bf-aotc-record-stat">field has caught up on <strong>{{ (sc.catch_up_hit_rate * 100) | round | int }}%</strong>{% if sc.median_catch_up_spots %} &middot; median {{ sc.median_catch_up_spots }} spots{% endif %}</span>
+                {% else %}
+                <span class="bf-aotc-record-note">Catch-up track record publishes once the field has had time to move &mdash; accruing daily.</span>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         {% if ahead_of_consensus %}
         <div class="bf-consensus-strip" aria-label="Prospects ValuCast ranks ahead of the public consensus">

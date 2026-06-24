@@ -235,6 +235,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "SCOUTING_REPORTS": tmp_path / "scouting_reports.json",
         "RECENT_FORM_SIGNAL": tmp_path / "recent_form_signal.json",
         "CALL_UP_PULSE": tmp_path / "call_up_pulse.json",
+        "AHEAD_OF_CONSENSUS_SCORECARD": tmp_path / "aotc_scorecard.json",
     }
     paths["VALUCAST_PROSPECT_INPUTS"].write_text(
         json.dumps(_valid_prospect_inputs()), encoding="utf-8"
@@ -289,6 +290,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["CALL_UP_PULSE"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["AHEAD_OF_CONSENSUS_SCORECARD"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PIPELINE_OBSERVABILITY"].write_text(

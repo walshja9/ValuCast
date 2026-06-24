@@ -3773,6 +3773,7 @@ def _build_backfields_page_context():
     models = root / "data" / "models"
     recent_signal = _load_artifact(models / "valucast_recent_signal_report.json")
     ahead_of_consensus_artifact = _load_artifact(models / "valucast_ahead_of_consensus.json")
+    aotc_scorecard = _load_artifact(models / "valucast_ahead_of_consensus_scorecard.json") or {}
     scouting_repository = _load_artifact(models / "valucast_scouting_reports.json")
     stat_payload = _load_artifact(root / "data" / "prospects" / "raw" / "milb_season_stats.json")
     prospect_rows = _prospect_rows()[:100] if dd_store.is_available else []
@@ -4190,6 +4191,7 @@ def _build_backfields_page_context():
         "team_boards": _build_team_board_context(),
         "scouting_reports": scouting_reports,
         "ahead_of_consensus": ahead_of_consensus,
+        "aotc_scorecard": aotc_scorecard,
     }
 
 

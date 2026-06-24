@@ -38,6 +38,9 @@ RECENT_FORM_SIGNAL = (
 CALL_UP_PULSE = (
     ROOT / "data" / "models" / "valucast_call_up_pulse.json"
 )
+AHEAD_OF_CONSENSUS_SCORECARD = (
+    ROOT / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+)
 PIPELINE_OBSERVABILITY = (
     ROOT / "data" / "models" / "valucast_pipeline_observability.json"
 )
@@ -117,6 +120,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (RECENT_SIGNAL_REPORT, "generated_at"),
         (RECENT_FORM_SIGNAL, "generated_at"),
         (CALL_UP_PULSE, "generated_at"),
+        (AHEAD_OF_CONSENSUS_SCORECARD, "generated_at"),
         (VALUCAST_QUALITY_GOVERNOR, "generated_at"),
         (PIPELINE_OBSERVABILITY, "generated_at"),
         (FRONT_OFFICE_FAILURES, "generated_at"),
