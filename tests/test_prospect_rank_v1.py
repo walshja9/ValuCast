@@ -1108,6 +1108,47 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     )
 
 
+def test_no_current_season_penalty_is_prior_pedigree_injury_aware_and_destacked():
+    from prospects.rank_v1 import _bucket_calibration_adjustment
+
+    def adj(*, role="pitcher", sample, prod, input_row=None, status="stale_or_inactive",
+            risk_basis=None, risk_discount=0.0, sba=30.0):
+        prodkey = "k_bb_pct" if role == "pitcher" else "ops"
+        components = {
+            "factual_current_context": {
+                "source_kind": "latest_milb_history", "role": role,
+                "sample": sample, prodkey: prod,
+            },
+            "availability": {"status": status, "risk_basis": risk_basis,
+                             "risk_discount": risk_discount},
+            "score_before_availability_adjustment": sba,
+        }
+        _, comp = _bucket_calibration_adjustment(
+            30.0, "prospect_model_v0_6", None, input_row or {},
+            {"role": role, "level": "AAA"}, components)
+        return comp["bucket_calibration"]["adjustment"]
+
+    weak = adj(sample=5, prod=0.0)        # no prior evidence -> full flat hit
+    strong = adj(sample=80, prod=20.0)    # full, productive prior -> softened
+    assert weak == -20.0, weak
+    assert -12.0 < strong < -6.0, strong          # ~-8, much softer than flat -20
+    # Draft pedigree softens further (large-N outcome signal).
+    pedigreed = adj(sample=80, prod=20.0, input_row={"draft_pick_number": 10})
+    assert pedigreed > strong, (pedigreed, strong)
+    # Genuine injury (involuntary absence) softens further still.
+    injured = adj(sample=80, prod=20.0, status="injured")
+    assert injured > strong, (injured, strong)
+    # De-stack: a staleness haircut already taken is credited back (less negative).
+    destacked = adj(sample=80, prod=20.0, risk_basis="sample_staleness",
+                    risk_discount=0.1, sba=30.0)
+    assert destacked > strong, (destacked, strong)
+    # Hitters are softened LESS than pitchers for the same prior (no historical
+    # analogs -> cautious): a strong-prior hitter keeps more of the penalty.
+    hitter_strong = adj(role="hitter", sample=400, prod=0.850)
+    assert hitter_strong < strong, (hitter_strong, strong)
+    assert -16.0 < hitter_strong < -12.0, hitter_strong
+
+
 def test_rank_v1_bucket_adjusts_upper_level_low_impact_hitter_model_samples():
     universe = _universe()
     universe["players"][0]["level"] = "AAA"

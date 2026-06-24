@@ -40,7 +40,7 @@ RANK_VERSION = "0.2.8"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
-BUCKET_CALIBRATION_VERSION = "0.2.3"
+BUCKET_CALIBRATION_VERSION = "0.3.0"
 FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
 UNCERTAINTY_VERSION = "0.1.0"
 NEAR_GRADUATION_VERSION = "0.1.0"
@@ -1064,6 +1064,40 @@ def _board_model_score_normalization_rows(
     return normalization_rows
 
 
+def _prior_year_strength(factual: dict, role: str) -> float:
+    """0..1 strength of a prior-year fallback line: sample adequacy x production.
+
+    Softens the no-current-season penalty -- a full, productive prior year (e.g.
+    an arm returning from injury) is far more predictive than a thin/weak one.
+    Calibration judgment, not outcome-gated (the validated outcome set excludes
+    thin samples by construction).
+    """
+    samp = _clean_float((factual or {}).get("sample")) or 0.0
+    if role == "pitcher":
+        size = min(1.0, samp / 80.0)
+        kbb = _clean_float((factual or {}).get("k_bb_pct")) or 0.0
+        prod = max(0.0, min(1.0, (kbb - 5.0) / 15.0))
+    elif role == "hitter":
+        size = min(1.0, samp / 400.0)
+        ops = _clean_float((factual or {}).get("ops")) or 0.0
+        prod = max(0.0, min(1.0, (ops - 0.650) / 0.200))
+    else:
+        return 0.0
+    return size * prod
+
+
+def _high_pedigree(input_row: dict | None) -> bool:
+    """Top-75 draft pick or >=$1M signing bonus (independence-safe pedigree).
+
+    High-pedigree prospects establish ~52% vs ~16% in the validated outcome set,
+    so pedigree credit is well-founded even where the thin-sample axis isn't.
+    """
+    row = input_row or {}
+    pick = _clean_float(row.get("draft_pick_number"))
+    bonus = _clean_float(row.get("signing_bonus")) or 0.0
+    return (pick is not None and pick <= 75) or bonus >= 1_000_000.0
+
+
 def _bucket_calibration_adjustment(
     score: float,
     source: str,
@@ -1083,29 +1117,59 @@ def _bucket_calibration_adjustment(
         or (input_row or {}).get("role")
     )
     adjustments = []
+    availability = components.get("availability")
+    availability = availability if isinstance(availability, dict) else {}
 
     # Match the milb_stat_freshness / prospect_card_data audit predicate exactly:
-    # a row is a "history fallback" unless its factual context is current_season
-    # (missing context counts as a fallback too). Penalize the same population so
-    # the board ordering and the publish gate never disagree.
+    # a row is a "history fallback" unless its factual context is current_season.
+    # The base penalty keeps such a profile behind current-season evidence, but it
+    # is a CALIBRATION JUDGMENT (not outcome-gated -- the validated outcome set
+    # excludes thin samples by construction). The flat hit is softened by prior-
+    # year strength + draft pedigree + genuine injury, and de-stacked from the
+    # availability staleness haircut that fires on the same signal. Evidence:
+    # injured-arm-with-strong-prior pitchers establish ~43% vs ~8% (N=14,
+    # directional); high-pedigree prospects ~52% vs 16% (large N). Hitter prior
+    # softening is capped lower (no historical analogs). See _prior_year_strength.
     factual = components.get("factual_current_context")
     factual = factual if isinstance(factual, dict) else {}
     if factual.get("source_kind") != "current_season":
-        adjustments.append(
-            {
-                "bucket": "no_current_season_activity",
-                "label": "No current-season stat line",
-                "level": level,
-                "role": role,
-                "source_kind": factual.get("source_kind") or "missing",
-                "adjustment": -NO_CURRENT_SEASON_ACTIVITY_PENALTY,
-                "reason": (
-                    "No current-season MiLB stat line: the card leans on a prior "
-                    "season sample, so the profile is ranked behind players with "
-                    "current-season evidence."
-                ),
-            }
-        )
+        base = -NO_CURRENT_SEASON_ACTIVITY_PENALTY
+        prior_q = _prior_year_strength(factual, str(role or ""))
+        max_soft = 0.60 if role == "pitcher" else 0.30
+        pedigreed = _high_pedigree(input_row)
+        penalty = base * (1.0 - max_soft * prior_q)
+        if pedigreed:
+            penalty *= 0.70
+        if str(availability.get("status") or "") == "injured":
+            penalty *= 0.60
+        # De-stack: the availability layer already took a staleness haircut for
+        # this same no-current-season signal -- credit it back so it isn't
+        # double-counted.
+        if availability.get("risk_basis") == "sample_staleness":
+            disc = _clean_float(availability.get("risk_discount")) or 0.0
+            sb = _clean_float(components.get("score_before_availability_adjustment")) or 0.0
+            penalty += disc * sb
+        penalty = round(min(0.0, penalty), 2)
+        if penalty < 0:
+            adjustments.append(
+                {
+                    "bucket": "no_current_season_activity",
+                    "label": "No current-season stat line",
+                    "level": level,
+                    "role": role,
+                    "source_kind": factual.get("source_kind") or "missing",
+                    "prior_year_strength": round(prior_q, 3),
+                    "high_pedigree": pedigreed,
+                    "basis": "calibration_judgment_not_outcome_gated",
+                    "adjustment": penalty,
+                    "reason": (
+                        "No current-season MiLB stat line: the card leans on a prior "
+                        "season sample, so the profile is ranked behind players with "
+                        "current-season evidence. Softened by prior-year strength, "
+                        "draft pedigree, and injury status."
+                    ),
+                }
+            )
 
     if source == PEDIGREE_SCORE_SOURCE and level not in UPPER_LEVEL_BUCKETS:
         adjustments.append(
@@ -1122,8 +1186,6 @@ def _bucket_calibration_adjustment(
             }
         )
 
-    availability = components.get("availability")
-    availability = availability if isinstance(availability, dict) else {}
     sample = _clean_float(availability.get("sample"))
     sample_unit = str(availability.get("sample_unit") or "").upper()
     if sample is None:
@@ -1142,7 +1204,12 @@ def _bucket_calibration_adjustment(
         # under 45 IP) plus any other thin-sample profile floating up on model
         # or pedigree strength, role-agnostically.
         thinness = max(0.0, min(1.0, 1.0 - reliability / 100.0))
-        penalty = -round(THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness, 2)
+        penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness
+        # Credit draft pedigree (a large-N outcome signal: ~52% vs 16% established)
+        # so a thin-but-pedigreed profile isn't sunk as hard as a thin no-name.
+        if _high_pedigree(input_row):
+            penalty *= 0.75
+        penalty = round(penalty, 2)
         if penalty < 0:
             adjustments.append(
                 {
