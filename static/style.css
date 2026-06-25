@@ -1861,6 +1861,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .fit-weight { width: 42px; padding: .05rem .2rem; border: 1px solid var(--c-border-strong); border-radius: 4px; font-size: .72rem; text-align: center; }
 .fit-status { margin-left: .5rem; color: var(--c-dynasty); font-weight: 700; }
 .col-fit { text-align: center; font-variant-numeric: tabular-nums; }
+.rankings-table.preset-fit-hidden .col-fit { display: none; }
 .fit-score { display: inline-block; min-width: 30px; padding: .1rem .35rem; border-radius: 999px; background: rgba(167,139,250,.14); color: var(--c-dynasty); font-weight: 600; }
 .col-confidence { text-align: center; white-space: nowrap; }
 

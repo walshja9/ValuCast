@@ -7,7 +7,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import app as app_module
-from app import _compute_dynasty_dollars, _compute_dynasty_tiers
+from app import _compute_dynasty_dollars, app as flask_app
 from web.dynasty_models import DynastyRankingRow
 from web.league_settings import LeagueSettings
 from web.public_snapshot_models import PublicSnapshotRow
@@ -227,9 +227,6 @@ class TestDynastyPresetValueContext(unittest.TestCase):
         self._assert_same_board(garbage, default)
 
 
-from app import app as flask_app
-
-
 class TestDynastyRoutes(unittest.TestCase):
     def setUp(self):
         self.client = flask_app.test_client()
@@ -374,6 +371,34 @@ class TestDynastyPresetValueTemplates(unittest.TestCase):
         self.assertNotIn('id="category-fit-panel"', body)
         self.assertNotIn('class="fit-category-grid"', body)
         self.assertNotIn("long-term ValuCast value does not change", body)
+
+    def test_flag_on_hides_dead_category_fit_column_on_page_and_partial(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"
+
+        for url in ("/?mode=dd_dynasty&preset=sv_hld",
+                    "/rankings?mode=dd_dynasty&preset=sv_hld"):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                body = response.data.decode("utf-8")
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn('class="rankings-table dynasty-rankings preset-fit-hidden"', body)
+                self.assertIn('<th class="col-fit sortable"', body)
+                self.assertIn('<td class="col-fit">', body)
+
+    def test_flag_off_keeps_category_fit_column_visible_on_page_and_partial(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "0"
+
+        for url in ("/?mode=dd_dynasty&preset=sv_hld",
+                    "/rankings?mode=dd_dynasty&preset=sv_hld"):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                body = response.data.decode("utf-8")
+
+                self.assertEqual(response.status_code, 200)
+                self.assertNotIn("preset-fit-hidden", body)
+                self.assertIn('<th class="col-fit sortable"', body)
+                self.assertIn('<td class="col-fit">', body)
 
     def test_flag_on_sv_hld_marks_only_untuned_prospect_values(self):
         os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"

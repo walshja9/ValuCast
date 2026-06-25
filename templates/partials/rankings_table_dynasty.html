@@ -27,7 +27,7 @@
 {% set prospect_rerank = mode == 'prospects' and custom_cats_active %}
 {% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 %}
 {% if dd_rows %}
-<table class="rankings-table dynasty-rankings">
+<table class="rankings-table dynasty-rankings{{ ' preset-fit-hidden' if preset_value_enabled|default(false) else '' }}">
     <thead>
         <tr>
             <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}Dynasty #{% endif %}</button></th>
