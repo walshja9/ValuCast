@@ -389,7 +389,7 @@ def _select_dynasty_store(snapshot_candidate, use_public_snapshot=None):
         else bool(use_public_snapshot)
     )
     if enabled and snapshot_candidate.is_available:
-        if snapshot_candidate.ready_for_live_consumers:
+        if snapshot_candidate.dynasty_ready:
             return snapshot_candidate, "valucast_public_snapshot"
         if _within_stale_window(getattr(snapshot_candidate, "generated_at", None)):
             return snapshot_candidate, "valucast_public_snapshot_stale"

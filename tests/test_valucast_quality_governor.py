@@ -235,6 +235,13 @@ def test_quality_governor_passes_clean_synthetic_board_but_keeps_buys_separate()
         "prospects": True,
         "buys": False,
     }
+    assert payload["surface_blockers"] == {
+        "dynasty": [],
+        "prospects": [],
+        "buys": [
+            "ValuCast-owned Buy signals are not approved for public promotion.",
+        ],
+    }
     assert payload["blockers"] == []
     assert payload["buy_blockers"] == [
         "ValuCast-owned Buy signals are not approved for public promotion."
@@ -340,12 +347,29 @@ def test_quality_governor_blocks_obvious_public_board_quality_failures():
     assert payload["ready_for_public_snapshot"] is False
     assert payload["ready_for_buys_promotion"] is False
     assert payload["surface_readiness"]["dynasty"] is False
+    assert payload["surface_readiness"]["prospects"] is False
     assert payload["surface_readiness"]["buys"] is False
     assert "Top MLB dynasty value is too far above the second row for public promotion." in payload["blockers"]
     assert "Top public rows split two-way identities without a combined-value policy." in payload["blockers"]
     assert "Top prospect board uses too many fallback-scored rows for public promotion." in payload["blockers"]
     assert "Top prospect board leans too heavily on neutral draft/signing context." in payload["blockers"]
     assert "Top prospect board has missing MLB-org display coverage." in payload["blockers"]
+    assert (
+        "Top MLB dynasty value is too far above the second row for public promotion."
+        in payload["surface_blockers"]["dynasty"]
+    )
+    assert (
+        "Top public rows split two-way identities without a combined-value policy."
+        in payload["surface_blockers"]["dynasty"]
+    )
+    assert (
+        "Top prospect board uses too many fallback-scored rows for public promotion."
+        not in payload["surface_blockers"]["dynasty"]
+    )
+    assert (
+        "Top prospect board uses too many fallback-scored rows for public promotion."
+        in payload["surface_blockers"]["prospects"]
+    )
 
 
 def test_quality_governor_blocks_elite_factual_raw_fallback_audit():
@@ -585,12 +609,21 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
         if check["id"] == "prospect_top_board_role_shape"
     )
     assert crowded_payload["ready_for_public_snapshot"] is False
+    assert crowded_payload["surface_readiness"]["dynasty"] is True
+    assert crowded_payload["surface_readiness"]["prospects"] is False
     assert crowded_check["status"] == "blocked"
     assert crowded_check["metrics"]["top25_pitcher_count"] == 8
     assert (
         "Top prospect board is too pitcher-heavy for public promotion."
         in crowded_payload["blockers"]
     )
+    assert (
+        "Top prospect board is too pitcher-heavy for public promotion."
+        not in crowded_payload["surface_blockers"]["dynasty"]
+    )
+    assert crowded_payload["surface_blockers"]["prospects"] == [
+        "Top prospect board is too pitcher-heavy for public promotion."
+    ]
 
 
 def test_quality_governor_blocks_pedigree_only_top50_crowding():

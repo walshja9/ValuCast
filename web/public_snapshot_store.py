@@ -238,6 +238,21 @@ class PublicSnapshotStore:
         return self._ready_for_live_consumers
 
     @property
+    def surface_readiness(self) -> dict:
+        return dict(self._validation.get("surface_readiness") or {})
+
+    @property
+    def surface_blockers(self) -> dict:
+        return dict(self._validation.get("surface_blockers") or {})
+
+    @property
+    def dynasty_ready(self) -> bool:
+        surface_readiness = self._validation.get("surface_readiness") or {}
+        if "dynasty" in surface_readiness:
+            return bool(surface_readiness.get("dynasty"))
+        return self.ready_for_live_consumers
+
+    @property
     def generated_at(self) -> str | None:
         return self._generated_at
 

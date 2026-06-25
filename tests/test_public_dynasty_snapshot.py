@@ -1,8 +1,9 @@
 """Tests for the ValuCast public dynasty snapshot gate."""
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
 
+import scripts.build_public_dynasty_snapshot as snapshot_builder
 from scripts.build_public_dynasty_snapshot import (
     COMMON_VALUE_SCALE,
     GRAD_FLOOR_DECAY_DAYS,
@@ -443,6 +444,83 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert calibration["metrics"]["mlb_rows_at_or_above_top_prospect"] == 3
     assert calibration["metrics"]["top_prospect_mlb_equivalent_rank"] == 4
     assert payload["players"][0]["name"] == "MLB Star"
+
+
+def test_build_snapshot_stamps_real_build_time_for_same_day_artifacts(monkeypatch):
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 6, 13, 17, 21, 33, tzinfo=timezone.utc)
+
+    monkeypatch.setattr(snapshot_builder, "datetime", FrozenDateTime)
+    rank = _rank_payload()
+    rank["generated_at"] = "2026-06-13T00:00:00+00:00"
+    mlb_layer = _ready_mlb_payload()
+    mlb_layer["generated_at"] = "2026-06-13T00:00:00+00:00"
+    buy_signals = _buy_payload()
+    buy_signals["generated_at"] = "2026-06-13T00:00:00+00:00"
+
+    payload = build_snapshot(rank, mlb_layer=mlb_layer, buy_signals=buy_signals)
+
+    assert payload["generated_at"] == "2026-06-13T17:21:33+00:00"
+    assert payload["validation"]["same_day_freshness"] is True
+    assert payload["validation"]["generated_dates"]["public_snapshot"] == "2026-06-13"
+    assert payload["validation"]["generated_dates"]["prospect_rank_v1"] == "2026-06-13"
+    assert payload["validation"]["generated_dates"]["mlb_dynasty_layer"] == "2026-06-13"
+
+
+def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked(
+    monkeypatch,
+    tmp_path,
+):
+    prospect_blocker = "Top prospect board is too pitcher-heavy for public promotion."
+
+    def fake_quality_governor(*args, **kwargs):
+        return {
+            "governor_version": "test",
+            "ready_for_public_snapshot": False,
+            "ready_for_buys_promotion": False,
+            "blockers": [prospect_blocker],
+            "buy_blockers": [prospect_blocker],
+            "surface_readiness": {
+                "dynasty": True,
+                "prospects": False,
+                "buys": False,
+            },
+            "surface_blockers": {
+                "dynasty": [],
+                "prospects": [prospect_blocker],
+                "buys": [prospect_blocker],
+            },
+        }
+
+    monkeypatch.setattr(
+        snapshot_builder,
+        "evaluate_quality_governor",
+        fake_quality_governor,
+    )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["surface_readiness"]["dynasty"] is True
+    assert payload["validation"]["surface_blockers"]["dynasty"] == []
+    assert payload["validation"]["surface_readiness"]["prospects"] is False
+    assert payload["validation"]["surface_blockers"]["prospects"] == [prospect_blocker]
+
+    from app import _select_dynasty_store
+
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+    selected, source = _select_dynasty_store(store, use_public_snapshot=True)
+
+    assert store.ready_for_live_consumers is False
+    assert store.dynasty_ready is True
+    assert selected is store
+    assert source == "valucast_public_snapshot"
     top_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
     assert top_prospect["rank"] == 4
     assert top_prospect["context"]["kind"] == "optional_display_context"
@@ -684,6 +762,9 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
 
     assert store.is_available is True
     assert store.ready_for_live_consumers is False
+    assert store.dynasty_ready is False
+    assert store.surface_readiness == payload["validation"]["surface_readiness"]
+    assert store.surface_blockers == payload["validation"]["surface_blockers"]
     assert store.generated_at == payload["generated_at"]
     assert len(store.get_all()) == 3
     row = store.get_by_id("vc_prospect_1_hitter")
@@ -1248,7 +1329,10 @@ def test_app_selector_goes_unavailable_when_snapshot_not_ready_and_old():
     from app import _select_dynasty_store
 
     snapshot = SimpleNamespace(
-        is_available=True, ready_for_live_consumers=False, generated_at="2000-01-01"
+        is_available=True,
+        dynasty_ready=False,
+        ready_for_live_consumers=False,
+        generated_at="2000-01-01",
     )
 
     selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
@@ -1262,7 +1346,10 @@ def test_app_selector_serves_stale_snapshot_when_recent():
 
     recent = (date.today() - timedelta(days=1)).isoformat()
     snapshot = SimpleNamespace(
-        is_available=True, ready_for_live_consumers=False, generated_at=recent
+        is_available=True,
+        dynasty_ready=False,
+        ready_for_live_consumers=False,
+        generated_at=recent,
     )
 
     selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
@@ -1274,7 +1361,11 @@ def test_app_selector_serves_stale_snapshot_when_recent():
 def test_app_selector_can_use_ready_public_snapshot():
     from app import _select_dynasty_store
 
-    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+    )
 
     selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
 
@@ -1285,7 +1376,11 @@ def test_app_selector_can_use_ready_public_snapshot():
 def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
     from app import _select_dynasty_store
 
-    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+    )
     monkeypatch.delenv("VALUCAST_USE_PUBLIC_SNAPSHOT", raising=False)
 
     selected, source = _select_dynasty_store(snapshot)
@@ -1297,7 +1392,11 @@ def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
 def test_app_selector_disabled_rollout_never_serves_dd(monkeypatch):
     from app import _select_dynasty_store
 
-    snapshot = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+    )
     monkeypatch.setenv("VALUCAST_USE_PUBLIC_SNAPSHOT", "0")
 
     selected, source = _select_dynasty_store(snapshot)

@@ -42,7 +42,16 @@ RECENT_SIGNAL_REPORT_PATH = (
 )
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.2.1"
+GOVERNOR_VERSION = "0.2.2"
+SURFACE_DYNASTY = "dynasty"
+SURFACE_PROSPECTS = "prospects"
+SURFACE_BUYS = "buys"
+SURFACE_BOTH = "both"
+BOARD_CHECK_SURFACES = {
+    SURFACE_DYNASTY,
+    SURFACE_PROSPECTS,
+    SURFACE_BOTH,
+}
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25
@@ -1518,6 +1527,30 @@ def _blocker_messages(checks: list[dict]) -> list[str]:
     ]
 
 
+def _surface_check(check: dict, surface: str) -> dict:
+    if surface not in BOARD_CHECK_SURFACES:
+        raise ValueError(f"Unknown ValuCast board-check surface: {surface!r}")
+    return {**check, "surface": surface}
+
+
+def _checks_for_surface(checks: list[dict], surface: str) -> list[dict]:
+    missing = [
+        str(check.get("id") or "<unknown>")
+        for check in checks
+        if check.get("surface") not in BOARD_CHECK_SURFACES
+    ]
+    if missing:
+        raise ValueError(
+            "ValuCast board checks missing explicit surface attribution: "
+            + ", ".join(missing)
+        )
+    return [
+        check
+        for check in checks
+        if check.get("surface") in {surface, SURFACE_BOTH}
+    ]
+
+
 def _dd_score_source_audit(players: list[dict]) -> dict:
     """Block if any SERVED value/score originates from DD or an external board.
 
@@ -1580,35 +1613,66 @@ def evaluate_quality_governor(
         }
 
     board_checks = [
-        _top_mlb_value_gap(players),
-        _mlb_projection_stability_outliers(players),
-        _mlb_top_board_role_shape(players),
-        _prospect_top_board_role_shape(prospect_rank, players),
-        _two_way_policy(players),
-        _prospect_rank_surface_suppression(
-            prospect_rank,
-            players,
-            graduated_prospect_ids,
+        _surface_check(_top_mlb_value_gap(players), SURFACE_DYNASTY),
+        _surface_check(_mlb_projection_stability_outliers(players), SURFACE_DYNASTY),
+        _surface_check(_mlb_top_board_role_shape(players), SURFACE_DYNASTY),
+        _surface_check(
+            _prospect_top_board_role_shape(prospect_rank, players),
+            SURFACE_PROSPECTS,
         ),
-        _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
-        _prospect_fallback_rate(players),
-        _prospect_pedigree_rate(players),
-        _prospect_bucket_shape(players),
-        _prospect_neutral_investment_rate(players),
-        _prospect_pedigree_cap_plateau(players),
-        _prospect_missing_team_count(players),
-        _prospect_factual_context_coverage(players),
-        _prospect_factual_context_shape(players),
-        _prospect_current_stat_context_alignment(players),
-        _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
-        _prospect_card_data_audit_check(prospect_card_data_audit),
-        _recent_signal_report_check(recent_signal_report),
-        _prospect_availability_coverage(players),
-        _prospect_availability_level_alignment(players),
-        _prospect_availability_risk_pricing(players),
-        _dd_score_source_audit(players),
+        _surface_check(_two_way_policy(players), SURFACE_BOTH),
+        _surface_check(
+            _prospect_rank_surface_suppression(
+                prospect_rank,
+                players,
+                graduated_prospect_ids,
+            ),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _prospect_elite_factual_fallback_audit(prospect_coverage_audit),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(_prospect_fallback_rate(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_pedigree_rate(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_bucket_shape(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_neutral_investment_rate(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_pedigree_cap_plateau(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_missing_team_count(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_factual_context_coverage(players), SURFACE_PROSPECTS),
+        _surface_check(_prospect_factual_context_shape(players), SURFACE_PROSPECTS),
+        _surface_check(
+            _prospect_current_stat_context_alignment(players),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _prospect_card_data_audit_check(prospect_card_data_audit),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _recent_signal_report_check(recent_signal_report),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(_prospect_availability_coverage(players), SURFACE_PROSPECTS),
+        _surface_check(
+            _prospect_availability_level_alignment(players),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _prospect_availability_risk_pricing(players),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(_dd_score_source_audit(players), SURFACE_BOTH),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
+    dynasty_checks = _checks_for_surface(board_checks, SURFACE_DYNASTY)
+    prospect_checks = _checks_for_surface(board_checks, SURFACE_PROSPECTS)
+    dynasty_board_ready = all(check["status"] == "passed" for check in dynasty_checks)
+    prospect_board_ready = all(check["status"] == "passed" for check in prospect_checks)
     buy_board_checks = [
         _buy_surface_alignment(
             buy_signals,
@@ -1626,6 +1690,11 @@ def evaluate_quality_governor(
     board_blockers = _blocker_messages(board_checks)
     buy_blockers = list(dict.fromkeys(board_blockers + _blocker_messages(buy_checks)))
     buy_ready = all(check["status"] == "passed" for check in buy_checks)
+    surface_blockers = {
+        SURFACE_DYNASTY: _blocker_messages(dynasty_checks),
+        SURFACE_PROSPECTS: _blocker_messages(prospect_checks),
+        SURFACE_BUYS: buy_blockers,
+    }
     return {
         "artifact": "valucast_quality_governor",
         "governor_name": GOVERNOR_NAME,
@@ -1729,9 +1798,10 @@ def evaluate_quality_governor(
         "checks": board_checks + buy_checks,
         "blockers": board_blockers,
         "buy_blockers": buy_blockers,
+        "surface_blockers": surface_blockers,
         "surface_readiness": {
-            "dynasty": public_board_ready,
-            "prospects": public_board_ready,
+            "dynasty": dynasty_board_ready,
+            "prospects": prospect_board_ready,
             "buys": buy_ready,
         },
         "next_allowed_step": (

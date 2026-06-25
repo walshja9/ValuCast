@@ -760,29 +760,41 @@ def _validation(
     buy_date = _date_part((buy_signals or {}).get("generated_at"))
     mlb_validation = (mlb_layer or {}).get("validation") or {}
     buy_validation = (buy_signals or {}).get("validation") or {}
-    blockers = []
+    local_blockers = []
+    local_surface_blockers = {
+        "dynasty": [],
+        "prospects": [],
+    }
     buy_blockers = []
+
+    def add_local_blockers(messages, surfaces):
+        for message in messages:
+            local_blockers.append(message)
+            if "dynasty" in surfaces:
+                local_surface_blockers["dynasty"].append(message)
+            if "prospects" in surfaces:
+                local_surface_blockers["prospects"].append(message)
+
     if not mlb_layer:
-        blockers.append(
-            "ValuCast MLB dynasty value layer artifact is missing; snapshot contains no MLB canonical values."
+        add_local_blockers(
+            [
+                "ValuCast MLB dynasty value layer artifact is missing; snapshot contains no MLB canonical values."
+            ],
+            {"dynasty"},
         )
     elif not mlb_validation.get("ready_for_live_consumers"):
-        blockers.extend(
+        add_local_blockers(
             mlb_validation.get("blockers")
-            or ["ValuCast MLB dynasty value layer is still shadow-only."]
+            or ["ValuCast MLB dynasty value layer is still shadow-only."],
+            {"dynasty"},
         )
-    blockers.extend(calibration_report.get("blockers") or [])
+    add_local_blockers(calibration_report.get("blockers") or [], {"dynasty", "prospects"})
     if not buy_signals:
         buy_blockers.append("ValuCast-owned buy signal artifact is missing.")
     elif not buy_validation.get("ready_for_live_consumers"):
         buy_blockers.extend(
             buy_validation.get("blockers")
             or ["ValuCast buy signals are still shadow-only."]
-        )
-    if not quality_governor.get("ready_for_public_snapshot"):
-        blockers.extend(
-            quality_governor.get("blockers")
-            or ["ValuCast quality governor has not approved public snapshot promotion."]
         )
     if not quality_governor.get("ready_for_buys_promotion"):
         buy_blockers.extend(
@@ -796,25 +808,63 @@ def _validation(
         date_values.append(buy_date)
     same_day_freshness = all(date_values) and len(set(date_values)) == 1
     if not same_day_freshness:
-        blockers.append("Public snapshot input artifacts are not all same-day fresh.")
+        add_local_blockers(
+            ["Public snapshot input artifacts are not all same-day fresh."],
+            {"dynasty", "prospects"},
+        )
     if duplicate_identity_count:
-        blockers.append("Public snapshot has duplicate MLBAM+role identities.")
+        add_local_blockers(
+            ["Public snapshot has duplicate MLBAM+role identities."],
+            {"dynasty", "prospects"},
+        )
     if not visible_prospect_ranks_contiguous:
-        blockers.append("Public snapshot visible prospect ranks are not contiguous.")
+        add_local_blockers(
+            ["Public snapshot visible prospect ranks are not contiguous."],
+            {"prospects"},
+        )
     field_problems = required_field_problems(players)
     if field_problems:
-        blockers.append("Public snapshot has incomplete required fields.")
+        add_local_blockers(
+            ["Public snapshot has incomplete required fields."],
+            {"dynasty", "prospects"},
+        )
 
     quality_surface_readiness = quality_governor.get("surface_readiness") or {}
+    quality_blockers = []
+    if not quality_governor.get("ready_for_public_snapshot"):
+        quality_blockers = (
+            quality_governor.get("blockers")
+            or ["ValuCast quality governor has not approved public snapshot promotion."]
+        )
+    governor_surface_blockers = quality_governor.get("surface_blockers")
+    if isinstance(governor_surface_blockers, dict):
+        governor_dynasty_blockers = list(governor_surface_blockers.get("dynasty") or [])
+        governor_prospect_blockers = list(
+            governor_surface_blockers.get("prospects") or []
+        )
+    else:
+        governor_dynasty_blockers = list(quality_blockers)
+        governor_prospect_blockers = list(quality_blockers)
+
+    dynasty_blockers = list(
+        dict.fromkeys(local_surface_blockers["dynasty"] + governor_dynasty_blockers)
+    )
+    prospect_blockers = list(
+        dict.fromkeys(local_surface_blockers["prospects"] + governor_prospect_blockers)
+    )
+    blockers = list(dict.fromkeys(local_blockers + quality_blockers))
+    buy_blockers = list(dict.fromkeys(buy_blockers))
     dynasty_ready = (
-        not blockers
+        not dynasty_blockers
         and bool(calibration_report.get("applied"))
         and bool(quality_surface_readiness.get("dynasty"))
     )
-    prospects_ready = dynasty_ready
+    prospects_ready = (
+        not prospect_blockers
+        and bool(calibration_report.get("applied"))
+        and bool(quality_surface_readiness.get("prospects"))
+    )
     buys_ready = dynasty_ready and bool(quality_surface_readiness.get("buys"))
-    blockers = list(dict.fromkeys(blockers))
-    buy_blockers = list(dict.fromkeys(buy_blockers))
 
     return {
         "ready_for_live_consumers": dynasty_ready and prospects_ready,
@@ -865,8 +915,8 @@ def _validation(
             "buys": buys_ready,
         },
         "surface_blockers": {
-            "dynasty": blockers,
-            "prospects": blockers,
+            "dynasty": dynasty_blockers,
+            "prospects": prospect_blockers,
             "buys": buy_blockers,
         },
         "buy_signal_blockers": buy_blockers,
@@ -888,12 +938,16 @@ def build_snapshot(
     actuals: list | None = None,
     generated_at: str | None = None,
 ) -> dict:
-    generated_at = (
-        generated_at
-        or prospect_rank.get("generated_at")
-        or (mlb_layer or {}).get("generated_at")
-        or datetime.now(timezone.utc).isoformat()
-    )
+    if generated_at is None:
+        build_time = datetime.now(timezone.utc)
+        inherited = prospect_rank.get("generated_at") or (mlb_layer or {}).get(
+            "generated_at"
+        )
+        inherited_date = _date_part(inherited) if inherited else None
+        if inherited_date and inherited_date == build_time.date().isoformat():
+            generated_at = build_time.isoformat()
+        else:
+            generated_at = inherited or build_time.isoformat()
     mlb_rows = _merge_two_way_mlb_rows(_mlb_rows(mlb_layer, generated_at))
     mlb_identity_ids = {
         mlbam_id
