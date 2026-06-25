@@ -2157,7 +2157,11 @@ def _prospect_player_card_png(row):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
     if not isinstance(context, dict):
         context = {}
-    scouting_report = _artifact_context_for_row(row).get("scouting_report")
+    artifact_context = _artifact_context_for_row(row)
+    if artifact_context.get("ahead_of_consensus"):
+        context = dict(context)
+        context["ahead_of_consensus"] = artifact_context["ahead_of_consensus"]
+    scouting_report = artifact_context.get("scouting_report")
     identity = _prospect_player_card_read(
         row, stat_percentiles, context, scouting_report=scouting_report
     )
@@ -2209,6 +2213,26 @@ def _prospect_player_card_png(row):
     draw.text((824, 286), f"{row.dynasty_value:.1f}", fill=green, font=_graphic_font(38, bold=True, mono=True))
     rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
     draw.text((824, 332), rank_text, fill=muted, font=_graphic_font(16, bold=True, mono=True))
+
+    receipt_text = _ahead_of_consensus_receipt_text(context.get("ahead_of_consensus"))
+    if receipt_text:
+        receipt_font = _graphic_font(15, bold=True)
+        receipt_box = (300, 376, 984, 404)
+        draw.rounded_rectangle(
+            receipt_box,
+            radius=7,
+            fill=(14, 29, 30),
+            outline=(20, 59, 55),
+            width=1,
+        )
+        draw.text(
+            (receipt_box[0] + 14, receipt_box[1] + 7),
+            _graphic_fit_text(
+                draw, receipt_text, receipt_font, receipt_box[2] - receipt_box[0] - 28
+            ),
+            fill=green,
+            font=receipt_font,
+        )
 
     avail_badge = _graphic_availability_badge(row)
     if avail_badge:
@@ -3593,6 +3617,66 @@ def _row_identity_key(row) -> str | None:
     return _identity_key(getattr(row, "mlbam_id", None), getattr(row, "role", None))
 
 
+def _ahead_of_consensus_for_key(key) -> dict | None:
+    if not key:
+        return None
+    payload = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus.json"
+    )
+    if not isinstance(payload, dict):
+        return None
+
+    key = str(key)
+    receipt = {}
+    divergence = payload.get("divergence_by_identity") or {}
+    if isinstance(divergence, dict) and isinstance(divergence.get(key), dict):
+        receipt.update(divergence[key])
+
+    for row in payload.get("ahead_of_consensus") or []:
+        if isinstance(row, dict) and str(row.get("identity_key") or "") == key:
+            receipt.update(row)
+            break
+
+    if not receipt:
+        return None
+    return {
+        "valucast_rank": receipt.get("valucast_rank"),
+        "consensus_rank": receipt.get("consensus_rank"),
+        "divergence": receipt.get("divergence"),
+        "board_count": receipt.get("board_count"),
+        "days_ahead": receipt.get("days_ahead"),
+        "ahead_since": receipt.get("ahead_since"),
+    }
+
+
+def _ahead_of_consensus_receipt_text(receipt) -> str | None:
+    if not isinstance(receipt, dict):
+        return None
+    try:
+        divergence = int(receipt.get("divergence"))
+    except (TypeError, ValueError):
+        return None
+    if divergence <= 0:
+        return None
+    try:
+        valucast_rank = int(receipt.get("valucast_rank"))
+        consensus_rank = int(receipt.get("consensus_rank"))
+    except (TypeError, ValueError):
+        return None
+
+    text = (
+        f"AHEAD OF THE CURVE \u2014 VC #{valucast_rank} "
+        f"vs field ~#{consensus_rank} \u00b7 +{divergence}"
+    )
+    try:
+        days_ahead = int(receipt.get("days_ahead"))
+    except (TypeError, ValueError):
+        days_ahead = 0
+    if days_ahead > 0 and receipt.get("ahead_since"):
+        text = f"{text} \u00b7 {days_ahead}d early"
+    return text
+
+
 def _format_context_label(value) -> str | None:
     if value in (None, ""):
         return None
@@ -3653,6 +3737,7 @@ def _artifact_context_for_row(row) -> dict:
     if not key:
         return {}
     root = Path(__file__).parent / "data" / "models"
+    ahead_of_consensus = _ahead_of_consensus_for_key(key)
     scouting = _indexed_artifact_rows(
         _load_artifact(root / "valucast_scouting_reports.json"), "reports"
     ).get(key)
@@ -3687,6 +3772,7 @@ def _artifact_context_for_row(row) -> dict:
         "call_up": call_up,
         "card_data_status": card_data_status,
         "role_profile": role_profile,
+        "ahead_of_consensus": ahead_of_consensus,
     }
 
 
@@ -6107,12 +6193,19 @@ def _build_redraft_player_card_context(player_id, args):
     result = next((r for r in detail_results if r.player.id == player_id), None)
     card_ctx = dict(ctx)
     card_ctx.update(_card_extras(player.name, player.pool, player.metadata))
+    mlbam_id = (
+        (player.metadata or {}).get("mlbam_id")
+        if isinstance(player.metadata, dict)
+        else None
+    )
+    role = "pitcher" if player.pool in _PITCHER_POOLS else "hitter"
     card_ctx.update({
         "player": player,
         "dyn_result": result,
         "dyn_categories": ctx["active_categories"],
         "dyn_category_summary": ctx["config_summary"],
         "as_of": active.as_of,
+        "ahead_of_consensus": _ahead_of_consensus_for_key(_identity_key(mlbam_id, role)),
     })
     return card_ctx, 200
 
