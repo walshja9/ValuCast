@@ -16,8 +16,11 @@ from scouting.voice import (
 
 GROUNDING = {
     "name": "Test Prospect", "role": "hitter", "level": "AA", "age": 21,
-    "current_minor_league_line": {"avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900,
-                                  "iso": 0.220, "k_pct": 18.0, "bb_pct": 11.0, "pa": 240},
+    "card_display_line": {
+        "avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900,
+        "iso": 0.220, "k_pct": 18.0, "bb_pct": 11.0, "pa": 240,
+        "usage": "the line shown on the card skill bars",
+    },
     "current_skill_percentiles": {"ops": 96, "iso": 92, "k_pct": 70},
 }
 
@@ -88,7 +91,7 @@ class TestVoiceGuard(unittest.TestCase):
             **GROUNDING,
             "role": "pitcher",
             "throws": "L",
-            "current_minor_league_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
+            "card_display_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
             "current_skill_percentiles": {"k_per_9": 88, "bb_per_9": 35},
         }
 
@@ -104,7 +107,7 @@ class TestVoiceGuard(unittest.TestCase):
         pitcher_grounding = {
             **GROUNDING,
             "role": "pitcher",
-            "current_minor_league_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
+            "card_display_line": {"ip": 47.3, "k_per_9": 12.6, "bb_per_9": 5.3},
         }
 
         result = validate_report_text("A right-hander with a 12.6 K/9 over 47.3 IP.", pitcher_grounding)
@@ -144,7 +147,7 @@ class TestGenerator(unittest.TestCase):
     def test_build_prompt_contains_facts_only(self):
         prompt = report_generator.build_prompt(GROUNDING)
         self.assertIn("Test Prospect", prompt)
-        self.assertIn("current_minor_league_line", prompt)
+        self.assertIn("card_display_line", prompt)
 
     def test_generate_with_fake_client_passes_voice_system_prompt(self):
         client = _FakeClient("A patient AA bat: .300/.380/.520 over 240 PA, 96th-pct OPS.")

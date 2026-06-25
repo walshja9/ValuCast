@@ -94,8 +94,11 @@ def _number(line: dict, key: str) -> float | None:
 
 def _performance_line(row) -> tuple[dict, bool]:
     """Best available performance line and whether it came from translation data."""
+    line, _level, _is_best = card_line(row)
+    if line:
+        return line, False
     if row.stat_line:
-        return row.stat_line, False
+        return {}, False
     translated = row.stat_line_translated or {}
     line = {
         stat.get("key"): stat.get("milb")
@@ -482,9 +485,11 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
     pitcher = _is_pitcher(row, line)
     sample = _number(line, "ip" if pitcher else "pa")
     if sample is None:
+        sample = _number(line, "sample")
+    if sample is None:
         raw_sample = translated.get("sample")
         sample = float(raw_sample) if isinstance(raw_sample, (int, float)) else None
-    unit = "IP" if pitcher else "PA"
+    unit = str(line.get("sample_unit") or ("IP" if pitcher else "PA"))
     season = translated.get("season")
     updated_year = str(row.metadata.get("last_updated") or "")[:4]
     old = (
@@ -517,7 +522,9 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
     if old or low_sample or status == "injured":
         confidence = "low"
 
-    level = _LEVEL_NAMES.get(row.level, row.level)
+    line_level = line.get("level")
+    display_level = line_level if isinstance(line_level, str) and line_level else row.level
+    level = _LEVEL_NAMES.get(display_level, display_level)
     sample_text = f"{sample:g} {unit}" if sample is not None else "the available sample"
     if status == "injured":
         if old and season:
@@ -528,11 +535,16 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
             return f"The latest meaningful sample is from {season}, so confidence is low."
         return "The latest meaningful sample is prior-season context, so confidence is low."
     if low_sample:
-        location = " in the latest MiLB sample" if row.level == "MLB" else (f" in {level}" if level else "")
+        location = " in the latest MiLB sample" if display_level == "MLB" else (f" in {level}" if level else "")
         return f"Only {sample_text}{location}, so confidence is low."
-    if row.level == "MLB":
+    if display_level == "MLB":
         return f"The latest MiLB sample covers {sample_text}, so confidence is {confidence}."
-    if row.age is not None and row.level and row.level != "MLB" and row.age <= _YOUNG_FOR_LEVEL.get(row.level, -1):
+    if (
+        row.age is not None
+        and display_level
+        and display_level != "MLB"
+        and row.age <= _YOUNG_FOR_LEVEL.get(display_level, -1)
+    ):
         return f"He is {row.age} in {level} over {sample_text}, so confidence is {confidence}."
     return f"The sample covers {sample_text}{f' in {level}' if level else ''}, so confidence is {confidence}."
 

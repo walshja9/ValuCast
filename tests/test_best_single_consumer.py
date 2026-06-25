@@ -13,18 +13,35 @@ from web.prospect_percentiles import (
     build_pool,
     card_line,
     card_percentiles,
+    identity_line,
     pool_label,
     profile_bars,
 )
+from web import prospect_percentiles
 
 
-def _row(stat_line=None, best=None, positions=("OF",), is_prospect=True, translated=None):
+def _row(
+    stat_line=None,
+    best=None,
+    positions=("OF",),
+    is_prospect=True,
+    translated=None,
+    level="AA",
+):
     return SimpleNamespace(
+        id="test-prospect",
+        name="Test Prospect",
         is_prospect=is_prospect,
         stat_line=stat_line,
         best_single_level_stat_line=best,
         positions=list(positions),
         stat_line_translated=translated,
+        level=level,
+        age=22,
+        prospect_rank=1,
+        dynasty_value=50.0,
+        metadata={"last_updated": "2026-06-24"},
+        context={},
     )
 
 
@@ -94,6 +111,27 @@ class TestBestSingleConsumer(unittest.TestCase):
         r = _row(stat_line=_hitter_line(50), best=None,
                  translated={"stats": [{"key": "k_pct", "mlb": 18.0}]})
         self.assertEqual(card_percentiles(self.pool, r), {})
+
+    def test_identity_line_thin_current_uses_best_single_line(self):
+        current = {
+            "pa": 71, "avg": 0.290, "obp": 0.380, "slg": 0.714, "ops": 1.094,
+            "iso": 0.424, "k_pct": 28.0, "bb_pct": 10.0,
+        }
+        best = {
+            "level": "AA", "sample": 150, "sample_unit": "PA",
+            "avg": 0.300, "obp": 0.390, "slg": 0.596, "ops": 0.986,
+            "iso": 0.296, "k_pct": 18.0, "bb_pct": 14.0,
+        }
+        r = _row(stat_line=current, best=best, level="AAA")
+
+        line, from_translation = prospect_percentiles._performance_line(r)
+        read = identity_line(r, {})
+
+        self.assertIs(line, best)
+        self.assertFalse(from_translation)
+        self.assertIn("150 PA", read)
+        self.assertIn("Double-A", read)
+        self.assertNotIn("71 PA", read)
 
     def test_non_prospect_returns_none(self):
         r = _row(stat_line=_hitter_line(300), is_prospect=False)

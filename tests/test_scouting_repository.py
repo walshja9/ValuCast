@@ -375,6 +375,71 @@ def test_scouting_repository_builds_mlb_report_without_statcast(tmp_path):
     assert validate_report_text(pitcher["report"], grounding)["ok"]
 
 
+def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
+    current = {
+        "pa": 71,
+        "avg": 0.333,
+        "obp": 0.420,
+        "slg": 0.757,
+        "ops": 1.177,
+        "iso": 0.424,
+        "k_pct": 28.2,
+        "bb_pct": 10.0,
+    }
+    best = {
+        "level": "AA",
+        "sample": 150,
+        "sample_unit": "PA",
+        "avg": 0.300,
+        "obp": 0.390,
+        "slg": 0.596,
+        "ops": 0.986,
+        "iso": 0.296,
+        "k_pct": 18.0,
+        "bb_pct": 14.0,
+    }
+    row = SimpleNamespace(
+        is_prospect=True,
+        name="Sean Keys",
+        role="hitter",
+        bats=None,
+        throws=None,
+        positions=["1B"],
+        team="DET",
+        level="AAA",
+        age=24,
+        prospect_rank=42,
+        stat_line=current,
+        stat_line_translated={
+            "role": "hitter",
+            "level": "AAA",
+            "sample": 71,
+            "sample_unit": "PA",
+            "stats": [
+                {"key": "iso", "label": "ISO", "milb": 0.424, "mlb": 0.290},
+                {"key": "k_pct", "label": "K%", "milb": 28.2, "mlb": 29.0},
+            ],
+        },
+        best_single_level_stat_line=best,
+        context={},
+        metadata={},
+        availability_context={},
+        has_peak_projection=False,
+        peak_projection_summary=None,
+    )
+
+    grounding = repository._llm_grounding(row, {"iso": 91}, "vs test pool")
+    serialized = json.dumps(grounding, sort_keys=True)
+
+    assert grounding["card_display_line"]["iso"] == 0.296
+    assert grounding["card_display_line"]["usage"] == "the line shown on the card skill bars"
+    assert "current_minor_league_line" not in grounding
+    assert "best_single_level_line" not in grounding
+    assert "0.424" not in serialized
+    assert grounding["mlb_equivalent_translation"]["stats"][0]["mlb"] == 0.290
+    assert "milb" not in grounding["mlb_equivalent_translation"]["stats"][0]
+
+
 def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):
     from scouting import report_generator, repository
 

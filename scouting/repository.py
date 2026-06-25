@@ -190,6 +190,61 @@ def _mlb_row_report(row, statcast_groups: list[dict] | None = None) -> dict:
     }
 
 
+def _card_display_line_grounding(line: dict | None, is_best: bool) -> dict | None:
+    if not isinstance(line, dict) or not line:
+        return None
+    return {
+        **line,
+        "usage": "the line shown on the card skill bars",
+        "source_kind": "best_single_level_stat_line" if is_best else "current_minor_league_line",
+    }
+
+
+def _line_sample_context(row, line: dict | None, level: str | None, is_best: bool) -> dict | None:
+    if not isinstance(line, dict) or not line:
+        return None
+    is_pitcher = any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct"))
+    sample = line.get("ip" if is_pitcher else "pa")
+    if sample is None:
+        sample = line.get("sample")
+    sample_unit = line.get("sample_unit") or ("IP" if is_pitcher else "PA")
+    context = row.context if isinstance(getattr(row, "context", None), dict) else {}
+    return {
+        "sample": sample,
+        "sample_unit": sample_unit,
+        "season": line.get("season") or context.get("stat_line_sample_season"),
+        "level": level or line.get("level") or row.level,
+        "source_kind": "best_single_level_stat_line" if is_best else context.get("stat_line_source_kind"),
+    }
+
+
+def _mlb_equivalent_translation_grounding(translated: dict | None) -> dict | None:
+    if not isinstance(translated, dict) or not translated:
+        return None
+    grounding = {
+        key: value
+        for key, value in translated.items()
+        if key != "stats" and value not in (None, {}, [], "")
+    }
+    grounding["usage"] = (
+        "MLB-equivalent context only; lead with card_display_line for displayed MiLB values"
+    )
+    stats = []
+    for stat in translated.get("stats") or ():
+        if not isinstance(stat, dict):
+            continue
+        item = {
+            key: stat.get(key)
+            for key in ("key", "label", "fmt", "mlb", "mlb_avg")
+            if stat.get(key) not in (None, {}, [], "")
+        }
+        if item:
+            stats.append(item)
+    if stats:
+        grounding["stats"] = stats
+    return grounding or None
+
+
 def _row_report(
     row,
     recent_signal: dict | None = None,
@@ -339,6 +394,7 @@ def _llm_grounding(
             "score_delta_3d": recent_signal.get("score_delta_3d"),
             "rank_delta_3d": recent_signal.get("rank_delta_3d"),
         }.items() if value not in (None, "")} or None
+    card_stat_line, card_level, card_line_is_best = prospect_percentiles.card_line(row)
     grounding = {
         "name": row.name,
         "role": row.role,
@@ -349,21 +405,15 @@ def _llm_grounding(
         "level": row.level,
         "age": row.age,
         "prospect_rank": row.prospect_rank,
-        "current_minor_league_line": row.stat_line or None,
-        "mlb_equivalent_translation": row.stat_line_translated or None,
-        "best_single_level_line": row.best_single_level_stat_line or None,
+        "card_display_line": _card_display_line_grounding(card_stat_line, card_line_is_best),
+        "mlb_equivalent_translation": _mlb_equivalent_translation_grounding(row.stat_line_translated),
         "current_skill_percentiles": percentiles or None,
         "percentile_pool": pool_label,
         "peak_projection": row.peak_projection_summary if row.has_peak_projection else None,
         "peak_projection_detail": peak_detail,
         "valucast_rank_movement": rank_movement,
         "availability": row.availability_context or None,
-        "sample_context": {
-            "sample": row.context.get("stat_line_sample"),
-            "sample_unit": row.context.get("stat_line_sample_unit"),
-            "season": row.context.get("stat_line_sample_season"),
-            "source_kind": row.context.get("stat_line_source_kind"),
-        },
+        "sample_context": _line_sample_context(row, card_stat_line, card_level, card_line_is_best),
     }
     return {key: value for key, value in grounding.items() if value not in (None, {}, [])}
 
