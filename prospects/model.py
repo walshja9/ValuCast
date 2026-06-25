@@ -26,6 +26,9 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_model"
 MODEL_NAME = "ValuCast Prospect Model"
 MODEL_VERSION = "0.6.0"
 MODEL_STATUS = "shadow_only"
+POOLED_SHADOW_ENABLED = os.environ.get("VALUCAST_POOLED_SHADOW", "1") != "0"
+POOLED_SHADOW_VERSION = "0.1.0"
+POOLED_SHADOW_USAGE = "pooled_line_shadow_observe_only_not_live_score_or_value"
 MATURE_THROUGH = 2019
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
@@ -919,6 +922,97 @@ def _select_current_records(current: dict, role: str) -> list[dict]:
     return list(by_player.values())
 
 
+def _pool_current_records(records: list[dict], role: str) -> dict | None:
+    if not records:
+        return None
+    qualifying = [
+        record
+        for record in records
+        if record.get("source_kind") == "current_season"
+        and _num(record.get("sample_season")) is not None
+        and _eligible_current(record, role)
+    ]
+    if len(qualifying) < 2:
+        return None
+    latest_season = max(_num(record.get("sample_season")) for record in qualifying)
+    qualifying = [
+        record
+        for record in qualifying
+        if _num(record.get("sample_season")) == latest_season
+    ]
+    if len(qualifying) < 2:
+        return None
+    levels = {
+        str(record.get("level") or "").upper()
+        for record in qualifying
+    }
+    if any(level not in LEVEL_CODE for level in levels):
+        return None
+    levels_pooled = sorted(levels, key=lambda level: LEVEL_CODE[level], reverse=True)
+    if len(levels_pooled) < 2:
+        return None
+    highest = max(
+        qualifying,
+        key=lambda record: (
+            LEVEL_CODE[str(record.get("level") or "").upper()],
+            _sample(record, role),
+        ),
+    )
+    if _num(highest.get("age")) is None:
+        return None
+    sample_key = "plate_appearances" if role == "hitter" else "innings_pitched"
+    pooled_sample = sum(_sample(record, role) for record in qualifying)
+    if pooled_sample <= 0:
+        return None
+
+    pooled_record = dict(highest)
+    rate_keys = (
+        ("iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip")
+        if role == "hitter"
+        else ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+    )
+    for key in rate_keys:
+        weighted_total = 0.0
+        weighted_sample = 0.0
+        for record in qualifying:
+            value = _num(record.get(key))
+            sample = _sample(record, role)
+            if value is None or sample <= 0:
+                continue
+            weighted_total += value * sample
+            weighted_sample += sample
+        pooled_record[key] = (
+            weighted_total / weighted_sample if weighted_sample > 0 else None
+        )
+
+    for key in (
+        "home_runs",
+        "stolen_bases",
+        "walks",
+        "hits",
+        "batters_faced",
+        "games_started",
+        "games",
+        "games_played",
+    ):
+        pooled_record[key] = sum(_zero_num(record.get(key)) for record in qualifying)
+    pooled_record[sample_key] = pooled_sample
+    pooled_record["level"] = levels_pooled[0]
+    pooled_record["age"] = highest.get("age")
+    if role == "pitcher":
+        games_started = pooled_record.get("games_started") or 0
+        pooled_record["is_starter"] = any(
+            _truthy(record.get("is_starter")) for record in qualifying
+        ) or games_started >= 5
+
+    return {
+        "record": pooled_record,
+        "pooled_sample": pooled_sample,
+        "levels_pooled": levels_pooled,
+        "n_levels": len(levels_pooled),
+    }
+
+
 def _regress_current_features(
     features: list[float], role_model: dict, role: str, sample: float
 ) -> tuple[list[float], float]:
@@ -1014,6 +1108,16 @@ def score_current(
         impact_model = impact_models[role]
         outcome_runtime = {**role_model["prediction_model"]}
         impact_runtime = {**impact_model["prediction_model"]}
+        group = "hitters" if role == "hitter" else "pitchers"
+        current_by_player: dict[int, list[dict]] = {}
+        for current_record in current.get(group, []):
+            if not current_record.get("mlbam_id") or not _eligible_current(
+                current_record, role
+            ):
+                continue
+            current_by_player.setdefault(int(current_record["mlbam_id"]), []).append(
+                current_record
+            )
         for record in _select_current_records(current, role):
             service_fact = service.get((int(record["mlbam_id"]), role))
             if service_fact is None or service_fact.get("graduated"):
@@ -1035,41 +1139,75 @@ def score_current(
                 confidence = "moderate"
             else:
                 confidence = "low"
-            scored.append(
-                {
-                    "mlbam_id": int(record["mlbam_id"]),
-                    "name": record.get("name"),
-                    "normalized_name": record.get("normalized_name"),
-                    "role": role,
-                    "position": record.get("position"),
-                    "team": record.get("team"),
-                    "age": record.get("age"),
-                    "level": record.get("level"),
-                    "sample": round(sample, 1),
-                    "sample_unit": "PA" if role == "hitter" else "IP",
-                    "sample_reliability": round(reliability, 3),
-                    "confidence": confidence,
-                    "expected_outcome_score": round(
-                        _predict_model(outcome_runtime, regressed), 4
-                    ),
-                    "expected_category_impact_score": round(
-                        _predict_model(impact_runtime, impact_features), 4
-                    ),
-                    "role_gate": role_model["gate"]["status"],
-                    "impact_gate": impact_model["gate"]["status"],
-                    "drivers": _prediction_drivers(
-                        outcome_runtime,
-                        regressed,
-                        OUTCOME_FEATURE_NAMES[role],
-                    ),
-                    "impact_drivers": _prediction_drivers(
-                        impact_runtime,
-                        impact_features,
-                        OUTCOME_FEATURE_NAMES[role],
-                        IMPACT_DRIVER_GROUPS[role],
-                    ),
-                }
-            )
+            row = {
+                "mlbam_id": int(record["mlbam_id"]),
+                "name": record.get("name"),
+                "normalized_name": record.get("normalized_name"),
+                "role": role,
+                "position": record.get("position"),
+                "team": record.get("team"),
+                "age": record.get("age"),
+                "level": record.get("level"),
+                "sample": round(sample, 1),
+                "sample_unit": "PA" if role == "hitter" else "IP",
+                "sample_reliability": round(reliability, 3),
+                "confidence": confidence,
+                "expected_outcome_score": round(
+                    _predict_model(outcome_runtime, regressed), 4
+                ),
+                "expected_category_impact_score": round(
+                    _predict_model(impact_runtime, impact_features), 4
+                ),
+                "role_gate": role_model["gate"]["status"],
+                "impact_gate": impact_model["gate"]["status"],
+                "drivers": _prediction_drivers(
+                    outcome_runtime,
+                    regressed,
+                    OUTCOME_FEATURE_NAMES[role],
+                ),
+                "impact_drivers": _prediction_drivers(
+                    impact_runtime,
+                    impact_features,
+                    OUTCOME_FEATURE_NAMES[role],
+                    IMPACT_DRIVER_GROUPS[role],
+                ),
+            }
+            if POOLED_SHADOW_ENABLED:
+                try:
+                    pooled = _pool_current_records(
+                        current_by_player.get(int(record["mlbam_id"]), []), role
+                    )
+                    if pooled is not None:
+                        pooled_record = pooled["record"]
+                        pooled_outcome_raw = _outcome_feature_vector(
+                            pooled_record, role
+                        )
+                        if pooled_outcome_raw is not None:
+                            pooled_sample = _sample(pooled_record, role)
+                            pooled_regressed, _ = _regress_current_features(
+                                pooled_outcome_raw,
+                                role_model,
+                                role,
+                                pooled_sample,
+                            )
+                            served_score = row["expected_outcome_score"]
+                            pooled_score = round(
+                                _predict_model(outcome_runtime, pooled_regressed), 4
+                            )
+                            row["pooled_shadow"] = {
+                                "version": POOLED_SHADOW_VERSION,
+                                "served_score": served_score,
+                                "pooled_score": pooled_score,
+                                "delta": round(pooled_score - served_score, 4),
+                                "served_sample": round(sample, 1),
+                                "pooled_sample": round(pooled_sample, 1),
+                                "levels_pooled": pooled["levels_pooled"],
+                                "n_levels": pooled["n_levels"],
+                                "usage": POOLED_SHADOW_USAGE,
+                            }
+                except Exception:  # noqa: BLE001
+                    pass
+            scored.append(row)
     scored.sort(key=lambda row: (-row["expected_outcome_score"], row["mlbam_id"], row["role"]))
     for rank, row in enumerate(scored, 1):
         row["valucast_prospect_rank"] = rank

@@ -47,6 +47,7 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # the universe/rank consumers read it. Without this the model artifact froze
     # at an old manual build and the board served stale (saturated) scores.
     ("scripts/build_prospect_model.py",),
+    ("scripts/build_pooled_shadow.py",),
     ("scripts/build_prospect_universe.py",),
     ("scripts/build_prospect_availability.py",),
     ("scripts/build_prospect_rank_v1.py",),
@@ -97,6 +98,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_prospect_peak_projection.py",),
     ("scripts/validate_prospect_peak_calibration_report.py",),
     ("scripts/validate_prospect_forward_validation.py",),
+    ("scripts/validate_pooled_shadow.py",),
     ("scripts/validate_prospect_outcome_backtest.py",),
     ("scripts/validate_projection_scorecard.py",),
     ("scripts/validate_prospect_shadow_promotion.py",),

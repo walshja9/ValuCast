@@ -47,7 +47,8 @@ jobs:
             tests/test_prospect_adapter_backtest.py \
             tests/test_dd_7x7_prospect_adapter.py \
             tests/test_dd_prospect_lens_feed.py \
-            tests/test_prospect_forward_shadow.py
+            tests/test_prospect_forward_shadow.py \
+            tests/test_pooled_shadow.py
 
       - name: Commit changed shadow artifacts
         run: |
@@ -58,6 +59,7 @@ jobs:
             data/models/valucast_prospect_dynasty_backtest.json \
             data/models/valucast_prospect_dynasty_layer.json \
             data/models/valucast_prospect_forward_shadow.json \
+            data/models/valucast_pooled_shadow.json \
             data/models/valucast_universal_prospect_index.json \
             data/models/valucast_universal_prospect_index_backtest.json \
             data/models/valucast_prospect_adapter_backtest.json \
@@ -67,7 +69,8 @@ jobs:
             data/prediction_archive/valucast_prospect_dynasty_layer \
             data/prediction_archive/valucast_universal_prospect_index \
             data/prediction_archive/valucast_dd_7x7_prospect_adapter \
-            data/prediction_archive/valucast_prospect_forward_shadow
+            data/prediction_archive/valucast_prospect_forward_shadow \
+            data/prediction_archive/valucast_pooled_shadow
           git diff --cached --quiet && exit 0
           git commit -m "Archive prospect shadow observations"
           git push origin master

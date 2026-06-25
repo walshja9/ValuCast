@@ -219,6 +219,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "MILB_STAT_FRESHNESS_AUDIT": tmp_path / "milb_stat_freshness.json",
         "PROSPECT_CARD_DATA_AUDIT": tmp_path / "prospect_card_data_audit.json",
         "RECENT_SIGNAL_REPORT": tmp_path / "recent_signal_report.json",
+        "POOLED_SHADOW": tmp_path / "pooled_shadow.json",
         "PIPELINE_OBSERVABILITY": tmp_path / "pipeline_observability.json",
         "PROSPECT_MODEL_V07": tmp_path / "prospect_model_v07.json",
         "PROSPECT_OUTCOME_BACKTEST": tmp_path / "prospect_outcome_backtest.json",
@@ -284,6 +285,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["RECENT_SIGNAL_REPORT"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["POOLED_SHADOW"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["RECENT_FORM_SIGNAL"].write_text(

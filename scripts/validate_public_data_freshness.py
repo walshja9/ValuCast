@@ -32,6 +32,7 @@ PROSPECT_CARD_DATA_AUDIT = (
 RECENT_SIGNAL_REPORT = (
     ROOT / "data" / "models" / "valucast_recent_signal_report.json"
 )
+POOLED_SHADOW = ROOT / "data" / "models" / "valucast_pooled_shadow.json"
 RECENT_FORM_SIGNAL = (
     ROOT / "data" / "models" / "valucast_recent_form_signal.json"
 )
@@ -118,6 +119,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (MILB_STAT_FRESHNESS_AUDIT, "generated_at"),
         (PROSPECT_CARD_DATA_AUDIT, "generated_at"),
         (RECENT_SIGNAL_REPORT, "generated_at"),
+        (POOLED_SHADOW, "generated_at"),
         (RECENT_FORM_SIGNAL, "generated_at"),
         (CALL_UP_PULSE, "generated_at"),
         (AHEAD_OF_CONSENSUS_SCORECARD, "generated_at"),
