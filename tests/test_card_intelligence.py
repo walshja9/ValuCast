@@ -24,6 +24,8 @@ def _row(
     level=None,
     context=None,
     components=None,
+    dynasty_value=70.0,
+    peak_projection=None,
 ):
     return DynastyRankingRow.from_feed({
         "id": row_id,
@@ -33,7 +35,7 @@ def _row(
         "mlb_team": "TEX",
         "age": age,
         "dynasty_rank": prospect_rank or 1,
-        "dynasty_value": 70.0,
+        "dynasty_value": dynasty_value,
         "status": "minors" if player_type == "prospect" else "mlb",
         "prospect_rank": prospect_rank,
         "source_ranks": source_ranks,
@@ -44,6 +46,7 @@ def _row(
         "level": level,
         "context": context,
         "components": components,
+        "peak_projection": peak_projection,
         "last_updated": "2026-06-12",
     })
 
@@ -435,6 +438,132 @@ class TestProspectPercentiles(unittest.TestCase):
             prospect_percentiles.identity_line(row, {"iso": 95}) for row in rows
         ])
         self.assertGreaterEqual(len(set(lines)), 3)
+
+    def test_value_suppressor_note_fires_on_elite_skill_low_value_gap(self):
+        row = _row(
+            "low_value_gap",
+            positions=["SP"],
+            level="A+",
+            age=22,
+            prospect_rank=300,
+            dynasty_value=0.5,
+            stat_line={
+                "ip": 45,
+                "era": 2.20,
+                "whip": 0.92,
+                "k_per_9": 12.8,
+                "bb_per_9": 1.7,
+                "k_bb_pct": 29.0,
+            },
+            components={
+                "factual_current_context": {
+                    "role": "pitcher",
+                    "sample": 45,
+                    "sample_unit": "IP",
+                    "skill_band": "bat_missing",
+                },
+            },
+            peak_projection={"peak_role": "depth_arm", "risk_band": "medium"},
+        )
+
+        line = prospect_percentiles.identity_line(
+            row,
+            {"k_bb_pct": 99, "bb_per_9": 95, "whip": 92},
+        )
+
+        self.assertIn("dynasty value stays low because", line)
+        self.assertIn("old for High-A", line)
+        self.assertIn("depth/relief arm", line)
+
+    def test_value_suppressor_note_absent_for_high_value_player(self):
+        row = _row(
+            "high_value",
+            positions=["SS"],
+            level="AA",
+            age=21,
+            prospect_rank=12,
+            dynasty_value=70.0,
+            stat_line={
+                "pa": 220,
+                "avg": 0.310,
+                "obp": 0.390,
+                "slg": 0.530,
+                "ops": 0.920,
+                "iso": 0.220,
+                "k_pct": 16.0,
+                "bb_pct": 11.0,
+            },
+            peak_projection={"peak_role": "everyday_regular", "risk_band": "medium"},
+        )
+
+        self.assertIsNone(
+            prospect_percentiles.value_suppressor_note(row, {"ops": 95, "iso": 80})
+        )
+        self.assertNotIn(
+            "stays low because",
+            prospect_percentiles.identity_line(row, {"ops": 95, "iso": 80}),
+        )
+
+    def test_value_suppressor_note_absent_when_skills_are_not_elite(self):
+        row = _row(
+            "not_elite_low_value",
+            positions=["SS"],
+            level="AA",
+            age=23,
+            prospect_rank=300,
+            dynasty_value=2.0,
+            stat_line={
+                "pa": 220,
+                "avg": 0.250,
+                "obp": 0.320,
+                "slg": 0.390,
+                "ops": 0.710,
+                "iso": 0.140,
+                "k_pct": 24.0,
+                "bb_pct": 8.0,
+            },
+            peak_projection={"peak_role": "bench_or_platoon_bat", "risk_band": "high"},
+        )
+
+        self.assertIsNone(prospect_percentiles.value_suppressor_note(row, {"ops": 55}))
+
+    def test_value_suppressor_reason_priority(self):
+        row = _row(
+            "priority_gap",
+            positions=["SP"],
+            level="AA",
+            age=23,
+            prospect_rank=280,
+            dynasty_value=3.0,
+            stat_line={
+                "ip": 35,
+                "era": 2.60,
+                "whip": 0.98,
+                "k_per_9": 13.4,
+                "bb_per_9": 2.0,
+                "k_bb_pct": 28.0,
+            },
+            components={
+                "factual_current_context": {
+                    "role": "pitcher",
+                    "sample": 35,
+                    "sample_unit": "IP",
+                    "skill_band": "thin",
+                },
+            },
+            peak_projection={"peak_role": "depth_arm", "risk_band": "medium"},
+        )
+
+        note = prospect_percentiles.value_suppressor_note(
+            row,
+            {"k_bb_pct": 99, "bb_per_9": 88, "whip": 82},
+        )
+
+        self.assertIn(
+            "because he's old for Double-A (23) and the sample is still thin (35 IP).",
+            note,
+        )
+        self.assertNotIn("depth/relief arm", note)
 
 
 class TestPublicSourceRanks(unittest.TestCase):

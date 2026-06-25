@@ -2042,6 +2042,10 @@ def _graphic_best_single_read(best_line, best_level, stat_percentiles, last):
     )
 
 
+def _with_note(text, note):
+    return f"{text} {note}" if note else text
+
+
 def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=None):
     scouting_text = _scouting_display_report_text(scouting_report)
     if scouting_text:
@@ -2052,8 +2056,12 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
 
     last = _graphic_last_name(row.name)
     card_stat_line, best_level, is_best = prospect_percentiles.card_line(row)
+    note = prospect_percentiles.value_suppressor_note(row, stat_percentiles)
     if is_best and card_stat_line:
-        return _graphic_best_single_read(card_stat_line, best_level, stat_percentiles, last)
+        return _with_note(
+            _graphic_best_single_read(card_stat_line, best_level, stat_percentiles, last),
+            note,
+        )
     sample = _graphic_sample_phrase(row, context, line)
     if any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")):
         era = _graphic_prose_stat(line.get("era"), "era")
@@ -2087,7 +2095,7 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
         weak = ""
         if weak_key and stat_percentiles[weak_key] <= 40:
             weak = f" The drag is {_graphic_pitcher_callout(weak_key, line, stat_percentiles[weak_key])}, which still caps the role projection."
-        return f"{intro} {loud}{weak}"
+        return _with_note(f"{intro} {loud}{weak}", note)
 
     avg = _graphic_prose_stat(line.get("avg"), "avg")
     obp = _graphic_prose_stat(line.get("obp"), "obp")
@@ -2116,7 +2124,7 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
     weak = ""
     if weak_key and stat_percentiles[weak_key] <= 40:
         weak = f" The check is the {_graphic_hitter_callout(weak_key, line, stat_percentiles[weak_key])}, which keeps this short of a clean everyday read."
-    return f"{intro} {loud}{weak}"
+    return _with_note(f"{intro} {loud}{weak}", note)
 
 
 def _prospect_player_card_png(row):

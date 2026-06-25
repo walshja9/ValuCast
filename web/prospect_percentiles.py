@@ -537,6 +537,128 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
     return f"The sample covers {sample_text}{f' in {level}' if level else ''}, so confidence is {confidence}."
 
 
+def _dict_context(row, attr: str, *metadata_keys: str) -> dict:
+    raw = getattr(row, attr, None)
+    if isinstance(raw, dict):
+        return raw
+    if callable(raw):
+        raw = raw()
+        if isinstance(raw, dict):
+            return raw
+    metadata = getattr(row, "metadata", None)
+    if isinstance(metadata, dict):
+        for key in metadata_keys:
+            raw = metadata.get(key)
+            if isinstance(raw, dict):
+                return raw
+    return {}
+
+
+def _float_value(raw) -> float | None:
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _display_number(raw) -> str:
+    value = _float_value(raw)
+    return f"{value:g}" if value is not None else str(raw)
+
+
+def value_suppressor_note(row, percentiles) -> str | None:
+    peaks = [
+        p
+        for p in (percentiles.values() if isinstance(percentiles, dict) else ())
+        if isinstance(p, int)
+    ]
+    elite_skill = any(p >= 90 for p in peaks) and sum(1 for p in peaks if p >= 75) >= 2
+
+    value = _float_value(getattr(row, "dynasty_value", None))
+    if value is None:
+        value = 0.0
+    prospect_rank = getattr(row, "prospect_rank", None)
+    rank_value = _float_value(prospect_rank)
+    low_rank = rank_value is not None and rank_value >= 250
+    low_value = value <= 8.0 or low_rank
+
+    peak = _dict_context(row, "peak_projection_context", "peak_projection_context", "peak_projection")
+    peak_role = str(peak.get("peak_role") or "")
+    capped = (
+        str(peak.get("peak_role") or peak.get("ceiling_band") or "")
+        in {
+            "depth_arm",
+            "organizational_depth",
+            "multi_inning_or_setup_arm",
+            "bench_or_platoon_bat",
+        }
+        or str(peak.get("risk_band")) == "high"
+    )
+    if not (elite_skill and low_value and capped):
+        return None
+
+    reasons = []
+    age = getattr(row, "age", None)
+    age_value = _float_value(age)
+    level = getattr(row, "level", None)
+    if age_value is not None and level in _YOUNG_FOR_LEVEL and age_value >= _YOUNG_FOR_LEVEL[level] + 2:
+        level_name = _LEVEL_NAMES.get(level, level)
+        reasons.append(f"he's old for {level_name} ({_display_number(age)})")
+
+    components = _dict_context(row, "prospect_components", "components")
+    factual_current = _dict_context(row, "factual_current_context")
+    sample = factual_current.get("sample")
+    sample_number = _float_value(sample)
+    unit = factual_current.get("sample_unit")
+    skill_band = factual_current.get("skill_band")
+    reliability = _float_value(components.get("sample_reliability"))
+    thin = (
+        sample_number is not None
+        and ((unit == "IP" and sample_number < 40) or (unit == "PA" and sample_number < 120))
+    ) or str(skill_band) in {"thin", "limited"} or (
+        reliability is not None and reliability < 45
+    )
+    if thin:
+        if sample_number is not None and unit:
+            reasons.append(f"the sample is still thin ({sample_number:g} {unit})")
+        else:
+            reasons.append("the sample is still thin")
+
+    peak_v2 = peak.get("peak_v2")
+    role_probabilities = (
+        peak_v2.get("role_probabilities")
+        if isinstance(peak_v2, dict) and isinstance(peak_v2.get("role_probabilities"), dict)
+        else {}
+    )
+    bust_risk = _float_value(role_probabilities.get("bust_risk"))
+    modest_ceiling = peak_role in {
+        "depth_arm",
+        "organizational_depth",
+        "multi_inning_or_setup_arm",
+    } or (bust_risk is not None and bust_risk >= 0.70)
+    role_from_context = str(factual_current.get("role") or "")
+    is_pitcher = role_from_context == "pitcher" or (
+        not role_from_context and _is_pitcher(row, getattr(row, "stat_line", None) or {})
+    )
+    if modest_ceiling:
+        if is_pitcher:
+            reasons.append("the profile projects as a depth/relief arm rather than a rotation piece")
+        else:
+            reasons.append("the projection caps at a bench/depth role")
+
+    investment = components.get("factual_investment_context")
+    score = investment.get("score") if isinstance(investment, dict) else None
+    score = _float_value(score)
+    if score is not None and score < 30:
+        reasons.append("the draft pedigree is modest")
+
+    reasons = reasons[:2]
+    if not reasons:
+        return None
+    why = reasons[0] if len(reasons) == 1 else f"{reasons[0]} and {reasons[1]}"
+    return f"The current skills grade out loud, but the dynasty value stays low because {why}."
+
+
 def _report_order(row) -> int:
     if isinstance(row.prospect_rank, int):
         return (row.prospect_rank - 1) % 4
@@ -860,7 +982,7 @@ def top_movers(rows, limit: int = 5, min_change: int = 5, max_rank: int = 200) -
     ]
 
 
-def identity_line(row, _percentiles: dict) -> str | None:
+def identity_line(row, percentiles: dict) -> str | None:
     """Deterministic scouting-style card summary. None for non-prospects."""
     if not row.is_prospect:
         return None
@@ -870,4 +992,6 @@ def identity_line(row, _percentiles: dict) -> str | None:
     skill, risk, role = (
         _pitcher_parts(row, line) if _is_pitcher(row, line) else _hitter_parts(row, line)
     )
-    return _assemble_report(row, skill, risk, role, _sample_context(row, line, from_translation))
+    report = _assemble_report(row, skill, risk, role, _sample_context(row, line, from_translation))
+    note = value_suppressor_note(row, percentiles)
+    return f"{report} {note}" if note else report
