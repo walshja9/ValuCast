@@ -31,7 +31,8 @@
           "value": 100.0
         }
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "dynasty"
     },
     {
       "id": "mlb_projection_stability_outliers",
@@ -44,7 +45,8 @@
         "samples": [],
         "top_n": 25
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "dynasty"
     },
     {
       "id": "mlb_top_board_role_shape",
@@ -69,7 +71,7 @@
               "SP"
             ],
             "rank": 5,
-            "value": 89.33
+            "value": 89.54
           },
           {
             "name": "Cristopher S\u00e1nchez",
@@ -77,7 +79,7 @@
               "SP"
             ],
             "rank": 14,
-            "value": 68.34
+            "value": 68.49
           },
           {
             "name": "Jacob Misiorowski",
@@ -86,7 +88,7 @@
               "RP"
             ],
             "rank": 15,
-            "value": 68.25
+            "value": 68.38
           },
           {
             "name": "Chase Burns",
@@ -95,14 +97,15 @@
               "RP"
             ],
             "rank": 22,
-            "value": 62.37
+            "value": 62.48
           }
         ],
         "reliever_count": 0,
         "reliever_samples": [],
         "top_n": 25
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "dynasty"
     },
     {
       "id": "prospect_top_board_role_shape",
@@ -192,7 +195,8 @@
         "top50_pitcher_rate": 0.34,
         "top50_sample_ready": true
       },
-      "status": "blocked"
+      "status": "blocked",
+      "surface": "prospects"
     },
     {
       "id": "two_way_identity_policy",
@@ -202,7 +206,8 @@
         "samples": [],
         "split_identity_count": 0
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "both"
     },
     {
       "id": "prospect_rank_surface_suppression",
@@ -217,7 +222,8 @@
         "suppressed_count": 0,
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_elite_factual_raw_fallback_audit",
@@ -229,7 +235,8 @@
         "max_allowed_elite_factual_raw_fallback_top_200": 0,
         "samples": []
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_fallback_rate",
@@ -242,7 +249,8 @@
         "sample_ready": true,
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_pedigree_rate",
@@ -256,7 +264,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_bucket_shape",
@@ -279,7 +288,8 @@
         "thin_upper_level_pitcher_count": 0,
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top25_neutral_investment_rate",
@@ -292,7 +302,8 @@
         "sample_ready": true,
         "top_n": 25
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top25_pedigree_cap_plateau",
@@ -305,7 +316,8 @@
         "samples": [],
         "top_n": 25
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_team_coverage",
@@ -318,7 +330,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_factual_context_coverage",
@@ -331,7 +344,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_factual_context_shape",
@@ -418,7 +432,8 @@
         ],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_current_stat_context_alignment",
@@ -431,7 +446,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "milb_stat_freshness_audit",
@@ -452,7 +468,8 @@
         "top50_history_fallback_count": 1,
         "top50_stat_context_mismatch_count": 0
       },
-      "status": "blocked"
+      "status": "blocked",
+      "surface": "prospects"
     },
     {
       "id": "prospect_card_data_audit",
@@ -468,20 +485,22 @@
         "top200_count": 200,
         "top200_watch_count": 0
       },
-      "status": "blocked"
+      "status": "blocked",
+      "surface": "prospects"
     },
     {
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 12,
+        "archive_day_span": 13,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
         "signal_count": 300,
         "top_mover_count": 25
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_availability_coverage",
@@ -494,7 +513,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_availability_level_alignment",
@@ -507,7 +527,8 @@
         "samples": [],
         "top_n": 50
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "prospect_top50_availability_risk_pricing",
@@ -521,7 +542,8 @@
         "top_n": 50,
         "unpriced_availability_risk_count": 0
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "prospects"
     },
     {
       "id": "dd_score_source_audit",
@@ -530,7 +552,8 @@
         "offender_count": 0,
         "offenders": []
       },
-      "status": "passed"
+      "status": "passed",
+      "surface": "both"
     },
     {
       "id": "buy_top40_public_surface_alignment",
@@ -567,8 +590,8 @@
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 11,
-        "history_limited_rate": 0.0042,
+        "history_limited_count": 0,
+        "history_limited_rate": 0.0,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
@@ -622,24 +645,24 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-24T00:00:00+00:00",
+  "generated_at": "2026-06-25T00:45:56.915371+00:00",
   "governor_name": "ValuCast Quality Governor",
-  "governor_version": "0.2.1",
+  "governor_version": "0.2.2",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-06-24",
-      "buy_signals": "2026-06-24",
-      "milb_stat_freshness_audit": "2026-06-24",
-      "mlb_layer": "2026-06-24",
-      "prospect_card_data_audit": "2026-06-24",
-      "prospect_coverage_audit": "2026-06-24",
-      "prospect_rank": "2026-06-24",
-      "public_snapshot": "2026-06-24",
-      "recent_signal_report": "2026-06-24"
+      "buy_review": "2026-06-25",
+      "buy_signals": "2026-06-25",
+      "milb_stat_freshness_audit": "2026-06-25",
+      "mlb_layer": "2026-06-25",
+      "prospect_card_data_audit": "2026-06-25",
+      "prospect_coverage_audit": "2026-06-25",
+      "prospect_rank": "2026-06-25",
+      "public_snapshot": "2026-06-25",
+      "recent_signal_report": "2026-06-25"
     },
-    "mlb_count": 964,
+    "mlb_count": 966,
     "prospect_count": 2648,
-    "public_row_count": 3612
+    "public_row_count": 3614
   },
   "next_allowed_step": "repair_model_quality_before_public_promotion",
   "ready_for_buys_promotion": false,
@@ -652,9 +675,23 @@
     "kind": "model_output_quality_gate"
   },
   "status": "blocked",
+  "surface_blockers": {
+    "buys": [
+      "Top prospect board is too pitcher-heavy for public promotion.",
+      "MiLB prospect-card stat freshness audit blocks public promotion.",
+      "Prospect card data audit blocks public promotion.",
+      "ValuCast-owned Buy signals are not approved for public promotion."
+    ],
+    "dynasty": [],
+    "prospects": [
+      "Top prospect board is too pitcher-heavy for public promotion.",
+      "MiLB prospect-card stat freshness audit blocks public promotion.",
+      "Prospect card data audit blocks public promotion."
+    ]
+  },
   "surface_readiness": {
     "buys": false,
-    "dynasty": false,
+    "dynasty": true,
     "prospects": false
   }
 }

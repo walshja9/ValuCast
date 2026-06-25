@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-06-24",
+  "generated_at": "2026-06-25",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -3216,18 +3216,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Colorado Rockies placed RHP Tanner Gordon on the 15-day injured list retroactive to June 2, 2026. Right hip impingement.",
-      "effective_date": "2026-06-02",
-      "list_type": "15-day injured list",
+      "description": "Colorado Rockies sent RHP Tanner Gordon on a rehab assignment to Albuquerque Isotopes.",
+      "effective_date": "2026-06-24",
+      "list_type": null,
       "mlbam_id": 685299,
       "name": "Tanner Gordon",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Colorado Rockies",
-      "transaction_date": "2026-06-05",
-      "transaction_id": 916216,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Albuquerque Isotopes",
+      "transaction_date": "2026-06-24",
+      "transaction_id": 922021,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -6606,7 +6606,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-06-24",
+    "end_date": "2026-06-25",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -6627,12 +6627,12 @@
     "available_after_il_count": 203,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 193,
+    "injured_count": 192,
     "profile_count": 439,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 43,
+    "rehab_count": 44,
     "risk_profile_count": 236,
     "tracked_mlbam_count": 10197,
-    "transaction_count": 7018
+    "transaction_count": 7020
   }
 }
