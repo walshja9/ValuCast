@@ -26,6 +26,9 @@
         <span class="detail-value {{ 'val-pos' if result.total_value > 0 else 'val-neg' }}">
             Value: {{ "%.2f" | format(result.total_value) }}
         </span>
+        <div class="profile-card-badges">
+            <a class="player-share-link" href="/redraft/player-card/{{ player.id }}{% if request.query_string %}?{{ request.query_string.decode('utf-8') }}{% endif %}" target="_blank" rel="noopener">Share graphic</a>
+        </div>
     </div>
 
     <div class="detail-body">

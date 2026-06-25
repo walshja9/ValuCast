@@ -12,6 +12,7 @@ from datetime import date
 from functools import lru_cache
 from html import escape
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.parse import quote, urlencode
 
 from flask import Flask, abort, render_template, request, make_response, jsonify, redirect
@@ -54,6 +55,7 @@ from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
 from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
+from scouting.mlb_read import build_mlb_scouting_read
 
 app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
@@ -2480,8 +2482,81 @@ def _dynasty_category_card_items(context):
     return items
 
 
-def _dynasty_player_card_png(row, context):
-    """Render a single dynasty player card from the dynasty detail context."""
+def _redraft_card_read(row, context):
+    role = "pitcher" if row.pool in _PITCHER_POOLS else "hitter"
+    shim = SimpleNamespace(role=role)
+    return build_mlb_scouting_read(
+        shim,
+        context.get("statcast_groups"),
+        row.stats,
+    )
+
+
+def _card_value_fields(mode, row, context):
+    """Mode-switched values for the shared player card renderer."""
+    if mode == "dynasty":
+        subtitle = "dynasty value + MLB Statcast context"
+        generated = _editorial_date(dd_store.generated_at)
+        if generated:
+            subtitle = f"{subtitle} - {generated}"
+        meta = " - ".join(
+            piece for piece in [
+                row.team or "FA",
+                "/".join(row.positions[:2]) if row.positions else "UT",
+                row.level or "MLB",
+                f"Age {row.age}" if row.age is not None else "",
+            ]
+            if piece
+        )
+        value_notes = _dynasty_confidence_lines(row)
+        preset_items = _dynasty_value_preset_items(row)
+        if preset_items:
+            value_notes.append(" / ".join(f"{label} {val}" for label, val in preset_items[:2]))
+        return {
+            "headline": "DYNASTY VALUE CARD",
+            "subtitle": subtitle,
+            "meta": meta,
+            "value": getattr(row, "dynasty_value", None),
+            "rank": getattr(row, "dynasty_rank", None),
+            "value_notes": value_notes,
+            "read_label": "THE DYNASTY READ",
+            "read_text": _dynasty_card_read(row, context),
+            "category_summary": context.get("dyn_category_summary"),
+            "footer_note": "Dynasty value context. Statcast bars are vs MLB league percentiles.",
+        }
+    if mode == "redraft":
+        subtitle = "redraft value + MLB Statcast context"
+        generated = _editorial_date(context.get("as_of"))
+        if generated:
+            subtitle = f"{subtitle} - {generated}"
+        role = "Pitcher" if row.pool in _PITCHER_POOLS else "Hitter"
+        meta = " - ".join(
+            piece for piece in [
+                (row.metadata or {}).get("team") or "FA",
+                "/".join(row.positions[:2]) if row.positions else "UT",
+                role,
+            ]
+            if piece
+        )
+        result = context.get("dyn_result")
+        ranks = context.get("overall_ranks") or {}
+        return {
+            "headline": "REDRAFT VALUE CARD",
+            "subtitle": subtitle,
+            "meta": meta,
+            "value": getattr(result, "total_value", None),
+            "rank": ranks.get(row.id),
+            "value_notes": [],
+            "read_label": "THE REDRAFT READ",
+            "read_text": _redraft_card_read(row, context),
+            "category_summary": context.get("dyn_category_summary"),
+            "footer_note": "Redraft value context. Statcast bars are vs MLB league percentiles.",
+        }
+    raise ValueError(f"Unknown player value card mode: {mode}")
+
+
+def _player_value_card_png(row, context, mode):
+    """Render a single player value card from a dynasty or redraft context."""
     from PIL import Image, ImageDraw
 
     width, height = 1080, 1350
@@ -2499,40 +2574,26 @@ def _dynasty_player_card_png(row, context):
     img = Image.new("RGB", (width, height), bg)
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
+    fields = _card_value_fields(mode, row, context)
 
-    subtitle = "dynasty value + MLB Statcast context"
-    generated = _editorial_date(dd_store.generated_at)
-    if generated:
-        subtitle = f"{subtitle} - {generated}"
-    _graphic_header(img, draw, headline="DYNASTY VALUE CARD", subtitle=subtitle)
+    _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"])
 
     draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
     name_font = _graphic_font(48, bold=True)
     draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 610), fill=text, font=name_font)
-    meta = " - ".join(
-        piece for piece in [
-            row.team or "FA",
-            "/".join(row.positions[:2]) if row.positions else "UT",
-            row.level or "MLB",
-            f"Age {row.age}" if row.age is not None else "",
-        ]
-        if piece
-    )
+    meta = fields["meta"]
     draw.text((76, 314), _graphic_fit_text(draw, meta, _graphic_font(22, mono=True), 610), fill=muted, font=_graphic_font(22, mono=True))
     draw.text((76, 350), "vs MLB Statcast", fill=muted, font=_graphic_font(18, mono=True))
 
     draw.rounded_rectangle((760, 244, 1002, 382), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
     draw.text((780, 262), "VALUCAST VALUE", fill=muted, font=_graphic_font(13, bold=True))
-    value = getattr(row, "dynasty_value", None)
+    value = fields["value"]
     value_text = f"{float(value):.1f}" if isinstance(value, (int, float)) else "-"
     draw.text((780, 282), value_text, fill=green, font=_graphic_font(38, bold=True, mono=True))
-    rank = getattr(row, "dynasty_rank", None)
+    rank = fields["rank"]
     rank_text = f"#{rank}" if rank is not None else "#-"
     draw.text((900, 294), rank_text, fill=muted, font=_graphic_font(18, bold=True, mono=True))
-    value_notes = _dynasty_confidence_lines(row)
-    preset_items = _dynasty_value_preset_items(row)
-    if preset_items:
-        value_notes.append(" / ".join(f"{label} {val}" for label, val in preset_items[:2]))
+    value_notes = fields["value_notes"]
     for idx, note in enumerate(value_notes[:2]):
         draw.text((780, 334 + idx * 22), _graphic_fit_text(draw, note, _graphic_font(15, bold=True), 198), fill=muted, font=_graphic_font(15, bold=True))
 
@@ -2569,14 +2630,14 @@ def _dynasty_player_card_png(row, context):
     read_y0 = 824
     read_y1 = 1120 if category_items else 1238
     draw.rounded_rectangle((48, read_y0, 1032, read_y1), radius=10, fill=card, outline=border, width=1)
-    draw.text((74, read_y0 + 30), "THE DYNASTY READ", fill=muted, font=_graphic_font(20, bold=True))
+    draw.text((74, read_y0 + 30), fields["read_label"], fill=muted, font=_graphic_font(20, bold=True))
     read_font = _graphic_font(24 if not category_items else 22)
-    for idx, line in enumerate(_graphic_wrap_read_text(draw, _dynasty_card_read(row, context), read_font, 890, max_lines=5)):
+    for idx, line in enumerate(_graphic_wrap_read_text(draw, fields["read_text"], read_font, 890, max_lines=5)):
         draw.text((74, read_y0 + 72 + idx * 32), line, fill=text, font=read_font)
 
     if category_items:
         draw.rounded_rectangle((48, 1146, 1032, 1238), radius=10, fill=card, outline=border, width=1)
-        summary = context.get("dyn_category_summary")
+        summary = fields["category_summary"]
         title = "CATEGORY BREAKDOWN (z-SCORE)"
         if summary:
             title = f"{title} - {summary}"
@@ -2589,11 +2650,16 @@ def _dynasty_player_card_png(row, context):
             draw.text((x + 14, 1191), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
             draw.text((x + 14, 1208), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
 
-    _graphic_footer(draw, right_note="Dynasty value context. Statcast bars are vs MLB league percentiles.")
+    _graphic_footer(draw, right_note=fields["footer_note"])
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
+
+
+def _dynasty_player_card_png(row, context):
+    """Render a single dynasty player card from the dynasty detail context."""
+    return _player_value_card_png(row, context, "dynasty")
 
 
 def _build_dynasty_context(args):
@@ -5926,6 +5992,81 @@ def _share_player_slug(name, fallback="player"):
     ) or fallback
 
 
+def _build_redraft_player_card_context(player_id, args):
+    ctx = _build_context(args)
+    active = ctx["active_store"]
+    if getattr(active, "player_count", 0) <= 0:
+        return None, 503
+
+    player = active.get_by_id(player_id)
+    if player is None:
+        return None, 404
+
+    config = ctx["config"]
+    detail_results = _merge_two_way_players(
+        engine.value_players(_valuation_players(active_store=active), config)
+    )
+    result = next((r for r in detail_results if r.player.id == player_id), None)
+    card_ctx = dict(ctx)
+    card_ctx.update(_card_extras(player.name, player.pool, player.metadata))
+    card_ctx.update({
+        "player": player,
+        "dyn_result": result,
+        "dyn_categories": ctx["active_categories"],
+        "dyn_category_summary": ctx["config_summary"],
+        "as_of": active.as_of,
+    })
+    return card_ctx, 200
+
+
+@app.route("/redraft/player-card/<player_id>")
+def redraft_player_card_preview(player_id):
+    context, status = _build_redraft_player_card_context(player_id, request.args)
+    if status != 200:
+        return "", status
+
+    player = context["player"]
+    slug = _share_player_slug(player.name, "redraft-player")
+    filename = f"valucast-{slug}.png"
+    query = request.query_string.decode("utf-8")
+    suffix = f"?{query}" if query else ""
+    png_url = f"/redraft/player-card/{escape(player_id)}.png{suffix}"
+    page_url = f"/redraft/player-card/{player_id}{suffix}"
+    back_url = f"/?{query}" if query else "/"
+    html = build_share_preview_html(
+        title=f"{player.name} | Redraft Value Card",
+        subtitle=f"{player.name} - redraft value + MLB Statcast context",
+        png_url=png_url,
+        filename=filename,
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url(page_url),
+        description=f"{player.name} ValuCast redraft card with value, MLB Statcast context, and category fit.",
+        image_alt=f"{player.name} ValuCast redraft player card",
+        back_url=back_url,
+        back_label="Back to redraft",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/redraft/player-card/<player_id>.png")
+def redraft_player_card_png(player_id):
+    context, status = _build_redraft_player_card_context(player_id, request.args)
+    if status != 200:
+        return "", status
+
+    player = context["player"]
+    png = _player_value_card_png(player, context, "redraft")
+    slug = _share_player_slug(player.name, "redraft-player")
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-{slug}.png"'
+    )
+    return response
+
+
 @app.route("/dynasty/player-card/<player_id>")
 def dynasty_player_card_preview(player_id):
     if not dd_store.is_available:
@@ -5964,7 +6105,7 @@ def dynasty_player_card_png(player_id):
         return "", 404
 
     row = context["row"]
-    png = _dynasty_player_card_png(row, context)
+    png = _player_value_card_png(row, context, "dynasty")
     slug = _share_player_slug(row.name, "dynasty-player")
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
