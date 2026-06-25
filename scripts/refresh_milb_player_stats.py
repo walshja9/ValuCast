@@ -43,6 +43,28 @@ def _rate(value: Any, digits: int = 3) -> float | None:
     return None if numeric is None else round(numeric, digits)
 
 
+def _pct(numerator: int | float, denominator: int | float) -> float | None:
+    return round(float(numerator) / float(denominator) * 100.0, 1) if denominator else None
+
+
+def _innings(value: Any, default: float = 0.0) -> float:
+    try:
+        text = str(value).split()[0]
+    except (TypeError, ValueError):
+        return default
+    if "." not in text:
+        numeric = _number(text)
+        return default if numeric is None else numeric
+    whole, fraction = text.split(".", 1)
+    try:
+        outs = int(fraction[:1] or 0)
+        if outs not in {0, 1, 2}:
+            return default
+        return float(whole) + outs / 3.0
+    except ValueError:
+        return default
+
+
 def _fetch_player_page(mlbam_id: int) -> str:
     request = urllib.request.Request(
         f"https://www.milb.com/player/{mlbam_id}",
@@ -157,6 +179,35 @@ def _hitter_updates(row: dict, fetched_date: str) -> dict:
     }
 
 
+def _pitcher_updates(row: dict, fetched_date: str) -> dict:
+    innings = _innings(row.get("inningsPitched"))
+    strikeouts = _int(row.get("strikeOuts"))
+    walks = _int(row.get("baseOnBalls"))
+    hits = _int(row.get("hits"))
+    earned_runs = _int(row.get("earnedRuns"))
+    batters_faced = _int(row.get("battersFaced"))
+    return {
+        "innings_pitched": innings,
+        "strikeouts": strikeouts,
+        "walks": walks,
+        "hits": hits,
+        "home_runs": _int(row.get("homeRuns")),
+        "earned_runs": earned_runs,
+        "runs": _int(row.get("runs")),
+        "batters_faced": batters_faced,
+        "wins": _int(row.get("wins")),
+        "losses": _int(row.get("losses")),
+        "games_played": _int(row.get("gamesPlayed")),
+        "games_started": _int(row.get("gamesStarted")),
+        "era": round(9 * earned_runs / innings, 2) if innings > 0 else None,
+        "whip": round((walks + hits) / innings, 2) if innings > 0 else None,
+        "k_per_9": round(9 * strikeouts / innings, 2) if innings > 0 else None,
+        "bb_per_9": round(9 * walks / innings, 2) if innings > 0 else None,
+        "k_bb_pct": _pct(strikeouts - walks, batters_faced),
+        "sample_fetched_date": fetched_date,
+    }
+
+
 def _write_json(path: Path, payload: dict) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -196,9 +247,11 @@ def refresh_milb_player_stats(
     page = _fetch_player_page(mlbam_id)
     rows = extract_mlb_stats_data(page)
     stat_row = _latest_current_row(rows, mlbam_id, role, season)
-    if role != "hitter":
-        raise NotImplementedError("targeted pitcher refresh is not implemented yet")
-    updates = _hitter_updates(stat_row, fetched_date)
+    updates = (
+        _hitter_updates(stat_row, fetched_date)
+        if role == "hitter"
+        else _pitcher_updates(stat_row, fetched_date)
+    )
     result = _update_current_stats(CURRENT_STATS_PATH, mlbam_id, role, updates)
     result["source_url"] = f"https://www.milb.com/player/{mlbam_id}"
     result["season"] = season
@@ -209,7 +262,7 @@ def refresh_milb_player_stats(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mlbam-id", type=int, required=True)
-    parser.add_argument("--role", choices=["hitter"], default="hitter")
+    parser.add_argument("--role", choices=["hitter", "pitcher"], default="hitter")
     parser.add_argument("--season", type=int, default=date.today().year)
     parser.add_argument("--fetched-date", default=date.today().isoformat())
     args = parser.parse_args()

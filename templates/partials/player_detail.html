@@ -1,7 +1,9 @@
+{% set HIDDEN_STATS = ['TB','NSB','G','GDP','IBB','SH','SF','HBP','GS'] %}
+
 {% macro projection_grid(stats) -%}
 <div class="stat-grid">
     {% for key, value in stats.items() %}
-    {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+    {% if key not in HIDDEN_STATS %}
     <div class="stat-item">
         <span class="stat-label">{{ key }}</span>
         <span class="stat-value">
@@ -104,7 +106,7 @@
             <h4>2026 Actual Stats{% if player.metadata.get('as_of') %} (through {{ player.metadata.get('as_of') }}){% endif %}</h4>
             <div class="stat-grid">
                 {% for key, value in stats_actual.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                {% if key not in HIDDEN_STATS %}
                 <div class="stat-item">
                     <span class="stat-label">{{ key }}</span>
                     <span class="stat-value">
@@ -125,7 +127,7 @@
             <h4>Rest-of-Season Projection (Steamer)</h4>
             <div class="stat-grid">
                 {% for key, value in stats_ros.items() %}
-                {% if key not in ['TB', 'NSB', 'G', 'GDP', 'IBB', 'SH', 'SF', 'HBP', 'GS'] %}
+                {% if key not in HIDDEN_STATS %}
                 <div class="stat-item">
                     <span class="stat-label">{{ key }}</span>
                     <span class="stat-value">

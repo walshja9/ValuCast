@@ -3,6 +3,7 @@ import io
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -410,6 +411,27 @@ class TestDynastyMode(unittest.TestCase):
             self.assertIn("image/png", png.content_type)
         index = self.client.get("/").data
         self.assertIn(b"/redraft/share-card?limit=50", index)
+
+    def test_redraft_share_card_png_uses_redraft_as_of_for_subtitle(self):
+        calls = []
+
+        def fake_graphic(rows, **kwargs):
+            calls.append(kwargs)
+            return b"png"
+
+        with patch.object(
+            app_module,
+            "_build_context",
+            return_value={
+                "mode": "categories",
+                "results": [],
+                "as_of": "2026-06-21T00:00:00+00:00",
+            },
+        ), patch.object(app_module, "_prospect_graphic_png", side_effect=fake_graphic):
+            response = self.client.get("/redraft/share-card.png?limit=20")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(calls[0]["as_of"], "2026-06-21T00:00:00+00:00")
 
     def test_prospects_position_graphic_png(self):
         from app import dd_store

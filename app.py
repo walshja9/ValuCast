@@ -1206,7 +1206,17 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None, noun="Pros
     return "".join(parts)
 
 
-def _prospect_graphic_png(rows, *, limit, position=None, search=None, noun="Prospects", hero_kicker=None, footer_note=None):
+def _prospect_graphic_png(
+    rows,
+    *,
+    limit,
+    position=None,
+    search=None,
+    noun="Prospects",
+    hero_kicker=None,
+    footer_note=None,
+    as_of=None,
+):
     """Render an Ahead of the Curve-style PNG for easy posting/saving.
 
     noun/hero_kicker/footer_note let other ranked boards (Dynasty, Redraft) reuse
@@ -1320,7 +1330,7 @@ def _prospect_graphic_png(rows, *, limit, position=None, search=None, noun="Pros
     draw = ImageDraw.Draw(img)
 
     scope = f"{position.upper()} " if position else ""
-    subtitle_date = _editorial_date(dd_store.generated_at)
+    subtitle_date = _editorial_date(as_of if as_of is not None else dd_store.generated_at)
     subtitle = f"Top {limit} {scope}{noun} from the current board"
     if search:
         subtitle = f"{subtitle} | {search}"
@@ -5772,6 +5782,7 @@ def redraft_share_card_png():
         noun="Redraft",
         hero_kicker="TOP REDRAFT VALUE",
         footer_note=f"ValuCast Redraft - {mode} ({src})",
+        as_of=ctx.get("as_of"),
     )
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
