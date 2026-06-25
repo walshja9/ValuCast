@@ -329,6 +329,11 @@ def test_scouting_repository_builds_guarded_mlb_reports(tmp_path):
     assert "throws" not in hitter
     assert "dynasty_value" not in hitter
     assert "Outside Mlb Cap" not in reports
+    assert hitter["report"] == (
+        "The Statcast card is carried by plus Barrel % at the 88th percentile (17.2%), "
+        "with well below-average Whiff % at the 32nd percentile (29.5%) as the drag. "
+        "A power-first line projects to .287 AVG, .374 OBP, .841 OPS, 31 HR, 12 SB over 640 PA."
+    )
     assert validate_report_text(hitter["report"], grounding)["ok"]
     assert validate_report_text(hitter["published_report"], grounding)["unsupported_numbers"] == []
     assert payload["source_policy"]["dd_values_used"] is False
@@ -362,7 +367,10 @@ def test_scouting_repository_builds_mlb_report_without_statcast(tmp_path):
 
     assert pitcher["player_type"] == "mlb"
     assert pitcher["statcast_groups"] == []
-    assert pitcher["report"]
+    assert pitcher["report"] == (
+        "With no current percentile card, the read leans on the projection. "
+        "The arm profiles for 2.88 ERA, 1.00 WHIP, 224 K, 13 W, 18 QS over 183.7 IP."
+    )
     assert "Statcast" not in pitcher["report"]
     assert validate_report_text(pitcher["report"], grounding)["ok"]
 

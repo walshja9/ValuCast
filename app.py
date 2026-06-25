@@ -6,6 +6,7 @@ import io
 import json
 import math
 import os
+import re
 import sys
 import time
 from datetime import date
@@ -2363,6 +2364,26 @@ def _dynasty_confidence_lines(row):
     return lines
 
 
+_ARTICLE_AN_TOKENS = {"SS", "SP", "RP", "RF", "LF", "CF", "IP", "OF", "IF", "MI", "CI"}
+_ARTICLE_AN_STARTS = set("AEIOUFHLMNRSX")
+
+
+def _indefinite_article(text):
+    token = str(text or "").strip().split(" ", 1)[0].strip("\"'([{")
+    token = token.rstrip(".,;:)]}")
+    if not token:
+        return "a"
+    upper = token.upper()
+    if upper in _ARTICLE_AN_TOKENS or upper[0] in _ARTICLE_AN_STARTS:
+        return "an"
+    return "a"
+
+
+def _capitalize_first(text):
+    text = str(text or "")
+    return text[:1].upper() + text[1:] if text else text
+
+
 def _statcast_profile_phrase(statcast_items):
     """One-sentence read of an MLB Statcast percentile profile (deterministic)."""
     if not statcast_items:
@@ -2384,18 +2405,81 @@ def _statcast_profile_phrase(statcast_items):
             return "below-average"
         return "soft"
 
+    def metric_phrase(item):
+        return f"{grade(item['percentile'])} {item['label']} ({ordinal(item['percentile'])} pct)"
+
+    def drag_phrase(item):
+        return f"{item['label'].lower()} at the {ordinal(item['percentile'])} pct"
+
     ranked = sorted(statcast_items, key=lambda it: it["percentile"], reverse=True)
     top, bottom = ranked[0], ranked[-1]
     if top["percentile"] >= 60 and bottom["percentile"] <= 40 and top["key"] != bottom["key"]:
-        return (
-            f"Statcast profile leans on {top['label']} ({ordinal(top['percentile'])} pct) "
-            f"while {bottom['label'].lower()} lags ({ordinal(bottom['percentile'])} pct)."
+        framings = (
+            "Statcast points first to {top}, with {bottom} the clearest drag.",
+            "{top} gives the Statcast card its shape, but {bottom} pulls it back.",
         )
+        index = (top["percentile"] + len(top["label"])) % len(framings)
+        return framings[index].format(top=metric_phrase(top), bottom=drag_phrase(bottom))
     if top["percentile"] >= 65:
-        return f"Statcast profile headlined by {grade(top['percentile'])} {top['label']} ({ordinal(top['percentile'])} pct)."
+        framings = (
+            "Statcast points to {top} as the separator.",
+            "The loudest Statcast mark is {top}.",
+        )
+        index = (top["percentile"] + len(top["label"])) % len(framings)
+        return framings[index].format(top=metric_phrase(top))
     if top["percentile"] <= 40:
-        return f"A soft Statcast profile top to bottom (best mark {top['label']}, {ordinal(top['percentile'])} pct)."
-    return f"A balanced Statcast profile (best {top['label']}, {ordinal(top['percentile'])} pct)."
+        framings = (
+            "The Statcast card is light across the board; {top} is still the best mark.",
+            "There is not a carrying Statcast mark here; {top} leads the card.",
+        )
+        index = (top["percentile"] + len(top["label"])) % len(framings)
+        return framings[index].format(top=metric_phrase(top))
+    return f"The Statcast card is balanced, led by {metric_phrase(top)}."
+
+
+_PROJECTED_ROLE_PHRASES = {
+    "everyday_regular": "an everyday role",
+    "regular": "a regular role",
+    "part_time_or_strong_side": "a strong-side role",
+    "rotation_workhorse": "a rotation workhorse role",
+    "leverage_reliever": "a high-leverage relief role",
+    "middle_relief": "a middle-relief role",
+    "swingman_or_bulk": "a swingman/bulk role",
+    "depth_arm": "a depth-arm role",
+}
+
+_AVAILABILITY_STATUS_SENTENCES = {
+    "active_mlb_roster": "He is on an active MLB roster.",
+    "injured_list": "He is on the injured list.",
+    "minors": "He is in the minors for now.",
+}
+
+
+def _enum_key(value):
+    return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _projected_role_phrase(role_profile):
+    raw_key = _enum_key(role_profile.get("projected_role"))
+    if raw_key in _PROJECTED_ROLE_PHRASES:
+        return _PROJECTED_ROLE_PHRASES[raw_key]
+    label_key = _enum_key(role_profile.get("projected_role_label"))
+    if label_key in _PROJECTED_ROLE_PHRASES:
+        return _PROJECTED_ROLE_PHRASES[label_key]
+    label = str(role_profile.get("projected_role_label") or role_profile.get("projected_role") or "").strip()
+    if not label:
+        return None
+    label = label.replace("_", " ").lower()
+    noun = label if label.endswith(" role") else f"{label} role"
+    return f"{_indefinite_article(noun)} {noun}"
+
+
+def _availability_status_sentence(role_profile):
+    raw_key = _enum_key(role_profile.get("availability_status"))
+    if raw_key in _AVAILABILITY_STATUS_SENTENCES:
+        return _AVAILABILITY_STATUS_SENTENCES[raw_key]
+    label = str(role_profile.get("availability_status_label") or role_profile.get("availability_status") or "").strip()
+    return f"Status: {label}." if label else None
 
 
 def _dynasty_card_read(row, context):
@@ -2413,36 +2497,50 @@ def _dynasty_card_read(row, context):
     if not isinstance(role_profile, dict):
         role_profile = {}
 
+    pos = "/".join(row.positions[:2]) if getattr(row, "positions", None) else None
+    role_bits = []
+    role_phrase = _projected_role_phrase(role_profile)
+    if role_phrase:
+        role_bits.append(f"projected for {role_phrase}")
+    if role_profile.get("projected_volume") is not None and role_profile.get("projected_volume_unit"):
+        volume = f"{float(role_profile['projected_volume']):.0f} {role_profile['projected_volume_unit']}"
+        role_bits.append(f"({volume})" if role_bits else f"projected for {volume}")
+
     lead = []
+    if pos and not role_bits:
+        lead.append(pos)
     if rank is not None and isinstance(value, (int, float)):
         lead.append(f"#{rank} on the dynasty board at {value:.1f}")
     elif isinstance(value, (int, float)):
         lead.append(f"{value:.1f} dynasty value")
-    role_bits = []
-    pos = "/".join(row.positions[:2]) if getattr(row, "positions", None) else None
-    if pos:
-        role_bits.append(pos)
-    if role_profile.get("projected_role_label"):
-        role_bits.append(f"projected for a {str(role_profile['projected_role_label']).lower()} role")
-    if role_profile.get("projected_volume") is not None and role_profile.get("projected_volume_unit"):
-        role_bits.append(f"({float(role_profile['projected_volume']):.0f} {role_profile['projected_volume_unit']})")
-    if lead and role_bits:
-        sentences.append(f"{row.name}: " + ", ".join(lead) + ". A " + " ".join(role_bits) + ".")
-    elif lead:
+
+    if lead:
         sentences.append(f"{row.name}: " + ", ".join(lead) + ".")
+        if role_bits:
+            if pos:
+                sentences.append(
+                    f"{_indefinite_article(pos).capitalize()} {pos} {' '.join(role_bits)}."
+                )
+            else:
+                sentences.append(f"{_capitalize_first(' '.join(role_bits))}.")
     elif role_bits:
-        sentences.append(f"{row.name} is a " + " ".join(role_bits) + ".")
+        if pos:
+            sentences.append(
+                f"{row.name} is {_indefinite_article(pos)} {pos} {' '.join(role_bits)}."
+            )
+        else:
+            sentences.append(f"{row.name} is {' '.join(role_bits)}.")
 
     # Read the SAME six metrics the card draws as bars, so copy matches visuals.
     profile = _statcast_profile_phrase(_dynasty_statcast_card_items(context)[:6])
     if profile:
         sentences.append(profile)
 
-    status = role_profile.get("availability_status_label")
+    status = _availability_status_sentence(role_profile)
     if status:
-        sentences.append(f"{status}.")
+        sentences.append(status)
 
-    read = " ".join(s for s in sentences if s).strip().replace("Mlb", "MLB")
+    read = re.sub(r"\bMlb\b", "MLB", " ".join(s for s in sentences if s).strip())
     if read:
         return read
     if rank is not None and isinstance(value, (int, float)):

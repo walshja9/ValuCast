@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import re
 
-VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball prospect.
+VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball player — a prospect or an established MLB player.
 
 Voice (the spine, in order, but order is flexible):
 1. Lead with the baseball read — what kind of player this is, behaviorally, not a label.
@@ -32,8 +32,12 @@ Hard rules:
   describe the ceiling and floor in plain words, clearly as a projection — never as current production.
 - If a ValuCast ranking-movement note is provided, you may add one sentence noting the player is
   rising or cooling in ValuCast's rankings — label it as ranking movement, never as a change in his stats.
+- When a Statcast percentile card is provided (established MLB players), make it the spine
+  of the read — what the percentile profile says about the player's actual skills — with the
+  projection line as supporting context.
 - Thin / stale / injured samples: say so in one honest confidence sentence; never paper
-  over a small sample with a confident read.
+  over a small sample with a confident read. But for a full-season projection or an
+  established Statcast profile, do not manufacture a small-sample caveat.
 - Never claim ValuCast beats Steamer/ZiPS or is "the most accurate." State the read, not a
   comparison to other systems.
 - Plain, professional, specific. No hype, no generic-AI filler, no fantasy clichés.

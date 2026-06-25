@@ -2,6 +2,16 @@
 from __future__ import annotations
 
 RATE_STATS = {"AVG", "OBP", "SLG", "OPS", "ISO"}
+WHOLE_COUNTING_STATS = {"HR", "SB", "R", "RBI", "W", "QS", "SV", "HLD", "K", "PA"}
+
+
+def _normalized_stat_value(key: str, value):
+    if not isinstance(value, (int, float)):
+        return value
+    number = float(value)
+    if key in WHOLE_COUNTING_STATS:
+        return float(f"{number:.0f}")
+    return value
 
 
 def stat_line_stats(stat_line: dict | None) -> dict:
@@ -11,12 +21,12 @@ def stat_line_stats(stat_line: dict | None) -> dict:
     stats = stat_line.get("stats")
     if isinstance(stats, dict):
         return {
-            str(key).upper(): value
+            str(key).upper(): _normalized_stat_value(str(key).upper(), value)
             for key, value in stats.items()
             if value is not None
         }
     return {
-        str(key).upper(): value
+        str(key).upper(): _normalized_stat_value(str(key).upper(), value)
         for key, value in stat_line.items()
         if isinstance(value, (int, float))
     }
@@ -35,8 +45,10 @@ def _format_stat(key: str, value: float) -> str:
         return f"{value:.2f}"
     if key == "WHIP":
         return f"{value:.2f}"
-    if key in {"IP", "K", "HR", "SB", "R", "RBI", "W", "QS", "SV", "HLD", "PA"}:
+    if key == "IP":
         return f"{value:.0f}" if value.is_integer() else f"{value:.1f}"
+    if key in WHOLE_COUNTING_STATS:
+        return f"{value:.0f}"
     return f"{value:g}"
 
 
@@ -74,8 +86,20 @@ def _flatten_metrics(statcast_groups: list[dict] | tuple[dict, ...] | None) -> l
     return metrics
 
 
+def _grade(pct: int | float) -> str:
+    if pct >= 90:
+        return "elite"
+    if pct >= 75:
+        return "plus"
+    if pct >= 55:
+        return "solid"
+    if pct >= 40:
+        return "fringe"
+    return "well below-average"
+
+
 def _metric_phrase(metric: dict) -> str:
-    phrase = f"{metric['label']} at the {_ordinal(metric['pct'])} percentile"
+    phrase = f"{_grade(metric['pct'])} {metric['label']} at the {_ordinal(metric['pct'])} percentile"
     display = str(metric.get("display") or "").strip()
     if display:
         phrase = f"{phrase} ({display})"
@@ -88,11 +112,22 @@ def _statcast_sentence(statcast_groups) -> str | None:
         return None
     strongest = max(metrics, key=lambda item: item["pct"])
     weakest = min(metrics, key=lambda item: item["pct"])
-    if strongest is weakest:
-        return f"The Statcast card leads with {_metric_phrase(strongest)}."
-    return (
-        f"The Statcast card leads with {_metric_phrase(strongest)}, "
-        f"while {_metric_phrase(weakest)} is the main weakness."
+    index = (strongest["pct"] + len(strongest["label"])) % 3
+    if strongest is weakest or strongest["pct"] - weakest["pct"] <= 15:
+        framings = (
+            "The Statcast card is balanced, headlined by {strongest}.",
+            "The percentile card is balanced, headlined by {strongest}.",
+            "The Statcast view is balanced, headlined by {strongest}.",
+        )
+        return framings[index].format(strongest=_metric_phrase(strongest))
+    framings = (
+        "The Statcast card is carried by {strongest}, with {weakest} as the drag.",
+        "{strongest} carries the Statcast card; {weakest} is the drag.",
+        "The Statcast view starts with {strongest}, but {weakest} pulls down the profile.",
+    )
+    return framings[index].format(
+        strongest=_metric_phrase(strongest),
+        weakest=_metric_phrase(weakest),
     )
 
 
@@ -119,8 +154,17 @@ def _hitter_projection_sentence(stats: dict) -> str:
     pa = _number(stats, "PA")
     suffix = f" over {_format_stat('PA', pa)} PA" if pa is not None else ""
     if not pieces:
-        return "The projection line is present, but it does not expose readable hitter stats."
-    return f"The projection line is a {_hitter_shape(stats)} shape: {', '.join(pieces[:5])}{suffix}."
+        return "The projection line is present, but the hitting line is too thin to read here."
+    shape = _hitter_shape(stats)
+    if "power" in shape:
+        lead = "A power-first line projects to"
+    elif "speed" in shape:
+        lead = "A speed-driven line projects to"
+    elif "OBP" in shape:
+        lead = "An on-base-led line projects to"
+    else:
+        lead = "A steady line projects to"
+    return f"{lead} {', '.join(pieces[:5])}{suffix}."
 
 
 def _pitcher_projection_sentence(stats: dict) -> str:
@@ -132,8 +176,8 @@ def _pitcher_projection_sentence(stats: dict) -> str:
     ip = _number(stats, "IP")
     suffix = f" over {_format_stat('IP', ip)} IP" if ip is not None else ""
     if not pieces:
-        return "The projection line is present, but it does not expose readable pitcher stats."
-    return f"The projection line is a run-prevention/volume shape: {', '.join(pieces[:5])}{suffix}."
+        return "The projection line is present, but the pitching line is too thin to read here."
+    return f"The arm profiles for {', '.join(pieces[:5])}{suffix}."
 
 
 def build_mlb_scouting_read(
@@ -152,4 +196,4 @@ def build_mlb_scouting_read(
     statcast = _statcast_sentence(statcast_groups)
     if statcast:
         return f"{statcast} {projection}"
-    return f"With no current percentile card, the read stays on the projected stat shape. {projection}"
+    return f"With no current percentile card, the read leans on the projection. {projection}"

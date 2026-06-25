@@ -18,9 +18,32 @@ MAX_ATTEMPTS = 2
 DEFAULT_TIMEOUT_SECONDS = 20.0
 
 
+def _coarsen_percentiles(obj):
+    """Copy of the grounding with Statcast percentile ``pct`` bucketed to the nearest 10,
+    so day-to-day population re-ranking (e.g. 71 -> 73) does not move the hash. Only ``pct``
+    is coarsened; raw/display/stat-line numbers (what the report actually cites) are kept."""
+    if isinstance(obj, dict):
+        out = {}
+        for key, value in obj.items():
+            if key == "pct" and isinstance(value, (int, float)) and not isinstance(value, bool):
+                out[key] = int(round(value / 10.0)) * 10
+            else:
+                out[key] = _coarsen_percentiles(value)
+        return out
+    if isinstance(obj, list):
+        return [_coarsen_percentiles(value) for value in obj]
+    return obj
+
+
 def grounding_hash(grounding: dict) -> str:
-    """Stable hash of the grounding so the daily build only re-calls changed reports."""
-    blob = json.dumps(grounding, sort_keys=True, separators=(",", ":"), default=str)
+    """Stable hash of the grounding so the daily build only re-calls changed reports.
+
+    Statcast percentiles are bucketed (nearest 10) before hashing so daily population
+    re-ranking does not force a regen; the full-precision grounding is still what the
+    LLM writer and the number-grounding validator see (this only coarsens the cache key).
+    """
+    stable = _coarsen_percentiles(grounding)
+    blob = json.dumps(stable, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.blake2s(blob.encode("utf-8"), digest_size=16).hexdigest()
 
 

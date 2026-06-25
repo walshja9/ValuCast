@@ -566,6 +566,73 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertNotIn("depth/relief arm", note)
 
 
+class TestValueCardReads(unittest.TestCase):
+    def test_dynasty_card_uses_clean_role_articles_and_status_prose(self):
+        row = _row(
+            "witt",
+            name="Bobby Witt Jr.",
+            player_type="mlb",
+            positions=["SS"],
+            prospect_rank=2,
+            dynasty_value=90.0,
+        )
+
+        read = app_module._dynasty_card_read(
+            row,
+            {
+                "role_profile": {
+                    "projected_role": "everyday_regular",
+                    "projected_role_label": "Everyday Regular",
+                    "availability_status": "active_mlb_roster",
+                    "availability_status_label": "Active Mlb Roster",
+                }
+            },
+        )
+
+        self.assertEqual(
+            read,
+            (
+                "Bobby Witt Jr.: #2 on the dynasty board at 90.0. "
+                "An SS projected for an everyday role. "
+                "He is on an active MLB roster."
+            ),
+        )
+
+    def test_dynasty_card_does_not_emit_stranded_position_sentence(self):
+        row = _row(
+            "skenes",
+            name="Paul Skenes",
+            player_type="mlb",
+            positions=["SP"],
+            prospect_rank=4,
+            dynasty_value=90.0,
+        )
+
+        read = app_module._dynasty_card_read(row, {"role_profile": {}})
+
+        self.assertEqual(
+            read,
+            "Paul Skenes: SP, #4 on the dynasty board at 90.0.",
+        )
+        self.assertNotIn("A SP.", read)
+
+    def test_dynasty_statcast_phrase_varies_without_label_fallbacks(self):
+        phrase = app_module._statcast_profile_phrase(
+            [
+                {"key": "barrel", "label": "Barrel %", "percentile": 88},
+                {"key": "whiff", "label": "Whiff %", "percentile": 32},
+            ]
+        )
+
+        self.assertEqual(
+            phrase,
+            (
+                "Statcast points first to elite Barrel % (88th pct), "
+                "with whiff % at the 32nd pct the clearest drag."
+            ),
+        )
+
+
 class TestPublicSourceRanks(unittest.TestCase):
     def test_cfr_and_internal_signals_excluded_from_public_boards(self):
         # cfr (deep stat-formula list) and cfr_raw/milb_perf (internal) are all
