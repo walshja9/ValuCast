@@ -152,7 +152,7 @@
                     data-bf-row-level="{{ row.level }}"
                     data-bf-sort-rank="{{ row.rank }}"
                     data-bf-sort-player="{{ row.name|lower }}"
-                    data-bf-sort-level="{{ row.level }}"
+                    data-bf-sort-level="{{ row.level_sort }}"
                     data-bf-sort-move="{{ row.move_sort }}"
                     data-bf-sort-value="{{ row.value_sort }}">
                     <span class="bf-rank">{{ row.rank }}</span>
@@ -266,7 +266,7 @@
         </div>
         {% endif %}
         {% if team_boards.selected %}
-        <div class="bf-team-board-card">
+        <div class="bf-team-board-card" data-bf-table data-bf-sort-current="rank" data-bf-sort-dir="asc">
             <div class="bf-team-title">
                 <div>
                     <h3>{{ team_boards.selected.name }}</h3>
@@ -278,18 +278,18 @@
                 </span>
             </div>
             <div class="bf-table-head" role="row">
-                <span>#</span>
-                <span>Player</span>
-                <span>Level</span>
-                <span>Move</span>
-                <span>Value</span>
+                <button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button>
+                <button type="button" data-bf-sort="player">Player</button>
+                <button type="button" data-bf-sort="level">Level</button>
+                <button type="button" data-bf-sort="move">Move</button>
+                <button type="button" data-bf-sort="value">Value</button>
             </div>
             {% for row in team_boards.rows %}
             <article class="bf-rank-row bf-team-row"
                 data-bf-row-level="{{ row.level }}"
                 data-bf-sort-rank="{{ row.org_rank }}"
                 data-bf-sort-player="{{ row.name|lower }}"
-                data-bf-sort-level="{{ row.level }}"
+                data-bf-sort-level="{{ row.level_sort }}"
                 data-bf-sort-move="{{ row.move_sort }}"
                 data-bf-sort-value="{{ row.value_sort }}">
                 <span class="bf-rank">{{ row.org_rank }}</span>
@@ -393,25 +393,25 @@
     (function () {
         var page = document.querySelector('.backfields-page');
         if (!page) { return; }
-        var table = page.querySelector('[data-bf-table]');
-        var tableFooter = page.querySelector('.bf-table-footer');
         var detailPanel = page.querySelector('[data-bf-detail-panel]');
         var detailTitle = page.querySelector('[data-bf-detail-title]');
         var detailBody = page.querySelector('[data-bf-detail-body]');
 
         function sortValue(row, sortKey) {
             var value = row.getAttribute('data-bf-sort-' + sortKey) || '';
-            if (sortKey === 'rank' || sortKey === 'move' || sortKey === 'value') {
+            if (sortKey === 'rank' || sortKey === 'level' || sortKey === 'move' || sortKey === 'value') {
                 var number = Number(value);
                 return Number.isFinite(number) ? number : 0;
             }
             return value.toLowerCase();
         }
 
-        function sortRows(sortKey) {
+        function sortRows(btn, sortKey) {
+            var table = btn.closest('[data-bf-table]');
             if (!table) { return; }
+            var tableFooter = table.querySelector('.bf-table-footer') || table.querySelector('.bf-team-extras');
             var current = table.getAttribute('data-bf-sort-current');
-            var defaultDir = sortKey === 'value' || sortKey === 'move' ? 'desc' : 'asc';
+            var defaultDir = sortKey === 'value' || sortKey === 'move' || sortKey === 'level' ? 'desc' : 'asc';
             var dir = current === sortKey
                 ? (table.getAttribute('data-bf-sort-dir') === 'asc' ? 'desc' : 'asc')
                 : defaultDir;
@@ -435,7 +435,7 @@
 
         page.querySelectorAll('[data-bf-sort]').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                sortRows(btn.getAttribute('data-bf-sort'));
+                sortRows(btn, btn.getAttribute('data-bf-sort'));
             });
         });
 

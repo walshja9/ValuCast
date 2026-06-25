@@ -172,6 +172,41 @@ def test_front_office_report_grades_five_pillars_without_feeding_scores():
     ] == 1
 
 
+def test_front_office_product_readiness_uses_dynasty_surface_when_prospect_surface_blocked():
+    snapshot = _snapshot()
+    snapshot["validation"]["ready_for_live_consumers"] = False
+    snapshot["validation"]["surface_readiness"] = {"dynasty": True, "prospects": False}
+    snapshot["validation"]["surface_blockers"] = {
+        "prospects": ["Prospect board is pitcher-heavy."]
+    }
+
+    payload = build_front_office_report(
+        snapshot,
+        _governor(),
+        _outcome(),
+        _v07(),
+        _raw(),
+        _buys_monitor(),
+        _failures(),
+        _milb_freshness(),
+        _pipeline_observability(),
+    )
+    product = {
+        pillar["name"]: pillar for pillar in payload["pillars"]
+    }["Product readiness"]
+
+    assert product["score"] == 95
+    assert product["grade"] == "A"
+    assert product["status"] == "public_ready"
+    assert product["evidence"]["public_snapshot_ready"] is False
+    assert product["evidence"]["quality_governor_ready"] is True
+    assert product["evidence"]["dynasty_ready"] is True
+    assert product["evidence"]["prospects_ready"] is False
+    assert product["evidence"]["prospect_board_caveat"] == (
+        "Prospect board is pitcher-heavy."
+    )
+
+
 def test_front_office_report_promotes_supported_pillars_to_a_plus():
     snapshot = _snapshot()
     snapshot["row_count"] = 3_500

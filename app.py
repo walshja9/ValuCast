@@ -55,6 +55,7 @@ from web.value_spark import build_spark
 from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
+from prospects.availability import LEVEL_ORDER
 from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 from scouting.mlb_read import build_mlb_scouting_read
 
@@ -4196,6 +4197,7 @@ def _team_board_row(row, org_rank, movements, reports_by_key):
     value = _team_board_value(row)
     has_report = any(key in reports_by_key for key in _team_board_identity_keys(row))
     name = getattr(row, "name", None) or "Unknown"
+    level = _team_board_level(row)
     affiliate = _team_board_affiliate(row)
     return {
         "org_rank": org_rank,
@@ -4204,7 +4206,8 @@ def _team_board_row(row, org_rank, movements, reports_by_key):
         "team": org,
         "team_name": _team_board_org_name(org),
         "position": _team_board_position(row),
-        "level": _team_board_level(row),
+        "level": level,
+        "level_sort": LEVEL_ORDER.get(level, 0),
         "affiliate": affiliate,
         "eta": _team_board_eta(row),
         "meta": " / ".join(part for part in (_team_board_position(row), affiliate, _team_board_eta(row)) if part),
@@ -4543,6 +4546,7 @@ def _build_backfields_page_context():
         key = identity_for(row)
         signal = signal_by_key.get(key) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
         link_fields = player_link_fields(row.name, row.id)
+        level = level_for(row)
         rankings.append({
             "rank": rank,
             "name": row.name,
@@ -4551,7 +4555,8 @@ def _build_backfields_page_context():
             "position": position_for(row),
             "affiliate": affiliate_for(row),
             "eta": eta_for(row),
-            "level": level_for(row) or "-",
+            "level": level or "-",
+            "level_sort": LEVEL_ORDER.get(level, 0),
             "tier": tier_for(row),
             "move": move_from_signal(signal),
             "move_sort": as_float((signal or {}).get("rank_delta_7d")) or 0.0,

@@ -244,13 +244,54 @@ def test_backfields_player_links_and_report_links_are_distinct():
 
 def test_backfields_rankings_are_client_sortable():
     response, html = _html("/backfields")
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
 
     assert response.status_code == 200
     for sort_key in ("rank", "player", "level", "move", "value"):
         assert f'data-bf-sort="{sort_key}"' in html
-    assert "sortRows(sortKey)" in html
-    assert "var defaultDir = sortKey === 'value' || sortKey === 'move' ? 'desc' : 'asc';" in html
+    assert "function sortRows(btn, sortKey)" in source
+    assert "sortRows(btn, btn.getAttribute('data-bf-sort'))" in source
+    assert (
+        "var defaultDir = sortKey === 'value' || sortKey === 'move' || sortKey === 'level'"
+        in html
+    )
+    assert source.count('data-bf-sort="level"') >= 2
+    assert 'data-bf-sort-level="{{ row.level_sort }}"' in source
     assert "data-bf-sort-value" in html
+
+
+def test_backfields_rankings_expose_numeric_level_sort_weight(monkeypatch):
+    rows = []
+    for index, level in enumerate(("MLB", "AAA", "AA", "A+", "A", "CPX", None), 1):
+        row = _row(f"{level or 'Unknown'} Prospect", "BOS", prospect_rank=index)
+        row.level = level
+        rows.append(row)
+    fake_store = SimpleNamespace(
+        generated_at="2026-06-25",
+        is_available=True,
+        get_all=lambda: rows,
+        get_by_id=lambda _player_id: None,
+    )
+    monkeypatch.setattr(app_module, "dd_store", fake_store)
+    monkeypatch.setattr(app_module, "_prospect_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr(app_module, "_prospect_tiers", lambda: {})
+    monkeypatch.setattr(app_module, "_build_buys_page_context", lambda _size: {"graphic_rows": []})
+    monkeypatch.setattr(app_module, "_build_team_board_context", lambda *args, **kwargs: {})
+    monkeypatch.setattr(app_module, "_load_artifact", lambda _path: {})
+
+    ctx = app_module._build_backfields_page_context()
+
+    assert {
+        row["level"]: row["level_sort"] for row in ctx["rankings"]
+    } == {
+        "MLB": 7,
+        "AAA": 6,
+        "AA": 5,
+        "A+": 4,
+        "A": 3,
+        "CPX": 2,
+        "-": 0,
+    }
 
 
 def test_backfields_callup_desk_and_stats_are_deeper_than_reference_stub():
@@ -427,6 +468,31 @@ def test_team_board_includes_org_callups_and_reports(monkeypatch):
     empty = app_module._build_team_board_context()
     assert empty["callups"] == []
     assert empty["reports"] == []
+
+
+def test_team_board_rows_expose_numeric_level_sort_weight():
+    rows = []
+    for index, level in enumerate(("MLB", "AAA", "AA", "A+", "A", "CPX", None), 1):
+        row = _row(f"{level or 'Unknown'} Prospect", "BOS", prospect_rank=index)
+        row.level = level
+        rows.append(row)
+
+    rendered = [
+        app_module._team_board_row(row, index, {}, {})
+        for index, row in enumerate(rows, 1)
+    ]
+
+    assert {
+        row["level"]: row["level_sort"] for row in rendered
+    } == {
+        "MLB": 7,
+        "AAA": 6,
+        "AA": 5,
+        "A+": 4,
+        "A": 3,
+        "CPX": 2,
+        "-": 0,
+    }
 
 
 def test_team_board_current_roster_org_reads_unique_fantrax_team(tmp_path, monkeypatch):

@@ -151,6 +151,20 @@ def build_front_office_report(
         check.get("status") == "passed" for check in governor_checks
     )
     public_ready = snapshot_validation.get("ready_for_live_consumers") is True
+    surface_readiness = snapshot_validation.get("surface_readiness") or {}
+    dynasty_ready = (
+        bool(surface_readiness.get("dynasty"))
+        if "dynasty" in surface_readiness
+        else public_ready
+    )
+    prospects_ready = bool(surface_readiness.get("prospects"))
+    prospect_board_caveat = (
+        (snapshot_validation.get("surface_blockers") or {}).get("prospects") or []
+    )
+    if isinstance(prospect_board_caveat, list):
+        prospect_board_caveat = "; ".join(
+            str(item) for item in prospect_board_caveat if item
+        ) or []
     row_count = (
         public_snapshot.get("row_count")
         or len(public_snapshot.get("players") or [])
@@ -159,7 +173,7 @@ def build_front_office_report(
     )
     duplicate_identity_count = snapshot_validation.get("duplicate_identity_count")
     product_a_plus_ready = (
-        public_ready
+        dynasty_ready
         and governor_ready
         and governor_all_passed
         and bool(row_count and row_count >= 3_000)
@@ -229,13 +243,13 @@ def build_front_office_report(
             97
             if product_a_plus_ready
             else 95
-            if public_ready and governor_ready
+            if dynasty_ready
             else 78,
             (
                 "a_plus_public_ready"
                 if product_a_plus_ready
                 else "public_ready"
-                if public_ready and governor_ready
+                if dynasty_ready
                 else "needs_work"
             ),
             {
@@ -245,6 +259,9 @@ def build_front_office_report(
                 "row_count": row_count,
                 "duplicate_identity_count": duplicate_identity_count,
                 "surface_readiness": snapshot_validation.get("surface_readiness"),
+                "dynasty_ready": dynasty_ready,
+                "prospects_ready": prospects_ready,
+                "prospect_board_caveat": prospect_board_caveat,
             },
         ),
         _pillar(
