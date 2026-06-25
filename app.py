@@ -1602,12 +1602,12 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None):
         draw.text((48, 183), extra_line, fill=green, font=_graphic_font(15, bold=True))
 
 
-def _graphic_footer(draw, *, right_note=None):
+def _graphic_footer(draw, *, right_note=None, card_height=1350):
     card = _GRAPHIC_PALETTE["card"]
     border = _GRAPHIC_PALETTE["border"]
     muted = _GRAPHIC_PALETTE["muted"]
 
-    foot_y = 1350 - 68
+    foot_y = card_height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
     draw.text((60, foot_y + 10), "valucast.app", fill=muted, font=_graphic_font(22))
     if right_note:
@@ -2167,7 +2167,125 @@ def _prospect_player_card_png(row):
         row, stat_percentiles, context, scouting_report=scouting_report
     )
 
-    width, height = 1080, 1350
+    STATS_BLOCK_H = 210
+
+    def _season_number(value):
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            return None
+        return numeric if math.isfinite(numeric) else None
+
+    def _season_sum(rows, key):
+        return sum(_season_number(stats_row.get(key)) or 0.0 for stats_row in rows)
+
+    def _season_ratio(numerator, denominator, *, scale=1.0):
+        if not denominator:
+            return None
+        return scale * numerator / denominator
+
+    def _season_role_for_card(card_row):
+        role = str(getattr(card_row, "role", "") or "").strip().lower()
+        if role in {"hitter", "pitcher"}:
+            return role
+        positions = {str(pos).upper() for pos in (getattr(card_row, "positions", ()) or ())}
+        return "pitcher" if positions and positions <= {"P", "SP", "RP"} else "hitter"
+
+    def _season_level_sort(level):
+        label = str(level or "").strip().upper()
+        return LEVEL_ORDER.get(label, 0)
+
+    def _season_rows_for_card(card_row):
+        mlbam_id = getattr(card_row, "mlbam_id", None)
+        if mlbam_id in (None, ""):
+            return [], _season_role_for_card(card_row)
+        raw_rows = [
+            stats_row for stats_row in MILB_SEASON_STATS_BY_MLBAM.get(str(mlbam_id), ())
+            if isinstance(stats_row, dict)
+        ]
+        role = _season_role_for_card(card_row)
+        role_rows = [
+            stats_row for stats_row in raw_rows
+            if str(stats_row.get("role") or "").strip().lower() == role
+        ]
+        season_rows = role_rows or raw_rows
+        if season_rows:
+            row_role = str(season_rows[0].get("role") or role).strip().lower()
+            if row_role in {"hitter", "pitcher"}:
+                role = row_role
+        season_rows = sorted(
+            season_rows,
+            key=lambda stats_row: (
+                -_season_level_sort(stats_row.get("level")),
+                str(stats_row.get("level") or ""),
+            ),
+        )
+        return season_rows, role
+
+    def _hitter_total_row(rows):
+        pa = _season_sum(rows, "plate_appearances")
+        ab = _season_sum(rows, "at_bats")
+        hits = _season_sum(rows, "hits")
+        doubles = _season_sum(rows, "doubles")
+        triples = _season_sum(rows, "triples")
+        hr = _season_sum(rows, "home_runs")
+        walks = _season_sum(rows, "walks")
+        strikeouts = _season_sum(rows, "strikeouts")
+        sb = _season_sum(rows, "stolen_bases")
+        has_sf = any(
+            stats_row.get("sac_flies") is not None
+            for stats_row in rows
+            if isinstance(stats_row, dict)
+        )
+        sf = _season_sum(rows, "sac_flies") if has_sf else 0.0
+        total_bases = hits + doubles + (2 * triples) + (3 * hr)
+        obp = _season_ratio(hits + walks, ab + walks + sf)
+        slg = _season_ratio(total_bases, ab)
+        return {
+            "level": "Total",
+            "plate_appearances": pa,
+            "avg": _season_ratio(hits, ab),
+            "obp": obp,
+            "slg": slg,
+            "ops": (obp + slg) if obp is not None and slg is not None else None,
+            "home_runs": hr,
+            "stolen_bases": sb,
+            "bb_pct": _season_ratio(walks, pa, scale=100.0),
+            "k_pct": _season_ratio(strikeouts, pa, scale=100.0),
+        }
+
+    def _pitcher_total_row(rows):
+        ip = _season_sum(rows, "innings_pitched")
+        hits = _season_sum(rows, "hits")
+        walks = _season_sum(rows, "walks")
+        strikeouts = _season_sum(rows, "strikeouts")
+        earned_runs = _season_sum(rows, "earned_runs")
+        batters_faced = _season_sum(rows, "batters_faced")
+        return {
+            "level": "Total",
+            "innings_pitched": ip,
+            "era": _season_ratio(9 * earned_runs, ip),
+            "whip": _season_ratio(walks + hits, ip),
+            "strikeouts": strikeouts,
+            "walks": walks,
+            "k_bb_pct": _season_ratio(strikeouts - walks, batters_faced, scale=100.0),
+        }
+
+    season_rows, season_role = _season_rows_for_card(row)
+    season_levels = {
+        str(stats_row.get("level") or "").strip().upper()
+        for stats_row in season_rows
+        if stats_row.get("level")
+    }
+    season_table_rows = list(season_rows)
+    if len(season_levels) >= 2:
+        season_table_rows.append(
+            _pitcher_total_row(season_rows)
+            if season_role == "pitcher"
+            else _hitter_total_row(season_rows)
+        )
+
+    width, height = 1080, 1350 + STATS_BLOCK_H
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -2274,36 +2392,133 @@ def _prospect_player_card_png(row):
     else:
         draw.text((74, 560), "Current sample does not meet the percentile-pool threshold.", fill=muted, font=_graphic_font(22))
 
+    # 2026 season production by MiLB level
+    if season_table_rows:
+        stats_top = 820
+        stats_bottom = stats_top + STATS_BLOCK_H
+        draw.rounded_rectangle(
+            (48, stats_top, 1032, stats_bottom),
+            radius=10,
+            fill=card,
+            outline=border,
+            width=1,
+        )
+        draw.rounded_rectangle(
+            (48, stats_top, 1032, stats_top + 38),
+            radius=10,
+            fill=(14, 29, 30),
+            outline=(20, 59, 55),
+            width=1,
+        )
+        draw.text((74, stats_top + 10), "2026 SEASON", fill=green, font=_graphic_font(20, bold=True))
+        draw.text(
+            (820, stats_top + 14),
+            "MILB PRODUCTION",
+            fill=muted,
+            font=_graphic_font(13, bold=True, mono=True),
+        )
+
+        header_font = _graphic_font(13, bold=True, mono=True)
+        value_font = _graphic_font(17, bold=True, mono=True)
+        level_font = _graphic_font(16, bold=True)
+        row_gap = 24 if len(season_table_rows) >= 5 else 27
+        header_y = stats_top + 52
+        first_row_y = stats_top + 76
+
+        def _season_display(stats_row, key):
+            value = stats_row.get(key)
+            if value is None:
+                value = "---"
+            return _graphic_stat_value(value, key)
+
+        def _draw_right_cell(x, y_pos, value, font, fill):
+            value = str(value)
+            draw.text((x - _graphic_text_width(draw, value, font), y_pos), value, fill=fill, font=font)
+
+        if season_role == "pitcher":
+            columns = (
+                ("level", "Level", 74, 118, "left"),
+                ("innings_pitched", "IP", 248, 0, "right"),
+                ("era", "ERA", 404, 0, "right"),
+                ("whip", "WHIP", 560, 0, "right"),
+                ("strikeouts", "K", 690, 0, "right"),
+                ("walks", "BB", 806, 0, "right"),
+                ("k_bb_pct", "K-BB%", 966, 0, "right"),
+            )
+        else:
+            columns = (
+                ("level", "Level", 74, 112, "left"),
+                ("plate_appearances", "PA", 214, 0, "right"),
+                ("avg", "AVG", 309, 0, "right"),
+                ("obp", "OBP", 404, 0, "right"),
+                ("slg", "SLG", 499, 0, "right"),
+                ("ops", "OPS", 594, 0, "right"),
+                ("home_runs", "HR", 680, 0, "right"),
+                ("stolen_bases", "SB", 758, 0, "right"),
+                ("bb_pct", "BB%", 860, 0, "right"),
+                ("k_pct", "K%", 966, 0, "right"),
+            )
+
+        for key, label, x, col_width, align in columns:
+            if align == "left":
+                draw.text((x, header_y), label, fill=muted, font=header_font)
+            else:
+                _draw_right_cell(x, header_y, label, header_font, muted)
+
+        for idx, stats_row in enumerate(season_table_rows):
+            row_y = first_row_y + idx * row_gap
+            is_total = str(stats_row.get("level") or "").lower() == "total"
+            row_fill = green if is_total else text
+            if is_total:
+                draw.line((74, row_y - 6, 1004, row_y - 6), fill=border, width=1)
+            elif idx % 2 == 1:
+                draw.rounded_rectangle(
+                    (64, row_y - 3, 1016, row_y + 20),
+                    radius=5,
+                    fill=(18, 20, 25),
+                )
+            for key, _label, x, col_width, align in columns:
+                value = _season_display(stats_row, key)
+                if align == "left":
+                    draw.text(
+                        (x, row_y),
+                        _graphic_fit_text(draw, value, level_font, col_width),
+                        fill=row_fill,
+                        font=level_font,
+                    )
+                else:
+                    _draw_right_cell(x, row_y, value, value_font, row_fill)
+
     # Narrative + 20-80 shape
-    draw.rounded_rectangle((48, 840, 1032, 1132), radius=10, fill=card, outline=border, width=1)
-    draw.text((74, 870), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
+    draw.rounded_rectangle((48, 1050, 1032, 1342), radius=10, fill=card, outline=border, width=1)
+    draw.text((74, 1080), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
     read_font = _graphic_font(22)
     for idx, line in enumerate(_graphic_wrap_read_text(draw, identity, read_font, 890, max_lines=4)):
-        draw.text((74, 910 + idx * 31), line, fill=text, font=read_font)
+        draw.text((74, 1120 + idx * 31), line, fill=text, font=read_font)
 
-    draw.text((74, 1040), shape_title, fill=muted, font=_graphic_font(18, bold=True))
+    draw.text((74, 1250), shape_title, fill=muted, font=_graphic_font(18, bold=True))
     for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
-        draw.rounded_rectangle((x, 1068, x + 205, 1114), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
+        draw.rounded_rectangle((x, 1278, x + 205, 1324), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
         grade = int(skill["grade"])
         color = bar_elite if grade >= 60 else bar_low if grade <= 40 else text
-        draw.text((x + 14, 1078), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
-        draw.text((x + 150, 1075), str(grade), fill=color, font=_graphic_font(25, bold=True))
-        draw.text((x + 14, 1096), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
+        draw.text((x + 14, 1288), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
+        draw.text((x + 150, 1285), str(grade), fill=color, font=_graphic_font(25, bold=True))
+        draw.text((x + 14, 1306), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
 
     # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
     # Skipped when the player has no FG board entry.
     if fg_scouting and fg_scouting.get("fv"):
-        draw.rounded_rectangle((48, 1146, 1032, 1272), radius=10, fill=card, outline=border, width=1)
-        draw.text((74, 1160), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
+        draw.rounded_rectangle((48, 1356, 1032, 1482), radius=10, fill=card, outline=border, width=1)
+        draw.text((74, 1370), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
                   fill=muted, font=_graphic_font(14, bold=True))
-        draw.text((74, 1186), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
+        draw.text((74, 1396), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
         org = fg_scouting.get("org")
         org_rk = fg_scouting.get("fg_org_rank")
         if org:
             org_label = f"{org}" + (f" - org #{int(org_rk)}" if org_rk else "")
-            draw.text((74, 1238), org_label, fill=muted, font=_graphic_font(16, mono=True))
+            draw.text((74, 1448), org_label, fill=muted, font=_graphic_font(16, mono=True))
         hit_g = fg_scouting.get("hit_grades") or {}
         pit_g = fg_scouting.get("pitch_grades") or {}
         if hit_g:
@@ -2316,8 +2531,8 @@ def _prospect_player_card_png(row):
         for label, val in tools:
             if not val:
                 continue
-            draw.text((tx, 1184), label, fill=muted, font=_graphic_font(13, bold=True))
-            draw.text((tx, 1204), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
+            draw.text((tx, 1394), label, fill=muted, font=_graphic_font(13, bold=True))
+            draw.text((tx, 1414), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
             tx += 150
 
     source = (
@@ -2325,7 +2540,7 @@ def _prospect_player_card_png(row):
         if peak_shape
         else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     )
-    _graphic_footer(draw, right_note=source)
+    _graphic_footer(draw, right_note=source, card_height=height)
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -3427,6 +3642,28 @@ def _load_artifact(path: Path) -> dict | None:
     payload = payload if isinstance(payload, dict) else None
     _ARTIFACT_CACHE[path] = (stamp, payload)
     return payload
+
+
+def _index_milb_season_stats(payload: dict | None) -> dict[str, list[dict]]:
+    indexed: dict[str, list[dict]] = {}
+    if not isinstance(payload, dict):
+        return indexed
+    for bucket in ("hitters", "pitchers"):
+        for row in payload.get(bucket) or ():
+            if not isinstance(row, dict):
+                continue
+            mlbam_id = row.get("mlbam_id")
+            if mlbam_id in (None, ""):
+                continue
+            indexed.setdefault(str(mlbam_id), []).append(row)
+    return indexed
+
+
+MILB_SEASON_STATS_BY_MLBAM = _index_milb_season_stats(
+    _load_artifact(
+        Path(__file__).parent / "data" / "prospects" / "raw" / "milb_season_stats.json"
+    )
+)
 
 
 def _artifact_ready(payload: dict | None, *keys: str) -> bool:
