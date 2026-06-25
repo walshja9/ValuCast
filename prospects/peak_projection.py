@@ -166,13 +166,12 @@ def _hitter_shape(current: dict, rank_score: float) -> list[dict]:
     impact = _avg([
         _scale(current.get("ops"), 0.590, 0.970),
         _scale(current.get("iso"), 0.070, 0.260),
-        _scale(rank_score, 25.0, 62.0),
     ]) or fallback
     return [
         {"label": "Hit", "grade": _grade(hit), "source": "K% / OPS"},
         {"label": "Power", "grade": _grade(power), "source": "ISO / OPS"},
         {"label": "Approach", "grade": _grade(approach), "source": "BB% / BB-K"},
-        {"label": "Impact", "grade": _grade(impact), "source": "OPS / ISO / score"},
+        {"label": "Impact", "grade": _grade(impact), "source": "OPS / ISO"},
     ]
 
 
@@ -188,7 +187,6 @@ def _pitcher_shape(current: dict, rank_score: float) -> list[dict]:
     run_prevention = _avg([
         _scale(current.get("era"), 6.25, 2.20, lower_is_better=True),
         _scale(current.get("whip"), 1.75, 0.90, lower_is_better=True),
-        _scale(rank_score, 25.0, 62.0),
     ]) or fallback
     return [
         {"label": "Miss", "grade": _grade(miss or fallback), "source": "K/9"},
