@@ -61,7 +61,22 @@ class TestCorrectnessFollowup(unittest.TestCase):
         from app import store, _build_context
         full = _build_context(ImmutableMultiDict([]))
         canon = full["canonical_ids"]
-        sub = next((p for p in store.get_all() if p.id not in canon), None)
+        # Pick a sub-threshold player whose name is NOT a substring-collision with
+        # any canonical (above-floor) player -- otherwise a same-name canonical row
+        # (e.g. "Victor Mesa" vs "Victor Mesa Jr.") matches the substring search first
+        # and the sub-threshold branch never fires. Name uniqueness isn't guaranteed.
+        canon_names = {p.name.lower() for p in store.get_all() if p.id in canon}
+        sub = next(
+            (
+                p
+                for p in store.get_all()
+                if p.id not in canon
+                and not any(
+                    p.name.lower() in cn or cn in p.name.lower() for cn in canon_names
+                )
+            ),
+            None,
+        )
         if sub is None:
             self.skipTest("no sub-threshold player available")
         ctx = _build_context(ImmutableMultiDict([("search", sub.name)]))
