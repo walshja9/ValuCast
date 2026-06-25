@@ -584,6 +584,42 @@ def test_rank_v1_prefers_valucast_current_stat_line_over_dd_display_context():
     assert context["stat_line"]["pa"] == 200
 
 
+def test_rank_v1_uses_owned_translation_for_qualifying_current_milb_rows():
+    feed = _feed()
+    feed["players"][0]["stat_line_translated"] = {"source": "dd"}
+    milb_history_by_key = {
+        ("1", "hitter"): {
+            "current_season": 2026,
+            "rows": [
+                {
+                    "role": "hitter",
+                    "season": 2026,
+                    "level": "AA",
+                    "plate_appearances": 200,
+                    "k_pct": 21.0,
+                    "bb_pct": 12.0,
+                    "iso": 0.180,
+                }
+            ],
+        }
+    }
+
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        dd_feed=feed,
+        milb_history_by_key=milb_history_by_key,
+    )
+
+    context = next(row for row in payload["board"] if row["mlbam_id"] == 1)[
+        "context_only"
+    ]
+    assert context["stat_line_translated"] is not None
+    assert context["stat_line_translated_source"] == "valucast_owned"
+
+
 def test_rank_v1_surfaces_near_graduation_context():
     input_contract = _input_contract()
     input_contract["mlb_service"] = [

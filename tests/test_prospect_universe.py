@@ -189,13 +189,8 @@ def test_public_rank_context_does_not_change_universe_membership():
 
     assert _without_context(changed) == _without_context(original)
     assert changed["players"][0]["context_only"]["stat_line"] == {"ops": 0.900, "pa": 200}
-    assert changed["players"][0]["context_only"]["stat_line_translated"] == {
-        "stats": {"OPS": 0.760}
-    }
-    assert changed["players"][0]["context_only"]["mlb_stat_line"] == {
-        "pa": 12,
-        "ops": 0.700,
-    }
+    assert "stat_line_translated" not in changed["players"][0]["context_only"]
+    assert "mlb_stat_line" not in changed["players"][0]["context_only"]
     assert changed["players"][0]["context_only"]["dd_dynasty_value"] == 150.0
     assert changed["players"][0]["context_only"]["source_ranks"] == {
         "pipeline": 1,
