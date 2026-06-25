@@ -1779,6 +1779,7 @@ def build_prospect_rank_v1(
     stale_inactive_excluded_count = 0
     manual_graduated_excluded_count = 0
     board = []
+    active_mlb_roster_board = []
 
     for universe_row in rows:
         role = universe_row.get("role")
@@ -1786,9 +1787,12 @@ def build_prospect_rank_v1(
         if key is None:
             missing_mlbam_count += 1
             continue
-        if key[0] in active_mlb_roster_ids:
+        # Active-roster prospects stay OFF the ranked board, but we retain a scored row
+        # so the dynasty snapshot's call-up bridge can surface known graduates who aren't
+        # yet in the MLB layer (e.g. <40-IP call-ups). Routed to active_mlb_roster_board.
+        is_active_mlb_roster = key[0] in active_mlb_roster_ids
+        if is_active_mlb_roster:
             active_mlb_roster_excluded_count += 1
-            continue
         if key[0] in manual_graduated_ids:
             manual_graduated_excluded_count += 1
             continue
@@ -1857,7 +1861,8 @@ def build_prospect_rank_v1(
             or universe_row.get("level")
             or (layer_profile or {}).get("level")
         )
-        board.append(
+        target_board = active_mlb_roster_board if is_active_mlb_roster else board
+        target_board.append(
             {
                 "mlbam_id": universe_row.get("mlbam_id"),
                 "name": universe_row.get("name")
@@ -1889,7 +1894,7 @@ def build_prospect_rank_v1(
                 ),
             }
         )
-        _merge_external_consensus(board[-1], key[0], sts_by_mlbam, fg_by_mlbam)
+        _merge_external_consensus(target_board[-1], key[0], sts_by_mlbam, fg_by_mlbam)
 
     board.sort(
         key=lambda row: (
@@ -1940,6 +1945,7 @@ def build_prospect_rank_v1(
         "generated_at": generated_at,
         "candidate_count": len(rows),
         "ranked_count": len(board),
+        "active_mlb_roster_board": active_mlb_roster_board,
         "rank_contract": {
             "purpose": (
                 "Produce a ValuCast-owned prospect ordering for canonical "

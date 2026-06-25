@@ -1007,6 +1007,23 @@ def build_snapshot(
         bridge_by_id.get(_mlbam_id(row), row)
         for row in prospect_rows
     ]
+    # Known graduates the morning prospect build already evicted (active MLB roster) but
+    # who aren't yet in the MLB dynasty layer (e.g. <40-IP call-ups) never reach the board
+    # above, so the same-day bridge can't see them. Bridge them in from the retained
+    # active_mlb_roster_board so they stay visible on dynasty/backfields instead of vanishing.
+    graduated_callup_bridge_rows = [
+        _active_callup_bridge_row(row)
+        for row in _prospect_rows(
+            {**prospect_rank, "board": prospect_rank.get("active_mlb_roster_board") or []},
+            generated_at,
+            peak_projection=prospect_peak_projection,
+            mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+        )
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id not in mlb_identity_ids
+        and mlbam_id not in active_callup_bridge_ids
+    ]
+    prospect_rows = prospect_rows + graduated_callup_bridge_rows
     active_prospect_ids = {
         mlbam_id
         for row in prospect_rows

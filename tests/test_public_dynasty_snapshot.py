@@ -1116,6 +1116,51 @@ def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
     }
 
 
+def test_snapshot_bridges_retained_active_roster_graduate_not_on_board():
+    # A known graduate the morning prospect build already evicted from the ranked board
+    # (active MLB roster) and who is NOT yet in the MLB layer (e.g. <40-IP call-up). He
+    # lives only in active_mlb_roster_board, so the in-board bridge can't see him; he must
+    # still be bridged onto the snapshot instead of vanishing from dynasty/backfields.
+    rank = _rank_payload()
+    board_ids = {row.get("mlbam_id") for row in rank["board"]}
+    assert 555 not in board_ids
+    graduate = {**rank["board"][0], "mlbam_id": 555, "name": "Retained Graduate"}
+    rank["active_mlb_roster_board"] = [graduate]
+
+    payload = build_snapshot(
+        rank,
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 555,
+                    "name": "Retained Graduate",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    bridged = next(row for row in payload["players"] if row["mlbam_id"] == 555)
+    assert bridged["player_type"] == "prospect"
+    assert bridged["level"] == "MLB"
+    assert bridged["active_mlb_callup_bridge"] is True
+    assert (
+        bridged["context"]["graduation_context"]["surface"]
+        == "active_mlb_roster_bridge"
+    )
+
+
 def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():
     payload = build_snapshot(
         _rank_payload(),
