@@ -1,5 +1,6 @@
 {% set v11 = dd_schema_version == '1.1' %}
 {% set _ap = active_preset|default(None) %}
+{% set _league_custom_preset_active = _ap and _ap != '5x5' %}
 {% if mode == 'prospects' and coverage_notice %}
 <div class="notice coverage-notice" role="status">{{ coverage_notice }}</div>
 {% endif %}
@@ -125,7 +126,8 @@
             <td class="col-team">{{ row.team or '—' }}</td>
             <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
             {% set _value = row.value_for(_ap) if row.value_for is defined else row.dynasty_value %}
-            <td class="col-value val-pos">{{ "%.1f" | format(_value) }}</td>
+            {% set _league_tuned = row.value_is_league_tuned(_ap) if row.value_is_league_tuned is defined else true %}
+            <td class="col-value val-pos">{{ "%.1f" | format(_value) }}{% if _league_custom_preset_active and not _league_tuned %}<sup class="val-untuned-mark" aria-label="baseline value">+</sup>{% endif %}</td>
             {% if mode == 'prospects' %}<td class="col-eta">{{ row.eta or '—' }}</td>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>

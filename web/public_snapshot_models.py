@@ -108,6 +108,9 @@ class PublicSnapshotRow:
             return self.value_by_preset[preset]
         return self.value
 
+    def value_is_league_tuned(self, preset: str | None) -> bool:
+        return bool(preset and preset in self.value_by_preset)
+
     @property
     def is_prospect(self) -> bool:
         return self.player_type == "prospect"

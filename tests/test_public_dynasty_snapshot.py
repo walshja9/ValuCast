@@ -817,6 +817,9 @@ def test_public_snapshot_row_uses_preset_value_with_default_fallback():
     assert row.value_for(None) == row.value
     assert row.value_for("unknown") == row.value
     assert empty_preset_row.value_for("sv_hld") == empty_preset_row.value
+    assert row.value_is_league_tuned("sv_hld") is True
+    assert empty_preset_row.value_is_league_tuned("sv_hld") is False
+    assert row.value_is_league_tuned(None) is False
 
 
 def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):

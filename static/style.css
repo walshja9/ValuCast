@@ -2902,6 +2902,7 @@ main {
 /* Board: value is the one teal signal; metadata stays quiet; movement
    teal/clay is token-driven; tier is luminance/edge (set on .tier-badge above). */
 .rankings-table td.col-value { color: var(--c-signal); font-weight: 700; }
+.val-untuned-mark { color: var(--c-muted); font-size: .68em; font-weight: 600; line-height: 0; margin-left: .12rem; vertical-align: super; }
 .rankings-table td.col-team,
 .rankings-table td.col-pos { color: var(--c-muted); font-weight: 400; }
 .rankings-table td.col-name { font-weight: 600; }

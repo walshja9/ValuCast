@@ -365,12 +365,47 @@ class TestDynastyPresetValueTemplates(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('id="preset-value-panel"', body)
         self.assertIn("League scoring", body)
-        self.assertIn("Values and ranks below are scored for your league's categories.", body)
+        self.assertIn(
+            "Pick your league's scoring. Values and ranks below are scored for your league's categories.",
+            body,
+        )
         self.assertIn('data-value-preset="sv_hld"', body)
         self.assertIn("active", self._button_fragment(body, "sv_hld"))
         self.assertNotIn('id="category-fit-panel"', body)
         self.assertNotIn('class="fit-category-grid"', body)
         self.assertNotIn("long-term ValuCast value does not change", body)
+
+    def test_flag_on_sv_hld_marks_only_untuned_prospect_values(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"
+
+        response = self.client.get("/?mode=dd_dynasty&preset=sv_hld")
+        body = response.data.decode("utf-8")
+        prospect_row = self._row_fragment(body, "Fallback Prospect")
+        mlb_row = self._row_fragment(body, "Hold Reliever")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "+ Prospect values use the ValuCast baseline -- not yet tuned to your league's W/SV categories.",
+            body,
+        )
+        self.assertIn('class="val-untuned-mark"', prospect_row)
+        self.assertIn(">+</sup>", prospect_row)
+        self.assertNotIn('class="val-untuned-mark"', mlb_row)
+
+    def test_default_scoring_does_not_mark_untuned_values(self):
+        os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"
+
+        implicit_response = self.client.get("/?mode=dd_dynasty")
+        explicit_response = self.client.get("/?mode=dd_dynasty&preset=5x5")
+        implicit_body = implicit_response.data.decode("utf-8")
+        explicit_body = explicit_response.data.decode("utf-8")
+
+        self.assertEqual(implicit_response.status_code, 200)
+        self.assertEqual(explicit_response.status_code, 200)
+        self.assertNotIn("Prospect values use the ValuCast baseline", implicit_body)
+        self.assertNotIn('class="val-untuned-mark"', self._row_fragment(implicit_body, "Fallback Prospect"))
+        self.assertNotIn("Prospect values use the ValuCast baseline", explicit_body)
+        self.assertNotIn('class="val-untuned-mark"', self._row_fragment(explicit_body, "Fallback Prospect"))
 
     def test_flag_on_sv_hld_value_column_uses_preset_value(self):
         os.environ["VALUCAST_DYNASTY_PRESET_VALUE"] = "1"

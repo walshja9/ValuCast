@@ -46,11 +46,15 @@
     </div>
 </section>{% endif %}
 {% if preset_value_enabled|default(false) %}
+{% set league_custom_preset_active = active_preset and active_preset != '5x5' %}
 <section class="category-fit-panel" id="preset-value-panel" aria-labelledby="preset-value-heading">
     <div class="category-fit-intro">
         <div>
             <h3 id="preset-value-heading">League scoring</h3>
-            <p>Values and ranks below are scored for your league's categories.</p>
+            <p>Pick your league's scoring. Values and ranks below are scored for your league's categories.</p>
+            {% if league_custom_preset_active %}
+            <p class="profile-note">+ Prospect values use the ValuCast baseline -- not yet tuned to your league's W/SV categories.</p>
+            {% endif %}
         </div>
     </div>
     <input type="hidden" name="preset" id="dynasty-preset-input" value="{{ active_preset or '5x5' }}">
