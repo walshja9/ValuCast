@@ -55,6 +55,13 @@
             {% if headline_context.parts %}
             <span class="headline-context">{{ headline_context.parts | join("  ·  ") }}</span>
             {% endif %}
+            <div class="profile-card-badges">
+            {% if row.is_prospect %}
+                <a class="player-share-link" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
+            {% else %}
+                <a class="player-share-link" href="/dynasty/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
+            {% endif %}
+            </div>
         </div>
     </div>
 
@@ -76,9 +83,6 @@
                         {% if row.sample_context_label %}<br><span class="sample-scope-note">{{ row.sample_context_label }}</span>{% endif %}
                     </p>
                     <p class="profile-percentile-legend">100 = best in the ValuCast prospect pool; higher is always better, including rate stats.</p>
-                </div>
-                <div class="profile-card-badges">
-                    <a class="player-share-link" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
                 </div>
             </div>
             {% if identity %}<p class="identity-line profile-card-identity">{{ identity }}</p>{% endif %}
@@ -516,6 +520,24 @@
                 <div class="stat-item"><span class="stat-label">Trend</span><span class="trend-chip trend-{{ row.trend_direction or ('up' if row.trend_delta >= 0 else 'down') }}">{{ '+' if (row.trend_direction == 'up' or (not row.trend_direction and row.trend_delta >= 0)) else '-' }}{{ "%.1f" | format(row.trend_delta | abs) }}</span></div>
                 {% endif %}
             </div>
+        </div>
+        {% endif %}
+
+        {% if scouting_report and (scouting_report.display_report or scouting_report.report) %}
+        <div class="detail-section scouting-context-card">
+            <div class="scouting-context-head">
+                <div>
+                    <span class="profile-card-kicker">Scouting Reports</span>
+                    <h4>Role & Read</h4>
+                </div>
+                <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open report</a>
+            </div>
+            <p class="scouting-card-read">{{ scouting_report.display_report or scouting_report.report }}</p>
+            <p class="sample-context-note">
+                Source:
+                {{ "guarded LLM read" if scouting_report.display_report_source == "llm" else "deterministic ValuCast read" }}
+                from projection stats{% if scouting_report.statcast_groups %} and MLB Statcast percentiles{% endif %}.
+            </p>
         </div>
         {% endif %}
 

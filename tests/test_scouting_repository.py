@@ -3,8 +3,11 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from scouting import repository
+from scouting.voice import validate_report_text
 from scouting.repository import build_scouting_repository
 from scripts.validate_scouting_repository import validate_scouting_repository
+from web.public_snapshot_store import PublicSnapshotStore
 
 
 def _write_snapshot(tmp_path):
@@ -112,6 +115,137 @@ def _write_snapshot(tmp_path):
     return path
 
 
+def _add_mlb_rows(snapshot_path):
+    data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    data["players"].extend(
+        [
+            {
+                "id": "vc_mlb_10_hitter",
+                "player_type": "mlb",
+                "name": "Established Bat",
+                "mlbam_id": 10,
+                "role": "hitter",
+                "positions": ["OF"],
+                "team": "LAD",
+                "mlb_team": "LAD",
+                "age": 27,
+                "rank": 4,
+                "value": 62.0,
+                "value_scale": "0_100_valucast_dynasty_score",
+                "value_source": "valucast_mlb_dynasty_layer",
+                "confidence": "high",
+                "updated_at": "2026-06-16T00:00:00+00:00",
+                "status": "candidate_ready",
+                "stat_line": {
+                    "source": "valucast_current_projection",
+                    "stats": {
+                        "AVG": 0.287,
+                        "OBP": 0.374,
+                        "OPS": 0.841,
+                        "HR": 31.4,
+                        "SB": 12.0,
+                        "PA": 640.0,
+                        "R": 94.2,
+                        "RBI": 101.3,
+                    },
+                },
+            },
+            {
+                "id": "vc_mlb_20_pitcher",
+                "player_type": "mlb",
+                "name": "Established Arm",
+                "mlbam_id": 20,
+                "role": "pitcher",
+                "positions": ["SP"],
+                "team": "SEA",
+                "mlb_team": "SEA",
+                "age": 28,
+                "rank": 5,
+                "value": 58.0,
+                "value_scale": "0_100_valucast_dynasty_score",
+                "value_source": "valucast_mlb_dynasty_layer",
+                "confidence": "high",
+                "updated_at": "2026-06-16T00:00:00+00:00",
+                "status": "candidate_ready",
+                "stat_line": {
+                    "source": "valucast_current_projection",
+                    "stats": {
+                        "ERA": 2.88,
+                        "WHIP": 1.0,
+                        "IP": 183.7,
+                        "K": 224.4,
+                        "W": 12.7,
+                        "QS": 18.4,
+                        "SV": 0.0,
+                    },
+                },
+            },
+            {
+                "id": "vc_mlb_999_hitter",
+                "player_type": "mlb",
+                "name": "Outside Mlb Cap",
+                "mlbam_id": 999,
+                "role": "hitter",
+                "positions": ["1B"],
+                "team": "TEX",
+                "mlb_team": "TEX",
+                "age": 31,
+                "rank": 999,
+                "value": 1.0,
+                "value_scale": "0_100_valucast_dynasty_score",
+                "value_source": "valucast_mlb_dynasty_layer",
+                "confidence": "low",
+                "updated_at": "2026-06-16T00:00:00+00:00",
+                "status": "candidate_ready",
+                "stat_line": {
+                    "source": "valucast_current_projection",
+                    "stats": {"AVG": 0.230, "OBP": 0.300, "HR": 9.0, "PA": 420.0},
+                },
+            },
+        ]
+    )
+    snapshot_path.write_text(json.dumps(data), encoding="utf-8")
+
+
+class _FakeStatcastStore:
+    def __init__(self):
+        self.groups_by_id = {
+            "10": [
+                {
+                    "label": "Batting",
+                    "metrics": [
+                        {
+                            "label": "Barrel %",
+                            "pct": 88,
+                            "raw": 17.2,
+                            "display": "17.2%",
+                        },
+                        {
+                            "label": "Whiff %",
+                            "pct": 32,
+                            "raw": 29.5,
+                            "display": "29.5%",
+                        },
+                    ],
+                }
+            ]
+        }
+
+    def display_groups(self, mlbam_id, prefer_pitching=False):
+        return self.groups_by_id.get(str(mlbam_id), [])
+
+
+def _row_by_name(snapshot_path, name):
+    store = PublicSnapshotStore(snapshot_path)
+    return next(row for row in store.get_all() if row.name == name)
+
+
+def _write_artifact(tmp_path, payload):
+    artifact_path = tmp_path / "reports.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+    return artifact_path
+
+
 def test_scouting_repository_builds_stat_grounded_reports(tmp_path):
     snapshot_path = _write_snapshot(tmp_path)
 
@@ -166,6 +300,71 @@ def test_scouting_repository_default_covers_deeper_prospect_cards(tmp_path):
     assert payload["summary"]["max_prospect_rank"] == 500
     assert "Deep Card" in names
     assert "Outside Coverage" not in names
+
+
+def test_scouting_repository_builds_guarded_mlb_reports(tmp_path):
+    snapshot_path = _write_snapshot(tmp_path)
+    _add_mlb_rows(snapshot_path)
+
+    with patch("scouting.repository.StatcastStore", return_value=_FakeStatcastStore()):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+            max_dynasty_rank=50,
+        )
+
+    reports = {report["name"]: report for report in payload["reports"]}
+    hitter = reports["Established Bat"]
+    hitter_row = _row_by_name(snapshot_path, "Established Bat")
+    grounding = repository._llm_grounding(
+        hitter_row,
+        {},
+        None,
+        statcast_groups=hitter["statcast_groups"],
+    )
+
+    assert hitter["player_type"] == "mlb"
+    assert hitter["published_report_source"] == "deterministic"
+    assert "bats" not in hitter
+    assert "throws" not in hitter
+    assert "dynasty_value" not in hitter
+    assert "Outside Mlb Cap" not in reports
+    assert validate_report_text(hitter["report"], grounding)["ok"]
+    assert validate_report_text(hitter["published_report"], grounding)["unsupported_numbers"] == []
+    assert payload["source_policy"]["dd_values_used"] is False
+    assert payload["source_policy"]["external_rankings_used_for_report"] is False
+    assert payload["source_policy"]["feeds_live_rank"] is False
+    assert payload["source_policy"]["feeds_live_value"] is False
+
+    _, problems = validate_scouting_repository(_write_artifact(tmp_path, payload))
+    assert problems == []
+
+
+def test_scouting_repository_builds_mlb_report_without_statcast(tmp_path):
+    snapshot_path = _write_snapshot(tmp_path)
+    _add_mlb_rows(snapshot_path)
+
+    with patch("scouting.repository.StatcastStore", return_value=_FakeStatcastStore()):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+            max_dynasty_rank=50,
+        )
+
+    pitcher = next(report for report in payload["reports"] if report["name"] == "Established Arm")
+    pitcher_row = _row_by_name(snapshot_path, "Established Arm")
+    grounding = repository._llm_grounding(
+        pitcher_row,
+        {},
+        None,
+        statcast_groups=[],
+    )
+
+    assert pitcher["player_type"] == "mlb"
+    assert pitcher["statcast_groups"] == []
+    assert pitcher["report"]
+    assert "Statcast" not in pitcher["report"]
+    assert validate_report_text(pitcher["report"], grounding)["ok"]
 
 
 def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):

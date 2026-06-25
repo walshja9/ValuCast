@@ -2304,6 +2304,298 @@ def _prospect_player_card_png(row):
     return output.getvalue()
 
 
+def _dynasty_statcast_card_items(context):
+    groups = context.get("statcast_groups") or []
+    group_count = len(groups)
+    items = []
+    for group in groups:
+        group_label = str(group.get("label") or "").strip()
+        for metric in group.get("metrics") or ():
+            pct = metric.get("pct")
+            if not isinstance(pct, (int, float)):
+                continue
+            label = str(metric.get("label") or "").strip()
+            if group_count > 1 and group_label:
+                label = f"{group_label[:3].upper()} {label}"
+            items.append({
+                "key": label.lower().replace(" ", "_"),
+                "label": label,
+                "percentile": int(max(0, min(100, pct))),
+                "value": metric.get("display") or "",
+            })
+    return items
+
+
+def _dynasty_value_preset_items(row):
+    value_by_preset = getattr(row, "value_by_preset", None)
+    if not isinstance(value_by_preset, dict) or not value_by_preset:
+        return []
+    labels = {
+        "5x5": "5x5",
+        "sv_hld": "SV+HLD",
+        "7x7": "7x7",
+        "7x7_ops": "7x7 OPS",
+        "points": "PTS",
+    }
+    items = []
+    for preset_id in ("5x5", "sv_hld", "7x7", "7x7_ops", "points"):
+        value = value_by_preset.get(preset_id)
+        if isinstance(value, (int, float)):
+            items.append((labels.get(preset_id, preset_id.upper()), f"{float(value):.1f}"))
+    return items
+
+
+def _dynasty_confidence_lines(row):
+    confidence = getattr(row, "confidence", None)
+    if not isinstance(confidence, dict):
+        return []
+    lines = []
+    level = _format_context_label(confidence.get("level"))
+    if level:
+        lines.append(f"{level} confidence")
+    value_range = confidence.get("range") or {}
+    low = value_range.get("low")
+    high = value_range.get("high")
+    if isinstance(low, (int, float)) and isinstance(high, (int, float)):
+        lines.append(f"Range {low:.0f}-{high:.0f}")
+    return lines
+
+
+def _statcast_profile_phrase(statcast_items):
+    """One-sentence read of an MLB Statcast percentile profile (deterministic)."""
+    if not statcast_items:
+        return None
+
+    def ordinal(n):
+        n = int(n)
+        suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
+
+    def grade(pct):
+        if pct >= 80:
+            return "elite"
+        if pct >= 65:
+            return "above-average"
+        if pct >= 45:
+            return "average"
+        if pct >= 25:
+            return "below-average"
+        return "soft"
+
+    ranked = sorted(statcast_items, key=lambda it: it["percentile"], reverse=True)
+    top, bottom = ranked[0], ranked[-1]
+    if top["percentile"] >= 60 and bottom["percentile"] <= 40 and top["key"] != bottom["key"]:
+        return (
+            f"Statcast profile leans on {top['label']} ({ordinal(top['percentile'])} pct) "
+            f"while {bottom['label'].lower()} lags ({ordinal(bottom['percentile'])} pct)."
+        )
+    if top["percentile"] >= 65:
+        return f"Statcast profile headlined by {grade(top['percentile'])} {top['label']} ({ordinal(top['percentile'])} pct)."
+    if top["percentile"] <= 40:
+        return f"A soft Statcast profile top to bottom (best mark {top['label']}, {ordinal(top['percentile'])} pct)."
+    return f"A balanced Statcast profile (best {top['label']}, {ordinal(top['percentile'])} pct)."
+
+
+def _dynasty_card_read(row, context):
+    dna = str(getattr(row, "dna", "") or "").strip()
+    if dna:
+        return dna
+    scouting = _scouting_display_report_text(context.get("scouting_report"))
+    if scouting:
+        return scouting
+
+    sentences = []
+    rank = getattr(row, "dynasty_rank", None)
+    value = getattr(row, "dynasty_value", None)
+    role_profile = context.get("role_profile")
+    if not isinstance(role_profile, dict):
+        role_profile = {}
+
+    lead = []
+    if rank is not None and isinstance(value, (int, float)):
+        lead.append(f"#{rank} on the dynasty board at {value:.1f}")
+    elif isinstance(value, (int, float)):
+        lead.append(f"{value:.1f} dynasty value")
+    role_bits = []
+    pos = "/".join(row.positions[:2]) if getattr(row, "positions", None) else None
+    if pos:
+        role_bits.append(pos)
+    if role_profile.get("projected_role_label"):
+        role_bits.append(f"projected for a {str(role_profile['projected_role_label']).lower()} role")
+    if role_profile.get("projected_volume") is not None and role_profile.get("projected_volume_unit"):
+        role_bits.append(f"({float(role_profile['projected_volume']):.0f} {role_profile['projected_volume_unit']})")
+    if lead and role_bits:
+        sentences.append(f"{row.name}: " + ", ".join(lead) + ". A " + " ".join(role_bits) + ".")
+    elif lead:
+        sentences.append(f"{row.name}: " + ", ".join(lead) + ".")
+    elif role_bits:
+        sentences.append(f"{row.name} is a " + " ".join(role_bits) + ".")
+
+    # Read the SAME six metrics the card draws as bars, so copy matches visuals.
+    profile = _statcast_profile_phrase(_dynasty_statcast_card_items(context)[:6])
+    if profile:
+        sentences.append(profile)
+
+    status = role_profile.get("availability_status_label")
+    if status:
+        sentences.append(f"{status}.")
+
+    read = " ".join(s for s in sentences if s).strip().replace("Mlb", "MLB")
+    if read:
+        return read
+    if rank is not None and isinstance(value, (int, float)):
+        return (
+            f"{row.name} sits #{rank} on the ValuCast dynasty board with a "
+            f"{value:.1f} long-term value, framed against current MLB role and skills."
+        )
+    return f"{row.name} is evaluated through ValuCast's dynasty lens against current MLB context."
+
+
+def _dynasty_category_card_items(context):
+    dyn_result = context.get("dyn_result")
+    dyn_categories = context.get("dyn_categories") or []
+    if not dyn_result or not dyn_categories:
+        return []
+    raw_values = getattr(dyn_result, "raw_values", {}) or {}
+    z_scores = getattr(dyn_result, "z_scores", {}) or {}
+    category_values = getattr(dyn_result, "category_values", {}) or {}
+    items = []
+    for category in dyn_categories:
+        raw = raw_values.get(category.id)
+        if raw is None:
+            continue
+        z = z_scores.get(category.id, 0)
+        value = category_values.get(category.id, 0)
+        if not isinstance(z, (int, float)):
+            z = 0
+        if not isinstance(value, (int, float)):
+            value = 0
+        items.append({
+            "label": category.label,
+            "raw": raw,
+            "z": z,
+            "value": value,
+        })
+    items.sort(key=lambda item: abs(item["z"]), reverse=True)
+    return items
+
+
+def _dynasty_player_card_png(row, context):
+    """Render a single dynasty player card from the dynasty detail context."""
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    bg = _GRAPHIC_PALETTE["bg"]
+    card = _GRAPHIC_PALETTE["card"]
+    card_2 = _GRAPHIC_PALETTE["card_2"]
+    border = _GRAPHIC_PALETTE["border"]
+    green = _GRAPHIC_PALETTE["green"]
+    bar_elite = green
+    bar_mid = _GRAPHIC_PALETTE["slate"]
+    bar_low = _GRAPHIC_PALETTE["clay"]
+    text = _GRAPHIC_PALETTE["text"]
+    muted = _GRAPHIC_PALETTE["muted"]
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+
+    subtitle = "dynasty value + MLB Statcast context"
+    generated = _editorial_date(dd_store.generated_at)
+    if generated:
+        subtitle = f"{subtitle} - {generated}"
+    _graphic_header(img, draw, headline="DYNASTY VALUE CARD", subtitle=subtitle)
+
+    draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
+    name_font = _graphic_font(48, bold=True)
+    draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 610), fill=text, font=name_font)
+    meta = " - ".join(
+        piece for piece in [
+            row.team or "FA",
+            "/".join(row.positions[:2]) if row.positions else "UT",
+            row.level or "MLB",
+            f"Age {row.age}" if row.age is not None else "",
+        ]
+        if piece
+    )
+    draw.text((76, 314), _graphic_fit_text(draw, meta, _graphic_font(22, mono=True), 610), fill=muted, font=_graphic_font(22, mono=True))
+    draw.text((76, 350), "vs MLB Statcast", fill=muted, font=_graphic_font(18, mono=True))
+
+    draw.rounded_rectangle((760, 244, 1002, 382), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
+    draw.text((780, 262), "VALUCAST VALUE", fill=muted, font=_graphic_font(13, bold=True))
+    value = getattr(row, "dynasty_value", None)
+    value_text = f"{float(value):.1f}" if isinstance(value, (int, float)) else "-"
+    draw.text((780, 282), value_text, fill=green, font=_graphic_font(38, bold=True, mono=True))
+    rank = getattr(row, "dynasty_rank", None)
+    rank_text = f"#{rank}" if rank is not None else "#-"
+    draw.text((900, 294), rank_text, fill=muted, font=_graphic_font(18, bold=True, mono=True))
+    value_notes = _dynasty_confidence_lines(row)
+    preset_items = _dynasty_value_preset_items(row)
+    if preset_items:
+        value_notes.append(" / ".join(f"{label} {val}" for label, val in preset_items[:2]))
+    for idx, note in enumerate(value_notes[:2]):
+        draw.text((780, 334 + idx * 22), _graphic_fit_text(draw, note, _graphic_font(15, bold=True), 198), fill=muted, font=_graphic_font(15, bold=True))
+
+    # MLB Statcast bars
+    statcast_items = _dynasty_statcast_card_items(context)
+    draw.rounded_rectangle((48, 438, 1032, 794), radius=10, fill=card, outline=border, width=1)
+    heading = "MLB STATCAST PERCENTILES"
+    asof = context.get("statcast_asof")
+    if asof:
+        heading = f"{heading} - {asof}"
+    draw.text((74, 468), _graphic_fit_text(draw, heading, _graphic_font(20, bold=True), 900), fill=muted, font=_graphic_font(20, bold=True))
+    draw.text((74, 500), "100 = best against MLB league percentile baselines.", fill=muted, font=_graphic_font(17, bold=True))
+
+    y = 542
+    if statcast_items:
+        for item in statcast_items[:6]:
+            pct = int(item["percentile"])
+            label = item["label"]
+            value = item["value"]
+            draw.text((82, y + 6), _graphic_fit_text(draw, label, _graphic_font(18, bold=True), 138), fill=muted, font=_graphic_font(18, bold=True))
+            x0, y0, x1, y1 = 238, y + 9, 790, y + 23
+            draw.rounded_rectangle((x0, y0, x1, y1), radius=4, fill=(30, 32, 40))
+            fill = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
+            draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=4, fill=fill)
+            knob_x = max(x0 + 14, min(x1 - 14, x0 + int((x1 - x0) * pct / 100)))
+            draw.rounded_rectangle((knob_x - 18, y0 - 3, knob_x + 18, y1 + 3), radius=4, fill=(10, 11, 15))
+            draw.text((knob_x - 10, y0 - 2), str(pct), fill=text, font=_graphic_font(14, bold=True))
+            draw.text((820, y + 1), _graphic_fit_text(draw, value or "-", _graphic_font(20, bold=True, mono=True), 158), fill=text, font=_graphic_font(20, bold=True, mono=True))
+            y += 43
+    else:
+        draw.text((74, 560), "No current MLB Statcast percentile card is available for this row.", fill=muted, font=_graphic_font(22))
+
+    category_items = _dynasty_category_card_items(context)
+    read_y0 = 824
+    read_y1 = 1120 if category_items else 1238
+    draw.rounded_rectangle((48, read_y0, 1032, read_y1), radius=10, fill=card, outline=border, width=1)
+    draw.text((74, read_y0 + 30), "THE DYNASTY READ", fill=muted, font=_graphic_font(20, bold=True))
+    read_font = _graphic_font(24 if not category_items else 22)
+    for idx, line in enumerate(_graphic_wrap_read_text(draw, _dynasty_card_read(row, context), read_font, 890, max_lines=5)):
+        draw.text((74, read_y0 + 72 + idx * 32), line, fill=text, font=read_font)
+
+    if category_items:
+        draw.rounded_rectangle((48, 1146, 1032, 1238), radius=10, fill=card, outline=border, width=1)
+        summary = context.get("dyn_category_summary")
+        title = "CATEGORY BREAKDOWN (z-SCORE)"
+        if summary:
+            title = f"{title} - {summary}"
+        draw.text((74, 1162), _graphic_fit_text(draw, title, _graphic_font(16, bold=True), 890), fill=muted, font=_graphic_font(16, bold=True))
+        for idx, item in enumerate(category_items[:4]):
+            x = 74 + idx * 235
+            z = float(item["z"] or 0)
+            z_color = green if z > 0 else bar_low if z < 0 else text
+            draw.rounded_rectangle((x, 1186, x + 205, 1232), radius=8, fill=card_2, outline=(44, 46, 54), width=1)
+            draw.text((x + 14, 1191), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
+            draw.text((x + 14, 1208), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
+
+    _graphic_footer(draw, right_note="Dynasty value context. Statcast bars are vs MLB league percentiles.")
+
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
 def _build_dynasty_context(args):
     """Build template context for DD Dynasty mode."""
     pool = args.get("pool", "")
@@ -5173,6 +5465,123 @@ def health_ready():
     return jsonify(body), (200 if ready else 503)
 
 
+def _build_dynasty_player_detail_context(player_id, args):
+    """Shared DD player-detail context for dynasty/prospect detail surfaces."""
+    dd_row = dd_store.get_by_id(player_id)
+    if dd_row is None:
+        return None
+
+    mlb_stats = None
+    mlb_stats_actual = None
+    mlb_stats_ros = None
+    mlb_stats_split = None
+    mlb_stats_actual_split = None
+    mlb_stats_ros_split = None
+    extras = {"statcast_groups": [], "statcast_asof": None, "player_links": []}
+    match_index = build_outlook_match_index(store.get_all())
+    matches = []
+    if not dd_row.is_prospect:
+        outlook = find_season_outlook(dd_row, match_index)
+        if outlook:
+            mlb_stats, mlb_stats_actual, mlb_stats_ros = outlook
+        split = find_season_outlook_split(dd_row, match_index)
+        if split:
+            mlb_stats_split, mlb_stats_actual_split, mlb_stats_ros_split = split
+        # Identity (mlbam/fangraphs ids) comes from the safely-matched
+        # projection row; the feed itself carries no ids today.
+        matches = find_outlook_projections(dd_row, match_index)
+        if matches:
+            extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
+
+    artifact_context = _artifact_context_for_row(dd_row)
+    prospect_context = {}
+    if dd_row.is_prospect:
+        matches = find_outlook_projections(dd_row, match_index)
+        if matches:
+            extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
+        stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, dd_row)
+        stat_captions = {
+            m: c for m in prospect_percentiles.CAPTION_METRICS
+            if (c := prospect_percentiles.caption_for(m, stat_percentiles.get(m))) is not None
+        }
+        profile_bars = prospect_percentiles.profile_bars(dd_row, stat_percentiles)
+        skill_grades = prospect_percentiles.skill_grades(dd_row, stat_percentiles)
+        skill_shape = prospect_percentiles.skill_shape_compare(
+            skill_grades, getattr(dd_row, "peak_shape_items", ()) or ()
+        )
+        profile_stat_context = getattr(dd_row, "context", None)
+        if not isinstance(profile_stat_context, dict):
+            profile_stat_context = (
+                dd_row.metadata.get("context")
+                if isinstance(dd_row.metadata, dict)
+                else {}
+            )
+        if not isinstance(profile_stat_context, dict):
+            profile_stat_context = {}
+        identity = _prospect_player_card_read(dd_row, stat_percentiles, profile_stat_context)
+        prospect_context = {
+            "stat_percentiles": stat_percentiles,
+            "stat_captions": stat_captions,
+            "identity": identity,
+            "profile_bars": profile_bars,
+            "skill_grades": skill_grades,
+            "skill_shape": skill_shape,
+            "profile_pool_label": prospect_percentiles.pool_label(dd_row),
+            "profile_stat_context": profile_stat_context,
+        }
+
+    # Same-engine category z's as the active dynasty category configuration.
+    # The feed's z_scores field has never been produced (DD-producer gap),
+    # so the card scores the safely matched projection app-side.
+    dyn_result = None
+    dyn_categories = []
+    dyn_category_summary = None
+    if matches:
+        dyn_cats, dyn_pcats, fit_active = _dynasty_detail_category_state(args)
+        # build_config treats an empty side as "use default"; use one
+        # harmless category instead, then filter it from the detail table.
+        config = build_config(
+            mode="categories", cats=dyn_cats or ["R"],
+            pcats=dyn_pcats or ["K"], rules_str="",
+            pt_params=None, split_rp=False, weights=None,
+        )
+        detail_results = _merge_two_way_players(
+            engine.value_players(
+                _valuation_players(active_store=store), config)
+        )
+        ids = {m.id for m in matches}
+        ids |= {m.metadata.get("base_id") or m.id for m in matches}
+        dyn_result = next(
+            (r for r in detail_results if r.player.id in ids), None)
+        dyn_categories = list(getattr(config, "categories", []) or [])
+        if fit_active:
+            requested = set(dyn_cats + dyn_pcats)
+            dyn_categories = [
+                category for category in dyn_categories
+                if category.id in requested
+            ]
+        dyn_category_summary = _dynasty_category_summary(dyn_cats, dyn_pcats)
+
+    context = {
+        "row": dd_row,
+        "dyn_result": dyn_result,
+        "dyn_categories": dyn_categories,
+        "dyn_category_summary": dyn_category_summary,
+        "spark": build_spark(dd_row.value_history),
+        "mlb_stats": mlb_stats,
+        "mlb_stats_actual": mlb_stats_actual,
+        "mlb_stats_ros": mlb_stats_ros,
+        "mlb_stats_split": mlb_stats_split,
+        "mlb_stats_actual_split": mlb_stats_actual_split,
+        "mlb_stats_ros_split": mlb_stats_ros_split,
+        "fangraphs": fg_fv.get(getattr(dd_row, "mlbam_id", None)),
+    }
+    context.update(prospect_context)
+    context.update(artifact_context)
+    context.update(extras)
+    return context
+
+
 @app.route("/player/<player_id>")
 def player_detail(player_id):
     mode = request.args.get("mode", "categories")
@@ -5193,121 +5602,10 @@ def player_detail(player_id):
             return redirect("/?" + urlencode({"mode": mode, "search": player_name}))
 
     if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
-        dd_row = dd_store.get_by_id(player_id)
-        if dd_row is None:
+        context = _build_dynasty_player_detail_context(player_id, request.args)
+        if context is None:
             return "<div class='error'>Player not found</div>", 404
-
-        mlb_stats = None
-        mlb_stats_actual = None
-        mlb_stats_ros = None
-        mlb_stats_split = None
-        mlb_stats_actual_split = None
-        mlb_stats_ros_split = None
-        extras = {"statcast_groups": [], "statcast_asof": None, "player_links": []}
-        match_index = build_outlook_match_index(store.get_all())
-        if not dd_row.is_prospect:
-            outlook = find_season_outlook(dd_row, match_index)
-            if outlook:
-                mlb_stats, mlb_stats_actual, mlb_stats_ros = outlook
-            split = find_season_outlook_split(dd_row, match_index)
-            if split:
-                mlb_stats_split, mlb_stats_actual_split, mlb_stats_ros_split = split
-            # Identity (mlbam/fangraphs ids) comes from the safely-matched
-            # projection row — the feed itself carries no ids today.
-            matches = find_outlook_projections(dd_row, match_index)
-            if matches:
-                extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
-
-        artifact_context = _artifact_context_for_row(dd_row)
-        prospect_context = {}
-        if dd_row.is_prospect:
-            matches = find_outlook_projections(dd_row, match_index)
-            if matches:
-                extras = _card_extras(dd_row.name, matches[0].pool, matches[0].metadata)
-            stat_percentiles = prospect_percentiles.card_percentiles(prospect_pool, dd_row)
-            stat_captions = {
-                m: c for m in prospect_percentiles.CAPTION_METRICS
-                if (c := prospect_percentiles.caption_for(m, stat_percentiles.get(m))) is not None
-            }
-            profile_bars = prospect_percentiles.profile_bars(dd_row, stat_percentiles)
-            skill_grades = prospect_percentiles.skill_grades(dd_row, stat_percentiles)
-            skill_shape = prospect_percentiles.skill_shape_compare(
-                skill_grades, getattr(dd_row, "peak_shape_items", ()) or ()
-            )
-            profile_stat_context = getattr(dd_row, "context", None)
-            if not isinstance(profile_stat_context, dict):
-                profile_stat_context = (
-                    dd_row.metadata.get("context")
-                    if isinstance(dd_row.metadata, dict)
-                    else {}
-                )
-            if not isinstance(profile_stat_context, dict):
-                profile_stat_context = {}
-            identity = _prospect_player_card_read(dd_row, stat_percentiles, profile_stat_context)
-            prospect_context = {
-                "stat_percentiles": stat_percentiles,
-                "stat_captions": stat_captions,
-                "identity": identity,
-                "profile_bars": profile_bars,
-                "skill_grades": skill_grades,
-                "skill_shape": skill_shape,
-                "profile_pool_label": prospect_percentiles.pool_label(dd_row),
-                "profile_stat_context": profile_stat_context,
-            }
-
-        # Same-engine category z's as the active dynasty category configuration.
-        # The feed's z_scores field has never been produced (DD-producer gap),
-        # so the card scores the safely matched projection app-side.
-        dyn_result = None
-        dyn_categories = []
-        dyn_category_summary = None
-        if matches:
-            dyn_cats, dyn_pcats, fit_active = _dynasty_detail_category_state(
-                request.args
-            )
-            # build_config treats an empty side as "use default"; use one
-            # harmless category instead, then filter it from the detail table.
-            config = build_config(
-                mode="categories", cats=dyn_cats or ["R"],
-                pcats=dyn_pcats or ["K"], rules_str="",
-                pt_params=None, split_rp=False, weights=None,
-            )
-            detail_results = _merge_two_way_players(
-                engine.value_players(
-                    _valuation_players(active_store=store), config)
-            )
-            ids = {m.id for m in matches}
-            ids |= {m.metadata.get("base_id") or m.id for m in matches}
-            dyn_result = next(
-                (r for r in detail_results if r.player.id in ids), None)
-            dyn_categories = list(getattr(config, "categories", []) or [])
-            if fit_active:
-                requested = set(dyn_cats + dyn_pcats)
-                dyn_categories = [
-                    category for category in dyn_categories
-                    if category.id in requested
-                ]
-            dyn_category_summary = _dynasty_category_summary(dyn_cats, dyn_pcats)
-
-        return render_template(
-            "partials/player_detail_dynasty.html",
-            row=dd_row,
-            dyn_result=dyn_result,
-            dyn_categories=dyn_categories,
-            dyn_category_summary=dyn_category_summary,
-            spark=build_spark(dd_row.value_history),
-            mlb_stats=mlb_stats,
-            mlb_stats_actual=mlb_stats_actual,
-            mlb_stats_ros=mlb_stats_ros,
-            mlb_stats_split=mlb_stats_split,
-            mlb_stats_actual_split=mlb_stats_actual_split,
-            mlb_stats_ros_split=mlb_stats_ros_split,
-            fangraphs=fg_fv.get(getattr(dd_row, "mlbam_id", None)),
-            **prospect_context,
-            **artifact_context,
-            **extras,
-        )
-
+        return render_template("partials/player_detail_dynasty.html", **context)
     # _build_context resolves + guards the source first (SourceError -> 400), then we
     # look the player up in the ACTIVE store so detail honors ?source=.
     ctx = _build_context(request.args)
@@ -5616,6 +5914,62 @@ def prospect_player_card_png(player_id):
     response.headers["Content-Type"] = "image/png"
     response.headers["Content-Disposition"] = (
         f'inline; filename="valucast-{filename_slug or "prospect"}-card.png"'
+    )
+    return response
+
+
+def _share_player_slug(name, fallback="player"):
+    return "-".join(
+        piece for piece in "".join(
+            ch.lower() if ch.isalnum() else "-" for ch in str(name or "")
+        ).split("-") if piece
+    ) or fallback
+
+
+@app.route("/dynasty/player-card/<player_id>")
+def dynasty_player_card_preview(player_id):
+    if not dd_store.is_available:
+        return "", 503
+    context = _build_dynasty_player_detail_context(player_id, request.args)
+    if context is None:
+        return "", 404
+
+    row = context["row"]
+    slug = _share_player_slug(row.name, "dynasty-player")
+    filename = f"valucast-{slug}.png"
+    png_url = f"/dynasty/player-card/{escape(player_id)}.png"
+    html = build_share_preview_html(
+        title=f"{row.name} | Dynasty Value Card",
+        subtitle=f"{row.name} - dynasty value + MLB Statcast context",
+        png_url=png_url,
+        filename=filename,
+        public_png_url=_public_url(png_url),
+        public_page_url=_public_url(f"/dynasty/player-card/{player_id}"),
+        description=f"{row.name} ValuCast dynasty card with value, MLB Statcast context, and category fit.",
+        image_alt=f"{row.name} ValuCast dynasty player card",
+        back_url="/?mode=dd_dynasty",
+        back_label="Back to dynasty",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+@app.route("/dynasty/player-card/<player_id>.png")
+def dynasty_player_card_png(player_id):
+    if not dd_store.is_available:
+        return "", 503
+    context = _build_dynasty_player_detail_context(player_id, request.args)
+    if context is None:
+        return "", 404
+
+    row = context["row"]
+    png = _dynasty_player_card_png(row, context)
+    slug = _share_player_slug(row.name, "dynasty-player")
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        f'inline; filename="valucast-{slug}.png"'
     )
     return response
 

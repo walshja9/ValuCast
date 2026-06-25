@@ -12,7 +12,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scouting import report_generator
+from scouting.mlb_read import build_mlb_scouting_read, stat_line_stats
 from scouting.voice import handedness_problems, validate_report_text
+from web.statcast_store import StatcastStore
 from web.public_snapshot_store import PublicSnapshotStore
 from web import prospect_percentiles
 
@@ -27,6 +29,7 @@ DEFAULT_LLM_MAX_GENERATE = 25
 ARTIFACT_NAME = "valucast_scouting_report_repository"
 REPOSITORY_VERSION = "0.1.0"
 DEFAULT_MAX_PROSPECT_RANK = 500
+DEFAULT_MAX_DYNASTY_RANK = 500
 
 
 def _report_status(text: str | None) -> str:
@@ -125,7 +128,76 @@ def _index_rows(payload: dict, rows_key: str) -> dict[str, dict]:
     return indexed
 
 
-def _row_report(row, recent_signal: dict | None = None, card_data: dict | None = None) -> dict:
+def _statcast_grounding_groups(display_groups) -> list[dict]:
+    groups = []
+    for group in display_groups or ():
+        if not isinstance(group, dict):
+            continue
+        metrics = []
+        for metric in group.get("metrics") or ():
+            if not isinstance(metric, dict):
+                continue
+            pct = metric.get("pct")
+            if not isinstance(pct, (int, float)):
+                continue
+            item = {
+                "label": str(metric.get("label") or "").strip(),
+                "pct": int(max(0, min(100, pct))),
+                "raw": metric.get("raw") if isinstance(metric.get("raw"), (int, float)) else None,
+                "display": metric.get("display"),
+            }
+            if item["label"]:
+                metrics.append(item)
+        if metrics:
+            groups.append({
+                "label": str(group.get("label") or "").strip(),
+                "metrics": metrics,
+            })
+    return groups
+
+
+def _mlb_row_report(row, statcast_groups: list[dict] | None = None) -> dict:
+    stats = stat_line_stats(row.stat_line)
+    groups = _statcast_grounding_groups(statcast_groups)
+    text = build_mlb_scouting_read(row, groups, stats)
+    source = row.stat_line.get("source") if isinstance(row.stat_line, dict) else None
+    return {
+        "id": row.id,
+        "identity_key": _identity_key(row),
+        "mlbam_id": str(row.mlbam_id),
+        "name": row.name,
+        "role": row.role,
+        "team": row.team,
+        "positions": list(row.positions or []),
+        "player_type": row.player_type,
+        "prospect_rank": None,
+        "confidence": row.confidence,
+        "level": row.level,
+        "age": row.age,
+        "report": text,
+        "report_status": _report_status(text),
+        "peak_summary": None,
+        "recent_signal": None,
+        "card_data_status": None,
+        "statcast_groups": groups,
+        "stat_line_stats": stats,
+        "source_fields": {
+            "stat_line_source": source or "valucast_current_projection",
+            "stat_line_label": "projection",
+            "statcast_percentiles": bool(groups),
+        },
+        "usage": "scouting_repository_context_not_live_rank_or_value",
+    }
+
+
+def _row_report(
+    row,
+    recent_signal: dict | None = None,
+    card_data: dict | None = None,
+    statcast_groups: list[dict] | None = None,
+) -> dict:
+    if getattr(row, "is_prospect", True) is False:
+        return _mlb_row_report(row, statcast_groups=statcast_groups)
     text = prospect_percentiles.identity_line(row, {}) or ""
     peak = row.peak_projection_summary if row.has_peak_projection else None
     bats = _hand_code(
@@ -209,10 +281,47 @@ def _llm_generation_limit() -> int | None:
         return DEFAULT_LLM_MAX_GENERATE
 
 
-def _llm_grounding(row, percentiles: dict, pool_label: str | None,
-                   recent_signal: dict | None = None) -> dict:
+def _env_optional_int(name: str, default: int) -> int | None:
+    raw = os.environ.get(name)
+    if raw is None or raw.strip() == "":
+        return default
+    value = raw.strip().lower()
+    if value in {"all", "none", "unbounded", "unlimited"}:
+        return None
+    try:
+        return max(0, int(value))
+    except ValueError:
+        return default
+
+
+def _llm_grounding(
+    row,
+    percentiles: dict,
+    pool_label: str | None,
+    recent_signal: dict | None = None,
+    statcast_groups: list[dict] | None = None,
+) -> dict:
     """Source-tagged, ValuCast-owned facts for the LLM read. No DD values/ranks, no
     external rankings, no market values — only what the card already owns."""
+    if getattr(row, "is_prospect", True) is False:
+        stat_line = row.stat_line if isinstance(row.stat_line, dict) else {}
+        source = stat_line.get("source")
+        grounding = {
+            "name": row.name,
+            "role": row.role,
+            "positions": list(row.positions or []),
+            "team": row.team,
+            "player_type": row.player_type,
+            "age": row.age,
+            "confidence": row.confidence,
+            "statcast_groups": statcast_groups or None,
+            "stat_line_stats": {
+                "label": "projection",
+                "source": source or "valucast_current_projection",
+                "stats": stat_line_stats(row.stat_line),
+            },
+        }
+        return {key: value for key, value in grounding.items() if value not in (None, {}, [])}
     peak_detail = None
     if row.has_peak_projection:
         peak_detail = {key: value for key, value in {
@@ -295,9 +404,18 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         key = report.get("identity_key")
         if not key:
             continue
-        percentiles = prospect_percentiles.card_percentiles(pool, row)
-        grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row),
-                                   recent_signal=report.get("recent_signal"))
+        if row.is_prospect:
+            percentiles = prospect_percentiles.card_percentiles(pool, row)
+            grounding = _llm_grounding(row, percentiles, prospect_percentiles.pool_label(row),
+                                       recent_signal=report.get("recent_signal"))
+        else:
+            grounding = _llm_grounding(
+                row,
+                {},
+                None,
+                recent_signal=report.get("recent_signal"),
+                statcast_groups=report.get("statcast_groups") or [],
+            )
         digest = report_generator.grounding_hash(grounding)
         cached = entries.get(key)
         result = None
@@ -360,28 +478,57 @@ def build_scouting_repository(
     card_data_audit_path: Path = CARD_DATA_AUDIT_PATH,
     generated_at: str | None = None,
     max_prospect_rank: int = DEFAULT_MAX_PROSPECT_RANK,
+    max_dynasty_rank: int | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
+    if max_dynasty_rank is None:
+        max_dynasty_rank = _env_optional_int(
+            "VALUCAST_SCOUTING_MAX_DYNASTY_RANK",
+            DEFAULT_MAX_DYNASTY_RANK,
+        )
     store = PublicSnapshotStore(snapshot_path)
     if not store.is_available:
         rows = []
     else:
-        rows = [
-            row
-            for row in store.get_all()
-            if row.is_prospect
-            and row.prospect_rank is not None
-            and row.prospect_rank <= max_prospect_rank
-        ]
+        rows = []
+        for row in store.get_all():
+            if (
+                row.is_prospect
+                and row.prospect_rank is not None
+                and row.prospect_rank <= max_prospect_rank
+            ):
+                rows.append(row)
+            elif (
+                not row.is_prospect
+                and row.mlbam_id not in (None, "")
+                and row.stat_line
+                and (
+                    max_dynasty_rank is None
+                    or row.dynasty_rank <= max_dynasty_rank
+                )
+            ):
+                rows.append(row)
     recent_payload = _load_optional(recent_signal_path)
     card_audit_payload = _load_optional(card_data_audit_path)
     recent_index = _index_rows(recent_payload, "signals")
     card_index = _index_rows(card_audit_payload, "cards")
+    statcast_store = StatcastStore()
+    statcast_by_key = {
+        _identity_key(row): _statcast_grounding_groups(
+            statcast_store.display_groups(
+                row.mlbam_id,
+                prefer_pitching=str(row.role or "").lower() == "pitcher",
+            )
+        )
+        for row in rows
+        if not row.is_prospect and _identity_key(row)
+    }
     reports = [
         _row_report(
             row,
             recent_signal=recent_index.get(_identity_key(row) or ""),
             card_data=card_index.get(_identity_key(row) or ""),
+            statcast_groups=statcast_by_key.get(_identity_key(row) or ""),
         )
         for row in rows
     ]
@@ -401,15 +548,21 @@ def build_scouting_repository(
     identity_keys = [(row["mlbam_id"], row["role"]) for row in reports]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     missing_report_count = sum(1 for row in reports if not row.get("report"))
+    prospect_report_count = sum(1 for row in reports if row.get("player_type") == "prospect")
+    mlb_report_count = sum(1 for row in reports if row.get("player_type") != "prospect")
     top100_count = sum(
-        1 for row in reports if row.get("prospect_rank") is not None and row["prospect_rank"] <= 100
+        1
+        for row in reports
+        if row.get("player_type") == "prospect"
+        and row.get("prospect_rank") is not None
+        and row["prospect_rank"] <= 100
     )
     blockers = []
     if not reports:
         blockers.append("Scouting repository has no reports.")
     if duplicate_identity_count:
         blockers.append("Scouting repository has duplicate MLBAM+role reports.")
-    if top100_count < min(100, len(reports)):
+    if top100_count < min(100, prospect_report_count):
         blockers.append("Scouting repository does not cover the visible top 100 prospects.")
     return {
         "artifact": ARTIFACT_NAME,
@@ -444,6 +597,9 @@ def build_scouting_repository(
             "top100_report_count": top100_count,
             "missing_report_count": missing_report_count,
             "max_prospect_rank": max_prospect_rank,
+            "max_dynasty_rank": max_dynasty_rank,
+            "prospect_report_count": prospect_report_count,
+            "mlb_report_count": mlb_report_count,
             "llm_shadow": llm_shadow,
             **publish_summary,
         },

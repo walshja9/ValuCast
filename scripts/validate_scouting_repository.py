@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scouting.repository import ARTIFACT_NAME, ARTIFACT_PATH, REPOSITORY_VERSION  # noqa: E402
-from scouting.voice import handedness_problems  # noqa: E402
+from scouting.voice import banned_phrase_hits, handedness_problems  # noqa: E402
 
 PROHIBITED_REPORT_PHRASES = (
     "display-only",
@@ -19,6 +19,7 @@ PROHIBITED_REPORT_PHRASES = (
     "dd-backed",
     "adapter",
 )
+ACCEPTED_PLAYER_TYPES = {"prospect", "mlb"}
 
 
 def validate_scouting_repository(
@@ -68,6 +69,9 @@ def validate_scouting_repository(
     else:
         seen = set()
         for index, row in enumerate(reports, 1):
+            player_type = row.get("player_type")
+            if player_type not in ACCEPTED_PLAYER_TYPES:
+                problems.append(f"report {index} invalid player_type")
             key = (str(row.get("mlbam_id")), str(row.get("role")))
             if key in seen:
                 problems.append(f"report {index} duplicate MLBAM+role identity")
@@ -111,6 +115,14 @@ def validate_scouting_repository(
                     problems.append(f"report {index} contains prohibited phrase {phrase!r}")
                 if phrase in published_lowered:
                     problems.append(f"report {index} published_report contains prohibited phrase {phrase!r}")
+            for phrase in banned_phrase_hits(str(row.get("report") or "")):
+                if phrase not in PROHIBITED_REPORT_PHRASES:
+                    problems.append(f"report {index} contains prohibited phrase {phrase!r}")
+            for phrase in banned_phrase_hits(str(row.get("published_report") or "")):
+                if phrase not in PROHIBITED_REPORT_PHRASES:
+                    problems.append(
+                        f"report {index} published_report contains prohibited phrase {phrase!r}"
+                    )
             for problem in handedness_problems(str(row.get("report") or ""), row):
                 problems.append(f"report {index} handedness mismatch: {problem}")
             for problem in handedness_problems(str(row.get("published_report") or ""), row):
