@@ -21,6 +21,7 @@ from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.input_contract import VALUCAST_INPUT_PATH
 from prospects.milb_translation import (
     best_single_level_stat_line,
+    combined_season_stat_line,
     translate_peripherals,
 )
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
@@ -1484,6 +1485,15 @@ def _context(
         else None
     )
     best_single = None
+    combined_line = (
+        combined_season_stat_line(
+            history_rows=milb_rows,
+            role=role,
+            season=(milb_entry or {}).get("current_season"),
+        )
+        if milb_rows
+        else None
+    )
     if milb_rows and stat_line:
         best_single = best_single_level_stat_line(
             current_line=stat_line,
@@ -1519,6 +1529,7 @@ def _context(
         "stat_line_translated": stat_line_translated,
         "stat_line_translated_source": stat_line_translated_source,
         "best_single_level_stat_line": best_single,
+        "combined_season_stat_line": combined_line,
         "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
         "mlb_stat_line_source": "dd_feed" if (dd_row or {}).get("mlb_stat_line") else None,
     }

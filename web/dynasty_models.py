@@ -76,6 +76,7 @@ class DynastyRankingRow:
     value_history: tuple = ()              # ((date, value), ...) chronological
     mlb_stat_line: dict | None = None      # call-ups: current-season MLB line
     stat_line_translated: dict | None = None  # MLB-equivalent peripherals
+    combined_season_stat_line: dict | None = None  # display-only all-level 2026 line
     # Raw metadata passthrough
     metadata: dict = field(default_factory=dict)
 
@@ -305,5 +306,8 @@ class DynastyRankingRow:
             value_history=cls._coerce_value_history(record.get("value_history")),
             mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),
             stat_line_translated=cls._coerce_dict(record.get("stat_line_translated")),
+            combined_season_stat_line=cls._coerce_dict(
+                record.get("combined_season_stat_line")
+            ),
             metadata=record,
         )

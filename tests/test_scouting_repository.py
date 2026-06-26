@@ -61,6 +61,24 @@ def _write_snapshot(tmp_path):
                     "obp": 0.397,
                     "slg": 0.579,
                 },
+                "combined_season_stat_line": {
+                    "role": "hitter",
+                    "season": 2026,
+                    "level": "AA",
+                    "levels": ["AA"],
+                    "level_label": "AA",
+                    "sample": 224,
+                    "sample_unit": "PA",
+                    "pa": 224,
+                    "ops": 0.976,
+                    "iso": 0.261,
+                    "k_pct": 12.9,
+                    "bb_pct": 9.8,
+                    "avg": 0.318,
+                    "obp": 0.397,
+                    "slg": 0.579,
+                    "babip": 0.340,
+                },
                 "context": {
                     "stat_line_source": "valucast_input_contract",
                     "stat_line_source_kind": "current_season",
@@ -93,6 +111,21 @@ def _write_snapshot(tmp_path):
                 "eta": 2027,
                 "score_source": "prospect_model_v0_6",
                 "stat_line": {
+                    "ip": 55.7,
+                    "k_per_9": 13.3,
+                    "bb_per_9": 1.1,
+                    "k_bb_pct": 37.7,
+                    "era": 1.13,
+                    "whip": 0.66,
+                },
+                "combined_season_stat_line": {
+                    "role": "pitcher",
+                    "season": 2026,
+                    "level": "AA",
+                    "levels": ["AA"],
+                    "level_label": "AA",
+                    "sample": 55.7,
+                    "sample_unit": "IP",
                     "ip": 55.7,
                     "k_per_9": 13.3,
                     "bb_per_9": 1.1,
@@ -398,6 +431,24 @@ def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
         "k_pct": 18.0,
         "bb_pct": 14.0,
     }
+    combined = {
+        "role": "hitter",
+        "season": 2026,
+        "level": "AAA",
+        "levels": ["AAA", "AA"],
+        "level_label": "AAA+AA",
+        "sample": 221,
+        "sample_unit": "PA",
+        "pa": 221,
+        "avg": 0.310,
+        "obp": 0.400,
+        "slg": 0.560,
+        "ops": 0.960,
+        "iso": 0.250,
+        "babip": 0.330,
+        "k_pct": 20.0,
+        "bb_pct": 12.0,
+    }
     row = SimpleNamespace(
         is_prospect=True,
         name="Sean Keys",
@@ -421,6 +472,7 @@ def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
             ],
         },
         best_single_level_stat_line=best,
+        combined_season_stat_line=combined,
         context={},
         metadata={},
         availability_context={},
@@ -431,11 +483,14 @@ def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
     grounding = repository._llm_grounding(row, {"iso": 91}, "vs test pool")
     serialized = json.dumps(grounding, sort_keys=True)
 
-    assert grounding["card_display_line"]["iso"] == 0.296
+    assert grounding["card_display_line"]["iso"] == 0.250
     assert grounding["card_display_line"]["usage"] == "the line shown on the card skill bars"
+    assert grounding["card_display_line"]["source_kind"] == "combined_season_line"
+    assert grounding["sample_context"]["source_kind"] == "combined_season_line"
     assert "current_minor_league_line" not in grounding
     assert "best_single_level_line" not in grounding
     assert "0.424" not in serialized
+    assert "0.296" not in serialized
     assert grounding["mlb_equivalent_translation"]["stats"][0]["mlb"] == 0.290
     assert "milb" not in grounding["mlb_equivalent_translation"]["stats"][0]
 

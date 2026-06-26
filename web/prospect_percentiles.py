@@ -80,6 +80,37 @@ _YOUNG_FOR_LEVEL = {
 }
 
 
+class CardLineSelection(tuple):
+    """Three-value card_line result with source metadata for display labels."""
+
+    def __new__(cls, line, level, is_best, *, is_combined: bool = False):
+        obj = super().__new__(cls, (line, level, is_best))
+        obj.is_combined = is_combined
+        return obj
+
+    @property
+    def line(self):
+        return self[0]
+
+    @property
+    def level(self):
+        return self[1]
+
+    @property
+    def is_best(self):
+        return self[2]
+
+    @property
+    def source_kind(self) -> str | None:
+        if self.is_combined:
+            return "combined_season_line"
+        if self.is_best:
+            return "best_single_level_stat_line"
+        if self.line:
+            return "current_minor_league_line"
+        return None
+
+
 def _stable_choice(row, family: str, options: tuple[str, ...]) -> str:
     """Player-stable copy variation without random or generated text."""
     key = f"{getattr(row, 'id', '')}|{getattr(row, 'name', '')}|{family}"
@@ -94,9 +125,9 @@ def _number(line: dict, key: str) -> float | None:
 
 def _performance_line(row) -> tuple[dict, bool]:
     """Best available performance line and whether it came from translation data."""
-    line, _level, _is_best = card_line(row)
-    if line:
-        return line, False
+    selection = card_line(row)
+    if selection.line:
+        return selection.line, False
     if row.stat_line:
         return {}, False
     translated = row.stat_line_translated or {}
@@ -776,30 +807,33 @@ def _no_sample_report(row) -> str:
     )
 
 
-def _eligible_hitter(row) -> bool:
-    line = row.stat_line or {}
-    pa = line.get("pa")
-    return bool(row.is_prospect and line and isinstance(pa, (int, float)) and pa >= MIN_PA)
+def _line_sample_for_role(line: dict, role_is_pitcher: bool) -> float | None:
+    sample = line.get("ip" if role_is_pitcher else "pa")
+    if sample is None:
+        sample = line.get("sample")
+    return float(sample) if isinstance(sample, (int, float)) else None
 
 
-def _eligible_pitcher(row) -> bool:
-    line = row.stat_line or {}
-    ip = line.get("ip")
-    return bool(row.is_prospect and line and isinstance(ip, (int, float)) and ip >= MIN_IP)
+def _clears_sample_floor(line: dict, role_is_pitcher: bool) -> bool:
+    sample = _line_sample_for_role(line, role_is_pitcher)
+    floor = MIN_IP if role_is_pitcher else MIN_PA
+    return sample is not None and sample >= floor
 
 
 def build_pool(rows) -> dict[str, list[float]]:
-    """Sorted per-metric value arrays over eligible prospects."""
+    """Sorted per-metric value arrays over eligible prospects, ranked on each
+    player's CARD LINE (combined season line when present, else current-level or
+    best-single line) so the pool and the displayed bars draw from one source.
+    Falling back through card_line keeps the pool populated before the snapshot
+    rebuild attaches combined lines (otherwise the bars would have no pool)."""
     pool: dict[str, list[float]] = {m: [] for m in METRICS}
     for row in rows:
-        if _eligible_hitter(row):
-            metrics = HITTER_METRICS
-        elif _eligible_pitcher(row):
-            metrics = PITCHER_METRICS
-        else:
+        line = card_line(row).line
+        if line is None:
             continue
+        metrics = PITCHER_METRICS if _is_pitcher(row, line) else HITTER_METRICS
         for m in metrics:
-            v = (row.stat_line or {}).get(m)
+            v = line.get(m)
             if isinstance(v, (int, float)):
                 pool[m].append(float(v))
     return {m: sorted(vs) for m, vs in pool.items() if vs}
@@ -819,31 +853,39 @@ def percentile_for(pool: dict, metric: str, value) -> int | None:
     return max(1, min(99, round(pct)))
 
 
-def card_line(row) -> tuple[dict | None, str | None, bool]:
+def card_line(row) -> CardLineSelection:
     """The stat line the card reads percentiles/skill-shape from, its level label, and
-    whether it is the best-single-level fallback. Current-level line if it clears the
-    sample threshold; else the best single-level line if it clears; else (None, None,
-    False). The best line is a raw single-level line (never a translation), so it ranks
+    whether it is the best-single-level fallback. Combined season line if it clears the
+    sample threshold; else current-level line; else best single-level line; else (None,
+    None, False). The selected line is raw MiLB data, so it ranks
     against the same raw pool — only labeled with its own level, not the current one."""
     if not getattr(row, "is_prospect", False):
-        return None, None, False
+        return CardLineSelection(None, None, False)
+    combined = getattr(row, "combined_season_stat_line", None)
+    if isinstance(combined, dict) and combined:
+        role_is_pitcher = _is_pitcher(row, combined)
+        if _clears_sample_floor(combined, role_is_pitcher):
+            return CardLineSelection(
+                combined,
+                combined.get("level_label") or combined.get("level"),
+                False,
+                is_combined=True,
+            )
     line = row.stat_line or {}
     role_is_pitcher = _is_pitcher(row, line)
-    min_sample = MIN_IP if role_is_pitcher else MIN_PA
-    sample = line.get("ip" if role_is_pitcher else "pa")
-    if line and isinstance(sample, (int, float)) and sample >= min_sample:
-        return line, None, False
+    if line and _clears_sample_floor(line, role_is_pitcher):
+        return CardLineSelection(line, None, False)
     best = getattr(row, "best_single_level_stat_line", None)
     if isinstance(best, dict) and best:
-        b_sample = best.get("sample")
-        if isinstance(b_sample, (int, float)) and b_sample >= min_sample:
-            return best, best.get("level"), True
-    return None, None, False
+        if _clears_sample_floor(best, role_is_pitcher):
+            return CardLineSelection(best, best.get("level"), True)
+    return CardLineSelection(None, None, False)
 
 
 def card_percentiles(pool: dict, row) -> dict[str, int]:
     """{metric: percentile} for the card's selected line; {} when no line clears."""
-    line, _level, _is_best = card_line(row)
+    selection = card_line(row)
+    line = selection.line
     if line is None:
         return {}
     metrics = PITCHER_METRICS if _is_pitcher(row, line) else HITTER_METRICS
@@ -857,23 +899,28 @@ def card_percentiles(pool: dict, row) -> dict[str, int]:
 
 def pool_label(row) -> str:
     """Display label for the percentile comparison pool."""
-    line, level, is_best = card_line(row)
+    selection = card_line(row)
+    line = selection.line
     role_is_pitcher = _is_pitcher(row, line if line is not None else (row.stat_line or {}))
     base = (
         f"vs ValuCast pitcher pool - all levels - {MIN_IP}+ IP"
         if role_is_pitcher
         else f"vs ValuCast hitter pool - all levels - {MIN_PA}+ PA"
     )
-    if is_best and level:
-        return f"{base} - best {level} read"
+    if selection.is_combined and isinstance(line, dict):
+        season = line.get("season")
+        if season:
+            return f"{base} - combined {season} line"
+        return f"{base} - combined season line"
     return base
 
 
 def profile_bars(row, percentiles: dict) -> tuple[dict, ...]:
     """Ordered profile bars for the expanded player card."""
-    # Read the SAME line card_percentiles/pool_label use, so the displayed value matches
-    # the percentile fill and the "best {level} read" label (best-single fallback included).
-    line, _level, _is_best = card_line(row)
+    # Read the SAME line card_percentiles/pool_label use, so the displayed value
+    # matches the percentile fill and label.
+    selection = card_line(row)
+    line = selection.line
     if not line or not percentiles:
         return ()
     order = PITCHER_PROFILE_ORDER if _is_pitcher(row, line) else HITTER_PROFILE_ORDER
@@ -902,7 +949,8 @@ def _grade_from_pcts(pcts: list[int]) -> int | None:
 
 def skill_grades(row, percentiles: dict) -> tuple[dict, ...]:
     """20-80-style current skill shape derived from ValuCast percentiles."""
-    line, _level, _is_best = card_line(row)
+    selection = card_line(row)
+    line = selection.line
     if not line or not percentiles:
         return ()
     specs = PITCHER_SKILL_SPECS if _is_pitcher(row, line) else HITTER_SKILL_SPECS

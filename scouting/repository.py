@@ -190,17 +190,28 @@ def _mlb_row_report(row, statcast_groups: list[dict] | None = None) -> dict:
     }
 
 
-def _card_display_line_grounding(line: dict | None, is_best: bool) -> dict | None:
+def _card_display_line_grounding(
+    line: dict | None,
+    is_best: bool,
+    source_kind: str | None = None,
+) -> dict | None:
     if not isinstance(line, dict) or not line:
         return None
     return {
         **line,
         "usage": "the line shown on the card skill bars",
-        "source_kind": "best_single_level_stat_line" if is_best else "current_minor_league_line",
+        "source_kind": source_kind
+        or ("best_single_level_stat_line" if is_best else "current_minor_league_line"),
     }
 
 
-def _line_sample_context(row, line: dict | None, level: str | None, is_best: bool) -> dict | None:
+def _line_sample_context(
+    row,
+    line: dict | None,
+    level: str | None,
+    is_best: bool,
+    source_kind: str | None = None,
+) -> dict | None:
     if not isinstance(line, dict) or not line:
         return None
     is_pitcher = any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct"))
@@ -214,7 +225,8 @@ def _line_sample_context(row, line: dict | None, level: str | None, is_best: boo
         "sample_unit": sample_unit,
         "season": line.get("season") or context.get("stat_line_sample_season"),
         "level": level or line.get("level") or row.level,
-        "source_kind": "best_single_level_stat_line" if is_best else context.get("stat_line_source_kind"),
+        "source_kind": source_kind
+        or ("best_single_level_stat_line" if is_best else context.get("stat_line_source_kind")),
     }
 
 
@@ -394,7 +406,13 @@ def _llm_grounding(
             "score_delta_3d": recent_signal.get("score_delta_3d"),
             "rank_delta_3d": recent_signal.get("rank_delta_3d"),
         }.items() if value not in (None, "")} or None
-    card_stat_line, card_level, card_line_is_best = prospect_percentiles.card_line(row)
+    card_selection = prospect_percentiles.card_line(row)
+    card_stat_line, card_level, card_line_is_best = card_selection
+    card_source_kind = (
+        card_selection.source_kind
+        if card_selection.is_combined or card_selection.is_best
+        else None
+    )
     grounding = {
         "name": row.name,
         "role": row.role,
@@ -405,7 +423,11 @@ def _llm_grounding(
         "level": row.level,
         "age": row.age,
         "prospect_rank": row.prospect_rank,
-        "card_display_line": _card_display_line_grounding(card_stat_line, card_line_is_best),
+        "card_display_line": _card_display_line_grounding(
+            card_stat_line,
+            card_line_is_best,
+            card_source_kind,
+        ),
         "mlb_equivalent_translation": _mlb_equivalent_translation_grounding(row.stat_line_translated),
         "current_skill_percentiles": percentiles or None,
         "percentile_pool": pool_label,
@@ -413,7 +435,13 @@ def _llm_grounding(
         "peak_projection_detail": peak_detail,
         "valucast_rank_movement": rank_movement,
         "availability": row.availability_context or None,
-        "sample_context": _line_sample_context(row, card_stat_line, card_level, card_line_is_best),
+        "sample_context": _line_sample_context(
+            row,
+            card_stat_line,
+            card_level,
+            card_line_is_best,
+            card_source_kind,
+        ),
     }
     return {key: value for key, value in grounding.items() if value not in (None, {}, [])}
 

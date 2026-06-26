@@ -2,6 +2,7 @@ import unittest
 
 from prospects.milb_translation import (
     best_single_level_stat_line,
+    combined_season_stat_line,
     translate_peripherals,
 )
 
@@ -112,6 +113,85 @@ class TestBestSingleLevel(unittest.TestCase):
             current_line={"pa": 50}, current_level="AAA",
             history_rows=[old], role="hitter", season=2026)
         self.assertIsNone(out)
+
+
+class TestCombinedSeasonStatLine(unittest.TestCase):
+    def test_hitter_combines_levels_with_full_metric_set(self):
+        rows = [
+            {
+                "role": "hitter", "season": 2026, "level": "AAA",
+                "plate_appearances": 80, "at_bats": 70, "hits": 21,
+                "home_runs": 4, "stolen_bases": 2, "walks": 8,
+                "avg": 0.300, "obp": 0.375, "slg": 0.520, "ops": 0.895,
+                "iso": 0.220, "babip": 0.340, "k_pct": 18.0, "bb_pct": 10.0,
+            },
+            {
+                "role": "hitter", "season": 2026, "level": "AA",
+                "plate_appearances": 120, "at_bats": 105, "hits": 28,
+                "home_runs": 5, "stolen_bases": 4, "walks": 12,
+                "avg": 0.267, "obp": 0.342, "slg": 0.470, "ops": 0.812,
+                "iso": 0.203, "babip": 0.310, "k_pct": 22.0, "bb_pct": 10.0,
+            },
+        ]
+
+        out = combined_season_stat_line(rows, "hitter", 2026)
+
+        self.assertIsNotNone(out)
+        self.assertEqual(out["role"], "hitter")
+        self.assertEqual(out["season"], 2026)
+        self.assertEqual(out["level"], "AAA")
+        self.assertEqual(out["levels"], ["AAA", "AA"])
+        self.assertEqual(out["level_label"], "AAA+AA")
+        self.assertEqual(out["sample"], 200)
+        self.assertEqual(out["sample_unit"], "PA")
+        self.assertEqual(out["pa"], 200)
+        for key in ("avg", "obp", "slg", "ops", "iso", "babip", "k_pct", "bb_pct"):
+            self.assertIn(key, out)
+        for key in ("home_runs", "stolen_bases", "walks", "hits", "at_bats", "plate_appearances"):
+            self.assertIn(key, out)
+        self.assertEqual(out["home_runs"], 9)
+        self.assertEqual(out["stolen_bases"], 6)
+        self.assertEqual(out["walks"], 20)
+        self.assertAlmostEqual(out["iso"], (0.220 * 80 + 0.203 * 120) / 200, places=3)
+        self.assertAlmostEqual(out["babip"], (0.340 * 80 + 0.310 * 120) / 200, places=3)
+
+    def test_pitcher_combines_levels_with_full_metric_set(self):
+        rows = [
+            {
+                "role": "pitcher", "season": 2026, "level": "AA",
+                "innings_pitched": 12.0, "strikeouts": 20, "walks": 5,
+                "batters_faced": 50, "games_started": 2,
+                "era": 2.25, "whip": 1.00, "k_per_9": 15.0,
+                "bb_per_9": 3.75, "k_bb_pct": 30.0,
+            },
+            {
+                "role": "pitcher", "season": 2026, "level": "A+",
+                "innings_pitched": 18.0, "strikeouts": 18, "walks": 6,
+                "batters_faced": 75, "games_started": 3,
+                "era": 3.50, "whip": 1.20, "k_per_9": 9.0,
+                "bb_per_9": 3.0, "k_bb_pct": 16.0,
+            },
+        ]
+
+        out = combined_season_stat_line(rows, "pitcher", 2026)
+
+        self.assertIsNotNone(out)
+        self.assertEqual(out["level"], "AA")
+        self.assertEqual(out["levels"], ["AA", "A+"])
+        self.assertEqual(out["level_label"], "AA+A+")
+        self.assertEqual(out["sample"], 30.0)
+        self.assertEqual(out["sample_unit"], "IP")
+        self.assertEqual(out["ip"], 30.0)
+        for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct"):
+            self.assertIn(key, out)
+        for key in ("strikeouts", "walks", "innings_pitched", "batters_faced", "games_started"):
+            self.assertIn(key, out)
+        self.assertEqual(out["strikeouts"], 38)
+        self.assertEqual(out["walks"], 11)
+        self.assertEqual(out["batters_faced"], 125)
+        self.assertEqual(out["games_started"], 5)
+        self.assertAlmostEqual(out["k_per_9"], (15.0 * 12 + 9.0 * 18) / 30, places=3)
+        self.assertAlmostEqual(out["bb_per_9"], (3.75 * 12 + 3.0 * 18) / 30, places=3)
 
 
 if __name__ == "__main__":

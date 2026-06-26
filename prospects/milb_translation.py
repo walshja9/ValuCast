@@ -173,6 +173,214 @@ def _round_line_value(value):
     return round(number, 3)
 
 
+def _numeric(value) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number
+
+
+def _sample_value(total: float, role: str):
+    if role == "hitter":
+        return int(total) if float(total).is_integer() else round(total, 1)
+    return round(total, 1)
+
+
+def _sum_numeric(rows: list[dict], key: str, *aliases: str):
+    total = 0.0
+    found = False
+    for row in rows:
+        value = None
+        for candidate in (key, *aliases):
+            value = _numeric(row.get(candidate))
+            if value is not None:
+                break
+        if value is None:
+            continue
+        total += value
+        found = True
+    if not found:
+        return None
+    return int(total) if float(total).is_integer() else round(total, 3)
+
+
+def _ratio(numerator, denominator, *, scale: float = 1.0) -> float | None:
+    numerator = _numeric(numerator)
+    denominator = _numeric(denominator)
+    if numerator is None or denominator is None or denominator <= 0:
+        return None
+    return scale * numerator / denominator
+
+
+def _hitter_rate_value(row: dict, key: str) -> float | None:
+    direct = _numeric(row.get(key))
+    if direct is not None:
+        return direct
+    hits = _numeric(row.get("hits"))
+    at_bats = _numeric(row.get("at_bats"))
+    walks = _numeric(row.get("walks"))
+    pa = _line_sample(row, "hitter")
+    strikeouts = _numeric(row.get("strikeouts"))
+    home_runs = _numeric(row.get("home_runs"))
+    doubles = _numeric(row.get("doubles"))
+    triples = _numeric(row.get("triples"))
+    sac_flies = _numeric(row.get("sac_flies")) or 0.0
+    hit_by_pitch = _numeric(row.get("hit_by_pitch")) or 0.0
+
+    if key == "avg":
+        return _ratio(hits, at_bats)
+    if key == "obp":
+        return _ratio(
+            (hits or 0.0) + (walks or 0.0) + hit_by_pitch,
+            (at_bats or 0.0) + (walks or 0.0) + hit_by_pitch + sac_flies,
+        )
+    if key in {"slg", "ops", "iso"}:
+        if hits is None or at_bats is None or at_bats <= 0:
+            return None
+        doubles = doubles or 0.0
+        triples = triples or 0.0
+        home_runs = home_runs or 0.0
+        total_bases = hits + doubles + (2 * triples) + (3 * home_runs)
+        slg = total_bases / at_bats
+        avg = _hitter_rate_value(row, "avg")
+        if key == "slg":
+            return slg
+        if key == "iso":
+            return slg - avg if avg is not None else None
+        obp = _hitter_rate_value(row, "obp")
+        return obp + slg if obp is not None else None
+    if key == "babip":
+        denominator = (at_bats or 0.0) - (strikeouts or 0.0) - (home_runs or 0.0) + sac_flies
+        return _ratio((hits or 0.0) - (home_runs or 0.0), denominator)
+    if key == "k_pct":
+        return _ratio(strikeouts, pa, scale=100.0)
+    if key == "bb_pct":
+        return _ratio(walks, pa, scale=100.0)
+    return None
+
+
+def _pitcher_rate_value(row: dict, key: str) -> float | None:
+    direct = _numeric(row.get(key))
+    if direct is not None:
+        return direct
+    ip = _line_sample(row, "pitcher")
+    strikeouts = _numeric(row.get("strikeouts"))
+    walks = _numeric(row.get("walks"))
+    hits = _numeric(row.get("hits"))
+    earned_runs = _numeric(row.get("earned_runs"))
+    batters_faced = _numeric(row.get("batters_faced"))
+
+    if key == "k_per_9":
+        return _ratio(strikeouts, ip, scale=9.0)
+    if key == "bb_per_9":
+        return _ratio(walks, ip, scale=9.0)
+    if key == "k_bb_pct":
+        return _ratio((strikeouts or 0.0) - (walks or 0.0), batters_faced, scale=100.0)
+    if key == "era":
+        return _ratio(earned_runs, ip, scale=9.0)
+    if key == "whip":
+        return _ratio((walks or 0.0) + (hits or 0.0), ip)
+    return None
+
+
+def _weighted_rate(rows: list[dict], role: str, key: str):
+    weighted = 0.0
+    weight = 0.0
+    value_for = _pitcher_rate_value if role == "pitcher" else _hitter_rate_value
+    for row in rows:
+        sample = _line_sample(row, role)
+        if sample <= 0:
+            continue
+        value = value_for(row, key)
+        if value is None:
+            continue
+        weighted += value * sample
+        weight += sample
+    if weight <= 0:
+        return None
+    return _round_line_value(weighted / weight)
+
+
+def combined_season_stat_line(history_rows: list[dict], role: str, season: int) -> dict | None:
+    """All-level same-season line for display-only card percentile reads.
+
+    Counting stats are summed; rate stats are PA/IP-weighted across per-level
+    rows. This is not used by prospect scoring.
+    """
+    if role not in ("hitter", "pitcher"):
+        return None
+    try:
+        target_season = int(season)
+    except (TypeError, ValueError):
+        return None
+
+    rows = []
+    for row in history_rows or []:
+        if row.get("role") != role:
+            continue
+        try:
+            row_season = int(row.get("season"))
+        except (TypeError, ValueError):
+            continue
+        if row_season != target_season or _line_sample(row, role) <= 0:
+            continue
+        rows.append(row)
+    if not rows:
+        return None
+
+    total_sample = sum(_line_sample(row, role) for row in rows)
+    if total_sample <= 0:
+        return None
+    levels = []
+    for row in sorted(rows, key=lambda r: _level_rank(_normalize_level(r.get("level"))), reverse=True):
+        level = _normalize_level(row.get("level"))
+        if level and level not in levels:
+            levels.append(level)
+    level = levels[0] if levels else None
+    level_label = "+".join(levels) if levels else None
+    sample = _sample_value(total_sample, role)
+
+    out = {
+        "role": role,
+        "season": target_season,
+        "level": level,
+        "levels": levels,
+        "level_label": level_label,
+        "sample": sample,
+        "sample_unit": "IP" if role == "pitcher" else "PA",
+    }
+    if role == "hitter":
+        out.update({
+            key: _weighted_rate(rows, role, key)
+            for key in ("iso", "babip", "k_pct", "bb_pct", "ops", "avg", "obp", "slg")
+        })
+        out.update({
+            "home_runs": _sum_numeric(rows, "home_runs"),
+            "stolen_bases": _sum_numeric(rows, "stolen_bases"),
+            "walks": _sum_numeric(rows, "walks"),
+            "hits": _sum_numeric(rows, "hits"),
+            "at_bats": _sum_numeric(rows, "at_bats"),
+            "plate_appearances": _sum_numeric(rows, "plate_appearances", "pa"),
+            "pa": sample,
+        })
+        return out
+
+    out.update({
+        key: _weighted_rate(rows, role, key)
+        for key in ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+    })
+    out.update({
+        "strikeouts": _sum_numeric(rows, "strikeouts"),
+        "walks": _sum_numeric(rows, "walks"),
+        "innings_pitched": _sum_numeric(rows, "innings_pitched", "ip"),
+        "batters_faced": _sum_numeric(rows, "batters_faced"),
+        "games_started": _sum_numeric(rows, "games_started"),
+        "ip": sample,
+    })
+    return out
+
+
 def _stat_line_from_history_row(row: dict, role: str) -> dict | None:
     sample = _line_sample(row, role)
     if sample <= 0:

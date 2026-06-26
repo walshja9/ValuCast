@@ -25,6 +25,7 @@ class TestOptionalFieldCoercion(unittest.TestCase):
         self.assertEqual(row.value_history, ())
         self.assertIsNone(row.mlb_stat_line)
         self.assertIsNone(row.stat_line_translated)
+        self.assertIsNone(row.combined_season_stat_line)
 
     def test_value_history_coerces_pairs_and_drops_garbage(self):
         row = DynastyRankingRow.from_feed(_record(value_history=[
@@ -43,9 +44,13 @@ class TestOptionalFieldCoercion(unittest.TestCase):
 
     def test_dict_fields_reject_non_dicts(self):
         row = DynastyRankingRow.from_feed(_record(
-            mlb_stat_line=["not", "a", "dict"], stat_line_translated="nope"))
+            mlb_stat_line=["not", "a", "dict"],
+            stat_line_translated="nope",
+            combined_season_stat_line="nope",
+        ))
         self.assertIsNone(row.mlb_stat_line)
         self.assertIsNone(row.stat_line_translated)
+        self.assertIsNone(row.combined_season_stat_line)
 
 
 class TestBuildSpark(unittest.TestCase):
@@ -117,13 +122,16 @@ class TestTranslatedBlock(_CardCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b"MLB-Equivalent Rates", resp.data)
 
-    def test_pool_label_carries_all_levels_caveat(self):
-        row = next(r for r in app_module.dd_store.get_all()
-                   if r.is_prospect and r.stat_line)
+    def test_pool_label_carries_combined_line_caveat(self):
+        row = next((r for r in app_module.dd_store.get_all()
+                    if r.is_prospect and getattr(r, "combined_season_stat_line", None)), None)
+        if row is None:
+            self.skipTest("feed predates combined_season_stat_line")
         resp = self.client.get(f"/player/{row.id}?mode=dd_dynasty", headers=HX)
         if b"ValuCast hitter pool" in resp.data:
             self.assertIn(b"all levels", resp.data)
             self.assertIn(b"100+ PA", resp.data)
+            self.assertIn(b"combined 2026 line", resp.data)
 
 
 if __name__ == "__main__":

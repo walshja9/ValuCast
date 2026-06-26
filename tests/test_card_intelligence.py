@@ -21,12 +21,28 @@ def _row(
     source_ranks=None,
     stat_line=None,
     stat_line_translated=None,
+    combined_season_stat_line=None,
     level=None,
     context=None,
     components=None,
     dynasty_value=70.0,
     peak_projection=None,
 ):
+    if combined_season_stat_line is None and player_type == "prospect" and isinstance(stat_line, dict):
+        is_pitcher = positions and set(positions) <= {"P", "SP", "RP"}
+        sample_key = "ip" if is_pitcher else "pa"
+        sample_unit = "IP" if is_pitcher else "PA"
+        if isinstance(stat_line.get(sample_key), (int, float)):
+            combined_season_stat_line = {
+                **stat_line,
+                "role": "pitcher" if is_pitcher else "hitter",
+                "season": 2026,
+                "level": level or "AA",
+                "levels": [level or "AA"],
+                "level_label": level or "AA",
+                "sample": stat_line[sample_key],
+                "sample_unit": sample_unit,
+            }
     return DynastyRankingRow.from_feed({
         "id": row_id,
         "player_type": player_type,
@@ -43,6 +59,7 @@ def _row(
         "breakout_rank_change": change,
         "stat_line": stat_line,
         "stat_line_translated": stat_line_translated,
+        "combined_season_stat_line": combined_season_stat_line,
         "level": level,
         "context": context,
         "components": components,
@@ -698,6 +715,24 @@ FEED = {
                 "bb_pct": 12.0,
                 "pa": 200,
             },
+            "combined_season_stat_line": {
+                "role": "hitter",
+                "season": 2026,
+                "level": "AA",
+                "levels": ["AA"],
+                "level_label": "AA",
+                "sample": 200,
+                "sample_unit": "PA",
+                "pa": 200,
+                "avg": 0.300,
+                "obp": 0.400,
+                "slg": 0.550,
+                "ops": 0.950,
+                "iso": 0.250,
+                "babip": 0.330,
+                "k_pct": 18.0,
+                "bb_pct": 12.0,
+            },
         },
         {
             "id": "dd_prospect_small",
@@ -724,6 +759,24 @@ FEED = {
                 "bb_pct": 8.0,
                 "pa": 80,
             },
+            "combined_season_stat_line": {
+                "role": "hitter",
+                "season": 2026,
+                "level": "A+",
+                "levels": ["A+"],
+                "level_label": "A+",
+                "sample": 80,
+                "sample_unit": "PA",
+                "pa": 80,
+                "avg": 0.250,
+                "obp": 0.320,
+                "slg": 0.400,
+                "ops": 0.720,
+                "iso": 0.150,
+                "babip": 0.300,
+                "k_pct": 28.0,
+                "bb_pct": 8.0,
+            },
         },
         {
             "id": "dd_prospect_arm",
@@ -748,6 +801,21 @@ FEED = {
                 "bb_per_9": 2.4,
                 "k_bb_pct": 26.0,
                 "ip": 44.2,
+            },
+            "combined_season_stat_line": {
+                "role": "pitcher",
+                "season": 2026,
+                "level": "AA",
+                "levels": ["AA"],
+                "level_label": "AA",
+                "sample": 44.2,
+                "sample_unit": "IP",
+                "ip": 44.2,
+                "era": 2.45,
+                "whip": 1.02,
+                "k_per_9": 12.4,
+                "bb_per_9": 2.4,
+                "k_bb_pct": 26.0,
             },
         },
     ],
@@ -818,6 +886,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"vs ValuCast hitter pool", response.data)
         self.assertIn(b"all levels", response.data)
         self.assertIn(b"100+ PA", response.data)
+        self.assertIn(b"combined 2026 line", response.data)
         self.assertIn(
             b"percentile in the ValuCast prospect pool",
             response.data,

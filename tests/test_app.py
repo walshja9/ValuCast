@@ -730,7 +730,7 @@ class TestDynastyMode(unittest.TestCase):
 
         row = SimpleNamespace(
             level="AA",
-            sample_context_label="AA sample: 72 PA | 2026 total: 177 PA across AA+A+",
+            sample_context_label="Combined 2026 line - AA+A+ - 177 PA",
         )
 
         label = _graphic_sample_context_label(
@@ -744,7 +744,7 @@ class TestDynastyMode(unittest.TestCase):
 
         self.assertEqual(
             label,
-            "AA sample: 72 PA | 2026 total: 177 PA across AA+A+",
+            "Combined 2026 line - AA+A+ - 177 PA",
         )
 
     def test_prospect_detail_links_player_share_graphic(self):

@@ -489,6 +489,7 @@ def _prospect_rows(
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
                 "best_single_level_stat_line": context.get("best_single_level_stat_line"),
+                "combined_season_stat_line": context.get("combined_season_stat_line"),
                 "mlb_stat_line": (mlb_stat_line_by_id or {}).get((_mlbam_id(row) or "", row.get("role"))),
                 "peak_projection": peak,
                 "context": {

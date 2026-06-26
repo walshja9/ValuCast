@@ -2184,6 +2184,21 @@ def _prospect_player_card_png(row):
             return None
         return scale * numerator / denominator
 
+    def _season_wavg(rows, key, weight_key="plate_appearances"):
+        """PA/IP-weighted mean of the official per-level rate. Recomputing rates
+        from summed counting omits HBP (absent in the feed) and can push the OBP/OPS
+        total below every per-level value; weighting the official rate avoids that
+        and matches the combined-line percentile bars."""
+        num = den = 0.0
+        for stats_row in rows:
+            value = _season_number(stats_row.get(key))
+            weight = _season_number(stats_row.get(weight_key))
+            if value is None or weight is None or weight <= 0:
+                continue
+            num += value * weight
+            den += weight
+        return round(num / den, 3) if den else None
+
     def _season_role_for_card(card_row):
         role = str(getattr(card_row, "role", "") or "").strip().lower()
         if role in {"hitter", "pitcher"}:
@@ -2223,35 +2238,20 @@ def _prospect_player_card_png(row):
         return season_rows, role
 
     def _hitter_total_row(rows):
-        pa = _season_sum(rows, "plate_appearances")
-        ab = _season_sum(rows, "at_bats")
-        hits = _season_sum(rows, "hits")
-        doubles = _season_sum(rows, "doubles")
-        triples = _season_sum(rows, "triples")
-        hr = _season_sum(rows, "home_runs")
-        walks = _season_sum(rows, "walks")
-        strikeouts = _season_sum(rows, "strikeouts")
-        sb = _season_sum(rows, "stolen_bases")
-        has_sf = any(
-            stats_row.get("sac_flies") is not None
-            for stats_row in rows
-            if isinstance(stats_row, dict)
-        )
-        sf = _season_sum(rows, "sac_flies") if has_sf else 0.0
-        total_bases = hits + doubles + (2 * triples) + (3 * hr)
-        obp = _season_ratio(hits + walks, ab + walks + sf)
-        slg = _season_ratio(total_bases, ab)
+        # Counting stats sum; rate stats are PA-weighted from the official per-level
+        # rates (so the Total matches the combined-line bars and stays between the
+        # per-level values). See _season_wavg for why rates are not recomputed.
         return {
             "level": "Total",
-            "plate_appearances": pa,
-            "avg": _season_ratio(hits, ab),
-            "obp": obp,
-            "slg": slg,
-            "ops": (obp + slg) if obp is not None and slg is not None else None,
-            "home_runs": hr,
-            "stolen_bases": sb,
-            "bb_pct": _season_ratio(walks, pa, scale=100.0),
-            "k_pct": _season_ratio(strikeouts, pa, scale=100.0),
+            "plate_appearances": _season_sum(rows, "plate_appearances"),
+            "avg": _season_wavg(rows, "avg"),
+            "obp": _season_wavg(rows, "obp"),
+            "slg": _season_wavg(rows, "slg"),
+            "ops": _season_wavg(rows, "ops"),
+            "home_runs": _season_sum(rows, "home_runs"),
+            "stolen_bases": _season_sum(rows, "stolen_bases"),
+            "bb_pct": _season_wavg(rows, "bb_pct"),
+            "k_pct": _season_wavg(rows, "k_pct"),
         }
 
     def _pitcher_total_row(rows):

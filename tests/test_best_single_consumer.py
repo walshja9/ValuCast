@@ -23,6 +23,7 @@ from web import prospect_percentiles
 def _row(
     stat_line=None,
     best=None,
+    combined=None,
     positions=("OF",),
     is_prospect=True,
     translated=None,
@@ -34,6 +35,7 @@ def _row(
         is_prospect=is_prospect,
         stat_line=stat_line,
         best_single_level_stat_line=best,
+        combined_season_stat_line=combined,
         positions=list(positions),
         stat_line_translated=translated,
         level=level,
@@ -55,8 +57,14 @@ def _hitter_line(pa, scale=1.0):
 class TestBestSingleConsumer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # A raw "all levels" pool of current-eligible hitters (PA >= 100).
-        cls.pool = build_pool([_row(stat_line=_hitter_line(300, 1.0 + 0.03 * i)) for i in range(6)])
+        # A raw combined-line pool of current-season eligible hitters (PA >= 100).
+        cls.pool = build_pool([
+            _row(
+                stat_line=_hitter_line(300, 0.5),
+                combined={**_hitter_line(300, 1.0 + 0.03 * i), "season": 2026, "level_label": "AA"},
+            )
+            for i in range(6)
+        ])
 
     def test_current_clears_uses_current_line(self):
         r = _row(stat_line=_hitter_line(200, 1.15))
@@ -77,7 +85,41 @@ class TestBestSingleConsumer(unittest.TestCase):
         self.assertEqual(level, "AA")
         self.assertTrue(is_best)
         self.assertTrue(card_percentiles(self.pool, r))            # percentiles come from the best line
-        self.assertIn("best AA read", pool_label(r))
+        self.assertNotIn("best AA read", pool_label(r))
+
+    def test_combined_line_takes_priority_over_current_and_best(self):
+        current = _hitter_line(50, 0.70)
+        best = {"level": "AA", "sample": 250, "sample_unit": "PA",
+                "avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900, "iso": 0.220,
+                "k_pct": 17.0, "bb_pct": 11.0}
+        combined = {**_hitter_line(200, 1.10), "season": 2026, "level_label": "AAA+AA"}
+        r = _row(stat_line=current, best=best, combined=combined)
+
+        selection = card_line(r)
+        line, level, is_best = selection
+
+        self.assertIs(line, combined)
+        self.assertEqual(level, "AAA+AA")
+        self.assertFalse(is_best)
+        self.assertTrue(selection.is_combined)
+        self.assertTrue(card_percentiles(self.pool, r))
+        self.assertIn("combined 2026 line", pool_label(r))
+
+    def test_build_pool_uses_combined_lines_not_current_lines(self):
+        rows = [
+            _row(
+                stat_line={**_hitter_line(200), "ops": 1.200},
+                combined={**_hitter_line(200), "ops": 0.700, "season": 2026, "level_label": "A+"},
+            ),
+            _row(
+                stat_line={**_hitter_line(200), "ops": 1.300},
+                combined={**_hitter_line(200), "ops": 0.800, "season": 2026, "level_label": "AA"},
+            ),
+        ]
+
+        pool = build_pool(rows)
+
+        self.assertEqual(pool["ops"], [0.700, 0.800])
 
     def test_profile_bars_thin_current_uses_best_values(self):
         # Regression: bar VALUES must come from the SAME line the percentiles use (the

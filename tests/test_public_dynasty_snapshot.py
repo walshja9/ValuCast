@@ -132,6 +132,30 @@ def _rank_payload():
                     "breakout_rank_change": 5,
                     "value_history_points": 3,
                     "stat_line": {"ops": 0.900, "pa": 200},
+                    "combined_season_stat_line": {
+                        "role": "hitter",
+                        "season": 2026,
+                        "level": "AA",
+                        "levels": ["AA", "A+"],
+                        "level_label": "AA+A+",
+                        "sample": 260,
+                        "sample_unit": "PA",
+                        "pa": 260,
+                        "avg": 0.304,
+                        "obp": 0.390,
+                        "slg": 0.540,
+                        "ops": 0.930,
+                        "iso": 0.236,
+                        "babip": 0.350,
+                        "k_pct": 15.0,
+                        "bb_pct": 10.0,
+                        "home_runs": 9,
+                        "stolen_bases": 4,
+                        "walks": 26,
+                        "hits": 70,
+                        "at_bats": 230,
+                        "plate_appearances": 260,
+                    },
                     "stat_line_source": "valucast_input_contract",
                     "stat_line_source_kind": "current_season",
                     "stat_line_level": "AA",
@@ -526,6 +550,8 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
     assert top_prospect["context"]["kind"] == "optional_display_context"
     assert top_prospect["context"]["stat_line_source"] == "valucast_input_contract"
     assert top_prospect["context"]["stat_line_source_kind"] == "current_season"
+    assert top_prospect["combined_season_stat_line"]["level_label"] == "AA+A+"
+    assert top_prospect["combined_season_stat_line"]["sample"] == 260
     assert top_prospect["context"]["graduation_context"]["status"] == "near_graduation"
     assert top_prospect["context"]["cross_universe_calibration"]["raw_value"] == 55.5
     assert (
@@ -885,14 +911,12 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     assert row.availability_status_label == "Thin Current Sample"
     assert row.availability_sample_label == "260 PA"
     assert row.stat_line_sample_label == "200 PA"
-    assert row.current_level_sample_label == "AA sample: 200 PA"
+    assert row.current_level_sample_label == "Combined 2026 line - AA+A+ - 260 PA"
     assert row.current_level_sample_badge == "AA 200 PA"
     assert row.has_split_level_sample is True
-    assert row.season_total_sample_label == "2026 total: 260 PA across AA+A+"
+    assert row.season_total_sample_label == "Combined 2026 line - AA+A+ - 260 PA"
     assert row.season_total_sample_badge == "2026 total 260 PA"
-    assert row.sample_context_label == (
-        "AA sample: 200 PA | 2026 total: 260 PA across AA+A+"
-    )
+    assert row.sample_context_label == "Combined 2026 line - AA+A+ - 260 PA"
     assert row.availability_note == "Thin sample."
     assert row.bucket_calibration_adjusted is True
     assert row.bucket_calibration_label == "Lower-minors context"
@@ -944,14 +968,32 @@ def test_split_level_sample_ignores_rounding_noise(tmp_path):
         "season": 2026,
         "stats": {"OPS": 0.760},
     }
+    prospect["combined_season_stat_line"] = {
+        "role": "hitter",
+        "season": 2026,
+        "level": "AA",
+        "levels": ["AA"],
+        "level_label": "AA",
+        "sample": 200.2,
+        "sample_unit": "PA",
+        "pa": 200.2,
+        "avg": 0.300,
+        "obp": 0.380,
+        "slg": 0.500,
+        "ops": 0.880,
+        "iso": 0.200,
+        "babip": 0.330,
+        "k_pct": 18.0,
+        "bb_pct": 10.0,
+    }
     store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
 
     row = store.get_by_id("vc_prospect_1_hitter")
 
     assert row is not None
     assert row.has_split_level_sample is False
-    assert row.season_total_sample_label is None
-    assert row.sample_context_label == "AA sample: 200 PA"
+    assert row.season_total_sample_label == "Combined 2026 line - AA - 200.2 PA"
+    assert row.sample_context_label == "Combined 2026 line - AA - 200.2 PA"
 
 
 def test_card_level_label_prefers_fresh_promoted_level_over_stale_feed(tmp_path):

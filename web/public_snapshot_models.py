@@ -90,6 +90,7 @@ class PublicSnapshotRow:
     mlb_stat_line: dict | None = None
     stat_line_translated: dict | None = None
     best_single_level_stat_line: dict | None = None
+    combined_season_stat_line: dict | None = None
     peak_projection: dict | None = None
     drivers: tuple[str, ...] = ()
     context: dict = field(default_factory=dict)
@@ -216,6 +217,9 @@ class PublicSnapshotRow:
 
     @property
     def current_level_sample_label(self) -> str | None:
+        combined = self._combined_line_sample_label
+        if combined:
+            return combined
         sample = self.stat_line_sample_label
         if not sample:
             return None
@@ -232,6 +236,23 @@ class PublicSnapshotRow:
 
     @property
     def _season_total_sample_parts(self) -> tuple[float | None, str | None, str | None, str | None]:
+        combined = self.combined_season_stat_line or {}
+        sample = _clean_float(combined.get("sample"))
+        if sample is None:
+            sample = _clean_float(combined.get("ip") or combined.get("pa"))
+        unit = combined.get("sample_unit")
+        if not unit:
+            if combined.get("ip") is not None:
+                unit = "IP"
+            elif combined.get("pa") is not None:
+                unit = "PA"
+        season = combined.get("season")
+        levels = combined.get("level_label")
+        if not levels and isinstance(combined.get("levels"), list):
+            levels = "+".join(str(level) for level in combined["levels"] if level)
+        if sample is not None and unit:
+            return sample, unit, str(season) if season else None, str(levels) if levels else None
+
         translated = self.stat_line_translated or {}
         sample = _clean_float(translated.get("sample"))
         unit = translated.get("sample_unit")
@@ -246,6 +267,17 @@ class PublicSnapshotRow:
         return sample, unit, str(season) if season else None, str(levels) if levels else None
 
     @property
+    def _combined_line_sample_label(self) -> str | None:
+        sample, unit, season, levels = self._season_total_sample_parts
+        sample_label = _format_sample(sample, unit)
+        if not sample_label:
+            return None
+        label = f"Combined {season or 'season'} line"
+        if levels:
+            label = f"{label} - {levels}"
+        return f"{label} - {sample_label}"
+
+    @property
     def has_split_level_sample(self) -> bool:
         total, unit, _season, levels = self._season_total_sample_parts
         current = _clean_float(self.context.get("stat_line_sample"))
@@ -257,16 +289,7 @@ class PublicSnapshotRow:
 
     @property
     def season_total_sample_label(self) -> str | None:
-        if not self.has_split_level_sample:
-            return None
-        sample, unit, season, levels = self._season_total_sample_parts
-        sample_label = _format_sample(sample, unit)
-        if not sample_label:
-            return None
-        label = f"{season or 'Season'} total: {sample_label}"
-        if levels:
-            label = f"{label} across {levels}"
-        return label
+        return self._combined_line_sample_label
 
     @property
     def season_total_sample_badge(self) -> str | None:
@@ -280,6 +303,9 @@ class PublicSnapshotRow:
 
     @property
     def sample_context_label(self) -> str | None:
+        combined = self._combined_line_sample_label
+        if combined:
+            return combined
         labels = [
             self.current_level_sample_label,
             self.season_total_sample_label,
@@ -631,6 +657,9 @@ class PublicSnapshotRow:
             stat_line_translated=cls._coerce_dict(record.get("stat_line_translated")),
             best_single_level_stat_line=cls._coerce_dict(
                 record.get("best_single_level_stat_line")
+            ),
+            combined_season_stat_line=cls._coerce_dict(
+                record.get("combined_season_stat_line")
             ),
             peak_projection=cls._coerce_dict(record.get("peak_projection")),
             drivers=tuple(str(item) for item in record.get("drivers") or ()),
