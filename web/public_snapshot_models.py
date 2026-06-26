@@ -268,10 +268,24 @@ class PublicSnapshotRow:
 
     @property
     def _combined_line_sample_label(self) -> str | None:
-        sample, unit, season, levels = self._season_total_sample_parts
+        # Only label "Combined ... line" when the combined line actually exists on the
+        # row (the snapshot-build field the percentile bars rank on). Before that field
+        # lands the bars show a single level, so don't claim "combined" from the
+        # translated fallback or the label and bars disagree.
+        combined = self.combined_season_stat_line or {}
+        if not combined:
+            return None
+        sample = _clean_float(combined.get("sample"))
+        if sample is None:
+            sample = _clean_float(combined.get("ip") or combined.get("pa"))
+        unit = combined.get("sample_unit") or ("IP" if combined.get("ip") is not None else "PA")
         sample_label = _format_sample(sample, unit)
         if not sample_label:
             return None
+        season = combined.get("season")
+        levels = combined.get("level_label")
+        if not levels and isinstance(combined.get("levels"), list):
+            levels = "+".join(str(level) for level in combined["levels"] if level)
         label = f"Combined {season or 'season'} line"
         if levels:
             label = f"{label} - {levels}"
@@ -289,7 +303,20 @@ class PublicSnapshotRow:
 
     @property
     def season_total_sample_label(self) -> str | None:
-        return self._combined_line_sample_label
+        combined = self._combined_line_sample_label
+        if combined:
+            return combined
+        # No combined line yet: keep the original season-total display.
+        if not self.has_split_level_sample:
+            return None
+        sample, unit, season, levels = self._season_total_sample_parts
+        sample_label = _format_sample(sample, unit)
+        if not sample_label:
+            return None
+        label = f"{season or 'Season'} total: {sample_label}"
+        if levels:
+            label = f"{label} across {levels}"
+        return label
 
     @property
     def season_total_sample_badge(self) -> str | None:

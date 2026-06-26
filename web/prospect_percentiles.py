@@ -912,6 +912,8 @@ def pool_label(row) -> str:
         if season:
             return f"{base} - combined {season} line"
         return f"{base} - combined season line"
+    if selection.is_best and selection.level:
+        return f"{base} - best {selection.level} read"
     return base
 
 

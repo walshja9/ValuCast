@@ -85,7 +85,7 @@ class TestBestSingleConsumer(unittest.TestCase):
         self.assertEqual(level, "AA")
         self.assertTrue(is_best)
         self.assertTrue(card_percentiles(self.pool, r))            # percentiles come from the best line
-        self.assertNotIn("best AA read", pool_label(r))
+        self.assertIn("best AA read", pool_label(r))               # label tells you the bars are the best-single read
 
     def test_combined_line_takes_priority_over_current_and_best(self):
         current = _hitter_line(50, 0.70)
