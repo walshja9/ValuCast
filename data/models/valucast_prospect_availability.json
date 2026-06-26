@@ -18102,14 +18102,14 @@
     {
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "Texas Rangers placed CF Evan Carter on the 10-day injured list. Right oblique strain.",
+      "availability_note": "limited upper level hitter sample under 150 pa; prior season sample",
       "level": "AAA",
       "mlbam_id": 694497,
       "name": "Evan Carter",
       "normalized_name": "evan carter",
       "present": true,
-      "risk_basis": "official_mlb_il",
-      "risk_discount": 0.12,
+      "risk_basis": "sample_staleness",
+      "risk_discount": 0.08,
       "risk_level": "high",
       "role": "hitter",
       "row_count": 1,
@@ -18118,10 +18118,11 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "official_mlb_il_override"
+        "limited_upper_level_hitter_sample_under_150_pa",
+        "prior_season_sample"
       ],
       "source_kind": "latest_milb_history",
-      "status": "injured",
+      "status": "stale_or_inactive",
       "team": "Round Rock Express"
     },
     {
@@ -117222,8 +117223,8 @@
       "current_sample_size": 1543,
       "manual_override": 3,
       "none": 3176,
-      "official_mlb_il": 80,
-      "sample_staleness": 120,
+      "official_mlb_il": 79,
+      "sample_staleness": 121,
       "upstream_factual_status": 18
     },
     "risk_level_counts": {
@@ -117234,19 +117235,19 @@
     "risk_profile_count": 1764,
     "signal_counts": {
       "fantrax_roster_status_override": 18,
-      "limited_upper_level_hitter_sample_under_150_pa": 179,
+      "limited_upper_level_hitter_sample_under_150_pa": 180,
       "limited_upper_level_starter_workload_under_45_ip": 196,
       "manual_status_override": 3,
-      "official_mlb_il_override": 80,
-      "prior_season_sample": 123,
+      "official_mlb_il_override": 79,
+      "prior_season_sample": 124,
       "thin_pitcher_workload_under_12_ip": 472,
       "thin_starter_workload_under_30_ip": 444,
       "thin_upper_level_hitter_sample_under_100_pa": 300
     },
     "status_counts": {
       "available": 3176,
-      "injured": 101,
-      "stale_or_inactive": 120,
+      "injured": 100,
+      "stale_or_inactive": 121,
       "thin_current_sample": 1543
     },
     "top_risk_profiles": [

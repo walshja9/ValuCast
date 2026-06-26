@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-26T21:00:44.987248+00:00",
+  "generated_at": "2026-06-26T21:11:55.723120+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -15844,7 +15844,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "694497_hitter",
       "mlbam_id": "694497",
       "name": "Evan Carter",
@@ -15870,7 +15870,7 @@
         "role_probability_source": "volume_fan",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.06,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 74.18,
@@ -15880,9 +15880,9 @@
         "volume_forecast": {
           "base": 326.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 331.3,
-          "low": 252.6,
-          "point": 303.4,
+          "high": 333.2,
+          "low": 258.3,
+          "point": 306.6,
           "unit": "PA"
         }
       },

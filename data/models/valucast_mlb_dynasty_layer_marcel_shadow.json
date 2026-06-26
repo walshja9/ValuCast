@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T21:00:41.882225+00:00",
+  "generated_at": "2026-06-26T21:11:51.124297+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.0",
   "limitations": [],
@@ -74207,6 +74207,176 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 23,
+      "components": {
+        "age_adjustment": 1.5733,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": true,
+          "effective_date": "2026-06-26",
+          "list_type": null,
+          "note": "Texas Rangers sent CF Evan Carter on a rehab assignment to Frisco RoughRiders.",
+          "present": true,
+          "risk_discount": 0.04,
+          "risk_level": "medium",
+          "score_before_availability_adjustment": 14.09,
+          "source": "official_mlb_statsapi_transactions",
+          "status": "rehab",
+          "transaction_date": "2026-06-26",
+          "transaction_id": 922911
+        },
+        "availability_adjusted": true,
+        "availability_risk_discount": 0.04,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 11.22,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": 1.0765,
+        "horizon_years": [
+          {
+            "age": 23,
+            "age_factor": 1.0,
+            "projected_value": 1.4161,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 24,
+            "age_factor": 0.9513,
+            "projected_value": 0.9227,
+            "reliability_factor": 0.685,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 25,
+            "age_factor": 0.9025,
+            "projected_value": 0.5997,
+            "reliability_factor": 0.4692,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 68.5,
+        "production_score": 11.22,
+        "projection_stability": {
+          "current_season_category_value": 1.4161,
+          "ros_category_value": null,
+          "ros_stability_weight": 0.0,
+          "ros_true_talent_annualization_scale": null,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 1.4161,
+          "stability_adjustment": 0.0,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 14.09,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 34.54,
+          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": null,
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "score_before_availability_adjustment": 14.09,
+        "season_category_value": 1.4161,
+        "track_record": {
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 34.54,
+          "track_record_floor_score": 45.91,
+          "volume": {
+            "career": 686.0,
+            "current_season": 229.0,
+            "prior_mlb": 457.0,
+            "recent_3yr_prior": 457.0
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "SB +0.97",
+        "R +0.35",
+        "AVG +0.11",
+        "HR -0.09",
+        "playing time reliability 68"
+      ],
+      "dynasty_horizon_value": 1.0765,
+      "id": "vc_mlb_694497_hitter",
+      "mlb_team": "TEX",
+      "mlbam_id": 694497,
+      "name": "Evan Carter",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "OF"
+      ],
+      "projection_value": 1.4161,
+      "rank": 459,
+      "role": "hitter",
+      "score": 13.52,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.1089,
+          "ERA": 0.0,
+          "HR": -0.0922,
+          "K": 0.0,
+          "R": 0.3475,
+          "RBI": 0.0009,
+          "SB": 0.9666,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.247,
+          "ERA": null,
+          "HR": 9.6829,
+          "K": null,
+          "R": 44.9264,
+          "RBI": 37.1452,
+          "SB": 11.7191,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_hp_projection_run",
+        "stats": {
+          "AVG": 0.247,
+          "HR": 9.683,
+          "OBP": 0.332,
+          "OPS": 0.743,
+          "PA": 326.2,
+          "R": 44.926,
+          "RBI": 37.145,
+          "SB": 11.719
+        }
+      },
+      "team": "TEX",
+      "value": 13.52,
+      "value_by_preset": {
+        "5x5": 13.52,
+        "6x6": 14.65,
+        "7x7": 15.58,
+        "7x7_ops": 15.77,
+        "obp": 15.45,
+        "points": 30.93,
+        "sv_hld": 13.58
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 26,
       "components": {
         "age_adjustment": 1.225,
@@ -74311,7 +74481,7 @@
         "RP"
       ],
       "projection_value": 1.0342,
-      "rank": 459,
+      "rank": 460,
       "role": "pitcher",
       "score": 13.44,
       "stat_line": {
@@ -74470,7 +74640,7 @@
         "RP"
       ],
       "projection_value": 1.39,
-      "rank": 460,
+      "rank": 461,
       "role": "pitcher",
       "score": 13.44,
       "stat_line": {
@@ -74638,7 +74808,7 @@
         "C"
       ],
       "projection_value": 1.1615,
-      "rank": 461,
+      "rank": 462,
       "role": "hitter",
       "score": 13.39,
       "stat_line": {
@@ -74798,7 +74968,7 @@
         "RP"
       ],
       "projection_value": 1.9171,
-      "rank": 462,
+      "rank": 463,
       "role": "pitcher",
       "score": 13.28,
       "stat_line": {
@@ -74957,7 +75127,7 @@
         "OF"
       ],
       "projection_value": 1.086,
-      "rank": 463,
+      "rank": 464,
       "role": "hitter",
       "score": 13.27,
       "stat_line": {
@@ -75007,176 +75177,6 @@
         "obp": 9.59,
         "points": 36.54,
         "sv_hld": 13.33
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 23,
-      "components": {
-        "age_adjustment": 1.5733,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-06-13",
-          "list_type": "10-day injured list",
-          "note": "Texas Rangers placed CF Evan Carter on the 10-day injured list. Right oblique strain.",
-          "present": true,
-          "risk_discount": 0.06,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 14.09,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-06-13",
-          "transaction_id": 918229
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.06,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 11.22,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": 1.0765,
-        "horizon_years": [
-          {
-            "age": 23,
-            "age_factor": 1.0,
-            "projected_value": 1.4161,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 24,
-            "age_factor": 0.9513,
-            "projected_value": 0.9227,
-            "reliability_factor": 0.685,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 25,
-            "age_factor": 0.9025,
-            "projected_value": 0.5997,
-            "reliability_factor": 0.4692,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 68.5,
-        "production_score": 11.22,
-        "projection_stability": {
-          "current_season_category_value": 1.4161,
-          "ros_category_value": null,
-          "ros_stability_weight": 0.0,
-          "ros_true_talent_annualization_scale": null,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 1.4161,
-          "stability_adjustment": 0.0,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 14.09,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 34.54,
-          "track_record_experience_band": "current_year_only_or_limited",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 14.09,
-        "season_category_value": 1.4161,
-        "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 34.54,
-          "track_record_floor_score": 45.91,
-          "volume": {
-            "career": 686.0,
-            "current_season": 229.0,
-            "prior_mlb": 457.0,
-            "recent_3yr_prior": 457.0
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "SB +0.97",
-        "R +0.35",
-        "AVG +0.11",
-        "HR -0.09",
-        "playing time reliability 68"
-      ],
-      "dynasty_horizon_value": 1.0765,
-      "id": "vc_mlb_694497_hitter",
-      "mlb_team": "TEX",
-      "mlbam_id": 694497,
-      "name": "Evan Carter",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "OF"
-      ],
-      "projection_value": 1.4161,
-      "rank": 464,
-      "role": "hitter",
-      "score": 13.24,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.1089,
-          "ERA": 0.0,
-          "HR": -0.0922,
-          "K": 0.0,
-          "R": 0.3475,
-          "RBI": 0.0009,
-          "SB": 0.9666,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.247,
-          "ERA": null,
-          "HR": 9.6829,
-          "K": null,
-          "R": 44.9264,
-          "RBI": 37.1452,
-          "SB": 11.7191,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_hp_projection_run",
-        "stats": {
-          "AVG": 0.247,
-          "HR": 9.683,
-          "OBP": 0.332,
-          "OPS": 0.743,
-          "PA": 326.2,
-          "R": 44.926,
-          "RBI": 37.145,
-          "SB": 11.719
-        }
-      },
-      "team": "TEX",
-      "value": 13.24,
-      "value_by_preset": {
-        "5x5": 13.24,
-        "6x6": 14.35,
-        "7x7": 15.26,
-        "7x7_ops": 15.44,
-        "obp": 15.13,
-        "points": 30.29,
-        "sv_hld": 13.3
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
