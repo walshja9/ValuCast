@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-06-26T12:30:31.430504+00:00",
+  "generated_at": "2026-06-26T14:18:23.622711+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-06-26T12:30:23.288799+00:00",
+    "card_data_audit_generated_at": "2026-06-26T14:18:14.632843+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
-    "public_snapshot_generated_at": "2026-06-26T12:30:21.266928+00:00",
+    "public_snapshot_generated_at": "2026-06-26T14:18:12.495971+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-06-26T12:30:23.715397+00:00",
+    "recent_signal_generated_at": "2026-06-26T14:18:15.093167+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -18425,22 +18425,6 @@
       "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "solid Chase % at the 66th percentile (31.9%) carries the Statcast card; well below-average Whiff % at the 22nd percentile (21.7%) is the drag. The arm profiles for 3.77 ERA, 1.32 WHIP, 159 K, 10 W, 18 QS over 183.6 IP.",
-      "report_llm": {
-        "handedness_problems": [],
-        "hard_ok": true,
-        "model": "claude-haiku-4-5-20251001",
-        "problems": {
-          "banned": [],
-          "handedness_problems": [],
-          "hard_ok": true,
-          "ok": false,
-          "unsupported_numbers": [
-            "4.00"
-          ]
-        },
-        "text": "Framber Valdez projects as a durable mid-rotation starter who survives on command and induces soft contact rather than overpowering hitters. His Statcast profile shows below-average strikeout stuff (K% in the 29th percentile, whiff% at 22nd) paired with a 4.34 xERA and .324 xwOBA that both sit in the 37th percentile\u2014evidence his fastball sits just 95.4 mph with weak spin (2212 rpm, 25th percentile) and he relies on avoiding barrels (7.4%, 51st percentile) to stay afloat. The main risk is that he generates insufficient misses and above-average hard contact (42.7%, 23rd percentile) to sustain a sub-4.00 ERA, making his projected 3.77 mark optimistic relative to his stuff. High confidence in this profile given a full established Statcast sample.",
-        "valid": false
-      },
       "report_status": "stat_grounded",
       "role": "pitcher",
       "source_fields": {
@@ -58778,13 +58762,13 @@
     "llm_shadow": {
       "available": true,
       "enabled": true,
-      "flagged": 1,
-      "generated": 50,
+      "flagged": 0,
+      "generated": 0,
       "generation_limit": 50,
       "report_count": 830,
-      "reused": 137,
+      "reused": 186,
       "reused_stale": 0,
-      "skipped_due_to_budget": 611
+      "skipped_due_to_budget": 0
     },
     "max_dynasty_rank": 500,
     "max_prospect_rank": 500,
