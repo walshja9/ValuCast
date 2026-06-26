@@ -2271,21 +2271,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Pittsburgh Pirates sent SS Konnor Griffin on a rehab assignment to Altoona Curve.",
-      "effective_date": "2026-06-24",
-      "list_type": null,
-      "mlbam_id": 804606,
-      "name": "Konnor Griffin",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Altoona Curve",
-      "transaction_date": "2026-06-24",
-      "transaction_id": 921975,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Kansas City Royals sent LHP Kris Bubic on a rehab assignment to Omaha Storm Chasers.",
       "effective_date": "2026-06-24",
       "list_type": null,
@@ -5361,6 +5346,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Pittsburgh Pirates activated SS Konnor Griffin from the 10-day injured list.",
+      "effective_date": "2026-06-26",
+      "list_type": "10-day injured list",
+      "mlbam_id": 804606,
+      "name": "Konnor Griffin",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Pittsburgh Pirates",
+      "transaction_date": "2026-06-26",
+      "transaction_id": 922732,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Philadelphia Phillies activated LHP Kyle Backhus from the 15-day injured list.",
       "effective_date": "2026-06-22",
       "list_type": "15-day injured list",
@@ -6714,15 +6714,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 204,
+    "available_after_il_count": 205,
     "blockers": [],
     "duplicate_identity_count": 0,
     "injured_count": 194,
     "profile_count": 445,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 47,
-    "risk_profile_count": 241,
+    "rehab_count": 46,
+    "risk_profile_count": 240,
     "tracked_mlbam_count": 10227,
-    "transaction_count": 7087
+    "transaction_count": 7090
   }
 }

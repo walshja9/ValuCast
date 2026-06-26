@@ -45246,6 +45246,176 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 19,
+      "components": {
+        "age_adjustment": 1.65,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-06-26",
+          "list_type": "10-day injured list",
+          "note": "Pittsburgh Pirates activated SS Konnor Griffin from the 10-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-06-26",
+          "transaction_id": 922732
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 35.11,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": 3.5526,
+        "horizon_years": [
+          {
+            "age": 19,
+            "age_factor": 1.0,
+            "projected_value": 4.2686,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 20,
+            "age_factor": 1.0,
+            "projected_value": 3.2634,
+            "reliability_factor": 0.7645,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 21,
+            "age_factor": 1.0,
+            "projected_value": 2.4948,
+            "reliability_factor": 0.5845,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 76.45,
+        "production_score": 35.11,
+        "projection_stability": {
+          "current_season_category_value": 5.8647,
+          "ros_category_value": 2.3397,
+          "ros_stability_weight": 0.4528,
+          "ros_true_talent_annualization_scale": 2.1518,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 4.2686,
+          "stability_adjustment": -1.5961,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": 1.9888
+        },
+        "role_adjustments": {
+          "actual_mlb_pa": 208.0,
+          "current_over_true_talent_gap": 3.525,
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 37.18,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 4.73,
+          "track_record_experience_band": "minimal_mlb_track_record",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": null,
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.042,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": 4.2686,
+        "track_record": {
+          "experience_band": "minimal_mlb_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 4.73,
+          "track_record_floor_score": 18.0,
+          "volume": {
+            "career": 208.0,
+            "current_season": 208.0,
+            "prior_mlb": 0.0,
+            "recent_3yr_prior": 0.0
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "SB +2.49",
+        "AVG +0.80",
+        "R +0.55",
+        "RBI +0.25",
+        "playing time reliability 76"
+      ],
+      "dynasty_horizon_value": 3.5526,
+      "id": "vc_mlb_804606_hitter",
+      "mlb_team": "PIT",
+      "mlbam_id": 804606,
+      "name": "Konnor Griffin",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "SS"
+      ],
+      "projection_value": 4.2686,
+      "rank": 281,
+      "role": "hitter",
+      "score": 35.62,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.8041,
+          "ERA": 0.0,
+          "HR": -0.2074,
+          "K": 0.0,
+          "R": 0.5491,
+          "RBI": 0.2544,
+          "SB": 2.4947,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2633,
+          "ERA": null,
+          "HR": 10.283,
+          "K": null,
+          "R": 61.027,
+          "RBI": 51.486,
+          "SB": 28.054,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.263,
+          "HR": 10.283,
+          "OBP": 0.325,
+          "OPS": 0.722,
+          "PA": 486.839,
+          "R": 61.027,
+          "RBI": 51.486,
+          "SB": 28.054
+        }
+      },
+      "team": "PIT",
+      "value": 35.62,
+      "value_by_preset": {
+        "5x5": 35.62,
+        "6x6": 31.26,
+        "7x7": 31.93,
+        "7x7_ops": 27.51,
+        "obp": 27.15,
+        "points": 59.07,
+        "sv_hld": 35.85
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 23,
       "components": {
         "age_adjustment": 1.5733,
@@ -45351,7 +45521,7 @@
         "OF"
       ],
       "projection_value": 4.1531,
-      "rank": 281,
+      "rank": 282,
       "role": "hitter",
       "score": 35.45,
       "stat_line": {
@@ -45522,7 +45692,7 @@
         "RP"
       ],
       "projection_value": -0.1722,
-      "rank": 282,
+      "rank": 283,
       "role": "pitcher",
       "score": 35.43,
       "stat_line": {
@@ -45681,7 +45851,7 @@
         "OF"
       ],
       "projection_value": 4.1601,
-      "rank": 283,
+      "rank": 284,
       "role": "hitter",
       "score": 34.58,
       "stat_line": {
@@ -45839,7 +46009,7 @@
         "3B"
       ],
       "projection_value": 3.6572,
-      "rank": 284,
+      "rank": 285,
       "role": "hitter",
       "score": 34.23,
       "stat_line": {
@@ -45889,178 +46059,6 @@
         "obp": 30.56,
         "points": 48.68,
         "sv_hld": 34.48
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 19,
-      "components": {
-        "age_adjustment": 1.65,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-06-24",
-          "list_type": null,
-          "note": "Pittsburgh Pirates sent SS Konnor Griffin on a rehab assignment to Altoona Curve.",
-          "present": true,
-          "risk_discount": 0.04,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 35.62,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "rehab",
-          "transaction_date": "2026-06-24",
-          "transaction_id": 921975
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.04,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 35.11,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": 3.5526,
-        "horizon_years": [
-          {
-            "age": 19,
-            "age_factor": 1.0,
-            "projected_value": 4.2686,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 20,
-            "age_factor": 1.0,
-            "projected_value": 3.2634,
-            "reliability_factor": 0.7645,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 21,
-            "age_factor": 1.0,
-            "projected_value": 2.4948,
-            "reliability_factor": 0.5845,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 76.45,
-        "production_score": 35.11,
-        "projection_stability": {
-          "current_season_category_value": 5.8647,
-          "ros_category_value": 2.3397,
-          "ros_stability_weight": 0.4528,
-          "ros_true_talent_annualization_scale": 2.1518,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 4.2686,
-          "stability_adjustment": -1.5961,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": 1.9888
-        },
-        "role_adjustments": {
-          "actual_mlb_pa": 208.0,
-          "current_over_true_talent_gap": 3.525,
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 37.18,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 4.73,
-          "track_record_experience_band": "minimal_mlb_track_record",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.042,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 35.62,
-        "season_category_value": 4.2686,
-        "track_record": {
-          "experience_band": "minimal_mlb_track_record",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 4.73,
-          "track_record_floor_score": 18.0,
-          "volume": {
-            "career": 208.0,
-            "current_season": 208.0,
-            "prior_mlb": 0.0,
-            "recent_3yr_prior": 0.0
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "SB +2.49",
-        "AVG +0.80",
-        "R +0.55",
-        "RBI +0.25",
-        "playing time reliability 76"
-      ],
-      "dynasty_horizon_value": 3.5526,
-      "id": "vc_mlb_804606_hitter",
-      "mlb_team": "PIT",
-      "mlbam_id": 804606,
-      "name": "Konnor Griffin",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "SS"
-      ],
-      "projection_value": 4.2686,
-      "rank": 285,
-      "role": "hitter",
-      "score": 34.19,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.8041,
-          "ERA": 0.0,
-          "HR": -0.2074,
-          "K": 0.0,
-          "R": 0.5491,
-          "RBI": 0.2544,
-          "SB": 2.4947,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2633,
-          "ERA": null,
-          "HR": 10.283,
-          "K": null,
-          "R": 61.027,
-          "RBI": 51.486,
-          "SB": 28.054,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.263,
-          "HR": 10.283,
-          "OBP": 0.325,
-          "OPS": 0.722,
-          "PA": 486.839,
-          "R": 61.027,
-          "RBI": 51.486,
-          "SB": 28.054
-        }
-      },
-      "team": "PIT",
-      "value": 34.19,
-      "value_by_preset": {
-        "5x5": 34.19,
-        "6x6": 30.01,
-        "7x7": 30.65,
-        "7x7_ops": 26.41,
-        "obp": 26.06,
-        "points": 56.71,
-        "sv_hld": 34.42
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -160825,11 +160823,11 @@
     "age_coverage_count": 997,
     "age_coverage_rate": 1.0,
     "age_coverage_threshold": 0.95,
-    "availability_adjusted_count": 142,
+    "availability_adjusted_count": 141,
     "availability_present": true,
     "availability_profile_count": 445,
     "availability_ready": true,
-    "availability_risk_profile_count": 241,
+    "availability_risk_profile_count": 240,
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 997,
