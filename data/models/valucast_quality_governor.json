@@ -16,13 +16,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 0.9,
+        "gap": 0.91,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 677951,
           "name": "Bobby Witt Jr.",
           "rank": 2,
-          "value": 99.1
+          "value": 99.09
         },
         "top": {
           "mlbam_id": 660271,
@@ -70,16 +70,8 @@
             "positions": [
               "SP"
             ],
-            "rank": 5,
-            "value": 90.1
-          },
-          {
-            "name": "Cristopher S\u00e1nchez",
-            "positions": [
-              "SP"
-            ],
-            "rank": 15,
-            "value": 69.01
+            "rank": 4,
+            "value": 90.42
           },
           {
             "name": "Jacob Misiorowski",
@@ -87,8 +79,16 @@
               "SP",
               "RP"
             ],
-            "rank": 18,
-            "value": 68.68
+            "rank": 14,
+            "value": 69.22
+          },
+          {
+            "name": "Cristopher S\u00e1nchez",
+            "positions": [
+              "SP"
+            ],
+            "rank": 16,
+            "value": 69.14
           },
           {
             "name": "Chase Burns",
@@ -97,7 +97,7 @@
               "RP"
             ],
             "rank": 22,
-            "value": 63.51
+            "value": 63.93
           }
         ],
         "reliever_count": 0,
@@ -119,80 +119,80 @@
             "name": "Kade Anderson",
             "rank": 1,
             "role": "pitcher",
-            "score": 74.35
+            "score": 74.33
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
             "rank": 5,
             "role": "pitcher",
-            "score": 62.52
+            "score": 61.87
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 6,
             "role": "pitcher",
-            "score": 61.98
+            "score": 61.75
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 8,
             "role": "pitcher",
-            "score": 56.68
+            "score": 56.83
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 11,
+            "rank": 10,
             "role": "pitcher",
-            "score": 55.96
+            "score": 55.85
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
             "rank": 12,
             "role": "pitcher",
-            "score": 54.93
+            "score": 55.12
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
-            "rank": 17,
+            "rank": 16,
             "role": "pitcher",
-            "score": 51.67
+            "score": 51.84
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
             "rank": 19,
             "role": "pitcher",
-            "score": 49.25
+            "score": 49.68
           },
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
             "rank": 23,
             "role": "pitcher",
-            "score": 46.94
+            "score": 46.92
           },
           {
             "mlbam_id": 701388,
             "name": "Jurrangelo Cijntje",
             "rank": 24,
             "role": "pitcher",
-            "score": 46.55
+            "score": 46.64
           }
         ],
         "top25_evaluated_count": 25,
         "top25_n": 25,
-        "top25_pitcher_count": 10,
+        "top25_pitcher_count": 11,
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 19,
-        "top50_pitcher_rate": 0.38,
+        "top50_pitcher_count": 20,
+        "top50_pitcher_rate": 0.4,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -354,10 +354,10 @@
         "band_counts": {
           "balanced": 8,
           "bat_missing": 4,
-          "impact": 17,
+          "impact": 16,
           "limited": 3,
-          "mixed": 6,
-          "starter_volume": 9,
+          "mixed": 5,
+          "starter_volume": 11,
           "thin": 3
         },
         "best_single_level_covered_count": 2,
@@ -372,7 +372,7 @@
             "current_skill_band": "thin",
             "mlbam_id": 815394,
             "name": "Theo Gillen",
-            "rank": 25,
+            "rank": 28,
             "role": "hitter"
           },
           {
@@ -380,7 +380,7 @@
             "best_sample": 266,
             "best_sample_unit": "PA",
             "current_level": "A+",
-            "current_sample": 5.0,
+            "current_sample": 9.0,
             "current_sample_unit": "PA",
             "current_skill_band": "thin",
             "mlbam_id": 815792,
@@ -403,7 +403,7 @@
             "level": "A+",
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 11,
+            "rank": 10,
             "role": "pitcher",
             "sample": 29.3,
             "sample_unit": "IP",
@@ -423,9 +423,9 @@
             "level": "A",
             "mlbam_id": 800611,
             "name": "Noble Meyer",
-            "rank": 36,
+            "rank": 34,
             "role": "pitcher",
-            "sample": 3.0,
+            "sample": 4.0,
             "sample_unit": "IP",
             "skill_band": "thin"
           },
@@ -433,7 +433,7 @@
             "level": "AA",
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 37,
+            "rank": 35,
             "role": "pitcher",
             "sample": 20.7,
             "sample_unit": "IP",
@@ -470,8 +470,8 @@
           "top-50 prospect card context uses latest_milb_history fallback",
           "top-200 prospect board has too many MiLB history fallbacks"
         ],
-        "current_row_count": 6200,
-        "current_season_row_count": 5976,
+        "current_row_count": 6221,
+        "current_season_row_count": 6000,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 13,
@@ -502,7 +502,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 13,
+        "archive_day_span": 14,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -600,8 +600,8 @@
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 7,
-        "history_limited_rate": 0.0026,
+        "history_limited_count": 10,
+        "history_limited_rate": 0.0037,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
@@ -611,7 +611,7 @@
         "public_board_ready": false,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 2655
+        "row_count": 2667
       },
       "status": "blocked"
     }
@@ -655,24 +655,24 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-25T20:52:34.484916+00:00",
+  "generated_at": "2026-06-26T10:54:02.526898+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-06-25",
-      "buy_signals": "2026-06-25",
-      "milb_stat_freshness_audit": "2026-06-25",
-      "mlb_layer": "2026-06-25",
-      "prospect_card_data_audit": "2026-06-25",
-      "prospect_coverage_audit": "2026-06-25",
-      "prospect_rank": "2026-06-25",
-      "public_snapshot": "2026-06-25",
-      "recent_signal_report": "2026-06-25"
+      "buy_review": "2026-06-26",
+      "buy_signals": "2026-06-26",
+      "milb_stat_freshness_audit": "2026-06-26",
+      "mlb_layer": "2026-06-26",
+      "prospect_card_data_audit": "2026-06-26",
+      "prospect_coverage_audit": "2026-06-26",
+      "prospect_rank": "2026-06-26",
+      "public_snapshot": "2026-06-26",
+      "recent_signal_report": "2026-06-26"
     },
-    "mlb_count": 964,
-    "prospect_count": 2664,
-    "public_row_count": 3628
+    "mlb_count": 966,
+    "prospect_count": 2675,
+    "public_row_count": 3641
   },
   "next_allowed_step": "repair_model_quality_before_public_promotion",
   "ready_for_buys_promotion": false,
