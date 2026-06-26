@@ -375,6 +375,7 @@ def _manual_graduated_ids() -> set[str]:
 
 STS_CONSENSUS_PATH = ROOT / "data" / "sts" / "sts_consensus_snapshot.json"
 FG_FV_SNAPSHOT_PATH = ROOT / "data" / "fangraphs" / "fg_fv_snapshot.json"
+PROSPECTSLIVE_PATH = ROOT / "data" / "prospectslive" / "prospectslive_consensus_snapshot.json"
 
 
 def _snapshot_by_mlbam(path: Path) -> dict:
@@ -385,11 +386,14 @@ def _snapshot_by_mlbam(path: Path) -> dict:
         return {}
 
 
-def _merge_external_consensus(row: dict, mlbam, sts_by_mlbam: dict, fg_by_mlbam: dict) -> None:
-    """Blend STS Formulated Consensus + the FanGraphs ordinal into a board row's
-    context_only.source_ranks, so the public consensus = median of pipeline + hkb
-    + sts + fg_ord. Display/divergence reference only -- never a score input
-    (consistent with the existing pass-through pipeline/hkb ranks)."""
+def _merge_external_consensus(
+    row: dict, mlbam, sts_by_mlbam: dict, fg_by_mlbam: dict, pl_by_mlbam: dict
+) -> None:
+    """Blend STS Formulated Consensus + the FanGraphs ordinal + the ProspectsLive
+    Top-600 rank into a board row's context_only.source_ranks, so the public
+    consensus = median of pipeline + hkb + sts + fg_ord + pl. Display/divergence
+    reference only -- never a score input (consistent with the existing
+    pass-through pipeline/hkb ranks)."""
     context = row.get("context_only")
     if not isinstance(context, dict):
         return
@@ -400,6 +404,9 @@ def _merge_external_consensus(row: dict, mlbam, sts_by_mlbam: dict, fg_by_mlbam:
     fg = fg_by_mlbam.get(str(mlbam)) or {}
     if fg.get("fg_top100") is not None:
         source_ranks["fg_ord"] = fg["fg_top100"]
+    pl = pl_by_mlbam.get(str(mlbam)) or {}
+    if pl.get("pl_rank") is not None:
+        source_ranks["pl"] = pl["pl_rank"]
     if source_ranks:
         context["source_ranks"] = source_ranks
 
@@ -1766,6 +1773,7 @@ def build_prospect_rank_v1(
     manual_graduated_ids = _manual_graduated_ids()
     sts_by_mlbam = _snapshot_by_mlbam(STS_CONSENSUS_PATH)
     fg_by_mlbam = _snapshot_by_mlbam(FG_FV_SNAPSHOT_PATH)
+    pl_by_mlbam = _snapshot_by_mlbam(PROSPECTSLIVE_PATH)
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
@@ -1905,7 +1913,9 @@ def build_prospect_rank_v1(
                 ),
             }
         )
-        _merge_external_consensus(target_board[-1], key[0], sts_by_mlbam, fg_by_mlbam)
+        _merge_external_consensus(
+            target_board[-1], key[0], sts_by_mlbam, fg_by_mlbam, pl_by_mlbam
+        )
 
     board.sort(
         key=lambda row: (
