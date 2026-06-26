@@ -1,8 +1,14 @@
 """Tests for ValuCast Prospect Peak Projection v1."""
 import json
 
+import pytest
+
+from prospects.peak_projection import PeakProjectionSentinelError
+from prospects.peak_projection import RUN_PREVENTION_MIN_PITCHERS
+from prospects.peak_projection import _correlation
 from prospects.peak_projection import _pitcher_shape
 from prospects.peak_projection import build_peak_projection
+from prospects.peak_projection import check_run_prevention_sentinel
 from prospects.peak_projection import run_peak_projection
 from scripts.validate_prospect_peak_projection import validate_peak_projection
 
@@ -255,3 +261,160 @@ def test_peak_projection_validator_rejects_stale_card_copy(tmp_path):
     _, problems = validate_peak_projection(artifact_path)
 
     assert any("stale card_v2 card_copy" in problem for problem in problems)
+
+
+# --- Run Prevention semantic sentinel -------------------------------------
+
+# A spread of (ERA, WHIP, Run Prevention grade) pitcher shapes. The grades here
+# are CORRECT: elite ERA/WHIP -> high grade, terrible ERA/WHIP -> low grade.
+# corr(ERA, grade) is strongly negative, matching healthy production data.
+_PITCHER_GRID = [
+    # era,  whip, correct Run Prevention grade
+    (1.05, 0.70, 80),
+    (1.80, 0.85, 75),
+    (2.40, 0.95, 70),
+    (2.90, 1.05, 60),
+    (3.30, 1.15, 55),
+    (3.80, 1.25, 50),
+    (4.20, 1.30, 45),
+    (4.70, 1.40, 40),
+    (5.10, 1.55, 35),
+    (5.70, 1.65, 30),
+    (6.30, 1.80, 25),
+    (7.10, 1.97, 20),
+    (1.30, 0.75, 78),
+    (6.80, 1.90, 22),
+]
+
+
+def _pitcher_projection(index, era, whip, run_prevention_grade):
+    return {
+        "mlbam_id": 50000 + index,
+        "name": f"Pitcher {index}" if index else "Kade Anderson",
+        "role": "pitcher",
+        "shape": [
+            {"label": "Miss", "grade": 55, "source": "K/9"},
+            {"label": "Command", "grade": 55, "source": "BB/9"},
+            {"label": "Dominance", "grade": 55, "source": "K-BB%"},
+            {"label": "Run Prevention", "grade": run_prevention_grade, "source": "ERA / WHIP"},
+        ],
+    }
+
+
+def _sentinel_inputs(grid):
+    """Build matching (projections, rank_payload) where the rank payload carries
+    the ERA each Run Prevention grade was built from, keyed by MLBAM+role."""
+    projections = []
+    board = []
+    for index, (era, whip, grade) in enumerate(grid):
+        projections.append(_pitcher_projection(index, era, whip, grade))
+        board.append(
+            {
+                "mlbam_id": 50000 + index,
+                "role": "pitcher",
+                "components": {"factual_current_context": {"era": era, "whip": whip}},
+            }
+        )
+    return projections, {"board": board}
+
+
+def test_run_prevention_sentinel_passes_on_correct_grades():
+    projections, rank_payload = _sentinel_inputs(_PITCHER_GRID)
+    summary = check_run_prevention_sentinel(projections, rank_payload)
+
+    assert summary["status"] == "ok"
+    assert summary["graded_pitcher_count"] == len(_PITCHER_GRID)
+    assert summary["violation_count"] == 0
+    assert summary["violation_rate"] == 0.0
+    # Strongly negative on healthy data; the -0.20 gate has wide margin.
+    assert summary["era_grade_correlation"] < -0.6
+
+
+def test_run_prevention_sentinel_raises_on_inverted_grades():
+    # Flip every grade around the 20-80 axis: low ERA now graded LOW (the bug
+    # that shipped a 7.11 ERA at 80 and a 1.0 ERA at 20).
+    inverted_grid = [(era, whip, 100 - grade) for era, whip, grade in _PITCHER_GRID]
+    projections, rank_payload = _sentinel_inputs(inverted_grid)
+
+    with pytest.raises(PeakProjectionSentinelError) as excinfo:
+        check_run_prevention_sentinel(projections, rank_payload)
+
+    message = str(excinfo.value)
+    assert "Run Prevention sentinel FAILED" in message
+    # The first inverted row is Kade Anderson (elite ERA graded as poor).
+    assert "Kade Anderson" in message
+
+
+def test_run_prevention_sentinel_raises_on_hard_direction_violations():
+    # The violation-rate gate is a second line of defense, independent of the
+    # correlation gate. This grid is strongly anti-correlated overall (so it
+    # PASSES the corr <= -0.20 check) but contains a couple of hard direction
+    # violations (an elite ERA graded poor, a blow-up ERA graded elite) above the
+    # 5% rate. The sentinel must still raise on those.
+    grid = [
+        (1.20, 0.75, 78),
+        (1.60, 0.85, 74),
+        (2.10, 0.95, 68),
+        (2.60, 1.05, 62),
+        (3.10, 1.12, 56),
+        (3.60, 1.20, 52),
+        (4.10, 1.28, 48),
+        (4.60, 1.38, 44),
+        (5.10, 1.50, 38),
+        (5.60, 1.62, 32),
+        (6.10, 1.78, 26),
+        (6.60, 1.90, 22),
+        (2.90, 1.05, 35),  # violation: ERA <= 3.00 graded < 40
+        (5.80, 1.66, 65),  # violation: ERA >= 5.50 graded > 60
+    ]
+    projections, rank_payload = _sentinel_inputs(grid)
+
+    # Confirm this exercises the violation gate, not the correlation gate.
+    eras = [era for era, _w, _g in grid]
+    grades = [grade for _e, _w, grade in grid]
+    assert _correlation(eras, grades) <= -0.20
+
+    with pytest.raises(PeakProjectionSentinelError) as excinfo:
+        check_run_prevention_sentinel(projections, rank_payload)
+    assert "violate the ERA" in str(excinfo.value)
+
+
+def test_run_prevention_sentinel_passes_with_too_few_pitchers():
+    # Conservative by design: below the minimum sample, the correlation is not
+    # trustworthy, so the sentinel records "insufficient_sample" and passes
+    # rather than risk a false positive on healthy-but-tiny boards.
+    small_grid = _PITCHER_GRID[: RUN_PREVENTION_MIN_PITCHERS - 1]
+    projections, rank_payload = _sentinel_inputs(small_grid)
+
+    summary = check_run_prevention_sentinel(projections, rank_payload)
+
+    assert summary["status"] == "insufficient_sample"
+    assert summary["era_grade_correlation"] is None
+
+
+def test_build_peak_projection_blocks_inverted_run_prevention_artifact():
+    # End-to-end: a build whose Run Prevention grades are inverted must raise
+    # from build_peak_projection (before any artifact is written), naming an
+    # example so the failure is actionable.
+    rows = []
+    for index, (era, whip, _grade) in enumerate(_PITCHER_GRID):
+        row = _row(index + 1, role="pitcher")
+        row["components"]["factual_current_context"]["era"] = era
+        row["components"]["factual_current_context"]["whip"] = whip
+        rows.append(row)
+
+    # Correct grades build cleanly and record the sentinel summary.
+    payload = build_peak_projection(_rank_payload(rows))
+    sentinel = payload["validation"]["run_prevention_sentinel"]
+    assert sentinel["status"] == "ok"
+    assert sentinel["violation_count"] == 0
+
+    # Now invert the built Run Prevention grades and re-run the sentinel via the
+    # public check to prove the build-step guard rejects the inverted artifact.
+    inverted = payload["projections"]
+    for row in inverted:
+        for item in row["shape"]:
+            if item["label"] == "Run Prevention":
+                item["grade"] = 100 - item["grade"]
+    with pytest.raises(PeakProjectionSentinelError):
+        check_run_prevention_sentinel(inverted, _rank_payload(rows))

@@ -32,6 +32,11 @@ DEFAULT_MAX_PROSPECT_RANK = 500
 DEFAULT_MAX_DYNASTY_RANK = 500
 
 
+class ScoutingRepositorySentinelError(RuntimeError):
+    """Raised when a generated repository fails a semantic sentinel and must not
+    publish (e.g. the no-sample read contradicts a real current stat line)."""
+
+
 def _report_status(text: str | None) -> str:
     if not text:
         return "missing"
@@ -41,6 +46,46 @@ def _report_status(text: str | None) -> str:
     if "injured" in lowered or "availability risk" in lowered:
         return "availability_context"
     return "stat_grounded"
+
+
+# Lead sentence emitted by web.prospect_percentiles._no_sample_report for a
+# genuinely sample-less prospect (see the f"No current performance sample is
+# available for this {descriptor}." templates there). This exact prefix is the
+# unambiguous marker of the no-evidence read; it is never produced for a player
+# whose current line has real rate values. Keep this string in sync with the
+# generator template if it ever changes.
+_NO_SAMPLE_MARKER = "No current performance sample is available"
+
+
+def _no_sample_template_in(text: str | None) -> bool:
+    return bool(text) and _NO_SAMPLE_MARKER in text
+
+
+def _stat_line_has_values(row) -> bool:
+    """True when the prospect's current stat_line carries at least one readable
+    hitter/pitcher rate metric (real performance sample), using the SAME rule the
+    read logic uses (prospect_percentiles._has_stat_values). A sample-only dict
+    ({"pa": 40}) or empty/None line is NOT a performance sample."""
+    return prospect_percentiles._has_stat_values(getattr(row, "stat_line", None))
+
+
+def _no_sample_contradiction(row, report: dict) -> bool:
+    """A prospect report uses the no-sample template while the player HAS a real
+    current stat line. This is always a bug: the read claims no evidence exists
+    for a player who has non-empty PA/IP + rate values (e.g. Ronny Hernandez 90
+    PA .329/.456/.671). Gates the build so the bad artifact cannot publish."""
+    if getattr(row, "is_prospect", True) is False:
+        return False
+    return _no_sample_template_in(report.get("report")) and _stat_line_has_values(row)
+
+
+def _no_sample_contradictions(rows, reports) -> list[str]:
+    """Names of prospects whose no-sample read contradicts a real stat line."""
+    offenders: list[str] = []
+    for row, report in zip(rows, reports):
+        if _no_sample_contradiction(row, report):
+            offenders.append(str(report.get("name") or getattr(row, "name", "") or "unknown"))
+    return offenders
 
 
 def _valid_llm_text(report: dict) -> str | None:
@@ -655,6 +700,7 @@ def build_scouting_repository(
         and row.get("prospect_rank") is not None
         and row["prospect_rank"] <= 100
     )
+    no_sample_contradictions = _no_sample_contradictions(rows, reports)
     blockers = []
     if not reports:
         blockers.append("Scouting repository has no reports.")
@@ -662,6 +708,14 @@ def build_scouting_repository(
         blockers.append("Scouting repository has duplicate MLBAM+role reports.")
     if top100_count < min(100, prospect_report_count):
         blockers.append("Scouting repository does not cover the visible top 100 prospects.")
+    if no_sample_contradictions:
+        preview = ", ".join(no_sample_contradictions[:10])
+        if len(no_sample_contradictions) > 10:
+            preview += f", +{len(no_sample_contradictions) - 10} more"
+        blockers.append(
+            "Scouting repository emits the no-sample read for "
+            f"{len(no_sample_contradictions)} prospect(s) with a real stat line: {preview}."
+        )
     return {
         "artifact": ARTIFACT_NAME,
         "repository_version": REPOSITORY_VERSION,
@@ -706,6 +760,8 @@ def build_scouting_repository(
             "report_count": len(reports),
             "duplicate_identity_count": duplicate_identity_count,
             "missing_report_count": missing_report_count,
+            "no_sample_contradiction_count": len(no_sample_contradictions),
+            "no_sample_contradiction_players": no_sample_contradictions,
             "blockers": blockers,
         },
         "reports": reports,
@@ -724,6 +780,19 @@ def run_scouting_repository(
         recent_signal_path=recent_signal_path,
         card_data_audit_path=card_data_audit_path,
     )
+    # Fail loud BEFORE writing: a no-sample read for a player who has a real
+    # current stat line is always a bug, and a stale/contradictory artifact must
+    # never publish over a good one. Tolerance is zero — the gate only fires on
+    # this unambiguous contradiction, never on legitimately sample-less players.
+    offenders = payload["validation"].get("no_sample_contradiction_players") or []
+    if offenders:
+        preview = ", ".join(offenders[:25])
+        if len(offenders) > 25:
+            preview += f", +{len(offenders) - 25} more"
+        raise ScoutingRepositorySentinelError(
+            f"{len(offenders)} scouting report(s) claim 'no current performance sample' "
+            f"for a prospect with a real stat line; refusing to publish: {preview}."
+        )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

@@ -31,6 +31,26 @@ PROJECTION_STATUS = "candidate_ready"
 ARTIFACT_NAME = "valucast_prospect_peak_projection_v1"
 MIN_TOP200_PROJECTION_COVERAGE = 0.90
 
+# --- Run Prevention semantic sentinel -------------------------------------
+# Run Prevention is graded so that LOW ERA/WHIP -> HIGH grade. A past
+# double-negation bug inverted this (a 7.11 ERA graded 80, a 1.0 ERA graded 20)
+# and still PASSED schema/coverage validation, shipping a stale artifact.
+# These checks assert the *semantics* of the grade against the raw ERA the
+# grade was built from, so an inverted/stale grade fails the build loudly.
+#
+# Healthy data: corr(ERA, RunPrevention) ~ -0.63, violation rate 0%.
+# Inverted data: corr ~ +0.63, violation rate ~50%.
+# Thresholds are deliberately conservative so they only fire on unambiguous
+# inversion, never on healthy noise.
+RUN_PREVENTION_LABEL = "Run Prevention"
+RUN_PREVENTION_MAX_CORR = -0.20  # corr above this (near-zero/positive) = inverted
+RUN_PREVENTION_MAX_VIOLATION_RATE = 0.05
+RUN_PREVENTION_MIN_PITCHERS = 12  # too few graded ERAs to trust the correlation
+RUN_PREVENTION_LOW_ERA = 3.00  # at/below this, grade must NOT be < 40
+RUN_PREVENTION_HIGH_ERA = 5.50  # at/above this, grade must NOT be > 60
+RUN_PREVENTION_LOW_GRADE = 40
+RUN_PREVENTION_HIGH_GRADE = 60
+
 SKILL_BAND_BONUS = {
     "impact": 4.0,
     "starter_volume": 3.6,
@@ -581,6 +601,123 @@ def _identity_key(row: dict) -> str | None:
     return f"{mlbam_id}_{role}"
 
 
+class PeakProjectionSentinelError(RuntimeError):
+    """Raised when a built peak projection fails a semantic sentinel.
+
+    A failure here means the artifact is unambiguously broken (e.g. an inverted
+    Run Prevention grade) and must NOT be written or published.
+    """
+
+
+def _run_prevention_grade(shape: Any) -> int | None:
+    if not isinstance(shape, list):
+        return None
+    for item in shape:
+        if isinstance(item, dict) and item.get("label") == RUN_PREVENTION_LABEL:
+            grade = item.get("grade")
+            return grade if isinstance(grade, (int, float)) else None
+    return None
+
+
+def _correlation(xs: list[float], ys: list[float]) -> float | None:
+    n = len(xs)
+    if n < 2:
+        return None
+    mean_x = sum(xs) / n
+    mean_y = sum(ys) / n
+    cov = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
+    var_x = sum((x - mean_x) ** 2 for x in xs)
+    var_y = sum((y - mean_y) ** 2 for y in ys)
+    if var_x <= 0.0 or var_y <= 0.0:
+        return None
+    return cov / math.sqrt(var_x * var_y)
+
+
+def check_run_prevention_sentinel(
+    projections: list[dict], rank_payload: dict
+) -> dict:
+    """Semantic guard: the Run Prevention grade must track ERA *inversely*.
+
+    Pairs each pitcher projection's Run Prevention grade with the raw ERA the
+    grade was built from (from the rank payload's factual_current_context), then
+    checks (a) corr(ERA, grade) is strongly negative and (b) hard direction
+    violations are rare. Raises PeakProjectionSentinelError on unambiguous
+    inversion so a bad/stale artifact cannot publish.
+
+    Returns a small summary dict (folded into the artifact's validation block)
+    when the data passes — or when there are too few graded ERAs to judge.
+    """
+    era_by_key: dict[str, float] = {}
+    for row in rank_payload.get("board") or []:
+        if str(row.get("role") or "") != "pitcher":
+            continue
+        key = _identity_key(row)
+        if key is None:
+            continue
+        era = _clean_float(_current_context(row).get("era"))
+        if era is not None:
+            era_by_key[key] = era
+
+    eras: list[float] = []
+    grades: list[float] = []
+    violations: list[str] = []
+    for row in projections:
+        if str(row.get("role") or "") != "pitcher":
+            continue
+        key = _identity_key(row)
+        if key is None:
+            continue
+        era = era_by_key.get(key)
+        grade = _run_prevention_grade(row.get("shape"))
+        if era is None or grade is None:
+            continue
+        eras.append(era)
+        grades.append(float(grade))
+        if era <= RUN_PREVENTION_LOW_ERA and grade < RUN_PREVENTION_LOW_GRADE:
+            violations.append(f"{row.get('name')} (ERA {era:.2f} graded {grade})")
+        elif era >= RUN_PREVENTION_HIGH_ERA and grade > RUN_PREVENTION_HIGH_GRADE:
+            violations.append(f"{row.get('name')} (ERA {era:.2f} graded {grade})")
+
+    pitcher_count = len(eras)
+    summary = {
+        "graded_pitcher_count": pitcher_count,
+        "violation_count": len(violations),
+    }
+    if pitcher_count < RUN_PREVENTION_MIN_PITCHERS:
+        # Not enough graded ERAs to trust a correlation; record and pass.
+        summary["era_grade_correlation"] = None
+        summary["status"] = "insufficient_sample"
+        return summary
+
+    corr = _correlation(eras, grades)
+    violation_rate = len(violations) / pitcher_count
+    summary["era_grade_correlation"] = round(corr, 4) if corr is not None else None
+    summary["violation_rate"] = round(violation_rate, 4)
+    summary["status"] = "ok"
+
+    example = violations[0] if violations else "an elite ERA graded as poor"
+    if corr is None or corr > RUN_PREVENTION_MAX_CORR:
+        raise PeakProjectionSentinelError(
+            "Run Prevention sentinel FAILED: corr(ERA, Run Prevention grade) is "
+            f"{corr if corr is None else round(corr, 4)} (must be <= "
+            f"{RUN_PREVENTION_MAX_CORR}). The grade is inverted or stale — low ERA "
+            "must yield a HIGH grade, not low. "
+            f"Example violation: {example}. "
+            "Refusing to write the peak projection artifact."
+        )
+    if violation_rate > RUN_PREVENTION_MAX_VIOLATION_RATE:
+        raise PeakProjectionSentinelError(
+            "Run Prevention sentinel FAILED: "
+            f"{len(violations)}/{pitcher_count} pitchers "
+            f"({violation_rate:.1%}) violate the ERA<->grade direction "
+            f"(threshold {RUN_PREVENTION_MAX_VIOLATION_RATE:.0%}). "
+            f"Example: {example}. "
+            "The Run Prevention grade is inverted or stale — refusing to write "
+            "the peak projection artifact."
+        )
+    return summary
+
+
 def _validation(projections: list[dict], rank_payload: dict) -> dict:
     top200 = [row for row in (rank_payload.get("board") or []) if (row.get("rank") or 999999) <= 200]
     projected_keys = [_identity_key(row) for row in projections]
@@ -629,7 +766,12 @@ def build_peak_projection(rank_payload: dict, generated_at: str | None = None) -
         for row in rank_payload.get("board") or []
         if _identity_key(row)
     ]
+    # Semantic sentinel: fail LOUD here (before the artifact is ever written) if
+    # the Run Prevention grade is inverted/stale relative to ERA. Schema/coverage
+    # validation cannot catch this — a backwards grade is still well-formed.
+    run_prevention_sentinel = check_run_prevention_sentinel(projections, rank_payload)
     validation = _validation(projections, rank_payload)
+    validation["run_prevention_sentinel"] = run_prevention_sentinel
     return {
         "artifact": ARTIFACT_NAME,
         "v2": _v2_summary(projections),
