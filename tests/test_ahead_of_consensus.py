@@ -70,9 +70,10 @@ def test_consensus_matches_public_snapshot_models():
 
 def test_divergence_sign_is_consensus_minus_valucast(tmp_path):
     # ValuCast #36 vs a public field consensus near ~92 -> a positive early call.
+    # Three boards so it clears the featured floor (the main board).
     payload = _build(
         tmp_path,
-        [_row(1, "Hector Rodriguez", "hitter", 36, {"pipeline": 90, "hkb": 94})],
+        [_row(1, "Hector Rodriguez", "hitter", 36, {"pipeline": 90, "hkb": 94, "sts": 92})],
     )
     rows = payload["ahead_of_consensus"]
     assert len(rows) == 1
@@ -92,17 +93,31 @@ def test_deep_single_board_is_excluded(tmp_path):
     assert payload["divergence_by_identity"] == {}
 
 
-def test_two_in_cap_boards_strong_valucast_is_included(tmp_path):
+def test_two_board_call_is_thin_not_featured(tmp_path):
+    # A 2-board call is guarded (computes a consensus) but too weakly corroborated
+    # to feature: it goes to the opt-in thin list, NOT the main board, and gets no
+    # featured-only badge.
     payload = _build(
         tmp_path,
         [_row(3, "Owen Murphy", "pitcher", 166, {"pipeline": 250, "hkb": 280})],
     )
-    rows = payload["ahead_of_consensus"]
-    assert [row["name"] for row in rows] == ["Owen Murphy"]
-    assert rows[0]["board_count"] == 2
-    assert rows[0]["divergence"] == 265 - 166  # median(250, 280) - 166
-    # The card badge index carries the same guarded call.
+    assert payload["ahead_of_consensus"] == []
+    thin = payload["ahead_of_consensus_thin"]
+    assert [row["name"] for row in thin] == ["Owen Murphy"]
+    assert thin[0]["board_count"] == 2
+    assert thin[0]["divergence"] == 265 - 166  # median(250, 280) - 166
+    assert "3_pitcher" not in payload["divergence_by_identity"]
+
+
+def test_three_board_call_is_featured(tmp_path):
+    payload = _build(
+        tmp_path,
+        [_row(3, "Owen Murphy", "pitcher", 166, {"pipeline": 250, "hkb": 280, "sts": 265})],
+    )
+    assert [row["name"] for row in payload["ahead_of_consensus"]] == ["Owen Murphy"]
+    assert payload["ahead_of_consensus_thin"] == []
     assert "3_pitcher" in payload["divergence_by_identity"]
+    assert payload["guards"]["featured_min_boards"] == 3
 
 
 def test_boards_beyond_consensus_cap_are_excluded(tmp_path):
@@ -147,8 +162,8 @@ def test_within_role_role_is_preserved(tmp_path):
     payload = _build(
         tmp_path,
         [
-            _row(7, "Bat Call", "hitter", 40, {"pipeline": 200, "hkb": 220}),
-            _row(8, "Arm Call", "pitcher", 60, {"pipeline": 280, "hkb": 295}),
+            _row(7, "Bat Call", "hitter", 40, {"pipeline": 200, "hkb": 220, "sts": 210}),
+            _row(8, "Arm Call", "pitcher", 60, {"pipeline": 280, "hkb": 295, "sts": 288}),
         ],
     )
     by_role = {row["name"]: row["role"] for row in payload["ahead_of_consensus"]}

@@ -5012,30 +5012,36 @@ def _build_backfields_page_context():
     except Exception:  # noqa: BLE001
         prospect_id_by_key = {}
 
-    ahead_of_consensus = []
-    for row in (ahead_of_consensus_artifact or {}).get("ahead_of_consensus") or []:
-        if not isinstance(row, dict):
-            continue
-        valucast_rank = as_float(row.get("valucast_rank"))
-        consensus_rank = as_float(row.get("consensus_rank"))
-        divergence = as_float(row.get("divergence"))
-        if valucast_rank is None or consensus_rank is None or divergence is None:
-            continue
-        board_count = as_float(row.get("board_count"))
-        name = row.get("name") or "Unknown"
-        resolved_id = prospect_id_by_key.get(
-            (str(row.get("mlbam_id")), str(row.get("role")))
-        )
-        ahead_of_consensus.append({
-            "name": name,
-            **player_link_fields(name, resolved_id or row.get("mlbam_id")),
-            "valucast_rank": int(valucast_rank),
-            "consensus_rank": int(consensus_rank),
-            "divergence": int(divergence),
-            "board_count": int(board_count) if board_count is not None else 0,
-            "ahead_since": row.get("ahead_since"),
-            "days_ahead": int(row.get("days_ahead") or 0),
-        })
+    def _shape_aotc(raw_rows):
+        shaped = []
+        for row in raw_rows or []:
+            if not isinstance(row, dict):
+                continue
+            valucast_rank = as_float(row.get("valucast_rank"))
+            consensus_rank = as_float(row.get("consensus_rank"))
+            divergence = as_float(row.get("divergence"))
+            if valucast_rank is None or consensus_rank is None or divergence is None:
+                continue
+            board_count = as_float(row.get("board_count"))
+            name = row.get("name") or "Unknown"
+            resolved_id = prospect_id_by_key.get(
+                (str(row.get("mlbam_id")), str(row.get("role")))
+            )
+            shaped.append({
+                "name": name,
+                **player_link_fields(name, resolved_id or row.get("mlbam_id")),
+                "valucast_rank": int(valucast_rank),
+                "consensus_rank": int(consensus_rank),
+                "divergence": int(divergence),
+                "board_count": int(board_count) if board_count is not None else 0,
+                "ahead_since": row.get("ahead_since"),
+                "days_ahead": int(row.get("days_ahead") or 0),
+            })
+        return shaped
+
+    _aotc_artifact = ahead_of_consensus_artifact or {}
+    ahead_of_consensus = _shape_aotc(_aotc_artifact.get("ahead_of_consensus"))
+    ahead_of_consensus_thin = _shape_aotc(_aotc_artifact.get("ahead_of_consensus_thin"))
 
     return {
         "backfields_page": True,
@@ -5052,6 +5058,7 @@ def _build_backfields_page_context():
         "team_boards": _build_team_board_context(),
         "scouting_reports": scouting_reports,
         "ahead_of_consensus": ahead_of_consensus,
+        "ahead_of_consensus_thin": ahead_of_consensus_thin,
         "aotc_scorecard": aotc_scorecard,
     }
 

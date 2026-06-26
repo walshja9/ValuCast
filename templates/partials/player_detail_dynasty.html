@@ -421,8 +421,8 @@
                     <span class="stat-label">Public Consensus</span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
                     <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
-                    {% if row.prospect_rank is not none and (row.public_source_consensus - row.prospect_rank) >= 25 %}
-                    <span class="source-ahead-chip" title="ValuCast ranks this player ahead of the public field">Ahead of the Curve +{{ row.public_source_consensus - row.prospect_rank }}</span>
+                    {% if row.prospect_rank is not none and (row.public_source_ranks | length) >= 3 and (row.public_source_consensus - row.prospect_rank) >= 25 %}
+                    <span class="source-ahead-chip" title="ValuCast ranks this player ahead of the public field (3+ boards)">Ahead of the Curve +{{ row.public_source_consensus - row.prospect_rank }}</span>
                     {% endif %}
                 </div>
                 {% endif %}

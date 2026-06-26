@@ -37,6 +37,11 @@ _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 # Noise guards. Do not loosen without fresh data — they are the line between
 # ~40 credible early calls and a garbage list driven by single deep boards.
 MIN_BOARDS = 2
+# The MAIN "Ahead of the Curve" board only features calls with >= this many public
+# boards. A 2-board consensus (often one deep list + ValuCast) yields the biggest
+# raw gaps but the least corroboration; those go to an opt-in "thin coverage" view,
+# not the headline. 2-board calls still compute a consensus -- they just aren't featured.
+FEATURED_MIN_BOARDS = 3
 MAX_VALUCAST_RANK = 300
 MIN_DIVERGENCE = 25
 MAX_AHEAD_ROWS = 25
@@ -154,6 +159,12 @@ def _is_guarded(row: dict) -> bool:
     )
 
 
+def _is_featured(row: dict) -> bool:
+    """Guarded AND corroborated by >= FEATURED_MIN_BOARDS public boards -- the bar
+    for the main showcase, the badge map, and the card/share AOTC framing."""
+    return _is_guarded(row) and row.get("board_count", 0) >= FEATURED_MIN_BOARDS
+
+
 def _conviction(row: dict) -> float:
     """log(consensus_rank / valucast_rank) -- "how many times higher we rate him",
     on the log scale rank perception actually uses. Higher = a stronger early call."""
@@ -221,16 +232,25 @@ def build_ahead_of_consensus_report(
     # even though the raw divergence is smaller (+70 vs +295). Sorting by raw
     # divergence buried the best calls; log(consensus/valucast) surfaces them while
     # still rewarding magnitude. The displayed "+N divergence" per row is unchanged.
-    ahead = sorted(
-        [row for row in rows if _is_guarded(row)],
-        key=lambda row: (_conviction(row), row["divergence"]),
-        reverse=True,
-    )[:MAX_AHEAD_ROWS]
+    def _ranked(candidates: list[dict]) -> list[dict]:
+        return sorted(
+            candidates,
+            key=lambda row: (_conviction(row), row["divergence"]),
+            reverse=True,
+        )[:MAX_AHEAD_ROWS]
+
+    # Main board: corroborated calls only (>= FEATURED_MIN_BOARDS public boards).
+    # The 2-board calls -- biggest raw gaps, weakest agreement -- go to the opt-in
+    # "thin coverage" list, not the headline.
+    ahead = _ranked([row for row in rows if _is_featured(row)])
+    ahead_thin = _ranked(
+        [row for row in rows if _is_guarded(row) and not _is_featured(row)]
+    )
     # Receipts: how long ValuCast has held each player ahead of the field (provable
     # via the dated board archive). Accrues over time -- thin while the archive is young.
     earliest_ahead = _earliest_ahead_dates()
     today = generated_at[:10]
-    for row in ahead:
+    for row in (*ahead, *ahead_thin):
         since = earliest_ahead.get(row["identity_key"])
         row["ahead_since"] = since
         row["days_ahead"] = _days_between(since, today)
@@ -242,12 +262,12 @@ def build_ahead_of_consensus_report(
             "divergence": row["divergence"],
         }
         for row in rows
-        if row.get("identity_key") and _is_guarded(row)
+        if row.get("identity_key") and _is_featured(row)
     }
     blockers: list[str] = []
     if not _board_rows(rank_payload):
         blockers.append("No prospect rank rows are available for ahead-of-consensus reporting.")
-    if not ahead:
+    if not ahead and not ahead_thin:
         blockers.append("No guarded ahead-of-consensus calls cleared the noise guards.")
     return {
         "artifact": ARTIFACT_NAME,
@@ -268,6 +288,7 @@ def build_ahead_of_consensus_report(
         },
         "guards": {
             "min_boards": MIN_BOARDS,
+            "featured_min_boards": FEATURED_MIN_BOARDS,
             "max_valucast_rank": MAX_VALUCAST_RANK,
             "min_divergence": MIN_DIVERGENCE,
             "max_ahead_rows": MAX_AHEAD_ROWS,
@@ -279,6 +300,7 @@ def build_ahead_of_consensus_report(
         "summary": {
             "evaluated_count": len(rows),
             "ahead_count": len(ahead),
+            "thin_count": len(ahead_thin),
             "badge_count": len(divergence_by_identity),
         },
         "validation": {
@@ -286,6 +308,7 @@ def build_ahead_of_consensus_report(
             "blockers": blockers,
         },
         "ahead_of_consensus": ahead,
+        "ahead_of_consensus_thin": ahead_thin,
         "divergence_by_identity": divergence_by_identity,
     }
 

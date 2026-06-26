@@ -4005,6 +4005,14 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-consensus-receipt::before { content: "\2713  "; font-weight: 700; }
 .backfields-page .bf-consensus-meta { margin: 0; font-size: .68rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bf-muted); }
 
+/* Thinly-covered (2-board) calls: opt-in, de-emphasized vs the featured board */
+.backfields-page .bf-consensus-thin { margin-top: .9rem; }
+.backfields-page .bf-consensus-thin > summary { cursor: pointer; font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bf-muted); padding: .4rem 0; }
+.backfields-page .bf-consensus-thin > summary:hover,
+.backfields-page .bf-consensus-thin[open] > summary { color: var(--bf-text); }
+.backfields-page .bf-consensus-thin .bf-consensus-card { border-left-color: var(--bf-muted); opacity: .82; }
+.backfields-page .bf-consensus-thin .bf-consensus-badge { color: var(--bf-muted); text-shadow: none; }
+
 /* Ahead-of-the-Curve track record (earliness scorecard, gated until credible) */
 .backfields-page .bf-aotc-record { display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--bf-hairline, rgba(255,255,255,.08)); }
 .backfields-page .bf-aotc-record-stat { font-size: .78rem; color: var(--bf-text); }

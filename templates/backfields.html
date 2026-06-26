@@ -112,8 +112,28 @@
             </article>
             {% endfor %}
         </div>
-        {% else %}
+        {% elif not ahead_of_consensus_thin %}
         <p class="bf-empty">No ahead-of-consensus calls available yet.</p>
+        {% endif %}
+        {% if ahead_of_consensus_thin %}
+        <details class="bf-consensus-thin">
+            <summary>Show thinly-covered calls ({{ ahead_of_consensus_thin | length }}) &mdash; only 2 boards, weaker agreement</summary>
+            <div class="bf-consensus-strip" aria-label="Thinly-covered ahead-of-consensus calls, two boards only">
+                {% for call in ahead_of_consensus_thin %}
+                <article class="bf-consensus-card">
+                    <div class="bf-consensus-top">
+                        <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}">{{ call.name }}</a></h3>
+                        <span class="bf-consensus-badge">+{{ call.divergence }}</span>
+                    </div>
+                    <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
+                    {% if call.days_ahead %}
+                    <p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field since {{ call.ahead_since }}">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>
+                    {% endif %}
+                    <p class="bf-consensus-meta">{{ call.board_count }} board{{ '' if call.board_count == 1 else 's' }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </details>
         {% endif %}
     </section>
 
