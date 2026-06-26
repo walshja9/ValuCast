@@ -513,6 +513,92 @@ def test_outcome_scores_use_validated_prediction_model_not_driver_weights():
     ]
 
 
+def test_stale_current_correction_pulls_prior_only_when_current_is_worse():
+    # W2.4 stale-current comparator: a prior-year line is the largest sample (so the
+    # model selects it), but a current-season line exists. The score is pulled DOWN
+    # toward a WORSE current line; a player with no current line is untouched; a
+    # player already scored on a current line is untouched.
+    contract = _contract()
+    cur = contract["current"]
+
+    def hitter(mid, **kw):
+        base = {
+            "mlbam_id": mid, "name": f"H{mid}", "normalized_name": f"h{mid}",
+            "team": "Club", "role": "hitter", "position": "OF", "level": "AA",
+            "age": 21, "iso": 0.20, "k_pct": 18.0, "bb_pct": 11.0, "ops": 0.880,
+        }
+        base.update(kw)
+        return base
+
+    cur["hitters"] += [
+        # 3: good prior (300 PA) + thin/bad current (40 PA) -> pull DOWN
+        hitter(3, plate_appearances=300, ops=0.900, iso=0.24,
+               sample_season=2025, source_kind="latest_milb_history"),
+        hitter(3, plate_appearances=40, ops=0.500, iso=0.05, k_pct=34.0, bb_pct=4.0,
+               sample_season=2026, source_kind="current_season"),
+        # 4: prior only, no current line -> untouched (no comparator)
+        hitter(4, plate_appearances=300, ops=0.900, iso=0.24,
+               sample_season=2025, source_kind="latest_milb_history"),
+        # 5: current-selected line clears the floor -> untouched
+        hitter(5, plate_appearances=200, ops=0.880,
+               sample_season=2026, source_kind="current_season"),
+    ]
+    for mid in (3, 4, 5):
+        contract["mlb_service"].append(
+            {"mlbam_id": mid, "role": "hitter", "ab": 0, "ip": 0, "graduated": False}
+        )
+
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    rows = {
+        r["mlbam_id"]: r
+        for r in score_current(contract, payload["roles"], payload["impact_roles"])
+    }
+
+    # prior selected + worse current -> corrected DOWN, pull within [0, 0.35]
+    sc = rows[3].get("stale_current_correction")
+    assert sc is not None
+    assert rows[3]["expected_outcome_score"] < sc["raw_outcome"]
+    assert 0.0 < sc["pull_weight"] <= 0.35
+    # prior with no current line -> untouched
+    assert "stale_current_correction" not in rows[4]
+    # current-selected -> untouched
+    assert "stale_current_correction" not in rows[5]
+
+
+def test_stale_current_correction_skips_tiny_but_good_current_line():
+    # The bad-line guard: a good prior + a TINY but GOOD current line must NOT pull.
+    # Small-sample regression makes the current model score low, but the factual line
+    # is fine, so it is not "worse" (the Andrew Sears case).
+    contract = _contract()
+
+    def hitter(mid, **kw):
+        base = {
+            "mlbam_id": mid, "name": f"H{mid}", "normalized_name": f"h{mid}",
+            "team": "Club", "role": "hitter", "position": "OF", "level": "AA",
+            "age": 21, "iso": 0.20, "k_pct": 18.0, "bb_pct": 11.0, "ops": 0.880,
+        }
+        base.update(kw)
+        return base
+
+    contract["current"]["hitters"] += [
+        hitter(6, plate_appearances=300, ops=0.900, iso=0.24,
+               sample_season=2025, source_kind="latest_milb_history"),
+        # tiny (40 PA) but strong line: good ops/iso, elite discipline -> guard blocks
+        hitter(6, plate_appearances=40, ops=0.920, iso=0.25, k_pct=16.0, bb_pct=12.0,
+               sample_season=2026, source_kind="current_season"),
+    ]
+    contract["mlb_service"].append(
+        {"mlbam_id": 6, "role": "hitter", "ab": 0, "ip": 0, "graduated": False}
+    )
+
+    payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
+    rows = {
+        r["mlbam_id"]: r
+        for r in score_current(contract, payload["roles"], payload["impact_roles"])
+    }
+    assert "stale_current_correction" not in rows[6]
+
+
 def test_driver_refresh_preserves_every_non_driver_model_output():
     contract = _contract()
     payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")

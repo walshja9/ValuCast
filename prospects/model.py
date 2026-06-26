@@ -24,7 +24,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_model.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_model"
 
 MODEL_NAME = "ValuCast Prospect Model"
-MODEL_VERSION = "0.6.0"
+MODEL_VERSION = "0.6.1"  # 0.6.1: stale-current comparator adjusts served scores
 MODEL_STATUS = "shadow_only"
 POOLED_SHADOW_ENABLED = os.environ.get("VALUCAST_POOLED_SHADOW", "1") != "0"
 POOLED_SHADOW_VERSION = "0.1.0"
@@ -922,6 +922,30 @@ def _select_current_records(current: dict, role: str) -> list[dict]:
     return list(by_player.values())
 
 
+def _current_line_is_bad(record: dict, role: str) -> bool:
+    """Factual bad-line guard for the stale-current pull: only pull a prior score
+    down when the current line is genuinely poor -- not merely small-sample
+    regressed -- so a tiny-but-GOOD current line never reads as 'worse'."""
+    if role == "pitcher":
+        era = _num(record.get("era"))
+        whip = _num(record.get("whip"))
+        k_bb = _num(record.get("k_bb_pct"))
+        return bool(
+            (era is not None and era >= 5.50)
+            or (whip is not None and whip >= 1.50)
+            or (k_bb is not None and k_bb <= 5.0)
+        )
+    ops = _num(record.get("ops"))
+    iso = _num(record.get("iso"))
+    k_pct = _num(record.get("k_pct"))
+    bb_pct = _num(record.get("bb_pct"))
+    return bool(
+        (ops is not None and ops <= 0.650)
+        or (iso is not None and iso <= 0.080)
+        or (k_pct is not None and bb_pct is not None and (k_pct - bb_pct) >= 25.0)
+    )
+
+
 def _pool_current_records(records: list[dict], role: str) -> dict | None:
     if not records:
         return None
@@ -1118,6 +1142,20 @@ def score_current(
             current_by_player.setdefault(int(current_record["mlbam_id"]), []).append(
                 current_record
             )
+        # W2.4 stale-current correction: every current-SEASON record by player, even
+        # below the eligibility floor, so a prior-year-selected player still exposes a
+        # current comparator. Keeps the largest current-season sample per player.
+        current_season_by_player: dict[int, dict] = {}
+        for current_record in current.get(group, []):
+            mid = current_record.get("mlbam_id")
+            if not mid or str(current_record.get("source_kind")) != "current_season":
+                continue
+            mid = int(mid)
+            incumbent = current_season_by_player.get(mid)
+            if incumbent is None or _sample(current_record, role) > _sample(
+                incumbent, role
+            ):
+                current_season_by_player[mid] = current_record
         for record in _select_current_records(current, role):
             service_fact = service.get((int(record["mlbam_id"]), role))
             if service_fact is None or service_fact.get("graduated"):
@@ -1172,6 +1210,52 @@ def score_current(
                     IMPACT_DRIVER_GROUPS[role],
                 ),
             }
+            # W2.4 stale-current correction: when the model selected a PRIOR-year line
+            # but a factually WORSE current-season line exists, pull the prior score
+            # DOWN toward the current comparator, weighted by current evidence
+            # (min 0.35). A factual bad-line guard keeps a tiny-but-GOOD current line
+            # from reading as "worse"; a player with no current line is untouched.
+            # (Runs before pooled-shadow so its served_score reflects the served value.)
+            if str(record.get("source_kind")) != "current_season":
+                comparator = current_season_by_player.get(int(record["mlbam_id"]))
+                comp_outcome_raw = (
+                    _outcome_feature_vector(comparator, role) if comparator else None
+                )
+                if comp_outcome_raw is not None and _current_line_is_bad(
+                    comparator, role
+                ):
+                    comp_sample = _sample(comparator, role)
+                    comp_regressed, comp_rel = _regress_current_features(
+                        comp_outcome_raw, role_model, role, comp_sample
+                    )
+                    comp_impact_features, _ = _regress_current_features(
+                        comp_outcome_raw, impact_model, role, comp_sample
+                    )
+                    current_outcome = _predict_model(outcome_runtime, comp_regressed)
+                    current_impact = _predict_model(impact_runtime, comp_impact_features)
+                    pull_w = min(
+                        0.35, comp_sample / (comp_sample + SAMPLE_REGRESSION[role])
+                    )
+                    prior_outcome = row["expected_outcome_score"]
+                    prior_impact = row["expected_category_impact_score"]
+                    row["expected_outcome_score"] = round(
+                        prior_outcome - pull_w * max(0.0, prior_outcome - current_outcome),
+                        4,
+                    )
+                    row["expected_category_impact_score"] = round(
+                        prior_impact - pull_w * max(0.0, prior_impact - current_impact), 4
+                    )
+                    # Keep the raw model output (the gate validates raw, not adjusted)
+                    # and expose the current comparator's reliability for honesty.
+                    row["stale_current_correction"] = {
+                        "raw_outcome": round(prior_outcome, 4),
+                        "raw_impact": round(prior_impact, 4),
+                        "current_outcome": round(current_outcome, 4),
+                        "current_impact": round(current_impact, 4),
+                        "current_sample": round(comp_sample, 1),
+                        "current_reliability": round(comp_rel, 3),
+                        "pull_weight": round(pull_w, 4),
+                    }
             if POOLED_SHADOW_ENABLED:
                 try:
                     pooled = _pool_current_records(
@@ -1341,6 +1425,9 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
         "The ordinal outcome score is a bridge target, not direct fantasy value.",
         "The v0.6 hitter hurdle architecture was selected during retrospective "
         "research and requires forward archived confirmation before live promotion.",
+        "Served scores carry a stale-current correction (stale_current_correction): a "
+        "prior-year-selected line is pulled toward a worse current line; the raw model "
+        "output is preserved in that field and is what the gate validates.",
     ]
     if not direct_7x7:
         limitations.append(
