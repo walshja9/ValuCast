@@ -925,24 +925,46 @@ def _select_current_records(current: dict, role: str) -> list[dict]:
 def _current_line_is_bad(record: dict, role: str) -> bool:
     """Factual bad-line guard for the stale-current pull: only pull a prior score
     down when the current line is genuinely poor -- not merely small-sample
-    regressed -- so a tiny-but-GOOD current line never reads as 'worse'."""
+    regressed. An EGREGIOUS collapse counts at any sample; otherwise a single bad
+    ratio needs enough current evidence (>=10 IP / >=40 PA) so a tiny line of fine
+    or mixed ratios never reads as 'worse' (e.g. a 1.80 WHIP / 14% K-BB in 3 IP)."""
     if role == "pitcher":
         era = _num(record.get("era"))
         whip = _num(record.get("whip"))
         k_bb = _num(record.get("k_bb_pct"))
+        ip = _sample(record, "pitcher")
+        if (era is not None and era >= 7.50) or (k_bb is not None and k_bb <= 0.0):
+            return True  # egregious collapse / no whiffs -- trust at any sample
+        if ip < 10.0:
+            return False  # too small to trust a single bad ratio
         return bool(
             (era is not None and era >= 5.50)
-            or (whip is not None and whip >= 1.50)
+            or (whip is not None and whip > 1.50)
             or (k_bb is not None and k_bb <= 5.0)
         )
     ops = _num(record.get("ops"))
     iso = _num(record.get("iso"))
     k_pct = _num(record.get("k_pct"))
     bb_pct = _num(record.get("bb_pct"))
+    pa = _sample(record, "hitter")
+    if ops is not None and ops <= 0.550:
+        return True  # egregious collapse -- trust at any sample
+    if pa < 40.0:
+        return False
     return bool(
         (ops is not None and ops <= 0.650)
         or (iso is not None and iso <= 0.080)
         or (k_pct is not None and bb_pct is not None and (k_pct - bb_pct) >= 25.0)
+    )
+
+
+def _display_record_key(record: dict, role: str) -> tuple[float, float]:
+    """Highest level, then sample -- mirrors rank_v1's display current-line selector
+    so the comparator scores the SAME current line the public card shows (no
+    'dropped for a line you can't see' contradiction)."""
+    return (
+        LEVEL_CODE.get(str(record.get("level") or "").upper(), -99.0),
+        _sample(record, role),
     )
 
 
@@ -1144,7 +1166,8 @@ def score_current(
             )
         # W2.4 stale-current correction: every current-SEASON record by player, even
         # below the eligibility floor, so a prior-year-selected player still exposes a
-        # current comparator. Keeps the largest current-season sample per player.
+        # current comparator. Picks the SAME line the public card shows (highest
+        # level, then sample) so the comparator never scores a line the user can't see.
         current_season_by_player: dict[int, dict] = {}
         for current_record in current.get(group, []):
             mid = current_record.get("mlbam_id")
@@ -1152,9 +1175,9 @@ def score_current(
                 continue
             mid = int(mid)
             incumbent = current_season_by_player.get(mid)
-            if incumbent is None or _sample(current_record, role) > _sample(
-                incumbent, role
-            ):
+            if incumbent is None or _display_record_key(
+                current_record, role
+            ) > _display_record_key(incumbent, role):
                 current_season_by_player[mid] = current_record
         for record in _select_current_records(current, role):
             service_fact = service.get((int(record["mlbam_id"]), role))
