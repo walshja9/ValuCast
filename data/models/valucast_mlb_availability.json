@@ -3321,6 +3321,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Cincinnati Reds placed RHP Tony Santillan on the 15-day injured list retroactive to June 23, 2026. Left oblique strain.",
+      "effective_date": "2026-06-23",
+      "list_type": "15-day injured list",
+      "mlbam_id": 663574,
+      "name": "Tony Santillan",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Cincinnati Reds",
+      "transaction_date": "2026-06-26",
+      "transaction_id": 922661,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "Los Angeles Angels transferred C Travis d'Arnaud from the 10-day injured list to the 60-day injured list. Right foot plantar fasciitis.",
       "effective_date": "2026-06-03",
       "list_type": "60-day injured list",
@@ -3438,21 +3453,6 @@
       "transaction_id": 916423,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "New York Mets sent CF Tyrone Taylor on a rehab assignment to Syracuse Mets.",
-      "effective_date": "2026-06-21",
-      "list_type": null,
-      "mlbam_id": 621438,
-      "name": "Tyrone Taylor",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Syracuse Mets",
-      "transaction_date": "2026-06-21",
-      "transaction_id": 920761,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -6486,6 +6486,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "New York Mets activated CF Tyrone Taylor from the 10-day injured list.",
+      "effective_date": "2026-06-26",
+      "list_type": "10-day injured list",
+      "mlbam_id": 621438,
+      "name": "Tyrone Taylor",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "New York Mets",
+      "transaction_date": "2026-06-26",
+      "transaction_id": 922673,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Los Angeles Angels activated 2B Vaughn Grissom from the 10-day injured list.",
       "effective_date": "2026-06-17",
       "list_type": "10-day injured list",
@@ -6699,15 +6714,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 203,
+    "available_after_il_count": 204,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 193,
-    "profile_count": 444,
+    "injured_count": 194,
+    "profile_count": 445,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 48,
+    "rehab_count": 47,
     "risk_profile_count": 241,
     "tracked_mlbam_count": 10227,
-    "transaction_count": 7079
+    "transaction_count": 7087
   }
 }

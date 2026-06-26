@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-26T14:17:03.972195+00:00",
+  "generated_at": "2026-06-26T17:36:01.598137+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -1452,9 +1452,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "645305_hitter",
       "mlbam_id": "645305",
       "name": "Ali S\u00e1nchez",
@@ -1495,7 +1495,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYY",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -16338,9 +16338,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "669004_hitter",
       "mlbam_id": "669004",
       "name": "MJ Melendez",
@@ -16382,7 +16382,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -33990,10 +33990,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "621438_hitter",
       "mlbam_id": "621438",
       "name": "Tyrone Taylor",
@@ -34006,19 +34006,20 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.4,
+        "confidence_score": 58.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "part_time_or_strong_side",
         "role_confidence": "moderate",
         "role_probabilities": {
-          "part_time_or_strong_side": 1.0
+          "part_time_or_strong_side": 0.9,
+          "regular": 0.1
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 54.54,
@@ -34028,13 +34029,13 @@
         "volume_forecast": {
           "base": 405.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 426.0,
-          "low": 298.3,
-          "point": 380.7,
+          "high": 435.4,
+          "low": 349.8,
+          "point": 405.0,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -64457,10 +64458,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "663574_reliever",
       "mlbam_id": "663574",
       "name": "Tony Santillan",
@@ -64473,7 +64474,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 57.5,
+        "confidence_score": 49.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -64484,8 +64485,8 @@
         },
         "role_probability_source": "save_hold_driven_v1_label",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.1,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 76.42,
@@ -64495,13 +64496,13 @@
         "volume_forecast": {
           "base": 43.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 45.3,
-          "low": 40.5,
-          "point": 43.6,
+          "high": 43.6,
+          "low": 32.5,
+          "point": 39.7,
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CIN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -69076,9 +69077,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "650960_reliever",
       "mlbam_id": "650960",
       "name": "Daniel Duarte",
@@ -69119,7 +69120,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "NYM",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101142,7 +101143,7 @@
   },
   "summary": {
     "active_injury_risk_count": 226,
-    "active_mlb_roster_count": 728,
+    "active_mlb_roster_count": 727,
     "profile_count": 2049,
     "role_counts": {
       "bench_or_depth": 401,
