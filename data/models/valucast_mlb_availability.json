@@ -1776,21 +1776,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Milwaukee Brewers sent LHP Jared Koenig on a rehab assignment to Nashville Sounds.",
-      "effective_date": "2026-05-29",
-      "list_type": null,
-      "mlbam_id": 657649,
-      "name": "Jared Koenig",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Nashville Sounds",
-      "transaction_date": "2026-05-29",
-      "transaction_id": 913067,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "San Francisco Giants sent CF Jared Oliva on a rehab assignment to Sacramento River Cats.",
       "effective_date": "2026-05-30",
       "list_type": null,
@@ -4851,6 +4836,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Milwaukee Brewers activated LHP Jared Koenig from the 15-day injured list.",
+      "effective_date": "2026-06-26",
+      "list_type": "15-day injured list",
+      "mlbam_id": 657649,
+      "name": "Jared Koenig",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-06-26",
+      "transaction_id": 922792,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Pittsburgh Pirates activated SS Jared Triolo from the 10-day injured list.",
       "effective_date": "2026-05-02",
       "list_type": "10-day injured list",
@@ -6714,15 +6714,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 205,
+    "available_after_il_count": 206,
     "blockers": [],
     "duplicate_identity_count": 0,
     "injured_count": 194,
     "profile_count": 445,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 46,
-    "risk_profile_count": 240,
+    "rehab_count": 45,
+    "risk_profile_count": 239,
     "tracked_mlbam_count": 10227,
-    "transaction_count": 7092
+    "transaction_count": 7102
   }
 }
