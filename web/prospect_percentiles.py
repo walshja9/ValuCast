@@ -123,13 +123,29 @@ def _number(line: dict, key: str) -> float | None:
     return float(value) if isinstance(value, (int, float)) else None
 
 
+def _has_stat_values(line) -> bool:
+    """True when the line carries at least one readable hitter/pitcher metric.
+
+    A sample-only or empty dict is not a performance sample, so it must not block the
+    honest no-sample read; a thin line with real rates is a small-sample read instead."""
+    if not isinstance(line, dict) or not line:
+        return False
+    return any(isinstance(line.get(metric), (int, float)) for metric in METRICS)
+
+
 def _performance_line(row) -> tuple[dict, bool]:
-    """Best available performance line and whether it came from translation data."""
+    """Best available performance line and whether it came from translation data.
+
+    Prefers the card_line the bars/label use. When no line clears the percentile-pool
+    floor but a real current stat_line exists, narrate THAT line as a small-sample read
+    rather than the absolute "no evidence" template — being below the bar floor is not
+    the same as having no performance sample (a scored top-200 prospect always has one).
+    """
     selection = card_line(row)
     if selection.line:
         return selection.line, False
-    if row.stat_line:
-        return {}, False
+    if _has_stat_values(row.stat_line):
+        return row.stat_line, False
     translated = row.stat_line_translated or {}
     line = {
         stat.get("key"): stat.get("milb")
@@ -903,9 +919,9 @@ def pool_label(row) -> str:
     line = selection.line
     role_is_pitcher = _is_pitcher(row, line if line is not None else (row.stat_line or {}))
     base = (
-        f"vs ValuCast pitcher pool - all levels - {MIN_IP}+ IP"
+        f"pitcher pool - {MIN_IP}+ IP"
         if role_is_pitcher
-        else f"vs ValuCast hitter pool - all levels - {MIN_PA}+ PA"
+        else f"hitter pool - {MIN_PA}+ PA"
     )
     if selection.is_combined and isinstance(line, dict):
         season = line.get("season")

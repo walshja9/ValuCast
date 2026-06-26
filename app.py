@@ -1889,6 +1889,20 @@ def _graphic_sample_phrase(row, context, line):
     return f" over {number} {unit}"
 
 
+def _graphic_combined_sample_phrase(line):
+    """`over N PA/IP` from the combined line's OWN sample, so the read sample matches
+    the label/bars line (not the thinner current-level context sample)."""
+    pitcher = any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct"))
+    sample = line.get("sample")
+    if not isinstance(sample, (int, float)):
+        sample = line.get("ip") if pitcher else line.get("pa")
+    if not isinstance(sample, (int, float)):
+        return ""
+    unit = line.get("sample_unit") or ("IP" if pitcher else "PA")
+    number = str(int(sample)) if float(sample).is_integer() else f"{float(sample):.1f}"
+    return f" over {number} {unit}"
+
+
 def _graphic_sample_context_label(row, context):
     label = getattr(row, "sample_context_label", None)
     if label:
@@ -2069,14 +2083,23 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
         return prospect_percentiles.identity_line(row, stat_percentiles) or ""
 
     last = _graphic_last_name(row.name)
-    card_stat_line, best_level, is_best = prospect_percentiles.card_line(row)
+    card_selection = prospect_percentiles.card_line(row)
+    card_stat_line, best_level, is_best = card_selection
     note = prospect_percentiles.value_suppressor_note(row, stat_percentiles)
     if is_best and card_stat_line:
         return _with_note(
             _graphic_best_single_read(card_stat_line, best_level, stat_percentiles, last),
             note,
         )
-    sample = _graphic_sample_phrase(row, context, line)
+    # Value/percentile parity: when card_line selected the combined season line, the
+    # callout VALUES and the sample must come from THAT line — the one stat_percentiles
+    # were ranked on — not the thin current stat_line. Otherwise a 9-PA .444 OPS value
+    # gets paired with the combined line's 99th percentile.
+    if card_selection.is_combined and card_stat_line:
+        line = card_stat_line
+        sample = _graphic_combined_sample_phrase(card_stat_line)
+    else:
+        sample = _graphic_sample_phrase(row, context, line)
     if any(key in line for key in ("era", "whip", "k_per_9", "bb_per_9", "k_bb_pct")):
         era = _graphic_prose_stat(line.get("era"), "era")
         whip = _graphic_prose_stat(line.get("whip"), "whip")

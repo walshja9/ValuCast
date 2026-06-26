@@ -495,6 +495,71 @@ def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
     assert "milb" not in grounding["mlb_equivalent_translation"]["stats"][0]
 
 
+def test_llm_grounding_rounds_card_line_rate_stats():
+    # Seth Hernandez regression: the card_line the read narrates is the combined
+    # season line, and its raw rate stats carry false precision (14.597 K/9). The
+    # grounding must round them before handoff so a model read cannot echo the
+    # spurious decimals: 1 dp for per-9/ERA/WHIP, whole number for percentages.
+    combined = {
+        "role": "pitcher",
+        "season": 2026,
+        "level": "AAA",
+        "levels": ["AAA", "AA"],
+        "level_label": "AAA+AA",
+        "sample": 57.3,
+        "sample_unit": "IP",
+        "ip": 57.3,
+        "era": 2.503,
+        "whip": 1.004,
+        "k_per_9": 14.597,
+        "bb_per_9": 2.531,
+        "k_bb_pct": 30.4,
+    }
+    current = {
+        "ip": 29.3,
+        "era": 2.10,
+        "whip": 0.95,
+        "k_per_9": 16.111,
+        "bb_per_9": 2.1,
+        "k_bb_pct": 35.0,
+    }
+    row = SimpleNamespace(
+        is_prospect=True,
+        name="Seth Hernandez",
+        role="pitcher",
+        bats=None,
+        throws=None,
+        positions=["SP"],
+        team="LAD",
+        level="A+",
+        age=19,
+        prospect_rank=5,
+        stat_line=current,
+        stat_line_translated=None,
+        best_single_level_stat_line=None,
+        combined_season_stat_line=combined,
+        context={},
+        metadata={},
+        availability_context={},
+        has_peak_projection=False,
+        peak_projection_summary=None,
+    )
+
+    grounding = repository._llm_grounding(row, {"k_per_9": 95}, "vs test pool")
+    serialized = json.dumps(grounding)
+    display = grounding["card_display_line"]
+
+    # Read narrates the SAME combined line the bars use, with rounded rates.
+    assert display["source_kind"] == "combined_season_line"
+    assert display["k_per_9"] == 14.6
+    assert display["bb_per_9"] == 2.5
+    assert display["era"] == 2.5
+    assert display["whip"] == 1.0
+    assert display["k_bb_pct"] == 30
+    assert "14.597" not in serialized
+    assert "16.111" not in serialized  # never the thin current-slice line
+
+
 def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):
     from scouting import report_generator, repository
 

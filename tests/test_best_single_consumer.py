@@ -175,9 +175,58 @@ class TestBestSingleConsumer(unittest.TestCase):
         self.assertIn("Double-A", read)
         self.assertNotIn("71 PA", read)
 
+    def test_scored_sub_threshold_prospect_gets_small_sample_read_not_no_evidence(self):
+        # A scored top-200 prospect with a thin current line (below the 100-PA pool
+        # floor) and no combined/best line: card_line is None, but the read must
+        # narrate the ACTUAL thin line as a small-sample read — NOT the absolute
+        # "no current performance sample / organizational depth" no-evidence template.
+        r = _row(
+            stat_line={
+                "pa": 62, "avg": 0.300, "obp": 0.380, "slg": 0.480, "ops": 0.860,
+                "iso": 0.180, "k_pct": 18.0, "bb_pct": 11.0,
+            },
+            best=None,
+            combined=None,
+            level="A",
+        )
+        r.prospect_rank = 33
+        r.dynasty_value = 43.4
+
+        self.assertIsNone(card_line(r)[0])
+        line, from_translation = prospect_percentiles._performance_line(r)
+        self.assertIs(line, r.stat_line)
+        self.assertFalse(from_translation)
+
+        read = identity_line(r, {})
+        self.assertIn("62 PA", read)
+        self.assertIn("confidence is low", read.lower())
+        self.assertNotIn("No current performance sample", read)
+        self.assertNotIn("only supported floor", read)
+
+    def test_no_stat_values_still_returns_honest_no_sample_read(self):
+        # Genuinely zero-data rows (and sample-only dicts) keep the honest no-sample line.
+        empty = _row(stat_line=None, best=None, combined=None)
+        sample_only = _row(stat_line={"pa": 40}, best=None, combined=None)
+        for r in (empty, sample_only):
+            self.assertIn(
+                "No current performance sample",
+                identity_line(r, {}),
+            )
+
     def test_non_prospect_returns_none(self):
         r = _row(stat_line=_hitter_line(300), is_prospect=False)
         self.assertIsNone(card_line(r)[0])
+
+    def test_pool_label_fits_mobile_width(self):
+        # Regression: the combined label used to reach ~67 chars
+        # ("vs ValuCast hitter pool - all levels - 100+ PA - combined 2026 line")
+        # and truncated to "...100+ PA - com..." on mobile. Keep it short enough to
+        # fit while preserving the qualifier tokens the other tests assert.
+        combined = {**_hitter_line(200, 1.10), "season": 2026, "level_label": "AAA+AA"}
+        r = _row(stat_line=_hitter_line(50, 0.70), combined=combined)
+        label = pool_label(r)
+        self.assertLessEqual(len(label), 50)
+        self.assertIn("combined 2026 line", label)
 
 
 if __name__ == "__main__":

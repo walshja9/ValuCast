@@ -1,9 +1,26 @@
 """Tests for ValuCast Prospect Peak Projection v1."""
 import json
 
+from prospects.peak_projection import _pitcher_shape
 from prospects.peak_projection import build_peak_projection
 from prospects.peak_projection import run_peak_projection
 from scripts.validate_prospect_peak_projection import validate_peak_projection
+
+
+def _run_prevention_grade(era, whip):
+    current = {"k_per_9": 9.0, "bb_per_9": 3.0, "k_bb_pct": 18.0, "era": era, "whip": whip}
+    shape = _pitcher_shape(current, rank_score=50.0)
+    rp = next(item for item in shape if item["label"] == "Run Prevention")
+    return rp["grade"]
+
+
+def test_run_prevention_grade_rewards_low_era_and_whip():
+    # Run Prevention must reward low ERA/WHIP. Under the old double-negated
+    # (swapped anchors + lower_is_better=True) code this was fully inverted,
+    # so a 7.11 ERA / 1.97 WHIP line graded ABOVE a 1.13 / 0.66 elite line.
+    elite = _run_prevention_grade(era=1.13, whip=0.66)
+    terrible = _run_prevention_grade(era=7.11, whip=1.97)
+    assert elite > terrible
 
 
 def _row(rank, role="hitter"):

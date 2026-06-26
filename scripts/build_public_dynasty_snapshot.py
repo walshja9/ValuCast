@@ -151,7 +151,13 @@ def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
 
 
 def _active_callup_bridge_row(row: dict) -> dict:
-    """Keep a fresh MLB call-up visible while the MLB projection layer catches up."""
+    """Keep a fresh MLB call-up visible while the MLB projection layer catches up.
+
+    The bridged row lands on the MLB/dynasty surface (player_type="mlb"), not the
+    prospect board: a graduated call-up has crossed the rookie line, so showing him as
+    a ranked prospect (with a prospect_rank) is wrong. He stays queryable on the MLB
+    surface instead of being stranded. prospect_rank is stripped so he can never be
+    re-read as a ranked prospect."""
     bridged = {**row}
     previous_level = row.get("level")
     context = dict(row.get("context") or {})
@@ -169,8 +175,10 @@ def _active_callup_bridge_row(row: dict) -> dict:
     ]
     bridged.update(
         {
+            "player_type": "mlb",
             "level": "MLB",
             "status": "active_mlb_callup",
+            "prospect_rank": None,
             "drivers": list(dict.fromkeys(drivers))[:6],
             "active_mlb_callup_bridge": True,
             "context": context,
@@ -994,19 +1002,15 @@ def build_snapshot(
         for row in graduated_prospect_rows
         if (mlbam_id := _mlbam_id(row))
     }
+    # Graduated call-ups (active MLB roster) leave the prospect board entirely: they are
+    # bridged onto the MLB/dynasty surface (player_type="mlb") below rather than kept as
+    # ranked prospects. Drop their un-bridged prospect rows here so the board never shows
+    # a graduate with a prospect_rank.
     prospect_rows = [
         row
         for row in all_prospect_rows
         if _mlbam_id(row) not in graduated_ids
-    ]
-    bridge_by_id = {
-        _mlbam_id(row): row
-        for row in active_callup_bridge_rows
-        if _mlbam_id(row)
-    }
-    prospect_rows = [
-        bridge_by_id.get(_mlbam_id(row), row)
-        for row in prospect_rows
+        and _mlbam_id(row) not in active_callup_bridge_ids
     ]
     # Known graduates the morning prospect build already evicted (active MLB roster) but
     # who aren't yet in the MLB dynasty layer (e.g. <40-IP call-ups) never reach the board
@@ -1024,7 +1028,7 @@ def build_snapshot(
         and mlbam_id not in mlb_identity_ids
         and mlbam_id not in active_callup_bridge_ids
     ]
-    prospect_rows = prospect_rows + graduated_callup_bridge_rows
+    callup_bridge_rows = active_callup_bridge_rows + graduated_callup_bridge_rows
     active_prospect_ids = {
         mlbam_id
         for row in prospect_rows
@@ -1036,6 +1040,9 @@ def build_snapshot(
     mlb_rows = [
         row for row in mlb_rows if _mlbam_id(row) not in active_prospect_ids
     ]
+    # Bridge graduated call-ups onto the MLB surface so they stay queryable on
+    # dynasty/backfields without ever ranking as prospects.
+    mlb_rows = mlb_rows + callup_bridge_rows
     graduation_transition_floor_count = _apply_graduation_transition_floor(
         mlb_rows,
         graduated_prospect_rows,

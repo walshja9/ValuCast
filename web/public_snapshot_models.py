@@ -15,6 +15,7 @@ from .prospect_context import (
     uncertainty_note,
     why_rank_chips,
 )
+from .prospect_percentiles import card_line
 
 
 # cfr is a deep stat-formula list (scale ~1-5700) on a different axis than the
@@ -213,7 +214,55 @@ class PublicSnapshotRow:
             return "MLB"
         if self._is_mlb_level(current_level) or self._is_mlb_level(feed_level):
             return "MLB"
+        # Single source of truth: when the bars rank the combined season line, the
+        # sub-header level must name that line's combined level (e.g. "AAA & AA"),
+        # not just the current-level slice.
+        combined_level = self._card_combined_level_label
+        if combined_level:
+            return combined_level
         return current_level or feed_level
+
+    @property
+    def _card_combined_level_label(self) -> str | None:
+        """Combined level label when card_line selects the combined season line, else None.
+        Reads the SAME selector the bars/percentiles use so the sub-header can't diverge.
+        Returns None for an effectively single-level combined line so the existing
+        single-level label stands; only a genuine multi-level line gets the joined label."""
+        selection = card_line(self)
+        if not selection.is_combined or not isinstance(selection.line, dict):
+            return None
+        line = selection.line
+        levels = [str(item) for item in (line.get("levels") or []) if item]
+        # The "A+" level contains a literal "+", so never split level_label on "+";
+        # build the joined label from the unambiguous levels list instead.
+        if len(levels) <= 1:
+            return None
+        return " & ".join(levels)
+
+    @staticmethod
+    def _season_text(value) -> str | None:
+        if value in (None, ""):
+            return None
+        text = str(value).strip()
+        return text or None
+
+    @property
+    def _current_sample_season(self) -> str | None:
+        return self._season_text(self.context.get("stat_line_sample_season"))
+
+    @property
+    def _cross_season_split(self) -> bool:
+        """The current sample and the season-total are tagged to DIFFERENT seasons.
+
+        When true, the current half must carry its own season tag so a prior-year
+        total (e.g. a 2025 line shown beside a 2026 current sample) can't read as the
+        current season — and vice versa. Only triggers when the split is actually shown.
+        """
+        if not self.has_split_level_sample:
+            return False
+        current_season = self._current_sample_season
+        total_season = self._season_text(self._season_total_sample_parts[2])
+        return bool(current_season and total_season and current_season != total_season)
 
     @property
     def current_level_sample_label(self) -> str | None:
@@ -224,7 +273,12 @@ class PublicSnapshotRow:
         if not sample:
             return None
         level = self.stat_line_level_label
-        return f"{level} sample: {sample}" if level else f"Current sample: {sample}"
+        prefix = f"{level} " if level else ""
+        if self._cross_season_split:
+            # Tag the current half with its season so the cross-season split is
+            # unambiguous (the other half is already year-tagged).
+            return f"{self._current_sample_season} {prefix}sample: {sample}"
+        return f"{prefix}sample: {sample}" if level else f"Current sample: {sample}"
 
     @property
     def current_level_sample_badge(self) -> str | None:
@@ -232,7 +286,10 @@ class PublicSnapshotRow:
         if not sample:
             return None
         level = self.stat_line_level_label
-        return f"{level} {sample}" if level else sample
+        prefix = f"{level} " if level else ""
+        if self._cross_season_split:
+            return f"{self._current_sample_season} {prefix}{sample}"
+        return f"{prefix}{sample}".strip() if level else sample
 
     @property
     def _season_total_sample_parts(self) -> tuple[float | None, str | None, str | None, str | None]:

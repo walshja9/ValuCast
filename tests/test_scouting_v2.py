@@ -48,6 +48,35 @@ class TestVoiceGuard(unittest.TestCase):
         self.assertEqual(unsupported_numbers(text, GROUNDING), [])
         self.assertTrue(validate_report_text(text, GROUNDING)["ok"])
 
+    def test_count_does_not_validate_same_digits_rate(self):
+        # BUG A regression: a PA *count* of 322 must not "ground" a hallucinated .322 AVG.
+        # The /1000 collapse is rate-only, so a count cannot back a same-digits rate.
+        grounding = {"role": "hitter", "card_display_line": {"pa": 322}}
+        # report cites a .322 AVG that is NOT in the grounding (only the 322 PA count is)
+        flagged = unsupported_numbers("A .322 hitter.", grounding)
+        self.assertIn(".322", flagged)
+        self.assertFalse(validate_report_text("A .322 hitter.", grounding)["ok"])
+
+    def test_real_rate_still_validates(self):
+        # A genuine .322 AVG grounded by a real .322 rate value stays supported.
+        grounding = {"role": "hitter", "card_display_line": {"avg": 0.322, "pa": 322}}
+        self.assertEqual(unsupported_numbers("A .322 hitter over 322 PA.", grounding), [])
+        self.assertTrue(validate_report_text("A .322 hitter over 322 PA.", grounding)["ok"])
+
+    def test_wrong_hitter_handedness_is_flagged(self):
+        # BUG B: a hitter described with the wrong batting side must be flagged.
+        lefty_hitter = {**GROUNDING, "role": "hitter", "bats": "L"}
+        problems = handedness_problems("A right-handed bat with real pop.", lefty_hitter)
+        self.assertTrue(problems)
+        result = validate_report_text("A right-handed bat over 240 PA.", lefty_hitter)
+        self.assertFalse(result["hard_ok"])
+        self.assertTrue(result["handedness_problems"])
+
+        # a correct side (or a switch hitter) is not flagged
+        self.assertEqual(handedness_problems("A left-handed bat.", lefty_hitter), [])
+        switch = {**GROUNDING, "role": "hitter", "bats": "S"}
+        self.assertEqual(handedness_problems("A left-handed bat from the right side too.", switch), [])
+
     def test_llm_grounding_includes_peak_detail_and_rank_movement(self):
         base = dict(
             name="Test", role="hitter", positions=["SS"], team="BOS", level="AA", age=21,

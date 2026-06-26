@@ -190,6 +190,26 @@ def _mlb_row_report(row, statcast_groups: list[dict] | None = None) -> dict:
     }
 
 
+# Rate stats carry false precision off the raw runtime line (e.g. 14.597 K/9). Round
+# them in the grounding before the LLM sees them so a model read cannot echo the
+# spurious decimals: 1 decimal for per-9 / ERA / WHIP, whole number for percentages.
+_RATE_ROUND_1DP = ("k_per_9", "bb_per_9", "era", "whip")
+_RATE_ROUND_WHOLE = ("k_pct", "bb_pct", "k_bb_pct")
+
+
+def _round_grounding_rates(line: dict) -> dict:
+    rounded = dict(line)
+    for key in _RATE_ROUND_1DP:
+        value = rounded.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            rounded[key] = round(float(value), 1)
+    for key in _RATE_ROUND_WHOLE:
+        value = rounded.get(key)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            rounded[key] = round(float(value))
+    return rounded
+
+
 def _card_display_line_grounding(
     line: dict | None,
     is_best: bool,
@@ -198,7 +218,7 @@ def _card_display_line_grounding(
     if not isinstance(line, dict) or not line:
         return None
     return {
-        **line,
+        **_round_grounding_rates(line),
         "usage": "the line shown on the card skill bars",
         "source_kind": source_kind
         or ("best_single_level_stat_line" if is_best else "current_minor_league_line"),

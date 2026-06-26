@@ -76,64 +76,106 @@ def banned_phrase_hits(text: str) -> list[str]:
     return [phrase for phrase in BANNED_PHRASES if phrase in lowered]
 
 
-def _collect_numbers(obj) -> set[float]:
+# Key fragments that name a RATE metric whose grounding value may legitimately appear
+# in leading-zero rate form (e.g. a 0.322 AVG cited as ".322", tokenized as 322). Only
+# these keys get the /1000 collapse — counts (pa/ab/h/hr...) and percentiles must not,
+# or a 322-PA count would "ground" a hallucinated .322 AVG.
+_RATE_KEY_FRAGMENTS = (
+    "avg", "obp", "slg", "ops", "iso", "babip", "era", "whip",
+    "_pct", "pct_", "_per_9", "_rate", "rate_", "k9", "bb9",
+)
+
+
+def _is_rate_key(key) -> bool:
+    if not isinstance(key, str):
+        return False
+    lowered = key.lower()
+    return any(frag in lowered for frag in _RATE_KEY_FRAGMENTS)
+
+
+def _collect_numbers(obj, rate_context: bool = False) -> tuple[set[float], set[float]]:
     """Every numeric value anywhere in the grounding (stats, samples, ages, ranks,
-    percentiles) — the set a report is allowed to cite."""
+    percentiles) — the set a report is allowed to cite. Returns (all, rate_only) where
+    rate_only is the subset found under a known rate-metric key, eligible for the
+    leading-zero (/1000) rate form."""
     found: set[float] = set()
+    rate_found: set[float] = set()
     if isinstance(obj, bool):
-        return found
+        return found, rate_found
     if isinstance(obj, (int, float)):
         found.add(float(obj))
+        if rate_context:
+            rate_found.add(float(obj))
     elif isinstance(obj, dict):
-        for v in obj.values():
-            found |= _collect_numbers(v)
+        for k, v in obj.items():
+            sub_all, sub_rate = _collect_numbers(v, rate_context or _is_rate_key(k))
+            found |= sub_all
+            rate_found |= sub_rate
     elif isinstance(obj, (list, tuple)):
         for v in obj:
-            found |= _collect_numbers(v)
+            sub_all, sub_rate = _collect_numbers(v, rate_context)
+            found |= sub_all
+            rate_found |= sub_rate
     elif isinstance(obj, str):
         for token in _NUMBER_RE.findall(obj):
             try:
-                found.add(float(token))
+                num = float(token)
             except ValueError:
                 continue
-    return found
+            found.add(num)
+            if rate_context:
+                rate_found.add(num)
+    return found, rate_found
 
 
 def _forms(value: float) -> set[float]:
-    """The forms a number could legitimately appear as: exact, 1-decimal (ERA/WHIP/K9
-    rounding like 3.36 -> 3.4), and — for >=30, so distinct ERAs don't collide — the
-    leading-zero rate form (".300" tokenized as 300 -> 0.300)."""
-    forms = {round(value, 3), round(value, 1)}
-    if value >= 30:
-        forms.add(round(value / 1000, 3))
-    return forms
+    """The rounding forms a number could legitimately appear as: exact and 1-decimal
+    (ERA/WHIP/K9 rounding like 3.36 -> 3.4). No /1000 collapse here — that is applied
+    only to rate-metric grounding values (see ``_number_supported``)."""
+    return {round(value, 3), round(value, 1)}
 
 
-def _number_supported(value: float, allowed: set[float]) -> bool:
-    """Supported if a legitimate rounded form of the cited number matches the grounding."""
+def _number_supported(value: float, allowed: set[float], rate_allowed: set[float]) -> bool:
+    """Supported if a legitimate rounded form of the cited number matches the grounding.
+    The leading-zero rate form (".322" tokenized as 322 -> 0.322) is only honored against
+    rate-metric grounding values, so a count like 322 PA cannot ground a .322 AVG."""
     value_forms = _forms(value)
-    return any(value_forms & _forms(a) for a in allowed)
+    if any(value_forms & _forms(a) for a in allowed):
+        return True
+    # cited as a leading-zero rate (".322" -> 322): match against rate-metric values only,
+    # comparing the cited /1000 form to the rate value's true form.
+    if value >= 30:
+        collapsed = _forms(round(value / 1000, 3))
+        if any(collapsed & _forms(a) for a in rate_allowed):
+            return True
+    return False
 
 
 def unsupported_numbers(text: str, grounding: dict) -> list[str]:
     """Numbers in the report not traceable to the grounding (hallucination guard).
     Soft signal — tolerant of rounding/ordinals to avoid false positives."""
-    allowed = _collect_numbers(grounding)
+    allowed, rate_allowed = _collect_numbers(grounding)
     out = []
     for token in _NUMBER_RE.findall(text or ""):
         try:
             value = float(token)
         except ValueError:
             continue
-        if not _number_supported(value, allowed):
+        if not _number_supported(value, allowed, rate_allowed):
             out.append(token)
     return out
 
 
-def _hand_code(value) -> str | None:
+def _raw_hand_text(value) -> str:
+    """Uppercased string form of a handedness value (unwrapping the dict form), used to
+    detect switch hitters before resolving an L/R code."""
     if isinstance(value, dict):
         value = value.get("code") or value.get("description") or value.get("side")
-    text = str(value or "").strip().upper()
+    return str(value or "").strip().upper()
+
+
+def _hand_code(value) -> str | None:
+    text = _raw_hand_text(value)
     if text in {"L", "LEFT"} or text.startswith("LEFT "):
         return "L"
     if text in {"R", "RIGHT"} or text.startswith("RIGHT "):
@@ -142,24 +184,34 @@ def _hand_code(value) -> str | None:
 
 
 def handedness_problems(text: str, grounding: dict) -> list[str]:
-    """Hard guard against invented or mismatched pitcher handedness."""
-    if str((grounding or {}).get("role") or "").lower() != "pitcher":
-        return []
+    """Hard guard against invented or mismatched handedness — pitcher throws hand
+    (``throws``) or hitter batting side (``bats``)."""
+    role = str((grounding or {}).get("role") or "").lower()
+    is_pitcher = role == "pitcher"
     mentions_left = bool(_LEFT_HAND_RE.search(text or ""))
     mentions_right = bool(_RIGHT_HAND_RE.search(text or ""))
     if not mentions_left and not mentions_right:
         return []
-    throws = _hand_code(
-        (grounding or {}).get("throws")
-        or (grounding or {}).get("pitch_hand")
-        or (grounding or {}).get("throw_hand")
-    )
-    if not throws:
-        return ["pitcher handedness mentioned but throws is missing from grounding"]
-    if throws == "L" and mentions_right:
-        return ["pitcher throws L but report says right-handed"]
-    if throws == "R" and mentions_left:
-        return ["pitcher throws R but report says left-handed"]
+    if is_pitcher:
+        noun, missing_label = "pitcher", "throws"
+        raw = (
+            (grounding or {}).get("throws")
+            or (grounding or {}).get("pitch_hand")
+            or (grounding or {}).get("throw_hand")
+        )
+    else:
+        noun, missing_label = "hitter", "bats"
+        raw = (grounding or {}).get("bats") or (grounding or {}).get("bat_hand")
+    # Switch hitters legitimately bat both ways — never flag a side for them.
+    if _raw_hand_text(raw) in {"S", "SWITCH", "B", "BOTH"}:
+        return []
+    hand = _hand_code(raw)
+    if not hand:
+        return [f"{noun} handedness mentioned but {missing_label} is missing from grounding"]
+    if hand == "L" and mentions_right:
+        return [f"{noun} {missing_label} L but report says right-handed"]
+    if hand == "R" and mentions_left:
+        return [f"{noun} {missing_label} R but report says left-handed"]
     return []
 
 

@@ -996,10 +996,81 @@ def test_split_level_sample_ignores_rounding_noise(tmp_path):
     assert row.sample_context_label == "Combined 2026 line - AA - 200.2 PA"
 
 
+def _cross_season_split_row(current_season, total_season):
+    return PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_111_hitter",
+            "name": "Aidan Miller",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "PHI",
+            "age": 21,
+            "rank": 5,
+            "value": 55.0,
+            "value_scale": "x",
+            "value_source": "prospect_model_v0_6",
+            "confidence": "medium",
+            "updated_at": "2026-06-24",
+            "mlbam_id": "111",
+            "role": "hitter",
+            "prospect_rank": 5,
+            "level": "AA",
+            "score_source": "prospect_model_v0_6",
+            "stat_line": {"pa": 489},
+            # No combined_season_stat_line: this is the fallback (translated) path where
+            # the cross-season split shows up, exactly like the audited rows.
+            "stat_line_translated": {
+                "level_label": "AA",
+                "sample": 526,
+                "sample_unit": "PA",
+                "season": total_season,
+                "stats": {"OPS": 0.760},
+            },
+            "context": {
+                "kind": "optional_display_context",
+                "stat_line_source": "valucast_input_contract",
+                "stat_line_source_kind": "current_season",
+                "stat_line_level": "AA",
+                "stat_line_sample": 489,
+                "stat_line_sample_unit": "PA",
+                "stat_line_sample_season": current_season,
+            },
+        }
+    )
+
+
+def test_cross_season_split_tags_current_half_with_its_season():
+    # Current 2026 sample next to a 2025 season total: both halves must carry a season
+    # tag so the prior-year total can't read as current.
+    row = _cross_season_split_row(2026, 2025)
+    assert row.has_split_level_sample is True
+    assert row.current_level_sample_label == "2026 AA sample: 489 PA"
+    assert row.current_level_sample_badge == "2026 AA 489 PA"
+    assert row.season_total_sample_label == "2025 total: 526 PA across AA"
+    assert (
+        row.sample_context_label
+        == "2026 AA sample: 489 PA | 2025 total: 526 PA across AA"
+    )
+
+
+def test_same_season_split_leaves_current_half_untagged():
+    # When both halves are the same season, the current half stays untagged (unchanged
+    # behavior) — only the genuine cross-season case gets the extra tag.
+    row = _cross_season_split_row(2026, 2026)
+    assert row.has_split_level_sample is True
+    assert row.current_level_sample_label == "AA sample: 489 PA"
+    assert row.current_level_sample_badge == "AA 489 PA"
+    assert (
+        row.sample_context_label
+        == "AA sample: 489 PA | 2026 total: 526 PA across AA"
+    )
+
+
 def test_card_level_label_prefers_fresh_promoted_level_over_stale_feed(tmp_path):
     # Promoted prospect: current-season sample is at AA, but the feed snapshot
-    # still carries the pre-promotion level. The card must show the fresh level,
-    # not the stale feed value (the header/profile-grid mismatch bug).
+    # still carries the pre-promotion level. Single source of truth: the bars rank
+    # the combined AA+A+ season line, so the sub-header names that same combined
+    # level — never the stale feed value (the header/profile-grid mismatch bug).
     rank_payload = _rank_payload()
     rank_payload["board"][0]["level"] = "A+"
     payload = build_snapshot(
@@ -1013,12 +1084,13 @@ def test_card_level_label_prefers_fresh_promoted_level_over_stale_feed(tmp_path)
 
     assert row is not None
     assert row.level == "A+"  # raw feed value preserved for provenance
-    assert row.card_level_label == "AA"  # card shows fresh current-season level
+    assert row.card_level_label == "AA & A+"  # matches the combined bars line
 
 
 def test_card_level_label_falls_back_to_feed_without_current_sample(tmp_path):
-    # No current-season stat line -> nothing fresher than the feed, so the card
-    # must fall back to the feed level rather than inventing a level from history.
+    # No current-season stat line, but the combined season line still clears the
+    # pool floor and drives the bars, so the label names the combined bars level
+    # rather than the stale single feed level.
     rank_payload = _rank_payload()
     rank_payload["board"][0]["level"] = "A+"
     rank_payload["board"][0]["context_only"]["stat_line_source_kind"] = "latest_milb_history"
@@ -1032,7 +1104,61 @@ def test_card_level_label_falls_back_to_feed_without_current_sample(tmp_path):
     row = store.get_by_id("vc_prospect_1_hitter")
 
     assert row is not None
-    assert row.card_level_label == "A+"
+    assert row.card_level_label == "AA & A+"
+
+
+def test_card_level_label_matches_combined_bars_level_over_current_slice(tmp_path):
+    # Seth Hernandez regression: feed/current level is the single A+ slice, but the
+    # bars rank the combined AAA & AA season line. The sub-header MUST name the
+    # combined level so the label and the bars cannot contradict each other.
+    rank_payload = _rank_payload()
+    board = rank_payload["board"][0]
+    board["level"] = "A+"
+    board["context_only"]["stat_line_level"] = "A+"
+    board["context_only"]["combined_season_stat_line"].update(
+        {
+            "level": "AAA",
+            "levels": ["AAA", "AA"],
+            "level_label": "AAA+AA",
+        }
+    )
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.level == "A+"
+    assert row.card_level_label == "AAA & AA"
+
+
+def test_card_level_label_keeps_single_level_combined_label(tmp_path):
+    # A single-level combined line is not a contradiction with the current slice,
+    # so the fresh current/feed label stands (no spurious " & " join).
+    rank_payload = _rank_payload()
+    board = rank_payload["board"][0]
+    board["context_only"]["combined_season_stat_line"].update(
+        {
+            "level": "AA",
+            "levels": ["AA"],
+            "level_label": "AA",
+        }
+    )
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.card_level_label == "AA"
 
 
 def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):
@@ -1134,12 +1260,23 @@ def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
     assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 0
     assert payload["validation"]["active_mlb_callup_bridge_count"] == 1
     assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
-    assert payload["validation"]["mlb_count"] == 1
-    assert payload["validation"]["prospect_count"] == 2
+    # The graduated call-up is bridged onto the MLB surface, not kept as a ranked
+    # prospect: the MLB count gains the bridge row and the prospect count loses it.
+    assert payload["validation"]["mlb_count"] == 2
+    assert payload["validation"]["prospect_count"] == 1
     bridged = next(row for row in payload["players"] if row["mlbam_id"] == 1)
     assert bridged["id"] == "vc_prospect_1_hitter"
-    assert bridged["player_type"] == "prospect"
+    assert bridged["player_type"] == "mlb"
     assert bridged["level"] == "MLB"
+    # No prospect_rank: a graduate must never read as a ranked prospect, and he is
+    # absent from the prospect board while still queryable on the MLB surface.
+    assert bridged["prospect_rank"] is None
+    assert bridged["active_mlb_callup_bridge"] is True
+    assert 1 not in {
+        row["mlbam_id"]
+        for row in payload["players"]
+        if row["player_type"] == "prospect"
+    }
     assert bridged["context"]["graduation_context"] == {
         "status": "active_mlb_callup",
         "graduated": True,
@@ -1153,7 +1290,7 @@ def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
         "role": "hitter",
         "level": "MLB",
         "previous_level": "AA",
-        "rank": 1,
+        "rank": None,
         "reason": "active_mlb_callup_bridge",
     }
 
@@ -1194,13 +1331,68 @@ def test_snapshot_bridges_retained_active_roster_graduate_not_on_board():
     )
 
     bridged = next(row for row in payload["players"] if row["mlbam_id"] == 555)
-    assert bridged["player_type"] == "prospect"
+    # Bridged onto the MLB surface (not a ranked prospect) so he stays visible on
+    # dynasty/backfields without appearing on the prospect board.
+    assert bridged["player_type"] == "mlb"
     assert bridged["level"] == "MLB"
+    assert bridged["prospect_rank"] is None
     assert bridged["active_mlb_callup_bridge"] is True
+    assert 555 not in {
+        row["mlbam_id"]
+        for row in payload["players"]
+        if row["player_type"] == "prospect"
+    }
     assert (
         bridged["context"]["graduation_context"]["surface"]
         == "active_mlb_roster_bridge"
     )
+
+
+def test_graduated_callup_absent_from_prospect_board_but_queryable_on_mlb(tmp_path):
+    """Stranding check: a graduated call-up is excluded from the ranked prospect board
+    yet stays queryable on the MLB/dynasty surface (not stranded), and the remaining
+    prospect ranks stay contiguous."""
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    # Visible prospect ranks stay contiguous once the graduate leaves the board.
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
+    prospect_ids = {
+        row["mlbam_id"] for row in payload["players"] if row["player_type"] == "prospect"
+    }
+    assert 1 not in prospect_ids  # graduate is off the prospect board
+
+    # The payload must still validate and load (no stranded/invalid rows), and the
+    # graduate must be queryable on the MLB pool but not the prospect pool.
+    path = tmp_path / "public_dynasty_snapshot.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    store = PublicSnapshotStore(path)
+    assert store.is_available
+    mlb_ids = {row.mlbam_id for row in store.filter(pool="mlb")}
+    board_ids = {row.mlbam_id for row in store.filter(pool="prospect")}
+    assert "1" in mlb_ids
+    assert "1" not in board_ids
 
 
 def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():

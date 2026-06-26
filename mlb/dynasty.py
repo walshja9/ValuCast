@@ -1136,10 +1136,19 @@ def build_mlb_dynasty_layer(
             projection_source_kind,
         )
         key = identity_key(result.player)
-        row["value_by_preset"] = {
-            preset_id: round(preset_scores[preset_id].get(key, row["value"]), 2)
-            for preset_id in preset_ids
-        }
+        value_by_preset = {}
+        for preset_id in preset_ids:
+            # BUG 2: the points preset has no pitcher model yet; suppress the
+            # broken pitcher display rather than rendering a floored value.
+            if preset_id == "points" and row.get("role") == "pitcher":
+                continue
+            preset_value = preset_scores[preset_id].get(key)
+            # BUG 1: omit (hide the chip) when this preset lacks a score for the
+            # player instead of silently falling back to the default 5x5 value.
+            if preset_value is None:
+                continue
+            value_by_preset[preset_id] = round(preset_value, 2)
+        row["value_by_preset"] = value_by_preset
         board.append(row)
     age_coverage_count = sum(1 for row in board if row.get("age") is not None)
     age_coverage_rate = round(age_coverage_count / len(board), 4) if board else 0.0

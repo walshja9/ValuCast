@@ -185,8 +185,8 @@ def _pitcher_shape(current: dict, rank_score: float) -> list[dict]:
         command,
     ]) or fallback
     run_prevention = _avg([
-        _scale(current.get("era"), 6.25, 2.20, lower_is_better=True),
-        _scale(current.get("whip"), 1.75, 0.90, lower_is_better=True),
+        _scale(current.get("era"), 6.25, 2.20),
+        _scale(current.get("whip"), 1.75, 0.90),
     ]) or fallback
     return [
         {"label": "Miss", "grade": _grade(miss or fallback), "source": "K/9"},

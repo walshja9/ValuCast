@@ -382,6 +382,60 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertIn("2025 MiLB sample", line)
         self.assertIn(".255/.355/.386 line over 552 PA", line)
 
+    def test_card_read_callout_value_matches_the_percentile_line(self):
+        # Value/percentile parity: a thin 9-PA current line (.080 ISO) sits under a
+        # combined 274-PA line (.424 ISO). The percentiles rank the COMBINED line, so
+        # the callout VALUE must also come from the combined line — never pair the thin
+        # .080 value with the combined line's 95th percentile.
+        pool_rows = [
+            _row(
+                f"pool_{i}",
+                prospect_rank=i,
+                stat_line={
+                    "pa": 200, "avg": 0.260, "obp": 0.330, "slg": 0.430,
+                    "ops": 0.700 + 0.02 * i, "iso": 0.120 + 0.01 * i,
+                    "k_pct": 20.0, "bb_pct": 9.0,
+                },
+                level="AA",
+            )
+            for i in range(1, 10)
+        ]
+        row = _row(
+            "gillen",
+            name="Theo Gillen",
+            prospect_rank=40,
+            positions=["OF"],
+            level="A+",
+            stat_line={
+                "pa": 9, "avg": 0.222, "obp": 0.300, "slg": 0.444, "ops": 0.444,
+                "iso": 0.080, "k_pct": 22.0, "bb_pct": 10.0,
+            },
+            combined_season_stat_line={
+                "role": "hitter", "season": 2026, "level": "A+",
+                "levels": ["A+", "A"], "level_label": "A+ & A",
+                "sample": 274, "sample_unit": "PA", "pa": 274,
+                "avg": 0.318, "obp": 0.430, "slg": 0.588, "ops": 1.018,
+                "iso": 0.424, "k_pct": 12.0, "bb_pct": 14.0,
+            },
+            context={
+                "stat_line_source_kind": "current_season",
+                "stat_line_sample": 9, "stat_line_sample_unit": "PA",
+                "stat_line_sample_season": 2026, "stat_line_level": "A+",
+            },
+        )
+        pool = prospect_percentiles.build_pool(pool_rows + [row])
+        pcts = prospect_percentiles.card_percentiles(pool, row)
+        self.assertGreaterEqual(pcts["iso"], 90)
+
+        read = app_module._prospect_player_card_read(row, pcts, row.metadata["context"])
+
+        # The callout value is the combined .424 ISO that earned the 95th percentile,
+        # and the displayed sample is the combined line's 274 PA — not the thin 9 PA.
+        self.assertIn(".424 ISO", read)
+        self.assertNotIn(".080", read)
+        self.assertIn("274 PA", read)
+        self.assertNotIn("9 PA", read)
+
     def test_high_miss_high_walk_pitcher_read_is_not_rule_tree_copy(self):
         pitcher = _row(
             "high_miss_walk_risk",
@@ -883,8 +937,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertNotIn(b"open question", response.data.lower())
         self.assertIn(b'class="prospect-profile-bar"', response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
-        self.assertIn(b"vs ValuCast hitter pool", response.data)
-        self.assertIn(b"all levels", response.data)
+        self.assertIn(b"hitter pool", response.data)
         self.assertIn(b"100+ PA", response.data)
         self.assertIn(b"combined 2026 line", response.data)
         self.assertIn(
@@ -905,9 +958,9 @@ class TestCardIntelligenceUI(unittest.TestCase):
         response = self.client.get("/player/dd_prospect_arm?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"The ValuCast Read", response.data)
-        self.assertIn(b"vs ValuCast pitcher pool", response.data)
+        self.assertIn(b"pitcher pool", response.data)
         self.assertIn(b"20+ IP", response.data)
-        self.assertNotIn(b"vs ValuCast hitter pool", response.data)
+        self.assertNotIn(b"hitter pool", response.data)
 
     def test_index_has_glass_toolbar_and_welcome_strip(self):
         response = self.client.get("/")
