@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-26T18:19:25.854442+00:00",
+  "generated_at": "2026-06-26T19:01:13.730969+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -25805,9 +25805,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "656413_hitter",
       "mlbam_id": "656413",
       "name": "Stuart Fairchild",
@@ -25849,7 +25849,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CLE",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101143,7 +101143,7 @@
   },
   "summary": {
     "active_injury_risk_count": 226,
-    "active_mlb_roster_count": 727,
+    "active_mlb_roster_count": 726,
     "profile_count": 2049,
     "role_counts": {
       "bench_or_depth": 401,
