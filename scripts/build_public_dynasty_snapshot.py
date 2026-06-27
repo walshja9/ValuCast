@@ -1016,17 +1016,30 @@ def build_snapshot(
     # who aren't yet in the MLB dynasty layer (e.g. <40-IP call-ups) never reach the board
     # above, so the same-day bridge can't see them. Bridge them in from the retained
     # active_mlb_roster_board so they stay visible on dynasty/backfields instead of vanishing.
+    active_roster_prospect_rows = _prospect_rows(
+        {**prospect_rank, "board": prospect_rank.get("active_mlb_roster_board") or []},
+        generated_at,
+        peak_projection=prospect_peak_projection,
+        mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+    )
     graduated_callup_bridge_rows = [
         _active_callup_bridge_row(row)
-        for row in _prospect_rows(
-            {**prospect_rank, "board": prospect_rank.get("active_mlb_roster_board") or []},
-            generated_at,
-            peak_projection=prospect_peak_projection,
-            mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
-        )
+        for row in active_roster_prospect_rows
         if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
         and mlbam_id not in mlb_identity_ids
         and mlbam_id not in active_callup_bridge_ids
+    ]
+    # Active-roster graduates who DO have an MLB-layer row are evicted from the main
+    # board (so they never enter graduated_prospect_rows) AND skipped by the bridge
+    # above (which excludes mlb_identity_ids), so the transition floor never reaches
+    # them and they serve at a cratered thin-MLB value (e.g. a 53-score prospect at a
+    # 3-PA 2.97). Feed their retained active-roster prospect rows to the floor source.
+    graduated_floor_extra_rows = [
+        row
+        for row in active_roster_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id in mlb_identity_ids
+        and mlbam_id not in graduated_ids
     ]
     callup_bridge_rows = active_callup_bridge_rows + graduated_callup_bridge_rows
     active_prospect_ids = {
@@ -1045,7 +1058,7 @@ def build_snapshot(
     mlb_rows = mlb_rows + callup_bridge_rows
     graduation_transition_floor_count = _apply_graduation_transition_floor(
         mlb_rows,
-        graduated_prospect_rows,
+        graduated_prospect_rows + graduated_floor_extra_rows,
         debut_by_id=_debut_dates_by_id(mlb_track_record),
         as_of_date=generated_at,
     )
