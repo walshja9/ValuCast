@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-27T11:51:50.732777+00:00",
+  "generated_at": "2026-06-27T14:08:44.428044+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.0",
   "limitations": [],
@@ -34645,6 +34645,176 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 30,
+      "components": {
+        "age_adjustment": 0.97,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": true,
+          "effective_date": "2026-06-27",
+          "list_type": null,
+          "note": "Tampa Bay Rays sent RF Jake Fraley on a rehab assignment to FCL Rays.",
+          "present": true,
+          "risk_discount": 0.04,
+          "risk_level": "medium",
+          "score_before_availability_adjustment": 49.66,
+          "source": "official_mlb_statsapi_transactions",
+          "status": "rehab",
+          "transaction_date": "2026-06-27",
+          "transaction_id": 923035
+        },
+        "availability_adjusted": true,
+        "availability_risk_discount": 0.04,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 10.12,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": 0.8224,
+        "horizon_years": [
+          {
+            "age": 30,
+            "age_factor": 1.0,
+            "projected_value": 1.0729,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 31,
+            "age_factor": 0.9485,
+            "projected_value": 0.7103,
+            "reliability_factor": 0.698,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 32,
+            "age_factor": 0.8969,
+            "projected_value": 0.4688,
+            "reliability_factor": 0.4872,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 69.8,
+        "production_score": 10.12,
+        "projection_stability": {
+          "current_season_category_value": 1.0729,
+          "ros_category_value": null,
+          "ros_stability_weight": 0.0,
+          "ros_true_talent_annualization_scale": null,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 1.0729,
+          "stability_adjustment": 0.0,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 13.1,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 64.63,
+          "track_record_experience_band": "established",
+          "track_record_floor_applied": true,
+          "track_record_floor_blocked_reason": null,
+          "track_record_floor_score": 49.66,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "score_before_availability_adjustment": 49.66,
+        "season_category_value": 1.0729,
+        "track_record": {
+          "experience_band": "established",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 64.63,
+          "track_record_floor_score": 49.66,
+          "volume": {
+            "career": 1868.0,
+            "current_season": 90.0,
+            "prior_mlb": 1778.0,
+            "recent_3yr_prior": 1196.0
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "SB +1.19",
+        "AVG +0.33",
+        "HR -0.24",
+        "R +0.18",
+        "playing time reliability 70"
+      ],
+      "dynasty_horizon_value": 0.8224,
+      "id": "vc_mlb_641584_hitter",
+      "mlb_team": "TBR",
+      "mlbam_id": 641584,
+      "name": "Jake Fraley",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "OF"
+      ],
+      "projection_value": 1.0729,
+      "rank": 215,
+      "role": "hitter",
+      "score": 47.67,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.3329,
+          "ERA": 0.0,
+          "HR": -0.2361,
+          "K": 0.0,
+          "R": 0.1781,
+          "RBI": 0.0944,
+          "SB": 1.1941,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2506,
+          "ERA": null,
+          "HR": 8.7895,
+          "K": null,
+          "R": 41.9293,
+          "RBI": 38.8011,
+          "SB": 12.9828,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_hp_projection_run",
+        "stats": {
+          "AVG": 0.251,
+          "HR": 8.79,
+          "OBP": 0.323,
+          "OPS": 0.712,
+          "PA": 346.7,
+          "R": 41.929,
+          "RBI": 38.801,
+          "SB": 12.983
+        }
+      },
+      "team": "TBR",
+      "value": 47.67,
+      "value_by_preset": {
+        "5x5": 47.67,
+        "6x6": 47.67,
+        "7x7": 47.67,
+        "7x7_ops": 47.67,
+        "obp": 47.67,
+        "points": 47.67,
+        "sv_hld": 47.67
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 27,
       "components": {
         "age_adjustment": 1.25,
@@ -34748,7 +34918,7 @@
         "OF"
       ],
       "projection_value": 1.1412,
-      "rank": 215,
+      "rank": 216,
       "role": "hitter",
       "score": 47.61,
       "stat_line": {
@@ -34906,7 +35076,7 @@
         "C"
       ],
       "projection_value": 0.6067,
-      "rank": 216,
+      "rank": 217,
       "role": "hitter",
       "score": 47.61,
       "stat_line": {
@@ -35076,7 +35246,7 @@
         "SP"
       ],
       "projection_value": 2.9273,
-      "rank": 217,
+      "rank": 218,
       "role": "pitcher",
       "score": 47.58,
       "stat_line": {
@@ -35247,7 +35417,7 @@
         "RP"
       ],
       "projection_value": 0.1453,
-      "rank": 218,
+      "rank": 219,
       "role": "pitcher",
       "score": 47.57,
       "stat_line": {
@@ -35417,7 +35587,7 @@
         "OF"
       ],
       "projection_value": 6.0288,
-      "rank": 219,
+      "rank": 220,
       "role": "hitter",
       "score": 47.54,
       "stat_line": {
@@ -35587,7 +35757,7 @@
         "1B"
       ],
       "projection_value": 2.2531,
-      "rank": 220,
+      "rank": 221,
       "role": "hitter",
       "score": 47.53,
       "stat_line": {
@@ -35745,7 +35915,7 @@
         "SP"
       ],
       "projection_value": 0.0633,
-      "rank": 221,
+      "rank": 222,
       "role": "pitcher",
       "score": 47.45,
       "stat_line": {
@@ -35903,7 +36073,7 @@
         "OF"
       ],
       "projection_value": 7.9022,
-      "rank": 222,
+      "rank": 223,
       "role": "hitter",
       "score": 47.44,
       "stat_line": {
@@ -36073,7 +36243,7 @@
         "SP"
       ],
       "projection_value": 5.529,
-      "rank": 223,
+      "rank": 224,
       "role": "pitcher",
       "score": 47.4,
       "stat_line": {
@@ -36243,7 +36413,7 @@
         "OF"
       ],
       "projection_value": 8.2782,
-      "rank": 224,
+      "rank": 225,
       "role": "hitter",
       "score": 47.38,
       "stat_line": {
@@ -36401,7 +36571,7 @@
         "2B"
       ],
       "projection_value": 3.7615,
-      "rank": 225,
+      "rank": 226,
       "role": "hitter",
       "score": 47.36,
       "stat_line": {
@@ -36571,7 +36741,7 @@
         "OF"
       ],
       "projection_value": 3.4543,
-      "rank": 226,
+      "rank": 227,
       "role": "hitter",
       "score": 47.33,
       "stat_line": {
@@ -36730,7 +36900,7 @@
         "RP"
       ],
       "projection_value": 1.8648,
-      "rank": 227,
+      "rank": 228,
       "role": "pitcher",
       "score": 47.32,
       "stat_line": {
@@ -36900,7 +37070,7 @@
         "OF"
       ],
       "projection_value": 1.8026,
-      "rank": 228,
+      "rank": 229,
       "role": "hitter",
       "score": 47.3,
       "stat_line": {
@@ -37059,7 +37229,7 @@
         "OF"
       ],
       "projection_value": 2.2901,
-      "rank": 229,
+      "rank": 230,
       "role": "hitter",
       "score": 47.26,
       "stat_line": {
@@ -37229,7 +37399,7 @@
         "OF"
       ],
       "projection_value": 3.6995,
-      "rank": 230,
+      "rank": 231,
       "role": "hitter",
       "score": 47.14,
       "stat_line": {
@@ -37398,7 +37568,7 @@
         "SS"
       ],
       "projection_value": 3.2809,
-      "rank": 231,
+      "rank": 232,
       "role": "hitter",
       "score": 47.0,
       "stat_line": {
@@ -37556,7 +37726,7 @@
         "SP"
       ],
       "projection_value": 4.4897,
-      "rank": 232,
+      "rank": 233,
       "role": "pitcher",
       "score": 46.99,
       "stat_line": {
@@ -37714,7 +37884,7 @@
         "SP"
       ],
       "projection_value": 4.0128,
-      "rank": 233,
+      "rank": 234,
       "role": "pitcher",
       "score": 46.99,
       "stat_line": {
@@ -37873,7 +38043,7 @@
         "DH"
       ],
       "projection_value": 5.6782,
-      "rank": 234,
+      "rank": 235,
       "role": "hitter",
       "score": 46.97,
       "stat_line": {
@@ -38043,7 +38213,7 @@
         "OF"
       ],
       "projection_value": 4.1996,
-      "rank": 235,
+      "rank": 236,
       "role": "hitter",
       "score": 46.86,
       "stat_line": {
@@ -38213,7 +38383,7 @@
         "C"
       ],
       "projection_value": 0.096,
-      "rank": 236,
+      "rank": 237,
       "role": "hitter",
       "score": 46.84,
       "stat_line": {
@@ -38381,7 +38551,7 @@
         "C"
       ],
       "projection_value": 3.1489,
-      "rank": 237,
+      "rank": 238,
       "role": "hitter",
       "score": 46.69,
       "stat_line": {
@@ -38431,176 +38601,6 @@
         "obp": 46.69,
         "points": 48.83,
         "sv_hld": 46.69
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 30,
-      "components": {
-        "age_adjustment": 0.97,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-05-16",
-          "list_type": "10-day injured list",
-          "note": "Tampa Bay Rays placed RF Jake Fraley on the 10-day injured list retroactive to May 16, 2026. Hernia.",
-          "present": true,
-          "risk_discount": 0.06,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 49.66,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-05-17",
-          "transaction_id": 909602
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.06,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 10.12,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": 0.8224,
-        "horizon_years": [
-          {
-            "age": 30,
-            "age_factor": 1.0,
-            "projected_value": 1.0729,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 31,
-            "age_factor": 0.9485,
-            "projected_value": 0.7103,
-            "reliability_factor": 0.698,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 32,
-            "age_factor": 0.8969,
-            "projected_value": 0.4688,
-            "reliability_factor": 0.4872,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 69.8,
-        "production_score": 10.12,
-        "projection_stability": {
-          "current_season_category_value": 1.0729,
-          "ros_category_value": null,
-          "ros_stability_weight": 0.0,
-          "ros_true_talent_annualization_scale": null,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 1.0729,
-          "stability_adjustment": 0.0,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 13.1,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 64.63,
-          "track_record_experience_band": "established",
-          "track_record_floor_applied": true,
-          "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": 49.66,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 49.66,
-        "season_category_value": 1.0729,
-        "track_record": {
-          "experience_band": "established",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 64.63,
-          "track_record_floor_score": 49.66,
-          "volume": {
-            "career": 1868.0,
-            "current_season": 90.0,
-            "prior_mlb": 1778.0,
-            "recent_3yr_prior": 1196.0
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "SB +1.19",
-        "AVG +0.33",
-        "HR -0.24",
-        "R +0.18",
-        "playing time reliability 70"
-      ],
-      "dynasty_horizon_value": 0.8224,
-      "id": "vc_mlb_641584_hitter",
-      "mlb_team": "TBR",
-      "mlbam_id": 641584,
-      "name": "Jake Fraley",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "OF"
-      ],
-      "projection_value": 1.0729,
-      "rank": 238,
-      "role": "hitter",
-      "score": 46.68,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.3329,
-          "ERA": 0.0,
-          "HR": -0.2361,
-          "K": 0.0,
-          "R": 0.1781,
-          "RBI": 0.0944,
-          "SB": 1.1941,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2506,
-          "ERA": null,
-          "HR": 8.7895,
-          "K": null,
-          "R": 41.9293,
-          "RBI": 38.8011,
-          "SB": 12.9828,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_hp_projection_run",
-        "stats": {
-          "AVG": 0.251,
-          "HR": 8.79,
-          "OBP": 0.323,
-          "OPS": 0.712,
-          "PA": 346.7,
-          "R": 41.929,
-          "RBI": 38.801,
-          "SB": 12.983
-        }
-      },
-      "team": "TBR",
-      "value": 46.68,
-      "value_by_preset": {
-        "5x5": 46.68,
-        "6x6": 46.68,
-        "7x7": 46.68,
-        "7x7_ops": 46.68,
-        "obp": 46.68,
-        "points": 46.68,
-        "sv_hld": 46.68
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -59405,8 +59405,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 27.19,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 32.36,
+          "track_record_experience_band": "current_year_only_or_limited",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": null,
           "track_record_floor_score": null,
@@ -59415,7 +59415,17 @@
         },
         "season_category_value": 4.9797,
         "track_record": {
-          "present": false
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 32.36,
+          "track_record_floor_score": 41.73,
+          "volume": {
+            "career": 169.0,
+            "current_season": 9.333,
+            "prior_mlb": 159.667,
+            "recent_3yr_prior": 159.667
+          }
         }
       },
       "confidence": "medium",
@@ -64846,8 +64856,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 21.92,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 25.37,
-          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": null,
           "track_record_floor_score": null,
@@ -64857,17 +64867,7 @@
         "score_before_availability_adjustment": 21.92,
         "season_category_value": 3.9494,
         "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 25.37,
-          "track_record_floor_score": 47.2,
-          "volume": {
-            "career": 133.667,
-            "current_season": 25.333,
-            "prior_mlb": 108.333,
-            "recent_3yr_prior": 108.333
-          }
+          "present": false
         }
       },
       "confidence": "medium",
@@ -203641,8 +203641,8 @@
           "reliever_score_cap": null,
           "score_before_role_adjustment": 4.86,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 2.15,
+          "track_record_experience_band": "minimal_mlb_track_record",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -203651,7 +203651,17 @@
         },
         "season_category_value": -1.4668,
         "track_record": {
-          "present": false
+          "experience_band": "minimal_mlb_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 2.15,
+          "track_record_floor_score": 46.47,
+          "volume": {
+            "career": 61.0,
+            "current_season": 53.0,
+            "prior_mlb": 8.0,
+            "recent_3yr_prior": 8.0
+          }
         }
       },
       "confidence": "low",
@@ -250770,7 +250780,7 @@
     "row_count": 1607,
     "track_record_coverage_rate": 0.997,
     "track_record_present": true,
-    "track_record_profile_count": 994,
+    "track_record_profile_count": 996,
     "track_record_ready": true
   },
   "value_by_preset_menu": [
