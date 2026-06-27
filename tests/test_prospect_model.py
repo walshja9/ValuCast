@@ -586,10 +586,16 @@ def test_stale_current_correction_skips_tiny_but_good_current_line():
         # tiny (40 PA) but strong line: good ops/iso, elite discipline -> guard blocks
         hitter(6, plate_appearances=40, ops=0.920, iso=0.25, k_pct=16.0, bb_pct=12.0,
                sample_season=2026, source_kind="current_season"),
+        # 9: good prior + 1 PA .000 OPS -- egregious-looking but pure noise -> no pull
+        hitter(9, plate_appearances=300, ops=0.900, iso=0.24,
+               sample_season=2025, source_kind="latest_milb_history"),
+        hitter(9, plate_appearances=1, ops=0.000, iso=0.000, k_pct=100.0, bb_pct=0.0,
+               sample_season=2026, source_kind="current_season"),
     ]
-    contract["mlb_service"].append(
-        {"mlbam_id": 6, "role": "hitter", "ab": 0, "ip": 0, "graduated": False}
-    )
+    for mid in (6, 9):
+        contract["mlb_service"].append(
+            {"mlbam_id": mid, "role": "hitter", "ab": 0, "ip": 0, "graduated": False}
+        )
 
     payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
     rows = {
@@ -597,6 +603,7 @@ def test_stale_current_correction_skips_tiny_but_good_current_line():
         for r in score_current(contract, payload["roles"], payload["impact_roles"])
     }
     assert "stale_current_correction" not in rows[6]
+    assert "stale_current_correction" not in rows[9]  # 1 PA egregious -> floored out
 
 
 def test_stale_current_correction_pitcher_tiny_sample_guard():

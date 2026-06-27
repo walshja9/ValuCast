@@ -947,8 +947,10 @@ def _current_line_is_bad(record: dict, role: str) -> bool:
     k_pct = _num(record.get("k_pct"))
     bb_pct = _num(record.get("bb_pct"))
     pa = _sample(record, "hitter")
+    if pa < 10.0:
+        return False  # too few PA to trust even an egregious line (1 PA .000 OPS = noise)
     if ops is not None and ops <= 0.550:
-        return True  # egregious collapse -- trust at any sample
+        return True  # egregious collapse (>= 10 PA)
     if pa < 40.0:
         return False
     return bool(
