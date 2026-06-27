@@ -741,13 +741,28 @@ def _apply_role_quantile_model_score_normalization(rows: list[dict]) -> None:
                 )
             )
             role_count = len(role_rows)
-            for index, row in enumerate(role_rows):
-                percentile = (index + 1) / (role_count + 1)
+            start = 0
+            while start < role_count:
+                end = start
+                value = _clean_float(role_rows[start].get(field)) or 0.0
+                while (
+                    end + 1 < role_count
+                    and (_clean_float(role_rows[end + 1].get(field)) or 0.0) == value
+                ):
+                    end += 1
+                # Tie block start..end shares a single mean-rank percentile so equal
+                # raw scores map to equal normalized scores (no mlbam_id tie-split).
+                percentile = sum(
+                    (index + 1) / (role_count + 1) for index in range(start, end + 1)
+                ) / (end - start + 1)
                 normalized = _pooled_quantile_value(pooled_values, percentile)
-                if normalized is None:
-                    continue
-                row[_model_score_field_percentile_key(field)] = round(percentile, 6)
-                row[_model_score_field_normalized_key(field)] = round(normalized, 6)
+                for index in range(start, end + 1):
+                    row = role_rows[index]
+                    if normalized is None:
+                        continue
+                    row[_model_score_field_percentile_key(field)] = round(percentile, 6)
+                    row[_model_score_field_normalized_key(field)] = round(normalized, 6)
+                start = end + 1
 
 
 def _model_score_component_value(model_profile: dict, field: str) -> float | None:
@@ -1261,7 +1276,13 @@ def _bucket_calibration_adjustment(
         # governor's failing "thin upper-level pitcher" bucket (e.g. an AAA arm
         # under 45 IP) plus any other thin-sample profile floating up on model
         # or pedigree strength, role-agnostically.
-        thinness = max(0.0, min(1.0, 1.0 - reliability / 100.0))
+        regression = 200.0 if role == "hitter" else 50.0
+        current_reliability = (
+            100.0 * sample / (sample + regression)
+            if sample is not None and sample > 0
+            else 0.0
+        )
+        thinness = max(0.0, min(1.0, 1.0 - current_reliability / 100.0))
         penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness
         # Credit draft pedigree (a large-N outcome signal: ~52% vs 16% established)
         # so a thin-but-pedigreed profile isn't sunk as hard as a thin no-name.

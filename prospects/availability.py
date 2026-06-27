@@ -520,7 +520,13 @@ def apply_availability_adjustment(
     if not availability_profile:
         return score, components
     discount = _clean_float(availability_profile.get("risk_discount")) or 0.0
-    discount = max(0.0, min(MAX_RISK_DISCOUNT, discount))
+    basis = str(availability_profile.get("risk_basis") or "")
+    ceiling = (
+        MAX_IL_RISK_DISCOUNT
+        if basis in {"official_mlb_il", "manual_override"}
+        else MAX_RISK_DISCOUNT
+    )
+    discount = max(0.0, min(ceiling, discount))
     adjusted_score = round(max(0.0, score * (1.0 - discount)), 2)
     next_components = dict(components)
     next_components["score_before_availability_adjustment"] = round(score, 2)

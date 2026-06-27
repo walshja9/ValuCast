@@ -933,10 +933,10 @@ def _current_line_is_bad(record: dict, role: str) -> bool:
         whip = _num(record.get("whip"))
         k_bb = _num(record.get("k_bb_pct"))
         ip = _sample(record, "pitcher")
-        if (era is not None and era >= 7.50) or (k_bb is not None and k_bb <= 0.0):
-            return True  # egregious collapse / no whiffs -- trust at any sample
         if ip < 10.0:
-            return False  # too small to trust a single bad ratio
+            return False  # too few IP to trust even an egregious line (2-IP blowup = noise)
+        if (era is not None and era >= 7.50) or (k_bb is not None and k_bb <= 0.0):
+            return True  # egregious collapse / no whiffs (>= 10 IP)
         return bool(
             (era is not None and era >= 5.50)
             or (whip is not None and whip > 1.50)
