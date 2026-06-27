@@ -81,7 +81,11 @@ def _feed(extra_players=None):
     }
 
 
-def test_input_lookup_prefers_promoted_level_over_larger_old_stint():
+def test_input_lookup_prefers_scored_max_sample_line_over_promoted_level():
+    # INV-SELECT-1 (scored == shown): _input_row_sort_key selects the max-sample
+    # current line (mirroring model._select_current_records), so the displayed line
+    # is the one that produced the value -- the bigger A+ stint, not the thinner AA
+    # promotion. The promotion stays surfaced via the roster/universe display level.
     contract = {
         "current": {
             "hitters": [
@@ -111,7 +115,7 @@ def test_input_lookup_prefers_promoted_level_over_larger_old_stint():
 
     selected = _input_lookup(contract)[("805796", "hitter")]
 
-    assert selected["level"] == "AA"
+    assert selected["level"] == "A+"
 
 
 def _universe(extra_players=None):

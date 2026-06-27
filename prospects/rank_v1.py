@@ -419,15 +419,22 @@ def _rookie_limits(input_contract: dict) -> dict[str, float]:
     }
 
 
-def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, int, float]:
-    """Prefer fresh promoted-level factual rows before falling back to sample size."""
+def _input_row_sort_key(row: dict, role: str) -> tuple[float, int, float, int]:
+    """Select the current line the model scores: max-sample first, then level.
+
+    INV-SELECT-1 (scored == shown): mirrors prospects/model.py::_select_current_records
+    (which scores the largest-sample line) so the displayed/calibration line matches
+    the line that produced the value. The scored line, not the most-advanced level, is
+    the card's evidence slice; the promotion is still surfaced via the roster/universe-
+    sourced display level. `_display_record_key` is intentionally left untouched.
+    """
     season = _clean_float(row.get("sample_season")) or 0.0
     current_flag = 1 if row.get("source_kind") == "current_season" else 0
     return (
         season,
         current_flag,
-        _input_level_rank(row.get("level")),
         _sample_size(row, role),
+        _input_level_rank(row.get("level")),
     )
 
 
@@ -1309,8 +1316,13 @@ def _bucket_calibration_adjustment(
                 }
             )
 
-    iso = _clean_float((input_row or {}).get("iso"))
-    ops = _clean_float((input_row or {}).get("ops"))
+    # INV-SELECT-2: read the impact ratios from the scored-line context, not the raw
+    # display input_row, so the upper-level low-impact penalty fires off the line that
+    # produced the score. factual_current_context rides the scored line via
+    # _input_row_sort_key's max-sample selection.
+    factual = (components or {}).get("factual_current_context") or {}
+    iso = _clean_float(factual.get("iso"))
+    ops = _clean_float(factual.get("ops"))
     if (
         source == "prospect_model_v0_6"
         and role == "hitter"

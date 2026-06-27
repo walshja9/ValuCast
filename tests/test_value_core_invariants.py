@@ -64,11 +64,6 @@ def _load_snapshot_module():
 # --------------------------------------------------------------------------- #
 # A (CRITICAL) — INV-SELECT-1: the line that produces the score == the line shown
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(
-    strict=True,
-    reason="INV-SELECT-1: align the displayed line to the scored max-sample line "
-    "(standalone display-coherence fix; MLE rewrite shelved). Red until it lands.",
-)
 def test_A_scored_line_equals_shown_line_fast_promote():
     """INV-SELECT-1. A fast-promoted prospect (AA big sample + AAA small sample,
     both current-season) must SHOW the same line that produced the SCORE.
@@ -113,11 +108,6 @@ def test_A_scored_line_equals_shown_line_fast_promote():
 # A-tail (ship-sooner sub-fix) — INV-SELECT-2: bucket calibration reads the
 # scored line, not the display line.
 # --------------------------------------------------------------------------- #
-@pytest.mark.xfail(
-    strict=True,
-    reason="INV-SELECT-2: align the bucket-calibration line to the scored max-sample "
-    "line (standalone display-coherence fix; MLE rewrite shelved). Red until it lands.",
-)
 def test_A_tail_bucket_calibration_reads_scored_line_not_display():
     """INV-SELECT-2. The upper-level-low-impact -1.5 penalty must key off the
     line that produced the score. Here the display line is a low-impact AAA cup
