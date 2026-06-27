@@ -36,6 +36,14 @@ jobs:
       - name: Run fresh-input-gated shadow pipeline
         run: python scripts/run_prospect_shadow_pipeline.py
 
+      - name: Build combined-level prospect shadow
+        run: |
+          python scripts/build_prospect_model.py
+          python scripts/build_prospect_universe.py
+          python scripts/build_prospect_availability.py
+          python scripts/build_prospect_rank_v1.py
+          python scripts/build_combined_level_shadow.py
+
       - name: Verify prospect shadow contracts
         run: |
           python -m pytest -q \
@@ -48,7 +56,8 @@ jobs:
             tests/test_dd_7x7_prospect_adapter.py \
             tests/test_dd_prospect_lens_feed.py \
             tests/test_prospect_forward_shadow.py \
-            tests/test_pooled_shadow.py
+            tests/test_pooled_shadow.py \
+            tests/test_combined_level_shadow.py
 
       - name: Commit changed shadow artifacts
         run: |
@@ -60,6 +69,7 @@ jobs:
             data/models/valucast_prospect_dynasty_layer.json \
             data/models/valucast_prospect_forward_shadow.json \
             data/models/valucast_pooled_shadow.json \
+            data/models/valucast_combined_level_shadow.json \
             data/models/valucast_universal_prospect_index.json \
             data/models/valucast_universal_prospect_index_backtest.json \
             data/models/valucast_prospect_adapter_backtest.json \
@@ -70,7 +80,8 @@ jobs:
             data/prediction_archive/valucast_universal_prospect_index \
             data/prediction_archive/valucast_dd_7x7_prospect_adapter \
             data/prediction_archive/valucast_prospect_forward_shadow \
-            data/prediction_archive/valucast_pooled_shadow
+            data/prediction_archive/valucast_pooled_shadow \
+            data/prediction_archive/valucast_combined_level_shadow
           git diff --cached --quiet && exit 0
           git commit -m "Archive prospect shadow observations"
           git push origin master
