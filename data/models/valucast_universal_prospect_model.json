@@ -1,7 +1,7 @@
 {
-  "candidate_count": 2740,
+  "candidate_count": 2742,
   "input_contract": {
-    "generated_at": "2026-06-26T00:00:00+00:00",
+    "generated_at": "2026-06-27T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -2067,6 +2067,103 @@
       "sample_reliability": 0.351,
       "sample_unit": "PA",
       "team": "Reading Fightin Phils"
+    },
+    {
+      "age": 25,
+      "level": "AA",
+      "mlbam_id": 679754,
+      "name": "Alberto Rodriguez",
+      "normalized_name": "alberto rodriguez",
+      "outcome_distribution": {
+        "bust_probability": 0.92,
+        "role_probability": 0.08,
+        "star_probability": 0.0
+      },
+      "outcomes": {
+        "established_probability": {
+          "conditional_on": null,
+          "gate_status": "fallback",
+          "prediction": 0.08,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "probability"
+        },
+        "regular_probability": {
+          "conditional_on": null,
+          "gate_status": "active",
+          "prediction": 0.0662,
+          "prediction_source": "ridge",
+          "unit": "probability"
+        },
+        "representative_avg": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 0.2516,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "AVG"
+        },
+        "representative_hr_per_600": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 17.19,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "HR/600 PA"
+        },
+        "representative_k_pct": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 22.39,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "K%"
+        },
+        "representative_ops": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 0.7468,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "OPS"
+        },
+        "representative_pa": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 512.67,
+          "prediction_source": "level_age_prior",
+          "unit": "PA"
+        },
+        "representative_r_per_600": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 73.59,
+          "prediction_source": "level_age_prior",
+          "unit": "R/600 PA"
+        },
+        "representative_rbi_per_600": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 68.62,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "RBI/600 PA"
+        },
+        "representative_sb_per_600": {
+          "conditional_on": "representative season has at least 300 PA",
+          "gate_status": "insufficient_sample",
+          "prediction": 7.54,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "SB/600 PA"
+        },
+        "star_probability": {
+          "conditional_on": null,
+          "gate_status": "fallback",
+          "prediction": 0.0,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "probability"
+        }
+      },
+      "position": "RF",
+      "role": "hitter",
+      "sample": 52.0,
+      "sample_reliability": 0.206,
+      "sample_unit": "PA",
+      "team": "Northwest Arkansas Naturals"
     },
     {
       "age": 25,
@@ -23997,50 +24094,50 @@
       "name": "Daniel Vazquez",
       "normalized_name": "daniel vazquez",
       "outcome_distribution": {
-        "bust_probability": 0.76,
-        "role_probability": 0.12,
+        "bust_probability": 0.8,
+        "role_probability": 0.08,
         "star_probability": 0.12
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.24,
+          "prediction": 0.2,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1469,
+          "prediction": 0.1407,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2532,
+          "prediction": 0.2527,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 18.71,
+          "prediction": 18.22,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 23.23,
+          "prediction": 23.2,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7473,
+          "prediction": 0.7392,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -24061,14 +24158,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 65.47,
+          "prediction": 65.16,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 8.07,
+          "prediction": 9.07,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -24082,8 +24179,8 @@
       },
       "position": "SS",
       "role": "hitter",
-      "sample": 259.0,
-      "sample_reliability": 0.564,
+      "sample": 263.0,
+      "sample_reliability": 0.568,
       "sample_unit": "PA",
       "team": "Northwest Arkansas Naturals"
     },
@@ -25273,35 +25370,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0939,
+          "prediction": 0.0885,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2408,
+          "prediction": 0.2438,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 19.79,
+          "prediction": 19.04,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 25.1,
+          "prediction": 24.8,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7463,
+          "prediction": 0.7538,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -25322,14 +25419,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 71.59,
+          "prediction": 73.05,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 9.14,
+          "prediction": 8.22,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -25343,8 +25440,8 @@
       },
       "position": "1B",
       "role": "hitter",
-      "sample": 271.0,
-      "sample_reliability": 0.575,
+      "sample": 276.0,
+      "sample_reliability": 0.58,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -41457,43 +41554,43 @@
       "name": "Canyon Brown",
       "normalized_name": "canyon brown",
       "outcome_distribution": {
-        "bust_probability": 0.8,
-        "role_probability": 0.12,
+        "bust_probability": 0.84,
+        "role_probability": 0.08,
         "star_probability": 0.08
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.2,
+          "prediction": 0.16,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2287,
+          "prediction": 0.2312,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2533,
+          "prediction": 0.2531,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 19.65,
+          "prediction": 20.17,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.31,
+          "prediction": 24.36,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -41542,8 +41639,8 @@
       },
       "position": "C",
       "role": "hitter",
-      "sample": 154.0,
-      "sample_reliability": 0.435,
+      "sample": 157.0,
+      "sample_reliability": 0.44,
       "sample_unit": "PA",
       "team": "Northwest Arkansas Naturals"
     },
@@ -43412,7 +43509,7 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0859,
+          "prediction": 0.0833,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -43482,8 +43579,8 @@
       },
       "position": "SS",
       "role": "hitter",
-      "sample": 285.0,
-      "sample_reliability": 0.588,
+      "sample": 289.0,
+      "sample_reliability": 0.591,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -55910,43 +56007,43 @@
       "name": "Dakota Harris",
       "normalized_name": "dakota harris",
       "outcome_distribution": {
-        "bust_probability": 0.92,
-        "role_probability": 0.08,
+        "bust_probability": 0.96,
+        "role_probability": 0.04,
         "star_probability": 0.0
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.08,
+          "prediction": 0.04,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2218,
+          "prediction": 0.2236,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2488,
+          "prediction": 0.2475,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 18.29,
+          "prediction": 19.09,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 22.58,
+          "prediction": 23.49,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -55995,8 +56092,8 @@
       },
       "position": "3B",
       "role": "hitter",
-      "sample": 247.0,
-      "sample_reliability": 0.553,
+      "sample": 250.0,
+      "sample_reliability": 0.556,
       "sample_unit": "PA",
       "team": "Springfield Cardinals"
     },
@@ -58723,22 +58820,22 @@
       "name": "Engelth Urena",
       "normalized_name": "engelth urena",
       "outcome_distribution": {
-        "bust_probability": 0.8,
-        "role_probability": 0.12,
+        "bust_probability": 0.84,
+        "role_probability": 0.08,
         "star_probability": 0.08
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.2,
+          "prediction": 0.16,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1076,
+          "prediction": 0.1066,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -58752,21 +58849,21 @@
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 17.7,
+          "prediction": 18.04,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.83,
+          "prediction": 24.97,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7543,
+          "prediction": 0.752,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -58787,14 +58884,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 67.7,
+          "prediction": 67.0,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 7.08,
+          "prediction": 7.01,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -58808,8 +58905,8 @@
       },
       "position": "C",
       "role": "hitter",
-      "sample": 241.0,
-      "sample_reliability": 0.546,
+      "sample": 245.0,
+      "sample_reliability": 0.551,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -66207,35 +66304,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0669,
+          "prediction": 0.0687,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2464,
+          "prediction": 0.2444,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 17.99,
+          "prediction": 18.14,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.43,
+          "prediction": 24.83,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7205,
+          "prediction": 0.7148,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -66256,14 +66353,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 64.87,
+          "prediction": 65.08,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 14.05,
+          "prediction": 13.85,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -66277,8 +66374,8 @@
       },
       "position": "LF",
       "role": "hitter",
-      "sample": 144.0,
-      "sample_reliability": 0.419,
+      "sample": 148.0,
+      "sample_reliability": 0.425,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays"
     },
@@ -68826,28 +68923,28 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2743,
+          "prediction": 0.2732,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2582,
+          "prediction": 0.2577,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 16.88,
+          "prediction": 16.99,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.18,
+          "prediction": 20.95,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -68896,8 +68993,8 @@
       },
       "position": "RF",
       "role": "hitter",
-      "sample": 216.0,
-      "sample_reliability": 0.519,
+      "sample": 220.0,
+      "sample_reliability": 0.524,
       "sample_unit": "PA",
       "team": "Springfield Cardinals"
     },
@@ -81227,43 +81324,43 @@
       "name": "Luis Escudero",
       "normalized_name": "luis escudero",
       "outcome_distribution": {
-        "bust_probability": 0.72,
-        "role_probability": 0.16,
-        "star_probability": 0.12
+        "bust_probability": 0.68,
+        "role_probability": 0.24,
+        "star_probability": 0.08
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.28,
+          "prediction": 0.32,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.319,
+          "prediction": 0.3168,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2457,
+          "prediction": 0.2474,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 19.46,
+          "prediction": 19.37,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.76,
+          "prediction": 23.88,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -81305,15 +81402,15 @@
         "star_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.12,
+          "prediction": 0.08,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         }
       },
       "position": "2B",
       "role": "hitter",
-      "sample": 78.0,
-      "sample_reliability": 0.281,
+      "sample": 82.0,
+      "sample_reliability": 0.291,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -82018,28 +82115,28 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1171,
+          "prediction": 0.1107,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2422,
+          "prediction": 0.2431,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 16.62,
+          "prediction": 17.9,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 23.13,
+          "prediction": 23.16,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -82088,8 +82185,8 @@
       },
       "position": "CF",
       "role": "hitter",
-      "sample": 149.0,
-      "sample_reliability": 0.427,
+      "sample": 154.0,
+      "sample_reliability": 0.435,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -87838,35 +87935,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1991,
+          "prediction": 0.1929,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2446,
+          "prediction": 0.2434,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 19.24,
+          "prediction": 19.37,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 22.03,
+          "prediction": 22.11,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7358,
+          "prediction": 0.7395,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -87887,14 +87984,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 65.79,
+          "prediction": 66.61,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 5.76,
+          "prediction": 5.54,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -87908,8 +88005,8 @@
       },
       "position": "LF",
       "role": "hitter",
-      "sample": 51.0,
-      "sample_reliability": 0.203,
+      "sample": 55.0,
+      "sample_reliability": 0.216,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -94904,50 +95001,50 @@
       "name": "Luis Puello",
       "normalized_name": "luis puello",
       "outcome_distribution": {
-        "bust_probability": 0.84,
-        "role_probability": 0.04,
+        "bust_probability": 0.88,
+        "role_probability": 0.0,
         "star_probability": 0.12
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.16,
+          "prediction": 0.12,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1944,
+          "prediction": 0.1904,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2482,
+          "prediction": 0.2478,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.76,
+          "prediction": 22.29,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 25.81,
+          "prediction": 25.61,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7644,
+          "prediction": 0.768,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -94968,14 +95065,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 73.27,
+          "prediction": 73.82,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 10.37,
+          "prediction": 9.71,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -94989,8 +95086,8 @@
       },
       "position": "LF",
       "role": "hitter",
-      "sample": 131.0,
-      "sample_reliability": 0.396,
+      "sample": 135.0,
+      "sample_reliability": 0.403,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -95792,35 +95889,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2275,
+          "prediction": 0.2218,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2444,
+          "prediction": 0.2441,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 22.72,
+          "prediction": 22.62,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 25.56,
+          "prediction": 26.07,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.751,
+          "prediction": 0.7456,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -95841,14 +95938,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 68.14,
+          "prediction": 67.99,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 12.73,
+          "prediction": 12.49,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -95862,8 +95959,8 @@
       },
       "position": "CF",
       "role": "hitter",
-      "sample": 314.0,
-      "sample_reliability": 0.611,
+      "sample": 318.0,
+      "sample_reliability": 0.614,
       "sample_unit": "PA",
       "team": "Northwest Arkansas Naturals"
     },
@@ -95874,50 +95971,50 @@
       "name": "Spencer Nivens",
       "normalized_name": "spencer nivens",
       "outcome_distribution": {
-        "bust_probability": 0.96,
+        "bust_probability": 0.92,
         "role_probability": 0.04,
-        "star_probability": 0.0
+        "star_probability": 0.04
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.04,
+          "prediction": 0.08,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2852,
+          "prediction": 0.3038,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2539,
+          "prediction": 0.2546,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 18.44,
+          "prediction": 18.56,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 22.59,
+          "prediction": 22.13,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7281,
+          "prediction": 0.7298,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -95938,29 +96035,29 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 67.26,
+          "prediction": 67.33,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 14.26,
+          "prediction": 14.66,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
         "star_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.0,
+          "prediction": 0.04,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         }
       },
       "position": "LF",
       "role": "hitter",
-      "sample": 172.0,
-      "sample_reliability": 0.462,
+      "sample": 176.0,
+      "sample_reliability": 0.468,
       "sample_unit": "PA",
       "team": "Northwest Arkansas Naturals"
     },
@@ -102485,28 +102582,28 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2021,
+          "prediction": 0.1991,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2534,
+          "prediction": 0.2529,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 18.35,
+          "prediction": 18.88,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.89,
+          "prediction": 22.11,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -102555,8 +102652,8 @@
       },
       "position": "RF",
       "role": "hitter",
-      "sample": 285.0,
-      "sample_reliability": 0.588,
+      "sample": 289.0,
+      "sample_reliability": 0.591,
       "sample_unit": "PA",
       "team": "Northwest Arkansas Naturals"
     },
@@ -102761,50 +102858,50 @@
       "name": "Dariel Ramon",
       "normalized_name": "dariel ramon",
       "outcome_distribution": {
-        "bust_probability": 0.72,
-        "role_probability": 0.24,
+        "bust_probability": 0.76,
+        "role_probability": 0.2,
         "star_probability": 0.04
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.28,
+          "prediction": 0.24,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.198,
+          "prediction": 0.1935,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.243,
+          "prediction": 0.2429,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 16.8,
+          "prediction": 16.54,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.68,
+          "prediction": 21.84,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7546,
+          "prediction": 0.7541,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -102825,14 +102922,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 67.6,
+          "prediction": 65.98,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 9.78,
+          "prediction": 9.68,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -102846,8 +102943,8 @@
       },
       "position": "2B",
       "role": "hitter",
-      "sample": 210.0,
-      "sample_reliability": 0.512,
+      "sample": 213.0,
+      "sample_reliability": 0.516,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays"
     },
@@ -105201,35 +105298,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0645,
+          "prediction": 0.069,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2461,
+          "prediction": 0.2486,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 15.49,
+          "prediction": 14.25,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 23.66,
+          "prediction": 23.25,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.733,
+          "prediction": 0.727,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -105250,14 +105347,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 65.57,
+          "prediction": 64.37,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 7.1,
+          "prediction": 7.36,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -105271,8 +105368,8 @@
       },
       "position": "C",
       "role": "hitter",
-      "sample": 162.0,
-      "sample_reliability": 0.448,
+      "sample": 166.0,
+      "sample_reliability": 0.454,
       "sample_unit": "PA",
       "team": "Tampa Tarpons"
     },
@@ -114416,7 +114513,7 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1887,
+          "prediction": 0.1866,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -114486,8 +114583,8 @@
       },
       "position": "2B",
       "role": "hitter",
-      "sample": 266.0,
-      "sample_reliability": 0.571,
+      "sample": 269.0,
+      "sample_reliability": 0.574,
       "sample_unit": "PA",
       "team": "Springfield Cardinals"
     },
@@ -116453,35 +116550,35 @@
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.3784,
+          "prediction": 0.3815,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2594,
+          "prediction": 0.259,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.33,
+          "prediction": 21.55,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 21.8,
+          "prediction": 21.66,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7674,
+          "prediction": 0.7655,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -116502,14 +116599,14 @@
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 70.61,
+          "prediction": 69.83,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 9.12,
+          "prediction": 8.97,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -116523,8 +116620,8 @@
       },
       "position": "C",
       "role": "hitter",
-      "sample": 146.0,
-      "sample_reliability": 0.422,
+      "sample": 150.0,
+      "sample_reliability": 0.429,
       "sample_unit": "PA",
       "team": "Springfield Cardinals"
     },
@@ -117893,43 +117990,43 @@
       "name": "Juan Sanchez",
       "normalized_name": "juan sanchez",
       "outcome_distribution": {
-        "bust_probability": 0.68,
-        "role_probability": 0.2,
+        "bust_probability": 0.64,
+        "role_probability": 0.24,
         "star_probability": 0.12
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.32,
+          "prediction": 0.36,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2231,
+          "prediction": 0.2208,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2468,
+          "prediction": 0.2426,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 19.91,
+          "prediction": 19.56,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.66,
+          "prediction": 25.07,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -117978,8 +118075,8 @@
       },
       "position": "3B",
       "role": "hitter",
-      "sample": 214.0,
-      "sample_reliability": 0.517,
+      "sample": 218.0,
+      "sample_reliability": 0.522,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays"
     },
@@ -120415,22 +120512,22 @@
       "name": "JoJo Parker",
       "normalized_name": "jojo parker",
       "outcome_distribution": {
-        "bust_probability": 0.64,
-        "role_probability": 0.2,
+        "bust_probability": 0.6,
+        "role_probability": 0.24,
         "star_probability": 0.16
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.36,
+          "prediction": 0.4,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.3307,
+          "prediction": 0.3294,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -120500,8 +120597,8 @@
       },
       "position": "SS",
       "role": "hitter",
-      "sample": 277.0,
-      "sample_reliability": 0.581,
+      "sample": 281.0,
+      "sample_reliability": 0.584,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays"
     },
@@ -124780,43 +124877,43 @@
       "name": "Jake Cook",
       "normalized_name": "jake cook",
       "outcome_distribution": {
-        "bust_probability": 1.0,
-        "role_probability": 0.0,
+        "bust_probability": 0.96,
+        "role_probability": 0.04,
         "star_probability": 0.0
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.0,
+          "prediction": 0.04,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.178,
+          "prediction": 0.1675,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.2422,
+          "prediction": 0.2424,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 18.37,
+          "prediction": 18.39,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.65,
+          "prediction": 24.88,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
@@ -124865,8 +124962,8 @@
       },
       "position": "CF",
       "role": "hitter",
-      "sample": 124.0,
-      "sample_reliability": 0.383,
+      "sample": 128.0,
+      "sample_reliability": 0.39,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays"
     },
@@ -151768,7 +151865,7 @@
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 78.76,
+          "prediction": 79.15,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -151782,7 +151879,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 9.17,
+          "prediction": 9.31,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -151796,7 +151893,7 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.36,
+          "prediction": 4.9,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
@@ -151831,8 +151928,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 21.0,
-      "sample_reliability": 0.296,
+      "sample": 21.3,
+      "sample_reliability": 0.299,
       "sample_unit": "IP",
       "team": "Tampa Tarpons"
     },
@@ -157096,14 +157193,14 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 4.3676,
+          "prediction": 4.476,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 98.88,
+          "prediction": 97.33,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -157117,7 +157214,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 7.88,
+          "prediction": 7.91,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -157131,28 +157228,28 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 6.81,
+          "prediction": 6.82,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.5,
+          "prediction": 1.46,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.3068,
+          "prediction": 1.3196,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0797,
+          "prediction": 0.0838,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -157166,8 +157263,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 35.3,
-      "sample_reliability": 0.414,
+      "sample": 39.3,
+      "sample_reliability": 0.44,
       "sample_unit": "IP",
       "team": "Northwest Arkansas Naturals"
     },
@@ -158461,7 +158558,7 @@
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 91.43,
+          "prediction": 90.54,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -158475,7 +158572,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 9.45,
+          "prediction": 9.38,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -158510,7 +158607,7 @@
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0294,
+          "prediction": 0.0309,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -158524,8 +158621,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 21.3,
-      "sample_reliability": 0.299,
+      "sample": 23.3,
+      "sample_reliability": 0.318,
       "sample_unit": "IP",
       "team": "Springfield Cardinals"
     },
@@ -171728,29 +171825,29 @@
       "name": "Henry Lalane",
       "normalized_name": "henry lalane",
       "outcome_distribution": {
-        "bust_probability": 0.76,
+        "bust_probability": 0.72,
         "role_probability": 0.16,
-        "star_probability": 0.08
+        "star_probability": 0.12
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.24,
+          "prediction": 0.28,
           "prediction_source": "historical_neighbors_25",
           "unit": "probability"
         },
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 3.6612,
+          "prediction": 3.6192,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 114.58,
+          "prediction": 105.23,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -171764,7 +171861,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 8.38,
+          "prediction": 8.54,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -171778,43 +171875,43 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 9.22,
+          "prediction": 10.25,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 6.82,
+          "prediction": 7.29,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.1968,
+          "prediction": 1.1972,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0486,
+          "prediction": 0.0663,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "star_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.08,
+          "prediction": 0.12,
           "prediction_source": "historical_neighbors_25",
           "unit": "probability"
         }
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 48.3,
-      "sample_reliability": 0.491,
+      "sample": 55.3,
+      "sample_reliability": 0.525,
       "sample_unit": "IP",
       "team": "Tampa Tarpons"
     },
@@ -185882,6 +185979,103 @@
       "sample_reliability": 0.361,
       "sample_unit": "IP",
       "team": "Fayetteville Woodpeckers"
+    },
+    {
+      "age": 22,
+      "level": "A",
+      "mlbam_id": 703863,
+      "name": "Josbel Garcia",
+      "normalized_name": "josbel garcia",
+      "outcome_distribution": {
+        "bust_probability": 0.96,
+        "role_probability": 0.04,
+        "star_probability": 0.0
+      },
+      "outcomes": {
+        "established_probability": {
+          "conditional_on": null,
+          "gate_status": "fallback",
+          "prediction": 0.04,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "probability"
+        },
+        "representative_era": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 3.5224,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "ERA"
+        },
+        "representative_ip": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 79.55,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "IP"
+        },
+        "representative_k_bb": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 2.8821,
+          "prediction_source": "level_age_prior",
+          "unit": "K:BB"
+        },
+        "representative_k_per_9": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 8.99,
+          "prediction_source": "canonical_historical_neighbors_25",
+          "unit": "K/9"
+        },
+        "representative_l_per_180": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 11.12,
+          "prediction_source": "level_age_prior",
+          "unit": "L/180 IP"
+        },
+        "representative_qs_per_180": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "insufficient_sample",
+          "prediction": 5.38,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "QS/180 IP"
+        },
+        "representative_sv_hld_per_60": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 13.41,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "SV+HLD/60 IP"
+        },
+        "representative_whip": {
+          "conditional_on": "representative season has at least 50 IP",
+          "gate_status": "fallback",
+          "prediction": 1.1804,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "WHIP"
+        },
+        "rotation_probability": {
+          "conditional_on": null,
+          "gate_status": "active",
+          "prediction": 0.0,
+          "prediction_source": "ridge",
+          "unit": "probability"
+        },
+        "star_probability": {
+          "conditional_on": null,
+          "gate_status": "fallback",
+          "prediction": 0.0,
+          "prediction_source": "historical_neighbors_25",
+          "unit": "probability"
+        }
+      },
+      "position": "P",
+      "role": "pitcher",
+      "sample": 16.0,
+      "sample_reliability": 0.242,
+      "sample_unit": "IP",
+      "team": "Dunedin Blue Jays"
     },
     {
       "age": 24,
@@ -229831,29 +230025,29 @@
       "name": "Chen-Wei Lin",
       "normalized_name": "chen wei lin",
       "outcome_distribution": {
-        "bust_probability": 0.48,
-        "role_probability": 0.36,
+        "bust_probability": 0.52,
+        "role_probability": 0.32,
         "star_probability": 0.16
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.52,
+          "prediction": 0.48,
           "prediction_source": "historical_neighbors_25",
           "unit": "probability"
         },
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 3.8856,
+          "prediction": 3.7648,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 118.54,
+          "prediction": 120.78,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -229867,7 +230061,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 8.1,
+          "prediction": 8.16,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -229895,14 +230089,14 @@
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.2728,
+          "prediction": 1.25,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.076,
+          "prediction": 0.0745,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -229916,8 +230110,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 53.0,
-      "sample_reliability": 0.515,
+      "sample": 57.0,
+      "sample_reliability": 0.533,
       "sample_unit": "IP",
       "team": "Springfield Cardinals"
     },
@@ -231965,29 +232159,29 @@
       "name": "Franly Urena",
       "normalized_name": "franly urena",
       "outcome_distribution": {
-        "bust_probability": 0.76,
-        "role_probability": 0.12,
-        "star_probability": 0.12
+        "bust_probability": 0.88,
+        "role_probability": 0.08,
+        "star_probability": 0.04
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.24,
+          "prediction": 0.12,
           "prediction_source": "historical_neighbors_25",
           "unit": "probability"
         },
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 3.6984,
+          "prediction": 3.7632,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 109.41,
+          "prediction": 113.02,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -232001,7 +232195,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 9.02,
+          "prediction": 8.84,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -232015,21 +232209,21 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 7.36,
+          "prediction": 7.1,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 6.01,
+          "prediction": 7.63,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.1992,
+          "prediction": 1.2288,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
@@ -232043,15 +232237,15 @@
         "star_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.12,
+          "prediction": 0.04,
           "prediction_source": "historical_neighbors_25",
           "unit": "probability"
         }
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 32.3,
-      "sample_reliability": 0.392,
+      "sample": 32.7,
+      "sample_reliability": 0.395,
       "sample_unit": "IP",
       "team": "Dunedin Blue Jays"
     },
@@ -234696,14 +234890,14 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 3.5832,
+          "prediction": 3.718,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 79.56,
+          "prediction": 83.96,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -234717,7 +234911,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 8.92,
+          "prediction": 8.9,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -234731,28 +234925,28 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.88,
+          "prediction": 4.09,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 11.83,
+          "prediction": 12.31,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.1892,
+          "prediction": 1.2076,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0158,
+          "prediction": 0.0149,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -234766,8 +234960,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 29.7,
-      "sample_reliability": 0.373,
+      "sample": 31.3,
+      "sample_reliability": 0.385,
       "sample_unit": "IP",
       "team": "Tampa Tarpons"
     },
@@ -235375,14 +235569,14 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 4.1168,
+          "prediction": 4.1912,
           "prediction_source": "historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 91.99,
+          "prediction": 92.46,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -235396,7 +235590,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 9.05,
+          "prediction": 9.0,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -235410,28 +235604,28 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 6.75,
+          "prediction": 5.99,
           "prediction_source": "historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 4.81,
+          "prediction": 4.8,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 1.2776,
+          "prediction": 1.2856,
           "prediction_source": "historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0708,
+          "prediction": 0.0664,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -235445,8 +235639,8 @@
       },
       "position": "P",
       "role": "pitcher",
-      "sample": 35.3,
-      "sample_reliability": 0.414,
+      "sample": 36.0,
+      "sample_reliability": 0.419,
       "sample_unit": "IP",
       "team": "Northwest Arkansas Naturals"
     },
@@ -265975,7 +266169,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-06-26T00:00:00+00:00",
+          "activated_at": "2026-06-27T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.069292,
           "cv_method": "walk_forward",
@@ -268499,7 +268693,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-06-26T00:00:00+00:00",
+          "activated_at": "2026-06-27T00:00:00+00:00",
           "baseline": "historical_neighbors_25",
           "baseline_score": 0.052212,
           "cv_method": "walk_forward",
