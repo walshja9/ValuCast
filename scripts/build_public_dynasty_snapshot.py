@@ -1098,7 +1098,7 @@ def build_snapshot(
             "reason": "active_mlb_callup_bridge",
         }
         for row in sorted(
-            active_callup_bridge_rows,
+            callup_bridge_rows,
             key=lambda row: (
                 int(row.get("prospect_rank") or 999999),
                 str(row.get("name") or ""),
@@ -1224,7 +1224,7 @@ def build_snapshot(
         suppressed_mlb_sample,
         calibration_report,
         graduation_transition_floor_count,
-        len(active_callup_bridge_rows),
+        len(callup_bridge_rows),
         active_callup_bridge_sample,
     )
     return payload
