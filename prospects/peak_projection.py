@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.availability import LEVEL_ETA_HINTS
+from prospects.availability import eta_window
 from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,17 +63,6 @@ SKILL_BAND_BONUS = {
     "limited": -3.2,
     "thin": -4.0,
 }
-
-LEVEL_ETA_HINTS = {
-    "MLB": "now",
-    "AAA": "near_term",
-    "AA": "one_to_two_years",
-    "A+": "two_to_three_years",
-    "A": "two_to_three_years",
-    "ROK": "long_range",
-    "CPX": "long_range",
-}
-
 
 def _clean_float(raw: Any) -> float | None:
     try:
@@ -152,21 +143,6 @@ def _investment_score(row: dict) -> float | None:
         return None
     score = _clean_float(value)
     return _clamp(score) if score is not None else None
-
-
-def _level(value: Any) -> str:
-    text = str(value or "").upper()
-    aliases = {
-        "HIGH-A": "A+",
-        "HIGH A": "A+",
-        "HI-A": "A+",
-        "SINGLE-A": "A",
-        "LOW-A": "A",
-        "LOW A": "A",
-        "ROOKIE": "ROK",
-        "COMPLEX": "CPX",
-    }
-    return aliases.get(text, text)
 
 
 def _hitter_shape(current: dict, rank_score: float) -> list[dict]:
@@ -308,10 +284,7 @@ def _floor_band(row: dict, risk_band: str, shape_average: float) -> str:
 
 
 def _eta_window(row: dict) -> str:
-    eta = row.get("eta")
-    if eta not in (None, ""):
-        return str(eta)
-    return LEVEL_ETA_HINTS.get(_level(row.get("level")), "unknown")
+    return eta_window(row)
 
 
 def _summary(row: dict, peak_score: float, ceiling: str, risk: str) -> str:

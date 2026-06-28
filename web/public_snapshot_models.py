@@ -7,6 +7,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from prospects.availability import eta_window as prospect_eta_window
+from prospects.availability import eta_window_label
+
 from .prospect_context import (
     context_note,
     skill_band_label,
@@ -104,6 +107,16 @@ class PublicSnapshotRow:
     @property
     def dynasty_value(self) -> float:
         return self.value
+
+    @property
+    def eta_display(self) -> str | None:
+        if self.eta is not None:
+            return str(self.eta)
+        return eta_window_label(
+            self.metadata.get("eta_window")
+            or self.peak_projection_context.get("eta_window")
+            or prospect_eta_window({"eta": self.eta, "level": self.level})
+        )
 
     def value_for(self, preset: str | None) -> float:
         if preset and preset in self.value_by_preset:

@@ -17,6 +17,7 @@ from mlb.roster_status import active_roster_lookup
 from prospects.availability import ARTIFACT_PATH as AVAILABILITY_PATH
 from prospects.availability import apply_availability_adjustment
 from prospects.availability import availability_lookup
+from prospects.availability import eta_window
 from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.input_contract import VALUCAST_INPUT_PATH
 from prospects.milb_translation import (
@@ -2065,6 +2066,7 @@ def build_prospect_rank_v1(
             or universe_row.get("level")
             or (layer_profile or {}).get("level")
         )
+        eta = universe_row.get("eta") or (dd_row or {}).get("eta")
         target_board = active_mlb_roster_board if is_active_mlb_roster else board
         target_board.append(
             {
@@ -2079,7 +2081,8 @@ def build_prospect_rank_v1(
                 "mlb_team": universe_row.get("mlb_team") or (dd_row or {}).get("mlb_team"),
                 "age": display_age,
                 "level": display_level,
-                "eta": universe_row.get("eta") or (dd_row or {}).get("eta"),
+                "eta": eta,
+                "eta_window": eta_window({"eta": eta, "level": display_level}),
                 "universe_source": universe_row.get("universe_source"),
                 "score": score,
                 "score_source": source,

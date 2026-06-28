@@ -56,6 +56,15 @@ LEVEL_ORDER = {
     "AAA": 6,
     "MLB": 7,
 }
+LEVEL_ETA_HINTS = {
+    "MLB": "now",
+    "AAA": "near_term",
+    "AA": "one_to_two_years",
+    "A+": "two_to_three_years",
+    "A": "two_to_three_years",
+    "ROK": "long_range",
+    "CPX": "long_range",
+}
 EXPLICIT_STATUS_DISCOUNTS = {
     "injured": MAX_RISK_DISCOUNT,
     "il": MAX_RISK_DISCOUNT,
@@ -118,11 +127,47 @@ def _parse_date(value: Any) -> date | None:
 
 
 def _level_key(level: Any) -> str:
-    return str(level or "").strip().upper()
+    text = str(level or "").strip().upper()
+    return {
+        "HIGH A": "A+",
+        "HIGH-A": "A+",
+        "HI-A": "A+",
+        "SINGLE-A": "A",
+        "LOW A": "A",
+        "LOW-A": "A",
+        "ROOKIE": "ROK",
+        "COMPLEX": "CPX",
+    }.get(text, text)
 
 
 def _level_rank(level: Any) -> int:
     return LEVEL_ORDER.get(_level_key(level), 0)
+
+
+def eta_window(row: dict | None) -> str:
+    if not isinstance(row, dict):
+        return "unknown"
+    eta = row.get("eta")
+    if eta not in (None, ""):
+        return str(eta)
+    return LEVEL_ETA_HINTS.get(_level_key(row.get("level")), "unknown")
+
+
+# Compact, table-friendly labels for the level-derived ETA windows (the precise
+# integer ETA is rendered as the year itself; this only labels the fallback).
+_ETA_WINDOW_LABELS = {
+    "now": "~now",
+    "near_term": "~1 yr",
+    "one_to_two_years": "~1-2 yr",
+    "two_to_three_years": "~2-3 yr",
+    "long_range": "~3+ yr",
+}
+
+
+def eta_window_label(window: Any) -> str | None:
+    if window in (None, "", "unknown"):
+        return None
+    return _ETA_WINDOW_LABELS.get(str(window), "approx. " + str(window).replace("_", " "))
 
 
 def identity_key(mlbam_id: Any, role: str | None) -> tuple[str, str] | None:

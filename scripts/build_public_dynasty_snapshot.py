@@ -488,6 +488,7 @@ def _prospect_rows(
                 "prospect_rank": row.get("rank"),
                 "level": row.get("level"),
                 "eta": row.get("eta"),
+                "eta_window": row.get("eta_window") or (peak or {}).get("eta_window"),
                 "score_source": row.get("score_source"),
                 "components": row.get("components") or {},
                 "drivers": row.get("drivers") or [],

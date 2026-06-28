@@ -3,6 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from prospects.availability import eta_window as prospect_eta_window
+from prospects.availability import eta_window_label
+
 from .prospect_context import (
     context_note,
     skill_band_label,
@@ -113,6 +116,15 @@ class DynastyRankingRow:
     @property
     def milb_performance_rank(self) -> int | float | None:
         return (self.source_ranks or {}).get("milb_perf")
+
+    @property
+    def eta_display(self) -> str | None:
+        if self.eta is not None:
+            return str(self.eta)
+        return eta_window_label(
+            self.metadata.get("eta_window")
+            or prospect_eta_window({"eta": self.eta, "level": self.level})
+        )
 
     @property
     def prospect_components(self) -> dict:

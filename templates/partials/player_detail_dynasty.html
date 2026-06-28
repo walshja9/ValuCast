@@ -46,8 +46,8 @@
             {% if row.tier is not none %}
             {% set headline_context.parts = headline_context.parts + ["Tier " ~ row.tier] %}
             {% endif %}
-            {% if row.eta %}
-            {% set headline_context.parts = headline_context.parts + ["ETA " ~ row.eta] %}
+            {% if row.eta_display %}
+            {% set headline_context.parts = headline_context.parts + ["ETA " ~ row.eta_display] %}
             {% endif %}
             {% if confidence.get('level') %}
             {% set headline_context.parts = headline_context.parts + [(confidence.get('level') | replace('_', ' ') | title) ~ " confidence"] %}

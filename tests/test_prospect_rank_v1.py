@@ -650,6 +650,22 @@ def test_rank_v1_surfaces_near_graduation_context():
     assert "graduation_context" not in far
 
 
+def test_rank_v1_derives_eta_window_from_level_when_eta_missing():
+    universe = _universe()
+    universe["players"][0].pop("eta")
+
+    payload = build_prospect_rank_v1(
+        universe,
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+    )
+
+    row = next(item for item in payload["board"] if item["mlbam_id"] == 1)
+    assert row["eta"] is None
+    assert row["eta_window"] == "one_to_two_years"
+
+
 def test_rank_v1_exposes_factual_current_context_for_hitter_components():
     input_contract = _input_contract()
     input_contract["current"]["hitters"][0].update(

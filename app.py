@@ -56,6 +56,8 @@ from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
 from prospects.availability import LEVEL_ORDER
+from prospects.availability import eta_window as prospect_eta_window
+from prospects.availability import eta_window_label
 from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 from scouting.mlb_read import build_mlb_scouting_read
 
@@ -4432,8 +4434,24 @@ def _team_board_affiliate(row):
 
 
 def _team_board_eta(row):
+    label = getattr(row, "eta_display", None)
+    if label:
+        return f"ETA {label}"
     eta = getattr(row, "eta", None)
-    return f"ETA {eta}" if eta not in (None, "") else ""
+    if eta not in (None, ""):
+        return f"ETA {eta}"
+    label = eta_window_label(_team_board_eta_window(row))
+    return f"ETA {label}" if label else ""
+
+
+def _team_board_eta_window(row):
+    metadata = getattr(row, "metadata", None)
+    if isinstance(metadata, dict) and metadata.get("eta_window"):
+        return metadata["eta_window"]
+    peak = getattr(row, "peak_projection_context", None)
+    if isinstance(peak, dict) and peak.get("eta_window"):
+        return peak["eta_window"]
+    return prospect_eta_window({"eta": getattr(row, "eta", None), "level": _team_board_level(row)})
 
 
 def _team_board_player_url(row):
@@ -4499,7 +4517,17 @@ def _team_board_year_bucket(row):
     try:
         eta_year = int(eta)
     except (TypeError, ValueError):
-        return "Monitor"
+        window = _team_board_eta_window(row)
+        try:
+            eta_year = int(window)
+        except (TypeError, ValueError):
+            if window in {"now", "near_term"}:
+                return "This year"
+            if window == "one_to_two_years":
+                return "Next year"
+            if window in {"two_to_three_years", "long_range"}:
+                return "Later"
+            return "Monitor"
     current_year = date.today().year
     if eta_year <= current_year:
         return "This year"
@@ -4692,8 +4720,7 @@ def _build_backfields_page_context():
         return "/".join(positions) if positions else "-"
 
     def eta_for(row):
-        eta = getattr(row, "eta", None)
-        return f"ETA {eta}" if eta else ""
+        return _team_board_eta(row)
 
     def tier_for(row):
         try:
@@ -4712,21 +4739,7 @@ def _build_backfields_page_context():
         }
 
     def current_year_bucket(row):
-        label = getattr(row, "graduation_context_label", None)
-        if label:
-            return label
-        graduation = getattr(row, "graduation_context", {}) or {}
-        if graduation.get("label"):
-            return str(graduation["label"])
-        eta = getattr(row, "eta", None)
-        current_year = date.today().year
-        if eta is None:
-            return "Monitor"
-        if eta <= current_year:
-            return "This year"
-        if eta == current_year + 1:
-            return "Next year"
-        return "Later"
+        return _team_board_year_bucket(row)
 
     def short_text(text, limit=230):
         clean = " ".join(str(text or "").split())
