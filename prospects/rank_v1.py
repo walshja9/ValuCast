@@ -66,6 +66,18 @@ THIN_SAMPLE_CONFIDENCE_PENALTY_MAX = 28.0
 # being flagged), so B ships exactly as is. Calibration knobs -- tuned on the shadow-diff.
 MODERATE_THIN_RELIABILITY_FLOOR = 50.0
 MODERATE_THIN_CONFIDENCE_PENALTY_K = 22.0
+# Career-validated-discipline SOFTENER for the moderate-thin haircut: a thin line whose
+# contact/discipline skill is corroborated by >=2 prior MiLB seasons (the multi-year arc
+# the current model is blind to) gets ~45% of the haircut given back. Calibration-only
+# (modulates the confidence haircut, never the model point estimate) -- same class as the
+# pedigree spare-gate, no outcome-validation wall. Knobs tuned on the shadow-diff.
+MODERATE_THIN_CAREER_SOFTENER = 0.55
+CAREER_MIN_PRIOR_SEASONS = 2
+CAREER_MIN_PRIOR_PA = 250.0
+CAREER_DISCIPLINE_MAX_K = 15.0
+CAREER_DISCIPLINE_MIN_BB = 10.0
+CAREER_MIN_PRIOR_IP = 60.0
+CAREER_PITCHER_MIN_KBB = 12.0
 # A prospect whose displayed stat line falls back to a prior-season MiLB sample
 # (factual_current_context.source_kind != "current_season") has NO current-season
 # evidence at all -- almost always an injured/inactive upper-level arm. They must
@@ -1186,6 +1198,55 @@ def _high_pedigree(input_row: dict | None) -> bool:
     return (pick is not None and pick <= 75) or bonus >= 1_000_000.0
 
 
+def _career_validated_discipline(career_entry: dict | None, role: str) -> bool:
+    """Multi-year MiLB track record corroborating the current thin line's contact/
+    discipline skill (k%/bb% for hitters, k-bb% for pitchers). Sibling of _high_pedigree
+    -- calibration_judgment_not_outcome_gated: it SOFTENS (never sets) the moderate-thin
+    confidence haircut and never touches the model point estimate, so it sidesteps the
+    W2.1/MLE outcome-validation wall. Fires only when >=2 PRIOR usable seasons show the
+    skill is durable, so a thin current line continuing a proven multi-year skill (e.g.
+    Hernandez's K% 20->7 over ~1000 PA) is not docked like a no-history fluke. Graceful
+    no-op when career history is absent (the long-tail default), exactly like _high_pedigree.
+    """
+    if not career_entry:
+        return False
+    current_season = _clean_float(career_entry.get("current_season"))
+    by_season: dict[float, list[tuple[float, dict]]] = {}
+    for row in (career_entry.get("rows") or []):
+        season = _clean_float(row.get("season"))
+        if season is None or (current_season is not None and season >= current_season):
+            continue  # PRIOR seasons only -- the current thin line is what we're deciding on
+        samp = _sample_size(row, role)
+        if samp > 0:
+            by_season.setdefault(season, []).append((samp, row))
+    if len(by_season) < CAREER_MIN_PRIOR_SEASONS:
+        return False
+
+    def _pa_weighted(field: str) -> tuple[float, float]:
+        num = den = 0.0
+        for entries in by_season.values():
+            season_w = sum(s for s, _ in entries)
+            if season_w <= 0:
+                continue
+            season_val = sum(
+                (_clean_float(r.get(field)) or 0.0) * s for s, r in entries
+            ) / season_w
+            num += season_val * season_w
+            den += season_w
+        return (num / den if den else 0.0), den
+
+    if role == "hitter":
+        k_pct, total_pa = _pa_weighted("k_pct")
+        bb_pct, _ = _pa_weighted("bb_pct")
+        if total_pa < CAREER_MIN_PRIOR_PA:
+            return False
+        return k_pct <= CAREER_DISCIPLINE_MAX_K and bb_pct >= CAREER_DISCIPLINE_MIN_BB
+    k_bb_pct, total_ip = _pa_weighted("k_bb_pct")
+    if total_ip < CAREER_MIN_PRIOR_IP:
+        return False
+    return k_bb_pct >= CAREER_PITCHER_MIN_KBB
+
+
 def _bucket_calibration_adjustment(
     score: float,
     source: str,
@@ -1193,6 +1254,7 @@ def _bucket_calibration_adjustment(
     input_row: dict | None,
     universe_row: dict | None,
     components: dict,
+    career_entry: dict | None = None,
 ) -> tuple[float, dict]:
     level = _level_key(
         (input_row or {}).get("level")
@@ -1342,6 +1404,12 @@ def _bucket_calibration_adjustment(
             / MODERATE_THIN_RELIABILITY_FLOOR,
         )
         penalty = -MODERATE_THIN_CONFIDENCE_PENALTY_K * deficit
+        career_validated = _career_validated_discipline(career_entry, role)
+        if career_validated:
+            # The thin line continues a proven multi-year contact/discipline skill, so
+            # give back ~45% of the haircut -- the sample is more trustworthy than its
+            # size alone implies (the career the point-estimate model is blind to).
+            penalty *= MODERATE_THIN_CAREER_SOFTENER
         penalty = round(penalty, 2)
         if penalty < 0:
             adjustments.append(
@@ -1355,6 +1423,7 @@ def _bucket_calibration_adjustment(
                     "sample_unit": sample_unit or None,
                     "sample_reliability": round(reliability, 2),
                     "adjustment": penalty,
+                    "career_validated": career_validated,
                     "reason": (
                         "A gaudy line whose own model reliability is below the floor "
                         "is discounted toward the confidence the model already assigns "
@@ -1934,6 +2003,7 @@ def build_prospect_rank_v1(
             input_row,
             universe_row,
             components,
+            (milb_history_by_key or {}).get(key),
         )
         confidence = _confidence(
             source,

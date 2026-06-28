@@ -39,6 +39,7 @@ import pytest
 
 from prospects.model import _current_line_is_bad
 from prospects.rank_v1 import (
+    MODERATE_THIN_CAREER_SOFTENER,
     _apply_role_quantile_model_score_normalization,
     _bucket_calibration_adjustment,
     _input_row_sort_key,
@@ -358,7 +359,7 @@ def test_G_tied_raw_scores_get_equal_percentile():
 # burying pedigreed thin prospects (Willits, consensus #3). Mutually exclusive
 # with B; full-sample leans (reliability >= floor) untouched by the zero-anchor.
 # --------------------------------------------------------------------------- #
-def _moderate_thin_penalty(reliability, pedigree=False):
+def _moderate_thin_penalty(reliability, pedigree=False, career_entry=None):
     input_row = {"mlbam_id": 2, "role": "hitter", "level": "A+"}
     if pedigree:
         input_row["draft_pick_number"] = 1  # 1-1 pick -> _high_pedigree
@@ -371,11 +372,34 @@ def _moderate_thin_penalty(reliability, pedigree=False):
     _, out = _bucket_calibration_adjustment(
         score=50.0, source="prospect_model_v0_6", layer_profile={"role": "hitter"},
         input_row=input_row, universe_row={"role": "hitter"}, components=components,
+        career_entry=career_entry,
     )
     for rule in (out.get("bucket_calibration", {}) or {}).get("rules", []):
         if rule["bucket"] == "moderate_thin_sample_confidence":
             return abs(float(rule["adjustment"]))
     return 0.0
+
+
+# A multi-year prior track record of durable contact + discipline (K% <= 15, BB% >= 10
+# over >= 2 prior seasons and >= 250 PA). Sibling of pedigree: the thin current line
+# continues a proven skill the point-estimate model is blind to, so the haircut softens.
+_CAREER_VALIDATED = {
+    "current_season": 2026,
+    "rows": [
+        {"season": 2025, "plate_appearances": 300, "k_pct": 13.0, "bb_pct": 11.0, "role": "hitter"},
+        {"season": 2024, "plate_appearances": 300, "k_pct": 12.0, "bb_pct": 12.0, "role": "hitter"},
+    ],
+}
+# Ronny Hernandez's REAL prior A-ball lines: elite walks but contact regressed (21.1% K
+# in 2025), so PA-weighted prior K% is 17.4 -- above the 15% gate. The current 7.4% K on
+# 94 PA is a spike above his own career rate, exactly what we should stay skeptical of.
+_CAREER_UNVALIDATED = {
+    "current_season": 2026,
+    "rows": [
+        {"season": 2025, "plate_appearances": 355, "k_pct": 21.1, "bb_pct": 12.7, "role": "hitter"},
+        {"season": 2024, "plate_appearances": 413, "k_pct": 14.3, "bb_pct": 15.0, "role": "hitter"},
+    ],
+}
 
 
 def test_moderate_thin_hits_no_pedigree_thin_line():
@@ -395,3 +419,23 @@ def test_moderate_thin_zero_at_floor():
     """INV-THIN-2. Reliability at/above the floor (a full-sample lean) is untouched
     -- the haircut is zero-anchored at the floor, so leans never move."""
     assert _moderate_thin_penalty(reliability=55.0) == 0.0
+
+
+def test_moderate_thin_career_validated_softens_haircut():
+    """INV-THIN-3. A thin line that continues a proven multi-year contact/discipline
+    skill (K% <= 15, BB% >= 10 over >= 2 prior seasons) keeps a SOFTENED haircut --
+    the career is real evidence the point estimate is blind to, so the thin sample is
+    more trustworthy than its size alone implies."""
+    base = _moderate_thin_penalty(reliability=32.0)
+    softened = _moderate_thin_penalty(reliability=32.0, career_entry=_CAREER_VALIDATED)
+    assert 0.0 < softened < base
+    assert softened == pytest.approx(round(base * MODERATE_THIN_CAREER_SOFTENER, 2))
+
+
+def test_moderate_thin_unvalidated_career_keeps_full_haircut():
+    """INV-THIN-3. The Hernandez case: elite career walks but contact regressed
+    (PA-weighted prior K% 17.4 > 15 gate), so the career does NOT validate the current
+    thin contact spike -- the full haircut stands and we don't over-credit the line."""
+    base = _moderate_thin_penalty(reliability=32.0)
+    unsoftened = _moderate_thin_penalty(reliability=32.0, career_entry=_CAREER_UNVALIDATED)
+    assert unsoftened == base
