@@ -5,12 +5,7 @@
     "MiLB prospect-card stat freshness audit blocks public promotion.",
     "Prospect card data audit blocks public promotion."
   ],
-  "buy_blockers": [
-    "Top prospect board is too pitcher-heavy for public promotion.",
-    "MiLB prospect-card stat freshness audit blocks public promotion.",
-    "Prospect card data audit blocks public promotion.",
-    "ValuCast-owned Buy signals are not approved for public promotion."
-  ],
+  "buy_blockers": [],
   "checks": [
     {
       "id": "mlb_top_value_gap",
@@ -133,7 +128,7 @@
             "name": "Hagen Smith",
             "rank": 6,
             "role": "pitcher",
-            "score": 61.0
+            "score": 60.99
           },
           {
             "mlbam_id": 701364,
@@ -147,7 +142,7 @@
             "name": "Seth Hernandez",
             "rank": 9,
             "role": "pitcher",
-            "score": 56.25
+            "score": 56.24
           },
           {
             "mlbam_id": 687312,
@@ -182,7 +177,7 @@
             "name": "Tyler Bremner",
             "rank": 25,
             "role": "pitcher",
-            "score": 46.7
+            "score": 46.69
           }
         ],
         "top25_evaluated_count": 25,
@@ -545,26 +540,26 @@
     },
     {
       "id": "buy_promotion_gate",
-      "message": "ValuCast-owned Buy signals are not approved for public promotion.",
+      "message": "ValuCast-owned Buy signals pass promotion checks.",
       "metrics": {
         "buy_artifact_present": true,
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 13,
-        "history_limited_rate": 0.0048,
+        "history_limited_count": 0,
+        "history_limited_rate": 0.0,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
         "max_low_confidence_rate": 0.35,
         "max_pedigree_rate": 0.35,
         "pedigree_rate": 0.0,
-        "public_board_ready": false,
+        "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 2683
+        "row_count": 162
       },
-      "status": "blocked"
+      "status": "passed"
     }
   ],
   "criteria": {
@@ -606,7 +601,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-28T14:27:03.397962+00:00",
+  "generated_at": "2026-06-28T15:20:57.489507+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
@@ -621,12 +616,12 @@
       "public_snapshot": "2026-06-28",
       "recent_signal_report": "2026-06-28"
     },
-    "mlb_count": 978,
-    "prospect_count": 2683,
+    "mlb_count": 977,
+    "prospect_count": 2684,
     "public_row_count": 3661
   },
   "next_allowed_step": "repair_model_quality_before_public_promotion",
-  "ready_for_buys_promotion": false,
+  "ready_for_buys_promotion": true,
   "ready_for_public_snapshot": false,
   "source_policy": {
     "dd_ranks_used_for_model_score": false,
@@ -637,12 +632,7 @@
   },
   "status": "blocked",
   "surface_blockers": {
-    "buys": [
-      "Top prospect board is too pitcher-heavy for public promotion.",
-      "MiLB prospect-card stat freshness audit blocks public promotion.",
-      "Prospect card data audit blocks public promotion.",
-      "ValuCast-owned Buy signals are not approved for public promotion."
-    ],
+    "buys": [],
     "dynasty": [],
     "prospects": [
       "Top prospect board is too pitcher-heavy for public promotion.",
@@ -651,7 +641,7 @@
     ]
   },
   "surface_readiness": {
-    "buys": false,
+    "buys": true,
     "dynasty": true,
     "prospects": false
   }

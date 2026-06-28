@@ -366,14 +366,14 @@
       },
       "consensus_rank": 577,
       "days_ahead": 4,
-      "divergence": 379,
+      "divergence": 378,
       "identity_key": "699115_hitter",
       "mlbam_id": "699115",
       "name": "Carlos Jorge",
       "role": "hitter",
       "team": "CIN",
       "usage": "ahead_of_consensus_context_not_live_rank_or_value",
-      "valucast_rank": 198
+      "valucast_rank": 199
     },
     {
       "ahead_since": "2026-06-26",
@@ -624,24 +624,6 @@
       "ahead_since": "2026-06-26",
       "board_count": 2,
       "boards": {
-        "pl": 574,
-        "sts": 457
-      },
-      "consensus_rank": 516,
-      "days_ahead": 2,
-      "divergence": 379,
-      "identity_key": "804973_pitcher",
-      "mlbam_id": "804973",
-      "name": "Manuel Rodriguez",
-      "role": "pitcher",
-      "team": "MIL",
-      "usage": "ahead_of_consensus_context_not_live_rank_or_value",
-      "valucast_rank": 137
-    },
-    {
-      "ahead_since": "2026-06-26",
-      "board_count": 2,
-      "boards": {
         "pl": 350,
         "sts": 427
       },
@@ -655,6 +637,24 @@
       "team": "CHC",
       "usage": "ahead_of_consensus_context_not_live_rank_or_value",
       "valucast_rank": 104
+    },
+    {
+      "ahead_since": "2026-06-26",
+      "board_count": 2,
+      "boards": {
+        "pl": 574,
+        "sts": 457
+      },
+      "consensus_rank": 516,
+      "days_ahead": 2,
+      "divergence": 377,
+      "identity_key": "804973_pitcher",
+      "mlbam_id": "804973",
+      "name": "Manuel Rodriguez",
+      "role": "pitcher",
+      "team": "MIL",
+      "usage": "ahead_of_consensus_context_not_live_rank_or_value",
+      "valucast_rank": 139
     },
     {
       "ahead_since": "2026-06-26",
@@ -935,14 +935,14 @@
       },
       "consensus_rank": 464,
       "days_ahead": 2,
-      "divergence": 243,
+      "divergence": 242,
       "identity_key": "806413_pitcher",
       "mlbam_id": "806413",
       "name": "Daniel Guerra",
       "role": "pitcher",
       "team": "TOR",
       "usage": "ahead_of_consensus_context_not_live_rank_or_value",
-      "valucast_rank": 221
+      "valucast_rank": 222
     }
   ],
   "artifact": "valucast_ahead_of_consensus",
@@ -1040,8 +1040,8 @@
     "699115_hitter": {
       "board_count": 3,
       "consensus_rank": 577,
-      "divergence": 379,
-      "valucast_rank": 198
+      "divergence": 378,
+      "valucast_rank": 199
     },
     "699302_hitter": {
       "board_count": 3,
@@ -1230,7 +1230,7 @@
       "valucast_rank": 44
     }
   },
-  "generated_at": "2026-06-28T14:27:12.716092+00:00",
+  "generated_at": "2026-06-28T15:21:06.181613+00:00",
   "generated_by": "valucast",
   "guards": {
     "featured_min_boards": 3,
@@ -1241,7 +1241,7 @@
   },
   "input_artifacts": {
     "rank_generated_at": "2026-06-28T00:00:00+00:00",
-    "rank_row_count": 2683
+    "rank_row_count": 2684
   },
   "signal_version": "0.1.0",
   "source_policy": {
@@ -1259,7 +1259,7 @@
   "summary": {
     "ahead_count": 25,
     "badge_count": 47,
-    "evaluated_count": 2683,
+    "evaluated_count": 2684,
     "thin_count": 25
   },
   "validation": {

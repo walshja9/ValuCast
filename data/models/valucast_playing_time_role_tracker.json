@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-28T14:25:43.414961+00:00",
+  "generated_at": "2026-06-28T15:19:39.242395+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -710,9 +710,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "669087_hitter",
       "mlbam_id": "669087",
       "name": "Sam Huff",
@@ -753,7 +753,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "BAL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -10922,10 +10922,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "687637_hitter",
       "mlbam_id": "687637",
       "name": "Dylan Beavers",
@@ -10938,20 +10938,20 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 34.7,
-        "delta_vs_v1_role": "shift:part_time_or_strong_side->bench_or_depth",
+        "confidence_score": 42.7,
+        "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
-        "most_likely_role": "bench_or_depth",
+        "most_likely_role": "part_time_or_strong_side",
         "role_confidence": "low",
         "role_probabilities": {
-          "bench_or_depth": 0.7,
-          "part_time_or_strong_side": 0.3
+          "bench_or_depth": 0.3,
+          "part_time_or_strong_side": 0.7
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 65.61,
@@ -10961,13 +10961,13 @@
         "volume_forecast": {
           "base": 268.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 277.8,
-          "low": 206.2,
-          "point": 252.4,
+          "high": 283.7,
+          "low": 240.8,
+          "point": 268.5,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "BAL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -15841,10 +15841,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "694497_hitter",
       "mlbam_id": "694497",
       "name": "Evan Carter",
@@ -15857,20 +15857,19 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 48.2,
+        "confidence_score": 56.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "part_time_or_strong_side",
         "role_confidence": "moderate",
         "role_probabilities": {
-          "bench_or_depth": 0.1,
-          "part_time_or_strong_side": 0.9
+          "part_time_or_strong_side": 1.0
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 73.96,
@@ -15880,13 +15879,13 @@
         "volume_forecast": {
           "base": 326.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 333.3,
-          "low": 258.1,
-          "point": 306.6,
+          "high": 340.2,
+          "low": 300.7,
+          "point": 326.2,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "TEX",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -18768,10 +18767,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
+      "active_injury_risk": true,
       "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "available",
+      "availability_status": "injured",
       "identity_key": "694671_hitter",
       "mlbam_id": "694671",
       "name": "Wyatt Langford",
@@ -18784,20 +18783,20 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.9,
+        "confidence_score": 58.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "regular",
         "role_confidence": "moderate",
         "role_probabilities": {
-          "everyday_regular": 0.1,
+          "part_time_or_strong_side": 0.1,
           "regular": 0.9
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.06,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
           "reliability": 76.98,
@@ -18807,9 +18806,9 @@
         "volume_forecast": {
           "base": 542.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 562.8,
-          "low": 504.8,
-          "point": 542.2,
+          "high": 548.4,
+          "low": 424.0,
+          "point": 504.2,
           "unit": "PA"
         }
       },
@@ -22483,10 +22482,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "available",
       "identity_key": "668939_hitter",
       "mlbam_id": "668939",
       "name": "Adley Rutschman",
@@ -22500,20 +22499,20 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 65.5,
-        "delta_vs_v1_role": "shift:regular->part_time_or_strong_side",
+        "confidence_score": 73.5,
+        "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
-        "most_likely_role": "part_time_or_strong_side",
-        "role_confidence": "moderate",
+        "most_likely_role": "regular",
+        "role_confidence": "high",
         "role_probabilities": {
-          "part_time_or_strong_side": 0.7,
-          "regular": 0.3
+          "part_time_or_strong_side": 0.1,
+          "regular": 0.9
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.06,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 76.88,
@@ -22523,13 +22522,13 @@
         "volume_forecast": {
           "base": 446.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 451.4,
-          "low": 348.9,
-          "point": 415.1,
+          "high": 463.3,
+          "low": 415.3,
+          "point": 446.3,
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "BAL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -28095,9 +28094,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "690984_hitter",
       "mlbam_id": "690984",
       "name": "Petey Halpin",
@@ -28138,7 +28137,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CLE",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -41341,9 +41340,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "availability_status": "unknown",
       "identity_key": "669236_hitter",
       "mlbam_id": "669236",
       "name": "Jeremiah Jackson",
@@ -41385,7 +41384,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "BAL",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -64364,7 +64363,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "455119_reliever",
       "mlbam_id": "455119",
       "name": "Chris Martin",
@@ -64389,7 +64388,7 @@
         "role_probability_source": "save_hold_driven_v1_label",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.1,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 57.81,
@@ -64399,9 +64398,9 @@
         "volume_forecast": {
           "base": 45.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 46.6,
-          "low": 31.5,
-          "point": 41.2,
+          "high": 47.4,
+          "low": 33.8,
+          "point": 42.6,
           "unit": "IP"
         }
       },
@@ -71837,7 +71836,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "641927_starter",
       "mlbam_id": "641927",
       "name": "Bailey Ober",
@@ -71857,13 +71856,13 @@
         "most_likely_role": "rotation_starter",
         "role_confidence": "moderate",
         "role_probabilities": {
-          "rotation_starter": 0.9,
-          "rotation_workhorse": 0.1
+          "rotation_starter": 0.7,
+          "rotation_workhorse": 0.3
         },
         "role_probability_source": "volume_fan",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.1,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 73.97,
@@ -71873,9 +71872,9 @@
         "volume_forecast": {
           "base": 156.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 156.9,
-          "low": 115.5,
-          "point": 142.2,
+          "high": 159.7,
+          "low": 123.7,
+          "point": 146.9,
           "unit": "IP"
         }
       },
@@ -99265,10 +99264,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
+      "active_injury_risk": true,
       "active_mlb_roster": false,
-      "availability_source": null,
-      "availability_status": "unknown",
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "rehab",
       "identity_key": "592866_starter",
       "mlbam_id": "592866",
       "name": "Trevor Williams",
@@ -99282,18 +99281,18 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 45.5,
+        "confidence_score": 37.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "rotation_starter",
-        "role_confidence": "moderate",
+        "role_confidence": "low",
         "role_probabilities": {
           "rotation_starter": 1.0
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
+          "active_injury_risk": true,
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": false,
           "experience_band": "unknown",
@@ -99304,9 +99303,9 @@
         "volume_forecast": {
           "base": 93.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 101.1,
-          "low": 79.4,
-          "point": 93.4,
+          "high": 100.0,
+          "low": 70.8,
+          "point": 89.7,
           "unit": "IP"
         }
       },
@@ -101143,7 +101142,7 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 230,
+    "active_injury_risk_count": 229,
     "active_mlb_roster_count": 724,
     "profile_count": 2049,
     "role_counts": {
@@ -101160,9 +101159,9 @@
   "tracker_version": "0.1.0",
   "v2": {
     "confidence_counts": {
-      "high": 201,
-      "low": 272,
-      "moderate": 1576
+      "high": 202,
+      "low": 273,
+      "moderate": 1574
     },
     "dynasty_layer_matched_count": 919,
     "feeds_card": false,
@@ -101170,7 +101169,7 @@
     "feeds_live_value": false,
     "model_version": "2.0.0",
     "profile_count": 2049,
-    "role_shift_vs_v1_count": 45,
+    "role_shift_vs_v1_count": 43,
     "save_hold_label_count": 855,
     "status": "shadow_observe_only",
     "volume_fan_role_count": 1194

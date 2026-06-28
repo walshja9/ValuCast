@@ -309,7 +309,8 @@
         "rank_comparison_count": 6
       },
       "recommendations": [
-        "Review top-50 availability-risk buckets before changing individual names."
+        "Review top-50 availability-risk buckets before changing individual names.",
+        "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
       ],
       "status": "collecting"
     },
@@ -319,7 +320,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2683,
+        "candidate_count": 2684,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -331,7 +332,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-28T14:25:45.672747+00:00",
+        "activated_at": "2026-06-28T15:19:41.415518+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -345,7 +346,7 @@
       },
       "candidate_count": 2777,
       "impact_board_gate": {
-        "activated_at": "2026-06-28T14:25:45.672747+00:00",
+        "activated_at": "2026-06-28T15:19:41.415518+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.173285,
         "cv_method": "walk_forward",
@@ -387,6 +388,11 @@
             "current": 6,
             "metric": "observation_span_days",
             "required": 30
+          },
+          {
+            "current": 0.375,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.55
           }
         ],
         "passed": false
@@ -411,6 +417,11 @@
             "current": 6,
             "metric": "observation_span_days",
             "required": 60
+          },
+          {
+            "current": 0.375,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.6
           }
         ],
         "passed": false
@@ -435,6 +446,11 @@
             "current": 6,
             "metric": "observation_span_days",
             "required": 14
+          },
+          {
+            "current": 0.375,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.45
           }
         ],
         "passed": false

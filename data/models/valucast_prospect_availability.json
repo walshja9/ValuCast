@@ -47454,15 +47454,15 @@
     {
       "active_row_count": 2,
       "age": 24,
-      "availability_note": "thin upper level hitter sample under 100 pa",
+      "availability_note": "Texas Rangers placed LF Wyatt Langford on the 10-day injured list. Left hamstring strain.",
       "level": "AAA",
       "mlbam_id": 694671,
       "name": "Wyatt Langford",
       "normalized_name": "wyatt langford",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.05,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "hitter",
       "row_count": 2,
       "sample": 15.0,
@@ -47470,10 +47470,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "thin_upper_level_hitter_sample_under_100_pa"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "injured",
       "team": "Round Rock Express"
     },
     {
@@ -62699,15 +62699,15 @@
     {
       "active_row_count": 1,
       "age": 40,
-      "availability_note": "Texas Rangers placed RHP Chris Martin on the 15-day injured list retroactive to May 31, 2026. Right shoulder impingement.",
+      "availability_note": "thin pitcher workload under 12 ip",
       "level": "AAA",
       "mlbam_id": 455119,
       "name": "Chris Martin",
       "normalized_name": "chris martin",
       "present": true,
-      "risk_basis": "official_mlb_il",
-      "risk_discount": 0.12,
-      "risk_level": "high",
+      "risk_basis": "current_sample_size",
+      "risk_discount": 0.04,
+      "risk_level": "medium",
       "role": "pitcher",
       "row_count": 1,
       "sample": 2.7,
@@ -62715,10 +62715,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "official_mlb_il_override"
+        "thin_pitcher_workload_under_12_ip"
       ],
       "source_kind": "current_season",
-      "status": "injured",
+      "status": "thin_current_sample",
       "team": "Round Rock Express"
     },
     {
@@ -116359,9 +116359,9 @@
       "manual_status_override": 3,
       "official_mlb_il_override": 72,
       "prior_season_sample": 76,
-      "thin_pitcher_workload_under_12_ip": 474,
+      "thin_pitcher_workload_under_12_ip": 475,
       "thin_starter_workload_under_30_ip": 433,
-      "thin_upper_level_hitter_sample_under_100_pa": 296
+      "thin_upper_level_hitter_sample_under_100_pa": 295
     },
     "status_counts": {
       "available": 3208,

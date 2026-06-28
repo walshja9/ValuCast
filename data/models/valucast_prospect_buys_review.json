@@ -142,31 +142,40 @@
     },
     "dd_overlap_context_only": true,
     "dd_top40_count": 40,
-    "history_limited_count": 13,
-    "history_limited_rate": 0.0048,
+    "history_limited_count": 0,
+    "history_limited_rate": 0.0,
     "max_history_limited_rate": 0.5,
-    "top40_name_overlap_count": 0,
-    "top40_name_overlap_rate": 0.0,
+    "top40_name_overlap_count": 1,
+    "top40_name_overlap_rate": 0.025,
     "valucast_age_distribution": {
-      "18": 4,
-      "19": 12,
-      "20": 6,
-      "21": 5,
-      "22": 7,
-      "23": 6
+      "18": 5,
+      "19": 13,
+      "20": 11,
+      "21": 3,
+      "22": 3,
+      "23": 4,
+      "24": 1
     },
     "valucast_level_distribution": {
-      "A": 16,
-      "A+": 14,
-      "AA": 5,
-      "AAA": 5
+      "A": 9,
+      "A+": 16,
+      "AA": 9,
+      "AAA": 6
     },
     "valucast_top40_count": 40
   },
-  "overlap": [],
+  "overlap": [
+    {
+      "dd_rank": 24,
+      "dd_score": 65.4,
+      "name": "Taitn Gray",
+      "valucast_rank": 31,
+      "valucast_score": 58.1
+    }
+  ],
   "promotion_decision": {
     "dd_overlap_is_context_only": true,
-    "history_limited_rate": 0.0048,
+    "history_limited_rate": 0.0,
     "neutral_momentum_launch_approved": false,
     "requires_route_gate": true,
     "status": "candidate_ready"
@@ -182,7 +191,7 @@
     "kind": "comparison_only",
     "manual_approval_recorded": true,
     "manual_approval_required_for_candidate_ready": true,
-    "prior_approval_reused": false
+    "prior_approval_reused": true
   },
   "valucast_top": [
     {
@@ -194,42 +203,10 @@
       "score": 74.5
     },
     {
-      "age": 18,
-      "level": "A",
-      "name": "Brady Ebel",
-      "rank": 2,
-      "reason": "ValuCast score momentum",
-      "score": 74.2
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Hayden Alvarez",
-      "rank": 3,
-      "reason": "Still in the buy window",
-      "score": 71.0
-    },
-    {
-      "age": 20,
-      "level": "A+",
-      "name": "Boston Bateman",
-      "rank": 4,
-      "reason": "ValuCast score momentum",
-      "score": 70.3
-    },
-    {
-      "age": 21,
-      "level": "A",
-      "name": "Malachi Witherspoon",
-      "rank": 5,
-      "reason": "ValuCast score momentum",
-      "score": 69.5
-    },
-    {
       "age": 19,
       "level": "A+",
       "name": "Justin Gonzales",
-      "rank": 6,
+      "rank": 2,
       "reason": "Still in the buy window",
       "score": 68.0
     },
@@ -237,7 +214,7 @@
       "age": 18,
       "level": "A+",
       "name": "Eli Willits",
-      "rank": 7,
+      "rank": 3,
       "reason": "Young runway",
       "score": 67.2
     },
@@ -245,7 +222,7 @@
       "age": 19,
       "level": "A",
       "name": "Xavier Neyens",
-      "rank": 8,
+      "rank": 4,
       "reason": "ValuCast score momentum",
       "score": 66.9
     },
@@ -253,7 +230,7 @@
       "age": 22,
       "level": "A+",
       "name": "Riley Quick",
-      "rank": 9,
+      "rank": 5,
       "reason": "ValuCast score momentum",
       "score": 65.4
     },
@@ -261,7 +238,7 @@
       "age": 23,
       "level": "AA",
       "name": "Khal Stephen",
-      "rank": 10,
+      "rank": 6,
       "reason": "ValuCast score momentum",
       "score": 64.3
     },
@@ -269,7 +246,7 @@
       "age": 20,
       "level": "A+",
       "name": "Felnin Celesten",
-      "rank": 11,
+      "rank": 7,
       "reason": "Still in the buy window",
       "score": 64.3
     },
@@ -277,23 +254,15 @@
       "age": 19,
       "level": "A+",
       "name": "Tate Southisene",
-      "rank": 12,
+      "rank": 8,
       "reason": "Still in the buy window",
       "score": 64.2
-    },
-    {
-      "age": 20,
-      "level": "A+",
-      "name": "Jose Urbina",
-      "rank": 13,
-      "reason": "ValuCast score momentum",
-      "score": 64.1
     },
     {
       "age": 19,
       "level": "A",
       "name": "JoJo Parker",
-      "rank": 14,
+      "rank": 9,
       "reason": "Young runway",
       "score": 63.9
     },
@@ -301,9 +270,49 @@
       "age": 22,
       "level": "AA",
       "name": "Alfonsin Rosario",
-      "rank": 15,
+      "rank": 10,
       "reason": "ValuCast score momentum",
       "score": 63.5
+    },
+    {
+      "age": 21,
+      "level": "AAA",
+      "name": "Walker Jenkins",
+      "rank": 11,
+      "reason": "Availability priced",
+      "score": 63.0
+    },
+    {
+      "age": 18,
+      "level": "A",
+      "name": "Juneiker Caceres",
+      "rank": 12,
+      "reason": "Young runway",
+      "score": 62.9
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Roldy Brito",
+      "rank": 13,
+      "reason": "Young runway",
+      "score": 62.6
+    },
+    {
+      "age": 23,
+      "level": "AAA",
+      "name": "Ryan Waldschmidt",
+      "rank": 14,
+      "reason": "ValuCast score momentum",
+      "score": 61.4
+    },
+    {
+      "age": 18,
+      "level": "A",
+      "name": "Kevin Alvarez",
+      "rank": 15,
+      "reason": "Young runway",
+      "score": 60.9
     }
   ]
 }

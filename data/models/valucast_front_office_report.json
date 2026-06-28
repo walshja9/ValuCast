@@ -39,6 +39,11 @@
           "current": 6,
           "metric": "observation_span_days",
           "required": 14
+        },
+        {
+          "current": 0.375,
+          "metric": "latest_top40_buy_retention_rate",
+          "required": 0.45
         }
       ],
       "next_target_grade": "A-",
@@ -50,12 +55,12 @@
       "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.8,
+    "latest_buy_retention_rate": 0.375,
     "latest_rank_bucket_count": 14,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-06-28T14:27:03.397962+00:00",
+  "generated_at": "2026-06-28T15:20:57.489507+00:00",
   "next_build_order": [
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
     "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -100,7 +105,7 @@
         "quality_governor_ready": false,
         "row_count": 3661,
         "surface_readiness": {
-          "buys": false,
+          "buys": true,
           "dynasty": true,
           "prospects": false
         }
@@ -112,7 +117,7 @@
     },
     {
       "evidence": {
-        "buy_monitor_ready": true,
+        "buy_monitor_ready": false,
         "duplicate_identity_count": 0,
         "milb_stat_freshness_ready": false,
         "pipeline_observability_ready": true,
@@ -166,7 +171,7 @@
       "evidence": {
         "buy_comparison_count": 6,
         "buy_comparisons_needed": 1,
-        "buys_monitor_status": "collecting",
+        "buys_monitor_status": "blocked",
         "cap_reasons": [
           "Forward observations are not review-ready yet."
         ],
@@ -208,6 +213,11 @@
                 "current": 6,
                 "metric": "observation_span_days",
                 "required": 30
+              },
+              {
+                "current": 0.375,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.55
               }
             ],
             "passed": false
@@ -232,6 +242,11 @@
                 "current": 6,
                 "metric": "observation_span_days",
                 "required": 60
+              },
+              {
+                "current": 0.375,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.6
               }
             ],
             "passed": false
@@ -256,6 +271,11 @@
                 "current": 6,
                 "metric": "observation_span_days",
                 "required": 14
+              },
+              {
+                "current": 0.375,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.45
               }
             ],
             "passed": false
