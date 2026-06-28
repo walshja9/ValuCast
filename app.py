@@ -1130,7 +1130,7 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None, noun="Pros
         '<path d="M828 70 C912 30 996 28 1052 64" fill="none" stroke="#34e2c4" stroke-width="3" opacity=".55"/>',
         '<path d="M828 100 C916 60 996 58 1052 92" fill="none" stroke="#1c7a6c" stroke-width="2" opacity=".5"/>',
         '<text x="64" y="58" fill="#34e2c4" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="4">VALUCAST</text>',
-        '<text x="64" y="90" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="0">Ahead of the Curve</text>',
+        '<text x="64" y="90" fill="#9197a6" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="0">Top Prospects</text>',
         f'<text x="68" y="174" fill="#e8e9ee" font-family="Space Grotesk,system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="32" font-weight="600">{escape(title)}</text>',
         f'<text x="68" y="207" fill="#9197a6" font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="500">Filtered from the current prospect board | Updated {escape(updated)}</text>',
     ]
@@ -1342,7 +1342,7 @@ def _prospect_graphic_png(
         subtitle = f"{subtitle} | {search}"
     if subtitle_date:
         subtitle = f"{subtitle} - {subtitle_date}"
-    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, tagline="Top Prospects")
 
     def draw_dense_prospect_grid(
         grid_rows,
@@ -1585,19 +1585,20 @@ def _graphic_fill_background(img):
         )
 
 
-def _graphic_header(img, draw, *, headline, subtitle, extra_line=None):
+def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve"):
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
     green = _GRAPHIC_PALETTE["green"]
 
     # Compact brand lockup, not a billboard — this is an exported app surface.
-    # "Ahead of the Curve" brands the graphic without dominating the player.
-    # (headline arg kept for call-site compatibility; the tagline is fixed.)
+    # The tagline brands the graphic without dominating it; defaults to "Ahead of
+    # the Curve" (the buys brand), overridden per board (e.g. "Top Prospects").
+    # (headline arg kept for call-site compatibility.)
     draw.arc((792, 26, 1052, 250), start=200, end=300, fill=(52, 226, 196), width=3)
     draw.arc((792, 48, 1052, 228), start=204, end=296, fill=(28, 120, 108), width=2)
     _paste_brand_mark(img, 48, 42, size=52)
     draw.text((116, 48), "VALUCAST", fill=green, font=_graphic_font(28, bold=True))
-    draw.text((118, 86), "Ahead of the Curve", fill=muted, font=_graphic_font(18, bold=True))
+    draw.text((118, 86), tagline, fill=muted, font=_graphic_font(18, bold=True))
     sub_font = _graphic_font(22)
     draw.text((48, 152), _graphic_fit_text(draw, subtitle, sub_font, 940), fill=text, font=sub_font)
     if extra_line:
