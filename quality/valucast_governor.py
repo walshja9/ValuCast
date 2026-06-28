@@ -52,7 +52,16 @@ BOARD_CHECK_SURFACES = {
     SURFACE_PROSPECTS,
     SURFACE_BOTH,
 }
-BUY_IRRELEVANT_BOARD_CHECK_IDS = {"prospect_top_board_role_shape"}
+# Board checks that gate the PROSPECTS surface / public snapshot but NOT the BUYS
+# surface: the buys are a separate, corroboration-filtered list, so the main board's
+# pitcher-shape lean and its top-50 card freshness/data audits (which can fire on a
+# single non-buy prospect, e.g. an injured player on a prior-year line) should not
+# block buys. Buys are gated on their own quality (corroboration + buy promotion gate).
+BUY_IRRELEVANT_BOARD_CHECK_IDS = {
+    "prospect_top_board_role_shape",
+    "milb_stat_freshness_audit",
+    "prospect_card_data_audit",
+}
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25

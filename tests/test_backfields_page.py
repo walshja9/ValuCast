@@ -105,7 +105,13 @@ def test_primary_nav_uses_backfields_as_prospect_hub():
 
 
 def test_backfields_hides_held_buys_but_keeps_scouting_deep_link():
-    response, html = _html("/backfields")
+    # Held-path coverage: with the AOTC hold ON, /buys is suppressed on backfields.
+    original = app_module.AHEAD_OF_THE_CURVE_HOLD
+    app_module.AHEAD_OF_THE_CURVE_HOLD = True
+    try:
+        response, html = _html("/backfields")
+    finally:
+        app_module.AHEAD_OF_THE_CURVE_HOLD = original
 
     assert response.status_code == 200
     assert 'href="/buys"' not in html
@@ -118,7 +124,8 @@ def test_backfields_section_anchors_present():
     assert response.status_code == 200
     for anchor in ("rankings", "call-up-desk", "stats", "team-boards"):
         assert f'id="{anchor}"' in html
-    assert 'id="ahead-of-the-curve"' not in html
+    # Buys are live (hold off), so the Ahead-of-the-Curve section is present.
+    assert 'id="ahead-of-the-curve"' in html
 
 
 def test_backfields_warm_css_is_scoped():

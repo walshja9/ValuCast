@@ -491,26 +491,34 @@ class TestDynastyMode(unittest.TestCase):
             self.assertIn("value", payload["players"][0])
 
     def test_buys_share_card_png_and_preview(self):
-        png = self.client.get("/buys/share-card.png")
-        self.assertEqual(png.status_code, 200)
-        self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
-        self.assertIn("image/png", png.content_type)
-        self.assertIn(
-            'filename="valucast-aotc-hold.png"',
-            png.headers.get("Content-Disposition", ""),
-        )
+        # Held-path coverage: the "returns later this week" share card + placeholder
+        # render when the AOTC hold is ON (the live default is now hold off).
+        import app as _app
+        original = _app.AHEAD_OF_THE_CURVE_HOLD
+        _app.AHEAD_OF_THE_CURVE_HOLD = True
+        try:
+            png = self.client.get("/buys/share-card.png")
+            self.assertEqual(png.status_code, 200)
+            self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+            self.assertIn("image/png", png.content_type)
+            self.assertIn(
+                'filename="valucast-aotc-hold.png"',
+                png.headers.get("Content-Disposition", ""),
+            )
 
-        preview = self.client.get("/buys/share-card")
-        self.assertEqual(preview.status_code, 200)
-        self.assertIn(b"Ahead of the Curve", preview.data)
-        self.assertIn(b"returns later this week", preview.data)
-        self.assertIn(b'property="og:image"', preview.data)
-        self.assertIn(b"/buys/share-card.png", preview.data)
+            preview = self.client.get("/buys/share-card")
+            self.assertEqual(preview.status_code, 200)
+            self.assertIn(b"Ahead of the Curve", preview.data)
+            self.assertIn(b"returns later this week", preview.data)
+            self.assertIn(b'property="og:image"', preview.data)
+            self.assertIn(b"/buys/share-card.png", preview.data)
 
-        buys_html = self.client.get("/buys").data
-        self.assertIn(b"/buys/share-card.png", buys_html)
-        self.assertIn(b"Ahead of the Curve returns later this week", buys_html)
-        self.assertNotIn(b'class="buys-row"', buys_html)
+            buys_html = self.client.get("/buys").data
+            self.assertIn(b"/buys/share-card.png", buys_html)
+            self.assertIn(b"Ahead of the Curve returns later this week", buys_html)
+            self.assertNotIn(b'class="buys-row"', buys_html)
+        finally:
+            _app.AHEAD_OF_THE_CURVE_HOLD = original
 
     def test_prospects_graphic_limit_20_filename(self):
         from app import dd_store

@@ -64,7 +64,7 @@ from scouting.mlb_read import build_mlb_scouting_read
 app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
 # Deliberate public hold of the buys/AOTC surface until release; flip to False (and redeploy) to re-enable.
-AHEAD_OF_THE_CURVE_HOLD = True
+AHEAD_OF_THE_CURVE_HOLD = False
 
 
 @app.after_request

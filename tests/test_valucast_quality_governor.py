@@ -652,7 +652,12 @@ def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
     assert blocker not in payload["buy_blockers"]
 
 
-def test_buy_gate_keeps_freshness_blocker_when_pitcher_shape_also_fails():
+def test_buy_gate_decoupled_from_prospect_board_freshness_and_shape():
+    # The pitcher-shape lean AND the top-50 card freshness audit are PROSPECT-board
+    # checks (the freshness one can fire on a single non-buy prospect, e.g. an injured
+    # player on a prior-year line). They block the prospects surface / public snapshot,
+    # but NOT the buys, which are a separate corroboration-filtered list gated on their
+    # own quality.
     prospects = [
         _prospect_row(index, role="pitcher" if index <= 8 else "hitter")
         for index in range(1, 51)
@@ -678,10 +683,14 @@ def test_buy_gate_keeps_freshness_blocker_when_pitcher_shape_also_fails():
 
     shape_blocker = "Top prospect board is too pitcher-heavy for public promotion."
     freshness_blocker = "MiLB prospect-card stat freshness audit blocks public promotion."
+    # Both block the prospects surface and the public snapshot ...
     assert payload["ready_for_public_snapshot"] is False
-    assert payload["ready_for_buys_promotion"] is False
-    assert freshness_blocker in payload["buy_blockers"]
+    assert shape_blocker in payload["surface_blockers"]["prospects"]
+    assert freshness_blocker in payload["surface_blockers"]["prospects"]
+    # ... but neither blocks the buys surface (decoupled).
+    assert payload["ready_for_buys_promotion"] is True
     assert shape_blocker not in payload["buy_blockers"]
+    assert freshness_blocker not in payload["buy_blockers"]
 
 
 def test_quality_governor_blocks_pedigree_only_top50_crowding():
