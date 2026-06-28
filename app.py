@@ -2341,7 +2341,27 @@ def _prospect_player_card_png(row):
             else _hitter_total_row(season_rows)
         )
 
-    width, height = 1080, 1350 + STATS_BLOCK_H
+    # The scouting read is the in-depth report when present; render it in full (plus
+    # the engine's one-line Projection verdict) and grow the card so the narrative
+    # block isn't clipped. Measure now (font metrics are draw-independent) so the
+    # canvas height absorbs the overflow; the no-report case stays pixel-identical.
+    _measure = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    read_font = _graphic_font(22)
+    proj_font = _graphic_font(19)
+    read_lines = _graphic_wrap_read_text(_measure, identity, read_font, 890, max_lines=16)
+    proj_text = str((scouting_report or {}).get("peak_summary") or "").strip()
+    proj_lines = _graphic_wrap_read_text(_measure, proj_text, proj_font, 890, max_lines=3) if proj_text else []
+
+    read_body_bottom = 1120 + len(read_lines) * 31
+    if proj_lines:
+        proj_y0 = read_body_bottom + 10
+        peak_label_y = proj_y0 + len(proj_lines) * 26 + 12
+    else:
+        proj_y0 = read_body_bottom
+        peak_label_y = read_body_bottom + 6
+    read_extra = peak_label_y - 1250  # delta applied to the shape/FG/footer below
+
+    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -2389,25 +2409,33 @@ def _prospect_player_card_png(row):
     rank_text = f"P#{row.prospect_rank}" if row.prospect_rank is not None else f"#{row.dynasty_rank}"
     draw.text((824, 332), rank_text, fill=muted, font=_graphic_font(16, bold=True, mono=True))
 
-    receipt_text = _ahead_of_consensus_receipt_text(context.get("ahead_of_consensus"))
+    receipt = context.get("ahead_of_consensus")
+    receipt_text = _ahead_of_consensus_receipt_text(receipt)
+    receipt_box = (300, 376, 984, 404)
+    receipt_font = _graphic_font(15, bold=True)
     if receipt_text:
-        receipt_font = _graphic_font(15, bold=True)
-        receipt_box = (300, 376, 984, 404)
-        draw.rounded_rectangle(
-            receipt_box,
-            radius=7,
-            fill=(14, 29, 30),
-            outline=(20, 59, 55),
-            width=1,
-        )
+        # Ahead of consensus: the green receipt already carries "vs field ~#Y".
+        draw.rounded_rectangle(receipt_box, radius=7, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
         draw.text(
             (receipt_box[0] + 14, receipt_box[1] + 7),
-            _graphic_fit_text(
-                draw, receipt_text, receipt_font, receipt_box[2] - receipt_box[0] - 28
-            ),
+            _graphic_fit_text(draw, receipt_text, receipt_font, receipt_box[2] - receipt_box[0] - 28),
             fill=green,
             font=receipt_font,
         )
+    else:
+        # No ahead receipt: still show the field's read so the divergence is the story.
+        consensus_value = _card_consensus_value(receipt, fg_scouting)
+        if consensus_value:
+            draw.rounded_rectangle(receipt_box, radius=7, fill=card_2, outline=(44, 46, 54), width=1)
+            label = "CONSENSUS  "
+            draw.text((receipt_box[0] + 14, receipt_box[1] + 7), label, fill=muted, font=receipt_font)
+            lx = receipt_box[0] + 14 + draw.textbbox((0, 0), label, font=receipt_font)[2]
+            draw.text(
+                (lx, receipt_box[1] + 7),
+                _graphic_fit_text(draw, consensus_value, receipt_font, receipt_box[2] - lx - 14),
+                fill=text,
+                font=receipt_font,
+            )
 
     avail_badge = _graphic_availability_badge(row)
     if avail_badge:
@@ -2560,36 +2588,39 @@ def _prospect_player_card_png(row):
                 else:
                     _draw_right_cell(x, row_y, value, value_font, row_fill)
 
-    # Narrative + 20-80 shape
-    draw.rounded_rectangle((48, 1050, 1032, 1342), radius=10, fill=card, outline=border, width=1)
+    # Narrative + 20-80 shape. The read box grows with the full report (read_extra);
+    # everything below shifts down by the same delta so the short-report case is
+    # pixel-identical (read_extra == 0).
+    draw.rounded_rectangle((48, 1050, 1032, 1342 + read_extra), radius=10, fill=card, outline=border, width=1)
     draw.text((74, 1080), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
-    read_font = _graphic_font(22)
-    for idx, line in enumerate(_graphic_wrap_read_text(draw, identity, read_font, 890, max_lines=4)):
+    for idx, line in enumerate(read_lines):
         draw.text((74, 1120 + idx * 31), line, fill=text, font=read_font)
+    for idx, line in enumerate(proj_lines):
+        draw.text((74, proj_y0 + idx * 26), line, fill=muted, font=proj_font)
 
-    draw.text((74, 1250), shape_title, fill=muted, font=_graphic_font(18, bold=True))
+    draw.text((74, 1250 + read_extra), shape_title, fill=muted, font=_graphic_font(18, bold=True))
     for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
-        draw.rounded_rectangle((x, 1278, x + 205, 1324), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
+        draw.rounded_rectangle((x, 1278 + read_extra, x + 205, 1324 + read_extra), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
         grade = int(skill["grade"])
         color = bar_elite if grade >= 60 else bar_low if grade <= 40 else text
-        draw.text((x + 14, 1288), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
-        draw.text((x + 150, 1285), str(grade), fill=color, font=_graphic_font(25, bold=True))
-        draw.text((x + 14, 1306), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
+        draw.text((x + 14, 1288 + read_extra), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
+        draw.text((x + 150, 1285 + read_extra), str(grade), fill=color, font=_graphic_font(25, bold=True))
+        draw.text((x + 14, 1306 + read_extra), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
 
     # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
     # Skipped when the player has no FG board entry.
     if fg_scouting and fg_scouting.get("fv"):
-        draw.rounded_rectangle((48, 1356, 1032, 1482), radius=10, fill=card, outline=border, width=1)
-        draw.text((74, 1370), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
+        draw.rounded_rectangle((48, 1356 + read_extra, 1032, 1482 + read_extra), radius=10, fill=card, outline=border, width=1)
+        draw.text((74, 1370 + read_extra), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
                   fill=muted, font=_graphic_font(14, bold=True))
-        draw.text((74, 1396), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
+        draw.text((74, 1396 + read_extra), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
         org = fg_scouting.get("org")
         org_rk = fg_scouting.get("fg_org_rank")
         if org:
             org_label = f"{org}" + (f" - org #{int(org_rk)}" if org_rk else "")
-            draw.text((74, 1448), org_label, fill=muted, font=_graphic_font(16, mono=True))
+            draw.text((74, 1448 + read_extra), org_label, fill=muted, font=_graphic_font(16, mono=True))
         hit_g = fg_scouting.get("hit_grades") or {}
         pit_g = fg_scouting.get("pitch_grades") or {}
         if hit_g:
@@ -2602,8 +2633,8 @@ def _prospect_player_card_png(row):
         for label, val in tools:
             if not val:
                 continue
-            draw.text((tx, 1394), label, fill=muted, font=_graphic_font(13, bold=True))
-            draw.text((tx, 1414), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
+            draw.text((tx, 1394 + read_extra), label, fill=muted, font=_graphic_font(13, bold=True))
+            draw.text((tx, 1414 + read_extra), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
             tx += 150
 
     source = (
@@ -3984,6 +4015,22 @@ def _ahead_of_consensus_receipt_text(receipt) -> str | None:
     if days_ahead > 0 and receipt.get("ahead_since"):
         text = f"{text} \u00b7 {days_ahead}d early"
     return text
+
+
+def _card_consensus_value(receipt, fg_scouting) -> str | None:
+    """Consensus-rank value for the share card: the multi-board number when ValuCast
+    has one, else an honest 'outside top 100'. We only assert 'outside top 100' when
+    FanGraphs (the deepest public board) also gives no top-100 placement -- otherwise
+    we'd mislabel a player the field actually ranks (FG would list him), so stay
+    silent there."""
+    if isinstance(receipt, dict):
+        try:
+            return f"#{int(receipt.get('consensus_rank'))}"
+        except (TypeError, ValueError):
+            pass
+    if (fg_scouting or {}).get("fg_top100"):
+        return None
+    return "outside top 100"
 
 
 def _format_context_label(value) -> str | None:
