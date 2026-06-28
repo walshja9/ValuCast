@@ -1,15 +1,15 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-27T23:26:32.162298+00:00",
+  "generated_at": "2026-06-28T02:28:10.644218+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
-    "availability_generated_at": "2026-06-27",
+    "availability_generated_at": "2026-06-28",
     "dynasty_layer_artifact": "ValuCast MLB Dynasty Value Layer",
-    "dynasty_layer_generated_at": "2026-06-27",
+    "dynasty_layer_generated_at": "2026-06-28",
     "projection_source": "projections/runs/valucast_hp_2026_v2/projections.json",
     "roster_status_artifact": "valucast_mlb_roster_status",
-    "roster_status_generated_at": "2026-06-27"
+    "roster_status_generated_at": "2026-06-28"
   },
   "profiles": [
     {
@@ -46,8 +46,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 70.35,
-          "track_record_certainty": 39.54
+          "reliability": 70.41,
+          "track_record_certainty": 39.55
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -145,7 +145,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.97,
+          "reliability": 82.05,
           "track_record_certainty": 81.74
         },
         "status": "shadow_observe_only",
@@ -279,7 +279,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 80.6,
+        "confidence_score": 80.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -294,15 +294,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 75.12,
+          "reliability": 75.16,
           "track_record_certainty": 87.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 634.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 661.0,
-          "low": 587.5,
+          "high": 660.9,
+          "low": 587.6,
           "point": 634.9,
           "unit": "PA"
         }
@@ -328,7 +328,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 58.7,
+        "confidence_score": 58.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -344,15 +344,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 78.67,
-          "track_record_certainty": 34.31
+          "reliability": 78.73,
+          "track_record_certainty": 34.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 423.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 437.9,
-          "low": 395.9,
+          "high": 437.8,
+          "low": 396.0,
           "point": 423.0,
           "unit": "PA"
         }
@@ -379,7 +379,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 78.9,
+        "confidence_score": 79.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -395,8 +395,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.06,
-          "track_record_certainty": 75.13
+          "reliability": 82.15,
+          "track_record_certainty": 75.14
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -923,7 +923,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 74.2,
+        "confidence_score": 74.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -938,15 +938,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.07,
-          "track_record_certainty": 70.66
+          "reliability": 77.21,
+          "track_record_certainty": 70.67
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 515.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 535.3,
-          "low": 480.3,
+          "high": 535.2,
+          "low": 480.5,
           "point": 515.8,
           "unit": "PA"
         }
@@ -1120,7 +1120,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 81.9,
+        "confidence_score": 82.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -1136,7 +1136,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.88,
+          "reliability": 76.92,
           "track_record_certainty": 88.1
         },
         "status": "shadow_observe_only",
@@ -1144,7 +1144,7 @@
           "base": 592.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 615.1,
-          "low": 551.4,
+          "low": 551.5,
           "point": 592.5,
           "unit": "PA"
         }
@@ -1728,8 +1728,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 81.49,
-          "track_record_certainty": 12.25
+          "reliability": 81.51,
+          "track_record_certainty": 12.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -1762,7 +1762,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 49.5,
+        "confidence_score": 49.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -1778,15 +1778,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.01,
-          "track_record_certainty": 18.21
+          "reliability": 75.18,
+          "track_record_certainty": 18.27
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 278.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 289.5,
-          "low": 257.2,
+          "high": 289.4,
+          "low": 257.3,
           "point": 278.0,
           "unit": "PA"
         }
@@ -1828,8 +1828,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.82,
-          "track_record_certainty": 68.9
+          "reliability": 81.87,
+          "track_record_certainty": 68.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -2562,7 +2562,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 78.3,
+        "confidence_score": 78.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -2577,8 +2577,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.42,
-          "track_record_certainty": 75.81
+          "reliability": 80.45,
+          "track_record_certainty": 75.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -2972,7 +2972,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 73.93,
+          "reliability": 73.97,
           "track_record_certainty": 56.13
         },
         "status": "shadow_observe_only",
@@ -2980,7 +2980,7 @@
           "base": 476.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 497.4,
-          "low": 439.6,
+          "low": 439.7,
           "point": 476.9,
           "unit": "PA"
         }
@@ -3021,7 +3021,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 78.68,
+          "reliability": 78.71,
           "track_record_certainty": 75.86
         },
         "status": "shadow_observe_only",
@@ -3119,8 +3119,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 82.38,
-          "track_record_certainty": 61.74
+          "reliability": 82.42,
+          "track_record_certainty": 61.75
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -3253,7 +3253,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 69.1,
+        "confidence_score": 69.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -3269,15 +3269,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 61.43,
+          "reliability": 61.63,
           "track_record_certainty": 78.55
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 278.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 296.2,
-          "low": 246.3,
+          "high": 296.1,
+          "low": 246.4,
           "point": 278.5,
           "unit": "PA"
         }
@@ -3319,8 +3319,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.05,
-          "track_record_certainty": 68.8
+          "reliability": 80.13,
+          "track_record_certainty": 68.81
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -3766,15 +3766,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.96,
-          "track_record_certainty": 67.58
+          "reliability": 78.02,
+          "track_record_certainty": 67.59
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 522.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 541.6,
-          "low": 488.0,
+          "low": 488.1,
           "point": 522.6,
           "unit": "PA"
         }
@@ -3998,7 +3998,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 70.8,
+        "confidence_score": 70.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -4013,15 +4013,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 61.85,
+          "reliability": 61.95,
           "track_record_certainty": 81.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 491.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 522.8,
-          "low": 435.5,
+          "high": 522.7,
+          "low": 435.7,
           "point": 491.8,
           "unit": "PA"
         }
@@ -4298,7 +4298,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 83.4,
+        "confidence_score": 83.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -4313,15 +4313,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.8,
+          "reliability": 79.91,
           "track_record_certainty": 87.78
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 526.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 544.4,
-          "low": 494.9,
+          "high": 544.3,
+          "low": 495.0,
           "point": 526.8,
           "unit": "PA"
         }
@@ -4411,7 +4411,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.84,
+          "reliability": 79.87,
           "track_record_certainty": 88.46
         },
         "status": "shadow_observe_only",
@@ -4943,7 +4943,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 74.0,
+        "confidence_score": 74.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -4958,15 +4958,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 72.12,
+          "reliability": 72.22,
           "track_record_certainty": 76.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 485.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 507.7,
-          "low": 444.8,
+          "high": 507.6,
+          "low": 444.9,
           "point": 485.4,
           "unit": "PA"
         }
@@ -5158,15 +5158,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.05,
-          "track_record_certainty": 80.43
+          "reliability": 77.16,
+          "track_record_certainty": 80.44
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 423.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 439.3,
-          "low": 394.2,
+          "low": 394.3,
           "point": 423.3,
           "unit": "PA"
         }
@@ -5257,15 +5257,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.69,
-          "track_record_certainty": 64.86
+          "reliability": 79.74,
+          "track_record_certainty": 64.87
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 464.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 480.1,
-          "low": 436.2,
+          "high": 480.0,
+          "low": 436.3,
           "point": 464.5,
           "unit": "PA"
         }
@@ -5356,15 +5356,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 79.39,
-          "track_record_certainty": 50.28
+          "reliability": 79.48,
+          "track_record_certainty": 50.3
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 435.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 450.5,
-          "low": 408.8,
+          "low": 408.9,
           "point": 435.7,
           "unit": "PA"
         }
@@ -5849,7 +5849,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.07,
+          "reliability": 82.1,
           "track_record_certainty": 80.6
         },
         "status": "shadow_observe_only",
@@ -6197,15 +6197,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.78,
-          "track_record_certainty": 59.0
+          "reliability": 76.88,
+          "track_record_certainty": 59.01
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 549.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 570.4,
-          "low": 511.1,
+          "low": 511.3,
           "point": 549.4,
           "unit": "PA"
         }
@@ -6395,15 +6395,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.82,
-          "track_record_certainty": 71.93
+          "reliability": 77.95,
+          "track_record_certainty": 71.94
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 615.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 637.8,
-          "low": 574.4,
+          "high": 637.7,
+          "low": 574.6,
           "point": 615.3,
           "unit": "PA"
         }
@@ -6429,7 +6429,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 76.5,
+        "confidence_score": 76.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -6444,7 +6444,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.58,
+          "reliability": 79.61,
           "track_record_certainty": 72.83
         },
         "status": "shadow_observe_only",
@@ -6452,7 +6452,7 @@
           "base": 460.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 475.6,
-          "low": 431.9,
+          "low": 432.0,
           "point": 460.1,
           "unit": "PA"
         }
@@ -6675,7 +6675,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 79.8,
+        "confidence_score": 79.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -6691,15 +6691,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.65,
+          "reliability": 79.76,
           "track_record_certainty": 80.05
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 572.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 591.3,
-          "low": 537.2,
+          "high": 591.2,
+          "low": 537.4,
           "point": 572.1,
           "unit": "PA"
         }
@@ -7023,7 +7023,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 68.9,
+        "confidence_score": 69.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7038,8 +7038,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.49,
-          "track_record_certainty": 53.57
+          "reliability": 81.58,
+          "track_record_certainty": 53.6
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -7072,7 +7072,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 69.1,
+        "confidence_score": 69.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7088,8 +7088,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.33,
-          "track_record_certainty": 54.2
+          "reliability": 81.43,
+          "track_record_certainty": 54.22
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -7138,8 +7138,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 82.93,
-          "track_record_certainty": 53.51
+          "reliability": 83.01,
+          "track_record_certainty": 53.53
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -7420,7 +7420,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 34.2,
+        "confidence_score": 34.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7435,15 +7435,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 57.52,
-          "track_record_certainty": 5.74
+          "reliability": 57.99,
+          "track_record_certainty": 5.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 223.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 238.6,
-          "low": 194.6,
+          "high": 238.5,
+          "low": 194.9,
           "point": 223.0,
           "unit": "PA"
         }
@@ -7619,7 +7619,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 81.5,
+        "confidence_score": 81.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7634,8 +7634,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.68,
-          "track_record_certainty": 81.32
+          "reliability": 81.75,
+          "track_record_certainty": 81.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -7733,14 +7733,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 69.95,
-          "track_record_certainty": 20.91
+          "reliability": 70.01,
+          "track_record_certainty": 20.93
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 310.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 325.4,
+          "high": 325.3,
           "low": 282.1,
           "point": 310.0,
           "unit": "PA"
@@ -7767,7 +7767,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 67.3,
+        "confidence_score": 67.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7782,15 +7782,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.73,
-          "track_record_certainty": 55.84
+          "reliability": 76.84,
+          "track_record_certainty": 55.85
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 405.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 420.6,
-          "low": 376.7,
+          "high": 420.5,
+          "low": 376.9,
           "point": 405.0,
           "unit": "PA"
         }
@@ -7816,7 +7816,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 54.8,
+        "confidence_score": 54.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7831,15 +7831,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.88,
-          "track_record_certainty": 33.93
+          "reliability": 72.09,
+          "track_record_certainty": 33.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 351.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 367.8,
-          "low": 321.8,
+          "high": 367.7,
+          "low": 322.1,
           "point": 351.5,
           "unit": "PA"
         }
@@ -7880,7 +7880,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.22,
+          "reliability": 81.29,
           "track_record_certainty": 72.62
         },
         "status": "shadow_observe_only",
@@ -7964,7 +7964,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 70.7,
+        "confidence_score": 70.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -7979,15 +7979,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 72.32,
-          "track_record_certainty": 68.83
+          "reliability": 72.52,
+          "track_record_certainty": 68.84
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 342.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 358.6,
-          "low": 314.4,
+          "high": 358.4,
+          "low": 314.6,
           "point": 342.9,
           "unit": "PA"
         }
@@ -8063,7 +8063,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 70.1,
+        "confidence_score": 70.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -8078,15 +8078,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 75.39,
-          "track_record_certainty": 63.71
+          "reliability": 75.55,
+          "track_record_certainty": 63.72
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 523.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 544.8,
-          "low": 484.8,
+          "high": 544.6,
+          "low": 485.1,
           "point": 523.5,
           "unit": "PA"
         }
@@ -8578,7 +8578,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.08,
+          "reliability": 82.12,
           "track_record_certainty": 84.27
         },
         "status": "shadow_observe_only",
@@ -8729,7 +8729,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.35,
+          "reliability": 77.38,
           "track_record_certainty": 85.01
         },
         "status": "shadow_observe_only",
@@ -9011,7 +9011,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 36.5,
+        "confidence_score": 36.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9026,15 +9026,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 61.72,
-          "track_record_certainty": 5.74
+          "reliability": 61.91,
+          "track_record_certainty": 5.79
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 221.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 235.5,
-          "low": 196.1,
+          "high": 235.4,
+          "low": 196.2,
           "point": 221.5,
           "unit": "PA"
         }
@@ -9075,7 +9075,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.21,
+          "reliability": 80.23,
           "track_record_certainty": 84.85
         },
         "status": "shadow_observe_only",
@@ -9406,7 +9406,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.7,
+        "confidence_score": 50.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9421,15 +9421,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.17,
-          "track_record_certainty": 25.76
+          "reliability": 71.34,
+          "track_record_certainty": 25.8
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 347.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 363.5,
-          "low": 317.0,
+          "high": 363.4,
+          "low": 317.2,
           "point": 347.0,
           "unit": "PA"
         }
@@ -9470,15 +9470,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.44,
+          "reliability": 77.51,
           "track_record_certainty": 79.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 498.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 517.5,
-          "low": 465.1,
+          "high": 517.4,
+          "low": 465.2,
           "point": 498.9,
           "unit": "PA"
         }
@@ -9604,7 +9604,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 78.1,
+        "confidence_score": 78.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9619,7 +9619,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.14,
+          "reliability": 82.22,
           "track_record_certainty": 73.26
         },
         "status": "shadow_observe_only",
@@ -9716,15 +9716,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 79.1,
-          "track_record_certainty": 50.65
+          "reliability": 79.13,
+          "track_record_certainty": 50.66
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 442.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 458.0,
-          "low": 414.9,
+          "high": 457.9,
+          "low": 415.0,
           "point": 442.7,
           "unit": "PA"
         }
@@ -9848,7 +9848,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 63.8,
+        "confidence_score": 63.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9864,15 +9864,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 59.24,
+          "reliability": 59.35,
           "track_record_certainty": 69.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 465.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 496.9,
-          "low": 408.7,
+          "high": 496.8,
+          "low": 408.8,
           "point": 465.6,
           "unit": "PA"
         }
@@ -9898,7 +9898,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.6,
+        "confidence_score": 66.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -9913,8 +9913,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.47,
-          "track_record_certainty": 49.62
+          "reliability": 80.57,
+          "track_record_certainty": 49.64
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -10359,7 +10359,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.18,
+          "reliability": 82.2,
           "track_record_certainty": 79.6
         },
         "status": "shadow_observe_only",
@@ -10658,14 +10658,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.31,
-          "track_record_certainty": 67.91
+          "reliability": 79.34,
+          "track_record_certainty": 67.92
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 549.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 568.4,
+          "high": 568.3,
           "low": 515.5,
           "point": 549.6,
           "unit": "PA"
@@ -10988,7 +10988,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 43.7,
+        "confidence_score": 43.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -11004,15 +11004,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 65.79,
-          "track_record_certainty": 16.64
+          "reliability": 66.02,
+          "track_record_certainty": 16.69
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 277.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 293.2,
-          "low": 249.0,
+          "high": 293.1,
+          "low": 249.2,
           "point": 277.5,
           "unit": "PA"
         }
@@ -11189,7 +11189,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 61.2,
+        "confidence_score": 61.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -11204,15 +11204,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.16,
-          "track_record_certainty": 45.44
+          "reliability": 74.24,
+          "track_record_certainty": 45.46
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 345.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 359.9,
-          "low": 318.4,
+          "low": 318.5,
           "point": 345.2,
           "unit": "PA"
         }
@@ -11303,7 +11303,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.77,
+          "reliability": 81.84,
           "track_record_certainty": 82.22
         },
         "status": "shadow_observe_only",
@@ -11552,8 +11552,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.83,
-          "track_record_certainty": 64.6
+          "reliability": 80.86,
+          "track_record_certainty": 64.61
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -11601,7 +11601,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.96,
+          "reliability": 82.0,
           "track_record_certainty": 84.0
         },
         "status": "shadow_observe_only",
@@ -11784,7 +11784,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 43.7,
+        "confidence_score": 43.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -11800,8 +11800,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 62.66,
-          "track_record_certainty": 20.57
+          "reliability": 62.75,
+          "track_record_certainty": 20.59
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -12147,7 +12147,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.85,
+          "reliability": 81.94,
           "track_record_certainty": 90.52
         },
         "status": "shadow_observe_only",
@@ -12580,7 +12580,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.5,
+        "confidence_score": 62.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12595,15 +12595,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.05,
-          "track_record_certainty": 43.53
+          "reliability": 78.18,
+          "track_record_certainty": 43.56
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 481.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 498.5,
-          "low": 449.4,
+          "high": 498.4,
+          "low": 449.6,
           "point": 481.1,
           "unit": "PA"
         }
@@ -12778,7 +12778,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.6,
+        "confidence_score": 62.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12794,15 +12794,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.15,
-          "track_record_certainty": 53.3
+          "reliability": 70.44,
+          "track_record_certainty": 53.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 452.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 474.6,
-          "low": 411.8,
+          "high": 474.4,
+          "low": 412.2,
           "point": 452.3,
           "unit": "PA"
         }
@@ -12927,7 +12927,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 34.2,
+        "confidence_score": 34.4,
         "delta_vs_v1_role": "shift:part_time_or_strong_side->bench_or_depth",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -12943,15 +12943,15 @@
           "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 59.8,
-          "track_record_certainty": 20.8
+          "reliability": 60.01,
+          "track_record_certainty": 20.83
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 274.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 286.2,
-          "low": 206.0,
+          "high": 286.1,
+          "low": 206.2,
           "point": 257.7,
           "unit": "PA"
         }
@@ -13028,7 +13028,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 52.3,
+        "confidence_score": 52.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13043,15 +13043,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.44,
-          "track_record_certainty": 28.89
+          "reliability": 71.55,
+          "track_record_certainty": 28.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 351.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 368.2,
-          "low": 321.5,
+          "high": 368.1,
+          "low": 321.6,
           "point": 351.6,
           "unit": "PA"
         }
@@ -13275,7 +13275,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 69.5,
+        "confidence_score": 69.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13291,8 +13291,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.9,
-          "track_record_certainty": 54.43
+          "reliability": 81.99,
+          "track_record_certainty": 54.45
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -13524,7 +13524,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 43.2,
+        "confidence_score": 43.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -13539,15 +13539,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 70.1,
-          "track_record_certainty": 10.41
+          "reliability": 70.34,
+          "track_record_certainty": 10.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 232.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 244.0,
-          "low": 211.6,
+          "high": 243.9,
+          "low": 211.8,
           "point": 232.5,
           "unit": "PA"
         }
@@ -13638,8 +13638,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 82.55,
-          "track_record_certainty": 37.3
+          "reliability": 82.59,
+          "track_record_certainty": 37.32
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -13688,14 +13688,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.13,
+          "reliability": 77.17,
           "track_record_certainty": 61.79
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 436.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 452.7,
+          "high": 452.6,
           "low": 406.3,
           "point": 436.2,
           "unit": "PA"
@@ -14074,7 +14074,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 54.6,
+        "confidence_score": 54.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -14089,15 +14089,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 72.09,
-          "track_record_certainty": 33.3
+          "reliability": 72.35,
+          "track_record_certainty": 33.36
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 374.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 391.4,
-          "low": 342.9,
+          "high": 391.3,
+          "low": 343.2,
           "point": 374.2,
           "unit": "PA"
         }
@@ -14584,7 +14584,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.47,
+          "reliability": 81.52,
           "track_record_certainty": 83.35
         },
         "status": "shadow_observe_only",
@@ -14930,8 +14930,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.05,
-          "track_record_certainty": 76.71
+          "reliability": 81.13,
+          "track_record_certainty": 76.72
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -15015,7 +15015,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.9,
+        "confidence_score": 51.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15030,15 +15030,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 67.63,
-          "track_record_certainty": 30.4
+          "reliability": 67.9,
+          "track_record_certainty": 30.44
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 374.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 394.6,
-          "low": 338.2,
+          "high": 394.4,
+          "low": 338.5,
           "point": 374.6,
           "unit": "PA"
         }
@@ -15064,7 +15064,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.6,
+        "confidence_score": 40.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15079,15 +15079,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 60.91,
-          "track_record_certainty": 15.77
+          "reliability": 61.41,
+          "track_record_certainty": 15.86
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 233.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 248.8,
-          "low": 206.3,
+          "high": 248.6,
+          "low": 206.6,
           "point": 233.7,
           "unit": "PA"
         }
@@ -15163,7 +15163,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.8,
+        "confidence_score": 40.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15178,15 +15178,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 54.32,
-          "track_record_certainty": 24.32
+          "reliability": 54.46,
+          "track_record_certainty": 24.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 207.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 222.6,
-          "low": 178.6,
+          "low": 178.7,
           "point": 207.0,
           "unit": "PA"
         }
@@ -15459,7 +15459,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 50.0,
+        "confidence_score": 50.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15475,15 +15475,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 64.11,
-          "track_record_certainty": 32.65
+          "reliability": 64.36,
+          "track_record_certainty": 32.69
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 418.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 443.3,
-          "low": 373.4,
+          "high": 443.1,
+          "low": 373.8,
           "point": 418.5,
           "unit": "PA"
         }
@@ -15525,14 +15525,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.74,
-          "track_record_certainty": 53.02
+          "reliability": 72.79,
+          "track_record_certainty": 53.03
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 433.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 452.6,
+          "high": 452.5,
           "low": 397.7,
           "point": 433.1,
           "unit": "PA"
@@ -15708,7 +15708,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 84.2,
+        "confidence_score": 84.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15724,7 +15724,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.37,
+          "reliability": 82.39,
           "track_record_certainty": 86.53
         },
         "status": "shadow_observe_only",
@@ -15758,7 +15758,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 61.9,
+        "confidence_score": 62.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15774,15 +15774,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 65.31,
-          "track_record_certainty": 57.75
+          "reliability": 65.47,
+          "track_record_certainty": 57.76
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 410.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 433.8,
-          "low": 367.6,
+          "high": 433.7,
+          "low": 367.8,
           "point": 410.3,
           "unit": "PA"
         }
@@ -15908,7 +15908,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 68.7,
+        "confidence_score": 68.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15923,8 +15923,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.67,
-          "track_record_certainty": 52.82
+          "reliability": 81.76,
+          "track_record_certainty": 52.85
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -15957,7 +15957,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 69.1,
+        "confidence_score": 69.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -15972,15 +15972,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.0,
-          "track_record_certainty": 60.72
+          "reliability": 76.15,
+          "track_record_certainty": 60.74
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 360.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 374.8,
-          "low": 334.5,
+          "high": 374.7,
+          "low": 334.7,
           "point": 360.5,
           "unit": "PA"
         }
@@ -16319,15 +16319,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 69.76,
-          "track_record_certainty": 61.81
+          "reliability": 69.82,
+          "track_record_certainty": 61.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 357.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 375.8,
-          "low": 325.4,
+          "high": 375.7,
+          "low": 325.5,
           "point": 357.9,
           "unit": "PA"
         }
@@ -17095,7 +17095,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 58.4,
+        "confidence_score": 58.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -17110,8 +17110,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 80.89,
-          "track_record_certainty": 30.87
+          "reliability": 81.01,
+          "track_record_certainty": 30.92
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -17344,7 +17344,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 59.9,
+        "confidence_score": 60.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -17360,15 +17360,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.21,
-          "track_record_certainty": 47.39
+          "reliability": 70.27,
+          "track_record_certainty": 47.4
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 545.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 572.1,
-          "low": 496.6,
+          "high": 572.0,
+          "low": 496.7,
           "point": 545.3,
           "unit": "PA"
         }
@@ -17394,7 +17394,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 68.3,
+        "confidence_score": 68.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -17410,15 +17410,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 56.58,
+          "reliability": 56.71,
           "track_record_certainty": 82.64
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 476.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 511.1,
-          "low": 414.8,
+          "high": 511.0,
+          "low": 415.0,
           "point": 476.9,
           "unit": "PA"
         }
@@ -17642,7 +17642,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 71.2,
+        "confidence_score": 71.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -17657,7 +17657,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 72.11,
+          "reliability": 72.21,
           "track_record_certainty": 70.17
         },
         "status": "shadow_observe_only",
@@ -17665,7 +17665,7 @@
           "base": 402.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 420.9,
-          "low": 368.7,
+          "low": 368.9,
           "point": 402.4,
           "unit": "PA"
         }
@@ -18052,15 +18052,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.48,
+          "reliability": 70.54,
           "track_record_certainty": 55.82
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 477.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 501.0,
-          "low": 435.4,
+          "high": 500.9,
+          "low": 435.5,
           "point": 477.7,
           "unit": "PA"
         }
@@ -18102,7 +18102,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 70.83,
+          "reliability": 70.94,
           "track_record_certainty": 74.29
         },
         "status": "shadow_observe_only",
@@ -18110,7 +18110,7 @@
           "base": 343.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 359.7,
-          "low": 313.2,
+          "low": 313.3,
           "point": 343.2,
           "unit": "PA"
         }
@@ -18136,7 +18136,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 72.7,
+        "confidence_score": 72.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -18152,15 +18152,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 75.01,
-          "track_record_certainty": 69.97
+          "reliability": 75.17,
+          "track_record_certainty": 69.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 420.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 437.7,
-          "low": 388.9,
+          "high": 437.6,
+          "low": 389.1,
           "point": 420.4,
           "unit": "PA"
         }
@@ -18451,8 +18451,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.08,
-          "track_record_certainty": 64.95
+          "reliability": 82.15,
+          "track_record_certainty": 64.96
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -18949,15 +18949,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 70.99,
-          "track_record_certainty": 70.52
+          "reliability": 71.11,
+          "track_record_certainty": 70.53
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 351.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 368.6,
-          "low": 321.2,
+          "low": 321.3,
           "point": 351.8,
           "unit": "PA"
         }
@@ -19332,7 +19332,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.0,
+        "confidence_score": 40.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19347,15 +19347,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 64.67,
-          "track_record_certainty": 9.89
+          "reliability": 65.08,
+          "track_record_certainty": 9.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 233.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 246.6,
-          "low": 208.3,
+          "high": 246.4,
+          "low": 208.6,
           "point": 233.0,
           "unit": "PA"
         }
@@ -19530,7 +19530,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 59.0,
+        "confidence_score": 59.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19546,15 +19546,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 79.02,
-          "track_record_certainty": 34.63
+          "reliability": 79.07,
+          "track_record_certainty": 34.65
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 420.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 435.1,
-          "low": 394.0,
+          "high": 435.0,
+          "low": 394.1,
           "point": 420.5,
           "unit": "PA"
         }
@@ -19629,7 +19629,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 43.9,
+        "confidence_score": 44.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19644,15 +19644,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 66.34,
-          "track_record_certainty": 16.4
+          "reliability": 66.64,
+          "track_record_certainty": 16.47
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 246.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 259.8,
-          "low": 221.2,
+          "high": 259.6,
+          "low": 221.5,
           "point": 246.1,
           "unit": "PA"
         }
@@ -19875,7 +19875,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 66.4,
+        "confidence_score": 66.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19891,8 +19891,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 82.22,
-          "track_record_certainty": 47.06
+          "reliability": 82.3,
+          "track_record_certainty": 47.09
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -20071,7 +20071,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 76.3,
+        "confidence_score": 76.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -20086,15 +20086,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 74.02,
+          "reliability": 74.11,
           "track_record_certainty": 79.18
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 526.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 549.0,
-          "low": 485.4,
+          "high": 548.9,
+          "low": 485.5,
           "point": 526.4,
           "unit": "PA"
         }
@@ -20270,7 +20270,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 77.7,
+        "confidence_score": 77.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -20285,7 +20285,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.77,
+          "reliability": 76.81,
           "track_record_certainty": 78.91
         },
         "status": "shadow_observe_only",
@@ -20966,7 +20966,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 73.1,
+        "confidence_score": 73.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -20981,8 +20981,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.71,
-          "track_record_certainty": 63.89
+          "reliability": 80.74,
+          "track_record_certainty": 63.9
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -21066,7 +21066,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 68.8,
+        "confidence_score": 68.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -21081,8 +21081,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.4,
-          "track_record_certainty": 53.51
+          "reliability": 81.5,
+          "track_record_certainty": 53.53
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -21230,14 +21230,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 71.84,
+          "reliability": 71.9,
           "track_record_certainty": 51.75
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 436.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 456.4,
+          "high": 456.3,
           "low": 399.3,
           "point": 436.1,
           "unit": "PA"
@@ -22763,8 +22763,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.71,
-          "track_record_certainty": 74.9
+          "reliability": 82.79,
+          "track_record_certainty": 74.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -22943,7 +22943,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 30.3,
+        "confidence_score": 30.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -22958,15 +22958,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 50.83,
-          "track_record_certainty": 5.28
+          "reliability": 51.15,
+          "track_record_certainty": 5.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 219.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 236.8,
-          "low": 186.7,
+          "high": 236.7,
+          "low": 186.9,
           "point": 219.0,
           "unit": "PA"
         }
@@ -23106,7 +23106,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.86,
+          "reliability": 81.88,
           "track_record_certainty": 88.68
         },
         "status": "shadow_observe_only",
@@ -23140,7 +23140,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 73.0,
+        "confidence_score": 73.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -23156,15 +23156,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 72.49,
-          "track_record_certainty": 73.57
+          "reliability": 72.69,
+          "track_record_certainty": 73.58
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 441.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 461.9,
-          "low": 405.3,
+          "high": 461.7,
+          "low": 405.6,
           "point": 441.8,
           "unit": "PA"
         }
@@ -23407,14 +23407,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.9,
-          "track_record_certainty": 71.9
+          "reliability": 79.95,
+          "track_record_certainty": 71.91
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 441.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 456.5,
+          "high": 456.4,
           "low": 415.2,
           "point": 441.8,
           "unit": "PA"
@@ -23442,7 +23442,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.7,
+        "confidence_score": 42.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -23457,15 +23457,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 71.76,
-          "track_record_certainty": 7.2
+          "reliability": 71.87,
+          "track_record_certainty": 7.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 218.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 228.7,
-          "low": 200.0,
+          "high": 228.6,
+          "low": 200.1,
           "point": 218.5,
           "unit": "PA"
         }
@@ -23591,7 +23591,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 68.2,
+        "confidence_score": 68.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -23607,15 +23607,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.75,
-          "track_record_certainty": 55.39
+          "reliability": 78.84,
+          "track_record_certainty": 55.41
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 551.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 571.1,
-          "low": 516.6,
+          "low": 516.8,
           "point": 551.8,
           "unit": "PA"
         }
@@ -23790,7 +23790,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 79.9,
+        "confidence_score": 80.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -23806,8 +23806,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.84,
-          "track_record_certainty": 78.78
+          "reliability": 80.96,
+          "track_record_certainty": 78.79
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -23988,7 +23988,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 69.2,
+        "confidence_score": 69.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24003,8 +24003,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.47,
-          "track_record_certainty": 54.26
+          "reliability": 81.51,
+          "track_record_certainty": 54.27
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -24188,7 +24188,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 36.4,
+        "confidence_score": 36.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24203,15 +24203,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 55.9,
-          "track_record_certainty": 12.58
+          "reliability": 56.41,
+          "track_record_certainty": 12.66
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 206.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 221.2,
-          "low": 178.9,
+          "high": 221.0,
+          "low": 179.2,
           "point": 206.2,
           "unit": "PA"
         }
@@ -24435,7 +24435,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.9,
+        "confidence_score": 41.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24450,8 +24450,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 66.76,
-          "track_record_certainty": 9.38
+          "reliability": 66.91,
+          "track_record_certainty": 9.42
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -24535,7 +24535,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 74.3,
+        "confidence_score": 74.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24550,8 +24550,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.46,
-          "track_record_certainty": 70.51
+          "reliability": 77.5,
+          "track_record_certainty": 70.52
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -24633,7 +24633,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 44.2,
+        "confidence_score": 44.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -24648,15 +24648,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 74.29,
-          "track_record_certainty": 7.42
+          "reliability": 74.42,
+          "track_record_certainty": 7.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 213.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 222.6,
-          "low": 197.0,
+          "high": 222.5,
+          "low": 197.1,
           "point": 213.5,
           "unit": "PA"
         }
@@ -24697,8 +24697,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.61,
-          "track_record_certainty": 69.4
+          "reliability": 81.66,
+          "track_record_certainty": 69.41
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -25143,8 +25143,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.75,
-          "track_record_certainty": 34.18
+          "reliability": 76.78,
+          "track_record_certainty": 34.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -25327,7 +25327,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 55.3,
+        "confidence_score": 55.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -25342,15 +25342,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 79.63,
-          "track_record_certainty": 25.64
+          "reliability": 79.74,
+          "track_record_certainty": 25.69
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 328.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 339.5,
-          "low": 308.4,
+          "low": 308.5,
           "point": 328.5,
           "unit": "PA"
         }
@@ -25391,15 +25391,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 73.27,
-          "track_record_certainty": 62.23
+          "reliability": 73.32,
+          "track_record_certainty": 62.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 383.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 400.6,
-          "low": 352.9,
+          "low": 353.0,
           "point": 383.7,
           "unit": "PA"
         }
@@ -26070,7 +26070,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 32.8,
+        "confidence_score": 32.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -26086,15 +26086,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 48.68,
-          "track_record_certainty": 13.37
+          "reliability": 48.85,
+          "track_record_certainty": 13.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 266.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 288.5,
-          "low": 225.0,
+          "high": 288.4,
+          "low": 225.2,
           "point": 266.0,
           "unit": "PA"
         }
@@ -26170,7 +26170,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 82.2,
+        "confidence_score": 82.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -26186,15 +26186,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.8,
-          "track_record_certainty": 87.58
+          "reliability": 77.89,
+          "track_record_certainty": 87.59
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 583.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 604.5,
-          "low": 544.3,
+          "high": 604.4,
+          "low": 544.4,
           "point": 583.1,
           "unit": "PA"
         }
@@ -26585,7 +26585,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 82.19,
+          "reliability": 82.22,
           "track_record_certainty": 49.45
         },
         "status": "shadow_observe_only",
@@ -26733,7 +26733,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.52,
+          "reliability": 81.57,
           "track_record_certainty": 90.08
         },
         "status": "shadow_observe_only",
@@ -27030,15 +27030,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.68,
-          "track_record_certainty": 52.22
+          "reliability": 78.77,
+          "track_record_certainty": 52.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 449.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 465.2,
-          "low": 420.7,
+          "high": 465.1,
+          "low": 420.8,
           "point": 449.4,
           "unit": "PA"
         }
@@ -27230,14 +27230,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.47,
+          "reliability": 77.5,
           "track_record_certainty": 87.73
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 553.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 574.1,
+          "high": 574.0,
           "low": 516.1,
           "point": 553.5,
           "unit": "PA"
@@ -27264,7 +27264,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 70.7,
+        "confidence_score": 70.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -27279,8 +27279,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.61,
-          "track_record_certainty": 58.66
+          "reliability": 80.71,
+          "track_record_certainty": 58.68
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -27377,8 +27377,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.0,
-          "track_record_certainty": 46.56
+          "reliability": 80.05,
+          "track_record_certainty": 46.58
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -27560,7 +27560,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 65.2,
+        "confidence_score": 65.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -27575,15 +27575,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.08,
-          "track_record_certainty": 54.41
+          "reliability": 74.17,
+          "track_record_certainty": 54.43
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 389.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 406.3,
-          "low": 359.3,
+          "high": 406.2,
+          "low": 359.4,
           "point": 389.6,
           "unit": "PA"
         }
@@ -27610,7 +27610,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 38.9,
+        "confidence_score": 39.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -27626,15 +27626,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 47.33,
-          "track_record_certainty": 28.69
+          "reliability": 47.7,
+          "track_record_certainty": 28.72
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 283.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 307.7,
-          "low": 238.4,
+          "high": 307.5,
+          "low": 238.7,
           "point": 283.1,
           "unit": "PA"
         }
@@ -27661,7 +27661,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 61.1,
+        "confidence_score": 61.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -27676,15 +27676,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.48,
-          "track_record_certainty": 47.22
+          "reliability": 72.68,
+          "track_record_certainty": 47.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 353.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 369.3,
-          "low": 324.1,
+          "high": 369.2,
+          "low": 324.3,
           "point": 353.3,
           "unit": "PA"
         }
@@ -28110,7 +28110,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 23.0,
+        "confidence_score": 23.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -28125,15 +28125,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 40.1,
-          "track_record_certainty": 2.15
+          "reliability": 40.81,
+          "track_record_certainty": 2.22
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 204.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 224.2,
-          "low": 167.3,
+          "high": 223.9,
+          "low": 167.8,
           "point": 204.0,
           "unit": "PA"
         }
@@ -28209,7 +28209,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 53.2,
+        "confidence_score": 53.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -28224,15 +28224,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 78.57,
-          "track_record_certainty": 22.29
+          "reliability": 78.69,
+          "track_record_certainty": 22.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 303.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 314.2,
-          "low": 284.0,
+          "low": 284.1,
           "point": 303.5,
           "unit": "PA"
         }
@@ -28472,15 +28472,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 73.82,
-          "track_record_certainty": 60.85
+          "reliability": 73.91,
+          "track_record_certainty": 60.86
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 472.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 492.7,
-          "low": 435.2,
+          "high": 492.6,
+          "low": 435.3,
           "point": 472.3,
           "unit": "PA"
         }
@@ -29118,7 +29118,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.04,
+          "reliability": 81.09,
           "track_record_certainty": 78.4
         },
         "status": "shadow_observe_only",
@@ -29203,7 +29203,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 40.7,
+        "confidence_score": 40.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29219,15 +29219,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 63.59,
-          "track_record_certainty": 12.81
+          "reliability": 63.85,
+          "track_record_certainty": 12.86
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 248.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 263.4,
-          "low": 221.4,
+          "high": 263.3,
+          "low": 221.6,
           "point": 248.5,
           "unit": "PA"
         }
@@ -29317,7 +29317,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.46,
+          "reliability": 80.48,
           "track_record_certainty": 65.87
         },
         "status": "shadow_observe_only",
@@ -29515,15 +29515,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 73.44,
-          "track_record_certainty": 38.28
+          "reliability": 73.49,
+          "track_record_certainty": 38.29
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 328.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 343.1,
-          "low": 302.5,
+          "low": 302.6,
           "point": 328.7,
           "unit": "PA"
         }
@@ -29697,7 +29697,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 68.2,
+        "confidence_score": 68.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29712,15 +29712,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 69.34,
-          "track_record_certainty": 66.75
+          "reliability": 69.59,
+          "track_record_certainty": 66.76
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 532.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 558.9,
-          "low": 483.1,
+          "high": 558.7,
+          "low": 483.5,
           "point": 532.0,
           "unit": "PA"
         }
@@ -29844,7 +29844,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 69.3,
+        "confidence_score": 69.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29860,7 +29860,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.31,
+          "reliability": 78.35,
           "track_record_certainty": 58.38
         },
         "status": "shadow_observe_only",
@@ -29868,7 +29868,7 @@
           "base": 542.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 562.1,
-          "low": 507.4,
+          "low": 507.5,
           "point": 542.7,
           "unit": "PA"
         }
@@ -29894,7 +29894,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 81.8,
+        "confidence_score": 81.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -29909,7 +29909,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.58,
+          "reliability": 81.67,
           "track_record_certainty": 82.15
         },
         "status": "shadow_observe_only",
@@ -30504,8 +30504,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.93,
-          "track_record_certainty": 46.32
+          "reliability": 81.95,
+          "track_record_certainty": 46.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -30702,8 +30702,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.1,
-          "track_record_certainty": 45.55
+          "reliability": 80.18,
+          "track_record_certainty": 45.57
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -30850,8 +30850,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.62,
-          "track_record_certainty": 69.39
+          "reliability": 82.7,
+          "track_record_certainty": 69.4
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -31150,15 +31150,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 55.84,
-          "track_record_certainty": 40.99
+          "reliability": 55.97,
+          "track_record_certainty": 41.0
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 218.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 233.9,
-          "low": 189.1,
+          "high": 233.8,
+          "low": 189.2,
           "point": 218.0,
           "unit": "PA"
         }
@@ -31451,8 +31451,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.9,
-          "track_record_certainty": 62.47
+          "reliability": 81.99,
+          "track_record_certainty": 62.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -31598,7 +31598,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.43,
+          "reliability": 80.48,
           "track_record_certainty": 87.84
         },
         "status": "shadow_observe_only",
@@ -31780,7 +31780,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 53.0,
+        "confidence_score": 53.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -31795,15 +31795,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 72.52,
-          "track_record_certainty": 29.08
+          "reliability": 73.01,
+          "track_record_certainty": 29.13
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 200.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 209.1,
-          "low": 183.5,
+          "high": 208.9,
+          "low": 183.8,
           "point": 200.0,
           "unit": "PA"
         }
@@ -31928,7 +31928,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.7,
+        "confidence_score": 42.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -31944,15 +31944,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 66.46,
-          "track_record_certainty": 13.61
+          "reliability": 66.61,
+          "track_record_certainty": 13.64
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 254.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 268.6,
-          "low": 228.9,
+          "high": 268.5,
+          "low": 229.0,
           "point": 254.5,
           "unit": "PA"
         }
@@ -32290,15 +32290,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.97,
-          "track_record_certainty": 73.07
+          "reliability": 80.05,
+          "track_record_certainty": 73.08
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 600.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 620.3,
-          "low": 564.4,
+          "low": 564.5,
           "point": 600.5,
           "unit": "PA"
         }
@@ -32570,7 +32570,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 68.5,
+        "confidence_score": 68.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -32585,15 +32585,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 66.7,
-          "track_record_certainty": 70.65
+          "reliability": 66.85,
+          "track_record_certainty": 70.66
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 342.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 361.3,
-          "low": 308.3,
+          "high": 361.2,
+          "low": 308.4,
           "point": 342.5,
           "unit": "PA"
         }
@@ -32668,7 +32668,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 56.6,
+        "confidence_score": 56.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -32684,15 +32684,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 60.67,
-          "track_record_certainty": 51.57
+          "reliability": 60.98,
+          "track_record_certainty": 51.59
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 451.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 480.9,
-          "low": 398.3,
+          "high": 480.7,
+          "low": 398.7,
           "point": 451.6,
           "unit": "PA"
         }
@@ -33112,7 +33112,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 48.9,
+        "confidence_score": 49.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33128,8 +33128,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.3,
-          "track_record_certainty": 15.44
+          "reliability": 76.37,
+          "track_record_certainty": 15.47
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -33362,7 +33362,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 36.7,
+        "confidence_score": 36.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -33377,15 +33377,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 59.81,
-          "track_record_certainty": 8.46
+          "reliability": 59.92,
+          "track_record_certainty": 8.49
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 200.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 213.3,
-          "low": 175.9,
+          "high": 213.2,
+          "low": 176.0,
           "point": 200.0,
           "unit": "PA"
         }
@@ -34156,7 +34156,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 80.1,
+        "confidence_score": 80.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34172,7 +34172,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.31,
+          "reliability": 82.33,
           "track_record_certainty": 77.49
         },
         "status": "shadow_observe_only",
@@ -34270,8 +34270,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.36,
-          "track_record_certainty": 84.6
+          "reliability": 82.44,
+          "track_record_certainty": 84.61
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -34354,7 +34354,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 64.6,
+        "confidence_score": 64.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34370,15 +34370,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.95,
-          "track_record_certainty": 51.96
+          "reliability": 75.11,
+          "track_record_certainty": 51.99
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 434.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 451.9,
-          "low": 401.4,
+          "high": 451.8,
+          "low": 401.6,
           "point": 434.0,
           "unit": "PA"
         }
@@ -34569,8 +34569,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.27,
-          "track_record_certainty": 75.49
+          "reliability": 82.31,
+          "track_record_certainty": 75.5
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -34802,7 +34802,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.5,
+        "confidence_score": 42.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34818,15 +34818,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 64.24,
-          "track_record_certainty": 15.95
+          "reliability": 64.58,
+          "track_record_certainty": 16.03
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 251.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 266.8,
-          "low": 224.9,
+          "high": 266.6,
+          "low": 225.1,
           "point": 251.9,
           "unit": "PA"
         }
@@ -34852,7 +34852,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 66.3,
+        "confidence_score": 66.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -34867,15 +34867,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.12,
-          "track_record_certainty": 56.68
+          "reliability": 74.3,
+          "track_record_certainty": 56.7
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 355.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 370.2,
-          "low": 327.4,
+          "high": 370.1,
+          "low": 327.6,
           "point": 355.0,
           "unit": "PA"
         }
@@ -34916,7 +34916,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.91,
+          "reliability": 81.0,
           "track_record_certainty": 80.58
         },
         "status": "shadow_observe_only",
@@ -35165,7 +35165,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.47,
+          "reliability": 79.5,
           "track_record_certainty": 70.2
         },
         "status": "shadow_observe_only",
@@ -35173,7 +35173,7 @@
           "base": 537.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 555.3,
-          "low": 504.0,
+          "low": 504.1,
           "point": 537.1,
           "unit": "PA"
         }
@@ -35313,7 +35313,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.37,
+          "reliability": 81.41,
           "track_record_certainty": 83.12
         },
         "status": "shadow_observe_only",
@@ -35347,7 +35347,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 52.0,
+        "confidence_score": 52.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -35362,15 +35362,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 63.99,
-          "track_record_certainty": 37.24
+          "reliability": 64.16,
+          "track_record_certainty": 37.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 301.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 319.2,
-          "low": 268.8,
+          "high": 319.1,
+          "low": 268.9,
           "point": 301.3,
           "unit": "PA"
         }
@@ -36012,8 +36012,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.51,
-          "track_record_certainty": 72.14
+          "reliability": 81.6,
+          "track_record_certainty": 72.15
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -36456,8 +36456,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.2,
-          "track_record_certainty": 52.05
+          "reliability": 81.22,
+          "track_record_certainty": 52.06
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -37496,15 +37496,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 62.74,
-          "track_record_certainty": 43.3
+          "reliability": 62.83,
+          "track_record_certainty": 43.31
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 404.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 429.0,
-          "low": 359.0,
+          "low": 359.1,
           "point": 404.2,
           "unit": "PA"
         }
@@ -37729,7 +37729,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 75.5,
+        "confidence_score": 75.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -37745,15 +37745,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.64,
-          "track_record_certainty": 70.41
+          "reliability": 79.75,
+          "track_record_certainty": 70.42
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 584.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 603.6,
-          "low": 548.3,
+          "high": 603.5,
+          "low": 548.5,
           "point": 584.0,
           "unit": "PA"
         }
@@ -37930,7 +37930,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.0,
+        "confidence_score": 42.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -37945,15 +37945,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 60.12,
-          "track_record_certainty": 19.87
+          "reliability": 60.44,
+          "track_record_certainty": 19.92
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 242.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 258.9,
-          "low": 213.8,
+          "high": 258.8,
+          "low": 214.1,
           "point": 242.9,
           "unit": "PA"
         }
@@ -38078,7 +38078,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 83.4,
+        "confidence_score": 83.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -38093,7 +38093,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 81.84,
+          "reliability": 81.88,
           "track_record_certainty": 85.37
         },
         "status": "shadow_observe_only",
@@ -38626,7 +38626,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 77.5,
+        "confidence_score": 77.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -38641,15 +38641,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 78.73,
+          "reliability": 78.85,
           "track_record_certainty": 75.99
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 490.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 507.7,
-          "low": 459.2,
+          "high": 507.6,
+          "low": 459.4,
           "point": 490.5,
           "unit": "PA"
         }
@@ -38691,15 +38691,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 75.91,
-          "track_record_certainty": 52.33
+          "reliability": 75.95,
+          "track_record_certainty": 52.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 434.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 451.4,
-          "low": 402.7,
+          "high": 451.3,
+          "low": 402.8,
           "point": 434.1,
           "unit": "PA"
         }
@@ -38824,7 +38824,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 64.1,
+        "confidence_score": 64.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -38840,15 +38840,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 66.43,
+          "reliability": 66.51,
           "track_record_certainty": 61.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 456.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 481.5,
-          "low": 410.3,
+          "high": 481.4,
+          "low": 410.4,
           "point": 456.2,
           "unit": "PA"
         }
@@ -39039,8 +39039,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 80.25,
-          "track_record_certainty": 24.28
+          "reliability": 80.36,
+          "track_record_certainty": 24.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -39372,7 +39372,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 69.4,
+        "confidence_score": 69.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -39387,15 +39387,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 64.86,
-          "track_record_certainty": 74.94
+          "reliability": 65.1,
+          "track_record_certainty": 74.95
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 403.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 427.2,
-          "low": 361.2,
+          "high": 427.1,
+          "low": 361.5,
           "point": 403.8,
           "unit": "PA"
         }
@@ -39635,15 +39635,15 @@
           "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 71.66,
-          "track_record_certainty": 52.99
+          "reliability": 71.72,
+          "track_record_certainty": 53.0
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 372.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 382.1,
-          "low": 292.5,
+          "low": 292.6,
           "point": 350.3,
           "unit": "PA"
         }
@@ -39831,7 +39831,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.61,
+          "reliability": 80.71,
           "track_record_certainty": 78.05
         },
         "status": "shadow_observe_only",
@@ -39931,7 +39931,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 82.15,
+          "reliability": 82.17,
           "track_record_certainty": 85.76
         },
         "status": "shadow_observe_only",
@@ -40016,7 +40016,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 62.8,
+        "confidence_score": 62.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40031,15 +40031,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.98,
-          "track_record_certainty": 52.89
+          "reliability": 71.1,
+          "track_record_certainty": 52.9
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 504.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 528.2,
-          "low": 460.2,
+          "high": 528.1,
+          "low": 460.4,
           "point": 504.1,
           "unit": "PA"
         }
@@ -40383,15 +40383,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.57,
-          "track_record_certainty": 15.98
+          "reliability": 75.65,
+          "track_record_certainty": 16.01
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 260.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 271.0,
-          "low": 241.4,
+          "low": 241.5,
           "point": 260.5,
           "unit": "PA"
         }
@@ -40615,7 +40615,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 47.4,
+        "confidence_score": 47.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40630,15 +40630,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 49.48,
-          "track_record_certainty": 44.86
+          "reliability": 49.82,
+          "track_record_certainty": 44.88
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 328.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 356.3,
-          "low": 279.1,
+          "high": 356.1,
+          "low": 279.4,
           "point": 328.9,
           "unit": "PA"
         }
@@ -40664,7 +40664,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 55.4,
+        "confidence_score": 55.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40679,15 +40679,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 72.98,
-          "track_record_certainty": 33.91
+          "reliability": 73.07,
+          "track_record_certainty": 33.93
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 316.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 330.3,
-          "low": 290.6,
+          "low": 290.7,
           "point": 316.2,
           "unit": "PA"
         }
@@ -40912,7 +40912,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 64.2,
+        "confidence_score": 64.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -40928,15 +40928,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.13,
-          "track_record_certainty": 56.9
+          "reliability": 70.31,
+          "track_record_certainty": 56.92
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 470.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 494.0,
-          "low": 428.6,
+          "high": 493.9,
+          "low": 428.9,
           "point": 470.8,
           "unit": "PA"
         }
@@ -41357,7 +41357,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "part-time plate appearances",
       "role_v2": {
-        "confidence_score": 45.3,
+        "confidence_score": 45.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -41372,15 +41372,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 66.69,
-          "track_record_certainty": 19.26
+          "reliability": 66.99,
+          "track_record_certainty": 19.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 291.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 307.5,
-          "low": 262.4,
+          "high": 307.4,
+          "low": 262.6,
           "point": 291.5,
           "unit": "PA"
         }
@@ -41754,7 +41754,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "regular-volume plate appearances",
       "role_v2": {
-        "confidence_score": 64.2,
+        "confidence_score": 64.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -41769,8 +41769,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.07,
-          "track_record_certainty": 44.78
+          "reliability": 80.17,
+          "track_record_certainty": 44.81
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -42019,8 +42019,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 81.68,
-          "track_record_certainty": 57.69
+          "reliability": 81.75,
+          "track_record_certainty": 57.71
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -42054,7 +42054,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 49.6,
+        "confidence_score": 49.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -42070,15 +42070,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.33,
-          "track_record_certainty": 19.35
+          "reliability": 74.55,
+          "track_record_certainty": 19.42
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 253.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 264.5,
-          "low": 234.3,
+          "low": 234.4,
           "point": 253.8,
           "unit": "PA"
         }
@@ -42404,7 +42404,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "600 PA pace",
       "role_v2": {
-        "confidence_score": 81.9,
+        "confidence_score": 82.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -42420,15 +42420,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.86,
+          "reliability": 79.97,
           "track_record_certainty": 84.4
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 581.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 601.1,
-          "low": 546.6,
+          "high": 601.0,
+          "low": 546.8,
           "point": 581.8,
           "unit": "PA"
         }
@@ -43246,7 +43246,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 42.9,
+        "confidence_score": 43.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -43261,15 +43261,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 67.55,
-          "track_record_certainty": 12.83
+          "reliability": 68.24,
+          "track_record_certainty": 12.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 38.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 40.8,
-          "low": 34.9,
+          "high": 40.7,
+          "low": 35.0,
           "point": 38.7,
           "unit": "IP"
         }
@@ -43886,7 +43886,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 62.8,
+        "confidence_score": 63.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -43901,8 +43901,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 70.26,
-          "track_record_certainty": 53.74
+          "reliability": 70.7,
+          "track_record_certainty": 53.76
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -44278,7 +44278,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 53.9,
+        "confidence_score": 54.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -44293,8 +44293,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.93,
-          "track_record_certainty": 26.93
+          "reliability": 76.21,
+          "track_record_certainty": 26.97
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -44969,7 +44969,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.3,
+        "confidence_score": 63.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -44984,15 +44984,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.26,
-          "track_record_certainty": 52.34
+          "reliability": 73.01,
+          "track_record_certainty": 52.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 56.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 59.3,
-          "low": 52.0,
+          "high": 59.2,
+          "low": 52.1,
           "point": 56.7,
           "unit": "IP"
         }
@@ -45757,7 +45757,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 58.6,
+        "confidence_score": 58.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -45772,8 +45772,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 77.38,
-          "track_record_certainty": 35.58
+          "reliability": 77.72,
+          "track_record_certainty": 35.62
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -47036,7 +47036,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 61.5,
+        "confidence_score": 61.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -47051,15 +47051,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 77.14,
-          "track_record_certainty": 42.43
+          "reliability": 77.52,
+          "track_record_certainty": 42.52
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 65.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 68.3,
-          "low": 61.3,
+          "high": 68.2,
+          "low": 61.4,
           "point": 65.8,
           "unit": "IP"
         }
@@ -49394,7 +49394,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 49.0,
+        "confidence_score": 49.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -49409,15 +49409,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 61.95,
-          "track_record_certainty": 33.11
+          "reliability": 62.66,
+          "track_record_certainty": 33.15
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 62.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 66.4,
-          "low": 55.4,
+          "low": 55.5,
           "point": 62.5,
           "unit": "IP"
         }
@@ -49836,7 +49836,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 42.7,
+        "confidence_score": 43.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -49851,8 +49851,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 62.26,
-          "track_record_certainty": 18.82
+          "reliability": 62.96,
+          "track_record_certainty": 18.87
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -51654,7 +51654,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 45.4,
+        "confidence_score": 45.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -51669,8 +51669,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 72.46,
-          "track_record_certainty": 12.33
+          "reliability": 72.58,
+          "track_record_certainty": 12.35
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -53031,7 +53031,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 70.6,
+        "confidence_score": 70.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -53046,7 +53046,7 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 74.45,
+          "reliability": 74.67,
           "track_record_certainty": 66.0
         },
         "status": "shadow_observe_only",
@@ -53179,7 +53179,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 47.3,
+        "confidence_score": 47.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -53194,15 +53194,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 73.53,
-          "track_record_certainty": 15.19
+          "reliability": 73.87,
+          "track_record_certainty": 15.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 17.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 17.8,
-          "low": 15.7,
+          "low": 15.8,
           "point": 17.1,
           "unit": "IP"
         }
@@ -53965,7 +53965,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 69.0,
+        "confidence_score": 69.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -53980,8 +53980,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 76.72,
-          "track_record_certainty": 59.47
+          "reliability": 76.99,
+          "track_record_certainty": 59.48
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -55539,7 +55539,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 50.4,
+        "confidence_score": 50.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -55554,15 +55554,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.02,
-          "track_record_certainty": 19.13
+          "reliability": 76.49,
+          "track_record_certainty": 19.21
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 30.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 31.6,
-          "low": 28.2,
+          "low": 28.3,
           "point": 30.4,
           "unit": "IP"
         }
@@ -56079,7 +56079,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 53.1,
+        "confidence_score": 53.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -56094,15 +56094,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.21,
-          "track_record_certainty": 27.26
+          "reliability": 74.86,
+          "track_record_certainty": 27.34
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 13.9,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 14.5,
-          "low": 12.8,
+          "low": 12.9,
           "point": 13.9,
           "unit": "IP"
         }
@@ -58435,7 +58435,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 30.0,
+        "confidence_score": 30.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -58450,8 +58450,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 50.61,
-          "track_record_certainty": 4.71
+          "reliability": 51.8,
+          "track_record_certainty": 4.77
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -60448,7 +60448,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 57.9,
+        "confidence_score": 58.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -60463,15 +60463,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 73.09,
-          "track_record_certainty": 39.25
+          "reliability": 73.45,
+          "track_record_certainty": 39.28
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 45.6,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 47.6,
-          "low": 41.9,
+          "low": 42.0,
           "point": 45.6,
           "unit": "IP"
         }
@@ -61429,7 +61429,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 52.3,
+        "confidence_score": 52.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -61444,8 +61444,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 77.77,
-          "track_record_certainty": 21.22
+          "reliability": 78.26,
+          "track_record_certainty": 21.3
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -61674,7 +61674,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 38.1,
+        "confidence_score": 38.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -61689,8 +61689,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 62.99,
-          "track_record_certainty": 7.65
+          "reliability": 63.66,
+          "track_record_certainty": 7.71
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -62657,7 +62657,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 62.4,
+        "confidence_score": 62.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -62672,15 +62672,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 78.06,
-          "track_record_certainty": 43.27
+          "reliability": 78.58,
+          "track_record_certainty": 43.39
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 88.8,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 92.0,
-          "low": 83.0,
+          "high": 91.9,
+          "low": 83.1,
           "point": 88.8,
           "unit": "IP"
         }
@@ -63346,7 +63346,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.8,
+        "confidence_score": 64.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -63361,8 +63361,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.59,
-          "track_record_certainty": 48.17
+          "reliability": 76.86,
+          "track_record_certainty": 48.19
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -63445,7 +63445,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 58.1,
+        "confidence_score": 58.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -63460,15 +63460,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.08,
-          "track_record_certainty": 36.22
+          "reliability": 76.46,
+          "track_record_certainty": 36.26
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 51.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 53.5,
-          "low": 47.8,
+          "low": 47.9,
           "point": 51.5,
           "unit": "IP"
         }
@@ -63543,12 +63543,12 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 69.9,
+        "confidence_score": 70.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
         "most_likely_role": "rotation_starter",
-        "role_confidence": "moderate",
+        "role_confidence": "high",
         "role_probabilities": {
           "rotation_starter": 1.0
         },
@@ -63558,8 +63558,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.07,
-          "track_record_certainty": 57.53
+          "reliability": 80.42,
+          "track_record_certainty": 57.59
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -64819,7 +64819,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 53.2,
+        "confidence_score": 53.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -64834,8 +64834,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.68,
-          "track_record_certainty": 27.0
+          "reliability": 74.99,
+          "track_record_certainty": 27.04
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -64868,7 +64868,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
       "role_v2": {
-        "confidence_score": 57.3,
+        "confidence_score": 57.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -64883,8 +64883,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 78.0,
-          "track_record_certainty": 31.9
+          "reliability": 78.24,
+          "track_record_certainty": 31.93
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -65015,7 +65015,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
       "role_v2": {
-        "confidence_score": 61.8,
+        "confidence_score": 62.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -65030,15 +65030,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 69.26,
-          "track_record_certainty": 52.67
+          "reliability": 69.72,
+          "track_record_certainty": 52.68
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 55.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 58.0,
-          "low": 50.1,
+          "low": 50.2,
           "point": 55.2,
           "unit": "IP"
         }
@@ -66244,7 +66244,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 59.0,
+        "confidence_score": 59.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -66259,8 +66259,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.72,
-          "track_record_certainty": 37.41
+          "reliability": 76.84,
+          "track_record_certainty": 37.44
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -66440,7 +66440,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 44.0,
+        "confidence_score": 44.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -66455,8 +66455,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 72.69,
-          "track_record_certainty": 8.98
+          "reliability": 72.81,
+          "track_record_certainty": 9.0
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -68652,7 +68652,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 63.5,
+        "confidence_score": 63.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -68667,15 +68667,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 77.82,
-          "track_record_certainty": 46.1
+          "reliability": 78.18,
+          "track_record_certainty": 46.18
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 104.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 108.0,
-          "low": 97.3,
+          "low": 97.4,
           "point": 104.2,
           "unit": "IP"
         }
@@ -69881,7 +69881,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 71.0,
+        "confidence_score": 71.4,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -69896,15 +69896,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 75.76,
-          "track_record_certainty": 65.28
+          "reliability": 76.35,
+          "track_record_certainty": 65.33
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 138.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 143.8,
-          "low": 128.2,
+          "high": 143.7,
+          "low": 128.5,
           "point": 138.3,
           "unit": "IP"
         }
@@ -70866,7 +70866,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 48.4,
+        "confidence_score": 48.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -70881,15 +70881,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 73.25,
-          "track_record_certainty": 17.96
+          "reliability": 73.87,
+          "track_record_certainty": 18.13
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 57.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 60.2,
-          "low": 53.1,
+          "low": 53.2,
           "point": 57.7,
           "unit": "IP"
         }
@@ -72293,7 +72293,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 70.4,
+        "confidence_score": 70.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -72308,8 +72308,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 80.28,
-          "track_record_certainty": 58.28
+          "reliability": 80.54,
+          "track_record_certainty": 58.32
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -72489,7 +72489,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 76.4,
+        "confidence_score": 76.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -72504,8 +72504,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 80.27,
-          "track_record_certainty": 71.6
+          "reliability": 80.78,
+          "track_record_certainty": 71.64
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -73768,7 +73768,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 74.9,
+        "confidence_score": 75.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -73783,8 +73783,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.03,
-          "track_record_certainty": 72.21
+          "reliability": 77.29,
+          "track_record_certainty": 72.22
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -73964,7 +73964,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 46.4,
+        "confidence_score": 46.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -73979,15 +73979,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.96,
-          "track_record_certainty": 15.1
+          "reliability": 72.73,
+          "track_record_certainty": 15.2
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 43.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 45.0,
-          "low": 39.4,
+          "high": 44.9,
+          "low": 39.5,
           "point": 43.0,
           "unit": "IP"
         }
@@ -74175,8 +74175,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.71,
-          "track_record_certainty": 16.96
+          "reliability": 75.81,
+          "track_record_certainty": 16.98
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -76273,7 +76273,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 59.5,
+        "confidence_score": 59.7,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -76288,8 +76288,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.57,
-          "track_record_certainty": 43.55
+          "reliability": 72.82,
+          "track_record_certainty": 43.57
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -77157,7 +77157,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 32.0,
+        "confidence_score": 32.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -77172,8 +77172,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 55.78,
-          "track_record_certainty": 2.97
+          "reliability": 56.21,
+          "track_record_certainty": 3.04
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -77697,7 +77697,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 55.8,
+        "confidence_score": 55.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -77712,14 +77712,14 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 74.68,
-          "track_record_certainty": 32.62
+          "reliability": 75.0,
+          "track_record_certainty": 32.66
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 51.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 53.7,
+          "high": 53.6,
           "low": 47.6,
           "point": 51.5,
           "unit": "IP"
@@ -78189,7 +78189,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 61.3,
+        "confidence_score": 61.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -78204,8 +78204,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 75.51,
-          "track_record_certainty": 44.04
+          "reliability": 75.81,
+          "track_record_certainty": 44.06
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -78927,7 +78927,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 49.6,
+        "confidence_score": 50.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -78942,15 +78942,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 59.03,
-          "track_record_certainty": 38.03
+          "reliability": 60.12,
+          "track_record_certainty": 38.13
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 101.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 108.6,
-          "low": 89.2,
+          "high": 108.4,
+          "low": 89.5,
           "point": 101.7,
           "unit": "IP"
         }
@@ -80204,7 +80204,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 45.0,
+        "confidence_score": 45.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -80219,8 +80219,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 74.68,
-          "track_record_certainty": 8.73
+          "reliability": 74.89,
+          "track_record_certainty": 8.76
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -80940,7 +80940,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 78.2,
+        "confidence_score": 78.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -80955,8 +80955,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 79.98,
-          "track_record_certainty": 76.0
+          "reliability": 80.48,
+          "track_record_certainty": 76.03
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -81234,7 +81234,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "save/hold leverage",
       "role_v2": {
-        "confidence_score": 62.2,
+        "confidence_score": 62.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -81249,8 +81249,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.34,
-          "track_record_certainty": 47.26
+          "reliability": 74.66,
+          "track_record_certainty": 47.28
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -82214,7 +82214,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 53.0,
+        "confidence_score": 53.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -82229,15 +82229,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 72.52,
-          "track_record_certainty": 29.08
+          "reliability": 73.01,
+          "track_record_certainty": 29.13
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 51.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 53.5,
-          "low": 47.0,
+          "low": 47.1,
           "point": 51.2,
           "unit": "IP"
         }
@@ -82263,7 +82263,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 54.9,
+        "confidence_score": 55.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -82278,8 +82278,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 75.88,
-          "track_record_certainty": 29.32
+          "reliability": 76.26,
+          "track_record_certainty": 29.37
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -83001,7 +83001,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 64.2,
+        "confidence_score": 64.5,
         "delta_vs_v1_role": "shift:rotation_workhorse->rotation_starter",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -83016,15 +83016,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 79.06,
-          "track_record_certainty": 45.93
+          "reliability": 79.54,
+          "track_record_certainty": 46.04
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 134.1,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 138.7,
-          "low": 125.7,
+          "high": 138.6,
+          "low": 125.9,
           "point": 134.1,
           "unit": "IP"
         }
@@ -85769,8 +85769,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.18,
-          "track_record_certainty": 28.59
+          "reliability": 76.28,
+          "track_record_certainty": 28.6
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -87524,7 +87524,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 56.9,
+        "confidence_score": 57.1,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -87539,15 +87539,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 73.43,
-          "track_record_certainty": 36.72
+          "reliability": 73.77,
+          "track_record_certainty": 36.75
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 82.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 86.3,
-          "low": 76.1,
+          "low": 76.2,
           "point": 82.7,
           "unit": "IP"
         }
@@ -87771,7 +87771,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 64.9,
+        "confidence_score": 65.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -87786,15 +87786,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 72.08,
-          "track_record_certainty": 56.22
+          "reliability": 72.46,
+          "track_record_certainty": 56.24
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 51.0,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 53.3,
-          "low": 46.7,
+          "low": 46.8,
           "point": 51.0,
           "unit": "IP"
         }
@@ -88899,7 +88899,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 63.0,
+        "confidence_score": 63.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -88914,8 +88914,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.27,
-          "track_record_certainty": 46.89
+          "reliability": 76.64,
+          "track_record_certainty": 46.92
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -92097,7 +92097,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 50.9,
+        "confidence_score": 51.0,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -92112,8 +92112,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 67.63,
-          "track_record_certainty": 30.4
+          "reliability": 67.9,
+          "track_record_certainty": 30.44
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -94659,7 +94659,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 69.1,
+        "confidence_score": 69.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -94674,15 +94674,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.71,
-          "track_record_certainty": 58.67
+          "reliability": 78.31,
+          "track_record_certainty": 58.75
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 105.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 109.1,
-          "low": 98.2,
+          "high": 109.0,
+          "low": 98.4,
           "point": 105.2,
           "unit": "IP"
         }
@@ -95167,8 +95167,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 78.35,
-          "track_record_certainty": 11.26
+          "reliability": 78.43,
+          "track_record_certainty": 11.28
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -95888,7 +95888,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 57.4,
+        "confidence_score": 57.6,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -95903,8 +95903,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 74.35,
-          "track_record_certainty": 36.78
+          "reliability": 74.56,
+          "track_record_certainty": 36.8
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -96433,7 +96433,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter-leaning volume",
       "role_v2": {
-        "confidence_score": 78.0,
+        "confidence_score": 78.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -96448,15 +96448,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
-          "reliability": 77.02,
-          "track_record_certainty": 79.1
+          "reliability": 77.67,
+          "track_record_certainty": 79.13
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 140.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 146.0,
-          "low": 131.0,
+          "high": 145.9,
+          "low": 131.3,
           "point": 140.7,
           "unit": "IP"
         }
@@ -96580,7 +96580,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 64.7,
+        "confidence_score": 64.9,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -96595,15 +96595,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.56,
-          "track_record_certainty": 50.27
+          "reliability": 76.83,
+          "track_record_certainty": 50.29
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 56.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 58.4,
-          "low": 52.2,
+          "high": 58.3,
+          "low": 52.3,
           "point": 56.2,
           "unit": "IP"
         }
@@ -97266,7 +97266,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 56.1,
+        "confidence_score": 56.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -97281,8 +97281,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 76.79,
-          "track_record_certainty": 30.89
+          "reliability": 77.06,
+          "track_record_certainty": 30.93
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -98460,8 +98460,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 71.62,
-          "track_record_certainty": 28.58
+          "reliability": 71.73,
+          "track_record_certainty": 28.6
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -98692,7 +98692,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 62.6,
+        "confidence_score": 62.8,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -98707,15 +98707,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "partial_track_record",
-          "reliability": 76.51,
-          "track_record_certainty": 45.6
+          "reliability": 76.78,
+          "track_record_certainty": 45.63
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 50.5,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 52.5,
-          "low": 46.9,
+          "high": 52.4,
+          "low": 47.0,
           "point": 50.5,
           "unit": "IP"
         }
@@ -98790,7 +98790,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 47.9,
+        "confidence_score": 48.2,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -98805,8 +98805,8 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
-          "reliability": 69.54,
-          "track_record_certainty": 21.52
+          "reliability": 70.0,
+          "track_record_certainty": 21.57
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
@@ -100166,7 +100166,7 @@
       "projected_volume_unit": "IP",
       "role_basis": "relief volume",
       "role_v2": {
-        "confidence_score": 46.3,
+        "confidence_score": 46.5,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -100181,15 +100181,15 @@
           "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
-          "reliability": 75.1,
-          "track_record_certainty": 11.0
+          "reliability": 75.41,
+          "track_record_certainty": 11.06
         },
         "status": "shadow_observe_only",
         "volume_forecast": {
           "base": 34.3,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
           "high": 35.7,
-          "low": 31.7,
+          "low": 31.8,
           "point": 34.3,
           "unit": "IP"
         }
@@ -101160,9 +101160,9 @@
   "tracker_version": "0.1.0",
   "v2": {
     "confidence_counts": {
-      "high": 200,
+      "high": 201,
       "low": 275,
-      "moderate": 1574
+      "moderate": 1573
     },
     "dynasty_layer_matched_count": 925,
     "feeds_card": false,

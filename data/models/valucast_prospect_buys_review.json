@@ -123,7 +123,7 @@
       "score": 65.9
     }
   ],
-  "generated_at": "2026-06-27T00:00:00+00:00",
+  "generated_at": "2026-06-28T00:00:00+00:00",
   "metrics": {
     "dd_age_distribution": {
       "18": 2,
@@ -142,23 +142,23 @@
     },
     "dd_overlap_context_only": true,
     "dd_top40_count": 40,
-    "history_limited_count": 12,
-    "history_limited_rate": 0.0045,
+    "history_limited_count": 5,
+    "history_limited_rate": 0.0019,
     "max_history_limited_rate": 0.5,
-    "top40_name_overlap_count": 1,
-    "top40_name_overlap_rate": 0.025,
+    "top40_name_overlap_count": 2,
+    "top40_name_overlap_rate": 0.05,
     "valucast_age_distribution": {
-      "18": 3,
-      "19": 13,
-      "20": 6,
-      "21": 6,
-      "22": 7,
+      "18": 4,
+      "19": 12,
+      "20": 5,
+      "21": 5,
+      "22": 9,
       "23": 5
     },
     "valucast_level_distribution": {
-      "A": 14,
-      "A+": 18,
-      "AA": 4,
+      "A": 15,
+      "A+": 16,
+      "AA": 5,
       "AAA": 4
     },
     "valucast_top40_count": 40
@@ -168,13 +168,20 @@
       "dd_rank": 40,
       "dd_score": 59.5,
       "name": "Tate Southisene",
-      "valucast_rank": 28,
+      "valucast_rank": 12,
+      "valucast_score": 63.8
+    },
+    {
+      "dd_rank": 21,
+      "dd_score": 64.0,
+      "name": "Juneiker Caceres",
+      "valucast_rank": 24,
       "valucast_score": 62.1
     }
   ],
   "promotion_decision": {
     "dd_overlap_is_context_only": true,
-    "history_limited_rate": 0.0045,
+    "history_limited_rate": 0.0019,
     "neutral_momentum_launch_approved": false,
     "requires_route_gate": true,
     "status": "candidate_ready"
@@ -210,10 +217,18 @@
       "score": 74.2
     },
     {
+      "age": 20,
+      "level": "A+",
+      "name": "Boston Bateman",
+      "rank": 3,
+      "reason": "ValuCast score momentum",
+      "score": 70.7
+    },
+    {
       "age": 21,
       "level": "A",
       "name": "Malachi Witherspoon",
-      "rank": 3,
+      "rank": 4,
       "reason": "ValuCast score momentum",
       "score": 69.7
     },
@@ -221,47 +236,31 @@
       "age": 19,
       "level": "A+",
       "name": "Justin Gonzales",
-      "rank": 4,
+      "rank": 5,
       "reason": "Still in the buy window",
-      "score": 69.4
+      "score": 69.2
     },
     {
       "age": 19,
       "level": "A",
       "name": "Hayden Alvarez",
-      "rank": 5,
-      "reason": "Still in the buy window",
-      "score": 69.4
-    },
-    {
-      "age": 20,
-      "level": "A+",
-      "name": "Boston Bateman",
       "rank": 6,
-      "reason": "ValuCast score momentum",
-      "score": 68.6
-    },
-    {
-      "age": 19,
-      "level": "AA",
-      "name": "Rainiel Rodriguez",
-      "rank": 7,
       "reason": "Still in the buy window",
-      "score": 68.1
+      "score": 69.0
     },
     {
-      "age": 19,
-      "level": "A",
-      "name": "Jaiden Lo Re",
-      "rank": 8,
-      "reason": "ValuCast score momentum",
-      "score": 65.7
+      "age": 18,
+      "level": "A+",
+      "name": "Eli Willits",
+      "rank": 7,
+      "reason": "Young runway",
+      "score": 66.8
     },
     {
       "age": 22,
       "level": "A+",
       "name": "Riley Quick",
-      "rank": 9,
+      "rank": 8,
       "reason": "ValuCast score momentum",
       "score": 65.4
     },
@@ -269,49 +268,57 @@
       "age": 23,
       "level": "AA",
       "name": "Khal Stephen",
-      "rank": 10,
+      "rank": 9,
       "reason": "ValuCast score momentum",
-      "score": 64.4
+      "score": 64.5
     },
     {
       "age": 20,
       "level": "A+",
       "name": "Felnin Celesten",
-      "rank": 11,
+      "rank": 10,
       "reason": "Still in the buy window",
-      "score": 64.4
+      "score": 64.2
     },
     {
       "age": 20,
       "level": "A+",
       "name": "Jose Urbina",
-      "rank": 12,
+      "rank": 11,
       "reason": "ValuCast score momentum",
       "score": 64.1
     },
     {
       "age": 19,
-      "level": "A",
-      "name": "Robert Arias",
-      "rank": 13,
+      "level": "A+",
+      "name": "Tate Southisene",
+      "rank": 12,
       "reason": "Still in the buy window",
-      "score": 64.0
+      "score": 63.8
     },
     {
-      "age": 18,
+      "age": 19,
       "level": "A+",
-      "name": "Eli Willits",
-      "rank": 14,
-      "reason": "Young runway",
-      "score": 63.9
+      "name": "Miguel Sime Jr.",
+      "rank": 13,
+      "reason": "Still in the buy window",
+      "score": 63.7
     },
     {
       "age": 19,
       "level": "A",
       "name": "JoJo Parker",
-      "rank": 15,
+      "rank": 14,
       "reason": "Young runway",
-      "score": 63.7
+      "score": 63.6
+    },
+    {
+      "age": 22,
+      "level": "A+",
+      "name": "AJ Russell",
+      "rank": 15,
+      "reason": "Still in the buy window",
+      "score": 63.6
     }
   ]
 }
