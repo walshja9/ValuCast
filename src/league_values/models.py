@@ -119,7 +119,13 @@ class PointRule:
 
     def applies_to(self, player_pool: PlayerPool | str) -> bool:
         player_pool = _enum_value(PlayerPool, player_pool)
-        return self.pool is PlayerPool.ALL or self.pool is player_pool
+        if self.pool is PlayerPool.ALL:
+            return True
+        if self.pool is player_pool:
+            return True
+        if self.pool is PlayerPool.PITCHER and player_pool in (PlayerPool.STARTER, PlayerPool.RELIEVER):
+            return True
+        return False
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "PointRule":

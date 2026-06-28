@@ -84,12 +84,7 @@ def test_mlb_dynasty_rows_carry_all_preset_values_with_5x5_parity():
 
     assert payload["value_by_preset_menu"] == PRESET_IDS
     for row in payload["players"]:
-        # The points preset has no pitcher model yet, so pitcher rows omit it
-        # (the PTS chip is suppressed) while hitters keep every preset.
-        expected = set(PRESET_IDS)
-        if row.get("role") == "pitcher":
-            expected.discard("points")
-        assert set(row["value_by_preset"]) == expected
+        assert set(row["value_by_preset"]) == set(PRESET_IDS)
         assert row["value_by_preset"]["5x5"] == row["value"]
 
 
@@ -193,9 +188,8 @@ def test_missing_preset_key_is_omitted_not_defaulted(monkeypatch):
     assert "5x5" in speed_row["value_by_preset"]
 
 
-def test_points_preset_omitted_for_pitchers_kept_for_hitters():
-    """The points preset has no pitcher model yet: pitchers omit the PTS chip,
-    hitters keep their points value."""
+def test_points_preset_scores_pitchers_and_hitters():
+    """Pitchers and hitters both carry non-zero points preset values."""
     payload = build_mlb_dynasty_layer(
         [
             _hitter(
@@ -219,7 +213,5 @@ def test_points_preset_omitted_for_pitchers_kept_for_hitters():
     )
 
     for row in payload["players"]:
-        if row.get("role") == "pitcher":
-            assert "points" not in row["value_by_preset"]
-        else:
-            assert "points" in row["value_by_preset"]
+        assert "points" in row["value_by_preset"]
+        assert row["value_by_preset"]["points"] > 0

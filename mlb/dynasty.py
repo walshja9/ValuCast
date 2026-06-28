@@ -1138,10 +1138,6 @@ def build_mlb_dynasty_layer(
         key = identity_key(result.player)
         value_by_preset = {}
         for preset_id in preset_ids:
-            # BUG 2: the points preset has no pitcher model yet; suppress the
-            # broken pitcher display rather than rendering a floored value.
-            if preset_id == "points" and row.get("role") == "pitcher":
-                continue
             preset_value = preset_scores[preset_id].get(key)
             # BUG 1: omit (hide the chip) when this preset lacks a score for the
             # player instead of silently falling back to the default 5x5 value.
