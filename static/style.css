@@ -2075,6 +2075,15 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .spark-delta.down { color: var(--c-neg); background: rgba(204, 138, 102, .14); }
 .spark-delta.flat { color: var(--c-muted); background: rgba(154, 161, 192, .14); }
 
+/* Ranks by format — settings-aware prospect ranks across league formats. */
+.format-ranks-section { margin-top: .25rem; }
+.format-ranks { display: flex; align-items: baseline; gap: 1.1rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: .82rem; }
+.format-ranks-label { color: var(--c-muted); text-transform: uppercase; letter-spacing: .07em; font-size: .6rem; font-weight: 700; }
+.format-rank { color: var(--c-muted); }
+.format-rank b { color: var(--c-text); font-weight: 700; margin-right: .35rem; }
+.fr-num { color: var(--c-pos); font-weight: 700; }
+.fr-total { color: var(--c-muted); font-size: .85em; }
+
 /* Form Curve — premium dynasty-value trend panel (velocity-of-change hero). */
 .form-curve-section { margin-top: 1rem; }
 .form-curve-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }

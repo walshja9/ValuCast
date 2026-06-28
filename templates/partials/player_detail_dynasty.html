@@ -70,6 +70,16 @@
         {% include "partials/_value_spark.html" %}
         {% endif %}
         {% if row.is_prospect %}
+        {% if format_ranks is defined and format_ranks %}
+        <div class="detail-section format-ranks-section">
+            <div class="format-ranks" aria-label="Ranks by format">
+                <span class="format-ranks-label">Ranks by format</span>
+                {% for item in format_ranks %}
+                <span class="format-rank"><b>{{ item.label }}</b><span class="fr-num">#{{ item.rank }}</span> <span class="fr-total">/ {{ item.total_label }}</span></span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         {% set card_context = profile_stat_context if profile_stat_context is defined else {} %}
         {% set has_skill_card = profile_bars is defined and profile_bars %}
         {% if identity or has_skill_card %}

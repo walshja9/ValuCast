@@ -51,6 +51,7 @@ from web.season_outlook import (
 from web.statcast_store import StatcastStore
 from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
+from web.prospect_league_ranks import format_ranks_for
 from web.value_spark import build_spark
 from web import buy_score
 from web import prospect_percentiles
@@ -6111,6 +6112,10 @@ def _build_dynasty_player_detail_context(player_id, args):
         "mlb_stats_actual_split": mlb_stats_actual_split,
         "mlb_stats_ros_split": mlb_stats_ros_split,
         "fangraphs": fg_fv.get(getattr(dd_row, "mlbam_id", None)),
+        "format_ranks": (
+            format_ranks_for(getattr(dd_row, "mlbam_id", None))
+            if dd_row.is_prospect else []
+        ),
     }
     context.update(prospect_context)
     context.update(artifact_context)
