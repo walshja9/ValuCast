@@ -69,6 +69,7 @@ _RIGHT_HAND_RE = re.compile(
     r"\b(?:right[- ]hand(?:ed|er)|righty|rhp)\b",
     re.IGNORECASE,
 )
+_TRIPLE_SLASH_RE = re.compile(r"(?<![\d.])(\.\d+|0?\.\d+)/(\.\d+|0?\.\d+)/(\.\d+|0?\.\d+)(?![\d.])")
 
 
 def banned_phrase_hits(text: str) -> list[str]:
@@ -166,6 +167,39 @@ def unsupported_numbers(text: str, grounding: dict) -> list[str]:
     return out
 
 
+def _grounding_rate(grounding: dict, key: str) -> float | None:
+    for scope in ("card_display_line", "mlb_equivalent_translation", "stat_line_stats"):
+        values = (grounding or {}).get(scope)
+        # stat_line_stats grounding comes in two shapes across repository.py:
+        # flat ({"AVG": ...}) and nested ({"stats": {"AVG": ...}}). Unwrap only
+        # when a real nested "stats" dict exists, else use the flat dict directly.
+        if scope == "stat_line_stats" and isinstance(values, dict) and isinstance(values.get("stats"), dict):
+            values = values.get("stats")
+        if not isinstance(values, dict):
+            continue
+        for raw_key, value in values.items():
+            if str(raw_key).lower() == key and isinstance(value, (int, float)):
+                return float(value)
+    return None
+
+
+def _same_rate(left: float, right: float) -> bool:
+    return round(float(left), 3) == round(float(right), 3)
+
+
+def triple_slash_problems(text: str, grounding: dict) -> list[str]:
+    ops = _grounding_rate(grounding, "ops")
+    slg = _grounding_rate(grounding, "slg")
+    if ops is None or slg is None or _same_rate(ops, slg):
+        return []
+    problems = []
+    for match in _TRIPLE_SLASH_RE.finditer(text or ""):
+        third = float(match.group(3))
+        if _same_rate(third, ops):
+            problems.append("triple-slash SLG slot matches OPS")
+    return problems
+
+
 def _raw_hand_text(value) -> str:
     """Uppercased string form of a handedness value (unwrapping the dict form), used to
     detect switch hitters before resolving an L/R code."""
@@ -221,10 +255,12 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     banned = banned_phrase_hits(text)
     numbers = unsupported_numbers(text, grounding)
     handedness = handedness_problems(text, grounding)
+    slash = triple_slash_problems(text, grounding)
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
         "handedness_problems": handedness,
-        "ok": not banned and not numbers and not handedness,
-        "hard_ok": not banned and not handedness,
+        "triple_slash_problems": slash,
+        "ok": not banned and not numbers and not handedness and not slash,
+        "hard_ok": not banned and not handedness and not slash,
     }

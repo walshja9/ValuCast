@@ -6,6 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from scouting import report_generator, repository
+from scouting.mlb_read import stat_line_stats
 from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
@@ -35,6 +36,17 @@ class TestVoiceGuard(unittest.TestCase):
         # cites the line + an ordinal percentile, all present in grounding
         text = "A .300/.380/.520 line over 240 PA, with a 96th-percentile OPS at age 21."
         self.assertEqual(unsupported_numbers(text, GROUNDING), [])
+
+    def test_stat_line_stats_derives_slg_from_ops_and_obp(self):
+        stats = stat_line_stats({"stats": {"AVG": 0.300, "OBP": 0.380, "OPS": 0.900}})
+
+        self.assertEqual(stats["SLG"], 0.520)
+
+    def test_ops_in_triple_slash_slg_slot_is_hard_fail(self):
+        result = validate_report_text("A .300/.380/.900 line over 240 PA.", GROUNDING)
+
+        self.assertFalse(result["hard_ok"])
+        self.assertFalse(result["ok"])
 
     def test_invented_number_flagged(self):
         text = "Sits 97 mph with the fastball."   # 97 is nowhere in the grounding

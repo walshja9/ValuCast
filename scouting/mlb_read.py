@@ -14,22 +14,31 @@ def _normalized_stat_value(key: str, value):
     return value
 
 
+def _with_derived_slg(stats: dict) -> dict:
+    if "SLG" not in stats:
+        ops = stats.get("OPS")
+        obp = stats.get("OBP")
+        if isinstance(ops, (int, float)) and isinstance(obp, (int, float)):
+            stats["SLG"] = round(float(ops) - float(obp), 3)
+    return stats
+
+
 def stat_line_stats(stat_line: dict | None) -> dict:
     """Return the projection stats dict from an MLB snapshot stat_line."""
     if not isinstance(stat_line, dict):
         return {}
     stats = stat_line.get("stats")
     if isinstance(stats, dict):
-        return {
+        return _with_derived_slg({
             str(key).upper(): _normalized_stat_value(str(key).upper(), value)
             for key, value in stats.items()
             if value is not None
-        }
-    return {
+        })
+    return _with_derived_slg({
         str(key).upper(): _normalized_stat_value(str(key).upper(), value)
         for key, value in stat_line.items()
         if isinstance(value, (int, float))
-    }
+    })
 
 
 def _number(stats: dict, key: str) -> float | None:
