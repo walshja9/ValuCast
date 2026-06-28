@@ -1611,21 +1611,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Detroit Tigers sent RHP Jack Flaherty on a rehab assignment to Erie SeaWolves.",
-      "effective_date": "2026-06-23",
-      "list_type": null,
-      "mlbam_id": 656427,
-      "name": "Jack Flaherty",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Erie SeaWolves",
-      "transaction_date": "2026-06-23",
-      "transaction_id": 921572,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Los Angeles Angels transferred RHP Jack Kochanowicz from the 15-day injured list to the 60-day injured list. Right elbow inflammation.",
       "effective_date": "2026-06-10",
       "list_type": "60-day injured list",
@@ -4836,6 +4821,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Detroit Tigers activated RHP Jack Flaherty from the 15-day injured list.",
+      "effective_date": "2026-06-28",
+      "list_type": "15-day injured list",
+      "mlbam_id": 656427,
+      "name": "Jack Flaherty",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Detroit Tigers",
+      "transaction_date": "2026-06-28",
+      "transaction_id": 923162,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Milwaukee Brewers activated LF Jackson Chourio from the 10-day injured list.",
       "effective_date": "2026-05-04",
       "list_type": "10-day injured list",
@@ -6789,15 +6789,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 205,
+    "available_after_il_count": 206,
     "blockers": [],
     "duplicate_identity_count": 0,
     "injured_count": 196,
     "profile_count": 450,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 49,
-    "risk_profile_count": 245,
+    "rehab_count": 48,
+    "risk_profile_count": 244,
     "tracked_mlbam_count": 10273,
-    "transaction_count": 7167
+    "transaction_count": 7170
   }
 }

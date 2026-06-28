@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-28T14:11:45.065361+00:00",
+  "generated_at": "2026-06-28T14:25:43.414961+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -45199,10 +45199,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": true,
-      "active_mlb_roster": false,
+      "active_injury_risk": false,
+      "active_mlb_roster": true,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "rehab",
+      "availability_status": "available",
       "identity_key": "656427_starter",
       "mlbam_id": "656427",
       "name": "Jack Flaherty",
@@ -45215,20 +45215,20 @@
       "projected_volume_unit": "IP",
       "role_basis": "starter volume",
       "role_v2": {
-        "confidence_score": 69.0,
-        "delta_vs_v1_role": "shift:rotation_workhorse->rotation_starter",
+        "confidence_score": 77.0,
+        "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
-        "most_likely_role": "rotation_starter",
-        "role_confidence": "moderate",
+        "most_likely_role": "rotation_workhorse",
+        "role_confidence": "high",
         "role_probabilities": {
-          "rotation_starter": 0.7,
-          "rotation_workhorse": 0.3
+          "rotation_starter": 0.1,
+          "rotation_workhorse": 0.9
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": true,
-          "availability_risk_discount": 0.04,
+          "active_injury_risk": false,
+          "availability_risk_discount": 0.0,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 75.12,
@@ -45238,13 +45238,13 @@
         "volume_forecast": {
           "base": 157.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 160.5,
-          "low": 125.1,
-          "point": 148.0,
+          "high": 163.9,
+          "low": 145.7,
+          "point": 157.4,
           "unit": "IP"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "DET",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -79500,7 +79500,7 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
       "availability_status": "available",
       "identity_key": "675627_reliever",
@@ -79543,7 +79543,7 @@
           "unit": "IP"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "TBR",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101143,7 +101143,7 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 231,
+    "active_injury_risk_count": 230,
     "active_mlb_roster_count": 724,
     "profile_count": 2049,
     "role_counts": {
@@ -101160,9 +101160,9 @@
   "tracker_version": "0.1.0",
   "v2": {
     "confidence_counts": {
-      "high": 200,
+      "high": 201,
       "low": 272,
-      "moderate": 1577
+      "moderate": 1576
     },
     "dynasty_layer_matched_count": 919,
     "feeds_card": false,
@@ -101170,7 +101170,7 @@
     "feeds_live_value": false,
     "model_version": "2.0.0",
     "profile_count": 2049,
-    "role_shift_vs_v1_count": 46,
+    "role_shift_vs_v1_count": 45,
     "save_hold_label_count": 855,
     "status": "shadow_observe_only",
     "volume_fan_role_count": 1194
