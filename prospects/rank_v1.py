@@ -58,6 +58,14 @@ THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
 # "thin_current_sample" availability signal the quality governor's top-50
 # bucket-shape check uses, so the board and the guardrail stay aligned.
 THIN_SAMPLE_CONFIDENCE_PENALTY_MAX = 28.0
+# Moderate-thin scored-line haircut -- the gap below B. A gaudy line whose own model
+# reliability is low but the availability layer does NOT flag thin_current_sample, so
+# B's haircut never fires (e.g. a 94-PA A+ masher at 32% reliability ranking #18 vs
+# consensus #460). Linear, zero-anchored at the floor so reliability>=floor rows are
+# untouched. Mutually exclusive with the thin_current_sample haircut (gated on NOT
+# being flagged), so B ships exactly as is. Calibration knobs -- tuned on the shadow-diff.
+MODERATE_THIN_RELIABILITY_FLOOR = 50.0
+MODERATE_THIN_CONFIDENCE_PENALTY_K = 22.0
 # A prospect whose displayed stat line falls back to a prior-season MiLB sample
 # (factual_current_context.source_kind != "current_season") has NO current-season
 # evidence at all -- almost always an injured/inactive upper-level arm. They must
@@ -1312,6 +1320,45 @@ def _bucket_calibration_adjustment(
                         "Thin current samples are ranked by a lower-confidence-bound "
                         "score so unproven profiles sort behind players with fuller "
                         "evidence; the penalty scales with sample reliability."
+                    ),
+                }
+            )
+
+    if (
+        source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
+        and status != "thin_current_sample"
+        and reliability is not None
+        and reliability < MODERATE_THIN_RELIABILITY_FLOOR
+        and not _high_pedigree(input_row)
+    ):
+        # Spare draft-pedigreed thin prospects entirely: their value has independent
+        # support (the pedigree), so a thin gaudy line isn't all it rests on. The
+        # haircut concentrates on no-pedigree thin lines, where the value rides the
+        # thin sample alone (the Hernandez case) -- not on consensus darlings the model
+        # already under-rates (e.g. Willits, consensus #3).
+        deficit = max(
+            0.0,
+            (MODERATE_THIN_RELIABILITY_FLOOR - reliability)
+            / MODERATE_THIN_RELIABILITY_FLOOR,
+        )
+        penalty = -MODERATE_THIN_CONFIDENCE_PENALTY_K * deficit
+        penalty = round(penalty, 2)
+        if penalty < 0:
+            adjustments.append(
+                {
+                    "bucket": "moderate_thin_sample_confidence",
+                    "label": "Moderate thin sample",
+                    "level": level,
+                    "role": role,
+                    "score_source": source,
+                    "sample": round(sample, 3) if sample is not None else None,
+                    "sample_unit": sample_unit or None,
+                    "sample_reliability": round(reliability, 2),
+                    "adjustment": penalty,
+                    "reason": (
+                        "A gaudy line whose own model reliability is below the floor "
+                        "is discounted toward the confidence the model already assigns "
+                        "it, so thin-sample performance doesn't outrank fuller evidence."
                     ),
                 }
             )

@@ -347,3 +347,51 @@ def test_G_tied_raw_scores_get_equal_percentile():
     _apply_role_quantile_model_score_normalization(rows)
     tied = {r["mlbam_id"]: r.get(pct_key) for r in rows if r[field] == 0.50}
     assert len(set(tied.values())) == 1, f"equal raw 0.50 -> unequal percentile {tied}"
+
+
+# --------------------------------------------------------------------------- #
+# Moderate-thin haircut — INV-THIN-2: a NO-PEDIGREE thin scored line (its own
+# model reliability below the floor, but NOT availability-flagged
+# thin_current_sample, so B never fires) takes a confidence haircut; a PEDIGREED
+# thin line does not (its value has independent support). Closes the gap below B
+# that put Ronny Hernandez (94 PA, rel 32) at #18 vs consensus #460, without
+# burying pedigreed thin prospects (Willits, consensus #3). Mutually exclusive
+# with B; full-sample leans (reliability >= floor) untouched by the zero-anchor.
+# --------------------------------------------------------------------------- #
+def _moderate_thin_penalty(reliability, pedigree=False):
+    input_row = {"mlbam_id": 2, "role": "hitter", "level": "A+"}
+    if pedigree:
+        input_row["draft_pick_number"] = 1  # 1-1 pick -> _high_pedigree
+    components = {
+        # status != "thin_current_sample" so B's haircut does NOT fire (this is the gap).
+        "availability": {"sample": 94.0, "sample_unit": "PA", "status": "available"},
+        "factual_current_context": {"source_kind": "current_season"},
+        "sample_reliability": reliability,
+    }
+    _, out = _bucket_calibration_adjustment(
+        score=50.0, source="prospect_model_v0_6", layer_profile={"role": "hitter"},
+        input_row=input_row, universe_row={"role": "hitter"}, components=components,
+    )
+    for rule in (out.get("bucket_calibration", {}) or {}).get("rules", []):
+        if rule["bucket"] == "moderate_thin_sample_confidence":
+            return abs(float(rule["adjustment"]))
+    return 0.0
+
+
+def test_moderate_thin_hits_no_pedigree_thin_line():
+    """INV-THIN-2. A no-pedigree thin scored line (rel below the floor, not
+    flagged thin_current_sample) takes the haircut -- the value can't ride a thin
+    gaudy sample at face value into the top tier."""
+    assert _moderate_thin_penalty(reliability=32.0) > 0.0
+
+
+def test_moderate_thin_spares_pedigreed_thin_prospect():
+    """INV-THIN-2. A pedigreed thin prospect (1-1 pick) is spared: its value has
+    independent support, so we don't dock a Willits-type consensus darling."""
+    assert _moderate_thin_penalty(reliability=32.0, pedigree=True) == 0.0
+
+
+def test_moderate_thin_zero_at_floor():
+    """INV-THIN-2. Reliability at/above the floor (a full-sample lean) is untouched
+    -- the haircut is zero-anchored at the floor, so leans never move."""
+    assert _moderate_thin_penalty(reliability=55.0) == 0.0
