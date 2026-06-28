@@ -34,13 +34,17 @@ SIGNAL_RELEASE = "valucast_prospect_buys_v1"
 LOCKED_RELEASE_STATUS = "locked"
 MAX_HISTORY_LIMITED_RATE = 0.50
 PROMOTION_BOARD_SIZE = 40
+FEATURED_MIN_BOARDS = 3
+CONSENSUS_RANK_CAP = 600
 PROMOTABLE_SCORE_SOURCES = {"prospect_model_v0_6", "prospect_pedigree_v0_7"}
 MAX_TOP40_RAW_FALLBACK_COUNT = 0
 MAX_TOP40_MISSING_TEAM_COUNT = 0
 MAX_TOP40_LOW_CONFIDENCE_RATE = 0.35
 MAX_TOP40_PEDIGREE_RATE = 0.35
+MAX_TOP25_PITCHER_RATE = 0.40
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 ACTIVE_MLB_ROSTER_STATUS_REQUIRED = True
+_INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 
 WEIGHTS = {
     "model_strength": 0.35,
@@ -86,6 +90,16 @@ def _identity_key(row: dict) -> tuple[str, str] | None:
 
 def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, value))
+
+
+def _public_source_ranks(source_ranks: dict) -> dict:
+    return {
+        source: rank
+        for source, rank in (source_ranks or {}).items()
+        if source not in _INTERNAL_SOURCES
+        and isinstance(rank, (int, float))
+        and rank <= CONSENSUS_RANK_CAP
+    }
 
 
 def buy_window_score(rank: int | None) -> float:
@@ -265,6 +279,11 @@ def _promotion_eligible(row: dict) -> bool:
 
 def _top_board_quality(board: list[dict]) -> dict:
     top_rows = board[:PROMOTION_BOARD_SIZE]
+    top25_rows = board[:25]
+    top25_pitcher_count = sum(1 for row in top25_rows if row.get("role") == "pitcher")
+    top25_pitcher_rate = (
+        round(top25_pitcher_count / len(top25_rows), 4) if top25_rows else 0.0
+    )
     raw_fallback_count = sum(
         1 for row in top_rows if row.get("score_source") in RAW_FALLBACK_SCORE_SOURCES
     )
@@ -277,9 +296,15 @@ def _top_board_quality(board: list[dict]) -> dict:
     for row in top_rows:
         source = str(row.get("score_source") or "unknown")
         source_counts[source] = source_counts.get(source, 0) + 1
+    blockers = []
+    if top25_pitcher_rate > MAX_TOP25_PITCHER_RATE:
+        blockers.append("buys_top25_pitcher_rate")
     return {
         "top_n": PROMOTION_BOARD_SIZE,
         "evaluated_count": len(top_rows),
+        "top25_pitcher_count": top25_pitcher_count,
+        "top25_pitcher_rate": top25_pitcher_rate,
+        "max_top25_pitcher_rate": MAX_TOP25_PITCHER_RATE,
         "raw_fallback_count": raw_fallback_count,
         "missing_team_count": missing_team_count,
         "low_confidence_count": low_confidence_count,
@@ -293,6 +318,7 @@ def _top_board_quality(board: list[dict]) -> dict:
         else 0.0,
         "max_pedigree_rate": MAX_TOP40_PEDIGREE_RATE,
         "score_source_counts": source_counts,
+        "blockers": blockers,
     }
 
 
@@ -373,11 +399,13 @@ def build_buy_signals(
         )
     )
     board = []
-    for rank, (composite, terms, row, score_history) in enumerate(scored, 1):
+    for composite, terms, row, score_history in scored:
         availability = _availability_context(row)
+        context = row.get("context_only") if isinstance(row.get("context_only"), dict) else {}
+        board_count = len(_public_source_ranks(context.get("source_ranks") or {}))
         board.append(
             {
-                "rank": rank,
+                "rank": 0,
                 "id": f"vc_buy_{row['mlbam_id']}_{row['role']}",
                 "player_id": f"vc_prospect_{row['mlbam_id']}_{row['role']}",
                 "name": row.get("name"),
@@ -391,6 +419,7 @@ def build_buy_signals(
                 "valucast_prospect_rank": row.get("rank"),
                 "valucast_prospect_score": row.get("score"),
                 "score": round(max(0.0, composite) * 100.0, 1),
+                "board_count": board_count,
                 "terms": terms,
                 "reason": _reason(terms),
                 "confidence": row.get("confidence"),
@@ -403,12 +432,15 @@ def build_buy_signals(
                 "drivers": row.get("drivers") or [],
                 "source_policy": {
                     "dd_context_used": False,
-                    "public_source_ranks_used": False,
+                    "public_source_ranks_used": True,
                     "external_rankings_used": False,
                     "market_values_used": False,
                 },
             }
         )
+    board = [row for row in board if row["board_count"] >= FEATURED_MIN_BOARDS]
+    for rank, row in enumerate(board, 1):
+        row["rank"] = rank
 
     history_limited_count = _history_limited_count(board)
     history_limited_rate = (
@@ -453,6 +485,10 @@ def build_buy_signals(
         blockers.append(
             "ValuCast Buy top board leans too heavily on pedigree-only profiles."
         )
+    if "buys_top25_pitcher_rate" in top_quality["blockers"]:
+        blockers.append(
+            "ValuCast Buy top-25 is too pitcher-heavy for public promotion."
+        )
     if top_quality["evaluated_count"] < PROMOTION_BOARD_SIZE:
         blockers.append(
             "ValuCast Buy top board has too few promotion-eligible rows."
@@ -472,7 +508,7 @@ def build_buy_signals(
             "dd_values_used": False,
             "dd_ranks_used": False,
             "dd_context_used": False,
-            "public_source_ranks_used": False,
+            "public_source_ranks_used": True,
             "external_rankings_used_for_score": False,
             "market_values_used_for_score": False,
         },

@@ -21,12 +21,14 @@ def _row(
     level="AA",
     source="prospect_model_v0_6",
     confidence="medium",
+    role="hitter",
+    source_ranks=None,
 ):
     return {
         "mlbam_id": mlbam_id,
         "name": name,
-        "role": "hitter",
-        "positions": ["SS"],
+        "role": role,
+        "positions": ["SP"] if role == "pitcher" else ["SS"],
         "mlb_team": "BOS",
         "age": age,
         "level": level,
@@ -50,7 +52,9 @@ def _row(
         "context_only": {
             "dd_dynasty_rank": 1,
             "dd_dynasty_value": 99.0,
-            "source_ranks": {"pipeline": 1, "hkb": 1},
+            "source_ranks": source_ranks
+            if source_ranks is not None
+            else {"pipeline": 1, "hkb": 1, "sts": 1},
         },
     }
 
@@ -108,7 +112,7 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
     assert payload["signal_version"] == "1.0.0"
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["dd_context_used"] is False
-    assert payload["source_policy"]["public_source_ranks_used"] is False
+    assert payload["source_policy"]["public_source_ranks_used"] is True
     assert payload["validation"]["row_count"] == 3
     assert payload["validation"]["ready_for_live_consumers"] is False
     assert payload["validation"]["buy_review_ready"] is False
@@ -118,6 +122,75 @@ def test_build_buy_signals_is_shadow_only_and_valucast_owned():
     assert payload["release_contract"]["frozen_score_contract"] is False
     assert payload["promotion"]["feeds_live_buys"] is False
     assert validate_valucast_buy_payload(payload) == []
+
+
+def test_buy_board_requires_three_public_board_ranks_and_reports_count():
+    rows = [
+        _row(
+            1,
+            "Corroborated Buy",
+            80,
+            58.0,
+            source_ranks={
+                "pipeline": 120,
+                "hkb": 180,
+                "sts": 220,
+                "milb_perf": 1,
+                "cfr": 2,
+            },
+        ),
+        _row(
+            2,
+            "Thin Buy",
+            81,
+            57.0,
+            source_ranks={
+                "pipeline": 120,
+                "hkb": 180,
+                "sts": 800,
+                "milb_breakout": 1,
+            },
+        ),
+    ]
+
+    payload = build_buy_signals(_rank_payload(rows), _history())
+
+    assert [row["name"] for row in payload["board"]] == ["Corroborated Buy"]
+    assert payload["board"][0]["board_count"] == 3
+    assert payload["validation"]["row_count"] == 1
+
+
+def test_buy_promotion_blocks_pitcher_heavy_corroborated_top25():
+    review = {
+        "review_status": "candidate_ready",
+        "source_policy": {"history_launch_approved": True},
+    }
+    rows = [
+        _row(
+            index,
+            f"Buy {index}",
+            index + 30,
+            55.0,
+            role="pitcher" if index <= 11 else "hitter",
+        )
+        for index in range(1, 45)
+    ]
+
+    payload = build_buy_signals(
+        _rank_payload(rows),
+        history_payloads=[],
+        promotion_review=review,
+        mlb_roster_status=_mlb_roster_status(),
+        require_mlb_roster_status=True,
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["top_board_quality"]["top25_pitcher_count"] == 11
+    assert payload["validation"]["top_board_quality"]["top25_pitcher_rate"] == 0.44
+    assert payload["validation"]["top_board_quality"]["max_top25_pitcher_rate"] == 0.40
+    assert any(
+        "pitcher-heavy" in blocker for blocker in payload["validation"]["blockers"]
+    )
 
 
 def test_build_buy_signals_can_be_candidate_ready_after_review():
@@ -161,7 +234,7 @@ def test_context_only_and_public_ranks_do_not_change_scores():
     changed["board"][0]["context_only"] = {
         "dd_dynasty_rank": 999,
         "dd_dynasty_value": 1.0,
-        "source_ranks": {"pipeline": 999, "hkb": 999},
+        "source_ranks": {"pipeline": 500, "hkb": 550, "sts": 590},
     }
 
     original = build_buy_signals(base, _history())

@@ -626,6 +626,64 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
     ]
 
 
+def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
+    prospects = [
+        _prospect_row(index, role="pitcher" if index <= 8 else "hitter")
+        for index in range(1, 51)
+    ]
+    payload = evaluate_quality_governor(
+        [
+            _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+            _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+            *prospects,
+        ],
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=True),
+        buy_review={"review_status": "candidate_ready"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    blocker = "Top prospect board is too pitcher-heavy for public promotion."
+    assert payload["ready_for_public_snapshot"] is False
+    assert payload["ready_for_buys_promotion"] is True
+    assert blocker in payload["blockers"]
+    assert blocker in payload["surface_blockers"]["prospects"]
+    assert blocker not in payload["buy_blockers"]
+
+
+def test_buy_gate_keeps_freshness_blocker_when_pitcher_shape_also_fails():
+    prospects = [
+        _prospect_row(index, role="pitcher" if index <= 8 else "hitter")
+        for index in range(1, 51)
+    ]
+    payload = evaluate_quality_governor(
+        [
+            _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+            _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+            *prospects,
+        ],
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=True),
+        buy_review={"review_status": "candidate_ready"},
+        milb_stat_freshness_audit={
+            "status": "blocked",
+            "generated_at": "2026-06-13T12:00:00+00:00",
+            "metrics": {"top50_history_fallback_count": 1},
+            "blockers": ["top-50 prospect card context uses latest_milb_history fallback"],
+        },
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+    shape_blocker = "Top prospect board is too pitcher-heavy for public promotion."
+    freshness_blocker = "MiLB prospect-card stat freshness audit blocks public promotion."
+    assert payload["ready_for_public_snapshot"] is False
+    assert payload["ready_for_buys_promotion"] is False
+    assert freshness_blocker in payload["buy_blockers"]
+    assert shape_blocker not in payload["buy_blockers"]
+
+
 def test_quality_governor_blocks_pedigree_only_top50_crowding():
     prospects = []
     for index in range(1, 51):

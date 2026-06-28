@@ -14,7 +14,6 @@ PROHIBITED_TRUE_FLAGS = (
     "dd_values_used",
     "dd_ranks_used",
     "dd_context_used",
-    "public_source_ranks_used",
     "external_rankings_used_for_score",
     "market_values_used_for_score",
 )

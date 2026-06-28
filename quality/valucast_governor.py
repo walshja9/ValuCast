@@ -52,6 +52,7 @@ BOARD_CHECK_SURFACES = {
     SURFACE_PROSPECTS,
     SURFACE_BOTH,
 }
+BUY_IRRELEVANT_BOARD_CHECK_IDS = {"prospect_top_board_role_shape"}
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
 MLB_STABILITY_TOP_N = 25
@@ -1669,6 +1670,14 @@ def evaluate_quality_governor(
         _surface_check(_dd_score_source_audit(players), SURFACE_BOTH),
     ]
     public_board_ready = all(check["status"] == "passed" for check in board_checks)
+    buy_relevant_board_checks = [
+        check
+        for check in board_checks
+        if check.get("id") not in BUY_IRRELEVANT_BOARD_CHECK_IDS
+    ]
+    buy_relevant_board_ready = all(
+        check["status"] == "passed" for check in buy_relevant_board_checks
+    )
     dynasty_checks = _checks_for_surface(board_checks, SURFACE_DYNASTY)
     prospect_checks = _checks_for_surface(board_checks, SURFACE_PROSPECTS)
     dynasty_board_ready = all(check["status"] == "passed" for check in dynasty_checks)
@@ -1683,12 +1692,15 @@ def evaluate_quality_governor(
     buy_check = _buy_promotion_check(
         buy_signals,
         buy_review,
-        public_board_ready=public_board_ready,
+        public_board_ready=buy_relevant_board_ready,
     )
     buy_checks = buy_board_checks + [buy_check]
 
     board_blockers = _blocker_messages(board_checks)
-    buy_blockers = list(dict.fromkeys(board_blockers + _blocker_messages(buy_checks)))
+    buy_board_blockers = _blocker_messages(buy_relevant_board_checks)
+    buy_blockers = list(
+        dict.fromkeys(buy_board_blockers + _blocker_messages(buy_checks))
+    )
     buy_ready = all(check["status"] == "passed" for check in buy_checks)
     surface_blockers = {
         SURFACE_DYNASTY: _blocker_messages(dynasty_checks),
