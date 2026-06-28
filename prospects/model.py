@@ -925,9 +925,10 @@ def _select_current_records(current: dict, role: str) -> list[dict]:
 def _current_line_is_bad(record: dict, role: str) -> bool:
     """Factual bad-line guard for the stale-current pull: only pull a prior score
     down when the current line is genuinely poor -- not merely small-sample
-    regressed. An EGREGIOUS collapse counts at any sample; otherwise a single bad
-    ratio needs enough current evidence (>=10 IP / >=40 PA) so a tiny line of fine
-    or mixed ratios never reads as 'worse' (e.g. a 1.80 WHIP / 14% K-BB in 3 IP)."""
+    regressed. The current sample must clear a floor (>=10 IP / >=40 PA) before it
+    can pull at all: below the floor even an egregious-looking collapse is treated as
+    noise (a 2-IP blowup, a 1-PA .000 line), symmetric across roles. Above the floor an
+    EGREGIOUS collapse pulls; otherwise a single bad ratio must also clear the floor."""
     if role == "pitcher":
         era = _num(record.get("era"))
         whip = _num(record.get("whip"))

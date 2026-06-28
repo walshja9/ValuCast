@@ -607,9 +607,10 @@ def test_stale_current_correction_skips_tiny_but_good_current_line():
 
 
 def test_stale_current_correction_pitcher_tiny_sample_guard():
-    # A tiny current pitcher line (<10 IP) of fine/mixed ratios must NOT pull (the
-    # Eriq Swan / Blake Burkhalter false positives); an egregious collapse pulls
-    # even at a tiny sample.
+    # A tiny current pitcher line (<10 IP) must NOT pull regardless of how egregious --
+    # symmetric with the hitter floor, guarding the Eriq Swan / Blake Burkhalter false
+    # positives (sub-floor egregious is covered by INV-BADLINE-1). An egregious collapse
+    # AT the 10-IP floor does pull.
     contract = _contract()
 
     def pitcher(mid, **kw):
@@ -628,10 +629,10 @@ def test_stale_current_correction_pitcher_tiny_sample_guard():
                 source_kind="latest_milb_history"),
         pitcher(7, innings_pitched=8, era=4.20, whip=1.40, k_bb_pct=15.0,
                 sample_season=2026, source_kind="current_season"),
-        # 8: good prior + tiny EGREGIOUS current (8 IP, 9.00 ERA) -> pull
+        # 8: good prior + egregious current AT the 10-IP floor -> pull
         pitcher(8, level="A+", innings_pitched=80, sample_season=2025,
                 source_kind="latest_milb_history"),
-        pitcher(8, innings_pitched=8, era=9.00, whip=2.10, k_bb_pct=3.0,
+        pitcher(8, innings_pitched=10, era=9.00, whip=2.10, k_bb_pct=3.0,
                 sample_season=2026, source_kind="current_season"),
     ]
     for mid in (7, 8):
@@ -645,7 +646,7 @@ def test_stale_current_correction_pitcher_tiny_sample_guard():
         for r in score_current(contract, payload["roles"], payload["impact_roles"])
     }
     assert "stale_current_correction" not in rows[7]  # tiny fine current -> no pull
-    assert rows[8].get("stale_current_correction") is not None  # egregious -> pull
+    assert rows[8].get("stale_current_correction") is not None  # egregious at floor -> pull
 
 
 def test_driver_refresh_preserves_every_non_driver_model_output():
