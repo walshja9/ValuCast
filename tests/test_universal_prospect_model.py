@@ -227,6 +227,34 @@ def test_outcome_distribution_is_coherent_when_independent_targets_cross():
     assert outcomes["star_probability"]["prediction"] == 0.3
 
 
+def test_outcome_distribution_enforces_volume_monotonicity():
+    # Reaching 300 PA (established) must be at least as likely as reaching 450 PA
+    # (regular); when the independently-trained heads cross, established clamps up so
+    # bust = 1 - established stays coherent (Sirota: 0.16 established / 0.36 regular).
+    outcomes = {
+        "established_probability": {"prediction": 0.16},
+        "regular_probability": {"prediction": 0.36},
+        "star_probability": {"prediction": 0.05},
+    }
+    distribution = _coherent_outcome_distribution(outcomes)
+    assert distribution["bust_probability"] == pytest.approx(0.64)
+    assert distribution["role_probability"] == pytest.approx(0.31)
+    assert distribution["star_probability"] == pytest.approx(0.05)
+    # the stored node is rewritten so it agrees with the distribution
+    assert outcomes["established_probability"]["prediction"] == pytest.approx(0.36)
+
+
+def test_outcome_distribution_handles_pitcher_rotation_threshold():
+    outcomes = {
+        "established_probability": {"prediction": 0.20},
+        "rotation_probability": {"prediction": 0.45},
+        "star_probability": {"prediction": 0.10},
+    }
+    distribution = _coherent_outcome_distribution(outcomes)
+    assert distribution["bust_probability"] == pytest.approx(0.55)
+    assert outcomes["established_probability"]["prediction"] == pytest.approx(0.45)
+
+
 def test_probability_gate_uses_brier_while_continuous_targets_use_mae():
     predictions = [0.2, 0.6]
     targets = [0.0, 1.0]

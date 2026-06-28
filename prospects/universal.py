@@ -819,6 +819,18 @@ def _coherent_outcome_distribution(outcomes: dict) -> dict:
     established = _clamp(
         float(outcomes["established_probability"]["prediction"])
     )
+    # Volume monotonicity: reaching the lower established threshold (300 PA / 50 IP)
+    # must be at least as likely as reaching the stricter regular/rotation threshold
+    # (450 PA / 120 IP). The heads are trained independently and one may be a gate
+    # fallback, so the predictions can cross (Sirota: established 0.16 < regular 0.36
+    # => an impossible 0.84 bust). Clamp established up to the stricter-volume head so
+    # bust = 1 - established stays coherent, and write it back so the stored node
+    # agrees with the distribution.
+    for stricter_key in ("regular_probability", "rotation_probability"):
+        node = outcomes.get(stricter_key)
+        if isinstance(node, dict) and node.get("prediction") is not None:
+            established = max(established, _clamp(float(node["prediction"])))
+    outcomes["established_probability"]["prediction"] = round(established, 4)
     star = min(
         established,
         _clamp(float(outcomes["star_probability"]["prediction"])),
