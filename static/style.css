@@ -2070,14 +2070,28 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .spread-chip.split { background: rgba(251, 191, 36, .14); color: var(--c-amber); }
 
 /* Dynasty value sparkline */
-.value-spark-section h4 { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
-.value-spark { width: 100%; max-width: 420px; height: 56px; display: block; margin-top: .35rem; }
-.value-spark polyline { stroke: var(--c-signal); stroke-width: 2; }  /* value sparkline = data → teal */
-.value-spark circle { fill: var(--c-signal); }
 .spark-delta { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .12rem .5rem; }
 .spark-delta.up { color: var(--c-pos); background: rgba(52, 226, 196, .14); }
 .spark-delta.down { color: var(--c-neg); background: rgba(204, 138, 102, .14); }
 .spark-delta.flat { color: var(--c-muted); background: rgba(154, 161, 192, .14); }
+
+/* Form Curve — premium dynasty-value trend panel (velocity-of-change hero). */
+.form-curve-section { margin-top: 1rem; }
+.form-curve-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.form-curve-title h4 { margin: 0; }
+.form-curve-sub { font-size: .72rem; color: var(--c-muted); }
+.form-curve-delta { text-align: right; line-height: 1.05; white-space: nowrap; }
+.fc-delta-num { font-size: 1.6rem; font-weight: 700; }
+.form-curve-delta.up .fc-delta-num { color: var(--c-pos); }
+.form-curve-delta.down .fc-delta-num { color: var(--c-neg); }
+.form-curve-delta.flat .fc-delta-num { color: var(--c-muted); }
+.fc-delta-label { display: block; font-size: .6rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: .05em; }
+.form-curve { width: 100%; max-width: 480px; height: 92px; display: block; margin-top: .55rem; }
+.fc-line { stroke: var(--c-signal); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.fc-dot { fill: var(--c-signal); }
+.fc-baseline { stroke: var(--c-muted); stroke-width: 1; stroke-dasharray: 3 4; opacity: .3; }
+.form-curve-foot { display: flex; justify-content: space-between; max-width: 480px; font-size: .7rem; color: var(--c-muted); margin-top: .4rem; }
+.fc-now strong { color: var(--c-signal); font-weight: 700; }
 
 /* MLB-equivalent peripherals */
 .translated-from { display: block; font-size: .68rem; color: var(--c-muted); margin-top: .15rem; }

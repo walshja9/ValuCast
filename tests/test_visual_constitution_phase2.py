@@ -101,8 +101,8 @@ def test_secondary_badges_are_slate_not_signal():
 
 def test_value_and_movement_keep_the_signal_lane():
     assert "var(--c-signal)" in _last_block(".rankings-table td.col-value")
-    assert "var(--c-signal)" in _last_block(".value-spark polyline")
-    assert "var(--c-signal)" in _last_block(".value-spark circle")
+    assert "var(--c-signal)" in _last_block(".fc-line")
+    assert "var(--c-signal)" in _last_block(".fc-dot")
     assert "var(--c-signal)" in _last_block(".mover-chip.up") or "var(--c-pos)" in _last_block(
         ".mover-chip.up"
     )

@@ -1,15 +1,35 @@
-{# Dynasty value sparkline. Context: spark (build_spark output or None). #}
+{# Form Curve — premium rolling-daily dynasty-value panel (the velocity-of-change
+   hero). Context: spark (build_spark output or None), row. No JS — server SVG. #}
 {% if spark %}
-<div class="detail-section value-spark-section">
-    <h4>Dynasty Value Trend
-        <span class="statcast-asof">{{ spark.first_date }} → {{ spark.last_date }} · value over time</span>
-        <span class="spark-delta {{ spark.direction }}">{{ "%+.1f" | format(spark.delta) }}</span>
-    </h4>
-    <svg class="value-spark" viewBox="0 0 {{ spark.width }} {{ spark.height }}"
+{% set fc_id = "fc-" ~ (row.id if row is defined and row.id else spark.last_date) %}
+<div class="detail-section form-curve-section">
+    <div class="form-curve-head">
+        <div class="form-curve-title">
+            <h4>Form Curve</h4>
+            <span class="form-curve-sub">rolling daily dynasty value</span>
+        </div>
+        <div class="form-curve-delta {{ spark.direction }}">
+            <span class="fc-delta-num">{{ "%+.1f" | format(spark.delta) }}</span>
+            <span class="fc-delta-label">over {{ spark.window_days }}d</span>
+        </div>
+    </div>
+    <svg class="form-curve" viewBox="0 0 {{ spark.width }} {{ spark.height }}"
          preserveAspectRatio="none" role="img"
          aria-label="Dynasty value {{ spark.first_date }} to {{ spark.last_date }}: range {{ spark.min }} to {{ spark.max }}, change {{ spark.delta }}">
-        <polyline points="{{ spark.points }}" fill="none" vector-effect="non-scaling-stroke" />
-        <circle cx="{{ spark.last_x }}" cy="{{ spark.last_y }}" r="2.5" />
+        <defs>
+            <linearGradient id="{{ fc_id }}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--c-signal)" stop-opacity=".26" />
+                <stop offset="100%" stop-color="var(--c-signal)" stop-opacity="0" />
+            </linearGradient>
+        </defs>
+        <line class="fc-baseline" x1="0" y1="{{ spark.start_y }}" x2="{{ spark.width }}" y2="{{ spark.start_y }}" />
+        <path class="fc-area" d="{{ spark.area }}" fill="url(#{{ fc_id }})" />
+        <polyline class="fc-line" points="{{ spark.points }}" fill="none" vector-effect="non-scaling-stroke" />
+        <circle class="fc-dot" cx="{{ spark.last_x }}" cy="{{ spark.last_y }}" r="3" />
     </svg>
+    <div class="form-curve-foot">
+        <span class="fc-range">{{ spark.first_date }} → {{ spark.last_date }}</span>
+        <span class="fc-now">now <strong>{{ spark.last_value }}</strong></span>
+    </div>
 </div>
 {% endif %}

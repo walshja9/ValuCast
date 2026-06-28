@@ -89,7 +89,7 @@ class TestSparkOnCards(_CardCase):
             self.skipTest("committed feed predates value_history")
         resp = self.client.get(f"/player/{row.id}?mode=dd_dynasty", headers=HX)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"value-spark", resp.data)
+        self.assertIn(b"form-curve", resp.data)
 
 
 class TestCallUpMlbLine(_CardCase):

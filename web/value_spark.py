@@ -24,12 +24,23 @@ def build_spark(value_history, width: int = W, height: int = H):
         for i, (_, v) in enumerate(pts)
     ]
     delta = round(values[-1] - values[0], 1)
+    baseline = round(height - PAD, 1)
+    # Closed path under the line -> gradient area fill for the Form Curve panel.
+    area = (
+        f"M{coords[0][0]},{coords[0][1]} "
+        + " ".join(f"L{x},{y}" for x, y in coords[1:])
+        + f" L{coords[-1][0]},{baseline} L{coords[0][0]},{baseline} Z"
+    )
     return {
         "points": " ".join(f"{x},{y}" for x, y in coords),
+        "area": area,
         "last_x": coords[-1][0], "last_y": coords[-1][1],
+        "start_y": coords[0][1],          # "started here" reference line
         "width": width, "height": height,
         "first_date": pts[0][0], "last_date": pts[-1][0],
         "min": round(lo, 1), "max": round(hi, 1),
+        "last_value": round(values[-1], 1),
+        "window_days": len(pts),
         "delta": delta,
         "direction": "up" if delta > 0 else ("down" if delta < 0 else "flat"),
     }
