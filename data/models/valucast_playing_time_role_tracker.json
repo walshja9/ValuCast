@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-28T11:59:22.907419+00:00",
+  "generated_at": "2026-06-28T14:11:45.065361+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -19909,10 +19909,10 @@
       "usage": "role_context_not_live_rank_or_value"
     },
     {
-      "active_injury_risk": false,
-      "active_mlb_roster": true,
-      "availability_source": null,
-      "availability_status": "active_mlb_roster",
+      "active_injury_risk": true,
+      "active_mlb_roster": false,
+      "availability_source": "official_mlb_statsapi_transactions",
+      "availability_status": "injured",
       "identity_key": "694362_hitter",
       "mlbam_id": "694362",
       "name": "Blake Dunn",
@@ -19925,7 +19925,7 @@
       "projected_volume_unit": "PA",
       "role_basis": "thin projected plate appearances",
       "role_v2": {
-        "confidence_score": 42.3,
+        "confidence_score": 34.3,
         "delta_vs_v1_role": "match",
         "feeds_card": false,
         "model_version": "2.0.0",
@@ -19936,8 +19936,8 @@
         },
         "role_probability_source": "volume_fan",
         "signals": {
-          "active_injury_risk": false,
-          "availability_risk_discount": 0.0,
+          "active_injury_risk": true,
+          "availability_risk_discount": 0.06,
           "dynasty_layer_matched": true,
           "experience_band": "current_year_only_or_limited",
           "reliability": 66.56,
@@ -19947,13 +19947,13 @@
         "volume_forecast": {
           "base": 240.4,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 253.7,
-          "low": 216.3,
-          "point": 240.4,
+          "high": 247.0,
+          "low": 181.0,
+          "point": 223.6,
           "unit": "PA"
         }
       },
-      "roster_status_source": "official_mlb_statsapi_active_roster",
+      "roster_status_source": null,
       "team": "CIN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -40847,9 +40847,9 @@
     },
     {
       "active_injury_risk": false,
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "availability_source": null,
-      "availability_status": "unknown",
+      "availability_status": "active_mlb_roster",
       "identity_key": "670770_hitter",
       "mlbam_id": "670770",
       "name": "TJ Friedl",
@@ -40891,7 +40891,7 @@
           "unit": "PA"
         }
       },
-      "roster_status_source": null,
+      "roster_status_source": "official_mlb_statsapi_active_roster",
       "team": "CIN",
       "usage": "role_context_not_live_rank_or_value"
     },
@@ -101143,7 +101143,7 @@
     "public_rankings_used": false
   },
   "summary": {
-    "active_injury_risk_count": 230,
+    "active_injury_risk_count": 231,
     "active_mlb_roster_count": 724,
     "profile_count": 2049,
     "role_counts": {

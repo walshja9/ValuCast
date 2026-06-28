@@ -50,12 +50,12 @@
       "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.775,
+    "latest_buy_retention_rate": 0.8,
     "latest_rank_bucket_count": 14,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-06-28T12:00:42.135468+00:00",
+  "generated_at": "2026-06-28T14:19:00.915777+00:00",
   "next_build_order": [
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
     "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -70,16 +70,16 @@
       ],
       "status": "blocked",
       "targeted_row_refresh_count": 0,
-      "top200_history_fallback_count": 10,
+      "top200_history_fallback_count": 8,
       "top50_history_fallback_count": 1,
       "top50_stat_context_mismatch_count": 0
     },
     "pipeline_observability": {
-      "date_mismatch_count": 1,
+      "date_mismatch_count": 0,
       "expected_date": "2026-06-28",
       "missing_or_unreadable_count": 0,
-      "ready_for_daily_publication": false,
-      "status": "blocked",
+      "ready_for_daily_publication": true,
+      "status": "candidate_ready",
       "targeted_row_refresh_count": 0
     }
   },
@@ -98,7 +98,7 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "row_count": 3655,
+        "row_count": 3661,
         "surface_readiness": {
           "buys": false,
           "dynasty": true,
@@ -115,7 +115,7 @@
         "buy_monitor_ready": true,
         "duplicate_identity_count": 0,
         "milb_stat_freshness_ready": false,
-        "pipeline_observability_ready": false,
+        "pipeline_observability_ready": true,
         "raw_data_independence_complete": true,
         "required_fields_complete": true,
         "same_day_freshness": true,

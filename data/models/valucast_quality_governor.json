@@ -119,70 +119,70 @@
             "name": "Kade Anderson",
             "rank": 1,
             "role": "pitcher",
-            "score": 74.57
+            "score": 74.56
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 5,
             "role": "pitcher",
-            "score": 62.09
+            "score": 62.41
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
             "rank": 6,
             "role": "pitcher",
-            "score": 61.15
+            "score": 61.0
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 7,
             "role": "pitcher",
-            "score": 57.33
+            "score": 57.51
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
             "rank": 9,
             "role": "pitcher",
-            "score": 56.34
+            "score": 56.25
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
             "rank": 10,
             "role": "pitcher",
-            "score": 55.41
+            "score": 55.47
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
             "rank": 12,
             "role": "pitcher",
-            "score": 54.18
+            "score": 54.39
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
-            "rank": 19,
+            "rank": 20,
             "role": "pitcher",
-            "score": 50.07
+            "score": 49.97
           },
           {
             "mlbam_id": 701388,
             "name": "Jurrangelo Cijntje",
-            "rank": 21,
+            "rank": 24,
             "role": "pitcher",
-            "score": 47.1
+            "score": 46.96
           },
           {
-            "mlbam_id": 815549,
-            "name": "Ryan Sloan",
-            "rank": 23,
+            "mlbam_id": 803285,
+            "name": "Tyler Bremner",
+            "rank": 25,
             "role": "pitcher",
-            "score": 46.76
+            "score": 46.71
           }
         ],
         "top25_evaluated_count": 25,
@@ -191,8 +191,8 @@
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 19,
-        "top50_pitcher_rate": 0.38,
+        "top50_pitcher_count": 18,
+        "top50_pitcher_rate": 0.36,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -352,12 +352,12 @@
       "message": "Top prospect board factual context shape is within publication limits.",
       "metrics": {
         "band_counts": {
-          "balanced": 8,
+          "balanced": 9,
           "bat_missing": 3,
           "impact": 20,
           "limited": 2,
           "mixed": 5,
-          "starter_volume": 12
+          "starter_volume": 11
         },
         "best_single_level_covered_count": 0,
         "best_single_level_samples": [],
@@ -375,7 +375,7 @@
             "level": "A+",
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
-            "rank": 26,
+            "rank": 25,
             "role": "pitcher",
             "sample": 28.0,
             "sample_unit": "IP",
@@ -385,7 +385,7 @@
             "level": "AA",
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 34,
+            "rank": 36,
             "role": "pitcher",
             "sample": 26.3,
             "sample_unit": "IP",
@@ -421,11 +421,11 @@
         "blockers": [
           "top-50 prospect card context uses latest_milb_history fallback"
         ],
-        "current_row_count": 6263,
+        "current_row_count": 6184,
         "current_season_row_count": 6043,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 10,
+        "top200_history_fallback_count": 8,
         "top50_history_fallback_count": 1,
         "top50_stat_context_mismatch_count": 0
       },
@@ -551,8 +551,8 @@
         "buy_review_present": true,
         "buy_validation_ready": true,
         "history_launch_approved": false,
-        "history_limited_count": 6,
-        "history_limited_rate": 0.0022,
+        "history_limited_count": 13,
+        "history_limited_rate": 0.0048,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
@@ -562,7 +562,7 @@
         "public_board_ready": false,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 2679
+        "row_count": 2684
       },
       "status": "blocked"
     }
@@ -606,7 +606,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-06-28T12:00:42.135468+00:00",
+  "generated_at": "2026-06-28T14:19:00.915777+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
@@ -621,9 +621,9 @@
       "public_snapshot": "2026-06-28",
       "recent_signal_report": "2026-06-28"
     },
-    "mlb_count": 976,
-    "prospect_count": 2679,
-    "public_row_count": 3655
+    "mlb_count": 977,
+    "prospect_count": 2684,
+    "public_row_count": 3661
   },
   "next_allowed_step": "repair_model_quality_before_public_promotion",
   "ready_for_buys_promotion": false,
