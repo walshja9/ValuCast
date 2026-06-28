@@ -203,9 +203,6 @@
                 {% if role_profile and role_profile.availability_status_label %}
                 <div class="stat-item"><span class="stat-label">Roster Context</span><span class="stat-value">{{ role_profile.availability_status_label }}</span></div>
                 {% endif %}
-                {% if recent_signal and recent_signal.movement_label %}
-                <div class="stat-item"><span class="stat-label">Last 3 days</span><span class="stat-value">{{ recent_signal.movement_label }}</span></div>
-                {% endif %}
                 {% if recent_form and recent_form.momentum_label %}
                 <div class="stat-item"><span class="stat-label">Recent form</span><span class="stat-value momentum-{{ 'heating' if recent_form.momentum_label == 'Heating Up' else ('cooling' if recent_form.momentum_label == 'Cooling Off' else 'steady') }}">{{ recent_form.momentum_label }}<span class="momentum-window"> · last {{ recent_form.window_days or 30 }}d vs season</span></span></div>
                 {% endif %}
@@ -236,13 +233,6 @@
                 {% endif %}
                 {% if row.graduation_context_label %}
                 <div class="stat-item"><span class="stat-label">Rookie Limit</span><span class="stat-value">{{ row.graduation_context_label }}</span></div>
-                {% endif %}
-                {% if row.breakout_label %}
-                <div class="stat-item">
-                    <span class="stat-label">Trend</span>
-                    {% set tdir = 'up' if (row.breakout_label == 'rising' or (row.breakout_rank_change or 0) > 0) else ('down' if (row.breakout_label == 'falling' or (row.breakout_rank_change or 0) < 0) else none) %}
-                    <span class="trend-chip {% if tdir %}trend-{{ tdir }}{% endif %}">{{ row.breakout_label | replace('_', ' ') | title }}{% if row.breakout_rank_change %} ({{ '+' if row.breakout_rank_change > 0 else '' }}{{ row.breakout_rank_change }}){% endif %}</span>
-                </div>
                 {% endif %}
             </div>
         </div>
@@ -316,11 +306,11 @@
         {% endif %}
 
         {% if row.stat_line and not has_skill_card %}
-        <div class="detail-section milb-stats">
-            <h4>MiLB Stats
+        <details class="detail-section milb-stats">
+            <summary><span>MiLB Stats</span>
                 {% if stat_percentiles is defined and stat_percentiles %}<span class="profile-note">{% if row.level == 'MLB' %}last MiLB sample - {% endif %}{{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}</span>
                 {% elif row.stat_line and row.stat_line.get('pa') is not none and row.stat_line.get('pa') < 100 %}<span class="small-sample">small sample - {{ row.stat_line.get('pa') | int }} PA</span>{% endif %}
-            </h4>
+            </summary>
             {% if row.stat_line.get('avg') is not none or row.stat_line.get('obp') is not none or row.stat_line.get('slg') is not none or row.stat_line.get('ops') is not none %}
             <div class="stat-group">
                 <h5>Rate Stats</h5>
@@ -385,16 +375,16 @@
                 </div>
             </div>
             {% endif %}
-        </div>
+        </details>
         {% endif %}
 
         {% if row.stat_line_translated and row.stat_line_translated.get('stats') %}
         {% set tr = row.stat_line_translated %}
-        <div class="detail-section translated-section">
-            <h4>MLB-Equivalent Rates
+        <details class="detail-section translated-section">
+            <summary><span>MLB-Equivalent Rates</span>
                 <span class="statcast-asof">{{ tr.get('level_label') or tr.get('level') }} - {{ tr.get('sample') }} {{ tr.get('sample_unit') }}</span>
                 {% if tr.get('confidence') %}<span class="pct-chip {% if tr.get('confidence') == 'low' %}low{% endif %}">{{ tr.get('confidence') }} confidence</span>{% endif %}
-            </h4>
+            </summary>
             <div class="stat-grid">
                 {% for s in tr.get('stats') %}
                 <div class="stat-item">
@@ -405,7 +395,7 @@
                 {% endfor %}
             </div>
             <p class="stat-caption">We translate only the stats that carry over from the minors. Small samples are nudged toward MLB average.</p>
-        </div>
+        </details>
         {% endif %}
 
         {% if row.source_ranks %}

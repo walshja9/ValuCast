@@ -951,7 +951,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_small_sample_card_has_tag_without_percentiles(self):
         response = self.client.get("/player/dd_prospect_small?mode=prospects", headers={"HX-Request": "true"})
         self.assertIn(b"small sample", response.data)
-        self.assertIn(b"<h4>MiLB Stats", response.data)
+        self.assertIn(b"MiLB Stats", response.data)
         self.assertNotIn(b'class="pct-rail"', response.data)
 
     def test_pitcher_prospect_card_uses_pitcher_pool_label(self):

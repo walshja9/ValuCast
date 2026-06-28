@@ -1586,6 +1586,36 @@ def _graphic_fill_background(img):
         )
 
 
+def _graphic_brand_curve(img, draw, *, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
+    """The rising 'value curve' brand motif: a smooth accelerating arc to a glowing
+    node in the top-right of the header band. Matches the site hero — replaces the
+    older stub arcs. Lives above the subtitle (y<150) and right of the lockup."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    n = 56
+    pts = [
+        (
+            x0 + (x1 - x0) * (i / n),
+            y0 - (y0 - y1) * ((i / n) ** power),
+        )
+        for i in range(n + 1)
+    ]
+
+    # Soft bloom on a blurred layer: curve halo + node glow.
+    glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.line(pts, fill=color + (110,), width=9, joint="curve")
+    gd.ellipse((x1 - 24, y1 - 24, x1 + 24, y1 + 24), fill=color + (90,))
+    glow = glow.filter(ImageFilter.GaussianBlur(9))
+    img.paste(glow, (0, 0), glow)
+
+    # Dim body underlay, then the bright stroke, then the node.
+    draw.line(pts, fill=(28, 120, 108), width=6, joint="curve")
+    draw.line(pts, fill=color, width=3, joint="curve")
+    draw.ellipse((x1 - 7, y1 - 7, x1 + 7, y1 + 7), outline=color, width=2)
+    draw.ellipse((x1 - 4, y1 - 4, x1 + 4, y1 + 4), fill=color)
+
+
 def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve"):
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
@@ -1595,8 +1625,7 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="
     # The tagline brands the graphic without dominating it; defaults to "Ahead of
     # the Curve" (the buys brand), overridden per board (e.g. "Top Prospects").
     # (headline arg kept for call-site compatibility.)
-    draw.arc((792, 26, 1052, 250), start=200, end=300, fill=(52, 226, 196), width=3)
-    draw.arc((792, 48, 1052, 228), start=204, end=296, fill=(28, 120, 108), width=2)
+    _graphic_brand_curve(img, draw)
     _paste_brand_mark(img, 48, 42, size=52)
     draw.text((116, 48), "VALUCAST", fill=green, font=_graphic_font(28, bold=True))
     draw.text((118, 86), tagline, fill=muted, font=_graphic_font(18, bold=True))
@@ -2392,6 +2421,21 @@ def _prospect_player_card_png(row):
             width=1,
         )
         draw.text((88, 382), avail_badge, fill=amber, font=badge_font)
+
+    # Ranks by format — settings-aware prospect ranks (the open-lane differentiator).
+    fr = format_ranks_for(getattr(row, "mlbam_id", None))
+    if fr:
+        fx, fy = 74, 414
+        lf = _graphic_font(13, bold=True, mono=True)
+        vf = _graphic_font(15, bold=True, mono=True)
+        draw.text((fx, fy + 1), "RANKS BY FORMAT", fill=muted, font=lf)
+        fx += draw.textbbox((0, 0), "RANKS BY FORMAT", font=lf)[2] + 18
+        for item in fr:
+            draw.text((fx, fy), item["label"], fill=text, font=vf)
+            fx += draw.textbbox((0, 0), item["label"], font=vf)[2] + 6
+            num = f"#{item['rank']}"
+            draw.text((fx, fy), num, fill=green, font=vf)
+            fx += draw.textbbox((0, 0), num, font=vf)[2] + 18
 
     # Skill bars
     draw.rounded_rectangle((48, 438, 1032, 812), radius=10, fill=card, outline=border, width=1)
