@@ -78,6 +78,15 @@ CAREER_DISCIPLINE_MAX_K = 15.0
 CAREER_DISCIPLINE_MIN_BB = 10.0
 CAREER_MIN_PRIOR_IP = 60.0
 CAREER_PITCHER_MIN_KBB = 12.0
+# Draft pedigree spares the thin-sample confidence haircut as INDEPENDENT support --
+# but only while fresh. A recent draftee's pro sample is naturally thin, so the draft
+# slot IS the evidence. As he accrues a multi-year pro record, his results become the
+# evidence and the draft slot stops being independent support, so the spare DECAYS from
+# full (<= FRESH yrs since draft) to none (>= STALE yrs). Keeps a 4-yr-stale top-10 pick
+# whose results have since walked his grade down (e.g. Hughes, FV 40, #512 consensus)
+# from riding 2022 draft night instead of his line. Calibration-only, not outcome-gated.
+PEDIGREE_SPARE_FRESH_YEARS = 2.0
+PEDIGREE_SPARE_STALE_YEARS = 5.0
 # A prospect whose displayed stat line falls back to a prior-season MiLB sample
 # (factual_current_context.source_kind != "current_season") has NO current-season
 # evidence at all -- almost always an injured/inactive upper-level arm. They must
@@ -1198,6 +1207,27 @@ def _high_pedigree(input_row: dict | None) -> bool:
     return (pick is not None and pick <= 75) or bonus >= 1_000_000.0
 
 
+def _pedigree_spare_credit(input_row: dict | None, current_season: float | None) -> float:
+    """Fraction of the draft-pedigree confidence spare that still applies, decayed by
+    years since draft (PEDIGREE_SPARE_*). 1.0 = full spare (fresh pedigree, OR draft year
+    unknown -> conservative, preserves prior all-or-nothing behavior); 0.0 = no spare
+    (not pedigreed, or pedigree too stale to count as independent support). Modulates the
+    confidence haircut, never the point estimate -- calibration judgment, not outcome-gated.
+    """
+    if not _high_pedigree(input_row):
+        return 0.0
+    draft_year = _clean_float((input_row or {}).get("draft_year"))
+    if draft_year is None or current_season is None:
+        return 1.0
+    years = current_season - draft_year
+    if years <= PEDIGREE_SPARE_FRESH_YEARS:
+        return 1.0
+    if years >= PEDIGREE_SPARE_STALE_YEARS:
+        return 0.0
+    span = PEDIGREE_SPARE_STALE_YEARS - PEDIGREE_SPARE_FRESH_YEARS
+    return (PEDIGREE_SPARE_STALE_YEARS - years) / span
+
+
 def _career_validated_discipline(career_entry: dict | None, role: str) -> bool:
     """Multi-year MiLB track record corroborating the current thin line's contact/
     discipline skill (k%/bb% for hitters, k-bb% for pitchers). Sibling of _high_pedigree
@@ -1282,6 +1312,7 @@ def _bucket_calibration_adjustment(
     # softening is capped lower (no historical analogs). See _prior_year_strength.
     factual = components.get("factual_current_context")
     factual = factual if isinstance(factual, dict) else {}
+    current_season = _clean_float(factual.get("sample_season"))
     if factual.get("source_kind") != "current_season":
         base = -NO_CURRENT_SEASON_ACTIVITY_PENALTY
         prior_q = _prior_year_strength(factual, str(role or ""))
@@ -1362,9 +1393,11 @@ def _bucket_calibration_adjustment(
         thinness = max(0.0, min(1.0, 1.0 - current_reliability / 100.0))
         penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness
         # Credit draft pedigree (a large-N outcome signal: ~52% vs 16% established)
-        # so a thin-but-pedigreed profile isn't sunk as hard as a thin no-name.
-        if _high_pedigree(input_row):
-            penalty *= 0.75
+        # so a thin-but-pedigreed profile isn't sunk as hard as a thin no-name --
+        # decayed once the pedigree goes stale (the pro record is then the evidence).
+        spare = _pedigree_spare_credit(input_row, current_season)
+        if spare:
+            penalty *= 1.0 - 0.25 * spare
         penalty = round(penalty, 2)
         if penalty < 0:
             adjustments.append(
@@ -1391,13 +1424,12 @@ def _bucket_calibration_adjustment(
         and status != "thin_current_sample"
         and reliability is not None
         and reliability < MODERATE_THIN_RELIABILITY_FLOOR
-        and not _high_pedigree(input_row)
     ):
-        # Spare draft-pedigreed thin prospects entirely: their value has independent
-        # support (the pedigree), so a thin gaudy line isn't all it rests on. The
-        # haircut concentrates on no-pedigree thin lines, where the value rides the
-        # thin sample alone (the Hernandez case) -- not on consensus darlings the model
-        # already under-rates (e.g. Willits, consensus #3).
+        # The haircut concentrates on thin lines whose value rides the thin sample alone
+        # (the Hernandez case). Draft pedigree is independent support, so it SPARES the
+        # haircut -- fully while fresh (a Willits-type consensus #3 the model under-rates),
+        # then decaying as the pedigree goes stale and the pro record becomes the evidence
+        # (the Hughes case: a 4-yr-stale top-10 pick the industry has walked to FV 40).
         deficit = max(
             0.0,
             (MODERATE_THIN_RELIABILITY_FLOOR - reliability)
@@ -1410,6 +1442,8 @@ def _bucket_calibration_adjustment(
             # give back ~45% of the haircut -- the sample is more trustworthy than its
             # size alone implies (the career the point-estimate model is blind to).
             penalty *= MODERATE_THIN_CAREER_SOFTENER
+        pedigree_spare = _pedigree_spare_credit(input_row, current_season)
+        penalty *= 1.0 - pedigree_spare
         penalty = round(penalty, 2)
         if penalty < 0:
             adjustments.append(
@@ -1424,6 +1458,7 @@ def _bucket_calibration_adjustment(
                     "sample_reliability": round(reliability, 2),
                     "adjustment": penalty,
                     "career_validated": career_validated,
+                    "pedigree_spare_credit": round(pedigree_spare, 3),
                     "reason": (
                         "A gaudy line whose own model reliability is below the floor "
                         "is discounted toward the confidence the model already assigns "

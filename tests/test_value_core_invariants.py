@@ -359,14 +359,21 @@ def test_G_tied_raw_scores_get_equal_percentile():
 # burying pedigreed thin prospects (Willits, consensus #3). Mutually exclusive
 # with B; full-sample leans (reliability >= floor) untouched by the zero-anchor.
 # --------------------------------------------------------------------------- #
-def _moderate_thin_penalty(reliability, pedigree=False, career_entry=None):
+def _moderate_thin_penalty(
+    reliability, pedigree=False, career_entry=None, draft_year=None, current_season=None
+):
     input_row = {"mlbam_id": 2, "role": "hitter", "level": "A+"}
     if pedigree:
         input_row["draft_pick_number"] = 1  # 1-1 pick -> _high_pedigree
+    if draft_year is not None:
+        input_row["draft_year"] = draft_year
+    factual = {"source_kind": "current_season"}
+    if current_season is not None:
+        factual["sample_season"] = current_season  # drives pedigree-staleness decay
     components = {
         # status != "thin_current_sample" so B's haircut does NOT fire (this is the gap).
         "availability": {"sample": 94.0, "sample_unit": "PA", "status": "available"},
-        "factual_current_context": {"source_kind": "current_season"},
+        "factual_current_context": factual,
         "sample_reliability": reliability,
     }
     _, out = _bucket_calibration_adjustment(
@@ -439,3 +446,38 @@ def test_moderate_thin_unvalidated_career_keeps_full_haircut():
     base = _moderate_thin_penalty(reliability=32.0)
     unsoftened = _moderate_thin_penalty(reliability=32.0, career_entry=_CAREER_UNVALIDATED)
     assert unsoftened == base
+
+
+def test_pedigree_spare_full_when_fresh():
+    """INV-THIN-4. A FRESH draft pedigree (1 yr post-draft) still fully spares the
+    haircut -- the pro sample is naturally thin, so the draft slot is the independent
+    support the value rests on (the Willits-type consensus darling we don't dock)."""
+    assert (
+        _moderate_thin_penalty(
+            reliability=32.0, pedigree=True, draft_year=2025, current_season=2026
+        )
+        == 0.0
+    )
+
+
+def test_pedigree_spare_decays_to_full_haircut_when_stale():
+    """INV-THIN-4. A STALE pedigree (>= 5 yrs post-draft) gets NO spare -- the pro
+    record is now the evidence, so the draft slot is no longer independent support and
+    the full haircut applies, same as a no-pedigree thin line."""
+    base = _moderate_thin_penalty(reliability=32.0)
+    stale = _moderate_thin_penalty(
+        reliability=32.0, pedigree=True, draft_year=2020, current_season=2026
+    )
+    assert stale == base
+
+
+def test_pedigree_spare_partial_when_midstale():
+    """INV-THIN-4. The Hughes case: a 4-yr-stale top-10 pick gets a PARTIAL spare --
+    pedigree decayed to ~1/3, so ~2/3 of the haircut applies. Nudges him down without
+    fully erasing the pedigree credit a fresh pick would keep."""
+    base = _moderate_thin_penalty(reliability=32.0)
+    mid = _moderate_thin_penalty(
+        reliability=32.0, pedigree=True, draft_year=2022, current_season=2026
+    )
+    assert 0.0 < mid < base
+    assert mid == pytest.approx(round(base * (2.0 / 3.0), 2))
