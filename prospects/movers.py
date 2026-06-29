@@ -1,7 +1,6 @@
 """ValuCast prospect movers from denoised Rank v1 score history."""
 from __future__ import annotations
 
-import ast
 import json
 import math
 import os
@@ -109,35 +108,6 @@ def _history_by_key(payloads: list[dict]) -> dict[tuple[str, str], dict[str, dic
     return history
 
 
-def _parse_driver(driver: Any) -> dict | None:
-    if isinstance(driver, dict):
-        return driver
-    if isinstance(driver, str):
-        try:
-            parsed = ast.literal_eval(driver)
-        except (SyntaxError, ValueError):
-            return {"feature": driver}
-        return parsed if isinstance(parsed, dict) else None
-    return None
-
-
-def _feature_label(feature: Any) -> str:
-    text = str(feature or "").replace("_", " ").strip()
-    return text or "model driver"
-
-
-def _top_driver_feature(row: dict) -> str:
-    parsed = [
-        driver
-        for driver in (_parse_driver(item) for item in (row.get("drivers") or []))
-        if driver
-    ]
-    if not parsed:
-        return "model driver"
-    parsed.sort(key=lambda item: abs(_clean_float(item.get("contribution")) or 0.0), reverse=True)
-    return _feature_label(parsed[0].get("feature"))
-
-
 def _fmt_decimal(value: Any, digits: int = 3) -> str | None:
     numeric = _clean_float(value)
     if numeric is None:
@@ -183,11 +153,10 @@ def _stat_snippet(row: dict) -> str:
 
 
 def _why(row: dict) -> str:
-    # Native-only: the top rank_v1 driver + the current stat line. We deliberately
-    # do NOT surface the DD breakout_label here -- it can contradict the score
-    # direction (e.g. "slipping" on a riser) and is DD-sourced, which would be at
-    # odds with this artifact's dd_context_used=False source policy.
-    parts = [_top_driver_feature(row)]
+    # The current stat line behind the move -- the concrete, plain-English why.
+    # We intentionally do NOT surface raw model feature names ("ops x youth") or
+    # the DD breakout_label (DD-sourced + can contradict the score direction).
+    parts = []
     snippet = _stat_snippet(row)
     if snippet:
         parts.append(snippet)

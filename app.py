@@ -5987,7 +5987,7 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
     date_label = _editorial_date(generated_at)
-    subtitle = "Biggest denoised Rank v1 score risers and fallers"
+    subtitle = "Biggest 7-day risers & fallers on the prospect board"
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
     _graphic_header(
@@ -5995,7 +5995,7 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
         draw,
         headline="PROSPECT MOVERS",
         subtitle=subtitle,
-        extra_line="Clean tail only - no cross-epoch jumps",
+        extra_line="Real, sustained moves - model re-baselines filtered out",
         tagline="Prospect Movers",
     )
 
@@ -6035,7 +6035,7 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
 
     draw_section("RISING", rising, 48, 242, 480, green)
     draw_section("COOLING", cooling, 552, 242, 480, red)
-    _graphic_footer(draw, right_note="Rank v1 score clean_tail; min +/-2.0")
+    _graphic_footer(draw, right_note="ValuCast prospect score - last 7 days")
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -6060,12 +6060,12 @@ def movers_share_card_png():
 def movers_share_card():
     html = build_share_preview_html(
         title="Prospect Movers",
-        subtitle="Biggest denoised Rank v1 score risers and fallers",
+        subtitle="Biggest 7-day risers & fallers on the prospect board",
         png_url="/movers/share-card.png",
         filename="valucast-prospect-movers.png",
         public_png_url=_public_url("/movers/share-card.png"),
         public_page_url=_public_url("/movers/share-card"),
-        description="Daily ValuCast prospect movers after clean-tail denoising.",
+        description="The biggest weekly risers and fallers on the ValuCast prospect board.",
         image_alt="ValuCast Prospect Movers board",
         back_url="/movers",
         back_label="Back to Prospect Movers",

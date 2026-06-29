@@ -2,13 +2,13 @@
 
 {% block title %}Prospect Movers | ValuCast{% endblock %}
 {% block og_title %}Prospect Movers | ValuCast{% endblock %}
-{% block og_description %}The biggest denoised ValuCast Rank v1 prospect risers and fallers.{% endblock %}
+{% block og_description %}The biggest weekly risers and fallers on the ValuCast prospect board.{% endblock %}
 {% block og_url %}https://valucast.app/movers{% endblock %}
 {% block og_image %}https://valucast.app/movers/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
 {% block twitter_title %}Prospect Movers | ValuCast{% endblock %}
-{% block twitter_description %}The biggest denoised ValuCast Rank v1 prospect risers and fallers.{% endblock %}
+{% block twitter_description %}The biggest weekly risers and fallers on the ValuCast prospect board.{% endblock %}
 {% block twitter_image %}https://valucast.app/movers/share-card.png{% endblock %}
 
 {% block content %}
@@ -30,8 +30,8 @@
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">PROSPECT MOVERS</span>
         <h1>PROSPECT MOVERS</h1>
-        <p class="buys-heading-sub">{{ mover_count }} clean-tail movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
-        <p class="buys-fineprint">Rank v1 score movement only. Step-guarded clean tails exclude hard re-baselines and stale gaps.</p>
+        <p class="buys-heading-sub">{{ mover_count }} movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
+        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last 7 days. We filter out the model's nightly re-baselines so you only see real, sustained movement.</p>
     </div>
     <div class="buys-actions">
         <a class="export-btn" href="/movers/share-card" target="_blank" rel="noopener">Preview graphic</a>
@@ -42,7 +42,7 @@
 {% if not movers_available %}
 <section class="map-heading glass">
     <h2>Movers artifact unavailable</h2>
-    <p>The board will populate after the next Rank v1 archive build.</p>
+    <p>The board will populate after the next daily build.</p>
 </section>
 {% else %}
 <div class="movers-grid">
