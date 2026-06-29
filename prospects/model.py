@@ -33,6 +33,16 @@ MATURE_THROUGH = 2019
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
 SAMPLE_REGRESSION = {"hitter": 200.0, "pitcher": 50.0}
+# W2.4 stale->current pull bounds. When the model scored a prior-YEAR line but a
+# factually WORSE current line exists, the score is pulled DOWN toward the
+# current comparator. The pull was capped at 0.35 and floored at nothing, so a
+# thin-but-damning current line (e.g. 12 IP / 6.00 ERA) barely corrected an
+# inflated prior-year score. Floor the pull so a confirmed-bad current line
+# always counts; cap it so a thin current line never fully overrides the prior.
+# Only fires behind the _current_line_is_bad guard (so it can't over-pull a
+# tiny-but-good current line) and only downward (max(0, prior - current)).
+STALE_PULL_FLOOR = 0.40
+STALE_PULL_CAP = 0.60
 # Level vocabulary for stat-based scoring. A/A+ were added so the model scores
 # lower-minors prospects on their current line instead of falling back to
 # pedigree (which mechanically forced low confidence). Codes preserve the
@@ -1260,7 +1270,11 @@ def score_current(
                     current_outcome = _predict_model(outcome_runtime, comp_regressed)
                     current_impact = _predict_model(impact_runtime, comp_impact_features)
                     pull_w = min(
-                        0.35, comp_sample / (comp_sample + SAMPLE_REGRESSION[role])
+                        STALE_PULL_CAP,
+                        max(
+                            STALE_PULL_FLOOR,
+                            comp_sample / (comp_sample + SAMPLE_REGRESSION[role]),
+                        ),
                     )
                     prior_outcome = row["expected_outcome_score"]
                     prior_impact = row["expected_category_impact_score"]

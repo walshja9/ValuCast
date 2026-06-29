@@ -554,11 +554,13 @@ def test_stale_current_correction_pulls_prior_only_when_current_is_worse():
         for r in score_current(contract, payload["roles"], payload["impact_roles"])
     }
 
-    # prior selected + worse current -> corrected DOWN, pull within [0, 0.35]
+    # prior selected + worse current -> corrected DOWN, pull within the
+    # floored/capped band [STALE_PULL_FLOOR, STALE_PULL_CAP] = [0.40, 0.60]
+    # (floored so a thin-but-damning current line still corrects a stale score).
     sc = rows[3].get("stale_current_correction")
     assert sc is not None
     assert rows[3]["expected_outcome_score"] < sc["raw_outcome"]
-    assert 0.0 < sc["pull_weight"] <= 0.35
+    assert 0.40 <= sc["pull_weight"] <= 0.60
     # prior with no current line -> untouched
     assert "stale_current_correction" not in rows[4]
     # current-selected -> untouched
