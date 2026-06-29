@@ -164,6 +164,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "MLB_ROSTER_STATUS": tmp_path / "mlb_roster_status.json",
         "MLB_DYNASTY_LAYER": tmp_path / "mlb_dynasty_layer.json",
         "VALUCAST_MOVERS": tmp_path / "valucast_movers.json",
+        "VALUCAST_RECEIPTS": tmp_path / "valucast_receipts.json",
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
         "VALUCAST_BUYS_MONITOR": tmp_path / "valucast_buys_monitor.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
@@ -221,6 +222,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["VALUCAST_MOVERS"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["VALUCAST_RECEIPTS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["VALUCAST_BUYS"].write_text(

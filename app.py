@@ -336,6 +336,10 @@ VALUCAST_MOVERS_PATH = Path(os.environ.get(
     "VALUCAST_MOVERS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_prospect_movers.json"),
 ))
+VALUCAST_RECEIPTS_PATH = Path(os.environ.get(
+    "VALUCAST_RECEIPTS_PATH",
+    str(Path(__file__).parent / "data" / "models" / "valucast_call_up_receipts.json"),
+))
 
 
 def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
@@ -6069,6 +6073,141 @@ def movers_share_card():
         image_alt="ValuCast Prospect Movers board",
         back_url="/movers",
         back_label="Back to Prospect Movers",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+def _load_receipts_payload(path=VALUCAST_RECEIPTS_PATH):
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _build_receipts_page_context():
+    payload = _load_receipts_payload()
+    receipts = list(payload.get("receipts") or [])
+    generated_at = payload.get("generated_at")
+    return {
+        "receipts": receipts,
+        "receipt_count": len(receipts),
+        "receipts_available": bool(payload),
+        "receipts_generated_at": generated_at,
+        "as_of": generated_at or store.as_of,
+    }
+
+
+@app.route("/receipts")
+def receipts():
+    context = _build_receipts_page_context()
+    return render_template("receipts.html", **context)
+
+
+def _receipts_share_card_png(receipts, *, generated_at=None):
+    """Deterministic server-side Call-Up Receipts graphic."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    palette = _GRAPHIC_PALETTE
+    bg = palette["bg"]
+    card = palette["card"]
+    card_2 = palette["card_2"]
+    border = palette["border"]
+    green = palette["green"]
+    blue = palette["blue"]
+    text = palette["text"]
+    muted = palette["muted"]
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    date_label = _editorial_date(generated_at)
+    subtitle = f"{len(receipts or [])} ValuCast-ranked prospects reached MLB active rosters"
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="CALL-UP RECEIPTS",
+        subtitle=subtitle,
+        extra_line="Consensus recomputed from public boards at last prospect rank",
+        tagline="Call-Up Receipts",
+    )
+
+    f_section = _graphic_font(28, bold=True)
+    f_date = _graphic_font(16, bold=True, mono=True)
+    f_name = _graphic_font(25, bold=True)
+    f_meta = _graphic_font(15)
+    f_rank = _graphic_font(16, bold=True, mono=True)
+    f_gap = _graphic_font(25, bold=True, mono=True)
+    row_h = 78
+    x, y, w = 48, 242, 984
+    draw.rounded_rectangle((x, y, x + w, y + 1004), radius=10, fill=card, outline=border, width=1)
+    draw.text((x + 20, y + 18), "RECEIPTS", fill=green, font=f_section)
+    if not receipts:
+        draw.text((x + 20, y + 98), "No call-up receipts have been logged yet.", fill=muted, font=f_name)
+    for idx, row in enumerate(list(receipts or [])[:14]):
+        top = y + 70 + idx * row_h
+        fill = card_2 if idx % 2 == 0 else card
+        draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
+        if idx:
+            draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
+        call_date = str(row.get("call_up_date") or "")[:10]
+        draw.text((x + 18, top + 14), call_date, fill=blue, font=f_date)
+        name = _graphic_fit_text(draw, row.get("name"), f_name, 360)
+        draw.text((x + 154, top + 10), name, fill=text, font=f_name)
+        meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
+        draw.text((x + 154, top + 43), _graphic_fit_text(draw, meta, f_meta, 360), fill=muted, font=f_meta)
+        consensus_rank = row.get("consensus_rank")
+        if consensus_rank not in (None, ""):
+            ranks = f"VC #{row.get('valucast_rank')} vs consensus #{consensus_rank}"
+        else:
+            ranks = f"VC #{row.get('valucast_rank')} - {row.get('field_label') or 'field outside top 100'}"
+        draw.text((x + 566, top + 28), _graphic_fit_text(draw, ranks, f_rank, 330), fill=muted, font=f_rank)
+        try:
+            gap = f"+{int(row.get('divergence'))}"
+            draw.text((x + w - 24 - _graphic_text_width(draw, gap, f_gap), top + 23), gap, fill=green, font=f_gap)
+        except (TypeError, ValueError):
+            gap = "AHEAD"
+            draw.text((x + w - 24 - _graphic_text_width(draw, gap, f_rank), top + 30), gap, fill=green, font=f_rank)
+
+    _graphic_footer(draw, right_note="ValuCast rank above public consensus before MLB call-up")
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/receipts/share-card.png")
+def receipts_share_card_png():
+    context = _build_receipts_page_context()
+    png = _receipts_share_card_png(
+        context["receipts"],
+        generated_at=context["receipts_generated_at"],
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-call-up-receipts.png"'
+    return response
+
+
+@app.route("/receipts/share-card")
+def receipts_share_card():
+    html = build_share_preview_html(
+        title="Call-Up Receipts",
+        subtitle="Prospects ValuCast ranked above consensus before MLB call-up",
+        png_url="/receipts/share-card.png",
+        filename="valucast-call-up-receipts.png",
+        public_png_url=_public_url("/receipts/share-card.png"),
+        public_page_url=_public_url("/receipts/share-card"),
+        description="Permanent receipts for prospects ValuCast ranked above consensus before MLB call-up.",
+        image_alt="ValuCast Call-Up Receipts board",
+        back_url="/receipts",
+        back_label="Back to Call-Up Receipts",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
