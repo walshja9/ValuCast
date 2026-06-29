@@ -1,6 +1,8 @@
 """Redraft individual player share-card routes."""
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from werkzeug.datastructures import MultiDict
 
@@ -134,6 +136,92 @@ def test_redraft_context_without_dynasty_match_does_not_crash(monkeypatch):
 
     assert status == 200
     assert "Age " not in fields["meta"]
+
+
+def _card_dynasty_row(value_history=()):
+    return SimpleNamespace(
+        name="Momentum Bat",
+        team="BOS",
+        positions=("SS",),
+        level="MLB",
+        age=25,
+        dynasty_value=70.0,
+        dynasty_rank=12,
+        confidence={"level": "high", "range": {"low": 66, "high": 74}},
+        value_by_preset={},
+        dna="Card read.",
+        value_history=value_history,
+    )
+
+
+def test_dynasty_player_card_fields_include_value_momentum():
+    row = _card_dynasty_row((
+        ("2026-06-12", 66.8),
+        ("2026-06-28", 70.0),
+    ))
+
+    fields = app_module._card_value_fields("dynasty", row, {"statcast_groups": []})
+
+    assert fields["momentum_label"] == "UP +3.2 IN 16D"
+
+
+def test_dynasty_player_card_fields_skip_empty_value_momentum():
+    fields = app_module._card_value_fields(
+        "dynasty",
+        _card_dynasty_row(()),
+        {"statcast_groups": []},
+    )
+
+    assert fields["momentum_label"] == ""
+
+
+def test_redraft_player_card_fields_use_joined_dynasty_value_history():
+    row = SimpleNamespace(
+        id="redraft-1",
+        name="Redraft Bat",
+        pool=app_module.PlayerPool.HITTER,
+        positions=("OF",),
+        metadata={"team": "BOS"},
+        stats={},
+    )
+    context = {
+        "as_of": "2026-06-28",
+        "dyn_result": SimpleNamespace(total_value=12.0),
+        "overall_ranks": {"redraft-1": 7},
+        "redraft_value_scale": (0.0, 20.0),
+        "redraft_dynasty_row": _card_dynasty_row((
+            ("2026-06-12", 66.8),
+            ("2026-06-28", 70.0),
+        )),
+        "statcast_groups": [],
+    }
+
+    fields = app_module._card_value_fields("redraft", row, context)
+
+    assert fields["momentum_label"] == "UP +3.2 IN 16D"
+
+
+def test_redraft_player_card_fields_skip_joined_dynasty_row_without_history():
+    row = SimpleNamespace(
+        id="redraft-1",
+        name="Redraft Bat",
+        pool=app_module.PlayerPool.HITTER,
+        positions=("OF",),
+        metadata={"team": "BOS"},
+        stats={},
+    )
+    context = {
+        "as_of": "2026-06-28",
+        "dyn_result": SimpleNamespace(total_value=12.0),
+        "overall_ranks": {"redraft-1": 7},
+        "redraft_value_scale": (0.0, 20.0),
+        "redraft_dynasty_row": _card_dynasty_row(()),
+        "statcast_groups": [],
+    }
+
+    fields = app_module._card_value_fields("redraft", row, context)
+
+    assert fields["momentum_label"] == ""
 
 
 @pytest.mark.parametrize("role", ["hitter", "pitcher"])

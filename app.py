@@ -468,6 +468,10 @@ def _buy_spark_label(spark: dict | None) -> str:
     return f"{direction} {delta:+.1f}{suffix}"
 
 
+def _value_momentum_label(row) -> str:
+    return _buy_spark_label(build_spark(getattr(row, "value_history", None)))
+
+
 dd_store, dynasty_data_source = _select_dynasty_store(public_snapshot_store)
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
 _DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE = {}
@@ -3022,12 +3026,14 @@ def _card_value_fields(mode, row, context):
         preset_items = _dynasty_value_preset_items(row)
         if preset_items:
             value_notes.append(" / ".join(f"{label} {val}" for label, val in preset_items[:2]))
+        momentum_label = _value_momentum_label(row)
         return {
             "headline": "DYNASTY VALUE CARD",
             "subtitle": subtitle,
             "meta": meta,
             "value": getattr(row, "dynasty_value", None),
             "rank": getattr(row, "dynasty_rank", None),
+            "momentum_label": momentum_label,
             "value_notes": value_notes,
             "read_label": "THE DYNASTY READ",
             "read_text": _dynasty_card_read(row, context),
@@ -3055,6 +3061,7 @@ def _card_value_fields(mode, row, context):
         value_notes = ["0-100 redraft scale"]
         if dynasty_row is not None:
             value_notes.extend(_dynasty_confidence_lines(dynasty_row))
+        momentum_label = _value_momentum_label(dynasty_row) if dynasty_row is not None else ""
         return {
             "headline": "REDRAFT VALUE CARD",
             "subtitle": subtitle,
@@ -3064,6 +3071,7 @@ def _card_value_fields(mode, row, context):
                 context.get("redraft_value_scale"),
             ),
             "rank": ranks.get(row.id),
+            "momentum_label": momentum_label,
             "value_notes": value_notes,
             "read_label": "THE REDRAFT READ",
             "read_text": _redraft_card_read(row, context),
@@ -3103,7 +3111,7 @@ def _player_value_card_png(row, context, mode):
     draw.text((76, 314), _graphic_fit_text(draw, meta, _graphic_font(22, mono=True), 610), fill=muted, font=_graphic_font(22, mono=True))
     draw.text((76, 350), "vs MLB Statcast", fill=muted, font=_graphic_font(18, mono=True))
 
-    draw.rounded_rectangle((760, 244, 1002, 382), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
+    draw.rounded_rectangle((760, 244, 1002, 402), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
     draw.text((780, 262), "VALUCAST VALUE", fill=muted, font=_graphic_font(13, bold=True))
     value = fields["value"]
     value_text = f"{float(value):.1f}" if isinstance(value, (int, float)) else "-"
@@ -3111,9 +3119,19 @@ def _player_value_card_png(row, context, mode):
     rank = fields["rank"]
     rank_text = f"#{rank}" if rank is not None else "#-"
     draw.text((900, 294), rank_text, fill=muted, font=_graphic_font(18, bold=True, mono=True))
+    momentum_label = fields.get("momentum_label") or ""
+    note_y = 334
+    if momentum_label:
+        chip_font = _graphic_font(13, bold=True, mono=True)
+        chip_text = _graphic_fit_text(draw, momentum_label, chip_font, 176)
+        chip_w = min(198, _graphic_text_width(draw, chip_text, chip_font) + 22)
+        accent = bar_low if momentum_label.startswith("DOWN") else green if momentum_label.startswith("UP") else muted
+        draw.rounded_rectangle((780, 324, 780 + chip_w, 348), radius=7, fill=(16, 35, 34), outline=(20, 59, 55), width=1)
+        draw.text((791, 329), chip_text, fill=accent, font=chip_font)
+        note_y = 356
     value_notes = fields["value_notes"]
     for idx, note in enumerate(value_notes[:2]):
-        draw.text((780, 334 + idx * 22), _graphic_fit_text(draw, note, _graphic_font(15, bold=True), 198), fill=muted, font=_graphic_font(15, bold=True))
+        draw.text((780, note_y + idx * 20), _graphic_fit_text(draw, note, _graphic_font(15, bold=True), 198), fill=muted, font=_graphic_font(15, bold=True))
 
     # MLB Statcast bars
     statcast_items = _dynasty_statcast_card_items(context)
@@ -6691,7 +6709,6 @@ def _build_redraft_player_card_context(player_id, args):
         "as_of": active.as_of,
         "redraft_value_scale": _redraft_value_scale(detail_results),
         "redraft_dynasty_row": dynasty_row,
-        "ahead_of_consensus": _ahead_of_consensus_for_key(_identity_key(mlbam_id, role)),
     })
     return card_ctx, 200
 

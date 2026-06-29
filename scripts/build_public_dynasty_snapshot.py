@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -29,10 +30,14 @@ BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
+MLB_VALUE_HISTORY_ARCHIVE_DIR = (
+    ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
+)
 
 SCHEMA_VERSION = "1.1"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
+MLB_VALUE_HISTORY_LIMIT = 30
 CALIBRATION_METHOD = "raw_common_scale_certification_v1"
 TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_1"
 TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
@@ -101,6 +106,70 @@ def _clean_int(value) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _mlb_archive_rows(payload) -> list[dict]:
+    if isinstance(payload, dict):
+        rows = payload.get("players") or payload.get("rows") or []
+    elif isinstance(payload, list):
+        rows = payload
+    else:
+        rows = []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _combined_mlb_history_value(values: list[float]) -> float:
+    ordered = sorted(values, reverse=True)
+    if len(ordered) == 1:
+        return ordered[0]
+    return round(min(100.0, ordered[0] + TWO_WAY_SECONDARY_VALUE_WEIGHT * sum(ordered[1:])), 2)
+
+
+def _mlb_value_history_from_archives(
+    archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
+) -> dict[str, list[tuple[str, float]]]:
+    if not archive_dir:
+        return {}
+    archive_dir = Path(archive_dir)
+    if not archive_dir.exists():
+        return {}
+
+    history: dict[str, list[tuple[str, float]]] = {}
+    files = sorted(archive_dir.glob("*.json"), key=lambda path: path.stem)[-MLB_VALUE_HISTORY_LIMIT:]
+    for path in files:
+        date_str = _date_part(path.stem)
+        if not date_str:
+            continue
+        by_player: dict[str, list[float]] = {}
+        for row in _mlb_archive_rows(_load_json(path)):
+            mlbam_id = _mlbam_id(row)
+            value = _clean_float(row.get("value"))
+            if not mlbam_id or value is None or not math.isfinite(value):
+                continue
+            by_player.setdefault(mlbam_id, []).append(value)
+        for mlbam_id, values in by_player.items():
+            history.setdefault(mlbam_id, []).append(
+                (date_str, _combined_mlb_history_value(values))
+            )
+    return history
+
+
+def _attach_mlb_value_history(
+    rows: list[dict],
+    history: dict[str, list[tuple[str, float]]],
+    generated_at: str,
+) -> None:
+    generated_date = _date_part(generated_at)
+    for row in rows:
+        mlbam_id = _mlbam_id(row)
+        points = list(history.get(mlbam_id, [])) if mlbam_id else []
+        current = _clean_float(row.get("value"))
+        if generated_date and current is not None and math.isfinite(current):
+            points = [(date_str, value) for date_str, value in points if date_str != generated_date]
+            points.append((generated_date, float(current)))
+        context = dict(row.get("context") or {})
+        context["value_history"] = points[-MLB_VALUE_HISTORY_LIMIT:]
+        row["context"] = context
 
 
 def _snapshot_id(row: dict) -> str:
@@ -947,6 +1016,7 @@ def build_snapshot(
     milb_stat_freshness_audit: dict | None = None,
     actuals: list | None = None,
     generated_at: str | None = None,
+    mlb_value_history_archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
 ) -> dict:
     if generated_at is None:
         build_time = datetime.now(timezone.utc)
@@ -1138,6 +1208,11 @@ def build_snapshot(
     )
     if calibration_report.get("applied"):
         _apply_common_value_scale(combined_rows, calibration_report)
+    _attach_mlb_value_history(
+        mlb_rows,
+        _mlb_value_history_from_archives(mlb_value_history_archive_dir),
+        generated_at,
+    )
     players = _assign_global_ranks(combined_rows)
     if milb_stat_freshness_audit is None and prospect_inputs:
         milb_stat_freshness_audit = build_milb_stat_freshness_audit(

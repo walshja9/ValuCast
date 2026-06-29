@@ -576,6 +576,37 @@ def test_public_snapshot_preserves_prospect_handedness_for_scouting():
     assert pitcher.throws == "L"
 
 
+def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
+    for date_str, value in [
+        ("2026-06-11", 82.0),
+        ("2026-06-12", 85.5),
+        ("2026-06-13", 88.0),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps({"players": [{"mlbam_id": 99, "value": value}]}),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=tmp_path,
+    )
+
+    mlb = next(row for row in payload["players"] if row["mlbam_id"] == 99)
+    prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+
+    assert mlb["context"]["value_history"] == [
+        ("2026-06-11", 82.0),
+        ("2026-06-12", 85.5),
+        ("2026-06-13", 90.0),
+    ]
+    assert len(mlb["context"]["value_history"]) <= 30
+    assert "value_history" not in prospect["context"]
+
+
 def test_snapshot_carries_peak_projection_card_context(tmp_path):
     payload = build_snapshot(
         _rank_payload(),
