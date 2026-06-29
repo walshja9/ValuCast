@@ -37,7 +37,6 @@ from web.category_registry import (
     DEFAULT_PCATS,
 )
 from web.config_builder import build_config, build_url_params, parse_list
-from web.dd_feed_store import DDFeedStore
 from web.public_snapshot_store import PublicSnapshotStore
 from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import parse_league_settings
@@ -325,9 +324,6 @@ def _valuation_players(always_keep=None, active_store=None):
     return [player for player in players if _is_live_redraft_projection(player)]
 
 
-# Load DD Dynasty feed once at startup
-DD_FEED_PATH = Path(os.environ.get("DD_DYNASTY_FEED_PATH",
-                    str(Path(__file__).parent / "data" / "dd" / "dd_dynasty_feed.json")))
 PUBLIC_SNAPSHOT_PATH = Path(os.environ.get(
     "VALUCAST_PUBLIC_SNAPSHOT_PATH",
     str(Path(__file__).parent / "data" / "public" / "public_dynasty_snapshot.json"),
@@ -345,9 +341,8 @@ VALUCAST_MOVERS_PATH = Path(os.environ.get(
 def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
     """Inline movers strip from the ValuCast-native movers board (no DD data).
 
-    Replaces the old DD breakout_rank_change widget; reads the denoised
-    valucast_prospect_movers.json and surfaces the biggest score moves
-    (risers + fallers), so the strip carries zero DD-sourced fields.
+    Reads the denoised valucast_prospect_movers.json and surfaces the biggest
+    score moves (risers + fallers), so the strip carries zero DD-sourced fields.
     """
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -367,7 +362,6 @@ def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_P
     return strip[:limit]
 
 
-legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
 
@@ -6419,7 +6413,6 @@ def health_ready():
             "ready_for_live_consumers": valucast_buy_store.ready_for_live_consumers,
             "live": buys_live,
         },
-        "dd_comparison_feed": {"available": legacy_dd_store.is_available},
         "dynasty_data_source": dynasty_data_source,
         "commit": os.environ.get("RENDER_GIT_COMMIT", ""),
     }

@@ -874,7 +874,7 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.z_scores is None
     assert row.source_divergence is None
     assert row.prospect_rank == 1
-    assert row.breakout_label == "rising"
+    assert not hasattr(row, "breakout_label")
     assert row.public_source_consensus == 10
     assert row.stat_line == {"ops": 0.900, "pa": 200}
     assert row.stat_line_translated == {
@@ -1636,9 +1636,12 @@ def test_snapshot_context_drops_unused_dd_keys_keeps_source_ranks():
         "dd_dynasty_value",
         "dd_prospect_rank",
         "has_dd_context",
+        "breakout_label",
+        "breakout_rank_change",
         "value_history_points",
     ):
         assert key not in context
+        assert key not in prospect
     # External-board comparison context is kept (feeds the labeled panel).
     assert "source_ranks" in context
 

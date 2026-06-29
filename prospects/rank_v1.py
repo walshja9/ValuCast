@@ -33,7 +33,6 @@ DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 MILB_SEASON_STATS_PATH = ROOT / "data" / "prospects" / "raw" / "milb_season_stats.json"
 MILB_CARD_HISTORY_PATH = ROOT / "data" / "prospects" / "raw" / "milb_card_history.json"
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
-DD_ADAPTER_PATH = ROOT / "data" / "models" / "valucast_dd_7x7_prospect_adapter.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
@@ -688,18 +687,6 @@ def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
         )
 
     return {key: value for key, value in context.items() if value is not None}
-
-
-def _adapter_lookup(adapter: dict | None) -> dict[tuple[str, str], dict]:
-    if not adapter:
-        return {}
-    lookup = {}
-    for role, result in (adapter.get("roles") or {}).items():
-        for row in result.get("players") or []:
-            key = identity_key(row.get("mlbam_id"), role)
-            if key:
-                lookup[key] = row
-    return lookup
 
 
 def _universe_rows(prospect_universe: dict) -> list[dict]:
@@ -1646,7 +1633,6 @@ def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
 
 def _context(
     dd_row: dict | None,
-    adapter_row: dict | None,
     input_row: dict | None,
     role: str | None,
     service_row: dict | None = None,
@@ -1705,13 +1691,7 @@ def _context(
     bats = _hand_code((input_row or {}).get("bats") or (dd_row or {}).get("bats"))
     throws = _hand_code((input_row or {}).get("throws") or (dd_row or {}).get("throws"))
     context = {
-        "has_dd_context": bool(dd_row),
-        "dd_dynasty_rank": (dd_row or {}).get("dynasty_rank"),
-        "dd_dynasty_value": (dd_row or {}).get("dynasty_value"),
-        "dd_prospect_rank": (dd_row or {}).get("prospect_rank"),
         "source_ranks": (dd_row or {}).get("source_ranks"),
-        "breakout_label": (dd_row or {}).get("breakout_label"),
-        "breakout_rank_change": (dd_row or {}).get("breakout_rank_change"),
         "value_history_points": len((dd_row or {}).get("value_history") or []),
         "bats": bats,
         "throws": throws,
@@ -1728,12 +1708,6 @@ def _context(
     graduation = _graduation_context(service_row, role, rookie_limits or {})
     if graduation:
         context["graduation_context"] = graduation
-    if adapter_row:
-        context["dd_adapter_context"] = {
-            "adapter_score": adapter_row.get("adapter_score"),
-            "adapter_rank": adapter_row.get("adapter_rank"),
-            "role": adapter_row.get("role"),
-        }
     return context
 
 
@@ -1745,14 +1719,11 @@ def _missing_sample(rows: list[dict], missing_keys: set[tuple[str, str]], limit:
         )
         key = identity_key(row.get("mlbam_id"), role)
         if key in missing_keys:
-            context = row.get("context_only") or {}
             missing.append(
                 {
                     "name": row.get("name"),
                     "mlbam_id": row.get("mlbam_id"),
                     "role": role,
-                    "dd_prospect_rank": context.get("dd_prospect_rank"),
-                    "dd_dynasty_rank": context.get("dd_dynasty_rank"),
                     "universe_source": row.get("universe_source"),
                 }
             )
@@ -1939,7 +1910,6 @@ def build_prospect_rank_v1(
     dynasty_layer: dict,
     prospect_model: dict,
     input_contract: dict,
-    dd_adapter: dict | None = None,
     dd_feed: dict | None = None,
     prospect_availability: dict | None = None,
     milb_history_by_key: dict | None = None,
@@ -1962,7 +1932,6 @@ def build_prospect_rank_v1(
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
-    adapter_by_key = _adapter_lookup(dd_adapter)
     dd_context_by_key = _dd_context_lookup(dd_feed)
 
     rows = _universe_rows(prospect_universe)
@@ -2092,7 +2061,6 @@ def build_prospect_rank_v1(
                 "drivers": _drivers(model_profile, layer_profile or {}),
                 "context_only": _context(
                     dd_row,
-                    adapter_by_key.get(key),
                     input_row,
                     role,
                     service_row,
@@ -2261,7 +2229,6 @@ def build_prospect_rank_v1(
             "prospect_availability_profile_count": (
                 prospect_availability or {}
             ).get("profile_count"),
-            "dd_adapter_version": (dd_adapter or {}).get("adapter_version"),
         },
         "promotion": {
             "live_consumer": "candidate_ready" if not validation["blockers"] else "blocked",
@@ -2322,7 +2289,6 @@ def run_prospect_rank_v1(
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     availability_path: Path | None = AVAILABILITY_PATH,
     mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
-    dd_adapter_path: Path = DD_ADAPTER_PATH,
     dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
@@ -2341,11 +2307,6 @@ def run_prospect_rank_v1(
         if mlb_roster_status_path is not None and mlb_roster_status_path.exists()
         else None
     )
-    dd_adapter = (
-        json.loads(dd_adapter_path.read_text(encoding="utf-8"))
-        if dd_adapter_path.exists()
-        else None
-    )
     dd_feed = (
         json.loads(dd_feed_path.read_text(encoding="utf-8"))
         if dd_feed_path.exists()
@@ -2357,7 +2318,6 @@ def run_prospect_rank_v1(
         dynasty_layer,
         prospect_model,
         input_contract,
-        dd_adapter=dd_adapter,
         dd_feed=dd_feed,
         prospect_availability=prospect_availability,
         milb_history_by_key=milb_history_by_key,

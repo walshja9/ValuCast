@@ -97,7 +97,9 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
         with mock.patch.object(app_module, "valucast_buy_store", blocked_buys):
             response = self.client.get("/health/ready")
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(response.get_json()["valucast_buys"]["live"])
+        body = response.get_json()
+        self.assertFalse(body["valucast_buys"]["live"])
+        self.assertNotIn("dd_comparison_feed", body)
 
     def test_health_ready_survives_snapshot_governor_block(self):
         """A quality-governor block on the public snapshot (available but not

@@ -319,7 +319,6 @@ def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_adapter=_adapter(),
         dd_feed=_feed(),
     )
     assert payload["status"] == "blocked"
@@ -387,13 +386,11 @@ def test_rank_v1_applies_bounded_availability_discount():
 
 def test_dd_and_public_rank_context_does_not_change_scores():
     feed = _feed()
-    adapter = _adapter()
     original = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_adapter=adapter,
         dd_feed=feed,
     )
     original_score = {
@@ -408,13 +405,11 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     feed["players"][0]["stat_line"] = {"ops": 0.900, "pa": 200}
     feed["players"][0]["stat_line_translated"] = {"stats": {"OPS": 0.760}}
     feed["players"][0]["mlb_stat_line"] = {"pa": 12, "ops": 0.700}
-    adapter["roles"]["hitter"]["players"][0]["adapter_score"] = 999.0
     changed = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_adapter=adapter,
         dd_feed=feed,
     )
     changed_score = {row["mlbam_id"]: row["score"] for row in changed["board"]}
@@ -423,9 +418,17 @@ def test_dd_and_public_rank_context_does_not_change_scores():
     context = next(row for row in changed["board"] if row["mlbam_id"] == 1)[
         "context_only"
     ]
-    assert context["dd_dynasty_value"] == 150.0
+    for key in (
+        "has_dd_context",
+        "dd_dynasty_rank",
+        "dd_dynasty_value",
+        "dd_prospect_rank",
+        "dd_adapter_context",
+        "breakout_label",
+        "breakout_rank_change",
+    ):
+        assert key not in context
     assert context["source_ranks"]["pipeline"] == 1
-    assert context["dd_adapter_context"]["adapter_score"] == 999.0
     assert context["stat_line"] == {"ops": 0.900, "pa": 200}
     assert context["stat_line_translated"] == {"stats": {"OPS": 0.760}}
     assert context["mlb_stat_line"] == {"pa": 12, "ops": 0.700}
@@ -456,7 +459,7 @@ def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
     context = next(row for row in payload["board"] if row["mlbam_id"] == 2)[
         "context_only"
     ]
-    assert context["has_dd_context"] is False
+    assert "has_dd_context" not in context
     assert context["stat_line_source"] == "valucast_input_contract"
     assert context["stat_line_sample"] == 150
     assert context["stat_line_sample_unit"] == "PA"
@@ -868,7 +871,9 @@ def test_rank_v1_does_not_require_dd_feed_context():
 
     assert payload["candidate_count"] == 2
     assert payload["ranked_count"] == 2
-    assert all(row["context_only"]["has_dd_context"] is False for row in payload["board"])
+    assert all(
+        "has_dd_context" not in row["context_only"] for row in payload["board"]
+    )
 
 
 def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
@@ -1252,7 +1257,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     input_path = tmp_path / "input.json"
     availability_path = tmp_path / "availability.json"
     roster_status_path = tmp_path / "roster_status.json"
-    adapter_path = tmp_path / "adapter.json"
     artifact_path = tmp_path / "rank.json"
 
     universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
@@ -1265,7 +1269,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         json.dumps(_mlb_roster_status()),
         encoding="utf-8",
     )
-    adapter_path.write_text(json.dumps(_adapter()), encoding="utf-8")
 
     result = run_prospect_rank_v1(
         prospect_universe_path=universe_path,
@@ -1274,7 +1277,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         input_contract_path=input_path,
         availability_path=availability_path,
         mlb_roster_status_path=roster_status_path,
-        dd_adapter_path=adapter_path,
         dd_feed_path=feed_path,
         artifact_path=artifact_path,
         archive_dir=tmp_path / "archive",
@@ -1286,4 +1288,5 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     assert result["archive_changed"] is True
     assert payload["board"][0]["rank"] == 1
     assert payload["board"][0]["components"]["availability"]["present"] is True
+    assert "dd_adapter_version" not in payload["input_artifacts"]
     assert (tmp_path / "archive" / "2026-06-13.json").exists()

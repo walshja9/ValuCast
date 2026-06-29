@@ -64,7 +64,7 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.prospect_rank, 3)
         self.assertEqual(row.level, "AA")
         self.assertEqual(row.eta, 2027)
-        self.assertEqual(row.breakout_label, "steady")
+        self.assertFalse(hasattr(row, "breakout_label"))
         self.assertIsNotNone(row.stat_line)
         self.assertEqual(row.source_divergence, 55)
         # cfr is excluded from the public consensus (deep stat-formula scale).

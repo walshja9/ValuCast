@@ -88,8 +88,6 @@ class PublicSnapshotRow:
     eta: int | None = None
     source_ranks: dict | None = None
     source_divergence: float | None = None
-    breakout_label: str | None = None
-    breakout_rank_change: int | None = None
     value_history: tuple = ()
     stat_line: dict | None = None
     mlb_stat_line: dict | None = None
@@ -743,12 +741,6 @@ class PublicSnapshotRow:
             eta=cls._coerce_int(record.get("eta")),
             source_ranks=cls._coerce_dict(context.get("source_ranks")),
             source_divergence=record.get("source_divergence"),
-            breakout_label=record.get("breakout_label") or context.get("breakout_label"),
-            breakout_rank_change=cls._coerce_int(
-                record.get("breakout_rank_change")
-                if record.get("breakout_rank_change") is not None
-                else context.get("breakout_rank_change")
-            ),
             value_history=cls._coerce_value_history(context.get("value_history")),
             stat_line=cls._coerce_dict(record.get("stat_line")),
             mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),

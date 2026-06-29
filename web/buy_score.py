@@ -143,10 +143,17 @@ def runway_score(age, level):
     return (age_term + level_term) / 2
 
 
+def _breakout_label(row):
+    return getattr(row, "breakout_label", None) or (
+        getattr(row, "metadata", {}) or {}
+    ).get("breakout_label")
+
+
 def score_row(row):
+    label = _breakout_label(row)
     terms = {
         "momentum": momentum_score(row.value_history),
-        "breakout": breakout_score(row.breakout_label),
+        "breakout": breakout_score(label),
         "gap": consensus_gap_score(row.source_ranks),
         "runway": runway_score(row.age, row.level),
     }
@@ -215,6 +222,7 @@ def build_board(rows, n=BOARD_SIZE):
         positions = list(row.positions or ())
         team_id = TEAM_IDS.get(row.team)
         mlbam = row.mlbam_id if row.mlbam_id else 0  # 0 forces the silhouette
+        label = _breakout_label(row)
         board.append({
             "rank": rank,
             "id": row.id,
@@ -224,10 +232,10 @@ def build_board(rows, n=BOARD_SIZE):
             "level": row.level or "—",
             "age": row.age,
             "score": round(max(composite, 0.0) * 100, 1),
-            "label": row.breakout_label or "",
+            "label": label or "",
             "terms": terms,
             "initials": graphic_initials(row.name),
-            "reason": graphic_reason(terms, row.breakout_label),
+            "reason": graphic_reason(terms, label),
             "headshot_url": HEADSHOT_URL.format(mlbam_id=mlbam),
             "logo_url": LOGO_URL.format(team_id=team_id) if team_id else None,
             "value_history": row.value_history,

@@ -625,8 +625,6 @@ def _prospect_rows(
                 "components": row.get("components") or {},
                 "drivers": row.get("drivers") or [],
                 "dynasty_signal": row.get("dynasty_signal"),
-                "breakout_label": context.get("breakout_label"),
-                "breakout_rank_change": context.get("breakout_rank_change"),
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
                 "best_single_level_stat_line": context.get("best_single_level_stat_line"),
@@ -637,11 +635,8 @@ def _prospect_rows(
                     "kind": "optional_display_context",
                     "usage": "display_only_not_used_for_valucast_score",
                     "valucast_rank_v1": row.get("rank"),
-                    # External-board comparison context (CFR/HKB/Pipeline) — kept,
-                    # labeled, never feeds a ValuCast score. The DD rank/value keys are
-                    # not dropped here: no consumer reads them off the public snapshot
-                    # (rank_v1's internal context_only still carries them for the
-                    # coverage/calibration audits).
+                    # External-board comparison context (CFR/HKB/Pipeline): kept,
+                    # labeled, never feeds a ValuCast score.
                     "source_ranks": context.get("source_ranks"),
                     "bats": context.get("bats") or row.get("bats"),
                     "throws": context.get("throws") or row.get("throws"),

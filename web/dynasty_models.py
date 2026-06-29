@@ -72,8 +72,6 @@ class DynastyRankingRow:
     eta: int | None = None
     source_ranks: dict | None = None
     source_divergence: float | None = None
-    breakout_label: str | None = None
-    breakout_rank_change: int | None = None
     stat_line: dict | None = None
     # v1.1 feed fields (all optional — 1.0 feeds simply lack them)
     value_history: tuple = ()              # ((date, value), ...) chronological
@@ -312,8 +310,6 @@ class DynastyRankingRow:
             eta=cls._coerce_int(record.get("eta")),
             source_ranks=record.get("source_ranks"),
             source_divergence=record.get("source_divergence"),
-            breakout_label=record.get("breakout_label"),
-            breakout_rank_change=cls._coerce_int(record.get("breakout_rank_change")),
             stat_line=cls._coerce_dict(record.get("stat_line")),
             value_history=cls._coerce_value_history(record.get("value_history")),
             mlb_stat_line=cls._coerce_dict(record.get("mlb_stat_line")),

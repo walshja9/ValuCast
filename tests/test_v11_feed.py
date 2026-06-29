@@ -40,7 +40,8 @@ class TestOptionalFieldCoercion(unittest.TestCase):
             eta="2027", age="20", breakout_rank_change="-6"))
         self.assertEqual(row.eta, 2027)
         self.assertEqual(row.age, 20)
-        self.assertEqual(row.breakout_rank_change, -6)
+        self.assertFalse(hasattr(row, "breakout_rank_change"))
+        self.assertEqual(row.metadata["breakout_rank_change"], "-6")
 
     def test_dict_fields_reject_non_dicts(self):
         row = DynastyRankingRow.from_feed(_record(
