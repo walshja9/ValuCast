@@ -302,3 +302,6 @@ def test_pooled_shadow_is_wired_into_public_build_and_shadow_workflow():
     assert "tests/test_pooled_shadow.py" in workflow
     assert "data/models/valucast_pooled_shadow.json" in workflow
     assert "data/prediction_archive/valucast_pooled_shadow" in workflow
+    # The workflow must actually BUILD the artifact it git-adds, or the commit
+    # step fails with "pathspec did not match any files" (exit 128).
+    assert "scripts/build_pooled_shadow.py" in workflow

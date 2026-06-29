@@ -39,6 +39,7 @@ jobs:
       - name: Build combined-level prospect shadow
         run: |
           python scripts/build_prospect_model.py
+          python scripts/build_pooled_shadow.py
           python scripts/build_prospect_universe.py
           python scripts/build_prospect_availability.py
           python scripts/build_prospect_rank_v1.py
