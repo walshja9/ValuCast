@@ -5280,15 +5280,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Houston Astros placed SS Braden Shewmake on the 10-day injured list retroactive to May 31, 2026. Right adductor strain.",
+      "availability_note": "thin upper level hitter sample under 100 pa",
       "level": "AAA",
       "mlbam_id": 669699,
       "name": "Braden Shewmake",
       "normalized_name": "braden shewmake",
       "present": true,
-      "risk_basis": "official_mlb_il",
-      "risk_discount": 0.12,
-      "risk_level": "high",
+      "risk_basis": "current_sample_size",
+      "risk_discount": 0.05,
+      "risk_level": "medium",
       "role": "hitter",
       "row_count": 1,
       "sample": 36.0,
@@ -5296,10 +5296,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "official_mlb_il_override"
+        "thin_upper_level_hitter_sample_under_100_pa"
       ],
       "source_kind": "current_season",
-      "status": "injured",
+      "status": "thin_current_sample",
       "team": "Scranton/Wilkes-Barre RailRiders"
     },
     {
@@ -23946,7 +23946,7 @@
       "risk_level": "clear",
       "role": "hitter",
       "row_count": 1,
-      "sample": 232.0,
+      "sample": 231.0,
       "sample_fetched_date": "2026-06-29",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
@@ -34067,7 +34067,7 @@
       "risk_level": "clear",
       "role": "hitter",
       "row_count": 1,
-      "sample": 300.0,
+      "sample": 301.0,
       "sample_fetched_date": "2026-06-29",
       "sample_staleness_days": 0,
       "sample_unit": "PA",
@@ -56072,15 +56072,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Houston Astros placed SS Braden Shewmake on the 10-day injured list retroactive to May 31, 2026. Right adductor strain.",
+      "availability_note": "thin pitcher workload under 12 ip",
       "level": "AAA",
       "mlbam_id": 669699,
       "name": "Braden Shewmake",
       "normalized_name": "braden shewmake",
       "present": true,
-      "risk_basis": "official_mlb_il",
-      "risk_discount": 0.12,
-      "risk_level": "high",
+      "risk_basis": "current_sample_size",
+      "risk_discount": 0.04,
+      "risk_level": "medium",
       "role": "pitcher",
       "row_count": 1,
       "sample": 0.3,
@@ -56088,10 +56088,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "official_mlb_il_override"
+        "thin_pitcher_workload_under_12_ip"
       ],
       "source_kind": "current_season",
-      "status": "injured",
+      "status": "thin_current_sample",
       "team": "Scranton/Wilkes-Barre RailRiders"
     },
     {
@@ -116775,17 +116775,17 @@
   "summary": {
     "profile_count": 4927,
     "risk_basis_counts": {
-      "current_sample_size": 1536,
+      "current_sample_size": 1538,
       "manual_override": 3,
       "none": 3228,
-      "official_mlb_il": 70,
+      "official_mlb_il": 68,
       "sample_staleness": 72,
       "upstream_factual_status": 18
     },
     "risk_level_counts": {
       "clear": 3228,
-      "high": 163,
-      "medium": 1536
+      "high": 161,
+      "medium": 1538
     },
     "risk_profile_count": 1699,
     "signal_counts": {
@@ -116793,17 +116793,17 @@
       "limited_upper_level_hitter_sample_under_150_pa": 164,
       "limited_upper_level_starter_workload_under_45_ip": 197,
       "manual_status_override": 3,
-      "official_mlb_il_override": 70,
+      "official_mlb_il_override": 68,
       "prior_season_sample": 74,
-      "thin_pitcher_workload_under_12_ip": 475,
+      "thin_pitcher_workload_under_12_ip": 476,
       "thin_starter_workload_under_30_ip": 437,
-      "thin_upper_level_hitter_sample_under_100_pa": 297
+      "thin_upper_level_hitter_sample_under_100_pa": 298
     },
     "status_counts": {
       "available": 3228,
-      "injured": 91,
+      "injured": 89,
       "stale_or_inactive": 72,
-      "thin_current_sample": 1536
+      "thin_current_sample": 1538
     },
     "top_risk_profiles": [
       {

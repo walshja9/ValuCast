@@ -675,7 +675,7 @@
     },
     "608070_hitter": {
       "hard_ok": true,
-      "hash": "b20897e249bfe3c6b47fe1495eaed62b",
+      "hash": "11b045847431b32bc51096c0dbf1a617",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
@@ -685,7 +685,7 @@
         "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Jos\u00e9 Ram\u00edrez projects as a high-contact, selective hitter who generates elite exit quality through disciplined at-bats\u2014his 14.0% K rate and 13.1% BB rate both rank in the 86th percentile, and his xwOBA of .355 (79th percentile) reflects consistent barrel-finding ability. The gap between his elite underlying metrics and his .252 projected average suggests BABIP risk or a shift in how balls in play are falling, a real concern at age 33 even for a player of Ram\u00edrez's quality. His 36 stolen bases signal he's still a dynamic runner despite middling sprint-speed percentiles (56th), and his elite defense (93rd percentile OAA) anchors his value. Medium confidence reflects uncertainty about whether batting average will stabilize closer to his quality of contact or remain suppressed.",
+      "text": "Jos\u00e9 Ram\u00edrez's Statcast profile \u2014 elite contact quality (79th percentile xwOBA, 86th percentile xBA) paired with strong discipline (88th percentile BB%, 86th percentile K%) \u2014 paints a hitter whose underlying skills remain well above average despite a .252 projected batting average. His xwOBA of .355 and xBA of .280 suggest legitimate hit ability that should translate to better batting average than the projection implies, though his 6.6% barrel rate (33rd percentile) hints at a loss of power sting relative to his career standards. The main risk is that at 33, average has already begun to slip and may not recover even if contact quality holds; this medium-confidence projection reflects uncertainty whether his elite bat-to-ball still generates consistent in-play hits.",
       "valid": true
     },
     "608324_hitter": {
@@ -866,10 +866,10 @@
         "ok": false,
         "triple_slash_problems": [],
         "unsupported_numbers": [
-          "172.2"
+          "173"
         ]
       },
-      "text": "Ranger Suarez is a contact-biased starter with exceptional bat-control rates\u2014his 7.4% walk rate and 24.9% strikeout rate sit in the 68th\u201369th percentile\u2014but his stuff profile does not match his results. His fastball sits 91.7 mph with 2060 rpm spin (both bottom-6th percentile), and he allows a 31.0% hard-hit rate despite an xERA of 3.23 and xwOBA of .282 (both 79th percentile), suggesting his repertoire is not generating the miss or weak contact his underlying metrics imply. The projection line of 3.28 ERA over 172.2 innings assumes that efficiency gap closes toward the middle; medium confidence reflects the inherent fragility of that assumption when stuff is this underpowered relative to command.",
+      "text": "Ranger Suarez is a mid-rotation starter who suppresses hard contact and generates weak barrels (5th percentile Barrel %, 90th percentile Avg Exit Velo allowed), despite working with fastball velocity that sits well below league average (91.7 mph, 6th percentile) and almost no spin (2060 rpm, 5th percentile). His strikeout rate and command are solid\u201424.9% K%, 7.4% BB%\u2014with an xERA of 3.23 (79th percentile) that supports the 3.28 ERA projection across roughly 173 innings. The real risk is that weak fastball stuff leaves him vulnerable to lucky sequencing and regression if his contact management erodes, and his oddly high hard-hit rate (31%, 89th percentile) despite low barrel rate suggests a fragile, non-repeatable skill profile. Medium confidence reflects the gap between his contact-suppression numbers and the underlying velocity/spin limitations that produce them.",
       "valid": false
     },
     "624413_hitter": {
@@ -1115,6 +1115,23 @@
       "text": "Josh Naylor is a contact-oriented hitter with well-above-average bat control but below-average power and athleticism. His Statcast profile shows 91st-percentile K% and 81st-percentile xBA, anchored by rare whiff discipline (18.6%), but his 27th-percentile exit velo and 22nd-percentile barrel rate reflect genuine power limitations\u2014the .400 projected slugging and 19 HR over a full slate confirm he's a floor player who won't drive in runs or score in volume. ValuCast's projection factors in a 4th-percentile sprint speed, which constrains both baserunning upside and positional versatility despite 23 projected stolen bases. The sample is large and the profile is stable, meriting high confidence in a sub-.730 OPS outcome.",
       "valid": true
     },
+    "647336_pitcher": {
+      "hard_ok": true,
+      "hash": "9e61e5433c518f81a36d53bcf6077bbe",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": false,
+        "triple_slash_problems": [],
+        "unsupported_numbers": [
+          "143"
+        ]
+      },
+      "text": "Soroka projects as a mid-rotation starter who pounds the zone with exceptional control and elite spin\u2014his 5.1% walk rate (94th percentile) and 2516 rpm fastball spin (91st percentile) anchor a repeatable, contact-management profile. His 23.7% strikeout rate (57th percentile) and modest 22.2% whiff rate (27th percentile) indicate he relies on precision and induced contact rather than pure stuff to log 143 innings with a 3.55 ERA. The main risk is hard contact; his 34.1% hard-hit rate (78th percentile) and .309 xwOBA (54th percentile) suggest his margin for error is thin if command slips. Medium confidence reflects solid Statcast data against a projection anchored by durability over dominance.",
+      "valid": false
+    },
     "650333_hitter": {
       "hard_ok": true,
       "hash": "821ce9fae856850c4f898d48d43cac7e",
@@ -1187,10 +1204,11 @@
         "ok": false,
         "triple_slash_problems": [],
         "unsupported_numbers": [
+          "206.2",
           "206"
         ]
       },
-      "text": "Cristopher S\u00e1nchez is a high-command starting pitcher whose strikeout rate (28.3%, 86th percentile) and walk rate (4.7%, 98th percentile) define his profile\u2014he pounds the zone and generates whiffs (31.6%, 89th percentile) without relying on elite velocity or spin. His Statcast profile carries a real vulnerability: hard-hit ball rate sits at 43.1% (20th percentile) and barrel rate at 8.7% (32nd percentile), meaning contact against him tends to be solid, which is the primary risk to his 2.52 ERA projection. The projection of 206 innings and 16 wins at age 29 reflects a pitcher who succeeds through precision and movement rather than power stuff\u2014confidence is high on the profile itself, though his margin for error on weak contact remains tighter than ace-level peers.",
+      "text": "Cristopher S\u00e1nchez is a strike-thrower with elite command who limits walks (4.7 percentile) and generates strikeouts at a 28.3% rate in the 86th percentile, posting a 3.00 xERA and .272 xwOBA that reflect true above-average stuff. His projection\u2014206.2 IP, 2.52 ERA, 16 wins, 225 strikeouts\u2014aligns with a mid-rotation anchor, but the data flags a notable vulnerability: batters are putting the ball in play hard against him, with a 43.1% hard-hit rate and 8.7% barrel rate both well below league average, suggesting limited margin for error when contact happens. The combination of elite command and whiff rates (31.6% in the 89th percentile) offsets the hard-hit exposure enough to project consistent quality starts, though durability over 206+ innings and preventing damage on those harder-hit balls will define the ceiling.",
       "valid": false
     },
     "656302_pitcher": {
@@ -1239,6 +1257,23 @@
         ]
       },
       "text": "Flaherty pounds the zone with above-average strikeout stuff (25.5th percentile K%, 154 strikeouts in 136 projected innings) but has lost command and ground-ball depth: his 11.1% walk rate and 48.7% hard-hit rate are both severely below-average, signaling he's vulnerable to loud contact even when missing bats. The projection line of 4.65 ERA and 1.43 WHIP reflects a starter functioning as a fourth/fifth option\u2014useful for volume but not efficiency. Medium confidence given the gap between his strikeout skill and overall outcome metrics; the hard-hit profile suggests something mechanical or cognitive has shifted.",
+      "valid": false
+    },
+    "656492_pitcher": {
+      "hard_ok": true,
+      "hash": "b6c62bd8638d77e8c8666209ad7942d6",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": false,
+        "triple_slash_problems": [],
+        "unsupported_numbers": [
+          "177"
+        ]
+      },
+      "text": "Foster Griffin projects as a mid-rotation starter with a 3.33 ERA and 1.13 WHIP over 177 innings, supported by a 24.5% strikeout rate that sits in the 65th percentile. His control is a genuine strength\u2014a 6.3% walk rate ranks 81st\u2014and opponents chase at 32.6%, giving him command leverage. The hard floor is his fastball: 91.5 mph (10th percentile) and 2094 rpm spin (9th percentile) leave him exposed to hard contact, reflected in a 10.4% barrel rate that ranks just 17th, and his xERA of 3.87 suggests results could drift higher if luck fades. Medium confidence given that his skill set relies on deception and command rather than raw stuff\u2014sustainable if his approach holds, but vulnerable to regression if velocity or location slip.",
       "valid": false
     },
     "656605_pitcher": {
@@ -1314,7 +1349,7 @@
           "178"
         ]
       },
-      "text": "Drew Rasmussen operates as a high-efficiency starter who limits walks and generates solid strikeouts through elite spin on his fastball. His Statcast profile sits in the 87th percentile for xERA (2.97) and xwOBA (.271), backed by a 98th-percentile walk rate of 4.5% and 76th-percentile strikeout rate of 26.4%. The main vulnerability is contact quality once hitters are in the zone\u2014his whiff rate (24.9%, 48th percentile) and hard-hit rate (32.6%, 85th percentile) suggest batters are making solid contact when they don't chase, a pattern that could limit his floor if command or spin slip. ValuCast projects a 3.01 ERA with 12 wins over 178 innings, a reasonable outcome given his walk and strikeout profile, though medium confidence reflects the moderate whiff rate and established-player age.",
+      "text": "Rasmussen is a high-command starter who generates weak contact and keeps the ball out of the zone, operating at the 87th percentile in xERA and 98th percentile in walk rate. His Statcast profile shows elite spin on his fastball (2526 rpm, 92nd percentile) and superior plate discipline that keeps opposing batters off-balance, underpinned by a strikeout rate in the 76th percentile. The meaningful risk is modest whiff rate (24.9%, 48th percentile) and hard-hit exposure (32.6%, 85th percentile), suggesting hitters who make contact do damage, and his perennially limited workload leaves little margin for error. The projection of a sub-3.00 ERA starter with 178 innings reflects a reliable mid-rotation arm, though medium confidence reflects his injury history and the tight relief window typical of this profile.",
       "valid": false
     },
     "656941_hitter": {
@@ -1354,14 +1389,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "184"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Logan Webb is a soft-contact pitcher who generates weak barrels and induces chase, but does not blow hitters away with strikeout stuff or fastball velocity. His Statcast profile shows 67th percentile xwOBA and xERA, powered by elite command (84th percentile BB%) and low hard-hit rates (77th percentile Barrel%), yet his 21.1% strikeout rate (42nd percentile) and 92.5 mph fastball (18th percentile) reflect modest stuff\u2014he survives on location and movement shape, not power. The ValuCast projection of 3.26 ERA with 184 innings and 11 wins reflects a reliable mid-rotation starter, but he offers no high-end swing-and-miss upside and remains vulnerable to better contact when his command lapses. Confidence is high on this profile; the data sample is established and consistent.",
-      "valid": false
+      "text": "Logan Webb commands respect through contact management and efficient execution rather than overpowering stuff: his 84th-percentile walk rate and 77th-percentile barrel suppression anchor a 3.26 ERA projection on modest strikeout volume (21.1% K, 42nd percentile). The Statcast profile reveals the real skill\u2014an xERA in the 67th percentile and elite chase rate (33.6%, 79th) that turn hitters' aggression into outs. His below-average fastball velocity (92.5 mph, 18th percentile) and historically weak spin (2085 rpm, 2nd percentile) are the floor to this profile; he survives on location, sequencing, and inducing weak contact, which works until it doesn't. High confidence in the projection given a full season of established Statcast data.",
+      "valid": true
     },
     "657746_pitcher": {
       "hard_ok": true,
@@ -1461,14 +1494,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "61"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Jhoan Duran is an elite strikeout reliever operating at the 99th-100th percentile in K%, whiff rate, and xERA, with a 100.2 mph fastball that generates overwhelming contact suppression despite contact quality that registers in the bottom 4th percentile for hard-hit rate and exit velo. The projection sees him as a high-volume closer with a 2.12 ERA over 61 innings, sustained by his historic swing-and-miss profile, but the 40.6% whiff rate and 5.5% walk rate leave minimal margin for velocity or command decline. Medium confidence reflects a real reliever elite enough to anchor a bullpen, though the hard-hit and velocity readings suggest some volatility in how opponents are connecting on what they do put in play.",
-      "valid": false
+      "text": "Jhoan Duran is an elite strikeout reliever whose overwhelming velocity and whiff rate let him punish contact at elite rates despite getting hit hard when opponents make contact. Statcast marks him 99th percentile in xwOBA (.231) and K% (40.0%), with a 40.6% whiff rate that ranks 99th; his 100.2 mph fastball sits at the 99th percentile. The flaw is immediate and severe: his 48.3% hard-hit rate and 92.1 mph average exit velo both rank in the bottom 5th\u2014he's giving up dangerous contact at a heavy volume, and if his strikeout rate slips even slightly, those hard hits will convert into runs fast. Medium confidence reflects real upside in a closer role, but the hard-contact profile carries tangible volatility.",
+      "valid": true
     },
     "662139_hitter": {
       "hard_ok": true,
@@ -1484,6 +1515,39 @@
       },
       "text": "Varsho is a light-contact outfielder whose pitch-recognition and swing mechanics leave him chasing at rates well above league average, which depresses his ability to generate hard contact and barrel the ball. His xwOBA (35th percentile) and average exit velo (8th percentile) signal a player stuck in the bottom third of the big-league power tier; the projection of .243/.315/.424 tracks with that reality. The athleticism (47th percentile sprint speed, strong fielding) and fringe walk rate (9.1%) offer modest everyday value, but the chase rate (36%, 17th percentile) and whiff rate (67th percentile) are the central issue\u2014he swings at pitches others let go, and misses often when he does. Medium confidence here reflects a full Statcast sample, but the profile is clear: a fourth-outfielder type without room for margin.",
       "valid": true
+    },
+    "662253_pitcher": {
+      "hard_ok": true,
+      "hash": "5d84cd679347f62667d7351256624c76",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": true,
+        "triple_slash_problems": [],
+        "unsupported_numbers": []
+      },
+      "text": "Mu\u00f1oz is a high-leverage reliever whose elite strikeout stuff (35.7% K%, 99th percentile whiff rate) routinely overpowers hitters, anchored by a 99-mph fastball that plays at the 98th percentile. His contact management is the real story\u2014a 41.6% whiff rate and 37.4% chase rate both in the 96th percentile or better\u2014but hitters are making harder contact when they do connect (43.5% hard-hit rate, 18th percentile), and his xwOBA and xERA sit at exactly league average despite the dominant strikeout profile. The walk rate (10.1%, 28th percentile) is the main drag on upside; if he tightens command, the ceiling is dominant closer production, but loose control limits consistency. Medium confidence reflects a profile with elite strikeout skills offset by moderate contact quality and above-average free-pass rate.",
+      "valid": true
+    },
+    "663436_pitcher": {
+      "hard_ok": true,
+      "hash": "682609c5ac1c2c07e9388cc24036ca0d",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": false,
+        "triple_slash_problems": [],
+        "unsupported_numbers": [
+          "173",
+          "2024"
+        ]
+      },
+      "text": "Davis Martin is a control-heavy starter who lives off fastball spin and command rather than pure stuff\u2014his 81st-percentile walk rate and 82nd-percentile fastball spin underscore a pitcher who works ahead in counts and induces weak contact. The projection calls for 3.53 ERA over 173 innings with a 1.24 WHIP and 13 wins, supported by Statcast metrics that show 63rd-percentile xERA and solid whiff rates despite modest strikeout velocity. The main risk is legitimacy of those outcomes: his hard-hit rate sits at just the 12th percentile, but that's a volatile surface-level metric, and his 44.9% hard-hit percentage paired with 89.8 mph average exit velo suggests he's getting extended contact even if not barrels. Medium confidence reflects a reasonable 2024 foundation, but a 29-year-old back-end starter projection hinges on whether his fastball spin and control can sustain across a full season.",
+      "valid": false
     },
     "663460_pitcher": {
       "hard_ok": true,
@@ -1543,7 +1607,7 @@
           "149"
         ]
       },
-      "text": "McClanahan is a mid-rotation starter whose stuff generates whiff (27.1th percentile in whiff rate, 56th percentile in K%) but whose contact quality remains a persistent problem\u2014his xERA of 4.29 and 41st-percentile xwOBA reflect a pitcher allowing hard contact and barrels at rates (41.8% hard-hit, 9.6% barrel) well below league average. The projection of 3.50 ERA, 1.23 WHIP, and 152 strikevers in 149 innings assumes better fortune than his Statcast profile suggests he typically earns; fastball velocity sits at 95.6 mph (69th percentile), which is solid, but his 2215-rpm spin (33rd percentile) and elevated walk rate (9.0%, 42nd percentile) underscore why results haven't matched velocity. Medium confidence is warranted given the gap between his projection and underlying batted-ball metrics.",
+      "text": "McClanahan's Statcast profile reveals a pitcher caught between two skills: elite whiff rate (65th percentile) and strikeout rate (56th) mask below-average hard-hit suppression (28th percentile) and exit velo management (23rd), leaving him vulnerable to solid contact. His 4.29 xERA (41st percentile) sits well above his projected 3.5 ERA, suggesting his ability to limit damage in play is thinner than his strikeout ability might suggest. ValuCast projects a 3.50 ERA with 149 innings and a 1.23 WHIP over a full season, but the gap between stuff-based outcomes and contact quality flags durability risk in a volume role\u2014medium confidence reflects the tension between his swing-and-miss and his exposure on contact pitches.",
       "valid": false
     },
     "663586_hitter": {
@@ -1839,6 +1903,21 @@
       "text": "Assad projects as a back-of-the-rotation starter or relief option with limited swing-and-miss: his 15.5% strikeout rate and 14.0% whiff percentage rank in the bottom tier, while his 4.55 xERA and .331 xwOBA (both 30th percentile) indicate contact is consistently hard. The 5.7% walk rate is well-controlled, but 49.0% hard-hit contact and an elite 22.4% chase rate suggest he survives on deception and weak contact rather than stuff\u2014a fragile foundation. His projected 4.18 ERA and 1.18 WHIP over 83.7 innings reflect modest volume and average outcomes, fitting a pitcher who can fill innings without missing many bats. Medium confidence reflects a small recent Statcast sample and the inherent volatility of a low-strikeout profile.",
       "valid": true
     },
+    "665923_hitter": {
+      "hard_ok": true,
+      "hash": "5adc63914922347eb63821c78e9d977e",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": true,
+        "triple_slash_problems": [],
+        "unsupported_numbers": []
+      },
+      "text": "Esteury Ruiz is a speed-first outfielder whose game hinges almost entirely on elite base-running ability\u2014his 29.6 ft/s sprint speed ranks at the 97th percentile\u2014and whose projected 25 stolen bases reflect that narrow skill set. The projection shows a .252 AVG with .453 SLG and only 6 HR, meaning he offers minimal offensive production beyond theft; the gap between his power and speed profile is stark. The real risk is that if health or opportunity limits his steal attempts, the remaining offensive value (.341 OBP in 189 PA) barely moves the needle. Confidence is low given how concentrated his value is and how vulnerable that concentration is to external factors.",
+      "valid": true
+    },
     "665926_hitter": {
       "hard_ok": true,
       "hash": "403733e6e137b5ad802a57f3ab5c640c",
@@ -1975,7 +2054,7 @@
           "187"
         ]
       },
-      "text": "Luzardo is a swing-and-miss starter with elite strikeout stuff\u2014his 28.0% K% and 31.4% whiff rate rank in the 85th\u201388th percentile\u2014but he's allowing hard contact at an alarming rate, with 29.6% hard-hit balls and 86.3 mph average exit velo both in the 91st\u201393rd percentile for damage. His xERA of 3.21 and projection for a 3.65 ERA with 216 strikeouts in 187 innings reflect a pitcher whose velocity and stuff generate whiffs without translating to clean outs; the underlying contact profile is a meaningful risk to his fantasy floor and real-world durability. High confidence in the sample and profile.",
+      "text": "Luzardo is a high-spin strikeout pitcher whose stuff plays at 85th percentile or better in whiff rate and K%, but he allows harder contact than elite starters\u2014his hard-hit rate sits at 93rd percentile and avg exit velo at 91st\u2014which caps his ceiling despite a 3.21 xERA. His xwOBA of .281 (80th percentile) reflects that dichotomy: he's missing bats with elite frequency while surrendering loud contact when he does get hit. The walk rate is merely average (57th percentile at 8.0%), and his fastball sits at 97.1 mph but with subaverage spin (41st percentile), a mismatch that explains why hard contact finds him; the projection of 3.65 ERA with 216 strikeouts over 187 innings aligns with a mid-rotation starter who will flicker between dominant and vulnerable. High confidence in this profile given the full Statcast season sample.",
       "valid": false
     },
     "666971_hitter": {
@@ -2188,7 +2267,7 @@
           "174"
         ]
       },
-      "text": "MacKenzie Gore generates above-average strikeout stuff\u201470th percentile K% at 25.3%\u2014but his Statcast profile shows a pitcher living on thin margins: his 54th percentile xwOBA (.309) and xERA (3.92) reflect a fastball that sits only 65th percentile in velocity (95.4 mph) paired with spin rates in the 36th percentile, leaving little room for error against hard contact. The real problem is command; at 9.9% BB%, he's in the 29th percentile for walk rate, and that discipline gap (25.3% K% minus 9.9% BB%) means he cannot afford the 44.1% hard-hit rate (16th percentile) he's currently allowing. ValuCast projects a 3.91 ERA over 174 innings with 190 strikeouts, but sustained success hinges on tightening the zone in a way his recent Statcast data doesn't yet suggest\u2014a medium-confidence read given the margin for error is razor-thin.",
+      "text": "MacKenzie Gore strikes batters out at a strong rate (25.3% K%, 70th percentile) but does not miss enough bats overall to offset elevated hard contact; his xwOBA of .309 and xERA of 3.92 (both 54th percentile) reflect a starter whose stuff plays to a middle-of-the-rotation floor. The control is loose\u20149.9% BB% ranks 29th\u2014and opposing batters are making hard contact at a well-above-average clip (44.1% hard-hit rate, 16th percentile), which drags on his value despite solid strikeout volume. His projection of 174 innings with a 3.91 ERA and 1.26 WHIP sits in a useful but unspectacular range for a back-end starter role. Medium confidence reflects a profile with defined limitations rather than hidden upside.",
       "valid": false
     },
     "669065_hitter": {
@@ -2232,11 +2311,10 @@
         "ok": false,
         "triple_slash_problems": [],
         "unsupported_numbers": [
-          "4",
-          "176"
+          "177"
         ]
       },
-      "text": "Dustin May throws hard (96.9 mph fastball, 83rd percentile) with plus spin (2323 rpm, 69th percentile), but his contact management is fragile: he sits at just 22.5% strikeout rate (49th percentile) while allowing 46.4% hard-hit contact (8th percentile), leaving him vulnerable despite excellent command (6.4% walk rate, 80th percentile). His Statcast profile (3.68 xERA, 64th percentile; .300 xwOBA, 63rd percentile) supports a mid-4 ERA outcome, which his projection of 4.17 ERA over 176+ innings reflects fairly. Medium confidence reflects the tension between his stuff and his inability to miss bats or suppress hard contact consistently.",
+      "text": "Dustin May profiles as a mid-rotation starter with elite fastball stuff but inconsistent contact management\u2014his 96.9 mph heater ranks in the 83rd percentile and he sits at 22.5% K% with tight control (6.4% BB%), yet his 46.4% hard-hit rate and 8th-percentile mark there reveal he's getting hit harder than nearly any pitcher in baseball. The projection calls for a 4.17 ERA across 177 innings with 165 strikeouts, a ceiling limited by the damage opponents inflict when they do make contact; his xERA (3.68, 64th percentile) suggests better underlying results than he's likely to deliver in practice. Medium confidence reflects a sample size and injury history that make year-to-year volatility the safer bet than regression toward the Statcast profile alone.",
       "valid": false
     },
     "669257_hitter": {
@@ -2615,16 +2693,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "2",
-          "157",
-          "186"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Reid Detmers is a strikeout pitcher with above-average command whose stuff underperforms relative to his results\u2014a profile built on whiff rate and chase rate rather than elite velocity or spin. His Statcast card shows a 27.6% K% at the 84th percentile and 3.02 xERA at the 85th percentile, supported by a 28.6% whiff rate, but his fastball sits at 94.1 mph with only 2,157 rpm spin (both well below league average), and he allows 36.8% hard contact. The main risk is that his deception and sequencing will regress as hitters adjust; command alone (7.6% BB% at 66th percentile) may not sustain a sub-3.80 ERA long-term if the underlying stuff continues to lag. ValuCast projects him for a 3.82 ERA across 186+ innings as a starter, with the ceiling of a mid-rotation anchor and the floor of a backend starter who lives on location\u2014high confidence in the read given a full-season Statcast profile.",
-      "valid": false
+      "text": "Reid Detmers is a strikeout pitcher operating in the 84th\u201385th percentile for whiff rate and strikeout percentage, underpinned by an xERA of 3.02 that signals sustainable stuff quality. His walk rate sits at the 66th percentile (7.6%), a mild leak that keeps him from elite pitcher territory but one manageable for a full-season starter. The main risk is fastball spin\u2014ranking in the 20th percentile at 2157 rpm\u2014which constrains his ceiling despite above-average strike-inducing ability and suggests he cannot afford command lapses. High confidence in this profile given the Statcast sample depth.",
+      "valid": true
     },
     "672515_hitter": {
       "hard_ok": true,
@@ -2816,11 +2890,10 @@
         "ok": false,
         "triple_slash_problems": [],
         "unsupported_numbers": [
-          "181.2",
-          "0.7"
+          "182"
         ]
       },
-      "text": "Tanner Bibee's Statcast profile shows a pitcher getting barreled at an elevated rate\u201444.3% hard-hit percentage, 28th percentile in xERA (4.63)\u2014and his stuff isn't generating enough swing-and-miss for his walk rate to compensate; he sits at 21% strikeout rate (41st percentile) while allowing 26.5% chase, a bottom-15 mark that suggests hitters aren't fooled. The ValuCast projection calls for a 3.95 ERA across 181.2 innings with a 1.21 WHIP, but that optimism clashes with his current Statcast foundation\u2014expected ERA is nearly 0.7 runs worse, and the exit-velo and barrel data suggest he's closer to his xERA floor than his projection ceiling. High confidence in the Statcast read; the projection may be banking on regression that Bibee's stuff profile doesn't yet support.",
+      "text": "Bibee operates as a high-walk, modest-stuff starter whose actual contact quality lags his strikeout rate. His Statcast profile sits in the 15th\u201328th percentile band across xwOBA, xERA, hard-hit rate, and fastball spin, indicating he's generating weak whiffs (59th percentile in whiff%) without elite velocity or movement to back it up\u2014and his 26.5% chase rate (15th percentile) means hitters are disciplined against him. ValuCast projects a 3.95 ERA over 182 innings with a 1.21 WHIP, but the gap between his 21% strikeout rate (41st percentile) and the quality of contact he allows (44.3% hard-hit, 28th percentile xERA) flags him as a pitcher whose actual stuff is below his strikeout line suggests. High confidence in this profile given the full Statcast sample.",
       "valid": false
     },
     "676475_hitter": {
@@ -2867,7 +2940,7 @@
           "178"
         ]
       },
-      "text": "Max Meyer is a strikeout pitcher with elite fastball spin who generates whiffs at a 78th-percentile rate, though his command lags at 42nd percentile in walk rate and his hard-hit rate sits in the 35th percentile. His projection calls for a 3.2 ERA across 178 innings with 190 strikeouts, built on his 26.7% K% and 1.19 WHIP, but the gap between his stuff-based Statcast profile (xERA 3.63 at 65th percentile) and the more optimistic projection suggests execution risk remains. Medium confidence reflects a pitcher whose elite spin and whiff rates can support top-tier performances, but whose walk rate and contact quality leave room for regression.",
+      "text": "Max Meyer is a strikeout pitcher with elite spin on his fastball\u201498th percentile at 2609 rpm\u2014and a whiff rate (28.9%, 78th percentile) that supports his projected 26.7% strikeout rate. His walk rate sits at 9.0% (42nd percentile), which is the main brake on his upside; he's giving up too much free offense to reliably post an ERA south of 3.2. ValuCast projects 178 innings, 14 wins, and a 1.19 WHIP over the full season, anchored by his stuff and chase rate, though the 65th percentile xERA warns that contact quality and command remain moderately inconsistent at this stage.",
       "valid": false
     },
     "676979_pitcher": {
@@ -2949,17 +3022,17 @@
     },
     "677587_hitter": {
       "hard_ok": true,
-      "hash": "520eb88d1170f3ecc68ddfbbe3c453ef",
+      "hash": "75276d0a611db8ee667ab28d168f6a3d",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Rocchio is a light-hitting shortstop whose value hinges entirely on contact rate and defense; his Statcast profile shows elite strikeout control (13.5% K%, 88th percentile) paired with a well-below-average barrel rate (2.7%, 10th percentile) and exit velo (86.4 mph, 12th percentile) that severely limits power upside. The ValuCast projection of .259/.334/.719 OPS reflects a player generating modest offensive value through contact and baserunning (21 SB projected), not raw hitting ability. His 96th percentile fielding grade at shortstop is the genuine carrying tool, but the hitting profile\u2014chasing at league-average rates (33.1% chase) while whiffing at a below-average clip\u2014offers little margin for error if the defense slides. Medium confidence reflects a thin recent sample and the risk that light-contact, low-power hitters need near-perfect execution to sustain roster value.",
+      "text": "Rocchio is a light-contact, speed-and-glove shortstop with limited middle-of-the-order pop\u2014a skill set that works best as a complementary player in the right lineup. His xwOBA of .308 (35th percentile) and xBA of .255 (56th percentile) reflect weak bat-to-ball consistency, compounded by a 12th-percentile exit velo and a 2.6% barrel rate that sits near the bottom of MLB; even his 33.8% chase rate (26th percentile) and 23.5% whiff rate (54th percentile) suggest a hitter chasing weakness rather than driving mistakes. The projection line of .259/.333/.384 (717 OPS) with 21 stolen bases over 574 PA is realistic given his elite fielding (97th percentile OAA) and plus sprint speed (53rd), but his 10 home run ceiling and marginal run production depend entirely on staying healthy and securing consistent playing time at short. Medium confidence reflects a player whose defensive value is established but whose offensive ceiling is capped by raw power limitations.",
       "valid": true
     },
     "677594_hitter": {
@@ -3015,28 +3088,29 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "182"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Ashcraft is a high-leverage starter who induces weak contact and generates strikeouts with excellent command\u2014his 90th-percentile xERA (2.88) and 82nd-percentile K% (27.3%) paired with a 89th-percentile BB% (5.6%) describe a pitcher who pounds the zone with conviction. The projection calls for a 3.35 ERA across 182 innings with 190 strikeouts and a 1.15 WHIP, anchored by that elite contact suppression. The main vulnerability is average fastball carry for a velocity leader\u2014his hard-hit rate sits right at league median and exit velo ranks only 34th percentile, suggesting his strikeout-heavy profile may be doing more work than his stuff alone. Confidence is high on the baseline outcome given the Statcast profile and full-season sample.",
-      "valid": false
+      "text": "Braxton Ashcraft is a high-spin, high-velocity starter who induces weak contact and generates chase-and-miss at an elite rate. His 90th-percentile xERA (2.88) and xwOBA allowed (.267) reflect a 27.3% strikeout rate (82nd percentile) paired with a 5.6% walk rate (89th percentile) \u2014 a clean, dominant control profile. The main vulnerability is a 38.5% hard-hit rate that sits right at league average, meaning his stuff generates swings and misses but doesn't prevent damage on solid contact; his projection of a 3.35 ERA accounts for that risk. High confidence here \u2014 this is a full Statcast profile of an established pitcher with elite strikeout command and a well-calibrated floor.",
+      "valid": true
     },
     "677960_pitcher": {
       "hard_ok": true,
-      "hash": "cbb07604d48e058ba854acc9ef34556a",
+      "hash": "636b5485bc5b1206e185e76981745827",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": true,
-        "unsupported_numbers": []
+        "ok": false,
+        "triple_slash_problems": [],
+        "unsupported_numbers": [
+          "144"
+        ]
       },
-      "text": "Ryan Weathers commands strikeouts at the 79th percentile (26.9% K%) with excellent control\u20146.8% BB% at the 76th\u2014but his stuff plays softer than his numbers suggest. His xERA of 4.49 and xwOBA of .329 both rank only around the 32nd percentile, meaning batters are squaring him up despite the whiffs; he's allowing hard contact at the 24th percentile (42.5% Hard-Hit%), with barrels landing at a troubling 7th percentile (11.7% Barrel%). The projection of a 3.82 ERA and 146 innings reflects middle-of-the-rotation depth potential, but the gap between his swing-and-miss profile and actual damage allowed is the core risk. Medium confidence reflects Weathers as a usable starter or multi-inning reliever whose results will likely lag his strikeout rate.",
-      "valid": true
+      "text": "Ryan Weathers is a mid-rotation arm with strong strikeout ability but poor contact management\u2014hitters are squaring him up at an above-average rate. His 26.9% K rate ranks in the 80th percentile and his 6.8% walk rate is well-controlled, but a 42.5% hard-hit rate and 11.7% barrel rate (8th percentile) reveal he's allowing barreled contact at nearly three times the league norm. The ValuCast projection of a 3.82 ERA over 144 innings reflects this tension: sufficient strikeouts and command to pitch in the major leagues, but insufficient stuff or execution to consistently miss barrels. Medium confidence on the exact ERA outcome given the volatility inherent in contact rates.",
+      "valid": false
     },
     "678246_hitter": {
       "hard_ok": true,
@@ -3272,14 +3346,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "118"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Bryce Miller is an elite strikeout pitcher with exceptional command operating at the 96th\u2013100th percentile in K%, BB%, and fastball spin, projecting as a mid-rotation starter with a 3.14 ERA over 118 innings. His Statcast profile is genuinely rare: a 2.27 xERA and .237 xwOBA (both 98th percentile) backed by 33.1% strikeout rate and a near-perfect 3.1% walk rate that ranks at the ceiling of control. The main risk is soft contact resistance\u2014his hard-hit rate (27.9%) and exit velo allowed (86.0 mph) are both elite, but he grades only 45th percentile in barrel rate, suggesting he can still leak runs if sequencing or luck regresses. Medium confidence reflects a proven Statcast skill set, though his injury history and recent usage adjustments warrant season-level validation.",
-      "valid": false
+      "text": "Bryce Miller is an elite strikeout pitcher with exceptional command\u2014a 33.1% K% and 3.1% BB% (both 96th+ percentile) who induces weak contact at an elite rate (xwOBA .237, 98th percentile). His xERA of 2.27 significantly underperforms his projection ERA of 3.14, suggesting real upside if results normalize to his underlying stuff. The main risk is that his hard-hit rate (27.9%, 97th percentile) and average exit velo (86.0 mph, 93rd percentile) hint at elevated home-run exposure despite the strikeouts\u2014a variance that could widen the gap between xERA and actual outcomes. Medium confidence reflects a solid foundation but a sample that may not fully explain how power and strikeouts will net out over a full season.",
+      "valid": true
     },
     "682617_hitter": {
       "hard_ok": true,
@@ -3715,6 +3787,21 @@
       "text": "Sal Frelick is a high-contact, low-power outfielder whose floor is built on elite plate discipline and plus-plus speed. His Statcast profile confirms the read: 9.4% K rate (99th percentile) and a 10.8% whiff rate (99th percentile) show a hitter who almost never misses, but his 86.1 mph average exit velo (9th percentile) and 2.4% barrel rate (7th percentile) reveal a player with almost no leverage\u2014the ValuCast projection of .251/.319/.349 over 496 PA reflects a ceiling of modest offensive value. His 28.6 ft/s sprint speed (85th percentile) and 12 stolen bases keep him playable, but the disconnect between his elite contact skills and bottom-10 power generation is the core constraint. Medium confidence given the light power profile and his reliance on a narrow skill set to produce value at an MLB position.",
       "valid": true
     },
+    "686218_pitcher": {
+      "hard_ok": true,
+      "hash": "e0ee6fc71bb9a185c69ca53f18d16064",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": true,
+        "triple_slash_problems": [],
+        "unsupported_numbers": []
+      },
+      "text": "Emmet Sheehan's Statcast profile shows a strikeout pitcher who generates above-average whiff (30.8%, 86th percentile) and spin (2437 rpm, 87th percentile) but grades out as middle-of-the-road in actual results\u2014his xERA (4.06) and xwOBA (.314) both sit at 49th percentile. The projection lands him at 4.56 ERA over 136 innings with 151 strikeouts, which tracks with a starter who can miss bats but surrenders enough hard contact (39.1% hard-hit, 10.4% barrel) to limit his margin for error. His control is solid (7.1% BB%, 72nd percentile), but the gap between his stuff grades and his impact metrics suggests command or sequencing remain works in progress. Medium confidence reflects the disconnect between elite spin and merely average results; another season of data will clarify whether the arsenal is truly ahead of the outcomes or if the contact profile represents his floor.",
+      "valid": true
+    },
     "686433_pitcher": {
       "hard_ok": true,
       "hash": "9c6c63946b6f4bcf8096da9e923a0cfd",
@@ -3864,30 +3951,32 @@
     },
     "686797_hitter": {
       "hard_ok": true,
-      "hash": "3c20d753b2cd3035bc8c1d64384813f3",
+      "hash": "28a3a124772239216f335c77f2bc9282",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Brooks Lee projects as a light-hitting infielder whose real skill\u2014a 9th-percentile xwOBA\u2014sits well ahead of his expected batting average, signaling contact management issues rather than pure hit ability. His 15.5% K rate (82nd percentile) and 21% whiff rate (68th percentile) are the core problem: he's chasing pitches outside the zone at a below-average rate (33.4%, 30th percentile) and missing elevated fastballs at an alarming clip. The projection line of .243 AVG and .300 OBP on 601 PA reflects a player likely limited to a utility role, with the hard-contact profile (4.6% barrel rate, 87.6 mph exit velo both well below average) offering little upside even if swing-and-miss improves. High confidence in this assessment given the full Statcast profile and established playing time at the MLB level.",
+      "text": "Brooks Lee is a contact-challenged hitter whose underlying quality metrics suggest he's making better contact than his strikeout rate reveals. His xwOBA sits at the 9th percentile and hard-hit rate at the 10th, despite a 15% strikeout rate that ranks in the 83rd percentile\u2014a red flag suggesting his swing-and-miss is outpacing his ability to leverage his bat when he does make contact. The projection line (.248/.304/.429) reflects a player who will compile moderate power volume but won't generate consistent line-drive authority; his 87.7 mph exit velo (25th percentile) and 4.4% barrel rate (19th) confirm limited juice in the barrel. Lee's floor is a defensive utility infielder with occasional pop; his ceiling is a bench bat with positional flexibility if the strikeout stays manageable. Confidence is high given the established Statcast profile and full-season projection sample.",
       "valid": true
     },
     "686948_hitter": {
       "hard_ok": true,
-      "hash": "0edb59b100694a53ff1bc81a76ca4674",
+      "hash": "ae29783cc06a71a6a21d627ffdf11178",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Drake Baldwin has elite bat-to-ball quality\u2014his 93rd-percentile xwOBA (.381) and 94th-percentile xSLG (.531) reflect genuine hard-contact skills, backed by a 97th-percentile barrel rate and 90th-percentile exit velo. His projection line of .264/.343/.810 OPS with 27 home runs over 557 PA reflects that power foundation, but a critical gap shows up in discipline: he chases pitches at the 16th percentile while posting a 25.3% K rate that sits in the bottom quartile. The strikeout rate and weak walk rate (9.6%, 58th percentile) will cap his on-base ability and offensive ceiling despite the raw power, and as a catcher his lack of speed (27th-percentile sprint speed) limits his value beyond the batter's box. Medium confidence given the projection's reliance on sustained barrel quality meeting realistic contact rates at the MLB level.",
+      "text": "Drake Baldwin generates elite hard-contact quality\u201491st percentile xwOBA, 95th percentile barrel rate, 93rd percentile xSLG\u2014but his actual hit tool lags his power foundation, sitting at 78th percentile xBA and projecting just .258 AVG. The primary risk is chase discipline: he's at 36.2% chase rate (17th percentile), a tendency that inflates his 24.5% K rate and undermines the offensive floor, especially for a catcher already limited by position scarcity and below-average mobility. Medium confidence given the gap between his quality of contact and his ability to stay out of the zone enough to maximize it.",
       "valid": true
     },
     "686973_pitcher": {
@@ -4130,17 +4219,17 @@
     },
     "687931_pitcher": {
       "hard_ok": true,
-      "hash": "41fd1df3cf84da68ec5bfc1711667b6b",
+      "hash": "9bfcdfa7a2a4fe46108767e695fff8ec",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Carson Whisenhunt is a left-handed pitcher building a workable three-true-outcome profile in AAA\u2014enough strikeout depth (10.1 K/9) to miss bats at the next level, but control issues (4.2 BB/9) that will limit his ceiling and force him into shorter stints. His ERA of 4.0 and WHIP of 1.4 translate to roughly league-average run prevention on an MLB scale, with a 12.5% K-BB% that lags the 13.5% big-league mean by a modest margin. The main risk is that his command grade (40) stays below average, capping his upside as a starter and pushing him toward multi-inning or setup relief work. ValuCast projects him as a useful MLB arm with 74% probability, and his ranking has moved up three spots in the past three days.",
+      "text": "Carson Whisenhunt is a left-handed starter pitching through neutral stuff\u2014he's striking out 10.1 per 9 and walking 4.2 per 9 over 72.3 AAA innings, which translates to an 8.8 K/9 and 4.0 BB/9 at the MLB level, slightly above average in miss but underselling it with a 12.5 K-BB%. His ERA sits at 4.0 with a 1.4 WHIP (both around 50th\u201366th percentile), marking him as a league-average run-preventer who hasn't yet mastered command consistency. The real constraint is control\u2014a 40-grade command grade and 57th-percentile BB/9 ceiling him as a relief arm rather than a starter at the highest level. ValuCast projects him as a multi-inning or setup reliever with near-term arrival and 75% odds of becoming a useful MLB arm, though the ranking has cooled modestly over the past three days.",
       "valid": true
     },
     "688422_pitcher": {
@@ -4402,14 +4491,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "171.2"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Nolan McLean is a high-strikeout starter with elite swing-and-miss command who consistently limits hard contact despite a below-average walk rate. His Statcast profile is in the 73rd percentile for xERA and xwOBA, underpinned by a 28.5% strikeout rate (87th percentile) and 6.8% barrel rate (61st percentile), suggesting he can generate swings and misses without overpowering velocity at 96.1 mph. The primary risk is ball control: his 9.1% walk rate (41st percentile) and elevated 28.4% chase rate (29th percentile) indicate he's reliant on weak contact and swing-and-miss rather than pound-the-zone command, which carries injury and burnout risk over a full season. The projection of 171.2 innings with a 3.78 ERA assumes sustainability that his walk-heavy profile may not support across a full calendar.",
-      "valid": false
+      "text": "Nolan McLean is a strikeout-heavy starter whose stuff plays well against contact, even if his command remains loose. His 28.5% K rate ranks 87th percentile, while his 3.42 xERA (73rd percentile) reflects a xwOBA of .290 showing clean miss\u2014but a 9.1% BB rate (41st percentile) and 28.4% chase rate (29th percentile) reveal he's still hunting the zone more than hitting it, limiting his margin for error. The main risk is that walk rate; one bad month of command erases the strikeout gains. Medium confidence here reflects an established profile with a known flaw, not volatility.",
+      "valid": true
     },
     "691001_hitter": {
       "hard_ok": true,
@@ -4912,6 +4999,21 @@
       "text": "Brock Selvidge is a high-walk pitcher who managed modest strikeout rates in limited AA action\u20147.3 K/9 and 4.6 BB/9 translate to an 8.1 K-BB% at the MLB level, well below league average (13.5%). His 4.92 ERA and 1.43 WHIP sit around the 50th percentile for his pool, while his 11th-percentile strikeout rate offers little margin for error. The core issue is command paired with insufficient stuff: neither the swings-and-misses nor the walks suggest a path to consistent execution at higher levels. This is a single prior-season sample of 75 innings with significant staleness, which limits confidence in any directional read.",
       "valid": true
     },
+    "691799_pitcher": {
+      "hard_ok": true,
+      "hash": "7a2158733a5e89dec40b1efdc458fdde",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": true,
+        "triple_slash_problems": [],
+        "unsupported_numbers": []
+      },
+      "text": "Grant Taylor is a high-velocity reliever with elite command of contact\u201498th-percentile strikeout rate (35.1%) and xERA (2.37) on a fastball sitting 98.2 mph. The Statcast profile shows a pitcher who dominates weak contact and induces swings outside the zone at an elite clip, which his projected 2.89 ERA and 1.14 WHIP directly reflect. The one material risk is hard-hit ball frequency (43.4%, 18th percentile), suggesting occasional vulnerable spots in his mix that prevent him from being untouchable even at his best. High confidence in his ability to operate as a dominant relief arm.",
+      "valid": true
+    },
     "691828_pitcher": {
       "hard_ok": true,
       "hash": "4aa68639c3fe1f38698943815695bb49",
@@ -5220,6 +5322,23 @@
       "text": "Schlittler is a high-velocity strike-thrower who dominates batters through superior stuff and command rather than overpowering whiff generation. His Statcast profile sits in the 92\u201394th percentile for K%, BB%, and xERA, backed by a 97.8 mph fastball and elite spin rates, while a 2.71 xERA projection and 1.04 WHIP suggest repeatable, low-walk excellence. The main risk is a modest 28.1% whiff rate (72nd percentile) and a 38.5% hard-hit rate (50th) that indicate hitters still make solid contact when they do put the ball in play\u2014he'll need to stay efficient and avoid mistakes in the zone. Medium confidence reflects a solid established profile, though the hard-hit rate bears monitoring for regression risk.",
       "valid": true
     },
+    "693821_pitcher": {
+      "hard_ok": true,
+      "hash": "b4ab1f472378565d427b1fd28595a7b7",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": false,
+        "triple_slash_problems": [],
+        "unsupported_numbers": [
+          "182"
+        ]
+      },
+      "text": "Bryce Elder is a soft-contact starter who limits hard contact effectively\u2014his 4.7% barrel rate ranks in the 85th percentile\u2014but generates only moderate swing-and-miss, putting a ceiling on strikeout upside. His Statcast profile (67th percentile xERA, 3.58) sits well ahead of his velocity profile (92.5 mph fastball at 13th percentile, 2221 rpm spin at 18th percentile), signaling that command and pitch sequencing have done the heavy lifting; the projection of a 4.21 ERA and 10 wins in 182 innings reflects a reliable back-of-the-rotation arm without true dominance. The main risk is that contact quality and control leave little room for error\u2014walk rate is solid at 7.2% (71st percentile), but a 20% K rate (34th percentile) means he must stay sharp to stay effective. High confidence in this projection.",
+      "valid": false
+    },
     "693850_hitter": {
       "hard_ok": true,
       "hash": "e4bfba829b7f413d9a36ee028d1dfca9",
@@ -5326,17 +5445,17 @@
     },
     "694197_hitter": {
       "hard_ok": true,
-      "hash": "00bc996af39425818897b85fe26318f8",
+      "hash": "55e98436a0dfb07b22f6fd09f22abb61",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Angel Genao is a young shortstop who leans on power\u2014.184 ISO in the 71st percentile\u2014but is chasing hard at the plate, with 19.2% strikeouts that rank in the 80th percentile against his peer pool. His walk rate sits at 9.0%, well below the league standard even in translation to MLB, and his .335 OBP reflects the tension between raw bat speed and swing-and-miss discipline. The main risk is whether the approach can mature; translated to MLB, he'd punch 21.3% strikeouts against just 10.5% walks, a combination that limits floor significantly. ValuCast's ranking has drifted down slightly in the past week, and with only 167 PAs here, this profile remains more projection than proven commodity.",
+      "text": "Angel Genao swings at a high rate and chases often\u2014a 20.4% strikeout rate (85th percentile) paired with a 10.5% walk rate masks a player who isn't generating much contact or patience at the plate relative to his swing decisions. His .435 slugging and .17 ISO are around average, built on a .265 average across 297 AAA+AA plate appearances, and while he's shown enough speed (6 steals) to move the needle slightly, the hit tool grades as modest (60) and power doesn't project higher. The projection ceiling is bench or platoon, with an 85% probability he lands there\u2014a near-certain outcome for a 22-year-old shortstop who has momentum rising in ValuCast's rankings but lacks the bat clarity to profile as a regular at this stage.",
       "valid": true
     },
     "694211_hitter": {
@@ -5370,17 +5489,17 @@
     },
     "694224_hitter": {
       "hard_ok": true,
-      "hash": "b7c7adfc3997156481aa6b03384bb75b",
+      "hash": "a3b6609438c0abd6535576427dfab30e",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Gabriel Gonzalez is a right-handed first baseman swinging through contact at a high rate while showing real bat-speed power relative to his hit tool\u2014a classic high-strikeout, moderate-power profile on the edge of MLB playability. His 20.5% K rate and .186 ISO in 302 AAA plate appearances project to 22.1% strikeouts and .149 ISO at the major-league level, solid power but offset by weak contact and a timid 8.9% walk rate. The ceiling remains a bench or platoon bat (85% probability), and Gonzalez has cooled slightly in ValuCast's rankings over the past three days. The current sample is live and substantial.",
+      "text": "Gabriel Gonzalez is a contact-challenged power hitter who swings through too much and doesn't walk enough to make up for it. His .255 AVG on a .291 BABIP and 20% K rate (74th percentile) are the real reads; the .438 SLG and 68th-percentile ISO mask an approach that ranks 45th in grade\u20149% BB rate against 20% K leaves almost no margin for error. The floor is a bench or depth piece, though 307 PA at AAA is a solid enough window to trust the projection. ValuCast has moved him up 4 spots in the past three days.",
       "valid": true
     },
     "694230_hitter": {
@@ -5816,17 +5935,17 @@
     },
     "694918_pitcher": {
       "hard_ok": true,
-      "hash": "f030f954f804a6e185f5f601e8cd69a9",
+      "hash": "b51714b28a82619ac7e2a72df266fa36",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Blade Tidwell is a right-handed starter showing moderate strikeout ability but persistent control issues at the AAA level. His 10.3 K/9 (62nd percentile) sits above league average, but a 5.1 BB/9 (40th percentile) and 1.64 WHIP (28th percentile) have inflated his 5.36 ERA in limited upper-level work. The walk rate is the core problem\u2014translated to MLB equivalent, he projects to 4.2 BB/9, well above the 3.2 league average, which will suppress his value even if strikeouts materialize. With only 40.3 innings in this sample and no deeper resume data provided, confidence in any sustained role remains guarded.",
+      "text": "Blade Tidwell is a right-handed pitcher who generates strikeouts (10.3 K/9) but lives dangerously with the walk rate (4.7 BB/9, 47th percentile among pitchers), creating tension between miss and command in the same delivery. His MLB-equivalent profile translates to 8.8 K/9 and 4.0 BB/9, suggesting the stuff plays in the majors but the control risk persists\u2014a 4.9 ERA and 1.50 WHIP in 46.3 AAA innings reflect that volatility. The ceiling is multi-inning reliever with a 64% probability of becoming a useful MLB arm, but the floor is depth work if command doesn't tighten. ValuCast has him rising sharply in recent rankings, though the current sample is live and moderate in confidence.",
       "valid": true
     },
     "694966_hitter": {
@@ -5867,14 +5986,12 @@
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "ok": false,
+        "ok": true,
         "triple_slash_problems": [],
-        "unsupported_numbers": [
-          "184"
-        ]
+        "unsupported_numbers": []
       },
-      "text": "Paul Skenes is a high-velocity starter generating elite contact-suppression through a 94th-percentile strikeout rate (30.6%) and a 94th-percentile xERA (2.63), with walk rate at the 92nd percentile (5.4%), projecting to a 3.00 ERA over 184 innings with 226 strikeouts. His fastball sits 97 mph and generates heavy swing-and-miss at the top of the zone, though his 30th-percentile fastball spin rate (2203 rpm) suggests he's generating strikeouts through precision and velocity rather than pure movement\u2014a profile that works as long as command stays intact. Hard-hit ball rate sits in the 64th percentile and barrel rate in the 71st, reasonable weaknesses for a strikeout-heavy pitcher, but both warrant monitoring as he accumulates innings in the majors. High confidence in the projection given established Statcast production across a full sample.",
-      "valid": false
+      "text": "Paul Skenes is a high-velocity starter with elite command and strikeout ability who suppresses hard contact at a 94th-percentile rate. His Statcast profile shows a 30.6% strikeout rate (94th percentile) paired with a 5.4% walk rate (92nd percentile) and an xERA of 2.63 (94th percentile), the shape of a front-of-rotation pitcher. The one concrete weakness is below-average fastball spin at 2203 rpm (30th percentile), which limits margin for error on his best pitch despite elite velocity. Confidence is high on a sustained ~3.00 ERA ceiling over a full season.",
+      "valid": true
     },
     "695033_pitcher": {
       "hard_ok": true,
@@ -6010,7 +6127,7 @@
           "168"
         ]
       },
-      "text": "Chase Burns is a high-velocity starter with elite strikeout stuff\u2014his fastball sits 97.9 mph with 2603 rpm spin (99th percentile), and he's punching out hitters at a 30.5% rate (93rd percentile) with a 33.2% whiff rate that matches. His xERA of 2.95 and xwOBA of .270 (both 88th percentile) align with a projection of 2.89 ERA over 168 innings with 204 strikeouts, but his control is only league-average (7.9% BB, 58th percentile) and he's allowing hard contact at a middling 68th percentile rate\u2014so home runs and walks remain a real concern despite the elite raw stuff. Medium confidence is appropriate given the gap between his pitch ability and results management.",
+      "text": "Chase Burns is a high-spin, high-velocity starter whose elite strikeout and whiff rates (30.5%, 33.2%) anchor a 2.95 xERA and .270 xwOBA that both land at the 88th percentile\u2014he pitches like a dominant, multi-inning arm. His 97.9 mph fastball and 2603 rpm spin (both 93rd percentile or better) are the foundation, and the ValuCast projection of 204 strikeouts over 168 innings tracks that elite swing-and-miss profile. The risk is baseline\u2014a 7.9% walk rate and middling 38th-percentile barrel rate suggest he can still leak contact when behind in the count and isn't entirely unhittable. Medium confidence reflects a young pitcher's narrow real-world sample relative to the consistency his Statcast profile implies.",
       "valid": false
     },
     "695506_hitter": {
@@ -6030,16 +6147,17 @@
     },
     "695508_hitter": {
       "hard_ok": true,
-      "hash": "efe938003e9c20182e22a5e4ef651363",
+      "hash": "0c139b93b228a814e7f2c1fd69fba995",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Cameron Cauley is a balanced hitter working through the AAA level with a disciplined approach but limited power production. He's walked in 13.3% of his plate appearances while striking out in 20.9%, a favorable BB-K spread that ranks in the 66th percentile, yet his .147 ISO suggests modest thump for a shortstop prospect. The main risk is a hit tool that grades only 55-range\u2014his .262 AVG on a 330 PA sample reflects a swing-and-miss tendency that translates to a projected 22.4% K% at MLB\u2014which constrains his upside to bench or platoon work despite the disciplined eye. ValuCast's ranking has moved up 13 spots over the last three days, reflecting recent performance strength on a current, full-health AAA sample.",
+      "text": "Cameron Cauley is a patient hitter with modest bat control and light power\u2014a skill profile that translates to bench or platoon utility rather than everyday production. His 13% walk rate (63rd percentile) and .363 OBP anchor a profile where approach discipline outpaces his ability to create impact; the .145 ISO (46th percentile) and 21% strikeout rate lag too far behind his contact management to drive consistent value. The main risk is that light power combined with a .262 AVG leaves little margin for error in an MLB environment. ValuCast's ranking has cooled in recent days, though over 343 PA at Triple-A the sample is stable and the projection to bench/platoon role (85% probability) is well-grounded.",
       "valid": true
     },
     "695521_hitter": {
@@ -6120,17 +6238,17 @@
     },
     "695653_hitter": {
       "hard_ok": true,
-      "hash": "9be1e891df954f07254fd9804c6d1d36",
+      "hash": "c22cfa1f16c00d67efacf8124727fa12",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Noah Miller is a high-strikeout, contact-limited shortstop who compensates with above-average walk rate and solid power relative to a thin hit tool. His 17.0 K% and .245 AVG across 318 AAA plate appearances rank him at 88th percentile in strikeouts and 52nd in batting average, while his 10.4 BB% (38th percentile) and .161 ISO (59th percentile) show modest discipline and gap strength that don't offset the swing-and-miss. The main risk is the disconnect between his approach grade (55) and impact grade (45)\u2014he's walking enough to stay useful but not hitting hard enough to break through at the MLB level. ValuCast projects him as a bench or platoon bat (85% probability) with near-term availability, though the ranking has cooled slightly in the last three days; the sample size is sufficient and current.",
+      "text": "Noah Miller is a high-strikeout contact hitter whose hit tool is carrying his profile despite modest overall offensive production at AAA. He's striking out at 17% with a .328 OBP and .167 ISO, numbers that translate to a 19.5% K% in MLB-equivalent context\u2014slightly better than league average\u2014but his .253 AVG and 88th percentile K rate signal he's missing too many pitches to generate consistent impact. The main risk is that his modest power (60th percentile ISO) and modest hit rates (57th percentile AVG) leave little margin for error in a bench role. ValuCast's ranking has moved up 8 spots over three days, reflecting near-term availability and a skill shape with more upside trajectory than current output.",
       "valid": true
     },
     "695667_pitcher": {
@@ -6578,17 +6696,17 @@
     },
     "699024_hitter": {
       "hard_ok": true,
-      "hash": "54f20ab82f7eaab8060e15c9eef9482d",
+      "hash": "3b49e26c1cf1981c89713b3e8253bae5",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Leo Bernal is a high-contact, disciplined hitter with modest power\u2014a bat-control prospect leaning on walk rate and contact quality over raw pop. At AAA, he's posting a .362 OBP and 13% BB% (both 64th percentile), backed by a .267 AVG and .164 ISO that land well below average for power. The power floor is real: a .139 ISO translates to well below the MLB average of .15, and his 22.4% K rate edges above league average, leaving little margin for error if the hit tool doesn't stay sharp. ValuCast projects a 84% likelihood he becomes a bench or platoon bat, though the current shape shows more upside trajectory than immediate value.",
+      "text": "Leo Bernal is a contact-oriented hitter with disciplined at-bats\u2014he's working a 13% walk rate against a 21% strikeout rate at AAA\u2014but the bat lacks consistent thump, posting just .159 ISO and a .421 slugging percentage over 273 plate appearances. His hit tool grades only 55, dragged down by a .262 average despite a .308 BABIP, signaling he's squaring the ball infrequently enough that even balls in play aren't carrying. The projection slots him as a bench or platoon option (83% probability) with a near-term arrival window, though his approach grade (60) hints at more upside than his current .776 OPS shows. This is a full season sample with solid plate appearances, but Bernal has cooled slightly in recent ranking movement.",
       "valid": true
     },
     "699043_hitter": {
@@ -8231,17 +8349,17 @@
     },
     "703186_pitcher": {
       "hard_ok": true,
-      "hash": "3be28bd6dde38e8944005ffebccb6f4f",
+      "hash": "68d93c37081ca191ca86c6c265ed7e99",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Jarlin Susana is a bat-missing arm operating at extreme velocities\u201415.0 K/9 over 47.3 IP at Double-A, ranked 99th percentile in strikeout rate among the ValuCast pitcher pool\u2014but control remains the hard ceiling on value, with a 25th percentile BB/9 of 6.1 and a 1.39 WHIP that leaks baserunners. His 3.61 ERA masks walk exposure; when translated to MLB equivalents, he sits at 4.7 BB/9, well above league average. The sample is stale\u2014from the 2025 season\u2014and at 47.3 innings is thin enough that his true command profile remains uncertain. ValuCast projects him as a multi-inning or setup arm with 73% odds of becoming a useful MLB contributor, but the walk rate is the fulcrum.",
+      "text": "Jarlin Susana is a high-velocity bat-missing arm whose command profile constrains his ceiling: he struck out 15.0 per 9 innings at AA in 2025, placing him at the 98th percentile for whiff rate, but walked 6.1 per 9 (23rd percentile), yielding a K-BB% of 23% that sits at the 91st percentile overall. The mismatch between elite miss and poor command suggests a reliever path rather than a starting role, with a multi-inning or setup ceiling and a substantial risk of bullpen-or-depth outcome depending on whether he tightens his zone. This is a stale prior-season sample at AA with moderate confidence in the MLB-equivalent translation.",
       "valid": true
     },
     "703190_hitter": {
@@ -8812,17 +8930,17 @@
     },
     "800522_hitter": {
       "hard_ok": true,
-      "hash": "0136ddd19ad9c762d5342264f357def7",
+      "hash": "653c01cbf533bf2fecec0864af240472",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Josue Briceno is a power-first hitter with elite bat speed who will need to prove he can make consistent contact; his .296 AVG and .602 SLG on 244 PA at A+ rank 99th percentile in ISO but his 16.4% K rate sits only at the 89th, signaling swing-and-miss remains a live concern even when he connects. When translated to a higher level of competition, his strikeouts climb to 23.1%, well above the MLB average of 22.0%, while his power is discounted from .306 ISO to .161\u2014still above average but a substantial cut. The sample is stale (prior season), and at 21 years old with only one level of professional data, confidence in the peak projection of \"second division regular\" is legitimately guarded.",
+      "text": "Josue Briceno is a high-leverage power hitter who generates elite contact quality over volume\u2014his .306 ISO and .602 SLG land in the 98th and 99th percentiles, respectively, built on a 16% K% and 17% BB% that show genuine two-strike discipline for a 21-year-old. When translated to MLB equivalents, those peripherals (23.1% K, 11.3% BB) sketch a bench-or-platoon profile with 84% probability, not an everyday regular; the power is real, but the hit tool and overall consistency remain unproven. This is a 244-PA A+ sample from 2025 with staleness risk and no current activity, so the elite percentile readings should anchor confidence tighter than the peak projection of \"low-end everyday regular\" suggests.",
       "valid": true
     },
     "800537_pitcher": {
@@ -9360,17 +9478,17 @@
     },
     "802408_pitcher": {
       "hard_ok": true,
-      "hash": "b0273bb23f87feb23364ab7ff97fd84f",
+      "hash": "798f3b706a4fc1acf364d8e916b5fcdb",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Brycen Mautz is a left-handed pitcher running a 2.45 ERA in AAA with strikeout stuff (9.5 K/9 vs. the minor-league pool) but consistently loose command\u2014his 6.1 BB/9 and 8.4 K-BB% both rank in the 24th\u201327th percentile among all minor-league arms. The walk rate is the defining liability; when translated to MLB equivalents, it projects to 5.0 BB/9, well above the 3.2 league average. With only 58.7 innings on a current sample, confidence in the ERA floor is moderate, and the control issues will need to tighten for him to work in anything tighter than a multi-inning relief role.",
+      "text": "Brycen Mautz is a control-compromised left-handed starter logging strong run prevention at AAA, but his strikeout rate sits well below average and his walk rate is well above it. Over 63.7 IP, he owns a 2.8 ERA with a 9.2 K/9, but that walks at 6.4 BB/9 and yields a K-BB% of just 7\u2014all signals of a pitcher managing results rather than overpowering opponents. ValuCast projects him as a multi-inning or setup reliever in the near term, which aligns with his command grade of 20 and miss grade of 45; the ERA is too good to ignore now, but the K-BB% disparity is real and carries MLB-translation risk. Sample is fresh and full-season, but ranking movement is cooling.",
       "valid": true
     },
     "802410_pitcher": {
@@ -9537,17 +9655,17 @@
     },
     "803175_hitter": {
       "hard_ok": true,
-      "hash": "5e50c6ed41e81217b67cc1d578cbed2a",
+      "hash": "67ebe202f305da3458765935b3a0f4e3",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Ethan Anderson is a power-first catcher with sufficient bat control to stay playable, swinging hard and connecting on power (.491 SLG, .23 ISO at 89th percentile) while tolerating strikeouts at a 19.7% rate. His walk rate sits at 12%, leaving his offensive floor dependent on that power translating\u2014an above-average ISO in the majors once adjusted (.164 MLB-equiv), but his hit tool grades out only to 60, meaning he won't hit for average to offset poor contact. The main risk is that a 22-year-old catcher with a strikeout lean and borderline approach discipline profiles as a bench or platoon bat (81% probability) rather than an everyday contributor, and ValuCast has cooled on him slightly in recent days.",
+      "text": "Ethan Anderson is a power-first hitter who trades hit rate for leverage\u2014a high-strikeout profile (.266 AVG, 19% K%) built entirely on plus iso (.245, 92nd percentile) and elite-level slugging output (.511 SLG, 90th percentile). His walk rate (12%, 56th percentile) sits around league average when MLB-translated, which means the approach has discipline but lacks the selectivity to offset the strikeouts and keep batting average competitive at higher levels. The main risk is that 22-year-old catchers who rely this heavily on power-over-contact typically need to prove they can survive pitcher adjustment and maintain this iso rate in tighter competition; 268 PA is a live sample, but the hit tool floor here is a real ceiling on future everyday viability. ValuCast ranks him rising, and the projection\u2014low-end everyday regular, two years out\u2014rests on whether the power sustains and his game-calling adds enough value to warrant the offensive tradeoff.",
       "valid": true
     },
     "803244_pitcher": {
@@ -9849,17 +9967,17 @@
     },
     "804558_hitter": {
       "hard_ok": true,
-      "hash": "5c07847e3423824f55ca716f622fb70e",
+      "hash": "99eee9abf3e12e9454fbf1d7daa012ed",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Raudi Rodriguez is a disciplined, high-contact hitter operating well above the strikeout-to-walk balance typical of minor leaguers, built on a .424 OBP and 16.5% BB% that grade 96th and 88th respectively in the ValuCast hitter pool. His .302 AVG and .509 SLG (.933 OPS) anchor elite percentiles across the board, but the MLB-equivalent translation exposes a meaningful power ceiling\u2014his .207 ISO projects to just .154 at the major-league level, suggesting his value hinges more on hit tool and patience than impact. The projection calls for a second-division regular within one to two years, though recent ranking movement has cooled slightly; this 285-PA sample is fresh and carries moderate confidence in the translation, making the next phase of development critical for determining whether the approach profile can sustain premium value as competition tightens.",
+      "text": "Raudi Rodriguez is a high-contact, walk-heavy hitter with a disciplined approach and just-adequate power\u2014a floor-focused prospect whose skill profile leans heavily on hit tool and pitch recognition over explosive upside. He's posting .300 AVG with a 95th-percentile OBP (.422) and 88th-percentile BB% (16%) in 303 AA plate appearances, but his ISO sits only at 74th percentile (.194), and strikeouts run at 19%, limiting the ceiling. The main constraint is power output: even in a full-season sample, he's generating modest slugging (.494) and will likely slot as a bench or platoon contributor rather than an everyday regular, though the approach mechanics and contact quality offer low developmental risk. ValuCast's ranking has cooled slightly over the past three days, but the bat shape and patient plate discipline remain credible assets.",
       "valid": true
     },
     "804560_hitter": {
@@ -9874,6 +9992,21 @@
         "unsupported_numbers": []
       },
       "text": "Charles Davalan is a contact-first left-handed hitter who works counts and avoids strikeouts at an elite rate, posting an 11.5 K%, well above the 98th percentile, while walking in 13.3% of his plate appearances and building a .392 OBP. The floor is immediate and real\u2014his .171 ISO ranks 65th percentile and projects to just .13 in the majors, making him a pure line-drive hitter with limited impact potential. ValuCast sees him as a bench or platoon bat (85% probability), though the data suggests upside remains untapped at age 22 with 286 PA through A+ ball. The sample is current and clean, but the power profile is the binding constraint on ceiling.",
+      "valid": true
+    },
+    "804606_hitter": {
+      "hard_ok": true,
+      "hash": "4c4b473c2c316cd55108cb32797b7c65",
+      "model": "claude-haiku-4-5-20251001",
+      "problems": {
+        "banned": [],
+        "handedness_problems": [],
+        "hard_ok": true,
+        "ok": true,
+        "triple_slash_problems": [],
+        "unsupported_numbers": []
+      },
+      "text": "Konnor Griffin is an athletic shortstop with rare speed (99th percentile sprint speed) who projects as a high-volume stolen-base contributor, but his bat lacks both consistency and force. His Statcast profile reveals significant swing-and-miss (31.8% whiff rate, 37.5% chase rate, both in the bottom quartile) and weak contact quality (87.6 mph average exit velo at the 24th percentile, 36.4% hard-hit rate at the 27th), resulting in a projected .265 AVG and .732 OPS despite 30 stolen bases. The main risk is that a 19-year-old with below-average plate discipline and contact tools may not develop the hit tool fast enough to justify a shortstop role; his path likely depends on whether the strikeout rate (26.1%) drops and exit velo climbs materially. Medium confidence given his age and the gap between his elite athleticism and still-developing offensive profile.",
       "valid": true
     },
     "804614_hitter": {
@@ -9954,17 +10087,17 @@
     },
     "804858_hitter": {
       "hard_ok": true,
-      "hash": "b6b18da98669adf99fcd2e6a471c7e92",
+      "hash": "a7886670b2b1d953dbba6622e1860cd5",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Bryan Rincon is a high-contact, selective hitter with legitimate power upside, operating at a 21.5% K rate and 15.9% BB rate over a fresh AA sample\u2014elite approach marks (85th and 89th percentiles in BB% and ISO respectively) anchored in the discipline to work counts. The MLB-equivalent translation projects his .226 ISO to .162 and his contact rate to remain above average, painting a second-division regular ceiling with meaningful hit-tool risk baked into the 60-grade hit grade. Sample is current and clean at 246 PA, though ValuCast's rankings have cooled slightly on Rincon over the past three days.",
+      "text": "Bryan Rincon is a high-walk, high-strikeout operator who trades contact for leverage; his 15% BB% and 21% K% sit at the 80th and 71st percentiles respectively in his peer group, and he's generating 87th-percentile ISO (.229) despite a modest .252 AVG on a .285 BABIP. The main risk is hit tool\u2014his combination of swing-and-miss and low batting average limits floor and requires the power and approach to stay sharp as he climbs. ValuCast's ranking has moved up 1.5 points in the last three days.",
       "valid": true
     },
     "804942_pitcher": {
@@ -10028,16 +10161,17 @@
     },
     "805082_hitter": {
       "hard_ok": true,
-      "hash": "173399e2c916a27f98fc6cead03b5fa2",
+      "hash": "5d0b8a73eb6cc8476b60d60bf7dc3b2d",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Ronny Hernandez is showing disciplined, power-oriented contact at A+ \u2014 striking out at 17.9% while walking at 11.1%, both well above league average in translation, and producing an ISO of .184 that signals genuine barrel control. The bat profile sketches as hit and power both at 80-grade ceiling, backed by a 11.1% walk rate and approach grade that outpaces strikeout risk. The floor is organizational depth; the ceiling is everyday regular, but that path lands only 27% of the time, with 63% bust probability into bench role \u2014 and a 94-PA sample, while current and clear, is thin enough that all grades carry real variance. ValuCast has moved Hernandez up 9.1 points in the last three days.",
+      "text": "Ronny Hernandez is a high-contact, disciplined left-handed hitter generating exit-level power through a 9% strikeout rate and 20% walk rate at A+, producing .456 OBP and .658 SLG across 103 plate appearances. His Statcast profile ranks in the 96th\u201399th percentile for hit tool, plate discipline, and slugging, with an .342 ISO suggesting impact over a small current sample. The core risk is that 103 PA is thin ice\u2014the MLB-equivalent translation shows modest power (0.178 ISO vs. league average 0.15) and suggests some regression is probable as he faces stronger competition, a reality the recent downward ranking movement reflects. This is a 21-year-old catcher with a rare approach shape and real bat, but confidence remains low until he carries this selectivity and contact through a full minor-league season.",
       "valid": true
     },
     "805127_hitter": {
@@ -10370,17 +10504,17 @@
     },
     "806046_pitcher": {
       "hard_ok": true,
-      "hash": "dad33631da86164a3b4e333b7bef55ae",
+      "hash": "baff944c2b3f050e0311fa102f5bf5ad",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Alex Clemmey is a 20-year-old left-handed starter showing the strikeout rate of a mid-rotation arm\u201410.0 K/9 in 61.3 AA innings\u2014but control is a significant brake on his upside. His 6.3 BB/9 sits in the 22nd percentile; the MLB translation suggests that projects to 5.3 BB/9 at the big-league level, still well above league average. The gap between whiff rate (57th percentile in K/9) and command (22nd percentile in BB/9) creates a volatile profile, and his 5.14 ERA reflects that inconsistency. ValuCast projects him as a multi-inning relief arm or setup option with a depth-arm floor over one to two years, though the recent ranking movement suggests cooling in the evaluator's view.",
+      "text": "Alex Clemmey is a left-handed pitcher throwing starter volume with below-average command and moderate strikeout production\u2014a profile tilted toward relief or depth-arm outcomes rather than sustained rotation work. Over 67.3 innings at AA, he's struck out 9.6 per nine while walking 6.0 per nine, leaving him at the 27th percentile in K-BB%. The walk rate is the core problem: translated to MLB context, his 5.2 BB/9 sits well above the 3.2 league average, and that control deficit compounds a miss grade that's only at the 50th percentile anyway. ValuCast projects a multi-inning or setup reliever ceiling with a 49% probability he settles into depth or relief work, though the trajectory suggests more upside than current value; the ranking has cooled slightly over three days.",
       "valid": true
     },
     "806061_hitter": {
@@ -10803,16 +10937,17 @@
     },
     "807080_hitter": {
       "hard_ok": true,
-      "hash": "d9541f47abcb711ba9119016bbdc8d26",
+      "hash": "6d99f768eefd3e684d5bf1851b565927",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "text": "Eric Hartman is a young left-handed hitter with elite raw power\u2014ISO of .267 (96th percentile) and OPS of .931 (95th percentile)\u2014who is driving production through impact rather than contact or patience. The .302 average and .569 slugging are real across 293 plate appearances at A+, but his 22.9% strikeout rate and 8.2% walk rate reveal a free-swinging approach that could limit his offensive ceiling at higher levels. He projects as a second-division regular with two to three years until arrival, though the majority of outcomes (66%) land him on the bench or as a platoon piece if he doesn't tighten his command of the strike zone. ValuCast has him rising slightly in rankings; this sample is active and clean.",
+      "text": "Eric Hartman is a 20-year-old left-handed hitter producing elite raw power (.563 SLG, .266 ISO at 90th and 95th percentiles respectively) with legitimate hit-tool foundation (.297 AVG, .359 OBP over 312 PA at A+). The structural weakness is a 23% strikeout rate that projects to 26% in MLB context\u2014above league average and at tension with his modest 8% walk rate, leaving him vulnerable to extended cold stretches as he advances. ValuCast ranks him at 56 prospects with recent upside movement; the projection ceiling is a low-end everyday regular, though the 67% probability skews toward bench-or-platoon outcomes given the approach profile.",
       "valid": true
     },
     "807083_hitter": {
@@ -11546,17 +11681,17 @@
     },
     "809254_pitcher": {
       "hard_ok": true,
-      "hash": "a1b3129c3dade0e54eec832bc8e505a3",
+      "hash": "7d817c6d902bf554481fffbb93524e8b",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Anthony Eyanson is a 21-year-old right-handed pitcher operating with exceptional early command and low free passes at AA, posting a 1.46 ERA with a 15.6% K-BB% and 4.7 BB/9 over a modest 24.7 innings. The peripherals translate to a 3.4 BB/9 in MLB-equivalent terms, well within league average, while strikeout rate sits at 9.1 K/9\u2014solid but not dominant. The real risk is the minimal sample size and unknown pitch arsenal; 45 innings is too thin to confirm whether this control profile holds, and without shape or velocity data, there's no way to assess the ceiling or likelihood of regression. Given the active, current sample and moderate translation confidence, this is a pure upside play that demands a full season of evidence before trusting the results.",
+      "text": "Anthony Eyanson is a run-prevention-first arm who has pitched to a 1.1 ERA with a 0.9 WHIP across 50.6 innings at AA/A+, operating at the 98th and 99th percentiles respectively. His 11.4 K/9 and 25 K-BB% sit well above average, but a 3.4 BB/9 (76th percentile) flags modest control\u2014the main constraint on a depth-arm projection that carries 71% probability of reaching MLB as a useful contributor. ValuCast has him trending up over the past three days, and the current sample is live and substantial enough to trust the profile shape.",
       "valid": true
     },
     "809343_pitcher": {
@@ -12386,17 +12521,17 @@
     },
     "815348_pitcher": {
       "hard_ok": true,
-      "hash": "81901bca34d12951881a325714d48afc",
+      "hash": "56fb0f39a6d6ef93d4a146234355551d",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Boston Bateman is a left-handed pitcher working starter volume who shows strong strikeout stuff\u201411.1 K/9, 76th percentile\u2014but is bleeding walks at 4.6 BB/9, 50th percentile, with a resulting 4.05 ERA. The core issue is command; his K-BB% of 16.9% (76th) masks a control problem that will limit his ceiling even as he develops. Bateman projects as a multi-inning or setup arm over the next two to three years, though the recent rank cooling reflects the reality that walk rate at age 20 on a 53-inning sample is still a legitimate signal of command risk.",
+      "text": "Boston Bateman is a strikeout-heavy left-hander developing the contact rates of a future relief arm\u201411.5 K/9 (76th percentile) paired with a concerning 4.9 BB/9 (43rd percentile) and resulting K-BB% of 17% (72nd percentile). Over 57.3 innings at A+, he's posted a 3.9 ERA and 1.4 WHIP, but the walk rate is the real liability in a profile already projected toward a multi-inning or setup reliever role rather than a starter's box. ValuCast has him rising in the rankings, though the MLB-equivalent translation flags the command\u20144.6 BB/9 translates closer to league average\u2014as the primary question mark for whether he reaches even useful depth-arm caliber.",
       "valid": true
     },
     "815352_hitter": {
@@ -12583,17 +12718,17 @@
     },
     "815785_pitcher": {
       "hard_ok": true,
-      "hash": "bd77973b2928b43208a69b0eca6d5b20",
+      "hash": "a7ec25adcb8a39a81d099084c7157f18",
       "model": "claude-haiku-4-5-20251001",
       "problems": {
         "banned": [],
         "handedness_problems": [],
         "hard_ok": true,
         "ok": true,
+        "triple_slash_problems": [],
         "unsupported_numbers": []
       },
-      "reused_against_updated_grounding": true,
-      "text": "Braylon Doughty is a command-first righthander operating well ahead of the control curve at age 20, striking out 11.2 per 9 while walking just 1.8\u2014both elite marks relative to his A+ peer group (97th and 76th percentiles respectively). The ceiling is back-end starter, but his 3.35 ERA and 1.27 WHIP hint at a gap between his stuff and results; the MLB-equivalent translation shows walk rate climbing to 2.7 per 9 and strikeout rate dipping to 8.5, a common reality check for young minor-league pitchers. With just 53.7 innings in his current season sample and a low-confidence translation, there's meaningful projection risk baked into any ceiling estimate. Doughty is rising in ValuCast rankings and profiles as more upside than present value, but he needs to prove he can sustain command while generating strikeouts at the next level.",
+      "text": "Braylon Doughty is a 20-year-old right-handed starter who commands the zone at an elite level\u201498th percentile in BB/9 at 1.7 per nine\u2014but operates as a mid-spin, mid-velo type who will need to sustain his current 11.2 K/9 to remain a starter; translated to MLB equivalents, that walk rate holds up (2.5 BB/9) but the strikeout output drops to 8.4 K/9, right around league average. The floor is a useful multi-inning arm, the ceiling is a back-end starter, and there's material upside ahead given the trajectory ValuCast is projecting\u2014but the walk excellence masks modest raw stuff, and the current Statcast profile (65-grade dominance) leaves little margin for error if velocity or whiff rates decline at higher levels. Early read on a polished teenager with more ceiling than present value.",
       "valid": true
     },
     "815787_hitter": {

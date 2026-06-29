@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-29T12:48:23.171069+00:00",
+  "generated_at": "2026-06-29T14:47:31.187848+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -24915,7 +24915,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "669699_hitter",
       "mlbam_id": "669699",
       "name": "Braden Shewmake",
@@ -24941,7 +24941,7 @@
         "role_probability_source": "volume_fan",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.06,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "minimal_mlb_track_record",
           "reliability": 41.72,
@@ -24951,9 +24951,9 @@
         "volume_forecast": {
           "base": 206.7,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 220.2,
-          "low": 141.3,
-          "point": 192.2,
+          "high": 221.5,
+          "low": 144.8,
+          "point": 194.3,
           "unit": "PA"
         }
       },

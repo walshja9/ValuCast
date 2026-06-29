@@ -147437,6 +147437,177 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 28,
+      "components": {
+        "age_adjustment": 1.1567,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": true,
+          "effective_date": "2026-06-27",
+          "list_type": null,
+          "note": "Houston Astros sent SS Braden Shewmake on a rehab assignment to FCL Astros.",
+          "present": true,
+          "risk_discount": 0.04,
+          "risk_level": "medium",
+          "score_before_availability_adjustment": 4.92,
+          "source": "official_mlb_statsapi_transactions",
+          "status": "rehab",
+          "transaction_date": "2026-06-27",
+          "transaction_id": 923306
+        },
+        "availability_adjusted": true,
+        "availability_risk_discount": 0.04,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 2.99,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -1.8912,
+        "horizon_years": [
+          {
+            "age": 28,
+            "age_factor": 1.0,
+            "projected_value": -2.8003,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 29,
+            "age_factor": 0.9193,
+            "projected_value": -1.4159,
+            "reliability_factor": 0.55,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 30,
+            "age_factor": 0.8386,
+            "projected_value": -0.7104,
+            "reliability_factor": 0.3025,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 41.72,
+        "production_score": 2.99,
+        "projection_stability": {
+          "current_season_category_value": -1.539,
+          "ros_category_value": -4.4412,
+          "ros_stability_weight": 0.4346,
+          "ros_true_talent_annualization_scale": 21.1484,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -2.8003,
+          "stability_adjustment": -1.2613,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 4.92,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 8.53,
+          "track_record_experience_band": "minimal_mlb_track_record",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "score_before_availability_adjustment": 4.92,
+        "season_category_value": -2.8003,
+        "track_record": {
+          "experience_band": "minimal_mlb_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 8.53,
+          "track_record_floor_score": 19.26,
+          "volume": {
+            "career": 150.0,
+            "current_season": 79.0,
+            "prior_mlb": 71.0,
+            "recent_3yr_prior": 71.0
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "R -1.37",
+        "RBI -1.33",
+        "HR -0.92",
+        "SB -0.82",
+        "playing time reliability 42"
+      ],
+      "dynasty_horizon_value": -1.8912,
+      "id": "vc_mlb_669699_hitter",
+      "mlb_team": "HOU",
+      "mlbam_id": 669699,
+      "name": "Braden Shewmake",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "3B",
+        "SS"
+      ],
+      "projection_value": -2.8003,
+      "rank": 912,
+      "role": "hitter",
+      "score": 4.73,
+      "stat_line": {
+        "category_values": {
+          "AVG": -0.0878,
+          "ERA": 0.0,
+          "HR": -0.9218,
+          "K": 0.0,
+          "R": -1.3729,
+          "RBI": -1.3317,
+          "SB": -0.8162,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2377,
+          "ERA": null,
+          "HR": 3.62,
+          "K": null,
+          "R": 10.755,
+          "RBI": 10.798,
+          "SB": 0.509,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.238,
+          "HR": 3.62,
+          "OBP": 0.263,
+          "OPS": 0.654,
+          "PA": 107.371,
+          "R": 10.755,
+          "RBI": 10.798,
+          "SB": 0.509
+        }
+      },
+      "team": "HOU",
+      "value": 4.73,
+      "value_by_preset": {
+        "5x5": 4.73,
+        "6x6": 2.37,
+        "7x7": 5.24,
+        "7x7_ops": 6.78,
+        "obp": 2.93,
+        "points": 3.65,
+        "sv_hld": 4.83
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 30,
       "components": {
         "age_adjustment": 0.97,
@@ -147550,7 +147721,7 @@
         "C"
       ],
       "projection_value": -2.8859,
-      "rank": 912,
+      "rank": 913,
       "role": "hitter",
       "score": 4.72,
       "stat_line": {
@@ -147600,177 +147771,6 @@
         "obp": 5.11,
         "points": 8.06,
         "sv_hld": 4.83
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 28,
-      "components": {
-        "age_adjustment": 1.1567,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-05-31",
-          "list_type": "10-day injured list",
-          "note": "Houston Astros placed SS Braden Shewmake on the 10-day injured list retroactive to May 31, 2026. Right adductor strain.",
-          "present": true,
-          "risk_discount": 0.06,
-          "risk_level": "medium",
-          "score_before_availability_adjustment": 4.92,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-06-02",
-          "transaction_id": 915368
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.06,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 2.99,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -1.8912,
-        "horizon_years": [
-          {
-            "age": 28,
-            "age_factor": 1.0,
-            "projected_value": -2.8003,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 29,
-            "age_factor": 0.9193,
-            "projected_value": -1.4159,
-            "reliability_factor": 0.55,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 30,
-            "age_factor": 0.8386,
-            "projected_value": -0.7104,
-            "reliability_factor": 0.3025,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 41.72,
-        "production_score": 2.99,
-        "projection_stability": {
-          "current_season_category_value": -1.539,
-          "ros_category_value": -4.4412,
-          "ros_stability_weight": 0.4346,
-          "ros_true_talent_annualization_scale": 21.1484,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -2.8003,
-          "stability_adjustment": -1.2613,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 4.92,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 8.53,
-          "track_record_experience_band": "minimal_mlb_track_record",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 4.92,
-        "season_category_value": -2.8003,
-        "track_record": {
-          "experience_band": "minimal_mlb_track_record",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 8.53,
-          "track_record_floor_score": 19.26,
-          "volume": {
-            "career": 150.0,
-            "current_season": 79.0,
-            "prior_mlb": 71.0,
-            "recent_3yr_prior": 71.0
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "R -1.37",
-        "RBI -1.33",
-        "HR -0.92",
-        "SB -0.82",
-        "playing time reliability 42"
-      ],
-      "dynasty_horizon_value": -1.8912,
-      "id": "vc_mlb_669699_hitter",
-      "mlb_team": "HOU",
-      "mlbam_id": 669699,
-      "name": "Braden Shewmake",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "3B",
-        "SS"
-      ],
-      "projection_value": -2.8003,
-      "rank": 913,
-      "role": "hitter",
-      "score": 4.63,
-      "stat_line": {
-        "category_values": {
-          "AVG": -0.0878,
-          "ERA": 0.0,
-          "HR": -0.9218,
-          "K": 0.0,
-          "R": -1.3729,
-          "RBI": -1.3317,
-          "SB": -0.8162,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2377,
-          "ERA": null,
-          "HR": 3.62,
-          "K": null,
-          "R": 10.755,
-          "RBI": 10.798,
-          "SB": 0.509,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.238,
-          "HR": 3.62,
-          "OBP": 0.263,
-          "OPS": 0.654,
-          "PA": 107.371,
-          "R": 10.755,
-          "RBI": 10.798,
-          "SB": 0.509
-        }
-      },
-      "team": "HOU",
-      "value": 4.63,
-      "value_by_preset": {
-        "5x5": 4.63,
-        "6x6": 2.32,
-        "7x7": 5.13,
-        "7x7_ops": 6.64,
-        "obp": 2.86,
-        "points": 3.58,
-        "sv_hld": 4.73
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
