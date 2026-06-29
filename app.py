@@ -1408,7 +1408,7 @@ def _prospect_graphic_png(
         subtitle = f"{subtitle} | {search}"
     if subtitle_date:
         subtitle = f"{subtitle} - {subtitle_date}"
-    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, tagline="Top Prospects")
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, tagline=f"Top {noun}")
 
     def draw_dense_prospect_grid(
         grid_rows,
