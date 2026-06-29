@@ -287,6 +287,23 @@ def _eta_window(row: dict) -> str:
     return eta_window(row)
 
 
+# Public role-tier display labels: de-jargoned for the card/web surfaces. The role
+# KEYS (impact_regular, second_division_regular, ...) drive logic and must NOT change;
+# these only govern what a reader sees. "second division regular" was insider scouting
+# jargon (FV-45 tier) -> plain language a casual fan gets instantly.
+CEILING_LABELS = {
+    "impact_regular": "impact everyday bat",
+    "second_division_regular": "low-end everyday regular",
+    "mid_rotation_or_better": "mid-rotation starter or better",
+    "multi_inning_or_setup_arm": "multi-inning or setup reliever",
+}
+
+
+def ceiling_label(key) -> str:
+    key = str(key or "")
+    return CEILING_LABELS.get(key, key.replace("_", " "))
+
+
 def _summary(row: dict, peak_score: float, ceiling: str, risk: str) -> str:
     current = _current_context(row)
     sample = _round(current.get("sample"), 1)
@@ -295,7 +312,7 @@ def _summary(row: dict, peak_score: float, ceiling: str, risk: str) -> str:
     role = "pitching" if row.get("role") == "pitcher" else "bat"
     sample_text = f"{sample:g} {unit}" if sample is not None and unit else "the current sample"
     return (
-        f"Peak read: {ceiling.replace('_', ' ')} with {risk} risk. "
+        f"Peak read: {ceiling_label(ceiling)} with {risk} risk. "
         f"The current {role} shape is {skill_band} over {sample_text}; "
         "this is a role and skill-shape projection, not a full stat forecast."
     )
@@ -355,7 +372,7 @@ def _card_v2_context(
         "confidence": confidence,
         "role_probabilities": _role_probability(row, peak_score, risk, shape_average),
         "card_copy": (
-            f"Ceiling is {ceiling.replace('_', ' ')}; "
+            f"Ceiling is {ceiling_label(ceiling)}; "
             f"floor is {floor.removesuffix('_floor').replace('_', ' ')}. "
             f"{risk.capitalize()} risk, {confidence} confidence."
         ),

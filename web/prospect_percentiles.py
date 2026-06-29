@@ -285,7 +285,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
             "Pitchers do not have to change their plan for his power.",
         )
         role = (
-            "Second-division regular ceiling, but the current damage points to a low-impact bench floor.",
+            "Low-end everyday regular ceiling, but the current damage points to a low-impact bench floor.",
             "The approach fits a reserve role today; more damage is required for everyday work.",
         )
         family = "hitter-contact-approach-light-power"
@@ -350,7 +350,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
             "The risk is a broad but ordinary offensive line without one result that forces an everyday role.",
         )
         role = (
-            "The likely outcome is a second-division regular who contributes across categories, with a useful bench-bat floor.",
+            "The likely outcome is a low-end everyday regular who contributes across categories, with a useful bench-bat floor.",
             "This reads as a broad-based regular outcome, with enough across-the-board value to retain a reserve floor.",
         )
         family = "hitter-balanced"

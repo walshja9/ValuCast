@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from prospects.availability import eta_window as prospect_eta_window
 from prospects.availability import eta_window_label
+from prospects.peak_projection import ceiling_label
 
 from .prospect_context import (
     context_note,
@@ -524,7 +525,7 @@ class PublicSnapshotRow:
     @property
     def peak_role_label(self) -> str | None:
         role = self.peak_projection_context.get("peak_role")
-        return _format_status(role)
+        return _format_status(ceiling_label(role)) if role else _format_status(role)
 
     @property
     def peak_floor_label(self) -> str | None:
