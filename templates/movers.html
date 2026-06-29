@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Prospect Movers | ValuCast{% endblock %}
+{% block og_title %}Prospect Movers | ValuCast{% endblock %}
+{% block og_description %}The biggest denoised ValuCast Rank v1 prospect risers and fallers.{% endblock %}
+{% block og_url %}https://valucast.app/movers{% endblock %}
+{% block og_image %}https://valucast.app/movers/share-card.png{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1350{% endblock %}
+{% block twitter_title %}Prospect Movers | ValuCast{% endblock %}
+{% block twitter_description %}The biggest denoised ValuCast Rank v1 prospect risers and fallers.{% endblock %}
+{% block twitter_image %}https://valucast.app/movers/share-card.png{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+<nav class="horizon-tabs" aria-label="Movers board navigation">
+    <a href="/?mode=dd_dynasty" class="htab htab-dynasty">Dynasty</a>
+    <a href="/backfields" class="htab htab-prospects">Backfields</a>
+    <a href="/map" class="htab">Map</a>
+    <a href="/movers" class="htab on" aria-current="page">Movers</a>
+    {% if not aotc_hold %}
+    <a href="/buys" class="htab">Buys</a>
+    {% endif %}
+</nav>
+
+<section class="buys-heading movers-heading glass">
+    <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
+        <path d="M318 10 C220 2 126 34 14 140" />
+    </svg>
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">PROSPECT MOVERS</span>
+        <h1>PROSPECT MOVERS</h1>
+        <p class="buys-heading-sub">{{ mover_count }} clean-tail movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
+        <p class="buys-fineprint">Rank v1 score movement only. Step-guarded clean tails exclude hard re-baselines and stale gaps.</p>
+    </div>
+    <div class="buys-actions">
+        <a class="export-btn" href="/movers/share-card" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" href="/movers/share-card.png" download="valucast-prospect-movers.png">Download PNG</a>
+    </div>
+</section>
+
+{% if not movers_available %}
+<section class="map-heading glass">
+    <h2>Movers artifact unavailable</h2>
+    <p>The board will populate after the next Rank v1 archive build.</p>
+</section>
+{% else %}
+<div class="movers-grid">
+    <section class="buys-list movers-section glass" aria-label="Rising prospect movers">
+        <h2>RISING 📈</h2>
+        {% if rising %}
+            {% for p in rising %}
+            <article class="movers-row">
+                <span class="buys-rank">#{{ p.current_rank }}</span>
+                <div class="buys-main">
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>
+                    <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
+                    <span class="buys-tag">{{ p.why }}</span>
+                </div>
+                <span class="mover-delta up">{{ p.score_delta | round(1) }}</span>
+                <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
+            </article>
+            {% endfor %}
+        {% else %}
+            <p class="buys-fineprint">Sparse board: no risers cleared the clean-tail and +2.0 score filters.</p>
+        {% endif %}
+    </section>
+
+    <section class="buys-list movers-section glass" aria-label="Cooling prospect movers">
+        <h2>COOLING ❄️</h2>
+        {% if cooling %}
+            {% for p in cooling %}
+            <article class="movers-row">
+                <span class="buys-rank">#{{ p.current_rank }}</span>
+                <div class="buys-main">
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>
+                    <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
+                    <span class="buys-tag">{{ p.why }}</span>
+                </div>
+                <span class="mover-delta down">{{ p.score_delta | round(1) }}</span>
+                <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
+            </article>
+            {% endfor %}
+        {% else %}
+            <p class="buys-fineprint">Sparse board: no fallers cleared the clean-tail and -2.0 score filters.</p>
+        {% endif %}
+    </section>
+</div>
+{% endif %}
+{% endblock %}

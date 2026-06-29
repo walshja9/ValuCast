@@ -14,12 +14,13 @@ def main() -> None:
         "ValuCast quality governor: "
         f"snapshot_ready={result['ready_for_public_snapshot']} "
         f"buys_ready={result['ready_for_buys_promotion']} "
+        f"movers_ready={result['ready_for_movers']} "
         f"blockers={result['blocker_count']} "
         f"buy_blockers={result['buy_blocker_count']} "
+        f"mover_blockers={result['mover_blocker_count']} "
         f"-> {result['artifact_path']}"
     )
 
 
 if __name__ == "__main__":
     main()
-

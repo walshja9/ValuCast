@@ -51,16 +51,18 @@ def main() -> int:
         "quality governor: "
         f"status={payload.get('status')} "
         f"snapshot_ready={payload.get('ready_for_public_snapshot')} "
-        f"buys_ready={payload.get('ready_for_buys_promotion')}"
+        f"buys_ready={payload.get('ready_for_buys_promotion')} "
+        f"movers_ready={payload.get('ready_for_movers')}"
     )
     for blocker in payload.get("blockers") or []:
         print(f"  blocker: {blocker}")
     for blocker in payload.get("buy_blockers") or []:
         if blocker not in (payload.get("blockers") or []):
             print(f"  buy blocker: {blocker}")
+    for blocker in payload.get("mover_blockers") or []:
+        print(f"  mover blocker: {blocker}")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

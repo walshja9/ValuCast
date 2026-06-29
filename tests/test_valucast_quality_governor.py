@@ -234,6 +234,7 @@ def test_quality_governor_passes_clean_synthetic_board_but_keeps_buys_separate()
         "dynasty": True,
         "prospects": True,
         "buys": False,
+        "movers": False,
     }
     assert payload["surface_blockers"] == {
         "dynasty": [],
@@ -241,10 +242,16 @@ def test_quality_governor_passes_clean_synthetic_board_but_keeps_buys_separate()
         "buys": [
             "ValuCast-owned Buy signals are not approved for public promotion.",
         ],
+        "movers": [
+            "ValuCast Prospect Movers artifact is missing or not native.",
+        ],
     }
     assert payload["blockers"] == []
     assert payload["buy_blockers"] == [
         "ValuCast-owned Buy signals are not approved for public promotion."
+    ]
+    assert payload["mover_blockers"] == [
+        "ValuCast Prospect Movers artifact is missing or not native."
     ]
 
 

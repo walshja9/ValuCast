@@ -1,0 +1,142 @@
+"""Tests for the ValuCast Prospect Movers board."""
+from __future__ import annotations
+
+from pathlib import Path
+
+
+def test_clean_score_tail_stops_at_epoch_step():
+    from prospects.movers import clean_score_tail
+
+    tail = clean_score_tail(
+        [
+            ("2026-06-18", 40.0),
+            ("2026-06-19", 41.0),
+            ("2026-06-20", 42.0),
+            ("2026-06-23", 60.0),
+            ("2026-06-24", 61.0),
+        ]
+    )
+
+    assert tail == [("2026-06-23", 60.0), ("2026-06-24", 61.0)]
+    assert tail[-1][1] - tail[0][1] == 1.0
+
+
+def test_clean_score_tail_keeps_clean_five_day_climb():
+    from prospects.movers import clean_score_tail
+
+    tail = clean_score_tail(
+        [
+            ("2026-06-24", 44.0),
+            ("2026-06-25", 45.0),
+            ("2026-06-26", 46.5),
+            ("2026-06-27", 47.5),
+            ("2026-06-28", 49.0),
+            ("2026-06-29", 50.0),
+        ]
+    )
+
+    assert tail[0] == ("2026-06-24", 44.0)
+    assert tail[-1] == ("2026-06-29", 50.0)
+    assert tail[-1][1] - tail[0][1] == 6.0
+
+
+def test_build_movers_board_uses_rank_v1_score_and_native_policy():
+    from prospects.movers import build_movers_board
+
+    current = {
+        "generated_at": "2026-06-29T12:00:00+00:00",
+        "rank_version": "rank-v1-test",
+        "board": [
+            _rank_row(1, "Clean Riser", 10, 50.0),
+            _rank_row(2, "Epoch Jump", 11, 61.0),
+            _rank_row(3, "Clean Faller", 12, 42.0),
+        ],
+    }
+    history = [
+        {"date": "2026-06-20", "board": [_rank_row(2, "Epoch Jump", 12, 42.0)]},
+        {
+            "date": "2026-06-26",
+            "board": [
+                _rank_row(1, "Clean Riser", 18, 45.0),
+                _rank_row(2, "Epoch Jump", 13, 60.0),
+                _rank_row(3, "Clean Faller", 8, 48.0),
+            ],
+        },
+    ]
+
+    payload = build_movers_board(current, history_payloads=history)
+
+    assert payload["source_policy"]["feeds_model_score"] is False
+    assert payload["source_policy"]["feeds_public_rank"] is False
+    assert payload["source_policy"]["feeds_buy_score"] is False
+    assert payload["source_policy"]["dd_values_used"] is False
+    assert payload["source_policy"]["dd_ranks_used"] is False
+    assert [row["name"] for row in payload["rising"]] == ["Clean Riser"]
+    assert [row["name"] for row in payload["cooling"]] == ["Clean Faller"]
+    assert payload["rising"][0]["score_delta"] == 5.0
+    assert payload["rising"][0]["rank_delta"] == 8
+    assert payload["cooling"][0]["score_delta"] == -6.0
+    assert payload["cooling"][0]["rank_delta"] == -4
+    assert payload["summary"]["excluded_step_guard_count"] >= 1
+
+
+def test_movers_wired_into_daily_public_build_and_publish_workflow():
+    from scripts import run_daily_public_build
+    from scripts import validate_public_data_freshness as freshness
+
+    workflow = Path(".github/workflows/daily-public-data.yml").read_text(encoding="utf-8")
+    build_steps = [" ".join(step) for step in run_daily_public_build.BUILD_STEPS]
+    validate_steps = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
+
+    assert build_steps.index("scripts/build_valucast_movers.py") > build_steps.index(
+        "scripts/build_prospect_rank_v1.py"
+    )
+    assert "scripts/validate_valucast_movers.py" in validate_steps
+    assert "data/models/valucast_prospect_movers.json" in workflow
+    assert "data/prediction_archive/valucast_prospect_movers" in workflow
+    assert hasattr(freshness, "VALUCAST_MOVERS")
+
+
+def test_movers_routes_render_html_and_png():
+    import app as app_module
+
+    client = app_module.app.test_client()
+
+    response = client.get("/movers")
+    assert response.status_code == 200
+    assert b"PROSPECT MOVERS" in response.data
+    assert b"/movers/share-card.png" in response.data
+
+    png = client.get("/movers/share-card.png")
+    assert png.status_code == 200
+    assert png.data[:8] == b"\x89PNG\r\n\x1a\n"
+    assert "image/png" in png.content_type
+
+
+def _rank_row(mlbam_id, name, rank, score, role="hitter"):
+    return {
+        "mlbam_id": mlbam_id,
+        "name": name,
+        "role": role,
+        "positions": ["SS"] if role == "hitter" else ["SP"],
+        "mlb_team": "BOS",
+        "age": 20,
+        "eta": 2027,
+        "level": "AA",
+        "rank": rank,
+        "score": score,
+        "drivers": ["{'feature': 'ops_x_youth', 'contribution': 0.2}"],
+        "context_only": {
+            "breakout_label": "rising",
+            "combined_season_stat_line": {
+                "role": role,
+                "level_label": "AA",
+                "sample": 120,
+                "sample_unit": "PA" if role == "hitter" else "IP",
+                "ops": 0.912,
+                "iso": 0.210,
+                "k_pct": 18.0,
+                "bb_pct": 12.0,
+            },
+        },
+    }

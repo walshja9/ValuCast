@@ -213,6 +213,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "MLB_AVAILABILITY": tmp_path / "mlb_availability.json",
         "MLB_ROSTER_STATUS": tmp_path / "mlb_roster_status.json",
         "MLB_DYNASTY_LAYER": tmp_path / "mlb_dynasty_layer.json",
+        "VALUCAST_MOVERS": tmp_path / "valucast_movers.json",
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
         "VALUCAST_BUYS_MONITOR": tmp_path / "valucast_buys_monitor.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
@@ -267,6 +268,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["MLB_ROSTER_STATUS"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["VALUCAST_MOVERS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["VALUCAST_BUYS"].write_text(
@@ -395,6 +399,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "scripts/build_prospect_peak_calibration_report.py" in build_commands
     assert "scripts/build_prospect_forward_validation.py" in build_commands
     assert "scripts/build_valucast_buys_monitor.py" in build_commands
+    assert "scripts/build_valucast_movers.py" in build_commands
     assert "scripts/build_prospect_outcome_backtest.py" in build_commands
     assert "scripts/build_raw_data_independence_audit.py" in build_commands
     assert "scripts/build_front_office_failures.py" in build_commands
@@ -413,6 +418,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "scripts/validate_front_office_failures.py" in validate_commands
     assert "scripts/validate_raw_data_independence_audit.py" in validate_commands
     assert "scripts/validate_valucast_buys_monitor.py" in validate_commands
+    assert "scripts/validate_valucast_movers.py" in validate_commands
     assert "scripts/validate_front_office_report.py" in validate_commands
     assert "scripts/validate_scouting_repository.py" in validate_commands
     assert "data/models/valucast_mlb_track_record.json" in workflow
@@ -433,6 +439,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "data/models/valucast_prospect_peak_projection_calibration.json" in workflow
     assert "data/models/valucast_prospect_forward_validation.json" in workflow
     assert "data/models/valucast_prospect_buys_monitor.json" in workflow
+    assert "data/models/valucast_prospect_movers.json" in workflow
     assert "data/models/valucast_prospect_outcome_backtest.json" in workflow
     assert "data/models/valucast_front_office_failures.json" in workflow
     assert "data/models/valucast_raw_data_independence_audit.json" in workflow

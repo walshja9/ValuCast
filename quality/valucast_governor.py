@@ -31,6 +31,7 @@ PROSPECT_COVERAGE_AUDIT_PATH = (
 )
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
+MOVERS_PATH = ROOT / "data" / "models" / "valucast_prospect_movers.json"
 MILB_STAT_FRESHNESS_AUDIT_PATH = (
     ROOT / "data" / "models" / "valucast_milb_stat_freshness_audit.json"
 )
@@ -46,6 +47,7 @@ GOVERNOR_VERSION = "0.2.2"
 SURFACE_DYNASTY = "dynasty"
 SURFACE_PROSPECTS = "prospects"
 SURFACE_BUYS = "buys"
+SURFACE_MOVERS = "movers"
 SURFACE_BOTH = "both"
 BOARD_CHECK_SURFACES = {
     SURFACE_DYNASTY,
@@ -1529,6 +1531,37 @@ def _buy_promotion_check(
     )
 
 
+def _movers_surface_check(movers: dict | None) -> dict:
+    policy = (movers or {}).get("source_policy") or {}
+    validation = (movers or {}).get("validation") or {}
+    rising_count = int(validation.get("rising_count") or 0)
+    cooling_count = int(validation.get("cooling_count") or 0)
+    policy_ok = (
+        policy.get("kind") == "valucast_prospect_movers"
+        and policy.get("feeds_model_score") is False
+        and policy.get("feeds_public_rank") is False
+        and policy.get("feeds_buy_score") is False
+        and policy.get("dd_values_used") is False
+        and policy.get("dd_ranks_used") is False
+        and policy.get("dd_context_used") is False
+    )
+    passed = bool(movers) and bool((movers or {}).get("generated_at")) and policy_ok
+    return _check(
+        "movers_surface_gate",
+        passed,
+        (
+            "ValuCast Prospect Movers artifact is ready for public display."
+            if passed
+            else "ValuCast Prospect Movers artifact is missing or not native."
+        ),
+        movers_artifact_present=bool(movers),
+        generated_at=(movers or {}).get("generated_at"),
+        policy_ok=policy_ok,
+        rising_count=rising_count,
+        cooling_count=cooling_count,
+    )
+
+
 def _blocker_messages(checks: list[dict]) -> list[str]:
     return [
         str(check["message"])
@@ -1595,6 +1628,7 @@ def evaluate_quality_governor(
     mlb_layer: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
+    movers: dict | None = None,
     milb_stat_freshness_audit: dict | None = None,
     prospect_card_data_audit: dict | None = None,
     recent_signal_report: dict | None = None,
@@ -1609,6 +1643,7 @@ def evaluate_quality_governor(
         prospect_coverage_audit,
         mlb_layer,
         buy_signals,
+        movers,
     )
     if graduated_prospect_ids is None and isinstance(public_snapshot_or_rows, dict):
         graduated_prospect_ids = {
@@ -1704,6 +1739,7 @@ def evaluate_quality_governor(
         public_board_ready=buy_relevant_board_ready,
     )
     buy_checks = buy_board_checks + [buy_check]
+    movers_check = _movers_surface_check(movers)
 
     board_blockers = _blocker_messages(board_checks)
     buy_board_blockers = _blocker_messages(buy_relevant_board_checks)
@@ -1711,10 +1747,13 @@ def evaluate_quality_governor(
         dict.fromkeys(buy_board_blockers + _blocker_messages(buy_checks))
     )
     buy_ready = all(check["status"] == "passed" for check in buy_checks)
+    mover_blockers = _blocker_messages([movers_check])
+    movers_ready = movers_check["status"] == "passed"
     surface_blockers = {
         SURFACE_DYNASTY: _blocker_messages(dynasty_checks),
         SURFACE_PROSPECTS: _blocker_messages(prospect_checks),
         SURFACE_BUYS: buy_blockers,
+        SURFACE_MOVERS: mover_blockers,
     }
     return {
         "artifact": "valucast_quality_governor",
@@ -1724,6 +1763,7 @@ def evaluate_quality_governor(
         "status": "candidate_ready" if public_board_ready else "blocked",
         "ready_for_public_snapshot": public_board_ready,
         "ready_for_buys_promotion": buy_ready,
+        "ready_for_movers": movers_ready,
         "source_policy": {
             "kind": "model_output_quality_gate",
             "feeds_model_score": False,
@@ -1805,6 +1845,7 @@ def evaluate_quality_governor(
                 "prospect_rank": _date_part((prospect_rank or {}).get("generated_at")),
                 "buy_signals": _date_part((buy_signals or {}).get("generated_at")),
                 "buy_review": _date_part((buy_review or {}).get("generated_at")),
+                "movers": _date_part((movers or {}).get("generated_at")),
                 "milb_stat_freshness_audit": _date_part(
                     (milb_stat_freshness_audit or {}).get("generated_at")
                 ),
@@ -1816,14 +1857,16 @@ def evaluate_quality_governor(
                 ),
             },
         },
-        "checks": board_checks + buy_checks,
+        "checks": board_checks + buy_checks + [movers_check],
         "blockers": board_blockers,
         "buy_blockers": buy_blockers,
+        "mover_blockers": mover_blockers,
         "surface_blockers": surface_blockers,
         "surface_readiness": {
             "dynasty": dynasty_board_ready,
             "prospects": prospect_board_ready,
             "buys": buy_ready,
+            "movers": movers_ready,
         },
         "next_allowed_step": (
             "wire_public_consumers"
@@ -1854,6 +1897,7 @@ def run_quality_governor(
     mlb_layer_path: Path = MLB_LAYER_PATH,
     buy_signals_path: Path = BUY_SIGNALS_PATH,
     buy_review_path: Path = BUY_REVIEW_PATH,
+    movers_path: Path = MOVERS_PATH,
     milb_stat_freshness_audit_path: Path = MILB_STAT_FRESHNESS_AUDIT_PATH,
     prospect_card_data_audit_path: Path = PROSPECT_CARD_DATA_AUDIT_PATH,
     recent_signal_report_path: Path = RECENT_SIGNAL_REPORT_PATH,
@@ -1865,6 +1909,7 @@ def run_quality_governor(
     mlb_layer = _load_optional(mlb_layer_path)
     buy_signals = _load_optional(buy_signals_path)
     buy_review = _load_optional(buy_review_path)
+    movers = _load_optional(movers_path)
     milb_stat_freshness_audit = _load_optional(milb_stat_freshness_audit_path)
     prospect_card_data_audit = _load_optional(prospect_card_data_audit_path)
     recent_signal_report = _load_optional(recent_signal_report_path)
@@ -1875,6 +1920,7 @@ def run_quality_governor(
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        movers=movers,
         milb_stat_freshness_audit=milb_stat_freshness_audit,
         prospect_card_data_audit=prospect_card_data_audit,
         recent_signal_report=recent_signal_report,
@@ -1884,6 +1930,8 @@ def run_quality_governor(
         "artifact_path": str(path),
         "ready_for_public_snapshot": payload["ready_for_public_snapshot"],
         "ready_for_buys_promotion": payload["ready_for_buys_promotion"],
+        "ready_for_movers": payload["ready_for_movers"],
         "blocker_count": len(payload["blockers"]),
         "buy_blocker_count": len(payload["buy_blockers"]),
+        "mover_blocker_count": len(payload["mover_blockers"]),
     }

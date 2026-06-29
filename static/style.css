@@ -2218,6 +2218,25 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .buys-preview summary { cursor: pointer; font-weight: 600; color: var(--c-blue-strong); }
 .buys-preview-wrap { margin-top: var(--space-2); overflow: hidden; }
 .buys-preview-card { transform-origin: top left; }
+.movers-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.movers-section h2 { margin: .25rem 0 var(--space-2); font-size: 1rem; letter-spacing: .08em; }
+.movers-row {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+    gap: var(--space-2);
+    align-items: center;
+    min-height: 76px;
+    padding: var(--space-2) var(--space-1);
+    border-bottom: 1px solid var(--c-border);
+}
+.movers-row:last-child { border-bottom: none; }
+.mover-delta {
+    font-weight: 700; background: var(--surface-2);
+    border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm);
+    padding: 2px 8px; min-width: 3.25rem; text-align: center;
+}
+.mover-delta.up { color: var(--c-prospect); }
+.mover-delta.down { color: var(--c-neg); }
 @media (max-width: 640px) {
     .buys-heading {
         align-items: stretch; flex-direction: column; min-height: 0;
@@ -2231,6 +2250,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .buys-row { grid-template-columns: 1.5rem 32px minmax(0, 1fr) auto; }
     .buys-thumb { width: 32px; height: 32px; }
     .buys-chip, .buys-spark { display: none; }
+    .movers-grid { grid-template-columns: 1fr; }
+    .movers-row { grid-template-columns: 1.5rem minmax(0, 1fr) auto; }
+    .movers-row .buys-chip { display: none; }
 }
 
 /* ---- Theme v2 polish layer ---- */

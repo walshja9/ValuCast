@@ -336,6 +336,10 @@ VALUCAST_BUYS_PATH = Path(os.environ.get(
     "VALUCAST_BUYS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_prospect_buys.json"),
 ))
+VALUCAST_MOVERS_PATH = Path(os.environ.get(
+    "VALUCAST_MOVERS_PATH",
+    str(Path(__file__).parent / "data" / "models" / "valucast_prospect_movers.json"),
+))
 legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
@@ -5904,6 +5908,146 @@ def value_map_share_card():
         image_alt="ValuCast value map",
         back_url="/map",
         back_label="Back to the map",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+def _load_movers_payload(path=VALUCAST_MOVERS_PATH):
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _build_movers_page_context():
+    payload = _load_movers_payload()
+    rising = list(payload.get("rising") or [])
+    cooling = list(payload.get("cooling") or [])
+    generated_at = payload.get("generated_at")
+    return {
+        "rising": rising,
+        "cooling": cooling,
+        "mover_count": len(rising) + len(cooling),
+        "movers_available": bool(payload),
+        "movers_generated_at": generated_at,
+        "movers_summary": payload.get("summary") or {},
+        "movers_validation": payload.get("validation") or {},
+        "as_of": generated_at or store.as_of,
+    }
+
+
+@app.route("/movers")
+def movers():
+    context = _build_movers_page_context()
+    return render_template("movers.html", **context)
+
+
+def _movers_share_card_png(rising, cooling, *, generated_at=None):
+    """Deterministic server-side Prospect Movers graphic."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    palette = _GRAPHIC_PALETTE
+    bg = palette["bg"]
+    card = palette["card"]
+    card_2 = palette["card_2"]
+    border = palette["border"]
+    green = palette["green"]
+    red = palette["clay"]
+    text = palette["text"]
+    muted = palette["muted"]
+    blue = palette["blue"]
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    date_label = _editorial_date(generated_at)
+    subtitle = "Biggest denoised Rank v1 score risers and fallers"
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="PROSPECT MOVERS",
+        subtitle=subtitle,
+        extra_line="Clean tail only - no cross-epoch jumps",
+        tagline="Prospect Movers",
+    )
+
+    f_section = _graphic_font(28, bold=True)
+    f_rank = _graphic_font(17, bold=True, mono=True)
+    f_name = _graphic_font(22, bold=True)
+    f_meta = _graphic_font(14)
+    f_delta = _graphic_font(21, bold=True, mono=True)
+    f_why = _graphic_font(13)
+    row_h = 78
+
+    def draw_section(title, rows, x, y, w, color):
+        draw.rounded_rectangle((x, y, x + w, y + 926), radius=10, fill=card, outline=border, width=1)
+        draw.text((x + 20, y + 18), title, fill=color, font=f_section)
+        if not rows:
+            draw.text((x + 20, y + 98), "Sparse board: no clean movers passed +/-2.0.", fill=muted, font=f_name)
+            return
+        for idx, row in enumerate(rows[:12]):
+            top = y + 70 + idx * row_h
+            fill = card_2 if idx % 2 == 0 else card
+            draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
+            if idx:
+                draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
+            rank = f"#{row.get('current_rank') or '-'}"
+            draw.text((x + 18, top + 14), rank, fill=blue, font=f_rank)
+            delta = row.get("score_delta")
+            try:
+                delta_text = f"{float(delta):+.1f}"
+            except (TypeError, ValueError):
+                delta_text = "--"
+            draw.text((x + w - 18 - _graphic_text_width(draw, delta_text, f_delta), top + 10), delta_text, fill=color, font=f_delta)
+            draw.text((x + 74, top + 10), _graphic_fit_text(draw, row.get("name"), f_name, 260), fill=text, font=f_name)
+            meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
+            draw.text((x + 74, top + 39), _graphic_fit_text(draw, row.get("movement_label") or meta, f_meta, 310), fill=muted, font=f_meta)
+            why = row.get("why") or meta
+            draw.text((x + 74, top + 58), _graphic_fit_text(draw, why, f_why, 370), fill=muted, font=f_why)
+
+    draw_section("RISING", rising, 48, 242, 480, green)
+    draw_section("COOLING", cooling, 552, 242, 480, red)
+    _graphic_footer(draw, right_note="Rank v1 score clean_tail; min +/-2.0")
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/movers/share-card.png")
+def movers_share_card_png():
+    context = _build_movers_page_context()
+    png = _movers_share_card_png(
+        context["rising"],
+        context["cooling"],
+        generated_at=context["movers_generated_at"],
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-prospect-movers.png"'
+    return response
+
+
+@app.route("/movers/share-card")
+def movers_share_card():
+    html = build_share_preview_html(
+        title="Prospect Movers",
+        subtitle="Biggest denoised Rank v1 score risers and fallers",
+        png_url="/movers/share-card.png",
+        filename="valucast-prospect-movers.png",
+        public_png_url=_public_url("/movers/share-card.png"),
+        public_page_url=_public_url("/movers/share-card"),
+        description="Daily ValuCast prospect movers after clean-tail denoising.",
+        image_alt="ValuCast Prospect Movers board",
+        back_url="/movers",
+        back_label="Back to Prospect Movers",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
