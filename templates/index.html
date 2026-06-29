@@ -23,6 +23,10 @@
            {% if horizon == 'dynasty' %}aria-current="page"{% endif %}>Dynasty</a>
         <a href="/backfields" class="htab htab-prospects">Backfields</a>
         <a href="/movers" class="htab">Movers</a>
+        <a href="/receipts" class="htab">Receipts</a>
+        {% if not aotc_hold %}
+        <a href="/buys" class="htab">Buys</a>
+        {% endif %}
         {% endif %}
     </nav>
 

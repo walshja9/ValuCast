@@ -4026,6 +4026,34 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     }
 }
 
+/* Mobile board tab-bar: 6 tabs overflow the viewport, and the segmented strip's
+   overflow:hidden clips the last one (Buys) with no way to reach it. Drop the shared
+   frame and let the tabs wrap as full-width pills so every section is visible + tappable. */
+@media (max-width: 640px) {
+    .horizon-tabs {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 6px;
+        overflow: visible;
+        border: none;
+        box-shadow: none;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: transparent;
+    }
+    .horizon-tabs .htab {
+        flex: 1 1 auto;
+        min-width: 92px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, .14);
+        border-radius: 8px;
+    }
+}
+
 /* ── FanGraphs scouting panel (player card) — structured grades, not a raw list ── */
 .prospect-fangraphs .fg-asof { font-family: var(--font-mono); font-size: .72rem; color: var(--c-muted); letter-spacing: .04em; font-weight: 500; }
 .prospect-fangraphs .fg-fv-summary { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .45rem 0 .7rem; }
