@@ -571,7 +571,24 @@ def _sample_context(row, line: dict, from_translation: bool) -> str:
 
     line_level = line.get("level")
     display_level = line_level if isinstance(line_level, str) and line_level else row.level
-    level = _LEVEL_NAMES.get(display_level, display_level)
+    # A combined multi-level line's sample spans EVERY level it pooled. Label it with all
+    # of them, not just the highest -- otherwise "235 PA" (133 AAA + 102 AA) reads as
+    # "235 PA in Triple-A" when only 133 were at Triple-A.
+    sample_levels = line.get("levels")
+    if not (isinstance(sample_levels, list) and sample_levels):
+        sample_levels = translated.get("levels")
+    named_levels = (
+        [_LEVEL_NAMES.get(lv, lv) for lv in sample_levels if lv]
+        if isinstance(sample_levels, list) else []
+    )
+    if len(named_levels) > 1:
+        level = (
+            " and ".join(named_levels)
+            if len(named_levels) == 2
+            else ", ".join(named_levels[:-1]) + f", and {named_levels[-1]}"
+        )
+    else:
+        level = _LEVEL_NAMES.get(display_level, display_level)
     sample_text = f"{sample:g} {unit}" if sample is not None else "the available sample"
     if status == "injured":
         if old and season:

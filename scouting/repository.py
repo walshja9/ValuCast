@@ -285,11 +285,20 @@ def _line_sample_context(
         sample = line.get("sample")
     sample_unit = line.get("sample_unit") or ("IP" if is_pitcher else "PA")
     context = row.context if isinstance(getattr(row, "context", None), dict) else {}
+    # A combined multi-level line's sample spans every level it pooled. Ground the level
+    # as the combined label (and expose the levels) so a generated report never claims
+    # "235 PA in Triple-A" when only part of that sample was at Triple-A.
+    sample_levels = [lv for lv in (line.get("levels") or []) if lv]
+    if len(sample_levels) > 1:
+        level_value = line.get("level_label") or "+".join(str(lv) for lv in sample_levels)
+    else:
+        level_value = level or line.get("level") or row.level
     return {
         "sample": sample,
         "sample_unit": sample_unit,
         "season": line.get("season") or context.get("stat_line_sample_season"),
-        "level": level or line.get("level") or row.level,
+        "level": level_value,
+        "levels": sample_levels or None,
         "source_kind": source_kind
         or ("best_single_level_stat_line" if is_best else context.get("stat_line_source_kind")),
     }

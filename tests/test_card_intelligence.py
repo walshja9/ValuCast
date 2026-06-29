@@ -688,6 +688,32 @@ class TestProspectPercentiles(unittest.TestCase):
         self.assertIn("he's old for Double-A (23)", note)
         self.assertNotIn("lost development time", note)
 
+    def test_sample_context_labels_all_levels_for_combined_line(self):
+        # A combined AAA+AA line's 235 PA must not read as "235 PA in Triple-A"
+        # (only part of that sample was at Triple-A).
+        row = _row(
+            "mendez",
+            positions=["LF"],
+            level="AAA",
+            age=22,
+            prospect_rank=32,
+            dynasty_value=44.8,
+            stat_line={"pa": 235, "ops": 0.896, "avg": 0.314, "k_pct": 16.1},
+            combined_season_stat_line={
+                "pa": 235, "ops": 0.896, "avg": 0.314, "k_pct": 16.1,
+                "role": "hitter", "season": 2026,
+                "level": "AAA", "level_label": "AAA+AA", "levels": ["AAA", "AA"],
+                "sample": 235, "sample_unit": "PA",
+            },
+            stat_line_translated={
+                "level": "AAA", "level_label": "AAA+AA", "levels": ["AAA", "AA"],
+                "sample": 235, "sample_unit": "PA", "confidence": "high", "season": 2026,
+            },
+        )
+        read = prospect_percentiles.identity_line(row, {"ops": 89, "avg": 96, "k_pct": 90})
+        self.assertIn("Triple-A and Double-A", read)
+        self.assertNotIn("235 PA in Triple-A,", read)
+
 
 class TestValueCardReads(unittest.TestCase):
     def test_dynasty_card_uses_clean_role_articles_and_status_prose(self):
