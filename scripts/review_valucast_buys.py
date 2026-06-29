@@ -18,10 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from web import buy_score  # noqa: E402
-from web.dd_feed_store import DDFeedStore  # noqa: E402
 from web.valucast_buy_store import ValuCastBuyStore  # noqa: E402
 
-DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 VALUCAST_BUYS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 OUTPUT_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 
@@ -190,10 +188,7 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
-    dd_store = DDFeedStore(DD_FEED_PATH)
     buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
-    if not dd_store.is_available:
-        raise SystemExit("DD feed unavailable; cannot review ValuCast buys")
     if not buy_store.is_available:
         raise SystemExit("ValuCast buys unavailable; cannot review ValuCast buys")
 
@@ -202,13 +197,12 @@ def main() -> None:
         or os.environ.get("VALUCAST_BUYS_REVIEW_APPROVED") == "1"
     )
     prior_approval, neutral_momentum_approval = _load_prior_approval()
-    dd_board = buy_score.build_board(dd_store.get_all())
     valucast_board = buy_score.build_valucast_board(
         buy_store.get_all(),
         n=BOARD_REVIEW_SIZE,
     )
     payload = build_review(
-        dd_board,
+        [],
         valucast_board,
         buy_store,
         manual_approval=explicit_approval,

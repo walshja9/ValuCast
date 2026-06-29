@@ -86,15 +86,15 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
         still serve, so Render keeps the deploy healthy. Guards the decoupling."""
         import app as app_module
 
-        if not (
-            app_module.public_snapshot_store.is_available
-            and app_module.public_snapshot_store.ready_for_live_consumers
-        ):
-            self.skipTest("core public snapshot not live in this checkout")
         blocked_buys = types.SimpleNamespace(
             is_available=True, ready_for_live_consumers=False
         )
-        with mock.patch.object(app_module, "valucast_buy_store", blocked_buys):
+        live_snapshot = types.SimpleNamespace(
+            is_available=True, ready_for_live_consumers=True
+        )
+        with mock.patch.object(app_module, "public_snapshot_store", live_snapshot), \
+             mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"), \
+             mock.patch.object(app_module, "valucast_buy_store", blocked_buys):
             response = self.client.get("/health/ready")
         self.assertEqual(response.status_code, 200)
         body = response.get_json()
@@ -130,16 +130,12 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
         import app as app_module
         from app import public_snapshot_store
 
-        if not (
-            public_snapshot_store.is_available
-            and public_snapshot_store.ready_for_live_consumers
-        ):
-            self.skipTest("ValuCast snapshot not live in this checkout")
-        self.assertIn(
-            app_module.dynasty_data_source,
-            {"valucast_public_snapshot", "valucast_public_snapshot_stale"},
-        )
         self.assertNotEqual(app_module.dynasty_data_source, "dd_feed")
+        if public_snapshot_store.is_available and public_snapshot_store.ready_for_live_consumers:
+            self.assertIn(
+                app_module.dynasty_data_source,
+                {"valucast_public_snapshot", "valucast_public_snapshot_stale"},
+            )
 
 
 if __name__ == "__main__":

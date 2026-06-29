@@ -19,15 +19,18 @@ def _proj(pid, name, pool, positions=(), base_id=None, stats=None, actual=None, 
 
 
 def _feed_row(name, positions, mlbam_id=None, player_type="mlb"):
-    return DynastyRankingRow.from_feed({
-        "id": "dd_" + name.lower().replace(" ", "_"),
-        "player_type": player_type,
-        "name": name,
-        "positions": positions,
-        "mlbam_id": mlbam_id,
-        "dynasty_rank": 1,
-        "dynasty_value": 50.0,
-    })
+    return DynastyRankingRow(
+        id="dd_" + name.lower().replace(" ", "_"),
+        name=name,
+        player_type=player_type,
+        positions=tuple(positions),
+        team="",
+        age=None,
+        dynasty_rank=1,
+        dynasty_value=50.0,
+        status=None,
+        mlbam_id=mlbam_id,
+    )
 
 
 class TestFindSeasonOutlook(unittest.TestCase):

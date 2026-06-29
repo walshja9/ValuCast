@@ -1,8 +1,6 @@
 """ValuCast-owned prospect universe for candidate ranking artifacts.
 
-The universe is model-owned membership. DD rows may add comparison/display
-context by MLBAM ID plus role, but DD never decides whether a prospect is in
-this artifact.
+The universe is model-owned membership.
 """
 from __future__ import annotations
 
@@ -16,7 +14,6 @@ from prospects.dynasty import ARTIFACT_PATH as DYNASTY_LAYER_PATH
 from prospects.universal import ARTIFACT_PATH as UNIVERSAL_MODEL_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
-DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 
 SCHEMA_VERSION = "1.0"
@@ -180,45 +177,7 @@ def _positions(profile: dict) -> list[str]:
     return []
 
 
-def _context_role(row: dict) -> str:
-    role = row.get("role")
-    if role in {"hitter", "pitcher"}:
-        return role
-    return infer_role(row.get("positions"))
-
-
-def _dd_context_lookup(dd_feed: dict | None) -> dict[tuple[str, str], dict]:
-    if not dd_feed:
-        return {}
-    lookup = {}
-    for row in dd_feed.get("players") or []:
-        if row.get("player_type") != "prospect":
-            continue
-        key = identity_key(row.get("mlbam_id"), _context_role(row))
-        if key and key not in lookup:
-            lookup[key] = row
-    return lookup
-
-
-def _dd_context(row: dict) -> dict:
-    return {
-        "dd_id": row.get("id"),
-        "dd_dynasty_rank": row.get("dynasty_rank"),
-        "dd_dynasty_value": row.get("dynasty_value"),
-        "dd_prospect_rank": row.get("prospect_rank"),
-        "source_ranks": row.get("source_ranks"),
-        "breakout_label": row.get("breakout_label"),
-        "breakout_rank_change": row.get("breakout_rank_change"),
-        "value_history_points": len(row.get("value_history") or []),
-        "stat_line": row.get("stat_line"),
-        "mlb_team": row.get("mlb_team"),
-        "eta": row.get("eta"),
-    }
-
-
-def _mlb_team(profile: dict, context: dict | None) -> str | None:
-    if context and context.get("mlb_team"):
-        return context.get("mlb_team")
+def _mlb_team(profile: dict) -> str | None:
     if profile.get("mlb_team"):
         return profile.get("mlb_team")
     team = profile.get("team")
@@ -238,11 +197,9 @@ def _universal_keys(universal_model: dict | None) -> set[tuple[str, str]]:
 def build_universe(
     dynasty_layer: dict,
     universal_model: dict | None = None,
-    dd_feed: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     """Build the ValuCast-owned prospect candidate universe."""
-    dd_context = _dd_context_lookup(dd_feed)
     universal_keys = _universal_keys(universal_model)
     generated_at = (
         generated_at
@@ -286,7 +243,6 @@ def build_universe(
             )
             continue
 
-        context = dd_context.get(key)
         player = {
             "mlbam_id": int(profile["mlbam_id"]),
             "role": role,
@@ -295,7 +251,7 @@ def build_universe(
             "positions": _positions(profile),
             "position": profile.get("position"),
             "team": profile.get("team"),
-            "mlb_team": _mlb_team(profile, context),
+            "mlb_team": _mlb_team(profile),
             "level": profile.get("level"),
             "age": profile.get("age"),
             "sample": profile.get("sample"),
@@ -304,9 +260,6 @@ def build_universe(
             "universe_source": "valucast_prospect_dynasty_layer",
             "universal_model_profile_present": not universal_keys or key in universal_keys,
         }
-        if context:
-            player["context_only"] = _dd_context(context)
-            player["eta"] = context.get("eta")
         players.append(player)
 
     if missing_identity_count or duplicate_keys:
@@ -342,7 +295,6 @@ def build_universe(
             "dynasty_layer_status": dynasty_layer.get("status"),
             "universal_model_version": (universal_model or {}).get("model_version"),
             "universal_model_status": (universal_model or {}).get("status"),
-            "dd_feed_schema_version": (dd_feed or {}).get("schema_version"),
             "affiliate_map_version": AFFILIATE_MAP_VERSION,
             "max_prospect_age": MAX_PROSPECT_AGE,
         },
@@ -355,12 +307,11 @@ def build_universe(
             "age_excluded_count": len(age_excluded),
             "age_excluded_sample": age_excluded[:12],
             "missing_universal_profile_count": missing_universal_count,
-            "dd_context_count": sum(1 for row in players if row.get("context_only")),
             "mlb_team_backfill_count": sum(
                 1
                 for row in players
                 if row.get("mlb_team")
-                and not row.get("context_only", {}).get("mlb_team")
+                and row.get("team")
             ),
             "missing_mlb_team_count": sum(1 for row in players if not row.get("mlb_team")),
         },
@@ -379,7 +330,6 @@ def write_universe(payload: dict, path: Path = ARTIFACT_PATH) -> Path:
 def run_universe(
     dynasty_layer_path: Path = DYNASTY_LAYER_PATH,
     universal_model_path: Path = UNIVERSAL_MODEL_PATH,
-    dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     dynasty_layer = json.loads(dynasty_layer_path.read_text(encoding="utf-8"))
@@ -388,12 +338,7 @@ def run_universe(
         if universal_model_path.exists()
         else None
     )
-    dd_feed = (
-        json.loads(dd_feed_path.read_text(encoding="utf-8"))
-        if dd_feed_path.exists()
-        else None
-    )
-    payload = build_universe(dynasty_layer, universal_model, dd_feed)
+    payload = build_universe(dynasty_layer, universal_model)
     path = write_universe(payload, artifact_path)
     return {
         "artifact_path": str(path),

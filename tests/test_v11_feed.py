@@ -19,16 +19,44 @@ def _record(**over):
     return base
 
 
+def _row(record):
+    return DynastyRankingRow(
+        id=record["id"],
+        name=record["name"],
+        player_type=record["player_type"],
+        positions=DynastyRankingRow._normalize_positions(record.get("positions") or []),
+        team=record.get("mlb_team", ""),
+        age=DynastyRankingRow._coerce_int(record.get("age")),
+        dynasty_rank=record["dynasty_rank"],
+        dynasty_value=record["dynasty_value"],
+        status=record.get("status"),
+        mlbam_id=record.get("mlbam_id"),
+        level=record.get("level"),
+        eta=DynastyRankingRow._coerce_int(record.get("eta")),
+        value_history=DynastyRankingRow._coerce_value_history(
+            record.get("value_history")
+        ),
+        mlb_stat_line=DynastyRankingRow._coerce_dict(record.get("mlb_stat_line")),
+        stat_line_translated=DynastyRankingRow._coerce_dict(
+            record.get("stat_line_translated")
+        ),
+        combined_season_stat_line=DynastyRankingRow._coerce_dict(
+            record.get("combined_season_stat_line")
+        ),
+        metadata=record,
+    )
+
+
 class TestOptionalFieldCoercion(unittest.TestCase):
     def test_new_fields_default_safely_when_absent(self):
-        row = DynastyRankingRow.from_feed(_record())
+        row = _row(_record())
         self.assertEqual(row.value_history, ())
         self.assertIsNone(row.mlb_stat_line)
         self.assertIsNone(row.stat_line_translated)
         self.assertIsNone(row.combined_season_stat_line)
 
     def test_value_history_coerces_pairs_and_drops_garbage(self):
-        row = DynastyRankingRow.from_feed(_record(value_history=[
+        row = _row(_record(value_history=[
             ["2026-05-14", 55.2], ["2026-05-15", "56.1"],
             ["bad-pair"], [None, 1.0], ["2026-05-16", None],
         ]))
@@ -36,7 +64,7 @@ class TestOptionalFieldCoercion(unittest.TestCase):
                          (("2026-05-14", 55.2), ("2026-05-15", 56.1)))
 
     def test_stringly_numbers_coerce(self):
-        row = DynastyRankingRow.from_feed(_record(
+        row = _row(_record(
             eta="2027", age="20", breakout_rank_change="-6"))
         self.assertEqual(row.eta, 2027)
         self.assertEqual(row.age, 20)
@@ -44,7 +72,7 @@ class TestOptionalFieldCoercion(unittest.TestCase):
         self.assertEqual(row.metadata["breakout_rank_change"], "-6")
 
     def test_dict_fields_reject_non_dicts(self):
-        row = DynastyRankingRow.from_feed(_record(
+        row = _row(_record(
             mlb_stat_line=["not", "a", "dict"],
             stat_line_translated="nope",
             combined_season_stat_line="nope",
@@ -94,16 +122,6 @@ class TestSparkOnCards(_CardCase):
 
 
 class TestCallUpMlbLine(_CardCase):
-    def test_mlb_line_renders_for_callup_with_line(self):
-        row = next((r for r in app_module.dd_store.get_all()
-                    if r.is_prospect and r.level == "MLB" and r.mlb_stat_line),
-                   None)
-        if row is None:
-            self.skipTest("committed feed predates mlb_stat_line")
-        resp = self.client.get(f"/player/{row.id}?mode=dd_dynasty", headers=HX)
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(b"2026 MLB Stats", resp.data)
-
     def test_mlb_line_absent_for_pure_minors(self):
         row = next(r for r in app_module.dd_store.get_all()
                    if r.is_prospect and r.level not in (None, "MLB"))

@@ -12,14 +12,6 @@
     {
       "date": "2026-06-29",
       "field": "generated_at",
-      "label": "dd_feed",
-      "matches_expected_date": true,
-      "path": "data/dd/dd_dynasty_feed.json",
-      "value": "2026-06-29T11:07:49"
-    },
-    {
-      "date": "2026-06-29",
-      "field": "generated_at",
       "label": "prospect_inputs",
       "matches_expected_date": true,
       "path": "data/prospects/prospect_model_inputs.json",
@@ -183,7 +175,7 @@
     "primary_cron_utc": "30 11 * * *",
     "primary_local_time_daylight": "7:30 AM ET",
     "primary_local_time_standard": "6:30 AM ET",
-    "upstream_dependency": "DD VPS nightly starts around 7:00 AM ET while the bridge remains in use; the fallback covers delayed upstream publish or delayed GitHub scheduling.",
+    "upstream_dependency": "Fallback covers delayed upstream data refresh or delayed GitHub scheduling.",
     "workflow": ".github/workflows/daily-public-data.yml"
   },
   "source_policy": {
@@ -199,7 +191,7 @@
   "status": "candidate_ready",
   "targeted_row_refreshes": [],
   "validation": {
-    "artifact_count": 21,
+    "artifact_count": 20,
     "date_mismatch_count": 0,
     "missing_or_unreadable_count": 0,
     "ready_for_daily_publication": true,

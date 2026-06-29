@@ -4,28 +4,9 @@ from urllib.error import URLError
 
 import pytest
 
-from scripts import sync_dd_feed
 from scripts import sync_dd_prospect_inputs
 from scripts import run_daily_public_build
 from scripts import validate_public_data_freshness as freshness
-
-
-def _valid_feed(generated_at="2026-06-13T11:00:00-04:00"):
-    return {
-        "schema_version": "1.1",
-        "generated_at": generated_at,
-        "player_count": 1,
-        "prospect_count": 0,
-        "players": [
-            {
-                "id": "dd_mlb_test",
-                "player_type": "mlb",
-                "name": "Test Player",
-                "dynasty_rank": 1,
-                "dynasty_value": 50.0,
-            }
-        ],
-    }
 
 
 def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
@@ -59,37 +40,6 @@ def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
             }
         ],
     }
-
-
-def test_sync_feed_validates_then_replaces(tmp_path, monkeypatch):
-    output = tmp_path / "feed.json"
-    output.write_text('{"old":true}', encoding="utf-8")
-    monkeypatch.setattr(
-        sync_dd_feed,
-        "fetch_feed",
-        lambda _url: json.dumps(_valid_feed()).encode(),
-    )
-
-    payload = sync_dd_feed.sync_feed("https://example.test/feed", output)
-
-    assert payload["generated_at"].startswith("2026-06-13")
-    assert json.loads(output.read_text(encoding="utf-8")) == payload
-    assert not output.with_suffix(".json.tmp").exists()
-
-
-def test_sync_feed_keeps_last_good_artifact_on_download_failure(tmp_path, monkeypatch):
-    output = tmp_path / "feed.json"
-    output.write_text('{"old":true}', encoding="utf-8")
-
-    def fail(_url):
-        raise URLError("offline")
-
-    monkeypatch.setattr(sync_dd_feed, "fetch_feed", fail)
-
-    with pytest.raises(URLError):
-        sync_dd_feed.sync_feed("https://example.test/feed", output)
-
-    assert json.loads(output.read_text(encoding="utf-8")) == {"old": True}
 
 
 def test_sync_prospect_inputs_validates_then_replaces(tmp_path, monkeypatch):
@@ -361,7 +311,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     ]
 
 
-def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
+def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed():
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
@@ -370,7 +320,9 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
 
     assert "approve_valucast_buys" in workflow
     assert "type: boolean" in workflow
+    assert "python scripts/sync_dd_feed.py" not in workflow
     assert "python scripts/sync_dd_prospect_inputs.py" not in workflow
+    assert "data/dd/dd_dynasty_feed.json" not in workflow
     assert "python scripts/refresh_milb_season_stats.py" in workflow
     assert "python scripts/build_valucast_prospect_inputs.py --refresh-service-cache" in workflow
     assert "python scripts/run_daily_public_build.py --only build" in workflow
@@ -390,6 +342,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_syncs_before_push():
     assert "scripts/validate_playing_time_role_tracker.py" in validate_commands
     assert "scripts/validate_mlb_roster_status.py" in validate_commands
     assert "scripts/validate_mlb_track_record.py" in validate_commands
+    assert "scripts/validate_feed.py" not in validate_commands
     assert "scripts/validate_valucast_prospect_inputs.py" in validate_commands
     assert "scripts/run_prospect_shadow_pipeline.py" in build_commands
     assert "scripts/build_prospect_availability.py" in build_commands
@@ -469,6 +422,8 @@ def test_daily_public_build_orchestrator_has_no_duplicate_steps():
     validate_steps = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
     assert len(build_steps) == len(set(build_steps))
     assert len(validate_steps) == len(set(validate_steps))
+    assert "scripts/sync_dd_feed.py" not in build_steps
+    assert "scripts/validate_feed.py" not in validate_steps
 
 
 def test_prospect_shadow_workflow_keys_off_valucast_inputs():

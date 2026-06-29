@@ -5,8 +5,69 @@ from pathlib import Path
 
 import app as app_module
 from web import prospect_percentiles
-from web.dd_feed_store import DDFeedStore
 from web.dynasty_models import DynastyRankingRow
+
+
+def _row_from_record(record):
+    team = DynastyRankingRow.TEAM_CODE_MAP.get(
+        record.get("mlb_team", ""), record.get("mlb_team", "")
+    )
+    return DynastyRankingRow(
+        id=record["id"],
+        name=record["name"],
+        player_type=record["player_type"],
+        positions=DynastyRankingRow._normalize_positions(record.get("positions") or []),
+        team=team,
+        age=DynastyRankingRow._coerce_int(record.get("age")),
+        dynasty_rank=record["dynasty_rank"],
+        dynasty_value=record["dynasty_value"],
+        status=record.get("status"),
+        mlbam_id=record.get("mlbam_id"),
+        prospect_rank=record.get("prospect_rank"),
+        level=record.get("level"),
+        eta=DynastyRankingRow._coerce_int(record.get("eta")),
+        source_ranks=record.get("source_ranks"),
+        source_divergence=record.get("source_divergence"),
+        stat_line=DynastyRankingRow._coerce_dict(record.get("stat_line")),
+        value_history=DynastyRankingRow._coerce_value_history(record.get("value_history")),
+        mlb_stat_line=DynastyRankingRow._coerce_dict(record.get("mlb_stat_line")),
+        stat_line_translated=DynastyRankingRow._coerce_dict(
+            record.get("stat_line_translated")
+        ),
+        combined_season_stat_line=DynastyRankingRow._coerce_dict(
+            record.get("combined_season_stat_line")
+        ),
+        metadata=record,
+    )
+
+
+class _Store:
+    def __init__(self, rows, generated_at="2026-06-12T12:00:00+00:00"):
+        self._rows = sorted(rows, key=lambda row: row.dynasty_rank)
+        self._by_id = {row.id: row for row in self._rows}
+        self.generated_at = generated_at
+        self.schema_version = "1.1"
+        self.is_available = True
+
+    def get_all(self):
+        return list(self._rows)
+
+    def get_by_id(self, row_id):
+        return self._by_id.get(row_id)
+
+    def filter(self, player_type=None, position=None, search=None, pool=None):
+        rows = self._rows
+        if player_type:
+            rows = [row for row in rows if row.player_type == player_type]
+        if pool == "prospect":
+            rows = [row for row in rows if row.is_prospect]
+        elif pool == "mlb":
+            rows = [row for row in rows if not row.is_prospect]
+        if position:
+            rows = [row for row in rows if position in row.positions]
+        if search:
+            rows = [row for row in rows if search.lower() in row.name.lower()]
+        return rows
 
 
 def _row(
@@ -43,7 +104,7 @@ def _row(
                 "sample": stat_line[sample_key],
                 "sample_unit": sample_unit,
             }
-    return DynastyRankingRow.from_feed({
+    return _row_from_record({
         "id": row_id,
         "player_type": player_type,
         "name": name or row_id.replace("_", " ").title(),
@@ -987,19 +1048,12 @@ FEED = {
 class TestCardIntelligenceUI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        fixture = tempfile.NamedTemporaryFile(
-            mode="w",
-            suffix=".json",
-            dir=Path(__file__).parent,
-            delete=False,
-            encoding="utf-8",
-        )
-        json.dump(FEED, fixture)
-        fixture.close()
-        cls.fixture_path = Path(fixture.name)
         cls.original_store = app_module.dd_store
         cls.original_pool = app_module.prospect_pool
-        app_module.dd_store = DDFeedStore(cls.fixture_path)
+        app_module.dd_store = _Store(
+            [_row_from_record(record) for record in FEED["players"]],
+            generated_at=FEED["generated_at"],
+        )
         app_module.prospect_pool = prospect_percentiles.build_pool(app_module.dd_store.get_all())
         app_module.app.config["TESTING"] = True
         cls.client = app_module.app.test_client()
@@ -1008,14 +1062,13 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def tearDownClass(cls):
         app_module.dd_store = cls.original_store
         app_module.prospect_pool = cls.original_pool
-        cls.fixture_path.unlink()
 
     def test_prospects_board_eta_cutoff_and_movers(self):
         response = self.client.get("/?mode=prospects&teams=4&pslots=1")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'class="col-eta sortable"', response.data)
         self.assertIn(b">2027</td>", response.data)
-        self.assertIn(b'colspan="8"', response.data)  # +1 for the compare column
+        self.assertIn(b'colspan="9"', response.data)  # confidence + compare columns
         self.assertIn(b'class="movers-strip"', response.data)
 
         htmx = self.client.get("/rankings?mode=prospects&teams=4&pslots=1")

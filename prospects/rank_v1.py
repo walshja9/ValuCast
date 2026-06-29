@@ -29,7 +29,6 @@ from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
-DD_FEED_PATH = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 MILB_SEASON_STATS_PATH = ROOT / "data" / "prospects" / "raw" / "milb_season_stats.json"
 MILB_CARD_HISTORY_PATH = ROOT / "data" / "prospects" / "raw" / "milb_card_history.json"
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
@@ -235,7 +234,7 @@ def load_milb_history_index(
     card_history_path: Path = MILB_CARD_HISTORY_PATH,
 ) -> dict[tuple[str, str], dict]:
     """ValuCast-owned MiLB rows per (mlbam_id, role) for the in-house translation +
-    best-single-level (replaces the DD feed's translated fields). Current per-level
+    best-single-level display context. Current per-level
     rows come from milb_season_stats (un-slimmed, retains every level); older seasons
     come from milb_card_history. Newest-first so translate_peripherals reads the
     latest season; the current season is never double-counted across the two sources."""
@@ -695,22 +694,6 @@ def _universe_rows(prospect_universe: dict) -> list[dict]:
         for row in prospect_universe.get("players") or []
         if row.get("role") in {"hitter", "pitcher"}
     ]
-
-
-def _dd_context_lookup(dd_feed: dict | None) -> dict[tuple[str, str], dict]:
-    if not dd_feed:
-        return {}
-    lookup = {}
-    for row in dd_feed.get("players") or []:
-        if row.get("player_type") != "prospect":
-            continue
-        role = row.get("role") if row.get("role") in {"hitter", "pitcher"} else infer_role(
-            row.get("positions")
-        )
-        key = identity_key(row.get("mlbam_id"), role)
-        if key and key not in lookup:
-            lookup[key] = row
-    return lookup
 
 
 def _model_score_field_normalized_key(field: str) -> str:
@@ -1632,34 +1615,23 @@ def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
 
 
 def _context(
-    dd_row: dict | None,
     input_row: dict | None,
     role: str | None,
     service_row: dict | None = None,
     rookie_limits: dict[str, float] | None = None,
     milb_entry: dict | None = None,
 ) -> dict:
-    dd_stat_line = (dd_row or {}).get("stat_line")
     input_stat_line = _input_stat_line(input_row, role)
-    use_input_stat_line = bool(input_stat_line) and (
-        _has_skill_stat(input_stat_line) or not dd_stat_line
-    )
-    stat_line = input_stat_line if use_input_stat_line else dd_stat_line
+    use_input_stat_line = bool(input_stat_line)
+    stat_line = input_stat_line
 
     # ValuCast-owned MLB-equivalent translation + best-single-level, computed from
-    # ValuCast's own raw MiLB rows. Falls back to the DD feed's value only when no
-    # owned rows exist (transitional). This is the last DD read in the factual path.
+    # ValuCast's own raw MiLB rows.
     milb_rows = (milb_entry or {}).get("rows") or []
     owned_translated = translate_peripherals(milb_rows, role) if milb_rows else None
-    stat_line_translated = (
-        owned_translated if owned_translated is not None
-        else (dd_row or {}).get("stat_line_translated")
-    )
-    # Provenance so the independence claim is quantified, not asserted: owned translation,
-    # transitional DD-feed fallback, or none. (mlb_stat_line is still DD-only — see below.)
+    stat_line_translated = owned_translated
     stat_line_translated_source = (
         "valucast_owned" if owned_translated is not None
-        else "dd_feed_fallback" if (dd_row or {}).get("stat_line_translated")
         else None
     )
     best_single = None
@@ -1684,15 +1656,11 @@ def _context(
     if use_input_stat_line:
         stat_line_source = "valucast_input_contract"
         stat_context = _stat_line_context(input_row, role)
-    elif dd_stat_line:
-        stat_line_source = "dd_display_context"
     else:
         stat_line_source = None
-    bats = _hand_code((input_row or {}).get("bats") or (dd_row or {}).get("bats"))
-    throws = _hand_code((input_row or {}).get("throws") or (dd_row or {}).get("throws"))
+    bats = _hand_code((input_row or {}).get("bats"))
+    throws = _hand_code((input_row or {}).get("throws"))
     context = {
-        "source_ranks": (dd_row or {}).get("source_ranks"),
-        "value_history_points": len((dd_row or {}).get("value_history") or []),
         "bats": bats,
         "throws": throws,
         "stat_line": stat_line,
@@ -1702,8 +1670,6 @@ def _context(
         "stat_line_translated_source": stat_line_translated_source,
         "best_single_level_stat_line": best_single,
         "combined_season_stat_line": combined_line,
-        "mlb_stat_line": (dd_row or {}).get("mlb_stat_line"),
-        "mlb_stat_line_source": "dd_feed" if (dd_row or {}).get("mlb_stat_line") else None,
     }
     graduation = _graduation_context(service_row, role, rookie_limits or {})
     if graduation:
@@ -1784,7 +1750,6 @@ def _validation(
     prospect_universe: dict,
     dynasty_layer: dict,
     input_contract: dict,
-    dd_feed: dict | None,
     prospect_rows: list[dict],
     board: list[dict],
     duplicate_keys: list[tuple[str, str]],
@@ -1800,7 +1765,6 @@ def _validation(
     require_mlb_roster_status: bool = False,
 ) -> dict:
     universe_date = _generated_date(prospect_universe)
-    feed_date = _generated_date(dd_feed or {})
     layer_date = _generated_date(dynasty_layer)
     input_date = _generated_date(input_contract)
     same_day = bool(universe_date and layer_date and input_date) and len(
@@ -1847,39 +1811,13 @@ def _validation(
     if active_mlb_roster_overlap_count:
         blockers.append("Active MLB roster identities remain on the prospect board.")
 
-    # Quantify the residual DD reads in the factual DISPLAY path so the "ValuCast-owned"
-    # claim is honest. Scoring independence already holds; this tracks translation/mlb-line
-    # provenance per row (the reviewer's "report fallback counts" over silently dropping).
-    translated_owned = translated_dd_fallback = translated_absent = mlb_stat_line_dd = 0
-    for row in board:
-        ctx = row.get("context_only") or {}
-        src = ctx.get("stat_line_translated_source")
-        if src == "valucast_owned":
-            translated_owned += 1
-        elif src == "dd_feed_fallback":
-            translated_dd_fallback += 1
-        else:
-            translated_absent += 1
-        if ctx.get("mlb_stat_line_source") == "dd_feed":
-            mlb_stat_line_dd += 1
-    dd_factual_fallback = {
-        "translated_valucast_owned": translated_owned,
-        "translated_dd_feed_fallback": translated_dd_fallback,
-        "translated_absent": translated_absent,
-        "mlb_stat_line_from_dd_feed": mlb_stat_line_dd,
-        "factual_path_fully_valucast_owned": translated_dd_fallback == 0 and mlb_stat_line_dd == 0,
-    }
-
     return {
         "public_migration_ready": not blockers,
-        "ready_to_replace_dd_feed": not blockers,
-        "dd_factual_fallback": dd_factual_fallback,
         "same_day_freshness": same_day,
         "generated_dates": {
             "prospect_universe": universe_date,
             "dynasty_layer": layer_date,
             "prospect_input_contract": input_date,
-            "dd_feed_context": feed_date,
         },
         "prospect_universe_count": len(prospect_rows),
         "ranked_count": len(board),
@@ -1910,7 +1848,6 @@ def build_prospect_rank_v1(
     dynasty_layer: dict,
     prospect_model: dict,
     input_contract: dict,
-    dd_feed: dict | None = None,
     prospect_availability: dict | None = None,
     milb_history_by_key: dict | None = None,
     mlb_roster_status: dict | None = None,
@@ -1932,7 +1869,6 @@ def build_prospect_rank_v1(
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
-    dd_context_by_key = _dd_context_lookup(dd_feed)
 
     rows = _universe_rows(prospect_universe)
     _apply_role_quantile_model_score_normalization(
@@ -1973,7 +1909,6 @@ def build_prospect_rank_v1(
             duplicate_keys.append(key)
             continue
         seen.add(key)
-        dd_row = dd_context_by_key.get(key)
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
@@ -2035,19 +1970,18 @@ def build_prospect_rank_v1(
             or universe_row.get("level")
             or (layer_profile or {}).get("level")
         )
-        eta = universe_row.get("eta") or (dd_row or {}).get("eta")
+        eta = universe_row.get("eta")
         target_board = active_mlb_roster_board if is_active_mlb_roster else board
         target_board.append(
             {
                 "mlbam_id": universe_row.get("mlbam_id"),
                 "name": universe_row.get("name")
-                or (dd_row or {}).get("name")
                 or (layer_profile or {}).get("name"),
                 "normalized_name": universe_row.get("normalized_name")
                 or (layer_profile or {}).get("normalized_name"),
                 "role": role,
-                "positions": universe_row.get("positions") or (dd_row or {}).get("positions"),
-                "mlb_team": universe_row.get("mlb_team") or (dd_row or {}).get("mlb_team"),
+                "positions": universe_row.get("positions"),
+                "mlb_team": universe_row.get("mlb_team"),
                 "age": display_age,
                 "level": display_level,
                 "eta": eta,
@@ -2060,7 +1994,6 @@ def build_prospect_rank_v1(
                 "dynasty_signal": (layer_profile or {}).get("dynasty_signal"),
                 "drivers": _drivers(model_profile, layer_profile or {}),
                 "context_only": _context(
-                    dd_row,
                     input_row,
                     role,
                     service_row,
@@ -2089,7 +2022,6 @@ def build_prospect_rank_v1(
         prospect_universe,
         dynasty_layer,
         input_contract,
-        dd_feed,
         rows,
         board,
         duplicate_keys,
@@ -2113,7 +2045,6 @@ def build_prospect_rank_v1(
         prospect_universe.get("generated_at")
         or dynasty_layer.get("generated_at")
         or input_contract.get("generated_at")
-        or (dd_feed or {}).get("generated_at")
     )
     return {
         "status": "candidate_ready" if not validation["blockers"] else "blocked",
@@ -2186,11 +2117,7 @@ def build_prospect_rank_v1(
                 ],
             },
             "prospect_universe_source": "valucast_prospect_universe",
-            "dd_feed_usage": "Optional display/comparison context only.",
             "context_only_fields": [
-                "DD dynasty_rank",
-                "DD dynasty_value",
-                "DD prospect_rank",
                 "source_ranks",
                 "value_history",
                 "stat_line",
@@ -2203,8 +2130,6 @@ def build_prospect_rank_v1(
                 "stat_line_sample_season",
                 "graduation_context",
                 "stat_line_translated",
-                "mlb_stat_line",
-                "DD adapter score/rank",
             ],
             "prohibited_score_inputs": PROHIBITED_SCORE_INPUTS,
             "external_rankings_used_for_score": False,
@@ -2217,9 +2142,6 @@ def build_prospect_rank_v1(
             "prospect_universe_schema_version": prospect_universe.get("schema_version"),
             "prospect_universe_artifact": prospect_universe.get("artifact"),
             "prospect_universe_candidate_count": prospect_universe.get("candidate_count"),
-            "dd_feed_generated_by": (dd_feed or {}).get("generated_by"),
-            "dd_feed_source": (dd_feed or {}).get("source"),
-            "dd_feed_schema_version": (dd_feed or {}).get("schema_version"),
             "prospect_model_version": prospect_model.get("model_version"),
             "dynasty_layer_version": dynasty_layer.get("layer_version"),
             "prospect_input_schema_version": input_contract.get("schema_version"),
@@ -2248,7 +2170,7 @@ def build_prospect_rank_v1(
         "validation": validation,
         "limitations": [
             "Public ValuCast surfaces consume this rank only through the canonical snapshot and quality governor.",
-            "ValuCast prospect-universe rows define membership; DD feed rows are optional context only.",
+            "ValuCast prospect-universe rows define membership.",
             "Identity-only fallback rows remain for prospects absent from the current ValuCast layer.",
             "Identity-only fallback rows have verified MLBAM identity but no eligible ValuCast model sample yet.",
             "Fallback-only lower-minors profiles are capped until the expanded model earns publication-grade evidence.",
@@ -2289,7 +2211,6 @@ def run_prospect_rank_v1(
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     availability_path: Path | None = AVAILABILITY_PATH,
     mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
-    dd_feed_path: Path = DD_FEED_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
 ) -> dict:
@@ -2307,18 +2228,12 @@ def run_prospect_rank_v1(
         if mlb_roster_status_path is not None and mlb_roster_status_path.exists()
         else None
     )
-    dd_feed = (
-        json.loads(dd_feed_path.read_text(encoding="utf-8"))
-        if dd_feed_path.exists()
-        else None
-    )
     milb_history_by_key = load_milb_history_index()
     payload = build_prospect_rank_v1(
         prospect_universe,
         dynasty_layer,
         prospect_model,
         input_contract,
-        dd_feed=dd_feed,
         prospect_availability=prospect_availability,
         milb_history_by_key=milb_history_by_key,
         mlb_roster_status=mlb_roster_status,

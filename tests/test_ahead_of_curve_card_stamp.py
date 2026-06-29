@@ -8,7 +8,7 @@ PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 
 def _prospect_row() -> DynastyRankingRow:
-    return DynastyRankingRow.from_feed({
+    record = {
         "id": "vc_prospect_999999_hitter",
         "player_type": "prospect",
         "name": "Receipt Prospect",
@@ -34,7 +34,23 @@ def _prospect_row() -> DynastyRankingRow:
         },
         "context": {"role": "hitter"},
         "last_updated": "2026-06-25",
-    })
+    }
+    return DynastyRankingRow(
+        id=record["id"],
+        name=record["name"],
+        player_type=record["player_type"],
+        positions=tuple(record["positions"]),
+        team=record["mlb_team"],
+        age=record["age"],
+        dynasty_rank=record["dynasty_rank"],
+        dynasty_value=record["dynasty_value"],
+        status=record["status"],
+        mlbam_id=record["mlbam_id"],
+        prospect_rank=record["prospect_rank"],
+        level=record["level"],
+        stat_line=record["stat_line"],
+        metadata=record,
+    )
 
 
 def test_ahead_of_consensus_for_key_merges_showcase_receipt(monkeypatch):

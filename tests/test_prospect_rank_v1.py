@@ -11,29 +11,9 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
     _input_lookup,
-    _validation,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
-
-
-def test_dd_factual_fallback_counts_are_reported():
-    # The factual display path still reads DD for some rows; the validation block must
-    # quantify it honestly rather than assert blanket independence.
-    board = [
-        {"score": 50, "rank": 1, "context_only": {
-            "stat_line_translated_source": "valucast_owned", "mlb_stat_line_source": None}},
-        {"score": 40, "rank": 2, "context_only": {
-            "stat_line_translated_source": "dd_feed_fallback", "mlb_stat_line_source": "dd_feed"}},
-        {"score": 30, "rank": 3, "context_only": {
-            "stat_line_translated_source": None, "mlb_stat_line_source": None}},
-    ]
-    fallback = _validation({}, {}, {}, None, board, board, [], 0, set(), 0, [])["dd_factual_fallback"]
-    assert fallback["translated_valucast_owned"] == 1
-    assert fallback["translated_dd_feed_fallback"] == 1
-    assert fallback["translated_absent"] == 1
-    assert fallback["mlb_stat_line_from_dd_feed"] == 1
-    assert fallback["factual_path_fully_valucast_owned"] is False
 
 
 def _feed(extra_players=None):
@@ -319,14 +299,12 @@ def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_feed=_feed(),
     )
     assert payload["status"] == "blocked"
     assert payload["promotion"]["live_consumer"] == "blocked"
     assert payload["promotion"]["feeds_live_valucast_rank"] is False
     assert payload["promotion"]["feeds_live_dd_value"] is False
     assert payload["validation"]["public_migration_ready"] is False
-    assert payload["validation"]["ready_to_replace_dd_feed"] is False
     assert payload["validation"]["blockers"] == [
         "Top-200 score separation is not strong enough for publication."
     ]
@@ -384,54 +362,28 @@ def test_rank_v1_applies_bounded_availability_discount():
     assert changed["input_artifacts"]["prospect_availability_version"] == "0.1.0"
 
 
-def test_dd_and_public_rank_context_does_not_change_scores():
-    feed = _feed()
-    original = build_prospect_rank_v1(
+def test_rank_v1_ignores_removed_dd_feed_context():
+    payload = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_feed=feed,
     )
-    original_score = {
-        row["mlbam_id"]: row["score"] for row in original["board"]
-    }
 
-    feed["players"][0]["dynasty_rank"] = 1
-    feed["players"][0]["dynasty_value"] = 150.0
-    feed["players"][0]["prospect_rank"] = 1
-    feed["players"][0]["source_ranks"] = {"pipeline": 1, "cfr": 1, "hkb": 1}
-    feed["players"][0]["value_history"] = [["2026-06-13", 150.0]]
-    feed["players"][0]["stat_line"] = {"ops": 0.900, "pa": 200}
-    feed["players"][0]["stat_line_translated"] = {"stats": {"OPS": 0.760}}
-    feed["players"][0]["mlb_stat_line"] = {"pa": 12, "ops": 0.700}
-    changed = build_prospect_rank_v1(
-        _universe(),
-        _dynasty_layer(),
-        _prospect_model(),
-        _input_contract(),
-        dd_feed=feed,
-    )
-    changed_score = {row["mlbam_id"]: row["score"] for row in changed["board"]}
-
-    assert changed_score == original_score
-    context = next(row for row in changed["board"] if row["mlbam_id"] == 1)[
-        "context_only"
-    ]
-    for key in (
-        "has_dd_context",
-        "dd_dynasty_rank",
-        "dd_dynasty_value",
-        "dd_prospect_rank",
-        "dd_adapter_context",
-        "breakout_label",
-        "breakout_rank_change",
-    ):
+    row = next(row for row in payload["board"] if row["mlbam_id"] == 1)
+    context = row["context_only"]
+    assert row["name"] == "Model Strong"
+    assert row["positions"] == ["SS"]
+    assert row["mlb_team"] == "BOS"
+    assert row["eta"] == 2027
+    for key in ("value_history_points", "mlb_stat_line", "mlb_stat_line_source"):
         assert key not in context
-    assert context["source_ranks"]["pipeline"] == 1
-    assert context["stat_line"] == {"ops": 0.900, "pa": 200}
-    assert context["stat_line_translated"] == {"stats": {"OPS": 0.760}}
-    assert context["mlb_stat_line"] == {"pa": 12, "ops": 0.700}
+    validation = payload["validation"]
+    assert "ready_to_replace_dd_feed" not in validation
+    assert "dd_factual_fallback" not in validation
+    assert "dd_feed_context" not in validation["generated_dates"]
+    for key in ("dd_feed_generated_by", "dd_feed_source", "dd_feed_schema_version"):
+        assert key not in payload["input_artifacts"]
 
 
 def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
@@ -453,7 +405,6 @@ def test_rank_v1_exposes_valucast_current_stats_without_dd_context():
         _dynasty_layer(),
         _prospect_model(),
         input_contract,
-        dd_feed={"schema_version": "1.1", "players": []},
     )
 
     context = next(row for row in payload["board"] if row["mlbam_id"] == 2)[
@@ -533,7 +484,6 @@ def test_rank_v1_prefers_newest_current_input_row_over_larger_old_sample():
         dynasty_layer,
         _prospect_model(),
         input_contract,
-        dd_feed={"schema_version": "1.1", "players": []},
     )
 
     row = next(item for item in payload["board"] if item["mlbam_id"] == 8)
@@ -571,15 +521,11 @@ def test_rank_v1_prefers_valucast_current_stat_line_over_dd_display_context():
             "bb_pct": 11.2,
         }
     )
-    feed = _feed()
-    feed["players"][0]["stat_line"] = {"ops": 0.610, "pa": 300}
-
     payload = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
         _prospect_model(),
         input_contract,
-        dd_feed=feed,
     )
 
     context = next(row for row in payload["board"] if row["mlbam_id"] == 1)[
@@ -592,8 +538,6 @@ def test_rank_v1_prefers_valucast_current_stat_line_over_dd_display_context():
 
 
 def test_rank_v1_uses_owned_translation_for_qualifying_current_milb_rows():
-    feed = _feed()
-    feed["players"][0]["stat_line_translated"] = {"source": "dd"}
     milb_history_by_key = {
         ("1", "hitter"): {
             "current_season": 2026,
@@ -616,7 +560,6 @@ def test_rank_v1_uses_owned_translation_for_qualifying_current_milb_rows():
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_feed=feed,
         milb_history_by_key=milb_history_by_key,
     )
 
@@ -804,7 +747,6 @@ def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
     )
     validation = payload["validation"]
     assert validation["public_migration_ready"] is False
-    assert validation["ready_to_replace_dd_feed"] is False
     assert validation["prospect_universe_count"] == 4
     assert validation["ranked_count"] == 3
     assert validation["missing_mlbam_count"] == 1
@@ -836,24 +778,12 @@ def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
     assert any("Duplicate MLBAM+role" in blocker for blocker in payload["validation"]["blockers"])
 
 
-def test_rank_v1_candidate_membership_comes_from_valucast_universe_not_dd_feed():
-    dd_extra = {
-        "id": "p3",
-        "player_type": "prospect",
-        "name": "DD Only",
-        "mlbam_id": 3,
-        "positions": ["SS"],
-        "dynasty_rank": 1,
-        "dynasty_value": 150.0,
-        "prospect_rank": 1,
-    }
-
+def test_rank_v1_candidate_membership_comes_from_valucast_universe():
     payload = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_feed=_feed([dd_extra]),
     )
 
     assert payload["candidate_count"] == 2
@@ -866,7 +796,6 @@ def test_rank_v1_does_not_require_dd_feed_context():
         _dynasty_layer(),
         _prospect_model(),
         _input_contract(),
-        dd_feed=None,
     )
 
     assert payload["candidate_count"] == 2
@@ -893,7 +822,6 @@ def test_elite_factual_fallback_uses_pedigree_v0_7_not_raw_fallback():
         _dynasty_layer(),
         _prospect_model(),
         input_contract,
-        dd_feed=_feed(),
     )
 
     row = next(item for item in payload["board"] if item["name"] == "Fallback Good")
@@ -923,7 +851,7 @@ def test_pedigree_confidence_tracks_current_sample_not_score_source():
          "school_type": "high_school"}
     )
     thin_payload = build_prospect_rank_v1(
-        _universe(), _dynasty_layer(), _prospect_model(), thin, dd_feed=_feed()
+        _universe(), _dynasty_layer(), _prospect_model(), thin
     )
     thin_row = next(r for r in thin_payload["board"] if r["name"] == "Fallback Good")
     assert thin_row["score_source"] == "prospect_pedigree_v0_7"
@@ -936,7 +864,7 @@ def test_pedigree_confidence_tracks_current_sample_not_score_source():
          "school_type": "high_school"}
     )
     full_payload = build_prospect_rank_v1(
-        _universe(), _dynasty_layer(), _prospect_model(), full, dd_feed=_feed()
+        _universe(), _dynasty_layer(), _prospect_model(), full
     )
     full_row = next(r for r in full_payload["board"] if r["name"] == "Fallback Good")
     assert full_row["score_source"] == "prospect_pedigree_v0_7"
@@ -1251,7 +1179,6 @@ def test_rank_v1_bucket_adjusts_upper_level_low_impact_hitter_model_samples():
 
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     universe_path = tmp_path / "universe.json"
-    feed_path = tmp_path / "feed.json"
     layer_path = tmp_path / "layer.json"
     model_path = tmp_path / "model.json"
     input_path = tmp_path / "input.json"
@@ -1260,7 +1187,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     artifact_path = tmp_path / "rank.json"
 
     universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
-    feed_path.write_text(json.dumps(_feed()), encoding="utf-8")
     layer_path.write_text(json.dumps(_dynasty_layer()), encoding="utf-8")
     model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
     input_path.write_text(json.dumps(_input_contract()), encoding="utf-8")
@@ -1277,7 +1203,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         input_contract_path=input_path,
         availability_path=availability_path,
         mlb_roster_status_path=roster_status_path,
-        dd_feed_path=feed_path,
         artifact_path=artifact_path,
         archive_dir=tmp_path / "archive",
     )

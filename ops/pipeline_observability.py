@@ -11,7 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_pipeline_observability.json"
 
 PUBLIC_SNAPSHOT = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
-DD_FEED = ROOT / "data" / "dd" / "dd_dynasty_feed.json"
 PROSPECT_INPUTS = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 MLB_TRACK_RECORD = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 MLB_AVAILABILITY = ROOT / "data" / "models" / "valucast_mlb_availability.json"
@@ -36,7 +35,6 @@ OBSERVABILITY_VERSION = "0.1.0"
 
 DATED_ARTIFACTS: tuple[tuple[Path, str, str], ...] = (
     (PUBLIC_SNAPSHOT, "generated_at", "public_snapshot"),
-    (DD_FEED, "generated_at", "dd_feed"),
     (PROSPECT_INPUTS, "generated_at", "prospect_inputs"),
     (MLB_TRACK_RECORD, "generated_at", "mlb_track_record"),
     (MLB_AVAILABILITY, "generated_at", "mlb_availability"),

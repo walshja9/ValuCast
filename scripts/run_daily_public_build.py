@@ -86,7 +86,6 @@ BUILD_STEPS: list[tuple[str, ...]] = [
 
 
 VALIDATE_STEPS: list[tuple[str, ...]] = [
-    ("scripts/validate_feed.py",),
     ("scripts/validate_mlb_track_record.py",),
     ("scripts/validate_hp_promotion_sanity_report.py",),
     ("scripts/validate_mlb_availability.py",),
@@ -123,14 +122,12 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_front_office_report.py",),
     ("scripts/validate_scouting_repository.py",),
     ("scripts/validate_public_dynasty_snapshot.py",),
-    ("scripts/validate_dd_independence_ratchet.py",),
     ("scripts/validate_public_data_freshness.py",),
     (
         "-m",
         "pytest",
         "-q",
         "tests/test_refresh.py",
-        "tests/test_dd_feed_integrity.py",
         "tests/test_public_data_refresh.py",
         "tests/test_public_dynasty_snapshot.py",
         "tests/test_valucast_quality_governor.py",
