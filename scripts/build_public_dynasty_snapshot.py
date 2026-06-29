@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from prospects.buys import PROSPECT_BUYS_EPOCH  # noqa: E402
 from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
 from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
 from web.public_snapshot_store import required_field_problems  # noqa: E402
@@ -33,11 +34,15 @@ OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 MLB_VALUE_HISTORY_ARCHIVE_DIR = (
     ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
 )
+PROSPECT_VALUE_HISTORY_ARCHIVE_DIR = (
+    ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
+)
 
 SCHEMA_VERSION = "1.1"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 MLB_VALUE_HISTORY_LIMIT = 30
+PROSPECT_VALUE_HISTORY_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 CALIBRATION_METHOD = "raw_common_scale_certification_v1"
 TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_1"
 TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
@@ -169,6 +174,64 @@ def _attach_mlb_value_history(
             points.append((generated_date, float(current)))
         context = dict(row.get("context") or {})
         context["value_history"] = points[-MLB_VALUE_HISTORY_LIMIT:]
+        row["context"] = context
+
+
+def _prospect_value_history_from_archives(
+    archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+) -> dict[tuple[str, str], list[tuple[str, float]]]:
+    if not archive_dir:
+        return {}
+    archive_dir = Path(archive_dir)
+    if not archive_dir.exists():
+        return {}
+
+    history: dict[tuple[str, str], list[tuple[str, float]]] = {}
+    files = sorted(archive_dir.glob("*.json"), key=lambda path: path.stem)[-MLB_VALUE_HISTORY_LIMIT:]
+    for path in files:
+        date_str = _date_part(path.stem)
+        if not date_str or date_str < PROSPECT_VALUE_HISTORY_EPOCH_DATE:
+            continue
+        payload = _load_json(path)
+        for row in (payload.get("board") if isinstance(payload, dict) else []) or []:
+            if not isinstance(row, dict):
+                continue
+            key = _identity_key(row)
+            score = _clean_float(row.get("score"))
+            if not key or score is None or not math.isfinite(score):
+                continue
+            history.setdefault(key, []).append((date_str, score))
+    return history
+
+
+def _attach_prospect_value_history(
+    rows: list[dict],
+    history: dict[tuple[str, str], list[tuple[str, float]]],
+    generated_at: str,
+) -> None:
+    generated_date = _date_part(generated_at)
+    for row in rows:
+        key = _identity_key(row)
+        points = list(history.get(key, [])) if key else []
+        current = _clean_float(row.get("value"))
+        if (
+            generated_date
+            and generated_date >= PROSPECT_VALUE_HISTORY_EPOCH_DATE
+            and current is not None
+            and math.isfinite(current)
+        ):
+            points = [(date_str, value) for date_str, value in points if date_str != generated_date]
+            points.append((generated_date, float(current)))
+        points = [
+            (date_str, value)
+            for date_str, value in points
+            if date_str >= PROSPECT_VALUE_HISTORY_EPOCH_DATE
+        ]
+        context = dict(row.get("context") or {})
+        if points:
+            context["value_history"] = points[-MLB_VALUE_HISTORY_LIMIT:]
+        else:
+            context.pop("value_history", None)
         row["context"] = context
 
 
@@ -1017,6 +1080,7 @@ def build_snapshot(
     actuals: list | None = None,
     generated_at: str | None = None,
     mlb_value_history_archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
+    prospect_value_history_archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
 ) -> dict:
     if generated_at is None:
         build_time = datetime.now(timezone.utc)
@@ -1211,6 +1275,11 @@ def build_snapshot(
     _attach_mlb_value_history(
         mlb_rows,
         _mlb_value_history_from_archives(mlb_value_history_archive_dir),
+        generated_at,
+    )
+    _attach_prospect_value_history(
+        prospect_rows,
+        _prospect_value_history_from_archives(prospect_value_history_archive_dir),
         generated_at,
     )
     players = _assign_global_ranks(combined_rows)

@@ -607,6 +607,47 @@ def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
     assert "value_history" not in prospect["context"]
 
 
+def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):
+    for date_str, score, dd_value in [
+        ("2026-06-21", 10.0, 777.0),
+        ("2026-06-22", 51.25, 888.0),
+        ("2026-06-24", 52.0, 999.0),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps(
+                {
+                    "board": [
+                        {
+                            "mlbam_id": 1,
+                            "role": "hitter",
+                            "score": score,
+                            "context_only": {"dd_dynasty_value": dd_value},
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        generated_at="2026-06-24T12:00:00+00:00",
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=tmp_path,
+    )
+
+    prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+
+    assert prospect["context"]["value_history"] == [
+        ("2026-06-22", 51.25),
+        ("2026-06-24", 55.5),
+    ]
+    assert 888.0 not in [value for _, value in prospect["context"]["value_history"]]
+    assert 999.0 not in [value for _, value in prospect["context"]["value_history"]]
+
+
 def test_snapshot_carries_peak_projection_card_context(tmp_path):
     payload = build_snapshot(
         _rank_payload(),
