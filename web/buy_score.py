@@ -144,9 +144,11 @@ def runway_score(age, level):
 
 
 def _breakout_label(row):
-    return getattr(row, "breakout_label", None) or (
-        getattr(row, "metadata", {}) or {}
-    ).get("breakout_label")
+    direct = getattr(row, "breakout_label", None)
+    if direct:
+        return direct
+    meta = getattr(row, "metadata", None)
+    return meta.get("breakout_label") if isinstance(meta, dict) else None
 
 
 def score_row(row):
