@@ -4,6 +4,7 @@ half-publish must not masquerade as 'ValuCast has no pitchers')."""
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 AS_OF_SEASON = 2026
@@ -45,10 +46,12 @@ def write_valucast_hp_run(
 
     run_path.mkdir(parents=True, exist_ok=True)
     proj_path.write_text(json.dumps(combined, indent=2), encoding="utf-8")
+    generated_at = datetime.now(timezone.utc).isoformat()
     manifest = {
         "run_id": run_id,
         "source_name": "valucast",
         "as_of_season": AS_OF_SEASON,
+        "generated_at": generated_at,
         "hitter_count": len(hitter_rows),
         "pitcher_count": len(pitcher_rows),
         "components": {
@@ -58,4 +61,6 @@ def write_valucast_hp_run(
     }
     (run_path / "run_manifest.json").write_text(
         json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    (run_path / "metadata.json").write_text(
+        json.dumps({"as_of": generated_at}, indent=2, sort_keys=True), encoding="utf-8")
     return run_id

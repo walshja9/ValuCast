@@ -24,6 +24,7 @@ from league_values.engine import ValuationEngine
 from league_values.post_processors import VolumeMultiplier
 from league_values.playing_time import filter_by_playing_time
 from league_values.models import PlayerPool, ValuationResult
+from mlb.dynasty import _percentile, _scale_value
 
 from web.projection_catalog import ProjectionCatalog
 from web.category_registry import (
@@ -468,6 +469,43 @@ def _buy_spark_label(spark: dict | None) -> str:
 
 dd_store, dynasty_data_source = _select_dynasty_store(public_snapshot_store)
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
+_DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE = {}
+
+
+def _dynasty_snapshot_identity_index(snapshot_store=None):
+    snapshot_store = snapshot_store or dd_store
+    if not getattr(snapshot_store, "is_available", False):
+        return {}
+    rows = snapshot_store.get_all()
+    signature = (
+        id(snapshot_store),
+        getattr(snapshot_store, "generated_at", None),
+        len(rows),
+    )
+    cached = _DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE.get(signature)
+    if cached is not None:
+        return cached
+
+    index = {}
+    for row in rows:
+        mlbam_id = getattr(row, "mlbam_id", None)
+        role = getattr(row, "role", None)
+        if mlbam_id in (None, ""):
+            continue
+        roles = ("hitter", "pitcher") if role == "two_way" else (role,)
+        for row_role in roles:
+            if row_role in {"hitter", "pitcher"}:
+                index.setdefault((str(mlbam_id), row_role), row)
+    if len(_DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE) > 8:
+        _DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE.clear()
+    _DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE[signature] = index
+    return index
+
+
+def _dynasty_snapshot_row_for(mlbam_id, role):
+    if mlbam_id in (None, "") or role not in {"hitter", "pitcher"}:
+        return None
+    return _dynasty_snapshot_identity_index().get((str(mlbam_id), role))
 
 # Refuse to promote a deploy with no servable ValuCast snapshot: with gunicorn
 # --preload this raises in the master, so the candidate deploy fails and Render keeps
@@ -2943,11 +2981,27 @@ def _dynasty_category_card_items(context):
 def _redraft_card_read(row, context):
     role = "pitcher" if row.pool in _PITCHER_POOLS else "hitter"
     shim = SimpleNamespace(role=role)
-    return build_mlb_scouting_read(
+    read = build_mlb_scouting_read(
         shim,
         context.get("statcast_groups"),
         row.stats,
     )
+    status = _snapshot_availability_status_sentence(context.get("redraft_dynasty_row"))
+    if status:
+        return f"{read} {status}"
+    return read
+
+
+def _snapshot_availability_status_sentence(row):
+    if row is None:
+        return None
+    availability = getattr(row, "availability_context", {}) or {}
+    if not isinstance(availability, dict):
+        availability = {}
+    return _availability_status_sentence({
+        "availability_status": availability.get("status"),
+        "availability_status_label": getattr(row, "availability_status_label", None),
+    })
 
 
 def _card_value_fields(mode, row, context):
@@ -2988,23 +3042,31 @@ def _card_value_fields(mode, row, context):
         if generated:
             subtitle = f"{subtitle} - {generated}"
         role = "Pitcher" if row.pool in _PITCHER_POOLS else "Hitter"
+        dynasty_row = context.get("redraft_dynasty_row")
         meta = " - ".join(
             piece for piece in [
                 (row.metadata or {}).get("team") or "FA",
                 "/".join(row.positions[:2]) if row.positions else "UT",
                 role,
+                f"Age {dynasty_row.age}" if dynasty_row is not None and dynasty_row.age is not None else "",
             ]
             if piece
         )
         result = context.get("dyn_result")
         ranks = context.get("overall_ranks") or {}
+        value_notes = ["0-100 redraft scale"]
+        if dynasty_row is not None:
+            value_notes.extend(_dynasty_confidence_lines(dynasty_row))
         return {
             "headline": "REDRAFT VALUE CARD",
             "subtitle": subtitle,
             "meta": meta,
-            "value": getattr(result, "total_value", None),
+            "value": _redraft_scaled_value(
+                getattr(result, "total_value", None),
+                context.get("redraft_value_scale"),
+            ),
             "rank": ranks.get(row.id),
-            "value_notes": [],
+            "value_notes": value_notes,
             "read_label": "THE REDRAFT READ",
             "read_text": _redraft_card_read(row, context),
             "category_summary": context.get("dyn_category_summary"),
@@ -3262,6 +3324,24 @@ def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResu
     return sorted(merged, key=lambda r: r.total_value, reverse=True)
 
 
+def _redraft_value_scale(results: list[ValuationResult]) -> tuple[float, float]:
+    values = [
+        float(result.total_value)
+        for result in results
+        if isinstance(result.total_value, (int, float)) and math.isfinite(result.total_value)
+    ]
+    if not values:
+        return 0.0, 0.0
+    return _percentile(values, 0.05), max(values)
+
+
+def _redraft_scaled_value(value, scale: tuple[float, float] | None):
+    if not isinstance(value, (int, float)):
+        return None
+    floor, ceiling = scale or (0.0, 0.0)
+    return _scale_value(float(value), floor, ceiling)
+
+
 def _compute_position_ranks(results: list[ValuationResult]) -> dict[str, str]:
     """Compute rank within position group for each player. Returns player_id -> 'SP12' etc."""
     pos_counters: dict[str, int] = {}
@@ -3424,6 +3504,7 @@ def _build_context(args):
         engine.value_players(_valuation_players(active_store=active), config)
     )
     all_results.sort(key=lambda r: r.total_value, reverse=True)
+    redraft_value_scale = _redraft_value_scale(all_results)
 
     # Metadata pool = the fixed top-200-by-value of the full universe (the same set the
     # default unfiltered board shows). Computing $/ranks/tiers here keeps the default
@@ -3532,6 +3613,7 @@ def _build_context(args):
         "tiers": tiers,
         "overall_ranks": overall_ranks,
         "canonical_ids": canonical_ids,
+        "redraft_value_scale": redraft_value_scale,
         "config_summary": _config_summary(mode, cats, pcats, split_rp),
         "as_of": active.as_of,
         "source": args.get("source", "") or "steamer",
@@ -6599,12 +6681,15 @@ def _build_redraft_player_card_context(player_id, args):
         else None
     )
     role = "pitcher" if player.pool in _PITCHER_POOLS else "hitter"
+    dynasty_row = _dynasty_snapshot_row_for(mlbam_id, role)
     card_ctx.update({
         "player": player,
         "dyn_result": result,
         "dyn_categories": ctx["active_categories"],
         "dyn_category_summary": ctx["config_summary"],
         "as_of": active.as_of,
+        "redraft_value_scale": _redraft_value_scale(detail_results),
+        "redraft_dynasty_row": dynasty_row,
         "ahead_of_consensus": _ahead_of_consensus_for_key(_identity_key(mlbam_id, role)),
     })
     return card_ctx, 200
@@ -6830,7 +6915,7 @@ _REDRAFT_PITCHER_POS = {"SP", "RP", "P"}
 class _RedraftShareRow:
     """Adapt a ValuationResult to the attributes the share renderer reads."""
 
-    def __init__(self, result):
+    def __init__(self, result, value_scale):
         player = result.player
         meta = player.metadata or {}
         if player.pool == PlayerPool.HITTER:
@@ -6841,7 +6926,8 @@ class _RedraftShareRow:
         self.positions = positions or ["DH"]
         self.team = meta.get("team") or "FA"
         self.age = meta.get("age")
-        self.value = round(result.total_value, 1)
+        scaled_value = _redraft_scaled_value(result.total_value, value_scale)
+        self.value = round(scaled_value, 1) if scaled_value is not None else None
         self.value_history = []   # redraft has no daily history -> no sparkline
         self.level = "MLB"
         self.status = "mlb"
@@ -6860,14 +6946,17 @@ def _redraft_share_labels(ctx, args):
 def redraft_share_card_png():
     limit = _prospect_share_limit(request.args)
     ctx = _build_context(request.args)
-    rows = [_RedraftShareRow(r) for r in (ctx.get("results") or [])[:limit]]
+    rows = [
+        _RedraftShareRow(r, ctx.get("redraft_value_scale"))
+        for r in (ctx.get("results") or [])[:limit]
+    ]
     mode, src = _redraft_share_labels(ctx, request.args)
     png = _prospect_graphic_png(
         rows,
         limit=limit,
         noun="Redraft",
         hero_kicker="TOP REDRAFT VALUE",
-        footer_note=f"ValuCast Redraft - {mode} ({src})",
+        footer_note=f"ValuCast Redraft 0-100 - {mode} ({src})",
         as_of=ctx.get("as_of"),
     )
     response = make_response(png)
@@ -6908,7 +6997,10 @@ def redraft_share_card():
 def redraft_share_card_svg():
     limit = _prospect_share_limit(request.args)
     ctx = _build_context(request.args)
-    rows = [_RedraftShareRow(r) for r in (ctx.get("results") or [])[:limit]]
+    rows = [
+        _RedraftShareRow(r, ctx.get("redraft_value_scale"))
+        for r in (ctx.get("results") or [])[:limit]
+    ]
     svg = _prospect_graphic_svg(rows, limit=limit, noun="Redraft")
     response = make_response(svg)
     response.headers["Content-Type"] = "image/svg+xml; charset=utf-8"

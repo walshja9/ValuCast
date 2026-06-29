@@ -30,9 +30,12 @@ class TestValucastHpRun(unittest.TestCase):
             self.assertEqual(len(rows), 3)                       # 2 hitters + 1 pitcher
             man = json.loads((runs / run_id / "run_manifest.json").read_text())
             self.assertEqual(man["source_name"], "valucast")
+            self.assertRegex(man["generated_at"], r"^\d{4}-\d{2}-\d{2}T")
             self.assertEqual(man["hitter_count"], 2)
             self.assertEqual(man["pitcher_count"], 1)
             self.assertEqual(man["components"]["hitters"]["alpha_contact"], 0.75)
+            meta = json.loads((runs / run_id / "metadata.json").read_text())
+            self.assertEqual(meta, {"as_of": man["generated_at"]})
 
     def test_rejects_single_pool(self):
         with tempfile.TemporaryDirectory() as d:

@@ -2,8 +2,13 @@ import json
 import os
 import tempfile
 import unittest
+from pathlib import Path
 
+from mlb.dynasty import _generated_at
 from web.projection_store import ProjectionStore
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 SAMPLE_PLAYERS = [
@@ -160,3 +165,10 @@ class TestProjectionStoreMetadata(unittest.TestCase):
                 json.dump({"as_of": "2026-05-25"}, f)
             store = ProjectionStore(path)
             self.assertEqual(store.as_of, "2026-05-25")
+
+    def test_valucast_hp_run_sidecar_feeds_dynasty_generated_at(self):
+        path = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
+        store = ProjectionStore(path)
+
+        self.assertIsNotNone(store.as_of)
+        self.assertEqual(_generated_at(store), store.as_of)
