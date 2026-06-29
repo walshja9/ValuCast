@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from league_values.engine import ValuationEngine
-from league_values.models import LeagueConfig, PlayerPool, PlayerProjection, ValuationResult
+from league_values.models import LeagueConfig, PlayerPool, PlayerProjection, ScoringMode, ValuationResult
 from league_values.playing_time import filter_by_playing_time
 from league_values.post_processors import AgeCurve, VolumeMultiplier
 from mlb.availability import (
@@ -80,6 +80,7 @@ LIMITED_PITCHER_TRACK_RECORD_MAX_DISCOUNT = 0.14
 TRACK_RECORD_FLOOR_MIN_CERTAINTY = 40.0
 TRACK_RECORD_FLOOR_MIN_STABILITY_VALUE = 0.0
 TRACK_RECORD_FLOOR_MIN_ROS_VALUE = 1.0
+TRACK_RECORD_FLOOR_MAX_PRODUCTION_GAP = 18.0
 RELIEVER_DYNASTY_SCORE_CAP = 52.0
 MLB_AVAILABILITY_MAX_DISCOUNT = 0.12
 MLB_AVAILABILITY_HITTER_IL_DISCOUNT = 0.06
@@ -686,19 +687,31 @@ def _track_record_floor(
 
 def _track_record_floor_blocked_reason(
     stability: dict[str, Any] | None,
+    *,
+    player: PlayerProjection | None = None,
+    score: float | None = None,
+    floor_score: float | None = None,
 ) -> str | None:
-    if not stability:
-        return None
-    stability_value = _finite_float(stability.get("stability_adjusted_category_value"))
-    if (
-        stability_value is None
-        or stability_value > TRACK_RECORD_FLOOR_MIN_STABILITY_VALUE
-    ):
-        return None
-    ros_value = _finite_float(stability.get("ros_category_value"))
-    if ros_value is not None and ros_value > TRACK_RECORD_FLOOR_MIN_ROS_VALUE:
-        return None
-    return "weak_current_and_ros_projection"
+    if stability:
+        stability_value = _finite_float(stability.get("stability_adjusted_category_value"))
+        if (
+            stability_value is not None
+            and stability_value <= TRACK_RECORD_FLOOR_MIN_STABILITY_VALUE
+        ):
+            ros_value = _finite_float(stability.get("ros_category_value"))
+            if ros_value is None or ros_value <= TRACK_RECORD_FLOOR_MIN_ROS_VALUE:
+                return "weak_current_and_ros_projection"
+    if player is not None:
+        age = _coerce_age(player.metadata.get("age"))
+        if age is not None:
+            if player.pool is PlayerPool.HITTER and age > 33:
+                return "aged_out_of_track_record_floor"
+            if _is_starter(player) and not _is_reliever_only(player) and age > 31:
+                return "aged_out_of_track_record_floor"
+    if score is not None and floor_score is not None:
+        if floor_score - score > TRACK_RECORD_FLOOR_MAX_PRODUCTION_GAP:
+            return "production_far_below_track_record_floor"
+    return None
 
 
 def _role_adjusted_score(
@@ -823,7 +836,12 @@ def _role_adjusted_score(
         adjustments["limited_mlb_track_record_discount"] = track_record_discount
     floor_score = _track_record_floor(track_record_profile)
     adjustments["track_record_floor_score"] = _round(floor_score)
-    floor_blocked_reason = _track_record_floor_blocked_reason(stability)
+    floor_blocked_reason = _track_record_floor_blocked_reason(
+        stability,
+        player=player,
+        score=score,
+        floor_score=floor_score,
+    )
     adjustments["track_record_floor_blocked_reason"] = floor_blocked_reason
     if (
         floor_score is not None
@@ -912,13 +930,30 @@ def _scores_for_config(
     values = [horizon["value"] for _, horizon in horizon_rows]
     floor = _percentile(values, 0.05)
     ceiling = max(values) if values else floor
+    pool_scale = None
+    if league.scoring_mode is ScoringMode.POINTS:
+        pool_scale = {}
+        for role_name in ("hitter", "pitcher"):
+            pool_vals = [
+                horizon["value"]
+                for result, horizon in horizon_rows
+                if _role(result.player) == role_name
+            ]
+            if pool_vals:
+                pool_scale[role_name] = (_percentile(pool_vals, 0.05), max(pool_vals))
 
     score_by_key: dict[tuple[str, str], float] = {}
     rows = []
     for result, horizon in horizon_rows:
         key = identity_key(result.player)
         track_record_profile = track_record_by_key.get(key) if key else None
-        production_score = _scale_value(horizon["value"], floor, ceiling)
+        scale_floor, scale_ceiling = floor, ceiling
+        if pool_scale is not None:
+            scale_floor, scale_ceiling = pool_scale.get(
+                _role(result.player),
+                (floor, ceiling),
+            )
+        production_score = _scale_value(horizon["value"], scale_floor, scale_ceiling)
         if _role(result.player) == "pitcher":
             production_score *= PITCHER_PRODUCTION_ANCHOR
         reliability = _playing_time_reliability(result.player)

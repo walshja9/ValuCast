@@ -2800,10 +2800,12 @@ _PROJECTED_ROLE_PHRASES = {
     "regular": "a regular role",
     "part_time_or_strong_side": "a strong-side role",
     "rotation_workhorse": "a rotation workhorse role",
+    "rotation_starter": "a rotation starter role",
     "leverage_reliever": "a high-leverage relief role",
     "middle_relief": "a middle-relief role",
     "swingman_or_bulk": "a swingman/bulk role",
     "depth_arm": "a depth-arm role",
+    "bench_or_depth": "a depth role",
 }
 
 _AVAILABILITY_STATUS_SENTENCES = {

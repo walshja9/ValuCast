@@ -1,6 +1,7 @@
 """Tests for MLB dynasty preset value parity."""
 
 from dataclasses import replace
+from statistics import median
 
 import mlb.dynasty as dynasty
 from mlb.dynasty import build_mlb_dynasty_layer, identity_key
@@ -215,3 +216,87 @@ def test_points_preset_scores_pitchers_and_hitters():
     for row in payload["players"]:
         assert "points" in row["value_by_preset"]
         assert row["value_by_preset"]["points"] > 0
+
+
+def test_points_preset_keeps_elite_pitcher_at_least_median_hitter():
+    def with_stats(player, **stats):
+        merged = dict(player.stats)
+        merged.update(stats)
+        return replace(player, stats=merged)
+
+    players = [
+        with_stats(
+            _pitcher(
+                player_id="sp_elite",
+                mlbam_id="101",
+                name="Elite Pitcher",
+                ip=190,
+                strikeouts=260,
+                era=2.60,
+                metadata={"age": 27},
+            ),
+            W=18,
+            ER=55,
+            BB=45,
+            H_ALLOWED=135,
+        ),
+        with_stats(
+            _pitcher(
+                player_id="sp_depth",
+                mlbam_id="102",
+                name="Depth Pitcher",
+                ip=80,
+                strikeouts=60,
+                era=5.20,
+                metadata={"age": 30},
+            ),
+            W=3,
+            ER=50,
+            BB=45,
+            H_ALLOWED=100,
+        ),
+    ]
+    for index, target_points in enumerate((760, 750, 740, 730, 720), start=1):
+        hitter = _hitter(
+            player_id=f"h_mid_{index}",
+            mlbam_id=str(200 + index),
+            name=f"Mid Hitter {index}",
+            hr=28,
+            sb=8,
+            avg=.275,
+            metadata={"age": 27},
+        )
+        stats = dict(hitter.stats)
+        base_points = (
+            stats["R"]
+            + stats["RBI"]
+            + stats["1B"]
+            + 2 * stats["2B"]
+            + 3 * stats["3B"]
+            + 4 * stats["HR"]
+            + stats["BB"]
+            + 2 * stats["SB"]
+            - stats["CS"]
+        )
+        bump = (target_points - base_points) / 3
+        players.append(
+            replace(
+                hitter,
+                stats={
+                    **stats,
+                    "R": stats["R"] + bump,
+                    "RBI": stats["RBI"] + bump,
+                    "BB": stats["BB"] + bump,
+                },
+            )
+        )
+
+    payload = build_mlb_dynasty_layer(players, "2026-06-13")
+    elite_pitcher = next(row for row in payload["players"] if row["name"] == "Elite Pitcher")
+    hitter_points = [
+        row["value_by_preset"]["points"]
+        for row in payload["players"]
+        if row["role"] == "hitter"
+    ]
+
+    assert elite_pitcher["value_by_preset"]["points"] >= median(hitter_points)

@@ -609,10 +609,10 @@ def test_mlb_layer_blocks_track_record_floor_when_current_and_ros_are_weak():
 
 
 def test_mlb_layer_allows_track_record_floor_when_ros_is_still_positive():
-    player = _hitter(metadata={"age": 34})
+    player = _hitter(metadata={"age": 33})
     score, adjustments = _role_adjusted_score(
         player,
-        24.0,
+        40.0,
         {
             "current_season_category_value": -2.0,
             "ros_category_value": 2.5,
@@ -629,6 +629,55 @@ def test_mlb_layer_allows_track_record_floor_when_ros_is_still_positive():
     assert score == 54.0
     assert adjustments["track_record_floor_applied"] is True
     assert adjustments["track_record_floor_blocked_reason"] is None
+
+
+def test_mlb_layer_blocks_track_record_floor_for_aged_out_hitter():
+    player = _hitter(metadata={"age": 34})
+    score, adjustments = _role_adjusted_score(
+        player,
+        40.0,
+        {
+            "current_season_category_value": 1.2,
+            "ros_category_value": 2.5,
+            "stability_adjusted_category_value": 1.8,
+        },
+        {
+            "experience_band": "established",
+            "track_record_certainty": 70.0,
+            "track_record_floor_score": 54.0,
+            "volume": {"prior_mlb": 2200, "career": 2500},
+        },
+    )
+
+    assert score == 40.0
+    assert adjustments["track_record_floor_applied"] is False
+    assert adjustments["track_record_floor_blocked_reason"] == "aged_out_of_track_record_floor"
+
+
+def test_mlb_layer_blocks_track_record_floor_when_production_gap_is_large():
+    player = _hitter(metadata={"age": 27})
+    score, adjustments = _role_adjusted_score(
+        player,
+        20.0,
+        {
+            "current_season_category_value": 1.2,
+            "ros_category_value": 2.5,
+            "stability_adjusted_category_value": 1.8,
+        },
+        {
+            "experience_band": "established",
+            "track_record_certainty": 70.0,
+            "track_record_floor_score": 55.0,
+            "volume": {"prior_mlb": 2200, "career": 2500},
+        },
+    )
+
+    assert score == 20.0
+    assert adjustments["track_record_floor_applied"] is False
+    assert (
+        adjustments["track_record_floor_blocked_reason"]
+        == "production_far_below_track_record_floor"
+    )
 
 
 def test_mlb_layer_discounts_high_score_with_limited_track_record():

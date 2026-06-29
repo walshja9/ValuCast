@@ -118,6 +118,10 @@ class TestPlayerDetail(unittest.TestCase):
         response = self.client.get("/player/NONEXISTENT?mode=categories&cats=R&pcats=K")
         self.assertEqual(response.status_code, 404)
 
+    def test_projected_rotation_starter_phrase_uses_a_rotation(self):
+        phrase = app_module._projected_role_phrase({"projected_role": "rotation_starter"})
+        self.assertTrue(phrase.startswith("a rotation"))
+
 
 class TestCompareRoute(unittest.TestCase):
     def setUp(self):
