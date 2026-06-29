@@ -625,7 +625,45 @@ def _display_number(raw) -> str:
     return f"{value:g}" if value is not None else str(raw)
 
 
-def value_suppressor_note(row, percentiles) -> str | None:
+_SHORTENED_GAMES_MAX = 90
+_SHORTENED_MIN_PA = 200
+_SHORTENED_MIN_IP = 50
+
+
+def _shortened_recent_season(exposure) -> dict | None:
+    """The model penalizes age-for-level but can't see WHY a prospect is old for it.
+    Given a player's season exposure ({draft_year, seasons:[{season,games,unit,sample}]}),
+    return the most recent COMPLETED season that ran short of a full slate despite a real
+    workload -- lost development time, not a stall -- else None. Conservative: the season
+    must be after the draft year (not a normal draft-summer debut) and recent enough to
+    explain the current age/level."""
+    if not isinstance(exposure, dict):
+        return None
+    seasons = [e for e in (exposure.get("seasons") or []) if isinstance(e, dict)]
+    if not seasons:
+        return None
+    current = max(e["season"] for e in seasons)
+    completed = [e for e in seasons if e["season"] < current]
+    if not completed:
+        return None
+    target = max(completed, key=lambda e: e["season"])
+    if current - target["season"] > 2:
+        return None
+    draft_year = exposure.get("draft_year")
+    if draft_year is not None:
+        if target["season"] <= draft_year:  # the draft summer is a normal partial season
+            return None
+    elif not any(e["season"] < target["season"] for e in seasons):
+        return None  # no draft year and target is the debut -> can't tell
+    games = target.get("games") or 0
+    sample = target.get("sample") or 0
+    floor = _SHORTENED_MIN_PA if target.get("unit") == "PA" else _SHORTENED_MIN_IP
+    if games < _SHORTENED_GAMES_MAX and sample >= floor:
+        return {"season": target["season"], "games": games}
+    return None
+
+
+def value_suppressor_note(row, percentiles, exposure=None) -> str | None:
     peaks = [
         p
         for p in (percentiles.values() if isinstance(percentiles, dict) else ())
@@ -715,7 +753,15 @@ def value_suppressor_note(row, percentiles) -> str | None:
     if not reasons:
         return None
     why = reasons[0] if len(reasons) == 1 else f"{reasons[0]} and {reasons[1]}"
-    return f"The current skills grade out loud, but the dynasty value stays low because {why}."
+    note = f"The current skills grade out loud, but the dynasty value stays low because {why}."
+    if any(reason.startswith("he's old for") for reason in reasons):
+        short = _shortened_recent_season(exposure)
+        if short:
+            note = (
+                f"{note} That said, his {short['season']} season ran just {short['games']} "
+                "games, so the age reflects lost development time more than a stall."
+            )
+    return note
 
 
 def _report_order(row) -> int:

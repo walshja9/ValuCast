@@ -636,6 +636,58 @@ class TestProspectPercentiles(unittest.TestCase):
         )
         self.assertNotIn("depth/relief arm", note)
 
+    def _old_for_level_hitter(self):
+        return _row(
+            "injury_repeat",
+            positions=["CF"],
+            level="AA",
+            age=23,
+            prospect_rank=280,
+            dynasty_value=3.0,
+            stat_line={"pa": 314, "ops": 1.056, "iso": 0.244, "bb_pct": 21.3},
+            components={
+                "factual_current_context": {
+                    "role": "hitter",
+                    "sample": 159,
+                    "sample_unit": "PA",
+                    "skill_band": "thin",
+                },
+            },
+            peak_projection={"peak_role": "bench_or_platoon_bat", "risk_band": "high"},
+        )
+
+    def test_value_suppressor_note_adds_lost_development_time_for_short_season(self):
+        row = self._old_for_level_hitter()
+        exposure = {
+            "draft_year": 2024,
+            "seasons": [
+                {"season": 2025, "games": 59, "unit": "PA", "sample": 270.0},
+                {"season": 2026, "games": 68, "unit": "PA", "sample": 314.0},
+            ],
+        }
+        note = prospect_percentiles.value_suppressor_note(
+            row, {"ops": 99, "iso": 91, "bb_pct": 98}, exposure=exposure
+        )
+        self.assertIn("he's old for Double-A (23)", note)
+        self.assertIn("his 2025 season ran just 59 games", note)
+        self.assertIn("lost development time", note)
+
+    def test_value_suppressor_note_no_mitigation_for_full_prior_season(self):
+        row = self._old_for_level_hitter()
+        exposure = {
+            "draft_year": 2021,
+            "seasons": [
+                {"season": 2024, "games": 124, "unit": "PA", "sample": 520.0},
+                {"season": 2025, "games": 130, "unit": "PA", "sample": 545.0},
+                {"season": 2026, "games": 68, "unit": "PA", "sample": 314.0},
+            ],
+        }
+        note = prospect_percentiles.value_suppressor_note(
+            row, {"ops": 99, "iso": 91, "bb_pct": 98}, exposure=exposure
+        )
+        self.assertIn("he's old for Double-A (23)", note)
+        self.assertNotIn("lost development time", note)
+
 
 class TestValueCardReads(unittest.TestCase):
     def test_dynasty_card_uses_clean_role_articles_and_status_prose(self):

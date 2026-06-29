@@ -2107,6 +2107,21 @@ def _with_note(text, note):
     return f"{text} {note}" if note else text
 
 
+@lru_cache(maxsize=1)
+def _prospect_exposure_history() -> dict:
+    """Per-prospect season exposure (games + PA/IP, draft year) for the card honesty
+    layer. Out-of-band artifact (scripts/build_prospect_exposure_history.py); absent in
+    dev is fine -- the note just omits the lost-development-time mitigation."""
+    try:
+        payload = json.loads(
+            (Path(__file__).parent / "data" / "prospects" / "raw" / "prospect_exposure_history.json")
+            .read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload.get("history") or {}
+
+
 def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=None):
     scouting_text = _scouting_display_report_text(scouting_report)
     if scouting_text:
@@ -2118,7 +2133,8 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
     last = _graphic_last_name(row.name)
     card_selection = prospect_percentiles.card_line(row)
     card_stat_line, best_level, is_best = card_selection
-    note = prospect_percentiles.value_suppressor_note(row, stat_percentiles)
+    exposure = _prospect_exposure_history().get(str(getattr(row, "mlbam_id", "")))
+    note = prospect_percentiles.value_suppressor_note(row, stat_percentiles, exposure=exposure)
     if is_best and card_stat_line:
         return _with_note(
             _graphic_best_single_read(card_stat_line, best_level, stat_percentiles, last),
