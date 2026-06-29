@@ -1105,24 +1105,6 @@ def caption_for(metric: str, pct: int | None) -> str | None:
     return None
 
 
-def top_movers(rows, limit: int = 5, min_change: int = 5, max_rank: int = 200) -> list[dict]:
-    """Largest |breakout_rank_change| among visible-board prospects. [] when quiet."""
-    candidates = [
-        r for r in rows
-        if r.is_prospect
-        and isinstance(r.breakout_rank_change, int)
-        and abs(r.breakout_rank_change) >= min_change
-        and r.prospect_rank is not None
-        and r.prospect_rank <= max_rank
-    ]
-    candidates.sort(key=lambda r: (-abs(r.breakout_rank_change), r.prospect_rank))
-    return [
-        {"id": r.id, "name": r.name, "prospect_rank": r.prospect_rank,
-         "change": r.breakout_rank_change}
-        for r in candidates[:limit]
-    ]
-
-
 def identity_line(row, percentiles: dict) -> str | None:
     """Deterministic scouting-style card summary. None for non-prospects."""
     if not row.is_prospect:

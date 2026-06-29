@@ -202,21 +202,33 @@ class TestProspectPercentiles(unittest.TestCase):
             "Strong all-around production",
         )
 
-    def test_top_movers_filters_sorts_and_caps(self):
-        rows = [
-            _row("m20", prospect_rank=20, change=20),
-            _row("m15", prospect_rank=15, change=-15),
-            _row("m12", prospect_rank=12, change=12),
-            _row("m10", prospect_rank=10, change=10),
-            _row("m8", prospect_rank=8, change=-8),
-            _row("m7", prospect_rank=7, change=7),
-            _row("quiet", prospect_rank=2, change=4),
-            _row("deep", prospect_rank=201, change=99),
-        ]
-        movers = prospect_percentiles.top_movers(rows)
-        self.assertEqual([m["change"] for m in movers], [20, -15, 12, 10, -8])
-        self.assertEqual(len(movers), 5)
-        self.assertEqual(prospect_percentiles.top_movers([rows[-2], rows[-1]]), [])
+    def test_native_prospect_movers_strip_is_dd_free(self):
+        import json
+        import os
+        import tempfile
+        from pathlib import Path
+        import app as app_module
+
+        data = {
+            "rising": [
+                {"player_id": "vc_prospect_1_hitter", "name": "Riser A", "score_delta": 7.7},
+                {"player_id": "vc_prospect_2_hitter", "name": "Riser B", "score_delta": 3.1},
+            ],
+            "cooling": [
+                {"player_id": "vc_prospect_3_hitter", "name": "Faller C", "score_delta": -9.4},
+            ],
+        }
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump(data, fh)
+            path = Path(fh.name)
+        try:
+            strip = app_module._native_prospect_movers_strip(limit=2, path=path)
+        finally:
+            os.unlink(path)
+        # sorted by |score move| desc, capped at the limit
+        self.assertEqual([m["name"] for m in strip], ["Faller C", "Riser A"])
+        self.assertEqual([m["change"] for m in strip], [-9, 8])
+        self.assertEqual(strip[0]["id"], "vc_prospect_3_hitter")
 
     def test_identity_line_reads_like_scouting_not_rank_narration(self):
         hitter = _row(

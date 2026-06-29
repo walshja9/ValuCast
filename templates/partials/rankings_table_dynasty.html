@@ -8,7 +8,7 @@
 <p class="profile-note prospect-rerank-caption">Re-ranked for your league's categories ({{ prospect_preset_label }}) from ValuCast's factual prospect projections — within hitters and pitchers separately. Not a dollar value.</p>
 {% endif %}
 {% if mode == 'prospects' and prospect_movers %}
-<div class="movers-strip" aria-label="Biggest prospect rank movers">
+<div class="movers-strip" aria-label="Biggest prospect movers">
     <span class="movers-label">Movers</span>
     {% for m in prospect_movers %}
     <button type="button" class="mover-chip {{ 'up' if m.change > 0 else 'down' }}" onclick="moverJump('{{ m.id }}')">

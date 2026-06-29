@@ -340,6 +340,33 @@ VALUCAST_MOVERS_PATH = Path(os.environ.get(
     "VALUCAST_MOVERS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_prospect_movers.json"),
 ))
+
+
+def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
+    """Inline movers strip from the ValuCast-native movers board (no DD data).
+
+    Replaces the old DD breakout_rank_change widget; reads the denoised
+    valucast_prospect_movers.json and surfaces the biggest score moves
+    (risers + fallers), so the strip carries zero DD-sourced fields.
+    """
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    strip = []
+    for row in (data.get("rising") or []) + (data.get("cooling") or []):
+        delta = row.get("score_delta")
+        if not isinstance(delta, (int, float)) or not row.get("name"):
+            continue
+        strip.append({
+            "id": row.get("player_id") or row.get("id"),
+            "name": row.get("name"),
+            "change": int(round(delta)),
+        })
+    strip.sort(key=lambda m: (-abs(m["change"]), m["name"]))
+    return strip[:limit]
+
+
 legacy_dd_store = DDFeedStore(DD_FEED_PATH)
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
@@ -1021,7 +1048,7 @@ def _apply_prospect_board_context(ctx, args):
     ctx["horizon"] = "prospects"
     ctx["dyn_z_map"] = _dynasty_z_map()
     ctx["prospect_movers"] = (
-        prospect_percentiles.top_movers(dd_store.filter(player_type="prospect"))
+        _native_prospect_movers_strip()
         if not ctx.get("search") and not ctx.get("position") and not ctx.get("pool")
         else []
     )
