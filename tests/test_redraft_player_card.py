@@ -112,6 +112,30 @@ def test_dynasty_snapshot_identity_lookup_matches_mlbam_and_role():
     assert app_module._dynasty_snapshot_row_for("not-a-real-id", expected.role) is None
 
 
+def test_artifact_context_falls_back_from_pitcher_to_starter_role_tracker(monkeypatch):
+    def fake_load_artifact(path):
+        if str(path).endswith("valucast_playing_time_role_tracker.json"):
+            return {
+                "profiles": [
+                    {
+                        "identity_key": "123_starter",
+                        "mlbam_id": "123",
+                        "pool": "starter",
+                        "projected_role": "rotation_starter",
+                    }
+                ]
+            }
+        return {}
+
+    monkeypatch.setattr(app_module, "_load_artifact", fake_load_artifact)
+
+    context = app_module._artifact_context_for_row(
+        SimpleNamespace(mlbam_id="123", role="pitcher")
+    )
+
+    assert context["role_profile"]["projected_role"] == "rotation_starter"
+
+
 def test_redraft_context_joins_dynasty_age_for_matched_player():
     player_id = _first_redraft_player_id_with_dynasty_match()
 

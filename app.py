@@ -61,7 +61,7 @@ from prospects.availability import LEVEL_ORDER
 from prospects.availability import eta_window as prospect_eta_window
 from prospects.availability import eta_window_label
 from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
-from scouting.mlb_read import build_mlb_scouting_read
+from scouting.mlb_read import build_mlb_scouting_read, stat_line_stats
 
 app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
@@ -2937,6 +2937,10 @@ def _dynasty_card_read(row, context):
         sentences.append(profile)
 
     status = _availability_status_sentence(role_profile)
+    if not role_bits and not profile and not status:
+        projection = _dynasty_projection_stat_read(row)
+        if projection:
+            sentences.append(projection)
     if status:
         sentences.append(status)
 
@@ -2949,6 +2953,17 @@ def _dynasty_card_read(row, context):
             f"{value:.1f} long-term value, framed against current MLB role and skills."
         )
     return f"{row.name} is evaluated through ValuCast's dynasty lens against current MLB context."
+
+
+def _dynasty_projection_stat_read(row):
+    stats = stat_line_stats(getattr(row, "stat_line", None))
+    if not stats:
+        return None
+    role = str(getattr(row, "role", "") or "").strip().lower()
+    if role not in {"hitter", "pitcher"}:
+        positions = set(getattr(row, "positions", ()) or ())
+        role = "pitcher" if positions and positions <= {"P", "SP", "RP"} else "hitter"
+    return build_mlb_scouting_read(SimpleNamespace(role=role), None, stats)
 
 
 def _dynasty_category_card_items(context):
@@ -3101,6 +3116,7 @@ def _player_value_card_png(row, context, mode):
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
     fields = _card_value_fields(mode, row, context)
+    statcast_items = _dynasty_statcast_card_items(context)
 
     _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"])
 
@@ -3109,7 +3125,8 @@ def _player_value_card_png(row, context, mode):
     draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 610), fill=text, font=name_font)
     meta = fields["meta"]
     draw.text((76, 314), _graphic_fit_text(draw, meta, _graphic_font(22, mono=True), 610), fill=muted, font=_graphic_font(22, mono=True))
-    draw.text((76, 350), "vs MLB Statcast", fill=muted, font=_graphic_font(18, mono=True))
+    if statcast_items:
+        draw.text((76, 350), "vs MLB Statcast", fill=muted, font=_graphic_font(18, mono=True))
 
     draw.rounded_rectangle((760, 244, 1002, 402), radius=8, fill=(14, 29, 30), outline=(20, 59, 55), width=1)
     draw.text((780, 262), "VALUCAST VALUE", fill=muted, font=_graphic_font(13, bold=True))
@@ -3133,18 +3150,15 @@ def _player_value_card_png(row, context, mode):
     for idx, note in enumerate(value_notes[:2]):
         draw.text((780, note_y + idx * 20), _graphic_fit_text(draw, note, _graphic_font(15, bold=True), 198), fill=muted, font=_graphic_font(15, bold=True))
 
-    # MLB Statcast bars
-    statcast_items = _dynasty_statcast_card_items(context)
-    draw.rounded_rectangle((48, 438, 1032, 794), radius=10, fill=card, outline=border, width=1)
-    heading = "MLB STATCAST PERCENTILES"
-    asof = context.get("statcast_asof")
-    if asof:
-        heading = f"{heading} - {asof}"
-    draw.text((74, 468), _graphic_fit_text(draw, heading, _graphic_font(20, bold=True), 900), fill=muted, font=_graphic_font(20, bold=True))
-    draw.text((74, 500), "100 = best against MLB league percentile baselines.", fill=muted, font=_graphic_font(17, bold=True))
-
     y = 542
     if statcast_items:
+        draw.rounded_rectangle((48, 438, 1032, 794), radius=10, fill=card, outline=border, width=1)
+        heading = "MLB STATCAST PERCENTILES"
+        asof = context.get("statcast_asof")
+        if asof:
+            heading = f"{heading} - {asof}"
+        draw.text((74, 468), _graphic_fit_text(draw, heading, _graphic_font(20, bold=True), 900), fill=muted, font=_graphic_font(20, bold=True))
+        draw.text((74, 500), "100 = best against MLB league percentile baselines.", fill=muted, font=_graphic_font(17, bold=True))
         for item in statcast_items[:6]:
             pct = int(item["percentile"])
             label = item["label"]
@@ -3159,32 +3173,36 @@ def _player_value_card_png(row, context, mode):
             draw.text((knob_x - 10, y0 - 2), str(pct), fill=text, font=_graphic_font(14, bold=True))
             draw.text((820, y + 1), _graphic_fit_text(draw, value or "-", _graphic_font(20, bold=True, mono=True), 158), fill=text, font=_graphic_font(20, bold=True, mono=True))
             y += 43
-    else:
-        draw.text((74, 560), "No current MLB Statcast percentile card is available for this row.", fill=muted, font=_graphic_font(22))
 
     category_items = _dynasty_category_card_items(context)
-    read_y0 = 824
-    read_y1 = 1120 if category_items else 1238
+    read_y0 = 824 if statcast_items else 438
+    read_font = _graphic_font(24 if not category_items else 22)
+    read_lines = _graphic_wrap_read_text(draw, fields["read_text"], read_font, 890, max_lines=5)
+    if statcast_items:
+        read_y1 = 1120 if category_items else 1238
+        category_y0, category_y1 = 1146, 1238
+    else:
+        read_y1 = min(1238, read_y0 + 104 + len(read_lines) * 32)
+        category_y0, category_y1 = read_y1 + 26, read_y1 + 118
     draw.rounded_rectangle((48, read_y0, 1032, read_y1), radius=10, fill=card, outline=border, width=1)
     draw.text((74, read_y0 + 30), fields["read_label"], fill=muted, font=_graphic_font(20, bold=True))
-    read_font = _graphic_font(24 if not category_items else 22)
-    for idx, line in enumerate(_graphic_wrap_read_text(draw, fields["read_text"], read_font, 890, max_lines=5)):
+    for idx, line in enumerate(read_lines):
         draw.text((74, read_y0 + 72 + idx * 32), line, fill=text, font=read_font)
 
     if category_items:
-        draw.rounded_rectangle((48, 1146, 1032, 1238), radius=10, fill=card, outline=border, width=1)
+        draw.rounded_rectangle((48, category_y0, 1032, category_y1), radius=10, fill=card, outline=border, width=1)
         summary = fields["category_summary"]
         title = "CATEGORY BREAKDOWN (z-SCORE)"
         if summary:
             title = f"{title} - {summary}"
-        draw.text((74, 1162), _graphic_fit_text(draw, title, _graphic_font(16, bold=True), 890), fill=muted, font=_graphic_font(16, bold=True))
+        draw.text((74, category_y0 + 16), _graphic_fit_text(draw, title, _graphic_font(16, bold=True), 890), fill=muted, font=_graphic_font(16, bold=True))
         for idx, item in enumerate(category_items[:4]):
             x = 74 + idx * 235
             z = float(item["z"] or 0)
             z_color = green if z > 0 else bar_low if z < 0 else text
-            draw.rounded_rectangle((x, 1186, x + 205, 1232), radius=8, fill=card_2, outline=(44, 46, 54), width=1)
-            draw.text((x + 14, 1191), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
-            draw.text((x + 14, 1208), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
+            draw.rounded_rectangle((x, category_y0 + 40, x + 205, category_y0 + 86), radius=8, fill=card_2, outline=(44, 46, 54), width=1)
+            draw.text((x + 14, category_y0 + 45), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
+            draw.text((x + 14, category_y0 + 62), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
 
     _graphic_footer(draw, right_note=fields["footer_note"])
 
@@ -4215,6 +4233,22 @@ def _indexed_artifact_rows(payload: dict | None, rows_key: str) -> dict[str, dic
     return indexed
 
 
+def _role_tracker_profile_for_row(indexed: dict[str, dict], row) -> dict | None:
+    mlbam_id = getattr(row, "mlbam_id", None)
+    role = str(getattr(row, "role", "") or "").strip().lower()
+    if role == "pitcher":
+        roles = ("pitcher", "starter", "reliever")
+    elif role == "two_way":
+        roles = ("hitter", "pitcher")
+    else:
+        roles = (role,)
+    for profile_role in roles:
+        profile = indexed.get(_identity_key(mlbam_id, profile_role))
+        if profile:
+            return profile
+    return None
+
+
 def _artifact_context_for_row(row) -> dict:
     key = _row_identity_key(row)
     if not key:
@@ -4237,9 +4271,10 @@ def _artifact_context_for_row(row) -> dict:
     card_data_status = _indexed_artifact_rows(
         _load_artifact(root / "valucast_prospect_card_data_audit.json"), "cards"
     ).get(key)
-    role_profile = _indexed_artifact_rows(
+    role_profiles = _indexed_artifact_rows(
         _load_artifact(root / "valucast_playing_time_role_tracker.json"), "profiles"
-    ).get(key)
+    )
+    role_profile = _role_tracker_profile_for_row(role_profiles, row)
     if role_profile:
         role_profile = dict(role_profile)
         role_profile["projected_role_label"] = _format_context_label(

@@ -765,6 +765,24 @@ class TestValueCardReads(unittest.TestCase):
         )
         self.assertNotIn("A SP.", read)
 
+    def test_dynasty_card_read_uses_projection_line_when_context_is_empty(self):
+        row = _row(
+            "keys",
+            name="Sean Keys",
+            player_type="mlb",
+            positions=["1B"],
+            prospect_rank=830,
+            dynasty_value=21.7,
+            stat_line={"avg": 0.285, "obp": 0.411, "ops": 0.992, "pa": 209},
+        )
+
+        read = app_module._dynasty_card_read(row, {"role_profile": {}})
+
+        self.assertIn("Sean Keys: 1B, #830 on the dynasty board at 21.7.", read)
+        self.assertIn("the read leans on the projection", read)
+        self.assertIn(".285 AVG", read)
+        self.assertIn("209 PA", read)
+
     def test_dynasty_statcast_phrase_varies_without_label_fallbacks(self):
         phrase = app_module._statcast_profile_phrase(
             [
