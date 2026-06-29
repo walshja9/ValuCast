@@ -188,6 +188,7 @@ statcast = StatcastStore()
 fg_fv = FgFvStore()
 
 _PITCHER_POOLS = (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER)
+REDRAFT_PITCHER_ANCHOR = 0.92  # demote the pitcher tier on the redraft board, mirroring dynasty's PITCHER_PRODUCTION_ANCHOR
 
 
 def _card_extras(name, pool, metadata):
@@ -683,8 +684,7 @@ def _dynasty_z_map():
         mode="categories", cats=list(FIT_CATS), pcats=list(FIT_PCATS),
         rules_str="", pt_params=None, split_rp=False, weights=None,
     )
-    results = _merge_two_way_players(
-        engine.value_players(_valuation_players(active_store=store), config))
+    results = _redraft_value_players(_valuation_players(active_store=store), config)
     by_id = {}
     for res in results:
         by_id[res.player.id] = res
@@ -803,9 +803,7 @@ def _dynasty_category_summary(cats, pcats):
 def _custom_dynasty_values(cats, pcats, teams, budget):
     """Feed-row id -> this-season auction dollars for a custom category tuple."""
     config = build_config(mode="categories", cats=list(cats), pcats=list(pcats))
-    results = _merge_two_way_players(
-        engine.value_players(_valuation_players(active_store=store), config)
-    )
+    results = _redraft_value_players(_valuation_players(active_store=store), config)
     dollars = _compute_dollar_values(results, num_teams=teams, budget=budget)
     result_by_projection_id = {}
     for result in results:
@@ -3324,6 +3322,21 @@ def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResu
     return sorted(merged, key=lambda r: r.total_value, reverse=True)
 
 
+def _apply_redraft_pitcher_anchor(results: list[ValuationResult]) -> list[ValuationResult]:
+    return [
+        dc_replace(result, total_value=result.total_value * REDRAFT_PITCHER_ANCHOR)
+        if result.player.pool in _PITCHER_POOLS and result.total_value > 0
+        else result
+        for result in results
+    ]
+
+
+def _redraft_value_players(players, config) -> list[ValuationResult]:
+    return _apply_redraft_pitcher_anchor(
+        _merge_two_way_players(engine.value_players(players, config))
+    )
+
+
 def _redraft_value_scale(results: list[ValuationResult]) -> tuple[float, float]:
     values = [
         float(result.total_value)
@@ -3500,9 +3513,7 @@ def _build_context(args):
     # Value the canonical universe (search/filter-independent) so display metadata is
     # stable. A search may surface sub-threshold players for DISPLAY only; it must not
     # change the pool the metadata is computed on.
-    all_results = _merge_two_way_players(
-        engine.value_players(_valuation_players(active_store=active), config)
-    )
+    all_results = _redraft_value_players(_valuation_players(active_store=active), config)
     all_results.sort(key=lambda r: r.total_value, reverse=True)
     redraft_value_scale = _redraft_value_scale(all_results)
 
@@ -3535,10 +3546,8 @@ def _build_context(args):
             # Sub-threshold name match: value it on demand for display (no metadata).
             search_keep = {p.id for p in active.get_all() if query in p.name.lower()}
             if search_keep:
-                extra = _merge_two_way_players(
-                    engine.value_players(
-                        _valuation_players(search_keep, active_store=active), config
-                    )
+                extra = _redraft_value_players(
+                    _valuation_players(search_keep, active_store=active), config
                 )
                 results = [r for r in extra if query in r.player.name.lower()]
 
@@ -6273,10 +6282,7 @@ def _build_dynasty_player_detail_context(player_id, args):
             pcats=dyn_pcats or ["K"], rules_str="",
             pt_params=None, split_rp=False, weights=None,
         )
-        detail_results = _merge_two_way_players(
-            engine.value_players(
-                _valuation_players(active_store=store), config)
-        )
+        detail_results = _redraft_value_players(_valuation_players(active_store=store), config)
         ids = {m.id for m in matches}
         ids |= {m.metadata.get("base_id") or m.id for m in matches}
         dyn_result = next(
@@ -6350,9 +6356,7 @@ def player_detail(player_id):
     # Value the canonical universe (no on-demand force-keep) so the detail value matches
     # the board exactly. A below-floor player isn't in the canonical set -> result None,
     # and the template shows the projection without a (non-canonical) value.
-    detail_results = _merge_two_way_players(
-        engine.value_players(_valuation_players(active_store=active), config)
-    )
+    detail_results = _redraft_value_players(_valuation_players(active_store=active), config)
     result = next((r for r in detail_results if r.player.id == player_id), None)
     base_id = player_proj.metadata.get("base_id") or player_proj.id
     siblings = [
@@ -6398,9 +6402,8 @@ def compare():
     ctx = _build_context(request.args)
     config = ctx["config"]
     # Use canonical results so compare matches the board (not an on-demand mini-pool).
-    all_results = _merge_two_way_players(
-        engine.value_players(
-            _valuation_players(active_store=ctx["active_store"]), config)
+    all_results = _redraft_value_players(
+        _valuation_players(active_store=ctx["active_store"]), config
     )
 
     r1 = next((r for r in all_results if r.player.id == p1_id), None)
@@ -6669,9 +6672,7 @@ def _build_redraft_player_card_context(player_id, args):
         return None, 404
 
     config = ctx["config"]
-    detail_results = _merge_two_way_players(
-        engine.value_players(_valuation_players(active_store=active), config)
-    )
+    detail_results = _redraft_value_players(_valuation_players(active_store=active), config)
     result = next((r for r in detail_results if r.player.id == player_id), None)
     card_ctx = dict(ctx)
     card_ctx.update(_card_extras(player.name, player.pool, player.metadata))

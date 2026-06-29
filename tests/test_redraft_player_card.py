@@ -26,11 +26,9 @@ def _first_redraft_player_id(role: str) -> str:
 
 def _redraft_results():
     ctx = app_module._build_context(MultiDict())
-    return app_module._merge_two_way_players(
-        app_module.engine.value_players(
-            app_module._valuation_players(active_store=ctx["active_store"]),
-            ctx["config"],
-        )
+    return app_module._redraft_value_players(
+        app_module._valuation_players(active_store=ctx["active_store"]),
+        ctx["config"],
     )
 
 

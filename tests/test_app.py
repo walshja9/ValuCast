@@ -955,6 +955,127 @@ class TestComputeTiers(unittest.TestCase):
         self.assertEqual(len(tiers), 2)
 
 
+class TestRedraftPitcherAnchor(unittest.TestCase):
+    def _result(self, player_id, name, pool, total_value, positions=(), metadata=None):
+        from league_values.models import PlayerProjection, ValuationResult
+
+        return ValuationResult(
+            player=PlayerProjection.from_dict({
+                "id": player_id,
+                "name": name,
+                "pool": pool,
+                "positions": positions,
+                "stats": {},
+                "metadata": metadata or {},
+            }),
+            total_value=total_value,
+            raw_values={"K": 1.0},
+            z_scores={"K": 2.0},
+            category_values={"K": 3.0},
+        )
+
+    def test_apply_redraft_pitcher_anchor_only_demotes_positive_pitchers(self):
+        positive_pitcher = self._result("p1", "Positive Pitcher", "pitcher", 10.0)
+        negative_pitcher = self._result("p2", "Negative Pitcher", "pitcher", -6.0)
+        hitter = self._result("h1", "Hitter", "hitter", 10.0)
+
+        anchored = app_module._apply_redraft_pitcher_anchor(
+            [positive_pitcher, negative_pitcher, hitter]
+        )
+
+        self.assertAlmostEqual(anchored[0].total_value, 9.2)
+        self.assertIs(anchored[0].category_values, positive_pitcher.category_values)
+        self.assertIs(anchored[0].z_scores, positive_pitcher.z_scores)
+        self.assertIs(anchored[1], negative_pitcher)
+        self.assertIs(anchored[2], hitter)
+
+    def test_redraft_board_anchor_can_move_comparable_hitter_above_pitcher(self):
+        from league_values.models import PlayerProjection
+        from werkzeug.datastructures import ImmutableMultiDict
+
+        players = [
+            PlayerProjection.from_dict({
+                "id": "elite-hitter",
+                "name": "Elite Hitter",
+                "pool": "hitter",
+                "positions": ("OF",),
+                "stats": {"PA": 550, "HR": 45},
+            }),
+            PlayerProjection.from_dict({
+                "id": "floor-hitter",
+                "name": "Floor Hitter",
+                "pool": "hitter",
+                "positions": ("OF",),
+                "stats": {"PA": 550, "HR": 0},
+            }),
+            PlayerProjection.from_dict({
+                "id": "elite-pitcher",
+                "name": "Elite Pitcher",
+                "pool": "pitcher",
+                "positions": ("SP",),
+                "stats": {"IP": 180, "K": 205},
+            }),
+            PlayerProjection.from_dict({
+                "id": "floor-pitcher",
+                "name": "Floor Pitcher",
+                "pool": "pitcher",
+                "positions": ("SP",),
+                "stats": {"IP": 180, "K": 0},
+            }),
+        ]
+
+        class FakeStore:
+            player_count = len(players)
+            as_of = "test"
+
+            def get_all(self):
+                return players
+
+        args = ImmutableMultiDict([
+            ("cats", "HR"),
+            ("pcats", "K"),
+            ("w_K", "1.05"),
+        ])
+        with patch.object(app_module, "_active_store", return_value=FakeStore()):
+            ctx = app_module._build_context(args)
+
+        raw_results = app_module._merge_two_way_players(
+            app_module.engine.value_players(players, ctx["config"])
+        )
+        raw_pitcher = next(r for r in raw_results if r.player.id == "elite-pitcher")
+        raw_hitter = next(r for r in raw_results if r.player.id == "elite-hitter")
+        anchored_pitcher = next(
+            r for r in ctx["results"] if r.player.id == "elite-pitcher"
+        )
+        anchored_hitter = next(
+            r for r in ctx["results"] if r.player.id == "elite-hitter"
+        )
+
+        self.assertGreater(raw_pitcher.total_value, raw_hitter.total_value)
+        self.assertLess(anchored_pitcher.total_value, raw_pitcher.total_value)
+        self.assertGreaterEqual(anchored_hitter.total_value, anchored_pitcher.total_value)
+        self.assertLessEqual(
+            ctx["overall_ranks"]["elite-hitter"],
+            ctx["overall_ranks"]["elite-pitcher"],
+        )
+
+    def test_redraft_value_players_merges_two_way_before_anchor(self):
+        hitter = self._result(
+            "shohei_H", "Shohei", "hitter", 10.0, metadata={"base_id": "shohei"}
+        )
+        pitcher = self._result(
+            "shohei_P", "Shohei", "pitcher", 5.0,
+            positions=("SP",), metadata={"base_id": "shohei"}
+        )
+
+        with patch.object(app_module.engine, "value_players", return_value=[pitcher, hitter]):
+            results = app_module._redraft_value_players([], object())
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].player.pool, app_module.PlayerPool.HITTER)
+        self.assertAlmostEqual(results[0].total_value, 15.0)
+
+
 class TestPlayingTimeFilter(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
@@ -997,17 +1118,15 @@ class TestPlayingTimeFilter(unittest.TestCase):
 
     def test_two_way_detail_value_matches_ranking(self):
         # Ohtani (19755) is two-way; detail/compare must merge like the ranking.
-        from app import _merge_two_way_players, engine, _valuation_players
+        from app import _redraft_value_players, _valuation_players
         from web.config_builder import build_config
         cfg = build_config(
             mode="categories", cats=None, pcats=None, rules_str="",
             pt_params=None, split_rp=False, weights=None,
         )
-        ranking = _merge_two_way_players(engine.value_players(_valuation_players(), cfg))
+        ranking = _redraft_value_players(_valuation_players(), cfg)
         rank_val = next(r.total_value for r in ranking if r.player.id == "19755")
-        detail = _merge_two_way_players(
-            engine.value_players(_valuation_players({"19755"}), cfg)
-        )
+        detail = _redraft_value_players(_valuation_players({"19755"}), cfg)
         detail_val = next(r.total_value for r in detail if r.player.id == "19755")
         self.assertAlmostEqual(rank_val, detail_val, places=6)
 
