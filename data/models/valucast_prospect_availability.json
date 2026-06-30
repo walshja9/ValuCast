@@ -19120,15 +19120,15 @@
     {
       "active_row_count": 1,
       "age": 28,
-      "availability_note": "Tampa Bay Rays placed LF Gavin Lux on the 60-day injured list. Right shoulder impingement.",
+      "availability_note": "thin upper level hitter sample under 100 pa",
       "level": "AAA",
       "mlbam_id": 666158,
       "name": "Gavin Lux",
       "normalized_name": "gavin lux",
       "present": true,
-      "risk_basis": "official_mlb_il",
-      "risk_discount": 0.3,
-      "risk_level": "high",
+      "risk_basis": "current_sample_size",
+      "risk_discount": 0.05,
+      "risk_level": "medium",
       "role": "hitter",
       "row_count": 1,
       "sample": 90.0,
@@ -19136,10 +19136,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "official_mlb_il_override"
+        "thin_upper_level_hitter_sample_under_100_pa"
       ],
       "source_kind": "current_season",
-      "status": "injured",
+      "status": "thin_current_sample",
       "team": "Durham Bulls"
     },
     {
@@ -116775,17 +116775,17 @@
   "summary": {
     "profile_count": 4927,
     "risk_basis_counts": {
-      "current_sample_size": 1532,
+      "current_sample_size": 1533,
       "manual_override": 3,
       "none": 3228,
-      "official_mlb_il": 74,
+      "official_mlb_il": 73,
       "sample_staleness": 72,
       "upstream_factual_status": 18
     },
     "risk_level_counts": {
       "clear": 3228,
-      "high": 167,
-      "medium": 1532
+      "high": 166,
+      "medium": 1533
     },
     "risk_profile_count": 1699,
     "signal_counts": {
@@ -116793,17 +116793,17 @@
       "limited_upper_level_hitter_sample_under_150_pa": 164,
       "limited_upper_level_starter_workload_under_45_ip": 197,
       "manual_status_override": 3,
-      "official_mlb_il_override": 74,
+      "official_mlb_il_override": 73,
       "prior_season_sample": 74,
       "thin_pitcher_workload_under_12_ip": 473,
       "thin_starter_workload_under_30_ip": 436,
-      "thin_upper_level_hitter_sample_under_100_pa": 296
+      "thin_upper_level_hitter_sample_under_100_pa": 297
     },
     "status_counts": {
       "available": 3228,
-      "injured": 95,
+      "injured": 94,
       "stale_or_inactive": 72,
-      "thin_current_sample": 1532
+      "thin_current_sample": 1533
     },
     "top_risk_profiles": [
       {
@@ -116839,23 +116839,6 @@
         ],
         "status": "injured",
         "team": "Las Vegas Aviators"
-      },
-      {
-        "availability_note": "Tampa Bay Rays placed LF Gavin Lux on the 60-day injured list. Right shoulder impingement.",
-        "level": "AAA",
-        "mlbam_id": 666158,
-        "name": "Gavin Lux",
-        "risk_basis": "official_mlb_il",
-        "risk_discount": 0.3,
-        "risk_level": "high",
-        "role": "hitter",
-        "sample": 90.0,
-        "sample_unit": "PA",
-        "signals": [
-          "official_mlb_il_override"
-        ],
-        "status": "injured",
-        "team": "Durham Bulls"
       },
       {
         "availability_note": "Texas Rangers transferred CF Michael Helman from the 10-day injured list to the 60-day injured list. Right finger fracture.",
@@ -117231,6 +117214,23 @@
         ],
         "status": "injured",
         "team": "Birmingham Barons"
+      },
+      {
+        "availability_note": "Tampa Bay Rays placed RHP Edwin Uceta on the 60-day injured list. Right shoulder impingement.",
+        "level": "AAA",
+        "mlbam_id": 670955,
+        "name": "Edwin Uceta",
+        "risk_basis": "official_mlb_il",
+        "risk_discount": 0.3,
+        "risk_level": "high",
+        "role": "pitcher",
+        "sample": 4.3,
+        "sample_unit": "IP",
+        "signals": [
+          "official_mlb_il_override"
+        ],
+        "status": "injured",
+        "team": "Durham Bulls"
       }
     ]
   },

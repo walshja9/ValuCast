@@ -102886,17 +102886,17 @@
         "age_source": "valucast_identity_birth_date",
         "availability": {
           "active_injury_risk": true,
-          "effective_date": "2026-06-27",
+          "effective_date": "2026-06-30",
           "list_type": null,
-          "note": "Tampa Bay Rays sent RF Jake Fraley on a rehab assignment to FCL Rays.",
+          "note": "Tampa Bay Rays sent RF Jake Fraley on a rehab assignment to Durham Bulls.",
           "present": true,
           "risk_discount": 0.04,
           "risk_level": "medium",
           "score_before_availability_adjustment": 11.38,
           "source": "official_mlb_statsapi_transactions",
           "status": "rehab",
-          "transaction_date": "2026-06-27",
-          "transaction_id": 923035
+          "transaction_date": "2026-06-30",
+          "transaction_id": 923571
         },
         "availability_adjusted": true,
         "availability_risk_discount": 0.04,
@@ -122080,6 +122080,176 @@
         "age_adjustment_status": "applied",
         "age_source": "valucast_identity_birth_date",
         "availability": {
+          "active_injury_risk": true,
+          "effective_date": "2026-06-30",
+          "list_type": null,
+          "note": "Tampa Bay Rays sent LF Gavin Lux on a rehab assignment to Durham Bulls.",
+          "present": true,
+          "risk_discount": 0.04,
+          "risk_level": "medium",
+          "score_before_availability_adjustment": 8.87,
+          "source": "official_mlb_statsapi_transactions",
+          "status": "rehab",
+          "transaction_date": "2026-06-30",
+          "transaction_id": 923569
+        },
+        "availability_adjusted": true,
+        "availability_risk_discount": 0.04,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 6.72,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -1.274,
+        "horizon_years": [
+          {
+            "age": 28,
+            "age_factor": 1.0,
+            "projected_value": -1.8864,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 29,
+            "age_factor": 0.9193,
+            "projected_value": -0.9538,
+            "reliability_factor": 0.55,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 30,
+            "age_factor": 0.8386,
+            "projected_value": -0.4785,
+            "reliability_factor": 0.3025,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 49.73,
+        "production_score": 6.72,
+        "projection_stability": {
+          "current_season_category_value": -1.8864,
+          "ros_category_value": null,
+          "ros_stability_weight": 0.0,
+          "ros_true_talent_annualization_scale": null,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -1.8864,
+          "stability_adjustment": 0.0,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 8.87,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 66.82,
+          "track_record_experience_band": "established",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": 48.45,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "score_before_availability_adjustment": 8.87,
+        "season_category_value": -1.8864,
+        "track_record": {
+          "experience_band": "established",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 66.82,
+          "track_record_floor_score": 48.45,
+          "volume": {
+            "career": 1993.0,
+            "current_season": 0.0,
+            "prior_mlb": 1993.0,
+            "recent_3yr_prior": 990.0
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "RBI -1.22",
+        "R -1.21",
+        "HR -1.10",
+        "SB -0.77",
+        "playing time reliability 50"
+      ],
+      "dynasty_horizon_value": -1.274,
+      "id": "vc_mlb_666158_hitter",
+      "mlb_team": "TBR",
+      "mlbam_id": 666158,
+      "name": "Gavin Lux",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "2B"
+      ],
+      "projection_value": -1.8864,
+      "rank": 754,
+      "role": "hitter",
+      "score": 8.52,
+      "stat_line": {
+        "category_values": {
+          "AVG": -0.0565,
+          "ERA": 0.0,
+          "HR": -1.096,
+          "K": 0.0,
+          "R": -1.2096,
+          "RBI": -1.2249,
+          "SB": -0.7689,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.242,
+          "ERA": null,
+          "HR": 1.998,
+          "K": null,
+          "R": 15.142,
+          "RBI": 13.606,
+          "SB": 0.887,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.242,
+          "HR": 1.998,
+          "OBP": 0.331,
+          "OPS": 0.682,
+          "PA": 148.415,
+          "R": 15.142,
+          "RBI": 13.606,
+          "SB": 0.887
+        }
+      },
+      "team": "TBR",
+      "value": 8.52,
+      "value_by_preset": {
+        "5x5": 8.52,
+        "6x6": 9.21,
+        "7x7": 12.73,
+        "7x7_ops": 12.01,
+        "obp": 8.13,
+        "points": 2.39,
+        "sv_hld": 8.53
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
+      "age": 28,
+      "components": {
+        "age_adjustment": 1.1567,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
           "present": false
         },
         "availability_adjusted": false,
@@ -122178,7 +122348,7 @@
         "OF"
       ],
       "projection_value": -2.0194,
-      "rank": 754,
+      "rank": 755,
       "role": "hitter",
       "score": 8.5,
       "stat_line": {
@@ -122349,7 +122519,7 @@
         "RP"
       ],
       "projection_value": -1.7372,
-      "rank": 755,
+      "rank": 756,
       "role": "pitcher",
       "score": 8.5,
       "stat_line": {
@@ -122508,7 +122678,7 @@
         "SS"
       ],
       "projection_value": -1.9686,
-      "rank": 756,
+      "rank": 757,
       "role": "hitter",
       "score": 8.5,
       "stat_line": {
@@ -122667,7 +122837,7 @@
         "3B"
       ],
       "projection_value": -2.0481,
-      "rank": 757,
+      "rank": 758,
       "role": "hitter",
       "score": 8.39,
       "stat_line": {
@@ -122825,7 +122995,7 @@
         "OF"
       ],
       "projection_value": -1.905,
-      "rank": 758,
+      "rank": 759,
       "role": "hitter",
       "score": 8.39,
       "stat_line": {
@@ -122983,7 +123153,7 @@
         "RP"
       ],
       "projection_value": -1.9456,
-      "rank": 759,
+      "rank": 760,
       "role": "pitcher",
       "score": 8.38,
       "stat_line": {
@@ -123141,7 +123311,7 @@
         "RP"
       ],
       "projection_value": -1.952,
-      "rank": 760,
+      "rank": 761,
       "role": "pitcher",
       "score": 8.35,
       "stat_line": {
@@ -123299,7 +123469,7 @@
         "RP"
       ],
       "projection_value": -1.9373,
-      "rank": 761,
+      "rank": 762,
       "role": "pitcher",
       "score": 8.35,
       "stat_line": {
@@ -123458,7 +123628,7 @@
         "3B"
       ],
       "projection_value": -1.9256,
-      "rank": 762,
+      "rank": 763,
       "role": "hitter",
       "score": 8.34,
       "stat_line": {
@@ -123616,7 +123786,7 @@
         "C"
       ],
       "projection_value": -2.1384,
-      "rank": 763,
+      "rank": 764,
       "role": "hitter",
       "score": 8.34,
       "stat_line": {
@@ -123774,7 +123944,7 @@
         "RP"
       ],
       "projection_value": -1.9646,
-      "rank": 764,
+      "rank": 765,
       "role": "pitcher",
       "score": 8.34,
       "stat_line": {
@@ -123932,7 +124102,7 @@
         "RP"
       ],
       "projection_value": -1.9677,
-      "rank": 765,
+      "rank": 766,
       "role": "pitcher",
       "score": 8.33,
       "stat_line": {
@@ -124090,7 +124260,7 @@
         "RP"
       ],
       "projection_value": -1.9829,
-      "rank": 766,
+      "rank": 767,
       "role": "pitcher",
       "score": 8.3,
       "stat_line": {
@@ -124258,7 +124428,7 @@
         "OF"
       ],
       "projection_value": -2.0828,
-      "rank": 767,
+      "rank": 768,
       "role": "hitter",
       "score": 8.25,
       "stat_line": {
@@ -124417,7 +124587,7 @@
         "RP"
       ],
       "projection_value": -1.9896,
-      "rank": 768,
+      "rank": 769,
       "role": "pitcher",
       "score": 8.25,
       "stat_line": {
@@ -124575,7 +124745,7 @@
         "RP"
       ],
       "projection_value": -2.0034,
-      "rank": 769,
+      "rank": 770,
       "role": "pitcher",
       "score": 8.22,
       "stat_line": {
@@ -124733,7 +124903,7 @@
         "RP"
       ],
       "projection_value": -1.9787,
-      "rank": 770,
+      "rank": 771,
       "role": "pitcher",
       "score": 8.22,
       "stat_line": {
@@ -124903,7 +125073,7 @@
         "RP"
       ],
       "projection_value": -1.6862,
-      "rank": 771,
+      "rank": 772,
       "role": "pitcher",
       "score": 8.21,
       "stat_line": {
@@ -125061,7 +125231,7 @@
         "RP"
       ],
       "projection_value": -1.9555,
-      "rank": 772,
+      "rank": 773,
       "role": "pitcher",
       "score": 8.21,
       "stat_line": {
@@ -125229,7 +125399,7 @@
         "C"
       ],
       "projection_value": -2.0913,
-      "rank": 773,
+      "rank": 774,
       "role": "hitter",
       "score": 8.16,
       "stat_line": {
@@ -125278,176 +125448,6 @@
         "7x7_ops": 10.97,
         "obp": 9.35,
         "points": 18.95,
-        "sv_hld": 8.17
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 28,
-      "components": {
-        "age_adjustment": 1.1567,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-05-27",
-          "list_type": "60-day injured list",
-          "note": "Tampa Bay Rays placed LF Gavin Lux on the 60-day injured list. Right shoulder impingement.",
-          "present": true,
-          "risk_discount": 0.08,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 8.87,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-05-27",
-          "transaction_id": 912142
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.08,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 6.72,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -1.274,
-        "horizon_years": [
-          {
-            "age": 28,
-            "age_factor": 1.0,
-            "projected_value": -1.8864,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 29,
-            "age_factor": 0.9193,
-            "projected_value": -0.9538,
-            "reliability_factor": 0.55,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 30,
-            "age_factor": 0.8386,
-            "projected_value": -0.4785,
-            "reliability_factor": 0.3025,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 49.73,
-        "production_score": 6.72,
-        "projection_stability": {
-          "current_season_category_value": -1.8864,
-          "ros_category_value": null,
-          "ros_stability_weight": 0.0,
-          "ros_true_talent_annualization_scale": null,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -1.8864,
-          "stability_adjustment": 0.0,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 8.87,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 66.82,
-          "track_record_experience_band": "established",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": 48.45,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 8.87,
-        "season_category_value": -1.8864,
-        "track_record": {
-          "experience_band": "established",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 66.82,
-          "track_record_floor_score": 48.45,
-          "volume": {
-            "career": 1993.0,
-            "current_season": 0.0,
-            "prior_mlb": 1993.0,
-            "recent_3yr_prior": 990.0
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "RBI -1.22",
-        "R -1.21",
-        "HR -1.10",
-        "SB -0.77",
-        "playing time reliability 50"
-      ],
-      "dynasty_horizon_value": -1.274,
-      "id": "vc_mlb_666158_hitter",
-      "mlb_team": "TBR",
-      "mlbam_id": 666158,
-      "name": "Gavin Lux",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "2B"
-      ],
-      "projection_value": -1.8864,
-      "rank": 774,
-      "role": "hitter",
-      "score": 8.16,
-      "stat_line": {
-        "category_values": {
-          "AVG": -0.0565,
-          "ERA": 0.0,
-          "HR": -1.096,
-          "K": 0.0,
-          "R": -1.2096,
-          "RBI": -1.2249,
-          "SB": -0.7689,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.242,
-          "ERA": null,
-          "HR": 1.998,
-          "K": null,
-          "R": 15.142,
-          "RBI": 13.606,
-          "SB": 0.887,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.242,
-          "HR": 1.998,
-          "OBP": 0.331,
-          "OPS": 0.682,
-          "PA": 148.415,
-          "R": 15.142,
-          "RBI": 13.606,
-          "SB": 0.887
-        }
-      },
-      "team": "TBR",
-      "value": 8.16,
-      "value_by_preset": {
-        "5x5": 8.16,
-        "6x6": 8.83,
-        "7x7": 12.2,
-        "7x7_ops": 11.51,
-        "obp": 7.79,
-        "points": 2.29,
         "sv_hld": 8.17
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",

@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_playing_time_role_tracker",
-  "generated_at": "2026-06-30T15:14:04.573992+00:00",
+  "generated_at": "2026-06-30T16:44:38.118428+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "availability_artifact": "valucast_mlb_availability",
@@ -26951,7 +26951,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "666158_hitter",
       "mlbam_id": "666158",
       "name": "Gavin Lux",
@@ -26977,7 +26977,7 @@
         "role_probability_source": "volume_fan",
         "signals": {
           "active_injury_risk": true,
-          "availability_risk_discount": 0.08,
+          "availability_risk_discount": 0.04,
           "dynasty_layer_matched": true,
           "experience_band": "established",
           "reliability": 49.73,
@@ -26987,9 +26987,9 @@
         "volume_forecast": {
           "base": 500.2,
           "basis": "projection_volume_shrunk_by_reliability_and_injury_risk",
-          "high": 523.7,
-          "low": 344.8,
-          "point": 460.2,
+          "high": 529.9,
+          "low": 361.7,
+          "point": 470.2,
           "unit": "PA"
         }
       },
@@ -83725,7 +83725,7 @@
       "active_injury_risk": true,
       "active_mlb_roster": false,
       "availability_source": "official_mlb_statsapi_transactions",
-      "availability_status": "injured",
+      "availability_status": "rehab",
       "identity_key": "669713_starter",
       "mlbam_id": "669713",
       "name": "Hayden Wesneski",
