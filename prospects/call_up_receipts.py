@@ -29,6 +29,13 @@ ARTIFACT_NAME = "valucast_call_up_receipts"
 SIGNAL_NAME = "ValuCast Call-Up Receipts"
 SIGNAL_VERSION = "0.1.0"
 
+# Call-ups to permanently drop from the board, by identity_key. The auto-scan re-reads
+# every dated rank archive each build, so a one-time delete from the artifact comes back —
+# the exclusion has to live in code. Kevin Alcántara (682634_hitter) reached MLB in late
+# May 2026, before ValuCast existed; his June AAA->MLB recall isn't an ahead-of-the-field
+# receipt (the field already had him as a big-leaguer), so it doesn't count.
+EXCLUDED_IDENTITY_KEYS = {"682634_hitter"}
+
 
 def _load_json(path: Path) -> dict:
     try:
@@ -355,8 +362,8 @@ def build_call_up_receipts(
             srow["seed"] = True
             by_key[srow["identity_key"]] = srow
             seed_count += 1
-    receipts = _sort_receipts(list(by_key.values()))
-    misses = _sort_misses(misses)
+    receipts = [r for r in _sort_receipts(list(by_key.values())) if r.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
+    misses = [m for m in _sort_misses(misses) if m.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
 
     blockers = []
     if len(archive_payloads) < 2:

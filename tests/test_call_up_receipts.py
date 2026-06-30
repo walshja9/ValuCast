@@ -113,6 +113,26 @@ def test_detect_misses_flags_call_ups_where_valucast_was_behind():
     assert not (set(hits) & set(misses))  # a player can't be both a hit and a miss
 
 
+def test_excluded_identity_keys_never_make_the_board_even_when_auto_detected():
+    from prospects import call_up_receipts as cur
+
+    # 682634 would auto-detect as a +N hit (board -> roster), but it's on the denylist.
+    archives = [
+        {"date": "2026-06-29", "board": [_rank_row(682634, "Excluded Guy", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-30", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 682634, "active_mlb_roster": True}]}
+
+    assert "682634_hitter" in cur.EXCLUDED_IDENTITY_KEYS
+    payload = cur.build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-06-30T00:00:00+00:00",
+    )
+    keys = [row["identity_key"] for row in payload["receipts"]] + [m["identity_key"] for m in payload["misses"]]
+    assert "682634_hitter" not in keys
+    assert payload["summary"]["receipt_count"] == 0
+
+
 def _rank_row(mlbam_id: int, name: str, rank: int, source_ranks: dict) -> dict:
     return {
         "mlbam_id": mlbam_id,
