@@ -1,0 +1,15 @@
+{% macro board_nav(active='', dd_available=true, aria='Board navigation') %}
+<nav class="horizon-tabs" aria-label="{{ aria }}">
+    <a href="/" class="htab{% if active == 'redraft' %} on{% endif %}"{% if active == 'redraft' %} aria-current="page"{% endif %}>Redraft</a>
+    {% if dd_available is not false %}
+    <a href="/?mode=dd_dynasty" class="htab htab-dynasty{% if active == 'dynasty' %} on{% endif %}"{% if active == 'dynasty' %} aria-current="page"{% endif %}>Dynasty</a>
+    <a href="/backfields" class="htab htab-prospects{% if active == 'backfields' %} on{% endif %}"{% if active == 'backfields' %} aria-current="page"{% endif %}>Backfields</a>
+    <a href="/map" class="htab{% if active == 'map' %} on{% endif %}"{% if active == 'map' %} aria-current="page"{% endif %}>Map</a>
+    <a href="/movers" class="htab{% if active == 'movers' %} on{% endif %}"{% if active == 'movers' %} aria-current="page"{% endif %}>Movers</a>
+    <a href="/receipts" class="htab{% if active == 'receipts' %} on{% endif %}"{% if active == 'receipts' %} aria-current="page"{% endif %}>Receipts</a>
+    {% if not aotc_hold %}
+    <a href="/buys" class="htab{% if active == 'buys' %} on{% endif %}"{% if active == 'buys' %} aria-current="page"{% endif %}>Buys</a>
+    {% endif %}
+    {% endif %}
+</nav>
+{% endmacro %}

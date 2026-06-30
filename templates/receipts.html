@@ -13,16 +13,8 @@
 
 {% block content %}
 {% from "partials/_editorial_date.html" import editorial_date %}
-<nav class="horizon-tabs" aria-label="Receipts board navigation">
-    <a href="/?mode=dd_dynasty" class="htab htab-dynasty">Dynasty</a>
-    <a href="/backfields" class="htab htab-prospects">Backfields</a>
-    <a href="/map" class="htab">Map</a>
-    <a href="/movers" class="htab">Movers</a>
-    <a href="/receipts" class="htab on" aria-current="page">Receipts</a>
-    {% if not aotc_hold %}
-    <a href="/buys" class="htab">Buys</a>
-    {% endif %}
-</nav>
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='receipts', aria='Receipts board navigation') }}
 
 <section class="buys-heading movers-heading glass">
     <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">

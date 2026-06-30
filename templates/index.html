@@ -2,6 +2,7 @@
 
 {% block content %}
 {% from "partials/_editorial_date.html" import editorial_date %}
+{% from "partials/_board_nav.html" import board_nav with context %}
 <form id="league-setup"
       hx-get="/rankings"
       hx-target="#rankings-container"
@@ -15,20 +16,7 @@
     <div class="notice">{{ notice }}</div>
     {% endif %}
 
-    <nav class="horizon-tabs" aria-label="Board horizon">
-        <a href="/" class="htab {{ 'on' if horizon == 'redraft' else '' }}"
-           {% if horizon == 'redraft' %}aria-current="page"{% endif %}>Redraft</a>
-        {% if dd_available is not false %}
-        <a href="/?mode=dd_dynasty" class="htab htab-dynasty {{ 'on' if horizon == 'dynasty' else '' }}"
-           {% if horizon == 'dynasty' %}aria-current="page"{% endif %}>Dynasty</a>
-        <a href="/backfields" class="htab htab-prospects">Backfields</a>
-        <a href="/movers" class="htab">Movers</a>
-        <a href="/receipts" class="htab">Receipts</a>
-        {% if not aotc_hold %}
-        <a href="/buys" class="htab">Buys</a>
-        {% endif %}
-        {% endif %}
-    </nav>
+    {{ board_nav(active=horizon, dd_available=dd_available, aria='Board horizon') }}
 
     {% if dd_generated_at %}
     <div class="freshness-badge" title="Board data last refreshed {{ editorial_date(dd_generated_at) }}">
