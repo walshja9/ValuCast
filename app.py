@@ -1323,7 +1323,9 @@ def _prospect_graphic_png(
         return name or "Unknown"
 
     def level_text(row):
-        return row.level or ("MLB" if row.status == "mlb" else "PRO")
+        # Prospects always carry a real minor-league level, so a missing level means MLB.
+        # (The old row.status check was dead here — dynasty rows are all "candidate_ready".)
+        return row.level or "MLB"
 
     def tag(row, *, age=False, compact=False):
         positions = "/".join(row.positions[:2]) if row.positions else "UT"
@@ -1468,7 +1470,7 @@ def _prospect_graphic_png(
 
             name_x = x + (68 if show_tag else 48)
             if show_tag:
-                tag_x = x + cell_w - 142
+                tag_x = x + cell_w - 170
                 # Bound the tag so it always stops short of the value (no overlap).
                 tag_text = fit_text(draw, tag(row, compact=True), tag_font, max(36, score_x - tag_x - 10))
                 draw.text((tag_x, text_y + 2), tag_text, fill=muted, font=tag_font)
