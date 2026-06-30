@@ -31,6 +31,7 @@
             {% endif %}
             <a href="#ahead-of-consensus">Early Calls</a>
             <a href="#call-up-desk">Call-Up Desk</a>
+            <a href="#got-the-call">Got the Call</a>
             <a href="#stats">Stats</a>
             <a href="#team-boards">Team Boards</a>
         </nav>
@@ -227,6 +228,42 @@
                 </div>
                 {% else %}
                 <p class="bf-empty">No AAA call-up candidates available.</p>
+                {% endif %}
+            </section>
+
+            <section id="got-the-call" class="bf-rail-card" aria-labelledby="bf-gotcall-title">
+                <div class="bf-card-head">
+                    <div>
+                        <h2 id="bf-gotcall-title">Got the Call</h2>
+                        <p>{{ recently_called_up_total }} rookie-eligible in the majors</p>
+                    </div>
+                    <span class="bf-live-dot" aria-hidden="true"></span>
+                </div>
+                {% if recently_called_up %}
+                <div class="bf-callup-list">
+                    {% for player in recently_called_up %}
+                    <article class="bf-callup-row">
+                        <div>
+                            <h3>{{ player.name }}</h3>
+                            <p>{{ player.flag }}</p>
+                            <p class="bf-callup-why">{{ player.why }}</p>
+                        </div>
+                        <span class="bf-callup-status">{{ player.status }}</span>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% if recently_called_up_more %}
+                <details class="bf-callup-more">
+                    <summary>See all {{ recently_called_up_total }} in the majors</summary>
+                    <ul class="bf-callup-more-list">
+                        {% for player in recently_called_up_more %}
+                        <li><span class="bf-callup-more-name">{{ player.name }}</span><span class="bf-callup-more-meta">{{ player.flag }} · {{ player.value }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endif %}
+                {% else %}
+                <p class="bf-empty">No recent call-ups available.</p>
                 {% endif %}
             </section>
 

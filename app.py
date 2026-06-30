@@ -5333,6 +5333,26 @@ def _build_backfields_page_context():
             "value": value,
         })
 
+    # "Got the Call" — the companion to the doorstep desk: rookie-eligible prospects who
+    # have already reached an MLB active roster (so they're off the ranked minors board).
+    # Top graduates show as cards; the rest fold into a "see all" dropdown so the rail
+    # stays compact while still accounting for everyone.
+    called_up_all = []
+    for r in _active_mlb_roster_rows():
+        positions = r.get("positions") or []
+        pos = "/".join(str(p) for p in positions[:2] if p) or "-"
+        team = r.get("mlb_team") or "-"
+        val = fmt_value(r.get("score"))
+        called_up_all.append({
+            "name": r.get("name") or "Unknown",
+            "flag": f"{team} · {pos}",
+            "why": f"Val {val} · rookie-eligible",
+            "status": "In the show",
+            "value": val,
+        })
+    recently_called_up = called_up_all[:8]
+    recently_called_up_more = called_up_all[8:]
+
     def leaders(rows, stat_key, label, *, high=True, value_format=fmt_value, limit=2):
         qualified = [
             row for row in rows
@@ -5476,6 +5496,9 @@ def _build_backfields_page_context():
         "rankings": rankings,
         "risers": risers,
         "callups": callups,
+        "recently_called_up": recently_called_up,
+        "recently_called_up_more": recently_called_up_more,
+        "recently_called_up_total": len(_active_mlb_roster_rows()),
         "stats": {
             "hitting": hitting_stats,
             "pitching": pitching_stats,
@@ -5527,6 +5550,57 @@ def _team_board_share_limit():
     if limit not in {10, 20}:
         abort(400)
     return limit
+
+
+_ACTIVE_ROSTER_ROWS = None
+
+
+def _active_mlb_roster_rows():
+    """Rookie-eligible prospects already on an MLB active roster — the 'Got the Call'
+    companion to the Call-Up Desk's 'knocking on the door'. Read once from the rank_v1
+    artifact's active_mlb_roster_board (display-only, no rebuild), sorted by value."""
+    global _ACTIVE_ROSTER_ROWS
+    if _ACTIVE_ROSTER_ROWS is None:
+        path = Path(__file__).parent / "data" / "models" / "valucast_prospect_rank_v1.json"
+        try:
+            rows = (json.loads(path.read_text(encoding="utf-8")) or {}).get("active_mlb_roster_board") or []
+        except (OSError, ValueError):
+            rows = []
+        _ACTIVE_ROSTER_ROWS = sorted(rows, key=lambda r: r.get("score") or 0, reverse=True)
+    return _ACTIVE_ROSTER_ROWS
+
+
+_DEBUTED_PROSPECT_IDS = None
+
+
+def _debuted_prospect_ids():
+    """{mlbam(str): taste} for rookie-eligible prospects who have logged MLB service
+    (graduated=False) — taste is the MLB sample so far, e.g. '2 PA' or '27 IP'.
+    Powers the backfields 'MLB · <taste>' badge. Sourced offline from the model inputs."""
+    global _DEBUTED_PROSPECT_IDS
+    if _DEBUTED_PROSPECT_IDS is None:
+        path = Path(__file__).parent / "data" / "prospects" / "prospect_model_inputs.json"
+        try:
+            svc = (json.loads(path.read_text(encoding="utf-8")) or {}).get("mlb_service") or []
+        except (OSError, ValueError):
+            svc = []
+        out = {}
+        for s in svc:
+            if not isinstance(s, dict) or s.get("mlbam_id") is None or s.get("graduated"):
+                continue
+            pa, ip = s.get("pa") or 0, s.get("ip") or 0
+            if pa > 0:
+                out[str(s["mlbam_id"])] = f"{int(pa)} PA"
+            elif ip > 0:
+                out[str(s["mlbam_id"])] = f"{ip:g} IP"
+        _DEBUTED_PROSPECT_IDS = out
+    return _DEBUTED_PROSPECT_IDS
+
+
+def _row_mlb_debut(row):
+    """MLB-taste string ('2 PA' / '27 IP') if this row's player has debuted, else None."""
+    mid = next((p for p in str(row.get("id", "")).split("_") if p.isdigit()), None)
+    return _debuted_prospect_ids().get(mid) if mid else None
 
 
 def _team_board_share_card_png(board, *, limit):
@@ -5599,12 +5673,16 @@ def _team_board_share_card_png(board, *, limit):
         rank_text = str(idx)
         draw.text((68, y + 12), rank_text, fill=muted, font=meta_font)
         name_y = y + (7 if limit == 20 else 10)
-        draw.text(
-            (118, name_y),
-            _graphic_fit_text(draw, row["name"], name_font, 470),
-            fill=text,
-            font=name_font,
-        )
+        fitted_name = _graphic_fit_text(draw, row["name"], name_font, 470)
+        draw.text((118, name_y), fitted_name, fill=text, font=name_font)
+        debut_taste = _row_mlb_debut(row)
+        if debut_taste:
+            label = f"MLB · {debut_taste}"
+            bx = 118 + _graphic_text_width(draw, fitted_name, name_font) + 12
+            bw = _graphic_text_width(draw, label, small_font) + 14
+            by = name_y + 4
+            draw.rounded_rectangle((bx, by, bx + bw, by + 20), radius=5, fill=warm_card_2, outline=slate, width=1)
+            draw.text((bx + 7, by + 3), label, fill=muted, font=small_font)
         meta = row["eta"]
         if meta and limit != 20:
             draw.text(

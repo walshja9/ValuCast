@@ -4100,6 +4100,14 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-consensus-thin[open] > summary { color: var(--bf-text); }
 .backfields-page .bf-consensus-thin .bf-consensus-card { border-left-color: var(--bf-muted); opacity: .82; }
 .backfields-page .bf-consensus-thin .bf-consensus-badge { color: var(--bf-muted); text-shadow: none; }
+.backfields-page .bf-callup-more { margin-top: .7rem; }
+.backfields-page .bf-callup-more > summary { cursor: pointer; font-size: .74rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bf-muted); padding: .4rem 0; }
+.backfields-page .bf-callup-more > summary:hover,
+.backfields-page .bf-callup-more[open] > summary { color: var(--bf-text); }
+.backfields-page .bf-callup-more-list { list-style: none; margin: .3rem 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.backfields-page .bf-callup-more-list li { display: flex; justify-content: space-between; gap: .6rem; padding: .35rem 0; border-top: 1px solid rgba(255,255,255,.06); font-size: .82rem; }
+.backfields-page .bf-callup-more-name { color: var(--bf-text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.backfields-page .bf-callup-more-meta { color: var(--bf-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* Ahead-of-the-Curve track record (earliness scorecard, gated until credible) */
 .backfields-page .bf-aotc-record { display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--bf-hairline, rgba(255,255,255,.08)); }
