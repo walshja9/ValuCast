@@ -30,12 +30,13 @@ def test_norm_matches_board_hyphen_and_dot_spacing():
 
 
 def test_merge_injects_pl_rank():
-    row = {"context_only": {"source_ranks": {"hkb": 184}}}
+    row = {"context_only": {"source_ranks": {}}}
     _merge_external_consensus(
-        row, 123, {}, {}, {"123": {"pl_rank": 136}}, {"123": {"pipeline_rank": 18}}
+        row, 123, {}, {}, {"123": {"pl_rank": 136}},
+        {"123": {"pipeline_rank": 18}}, {"123": {"hkb_rank": 50}},
     )
-    assert row["context_only"]["source_ranks"]["pl"] == 136
-    assert row["context_only"]["source_ranks"]["pipeline"] == 18
+    sr = row["context_only"]["source_ranks"]
+    assert sr["pl"] == 136 and sr["pipeline"] == 18 and sr["hkb"] == 50
 
 
 def test_pl_counts_toward_consensus_and_is_capped():

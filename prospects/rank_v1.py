@@ -405,6 +405,7 @@ STS_CONSENSUS_PATH = ROOT / "data" / "sts" / "sts_consensus_snapshot.json"
 FG_FV_SNAPSHOT_PATH = ROOT / "data" / "fangraphs" / "fg_fv_snapshot.json"
 PROSPECTSLIVE_PATH = ROOT / "data" / "prospectslive" / "prospectslive_consensus_snapshot.json"
 PIPELINE_PATH = ROOT / "data" / "pipeline" / "pipeline_consensus_snapshot.json"
+HKB_PATH = ROOT / "data" / "hkb" / "hkb_consensus_snapshot.json"
 
 
 def _snapshot_by_mlbam(path: Path) -> dict:
@@ -417,13 +418,13 @@ def _snapshot_by_mlbam(path: Path) -> dict:
 
 def _merge_external_consensus(
     row: dict, mlbam, sts_by_mlbam: dict, fg_by_mlbam: dict, pl_by_mlbam: dict,
-    pipeline_by_mlbam: dict,
+    pipeline_by_mlbam: dict, hkb_by_mlbam: dict | None = None,
 ) -> None:
-    """Blend the MLB Pipeline Top 100 + STS Formulated Consensus + the FanGraphs
-    ordinal + the ProspectsLive Top-600 rank into a board row's
+    """Blend the MLB Pipeline Top 100 + HKB board + STS Formulated Consensus + the
+    FanGraphs ordinal + the ProspectsLive Top-600 rank into a board row's
     context_only.source_ranks, so the public consensus = median of pipeline + hkb +
     sts + fg_ord + pl. Display/divergence reference only -- never a score input.
-    (Pipeline re-introduced natively here after the DD-feed cut removed its old
+    (Pipeline + HKB re-introduced natively here after the DD-feed cut removed their old
     pass-through source.)"""
     context = row.get("context_only")
     if not isinstance(context, dict):
@@ -441,6 +442,9 @@ def _merge_external_consensus(
     pipeline = pipeline_by_mlbam.get(str(mlbam)) or {}
     if pipeline.get("pipeline_rank") is not None:
         source_ranks["pipeline"] = pipeline["pipeline_rank"]
+    hkb = (hkb_by_mlbam or {}).get(str(mlbam)) or {}
+    if hkb.get("hkb_rank") is not None:
+        source_ranks["hkb"] = hkb["hkb_rank"]
     if source_ranks:
         context["source_ranks"] = source_ranks
 
@@ -1873,6 +1877,7 @@ def build_prospect_rank_v1(
     fg_by_mlbam = _snapshot_by_mlbam(FG_FV_SNAPSHOT_PATH)
     pl_by_mlbam = _snapshot_by_mlbam(PROSPECTSLIVE_PATH)
     pipeline_by_mlbam = _snapshot_by_mlbam(PIPELINE_PATH)
+    hkb_by_mlbam = _snapshot_by_mlbam(HKB_PATH)
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
@@ -2011,7 +2016,7 @@ def build_prospect_rank_v1(
         )
         _merge_external_consensus(
             target_board[-1], key[0], sts_by_mlbam, fg_by_mlbam, pl_by_mlbam,
-            pipeline_by_mlbam,
+            pipeline_by_mlbam, hkb_by_mlbam,
         )
 
     board.sort(
