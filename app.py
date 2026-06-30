@@ -1657,37 +1657,48 @@ def _graphic_fill_background(img):
         )
 
 
-def _graphic_brand_curve(img, draw, *, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
-    """The rising 'value curve' brand motif: a smooth accelerating arc to a glowing
-    node in the top-right of the header band. Matches the site hero — replaces the
-    older stub arcs. Lives above the subtitle (y<150) and right of the lockup."""
+def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
+    """The rising 'value curve' brand motif in the top-right of the header band. When a
+    player's value_history is supplied (the "Ahead of the Curve" player cards), it draws
+    that player's REAL rolling form curve here — green rising, clay falling — so the motif
+    becomes the player's movement. Otherwise the default decorative accelerating arc."""
     from PIL import Image, ImageDraw, ImageFilter
 
-    n = 56
-    pts = [
-        (
-            x0 + (x1 - x0) * (i / n),
-            y0 - (y0 - y1) * ((i / n) ** power),
-        )
-        for i in range(n + 1)
-    ]
+    pts = None
+    spark = build_spark(value_history, width=(x1 - x0), height=(y0 - y1)) if value_history else None
+    if spark and spark.get("points"):
+        if spark.get("direction") == "down":
+            color = _GRAPHIC_PALETTE.get("clay", (204, 138, 102))
+        elif spark.get("direction") == "flat":
+            color = _GRAPHIC_PALETTE.get("muted", color)
+        try:
+            real = [(x0 + float(px), y1 + float(py)) for px, py in (p.split(",") for p in spark["points"].split())]
+        except (ValueError, KeyError):
+            real = []
+        if len(real) >= 2:
+            pts = real
+    if pts is None:
+        n = 56
+        pts = [(x0 + (x1 - x0) * (i / n), y0 - (y0 - y1) * ((i / n) ** power)) for i in range(n + 1)]
+    nx, ny = pts[-1]
+    dim = tuple(int(c * 0.5) for c in color)
 
     # Soft bloom on a blurred layer: curve halo + node glow.
     glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
     gd.line(pts, fill=color + (110,), width=9, joint="curve")
-    gd.ellipse((x1 - 24, y1 - 24, x1 + 24, y1 + 24), fill=color + (90,))
+    gd.ellipse((nx - 24, ny - 24, nx + 24, ny + 24), fill=color + (90,))
     glow = glow.filter(ImageFilter.GaussianBlur(9))
     img.paste(glow, (0, 0), glow)
 
     # Dim body underlay, then the bright stroke, then the node.
-    draw.line(pts, fill=(28, 120, 108), width=6, joint="curve")
+    draw.line(pts, fill=dim, width=6, joint="curve")
     draw.line(pts, fill=color, width=3, joint="curve")
-    draw.ellipse((x1 - 7, y1 - 7, x1 + 7, y1 + 7), outline=color, width=2)
-    draw.ellipse((x1 - 4, y1 - 4, x1 + 4, y1 + 4), fill=color)
+    draw.ellipse((nx - 7, ny - 7, nx + 7, ny + 7), outline=color, width=2)
+    draw.ellipse((nx - 4, ny - 4, nx + 4, ny + 4), fill=color)
 
 
-def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve"):
+def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve", value_history=None):
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
     green = _GRAPHIC_PALETTE["green"]
@@ -1696,10 +1707,15 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="
     # The tagline brands the graphic without dominating it; defaults to "Ahead of
     # the Curve" (the buys brand), overridden per board (e.g. "Top Prospects").
     # (headline arg kept for call-site compatibility.)
-    _graphic_brand_curve(img, draw)
+    _graphic_brand_curve(img, draw, value_history=value_history)
     _paste_brand_mark(img, 48, 42, size=52)
     draw.text((116, 48), "VALUCAST", fill=green, font=_graphic_font(28, bold=True))
     draw.text((118, 86), tagline, fill=muted, font=_graphic_font(18, bold=True))
+    # When the brand curve is a real form curve, caption its movement.
+    spark = build_spark(value_history) if value_history else None
+    if spark:
+        accent = green if spark.get("direction") == "up" else _GRAPHIC_PALETTE.get("clay", (204, 138, 102)) if spark.get("direction") == "down" else muted
+        draw.text((560, 132), f'FORM  {spark["delta"]:+.1f} over {spark["window_days"]}d', fill=accent, font=_graphic_font(14, bold=True))
     sub_font = _graphic_font(22)
     draw.text((48, 152), _graphic_fit_text(draw, subtitle, sub_font, 940), fill=text, font=sub_font)
     if extra_line:
@@ -2470,7 +2486,7 @@ def _prospect_player_card_png(row):
     generated = _editorial_date(dd_store.generated_at)
     if generated:
         subtitle = f"{subtitle} - {generated}"
-    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle)
+    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, value_history=getattr(row, "value_history", None))
 
     # Identity row — flat panel, name leads (no monogram). Value folds into an
     # app-style faint-teal chip (label over number), not a separate boxed module.
@@ -3149,7 +3165,7 @@ def _player_value_card_png(row, context, mode):
     fields = _card_value_fields(mode, row, context)
     statcast_items = _dynasty_statcast_card_items(context)
 
-    _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"])
+    _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"], value_history=getattr(row, "value_history", None))
 
     draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
     name_font = _graphic_font(48, bold=True)
