@@ -3729,6 +3729,12 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     padding: .58rem .72rem;
 }
 
+/* The level filter sets [hidden] on non-matching rows; this beats the display:grid
+   above (which otherwise overrode the UA [hidden]{display:none} and kept rows visible). */
+.backfields-page .bf-rank-row[hidden] {
+    display: none;
+}
+
 .backfields-page .bf-table-head {
     color: var(--bf-muted);
     border-bottom: 1px solid var(--bf-line);
