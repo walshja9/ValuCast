@@ -16,7 +16,7 @@ def main() -> None:
         f"candidates={result['candidate_count']} "
         f"duplicates={validation['duplicate_identity_count']} "
         f"missing_mlbam={validation['missing_mlbam_count']} "
-        f"dd_context={validation['dd_context_count']} -> {result['artifact_path']}"
+        f"-> {result['artifact_path']}"
     )
 
 
