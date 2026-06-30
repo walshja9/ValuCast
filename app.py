@@ -1684,9 +1684,41 @@ def _graphic_glass_panel(img, draw, box, *, radius=14, fill=None, border=None, s
     draw.line([(x0 + radius, y0 + 1), (x1 - radius, y0 + 1)], fill=(60, 66, 86), width=1)  # top bevel
 
 
+def _aa_strokes(img, pts, lines, *, node_fill=None, node_r=0, ring=None, ring_r=0, ring_w=0, ss=4):
+    """Anti-alias Pillow's hard polyline strokes (ImageDraw has no AA, which made the rolling
+    header curves look 8-bit/blocky): draw on an ss-supersampled layer sized to the curve's
+    bbox, then downscale LANCZOS and composite. `lines` = [(rgb, width), ...]; optional
+    white-hot node + outline ring at the last point. Cheap — supersamples only the bbox."""
+    from PIL import Image, ImageDraw
+    if not pts or len(pts) < 2:
+        return
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    pad = max([w for _, w in lines] + [node_r, ring_r + ring_w, 2]) + 2
+    x0 = int(min(xs) - pad)
+    y0 = int(min(ys) - pad)
+    bw = max(1, int(max(xs) + pad) - x0)
+    bh = max(1, int(max(ys) + pad) - y0)
+    layer = Image.new("RGBA", (bw * ss, bh * ss), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    sp = [((x - x0) * ss, (y - y0) * ss) for x, y in pts]
+    for rgb, wid in lines:
+        d.line(sp, fill=rgb + (255,), width=max(1, int(wid)) * ss, joint="curve")
+    nx, ny = sp[-1]
+    if ring is not None and ring_r:
+        d.ellipse((nx - ring_r * ss, ny - ring_r * ss, nx + ring_r * ss, ny + ring_r * ss),
+                  outline=ring + (255,), width=max(1, ring_w) * ss)
+    if node_fill is not None and node_r:
+        d.ellipse((nx - node_r * ss, ny - node_r * ss, nx + node_r * ss, ny + node_r * ss),
+                  fill=node_fill + (255,))
+    aa = layer.resize((bw, bh), Image.LANCZOS)
+    img.paste(aa, (x0, y0), aa)
+
+
 def _glow_polyline(img, draw, pts, color, *, body=4, core=1.6, blur=8, node=True):
     """Glossy trend line: wide soft bloom + saturated body + bright near-white core +
-    optional hot node. Pure Pillow — shared by every sparkline/trend draw."""
+    optional hot node. Pure Pillow — shared by every sparkline/trend draw. Crisp strokes
+    are anti-aliased (supersampled) so the curve doesn't render 8-bit/blocky."""
     from PIL import Image, ImageDraw, ImageFilter
     if not pts or len(pts) < 2:
         return
@@ -1695,11 +1727,8 @@ def _glow_polyline(img, draw, pts, color, *, body=4, core=1.6, blur=8, node=True
     ImageDraw.Draw(glow).line(pts, fill=color + (150,), width=int(body) * 3, joint="curve")
     glow = glow.filter(ImageFilter.GaussianBlur(blur))
     img.paste(glow, (0, 0), glow)
-    draw.line(pts, fill=color, width=int(body), joint="curve")
-    draw.line(pts, fill=hot, width=max(1, round(core)), joint="curve")
-    if node:
-        nx, ny = pts[-1]
-        draw.ellipse((nx - 5, ny - 5, nx + 5, ny + 5), fill=hot)
+    _aa_strokes(img, pts, [(color, int(body)), (hot, max(1, round(core)))],
+                node_fill=(hot if node else None), node_r=(5 if node else 0))
 
 
 def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
@@ -1736,13 +1765,9 @@ def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=10
     glow = glow.filter(ImageFilter.GaussianBlur(11))
     img.paste(glow, (0, 0), glow)
 
-    # 2) saturated body, then bright core
-    draw.line(pts, fill=color, width=5, joint="curve")
-    draw.line(pts, fill=hot, width=2, joint="curve")
-
-    # 3) hot node: outer ring + white-hot center
-    draw.ellipse((nx - 12, ny - 12, nx + 12, ny + 12), outline=color, width=2)
-    draw.ellipse((nx - 6, ny - 6, nx + 6, ny + 6), fill=hot)
+    # 2+3) saturated body + bright core + hot node/ring, anti-aliased (supersampled bbox)
+    _aa_strokes(img, pts, [(color, 5), (hot, 2)],
+                node_fill=hot, node_r=6, ring=color, ring_r=12, ring_w=2)
 
 
 def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
