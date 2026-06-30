@@ -108,15 +108,13 @@ def _paste_brand_mark(img, x, y, size=58):
     """Paste the ValuCast mark into a PIL graphic if the static asset exists."""
     if not _BRAND_MARK_PATH.exists():
         return
-    from PIL import Image, ImageDraw
+    from PIL import Image
 
     mark = Image.open(_BRAND_MARK_PATH).convert("RGBA").resize(
         (size, size), Image.Resampling.LANCZOS
     )
-    mask = Image.new("L", (size, size), 0)
-    mask_draw = ImageDraw.Draw(mask)
-    mask_draw.rounded_rectangle((0, 0, size, size), radius=max(10, size // 5), fill=255)
-    img.paste(mark, (x, y), mask)
+    # Bare emblem — paste on its own alpha, no box/tile (matches the glass-V previews).
+    img.paste(mark, (x, y), mark)
 
 
 def _editorial_date(value):
@@ -1485,13 +1483,13 @@ def _prospect_graphic_png(
             )
 
     if not rows:
-        draw.rounded_rectangle((48, 225, 1032, 360), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 225, 1032, 360), radius=12)
         draw.text((76, 276), "No prospects found for this filter.", fill=text, font=font(30, bold=True))
     elif limit <= 10:
         # Compact variant for position top-10s: same voice, less empty space.
         hero = rows[0]
         leader = hero_kicker or ("POSITION LEADER" if position else "TOP PROSPECT")
-        draw.rounded_rectangle((48, 226, 1032, 532), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 226, 1032, 532), radius=12)
         draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(16, bold=True))
         hero_name_font = font(43, bold=True)
@@ -1508,7 +1506,7 @@ def _prospect_graphic_png(
         draw_chip(810, 392, "current board", fill=card, fg=muted, outline=border, fnt=font(14, bold=True))
         spark = spark_points(hero, 670, 484, 260, 34)
         if spark:
-            draw.line(spark[0], fill=green if spark[1] == "up" else muted, width=3, joint="curve")
+            _glow_polyline(img, draw, spark[0], green if spark[1] == "up" else muted, body=3, core=1.4, blur=6)
             draw.text((670, 522), "RECENT MOVEMENT", fill=muted, font=font(15, bold=True))
 
         grid_rows = rows[1:10]
@@ -1567,7 +1565,7 @@ def _prospect_graphic_png(
     else:
         hero = rows[0]
         leader = hero_kicker or ("POSITION LEADER" if position else "TOP PROSPECT")
-        draw.rounded_rectangle((48, 226, 418, 540), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 226, 418, 540), radius=12)
         draw.text((70, 252), leader, fill=muted, font=font(20, bold=True))
         draw.text((70, 282), hero_rank_heading(1).upper(), fill=muted, font=font(15, bold=True))
         hero_name_font = font(31, bold=True)
@@ -1583,7 +1581,7 @@ def _prospect_graphic_png(
         for idx, row in enumerate(supports):
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
-            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=10, fill=card, outline=border, width=1)
+            _graphic_glass_panel(img, draw, (x, y, x + 291, y + 149), radius=12)
             draw.text((x + 18, y + 18), rank_label(idx + 2), fill=blue, font=font(19, bold=True))
             support_name_font = font(20, bold=True)
             support_name_lines = split_name_lines(draw, row.name, support_name_font, 250)
@@ -1630,10 +1628,10 @@ def _prospect_graphic_png(
 _GRAPHIC_PALETTE = {
     # Phase 2 Broadcast Board — neutral cool-black base, teal = the one signal,
     # slate = structure/ranks (no functional blue in a static graphic), clay = decline.
-    "bg": (11, 12, 15),
-    "card": (21, 22, 27),
-    "card_2": (28, 30, 37),
-    "border": (42, 44, 52),
+    "bg": (18, 19, 31),       # cool-black #12131F (glass pass)
+    "card": (28, 31, 44),     # dark glass, faint cool tint
+    "card_2": (36, 40, 54),
+    "border": (54, 59, 76),   # hairline, cooler
     "green": (52, 226, 196),   # legacy key, now teal — repaints every old green accent
     "teal": (52, 226, 196),
     "blue": (138, 146, 168),   # legacy key, now slate — ranks/monograms are structural
@@ -1649,20 +1647,59 @@ def _graphic_fill_background(img):
 
     width, height = img.size
     draw = ImageDraw.Draw(img)
+    top, bot = (18, 19, 31), (12, 13, 21)          # #12131F -> deeper
     for y in range(height):
         t = y / height
-        draw.line(
-            [(0, y), (width, y)],
-            fill=(round(11 + 5 * t), round(12 + 5 * t), round(15 + 7 * t)),
-        )
-    # Ambient teal bloom in the header band (the brand's "glow on near-black" feel).
-    # Panels are drawn opaque on top, so this only reads through the header + margins.
+        draw.line([(0, y), (width, y)], fill=(
+            round(top[0] + (bot[0] - top[0]) * t),
+            round(top[1] + (bot[1] - top[1]) * t),
+            round(top[2] + (bot[2] - top[2]) * t),
+        ))
+    # Soft teal/silver light blooms drifting through (teal top-right, silver bottom-left,
+    # faint mid teal). Panels draw opaque on top, so the blooms read through the header
+    # and the margins/gutters only.
     glow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gd.ellipse((-160, -180, 540, 300), fill=(30, 152, 136, 58))
-    gd.ellipse((width - 380, -200, width + 180, 250), fill=(34, 120, 156, 44))
-    glow = glow.filter(ImageFilter.GaussianBlur(90))
+    gd.ellipse((width - 520, -260, width + 200, 360),   fill=(52, 226, 196, 46))   # teal, top-right
+    gd.ellipse((-260, height - 440, 380, height + 220), fill=(176, 205, 232, 30))  # silver, bottom-left
+    gd.ellipse((int(width * 0.34), int(height * 0.46), int(width * 0.86), int(height * 0.9)),
+               fill=(19, 180, 156, 15))                                            # faint mid teal
+    glow = glow.filter(ImageFilter.GaussianBlur(110))
     img.alpha_composite(glow) if img.mode == "RGBA" else img.paste(glow, (0, 0), glow)
+
+
+def _graphic_glass_panel(img, draw, box, *, radius=14, fill=None, border=None, shadow=True):
+    """Dark-glass panel: soft drop shadow + cool fill + hairline border + faint
+    top-edge highlight (the glass bevel). Pure Pillow."""
+    from PIL import Image, ImageDraw, ImageFilter
+    x0, y0, x1, y1 = box
+    fill = fill or _GRAPHIC_PALETTE["card"]
+    border = border or _GRAPHIC_PALETTE["border"]
+    if shadow:
+        sh = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        ImageDraw.Draw(sh).rounded_rectangle((x0, y0 + 10, x1, y1 + 16), radius=radius, fill=(0, 0, 0, 150))
+        sh = sh.filter(ImageFilter.GaussianBlur(18))
+        img.paste(sh, (0, 0), sh)
+    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=border, width=1)
+    draw.line([(x0 + radius, y0 + 1), (x1 - radius, y0 + 1)], fill=(60, 66, 86), width=1)  # top bevel
+
+
+def _glow_polyline(img, draw, pts, color, *, body=4, core=1.6, blur=8, node=True):
+    """Glossy trend line: wide soft bloom + saturated body + bright near-white core +
+    optional hot node. Pure Pillow — shared by every sparkline/trend draw."""
+    from PIL import Image, ImageDraw, ImageFilter
+    if not pts or len(pts) < 2:
+        return
+    hot = tuple(min(255, int(c + (255 - c) * 0.75)) for c in color)
+    glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ImageDraw.Draw(glow).line(pts, fill=color + (150,), width=int(body) * 3, joint="curve")
+    glow = glow.filter(ImageFilter.GaussianBlur(blur))
+    img.paste(glow, (0, 0), glow)
+    draw.line(pts, fill=color, width=int(body), joint="curve")
+    draw.line(pts, fill=hot, width=max(1, round(core)), joint="curve")
+    if node:
+        nx, ny = pts[-1]
+        draw.ellipse((nx - 5, ny - 5, nx + 5, ny + 5), fill=hot)
 
 
 def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
@@ -1689,21 +1726,23 @@ def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=10
         n = 56
         pts = [(x0 + (x1 - x0) * (i / n), y0 - (y0 - y1) * ((i / n) ** power)) for i in range(n + 1)]
     nx, ny = pts[-1]
-    dim = tuple(int(c * 0.5) for c in color)
+    hot = tuple(min(255, int(c + (255 - c) * 0.75)) for c in color)   # near-white core / node
 
-    # Soft bloom on a blurred layer: curve halo + node glow.
+    # 1) wide soft bloom (blurred)
     glow = Image.new("RGBA", img.size, (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gd.line(pts, fill=color + (110,), width=9, joint="curve")
-    gd.ellipse((nx - 24, ny - 24, nx + 24, ny + 24), fill=color + (90,))
-    glow = glow.filter(ImageFilter.GaussianBlur(9))
+    gd.line(pts, fill=color + (150,), width=16, joint="curve")
+    gd.ellipse((nx - 34, ny - 34, nx + 34, ny + 34), fill=color + (120,))
+    glow = glow.filter(ImageFilter.GaussianBlur(11))
     img.paste(glow, (0, 0), glow)
 
-    # Dim body underlay, then the bright stroke, then the node.
-    draw.line(pts, fill=dim, width=6, joint="curve")
-    draw.line(pts, fill=color, width=3, joint="curve")
-    draw.ellipse((nx - 7, ny - 7, nx + 7, ny + 7), outline=color, width=2)
-    draw.ellipse((nx - 4, ny - 4, nx + 4, ny + 4), fill=color)
+    # 2) saturated body, then bright core
+    draw.line(pts, fill=color, width=5, joint="curve")
+    draw.line(pts, fill=hot, width=2, joint="curve")
+
+    # 3) hot node: outer ring + white-hot center
+    draw.ellipse((nx - 12, ny - 12, nx + 12, ny + 12), outline=color, width=2)
+    draw.ellipse((nx - 6, ny - 6, nx + 6, ny + 6), fill=hot)
 
 
 def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
@@ -1724,10 +1763,17 @@ def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
     mask = Image.new("L", (width, height), 0)
     ImageDraw.Draw(mask).text((pad, pad), text, fill=255, font=font)
 
+    # 0) beveled depth: dark drop below + bright top highlight (reads as glass relief)
+    bevel = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(bevel)
+    bd.text((pad, pad + 2), text, fill=(0, 0, 0, 150), font=font)        # dark drop = depth
+    bd.text((pad, pad - 1), text, fill=(255, 255, 255, 90), font=font)   # top highlight
+    img.paste(bevel, (ox, oy), bevel)
+
     # 1) soft teal outer glow (the "glowing glass on black" feel)
     glow_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     glow_layer.paste(Image.new("RGBA", (width, height), glow + (255,)), (0, 0), mask)
-    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(6))
+    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(8))
     img.paste(glow_layer, (ox, oy), glow_layer)
 
     # 2) glass fill: horizontal teal->chrome-silver x vertical sheen (bright near the top).
@@ -2542,7 +2588,7 @@ def _prospect_player_card_png(row):
 
     # Identity row — flat panel, name leads (no monogram). Value folds into an
     # app-style faint-teal chip (label over number), not a separate boxed module.
-    draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
+    _graphic_glass_panel(img, draw, (48, 218, 1032, 410), radius=12)
 
     name_font = _graphic_font(48, bold=True)
     draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 600), fill=text, font=name_font)
@@ -2621,7 +2667,7 @@ def _prospect_player_card_png(row):
             fx += draw.textbbox((0, 0), num, font=vf)[2] + 18
 
     # Skill bars
-    draw.rounded_rectangle((48, 438, 1032, 812), radius=10, fill=card, outline=border, width=1)
+    _graphic_glass_panel(img, draw, (48, 438, 1032, 812), radius=12)
     draw.text((74, 468), "CURRENT SKILL PERCENTILES", fill=muted, font=_graphic_font(20, bold=True))
     sample_context = _graphic_sample_context_label(row, context)
     if sample_context:
@@ -2746,7 +2792,7 @@ def _prospect_player_card_png(row):
     # Narrative + 20-80 shape. The read box grows with the full report (read_extra);
     # everything below shifts down by the same delta so the short-report case is
     # pixel-identical (read_extra == 0).
-    draw.rounded_rectangle((48, 1050, 1032, 1342 + read_extra), radius=10, fill=card, outline=border, width=1)
+    _graphic_glass_panel(img, draw, (48, 1050, 1032, 1342 + read_extra), radius=12)
     draw.text((74, 1080), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
     for idx, line in enumerate(read_lines):
         draw.text((74, 1120 + idx * 31), line, fill=text, font=read_font)
@@ -2767,7 +2813,7 @@ def _prospect_player_card_png(row):
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
     # Skipped when the player has no FG board entry.
     if fg_scouting and fg_scouting.get("fv"):
-        draw.rounded_rectangle((48, 1356 + read_extra, 1032, 1482 + read_extra), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 1356 + read_extra, 1032, 1482 + read_extra), radius=12)
         draw.text((74, 1370 + read_extra), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
                   fill=muted, font=_graphic_font(14, bold=True))
         draw.text((74, 1396 + read_extra), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
@@ -3219,7 +3265,7 @@ def _player_value_card_png(row, context, mode):
 
     _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"], value_history=getattr(row, "value_history", None))
 
-    draw.rounded_rectangle((48, 218, 1032, 410), radius=10, fill=card, outline=border, width=1)
+    _graphic_glass_panel(img, draw, (48, 218, 1032, 410), radius=12)
     name_font = _graphic_font(48, bold=True)
     draw.text((74, 250), _graphic_fit_text(draw, row.name, name_font, 610), fill=text, font=name_font)
     meta = fields["meta"]
@@ -3251,7 +3297,7 @@ def _player_value_card_png(row, context, mode):
 
     y = 542
     if statcast_items:
-        draw.rounded_rectangle((48, 438, 1032, 794), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 438, 1032, 794), radius=12)
         heading = "MLB STATCAST PERCENTILES"
         asof = context.get("statcast_asof")
         if asof:
@@ -3295,13 +3341,13 @@ def _player_value_card_png(row, context, mode):
     else:
         read_y1 = min(1238, read_y0 + 104 + len(read_lines) * 32)
         category_y0, category_y1 = read_y1 + 26, read_y1 + 118
-    draw.rounded_rectangle((48, read_y0, 1032, read_y1), radius=10, fill=card, outline=border, width=1)
+    _graphic_glass_panel(img, draw, (48, read_y0, 1032, read_y1), radius=12)
     draw.text((74, read_y0 + 30), fields["read_label"], fill=muted, font=_graphic_font(20, bold=True))
     for idx, line in enumerate(read_lines):
         draw.text((74, read_y0 + 72 + idx * 32), line, fill=text, font=read_font)
 
     if category_items:
-        draw.rounded_rectangle((48, category_y0, 1032, category_y1), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, category_y0, 1032, category_y1), radius=12)
         summary = fields["category_summary"]
         title = "CATEGORY BREAKDOWN (z-SCORE)"
         if summary:
@@ -6437,11 +6483,11 @@ def _buys_share_card_png(
     hero_rows = list(rows or [])[:5]
     grid_rows = list(rows or [])[5:40]
     if not hero_rows:
-        draw.rounded_rectangle((48, 226, 1032, 370), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 226, 1032, 370), radius=12)
         draw.text((76, 278), "No prospect buys are available.", fill=text, font=f_name)
     else:
         hero = hero_rows[0]
-        draw.rounded_rectangle((48, 226, 418, 540), radius=10, fill=card, outline=border, width=1)
+        _graphic_glass_panel(img, draw, (48, 226, 418, 540), radius=12)
         draw.text((70, 252), "#1 - TOP BUY", fill=muted, font=f_rank)
         name_lines = split_lines(hero.get("name"), _graphic_font(34, bold=True), 320)
         for idx, line in enumerate(name_lines[:2]):
@@ -6460,7 +6506,7 @@ def _buys_share_card_png(
         for idx, row in enumerate(hero_rows[1:5]):
             x = 435 + (idx % 2) * 307
             y = 226 + (idx // 2) * 164
-            draw.rounded_rectangle((x, y, x + 291, y + 149), radius=10, fill=card, outline=border, width=1)
+            _graphic_glass_panel(img, draw, (x, y, x + 291, y + 149), radius=12)
             draw.text((x + 18, y + 13), f"#{idx + 2}", fill=blue, font=f_rank)
             support_lines = split_lines(row.get("name"), f_support_name, 250)
             for line_idx, line in enumerate(support_lines[:2]):

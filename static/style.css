@@ -2214,6 +2214,15 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .buys-spark.up circle { fill: var(--c-prospect); }
 .buys-spark.down polyline { stroke: var(--c-neg); }
 .buys-spark.down circle { fill: var(--c-neg); }
+
+/* glossy trend lines — soft neon halo + brighter stroke + hot node (glass pass) */
+.buys-spark, .bf-spark, .value-spark { overflow: visible; }
+.buys-spark polyline, .bf-spark polyline, .value-spark polyline { stroke-width: 2.2; }
+.buys-spark.up,   .bf-spark.up,   .value-spark.up   { filter: drop-shadow(0 0 3px rgba(52,226,196,.60)); }
+.buys-spark.down, .bf-spark.down, .value-spark.down { filter: drop-shadow(0 0 3px rgba(204,138,102,.55)); }
+.buys-spark, .bf-spark, .value-spark                { filter: drop-shadow(0 0 2px rgba(154,161,192,.40)); }
+.buys-spark circle, .bf-spark circle, .value-spark circle { r: 2.8; }
+.buys-spark.up circle, .bf-spark.up circle, .value-spark.up circle { fill: #EAFFFB; }
 .buys-preview { margin-top: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); }
 .buys-preview summary { cursor: pointer; font-weight: 600; color: var(--c-blue-strong); }
 .buys-preview-wrap { margin-top: var(--space-2); overflow: hidden; }
