@@ -138,28 +138,45 @@ def _sort_receipts(receipts: list[dict]) -> list[dict]:
     return scored + seeded
 
 
-def _receipt_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
+def _existing_misses(existing_log: dict | list | None) -> list[dict]:
+    if isinstance(existing_log, dict):
+        rows = existing_log.get("misses") or []
+    else:
+        rows = existing_log or []
+    return [dict(row) for row in rows if isinstance(row, dict) and row.get("identity_key")]
+
+
+def _sort_misses(misses: list[dict]) -> list[dict]:
+    """Biggest miss first: most-negative divergence (field furthest ahead of us)."""
+    return sorted(
+        misses,
+        key=lambda r: (r.get("divergence", 0), r.get("valucast_rank") or 0),
+    )
+
+
+def _call_up_row(row: dict, cur_date: str, logged_at: str) -> tuple[dict | None, str | None]:
+    """Build a call-up row and classify it against the public-board consensus.
+
+    Returns (row, "hit") when ValuCast had the player above the field, (row, "miss")
+    when ValuCast was below the field, or (None, None) when there's no usable consensus
+    or the gap sits inside the noise band. The miss path is what makes the board
+    two-sided — it's auto-only (never seeded), so it can't be cherry-picked.
+    """
     key = _identity_key(row)
     valucast_rank = _clean_int(row.get("rank"))
     if not key or valucast_rank is None:
-        return None
+        return None, None
     public_ranks = _public_source_ranks(_source_ranks(row))
-    board_count = len(public_ranks)
-    consensus = _public_source_consensus(public_ranks) if board_count >= MIN_BOARDS else None
-    divergence = consensus - valucast_rank if consensus is not None else None
-    if (
-        consensus is None
-        or board_count < MIN_BOARDS
-        or valucast_rank > MAX_VALUCAST_RANK
-        or divergence is None
-        or divergence < MIN_DIVERGENCE
-    ):
-        return None
-    role = str(row.get("role")).lower()
-    return {
+    if len(public_ranks) < MIN_BOARDS:
+        return None, None
+    consensus = _public_source_consensus(public_ranks)
+    if consensus is None:
+        return None, None
+    divergence = consensus - valucast_rank
+    base = {
         "identity_key": key,
         "mlbam_id": str(row.get("mlbam_id")),
-        "role": role,
+        "role": str(row.get("role")).lower(),
         "name": row.get("name"),
         "team": row.get("mlb_team") or row.get("team") or "-",
         "pos": _pos(row),
@@ -170,20 +187,38 @@ def _receipt_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
         "call_up_date": cur_date,
         "logged_at": logged_at,
     }
+    if valucast_rank <= MAX_VALUCAST_RANK and divergence >= MIN_DIVERGENCE:
+        return base, "hit"
+    # Miss: the field had him as a real prospect (consensus within range) and we were
+    # meaningfully behind. Same magnitude bar as a hit, sign flipped.
+    if consensus <= MAX_VALUCAST_RANK and divergence <= -MIN_DIVERGENCE:
+        return base, "miss"
+    return None, None
 
 
-def detect_receipts(
+def _receipt_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
+    base, kind = _call_up_row(row, cur_date, logged_at)
+    return base if kind == "hit" else None
+
+
+def _miss_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
+    base, kind = _call_up_row(row, cur_date, logged_at)
+    return base if kind == "miss" else None
+
+
+def _detect_call_ups(
     prev_board: dict | list,
     cur_board: dict | list,
     cur_date: str,
     roster_lookup: dict[str, dict],
-    existing_log: dict | list | None,
+    existing_rows: list[dict],
+    from_row,
     *,
     logged_at: str | None = None,
 ) -> list[dict]:
-    """Merge receipts for prospects that disappeared into the current MLB roster."""
+    """Merge call-ups (built by ``from_row``) for prospects that disappeared into the roster."""
     logged_at = logged_at or f"{cur_date}T00:00:00+00:00"
-    merged = {row["identity_key"]: row for row in _existing_receipts(existing_log)}
+    merged = {row["identity_key"]: row for row in existing_rows}
     prev_by_key = {
         key: row
         for row in _rows(prev_board)
@@ -200,7 +235,7 @@ def detect_receipts(
         mlbam_id = row.get("mlbam_id")
         if str(mlbam_id) not in roster_lookup:
             continue
-        receipt = _receipt_from_row(row, cur_date, logged_at)
+        receipt = from_row(row, cur_date, logged_at)
         if not receipt:
             continue
         existing = merged.get(key)
@@ -219,6 +254,38 @@ def detect_receipts(
             str(row.get("identity_key") or ""),
         ),
         reverse=True,
+    )
+
+
+def detect_receipts(
+    prev_board: dict | list,
+    cur_board: dict | list,
+    cur_date: str,
+    roster_lookup: dict[str, dict],
+    existing_log: dict | list | None,
+    *,
+    logged_at: str | None = None,
+) -> list[dict]:
+    """Merge ahead-of-field receipts for prospects that disappeared into the MLB roster."""
+    return _detect_call_ups(
+        prev_board, cur_board, cur_date, roster_lookup,
+        _existing_receipts(existing_log), _receipt_from_row, logged_at=logged_at,
+    )
+
+
+def detect_misses(
+    prev_board: dict | list,
+    cur_board: dict | list,
+    cur_date: str,
+    roster_lookup: dict[str, dict],
+    existing_log: dict | list | None,
+    *,
+    logged_at: str | None = None,
+) -> list[dict]:
+    """Merge call-ups where ValuCast sat BEHIND the field (the accountability side)."""
+    return _detect_call_ups(
+        prev_board, cur_board, cur_date, roster_lookup,
+        _existing_misses(existing_log), _miss_from_row, logged_at=logged_at,
     )
 
 
@@ -266,6 +333,7 @@ def build_call_up_receipts(
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
     roster_lookup = active_roster_lookup(roster_payload)
     receipts = _existing_receipts(existing_log)
+    misses = _existing_misses(existing_log)
     archive_dates = [
         date
         for payload in archive_payloads
@@ -275,6 +343,7 @@ def build_call_up_receipts(
         cur_date = _date_part(cur.get("date") or cur.get("generated_at"))
         if cur_date:
             receipts = detect_receipts(prev, cur, cur_date, roster_lookup, receipts, logged_at=generated_at)
+            misses = detect_misses(prev, cur, cur_date, roster_lookup, misses, logged_at=generated_at)
 
     # Merge curated seeds; auto-detected rows win on identity (they carry a real divergence).
     by_key = {row["identity_key"]: row for row in receipts}
@@ -287,6 +356,7 @@ def build_call_up_receipts(
             by_key[srow["identity_key"]] = srow
             seed_count += 1
     receipts = _sort_receipts(list(by_key.values()))
+    misses = _sort_misses(misses)
 
     blockers = []
     if len(archive_payloads) < 2:
@@ -316,6 +386,7 @@ def build_call_up_receipts(
         },
         "summary": {
             "receipt_count": len(receipts),
+            "miss_count": len(misses),
             "seed_count": seed_count,
             "archive_dates_scanned": archive_dates,
         },
@@ -324,6 +395,7 @@ def build_call_up_receipts(
             "blockers": blockers,
         },
         "receipts": receipts,
+        "misses": misses,
     }
 
 
@@ -349,5 +421,7 @@ def run_call_up_receipts(
         "archive_changed": archive_changed,
         "status": payload["status"],
         "receipt_count": payload["summary"]["receipt_count"],
+        "miss_count": payload["summary"]["miss_count"],
         "receipts": payload["receipts"],
+        "misses": payload["misses"],
     }

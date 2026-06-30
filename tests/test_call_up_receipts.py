@@ -83,6 +83,36 @@ def test_build_merges_seed_rows_and_auto_wins_on_identity_collision():
     assert curated["divergence"] is None and curated["seed"] is True
 
 
+def test_detect_misses_flags_call_ups_where_valucast_was_behind():
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [
+            _rank_row(301, "We Were High", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),    # hit: div +75
+            _rank_row(302, "Field Was High", 200, {"pipeline": 40, "hkb": 50, "sts": 60}),  # miss: div -150
+        ]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 301, "active_mlb_roster": True},
+        {"mlbam_id": 302, "active_mlb_roster": True},
+    ]}
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-29T00:00:00+00:00",
+    )
+    hits = {r["identity_key"]: r for r in payload["receipts"]}
+    misses = {m["identity_key"]: m for m in payload["misses"]}
+
+    assert "301_hitter" in hits and "301_hitter" not in misses
+    assert "302_hitter" in misses and "302_hitter" not in hits
+    miss = misses["302_hitter"]
+    assert (miss["consensus_rank"], miss["valucast_rank"], miss["divergence"]) == (50, 200, -150)
+    assert payload["summary"]["miss_count"] == 1
+    assert not (set(hits) & set(misses))  # a player can't be both a hit and a miss
+
+
 def _rank_row(mlbam_id: int, name: str, rank: int, source_ranks: dict) -> dict:
     return {
         "mlbam_id": mlbam_id,
