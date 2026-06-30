@@ -2962,8 +2962,8 @@ def _dynasty_card_read(row, context):
         else:
             sentences.append(f"{row.name} is {' '.join(role_bits)}.")
 
-    # Read the SAME six metrics the card draws as bars, so copy matches visuals.
-    profile = _statcast_profile_phrase(_dynasty_statcast_card_items(context)[:6])
+    # Read the SAME metrics the card draws as bars (now the full set), so copy matches visuals.
+    profile = _statcast_profile_phrase(_dynasty_statcast_card_items(context)[:12])
     if profile:
         sentences.append(profile)
 
@@ -3190,20 +3190,32 @@ def _player_value_card_png(row, context, mode):
             heading = f"{heading} - {asof}"
         draw.text((74, 468), _graphic_fit_text(draw, heading, _graphic_font(20, bold=True), 900), fill=muted, font=_graphic_font(20, bold=True))
         draw.text((74, 500), "100 = best against MLB league percentile baselines.", fill=muted, font=_graphic_font(17, bold=True))
-        for item in statcast_items[:6]:
+        def _draw_statcast_bar(item, lx, lw, x0, x1, vx, vw, ry, lf, vf):
             pct = int(item["percentile"])
-            label = item["label"]
-            value = item["value"]
-            draw.text((82, y + 6), _graphic_fit_text(draw, label, _graphic_font(18, bold=True), 138), fill=muted, font=_graphic_font(18, bold=True))
-            x0, y0, x1, y1 = 238, y + 9, 790, y + 23
-            draw.rounded_rectangle((x0, y0, x1, y1), radius=4, fill=(30, 32, 40))
+            draw.text((lx, ry + 6), _graphic_fit_text(draw, item["label"], lf, lw), fill=muted, font=lf)
+            y0b, y1b = ry + 9, ry + 23
+            draw.rounded_rectangle((x0, y0b, x1, y1b), radius=4, fill=(30, 32, 40))
             fill = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
-            draw.rounded_rectangle((x0, y0, x0 + int((x1 - x0) * pct / 100), y1), radius=4, fill=fill)
+            draw.rounded_rectangle((x0, y0b, x0 + int((x1 - x0) * pct / 100), y1b), radius=4, fill=fill)
             knob_x = max(x0 + 14, min(x1 - 14, x0 + int((x1 - x0) * pct / 100)))
-            draw.rounded_rectangle((knob_x - 18, y0 - 3, knob_x + 18, y1 + 3), radius=4, fill=(10, 11, 15))
-            draw.text((knob_x - 10, y0 - 2), str(pct), fill=text, font=_graphic_font(14, bold=True))
-            draw.text((820, y + 1), _graphic_fit_text(draw, value or "-", _graphic_font(20, bold=True, mono=True), 158), fill=text, font=_graphic_font(20, bold=True, mono=True))
-            y += 43
+            draw.rounded_rectangle((knob_x - 18, y0b - 3, knob_x + 18, y1b + 3), radius=4, fill=(10, 11, 15))
+            draw.text((knob_x - 10, y0b - 2), str(pct), fill=text, font=_graphic_font(14, bold=True))
+            draw.text((vx, ry + 2), _graphic_fit_text(draw, item["value"] or "-", vf, vw), fill=text, font=vf)
+        # All available percentiles. <=6 (thin samples): one full-width column. More
+        # (a full hitter is 12, pitcher 11): two columns so they all fit the same box.
+        items = statcast_items[:12]
+        if len(items) <= 6:
+            lf, vf = _graphic_font(18, bold=True), _graphic_font(20, bold=True, mono=True)
+            for idx, item in enumerate(items):
+                _draw_statcast_bar(item, 82, 138, 238, 790, 820, 158, y + idx * 43, lf, vf)
+        else:
+            per_col = (len(items) + 1) // 2
+            lf, vf = _graphic_font(16, bold=True), _graphic_font(16, bold=True, mono=True)
+            for idx, item in enumerate(items):
+                if idx < per_col:
+                    _draw_statcast_bar(item, 76, 116, 198, 440, 450, 84, y + idx * 43, lf, vf)
+                else:
+                    _draw_statcast_bar(item, 558, 116, 680, 922, 932, 92, y + (idx - per_col) * 43, lf, vf)
 
     category_items = _dynasty_category_card_items(context)
     read_y0 = 824 if statcast_items else 438
