@@ -268,6 +268,37 @@ def _ceiling_band(row: dict, peak_score: float) -> str:
     return "organizational_depth"
 
 
+# Hitter ceiling tiers, low -> high. Used to floor the role label by the peak shape.
+_HITTER_TIERS = [
+    "organizational_depth",
+    "bench_or_platoon_bat",
+    "second_division_regular",
+    "everyday_regular",
+    "impact_regular",
+]
+
+
+def _floor_ceiling_by_shape(ceiling: str, shape_average: float, role: str, *, risk_band: str | None = None) -> str:
+    """Keep a hitter's role label from contradicting the card's own peak-shape grades.
+
+    The label comes from peak_score (58% rank/value, 30% shape), so an elite-shape hitter
+    with a soft, day-to-day-volatile rank score can read "bench or platoon bat" next to an
+    80-hit peak. Floor the tier so it can't sit more than one rung below the tier the peak
+    shape alone implies. Gated off high-risk thin samples so a small hot streak can't float
+    the label. Pitchers and non-hitter tiers are untouched.
+    """
+    if role == "pitcher" or ceiling not in _HITTER_TIERS:
+        return ceiling
+    if risk_band == "high":
+        return ceiling
+    shape_band = _ceiling_band({"role": "hitter"}, float(shape_average or 0.0))
+    if shape_band not in _HITTER_TIERS:
+        return ceiling
+    ci = _HITTER_TIERS.index(ceiling)
+    si = _HITTER_TIERS.index(shape_band)
+    return _HITTER_TIERS[max(ci, si - 1)]
+
+
 def _floor_band(row: dict, risk_band: str, shape_average: float) -> str:
     role = str(row.get("role") or "")
     if role == "pitcher":
@@ -480,7 +511,7 @@ def _peak_v2(row: dict, *, v1_peak_score: float, rank_score: float) -> dict:
     shape_average = _shape_average(shape)
     peak_score = _peak_score(row, shape_average)
     risk = _risk_band(row, shape_average)
-    ceiling = _ceiling_band(row, peak_score)
+    ceiling = _floor_ceiling_by_shape(_ceiling_band(row, peak_score), shape_average, role, risk_band=risk)
     floor = _floor_band(row, risk, shape_average)
     role_probabilities, role_probability_source = _v2_role_probability(
         row, peak_score, risk, shape_average
@@ -534,7 +565,7 @@ def _projection_row(row: dict) -> dict:
     shape_average = _shape_average(shape)
     peak_score = _peak_score(row, shape_average)
     risk = _risk_band(row, shape_average)
-    ceiling = _ceiling_band(row, peak_score)
+    ceiling = _floor_ceiling_by_shape(_ceiling_band(row, peak_score), shape_average, str(row.get("role") or ""), risk_band=risk)
     floor = _floor_band(row, risk, shape_average)
     confidence = _confidence(row, risk)
     current = _current_context(row)
