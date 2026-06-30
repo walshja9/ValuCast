@@ -1708,8 +1708,9 @@ def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=10
 
 def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
     """Glossy 'liquid glass' wordmark matching the brand logo: a horizontal teal->chrome
-    fill with a vertical glass sheen and a soft teal outer glow on the dark surface."""
-    import numpy as np
+    fill with a vertical glass sheen and a soft teal outer glow on the dark surface.
+    Pure Pillow (no numpy) — Render's deploy is deliberately lean and numpy isn't installed."""
+    import math
     from PIL import Image, ImageDraw, ImageFilter
 
     x0, y0, x1, y1 = draw.textbbox(xy, text, font=font)
@@ -1729,16 +1730,24 @@ def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
     glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(6))
     img.paste(glow_layer, (ox, oy), glow_layer)
 
-    # 2) glass fill: horizontal teal->chrome-silver x vertical sheen (bright near the top)
-    xs = np.linspace(0.0, 1.0, width)
-    ys = np.linspace(0.0, 1.0, height)
-    teal = np.array([46, 224, 196], dtype=float)
-    silver = np.array([228, 236, 247], dtype=float)
-    hor = teal[None, :] * (1.0 - xs[:, None]) + silver[None, :] * xs[:, None]  # (W,3)
-    hor = np.repeat(hor[None, :, :], height, axis=0)                            # (H,W,3)
-    sheen = 0.80 + 0.52 * np.exp(-((ys - 0.26) ** 2) / (2 * 0.11 ** 2)) - 0.22 * ys
-    rgb = np.clip(hor * sheen[:, None, None], 0, 255).astype("uint8")
-    img.paste(Image.fromarray(rgb, "RGB"), (ox, oy), mask)
+    # 2) glass fill: horizontal teal->chrome-silver x vertical sheen (bright near the top).
+    # ponytail: pure-Python pixel build, fine at wordmark size (~width*height ≈ 10k px).
+    teal, silver = (46, 224, 196), (228, 236, 247)
+    denom_x, denom_y = max(width - 1, 1), max(height - 1, 1)
+    px = []
+    for j in range(height):
+        ty = j / denom_y
+        sheen = 0.80 + 0.52 * math.exp(-((ty - 0.26) ** 2) / (2 * 0.11 ** 2)) - 0.22 * ty
+        for i in range(width):
+            tx = i / denom_x
+            px.append((
+                min(255, int((teal[0] * (1 - tx) + silver[0] * tx) * sheen)),
+                min(255, int((teal[1] * (1 - tx) + silver[1] * tx) * sheen)),
+                min(255, int((teal[2] * (1 - tx) + silver[2] * tx) * sheen)),
+            ))
+    fill = Image.new("RGB", (width, height))
+    fill.putdata(px)
+    img.paste(fill, (ox, oy), mask)
 
 
 def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve", value_history=None):
