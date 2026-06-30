@@ -303,13 +303,13 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 7,
+        "buy_comparison_count": 8,
         "latest_rank_bucket_count": 14,
-        "observation_span_days": 7,
-        "rank_comparison_count": 7
+        "observation_span_days": 8,
+        "rank_comparison_count": 8
       },
       "recommendations": [
-        "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
+        "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
       ],
       "status": "collecting"
     },
@@ -319,7 +319,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2695,
+        "candidate_count": 2689,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -331,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-29T14:53:34.230712+00:00",
+        "activated_at": "2026-06-30T14:22:44.959935+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -345,7 +345,7 @@
       },
       "candidate_count": 2787,
       "impact_board_gate": {
-        "activated_at": "2026-06-29T14:53:34.230712+00:00",
+        "activated_at": "2026-06-30T14:22:44.959935+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.173285,
         "cv_method": "walk_forward",
@@ -374,19 +374,24 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 30
+          },
+          {
+            "current": 0.425,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.55
           }
         ],
         "passed": false
@@ -398,19 +403,24 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 60
+          },
+          {
+            "current": 0.425,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.6
           }
         ],
         "passed": false
@@ -422,9 +432,14 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 14
+          },
+          {
+            "current": 0.425,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.45
           }
         ],
         "passed": false
@@ -437,12 +452,12 @@
     "target_grade": "A-",
     "uncapped_score": 97
   },
-  "generated_at": "2026-06-29T00:00:00+00:00",
+  "generated_at": "2026-06-30T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-06-29",
-    "dynasty_backtest": "2026-06-29",
-    "forward_validation": "2026-06-29",
-    "model_v07": "2026-06-29",
+    "adapter_backtest": "2026-06-30",
+    "dynasty_backtest": "2026-06-30",
+    "forward_validation": "2026-06-30",
+    "model_v07": "2026-06-30",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
