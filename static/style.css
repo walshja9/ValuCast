@@ -2197,7 +2197,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     border-bottom: 1px solid var(--c-border);
 }
 .buys-row:last-child { border-bottom: none; }
-.buys-rank { font-weight: 700; color: var(--c-text); text-align: right; }
+.buys-rank { font-weight: 700; color: var(--c-text); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .buys-thumb { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); object-fit: cover; }
 .buys-main a { font-weight: 600; }
 .buys-tag { display: block; font-size: .76rem; color: var(--c-muted); }
@@ -2222,7 +2222,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .movers-section h2 { margin: .25rem 0 var(--space-2); font-size: 1rem; letter-spacing: .08em; }
 .movers-row {
     display: grid;
-    grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto auto;
     gap: var(--space-2);
     align-items: center;
     min-height: 76px;
@@ -2251,7 +2251,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .buys-thumb { width: 32px; height: 32px; }
     .buys-chip, .buys-spark { display: none; }
     .movers-grid { grid-template-columns: 1fr; }
-    .movers-row { grid-template-columns: 1.5rem minmax(0, 1fr) auto; }
+    .movers-row { grid-template-columns: 2.75rem minmax(0, 1fr) auto; }
     .movers-row .buys-chip { display: none; }
 }
 
