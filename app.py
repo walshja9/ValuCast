@@ -1645,7 +1645,7 @@ _GRAPHIC_PALETTE = {
 
 
 def _graphic_fill_background(img):
-    from PIL import ImageDraw
+    from PIL import Image, ImageDraw, ImageFilter
 
     width, height = img.size
     draw = ImageDraw.Draw(img)
@@ -1655,6 +1655,14 @@ def _graphic_fill_background(img):
             [(0, y), (width, y)],
             fill=(round(11 + 5 * t), round(12 + 5 * t), round(15 + 7 * t)),
         )
+    # Ambient teal bloom in the header band (the brand's "glow on near-black" feel).
+    # Panels are drawn opaque on top, so this only reads through the header + margins.
+    glow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse((-160, -180, 540, 300), fill=(30, 152, 136, 58))
+    gd.ellipse((width - 380, -200, width + 180, 250), fill=(34, 120, 156, 44))
+    glow = glow.filter(ImageFilter.GaussianBlur(90))
+    img.alpha_composite(glow) if img.mode == "RGBA" else img.paste(glow, (0, 0), glow)
 
 
 def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=1016, y1=42, power=2.4, color=(52, 226, 196)):
@@ -1698,6 +1706,41 @@ def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=10
     draw.ellipse((nx - 4, ny - 4, nx + 4, ny + 4), fill=color)
 
 
+def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
+    """Glossy 'liquid glass' wordmark matching the brand logo: a horizontal teal->chrome
+    fill with a vertical glass sheen and a soft teal outer glow on the dark surface."""
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFilter
+
+    x0, y0, x1, y1 = draw.textbbox(xy, text, font=font)
+    w, h = x1 - x0, y1 - y0
+    if w <= 0 or h <= 0:
+        draw.text(xy, text, fill=(180, 246, 234), font=font)
+        return
+    pad = 10
+    width, height = w + pad * 2, h + pad * 2
+    ox, oy = x0 - pad, y0 - pad
+    mask = Image.new("L", (width, height), 0)
+    ImageDraw.Draw(mask).text((pad, pad), text, fill=255, font=font)
+
+    # 1) soft teal outer glow (the "glowing glass on black" feel)
+    glow_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    glow_layer.paste(Image.new("RGBA", (width, height), glow + (255,)), (0, 0), mask)
+    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(6))
+    img.paste(glow_layer, (ox, oy), glow_layer)
+
+    # 2) glass fill: horizontal teal->chrome-silver x vertical sheen (bright near the top)
+    xs = np.linspace(0.0, 1.0, width)
+    ys = np.linspace(0.0, 1.0, height)
+    teal = np.array([46, 224, 196], dtype=float)
+    silver = np.array([228, 236, 247], dtype=float)
+    hor = teal[None, :] * (1.0 - xs[:, None]) + silver[None, :] * xs[:, None]  # (W,3)
+    hor = np.repeat(hor[None, :, :], height, axis=0)                            # (H,W,3)
+    sheen = 0.80 + 0.52 * np.exp(-((ys - 0.26) ** 2) / (2 * 0.11 ** 2)) - 0.22 * ys
+    rgb = np.clip(hor * sheen[:, None, None], 0, 255).astype("uint8")
+    img.paste(Image.fromarray(rgb, "RGB"), (ox, oy), mask)
+
+
 def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve", value_history=None):
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
@@ -1709,7 +1752,7 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="
     # (headline arg kept for call-site compatibility.)
     _graphic_brand_curve(img, draw, value_history=value_history)
     _paste_brand_mark(img, 48, 42, size=52)
-    draw.text((116, 48), "VALUCAST", fill=green, font=_graphic_font(28, bold=True))
+    _draw_glass_text(img, draw, (116, 48), "VALUCAST", _graphic_font(28, bold=True))
     draw.text((118, 86), tagline, fill=muted, font=_graphic_font(18, bold=True))
     # When the brand curve is a real form curve, caption its movement.
     spark = build_spark(value_history) if value_history else None

@@ -4097,3 +4097,22 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-aotc-record-stat { font-size: .78rem; color: var(--bf-text); }
 .backfields-page .bf-aotc-record-stat strong { color: var(--bf-signal); font-variant-numeric: tabular-nums; }
 .backfields-page .bf-aotc-record-note { font-size: .72rem; color: var(--bf-muted); font-style: italic; }
+
+/* ── Liquid-glass brand refinement (match the logo feel) ── */
+.glass {
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, .055), rgba(255, 255, 255, 0) 42%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .28),
+        inset 0 0 0 1px rgba(120, 226, 210, .045),
+        inset 0 -1px 0 rgba(255, 255, 255, .04),
+        0 12px 40px rgba(0, 0, 0, .45);
+}
+/* Teal -> chrome glass wordmark in the nav, matching the logo + share cards. */
+.brand-word {
+    background: linear-gradient(100deg, #34e2c4 0%, #8fe9de 44%, #d7e4f2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+.site-logo { box-shadow: 0 0 0 1px rgba(120, 226, 210, .18), 0 0 22px rgba(52, 226, 196, .22), 0 8px 20px rgba(0, 0, 0, .30); }
