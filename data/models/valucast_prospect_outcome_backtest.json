@@ -309,7 +309,7 @@
         "rank_comparison_count": 8
       },
       "recommendations": [
-        "Buy top-40 retention is low; keep monitoring before tuning the buy-window curve."
+        "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
       ],
       "status": "collecting"
     },
@@ -331,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-06-30T14:32:34.616732+00:00",
+        "activated_at": "2026-06-30T15:14:06.974332+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -345,7 +345,7 @@
       },
       "candidate_count": 2787,
       "impact_board_gate": {
-        "activated_at": "2026-06-30T14:32:34.616732+00:00",
+        "activated_at": "2026-06-30T15:14:06.974332+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.173285,
         "cv_method": "walk_forward",
@@ -387,11 +387,6 @@
             "current": 8,
             "metric": "observation_span_days",
             "required": 30
-          },
-          {
-            "current": 0.425,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.55
           }
         ],
         "passed": false
@@ -416,11 +411,6 @@
             "current": 8,
             "metric": "observation_span_days",
             "required": 60
-          },
-          {
-            "current": 0.425,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.6
           }
         ],
         "passed": false
@@ -435,11 +425,6 @@
             "current": 8,
             "metric": "observation_span_days",
             "required": 14
-          },
-          {
-            "current": 0.425,
-            "metric": "latest_top40_buy_retention_rate",
-            "required": 0.45
           }
         ],
         "passed": false

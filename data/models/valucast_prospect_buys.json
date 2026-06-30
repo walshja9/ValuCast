@@ -1,12 +1,254 @@
 {
   "board": [
     {
-      "age": 18,
+      "age": 19,
+      "availability_level": "A",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0659, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0643, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0637, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0599, 'feature': 'youth'}",
+        "{'contribution': 0.0575, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0456, 'feature': 'iso'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_828098_hitter",
+      "level": "A",
+      "mlbam_id": 828098,
+      "name": "JoJo Parker",
+      "player_id": "vc_prospect_828098_hitter",
+      "positions": [
+        "SS"
+      ],
+      "rank": 1,
+      "reason": "ValuCast score momentum",
+      "role": "hitter",
+      "score": 72.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          46.99
+        ],
+        [
+          "2026-06-14",
+          43.5
+        ],
+        [
+          "2026-06-15",
+          43.5
+        ],
+        [
+          "2026-06-16",
+          43.5
+        ],
+        [
+          "2026-06-17",
+          43.54
+        ],
+        [
+          "2026-06-18",
+          43.61
+        ],
+        [
+          "2026-06-19",
+          43.58
+        ],
+        [
+          "2026-06-20",
+          43.58
+        ],
+        [
+          "2026-06-21",
+          37.28
+        ],
+        [
+          "2026-06-22",
+          27.53
+        ],
+        [
+          "2026-06-23",
+          27.5
+        ],
+        [
+          "2026-06-24",
+          28.31
+        ],
+        [
+          "2026-06-25",
+          29.56
+        ],
+        [
+          "2026-06-26",
+          30.12
+        ],
+        [
+          "2026-06-27",
+          30.53
+        ],
+        [
+          "2026-06-28",
+          30.59
+        ],
+        [
+          "2026-06-29",
+          34.36
+        ],
+        [
+          "2026-06-30",
+          34.43
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "TOR",
+      "terms": {
+        "buy_window": 1.0,
+        "conviction": 0.6818,
+        "model_strength": 0.3443,
+        "momentum": 1.0,
+        "runway": 0.95
+      },
+      "valucast_prospect_rank": 101,
+      "valucast_prospect_score": 34.43
+    },
+    {
+      "age": 19,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0988, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0983, 'feature': 'iso_x_youth'}",
+        "{'contribution': -0.044, 'feature': 'discipline_x_youth'}",
+        "{'contribution': 0.0989, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0841, 'feature': 'youth'}",
+        "{'contribution': 0.0684, 'feature': 'iso_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_821100_hitter",
+      "level": "A+",
+      "mlbam_id": 821100,
+      "name": "Justin Gonzales",
+      "player_id": "vc_prospect_821100_hitter",
+      "positions": [
+        "RF"
+      ],
+      "rank": 2,
+      "reason": "ValuCast score momentum",
+      "role": "hitter",
+      "score": 68.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          36.17
+        ],
+        [
+          "2026-06-14",
+          36.22
+        ],
+        [
+          "2026-06-15",
+          34.74
+        ],
+        [
+          "2026-06-16",
+          34.74
+        ],
+        [
+          "2026-06-17",
+          34.78
+        ],
+        [
+          "2026-06-18",
+          37.88
+        ],
+        [
+          "2026-06-19",
+          37.93
+        ],
+        [
+          "2026-06-20",
+          37.93
+        ],
+        [
+          "2026-06-21",
+          42.93
+        ],
+        [
+          "2026-06-22",
+          33.19
+        ],
+        [
+          "2026-06-23",
+          33.17
+        ],
+        [
+          "2026-06-24",
+          33.35
+        ],
+        [
+          "2026-06-25",
+          34.43
+        ],
+        [
+          "2026-06-26",
+          35.86
+        ],
+        [
+          "2026-06-27",
+          36.99
+        ],
+        [
+          "2026-06-28",
+          37.03
+        ],
+        [
+          "2026-06-29",
+          37.23
+        ],
+        [
+          "2026-06-30",
+          37.34
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "BOS",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6804,
+        "model_strength": 0.3734,
+        "momentum": 0.9002,
+        "runway": 0.875
+      },
+      "valucast_prospect_rank": 72,
+      "valucast_prospect_score": 37.34
+    },
+    {
+      "age": 18,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1029, 'feature': 'iso_x_youth'}",
@@ -25,7 +267,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 1,
+      "rank": 3,
       "reason": "Young runway",
       "role": "hitter",
       "score": 67.7,
@@ -123,6 +365,127 @@
     },
     {
       "age": 19,
+      "availability_level": "A",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0706, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0635, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0633, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0602, 'feature': 'youth'}",
+        "{'contribution': 0.0532, 'feature': 'ops_x_youth'}",
+        "{'contribution': -0.0471, 'feature': 'obp'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815832_hitter",
+      "level": "A",
+      "mlbam_id": 815832,
+      "name": "Xavier Neyens",
+      "player_id": "vc_prospect_815832_hitter",
+      "positions": [
+        "3B"
+      ],
+      "rank": 4,
+      "reason": "ValuCast score momentum",
+      "role": "hitter",
+      "score": 67.3,
+      "score_history": [
+        [
+          "2026-06-13",
+          46.85
+        ],
+        [
+          "2026-06-14",
+          43.28
+        ],
+        [
+          "2026-06-15",
+          43.21
+        ],
+        [
+          "2026-06-16",
+          43.21
+        ],
+        [
+          "2026-06-17",
+          43.29
+        ],
+        [
+          "2026-06-18",
+          43.22
+        ],
+        [
+          "2026-06-19",
+          43.22
+        ],
+        [
+          "2026-06-20",
+          43.22
+        ],
+        [
+          "2026-06-21",
+          28.49
+        ],
+        [
+          "2026-06-22",
+          21.73
+        ],
+        [
+          "2026-06-23",
+          21.71
+        ],
+        [
+          "2026-06-24",
+          23.16
+        ],
+        [
+          "2026-06-25",
+          24.74
+        ],
+        [
+          "2026-06-26",
+          24.83
+        ],
+        [
+          "2026-06-27",
+          25.37
+        ],
+        [
+          "2026-06-28",
+          28.4
+        ],
+        [
+          "2026-06-29",
+          29.47
+        ],
+        [
+          "2026-06-30",
+          29.48
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "HOU",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.6738,
+        "model_strength": 0.2948,
+        "momentum": 1.0,
+        "runway": 0.95
+      },
+      "valucast_prospect_rank": 184,
+      "valucast_prospect_score": 29.48
+    },
+    {
+      "age": 19,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
@@ -146,7 +509,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 2,
+      "rank": 5,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 66.7,
@@ -267,7 +630,7 @@
       "positions": [
         "P"
       ],
-      "rank": 3,
+      "rank": 6,
       "reason": "ValuCast score momentum",
       "role": "pitcher",
       "score": 65.3,
@@ -364,12 +727,133 @@
       "valucast_prospect_score": 31.85
     },
     {
-      "age": 20,
+      "age": 19,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1285, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.1119, 'feature': 'ops_x_youth'}",
+        "{'contribution': -0.066, 'feature': 'discipline_x_youth'}",
+        "{'contribution': 0.1088, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0867, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0846, 'feature': 'youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_807083_hitter",
+      "level": "A+",
+      "mlbam_id": 807083,
+      "name": "Nathan Flewelling",
+      "player_id": "vc_prospect_807083_hitter",
+      "positions": [
+        "C"
+      ],
+      "rank": 7,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 65.0,
+      "score_history": [
+        [
+          "2026-06-13",
+          35.78
+        ],
+        [
+          "2026-06-14",
+          29.75
+        ],
+        [
+          "2026-06-15",
+          31.33
+        ],
+        [
+          "2026-06-16",
+          31.33
+        ],
+        [
+          "2026-06-17",
+          35.94
+        ],
+        [
+          "2026-06-18",
+          41.75
+        ],
+        [
+          "2026-06-19",
+          41.75
+        ],
+        [
+          "2026-06-20",
+          41.75
+        ],
+        [
+          "2026-06-21",
+          53.92
+        ],
+        [
+          "2026-06-22",
+          42.63
+        ],
+        [
+          "2026-06-23",
+          42.63
+        ],
+        [
+          "2026-06-24",
+          41.55
+        ],
+        [
+          "2026-06-25",
+          41.5
+        ],
+        [
+          "2026-06-26",
+          40.32
+        ],
+        [
+          "2026-06-27",
+          41.74
+        ],
+        [
+          "2026-06-28",
+          41.66
+        ],
+        [
+          "2026-06-29",
+          44.46
+        ],
+        [
+          "2026-06-30",
+          44.51
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "TBR",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6846,
+        "model_strength": 0.4451,
+        "momentum": 0.5764,
+        "runway": 0.875
+      },
+      "valucast_prospect_rank": 32,
+      "valucast_prospect_score": 44.51
+    },
+    {
+      "age": 20,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0734, 'feature': 'ops_x_youth'}",
@@ -388,7 +872,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 4,
+      "rank": 8,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 64.4,
@@ -490,7 +974,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0644, 'feature': 'ops_x_youth'}",
@@ -509,7 +993,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 5,
+      "rank": 9,
       "reason": "Young runway",
       "role": "hitter",
       "score": 62.7,
@@ -611,7 +1095,7 @@
       "availability_risk_discount": 0.03,
       "availability_risk_level": "medium",
       "availability_status": "thin_current_sample",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1852, 'feature': 'level'}",
@@ -630,7 +1114,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 6,
+      "rank": 10,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 62.6,
@@ -732,7 +1216,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0568, 'feature': 'ops_x_youth'}",
@@ -751,7 +1235,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 7,
+      "rank": 11,
       "reason": "ValuCast score momentum",
       "role": "hitter",
       "score": 62.2,
@@ -853,7 +1337,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1858, 'feature': 'level'}",
@@ -872,7 +1356,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 8,
+      "rank": 12,
       "reason": "ValuCast score momentum",
       "role": "hitter",
       "score": 61.6,
@@ -974,7 +1458,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1776, 'feature': 'level'}",
@@ -993,7 +1477,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 9,
+      "rank": 13,
       "reason": "ValuCast score momentum",
       "role": "hitter",
       "score": 61.4,
@@ -1090,12 +1574,133 @@
       "valucast_prospect_score": 39.81
     },
     {
+      "age": 18,
+      "availability_level": "A",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0792, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0775, 'feature': 'iso_x_youth'}",
+        "{'contribution': -0.0567, 'feature': 'discipline_x_youth'}",
+        "{'contribution': 0.0893, 'feature': 'youth'}",
+        "{'contribution': 0.0682, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0521, 'feature': 'iso_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_829037_hitter",
+      "level": "A",
+      "mlbam_id": 829037,
+      "name": "Kevin Alvarez",
+      "player_id": "vc_prospect_829037_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 14,
+      "reason": "Young runway",
+      "role": "hitter",
+      "score": 60.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          37.4
+        ],
+        [
+          "2026-06-14",
+          37.45
+        ],
+        [
+          "2026-06-15",
+          37.45
+        ],
+        [
+          "2026-06-16",
+          37.45
+        ],
+        [
+          "2026-06-17",
+          37.45
+        ],
+        [
+          "2026-06-18",
+          37.45
+        ],
+        [
+          "2026-06-19",
+          39.03
+        ],
+        [
+          "2026-06-20",
+          37.56
+        ],
+        [
+          "2026-06-21",
+          31.85
+        ],
+        [
+          "2026-06-22",
+          24.06
+        ],
+        [
+          "2026-06-23",
+          24.03
+        ],
+        [
+          "2026-06-24",
+          26.27
+        ],
+        [
+          "2026-06-25",
+          26.78
+        ],
+        [
+          "2026-06-26",
+          26.68
+        ],
+        [
+          "2026-06-27",
+          26.46
+        ],
+        [
+          "2026-06-28",
+          26.24
+        ],
+        [
+          "2026-06-29",
+          26.19
+        ],
+        [
+          "2026-06-30",
+          26.22
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "HOU",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.6668,
+        "model_strength": 0.2622,
+        "momentum": 0.688,
+        "runway": 1.0
+      },
+      "valucast_prospect_rank": 278,
+      "valucast_prospect_score": 26.22
+    },
+    {
       "age": 22,
       "availability_level": "AAA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1729, 'feature': 'level'}",
@@ -1114,7 +1719,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 10,
+      "rank": 15,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 60.5,
@@ -1235,7 +1840,7 @@
       "positions": [
         "C"
       ],
-      "rank": 11,
+      "rank": 16,
       "reason": "ValuCast score momentum",
       "role": "hitter",
       "score": 60.4,
@@ -1337,7 +1942,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.2983, 'feature': 'pick_value'}",
@@ -1356,7 +1961,7 @@
       "positions": [
         "P"
       ],
-      "rank": 12,
+      "rank": 17,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 60.0,
@@ -1453,12 +2058,133 @@
       "valucast_prospect_score": 74.63
     },
     {
-      "age": 21,
+      "age": 20,
       "availability_level": "AA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0936, 'feature': 'slg'}",
+        "{'contribution': 0.0801, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.077, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.1065, 'feature': 'slg'}",
+        "{'contribution': 0.0812, 'feature': 'iso'}",
+        "{'contribution': 0.0783, 'feature': 'ops_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815394_hitter",
+      "level": "AA",
+      "mlbam_id": 815394,
+      "name": "Theo Gillen",
+      "player_id": "vc_prospect_815394_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 18,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 59.1,
+      "score_history": [
+        [
+          "2026-06-13",
+          47.09
+        ],
+        [
+          "2026-06-14",
+          43.66
+        ],
+        [
+          "2026-06-15",
+          43.67
+        ],
+        [
+          "2026-06-16",
+          43.67
+        ],
+        [
+          "2026-06-17",
+          43.67
+        ],
+        [
+          "2026-06-18",
+          43.75
+        ],
+        [
+          "2026-06-19",
+          43.68
+        ],
+        [
+          "2026-06-20",
+          43.68
+        ],
+        [
+          "2026-06-21",
+          56.46
+        ],
+        [
+          "2026-06-22",
+          45.74
+        ],
+        [
+          "2026-06-23",
+          45.74
+        ],
+        [
+          "2026-06-24",
+          45.54
+        ],
+        [
+          "2026-06-25",
+          45.97
+        ],
+        [
+          "2026-06-26",
+          44.9
+        ],
+        [
+          "2026-06-27",
+          46.75
+        ],
+        [
+          "2026-06-28",
+          46.51
+        ],
+        [
+          "2026-06-29",
+          46.44
+        ],
+        [
+          "2026-06-30",
+          46.4
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "TBR",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6755,
+        "model_strength": 0.464,
+        "momentum": 0.4577,
+        "runway": 0.675
+      },
+      "valucast_prospect_rank": 26,
+      "valucast_prospect_score": 46.4
+    },
+    {
+      "age": 21,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': -0.0919, 'feature': 'log_signing_bonus'}",
@@ -1477,7 +2203,7 @@
       "positions": [
         "P"
       ],
-      "rank": 13,
+      "rank": 19,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 58.7,
@@ -1574,12 +2300,133 @@
       "valucast_prospect_score": 38.72
     },
     {
-      "age": 20,
+      "age": 21,
       "availability_level": "AA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': 0.0593, 'feature': 'k_bb_pct'}",
+        "{'contribution': 0.0433, 'feature': 'start_rate'}",
+        "{'contribution': 0.031, 'feature': 'k_to_bb_per_9'}",
+        "{'contribution': 0.1004, 'feature': 'k_bb_pct'}",
+        "{'contribution': 0.045, 'feature': 'k_per_9'}",
+        "{'contribution': 0.0415, 'feature': 'start_rate'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_800537_pitcher",
+      "level": "AA",
+      "mlbam_id": 800537,
+      "name": "Christian Zazueta",
+      "player_id": "vc_prospect_800537_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 20,
+      "reason": "ValuCast score momentum",
+      "role": "pitcher",
+      "score": 58.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          26.4
+        ],
+        [
+          "2026-06-14",
+          26.4
+        ],
+        [
+          "2026-06-15",
+          26.4
+        ],
+        [
+          "2026-06-16",
+          26.4
+        ],
+        [
+          "2026-06-17",
+          26.4
+        ],
+        [
+          "2026-06-18",
+          26.4
+        ],
+        [
+          "2026-06-19",
+          29.71
+        ],
+        [
+          "2026-06-20",
+          29.71
+        ],
+        [
+          "2026-06-21",
+          30.65
+        ],
+        [
+          "2026-06-22",
+          28.88
+        ],
+        [
+          "2026-06-23",
+          28.89
+        ],
+        [
+          "2026-06-24",
+          30.23
+        ],
+        [
+          "2026-06-25",
+          30.34
+        ],
+        [
+          "2026-06-26",
+          30.5
+        ],
+        [
+          "2026-06-27",
+          30.45
+        ],
+        [
+          "2026-06-28",
+          30.23
+        ],
+        [
+          "2026-06-29",
+          30.02
+        ],
+        [
+          "2026-06-30",
+          29.96
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "LAD",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.7476,
+        "model_strength": 0.2996,
+        "momentum": 0.8747,
+        "runway": 0.6
+      },
+      "valucast_prospect_rank": 172,
+      "valucast_prospect_score": 29.96
+    },
+    {
+      "age": 20,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.196, 'feature': 'iso_x_youth'}",
@@ -1598,7 +2445,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 14,
+      "rank": 21,
       "reason": "ValuCast model strength",
       "role": "hitter",
       "score": 58.6,
@@ -1700,7 +2547,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.3641, 'feature': 'pick_value'}",
@@ -1719,7 +2566,7 @@
       "positions": [
         "P"
       ],
-      "rank": 15,
+      "rank": 22,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 58.5,
@@ -1817,11 +2664,253 @@
     },
     {
       "age": 19,
-      "availability_level": "AA",
+      "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': 0.1513, 'feature': 'pick_value'}",
+        "{'contribution': 0.136, 'feature': 'inverse_draft_round'}",
+        "{'contribution': -0.1126, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.1556, 'feature': 'inverse_draft_round'}",
+        "{'contribution': 0.1312, 'feature': 'pick_value'}",
+        "{'contribution': -0.0921, 'feature': 'log_signing_bonus'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_807284_pitcher",
+      "level": "A+",
+      "mlbam_id": 807284,
+      "name": "Cam Caminiti",
+      "player_id": "vc_prospect_807284_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 23,
+      "reason": "Still in the buy window",
+      "role": "pitcher",
+      "score": 58.4,
+      "score_history": [
+        [
+          "2026-06-13",
+          35.51
+        ],
+        [
+          "2026-06-14",
+          35.51
+        ],
+        [
+          "2026-06-15",
+          35.5
+        ],
+        [
+          "2026-06-16",
+          35.5
+        ],
+        [
+          "2026-06-17",
+          35.5
+        ],
+        [
+          "2026-06-18",
+          35.69
+        ],
+        [
+          "2026-06-19",
+          35.69
+        ],
+        [
+          "2026-06-20",
+          35.69
+        ],
+        [
+          "2026-06-21",
+          48.29
+        ],
+        [
+          "2026-06-22",
+          45.49
+        ],
+        [
+          "2026-06-23",
+          45.48
+        ],
+        [
+          "2026-06-24",
+          45.2
+        ],
+        [
+          "2026-06-25",
+          45.17
+        ],
+        [
+          "2026-06-26",
+          45.59
+        ],
+        [
+          "2026-06-27",
+          45.84
+        ],
+        [
+          "2026-06-28",
+          45.66
+        ],
+        [
+          "2026-06-29",
+          45.66
+        ],
+        [
+          "2026-06-30",
+          45.72
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "ATL",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.7693,
+        "model_strength": 0.4572,
+        "momentum": 0.1871,
+        "runway": 0.875
+      },
+      "valucast_prospect_rank": 28,
+      "valucast_prospect_score": 45.72
+    },
+    {
+      "age": 19,
+      "availability_level": "A",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0571, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0505, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0477, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0588, 'feature': 'youth'}",
+        "{'contribution': 0.0488, 'feature': 'ops_x_youth'}",
+        "{'contribution': -0.0366, 'feature': 'discipline_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815843_hitter",
+      "level": "A",
+      "mlbam_id": 815843,
+      "name": "Josh Hammond",
+      "player_id": "vc_prospect_815843_hitter",
+      "positions": [
+        "SS"
+      ],
+      "rank": 24,
+      "reason": "Young runway",
+      "role": "hitter",
+      "score": 58.1,
+      "score_history": [
+        [
+          "2026-06-13",
+          29.76
+        ],
+        [
+          "2026-06-14",
+          29.81
+        ],
+        [
+          "2026-06-15",
+          28.33
+        ],
+        [
+          "2026-06-16",
+          28.33
+        ],
+        [
+          "2026-06-17",
+          28.38
+        ],
+        [
+          "2026-06-18",
+          28.38
+        ],
+        [
+          "2026-06-19",
+          28.43
+        ],
+        [
+          "2026-06-20",
+          28.46
+        ],
+        [
+          "2026-06-21",
+          26.89
+        ],
+        [
+          "2026-06-22",
+          20.69
+        ],
+        [
+          "2026-06-23",
+          20.65
+        ],
+        [
+          "2026-06-24",
+          20.9
+        ],
+        [
+          "2026-06-25",
+          20.9
+        ],
+        [
+          "2026-06-26",
+          22.33
+        ],
+        [
+          "2026-06-27",
+          23.76
+        ],
+        [
+          "2026-06-28",
+          23.69
+        ],
+        [
+          "2026-06-29",
+          24.12
+        ],
+        [
+          "2026-06-30",
+          24.09
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "KC",
+      "terms": {
+        "buy_window": 0.45,
+        "conviction": 0.6878,
+        "model_strength": 0.2409,
+        "momentum": 0.8533,
+        "runway": 0.95
+      },
+      "valucast_prospect_rank": 362,
+      "valucast_prospect_score": 24.09
+    },
+    {
+      "age": 19,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1066, 'feature': 'ops_x_youth'}",
@@ -1840,7 +2929,7 @@
       "positions": [
         "C"
       ],
-      "rank": 16,
+      "rank": 25,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 57.8,
@@ -1938,11 +3027,132 @@
     },
     {
       "age": 20,
-      "availability_level": "AA",
+      "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': 0.1044, 'feature': 'pick_value'}",
+        "{'contribution': -0.0971, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.055, 'feature': 'start_rate'}",
+        "{'contribution': 0.0874, 'feature': 'pick_value'}",
+        "{'contribution': 0.0793, 'feature': 'k_bb_pct'}",
+        "{'contribution': -0.0784, 'feature': 'log_signing_bonus'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815785_pitcher",
+      "level": "A+",
+      "mlbam_id": 815785,
+      "name": "Braylon Doughty",
+      "player_id": "vc_prospect_815785_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 26,
+      "reason": "Still in the buy window",
+      "role": "pitcher",
+      "score": 57.3,
+      "score_history": [
+        [
+          "2026-06-13",
+          33.22
+        ],
+        [
+          "2026-06-14",
+          33.22
+        ],
+        [
+          "2026-06-15",
+          33.22
+        ],
+        [
+          "2026-06-16",
+          33.22
+        ],
+        [
+          "2026-06-17",
+          33.22
+        ],
+        [
+          "2026-06-18",
+          33.22
+        ],
+        [
+          "2026-06-19",
+          33.52
+        ],
+        [
+          "2026-06-20",
+          33.52
+        ],
+        [
+          "2026-06-21",
+          40.26
+        ],
+        [
+          "2026-06-22",
+          37.76
+        ],
+        [
+          "2026-06-23",
+          37.76
+        ],
+        [
+          "2026-06-24",
+          38.04
+        ],
+        [
+          "2026-06-25",
+          38.13
+        ],
+        [
+          "2026-06-26",
+          39.77
+        ],
+        [
+          "2026-06-27",
+          39.79
+        ],
+        [
+          "2026-06-28",
+          39.46
+        ],
+        [
+          "2026-06-29",
+          39.48
+        ],
+        [
+          "2026-06-30",
+          39.42
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "CLE",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.7654,
+        "model_strength": 0.3942,
+        "momentum": 0.3165,
+        "runway": 0.8
+      },
+      "valucast_prospect_rank": 57,
+      "valucast_prospect_score": 39.42
+    },
+    {
+      "age": 20,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.105, 'feature': 'ops_x_youth'}",
@@ -1961,7 +3171,7 @@
       "positions": [
         "C"
       ],
-      "rank": 17,
+      "rank": 27,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 57.3,
@@ -2059,11 +3269,130 @@
     },
     {
       "age": 21,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.08,
+      "availability_risk_level": "high",
+      "availability_status": "stale_or_inactive",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1423, 'feature': 'babip'}",
+        "{'contribution': 0.1032, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.1015, 'feature': 'slg'}",
+        "{'contribution': -0.152, 'feature': 'iso_x_ops'}",
+        "{'contribution': 0.091, 'feature': 'iso'}",
+        "{'contribution': 0.0811, 'feature': 'babip'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_800522_hitter",
+      "level": "A+",
+      "mlbam_id": 800522,
+      "name": "Josue Briceno",
+      "player_id": "vc_prospect_800522_hitter",
+      "positions": [],
+      "rank": 28,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 56.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          38.41
+        ],
+        [
+          "2026-06-14",
+          38.41
+        ],
+        [
+          "2026-06-15",
+          38.41
+        ],
+        [
+          "2026-06-16",
+          38.41
+        ],
+        [
+          "2026-06-17",
+          38.41
+        ],
+        [
+          "2026-06-18",
+          38.41
+        ],
+        [
+          "2026-06-19",
+          38.41
+        ],
+        [
+          "2026-06-20",
+          38.41
+        ],
+        [
+          "2026-06-21",
+          47.63
+        ],
+        [
+          "2026-06-22",
+          19.1
+        ],
+        [
+          "2026-06-23",
+          19.11
+        ],
+        [
+          "2026-06-24",
+          39.66
+        ],
+        [
+          "2026-06-25",
+          40.24
+        ],
+        [
+          "2026-06-26",
+          39.91
+        ],
+        [
+          "2026-06-27",
+          39.46
+        ],
+        [
+          "2026-06-28",
+          39.63
+        ],
+        [
+          "2026-06-29",
+          39.77
+        ],
+        [
+          "2026-06-30",
+          39.72
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "DET",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6685,
+        "model_strength": 0.3972,
+        "momentum": 0.4061,
+        "runway": 0.725
+      },
+      "valucast_prospect_rank": 54,
+      "valucast_prospect_score": 39.72
+    },
+    {
+      "age": 21,
       "availability_level": "AA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1439, 'feature': 'iso_x_youth'}",
@@ -2082,7 +3411,7 @@
       "positions": [
         "RF"
       ],
-      "rank": 18,
+      "rank": 29,
       "reason": "Model conviction",
       "role": "hitter",
       "score": 56.0,
@@ -2184,7 +3513,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0596, 'feature': 'ops_x_youth'}",
@@ -2203,7 +3532,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 19,
+      "rank": 30,
       "reason": "Young runway",
       "role": "hitter",
       "score": 56.0,
@@ -2305,7 +3634,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.152, 'feature': 'ops_x_youth'}",
@@ -2324,7 +3653,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 20,
+      "rank": 31,
       "reason": "Young runway",
       "role": "hitter",
       "score": 55.6,
@@ -2426,7 +3755,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': -0.1127, 'feature': 'log_signing_bonus'}",
@@ -2445,7 +3774,7 @@
       "positions": [
         "P"
       ],
-      "rank": 21,
+      "rank": 32,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 55.5,
@@ -2542,12 +3871,131 @@
       "valucast_prospect_score": 47.58
     },
     {
+      "age": 22,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.1,
+      "availability_risk_level": "high",
+      "availability_status": "stale_or_inactive",
+      "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': 0.2102, 'feature': 'batters_faced_per_ip'}",
+        "{'contribution': -0.061, 'feature': 'h_per_9'}",
+        "{'contribution': 0.043, 'feature': 'start_rate'}",
+        "{'contribution': 0.3653, 'feature': 'batters_faced_per_ip'}",
+        "{'contribution': -0.0597, 'feature': 'h_per_9'}",
+        "{'contribution': 0.0575, 'feature': 'k_per_9'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_703186_pitcher",
+      "level": "AA",
+      "mlbam_id": 703186,
+      "name": "Jarlin Susana",
+      "player_id": "vc_prospect_703186_pitcher",
+      "positions": [],
+      "rank": 33,
+      "reason": "Still in the buy window",
+      "role": "pitcher",
+      "score": 55.4,
+      "score_history": [
+        [
+          "2026-06-13",
+          33.52
+        ],
+        [
+          "2026-06-14",
+          33.52
+        ],
+        [
+          "2026-06-15",
+          30.78
+        ],
+        [
+          "2026-06-16",
+          30.78
+        ],
+        [
+          "2026-06-17",
+          30.78
+        ],
+        [
+          "2026-06-18",
+          30.78
+        ],
+        [
+          "2026-06-19",
+          30.78
+        ],
+        [
+          "2026-06-20",
+          30.78
+        ],
+        [
+          "2026-06-21",
+          52.42
+        ],
+        [
+          "2026-06-22",
+          26.89
+        ],
+        [
+          "2026-06-23",
+          26.89
+        ],
+        [
+          "2026-06-24",
+          39.53
+        ],
+        [
+          "2026-06-25",
+          39.14
+        ],
+        [
+          "2026-06-26",
+          40.29
+        ],
+        [
+          "2026-06-27",
+          38.63
+        ],
+        [
+          "2026-06-28",
+          39.11
+        ],
+        [
+          "2026-06-29",
+          40.42
+        ],
+        [
+          "2026-06-30",
+          40.42
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "WSN",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.7451,
+        "model_strength": 0.4042,
+        "momentum": 0.4901,
+        "runway": 0.525
+      },
+      "valucast_prospect_rank": 49,
+      "valucast_prospect_score": 40.42
+    },
+    {
       "age": 20,
       "availability_level": "AA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.11, 'feature': 'iso'}",
@@ -2566,7 +4014,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 22,
+      "rank": 34,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 55.4,
@@ -2668,7 +4116,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1011, 'feature': 'level'}",
@@ -2687,7 +4135,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 23,
+      "rank": 35,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 55.2,
@@ -2789,7 +4237,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': -0.2069, 'feature': 'ops_x_level'}",
@@ -2808,7 +4256,7 @@
       "positions": [
         "1B"
       ],
-      "rank": 24,
+      "rank": 36,
       "reason": "ValuCast score momentum",
       "role": "hitter",
       "score": 55.1,
@@ -2929,7 +4377,7 @@
       "positions": [
         "P"
       ],
-      "rank": 25,
+      "rank": 37,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 54.5,
@@ -3031,7 +4479,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.6347, 'feature': 'pick_value'}",
@@ -3050,7 +4498,7 @@
       "positions": [
         "P"
       ],
-      "rank": 26,
+      "rank": 38,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 54.3,
@@ -3152,7 +4600,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0805, 'feature': 'iso_x_youth'}",
@@ -3171,7 +4619,7 @@
       "positions": [
         "C"
       ],
-      "rank": 27,
+      "rank": 39,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 54.3,
@@ -3273,7 +4721,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.4571, 'feature': 'pick_value'}",
@@ -3292,7 +4740,7 @@
       "positions": [
         "P"
       ],
-      "rank": 28,
+      "rank": 40,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 54.3,
@@ -3394,7 +4842,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1005, 'feature': 'level'}",
@@ -3413,7 +4861,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 29,
+      "rank": 41,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 54.2,
@@ -3515,7 +4963,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1642, 'feature': 'ops_x_youth'}",
@@ -3534,7 +4982,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 30,
+      "rank": 42,
       "reason": "Young runway",
       "role": "hitter",
       "score": 53.9,
@@ -3631,12 +5079,254 @@
       "valucast_prospect_score": 55.9
     },
     {
+      "age": 22,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1656, 'feature': 'inverse_draft_round'}",
+        "{'contribution': 0.1518, 'feature': 'pick_value'}",
+        "{'contribution': -0.1058, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.1806, 'feature': 'inverse_draft_round'}",
+        "{'contribution': 0.1416, 'feature': 'pick_value'}",
+        "{'contribution': -0.0867, 'feature': 'log_signing_bonus'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_805906_pitcher",
+      "level": "AA",
+      "mlbam_id": 805906,
+      "name": "Gage Wood",
+      "player_id": "vc_prospect_805906_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 43,
+      "reason": "Still in the buy window",
+      "role": "pitcher",
+      "score": 53.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          26.73
+        ],
+        [
+          "2026-06-14",
+          26.73
+        ],
+        [
+          "2026-06-15",
+          26.73
+        ],
+        [
+          "2026-06-16",
+          26.73
+        ],
+        [
+          "2026-06-17",
+          26.73
+        ],
+        [
+          "2026-06-18",
+          26.73
+        ],
+        [
+          "2026-06-19",
+          33.22
+        ],
+        [
+          "2026-06-20",
+          33.22
+        ],
+        [
+          "2026-06-21",
+          35.31
+        ],
+        [
+          "2026-06-22",
+          17.46
+        ],
+        [
+          "2026-06-23",
+          17.46
+        ],
+        [
+          "2026-06-24",
+          25.97
+        ],
+        [
+          "2026-06-25",
+          43.08
+        ],
+        [
+          "2026-06-26",
+          43.38
+        ],
+        [
+          "2026-06-27",
+          43.35
+        ],
+        [
+          "2026-06-28",
+          43.24
+        ],
+        [
+          "2026-06-29",
+          43.48
+        ],
+        [
+          "2026-06-30",
+          43.45
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "PHI",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.5786,
+        "model_strength": 0.4345,
+        "momentum": 0.4344,
+        "runway": 0.525
+      },
+      "valucast_prospect_rank": 37,
+      "valucast_prospect_score": 43.45
+    },
+    {
+      "age": 22,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': 0.3176, 'feature': 'pick_value'}",
+        "{'contribution': 0.1916, 'feature': 'inverse_draft_round'}",
+        "{'contribution': -0.143, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.2242, 'feature': 'pick_value'}",
+        "{'contribution': 0.1524, 'feature': 'inverse_draft_round'}",
+        "{'contribution': -0.0618, 'feature': 'log_signing_bonus'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_701364_pitcher",
+      "level": "AA",
+      "mlbam_id": 701364,
+      "name": "Jamie Arnold",
+      "player_id": "vc_prospect_701364_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 44,
+      "reason": "Model conviction",
+      "role": "pitcher",
+      "score": 53.3,
+      "score_history": [
+        [
+          "2026-06-13",
+          37.93
+        ],
+        [
+          "2026-06-14",
+          37.99
+        ],
+        [
+          "2026-06-15",
+          37.99
+        ],
+        [
+          "2026-06-16",
+          37.99
+        ],
+        [
+          "2026-06-17",
+          37.99
+        ],
+        [
+          "2026-06-18",
+          37.99
+        ],
+        [
+          "2026-06-19",
+          37.99
+        ],
+        [
+          "2026-06-20",
+          38.06
+        ],
+        [
+          "2026-06-21",
+          61.63
+        ],
+        [
+          "2026-06-22",
+          55.58
+        ],
+        [
+          "2026-06-23",
+          55.58
+        ],
+        [
+          "2026-06-24",
+          56.65
+        ],
+        [
+          "2026-06-25",
+          56.68
+        ],
+        [
+          "2026-06-26",
+          57.23
+        ],
+        [
+          "2026-06-27",
+          57.3
+        ],
+        [
+          "2026-06-28",
+          57.51
+        ],
+        [
+          "2026-06-29",
+          57.3
+        ],
+        [
+          "2026-06-30",
+          57.3
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "ATH",
+      "terms": {
+        "buy_window": 0.3,
+        "conviction": 0.7791,
+        "model_strength": 0.573,
+        "momentum": 0.5238,
+        "runway": 0.525
+      },
+      "valucast_prospect_rank": 8,
+      "valucast_prospect_score": 57.3
+    },
+    {
       "age": 19,
       "availability_level": "A",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0707, 'feature': 'iso'}",
@@ -3655,7 +5345,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 31,
+      "rank": 45,
       "reason": "Young runway",
       "role": "hitter",
       "score": 53.0,
@@ -3757,7 +5447,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1363, 'feature': 'bb_to_k_ratio'}",
@@ -3776,7 +5466,7 @@
       "positions": [
         "RF"
       ],
-      "rank": 32,
+      "rank": 46,
       "reason": "Model conviction",
       "role": "hitter",
       "score": 52.5,
@@ -3897,7 +5587,7 @@
       "positions": [
         "P"
       ],
-      "rank": 33,
+      "rank": 47,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 52.4,
@@ -4018,7 +5708,7 @@
       "positions": [
         "P"
       ],
-      "rank": 34,
+      "rank": 48,
       "reason": "ValuCast score momentum",
       "role": "pitcher",
       "score": 52.2,
@@ -4120,7 +5810,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1007, 'feature': 'level'}",
@@ -4139,7 +5829,7 @@
       "positions": [
         "LF"
       ],
-      "rank": 35,
+      "rank": 49,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 52.1,
@@ -4236,12 +5926,492 @@
       "valucast_prospect_score": 34.24
     },
     {
+      "age": 19,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0975, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0598, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0566, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0904, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0593, 'feature': 'youth'}",
+        "{'contribution': 0.0493, 'feature': 'ops_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815824_hitter",
+      "level": "A+",
+      "mlbam_id": 815824,
+      "name": "Josiah Hartshorn",
+      "player_id": "vc_prospect_815824_hitter",
+      "positions": [
+        "1B"
+      ],
+      "rank": 50,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 51.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          35.55
+        ],
+        [
+          "2026-06-14",
+          35.55
+        ],
+        [
+          "2026-06-15",
+          41.75
+        ],
+        [
+          "2026-06-16",
+          41.75
+        ],
+        [
+          "2026-06-17",
+          41.75
+        ],
+        [
+          "2026-06-18",
+          41.75
+        ],
+        [
+          "2026-06-19",
+          41.75
+        ],
+        [
+          "2026-06-20",
+          41.75
+        ],
+        [
+          "2026-06-21",
+          65.0
+        ],
+        [
+          "2026-06-22",
+          38.41
+        ],
+        [
+          "2026-06-23",
+          38.38
+        ],
+        [
+          "2026-06-24",
+          36.33
+        ],
+        [
+          "2026-06-25",
+          37.22
+        ],
+        [
+          "2026-06-26",
+          36.74
+        ],
+        [
+          "2026-06-27",
+          36.86
+        ],
+        [
+          "2026-06-28",
+          36.71
+        ],
+        [
+          "2026-06-29",
+          35.02
+        ],
+        [
+          "2026-06-30",
+          35.03
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "CHC",
+      "terms": {
+        "buy_window": 1.0,
+        "conviction": 0.6139,
+        "model_strength": 0.3503,
+        "momentum": 0.048,
+        "runway": 0.875
+      },
+      "valucast_prospect_rank": 90,
+      "valucast_prospect_score": 35.03
+    },
+    {
+      "age": 20,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.3,
+      "availability_risk_level": "high",
+      "availability_status": "injured",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1769, 'feature': 'babip'}",
+        "{'contribution': 0.1481, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.1336, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.1092, 'feature': 'ops_x_youth'}",
+        "{'contribution': -0.0471, 'feature': 'youth'}",
+        "{'contribution': 0.0374, 'feature': 'iso_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_806964_hitter",
+      "level": "AA",
+      "mlbam_id": 806964,
+      "name": "Sebastian Walcott",
+      "player_id": "vc_prospect_806964_hitter",
+      "positions": [],
+      "rank": 51,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 51.3,
+      "score_history": [
+        [
+          "2026-06-13",
+          36.54
+        ],
+        [
+          "2026-06-14",
+          36.54
+        ],
+        [
+          "2026-06-15",
+          36.74
+        ],
+        [
+          "2026-06-16",
+          36.74
+        ],
+        [
+          "2026-06-17",
+          36.74
+        ],
+        [
+          "2026-06-18",
+          36.74
+        ],
+        [
+          "2026-06-19",
+          36.74
+        ],
+        [
+          "2026-06-20",
+          36.74
+        ],
+        [
+          "2026-06-21",
+          37.76
+        ],
+        [
+          "2026-06-22",
+          15.04
+        ],
+        [
+          "2026-06-23",
+          15.05
+        ],
+        [
+          "2026-06-24",
+          37.5
+        ],
+        [
+          "2026-06-25",
+          37.48
+        ],
+        [
+          "2026-06-26",
+          37.37
+        ],
+        [
+          "2026-06-27",
+          27.18
+        ],
+        [
+          "2026-06-28",
+          27.28
+        ],
+        [
+          "2026-06-29",
+          27.8
+        ],
+        [
+          "2026-06-30",
+          27.75
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "TEX",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.7329,
+        "model_strength": 0.2775,
+        "momentum": 0.476,
+        "runway": 0.675
+      },
+      "valucast_prospect_rank": 236,
+      "valucast_prospect_score": 27.75
+    },
+    {
+      "age": 20,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0852, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0847, 'feature': 'slg'}",
+        "{'contribution': 0.0785, 'feature': 'iso'}",
+        "{'contribution': 0.0969, 'feature': 'slg'}",
+        "{'contribution': 0.0964, 'feature': 'iso'}",
+        "{'contribution': 0.076, 'feature': 'ops_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_807080_hitter",
+      "level": "A+",
+      "mlbam_id": 807080,
+      "name": "Eric Hartman",
+      "player_id": "vc_prospect_807080_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 52,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 50.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          34.23
+        ],
+        [
+          "2026-06-14",
+          38.83
+        ],
+        [
+          "2026-06-15",
+          35.84
+        ],
+        [
+          "2026-06-16",
+          35.84
+        ],
+        [
+          "2026-06-17",
+          35.88
+        ],
+        [
+          "2026-06-18",
+          37.43
+        ],
+        [
+          "2026-06-19",
+          37.43
+        ],
+        [
+          "2026-06-20",
+          37.48
+        ],
+        [
+          "2026-06-21",
+          44.52
+        ],
+        [
+          "2026-06-22",
+          38.63
+        ],
+        [
+          "2026-06-23",
+          38.63
+        ],
+        [
+          "2026-06-24",
+          41.05
+        ],
+        [
+          "2026-06-25",
+          39.56
+        ],
+        [
+          "2026-06-26",
+          38.91
+        ],
+        [
+          "2026-06-27",
+          37.53
+        ],
+        [
+          "2026-06-28",
+          37.7
+        ],
+        [
+          "2026-06-29",
+          39.71
+        ],
+        [
+          "2026-06-30",
+          40.3
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "ATL",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6892,
+        "model_strength": 0.403,
+        "momentum": 0.0208,
+        "runway": 0.8
+      },
+      "valucast_prospect_rank": 51,
+      "valucast_prospect_score": 40.3
+    },
+    {
+      "age": 22,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.08,
+      "availability_risk_level": "high",
+      "availability_status": "stale_or_inactive",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.165, 'feature': 'babip'}",
+        "{'contribution': -0.1047, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0955, 'feature': 'level'}",
+        "{'contribution': 0.0987, 'feature': 'babip'}",
+        "{'contribution': 0.0464, 'feature': 'ops_x_youth'}",
+        "{'contribution': -0.0395, 'feature': 'iso_x_ops'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_805795_hitter",
+      "level": "AA",
+      "mlbam_id": 805795,
+      "name": "Aidan Miller",
+      "player_id": "vc_prospect_805795_hitter",
+      "positions": [],
+      "rank": 53,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 50.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          32.13
+        ],
+        [
+          "2026-06-14",
+          32.13
+        ],
+        [
+          "2026-06-15",
+          22.34
+        ],
+        [
+          "2026-06-16",
+          22.34
+        ],
+        [
+          "2026-06-17",
+          22.34
+        ],
+        [
+          "2026-06-18",
+          22.34
+        ],
+        [
+          "2026-06-19",
+          22.34
+        ],
+        [
+          "2026-06-20",
+          22.34
+        ],
+        [
+          "2026-06-21",
+          25.41
+        ],
+        [
+          "2026-06-22",
+          4.65
+        ],
+        [
+          "2026-06-23",
+          4.65
+        ],
+        [
+          "2026-06-24",
+          38.12
+        ],
+        [
+          "2026-06-25",
+          37.73
+        ],
+        [
+          "2026-06-26",
+          37.49
+        ],
+        [
+          "2026-06-27",
+          37.05
+        ],
+        [
+          "2026-06-28",
+          37.94
+        ],
+        [
+          "2026-06-29",
+          37.47
+        ],
+        [
+          "2026-06-30",
+          37.34
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "PHI",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.7245,
+        "model_strength": 0.3734,
+        "momentum": 0.3182,
+        "runway": 0.525
+      },
+      "valucast_prospect_rank": 71,
+      "valucast_prospect_score": 37.34
+    },
+    {
       "age": 23,
       "availability_level": "AAA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': -0.0669, 'feature': 'log_signing_bonus'}",
@@ -4260,7 +6430,7 @@
       "positions": [
         "P"
       ],
-      "rank": 36,
+      "rank": 54,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 50.6,
@@ -4357,12 +6527,254 @@
       "valucast_prospect_score": 31.5
     },
     {
+      "age": 21,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1893, 'feature': 'level'}",
+        "{'contribution': 0.1787, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.1458, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.1215, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0563, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.0499, 'feature': 'bb_to_k_ratio'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_800325_hitter",
+      "level": "AAA",
+      "mlbam_id": 800325,
+      "name": "Luis Lara",
+      "player_id": "vc_prospect_800325_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 55,
+      "reason": "Model conviction",
+      "role": "hitter",
+      "score": 50.6,
+      "score_history": [
+        [
+          "2026-06-13",
+          54.17
+        ],
+        [
+          "2026-06-14",
+          54.18
+        ],
+        [
+          "2026-06-15",
+          54.19
+        ],
+        [
+          "2026-06-16",
+          54.19
+        ],
+        [
+          "2026-06-17",
+          54.2
+        ],
+        [
+          "2026-06-18",
+          54.21
+        ],
+        [
+          "2026-06-19",
+          53.62
+        ],
+        [
+          "2026-06-20",
+          53.63
+        ],
+        [
+          "2026-06-21",
+          71.96
+        ],
+        [
+          "2026-06-22",
+          65.28
+        ],
+        [
+          "2026-06-23",
+          65.28
+        ],
+        [
+          "2026-06-24",
+          63.79
+        ],
+        [
+          "2026-06-25",
+          65.37
+        ],
+        [
+          "2026-06-26",
+          63.86
+        ],
+        [
+          "2026-06-27",
+          63.93
+        ],
+        [
+          "2026-06-28",
+          64.01
+        ],
+        [
+          "2026-06-29",
+          64.51
+        ],
+        [
+          "2026-06-30",
+          64.51
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "MIL",
+      "terms": {
+        "buy_window": 0.3,
+        "conviction": 0.6923,
+        "model_strength": 0.6451,
+        "momentum": 0.3528,
+        "runway": 0.475
+      },
+      "valucast_prospect_rank": 4,
+      "valucast_prospect_score": 64.51
+    },
+    {
+      "age": 21,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0808, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0763, 'feature': 'slg'}",
+        "{'contribution': 0.0555, 'feature': 'iso'}",
+        "{'contribution': 0.0807, 'feature': 'slg'}",
+        "{'contribution': 0.076, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0654, 'feature': 'aaa_translation'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815304_hitter",
+      "level": "AA",
+      "mlbam_id": 815304,
+      "name": "Josh Adamczewski",
+      "player_id": "vc_prospect_815304_hitter",
+      "positions": [
+        "LF"
+      ],
+      "rank": 56,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 49.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          33.13
+        ],
+        [
+          "2026-06-14",
+          33.17
+        ],
+        [
+          "2026-06-15",
+          33.17
+        ],
+        [
+          "2026-06-16",
+          33.17
+        ],
+        [
+          "2026-06-17",
+          33.17
+        ],
+        [
+          "2026-06-18",
+          33.17
+        ],
+        [
+          "2026-06-19",
+          33.17
+        ],
+        [
+          "2026-06-20",
+          33.17
+        ],
+        [
+          "2026-06-21",
+          51.52
+        ],
+        [
+          "2026-06-22",
+          38.32
+        ],
+        [
+          "2026-06-23",
+          38.33
+        ],
+        [
+          "2026-06-24",
+          36.94
+        ],
+        [
+          "2026-06-25",
+          36.84
+        ],
+        [
+          "2026-06-26",
+          36.75
+        ],
+        [
+          "2026-06-27",
+          36.72
+        ],
+        [
+          "2026-06-28",
+          36.83
+        ],
+        [
+          "2026-06-29",
+          36.73
+        ],
+        [
+          "2026-06-30",
+          36.86
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "MIL",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6556,
+        "model_strength": 0.3686,
+        "momentum": 0.2476,
+        "runway": 0.6
+      },
+      "valucast_prospect_rank": 75,
+      "valucast_prospect_score": 36.86
+    },
+    {
       "age": 18,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.0721, 'feature': 'starter_x_youth'}",
@@ -4381,7 +6793,7 @@
       "positions": [
         "P"
       ],
-      "rank": 37,
+      "rank": 57,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 49.5,
@@ -4478,12 +6890,252 @@
       "valucast_prospect_score": 28.29
     },
     {
-      "age": 22,
+      "age": 23,
       "availability_level": "AAA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': -0.2049, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.2043, 'feature': 'level'}",
+        "{'contribution': 0.1335, 'feature': 'iso'}",
+        "{'contribution': 0.1615, 'feature': 'iso'}",
+        "{'contribution': 0.1508, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.1233, 'feature': 'slg'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_695491_hitter",
+      "level": "AAA",
+      "mlbam_id": 695491,
+      "name": "Joshua B\u00e1ez",
+      "player_id": "vc_prospect_695491_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 58,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 49.5,
+      "score_history": [
+        [
+          "2026-06-13",
+          38.55
+        ],
+        [
+          "2026-06-14",
+          38.55
+        ],
+        [
+          "2026-06-15",
+          38.56
+        ],
+        [
+          "2026-06-16",
+          38.56
+        ],
+        [
+          "2026-06-17",
+          38.27
+        ],
+        [
+          "2026-06-18",
+          38.88
+        ],
+        [
+          "2026-06-19",
+          38.3
+        ],
+        [
+          "2026-06-20",
+          38.3
+        ],
+        [
+          "2026-06-21",
+          37.72
+        ],
+        [
+          "2026-06-22",
+          46.59
+        ],
+        [
+          "2026-06-23",
+          46.59
+        ],
+        [
+          "2026-06-24",
+          48.42
+        ],
+        [
+          "2026-06-25",
+          48.38
+        ],
+        [
+          "2026-06-26",
+          47.39
+        ],
+        [
+          "2026-06-27",
+          46.17
+        ],
+        [
+          "2026-06-28",
+          47.16
+        ],
+        [
+          "2026-06-29",
+          45.91
+        ],
+        [
+          "2026-06-30",
+          45.73
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "STL",
+      "terms": {
+        "buy_window": 0.9,
+        "conviction": 0.6927,
+        "model_strength": 0.4573,
+        "momentum": 0.3262,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 27,
+      "valucast_prospect_score": 45.73
+    },
+    {
+      "age": 22,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.1,
+      "availability_risk_level": "high",
+      "availability_status": "stale_or_inactive",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1398, 'feature': 'batters_faced_per_ip'}",
+        "{'contribution': -0.0973, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.0597, 'feature': 'k_bb_pct'}",
+        "{'contribution': 0.2633, 'feature': 'batters_faced_per_ip'}",
+        "{'contribution': 0.1309, 'feature': 'k_bb_pct'}",
+        "{'contribution': -0.0915, 'feature': 'log_signing_bonus'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_805809_pitcher",
+      "level": "A+",
+      "mlbam_id": 805809,
+      "name": "Travis Sykora",
+      "player_id": "vc_prospect_805809_pitcher",
+      "positions": [],
+      "rank": 59,
+      "reason": "Still in the buy window",
+      "role": "pitcher",
+      "score": 49.1,
+      "score_history": [
+        [
+          "2026-06-13",
+          27.02
+        ],
+        [
+          "2026-06-14",
+          27.02
+        ],
+        [
+          "2026-06-15",
+          24.28
+        ],
+        [
+          "2026-06-16",
+          24.28
+        ],
+        [
+          "2026-06-17",
+          24.28
+        ],
+        [
+          "2026-06-18",
+          24.28
+        ],
+        [
+          "2026-06-19",
+          24.28
+        ],
+        [
+          "2026-06-20",
+          24.28
+        ],
+        [
+          "2026-06-21",
+          53.2
+        ],
+        [
+          "2026-06-22",
+          12.47
+        ],
+        [
+          "2026-06-23",
+          12.46
+        ],
+        [
+          "2026-06-24",
+          30.33
+        ],
+        [
+          "2026-06-25",
+          30.36
+        ],
+        [
+          "2026-06-26",
+          31.16
+        ],
+        [
+          "2026-06-27",
+          31.07
+        ],
+        [
+          "2026-06-28",
+          30.57
+        ],
+        [
+          "2026-06-29",
+          30.61
+        ],
+        [
+          "2026-06-30",
+          30.37
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "WSN",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.6066,
+        "model_strength": 0.3037,
+        "momentum": 0.4053,
+        "runway": 0.65
+      },
+      "valucast_prospect_rank": 160,
+      "valucast_prospect_score": 30.37
+    },
+    {
+      "age": 22,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': -0.0769, 'feature': 'log_signing_bonus'}",
@@ -4502,7 +7154,7 @@
       "positions": [
         "P"
       ],
-      "rank": 38,
+      "rank": 60,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 48.8,
@@ -4596,11 +7248,132 @@
     },
     {
       "age": 22,
-      "availability_level": "AAA",
+      "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1539, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.08, 'feature': 'slg'}",
+        "{'contribution': 0.0781, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.1433, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0724, 'feature': 'slg'}",
+        "{'contribution': 0.0467, 'feature': 'avg'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_805207_hitter",
+      "level": "A+",
+      "mlbam_id": 805207,
+      "name": "Caden Bodine",
+      "player_id": "vc_prospect_805207_hitter",
+      "positions": [
+        "C"
+      ],
+      "rank": 61,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 48.5,
+      "score_history": [
+        [
+          "2026-06-13",
+          25.46
+        ],
+        [
+          "2026-06-14",
+          25.46
+        ],
+        [
+          "2026-06-15",
+          22.93
+        ],
+        [
+          "2026-06-16",
+          22.93
+        ],
+        [
+          "2026-06-17",
+          23.04
+        ],
+        [
+          "2026-06-18",
+          24.69
+        ],
+        [
+          "2026-06-19",
+          24.75
+        ],
+        [
+          "2026-06-20",
+          23.33
+        ],
+        [
+          "2026-06-21",
+          53.6
+        ],
+        [
+          "2026-06-22",
+          29.17
+        ],
+        [
+          "2026-06-23",
+          29.16
+        ],
+        [
+          "2026-06-24",
+          28.13
+        ],
+        [
+          "2026-06-25",
+          28.16
+        ],
+        [
+          "2026-06-26",
+          28.16
+        ],
+        [
+          "2026-06-27",
+          28.26
+        ],
+        [
+          "2026-06-28",
+          28.5
+        ],
+        [
+          "2026-06-29",
+          29.09
+        ],
+        [
+          "2026-06-30",
+          29.1
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "TBR",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.6265,
+        "model_strength": 0.291,
+        "momentum": 0.3907,
+        "runway": 0.65
+      },
+      "valucast_prospect_rank": 194,
+      "valucast_prospect_score": 29.1
+    },
+    {
+      "age": 22,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': -0.0929, 'feature': 'log_signing_bonus'}",
@@ -4619,7 +7392,7 @@
       "positions": [
         "P"
       ],
-      "rank": 39,
+      "rank": 62,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 48.5,
@@ -4721,7 +7494,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0712, 'feature': 'iso_x_youth'}",
@@ -4740,7 +7513,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 40,
+      "rank": 63,
       "reason": "Young runway",
       "role": "hitter",
       "score": 48.1,
@@ -4842,7 +7615,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.3505, 'feature': 'pick_value'}",
@@ -4861,7 +7634,7 @@
       "positions": [
         "P"
       ],
-      "rank": 41,
+      "rank": 64,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 47.9,
@@ -4963,7 +7736,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0778, 'feature': 'slg'}",
@@ -4982,7 +7755,7 @@
       "positions": [
         "2B"
       ],
-      "rank": 42,
+      "rank": 65,
       "reason": "Young runway",
       "role": "hitter",
       "score": 46.1,
@@ -5084,7 +7857,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0969, 'feature': 'level'}",
@@ -5103,7 +7876,7 @@
       "positions": [
         "2B"
       ],
-      "rank": 43,
+      "rank": 66,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 45.7,
@@ -5205,7 +7978,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1112, 'feature': 'iso_x_youth'}",
@@ -5224,7 +7997,7 @@
       "positions": [
         "C"
       ],
-      "rank": 44,
+      "rank": 67,
       "reason": "Young runway",
       "role": "hitter",
       "score": 45.6,
@@ -5326,7 +8099,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1086, 'feature': 'level'}",
@@ -5345,7 +8118,7 @@
       "positions": [
         "1B"
       ],
-      "rank": 45,
+      "rank": 68,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 45.4,
@@ -5447,7 +8220,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1793, 'feature': 'level'}",
@@ -5466,7 +8239,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 46,
+      "rank": 69,
       "reason": "Model conviction",
       "role": "hitter",
       "score": 44.7,
@@ -5587,7 +8360,7 @@
       "positions": [
         "C"
       ],
-      "rank": 47,
+      "rank": 70,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 44.7,
@@ -5689,7 +8462,7 @@
       "availability_risk_discount": 0.06,
       "availability_risk_level": "medium",
       "availability_status": "thin_current_sample",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0984, 'feature': 'starter_x_youth'}",
@@ -5708,7 +8481,7 @@
       "positions": [
         "P"
       ],
-      "rank": 48,
+      "rank": 71,
       "reason": "ValuCast score momentum",
       "role": "pitcher",
       "score": 44.6,
@@ -5810,7 +8583,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1849, 'feature': 'level'}",
@@ -5829,7 +8602,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 49,
+      "rank": 72,
       "reason": "Model conviction",
       "role": "hitter",
       "score": 44.1,
@@ -5926,12 +8699,133 @@
       "valucast_prospect_score": 51.42
     },
     {
-      "age": 19,
+      "age": 22,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0833, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0284, 'feature': 'iso_x_discipline'}",
+        "{'contribution': 0.0259, 'feature': 'level'}",
+        "{'contribution': 0.0847, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': 0.0441, 'feature': 'aaa_translation'}",
+        "{'contribution': -0.0249, 'feature': 'ops_x_discipline'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_804560_hitter",
+      "level": "A+",
+      "mlbam_id": 804560,
+      "name": "Charles Davalan",
+      "player_id": "vc_prospect_804560_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 73,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 43.6,
+      "score_history": [
+        [
+          "2026-06-13",
+          28.82
+        ],
+        [
+          "2026-06-14",
+          27.34
+        ],
+        [
+          "2026-06-15",
+          27.38
+        ],
+        [
+          "2026-06-16",
+          27.38
+        ],
+        [
+          "2026-06-17",
+          27.38
+        ],
+        [
+          "2026-06-18",
+          28.94
+        ],
+        [
+          "2026-06-19",
+          29.01
+        ],
+        [
+          "2026-06-20",
+          29.01
+        ],
+        [
+          "2026-06-21",
+          34.8
+        ],
+        [
+          "2026-06-22",
+          28.05
+        ],
+        [
+          "2026-06-23",
+          28.02
+        ],
+        [
+          "2026-06-24",
+          28.44
+        ],
+        [
+          "2026-06-25",
+          27.03
+        ],
+        [
+          "2026-06-26",
+          25.85
+        ],
+        [
+          "2026-06-27",
+          25.87
+        ],
+        [
+          "2026-06-28",
+          26.05
+        ],
+        [
+          "2026-06-29",
+          26.28
+        ],
+        [
+          "2026-06-30",
+          26.28
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "LAD",
+      "terms": {
+        "buy_window": 0.75,
+        "conviction": 0.6867,
+        "model_strength": 0.2628,
+        "momentum": 0.164,
+        "runway": 0.65
+      },
+      "valucast_prospect_rank": 275,
+      "valucast_prospect_score": 26.28
+    },
+    {
+      "age": 19,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0523, 'feature': 'ops_x_youth'}",
@@ -5950,7 +8844,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 50,
+      "rank": 74,
       "reason": "Young runway",
       "role": "hitter",
       "score": 43.0,
@@ -6071,7 +8965,7 @@
       "positions": [
         "C"
       ],
-      "rank": 51,
+      "rank": 75,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 42.8,
@@ -6173,7 +9067,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0379, 'feature': 'iso'}",
@@ -6192,7 +9086,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 52,
+      "rank": 76,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 42.7,
@@ -6289,12 +9183,133 @@
       "valucast_prospect_score": 28.62
     },
     {
-      "age": 21,
+      "age": 23,
       "availability_level": "AAA",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1988, 'feature': 'level'}",
+        "{'contribution': -0.196, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.1115, 'feature': 'slg'}",
+        "{'contribution': 0.1291, 'feature': 'iso'}",
+        "{'contribution': 0.127, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.1146, 'feature': 'slg'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_696486_hitter",
+      "level": "AAA",
+      "mlbam_id": 696486,
+      "name": "James Tibbs III",
+      "player_id": "vc_prospect_696486_hitter",
+      "positions": [
+        "1B"
+      ],
+      "rank": 77,
+      "reason": "Model conviction",
+      "role": "hitter",
+      "score": 42.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          47.02
+        ],
+        [
+          "2026-06-14",
+          47.33
+        ],
+        [
+          "2026-06-15",
+          47.34
+        ],
+        [
+          "2026-06-16",
+          47.34
+        ],
+        [
+          "2026-06-17",
+          46.75
+        ],
+        [
+          "2026-06-18",
+          46.76
+        ],
+        [
+          "2026-06-19",
+          46.77
+        ],
+        [
+          "2026-06-20",
+          46.78
+        ],
+        [
+          "2026-06-21",
+          59.13
+        ],
+        [
+          "2026-06-22",
+          60.99
+        ],
+        [
+          "2026-06-23",
+          61.0
+        ],
+        [
+          "2026-06-24",
+          56.94
+        ],
+        [
+          "2026-06-25",
+          58.04
+        ],
+        [
+          "2026-06-26",
+          56.94
+        ],
+        [
+          "2026-06-27",
+          54.81
+        ],
+        [
+          "2026-06-28",
+          55.08
+        ],
+        [
+          "2026-06-29",
+          56.75
+        ],
+        [
+          "2026-06-30",
+          56.75
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "LAD",
+      "terms": {
+        "buy_window": 0.3,
+        "conviction": 0.7011,
+        "model_strength": 0.5675,
+        "momentum": 0.239,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 9,
+      "valucast_prospect_score": 56.75
+    },
+    {
+      "age": 21,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.1712, 'feature': 'level'}",
@@ -6313,7 +9328,7 @@
       "positions": [
         "CF"
       ],
-      "rank": 53,
+      "rank": 78,
       "reason": "Model conviction",
       "role": "hitter",
       "score": 42.1,
@@ -6434,7 +9449,7 @@
       "positions": [
         "3B"
       ],
-      "rank": 54,
+      "rank": 79,
       "reason": "Still in the buy window",
       "role": "hitter",
       "score": 41.1,
@@ -6531,12 +9546,254 @@
       "valucast_prospect_score": 28.35
     },
     {
+      "age": 23,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.104, 'feature': 'level'}",
+        "{'contribution': -0.0666, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.0613, 'feature': 'slg'}",
+        "{'contribution': 0.1195, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.0627, 'feature': 'slg'}",
+        "{'contribution': 0.0454, 'feature': 'iso'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_814409_hitter",
+      "level": "AAA",
+      "mlbam_id": 814409,
+      "name": "Seaver King",
+      "player_id": "vc_prospect_814409_hitter",
+      "positions": [
+        "SS"
+      ],
+      "rank": 80,
+      "reason": "Still in the buy window",
+      "role": "hitter",
+      "score": 41.0,
+      "score_history": [
+        [
+          "2026-06-13",
+          34.37
+        ],
+        [
+          "2026-06-14",
+          34.37
+        ],
+        [
+          "2026-06-15",
+          35.44
+        ],
+        [
+          "2026-06-16",
+          35.44
+        ],
+        [
+          "2026-06-17",
+          35.16
+        ],
+        [
+          "2026-06-18",
+          35.19
+        ],
+        [
+          "2026-06-19",
+          35.23
+        ],
+        [
+          "2026-06-20",
+          35.25
+        ],
+        [
+          "2026-06-21",
+          34.15
+        ],
+        [
+          "2026-06-22",
+          32.42
+        ],
+        [
+          "2026-06-23",
+          32.46
+        ],
+        [
+          "2026-06-24",
+          32.23
+        ],
+        [
+          "2026-06-25",
+          32.1
+        ],
+        [
+          "2026-06-26",
+          32.24
+        ],
+        [
+          "2026-06-27",
+          32.48
+        ],
+        [
+          "2026-06-28",
+          32.78
+        ],
+        [
+          "2026-06-29",
+          32.7
+        ],
+        [
+          "2026-06-30",
+          32.71
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "WSN",
+      "terms": {
+        "buy_window": 1.0,
+        "conviction": 0.6202,
+        "model_strength": 0.3271,
+        "momentum": 0.0919,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 125,
+      "valucast_prospect_score": 32.71
+    },
+    {
+      "age": 20,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0301, 'feature': 'ops_x_youth'}",
+        "{'contribution': 0.0274, 'feature': 'level'}",
+        "{'contribution': 0.0235, 'feature': 'sb_per_600_pa'}",
+        "{'contribution': 0.0547, 'feature': 'youth'}",
+        "{'contribution': 0.0445, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.0353, 'feature': 'sb_per_600_pa'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_825582_hitter",
+      "level": "A+",
+      "mlbam_id": 825582,
+      "name": "Nate George",
+      "player_id": "vc_prospect_825582_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 81,
+      "reason": "Young runway",
+      "role": "hitter",
+      "score": 40.8,
+      "score_history": [
+        [
+          "2026-06-13",
+          18.8
+        ],
+        [
+          "2026-06-14",
+          18.8
+        ],
+        [
+          "2026-06-15",
+          18.8
+        ],
+        [
+          "2026-06-16",
+          18.8
+        ],
+        [
+          "2026-06-17",
+          18.8
+        ],
+        [
+          "2026-06-18",
+          18.8
+        ],
+        [
+          "2026-06-19",
+          18.8
+        ],
+        [
+          "2026-06-20",
+          18.8
+        ],
+        [
+          "2026-06-21",
+          23.78
+        ],
+        [
+          "2026-06-22",
+          16.37
+        ],
+        [
+          "2026-06-23",
+          16.36
+        ],
+        [
+          "2026-06-24",
+          18.47
+        ],
+        [
+          "2026-06-25",
+          18.49
+        ],
+        [
+          "2026-06-26",
+          18.5
+        ],
+        [
+          "2026-06-27",
+          18.52
+        ],
+        [
+          "2026-06-28",
+          10.48
+        ],
+        [
+          "2026-06-29",
+          11.9
+        ],
+        [
+          "2026-06-30",
+          11.89
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "BAL",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.588,
+        "model_strength": 0.1189,
+        "momentum": 0.588,
+        "runway": 0.8
+      },
+      "valucast_prospect_rank": 1031,
+      "valucast_prospect_score": 11.89
+    },
+    {
       "age": 22,
       "availability_level": "AAA",
       "availability_risk_discount": 0.06,
       "availability_risk_level": "medium",
       "availability_status": "thin_current_sample",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.08, 'feature': 'starter_x_youth'}",
@@ -6555,7 +9812,7 @@
       "positions": [
         "P"
       ],
-      "rank": 55,
+      "rank": 82,
       "reason": "ValuCast score momentum",
       "role": "pitcher",
       "score": 40.7,
@@ -6657,7 +9914,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.0498, 'feature': 'starter_x_youth'}",
@@ -6676,7 +9933,7 @@
       "positions": [
         "P"
       ],
-      "rank": 56,
+      "rank": 83,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 40.5,
@@ -6773,12 +10030,133 @@
       "valucast_prospect_score": 32.34
     },
     {
-      "age": 19,
+      "age": 20,
       "availability_level": "A+",
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
       "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0739, 'feature': 'ops_x_level'}",
+        "{'contribution': -0.0614, 'feature': 'babip'}",
+        "{'contribution': 0.0569, 'feature': 'avg'}",
+        "{'contribution': -0.0699, 'feature': 'babip'}",
+        "{'contribution': 0.0548, 'feature': 'avg'}",
+        "{'contribution': -0.0526, 'feature': 'obp'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_815617_hitter",
+      "level": "A+",
+      "mlbam_id": 815617,
+      "name": "Kayson Cunningham",
+      "player_id": "vc_prospect_815617_hitter",
+      "positions": [
+        "SS"
+      ],
+      "rank": 84,
+      "reason": "Young runway",
+      "role": "hitter",
+      "score": 39.7,
+      "score_history": [
+        [
+          "2026-06-13",
+          46.96
+        ],
+        [
+          "2026-06-14",
+          43.46
+        ],
+        [
+          "2026-06-15",
+          43.49
+        ],
+        [
+          "2026-06-16",
+          43.49
+        ],
+        [
+          "2026-06-17",
+          43.49
+        ],
+        [
+          "2026-06-18",
+          43.49
+        ],
+        [
+          "2026-06-19",
+          43.49
+        ],
+        [
+          "2026-06-20",
+          43.49
+        ],
+        [
+          "2026-06-21",
+          43.21
+        ],
+        [
+          "2026-06-22",
+          27.71
+        ],
+        [
+          "2026-06-23",
+          27.69
+        ],
+        [
+          "2026-06-24",
+          23.94
+        ],
+        [
+          "2026-06-25",
+          24.19
+        ],
+        [
+          "2026-06-26",
+          24.11
+        ],
+        [
+          "2026-06-27",
+          23.86
+        ],
+        [
+          "2026-06-28",
+          24.16
+        ],
+        [
+          "2026-06-29",
+          25.6
+        ],
+        [
+          "2026-06-30",
+          25.6
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "ARI",
+      "terms": {
+        "buy_window": 0.45,
+        "conviction": 0.5628,
+        "model_strength": 0.256,
+        "momentum": 0.1187,
+        "runway": 0.8
+      },
+      "valucast_prospect_rank": 302,
+      "valucast_prospect_score": 25.6
+    },
+    {
+      "age": 19,
+      "availability_level": "A+",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': -0.0788, 'feature': 'discipline_x_youth'}",
@@ -6797,7 +10175,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 57,
+      "rank": 85,
       "reason": "Young runway",
       "role": "hitter",
       "score": 39.6,
@@ -6916,7 +10294,7 @@
       "name": "Juan Valera",
       "player_id": "vc_prospect_813536_pitcher",
       "positions": [],
-      "rank": 58,
+      "rank": 86,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 37.6,
@@ -7018,7 +10396,7 @@
       "availability_risk_discount": 0.3,
       "availability_risk_level": "high",
       "availability_status": "injured",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': -0.0995, 'feature': 'log_signing_bonus'}",
@@ -7037,7 +10415,7 @@
       "positions": [
         "P"
       ],
-      "rank": 59,
+      "rank": 87,
       "reason": "Still in the buy window",
       "role": "pitcher",
       "score": 36.4,
@@ -7134,12 +10512,131 @@
       "valucast_prospect_score": 26.74
     },
     {
+      "age": 19,
+      "availability_level": "A",
+      "availability_risk_discount": 0.08,
+      "availability_risk_level": "high",
+      "availability_status": "stale_or_inactive",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.07, 'feature': 'babip'}",
+        "{'contribution': 0.0528, 'feature': 'bb_to_k_ratio'}",
+        "{'contribution': -0.0491, 'feature': 'level'}",
+        "{'contribution': 0.0746, 'feature': 'babip'}",
+        "{'contribution': 0.053, 'feature': 'youth'}",
+        "{'contribution': 0.0482, 'feature': 'bb_to_k_ratio'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_828076_hitter",
+      "level": "A",
+      "mlbam_id": 828076,
+      "name": "Dax Kilby",
+      "player_id": "vc_prospect_828076_hitter",
+      "positions": [],
+      "rank": 88,
+      "reason": "Young runway",
+      "role": "hitter",
+      "score": 35.9,
+      "score_history": [
+        [
+          "2026-06-13",
+          26.85
+        ],
+        [
+          "2026-06-14",
+          26.85
+        ],
+        [
+          "2026-06-15",
+          24.05
+        ],
+        [
+          "2026-06-16",
+          24.05
+        ],
+        [
+          "2026-06-17",
+          24.05
+        ],
+        [
+          "2026-06-18",
+          24.05
+        ],
+        [
+          "2026-06-19",
+          24.05
+        ],
+        [
+          "2026-06-20",
+          24.05
+        ],
+        [
+          "2026-06-21",
+          41.35
+        ],
+        [
+          "2026-06-22",
+          0.0
+        ],
+        [
+          "2026-06-23",
+          0.0
+        ],
+        [
+          "2026-06-24",
+          9.32
+        ],
+        [
+          "2026-06-25",
+          9.32
+        ],
+        [
+          "2026-06-26",
+          9.11
+        ],
+        [
+          "2026-06-27",
+          9.19
+        ],
+        [
+          "2026-06-28",
+          0.0
+        ],
+        [
+          "2026-06-29",
+          0.02
+        ],
+        [
+          "2026-06-30",
+          0.05
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "NYY",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.5768,
+        "model_strength": 0.0005,
+        "momentum": 0.4067,
+        "runway": 0.95
+      },
+      "valucast_prospect_rank": 1958,
+      "valucast_prospect_score": 0.05
+    },
+    {
       "age": 21,
       "availability_level": "A+",
       "availability_risk_discount": 0.06,
       "availability_risk_level": "medium",
       "availability_status": "thin_current_sample",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0537, 'feature': 'start_rate'}",
@@ -7158,7 +10655,7 @@
       "positions": [
         "P"
       ],
-      "rank": 60,
+      "rank": 89,
       "reason": "Young runway",
       "role": "pitcher",
       "score": 35.8,
@@ -7279,7 +10776,7 @@
       "positions": [
         "P"
       ],
-      "rank": 61,
+      "rank": 90,
       "reason": "ValuCast score momentum",
       "role": "pitcher",
       "score": 35.7,
@@ -7388,7 +10885,7 @@
       "positions": [
         "P"
       ],
-      "rank": 62,
+      "rank": 91,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 35.7,
@@ -7490,7 +10987,7 @@
       "availability_risk_discount": 0.12,
       "availability_risk_level": "high",
       "availability_status": "injured",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0429, 'feature': 'iso_x_youth'}",
@@ -7509,7 +11006,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 63,
+      "rank": 92,
       "reason": "Young runway",
       "role": "hitter",
       "score": 33.9,
@@ -7611,7 +11108,7 @@
       "availability_risk_discount": 0.0,
       "availability_risk_level": "clear",
       "availability_status": "available",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "medium",
       "drivers": [
         "{'contribution': 0.0697, 'feature': 'ops_x_level'}",
@@ -7630,7 +11127,7 @@
       "positions": [
         "SS"
       ],
-      "rank": 64,
+      "rank": 93,
       "reason": "Young runway",
       "role": "hitter",
       "score": 32.8,
@@ -7751,7 +11248,7 @@
       "positions": [
         "P"
       ],
-      "rank": 65,
+      "rank": 94,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 29.7,
@@ -7848,12 +11345,234 @@
       "valucast_prospect_score": 25.34
     },
     {
+      "age": 23,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.03,
+      "availability_risk_level": "medium",
+      "availability_status": "thin_current_sample",
+      "board_count": 3,
+      "confidence": "high",
+      "drivers": [
+        "{'contribution': -0.0851, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.0789, 'feature': 'pick_value'}",
+        "{'contribution': 0.0498, 'feature': 'start_rate'}",
+        "{'contribution': -0.0699, 'feature': 'log_signing_bonus'}",
+        "{'contribution': 0.0661, 'feature': 'pick_value'}",
+        "{'contribution': -0.0579, 'feature': 'prep_drafted'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_702275_pitcher",
+      "level": "AAA",
+      "mlbam_id": 702275,
+      "name": "JR Ritchie",
+      "player_id": "vc_prospect_702275_pitcher",
+      "positions": [
+        "P"
+      ],
+      "rank": 95,
+      "reason": "Model conviction",
+      "role": "pitcher",
+      "score": 28.4,
+      "score_history": [
+        [
+          "2026-06-13",
+          38.28
+        ],
+        [
+          "2026-06-14",
+          38.28
+        ],
+        [
+          "2026-06-15",
+          38.28
+        ],
+        [
+          "2026-06-16",
+          38.28
+        ],
+        [
+          "2026-06-17",
+          38.28
+        ],
+        [
+          "2026-06-18",
+          38.28
+        ],
+        [
+          "2026-06-24",
+          20.46
+        ],
+        [
+          "2026-06-25",
+          20.62
+        ],
+        [
+          "2026-06-26",
+          20.59
+        ],
+        [
+          "2026-06-27",
+          20.65
+        ],
+        [
+          "2026-06-28",
+          17.8
+        ],
+        [
+          "2026-06-29",
+          19.19
+        ],
+        [
+          "2026-06-30",
+          19.24
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "ATL",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.7402,
+        "model_strength": 0.1924,
+        "momentum": 0.2373,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 605,
+      "valucast_prospect_score": 19.24
+    },
+    {
+      "age": 23,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.03,
+      "availability_risk_level": "medium",
+      "availability_status": "thin_current_sample",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.1934, 'feature': 'level'}",
+        "{'contribution': -0.1092, 'feature': 'ops_x_level'}",
+        "{'contribution': 0.051, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.2175, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.0588, 'feature': 'iso'}",
+        "{'contribution': 0.0479, 'feature': 'ops_x_youth'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_691181_hitter",
+      "level": "AAA",
+      "mlbam_id": 691181,
+      "name": "Emmanuel Rodriguez",
+      "player_id": "vc_prospect_691181_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 96,
+      "reason": "Model conviction",
+      "role": "hitter",
+      "score": 28.0,
+      "score_history": [
+        [
+          "2026-06-13",
+          32.59
+        ],
+        [
+          "2026-06-14",
+          32.59
+        ],
+        [
+          "2026-06-15",
+          32.59
+        ],
+        [
+          "2026-06-16",
+          32.59
+        ],
+        [
+          "2026-06-17",
+          32.59
+        ],
+        [
+          "2026-06-18",
+          32.59
+        ],
+        [
+          "2026-06-19",
+          32.59
+        ],
+        [
+          "2026-06-20",
+          32.59
+        ],
+        [
+          "2026-06-21",
+          40.57
+        ],
+        [
+          "2026-06-22",
+          19.58
+        ],
+        [
+          "2026-06-23",
+          19.58
+        ],
+        [
+          "2026-06-24",
+          18.89
+        ],
+        [
+          "2026-06-25",
+          19.01
+        ],
+        [
+          "2026-06-26",
+          19.0
+        ],
+        [
+          "2026-06-27",
+          18.73
+        ],
+        [
+          "2026-06-28",
+          18.85
+        ],
+        [
+          "2026-06-29",
+          18.79
+        ],
+        [
+          "2026-06-30",
+          18.79
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "MIN",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.5989,
+        "model_strength": 0.1879,
+        "momentum": 0.2947,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 637,
+      "valucast_prospect_score": 18.79
+    },
+    {
       "age": 24,
       "availability_level": "AAA",
       "availability_risk_discount": 0.06,
       "availability_risk_level": "medium",
       "availability_status": "thin_current_sample",
-      "board_count": 3,
+      "board_count": 4,
       "confidence": "high",
       "drivers": [
         "{'contribution': 0.2321, 'feature': 'batters_faced_per_ip'}",
@@ -7870,7 +11589,7 @@
       "name": "Jaxon Wiggins",
       "player_id": "vc_prospect_694393_pitcher",
       "positions": [],
-      "rank": 66,
+      "rank": 97,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 27.7,
@@ -7991,7 +11710,7 @@
       "positions": [
         "P"
       ],
-      "rank": 67,
+      "rank": 98,
       "reason": "Model conviction",
       "role": "pitcher",
       "score": 27.6,
@@ -8086,6 +11805,216 @@
       },
       "valucast_prospect_rank": 1267,
       "valucast_prospect_score": 8.6
+    },
+    {
+      "age": 23,
+      "availability_level": "AA",
+      "availability_risk_discount": 0.0,
+      "availability_risk_level": "clear",
+      "availability_status": "available",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': 0.0693, 'feature': 'slg'}",
+        "{'contribution': -0.0612, 'feature': 'iso_x_youth'}",
+        "{'contribution': 0.0585, 'feature': 'iso'}",
+        "{'contribution': 0.0592, 'feature': 'slg'}",
+        "{'contribution': 0.0556, 'feature': 'aaa_translation'}",
+        "{'contribution': 0.0478, 'feature': 'iso'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_701527_hitter",
+      "level": "AA",
+      "mlbam_id": 701527,
+      "name": "Mike Sirota",
+      "player_id": "vc_prospect_701527_hitter",
+      "positions": [
+        "CF"
+      ],
+      "rank": 99,
+      "reason": "Model conviction",
+      "role": "hitter",
+      "score": 27.2,
+      "score_history": [
+        [
+          "2026-06-13",
+          31.34
+        ],
+        [
+          "2026-06-14",
+          31.34
+        ],
+        [
+          "2026-06-15",
+          29.26
+        ],
+        [
+          "2026-06-16",
+          29.26
+        ],
+        [
+          "2026-06-17",
+          29.29
+        ],
+        [
+          "2026-06-18",
+          29.32
+        ],
+        [
+          "2026-06-19",
+          29.35
+        ],
+        [
+          "2026-06-20",
+          29.68
+        ],
+        [
+          "2026-06-21",
+          18.59
+        ],
+        [
+          "2026-06-22",
+          17.84
+        ],
+        [
+          "2026-06-23",
+          17.8
+        ],
+        [
+          "2026-06-24",
+          17.73
+        ],
+        [
+          "2026-06-25",
+          17.68
+        ],
+        [
+          "2026-06-26",
+          18.26
+        ],
+        [
+          "2026-06-27",
+          18.33
+        ],
+        [
+          "2026-06-28",
+          15.32
+        ],
+        [
+          "2026-06-29",
+          16.73
+        ],
+        [
+          "2026-06-30",
+          16.72
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "LAD",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.629,
+        "model_strength": 0.1672,
+        "momentum": 0.1507,
+        "runway": 0.45
+      },
+      "valucast_prospect_rank": 747,
+      "valucast_prospect_score": 16.72
+    },
+    {
+      "age": 23,
+      "availability_level": "AAA",
+      "availability_risk_discount": 0.05,
+      "availability_risk_level": "medium",
+      "availability_status": "thin_current_sample",
+      "board_count": 3,
+      "confidence": "medium",
+      "drivers": [
+        "{'contribution': -0.0486, 'feature': 'log_pa'}",
+        "{'contribution': -0.0374, 'feature': 'slg'}",
+        "{'contribution': 0.0299, 'feature': 'level'}",
+        "{'contribution': -0.0423, 'feature': 'log_pa'}",
+        "{'contribution': 0.0294, 'feature': 'aaa_translation'}",
+        "{'contribution': -0.0254, 'feature': 'slg'}"
+      ],
+      "eta": null,
+      "id": "vc_buy_801346_hitter",
+      "level": "AAA",
+      "mlbam_id": 801346,
+      "name": "Luis Hernandez",
+      "player_id": "vc_prospect_801346_hitter",
+      "positions": [
+        "C"
+      ],
+      "rank": 100,
+      "reason": "Model conviction",
+      "role": "hitter",
+      "score": 15.1,
+      "score_history": [
+        [
+          "2026-06-21",
+          3.15
+        ],
+        [
+          "2026-06-22",
+          0.0
+        ],
+        [
+          "2026-06-23",
+          0.0
+        ],
+        [
+          "2026-06-24",
+          0.0
+        ],
+        [
+          "2026-06-25",
+          0.0
+        ],
+        [
+          "2026-06-26",
+          0.0
+        ],
+        [
+          "2026-06-27",
+          0.0
+        ],
+        [
+          "2026-06-28",
+          0.0
+        ],
+        [
+          "2026-06-29",
+          0.0
+        ],
+        [
+          "2026-06-30",
+          0.0
+        ]
+      ],
+      "score_source": "prospect_model_v0_6",
+      "source_policy": {
+        "dd_context_used": false,
+        "external_rankings_used": false,
+        "market_values_used": false,
+        "public_source_ranks_used": true
+      },
+      "team": "MIN",
+      "terms": {
+        "buy_window": 0.2,
+        "conviction": 0.56,
+        "model_strength": 0.0,
+        "momentum": 0.0,
+        "runway": 0.325
+      },
+      "valucast_prospect_rank": 2137,
+      "valucast_prospect_score": 0.0
     }
   ],
   "epoch": "2026-06-22-role-normalization",
@@ -8182,7 +12111,7 @@
     ],
     "ranks_contiguous": true,
     "ready_for_live_consumers": true,
-    "row_count": 67,
+    "row_count": 100,
     "top_board_quality": {
       "blockers": [],
       "evaluated_count": 40,
