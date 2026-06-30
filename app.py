@@ -6092,10 +6092,13 @@ def _load_receipts_payload(path=VALUCAST_RECEIPTS_PATH):
 def _build_receipts_page_context():
     payload = _load_receipts_payload()
     receipts = list(payload.get("receipts") or [])
+    misses = list(payload.get("misses") or [])
     generated_at = payload.get("generated_at")
     return {
         "receipts": receipts,
         "receipt_count": len(receipts),
+        "misses": misses,
+        "miss_count": len(misses),
         "receipts_available": bool(payload),
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,
@@ -6108,8 +6111,8 @@ def receipts():
     return render_template("receipts.html", **context)
 
 
-def _receipts_share_card_png(receipts, *, generated_at=None):
-    """Deterministic server-side Call-Up Receipts graphic."""
+def _receipts_share_card_png(receipts, misses=None, *, generated_at=None):
+    """Deterministic two-sided Call-Up Receipts graphic (ahead of the field + behind it)."""
     import io as _io
     from PIL import Image, ImageDraw
 
@@ -6120,15 +6123,19 @@ def _receipts_share_card_png(receipts, *, generated_at=None):
     card_2 = palette["card_2"]
     border = palette["border"]
     green = palette["green"]
+    clay = palette.get("clay", "#c98a6a")
     blue = palette["blue"]
     text = palette["text"]
     muted = palette["muted"]
+
+    receipts = list(receipts or [])
+    misses = list(misses or [])
 
     img = Image.new("RGB", (width, height), bg)
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
     date_label = _editorial_date(generated_at)
-    subtitle = f"{len(receipts or [])} ValuCast-ranked prospects reached MLB active rosters"
+    subtitle = f"{len(receipts)} ahead of the field - {len(misses)} behind"
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
     _graphic_header(
@@ -6136,48 +6143,60 @@ def _receipts_share_card_png(receipts, *, generated_at=None):
         draw,
         headline="CALL-UP RECEIPTS",
         subtitle=subtitle,
-        extra_line="Consensus recomputed from public boards at last prospect rank",
+        extra_line="Every prospect call-up vs the public-board consensus, both directions",
         tagline="Call-Up Receipts",
     )
 
-    f_section = _graphic_font(28, bold=True)
-    f_date = _graphic_font(16, bold=True, mono=True)
-    f_name = _graphic_font(25, bold=True)
-    f_meta = _graphic_font(15)
-    f_rank = _graphic_font(16, bold=True, mono=True)
-    f_gap = _graphic_font(25, bold=True, mono=True)
-    row_h = 78
-    x, y, w = 48, 242, 984
-    draw.rounded_rectangle((x, y, x + w, y + 1004), radius=10, fill=card, outline=border, width=1)
-    draw.text((x + 20, y + 18), "RECEIPTS", fill=green, font=f_section)
-    if not receipts:
-        draw.text((x + 20, y + 98), "No call-up receipts have been logged yet.", fill=muted, font=f_name)
-    for idx, row in enumerate(list(receipts or [])[:14]):
-        top = y + 70 + idx * row_h
-        fill = card_2 if idx % 2 == 0 else card
-        draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
-        if idx:
-            draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
-        call_date = str(row.get("call_up_date") or "")[:10]
-        draw.text((x + 18, top + 14), call_date, fill=blue, font=f_date)
-        name = _graphic_fit_text(draw, row.get("name"), f_name, 360)
-        draw.text((x + 154, top + 10), name, fill=text, font=f_name)
-        meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
-        draw.text((x + 154, top + 43), _graphic_fit_text(draw, meta, f_meta, 360), fill=muted, font=f_meta)
-        consensus_rank = row.get("consensus_rank")
-        if consensus_rank not in (None, ""):
-            ranks = f"VC #{row.get('valucast_rank')} vs consensus #{consensus_rank}"
-        else:
-            ranks = f"VC #{row.get('valucast_rank')} - {row.get('field_label') or 'field outside top 100'}"
-        draw.text((x + 566, top + 28), _graphic_fit_text(draw, ranks, f_rank, 330), fill=muted, font=f_rank)
-        try:
-            gap = f"+{int(row.get('divergence'))}"
-            draw.text((x + w - 24 - _graphic_text_width(draw, gap, f_gap), top + 23), gap, fill=green, font=f_gap)
-        except (TypeError, ValueError):
-            gap = "AHEAD"
-            draw.text((x + w - 24 - _graphic_text_width(draw, gap, f_rank), top + 30), gap, fill=green, font=f_rank)
+    f_section = _graphic_font(25, bold=True)
+    f_date = _graphic_font(15, bold=True, mono=True)
+    f_name = _graphic_font(23, bold=True)
+    f_meta = _graphic_font(14)
+    f_rank = _graphic_font(15, bold=True, mono=True)
+    f_gap = _graphic_font(24, bold=True, mono=True)
+    row_h = 60
+    x, w = 48, 984
 
-    _graphic_footer(draw, right_note="ValuCast rank above public consensus before MLB call-up")
+    def draw_section(title, rows, top_y, accent, is_miss):
+        n = max(1, len(rows))
+        panel_h = 50 + n * row_h + 8
+        draw.rounded_rectangle((x, top_y, x + w, top_y + panel_h), radius=10, fill=card, outline=border, width=1)
+        draw.text((x + 20, top_y + 14), title, fill=accent, font=f_section)
+        if not rows:
+            draw.text((x + 20, top_y + 62), "None logged yet.", fill=muted, font=f_name)
+        for idx, row in enumerate(rows):
+            top = top_y + 48 + idx * row_h
+            fill = card_2 if idx % 2 == 0 else card
+            draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
+            if idx:
+                draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
+            call_date = str(row.get("call_up_date") or "")[:10]
+            draw.text((x + 18, top + 11), call_date, fill=blue, font=f_date)
+            name = _graphic_fit_text(draw, row.get("name"), f_name, 350)
+            draw.text((x + 150, top + 7), name, fill=text, font=f_name)
+            meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
+            draw.text((x + 150, top + 35), _graphic_fit_text(draw, meta, f_meta, 350), fill=muted, font=f_meta)
+            consensus_rank = row.get("consensus_rank")
+            if consensus_rank not in (None, ""):
+                ranks = f"VC #{row.get('valucast_rank')} vs field #{consensus_rank}"
+            else:
+                ranks = f"VC #{row.get('valucast_rank')} - {row.get('field_label') or 'field outside top 100'}"
+            draw.text((x + 560, top + 21), _graphic_fit_text(draw, ranks, f_rank, 330), fill=muted, font=f_rank)
+            div = row.get("divergence")
+            if isinstance(div, int):
+                label = str(div) if is_miss else f"+{div}"
+                color = clay if is_miss else green
+                draw.text((x + w - 22 - _graphic_text_width(draw, label, f_gap), top + 16), label, fill=color, font=f_gap)
+            else:
+                label = "AHEAD"
+                draw.text((x + w - 22 - _graphic_text_width(draw, label, f_rank), top + 22), label, fill=green, font=f_rank)
+        return top_y + panel_h
+
+    y = 242
+    y = draw_section("AHEAD OF THE FIELD", receipts[:8], y, green, False)
+    if misses:
+        draw_section("BEHIND THE FIELD", misses[:6], y + 16, clay, True)
+
+    _graphic_footer(draw, right_note="ValuCast vs the public-board consensus on every call-up")
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -6189,6 +6208,7 @@ def receipts_share_card_png():
     context = _build_receipts_page_context()
     png = _receipts_share_card_png(
         context["receipts"],
+        context["misses"],
         generated_at=context["receipts_generated_at"],
     )
     response = make_response(png)

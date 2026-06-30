@@ -2,13 +2,13 @@
 
 {% block title %}Call-Up Receipts | ValuCast{% endblock %}
 {% block og_title %}Call-Up Receipts | ValuCast{% endblock %}
-{% block og_description %}Permanent receipts for prospects ValuCast ranked above consensus before they reached MLB active rosters.{% endblock %}
+{% block og_description %}Every prospect call-up, with where ValuCast ranked them vs the public-board consensus — the ones we were ahead on and the ones we were behind on.{% endblock %}
 {% block og_url %}https://valucast.app/receipts{% endblock %}
 {% block og_image %}https://valucast.app/receipts/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
 {% block twitter_title %}Call-Up Receipts | ValuCast{% endblock %}
-{% block twitter_description %}Permanent receipts for prospects ValuCast ranked above consensus before they reached MLB active rosters.{% endblock %}
+{% block twitter_description %}Every prospect call-up, with where ValuCast ranked them vs the public-board consensus — both the ones we were ahead on and the ones we missed.{% endblock %}
 {% block twitter_image %}https://valucast.app/receipts/share-card.png{% endblock %}
 
 {% block content %}
@@ -23,8 +23,8 @@
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">CALL-UP RECEIPTS</span>
         <h1>CALL-UP RECEIPTS</h1>
-        <p class="buys-heading-sub">{{ receipt_count }} receipts{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
-        <p class="buys-fineprint">Every logged player was ranked higher by ValuCast than the field before reaching an MLB active roster. A <strong>+N</strong> shows how far above the public-board consensus we had him; <strong>AHEAD</strong> means the public boards weren't ranking him at all.</p>
+        <p class="buys-heading-sub">{{ receipt_count }} ahead &middot; {{ miss_count }} behind{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
+        <p class="buys-fineprint">Every prospect call-up, with where ValuCast had them vs the public-board consensus &mdash; the ones we were ahead on <strong>and</strong> the ones we were behind on. Logged automatically the day they reach the majors, no cherry-picking. Small sample, growing.</p>
     </div>
     <div class="buys-actions">
         <a class="export-btn" href="/receipts/share-card" target="_blank" rel="noopener">Preview graphic</a>
@@ -32,13 +32,15 @@
     </div>
 </section>
 
-{% if not receipts_available or not receipts %}
+{% if not receipts_available or (not receipts and not misses) %}
 <section class="map-heading glass">
-    <h2>No call-up receipts yet</h2>
-    <p>The board fills automatically when an ahead-of-consensus prospect graduates to an MLB active roster.</p>
+    <h2>No call-ups logged yet</h2>
+    <p>The board fills automatically when a ranked prospect graduates to an MLB active roster.</p>
 </section>
 {% else %}
-<section class="buys-list glass" aria-label="Call-up receipts">
+{% if receipts %}
+<section class="buys-list movers-section glass" aria-label="Call-ups ValuCast was ahead of the field on">
+    <h2>AHEAD OF THE FIELD 📈</h2>
     {% for p in receipts %}
     <article class="movers-row">
         <span class="buys-rank">#{{ p.valucast_rank }}</span>
@@ -46,7 +48,7 @@
             <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
             {% if p.consensus_rank is not none %}
-            <span class="buys-tag">Consensus #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}</span>
+            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}</span>
             {% else %}
             <span class="buys-tag">{{ p.field_label or 'Field had him outside the top 100' }} &middot; called up {{ p.call_up_date }}</span>
             {% endif %}
@@ -56,9 +58,28 @@
         {% else %}
         <span class="mover-delta up">AHEAD</span>
         {% endif %}
-        <span class="trend-chip buys-chip">receipt</span>
+        <span class="trend-chip buys-chip">ahead</span>
     </article>
     {% endfor %}
 </section>
+{% endif %}
+{% if misses %}
+<section class="buys-list movers-section glass" aria-label="Call-ups the field was ahead of ValuCast on">
+    <h2>BEHIND THE FIELD ❄️</h2>
+    <p class="buys-fineprint">Call-ups where the public boards had them higher than we did. We log these too — that's the point.</p>
+    {% for p in misses %}
+    <article class="movers-row">
+        <span class="buys-rank">#{{ p.valucast_rank }}</span>
+        <div class="buys-main">
+            <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+            <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
+            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}</span>
+        </div>
+        <span class="mover-delta down">{{ p.divergence }}</span>
+        <span class="trend-chip buys-chip">miss</span>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
 {% endif %}
 {% endblock %}
