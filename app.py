@@ -1782,7 +1782,9 @@ def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
     if w <= 0 or h <= 0:
         draw.text(xy, text, fill=(180, 246, 234), font=font)
         return
-    pad = 10
+    # Pad scales with font size: the glyph ink sits below the draw anchor by a gap that
+    # grows with size, so a fixed 10px clipped letter bottoms at large sizes (the banner).
+    pad = max(10, int(getattr(font, "size", 28) * 0.28))
     width, height = w + pad * 2, h + pad * 2
     ox, oy = x0 - pad, y0 - pad
     mask = Image.new("L", (width, height), 0)
@@ -1803,12 +1805,12 @@ def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
 
     # 2) glass fill: horizontal teal->chrome-silver x vertical sheen (bright near the top).
     # ponytail: pure-Python pixel build, fine at wordmark size (~width*height ≈ 10k px).
-    teal, silver = (46, 224, 196), (228, 236, 247)
+    teal, silver = (120, 236, 214), (224, 232, 244)
     denom_x, denom_y = max(width - 1, 1), max(height - 1, 1)
     px = []
     for j in range(height):
         ty = j / denom_y
-        sheen = 0.80 + 0.52 * math.exp(-((ty - 0.26) ** 2) / (2 * 0.11 ** 2)) - 0.22 * ty
+        sheen = 0.92 + 0.30 * math.exp(-((ty - 0.30) ** 2) / (2 * 0.16 ** 2)) - 0.10 * ty
         for i in range(width):
             tx = i / denom_x
             px.append((
