@@ -1080,6 +1080,16 @@ def _apply_prospect_board_context(ctx, args):
         for row in rows
         if (key := _row_identity_key(row)) in call_up_by_key
     }
+    # Rookie-eligible prospects who've already had a taste of the majors (e.g. a
+    # cup-of-coffee call-up since optioned back down) -- so the board doesn't look
+    # naive to anyone who already knows the player debuted. Same source as the
+    # backfields "Got the Call" MLB-taste badge; display-only, doesn't affect rank.
+    debuted = _debuted_prospect_ids()
+    ctx["mlb_debut_by_id"] = {
+        row.id: debuted[str(row.mlbam_id)]
+        for row in rows
+        if str(getattr(row, "mlbam_id", "")) in debuted
+    }
 
     # Live settings-aware re-ranking (presets OR arbitrary custom cats). Re-ranking
     # is a downstream VIEW: it never touches dynasty_value, P#, or the prospect

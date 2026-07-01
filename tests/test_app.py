@@ -1195,3 +1195,18 @@ class TestInputHardening(unittest.TestCase):
         r = self.client.get("/")
         self.assertEqual(r.headers.get("X-Content-Type-Options"), "nosniff")
         self.assertEqual(r.headers.get("X-Frame-Options"), "DENY")
+
+
+def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():
+    """7/1: a cup-of-coffee call-up (e.g. Carson Whisenhunt, recalled then optioned
+    right back down) still ranks as a prospect -- correctly, per MLB's rookie-service
+    rule -- but without any indicator, it can look like the board doesn't know he's
+    already touched the majors. Surface it instead of hiding it."""
+    client = app.test_client()
+    html = client.get("/?mode=prospects").data.decode("utf-8")
+    idx = html.find("Whisenhunt")
+    assert idx != -1, "Whisenhunt should still be on the prospects board"
+    row_html = html[idx:idx + 2000]
+    assert "MLB taste" in row_html
+    assert "23.1 IP" in row_html
+    assert "callup-chip" in row_html

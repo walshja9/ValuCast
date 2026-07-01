@@ -98,6 +98,8 @@
                 {% set cu = call_up_by_id.get(row.id) if call_up_by_id else None %}
                 {% if cu %}
                 <span class="callup-chip" title="On a fresh MLB active roster ({{ cu.mlb_team or 'MLB' }}) -- the board graduates him next build">Called up{% if cu.mlb_team %} · {{ cu.mlb_team }}{% endif %}</span>
+                {% elif mode == 'prospects' and mlb_debut_by_id and mlb_debut_by_id.get(row.id) %}
+                <span class="callup-chip" title="Already logged MLB time on a prior call-up, since optioned back down -- still rookie-eligible under MLB's service-time rule">MLB taste · {{ mlb_debut_by_id.get(row.id) }}</span>
                 {% endif %}
                 {% set mo = momentum_by_id.get(row.id) if momentum_by_id else None %}
                 {% if mo and mo.momentum_label in ['Heating Up', 'Cooling Off'] %}
