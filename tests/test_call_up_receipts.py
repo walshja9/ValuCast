@@ -158,21 +158,22 @@ def test_actual_call_up_date_shadow_attaches_real_date_without_changing_anything
         {"date": "2026-06-25", "board": []},
     ]
     roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
-    # A genuine call-up transaction (typeCode SE) dated well before the archive-diff's
-    # inferred call_up_date -- the shadow should surface the earlier, real date.
+    # A genuine call-up transaction (typeCode SE), post-launch, dated before the
+    # archive-diff's inferred call_up_date -- the shadow should surface the earlier,
+    # real date without excluding the row (it's still after LAUNCH_DATE).
     transactions_cache = {
         "queries": {
             "2026-01-01:2026-06-25:sportId=1": {
                 "transactions": [
                     {
                         "typeCode": "SE",
-                        "date": "2026-05-01",
-                        "effectiveDate": "2026-05-01",
+                        "date": "2026-06-20",
+                        "effectiveDate": "2026-06-20",
                         "person": {"id": 101, "fullName": "Scored Guy"},
                     },
                     {  # non-call-up transaction for the same player -- must be ignored
                         "typeCode": "NUM",
-                        "date": "2026-06-10",
+                        "date": "2026-06-22",
                         "person": {"id": 101, "fullName": "Scored Guy"},
                     },
                 ]
@@ -187,7 +188,44 @@ def test_actual_call_up_date_shadow_attaches_real_date_without_changing_anything
     )
     receipt = payload["receipts"][0]
     assert receipt["call_up_date"] == "2026-06-25"  # unchanged -- still the archive-diff date
-    assert receipt["actual_call_up_date"] == "2026-05-01"  # shadow: the real date
+    assert receipt["actual_call_up_date"] == "2026-06-20"  # shadow: the real date
+    assert payload["summary"]["pre_launch_excluded_count"] == 0
+
+
+def test_pre_launch_actual_call_up_date_gets_excluded():
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [_rank_row(101, "Actually Pre-Launch", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    # Real call-up (typeCode SE) before ValuCast's 2026-06-16 launch -- the field/board
+    # comparison isn't meaningful (same principle as the Alcántara/Schultz denylist
+    # entries), so this must be dropped entirely, not just re-dated.
+    transactions_cache = {
+        "queries": {
+            "2026-01-01:2026-06-25:sportId=1": {
+                "transactions": [
+                    {
+                        "typeCode": "SE",
+                        "date": "2026-05-01",
+                        "effectiveDate": "2026-05-01",
+                        "person": {"id": 101, "fullName": "Actually Pre-Launch"},
+                    },
+                ]
+            }
+        }
+    }
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=transactions_cache,
+    )
+    assert payload["receipts"] == []
+    assert payload["summary"]["pre_launch_excluded_count"] == 1
+    assert payload["summary"]["pre_launch_excluded_names"] == ["Actually Pre-Launch"]
 
 
 def test_actual_call_up_date_shadow_absent_without_a_transactions_cache():

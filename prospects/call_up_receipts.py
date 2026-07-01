@@ -48,6 +48,16 @@ EXCLUDED_IDENTITY_KEYS = {"682634_hitter", "702273_pitcher"}
 CALL_UP_TRANSACTION_TYPE_CODES = {"SE", "CU", "PUR", "CP"}
 TRANSACTIONS_CACHE_PATH = ROOT / "data" / "mlb" / "mlb_availability_transactions_cache.json"
 
+# ValuCast's public board went live 2026-06-16 (Alex, 7/1). A call-up whose real date
+# (actual_call_up_date, from the transactions cache) predates this has no "ahead of the
+# field" story: the field, and the player's own MLB roster spot, already reflected the
+# outcome before ValuCast had a public ranking to compare against -- the same principle
+# as EXCLUDED_IDENTITY_KEYS (Alcántara), applied automatically instead of one-by-one
+# denylisting. Only excludes when a real date is actually known (no date = no action --
+# don't guess). Applied AFTER the shadow-date attachment, so this needs a real
+# transactions_cache to do anything; without one, nothing changes (same as today).
+LAUNCH_DATE = "2026-06-16"
+
 
 def _load_json(path: Path) -> dict:
     try:
@@ -400,15 +410,25 @@ def build_call_up_receipts(
     receipts = [r for r in _sort_receipts(list(by_key.values())) if r.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
     misses = [m for m in _sort_misses(misses) if m.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
 
-    # Shadow: attach the real call-up date next to the archive-diff-inferred one, when
-    # a genuine call-up transaction exists for that player. Observe-only -- doesn't
-    # change call_up_date, sorting, or hit/miss classification.
+    # Attach the real call-up date next to the archive-diff-inferred one, when a genuine
+    # call-up transaction exists for that player. Never changes call_up_date or sorting.
     actual_dates = _actual_call_up_dates(transactions_cache) if transactions_cache else {}
     if actual_dates:
         for row in receipts + misses:
             real_date = actual_dates.get(str(row.get("mlbam_id")))
             if real_date:
                 row["actual_call_up_date"] = real_date
+
+    # Drop anyone whose REAL call-up predates launch -- see LAUNCH_DATE above. Only acts
+    # on a confirmed actual_call_up_date; a row with no real-date match is left alone.
+    pre_launch_excluded = [
+        row for row in receipts + misses
+        if row.get("actual_call_up_date") and row["actual_call_up_date"] < LAUNCH_DATE
+    ]
+    if pre_launch_excluded:
+        dropped_keys = {row["identity_key"] for row in pre_launch_excluded}
+        receipts = [r for r in receipts if r["identity_key"] not in dropped_keys]
+        misses = [m for m in misses if m["identity_key"] not in dropped_keys]
 
     blockers = []
     if len(archive_payloads) < 2:
@@ -441,6 +461,10 @@ def build_call_up_receipts(
             "miss_count": len(misses),
             "seed_count": seed_count,
             "archive_dates_scanned": archive_dates,
+            "pre_launch_excluded_count": len(pre_launch_excluded),
+            "pre_launch_excluded_names": sorted(
+                {row.get("name") for row in pre_launch_excluded if row.get("name")}
+            ),
         },
         "validation": {
             "ready_for_call_up_receipts": not blockers,
