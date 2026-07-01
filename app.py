@@ -3272,7 +3272,14 @@ def _player_value_card_png(row, context, mode):
     """Render a single player value card from a dynasty or redraft context."""
     from PIL import Image, ImageDraw
 
-    width, height = 1080, 1350
+    category_items = _dynasty_category_card_items(context)
+    # Categories wrap 4-per-row so every category in the active league format is
+    # shown (not just the top 4) — the card grows downward to fit extra rows and
+    # the footer shifts with it; nothing above the category panel moves.
+    category_rows = -(-len(category_items) // 4) if category_items else 0
+    category_extra = max(0, category_rows - 1) * 54
+
+    width, height = 1080, 1350 + category_extra
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -3358,16 +3365,15 @@ def _player_value_card_png(row, context, mode):
                 else:
                     _draw_statcast_bar(item, 558, 116, 680, 922, 932, 92, y + (idx - per_col) * 43, lf, vf)
 
-    category_items = _dynasty_category_card_items(context)
     read_y0 = 824 if statcast_items else 438
     read_font = _graphic_font(24 if not category_items else 22)
     read_lines = _graphic_wrap_read_text(draw, fields["read_text"], read_font, 890, max_lines=5)
     if statcast_items:
         read_y1 = 1120 if category_items else 1238
-        category_y0, category_y1 = 1146, 1238
+        category_y0, category_y1 = 1146, 1238 + category_extra
     else:
         read_y1 = min(1238, read_y0 + 104 + len(read_lines) * 32)
-        category_y0, category_y1 = read_y1 + 26, read_y1 + 118
+        category_y0, category_y1 = read_y1 + 26, read_y1 + 118 + category_extra
     _graphic_glass_panel(img, draw, (48, read_y0, 1032, read_y1), radius=12)
     draw.text((74, read_y0 + 30), fields["read_label"], fill=muted, font=_graphic_font(20, bold=True))
     for idx, line in enumerate(read_lines):
@@ -3380,15 +3386,17 @@ def _player_value_card_png(row, context, mode):
         if summary:
             title = f"{title} - {summary}"
         draw.text((74, category_y0 + 16), _graphic_fit_text(draw, title, _graphic_font(16, bold=True), 890), fill=muted, font=_graphic_font(16, bold=True))
-        for idx, item in enumerate(category_items[:4]):
-            x = 74 + idx * 235
+        for idx, item in enumerate(category_items):
+            col, row_num = idx % 4, idx // 4
+            x = 74 + col * 235
+            box_y0 = category_y0 + 40 + row_num * 54
             z = float(item["z"] or 0)
             z_color = green if z > 0 else bar_low if z < 0 else text
-            draw.rounded_rectangle((x, category_y0 + 40, x + 205, category_y0 + 86), radius=8, fill=card_2, outline=(44, 46, 54), width=1)
-            draw.text((x + 14, category_y0 + 45), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
-            draw.text((x + 14, category_y0 + 62), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
+            draw.rounded_rectangle((x, box_y0, x + 205, box_y0 + 46), radius=8, fill=card_2, outline=(44, 46, 54), width=1)
+            draw.text((x + 14, box_y0 + 5), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
+            draw.text((x + 14, box_y0 + 22), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
 
-    _graphic_footer(draw, right_note=fields["footer_note"])
+    _graphic_footer(draw, right_note=fields["footer_note"], card_height=height)
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)

@@ -287,3 +287,24 @@ def test_dynasty_player_card_still_renders_after_shared_renderer_refactor(client
     assert response.data[:8] == PNG_MAGIC
     assert "image/png" in response.content_type
     assert len(response.data) > 1000
+
+
+def test_redraft_player_card_shows_every_category_not_just_top_four(client):
+    """A league format with more than 4 hitting categories must render all of
+    them (wrapped across rows), not silently drop everything past the 4th."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    player_id = _first_redraft_player_id("hitter")
+    base = client.get(f"/redraft/player-card/{player_id}.png?cats=R,HR&pcats=K")
+    many = client.get(
+        f"/redraft/player-card/{player_id}.png?cats=R,HR,RBI,SB,AVG,OPS,TB&pcats=K"
+    )
+
+    assert base.status_code == 200 and many.status_code == 200
+    base_h = Image.open(BytesIO(base.data)).height
+    many_h = Image.open(BytesIO(many.data)).height
+    # 7 categories need 2 rows (4-per-row); the card must grow to fit the 2nd row
+    # rather than clipping categories 5-7.
+    assert many_h > base_h
