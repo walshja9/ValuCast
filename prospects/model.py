@@ -196,6 +196,19 @@ NON_SHRINK_FEATURES = {
     "bats_switch",
     "throws_left",
 }
+# Draft-pedigree subset of NON_SHRINK_FEATURES (pitchers only -- OUTCOME_FEATURE_NAMES
+# has no equivalent hitter pedigree columns). Used only by the pedigree-shrink shadow
+# below; never affects the served score.
+PITCHER_PEDIGREE_FEATURES = {
+    "rule4_drafted",
+    "draft_record_known",
+    "pick_value",
+    "inverse_draft_pick",
+    "inverse_draft_round",
+    "log_signing_bonus",
+    "college_drafted",
+    "prep_drafted",
+}
 
 
 def validate_input_contract(contract: dict) -> None:
@@ -1073,20 +1086,28 @@ def _pool_current_records(records: list[dict], role: str) -> dict | None:
 
 
 def _regress_current_features(
-    features: list[float], role_model: dict, role: str, sample: float
+    features: list[float],
+    role_model: dict,
+    role: str,
+    sample: float,
+    *,
+    also_shrink: frozenset[str] = frozenset(),
 ) -> tuple[list[float], float]:
     reliability = sample / (sample + SAMPLE_REGRESSION[role])
     # Shrink every performance-derived feature in the scoring vector toward its
     # training mean by reliability. The vector is the rich OUTCOME feature set,
     # so we walk the model's own feature_names (falling back to the base names),
     # holding only the structural facts in NON_SHRINK_FEATURES fixed.
+    # `also_shrink` additionally shrinks named NON_SHRINK_FEATURES too -- used only
+    # by the pedigree-shrink shadow counterfactual, never by the served score path
+    # (default empty set reproduces the exact prior behavior).
     feature_names = role_model.get("feature_names") or FEATURE_NAMES[role]
     means = role_model["means"]
     out = list(features)
     for index, name in enumerate(feature_names):
         if index >= len(out) or index >= len(means):
             break
-        if name in NON_SHRINK_FEATURES:
+        if name in NON_SHRINK_FEATURES and name not in also_shrink:
             continue
         center = float(means[index])
         out[index] = center + reliability * (out[index] - center)
@@ -1295,6 +1316,64 @@ def score_current(
                         "current_sample": round(comp_sample, 1),
                         "current_reliability": round(comp_rel, 3),
                         "pull_weight": round(pull_w, 4),
+                    }
+            # Pedigree-shrink shadow (observe-only, never applied to the served score):
+            # draft-pedigree features are structurally exempt from sample-size shrinkage
+            # (NON_SHRINK_FEATURES) even when the pitcher's OWN current-season line is
+            # thin and genuinely bad (_current_line_is_bad), so his poor performance
+            # gets diluted toward the mean while his pedigree doesn't. This is the
+            # residual case the 6/29 stale-current-pull fix explicitly did NOT cover
+            # (that fix only pulls when a STALE prior-year line is being served over a
+            # worse current one; this fires when the served line already IS the current
+            # one). Computes what expected_outcome_score/expected_category_impact_score
+            # would be if pedigree shrank at the same reliability as everything else --
+            # LIVE (applied to served score): draft-pedigree features are structurally
+            # exempt from sample-size shrinkage (NON_SHRINK_FEATURES) even when the
+            # pitcher's OWN current-season line is thin and genuinely bad
+            # (_current_line_is_bad), so his poor performance gets diluted toward the
+            # mean while his pedigree doesn't. Residual case the 6/29 stale-current-pull
+            # fix explicitly did not cover (that fix only pulls when a STALE prior-year
+            # line is served over a worse current one; this fires when the served line
+            # already IS the current one).
+            #
+            # Downward-only: shrinking pedigree toward the training mean is symmetric --
+            # it pulls above-average pedigree down but also pulls below-average pedigree
+            # up. Only the downward case is the bug being corrected (elite pedigree
+            # insulating a bad current line); a below-average-pedigree player's bad line
+            # is already scored on its own (unshrunk-pedigree) merits and must never get
+            # boosted. Same clamp shape as stale_current_correction (never raises a score).
+            if (
+                role == "pitcher"
+                and str(record.get("source_kind")) == "current_season"
+                and _current_line_is_bad(record, role)
+            ):
+                pedigree_regressed, _ = _regress_current_features(
+                    outcome_raw, role_model, role, sample,
+                    also_shrink=PITCHER_PEDIGREE_FEATURES,
+                )
+                pedigree_impact_features, _ = _regress_current_features(
+                    outcome_raw, impact_model, role, sample,
+                    also_shrink=PITCHER_PEDIGREE_FEATURES,
+                )
+                pedigree_outcome = round(_predict_model(outcome_runtime, pedigree_regressed), 4)
+                pedigree_impact = round(
+                    _predict_model(impact_runtime, pedigree_impact_features), 4
+                )
+                raw_outcome = row["expected_outcome_score"]
+                raw_impact = row["expected_category_impact_score"]
+                corrected_outcome = round(min(raw_outcome, pedigree_outcome), 4)
+                corrected_impact = round(min(raw_impact, pedigree_impact), 4)
+                if corrected_outcome < raw_outcome or corrected_impact < raw_impact:
+                    row["expected_outcome_score"] = corrected_outcome
+                    row["expected_category_impact_score"] = corrected_impact
+                    row["pedigree_shrink_correction"] = {
+                        "raw_outcome": raw_outcome,
+                        "raw_impact": raw_impact,
+                        "pedigree_shrunk_outcome": pedigree_outcome,
+                        "pedigree_shrunk_impact": pedigree_impact,
+                        "outcome_delta": round(corrected_outcome - raw_outcome, 4),
+                        "impact_delta": round(corrected_impact - raw_impact, 4),
+                        "reliability": round(reliability, 3),
                     }
             if POOLED_SHADOW_ENABLED:
                 try:

@@ -718,3 +718,42 @@ def test_load_contract_validates_schema(tmp_path):
     path.write_text(json.dumps({"schema_version": "0"}), encoding="utf-8")
     with pytest.raises(ValueError, match="schema_version"):
         load_input_contract(path)
+
+
+def test_pedigree_features_are_real_pitcher_outcome_features():
+    from prospects.model import PITCHER_PEDIGREE_FEATURES
+
+    # A typo'd/stale name here would make the pedigree-shrink shadow a silent
+    # no-op (the also_shrink lookup in _regress_current_features matches by name
+    # against role_model["feature_names"], which mirrors OUTCOME_FEATURE_NAMES).
+    assert PITCHER_PEDIGREE_FEATURES <= set(OUTCOME_FEATURE_NAMES["pitcher"])
+
+
+def test_also_shrink_pulls_named_features_toward_mean_but_leaves_others_fixed():
+    from prospects.model import PITCHER_PEDIGREE_FEATURES
+
+    feature_names = OUTCOME_FEATURE_NAMES["pitcher"]
+    means = [0.0] * len(feature_names)
+    role_model = {"feature_names": feature_names, "means": means}
+    # A high-pedigree, bad-performance line: performance features far from the
+    # (zero) mean, pedigree features also far from the mean.
+    features = [10.0] * len(feature_names)
+    sample = 30.0  # thin -> low reliability, so shrinkage is substantial either way
+
+    default_out, reliability = _regress_current_features(
+        features, role_model, "pitcher", sample
+    )
+    pedigree_out, _ = _regress_current_features(
+        features, role_model, "pitcher", sample, also_shrink=PITCHER_PEDIGREE_FEATURES
+    )
+    assert 0.0 < reliability < 1.0
+    for index, name in enumerate(feature_names):
+        if name in PITCHER_PEDIGREE_FEATURES:
+            # Shrunk in the pedigree-shadow pass...
+            assert pedigree_out[index] == pytest.approx(reliability * 10.0)
+            # ...but NOT in the default (served-score) pass -- the fix must never
+            # change what's actually served.
+            assert default_out[index] == 10.0
+        else:
+            # Every non-pedigree feature is identical in both passes.
+            assert pedigree_out[index] == default_out[index]
