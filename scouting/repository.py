@@ -571,14 +571,23 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         digest = report_generator.grounding_hash(grounding)
         cached = entries.get(key)
         result = None
+        current_model = report_generator.DEFAULT_MODEL
+        # Reuse only when the grounding AND the model both match the current build — so a
+        # model/prompt swap forces regeneration instead of serving the old model's prose.
         if (
             isinstance(cached, dict)
             and cached.get("hash") == digest
             and cached.get("valid") is True
+            and cached.get("model") == current_model
         ):
             result = cached
             reused += 1
-        elif isinstance(cached, dict) and cached.get("valid") is True and cached.get("text"):
+        elif (
+            isinstance(cached, dict)
+            and cached.get("valid") is True
+            and cached.get("text")
+            and cached.get("model") == current_model
+        ):
             guard = validate_report_text(cached["text"], grounding)
             if guard["ok"]:
                 result = {

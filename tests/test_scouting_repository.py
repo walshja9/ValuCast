@@ -732,6 +732,7 @@ def test_scouting_repository_reuses_cached_llm_when_generation_budget_is_zero(
     with (
         patch.object(report_generator, "default_client", return_value=_FakeClient()),
         patch.object(report_generator, "grounding_hash", return_value="same"),
+        patch.object(report_generator, "DEFAULT_MODEL", "test"),
         patch.object(repository, "LLM_CACHE_PATH", cache_path),
     ):
         payload = build_scouting_repository(
@@ -799,6 +800,7 @@ def test_scouting_repository_reuses_stale_cache_only_when_it_still_validates(
     with (
         patch.object(report_generator, "default_client", return_value=_FakeClient()),
         patch.object(report_generator, "grounding_hash", return_value="new"),
+        patch.object(report_generator, "DEFAULT_MODEL", "test"),
         patch.object(repository, "LLM_CACHE_PATH", cache_path),
     ):
         payload = build_scouting_repository(

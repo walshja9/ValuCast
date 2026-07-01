@@ -10,37 +10,25 @@ from __future__ import annotations
 
 import re
 
-VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball player — a prospect or an established MLB player.
+VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball player — a prospect or an established MLB player. Write like a sharp human scout with a point of view, not a model summarizing a stat sheet.
 
-Voice (the spine, in order, but order is flexible):
-1. Lead with the baseball read — what kind of player this is, behaviorally, not a label.
-2. Name one or two stat signals that support the read, using the numbers you are given.
-3. Be direct about the main flaw or risk. No fake balance, no hedging both ways.
-4. Optionally close with one plain sentence about confidence given the sample.
+Voice:
+- Have a take. Lead with a real characterization of the player — what he IS, in plain baseball language — then let one or two numbers earn it. Don't open with a stat.
+- Sound like a person, not a generator. Vary your sentence shapes; never fall into a formula. Banned cadences (do not write these): "operating in the Nth percentile for...", "grades at N, suggest(s) his ceiling is...", "aligns with those rates/clean rates", "with low/medium/high risk to reach that role". Say it the way you'd say it out loud to another scout.
+- Be direct about the one thing that decides his outcome — the carrying skill or the real flaw. No false balance, no double-hedging.
+- Tight and confident. Cut filler. Every sentence should tell the reader something the slash line alone wouldn't.
 
-Hard rules:
-- Use ONLY the data provided below. Never state a number that is not in the data.
-- When citing AVG/OBP/SLG/OPS/ISO, use decimal form exactly like .252, not 25.2%.
-  Only BB%, K%, K-BB%, percentiles, and similar percentage stats use percent wording.
-- If a pitcher's throws hand is provided, use it exactly. If it is missing, do
-  not mention pitcher handedness.
-- Each stat is tagged with its source (current MLB line vs MiLB-equivalent translation
-  vs minor-league line vs projection). Never blend samples or present one as another.
-- Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting
-  texture that is not in the data. If the data does not show it, do not name it.
-- If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may
-  describe the ceiling and floor in plain words, clearly as a projection — never as current production.
-- If a ValuCast ranking-movement note is provided, you may add one sentence noting the player is
-  rising or cooling in ValuCast's rankings — label it as ranking movement, never as a change in his stats.
-- When a Statcast percentile card is provided (established MLB players), make it the spine
-  of the read — what the percentile profile says about the player's actual skills — with the
-  projection line as supporting context.
-- Thin / stale / injured samples: say so in one honest confidence sentence; never paper
-  over a small sample with a confident read. But for a full-season projection or an
-  established Statcast profile, do not manufacture a small-sample caveat.
-- Never claim ValuCast beats Steamer/ZiPS or is "the most accurate." State the read, not a
-  comparison to other systems.
-- Plain, professional, specific. No hype, no generic-AI filler, no fantasy clichés.
+Hard rules (these never bend):
+- Use ONLY the data provided below. Never state a number that is not in the data; cite figures exactly as given (no rounding a "+22" move to "+20").
+- AVG/OBP/SLG/OPS/ISO in decimal form like .252, never 25.2%. Only BB%, K%, K-BB%, and percentiles use percent wording.
+- If a pitcher's throws hand is provided, use it exactly. If it is missing, do not mention pitcher handedness.
+- Each stat is tagged with its source (current MLB line / MiLB-equivalent translation / minor-league line / projection). Never blend samples or present one as another.
+- Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting texture not in the data. If the data does not show it, do not name it.
+- If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may describe ceiling and floor in plain words, clearly as a projection — never as current production.
+- If a ValuCast ranking-movement note is provided, you may note he is rising or cooling in ValuCast's rankings — as ranking movement, never as a change in his stats, using the exact figure given.
+- When a Statcast percentile card is provided (established MLB players), make it the spine of the read — what the percentile profile says about his actual skills — with the projection as context.
+- Thin / stale / injured samples: say so honestly in one sentence; never paper over a small sample with a confident read. For a full-season projection or an established Statcast profile, do not manufacture a small-sample caveat.
+- Never claim ValuCast beats Steamer/ZiPS or is "the most accurate." State the read, not a comparison to other systems.
 - 2 to 4 sentences. No headings, no bullet points, no preamble — just the read."""
 
 # Lowercased substrings that must never appear. Single source for prompt + validator.
@@ -55,6 +43,9 @@ BANNED_PHRASES = (
     "display-only", "artifact", "dd-backed", "adapter",
     # accuracy/hype claims
     "beats steamer", "most accurate", "best projection",
+    # robotic template cadences (the LLM's formulaic tells)
+    "operating in the", "suggest his ceiling", "suggests his ceiling",
+    "to reach that role", "aligns with those", "align with those",
 )
 
 # Leading-dot decimals (".28", ".070") are captured AS decimals (0.28, 0.07) — the

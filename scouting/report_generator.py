@@ -12,7 +12,7 @@ import os
 
 from scouting.voice import VOICE_PROMPT, validate_report_text
 
-DEFAULT_MODEL = os.environ.get("VALUCAST_SCOUTING_MODEL", "claude-haiku-4-5-20251001")
+DEFAULT_MODEL = os.environ.get("VALUCAST_SCOUTING_MODEL", "claude-sonnet-4-6")
 MAX_TOKENS = 320
 MAX_ATTEMPTS = 2
 DEFAULT_TIMEOUT_SECONDS = 20.0
