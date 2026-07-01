@@ -408,8 +408,8 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
         "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "
         "&& '1' || '0' }}"
     ) in workflow
-    assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "970"' in workflow
-    assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "12"' in workflow
+    assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "300"' in workflow
+    assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"' in workflow
     # 379015c replaced the cross-run rebase-merge recovery (which silently dropped
     # this run's freshly built artifacts) with: sync to the latest origin/master
     # right after checkout, build on it, then a single fail-loud push. Assert the
