@@ -2,11 +2,12 @@
    dynasty_category_fit.html, but offers ONLY the categories ValuCast's prospect
    model can project (prospect_supported_cats / _pcats, board vocabulary). The
    "not yet projected" hint names the recognized league cats the model can't do
-   yet (W, SV) so users understand why they're absent. Selecting any chip submits
+   yet (W — no wins in the label seasons) so users understand why they're absent.
+   Selecting any chip submits
    cats/pcats and flips rank_by to league; clearing all reverts to the model P#. #}
 {% set cat_labels = {
     'PA':'PA','R':'R','HR':'HR','RBI':'RBI','SB':'SB','AVG':'AVG','OPS':'OPS','SO':'SO',
-    'IP':'IP','K':'K','QS':'QS','SV_HLD':'SV + HLD','ERA':'ERA','WHIP':'WHIP',
+    'IP':'IP','K':'K','QS':'QS','SV':'SV','HLD':'HLD','SV_HLD':'SV + HLD','ERA':'ERA','WHIP':'WHIP',
     'K_BB':'K/BB','L':'L'
 } %}
 <section class="category-fit-panel prospect-category-fit" id="prospect-category-fit" aria-labelledby="prospect-fit-heading">
@@ -39,7 +40,7 @@
                 <span>{{ cat_labels.get(cat, cat) }}</span>
             </label>
             {% endfor %}
-            <p class="fit-not-projected" aria-label="Categories not yet projected">Not yet projected: W, SV</p>
+            <p class="fit-not-projected" aria-label="Categories not yet projected">Not yet projected: W</p>
         </div>
     </div>
 </section>

@@ -11,7 +11,9 @@ _ADAPTER_PATH = (
     / "models"
     / "valucast_prospect_league_adapters.json"
 )
-_PRESETS = (("dd_7x7", "7x7"), ("roto_5x5", "5x5"))
+# ops_7x7 appears on cards once the daily build regenerates the adapters artifact;
+# until then the lookup just skips it (dd_7x7 stays in the artifact, unsurfaced).
+_PRESETS = (("ops_7x7", "7x7 OPS"), ("roto_5x5", "5x5"))
 
 
 def format_ranks_for(mlbam_id, role=None):

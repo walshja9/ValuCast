@@ -467,6 +467,23 @@ TARGET_SPECS = {
             "scale": 80.0,
             "unit": "SV+HLD/60 IP",
         },
+        # Split saves/holds (7/1): the label seasons carry sv and hld separately, so
+        # these train on real data. Adapter-only consumers — the live score's outcome
+        # index reads the dynasty layer, never these representative rates.
+        "representative_sv_per_60": {
+            "kind": "conditional",
+            "derived": "sv_per_60",
+            "offset": 0.0,
+            "scale": 60.0,
+            "unit": "SV/60 IP",
+        },
+        "representative_hld_per_60": {
+            "kind": "conditional",
+            "derived": "hld_per_60",
+            "offset": 0.0,
+            "scale": 60.0,
+            "unit": "HLD/60 IP",
+        },
         "representative_l_per_180": {
             "kind": "conditional",
             "derived": "l_per_180",
@@ -617,6 +634,12 @@ def _raw_target(row: dict, role: str, target_name: str, seasons_by_player: dict)
         if saves is None and holds is None:
             return None
         return None if not sample else ((saves or 0.0) + (holds or 0.0)) / sample * 60.0
+    if spec.get("derived") == "sv_per_60":
+        value = _num(season.get("sv"))
+        return None if value is None or not sample else value / sample * 60.0
+    if spec.get("derived") == "hld_per_60":
+        value = _num(season.get("hld"))
+        return None if value is None or not sample else value / sample * 60.0
     if spec.get("derived") == "l_per_180":
         value = _num(season.get("l"))
         return None if value is None or not sample else value / sample * 180.0

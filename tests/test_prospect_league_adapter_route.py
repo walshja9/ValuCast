@@ -1,6 +1,6 @@
 """Live URL-driven prospect league re-ranking (P2 Slice 1, presets only).
 
-Covers the route surface (every path 200, dd_7x7 re-orders + renders the re-rank
+Covers the route surface (every path 200, ops_7x7 re-orders + renders the re-rank
 column, roto_5x5 refuses partial coverage and keeps the default order, garbage
 params degrade to the default board) and the re-scorer's category canonicalization
 plus the row join.
@@ -24,11 +24,11 @@ class TestProspectLeagueAdapterRoute(unittest.TestCase):
     def _board_ready():
         return app.dd_store.is_available and app._UNIVERSAL_PROSPECT_AVAILABLE
 
-    def test_dd_7x7_reorders_and_renders_rerank_column(self):
+    def test_ops_7x7_reorders_and_renders_rerank_column(self):
         if not self._board_ready():
             self.skipTest("prospect board / universal model not available")
         default = self.client.get("/?mode=prospects")
-        league = self.client.get("/?mode=prospects&preset=dd_7x7&rank_by=league")
+        league = self.client.get("/?mode=prospects&preset=ops_7x7&rank_by=league")
         self.assertEqual(default.status_code, 200)
         self.assertEqual(league.status_code, 200)
         default_html = default.get_data(as_text=True)
@@ -65,8 +65,8 @@ class TestProspectLeagueAdapterRoute(unittest.TestCase):
             self.skipTest("prospect board / universal model not available")
         for query in (
             "/?mode=prospects&preset=zzz&rank_by=league",
-            "/?mode=prospects&preset=dd_7x7&rank_by=bogus",
-            "/?mode=prospects&preset=dd_7x7",  # rank_by missing
+            "/?mode=prospects&preset=ops_7x7&rank_by=bogus",
+            "/?mode=prospects&preset=ops_7x7",  # rank_by missing
         ):
             with self.subTest(query=query):
                 response = self.client.get(query)
@@ -77,12 +77,12 @@ class TestProspectLeagueAdapterRoute(unittest.TestCase):
         if not self._board_ready():
             self.skipTest("prospect board / universal model not available")
         response = self.client.get(
-            "/rankings?mode=prospects&preset=dd_7x7&rank_by=league"
+            "/rankings?mode=prospects&preset=ops_7x7&rank_by=league"
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("Your League #", response.get_data(as_text=True))
         push_url = response.headers.get("HX-Replace-Url", "")
-        self.assertIn("preset=dd_7x7", push_url)
+        self.assertIn("preset=ops_7x7", push_url)
         self.assertIn("rank_by=league", push_url)
 
     def test_custom_cats_reorder_and_render_rerank_column(self):
@@ -131,27 +131,30 @@ class TestProspectLeagueAdapterRoute(unittest.TestCase):
         # Supported categories appear as selectable chips...
         for cat in ("HR", "SB", "OPS", "SO"):
             self.assertIn(f'name="cats" value="{cat}"', html)
-        for pcat in ("K", "ERA", "WHIP", "SV_HLD", "K_BB"):
+        for pcat in ("K", "ERA", "WHIP", "SV", "HLD", "SV_HLD", "K_BB"):
             self.assertIn(f'name="pcats" value="{pcat}"', html)
         # ...while the categories the model can't project are NOT selectable, only
-        # surfaced as an inline "not yet projected" hint.
+        # surfaced as an inline "not yet projected" hint. (SV and HLD graduated to
+        # supported on 7/1 via the split trained targets; W has no label data.)
         self.assertNotIn('name="pcats" value="W"', html)
-        self.assertNotIn('name="pcats" value="SV"', html)
         self.assertIn("Not yet projected", html)
 
 
 class TestProspectCategoryStateAndRescorer(unittest.TestCase):
     def test_state_canonicalizes_preset_into_board_vocabulary(self):
-        args = {"preset": "dd_7x7", "rank_by": "league"}
+        args = {"preset": "ops_7x7", "rank_by": "league"}
         cats, pcats, active, label = app._prospect_category_state(
             type("A", (), {"get": lambda self, k, d=None: args.get(k, d)})()
         )
         self.assertTrue(active)
-        self.assertEqual(label, "7x7")
+        self.assertEqual(label, "7x7 OPS")
         pcat_keys = dict(pcats)
-        # Board vocabulary in the URL/state contract: SV_HLD / K_BB, not SV+HLD.
-        self.assertIn("SV_HLD", pcat_keys)
+        # Board vocabulary in the URL/state contract: K_BB not K/BB; the 7/1 split
+        # preset carries separate SV and HLD (no combined SV_HLD, no IP, no L).
+        self.assertIn("SV", pcat_keys)
+        self.assertIn("HLD", pcat_keys)
         self.assertIn("K_BB", pcat_keys)
+        self.assertNotIn("SV_HLD", pcat_keys)
         self.assertNotIn("SV+HLD", pcat_keys)
         # Negative-direction categories keep their sign from the adapter PRESETS.
         self.assertEqual(dict(cats)["SO"], -1)

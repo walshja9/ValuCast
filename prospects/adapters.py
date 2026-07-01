@@ -27,6 +27,17 @@ PRESETS = {
         "hitter": {"R": 1, "HR": 1, "RBI": 1, "SB": 1, "AVG": 1},
         "pitcher": {"W": 1, "K": 1, "ERA": -1, "WHIP": -1, "SV": 1},
     },
+    # Generic 7x7 the public board surfaces (7/1): NOT the DD mix — SV and HLD are
+    # separate categories (split trained targets), no L, no IP. A preset with W
+    # would hit the partial-coverage refusal (no W in the label seasons), which is
+    # why roto_5x5 still shows its coverage notice.
+    "ops_7x7": {
+        "name": "7x7 OPS",
+        "hitter": {"R": 1, "HR": 1, "RBI": 1, "SB": 1, "AVG": 1, "OPS": 1, "SO": -1},
+        "pitcher": {"K": 1, "QS": 1, "SV": 1, "HLD": 1, "ERA": -1, "WHIP": -1, "K/BB": 1},
+    },
+    # Build-chain only (dd_adapter / adapter_backtest artifacts) — no longer surfaced
+    # in the public UI. Candidate for the DD-residue kill list.
     "dd_7x7": {
         "name": "Diamond Dynasties 7x7",
         "hitter": {
@@ -51,7 +62,7 @@ PRESETS = {
 }
 SUPPORTED_CATEGORIES = {
     "hitter": {"PA", "R", "HR", "RBI", "SB", "AVG", "OPS", "SO"},
-    "pitcher": {"IP", "K", "QS", "SV+HLD", "ERA", "WHIP", "K/BB", "L"},
+    "pitcher": {"IP", "K", "QS", "SV", "HLD", "SV+HLD", "ERA", "WHIP", "K/BB", "L"},
 }
 def _prediction(profile: dict, name: str) -> float:
     return float(profile["outcomes"][name]["prediction"])
@@ -125,6 +136,14 @@ def project_categories(profile: dict) -> dict[str, float]:
             * _prediction(profile, "representative_sv_hld_per_60")
             * (1.0 - rotation_share)
         )
+    for category, target in (
+        ("SV", "representative_sv_per_60"),
+        ("HLD", "representative_hld_per_60"),
+    ):
+        if rotation_share is not None and _has_prediction(profile, target):
+            categories[category] = (
+                ip / 60.0 * _prediction(profile, target) * (1.0 - rotation_share)
+            )
     for category, target in {
         "ERA": "representative_era",
         "WHIP": "representative_whip",
