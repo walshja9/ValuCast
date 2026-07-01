@@ -2,8 +2,10 @@
 from mlb.projection_source_comparison import (
     MIN_SAMPLE,
     build_comparison,
+    build_counting_stat_comparison,
     build_freeze,
     build_what_would_change,
+    prorate_counting_projection,
     validate_comparison,
     _actual_lines,
     _scoreable,
@@ -21,6 +23,25 @@ def _hitter(mlbam, avg, obp, slg, ops, pa=120.0):
 
 def _cohort(n, avg, obp, slg, ops, pa=120.0):
     return [_hitter(1000 + i, avg, obp, slg, ops, pa) for i in range(n)]
+
+
+def _counting_hitter(mlbam, hr, rbi, runs, sb, pa=120.0):
+    return {
+        "metadata": {"mlbam_id": str(mlbam)},
+        "pool": "hitter",
+        "stats": {"HR": hr, "RBI": rbi, "R": runs, "SB": sb, "PA": pa},
+    }
+
+
+def _counting_pitcher(mlbam, er, bb, hits, k, w, sv, hld, ip=40.0):
+    return {
+        "metadata": {"mlbam_id": str(mlbam)},
+        "pool": "starter",
+        "stats": {
+            "ER": er, "BB": bb, "H_ALLOWED": hits, "K": k,
+            "W": w, "SV": sv, "HLD": hld, "IP": ip,
+        },
+    }
 
 
 def test_build_freeze_captures_rate_lines_and_coverage():
@@ -138,6 +159,63 @@ def test_what_would_change_ranks_by_value_delta():
     changes = build_what_would_change(live, shadow, top_n=5)
     assert changes[0]["name"] == "B"
     assert changes[0]["value_delta"] == 20.0
+
+
+def test_prorate_counting_projection_uses_elapsed_over_remaining_days():
+    assert prorate_counting_projection(20, 10, 20) == 10.0
+    assert prorate_counting_projection(20, 0, 20) == 0.0
+    assert prorate_counting_projection(20, 20, 0) == 20.0
+
+
+def test_counting_stat_comparison_scores_forward_deltas_with_proration():
+    as_of_actuals = [_counting_hitter(101, hr=10, rbi=30, runs=40, sb=5, pa=200)]
+    current_actuals = [_counting_hitter(101, hr=12, rbi=35, runs=43, sb=6, pa=260)]
+    # With season_end 2026-07-08, the 6/18 -> 6/28 window is half the remaining season.
+    hp_rows = [_counting_hitter(101, hr=20, rbi=50, runs=30, sb=10)]
+    steamer_rows = [_counting_hitter(101, hr=10, rbi=20, runs=14, sb=4)]
+
+    result = build_counting_stat_comparison(
+        valucast_hp_rows=hp_rows,
+        steamer_ros_rows=steamer_rows,
+        as_of_actual_rows=as_of_actuals,
+        current_actual_rows=current_actuals,
+        as_of="2026-06-18",
+        through="2026-06-28",
+        season_end="2026-07-08",
+    )
+
+    assert result["status"] == "scored"
+    assert result["window"]["proration_factor"] == 0.5
+    assert result["scoreable_players"] == 1
+    assert result["actual_counting_deltas"]["101"]["counts"] == {
+        "HR": 2.0, "RBI": 5.0, "R": 3.0, "SB": 1.0,
+    }
+    assert result["scores"]["marcel_mae"]["HR"] == 8.0
+    assert result["scores"]["steamer_mae"]["HR"] == 3.0
+    assert result["scores"]["per_stat_ratio"]["HR"] == 2.6667
+
+
+def test_counting_stat_comparison_scores_pitching_counts():
+    as_of_actuals = [_counting_pitcher(202, er=8, bb=5, hits=15, k=30, w=2, sv=0, hld=3, ip=20)]
+    current_actuals = [_counting_pitcher(202, er=15, bb=12, hits=25, k=55, w=3, sv=1, hld=5, ip=45)]
+    hp_rows = [_counting_pitcher(202, er=20, bb=20, hits=30, k=60, w=4, sv=2, hld=8)]
+    steamer_rows = [_counting_pitcher(202, er=14, bb=12, hits=20, k=40, w=2, sv=2, hld=4)]
+
+    result = build_counting_stat_comparison(
+        valucast_hp_rows=hp_rows,
+        steamer_ros_rows=steamer_rows,
+        as_of_actual_rows=as_of_actuals,
+        current_actual_rows=current_actuals,
+        as_of="2026-06-18",
+        through="2026-06-28",
+        season_end="2026-07-08",
+    )
+
+    assert result["status"] == "scored"
+    assert result["actual_counting_deltas"]["202"]["counts"]["K"] == 25.0
+    assert result["scores"]["marcel_mae"]["K"] == 5.0
+    assert result["scores"]["steamer_mae"]["K"] == 5.0
+    assert result["scores"]["per_stat_ratio"]["K"] == 1.0
 
 
 def test_resolve_source_env_default_off(monkeypatch):

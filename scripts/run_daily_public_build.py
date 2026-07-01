@@ -20,6 +20,8 @@ BUILD_STEPS: list[tuple[str, ...]] = [
         "--projection-path",
         "projections/runs/valucast_hp_2026_v2/projections.json",
     ),
+    ("scripts/archive_valucast_actuals_snapshot.py",),
+    ("scripts/build_valucast_hp_run.py",),
     ("scripts/build_mlb_track_record.py",),
     ("scripts/build_mlb_availability.py",),
     ("scripts/build_validation_scorecard.py",),

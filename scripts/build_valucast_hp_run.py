@@ -1,149 +1,299 @@
-"""Rebuild the immutable ValuCast H+P run, bumping the version, with pitcher ERA
-derived from projected FIP (raw FIP + leakage-safe league cFIP) instead of the old
-ER-rate prior.
-
-Why this exists
----------------
-The opt-in `?source=valucast` board reads ONE frozen, immutable run
-(`projections/runs/valucast_hp_2026_vN/projections.json`). When commit 060cca1 shipped
-FIP-based pitcher ERA in `projections/models/marcel_pitcher.py`
-(`PitcherMarcelParams.era_from_fip`, default True), the already-archived v1 run kept its
-old ER-rate ERAs. The live model changed; the frozen artifact did not. The absence of a
-committed builder is why bumping it was a manual chore.
-
-Safe, deterministic transform (NOT a fresh model run)
------------------------------------------------------
-ONLY the ERA derivation changed in the model -- none of the projected components
-(K/BB/HBP/HR/IP/...) moved. So instead of re-running the whole pipeline (which would be
-sensitive to data/seed drift), this script:
-
-  1. Loads the prior run rows + manifest.
-  2. Keeps every HITTER row BYTE-IDENTICAL (untouched object, same order).
-  3. For each PITCHER row with IP > 0, recomputes ONLY ERA and ER from the row's own
-     already-projected FIP components, using the same identity the model now uses:
-         raw_fip = (13*HR + 3*(BB + HBP) - 2*K) / IP
-         ERA     = max(0, raw_fip + cFIP)
-         ER      = ERA * IP / 9        (keeps the 9*ER/IP == ERA identity)
-     Rows with IP <= 0 are left unchanged. All other stats fields are untouched.
-  4. Writes the next version via the project's own `write_valucast_hp_run`, which
-     enforces immutability and pool integrity. v1 stays intact.
-
-cFIP is computed exactly as `build_pitcher_projections` does: from the three prior
-pre-target seasons (2025, 2024, 2023), so it is leakage-safe and matches the live model.
-
-Re-runnable: pass --version to target a specific bump; default is prior_version + 1.
-"""
+#!/usr/bin/env python3
+"""Build the live ValuCast H+P projection run or a dated historical snapshot."""
 from __future__ import annotations
 
 import argparse
-import copy
 import json
+import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))  # allow `python scripts/build_valucast_hp_run.py`
+    sys.path.insert(0, str(ROOT))
 
-from projections.data.pitching_historical import load_pitching_season
-from projections.export.valucast_hp_run import AS_OF_SEASON, write_valucast_hp_run
-from projections.models.marcel_pitcher import compute_cfip
+from projections.data.identity import load_identity_store  # noqa: E402
+from projections.export.marcel_run import build_marcel_projections  # noqa: E402
+from projections.export.valucast_enrich import build_eligibility, enrich_rows  # noqa: E402
+from projections.export.valucast_hp_run import AS_OF_SEASON  # noqa: E402
+from projections.models.marcel_params import MarcelParams  # noqa: E402
+from projections.models.marcel_pitcher import build_pitcher_projections, compute_cfip  # noqa: E402
+from projections.models.pitcher_params import PitcherMarcelParams  # noqa: E402
+from projections.data.pitching_historical import load_pitching_season  # noqa: E402
 
-RUNS_DIR = ROOT / "projections" / "runs"
 DATA_DIR = ROOT / "projections" / "data"
+CURRENT_PROJECTION_PATH = ROOT / "data" / "projections" / "current.json"
+CURRENT_ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
+LIVE_RUN_DIR = ROOT / "projections" / "runs" / f"valucast_hp_{AS_OF_SEASON}_v2"
+HP_SNAPSHOT_DIR = ROOT / "data" / "prediction_archive" / "valucast_hp_snapshot"
 
-_PITCHER_POOLS = {"starter", "reliever", "pitcher"}
-_PRIOR_SEASONS = (AS_OF_SEASON - 1, AS_OF_SEASON - 2, AS_OF_SEASON - 3)  # 2025, 2024, 2023
-
-
-def compute_cfip_for_target() -> float:
-    """Leakage-safe league cFIP over the three prior pre-target seasons (matches the
-    live model's `build_pitcher_projections`)."""
-    snaps = [load_pitching_season(y, DATA_DIR) for y in _PRIOR_SEASONS]
-    cfip = compute_cfip(snaps)
-    if cfip is None:
-        raise RuntimeError("compute_cfip returned None (no IP in prior seasons).")
-    return cfip
+PITCHER_POOLS = {"starter", "reliever", "pitcher"}
+HITTER_COUNTING = ("PA", "AB", "1B", "2B", "3B", "HR", "R", "RBI", "SB", "CS", "BB", "SO", "HBP", "SF")
+PITCHER_COUNTING = ("IP", "ER", "BB", "H_ALLOWED", "K", "W", "L", "SV", "HLD", "GS", "G", "QS")
+HITTER_PARAMS = MarcelParams(alpha_contact=0.75, alpha_power=0.5)
+PITCHER_PARAMS = PitcherMarcelParams()
+PRIOR_SEASONS = (AS_OF_SEASON - 3, AS_OF_SEASON - 2, AS_OF_SEASON - 1)
 
 
-def patch_pitcher_era(row: dict, cfip: float) -> dict:
-    """Return a copy of a pitcher row with ERA/ER re-derived from projected FIP.
-    Rows with IP <= 0 are returned unchanged. No other stats field is touched."""
-    out = copy.deepcopy(row)
-    stats = out["stats"]
-    ip = float(stats.get("IP", 0) or 0.0)
-    if ip <= 0:
-        return out
-    raw_fip = (13.0 * stats["HR"] + 3.0 * (stats["BB"] + stats["HBP"]) - 2.0 * stats["K"]) / ip
-    era = max(0.0, raw_fip + cfip)
-    stats["ER"] = round(era * ip / 9.0, 4)   # match the model's 4-dp rounding on stats
-    stats["ERA"] = round(era, 3)
+def _load_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _atomic_json(path: Path, payload, *, indent: int = 2) -> bool:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = json.dumps(payload, indent=indent, sort_keys=True)
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return False
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+    return True
+
+
+def _mlbam_id(row: dict) -> str | None:
+    value = (row.get("metadata") or {}).get("mlbam_id", row.get("mlbam_id"))
+    return None if value in (None, "") else str(value)
+
+
+def _role(row: dict) -> str:
+    return "pitcher" if row.get("pool") in PITCHER_POOLS else "hitter"
+
+
+def _safe(stats: dict, key: str) -> float:
+    return float(stats.get(key, 0) or 0)
+
+
+def _actuals_by_key(actual_rows: list[dict]) -> dict[tuple[str, str], dict]:
+    out = {}
+    for row in actual_rows:
+        mlbam_id = _mlbam_id(row)
+        if mlbam_id:
+            out[(mlbam_id, _role(row))] = row
     return out
 
 
-def _meta_from_manifest_component(component: dict) -> dict:
-    """Strip the 'inputs' key (the writer re-adds it) and return the rest as meta."""
-    return {k: v for k, v in component.items() if k != "inputs"}
+def _subtract(projected: float, actual: float) -> float:
+    # ponytail: clamp at zero; revisit with playing-time redistribution if this becomes live-critical.
+    return max(0.0, projected - actual)
 
 
-def build(prior_version: int, version: int) -> str:
-    prior_id = f"valucast_hp_{AS_OF_SEASON}_v{prior_version}"
-    prior_run = RUNS_DIR / prior_id
-    rows = json.loads((prior_run / "projections.json").read_text(encoding="utf-8"))
-    manifest = json.loads((prior_run / "run_manifest.json").read_text(encoding="utf-8"))
+def _remaining_hitter_stats(proj: dict, actual: dict) -> dict:
+    stats = dict(proj)
+    actual_stats = actual.get("stats") or {}
+    for key in HITTER_COUNTING:
+        stats[key] = _subtract(_safe(stats, key), _safe(actual_stats, key))
+    stats["H"] = stats["1B"] + stats["2B"] + stats["3B"] + stats["HR"]
+    stats["TB"] = stats["1B"] + 2 * stats["2B"] + 3 * stats["3B"] + 4 * stats["HR"]
+    stats["NSB"] = stats["SB"] - stats["CS"]
+    ab = stats["AB"]
+    pa_denom = ab + stats["BB"] + stats["HBP"] + stats["SF"]
+    stats["AVG"] = round(stats["H"] / ab, 3) if ab > 0 else 0.0
+    stats["OBP"] = round((stats["H"] + stats["BB"] + stats["HBP"]) / pa_denom, 3) if pa_denom > 0 else 0.0
+    stats["SLG"] = round(stats["TB"] / ab, 3) if ab > 0 else 0.0
+    stats["OPS"] = round(stats["OBP"] + stats["SLG"], 3)
+    return {k: round(v, 4) if isinstance(v, float) else v for k, v in stats.items()}
 
-    hitters = [r for r in rows if r.get("pool") == "hitter"]
-    pitchers = [r for r in rows if r.get("pool") in _PITCHER_POOLS]
-    leftover = [r for r in rows if r.get("pool") not in ({"hitter"} | _PITCHER_POOLS)]
-    if leftover:
-        raise RuntimeError(f"Unexpected pools in {prior_id}: {sorted({r.get('pool') for r in leftover})}")
 
-    cfip = compute_cfip_for_target()
-    patched_pitchers = [patch_pitcher_era(r, cfip) for r in pitchers]
+def _remaining_pitcher_stats(proj: dict, actual: dict) -> dict:
+    stats = dict(proj)
+    actual_stats = actual.get("stats") or {}
+    for key in PITCHER_COUNTING:
+        stats[key] = _subtract(_safe(stats, key), _safe(actual_stats, key))
+    stats["SV_HLD"] = stats["SV"] + stats["HLD"]
+    ip = stats["IP"]
+    stats["ERA"] = round(9 * stats["ER"] / ip, 3) if ip > 0 else 0.0
+    stats["WHIP"] = round((stats["BB"] + stats["H_ALLOWED"]) / ip, 3) if ip > 0 else 0.0
+    stats["K_9"] = round(9 * stats["K"] / ip, 3) if ip > 0 else 0.0
+    stats["BB_9"] = round(9 * stats["BB"] / ip, 3) if ip > 0 else 0.0
+    stats["K_BB"] = round(stats["K"] / stats["BB"], 3) if stats["BB"] > 0 else 0.0
+    return {k: round(v, 4) if isinstance(v, float) else v for k, v in stats.items()}
 
-    components = manifest.get("components", {})
-    hitter_meta = _meta_from_manifest_component(components.get("hitters", {}))
-    pitcher_meta = _meta_from_manifest_component(components.get("pitchers", {}))
-    pitcher_meta["era_method"] = "projected_fip_plus_cfip"
-    pitcher_meta["cfip_2026"] = round(cfip, 4)
 
-    run_id = write_valucast_hp_run(
-        hitter_rows=hitters,
-        pitcher_rows=patched_pitchers,
-        runs_dir=RUNS_DIR,
-        version=version,
-        hitter_meta=hitter_meta,
-        pitcher_meta=pitcher_meta,
+def apply_actuals_to_remaining(rows: list[dict], actual_rows: list[dict], actuals_as_of: str) -> list[dict]:
+    actuals = _actuals_by_key(actual_rows)
+    out = []
+    for row in rows:
+        role = _role(row)
+        actual = actuals.get((_mlbam_id(row) or "", role))
+        row2 = dict(row)
+        row2["metadata"] = dict(row.get("metadata") or {})
+        row2["metadata"]["projection_scope"] = "rest_of_season"
+        row2["metadata"]["actuals_as_of"] = actuals_as_of
+        if actual:
+            if role == "hitter":
+                row2["stats"] = _remaining_hitter_stats(row.get("stats") or {}, actual)
+            else:
+                row2["stats"] = _remaining_pitcher_stats(row.get("stats") or {}, actual)
+        out.append(row2)
+    return out
+
+
+def _actuals_as_of(actual_rows: list[dict], generated_at: str) -> str:
+    for row in actual_rows:
+        as_of = (row.get("metadata") or {}).get("as_of")
+        if as_of:
+            return str(as_of)[:10]
+    return generated_at[:10]
+
+
+def _cfip_for_manifest() -> float | None:
+    snaps = [load_pitching_season(year, DATA_DIR) for year in (AS_OF_SEASON - 1, AS_OF_SEASON - 2, AS_OF_SEASON - 3)]
+    cfip = compute_cfip(snaps)
+    return round(cfip, 4) if cfip is not None else None
+
+
+def build_valucast_hp_rows(
+    *,
+    actuals_path: Path = CURRENT_ACTUALS_PATH,
+    projection_universe_path: Path = CURRENT_PROJECTION_PATH,
+    generated_at: str | None = None,
+) -> list[dict]:
+    generated_at = generated_at or datetime.now(timezone.utc).isoformat()
+    universe = _load_json(projection_universe_path)
+    actuals = _load_json(actuals_path)
+    eligibility = build_eligibility(universe)
+    identities = load_identity_store(DATA_DIR)
+
+    hitter_rows = build_marcel_projections(AS_OF_SEASON, DATA_DIR, HITTER_PARAMS, identities)
+    pitcher_rows = build_pitcher_projections(AS_OF_SEASON, DATA_DIR, PITCHER_PARAMS)
+    hitters = enrich_rows(hitter_rows, eligibility["hitters"])
+    pitchers = enrich_rows(pitcher_rows, eligibility["pitchers"])
+    return apply_actuals_to_remaining(hitters + pitchers, actuals, _actuals_as_of(actuals, generated_at))
+
+
+def build_manifest(rows: list[dict], generated_at: str, actuals_as_of: str) -> dict:
+    hitters = [row for row in rows if row.get("pool") == "hitter"]
+    pitchers = [row for row in rows if row.get("pool") in PITCHER_POOLS]
+    pitcher_meta = {
+        "model": "valucast_pitching_marcel",
+        "model_version": 1,
+        "n_reg": PITCHER_PARAMS.n_reg,
+        "era_method": "projected_fip_plus_cfip",
+        "prior_seasons": list(PRIOR_SEASONS),
+        "verdict": "held-out 2020-25 skill mean MAE ratio 0.821 vs persistence",
+    }
+    cfip = _cfip_for_manifest()
+    if cfip is not None:
+        pitcher_meta["cfip_2026"] = cfip
+    return {
+        "run_id": f"valucast_hp_{AS_OF_SEASON}_v2",
+        "source_name": "valucast",
+        "as_of_season": AS_OF_SEASON,
+        "generated_at": generated_at,
+        "projection_scope": "rest_of_season",
+        "actuals_as_of": actuals_as_of,
+        "hitter_count": len(hitters),
+        "pitcher_count": len(pitchers),
+        "eligibility_source": (
+            "current.json (Steamer outlook) used for names/teams/positions + active-player universe; "
+            "NO projection stats copied"
+        ),
+        "components": {
+            "hitters": {
+                "inputs": "consumes Savant xBA/xSLG (not our own xBA)",
+                "model": "valucast_marcel_statcast",
+                "model_version": 1,
+                "alpha_contact": HITTER_PARAMS.alpha_contact,
+                "alpha_power": HITTER_PARAMS.alpha_power,
+                "gamma": HITTER_PARAMS.gamma,
+                "prior_seasons": list(PRIOR_SEASONS),
+                "verdict": "held-out 2020-25 mean MAE ratio 0.979; AVG/OBP/SLG/OPS 4-6% lift; HR neutral",
+            },
+            "pitchers": {
+                "inputs": "fully in-house, no Statcast",
+                **pitcher_meta,
+            },
+        },
+    }
+
+
+def _validate_rows(rows: list[dict]) -> None:
+    hitters = [row for row in rows if row.get("pool") == "hitter"]
+    pitchers = [row for row in rows if row.get("pool") in PITCHER_POOLS]
+    if not hitters:
+        raise ValueError("ValuCast H+P run has zero hitter rows; refusing to write.")
+    if not pitchers:
+        raise ValueError("ValuCast H+P run has zero pitcher rows; refusing to write.")
+
+
+def write_live_hp_run(rows: list[dict], manifest: dict, run_dir: Path = LIVE_RUN_DIR) -> dict:
+    _validate_rows(rows)
+    changed = _atomic_json(run_dir / "projections.json", rows, indent=2)
+    changed = _atomic_json(run_dir / "run_manifest.json", manifest, indent=2) or changed
+    changed = _atomic_json(run_dir / "metadata.json", {"as_of": manifest["generated_at"]}, indent=2) or changed
+    return {"changed": changed, "row_count": len(rows), "run_dir": str(run_dir)}
+
+
+def write_historical_hp_snapshot(
+    as_of: str,
+    *,
+    actuals_path: Path,
+    projection_universe_path: Path = CURRENT_PROJECTION_PATH,
+    archive_dir: Path = HP_SNAPSHOT_DIR,
+) -> dict:
+    rows = build_valucast_hp_rows(
+        actuals_path=actuals_path,
+        projection_universe_path=projection_universe_path,
+        generated_at=f"{as_of}T00:00:00+00:00",
     )
-
-    # The writer intentionally does not emit `eligibility_source` (it is hand-authored
-    # provenance, not a per-leg component). Carry it forward from the prior manifest so
-    # v2 documents the same eligibility universe v1 did (a quality test asserts its
-    # presence). Re-write with the writer's own formatting (indent=2, sort_keys).
-    eligibility = manifest.get("eligibility_source")
-    if eligibility is not None:
-        v2_manifest_path = RUNS_DIR / run_id / "run_manifest.json"
-        v2_manifest = json.loads(v2_manifest_path.read_text(encoding="utf-8"))
-        if "eligibility_source" not in v2_manifest:
-            v2_manifest["eligibility_source"] = eligibility
-            v2_manifest_path.write_text(
-                json.dumps(v2_manifest, indent=2, sort_keys=True), encoding="utf-8")
-
-    print(f"wrote {run_id} | hitters {len(hitters)} | pitchers {len(patched_pitchers)} "
-          f"| cfip {round(cfip, 4)}")
-    return run_id
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    path = archive_dir / f"{as_of}.json"
+    changed = _atomic_json(path, rows, indent=2)
+    return {"archive_path": str(path), "archive_changed": changed, "row_count": len(rows)}
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--prior-version", type=int, default=1,
-                    help="Version of the run to transform (default 1).")
-    ap.add_argument("--version", type=int, default=None,
-                    help="Version to write (default: prior-version + 1).")
-    args = ap.parse_args()
-    version = args.version if args.version is not None else args.prior_version + 1
-    build(args.prior_version, version)
+def build_live_run(
+    *,
+    actuals_path: Path = CURRENT_ACTUALS_PATH,
+    projection_universe_path: Path = CURRENT_PROJECTION_PATH,
+    run_dir: Path = LIVE_RUN_DIR,
+    generated_at: str | None = None,
+) -> dict:
+    generated_at = generated_at or datetime.now(timezone.utc).isoformat()
+    rows = build_valucast_hp_rows(
+        actuals_path=actuals_path,
+        projection_universe_path=projection_universe_path,
+        generated_at=generated_at,
+    )
+    actuals_as_of = (rows[0].get("metadata") or {}).get("actuals_as_of", generated_at[:10])
+    manifest = build_manifest(rows, generated_at, actuals_as_of)
+    return write_live_hp_run(rows, manifest, run_dir)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--historical-date", help="Write data/prediction_archive/valucast_hp_snapshot/YYYY-MM-DD.json.")
+    parser.add_argument("--actuals-path", type=Path, default=CURRENT_ACTUALS_PATH)
+    parser.add_argument("--projection-universe-path", type=Path, default=CURRENT_PROJECTION_PATH)
+    parser.add_argument("--archive-dir", type=Path, default=HP_SNAPSHOT_DIR)
+    parser.add_argument("--run-dir", type=Path, default=LIVE_RUN_DIR)
+    args = parser.parse_args()
+
+    if args.historical_date:
+        result = write_historical_hp_snapshot(
+            args.historical_date,
+            actuals_path=args.actuals_path,
+            projection_universe_path=args.projection_universe_path,
+            archive_dir=args.archive_dir,
+        )
+        print(
+            "ValuCast H+P historical snapshot: "
+            f"rows={result['row_count']} changed={result['archive_changed']} -> {result['archive_path']}"
+        )
+        return 0
+
+    result = build_live_run(
+        actuals_path=args.actuals_path,
+        projection_universe_path=args.projection_universe_path,
+        run_dir=args.run_dir,
+    )
+    print(
+        "ValuCast H+P live run: "
+        f"rows={result['row_count']} changed={result['changed']} -> {result['run_dir']}"
+    )
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

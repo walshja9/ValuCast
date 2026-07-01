@@ -1,5 +1,12 @@
 import unittest
-from scraper.mlb_actuals import normalize_ip, normalize_hitter, normalize_pitcher, derive_qs_from_games
+from scraper.mlb_actuals import (
+    build_historical_actuals,
+    derive_qs_from_games,
+    fetch_game_logs,
+    normalize_hitter,
+    normalize_ip,
+    normalize_pitcher,
+)
 
 
 class TestNormalizeIP(unittest.TestCase):
@@ -137,6 +144,138 @@ class TestDeriveQS(unittest.TestCase):
 
     def test_empty_games(self):
         self.assertEqual(derive_qs_from_games([]), 0)
+
+
+class TestHistoricalActuals(unittest.TestCase):
+    def test_fetch_game_logs_treats_empty_stats_as_no_games(self):
+        rows = fetch_game_logs(
+            "999",
+            "hitting",
+            season=2026,
+            fetcher=lambda _url: {"stats": []},
+        )
+
+        self.assertEqual(rows, [])
+
+    def test_sums_hitter_game_logs_through_as_of_date(self):
+        def fake_fetch(url):
+            self.assertIn("group=hitting", url)
+            return {"stats": [{"splits": [
+                {
+                    "date": "2026-06-17",
+                    "player": {"id": 101, "fullName": "Test Hitter"},
+                    "team": {"abbreviation": "BOS"},
+                    "stat": {
+                        "hits": 2, "homeRuns": 1, "runs": 1, "rbi": 3,
+                        "doubles": 1, "triples": 0, "strikeOuts": 1,
+                        "baseOnBalls": 1, "hitByPitch": 0, "sacFlies": 0,
+                        "atBats": 4, "plateAppearances": 5,
+                        "stolenBases": 1, "caughtStealing": 0,
+                        "gamesPlayed": 1,
+                    },
+                },
+                {
+                    "date": "2026-06-18",
+                    "player": {"id": 101, "fullName": "Test Hitter"},
+                    "team": {"abbreviation": "BOS"},
+                    "stat": {
+                        "hits": 1, "homeRuns": 0, "runs": 1, "rbi": 1,
+                        "doubles": 0, "triples": 0, "strikeOuts": 2,
+                        "baseOnBalls": 0, "hitByPitch": 0, "sacFlies": 0,
+                        "atBats": 4, "plateAppearances": 4,
+                        "stolenBases": 0, "caughtStealing": 1,
+                        "gamesPlayed": 1,
+                    },
+                },
+                {
+                    "date": "2026-06-19",
+                    "player": {"id": 101, "fullName": "Test Hitter"},
+                    "team": {"abbreviation": "BOS"},
+                    "stat": {
+                        "hits": 4, "homeRuns": 4, "runs": 4, "rbi": 8,
+                        "doubles": 0, "triples": 0, "strikeOuts": 0,
+                        "baseOnBalls": 0, "hitByPitch": 0, "sacFlies": 0,
+                        "atBats": 4, "plateAppearances": 4,
+                        "stolenBases": 4, "caughtStealing": 0,
+                        "gamesPlayed": 1,
+                    },
+                },
+            ]}]}
+
+        rows = build_historical_actuals(
+            {"101": "hitter"}, season=2026, as_of="2026-06-18",
+            delay=0.0, fetcher=fake_fetch,
+        )
+
+        self.assertEqual(len(rows), 1)
+        stats = rows[0]["stats"]
+        self.assertEqual(stats["H"], 3)
+        self.assertEqual(stats["HR"], 1)
+        self.assertEqual(stats["R"], 2)
+        self.assertEqual(stats["RBI"], 4)
+        self.assertEqual(stats["SB"], 1)
+        self.assertEqual(stats["CS"], 1)
+        self.assertEqual(stats["PA"], 9)
+        self.assertEqual(stats["G"], 2)
+        self.assertEqual(stats["TB"], 7)
+        self.assertEqual(stats["AVG"], 0.375)
+
+    def test_sums_pitcher_ip_as_outs_and_excludes_future_games(self):
+        def fake_fetch(url):
+            self.assertIn("group=pitching", url)
+            return {"stats": [{"splits": [
+                {
+                    "date": "2026-06-12",
+                    "player": {"id": 202, "fullName": "Test Pitcher"},
+                    "team": {"abbreviation": "LAD"},
+                    "stat": {
+                        "inningsPitched": "6.2", "earnedRuns": 2,
+                        "baseOnBalls": 1, "hits": 5, "strikeOuts": 8,
+                        "wins": 1, "losses": 0, "saves": 0, "holds": 0,
+                        "gamesStarted": 1, "gamesPitched": 1,
+                    },
+                },
+                {
+                    "date": "2026-06-18",
+                    "player": {"id": 202, "fullName": "Test Pitcher"},
+                    "team": {"abbreviation": "LAD"},
+                    "stat": {
+                        "inningsPitched": "5.1", "earnedRuns": 1,
+                        "baseOnBalls": 2, "hits": 5, "strikeOuts": 5,
+                        "wins": 0, "losses": 1, "saves": 0, "holds": 0,
+                        "gamesStarted": 1, "gamesPitched": 1,
+                    },
+                },
+                {
+                    "date": "2026-06-19",
+                    "player": {"id": 202, "fullName": "Test Pitcher"},
+                    "team": {"abbreviation": "LAD"},
+                    "stat": {
+                        "inningsPitched": "1.0", "earnedRuns": 10,
+                        "baseOnBalls": 10, "hits": 10, "strikeOuts": 0,
+                        "wins": 0, "losses": 0, "saves": 1, "holds": 0,
+                        "gamesStarted": 0, "gamesPitched": 1,
+                    },
+                },
+            ]}]}
+
+        rows = build_historical_actuals(
+            {"202": "pitcher"}, season=2026, as_of="2026-06-18",
+            delay=0.0, fetcher=fake_fetch,
+        )
+
+        self.assertEqual(len(rows), 1)
+        stats = rows[0]["stats"]
+        self.assertEqual(stats["IP"], 12.0)
+        self.assertEqual(stats["ER"], 3)
+        self.assertEqual(stats["BB"], 3)
+        self.assertEqual(stats["H_ALLOWED"], 10)
+        self.assertEqual(stats["K"], 13)
+        self.assertEqual(stats["W"], 1)
+        self.assertEqual(stats["SV"], 0)
+        self.assertEqual(stats["GS"], 2)
+        self.assertEqual(stats["G"], 2)
+        self.assertEqual(stats["QS"], 1)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+import subprocess
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from prospects.gate import decide_gate, validate_gate
@@ -28,6 +29,8 @@ SHADOW_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer_marce
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_mlb_projection_source_comparison.json"
 FREEZE_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_projection_source_freeze"
 COMPARISON_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_projection_source_comparison"
+ACTUALS_SNAPSHOT_DIR = ROOT / "data" / "prediction_archive" / "valucast_actuals_snapshot"
+HP_SNAPSHOT_DIR = ROOT / "data" / "prediction_archive" / "valucast_hp_snapshot"
 
 ARTIFACT_NAME = "valucast_mlb_projection_source_comparison"
 COMPARISON_VERSION = "0.1.0"
@@ -35,7 +38,11 @@ METRIC = "rate_stat_mae_ratio_vs_forward_actuals"
 
 HITTER_RATE_KEYS = ("AVG", "OBP", "SLG", "OPS")
 PITCHER_RATE_KEYS = ("ERA", "WHIP")  # the rate stats present across all three sources
+HITTER_COUNTING_KEYS = ("HR", "RBI", "R", "SB")
+PITCHER_COUNTING_KEYS = ("ER", "BB", "H_ALLOWED", "K", "W", "SV", "HLD")
 PITCHER_POOLS = {"pitcher", "starter", "reliever"}
+COUNTING_WINDOW_START = "2026-06-18"
+MLB_2026_REGULAR_SEASON_END = "2026-09-27"
 
 MIN_HITTER_PA = 50.0       # forward actual volume needed for a hitter to be scoreable
 MIN_PITCHER_IP = 20.0      # forward actual volume needed for a pitcher to be scoreable
@@ -65,6 +72,10 @@ def _finite(value) -> float | None:
 
 def _rate_keys(role: str) -> tuple[str, ...]:
     return PITCHER_RATE_KEYS if role == "pitcher" else HITTER_RATE_KEYS
+
+
+def _counting_keys(role: str) -> tuple[str, ...]:
+    return PITCHER_COUNTING_KEYS if role == "pitcher" else HITTER_COUNTING_KEYS
 
 
 def _volume(stats: dict, role: str) -> float:
@@ -215,6 +226,213 @@ def _actual_lines(actuals_rows: list[dict]) -> dict[str, dict]:
     return _rate_lines(actuals_rows)
 
 
+# -------------------------------------------------------------- counting scores
+def prorate_counting_projection(value: float, elapsed_days: int, remaining_days: int) -> float:
+    """Prorate a rest-of-season counting projection into the elapsed test window."""
+    if remaining_days <= 0:
+        return round(float(value), 4)
+    elapsed = min(max(elapsed_days, 0), remaining_days)
+    return round(float(value) * elapsed / remaining_days, 4)
+
+
+def _counting_lines(rows: list[dict]) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for row in rows:
+        mlbam_id = _mlbam_id(row)
+        if not mlbam_id:
+            continue
+        role = _role(row)
+        stats = row.get("stats") or {}
+        counts = {k: (_finite(stats.get(k)) or 0.0) for k in _counting_keys(role)}
+        volume = _volume(stats, role)
+        existing = out.get(mlbam_id)
+        if existing is None or volume > existing["volume"]:
+            out[mlbam_id] = {"role": role, "counts": counts, "volume": round(volume, 3)}
+    return out
+
+
+def _actual_counting_deltas(as_of_rows: list[dict], current_rows: list[dict]) -> dict[str, dict]:
+    as_of = _counting_lines(as_of_rows)
+    current = _counting_lines(current_rows)
+    out: dict[str, dict] = {}
+    for mlbam_id, end in current.items():
+        start = as_of.get(mlbam_id)
+        if not start:
+            continue
+        role = end["role"]
+        keys = _counting_keys(role)
+        counts = {
+            key: round(max(0.0, end["counts"].get(key, 0.0) - start["counts"].get(key, 0.0)), 4)
+            for key in keys
+        }
+        volume = round(max(0.0, end["volume"] - start["volume"]), 3)
+        out[mlbam_id] = {"role": role, "counts": counts, "volume": volume}
+    return out
+
+
+def _counting_scoreable(
+    valucast_hp: dict,
+    steamer_ros: dict,
+    actual_deltas: dict[str, dict],
+) -> list[str]:
+    out = []
+    for mlbam_id, actual in actual_deltas.items():
+        if mlbam_id not in valucast_hp or mlbam_id not in steamer_ros:
+            continue
+        role = actual["role"]
+        min_volume = MIN_PITCHER_IP if role == "pitcher" else MIN_HITTER_PA
+        if actual["volume"] >= min_volume:
+            out.append(mlbam_id)
+    return out
+
+
+def _per_stat_counting_mae(
+    source: dict,
+    actual_deltas: dict,
+    ids: list[str],
+    elapsed_days: int,
+    remaining_days: int,
+) -> dict[str, float]:
+    errs: dict[str, list[float]] = {}
+    for mlbam_id in ids:
+        proj = source.get(mlbam_id)
+        actual = actual_deltas.get(mlbam_id)
+        if not proj or not actual:
+            continue
+        for key, av in actual["counts"].items():
+            pv = prorate_counting_projection(proj["counts"].get(key, 0.0), elapsed_days, remaining_days)
+            errs.setdefault(key, []).append(abs(pv - av))
+    return {stat: sum(v) / len(v) for stat, v in errs.items() if v}
+
+
+def _score_counting_sources(
+    valucast_hp: dict,
+    steamer_ros: dict,
+    actual_deltas: dict,
+    ids: list[str],
+    elapsed_days: int,
+    remaining_days: int,
+) -> dict:
+    marcel_mae = _per_stat_counting_mae(valucast_hp, actual_deltas, ids, elapsed_days, remaining_days)
+    steamer_mae = _per_stat_counting_mae(steamer_ros, actual_deltas, ids, elapsed_days, remaining_days)
+    ratios = {
+        stat: marcel_mae[stat] / steamer_mae[stat]
+        for stat in marcel_mae
+        if stat in steamer_mae and steamer_mae[stat] > 0
+    }
+    mean_ratio = round(sum(ratios.values()) / len(ratios), 4) if ratios else None
+    return {
+        "marcel_mae": {k: round(v, 5) for k, v in marcel_mae.items()},
+        "steamer_mae": {k: round(v, 5) for k, v in steamer_mae.items()},
+        "per_stat_ratio": {k: round(v, 4) for k, v in ratios.items()},
+        "marcel_mean_ratio_vs_steamer": mean_ratio,
+    }
+
+
+def build_counting_stat_comparison(
+    *,
+    valucast_hp_rows: list[dict],
+    steamer_ros_rows: list[dict],
+    as_of_actual_rows: list[dict],
+    current_actual_rows: list[dict],
+    as_of: str,
+    through: str,
+    season_end: str = MLB_2026_REGULAR_SEASON_END,
+    steamer_git_commit: str | None = None,
+) -> dict:
+    start = _parse_date(as_of)
+    end = _parse_date(through)
+    season_end_date = _parse_date(season_end)
+    elapsed_days = (end - start).days if start and end else 0
+    remaining_days = (season_end_date - start).days if start and season_end_date else 0
+    actual_deltas = _actual_counting_deltas(as_of_actual_rows, current_actual_rows)
+    valucast_hp = _counting_lines(valucast_hp_rows)
+    steamer_ros = _counting_lines(steamer_ros_rows)
+    ids = _counting_scoreable(valucast_hp, steamer_ros, actual_deltas)
+    scores = _score_counting_sources(
+        valucast_hp, steamer_ros, actual_deltas, ids, elapsed_days, remaining_days,
+    ) if ids else {}
+    return {
+        "status": "scored" if ids else "insufficient_sample",
+        "window": {
+            "as_of": as_of,
+            "through": through,
+            "season_end": season_end,
+            "elapsed_days": elapsed_days,
+            "remaining_days_at_freeze": remaining_days,
+            "proration_factor": round(elapsed_days / remaining_days, 4) if remaining_days > 0 else 1.0,
+            "proration_method": (
+                "calendar_days_elapsed_over_regular_season_days_remaining; "
+                "projection rows are treated as rest-of-season counts"
+            ),
+        },
+        "counting_keys": {
+            "hitters": list(HITTER_COUNTING_KEYS),
+            "pitchers": list(PITCHER_COUNTING_KEYS),
+        },
+        "scoreable_players": len(ids),
+        "actual_counting_deltas": {mlbam_id: actual_deltas[mlbam_id] for mlbam_id in ids},
+        "scores": scores,
+        "steamer_ros_git_commit": steamer_git_commit,
+    }
+
+
+def load_steamer_ros_from_git(as_of: str, path: Path = STEAMER_ROS_PATH) -> tuple[list[dict], str]:
+    rel = path.relative_to(ROOT).as_posix()
+    start = _parse_date(as_of)
+    before = (start + timedelta(days=1)).isoformat() if start else as_of
+    sha = subprocess.run(
+        ["git", "log", f"--before={before}", "-1", "--format=%H", "--", rel],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    if not sha:
+        raise RuntimeError(f"no git commit found for {rel} before {before}")
+    text = subprocess.run(
+        ["git", "show", f"{sha}:{rel}"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    return json.loads(text), sha
+
+
+def build_counting_stat_comparison_from_paths(
+    *,
+    current_actuals_path: Path = ACTUALS_PATH,
+    as_of: str = COUNTING_WINDOW_START,
+    through: str,
+    actuals_snapshot_dir: Path = ACTUALS_SNAPSHOT_DIR,
+    hp_snapshot_dir: Path = HP_SNAPSHOT_DIR,
+) -> dict:
+    as_of_actuals_path = actuals_snapshot_dir / f"{as_of}.json"
+    hp_snapshot_path = hp_snapshot_dir / f"{as_of}.json"
+    missing = [
+        str(path)
+        for path in (as_of_actuals_path, hp_snapshot_path, current_actuals_path)
+        if not path.exists()
+    ]
+    if missing:
+        return {
+            "status": "missing_inputs",
+            "window": {"as_of": as_of, "through": through},
+            "missing_inputs": missing,
+        }
+    steamer_rows, sha = load_steamer_ros_from_git(as_of)
+    return build_counting_stat_comparison(
+        valucast_hp_rows=_load(hp_snapshot_path) or [],
+        steamer_ros_rows=steamer_rows,
+        as_of_actual_rows=_load(as_of_actuals_path) or [],
+        current_actual_rows=_load(current_actuals_path) or [],
+        as_of=as_of,
+        through=through,
+        steamer_git_commit=sha,
+    )
+
+
 # ----------------------------------------------------------------- what-would-change
 def _layer_rows(layer: dict | None) -> dict[str, dict]:
     out: dict[str, dict] = {}
@@ -256,6 +474,7 @@ def build_comparison(
     live_layer: dict | None,
     shadow_layer: dict | None,
     generated_at: str,
+    counting_stat_comparison: dict | None = None,
     now=None,
 ) -> dict:
     now_date = _parse_date(now) or _parse_date(generated_at) or datetime.now(timezone.utc).date()
@@ -315,11 +534,13 @@ def build_comparison(
         },
         "caveats": [
             "Both sources are PURE projections frozen before the scored actuals (no leakage).",
-            "Rate-stat MAE only; counting/volume accuracy is out of scope.",
+            "Rate-stat and counting-stat comparisons are reported separately; the live-source "
+            "gate still uses rate-stat MAE only.",
             "A 'win' (gate active) is necessary but NOT sufficient for a flip — review the "
             "what_would_change diff and flip manually via the env flag.",
         ],
         "scores": scores,
+        "counting_stat_comparison": counting_stat_comparison or {"status": "not_requested"},
         "gate": gate,
         "marcel_beats_steamer": marcel_wins,
         "what_would_change": build_what_would_change(live_layer, shadow_layer),
@@ -373,6 +594,10 @@ def run_projection_source_comparison(
         live_layer=_load(live_layer_path),
         shadow_layer=_load(shadow_layer_path),
         generated_at=generated_at,
+        counting_stat_comparison=build_counting_stat_comparison_from_paths(
+            current_actuals_path=actuals_path,
+            through=date_str,
+        ),
         now=now,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)

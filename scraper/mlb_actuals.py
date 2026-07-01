@@ -2,10 +2,22 @@
 from __future__ import annotations
 
 import json
+import time
+from datetime import datetime
 from urllib.request import Request, urlopen
 
 MLB_API_BASE = "https://statsapi.mlb.com/api/v1"
 USER_AGENT = "Mozilla/5.0"
+
+HITTER_GAME_LOG_COUNTING = (
+    "hits", "homeRuns", "runs", "rbi", "doubles", "triples", "strikeOuts",
+    "baseOnBalls", "hitByPitch", "sacFlies", "atBats", "plateAppearances",
+    "stolenBases", "caughtStealing", "gamesPlayed",
+)
+PITCHER_GAME_LOG_COUNTING = (
+    "earnedRuns", "baseOnBalls", "hits", "strikeOuts", "wins", "losses",
+    "saves", "holds", "gamesStarted", "gamesPitched",
+)
 
 
 def normalize_ip(ip_baseball: float) -> float:
@@ -13,6 +25,18 @@ def normalize_ip(ip_baseball: float) -> float:
     whole = int(ip_baseball)
     outs = round((ip_baseball - whole) * 10)
     return whole + outs / 3
+
+
+def _ip_to_outs(ip_baseball) -> int:
+    """Convert baseball IP notation to outs."""
+    text = str(ip_baseball or "0").strip()
+    whole, _, frac = text.partition(".")
+    return int(whole or 0) * 3 + int((frac or "0")[:1] or 0)
+
+
+def _outs_to_ip(outs: int) -> str:
+    """Convert outs back to baseball IP notation."""
+    return f"{outs // 3}.{outs % 3}"
 
 
 def normalize_hitter(entry: dict, as_of: str) -> dict:
@@ -145,6 +169,66 @@ def _fetch_json(url: str) -> dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
+def fetch_game_logs(mlbam_id: str, group: str, season: int = 2026, fetcher=None) -> list[dict]:
+    """Fetch one player's regular-season MLB game logs."""
+    fetcher = fetcher or _fetch_json
+    url = (
+        f"{MLB_API_BASE}/people/{mlbam_id}/stats?"
+        f"stats=gameLog&group={group}&season={season}&gameType=R"
+    )
+    data = fetcher(url)
+    return (data.get("stats") or [{}])[0].get("splits", [])
+
+
+def _date_lte(value: str, as_of: str) -> bool:
+    try:
+        return datetime.fromisoformat(str(value)[:10]).date() <= datetime.fromisoformat(as_of).date()
+    except ValueError:
+        return False
+
+
+def _summed_game_log_entry(mlbam_id: str, role: str, games: list[dict], as_of: str) -> dict:
+    group = "pitching" if role != "hitter" else "hitting"
+    included = [g for g in games if _date_lte(g.get("date", ""), as_of)]
+    sample = (included or games or [{}])[-1]
+    player = sample.get("player") or {"id": mlbam_id, "fullName": str(mlbam_id)}
+    team = sample.get("team") or {}
+
+    if group == "hitting":
+        stat = {key: sum(int((g.get("stat") or {}).get(key, 0) or 0) for g in included)
+                for key in HITTER_GAME_LOG_COUNTING}
+    else:
+        stat = {key: sum(int((g.get("stat") or {}).get(key, 0) or 0) for g in included)
+                for key in PITCHER_GAME_LOG_COUNTING}
+        outs = sum(_ip_to_outs((g.get("stat") or {}).get("inningsPitched", "0")) for g in included)
+        stat["inningsPitched"] = _outs_to_ip(outs)
+
+    return {"player": player, "team": team, "stat": stat}
+
+
+def build_historical_actuals(
+    player_roles: dict[str, str],
+    season: int,
+    as_of: str,
+    delay: float = 0.075,
+    fetcher=None,
+) -> list[dict]:
+    """Reconstruct cumulative actuals as of a date from per-player game logs."""
+    rows = []
+    for mlbam_id, role in player_roles.items():
+        group = "pitching" if role != "hitter" else "hitting"
+        games = fetch_game_logs(str(mlbam_id), group, season, fetcher=fetcher)
+        entry = _summed_game_log_entry(str(mlbam_id), role, games, as_of)
+        if group == "hitting":
+            rows.append(normalize_hitter(entry, as_of))
+        else:
+            qs = derive_qs_from_games([g for g in games if _date_lte(g.get("date", ""), as_of)])
+            rows.append(normalize_pitcher(entry, qs=qs, as_of=as_of))
+        if delay:
+            time.sleep(delay)
+    return rows
+
+
 def fetch_actuals(season: int = 2026) -> dict[str, list[dict]]:
     """Fetch YTD hitter and pitcher actuals from MLB Stats API.
 
@@ -169,9 +253,7 @@ def fetch_qs(pitchers: list[dict], season: int = 2026) -> dict[str, int]:
         if gs == 0:
             qs_map[mlbam_id] = 0
             continue
-        url = f"{MLB_API_BASE}/people/{mlbam_id}/stats?stats=gameLog&group=pitching&season={season}&gameType=R"
-        gl_data = _fetch_json(url)
-        games = gl_data["stats"][0]["splits"]
+        games = fetch_game_logs(mlbam_id, "pitching", season)
         qs_map[mlbam_id] = derive_qs_from_games(games)
     return qs_map
 

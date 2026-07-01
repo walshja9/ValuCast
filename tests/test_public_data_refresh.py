@@ -336,6 +336,11 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
         "scripts/backfill_projection_identities.py "
         "--projection-path projections/runs/valucast_hp_2026_v2/projections.json"
     ) in build_commands
+    assert "scripts/build_valucast_hp_run.py" in build_commands
+    assert build_commands.index("scripts/build_valucast_hp_run.py") < build_commands.index(
+        "scripts/build_mlb_dynasty_layer.py"
+    )
+    assert "scripts/archive_valucast_actuals_snapshot.py" in build_commands
     assert "scripts/build_mlb_track_record.py" in build_commands
     assert "scripts/build_mlb_availability.py" in build_commands
     assert "scripts/build_hp_promotion_sanity_report.py" in build_commands
@@ -403,6 +408,10 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "data/models/valucast_front_office_report.json" in workflow
     assert "data/models/valucast_scouting_reports.json" in workflow
     assert "data/models/valucast_ahead_of_consensus.json" in workflow
+    assert "data/prediction_archive/valucast_actuals_snapshot" in workflow
+    assert "projections/runs/valucast_hp_2026_v2/projections.json" in workflow
+    assert "projections/runs/valucast_hp_2026_v2/run_manifest.json" in workflow
+    assert "projections/runs/valucast_hp_2026_v2/metadata.json" in workflow
     assert (
         "VALUCAST_BUYS_REVIEW_APPROVED: "
         "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "

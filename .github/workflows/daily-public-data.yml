@@ -178,6 +178,7 @@ jobs:
             data/prediction_archive/valucast_mlb_dynasty_layer_marcel_shadow \
             data/prediction_archive/valucast_mlb_projection_source_freeze \
             data/prediction_archive/valucast_mlb_projection_source_comparison \
+            data/prediction_archive/valucast_actuals_snapshot \
             data/prediction_archive/valucast_mlb_availability \
             data/prediction_archive/valucast_mlb_roster_status \
             data/prediction_archive/valucast_mlb_track_record \
@@ -199,6 +200,9 @@ jobs:
             data/public/public_dynasty_snapshot.json \
             data/statcast/percentiles.json \
             data/validation/methodology_scorecard.json \
+            projections/runs/valucast_hp_2026_v2/projections.json \
+            projections/runs/valucast_hp_2026_v2/run_manifest.json \
+            projections/runs/valucast_hp_2026_v2/metadata.json \
             projections/data/identity.json
           if [ -f data/models/valucast_scouting_llm_cache.json ]; then
             git add data/models/valucast_scouting_llm_cache.json
