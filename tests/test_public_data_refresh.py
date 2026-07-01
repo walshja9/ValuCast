@@ -343,6 +343,10 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "python scripts/run_daily_public_build.py --only build" in workflow
     assert "python scripts/run_daily_public_build.py --only validate" in workflow
     assert "scripts/backfill_projection_identities.py" in build_commands
+    # 7/1: league adapters joined the nightly chain (the artifact had frozen at a
+    # June manual build) — step ordered after the shadow pipeline, artifact committed.
+    assert "scripts/build_prospect_league_adapters.py" in build_commands
+    assert "data/models/valucast_prospect_league_adapters.json" in workflow
     assert (
         "scripts/backfill_projection_identities.py "
         "--projection-path projections/runs/valucast_hp_2026_v2/projections.json"

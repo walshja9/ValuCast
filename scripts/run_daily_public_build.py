@@ -45,6 +45,10 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_mlb_roster_status.py",),
     ("scripts/build_playing_time_role_tracker.py",),
     ("scripts/run_prospect_shadow_pipeline.py",),
+    # League adapters read the universal model the shadow pipeline just rebuilt.
+    # This step was missing until 7/1 — the adapters artifact (card format ranks,
+    # ops_7x7/roto_5x5) froze at a June manual build while the board moved daily.
+    ("scripts/build_prospect_league_adapters.py",),
     # Re-score the proprietary prospect model from the day's fresh inputs BEFORE
     # the universe/rank consumers read it. Without this the model artifact froze
     # at an old manual build and the board served stale (saturated) scores.
