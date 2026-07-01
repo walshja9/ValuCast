@@ -11,6 +11,7 @@ from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
     handedness_problems,
+    sample_context_stale,
     unsupported_numbers,
     validate_report_text,
 )
@@ -74,6 +75,26 @@ class TestVoiceGuard(unittest.TestCase):
         grounding = {"role": "hitter", "card_display_line": {"avg": 0.322, "pa": 322}}
         self.assertEqual(unsupported_numbers("A .322 hitter over 322 PA.", grounding), [])
         self.assertTrue(validate_report_text("A .322 hitter over 322 PA.", grounding)["ok"])
+
+    def test_sample_context_stale_when_current_sample_never_cited(self):
+        # 7/1 bug: Nolan Perry's report described his old single-level A+ line
+        # (30.7 IP) after his card moved to a combined 3-level line (54.7 IP).
+        # None of the old text's numbers look "unsupported" -- they still appear
+        # in the new grounding's per-level breakdown -- so unsupported_numbers()
+        # alone lets it through. sample_context_stale() must catch it separately.
+        grounding = {**GROUNDING, "sample_context": {"sample": 54.7, "sample_unit": "IP"}}
+        stale_text = "Over 30.7 IP at A+, he posted a 3.23 ERA and 1.24 WHIP."
+        self.assertTrue(sample_context_stale(stale_text, grounding))
+
+    def test_sample_context_not_stale_when_current_sample_is_cited(self):
+        grounding = {**GROUNDING, "sample_context": {"sample": 54.7, "sample_unit": "IP"}}
+        fresh_text = "Over 54.7 IP across three levels, he posted a 2.47 ERA."
+        self.assertFalse(sample_context_stale(fresh_text, grounding))
+
+    def test_sample_context_stale_false_without_a_sample_context(self):
+        # No sample_context in the grounding (e.g. an MLB-player report shape) ->
+        # nothing to compare against, so this must never false-positive.
+        self.assertFalse(sample_context_stale("Any text at all.", GROUNDING))
 
     def test_wrong_hitter_handedness_is_flagged(self):
         # BUG B: a hitter described with the wrong batting side must be flagged.

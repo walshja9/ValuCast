@@ -854,6 +854,68 @@ def test_scouting_repository_reuses_stale_cache_only_when_it_still_validates(
     assert pitcher["published_report_source"] == "deterministic"
 
 
+def test_scouting_repository_rejects_stale_reuse_when_sample_size_changed(tmp_path, monkeypatch):
+    """7/1: a real production bug -- Nolan Perry's report was reused after his sample
+    grew from a single-level line into a combined multi-level line. None of the old
+    text's numbers looked "unsupported" (they still individually appear in the new
+    grounding's per-level breakdown), so the guard let it through even though the
+    text now silently describes an outdated, narrower slice of the season as the
+    whole thing. This must force a regen (or fallback) instead of reusing."""
+    from scouting import report_generator, repository
+
+    class _FailMessages:
+        def create(self, **_kwargs):
+            raise AssertionError("generation budget should prevent API calls")
+
+    class _FakeClient:
+        messages = _FailMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    cache_path = Path(tmp_path) / "llm_cache.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "artifact": "valucast_scouting_llm_cache",
+                "entries": {
+                    "1_hitter": {
+                        "hash": "old",
+                        "text": (
+                            # Current combined_season_stat_line.sample is 224 PA --
+                            # this stale text describes an earlier, smaller sample.
+                            "Model Strong is a left-handed AA hitter with a .976 OPS "
+                            "over 142 PA."
+                        ),
+                        "model": "test",
+                        "valid": True,
+                        "hard_ok": True,
+                        "problems": {"ok": True, "hard_ok": True},
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM_MAX_GENERATE", "0")
+    with (
+        patch.object(report_generator, "default_client", return_value=_FakeClient()),
+        patch.object(report_generator, "grounding_hash", return_value="new"),
+        patch.object(report_generator, "DEFAULT_MODEL", "test"),
+        patch.object(repository, "LLM_CACHE_PATH", cache_path),
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    # Starter Arm has no cache entry at all, so it also skips on the zero budget --
+    # what matters here is Model Strong specifically didn't reuse the stale text.
+    assert payload["summary"]["llm_shadow"]["reused_stale"] == 0
+    assert payload["summary"]["llm_shadow"]["skipped_due_to_budget"] == 2
+    hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
+    assert hitter["published_report_source"] == "deterministic"
+
+
 def test_scouting_repository_publish_rechecks_stale_llm_handedness():
     from scouting import repository
 

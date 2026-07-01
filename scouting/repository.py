@@ -13,7 +13,7 @@ from pathlib import Path
 
 from scouting import report_generator
 from scouting.mlb_read import build_mlb_scouting_read, stat_line_stats
-from scouting.voice import handedness_problems, validate_report_text
+from scouting.voice import handedness_problems, sample_context_stale, validate_report_text
 from web.statcast_store import StatcastStore
 from web.public_snapshot_store import PublicSnapshotStore
 from web import prospect_percentiles
@@ -590,7 +590,13 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             and cached.get("model") == current_model
         ):
             guard = validate_report_text(cached["text"], grounding)
-            if guard["ok"]:
+            # unsupported_numbers() alone lets a stale report through when the player's
+            # sample grew (e.g. into a multi-level pooled line): every number the old
+            # text cites still individually appears somewhere in the new grounding's
+            # per-level breakdown, so nothing looks "unsupported" even though the text
+            # now silently describes a narrower, outdated slice of the season as the
+            # whole thing. sample_context_stale() closes that gap.
+            if guard["ok"] and not sample_context_stale(cached["text"], grounding):
                 result = {
                     **cached,
                     "hash": digest,

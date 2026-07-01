@@ -158,6 +158,30 @@ def unsupported_numbers(text: str, grounding: dict) -> list[str]:
     return out
 
 
+def sample_context_stale(text: str, grounding: dict) -> bool:
+    """True when the text never cites the CURRENT sample size at all -- catches a
+    cached report reused against updated grounding after the player's sample grew
+    (e.g. a single-level line that later became a multi-level pooled line). Every
+    one of the old sub-line's own numbers still individually appear in the new
+    grounding's per-level breakdown, so unsupported_numbers() alone can't catch this
+    -- the text isn't inventing anything, it's just silently describing a narrower,
+    outdated slice of the season as if it were the whole thing. Only meaningful for
+    the reused-cache path; a fresh generation always describes the current sample."""
+    sample_context = (grounding or {}).get("sample_context")
+    sample = sample_context.get("sample") if isinstance(sample_context, dict) else None
+    if not isinstance(sample, (int, float)) or sample <= 0:
+        return False
+    forms = {round(float(sample), 3), round(float(sample), 1), round(float(sample))}
+    for token in _NUMBER_RE.findall(text or ""):
+        try:
+            value = float(token)
+        except ValueError:
+            continue
+        if {round(value, 3), round(value, 1), round(value)} & forms:
+            return False
+    return True
+
+
 def _grounding_rate(grounding: dict, key: str) -> float | None:
     for scope in ("card_display_line", "mlb_equivalent_translation", "stat_line_stats"):
         values = (grounding or {}).get(scope)
