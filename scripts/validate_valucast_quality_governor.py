@@ -31,13 +31,38 @@ def validate_governor(path: Path = GOVERNOR_PATH) -> tuple[dict | None, list[str
         problems.append("checks must be a non-empty list")
     if not isinstance(payload.get("surface_readiness"), dict):
         problems.append("surface_readiness must be an object")
-    # Shape-valid but content-blocked must still fail this gate: it runs before the
-    # commit step, and "blocked" was previously an accepted status value, so a
-    # governor-rejected board could publish to production with no error anywhere.
-    if payload.get("status") == "blocked":
-        blockers = payload.get("blockers") or []
-        detail = f": {'; '.join(str(b) for b in blockers[:5])}" if blockers else ""
-        problems.append(f"quality governor status is blocked{detail}")
+    # Shape-valid but content-blocked must still fail this gate for surfaces the
+    # live app actually serves gated on that flag: the daily commit is atomic
+    # (actuals, dynasty, buys, movers, scouting all land in one push), and
+    # "blocked" was previously an accepted status value, so a governor-rejected
+    # board could publish with no error anywhere.
+    #
+    # Scoped to dynasty/buys/movers, NOT prospects: app.py's _select_dynasty_store
+    # gates live serving on surface_readiness["dynasty"] only (both /?mode=dd_dynasty
+    # and /?mode=prospects read the same dd_store) -- the "prospects" flag isn't
+    # consulted by any live route (deliberately decoupled in 75e2878 so prospect
+    # model issues can't false-stale the dynasty board). Blocking the ENTIRE day's
+    # actuals/dynasty/buys/movers refresh over a prospects-only content issue (e.g.
+    # top-board pitcher tilt) throws away real, ready data for zero live-serving
+    # safety benefit. Prospects-surface blockers still print below and remain
+    # visible via surface_blockers on the internal Launch Stability view.
+    surface_readiness = payload.get("surface_readiness") or {}
+    surface_blockers = payload.get("surface_blockers") or {}
+    gating_surfaces = {"dynasty": "Dynasty board", "buys": "Buys", "movers": "Movers"}
+    failed = [
+        label for key, label in gating_surfaces.items()
+        if surface_readiness.get(key) is False
+    ]
+    if failed:
+        details = []
+        for key, label in gating_surfaces.items():
+            if surface_readiness.get(key) is False:
+                blockers = surface_blockers.get(key) or []
+                detail = f" ({'; '.join(str(b) for b in blockers[:3])})" if blockers else ""
+                details.append(f"{label}{detail}")
+        problems.append(
+            "quality governor blocks a live-serving surface: " + "; ".join(details)
+        )
     return payload, problems
 
 
