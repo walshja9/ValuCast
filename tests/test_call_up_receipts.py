@@ -133,6 +133,79 @@ def test_excluded_identity_keys_never_make_the_board_even_when_auto_detected():
     assert payload["summary"]["receipt_count"] == 0
 
 
+def test_noah_schultz_excluded_rehab_activation_looked_like_a_fresh_call_up():
+    from prospects import call_up_receipts as cur
+
+    assert "702273_pitcher" in cur.EXCLUDED_IDENTITY_KEYS
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(702273, "Noah Schultz", 952, {"pipeline": 26, "hkb": 20, "sts": 30})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 702273, "active_mlb_roster": True}]}
+    payload = cur.build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+    )
+    keys = [row["identity_key"] for row in payload["receipts"]] + [m["identity_key"] for m in payload["misses"]]
+    assert "702273_pitcher" not in keys
+
+
+def test_actual_call_up_date_shadow_attaches_real_date_without_changing_anything_else():
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [_rank_row(101, "Scored Guy", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    # A genuine call-up transaction (typeCode SE) dated well before the archive-diff's
+    # inferred call_up_date -- the shadow should surface the earlier, real date.
+    transactions_cache = {
+        "queries": {
+            "2026-01-01:2026-06-25:sportId=1": {
+                "transactions": [
+                    {
+                        "typeCode": "SE",
+                        "date": "2026-05-01",
+                        "effectiveDate": "2026-05-01",
+                        "person": {"id": 101, "fullName": "Scored Guy"},
+                    },
+                    {  # non-call-up transaction for the same player -- must be ignored
+                        "typeCode": "NUM",
+                        "date": "2026-06-10",
+                        "person": {"id": 101, "fullName": "Scored Guy"},
+                    },
+                ]
+            }
+        }
+    }
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=transactions_cache,
+    )
+    receipt = payload["receipts"][0]
+    assert receipt["call_up_date"] == "2026-06-25"  # unchanged -- still the archive-diff date
+    assert receipt["actual_call_up_date"] == "2026-05-01"  # shadow: the real date
+
+
+def test_actual_call_up_date_shadow_absent_without_a_transactions_cache():
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [_rank_row(101, "Scored Guy", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+    )
+    assert "actual_call_up_date" not in payload["receipts"][0]
+
+
 def _rank_row(mlbam_id: int, name: str, rank: int, source_ranks: dict) -> dict:
     return {
         "mlbam_id": mlbam_id,

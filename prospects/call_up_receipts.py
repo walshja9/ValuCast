@@ -34,7 +34,19 @@ SIGNAL_VERSION = "0.1.0"
 # the exclusion has to live in code. Kevin Alcántara (682634_hitter) reached MLB in late
 # May 2026, before ValuCast existed; his June AAA->MLB recall isn't an ahead-of-the-field
 # receipt (the field already had him as a big-leaguer), so it doesn't count.
-EXCLUDED_IDENTITY_KEYS = {"682634_hitter"}
+# Noah Schultz (702273_pitcher): real call-up was 2026-04-14 ("CWS selected the contract
+# of LHP Noah Schultz from Charlotte Knights" -- MLB transactions cache). He landed on
+# the board today only because he was activated 2026-07-01 off a rehab assignment/IL
+# stint, which the archive-diff detector reads as a fresh disappearance-into-the-roster
+# event. Not a real receipt or miss -- he'd already been up for 2.5 months.
+EXCLUDED_IDENTITY_KEYS = {"682634_hitter", "702273_pitcher"}
+
+# Real MLB Stats API transaction types that represent a player being added to the MLB
+# roster FROM the minors (a genuine call-up) -- as opposed to injury-list moves, options,
+# rehab assignments, trades, etc., which can make a player disappear from / reappear on
+# the ranked board without a fresh call-up actually happening (see Schultz above).
+CALL_UP_TRANSACTION_TYPE_CODES = {"SE", "CU", "PUR", "CP"}
+TRANSACTIONS_CACHE_PATH = ROOT / "data" / "mlb" / "mlb_availability_transactions_cache.json"
 
 
 def _load_json(path: Path) -> dict:
@@ -60,6 +72,28 @@ def _clean_int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _actual_call_up_dates(transactions_cache: dict) -> dict[str, str]:
+    """Earliest genuine call-up transaction date per mlbam_id, across every cached
+    transaction query. Observe-only: does not change call_up_date, sorting, or which
+    rows count as receipts/misses -- it's a shadow field so the real date is visible
+    next to the archive-diff-inferred one (which can be wrong, e.g. Schultz above)."""
+    earliest: dict[str, str] = {}
+    for query in (transactions_cache.get("queries") or {}).values():
+        if not isinstance(query, dict):
+            continue
+        for row in query.get("transactions") or []:
+            if not isinstance(row, dict) or row.get("typeCode") not in CALL_UP_TRANSACTION_TYPE_CODES:
+                continue
+            mlbam_id = (row.get("person") or {}).get("id")
+            date = _date_part(row.get("effectiveDate") or row.get("date"))
+            if mlbam_id in (None, "") or not date:
+                continue
+            key = str(mlbam_id)
+            if key not in earliest or date < earliest[key]:
+                earliest[key] = date
+    return earliest
 
 
 def _identity_key(row: dict) -> str | None:
@@ -336,6 +370,7 @@ def build_call_up_receipts(
     existing_log: dict | list | None = None,
     seed_rows: list[dict] | None = None,
     generated_at: str | None = None,
+    transactions_cache: dict | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
     roster_lookup = active_roster_lookup(roster_payload)
@@ -364,6 +399,16 @@ def build_call_up_receipts(
             seed_count += 1
     receipts = [r for r in _sort_receipts(list(by_key.values())) if r.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
     misses = [m for m in _sort_misses(misses) if m.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
+
+    # Shadow: attach the real call-up date next to the archive-diff-inferred one, when
+    # a genuine call-up transaction exists for that player. Observe-only -- doesn't
+    # change call_up_date, sorting, or hit/miss classification.
+    actual_dates = _actual_call_up_dates(transactions_cache) if transactions_cache else {}
+    if actual_dates:
+        for row in receipts + misses:
+            real_date = actual_dates.get(str(row.get("mlbam_id")))
+            if real_date:
+                row["actual_call_up_date"] = real_date
 
     blockers = []
     if len(archive_payloads) < 2:
@@ -412,12 +457,14 @@ def run_call_up_receipts(
     roster_path: Path = ROSTER_PATH,
     artifact_path: Path = ARTIFACT_PATH,
     archive_dir: Path = ARCHIVE_DIR,
+    transactions_cache_path: Path = TRANSACTIONS_CACHE_PATH,
 ) -> dict:
     payload = build_call_up_receipts(
         archive_payloads=_archive_payloads(rank_archive_dir),
         roster_payload=_load_json(roster_path),
         existing_log=_load_json(artifact_path),
         seed_rows=_seed_receipts(),
+        transactions_cache=_load_json(transactions_cache_path),
     )
     _write_json(payload, artifact_path)
     date_str = _date_part(payload["generated_at"]) or datetime.now(timezone.utc).date().isoformat()
