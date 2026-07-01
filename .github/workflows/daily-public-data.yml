@@ -37,7 +37,11 @@ jobs:
     # The LLM scouting build alone can run ~25-30 min on a cold cache. A 30-min
     # job cap let it get cancelled mid-build (no commit, app stuck a day behind),
     # so give the whole pipeline real headroom.
-    timeout-minutes: 60
+    # Temporarily raised further (60->180) alongside VALUCAST_SCOUTING_LLM_MAX_GENERATE
+    # below for the Haiku->Sonnet voice migration: ~963 cached reads need to regenerate
+    # once, and that's a much bigger one-time run than the normal daily budget. Dial
+    # both back down (e.g. generate ~100-150, timeout 60-90) once the backlog clears.
+    timeout-minutes: 180
     # Hoisted to job level so the deploy step's `if` guard can actually read it.
     # A step-level env is NOT visible to that same step's `if`, which silently
     # skipped the old deploy step and left the live app a day behind.
@@ -89,11 +93,14 @@ jobs:
           # present (offline-safe no-op otherwise). Adding the secret = turning it on.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           VALUCAST_SCOUTING_LLM: "1"
-          # Raised 50->200 for the Haiku->Sonnet voice migration: the model-aware cache
-          # forces every read to regenerate once, so a higher budget rolls the new voice
-          # out in days, not weeks (the cache throttles ongoing cost back down after).
-          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "200"
-          VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "8"
+          # Raised 200->970 (covers the full ~963-entry backlog) to get the Haiku->Sonnet
+          # voice migration done in one run instead of trickling out over days; paired
+          # with the timeout-minutes bump above. The model-aware cache throttles cost
+          # back down automatically once every entry has regenerated under the new model.
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "970"
+          # 8->12: Sonnet's longer, de-robotified reads run closer to the old Haiku
+          # ceiling; a bit more room cuts spurious timeout failures during the migration.
+          VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "12"
         run: python scripts/run_daily_public_build.py --only build
 
       - name: Validate public artifacts

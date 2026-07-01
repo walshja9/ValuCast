@@ -695,6 +695,42 @@ def test_scouting_repository_caps_uncached_llm_generation(tmp_path, monkeypatch)
     assert payload["summary"]["deterministic_published_report_count"] == 1
 
 
+def test_scouting_repository_counts_api_failures_against_budget(tmp_path, monkeypatch):
+    """A run of API errors must stop at generation_limit calls, not retry every
+    eligible row — errored attempts consume budget the same as successful ones."""
+    from scouting import report_generator, repository
+
+    class _FailingMessages:
+        def __init__(self):
+            self.calls = 0
+
+        def create(self, **_kwargs):
+            self.calls += 1
+            raise RuntimeError("simulated API failure")
+
+    class _FakeClient:
+        def __init__(self):
+            self.messages = _FailingMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    client = _FakeClient()
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM_MAX_GENERATE", "1")
+    with patch.object(report_generator, "default_client", return_value=client), patch.object(
+        repository, "LLM_CACHE_PATH", Path(tmp_path) / "llm_cache.json"
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    # Only ONE call attempted (the budget), not one per eligible row.
+    assert client.messages.calls == 1
+    assert payload["summary"]["llm_shadow"]["errored"] == 1
+    assert payload["summary"]["llm_shadow"]["generated"] == 0
+    assert payload["summary"]["llm_shadow"]["skipped_due_to_budget"] == 1
+
+
 def test_scouting_repository_reuses_cached_llm_when_generation_budget_is_zero(
     tmp_path, monkeypatch
 ):

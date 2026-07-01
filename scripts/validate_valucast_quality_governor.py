@@ -31,6 +31,13 @@ def validate_governor(path: Path = GOVERNOR_PATH) -> tuple[dict | None, list[str
         problems.append("checks must be a non-empty list")
     if not isinstance(payload.get("surface_readiness"), dict):
         problems.append("surface_readiness must be an object")
+    # Shape-valid but content-blocked must still fail this gate: it runs before the
+    # commit step, and "blocked" was previously an accepted status value, so a
+    # governor-rejected board could publish to production with no error anywhere.
+    if payload.get("status") == "blocked":
+        blockers = payload.get("blockers") or []
+        detail = f": {'; '.join(str(b) for b in blockers[:5])}" if blockers else ""
+        problems.append(f"quality governor status is blocked{detail}")
     return payload, problems
 
 

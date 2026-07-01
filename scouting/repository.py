@@ -544,13 +544,14 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             "reused": 0,
             "reused_stale": 0,
             "flagged": 0,
+            "errored": 0,
             "skipped_due_to_budget": 0,
             "generation_limit": generation_limit,
         }
     pool = prospect_percentiles.build_pool(store.get_all())
     cache = _load_optional(LLM_CACHE_PATH)
     entries = cache.get("entries") if isinstance(cache.get("entries"), dict) else {}
-    generated = reused = reused_stale = flagged = skipped_due_to_budget = 0
+    generated = reused = reused_stale = flagged = errored = skipped_due_to_budget = 0
     fresh: dict = dict(entries)
     for row, report in zip(rows, reports):
         key = report.get("identity_key")
@@ -600,14 +601,19 @@ def _attach_llm_reports(rows, reports, store) -> dict:
                 }
                 reused_stale += 1
         if result is None:
-            if generation_limit is not None and generated >= generation_limit:
+            # Attempts (success or failure) count against the budget, not just successes —
+            # otherwise a run of API errors (rate limit, outage) never trips the cutoff and
+            # retries every eligible row instead of stopping at generation_limit calls.
+            if generation_limit is not None and generated + errored >= generation_limit:
                 skipped_due_to_budget += 1
                 continue
             try:
                 gen = report_generator.generate_report(grounding, client=client)
             except Exception:  # noqa: BLE001 - one bad call must not fail the daily build
+                errored += 1
                 continue
             if gen is None:
+                errored += 1
                 continue
             result = {
                 "hash": digest, "text": gen["text"], "model": gen["model"],
@@ -627,7 +633,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
     return {
         "enabled": True, "available": True, "generated": generated,
         "reused": reused, "reused_stale": reused_stale, "flagged": flagged,
-        "skipped_due_to_budget": skipped_due_to_budget,
+        "errored": errored, "skipped_due_to_budget": skipped_due_to_budget,
         "generation_limit": generation_limit, "report_count": len(fresh),
     }
 
@@ -700,6 +706,7 @@ def build_scouting_repository(
         "reused": 0,
         "reused_stale": 0,
         "flagged": 0,
+        "errored": 0,
         "skipped_due_to_budget": 0,
         "generation_limit": None,
     }
