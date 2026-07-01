@@ -179,7 +179,7 @@ def test_data_bar_tracks_share_bar_grammar_tokens():
 
 
 def test_statcast_percentile_ramp_matches_bar_palette_tokens():
-    for token_tuple in ["(52, 226, 196)", "(94, 102, 120)", "(204, 138, 102)"]:
+    for token_tuple in ["(52, 226, 196)", "(94, 102, 120)", "(208, 116, 92)"]:
         assert token_tuple in STATCAST_STORE
 
     for retired in ["(52, 211, 153)", "#34d399", "(91, 102, 122)", "#5b667a"]:

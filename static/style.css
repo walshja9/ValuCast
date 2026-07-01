@@ -30,7 +30,7 @@
   --c-blue-strong: #6ea1ff;
 
   --c-amber: #fbbf24;          /* caution / uncertainty only */
-  --c-clay: #cc8a66;           /* decline — replaces alarm red */
+  --c-clay: #d0745c;           /* decline — replaces alarm red; redder than the backfields gold so "down" never reads as sub-brand */
   --c-neg: var(--c-clay);
   --c-slate: #5e6678;          /* avg tier, inactive bars, structural ticks */
   --c-positive-muted: #6f7b8f;  /* secondary good/status, never the live signal */
@@ -105,7 +105,7 @@ h1, h2, h3, h4, h5, h6,
     font-family: var(--font-display);
     letter-spacing: -.01em;
 }
-.eyebrow, .profile-card-kicker, .movers-label, .tagline,
+.eyebrow, .profile-card-kicker, .movers-label,
 .tier-badge, .pos-rank, .mover-delta,
 .rankings-table, .rankings-table th, .rankings-table td,
 .mobile-stat, .stat-item, .stat-value, .skill-shape-grade,
@@ -114,6 +114,10 @@ h1, h2, h3, h4, h5, h6,
 }
 /* Player names keep the display cast even inside the mono data table. */
 .rankings-table td.col-name, .rankings-table td.col-name a { font-family: var(--font-display); }
+/* Prose is body-cast: the tagline is a sentence, not a data label, and the expanded
+   detail card (rendered inside a .rankings-table td) must not inherit table mono —
+   its data chips (.stat-value, .mobile-stat, ...) re-assert mono via their own rules. */
+.detail-row td { font-family: var(--font-body); }
 
 a { color: var(--c-blue); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -1410,9 +1414,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .confidence-chip { background: var(--surface-2); color: var(--c-muted); }
 .confidence-high { background: rgba(52,226,196,.14); color: var(--c-prospect); }
 .confidence-medium { background: rgba(251,191,36,.14); color: var(--c-amber); }
-.confidence-low, .confidence-very_low { background: rgba(204,138,102,.14); color: var(--c-neg); }
+.confidence-low, .confidence-very_low { background: rgba(208,116,92,.14); color: var(--c-neg); }
 .trend-up { background: rgba(52,226,196,.14); color: var(--c-prospect); }
-.trend-down { background: rgba(204,138,102,.14); color: var(--c-neg); }
+.trend-down { background: rgba(208,116,92,.14); color: var(--c-neg); }
 .source-spread { margin-left: .35rem; background: rgba(251,191,36,.14); color: var(--c-amber); text-transform: none; letter-spacing: 0; }
 .dynasty-detail .stat-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); }
 .prospect-profile-card {
@@ -2072,7 +2076,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 /* Dynasty value sparkline */
 .spark-delta { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: .12rem .5rem; }
 .spark-delta.up { color: var(--c-pos); background: rgba(52, 226, 196, .14); }
-.spark-delta.down { color: var(--c-neg); background: rgba(204, 138, 102, .14); }
+.spark-delta.down { color: var(--c-neg); background: rgba(208, 116, 92, .14); }
 .spark-delta.flat { color: var(--c-muted); background: rgba(154, 161, 192, .14); }
 
 /* Ranks by format — settings-aware prospect ranks across league formats. */
@@ -2183,7 +2187,12 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     position: absolute; z-index: 0; right: 1rem; top: .7rem;
     width: min(36%, 330px); height: auto; opacity: .8;
 }
-.buys-heading-arc path { fill: none; stroke: rgba(110,161,255,.26); stroke-width: 2; }
+.buys-heading-arc path { fill: none; stroke-linecap: round; }
+.buys-heading-arc .arc-halo { stroke: rgba(52, 226, 196, .10); stroke-width: 11; }
+.buys-heading-arc .arc-glow { stroke: rgba(52, 226, 196, .32); stroke-width: 5.5; }
+.buys-heading-arc .arc-core { stroke: #7df0dc; stroke-width: 2.4; }
+.buys-heading-arc .arc-node-halo { fill: rgba(52, 226, 196, .22); }
+.buys-heading-arc .arc-node { fill: #eafffb; }
 .buys-fineprint { max-width: 690px; font-size: .72rem; color: var(--c-muted); margin-top: .35rem; }
 .buys-actions { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
 .buys-export-notice { font-size: .76rem; color: var(--c-amber); max-width: 260px; text-align: right; }
@@ -2219,7 +2228,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .buys-spark, .bf-spark, .value-spark { overflow: visible; }
 .buys-spark polyline, .bf-spark polyline, .value-spark polyline { stroke-width: 2.2; }
 .buys-spark.up,   .bf-spark.up,   .value-spark.up   { filter: drop-shadow(0 0 3px rgba(52,226,196,.60)); }
-.buys-spark.down, .bf-spark.down, .value-spark.down { filter: drop-shadow(0 0 3px rgba(204,138,102,.55)); }
+.buys-spark.down, .bf-spark.down, .value-spark.down { filter: drop-shadow(0 0 3px rgba(208,116,92,.55)); }
 .buys-spark, .bf-spark, .value-spark                { filter: drop-shadow(0 0 2px rgba(154,161,192,.40)); }
 .buys-spark circle, .bf-spark circle, .value-spark circle { r: 2.8; }
 .buys-spark.up circle, .bf-spark.up circle, .value-spark.up circle { fill: #EAFFFB; }
@@ -4148,3 +4157,34 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     box-shadow: 0 16px 40px rgba(0, 0, 0, .42);
     font-weight: 700;
 }
+
+/* Share-graphic dropdown — replaces the Generate Top 20/50/100 button triplets.
+   Native <details> so no form change events fire (the board form re-ranks on any
+   named-control change); base.html closes open menus on outside click. */
+.graphic-menu { position: relative; display: inline-block; }
+.graphic-menu > summary { list-style: none; cursor: pointer; user-select: none; }
+.graphic-menu > summary::-webkit-details-marker { display: none; }
+.graphic-menu > summary::after { content: " \25BE"; color: var(--c-muted); }
+.graphic-menu-list {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 80;
+    min-width: 128px;
+    display: flex;
+    flex-direction: column;
+    padding: .3rem;
+    background: var(--surface-panel-strong);
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+}
+.graphic-menu-list a {
+    padding: .42rem .6rem;
+    border-radius: var(--radius-sm);
+    color: var(--c-text);
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.graphic-menu-list a:hover { background: var(--surface-2); text-decoration: none; }

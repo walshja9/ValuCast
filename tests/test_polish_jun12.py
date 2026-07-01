@@ -416,10 +416,14 @@ class TestGlassAndMap(_RealAppCase):
         self.assertEqual([p["id"] for p in payload], ["c"])
         self.assertEqual(payload[0]["group"], "sp")
 
-    def test_map_links_on_dynasty_and_prospect_toolbars(self):
+    def test_toolbar_map_chips_removed_nav_owns_routing(self):
+        # Nav diet 7/1: Map/Backfields toolbar chips were a third nav layer
+        # duplicating the horizon tabs; the tabs own that routing now.
         for mode in ("dd_dynasty", "prospects"):
             html = self.client.get(f"/?mode={mode}").data.decode("utf-8")
-            self.assertIn('class="map-link"', html)
+            self.assertNotIn('class="map-link"', html)
+            self.assertIn('href="/map"', html)
+            self.assertIn('href="/backfields"', html)
 
 
 class TestShareableCardLinks(_RealAppCase):

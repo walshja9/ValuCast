@@ -448,7 +448,7 @@ def test_build_valucast_board_formats_existing_template_shape():
 
     assert len(board) == 1
     assert board[0]["id"].startswith("vc_prospect_")
-    assert board[0]["headshot_url"].endswith("/headshot/67/current")
+    assert board[0]["headshot_url"].endswith("/headshot/milb/current")
     assert "momentum" in board[0]["terms"]
     assert "valucast_terms" in board[0]
     assert board[0]["value_history"] == ()

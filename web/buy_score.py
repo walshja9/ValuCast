@@ -59,9 +59,12 @@ TEAM_IDS = {
     "TEX": 140, "TOR": 141, "WSH": 120, "WSN": 120,
 }
 
+# milb variant, not 67: prospects rarely have MLB photos (the 67 path 404s and the
+# d_ generic silhouette rendered for everyone). milb/current has real headshots for
+# most of the pool; the generic default still covers anyone without one.
 HEADSHOT_URL = ("https://img.mlbstatic.com/mlb-photos/image/upload/"
                 "d_people:generic:headshot:67:current.png/w_120,q_auto:best/"
-                "v1/people/{mlbam_id}/headshot/67/current")
+                "v1/people/{mlbam_id}/headshot/milb/current")
 LOGO_URL = "https://midfield.mlbstatic.com/v1/team/{team_id}/spots/64"
 
 

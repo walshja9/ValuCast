@@ -96,7 +96,7 @@ _CSP_POLICY = (
     "connect-src 'self'; "
     "form-action 'self'"
 )
-_PNG_CACHE_MAX = 200
+_PNG_CACHE_MAX = 32  # ~32 x ~0.5MB PNGs: bound worst-case RAM on the 512MB Render box
 _PNG_CACHE: OrderedDict[tuple, tuple[bytes, dict[str, str]]] = OrderedDict()
 
 
@@ -137,10 +137,13 @@ def _serve_cached_png():
     if app.config.get("TESTING"):
         return None
     key = _png_cache_key()
-    if key is None or key not in _PNG_CACHE:
+    if key is None:
         return None
-    body, headers = _PNG_CACHE.pop(key)
-    _PNG_CACHE[key] = (body, headers)
+    cached = _PNG_CACHE.pop(key, None)  # pop-or-None: check-then-pop races under gunicorn --threads 4
+    if cached is None:
+        return None
+    body, headers = cached
+    _PNG_CACHE[key] = cached
     response = make_response(body)
     for name, value in headers.items():
         response.headers[name] = value
@@ -1027,7 +1030,7 @@ def _prospect_preset_cats(preset_key):
 
 
 PROSPECT_CATEGORY_PRESETS = {
-    "dd_7x7": "7x7",
+    "ops_7x7": "7x7 OPS",
     "roto_5x5": "Standard 5x5",
 }
 
@@ -1664,12 +1667,15 @@ def _prospect_graphic_png(
             x, y = start_x + col * (cell_w + 24), start_y + r * (cell_h + 18)
             draw.rounded_rectangle((x, y, x + cell_w, y + cell_h), radius=8, fill=card_2, outline=border, width=1)
             draw.text((x + 18, y + 16), rank_label(idx + 2), fill=blue, font=font(21, bold=True))
-            card_name_font = font(24, bold=True)
-            name_lines = split_name_lines(draw, row.name, card_name_font, 220)
-            for line_idx, line in enumerate(name_lines[:2]):
-                draw.text((x + 18, y + 52 + line_idx * 27), line, fill=text, font=card_name_font)
-            tag_y = y + (98 if len(name_lines) > 1 else 90)
-            draw.text((x + 18, tag_y), fit_text(draw, tag(row), font(16), 220), fill=muted, font=font(16))
+            # One line, stepping the size down to fit: two wrapped 24pt lines
+            # (y+52 and y+79, ~28px tall) collided with the tag at y+98 on long
+            # names like "Pete Crow-Armstrong".
+            for name_size in (24, 21, 18):
+                card_name_font = font(name_size, bold=True)
+                if text_width(draw, row.name, card_name_font) <= 274:
+                    break
+            draw.text((x + 18, y + 52), fit_text(draw, row.name, card_name_font, 274), fill=text, font=card_name_font)
+            draw.text((x + 18, y + 90), fit_text(draw, tag(row), font(16), 274), fill=muted, font=font(16))
             draw.text((x + cell_w - 86, y + 20), note_label(row), fill=muted, font=font(14, bold=True))
             draw.line((x + 18, y + 120, x + cell_w - 18, y + 120), fill=border, width=1)
             draw.text((x + 18, y + 132), "VAL", fill=muted, font=font(13, bold=True))
@@ -1782,7 +1788,7 @@ _GRAPHIC_PALETTE = {
     "teal": (52, 226, 196),
     "blue": (138, 146, 168),   # legacy key, now slate — ranks/monograms are structural
     "slate": (94, 102, 120),
-    "clay": (204, 138, 102),
+    "clay": (208, 116, 92),   # matches --c-clay #d0745c — redder than backfields gold
     "text": (231, 233, 240),
     "muted": (150, 151, 166),
 }
@@ -1888,7 +1894,7 @@ def _graphic_brand_curve(img, draw, *, value_history=None, x0=560, y0=130, x1=10
     spark = build_spark(value_history, width=(x1 - x0), height=(y0 - y1)) if value_history else None
     if spark and spark.get("points"):
         if spark.get("direction") == "down":
-            color = _GRAPHIC_PALETTE.get("clay", (204, 138, 102))
+            color = _GRAPHIC_PALETTE.get("clay", (208, 116, 92))
         elif spark.get("direction") == "flat":
             color = _GRAPHIC_PALETTE.get("muted", color)
         try:
@@ -1985,7 +1991,7 @@ def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="
     # When the brand curve is a real form curve, caption its movement.
     spark = build_spark(value_history) if value_history else None
     if spark:
-        accent = green if spark.get("direction") == "up" else _GRAPHIC_PALETTE.get("clay", (204, 138, 102)) if spark.get("direction") == "down" else muted
+        accent = green if spark.get("direction") == "up" else _GRAPHIC_PALETTE.get("clay", (208, 116, 92)) if spark.get("direction") == "down" else muted
         draw.text((560, 132), f'FORM  {spark["delta"]:+.1f} over {spark["window_days"]}d', fill=accent, font=_graphic_font(14, bold=True))
     sub_font = _graphic_font(22)
     draw.text((48, 152), _graphic_fit_text(draw, subtitle, sub_font, 940), fill=text, font=sub_font)
@@ -6721,7 +6727,7 @@ def _buys_share_card_png(
     blue = _GRAPHIC_PALETTE["blue"]
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
-    red = (204, 138, 102)
+    red = _GRAPHIC_PALETTE["clay"]
 
     f_source = _graphic_font(17, bold=True)
     f_rank = _graphic_font(21, bold=True)

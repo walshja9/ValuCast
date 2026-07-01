@@ -86,11 +86,14 @@
             </select>
             <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
-            <span class="graphic-actions" aria-label="Redraft graphic actions">
-                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=20" target="_blank" onclick="openRedraftGraphic(event, 20)">Generate Top 20 Graphic</a>
-                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=50" target="_blank" onclick="openRedraftGraphic(event, 50)">Generate Top 50 Graphic</a>
-                <a class="export-btn graphic-btn" href="/redraft/share-card?limit=100" target="_blank" onclick="openRedraftGraphic(event, 100)">Generate Top 100 Graphic</a>
-            </span>
+            <details class="graphic-menu" aria-label="Redraft graphic actions">
+                <summary class="export-btn graphic-btn">Share graphic</summary>
+                <div class="graphic-menu-list">
+                    <a href="/redraft/share-card?limit=20" target="_blank" onclick="openRedraftGraphic(event, 20); this.closest('details').removeAttribute('open')">Top 20</a>
+                    <a href="/redraft/share-card?limit=50" target="_blank" onclick="openRedraftGraphic(event, 50); this.closest('details').removeAttribute('open')">Top 50</a>
+                    <a href="/redraft/share-card?limit=100" target="_blank" onclick="openRedraftGraphic(event, 100); this.closest('details').removeAttribute('open')">Top 100</a>
+                </div>
+            </details>
             <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
         </div>
     </div>
@@ -136,14 +139,15 @@
                 <label><input type="radio" name="rank_by" value="now" {{ 'checked' if rank_by == 'now' else '' }}><span>Now $</span></label>
             </fieldset>
             {% endif %}
-            <a class="map-link" href="/map">Map</a>
-            <a class="map-link" href="/backfields">Backfields</a>
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
-            <span class="graphic-actions" aria-label="Dynasty graphic actions">
-                <a class="export-btn graphic-btn" href="/dynasty/share-card?limit=20" target="_blank" onclick="openDynastyGraphic(event, 20)">Generate Top 20 Graphic</a>
-                <a class="export-btn graphic-btn" href="/dynasty/share-card?limit=50" target="_blank" onclick="openDynastyGraphic(event, 50)">Generate Top 50 Graphic</a>
-                <a class="export-btn graphic-btn" href="/dynasty/share-card?limit=100" target="_blank" onclick="openDynastyGraphic(event, 100)">Generate Top 100 Graphic</a>
-            </span>
+            <details class="graphic-menu" aria-label="Dynasty graphic actions">
+                <summary class="export-btn graphic-btn">Share graphic</summary>
+                <div class="graphic-menu-list">
+                    <a href="/dynasty/share-card?limit=20" target="_blank" onclick="openDynastyGraphic(event, 20); this.closest('details').removeAttribute('open')">Top 20</a>
+                    <a href="/dynasty/share-card?limit=50" target="_blank" onclick="openDynastyGraphic(event, 50); this.closest('details').removeAttribute('open')">Top 50</a>
+                    <a href="/dynasty/share-card?limit=100" target="_blank" onclick="openDynastyGraphic(event, 100); this.closest('details').removeAttribute('open')">Top 100</a>
+                </div>
+            </details>
             <button type="button" class="customize-toggle primary-action" onclick="toggleSetup()">Customize</button>
         </div>
     </div>
@@ -180,7 +184,7 @@
         <select name="preset" id="prospect-preset" class="position-select" aria-label="Score for your league"
                 onchange="document.getElementById('prospect-rank-by').value = this.value ? 'league' : 'default'; if (this.value) { (document.getElementById('prospect-category-fit')||{}).querySelectorAll && document.getElementById('prospect-category-fit').querySelectorAll('input[type=checkbox]:checked').forEach(function(cb){cb.checked=false;}); }">
             <option value="">Default order (P#)</option>
-            <option value="dd_7x7" {{ 'selected' if prospect_preset == 'dd_7x7' else '' }}>7x7</option>
+            <option value="ops_7x7" {{ 'selected' if prospect_preset == 'ops_7x7' else '' }}>7x7 OPS</option>
             <option value="roto_5x5" {{ 'selected' if prospect_preset == 'roto_5x5' else '' }}>Standard 5x5</option>
         </select>
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
@@ -191,14 +195,15 @@
                 <option value="{{ pos }}" {{ 'selected' if position == pos else '' }}>{{ pos }}</option>
                 {% endfor %}
             </select>
-            <a class="map-link" href="/map">Map</a>
-            <a class="map-link" href="/backfields">Backfields</a>
-            <span class="graphic-actions" aria-label="Prospect graphic actions">
-                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=10" target="_blank" onclick="openProspectGraphic(event, 10)">Generate Top 10 Graphic</a>
-                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=20" target="_blank" onclick="openProspectGraphic(event, 20)">Generate Top 20 Graphic</a>
-                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=50" target="_blank" onclick="openProspectGraphic(event, 50)">Generate Top 50 Graphic</a>
-                <a class="export-btn graphic-btn" href="/prospects/share-card?limit=100" target="_blank" onclick="openProspectGraphic(event, 100)">Generate Top 100 Graphic</a>
-            </span>
+            <details class="graphic-menu" aria-label="Prospect graphic actions">
+                <summary class="export-btn graphic-btn">Share graphic</summary>
+                <div class="graphic-menu-list">
+                    <a href="/prospects/share-card?limit=10" target="_blank" onclick="openProspectGraphic(event, 10); this.closest('details').removeAttribute('open')">Top 10</a>
+                    <a href="/prospects/share-card?limit=20" target="_blank" onclick="openProspectGraphic(event, 20); this.closest('details').removeAttribute('open')">Top 20</a>
+                    <a href="/prospects/share-card?limit=50" target="_blank" onclick="openProspectGraphic(event, 50); this.closest('details').removeAttribute('open')">Top 50</a>
+                    <a href="/prospects/share-card?limit=100" target="_blank" onclick="openProspectGraphic(event, 100); this.closest('details').removeAttribute('open')">Top 100</a>
+                </div>
+            </details>
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
         </div>
     </div>

@@ -53,11 +53,11 @@ class TestLaunchPolish(unittest.TestCase):
         self.assertIn("function toggleToolbarFilters(btn)", html)
         self.assertIn("btn.setAttribute('aria-expanded', panel.classList.contains('open'))", html)
 
-        secondary = html[
-            html.index('<div id="toolbar-secondary" class="toolbar-secondary">'):
-            html.index("</div>", html.index('<div id="toolbar-secondary" class="toolbar-secondary">'))
-            + len("</div>")
-        ]
+        # Slice through the Customize button (the disclosure's last control) —
+        # first-</div> slicing broke once the share menu nested a div inside.
+        start = html.index('<div id="toolbar-secondary" class="toolbar-secondary">')
+        end = html.index("Customize</button>", start) + len("Customize</button>")
+        secondary = html[start:end]
         for marker in ('name="source"', 'name="pool"', 'name="position"',
                        'name="display"', "Export CSV", "Customize"):
             self.assertIn(marker, secondary)

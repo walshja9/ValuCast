@@ -26,7 +26,9 @@ class TestTabMarkup(unittest.TestCase):
         self.assertIn('href="/?mode=dd_dynasty"', html)
         self.assertIn('href="/backfields"', html)
         horizon_nav = re.search(r'<nav class="horizon-tabs"[^>]*>(.*?)</nav>', html, re.S).group(1)
-        self.assertNotIn('href="/?mode=prospects"', horizon_nav)
+        # Nav diet 7/1: the prospect value board gets a tab — movers/receipts/hub all
+        # deep-link into /?mode=prospects, so it can't stay an orphaned surface.
+        self.assertIn('href="/?mode=prospects"', horizon_nav)
         self.assertIn(">Backfields</a>", horizon_nav)
         self.assertIn('class="horizon-tabs"', html)
         self.assertIn('aria-current="page"', html)

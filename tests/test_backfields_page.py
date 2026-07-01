@@ -89,7 +89,9 @@ def test_prospect_neighbor_navigation_points_to_backfields():
         if response.status_code == 503:
             continue
         assert 'href="/backfields" class="htab htab-prospects">Backfields</a>' in html
-        assert 'href="/?mode=prospects" class="htab htab-prospects">Prospects</a>' not in html
+        # 7/1: Backfields stays the minors hub; the prospect value board now ALSO has
+        # its own (plain-htab) tab because deep links land there constantly.
+        assert 'href="/?mode=prospects" class="htab' in html
 
 
 def test_primary_nav_uses_backfields_as_prospect_hub():

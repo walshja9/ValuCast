@@ -104,7 +104,7 @@ class TestDisplayGroups(unittest.TestCase):
 
 class TestPercentileColor(unittest.TestCase):
     def test_endpoints_and_midpoint(self):
-        self.assertEqual(percentile_color(0), "#cc8a66")    # token clay
+        self.assertEqual(percentile_color(0), "#d0745c")    # token clay
         self.assertEqual(percentile_color(50), "#5e6678")   # token slate
         self.assertEqual(percentile_color(100), "#34e2c4")  # token teal
 

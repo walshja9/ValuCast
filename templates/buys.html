@@ -17,8 +17,14 @@
 {{ board_nav(active='buys') }}
 
 <section class="buys-heading glass">
+    {# Layered strokes (halo/glow/core + hot node) = the share-card neon curve.
+       Pure geometry, no CSS filters, so html2canvas renders it identically. #}
     <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
-        <path d="M318 10 C220 2 126 34 14 140" />
+        <path class="arc-halo" d="M318 10 C220 2 126 34 14 140" />
+        <path class="arc-glow" d="M318 10 C220 2 126 34 14 140" />
+        <path class="arc-core" d="M318 10 C220 2 126 34 14 140" />
+        <circle class="arc-node-halo" cx="318" cy="10" r="9" />
+        <circle class="arc-node" cx="318" cy="10" r="3.5" />
     </svg>
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">VALUCAST BUYS</span>
@@ -134,8 +140,8 @@
 .bg-feature-spark circle { fill: #9197a6; }
 .bg-feature-spark.up polyline { stroke: #34e2c4; }
 .bg-feature-spark.up circle { fill: #34e2c4; }
-.bg-feature-spark.down polyline { stroke: #cc8a66; }
-.bg-feature-spark.down circle { fill: #cc8a66; }
+.bg-feature-spark.down polyline { stroke: #d0745c; }
+.bg-feature-spark.down circle { fill: #d0745c; }
 .bg-hero-spark { position: absolute; left: 188px; top: 208px; width: 154px; height: 42px; }
 .bg-spark-label { position: absolute; left: 188px; top: 259px; font-size: 15px; font-weight: 600; color: #9197a6; letter-spacing: .4px; }
 .bg-feature-reason { position: absolute; left: 20px; bottom: 10px; font-size: 16px; font-weight: 600; text-transform: uppercase; color: #8a92a6; }
