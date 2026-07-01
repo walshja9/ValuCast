@@ -3,6 +3,35 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import app as app_module
+from app import app
+
+
+def test_receipts_page_shows_hold_message_and_hides_share_card_when_held(monkeypatch):
+    """7/1: the pre-launch fix shrank the board to 4 hits / 0 misses -- too thin to
+    show credibly. Held from public view (nav + share-card) while the daily build
+    keeps running in the background; see RECEIPTS_HOLD in app.py."""
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
+    client = app.test_client()
+
+    page = client.get("/receipts").data.decode("utf-8")
+    assert "Building a real track record" in page
+    assert 'href="/receipts"' not in page  # nav tab hidden
+    assert "buys-actions" not in page  # export buttons hidden
+
+    assert client.get("/receipts/share-card").status_code == 404
+    assert client.get("/receipts/share-card.png").status_code == 404
+
+
+def test_receipts_page_renders_normally_when_not_held(monkeypatch):
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    client = app.test_client()
+
+    page = client.get("/receipts").data.decode("utf-8")
+    assert "Building a real track record" not in page
+    assert 'href="/receipts"' in page  # nav tab shown
+    assert client.get("/receipts/share-card").status_code == 200
+
 
 def test_call_up_receipts_wired_into_daily_public_build_and_publish_workflow():
     from scripts import run_daily_public_build

@@ -23,19 +23,31 @@
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">CALL-UP RECEIPTS</span>
         <h1>CALL-UP RECEIPTS</h1>
+        {% if receipts_hold %}
+        <p class="buys-heading-sub">Building a real track record</p>
+        <p class="buys-fineprint">This board is being held back for now. A recent fix correctly stopped counting call-ups that happened before ValuCast even existed (the field already knew about those players — crediting ourselves for them isn't honest). That shrank the sample to a handful of games, too small and too flattering-looking to show. It's still running every day in the background, and comes back once there's a real post-launch sample to stand behind.</p>
+        {% else %}
         <p class="buys-heading-sub">{{ receipt_count }} ahead &middot; {{ miss_count }} behind{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint">Every prospect call-up, with where ValuCast had them vs the public-board consensus &mdash; the ones we were ahead on <strong>and</strong> the ones we were behind on. Logged automatically the day they reach the majors, no cherry-picking. Small sample, growing.</p>
+        {% endif %}
     </div>
+    {% if not receipts_hold %}
     <div class="buys-actions">
         <a class="export-btn" href="/receipts/share-card" target="_blank" rel="noopener">Preview graphic</a>
         <a class="export-btn secondary-action" href="/receipts/share-card.png" download="valucast-call-up-receipts.png">Download PNG</a>
     </div>
+    {% endif %}
 </section>
 
 {% if not receipts_available or (not receipts and not misses) %}
 <section class="map-heading glass">
+    {% if receipts_hold %}
+    <h2>Board on hold</h2>
+    <p>See above &mdash; the daily build keeps running, this just isn't public yet.</p>
+    {% else %}
     <h2>No call-ups logged yet</h2>
     <p>The board fills automatically when a ranked prospect graduates to an MLB active roster.</p>
+    {% endif %}
 </section>
 {% else %}
 {% if receipts %}

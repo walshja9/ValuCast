@@ -6,7 +6,9 @@
     <a href="/backfields" class="htab htab-prospects{% if active == 'backfields' %} on{% endif %}"{% if active == 'backfields' %} aria-current="page"{% endif %}>Backfields</a>
     <a href="/map" class="htab{% if active == 'map' %} on{% endif %}"{% if active == 'map' %} aria-current="page"{% endif %}>Map</a>
     <a href="/movers" class="htab{% if active == 'movers' %} on{% endif %}"{% if active == 'movers' %} aria-current="page"{% endif %}>Movers</a>
+    {% if not receipts_hold %}
     <a href="/receipts" class="htab{% if active == 'receipts' %} on{% endif %}"{% if active == 'receipts' %} aria-current="page"{% endif %}>Receipts</a>
+    {% endif %}
     {% if not aotc_hold %}
     <a href="/buys" class="htab{% if active == 'buys' %} on{% endif %}"{% if active == 'buys' %} aria-current="page"{% endif %}>Buys</a>
     {% endif %}

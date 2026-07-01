@@ -66,6 +66,12 @@ app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
 # Deliberate public hold of the buys/AOTC surface until release; flip to False (and redeploy) to re-enable.
 AHEAD_OF_THE_CURVE_HOLD = False
+# Deliberate public hold of the call-up receipts board (7/1): the pre-launch exclusion
+# fix dropped the sample to 4 hits / 0 misses, too thin and too "perfect" to show
+# credibly. The daily build keeps computing valucast_call_up_receipts.json as usual
+# (shadow -- grabbing more post-launch data); only the public page/nav/share-card are
+# held. Flip to False (and redeploy) once there's a real sample.
+RECEIPTS_HOLD = True
 
 
 @app.after_request
@@ -78,7 +84,7 @@ def _security_headers(response):
 
 @app.context_processor
 def _aotc_hold_context():
-    return {"aotc_hold": AHEAD_OF_THE_CURVE_HOLD}
+    return {"aotc_hold": AHEAD_OF_THE_CURVE_HOLD, "receipts_hold": RECEIPTS_HOLD}
 
 
 def _public_url(path):
@@ -6330,15 +6336,15 @@ def _load_receipts_payload(path=VALUCAST_RECEIPTS_PATH):
 
 def _build_receipts_page_context():
     payload = _load_receipts_payload()
-    receipts = list(payload.get("receipts") or [])
-    misses = list(payload.get("misses") or [])
+    receipts = [] if RECEIPTS_HOLD else list(payload.get("receipts") or [])
+    misses = [] if RECEIPTS_HOLD else list(payload.get("misses") or [])
     generated_at = payload.get("generated_at")
     return {
         "receipts": receipts,
         "receipt_count": len(receipts),
         "misses": misses,
         "miss_count": len(misses),
-        "receipts_available": bool(payload),
+        "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,
     }
@@ -6444,6 +6450,8 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None):
 
 @app.route("/receipts/share-card.png")
 def receipts_share_card_png():
+    if RECEIPTS_HOLD:
+        abort(404)
     context = _build_receipts_page_context()
     png = _receipts_share_card_png(
         context["receipts"],
@@ -6458,6 +6466,8 @@ def receipts_share_card_png():
 
 @app.route("/receipts/share-card")
 def receipts_share_card():
+    if RECEIPTS_HOLD:
+        abort(404)
     html = build_share_preview_html(
         title="Call-Up Receipts",
         subtitle="Prospects ValuCast ranked above consensus before MLB call-up",
