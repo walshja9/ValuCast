@@ -110,19 +110,22 @@ def test_value_and_movement_keep_the_signal_lane():
 
 def test_tier_is_a_left_edge_luminance_tick_not_a_colored_badge():
     # Wave 2C: tier reads as a 3px left-edge luminance ramp, T1 brightest → T5 darkest.
+    # box-shadow, not a ::before pseudo-element — a generated-content box on a <tr>
+    # gets folded into the table's auto-layout column model and shifts every <td>
+    # one column off from its <th>. box-shadow is pure paint, so it can't do that.
     ladder = {
-        ".player-row.tier-1::before": "#e6eaf1",
-        ".player-row.tier-2::before": "#b9c0ce",
-        ".player-row.tier-3::before": "#8a93a4",
-        ".player-row.tier-4::before": "#5e6678",
-        ".player-row.tier-5::before": "#3e465a",
+        ".player-row.tier-1": "#e6eaf1",
+        ".player-row.tier-2": "#b9c0ce",
+        ".player-row.tier-3": "#8a93a4",
+        ".player-row.tier-4": "#5e6678",
+        ".player-row.tier-5": "#3e465a",
     }
     for selector, hex_value in ladder.items():
         assert hex_value in _last_block(selector), selector
 
-    base = _last_block(".player-row::before")
-    assert "width: 3px" in base
-    assert "left: 0" in base
+    base = _last_block(".player-row")
+    assert "box-shadow: inset 3px 0 0 0" in base
+    assert not _blocks(".player-row::before"), "regressed to a <tr> pseudo-element"
     # the in-name colored tier chip stays hidden — tier is the tick, not a badge
     assert "display: none" in _last_block(".rankings-table td.col-name > .tier-badge")
 
