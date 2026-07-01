@@ -443,8 +443,9 @@ function toggleDetail(playerId, row) {
         htmx.ajax('GET', '/player/' + playerId + '?' + params.toString(), {
             target: '#detail-' + playerId + ' td',
             swap: 'innerHTML',
+        }).then(function () {
+            detailRow.dataset.loaded = 'true';
         });
-        detailRow.dataset.loaded = 'true';
     }
     /* Clear the inline style so CSS picks the display: table-row on desktop,
        block (card) in the mobile layout. Forcing 'table-row' broke mobile. */

@@ -267,6 +267,17 @@ def test_history_drives_momentum_from_valucast_scores():
     assert row["score_history"] == [("2026-06-12", 53.0), ("2026-06-13", 58.0)]
 
 
+def test_neutral_momentum_does_not_become_the_headline_reason():
+    rows = [_row(9, "Neutral Momentum", 700, 20.0, age=24, level="AAA", confidence="low")]
+    rows[0]["components"]["sample_reliability"] = 0.0
+
+    payload = build_buy_signals(_rank_payload(rows), [])
+    row = payload["board"][0]
+
+    assert row["terms"]["momentum"] == 0.4
+    assert row["reason"] != "ValuCast score momentum"
+
+
 def test_buy_signals_carry_availability_disclosure():
     rows = [_row(1, "Injury Buy", 80, 58.0)]
     rows[0]["components"]["availability"] = {

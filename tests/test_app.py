@@ -56,6 +56,12 @@ class TestIndexRoute(unittest.TestCase):
         response = self.client.get("/")
         self.assertIn(b"customize-toggle", response.data)
 
+    def test_index_registers_htmx_error_handler_and_detail_retry(self):
+        response = self.client.get("/")
+        html = response.data.decode("utf-8")
+        self.assertIn("htmx:responseError", html)
+        self.assertIn(".then(function () {\n            detailRow.dataset.loaded = 'true';", html)
+
 
 class TestRankingsRoute(unittest.TestCase):
     def setUp(self):
@@ -73,6 +79,14 @@ class TestRankingsRoute(unittest.TestCase):
     def test_rankings_sets_replace_url(self):
         response = self.client.get("/rankings?mode=categories&cats=R,HR&pcats=K,ERA")
         self.assertIn("HX-Replace-Url", response.headers)
+
+    def test_rankings_browser_visit_redirects_to_board(self):
+        response = self.client.get(
+            "/rankings?mode=prospects&search=Jenkins",
+            headers={"Accept": "text/html"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/?mode=prospects&search=Jenkins", response.headers["Location"])
 
     def test_rankings_oob_setup_panel(self):
         response = self.client.get("/rankings?mode=categories&cats=R,HR&pcats=K,ERA")
@@ -117,6 +131,8 @@ class TestPlayerDetail(unittest.TestCase):
     def test_missing_player_returns_404(self):
         response = self.client.get("/player/NONEXISTENT?mode=categories&cats=R&pcats=K")
         self.assertEqual(response.status_code, 404)
+        self.assertNotIn(b"<div class='error'>Player not found</div>", response.data)
+        self.assertIn(b"ValuCast", response.data)
 
     def test_projected_rotation_starter_phrase_uses_a_rotation(self):
         phrase = app_module._projected_role_phrase({"projected_role": "rotation_starter"})
@@ -394,6 +410,7 @@ class TestDynastyMode(unittest.TestCase):
         preview = self.client.get("/dynasty/share-card?limit=50")
         self.assertEqual(preview.status_code, 200)
         self.assertIn("text/html", preview.content_type)
+        self.assertIn(b"<title>ValuCast Dynasty Top 50 | ValuCast</title>", preview.data)
         self.assertIn(b"Top 50 Dynasty", preview.data)
         self.assertIn(b"/dynasty/share-card.png?limit=50", preview.data)
         for limit in (20, 50, 100):
@@ -407,6 +424,7 @@ class TestDynastyMode(unittest.TestCase):
         preview = self.client.get("/redraft/share-card?limit=50")
         self.assertEqual(preview.status_code, 200)
         self.assertIn("text/html", preview.content_type)
+        self.assertIn(b"<title>ValuCast Redraft Top 50 | ValuCast</title>", preview.data)
         self.assertIn(b"Top 50 Redraft", preview.data)
         self.assertIn(b"/redraft/share-card.png?limit=50", preview.data)
         for limit in (20, 50, 100):
@@ -1195,6 +1213,20 @@ class TestInputHardening(unittest.TestCase):
         r = self.client.get("/")
         self.assertEqual(r.headers.get("X-Content-Type-Options"), "nosniff")
         self.assertEqual(r.headers.get("X-Frame-Options"), "DENY")
+        self.assertIn("default-src 'self'", r.headers.get("Content-Security-Policy", ""))
+
+    def test_html_is_gzipped_when_requested(self):
+        r = self.client.get("/", headers={"Accept-Encoding": "gzip"})
+        self.assertEqual(r.headers.get("Content-Encoding"), "gzip")
+        self.assertIn("Accept-Encoding", r.headers.get("Vary", ""))
+
+    def test_png_responses_are_publicly_cacheable(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        r = self.client.get("/prospects/share-card.png?limit=20")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.headers.get("Cache-Control"), "public, max-age=21600")
 
 
 def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():

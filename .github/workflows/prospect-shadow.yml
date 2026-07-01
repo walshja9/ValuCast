@@ -12,19 +12,24 @@ permissions:
   contents: write
 
 concurrency:
-  group: prospect-shadow-tracking
-  cancel-in-progress: true
+  group: daily-public-data-refresh
+  cancel-in-progress: false
 
 jobs:
   build-shadow-artifacts:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - name: Sync to latest origin/master
+        run: |
+          git fetch origin
+          git checkout -B master origin/master
+
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 

@@ -242,7 +242,12 @@ def _reason(terms: dict) -> str:
         key=lambda item: item[1],
         reverse=True,
     )
-    top = ordered[0][0] if ordered else "model_strength"
+    top = "model_strength"
+    for key, value in ordered:
+        if key == "momentum" and value <= 0.4:
+            continue
+        top = key
+        break
     return {
         "model_strength": "ValuCast model strength",
         "momentum": "ValuCast score momentum",

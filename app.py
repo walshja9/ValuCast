@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, OrderedDict
 import csv
+import gzip
 import io
 import json
 import math
@@ -72,6 +73,121 @@ AHEAD_OF_THE_CURVE_HOLD = False
 # (shadow -- grabbing more post-launch data); only the public page/nav/share-card are
 # held. Flip to False (and redeploy) once there's a real sample.
 RECEIPTS_HOLD = True
+_GZIP_MIN_BYTES = 1024
+_GZIP_MIMETYPES = {
+    "application/javascript",
+    "application/json",
+    "image/svg+xml",
+    "text/css",
+    "text/html",
+    "text/javascript",
+    "text/plain",
+    "text/xml",
+}
+_CSP_POLICY = (
+    "default-src 'self'; "
+    "base-uri 'self'; "
+    "object-src 'none'; "
+    "frame-ancestors 'none'; "
+    "img-src 'self' data: https:; "
+    "script-src 'self' 'unsafe-inline'; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "font-src 'self' https://fonts.gstatic.com data:; "
+    "connect-src 'self'; "
+    "form-action 'self'"
+)
+_PNG_CACHE_MAX = 200
+_PNG_CACHE: OrderedDict[tuple, tuple[bytes, dict[str, str]]] = OrderedDict()
+
+
+def _append_vary(response, value):
+    existing = response.headers.get("Vary")
+    if not existing:
+        response.headers["Vary"] = value
+        return
+    values = [part.strip() for part in existing.split(",")]
+    if value.lower() not in {part.lower() for part in values}:
+        response.headers["Vary"] = existing + ", " + value
+
+
+def _png_cache_generation():
+    parts = []
+    for name, attr in (
+        ("dd_store", "generated_at"),
+        ("store", "as_of"),
+        ("valucast_buy_store", "generated_at"),
+    ):
+        obj = globals().get(name)
+        parts.append(str(getattr(obj, attr, "") or ""))
+    return "|".join(parts)
+
+
+def _png_cache_key():
+    if request.method != "GET" or not request.path.endswith(".png"):
+        return None
+    return (
+        _png_cache_generation(),
+        request.path,
+        tuple(sorted(request.args.items(multi=True))),
+    )
+
+
+@app.before_request
+def _serve_cached_png():
+    if app.config.get("TESTING"):
+        return None
+    key = _png_cache_key()
+    if key is None or key not in _PNG_CACHE:
+        return None
+    body, headers = _PNG_CACHE.pop(key)
+    _PNG_CACHE[key] = (body, headers)
+    response = make_response(body)
+    for name, value in headers.items():
+        response.headers[name] = value
+    return response
+
+
+def _maybe_cache_png(response):
+    if response.status_code != 200 or response.mimetype != "image/png":
+        return response
+    response.headers.setdefault("Cache-Control", "public, max-age=21600")
+    if app.config.get("TESTING"):
+        return response
+    key = _png_cache_key()
+    if key is None or response.direct_passthrough:
+        return response
+    body = response.get_data()
+    headers = {
+        name: value
+        for name, value in response.headers.items()
+        if name in {"Content-Type", "Content-Disposition", "Cache-Control"}
+    }
+    _PNG_CACHE[key] = (body, headers)
+    _PNG_CACHE.move_to_end(key)
+    while len(_PNG_CACHE) > _PNG_CACHE_MAX:
+        _PNG_CACHE.popitem(last=False)
+    return response
+
+
+def _maybe_gzip(response):
+    if (
+        request.method == "HEAD"
+        or response.status_code < 200
+        or response.status_code >= 300
+        or response.direct_passthrough
+        or response.headers.get("Content-Encoding")
+        or "gzip" not in request.headers.get("Accept-Encoding", "").lower()
+        or response.mimetype not in _GZIP_MIMETYPES
+    ):
+        return response
+    body = response.get_data()
+    if len(body) < _GZIP_MIN_BYTES:
+        return response
+    response.set_data(gzip.compress(body))
+    response.headers["Content-Encoding"] = "gzip"
+    response.headers["Content-Length"] = str(len(response.get_data()))
+    _append_vary(response, "Accept-Encoding")
+    return response
 
 
 @app.after_request
@@ -79,7 +195,9 @@ def _security_headers(response):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    return response
+    response.headers.setdefault("Content-Security-Policy", _CSP_POLICY)
+    response = _maybe_cache_png(response)
+    return _maybe_gzip(response)
 
 
 @app.context_processor
@@ -96,6 +214,18 @@ def _public_url(path):
     if not path.startswith("/"):
         path = "/" + path
     return PUBLIC_BASE_URL + path
+
+
+def _browser_direct_partial_request() -> bool:
+    return (
+        request.headers.get("HX-Request") != "true"
+        and "text/html" in request.headers.get("Accept", "")
+    )
+
+
+def _redirect_home(args) -> object:
+    query = urlencode(args, doseq=True)
+    return redirect("/" + (f"?{query}" if query else ""))
 
 
 # Per-category projected-stat formatting for the rankings columns.
@@ -496,8 +626,8 @@ def _buy_spark_label(spark: dict | None) -> str:
     except (TypeError, ValueError):
         days = None
     if direction == "FLAT":
-        return f"FLAT {days}D" if days else "FLAT"
-    suffix = f" IN {days}D" if days else ""
+        return f"FLAT OVER {days}D" if days else "FLAT"
+    suffix = f" OVER {days}D" if days else ""
     return f"{direction} {delta:+.1f}{suffix}"
 
 
@@ -1903,6 +2033,7 @@ _GRAPHIC_BRAND_FONTS = {
 }
 
 
+@lru_cache(maxsize=128)
 def _graphic_font(size, *, bold=False, serif=False, mono=False):
     from PIL import ImageFont
 
@@ -3902,6 +4033,8 @@ def index():
 
 @app.route("/rankings")
 def rankings():
+    if _browser_direct_partial_request():
+        return _redirect_home(request.args.to_dict(flat=False))
     mode = request.args.get("mode", "categories")
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
@@ -3991,6 +4124,10 @@ def league_import():
     """Fill the dynasty setup knobs from a league URL. Self-contained seam —
     a future paid gate wraps exactly this route. Always returns the panel
     fragment (200): failures become an inline notice, knobs untouched."""
+    if _browser_direct_partial_request():
+        args = request.args.to_dict(flat=False)
+        args.setdefault("mode", ["dd_dynasty"])
+        return _redirect_home(args)
     current = parse_league_settings(request.args)
     cats, pcats, _ = _dynasty_category_state(request.args)
     setup_context = {
@@ -6979,7 +7116,7 @@ def player_detail(player_id):
     if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
         context = _build_dynasty_player_detail_context(player_id, request.args)
         if context is None:
-            return "<div class='error'>Player not found</div>", 404
+            abort(404)
         return render_template("partials/player_detail_dynasty.html", **context)
     # _build_context resolves + guards the source first (SourceError -> 400), then we
     # look the player up in the ACTIVE store so detail honors ?source=.
@@ -6987,7 +7124,7 @@ def player_detail(player_id):
     active = ctx["active_store"]
     player_proj = active.get_by_id(player_id)
     if not player_proj:
-        return "<div class='error'>Player not found</div>", 404
+        abort(404)
 
     config = ctx["config"]
     # Value the canonical universe (no on-demand force-keep) so the detail value matches
@@ -7481,15 +7618,20 @@ def dynasty_share_card():
     title = f"Top {limit} {scope + ' ' if scope else ''}Dynasty"
     if search:
         title = f"{title} | {search}"
+    preview_title = f"ValuCast Dynasty Top {limit}"
+    if scope:
+        preview_title = f"{preview_title} - {scope}"
+    if search:
+        preview_title = f"{preview_title} | {search}"
     html = build_share_preview_html(
-        title="Ahead of the Curve",
+        title=preview_title,
         subtitle=title,
         png_url=png_url,
         filename=f"valucast-dynasty-top-{limit}.png",
         public_png_url=_public_url(png_url),
         public_page_url=_public_url("/dynasty/share-card?" + urlencode(params)),
         description="ValuCast's current dynasty board, from the live Dynasty tab.",
-        image_alt=f"Ahead of the Curve - {title}",
+        image_alt=preview_title,
         back_url="/?mode=dd_dynasty",
         back_label="Back to dynasty",
     )
@@ -7613,15 +7755,16 @@ def redraft_share_card():
     params["limit"] = limit
     png_url = "/redraft/share-card.png?" + urlencode(params)
     title = f"Top {limit} Redraft - {mode} ({src})"
+    preview_title = f"ValuCast Redraft Top {limit}"
     html = build_share_preview_html(
-        title="Ahead of the Curve",
+        title=preview_title,
         subtitle=title,
         png_url=png_url,
         filename=f"valucast-redraft-top-{limit}.png",
         public_png_url=_public_url(png_url),
         public_page_url=_public_url("/redraft/share-card?" + urlencode(params)),
         description="ValuCast redraft values, from the live board.",
-        image_alt=f"Ahead of the Curve - {title}",
+        image_alt=preview_title,
         back_url="/",
         back_label="Back to redraft",
     )

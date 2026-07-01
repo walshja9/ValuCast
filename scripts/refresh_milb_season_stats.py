@@ -271,7 +271,35 @@ def _resolve_date_range(
     return start.isoformat(), end.isoformat()
 
 
+def _row_count(payload: dict) -> int:
+    return len(payload.get("hitters") or []) + len(payload.get("pitchers") or [])
+
+
+def _prior_row_count(path: Path) -> int:
+    if not path.exists():
+        return 0
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return 0
+    return _row_count(payload) if isinstance(payload, dict) else 0
+
+
+def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
+    prior = _prior_row_count(path)
+    if prior <= 0:
+        return
+    rows = _row_count(payload)
+    floor = max(500, int(prior * 0.5))
+    if rows < floor:
+        raise ValueError(
+            "refusing to write tiny MiLB stats refresh: "
+            f"rows={rows} prior_rows={prior} floor={floor}"
+        )
+
+
 def write_milb_season_stats(payload: dict, path: Path = OUTPUT_PATH) -> Path:
+    _assert_not_tiny_refresh(payload, path)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

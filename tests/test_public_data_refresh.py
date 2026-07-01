@@ -9,6 +9,17 @@ from scripts import run_daily_public_build
 from scripts import validate_public_data_freshness as freshness
 
 
+def test_prospect_shadow_workflow_serializes_with_daily_refresh_and_syncs_master():
+    workflow = Path(".github/workflows/prospect-shadow.yml").read_text(encoding="utf-8")
+
+    assert "group: daily-public-data-refresh" in workflow
+    assert "cancel-in-progress: false" in workflow
+    assert "actions/checkout@v5" in workflow
+    assert "actions/setup-python@v6" in workflow
+    assert "git fetch origin" in workflow
+    assert "git checkout -B master origin/master" in workflow
+
+
 def _valid_prospect_inputs(generated_at="2026-06-13T11:00:00-04:00"):
     return {
         "schema_version": "1.1",

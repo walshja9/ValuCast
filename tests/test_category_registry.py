@@ -27,6 +27,10 @@ class TestHittingCategories(unittest.TestCase):
         so = next(c for c in HITTING_CATEGORIES if c.id == "SO")
         self.assertEqual(so.direction, Direction.LOWER_IS_BETTER)
 
+    def test_hitter_strikeout_label_is_unambiguous(self):
+        so = next(c for c in HITTING_CATEGORIES if c.id == "SO")
+        self.assertEqual(so.label, "Strikeouts (batter)")
+
     def test_all_hitting_cats_are_hitter_pool(self):
         for cat in HITTING_CATEGORIES:
             self.assertEqual(cat.pool, PlayerPool.HITTER, f"{cat.id} has wrong pool")
@@ -47,6 +51,10 @@ class TestPitchingCategories(unittest.TestCase):
     def test_all_pitching_cats_are_pitcher_pool(self):
         for cat in PITCHING_CATEGORIES:
             self.assertEqual(cat.pool, PlayerPool.PITCHER, f"{cat.id} has wrong pool")
+
+    def test_pitcher_strikeout_label_is_unambiguous(self):
+        strikeouts = next(c for c in PITCHING_CATEGORIES if c.id == "K")
+        self.assertEqual(strikeouts.label, "Strikeouts (pitcher)")
 
 
 class TestPresets(unittest.TestCase):

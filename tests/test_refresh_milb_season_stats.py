@@ -1,3 +1,7 @@
+import json
+
+import pytest
+
 from scripts import refresh_milb_season_stats as refresh
 
 
@@ -100,3 +104,17 @@ def test_build_milb_season_stats_converts_official_rows(monkeypatch):
     assert pitcher["bb_per_9"] == 6.23
     assert pitcher["k_bb_pct"] == 18.1
     assert pitcher["is_starter"] is True
+
+
+def test_write_refuses_tiny_refresh_against_existing_file(tmp_path):
+    path = tmp_path / "milb_season_stats.json"
+    existing = {
+        "hitters": [{"mlbam_id": i} for i in range(800)],
+        "pitchers": [{"mlbam_id": 1000 + i} for i in range(800)],
+    }
+    path.write_text(json.dumps(existing), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="refusing to write tiny MiLB stats refresh"):
+        refresh.write_milb_season_stats({"hitters": [], "pitchers": []}, path)
+
+    assert json.loads(path.read_text(encoding="utf-8")) == existing

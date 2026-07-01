@@ -4133,3 +4133,18 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     color: transparent;
 }
 .site-logo { box-shadow: 0 0 0 1px rgba(120, 226, 210, .18), 0 0 22px rgba(52, 226, 196, .22), 0 8px 20px rgba(0, 0, 0, .30); }
+
+.htmx-error-notice {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 1200;
+    max-width: min(320px, calc(100vw - 36px));
+    padding: .72rem .9rem;
+    border: 1px solid rgba(239, 68, 68, .45);
+    border-radius: 8px;
+    background: rgba(24, 26, 34, .96);
+    color: #f4f5f8;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .42);
+    font-weight: 700;
+}

@@ -186,7 +186,7 @@ def test_dynasty_player_card_fields_include_value_momentum():
 
     fields = app_module._card_value_fields("dynasty", row, {"statcast_groups": []})
 
-    assert fields["momentum_label"] == "UP +3.2 IN 16D"
+    assert fields["momentum_label"] == "UP +3.2 OVER 16D"
 
 
 def test_dynasty_player_card_fields_skip_empty_value_momentum():
@@ -222,7 +222,7 @@ def test_redraft_player_card_fields_use_joined_dynasty_value_history():
 
     fields = app_module._card_value_fields("redraft", row, context)
 
-    assert fields["momentum_label"] == "UP +3.2 IN 16D"
+    assert fields["momentum_label"] == "UP +3.2 OVER 16D"
 
 
 def test_redraft_player_card_fields_skip_joined_dynasty_row_without_history():

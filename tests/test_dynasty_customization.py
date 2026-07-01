@@ -494,6 +494,14 @@ class TestLeagueImportRoute(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn(b"Unsupported URL", r.data)
 
+    def test_import_browser_visit_redirects_to_dynasty_board(self):
+        r = self.client.get(
+            "/league-import?teams=12",
+            headers={"Accept": "text/html"},
+        )
+        self.assertEqual(r.status_code, 302)
+        self.assertIn("/?teams=12&mode=dd_dynasty", r.headers["Location"])
+
     def test_imported_values_are_clamped(self):
         with patch("app.import_league", return_value=({"teams": 99, "roster": 200}, "Imported.")):
             r = self.client.get("/league-import?league_url=https://www.fantrax.com/fantasy/league/abc/home")

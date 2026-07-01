@@ -268,7 +268,7 @@ class TestBuysGraphicCopy(unittest.TestCase):
             "first_date": "2026-06-13",
             "last_date": "2026-06-16",
         }
-        self.assertEqual(app_module._buy_spark_label(spark), "UP +3.6 IN 3D")
+        self.assertEqual(app_module._buy_spark_label(spark), "UP +3.6 OVER 3D")
 
     def test_spark_label_handles_flat_and_missing(self):
         self.assertEqual(
@@ -277,7 +277,7 @@ class TestBuysGraphicCopy(unittest.TestCase):
                 "first_date": "2026-06-13",
                 "last_date": "2026-06-16",
             }),
-            "FLAT 3D",
+            "FLAT OVER 3D",
         )
         self.assertEqual(app_module._buy_spark_label(None), "")
 

@@ -29,7 +29,7 @@ HITTING_CATEGORIES: tuple[CategorySpec, ...] = (
     CategorySpec(id="H", label="Hits", pool=PlayerPool.HITTER, stat="H"),
     CategorySpec(id="BB", label="Walks", pool=PlayerPool.HITTER, stat="BB"),
     CategorySpec(
-        id="SO", label="Strikeouts", pool=PlayerPool.HITTER, stat="SO",
+        id="SO", label="Strikeouts (batter)", pool=PlayerPool.HITTER, stat="SO",
         direction=Direction.LOWER_IS_BETTER,
     ),
     CategorySpec(id="TB", label="Total Bases", pool=PlayerPool.HITTER, stat="TB"),
@@ -45,7 +45,7 @@ PITCHING_CATEGORIES: tuple[CategorySpec, ...] = (
         id="L", label="Losses", pool=PlayerPool.PITCHER, stat="L",
         direction=Direction.LOWER_IS_BETTER,
     ),
-    CategorySpec(id="K", label="Strikeouts", pool=PlayerPool.PITCHER, stat="K"),
+    CategorySpec(id="K", label="Strikeouts (pitcher)", pool=PlayerPool.PITCHER, stat="K"),
     CategorySpec(id="QS", label="Quality Starts", pool=PlayerPool.PITCHER, stat="QS"),
     CategorySpec(id="SV", label="Saves", pool=PlayerPool.PITCHER, stat="SV"),
     CategorySpec(id="HLD", label="Holds", pool=PlayerPool.PITCHER, stat="HLD"),

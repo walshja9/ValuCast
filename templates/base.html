@@ -46,5 +46,22 @@
             {% include "partials/_footer_provenance.html" %}
         </div>
     </footer>
+    <script>
+    document.body.addEventListener('htmx:responseError', function () {
+        let notice = document.getElementById('htmx-error-notice');
+        if (!notice) {
+            notice = document.createElement('div');
+            notice.id = 'htmx-error-notice';
+            notice.className = 'htmx-error-notice';
+            document.body.appendChild(notice);
+        }
+        notice.textContent = 'Something failed - try again.';
+        notice.hidden = false;
+        window.clearTimeout(notice.dataset.timerId);
+        notice.dataset.timerId = window.setTimeout(function () {
+            notice.hidden = true;
+        }, 5000);
+    });
+    </script>
 </body>
 </html>
