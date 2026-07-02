@@ -4194,7 +4194,15 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .graphic-menu-list a:hover { background: var(--surface-2); text-decoration: none; }
 
 /* Grouped share menu: view label + size links per row */
-.graphic-menu-grid { min-width: 230px; }
+.graphic-menu-grid {
+    min-width: 230px;
+    max-width: calc(100vw - 24px);
+    /* solid, not the glass token — without backdrop-filter the page bled through */
+    background: #101218;
+}
+/* The backfields share button sits at the hero's LEFT edge — a right-anchored
+   dropdown hangs half off-screen on mobile. Anchor left there instead. */
+.bf-share-actions .graphic-menu-list { left: 0; right: auto; }
 .graphic-menu-label {
     padding: .34rem .6rem .1rem;
     font-family: var(--font-mono);
