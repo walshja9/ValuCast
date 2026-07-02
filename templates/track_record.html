@@ -91,13 +91,23 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
         </div>
         <div class="ledger-row-detail">
             <span>since {{ c.ahead_since }} &middot; {{ c.days_tracked }}d</span>
+            {% if c.valucast_then is not none %}
+            <span class="ledger-row-move">us #{{ c.valucast_then }} &rarr; {% if c.valucast_now is not none %}#{{ c.valucast_now }}{% else %}&mdash;{% endif %}</span>
+            {% endif %}
             {% if c.consensus_now is not none %}
             <span class="ledger-row-move">field ~#{{ c.consensus_then }} &rarr; ~#{{ c.consensus_now }}</span>
             {% else %}
             <span class="ledger-row-move">field ~#{{ c.consensus_then }} &rarr; &mdash;</span>
             {% endif %}
-            {% if c.consensus_catch_up is not none %}
+            {# The highlighted delta tells THIS row's story: on a retreat the story is
+               OUR drop, not the field's drift — coloring the field's +move teal made
+               "we backed off" rows read like mislabeled wins (7/2). #}
+            {% if kind == 'retreat' and c.valucast_then is not none and c.valucast_now is not none %}
+            <span class="ledger-row-delta neg">us {{ '%+d' | format(c.valucast_then - c.valucast_now) }}</span>
+            {% elif kind in ('win', 'loss') and c.consensus_catch_up is not none %}
             <span class="ledger-row-delta {{ 'pos' if c.consensus_catch_up > 0 else ('neg' if c.consensus_catch_up < 0 else '') }}">{{ '%+d' | format(c.consensus_catch_up) }}</span>
+            {% elif c.consensus_catch_up is not none %}
+            <span class="ledger-row-delta">{{ '%+d' | format(c.consensus_catch_up) }}</span>
             {% endif %}
         </div>
     </article>
