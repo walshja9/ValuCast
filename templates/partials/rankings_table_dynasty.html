@@ -97,7 +97,9 @@
                 {% endif %}
                 {% set cu = call_up_by_id.get(row.id) if call_up_by_id else None %}
                 {% if cu %}
-                <span class="callup-chip" title="On a fresh MLB active roster ({{ cu.mlb_team or 'MLB' }}) -- the board graduates him next build">Called up{% if cu.mlb_team %} · {{ cu.mlb_team }}{% endif %}</span>
+                <span class="callup-chip" title="On an MLB active roster ({{ cu.mlb_team or 'MLB' }}) -- stays ranked until he crosses the rookie limits (130 AB / 50 IP), then graduates off the board">Called up{% if cu.mlb_team %} · {{ cu.mlb_team }}{% endif %}</span>
+                {% elif row.active_mlb_callup %}
+                <span class="callup-chip" title="On an MLB active roster but still rookie-eligible -- he stays ranked until he crosses the rookie limits (130 AB / 50 IP), then graduates off the board">In MLB · rookie-eligible</span>
                 {% elif mode == 'prospects' and mlb_debut_by_id and mlb_debut_by_id.get(row.id) %}
                 <span class="callup-chip" title="Already logged MLB time on a prior call-up, since optioned back down -- still rookie-eligible under MLB's service-time rule">MLB taste · {{ mlb_debut_by_id.get(row.id) }}</span>
                 {% endif %}

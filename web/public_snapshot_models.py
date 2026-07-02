@@ -624,6 +624,13 @@ class PublicSnapshotRow:
         return raw if isinstance(raw, dict) else {}
 
     @property
+    def active_mlb_callup(self) -> bool:
+        """Rookie-rule retention (7/2): on an active MLB roster but still rookie-
+        eligible, so he stays ranked — the board chip explains why he's here."""
+        raw = self.context.get("active_mlb_callup")
+        return isinstance(raw, dict) and raw.get("graduated") is False
+
+    @property
     def graduation_context_label(self) -> str | None:
         context = self.graduation_context
         if not context:
