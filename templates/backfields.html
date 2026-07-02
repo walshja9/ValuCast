@@ -92,10 +92,11 @@
             {% if sc and sc.ever_flagged %}
             <div class="bf-aotc-record" aria-label="Ahead of the Curve track record">
                 <span class="bf-aotc-record-stat"><strong>{{ sc.ever_flagged }}</strong> early calls tracked since {{ sc.first_call_date }}</span>
-                {% if sc_gate and sc_gate.publishable and sc.catch_up_hit_rate is not none %}
-                <span class="bf-aotc-record-stat">field has caught up on <strong>{{ (sc.catch_up_hit_rate * 100) | round | int }}%</strong>{% if sc.median_catch_up_spots %} &middot; median {{ sc.median_catch_up_spots }} spots{% endif %}</span>
+                {% if sc_gate and sc_gate.publishable and sc.decided_rate is not none %}
+                <span class="bf-aotc-record-stat"><strong>{{ sc.wins }}</strong> of <strong>{{ sc.decided_count }}</strong> decided calls ended with the field coming to us ({{ (sc.decided_rate * 100) | round | int }}%){% if sc.control_lift %} &middot; <strong>{{ sc.control_lift }}x</strong> the matched-control baseline{% endif %}</span>
+                <span class="bf-aotc-record-note">retired calls count against us &mdash; <a href="/aotc-scorecard.json">full ledger</a></span>
                 {% else %}
-                <span class="bf-aotc-record-note">Catch-up track record publishes once the field has had time to move &mdash; accruing daily.</span>
+                <span class="bf-aotc-record-note">Catch-up track record publishes once the field has had time to move &mdash; accruing daily &middot; <a href="/aotc-scorecard.json">full ledger</a></span>
                 {% endif %}
             </div>
             {% endif %}

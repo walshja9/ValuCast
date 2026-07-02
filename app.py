@@ -6519,6 +6519,20 @@ def _build_receipts_page_context():
     }
 
 
+@app.route("/aotc-scorecard.json")
+def aotc_scorecard_json():
+    """Public ledger: the raw Ahead-of-the-Curve scorecard artifact — definitions,
+    targets, funnel, and every call including the retreats. Third parties can
+    snapshot it themselves; that's the point."""
+    path = Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+    if not path.exists():
+        abort(404)
+    response = make_response(path.read_text(encoding="utf-8"))
+    response.headers["Content-Type"] = "application/json"
+    response.headers.setdefault("Cache-Control", "public, max-age=3600")
+    return response
+
+
 @app.route("/receipts")
 def receipts():
     context = _build_receipts_page_context()

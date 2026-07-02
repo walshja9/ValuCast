@@ -45,13 +45,37 @@ def validate_scorecard(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[st
     if not isinstance(gate.get("publishable"), bool):
         problems.append("gate.publishable must be boolean")
     summary = payload.get("summary") or {}
-    rate = summary.get("catch_up_hit_rate")
+    rate = summary.get("decided_rate")
     if rate is not None and not (0.0 <= rate <= 1.0):
-        problems.append("summary.catch_up_hit_rate must be in [0, 1] or null")
+        problems.append("summary.decided_rate must be in [0, 1] or null")
+    lift = summary.get("control_lift")
+    if lift is not None and lift < 0:
+        problems.append("summary.control_lift must be >= 0 or null")
+    funnel = payload.get("funnel") or {}
+    required_buckets = {
+        "open_toward", "open_away", "open_flat", "closed_caught_up",
+        "retired_we_backed_off", "resolved_called_up_or_graduated", "left_universe",
+    }
+    if set(funnel) != required_buckets:
+        problems.append("funnel must contain exactly the exit-accounting buckets")
+    elif sum(funnel.values()) != summary.get("ever_flagged"):
+        problems.append("funnel buckets must sum to ever_flagged (no silent exits)")
+    wins = summary.get("wins")
+    decided = summary.get("decided_count")
+    if isinstance(wins, int) and isinstance(decided, int):
+        expected_wins = funnel.get("open_toward", 0) + funnel.get("closed_caught_up", 0)
+        expected_decided = expected_wins + funnel.get("open_away", 0) + funnel.get("retired_we_backed_off", 0)
+        if wins != expected_wins or decided != expected_decided:
+            problems.append("wins/decided_count must match the funnel arithmetic")
+    targets = payload.get("targets") or {}
+    if not (isinstance(targets.get("decided_rate"), float) and isinstance(targets.get("control_lift"), (int, float))):
+        problems.append("targets must carry decided_rate and control_lift")
+    if not isinstance(payload.get("definitions"), dict):
+        problems.append("definitions block must be present (pre-registered methodology)")
     if not isinstance(payload.get("calls"), list):
         problems.append("calls must be a list")
-    # Catch-up arithmetic spot-check.
-    for c in (payload.get("calls") or [])[:50]:
+    # Catch-up arithmetic spot-check (exited calls carry None legitimately).
+    for c in (payload.get("calls") or [])[:80]:
         if not isinstance(c, dict):
             continue
         ct, cn, cu = c.get("consensus_then"), c.get("consensus_now"), c.get("consensus_catch_up")
@@ -75,7 +99,8 @@ def main() -> int:
     print(
         "ahead-of-consensus scorecard: "
         f"publishable={payload.get('gate', {}).get('publishable')} "
-        f"resolved={s.get('resolved_count')} hit_rate={s.get('catch_up_hit_rate')}"
+        f"decided={s.get('decided_count')} decided_rate={s.get('decided_rate')} "
+        f"lift={s.get('control_lift')}"
     )
     return 0
 
