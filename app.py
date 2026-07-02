@@ -7391,14 +7391,41 @@ def _prospect_share_limit(args):
     return limit if limit in {10, 20, 50, 100} else 10
 
 
+def _prospect_share_debut_view(args):
+    """(row_filter, view) for the debut filter on share surfaces — the same
+    semantics as the board filter, so a shared graphic matches the board the
+    sharer was looking at. view is None / "debuted" / "undebuted"."""
+    raw = args.get("callups") or ""
+    callups = {"milb": "undebuted"}.get(raw, raw)
+    if callups not in ("debuted", "undebuted"):
+        return None, None
+    debuted_ids = _debuted_prospect_ids()
+
+    def _has_debuted(row):
+        return (
+            getattr(row, "active_mlb_callup", False)
+            or str(getattr(row, "mlbam_id", "")) in debuted_ids
+        )
+
+    if callups == "debuted":
+        return _has_debuted, "debuted"
+    return (lambda row: not _has_debuted(row)), "undebuted"
+
+
+_DEBUT_VIEW_NOUN = {"debuted": "Debuted Prospects", "undebuted": "Not-Yet-Debuted Prospects"}
+
+
 def _prospect_graphic_payload():
     limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
-    rows = _prospect_rows(position=position, search=search)[:limit]
-    svg = _prospect_graphic_svg(rows, limit=limit, position=position, search=search)
+    row_filter, debut_view = _prospect_share_debut_view(request.args)
+    rows = _prospect_rows(position=position, search=search, row_filter=row_filter)[:limit]
+    noun = _DEBUT_VIEW_NOUN.get(debut_view, "Prospects")
+    svg = _prospect_graphic_svg(rows, limit=limit, position=position, search=search, noun=noun)
     scope = (position or "all").lower()
-    filename = f"valucast-top-{limit}-{scope}-prospects.svg"
+    view_slug = f"-{debut_view}" if debut_view else ""
+    filename = f"valucast-top-{limit}-{scope}{view_slug}-prospects.svg"
     return svg, filename, limit, position, search
 
 
@@ -7410,19 +7437,24 @@ def prospects_share_card():
     limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
+    _, debut_view = _prospect_share_debut_view(request.args)
     params = {"limit": limit}
     if position:
         params["position"] = position
     if search:
         params["search"] = search
+    if debut_view:
+        params["callups"] = debut_view
     png_url = "/prospects/share-card.png?" + urlencode(params)
     scope = (position or "all").lower()
-    filename = f"valucast-top-{limit}-{scope}-prospects.png"
-    title = f"Top {limit} {position + ' ' if position else ''}Prospects"
+    view_slug = f"-{debut_view}" if debut_view else ""
+    filename = f"valucast-top-{limit}-{scope}{view_slug}-prospects.png"
+    noun = _DEBUT_VIEW_NOUN.get(debut_view, "Prospects")
+    title = f"Top {limit} {position + ' ' if position else ''}{noun}"
     if search:
         title = f"{title} | {search}"
     html = build_share_preview_html(
-        title="Ahead of the Curve",
+        title=f"ValuCast Prospects Top {limit}",
         subtitle=title,
         png_url=png_url,
         filename=filename,
@@ -7446,13 +7478,16 @@ def prospects_share_card_png():
     limit = _prospect_share_limit(request.args)
     position = request.args.get("position") or None
     search = request.args.get("search") or None
-    rows = _prospect_rows(position=position, search=search)[:limit]
-    png = _prospect_graphic_png(rows, limit=limit, position=position, search=search)
+    row_filter, debut_view = _prospect_share_debut_view(request.args)
+    rows = _prospect_rows(position=position, search=search, row_filter=row_filter)[:limit]
+    noun = _DEBUT_VIEW_NOUN.get(debut_view, "Prospects")
+    png = _prospect_graphic_png(rows, limit=limit, position=position, search=search, noun=noun)
     scope = (position or "all").lower()
+    view_slug = f"-{debut_view}" if debut_view else ""
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
     response.headers["Content-Disposition"] = (
-        f'inline; filename="valucast-top-{limit}-{scope}-prospects.png"'
+        f'inline; filename="valucast-top-{limit}-{scope}{view_slug}-prospects.png"'
     )
     return response
 
