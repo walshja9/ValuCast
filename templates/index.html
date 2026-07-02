@@ -202,11 +202,16 @@
             </select>
             <details class="graphic-menu" aria-label="Prospect graphic actions">
                 <summary class="export-btn graphic-btn">Share graphic</summary>
-                <div class="graphic-menu-list">
-                    <a href="/prospects/share-card?limit=10" target="_blank" onclick="openProspectGraphic(event, 10); this.closest('details').removeAttribute('open')">Top 10</a>
-                    <a href="/prospects/share-card?limit=20" target="_blank" onclick="openProspectGraphic(event, 20); this.closest('details').removeAttribute('open')">Top 20</a>
-                    <a href="/prospects/share-card?limit=50" target="_blank" onclick="openProspectGraphic(event, 50); this.closest('details').removeAttribute('open')">Top 50</a>
-                    <a href="/prospects/share-card?limit=100" target="_blank" onclick="openProspectGraphic(event, 100); this.closest('details').removeAttribute('open')">Top 100</a>
+                <div class="graphic-menu-list graphic-menu-grid">
+                    {% for view, label in [('', 'Full board'), ('undebuted', 'Not debuted'), ('debuted', 'Debuted')] %}
+                    <span class="graphic-menu-label">{{ label }}</span>
+                    <span class="graphic-menu-sizes">
+                        {% for n in [20, 50, 100, 200] %}
+                        <a href="/prospects/share-card?limit={{ n }}{% if view %}&callups={{ view }}{% endif %}" target="_blank"
+                           onclick="openProspectGraphic(event, {{ n }}, '{{ view }}'); this.closest('details').removeAttribute('open')">{{ n }}</a>
+                        {% endfor %}
+                    </span>
+                    {% endfor %}
                 </div>
             </details>
             <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
@@ -411,11 +416,12 @@ function detailRequestParams() {
     return params;
 }
 
-function openProspectGraphic(e, limit) {
+function openProspectGraphic(e, limit, callups) {
     e.preventDefault();
     const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
     params.set('limit', String(limit));
     params.set('mode', 'prospects');
+    if (callups !== undefined) { if (callups) { params.set('callups', callups); } else { params.delete('callups'); } }
     window.open('/prospects/share-card?' + params.toString(), '_blank', 'noopener');
 }
 

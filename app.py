@@ -1576,7 +1576,8 @@ def _prospect_graphic_png(
             points.append((x + float(px), y + float(py)))
         return points, spark["direction"]
 
-    width, height = 1080, 1350
+    # 200-deep boards get a taller canvas: 5-col dense grid = 40 rows x 52px.
+    width, height = 1080, (2400 if limit >= 200 else 1350)
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -1807,7 +1808,7 @@ def _prospect_graphic_png(
             draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
     footer = footer_note or "ValuCast Prospect Rank - stats + age/level + investment + availability"
-    _graphic_footer(draw, right_note=footer)
+    _graphic_footer(draw, right_note=footer, card_height=height)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -6568,6 +6569,20 @@ def _build_receipts_page_context():
     }
 
 
+@app.route("/track-record")
+def track_record():
+    """Human-readable Ahead-of-the-Curve ledger — the JSON artifact rendered for
+    people (7/2: "no one could see the ledger hidden behind a json file"). The
+    aggregate headline still honors the 30-day publish gate; the full funnel and
+    per-call ledger are live immediately, misses included."""
+    path = Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+    try:
+        sc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        sc = None
+    return render_template("track_record.html", sc=sc)
+
+
 @app.route("/aotc-scorecard.json")
 def aotc_scorecard_json():
     """Public ledger: the raw Ahead-of-the-Curve scorecard artifact — definitions,
@@ -7388,7 +7403,7 @@ def _prospect_share_limit(args):
         limit = int(args.get("limit", 10))
     except (TypeError, ValueError):
         return 10
-    return limit if limit in {10, 20, 50, 100} else 10
+    return limit if limit in {10, 20, 50, 100, 200} else 10
 
 
 def _prospect_share_debut_view(args):

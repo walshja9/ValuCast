@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Ahead of the Curve — Track Record | ValuCast{% endblock %}
+
+{% block content %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(aria='Track record navigation') }}
+{% include "partials/_stale_notice.html" %}
+
+<article class="methodology-page glass">
+    <header>
+        <h2>Ahead of the Curve — Track Record</h2>
+        <p>Every prospect ValuCast flags as ranked meaningfully ahead of the public field,
+        tracked to one of exactly seven outcomes — including the calls <strong>we backed off
+        ourselves</strong>, which count against us. No call ever leaves this ledger silently.
+        Definitions were <a href="/methodology#aotc-rules">pre-registered {{ sc.definitions.frozen.split(',')[0] if sc.definitions else '2026-07-02' }}</a>
+        and the raw artifact is public at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>.</p>
+    </header>
+
+    {% if sc %}
+    <section>
+        {% if sc.gate.publishable %}
+        <h3>Headline</h3>
+        <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
+        decided calls ended with the field coming to us
+        ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
+        <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
+        Pre-registered targets: {{ (sc.targets.decided_rate * 100) | round | int }}% decided-rate,
+        {{ sc.targets.control_lift }}x lift.</p>
+        {% else %}
+        <div class="notice">The aggregate publishes as a headline metric once the
+        {{ sc.gate.min_publish_horizon_days }}-day horizon matures
+        (currently {{ sc.summary.horizon_days }} days in) — the full ledger below is live now,
+        misses included. Pre-registered targets on record:
+        {{ (sc.targets.decided_rate * 100) | round | int }}% decided-rate,
+        {{ sc.targets.control_lift }}x matched-control lift.</div>
+        {% endif %}
+    </section>
+
+    <section>
+        <h3>The funnel — every call accounted for</h3>
+        <table class="provenance-table ledger">
+            <tr><th>Outcome</th><th>Calls</th><th>Counts as</th></tr>
+            <tr><td>Field moved toward us (past the noise floor)</td><td><strong>{{ sc.funnel.open_toward }}</strong></td><td>win (open)</td></tr>
+            <tr><td>Field fully caught up — divergence closed</td><td><strong>{{ sc.funnel.closed_caught_up }}</strong></td><td>win (terminal)</td></tr>
+            <tr><td>Field moved further away</td><td><strong>{{ sc.funnel.open_away }}</strong></td><td>loss</td></tr>
+            <tr><td>We backed off our own call</td><td><strong>{{ sc.funnel.retired_we_backed_off }}</strong></td><td>loss — ours</td></tr>
+            <tr><td>Below the noise floor so far</td><td>{{ sc.funnel.open_flat }}</td><td>undecided</td></tr>
+            <tr><td>Called up / graduated before resolution</td><td>{{ sc.funnel.resolved_called_up_or_graduated }}</td><td>event-resolved</td></tr>
+            <tr><td>Left the tracked universe</td><td>{{ sc.funnel.left_universe }}</td><td>disclosed exit</td></tr>
+        </table>
+        <p class="profile-note">{{ sc.summary.ever_flagged }} calls ever flagged since
+        {{ sc.summary.first_call_date }} · matched-control comparison:
+        {% if sc.summary.control_rates %}never-flagged players at the same ranks moved toward us
+        {{ (sc.summary.control_rates.toward_rate * 100) | round | int }}% of the time vs
+        {{ (sc.summary.open_rates.toward_rate * 100) | round | int }}% for our calls{% else %}accruing{% endif %}.</p>
+    </section>
+
+    <section>
+        <h3>Every call</h3>
+        <table class="provenance-table ledger track-record-calls">
+            <tr><th>Player</th><th>Status</th><th>Since</th><th>Days</th><th>Field then → now</th><th>Catch-up</th></tr>
+            {% for c in sc.calls %}
+            <tr>
+                <td>{{ c.name }}</td>
+                <td>{{ {
+                    'open_toward': 'Field moving toward us',
+                    'open_away': 'Field moving away',
+                    'open_flat': 'No decisive move yet',
+                    'closed_caught_up': 'Caught up — win',
+                    'retired_we_backed_off': 'We backed off',
+                    'resolved_called_up_or_graduated': 'Called up / graduated',
+                    'left_universe': 'Left universe',
+                }.get(c.status, c.status) }}</td>
+                <td>{{ c.ahead_since }}</td>
+                <td>{{ c.days_tracked }}</td>
+                <td>{% if c.consensus_now is not none %}~#{{ c.consensus_then }} → ~#{{ c.consensus_now }}{% else %}~#{{ c.consensus_then }} → —{% endif %}</td>
+                <td>{% if c.consensus_catch_up is not none %}{{ '%+d' | format(c.consensus_catch_up) }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+    {% else %}
+    <section><p>The track-record artifact is not available right now — the raw ledger lives at
+    <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> when published.</p></section>
+    {% endif %}
+</article>
+{% endblock %}

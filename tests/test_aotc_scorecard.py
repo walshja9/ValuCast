@@ -131,3 +131,18 @@ def test_empty_archive_is_safe(tmp_path):
     assert payload["status"] == "blocked"
     assert payload["calls"] == []
     assert payload["gate"]["publishable"] is False
+
+
+def test_track_record_page_renders_full_ledger():
+    """/track-record is the human-readable ledger — funnel, every call, honest
+    statuses — while the aggregate headline still honors the publish gate."""
+    from app import app
+
+    app.config["TESTING"] = True
+    html = app.test_client().get("/track-record").data.decode("utf-8")
+
+    assert "Ahead of the Curve — Track Record" in html
+    assert "We backed off" in html                      # misses are on the page
+    assert "/aotc-scorecard.json" in html               # raw artifact still linked
+    assert "no call ever leaves this ledger silently" in html.lower()
+

@@ -4192,3 +4192,26 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     white-space: nowrap;
 }
 .graphic-menu-list a:hover { background: var(--surface-2); text-decoration: none; }
+
+/* Grouped share menu: view label + size links per row */
+.graphic-menu-grid { min-width: 230px; }
+.graphic-menu-label {
+    padding: .34rem .6rem .1rem;
+    font-family: var(--font-mono);
+    font-size: .62rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+}
+.graphic-menu-sizes { display: flex; gap: .25rem; padding: 0 .35rem .3rem; }
+.graphic-menu-sizes a {
+    flex: 1;
+    text-align: center;
+    padding: .3rem .35rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    color: var(--c-text);
+    font-size: .78rem;
+    font-weight: 600;
+}
+.graphic-menu-sizes a:hover { background: var(--surface-2); text-decoration: none; }

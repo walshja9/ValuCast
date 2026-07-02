@@ -21,10 +21,16 @@
             {% if as_of %}<span class="bf-freshness">Values updated {{ editorial_date(as_of) }}</span>{% endif %}
             <details class="graphic-menu bf-share-actions" aria-label="Share the prospect board">
                 <summary class="bf-share">Share graphic</summary>
-                <div class="graphic-menu-list">
-                    <a href="/prospects/share-card?limit=20" target="_blank" onclick="this.closest('details').removeAttribute('open')">Top 20</a>
-                    <a href="/prospects/share-card?limit=50" target="_blank" onclick="this.closest('details').removeAttribute('open')">Top 50</a>
-                    <a href="/prospects/share-card?limit=100" target="_blank" onclick="this.closest('details').removeAttribute('open')">Top 100</a>
+                <div class="graphic-menu-list graphic-menu-grid">
+                    {% for view, label in [('', 'Full board'), ('undebuted', 'Not debuted'), ('debuted', 'Debuted')] %}
+                    <span class="graphic-menu-label">{{ label }}</span>
+                    <span class="graphic-menu-sizes">
+                        {% for n in [20, 50, 100, 200] %}
+                        <a href="/prospects/share-card?limit={{ n }}{% if view %}&callups={{ view }}{% endif %}" target="_blank"
+                           onclick="this.closest('details').removeAttribute('open')">{{ n }}</a>
+                        {% endfor %}
+                    </span>
+                    {% endfor %}
                 </div>
             </details>
         </div>
@@ -95,9 +101,9 @@
                 <span class="bf-aotc-record-stat"><strong>{{ sc.ever_flagged }}</strong> early calls tracked since {{ sc.first_call_date }}</span>
                 {% if sc_gate and sc_gate.publishable and sc.decided_rate is not none %}
                 <span class="bf-aotc-record-stat"><strong>{{ sc.wins }}</strong> of <strong>{{ sc.decided_count }}</strong> decided calls ended with the field coming to us ({{ (sc.decided_rate * 100) | round | int }}%){% if sc.control_lift %} &middot; <strong>{{ sc.control_lift }}x</strong> the matched-control baseline{% endif %}</span>
-                <span class="bf-aotc-record-note">retired calls count against us &mdash; <a href="/aotc-scorecard.json">full ledger</a></span>
+                <span class="bf-aotc-record-note">retired calls count against us &mdash; <a href="/track-record">full ledger</a></span>
                 {% else %}
-                <span class="bf-aotc-record-note">Catch-up track record publishes once the field has had time to move &mdash; accruing daily &middot; <a href="/aotc-scorecard.json">full ledger</a></span>
+                <span class="bf-aotc-record-note">Catch-up track record publishes once the field has had time to move &mdash; accruing daily &middot; <a href="/track-record">full ledger</a></span>
                 {% endif %}
             </div>
             {% endif %}
