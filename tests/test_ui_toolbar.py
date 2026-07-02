@@ -37,6 +37,7 @@ class TestToolbar(unittest.TestCase):
         html = self.client.get("/?mode=prospects").data.decode("utf-8")
         self.assertNotIn('name="pool"', html)
         self.assertNotIn('name="source"', html)
+        self.assertIn('name="callups"', html)          # MiLB-only view filter
         self.assertIn("Share graphic", html)
         self.assertIn('class="graphic-menu"', html)
         self.assertIn("/prospects/share-card?limit=20", html)
@@ -44,6 +45,14 @@ class TestToolbar(unittest.TestCase):
         self.assertIn("/prospects/share-card?limit=50", html)
         self.assertIn("/prospects/share-card?limit=100", html)
         self.assertIn("openProspectGraphic", html)
+
+    def test_prospects_callups_filter_hides_retained_active_roster_players(self):
+        default = self.client.get("/?mode=prospects").data.decode("utf-8")
+        milb = self.client.get("/?mode=prospects&callups=milb").data.decode("utf-8")
+        # Retained call-ups carry the explaining chip; the MiLB-only view hides them.
+        if "In MLB · rookie-eligible" not in default:
+            self.skipTest("no retained call-ups in current data")
+        self.assertNotIn("In MLB · rookie-eligible", milb)
 
     def test_scoring_switch_updates_display_slot_oob(self):
         # P1 fix: switching Categories<->Points must restructure the toolbar (the

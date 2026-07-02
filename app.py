@@ -1175,6 +1175,13 @@ def _apply_prospect_board_context(ctx, args):
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
     )
+    # View filter for continuity with pre-retention boards: "MiLB only" hides the
+    # rookie-eligible active-roster call-ups the 7/2 rookie-rule retention keeps
+    # ranked. P# gaps are honest — same behavior as the position filter.
+    callups = args.get("callups") if args.get("callups") == "milb" else ""
+    if callups:
+        rows = [row for row in rows if not getattr(row, "active_mlb_callup", False)]
+    ctx["callups"] = callups
     settings = parse_league_settings(args)
     ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
     ctx["tiers"] = _prospect_tiers()
@@ -4064,6 +4071,8 @@ def rankings():
             params["position"] = ctx["position"]
         if ctx.get("search"):
             params["search"] = ctx["search"]
+        if ctx.get("callups"):
+            params["callups"] = ctx["callups"]
         from web.league_settings import _BOUNDS
         for name in _BOUNDS:
             value = request.args.get(name)
