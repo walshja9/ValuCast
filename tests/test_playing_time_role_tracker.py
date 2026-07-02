@@ -168,3 +168,30 @@ def test_run_and_validate_role_tracker(tmp_path):
     assert result["ready_for_role_context"] is True
     assert result["archive_changed"] is True
     assert problems == []
+
+
+def test_midseason_ros_volume_is_annualized_before_role_thresholds():
+    """7/2 regression (the Bobby Witt Jr. case): thresholds are full-season volumes
+    but the projection source is rest-of-season — mid-season, a franchise player at
+    ~280 ROS PA must NOT decay to bench_or_depth."""
+    from mlb.playing_time_role import build_playing_time_role_tracker
+
+    star = {
+        "mlbam_id": 1, "name": "Franchise Star", "pool": "hitter",
+        "positions": ["SS"], "stats": {"PA": 280.0},
+    }
+    payload = build_playing_time_role_tracker(
+        projections=[star], generated_at="2026-07-02T12:00:00+00:00",
+    )
+    profile = payload["profiles"][0]
+    assert profile["projected_role"] in ("everyday_regular", "regular")
+    assert profile["projected_volume"] == 280.0        # display stays honest ROS
+    assert profile["season_pace_factor"] > 1.5
+
+    # Pre-season the same PA line is genuinely part-time — no annualization.
+    payload_pre = build_playing_time_role_tracker(
+        projections=[star], generated_at="2026-03-01T12:00:00+00:00",
+    )
+    assert payload_pre["profiles"][0]["projected_role"] == "part_time_or_strong_side"
+    assert payload_pre["profiles"][0]["season_pace_factor"] == 1.0
+

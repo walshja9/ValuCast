@@ -90,51 +90,84 @@ def _availability_lookup(availability: dict | None) -> dict[str, dict]:
     return lookup
 
 
-def _hitter_role(stats: dict) -> tuple[str, float, str]:
+# Role thresholds are FULL-SEASON volumes, but the projection source is
+# REST-OF-SEASON — without annualization every player in the league decays
+# toward bench_or_depth as the calendar advances (found 7/2: Bobby Witt Jr.
+# at 257 ROS PA labeled "bench_or_depth"). Thresholds are applied to
+# season-pace volume; displayed volumes stay honest ROS numbers.
+MLB_2026_REGULAR_SEASON_START = "2026-03-26"
+MLB_2026_REGULAR_SEASON_END = "2026-09-27"
+MAX_PACE_FACTOR = 4.0  # late-season ROS volumes are tiny + noisy; cap the blowup
+
+
+def _season_pace_factor(as_of: str | None) -> float:
+    from datetime import date as _date
+
+    try:
+        current = _date.fromisoformat(str(as_of)[:10])
+    except (TypeError, ValueError):
+        return 1.0
+    start = _date.fromisoformat(MLB_2026_REGULAR_SEASON_START)
+    end = _date.fromisoformat(MLB_2026_REGULAR_SEASON_END)
+    total = (end - start).days
+    if current <= start or total <= 0:
+        return 1.0
+    remaining = max((end - current).days, 1)
+    return _clamp(total / remaining, 1.0, MAX_PACE_FACTOR)
+
+
+def _hitter_role(stats: dict, pace: float = 1.0) -> tuple[str, float, str]:
     pa = _clean_float(stats.get("PA"))
-    if pa >= 560:
+    season_pa = pa * pace
+    if season_pa >= 560:
         return "everyday_regular", pa, "600 PA pace"
-    if pa >= 430:
+    if season_pa >= 430:
         return "regular", pa, "regular-volume plate appearances"
-    if pa >= 260:
+    if season_pa >= 260:
         return "part_time_or_strong_side", pa, "part-time plate appearances"
     return "bench_or_depth", pa, "thin projected plate appearances"
 
 
-def _pitcher_role(pool: str, stats: dict) -> tuple[str, float, str]:
+def _pitcher_role(pool: str, stats: dict, pace: float = 1.0) -> tuple[str, float, str]:
     ip = _clean_float(stats.get("IP"))
-    starts = _clean_float(stats.get("GS"))
-    sv_hld = _clean_float(stats.get("SV_HLD")) or (
+    starts = _clean_float(stats.get("GS")) * pace
+    sv_hld = (_clean_float(stats.get("SV_HLD")) or (
         _clean_float(stats.get("SV")) + _clean_float(stats.get("HLD"))
-    )
-    if pool == "starter" or starts >= 18 or ip >= 125:
-        if ip >= 150 or starts >= 24:
+    )) * pace
+    season_ip = ip * pace
+    if pool == "starter" or starts >= 18 or season_ip >= 125:
+        if season_ip >= 150 or starts >= 24:
             return "rotation_workhorse", ip, "starter volume"
         return "rotation_starter", ip, "starter-leaning volume"
     if pool == "reliever" or sv_hld >= 12:
         if sv_hld >= 22:
             return "leverage_reliever", ip, "save/hold leverage"
         return "middle_relief", ip, "relief volume"
-    if ip >= 75:
+    if season_ip >= 75:
         return "swingman_or_bulk", ip, "bulk innings"
     return "depth_arm", ip, "thin projected innings"
 
 
-def _role_profile(row: dict) -> tuple[str, float, str, str]:
+def _role_profile(row: dict, pace: float = 1.0) -> tuple[str, float, str, str]:
     pool = str(row.get("pool") or "").lower()
     stats = row.get("stats") or {}
     if pool == "hitter":
-        role, volume, basis = _hitter_role(stats)
+        role, volume, basis = _hitter_role(stats, pace)
         return role, round(volume, 1), "PA", basis
-    role, volume, basis = _pitcher_role(pool, stats)
+    role, volume, basis = _pitcher_role(pool, stats, pace)
     return role, round(volume, 1), "IP", basis
 
 
-def _row_profile(row: dict, roster_lookup: dict[str, dict], availability_lookup: dict[str, dict]) -> dict | None:
+def _row_profile(
+    row: dict,
+    roster_lookup: dict[str, dict],
+    availability_lookup: dict[str, dict],
+    pace: float = 1.0,
+) -> dict | None:
     mlbam_id = _mlbam_id(row)
     if not mlbam_id:
         return None
-    role_label, volume, unit, basis = _role_profile(row)
+    role_label, volume, unit, basis = _role_profile(row, pace)
     roster = roster_lookup.get(mlbam_id) or {}
     availability = availability_lookup.get(mlbam_id) or {}
     active = roster.get("active_mlb_roster")
@@ -226,7 +259,7 @@ def _starter_bucket(ip: float) -> str:
 _FAN = ((-1.0, 0.1), (-0.5, 0.2), (0.0, 0.4), (0.5, 0.2), (1.0, 0.1))
 
 
-def _role_distribution(pool: str, vf: dict, v1_role: str) -> tuple[dict, str]:
+def _role_distribution(pool: str, vf: dict, v1_role: str, pace: float = 1.0) -> tuple[dict, str]:
     if pool == "reliever":
         # Reliever role (leverage vs middle) is SV/HLD-driven, not forecastable from
         # an innings range, so keep the v1 label. ponytail: soft only where volume rules.
@@ -238,7 +271,7 @@ def _role_distribution(pool: str, vf: dict, v1_role: str) -> tuple[dict, str]:
     dist: dict[str, float] = {}
     for offset, weight in _FAN:
         vol = point + (offset * down if offset < 0 else offset * up)
-        bucket = bucket_fn(vol)
+        bucket = bucket_fn(vol * pace)
         dist[bucket] = dist.get(bucket, 0.0) + weight
     total = sum(dist.values()) or 1.0
     return {k: round(v / total, 3) for k, v in dist.items()}, "volume_fan"
@@ -257,7 +290,7 @@ def _role_confidence(signals: dict, injury: bool) -> tuple[str, float]:
     return band, round(score, 1)
 
 
-def _role_v2(profile: dict, dynasty_lookup: dict[str, dict]) -> dict:
+def _role_v2(profile: dict, dynasty_lookup: dict[str, dict], pace: float = 1.0) -> dict:
     pool = str(profile.get("pool") or "").lower()
     base = _clean_float(profile.get("projected_volume"))
     unit = profile.get("projected_volume_unit") or ("PA" if pool == "hitter" else "IP")
@@ -266,7 +299,7 @@ def _role_v2(profile: dict, dynasty_lookup: dict[str, dict]) -> dict:
     matched = dynasty_lookup.get(str(profile.get("mlbam_id")))
     signals = matched or {}
     vf = _volume_forecast(base, unit, signals, injury)
-    dist, source = _role_distribution(pool, vf, v1_role)
+    dist, source = _role_distribution(pool, vf, v1_role, pace)
     most_likely = max(dist, key=dist.get) if dist else v1_role
     band, score = _role_confidence(signals, injury)
     delta = "match" if most_likely == v1_role else f"shift:{v1_role}->{most_likely}"
@@ -335,16 +368,18 @@ def build_playing_time_role_tracker(
     generated_at: str | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
+    pace = _season_pace_factor(generated_at)
     roster_by_id = _roster_lookup(roster_status)
     availability_by_id = _availability_lookup(availability)
     dynasty_by_id = _dynasty_lookup(dynasty_layer)
     profiles = [
         profile
         for row in projections
-        if (profile := _row_profile(row, roster_by_id, availability_by_id))
+        if (profile := _row_profile(row, roster_by_id, availability_by_id, pace))
     ]
     for profile in profiles:
-        profile["role_v2"] = _role_v2(profile, dynasty_by_id)
+        profile["season_pace_factor"] = round(pace, 2)
+        profile["role_v2"] = _role_v2(profile, dynasty_by_id, pace)
     identity_keys = [row["identity_key"] for row in profiles]
     duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
     active_count = sum(1 for row in profiles if row["active_mlb_roster"])
