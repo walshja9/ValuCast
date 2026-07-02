@@ -46,13 +46,19 @@ class TestToolbar(unittest.TestCase):
         self.assertIn("/prospects/share-card?limit=100", html)
         self.assertIn("openProspectGraphic", html)
 
-    def test_prospects_callups_filter_hides_retained_active_roster_players(self):
+    def test_prospects_debut_filter_hides_and_isolates_debuted_players(self):
         default = self.client.get("/?mode=prospects").data.decode("utf-8")
-        milb = self.client.get("/?mode=prospects&callups=milb").data.decode("utf-8")
-        # Retained call-ups carry the explaining chip; the MiLB-only view hides them.
+        undebuted = self.client.get("/?mode=prospects&callups=undebuted").data.decode("utf-8")
+        # Retained call-ups carry the explaining chip; the not-debuted view hides them.
         if "In MLB · rookie-eligible" not in default:
             self.skipTest("no retained call-ups in current data")
-        self.assertNotIn("In MLB · rookie-eligible", milb)
+        self.assertNotIn("In MLB · rookie-eligible", undebuted)
+        # Legacy param value keeps working for any shared URLs.
+        legacy = self.client.get("/?mode=prospects&callups=milb").data.decode("utf-8")
+        self.assertNotIn("In MLB · rookie-eligible", legacy)
+        # The debuted-only view keeps at least one retained call-up visible.
+        debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
+        self.assertIn("In MLB · rookie-eligible", debuted)
 
     def test_scoring_switch_updates_display_slot_oob(self):
         # P1 fix: switching Categories<->Points must restructure the toolbar (the

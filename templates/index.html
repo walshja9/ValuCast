@@ -189,9 +189,10 @@
         </select>
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
         <div id="toolbar-secondary" class="toolbar-secondary">
-            <fieldset class="pool-toggle" aria-label="Called-up filter">
+            <fieldset class="pool-toggle" aria-label="Debut filter">
                 <label class="pool-btn"><input type="radio" name="callups" value="" {{ 'checked' if not callups else '' }}><span>All</span></label>
-                <label class="pool-btn" title="Hide rookie-eligible players currently on an MLB active roster"><input type="radio" name="callups" value="milb" {{ 'checked' if callups == 'milb' else '' }}><span>MiLB only</span></label>
+                <label class="pool-btn" title="Rookie-eligible prospects who have reached the majors — on an active roster now or via a prior call-up"><input type="radio" name="callups" value="debuted" {{ 'checked' if callups == 'debuted' else '' }}><span>Debuted</span></label>
+                <label class="pool-btn" title="Prospects who have not yet reached the majors"><input type="radio" name="callups" value="undebuted" {{ 'checked' if callups == 'undebuted' else '' }}><span>Not debuted</span></label>
             </fieldset>
             <select name="position" class="position-select">
                 <option value="">All Positions</option>

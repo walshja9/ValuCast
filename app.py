@@ -1175,12 +1175,26 @@ def _apply_prospect_board_context(ctx, args):
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
     )
-    # View filter for continuity with pre-retention boards: "MiLB only" hides the
-    # rookie-eligible active-roster call-ups the 7/2 rookie-rule retention keeps
-    # ranked. P# gaps are honest — same behavior as the position filter.
-    callups = args.get("callups") if args.get("callups") == "milb" else ""
-    if callups:
-        rows = [row for row in rows if not getattr(row, "active_mlb_callup", False)]
+    # Debut-status view filter (renamed from "MiLB only" 7/2 — debut is the concept
+    # users actually reason about). "Debuted" = has reached the majors: on an active
+    # roster now (rookie-rule retention) OR a prior call-up since optioned back down
+    # (the MLB-taste guys). P# gaps are honest — same behavior as the position filter.
+    raw_callups = args.get("callups") or ""
+    callups = {"milb": "undebuted"}.get(raw_callups, raw_callups)
+    if callups not in ("debuted", "undebuted"):
+        callups = ""
+    debuted_ids = _debuted_prospect_ids()
+
+    def _has_debuted(row) -> bool:
+        return (
+            getattr(row, "active_mlb_callup", False)
+            or str(getattr(row, "mlbam_id", "")) in debuted_ids
+        )
+
+    if callups == "undebuted":
+        rows = [row for row in rows if not _has_debuted(row)]
+    elif callups == "debuted":
+        rows = [row for row in rows if _has_debuted(row)]
     ctx["callups"] = callups
     settings = parse_league_settings(args)
     ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
@@ -1224,11 +1238,10 @@ def _apply_prospect_board_context(ctx, args):
     # cup-of-coffee call-up since optioned back down) -- so the board doesn't look
     # naive to anyone who already knows the player debuted. Same source as the
     # backfields "Got the Call" MLB-taste badge; display-only, doesn't affect rank.
-    debuted = _debuted_prospect_ids()
     ctx["mlb_debut_by_id"] = {
-        row.id: debuted[str(row.mlbam_id)]
+        row.id: debuted_ids[str(row.mlbam_id)]
         for row in rows
-        if str(getattr(row, "mlbam_id", "")) in debuted
+        if str(getattr(row, "mlbam_id", "")) in debuted_ids
     }
 
     # Live settings-aware re-ranking (presets OR arbitrary custom cats). Re-ranking
