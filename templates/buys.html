@@ -37,6 +37,7 @@
         <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint"><strong>Source:</strong> {{ buy_source_label }}. {{ buy_source_note }}</p>
         <p class="buys-fineprint">{{ buy_formula_note }}. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
+        <p class="buys-fineprint">Form curves span the tracked value history — up to 30 days (tracking began June 13). The <a href="/movers">Movers board</a> measures 10-day change; different window, different question.</p>
         {% endif %}
     </div>
     {% if dd_available %}
