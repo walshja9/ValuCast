@@ -4,17 +4,15 @@ on:
   schedule:
     # GitHub scheduled workflows are best-effort: runs are routinely delayed
     # 30-60+ min or dropped entirely during congestion (the 10:45 UTC primary
-    # was silently skipped on 2026-06-21). Stack several morning attempts with
-    # off-the-half-hour minutes so at least one lands fresh public data before
-    # the 8:00 AM ET (12:00 UTC) share window even when the earlier ones miss.
+    # was silently skipped on 2026-06-21), so the primary gets two fallbacks.
     #
-    # Primary refresh: 5:50 AM ET during daylight time. The early start absorbs
-    # a delayed run plus the ~25-30 min build and still finishes before 8 AM ET.
-    - cron: "50 9 * * *"
-    # Same-morning fallbacks before 8:00 AM ET if an earlier run is skipped.
-    - cron: "40 10 * * *"
-    - cron: "20 11 * * *"
-    # Late safety fallback to recover if every pre-8 refresh misses.
+    # Primary refresh: 7:30 AM ET during daylight time (7/2 request — the old
+    # pre-8-AM-share-window constraint retired with the 8 AM briefing). Data
+    # lands ~8:15-8:30 AM ET after the ~55 min build. EST note: these UTC crons
+    # drift an hour earlier in ET when daylight time ends.
+    - cron: "30 11 * * *"
+    # Same-morning fallbacks if the primary is skipped.
+    - cron: "20 12 * * *"
     - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
