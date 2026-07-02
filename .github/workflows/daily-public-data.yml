@@ -30,7 +30,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Fallback crons fire even when the primary already published (that's their
+  # job), but re-running the full ~55-min pipeline for an already-fresh day is
+  # pure noise — it queues behind the concurrency group, reads as "two
+  # refreshes going", and stretches the daily push-freeze window. Scheduled
+  # runs skip in seconds when today's data commit already exists; manual
+  # dispatches always proceed.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          proceed=true
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            latest=$(gh api "repos/${{ github.repository }}/commits/master" --jq '.commit.message' | head -n 1)
+            today=$(date -u +%F)
+            if [ "$latest" = "data: daily public refresh $today" ]; then
+              proceed=false
+              echo "Today's refresh already published ($latest) — fallback skipping."
+            fi
+          fi
+          echo "proceed=$proceed" >> "$GITHUB_OUTPUT"
+
   refresh:
+    needs: preflight
+    if: needs.preflight.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     # The LLM scouting build alone can run ~25-30 min on a cold cache. A 30-min
     # job cap let it get cancelled mid-build (no commit, app stuck a day behind),

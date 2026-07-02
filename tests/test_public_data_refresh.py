@@ -351,6 +351,10 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     # June manual build) — step ordered after the shadow pipeline, artifact committed.
     assert "scripts/build_prospect_league_adapters.py" in build_commands
     assert "data/models/valucast_prospect_league_adapters.json" in workflow
+    # 7/2: scheduled fallbacks skip when today's refresh already published.
+    assert "needs: preflight" in workflow
+    assert "needs.preflight.outputs.proceed == 'true'" in workflow
+    assert "data: daily public refresh $today" in workflow
     assert (
         "scripts/backfill_projection_identities.py "
         "--projection-path projections/runs/valucast_hp_2026_v2/projections.json"
