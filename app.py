@@ -881,9 +881,8 @@ DYNASTY_CATEGORY_PRESETS = {
     **CATEGORY_PRESETS,
 }
 _FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L", "BB_9"})
-# Projected stat columns on the Dynasty board — the classic 10 the Redraft
-# board defaults to, NOT the full FIT union (that's a fit-panel vocabulary).
-DYN_BOARD_CATS = ("R", "HR", "RBI", "SB", "AVG", "W", "SV", "K", "ERA", "WHIP")
+# Canonical id -> display label for board column headers (SV_HLD -> SV+HLD).
+_CAT_DISPLAY_LABELS = {v: k for k, v in FIT_QUERY_ALIASES.items()}
 _DYN_Z_CACHE = {"key": None, "map": {}, "stats": {}}
 
 
@@ -935,9 +934,11 @@ def _dynasty_match_maps():
                  if (m.metadata.get("base_id") or m.id) in by_id), None)
         if res is None:
             continue
+        # Full FIT-union stats — the board shows whichever slice the active
+        # category selection asks for, so cache everything once.
         stats = {
-            cat: raw for cat in DYN_BOARD_CATS
-            if (raw := res.raw_values.get(cat)) is not None
+            cat: raw for cat, raw in res.raw_values.items()
+            if isinstance(raw, (int, float))
         }
         if stats:
             stats_map[row.id] = stats
@@ -3723,7 +3724,10 @@ def _build_dynasty_context(args):
         "dd_rows": rows,
         "dyn_z_map": _dynasty_z_map(),
         "dyn_stats_map": _dynasty_stats_map(),
-        "dyn_stat_cats": DYN_BOARD_CATS,
+        # Stat columns follow the active category selection (7/2: they were
+        # pinned to the classic 10, so preset swaps never changed the board).
+        "dyn_stat_cats": tuple(cats) + tuple(pcats),
+        "dyn_stat_labels": _CAT_DISPLAY_LABELS,
         "dynasty_dollars": dynasty_dollars,
         "now_dollars": now_dollars,
         "custom_cats_active": custom_cats_active,

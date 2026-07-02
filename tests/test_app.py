@@ -288,17 +288,32 @@ class TestDynastyMode(unittest.TestCase):
 
     def test_dynasty_shows_projected_stat_columns(self):
         # 7/2: the Redraft stat columns were "completely missing in the dynasty
-        # section" -- the board now carries the same classic 10, populated from
-        # the matched projections the Category Fit panel already uses.
-        from app import DYN_BOARD_CATS, dd_store
+        # section" -- the board carries them now, populated from the matched
+        # projections the Category Fit panel already uses. Columns follow the
+        # active category selection (default 7x7 here).
+        from app import DYNASTY_DEFAULT_CATS, DYNASTY_DEFAULT_PCATS, _CAT_DISPLAY_LABELS, dd_store
         if not dd_store.is_available:
             self.skipTest("DD feed not available")
         response = self.client.get("/?mode=dd_dynasty")
         html = response.data.decode("utf-8")
-        for cat in DYN_BOARD_CATS:
-            self.assertIn(f'full-season line">{cat}</th>', html)
+        for cat in DYNASTY_DEFAULT_CATS + DYNASTY_DEFAULT_PCATS:
+            label = _CAT_DISPLAY_LABELS.get(cat, cat)
+            self.assertIn(f'full-season line">{label}</th>', html)
         # At least one row renders real numbers, not just em-dash placeholders.
         self.assertIn('<td class="col-cat">', html)
+
+    def test_dynasty_stat_columns_follow_category_selection(self):
+        # 7/2: swapping presets left the stat columns frozen -- they were pinned
+        # to a hardcoded tuple instead of the selected cats/pcats.
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        response = self.client.get(
+            "/?mode=dd_dynasty&cats=R,HR,RBI,SB,AVG&pcats=W,SV,K,ERA,WHIP")
+        html = response.data.decode("utf-8")
+        self.assertIn('full-season line">W</th>', html)
+        self.assertNotIn('full-season line">OPS</th>', html)
+        self.assertNotIn('full-season line">K/BB</th>', html)
 
     def test_dynasty_rankings_returns_200(self):
         response = self.client.get("/rankings?mode=dd_dynasty")
