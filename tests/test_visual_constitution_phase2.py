@@ -248,3 +248,14 @@ def test_scouting_meta_is_single_muted_mono_line_not_chip_stack():
     link_css = _last_block(".scouting-meta a")
     assert "var(--c-blue)" in link_css
     assert "text-decoration" in link_css
+
+def test_numeric_header_labels_right_align_over_their_values():
+    # Redraft/Dynasty boards: every numeric td right-aligns, so their th must
+    # too -- .rankings-table th (0,1,1) beats bare .col-* (0,1,0), which left
+    # every numeric label flush-left over flush-right values. The residual
+    # "columns still aren't lined up" after the c581f37 phantom-column fix.
+    match = re.search(r"\.rankings-table th\.col-cat[^{]*\{([^}]+)\}", CSS)
+    assert match, "numeric-header alignment rule missing"
+    assert "text-align: right" in match.group(1)
+    for col in ("col-dollars", "col-dollar", "col-now-dollar", "col-value"):
+        assert f".rankings-table th.{col}" in match.group(0), col

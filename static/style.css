@@ -860,6 +860,13 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .col-dollars { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 40px; }
 .col-value { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
 .col-cat { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.col-dollar, .col-now-dollar { text-align: right; font-variant-numeric: tabular-nums; }
+/* Header labels sit over their numbers. `.rankings-table th` (0,1,1) beats the
+   bare `.col-*` right-align (0,1,0), so without these th-qualified rules every
+   numeric label rendered flush-left while its values rendered flush-right —
+   the residual "columns still aren't lined up" after the c581f37 box fix. */
+.rankings-table th.col-cat, .rankings-table th.col-dollars, .rankings-table th.col-dollar,
+.rankings-table th.col-now-dollar, .rankings-table th.col-value { text-align: right; }
 .rankings-table td.col-cat.na { opacity: .35; }
 .mobile-stat-strip { display: none; }
 

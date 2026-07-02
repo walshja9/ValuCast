@@ -843,11 +843,25 @@ DYNASTY_CATEGORY_PRESETS = {
     **CATEGORY_PRESETS,
 }
 _FIT_STAT_SPACE_FLIP = frozenset({"SO", "ERA", "WHIP", "L", "BB_9"})
-_DYN_Z_CACHE = {"key": None, "map": {}}
+# Projected stat columns on the Dynasty board — the classic 10 the Redraft
+# board defaults to, NOT the full FIT union (that's a fit-panel vocabulary).
+DYN_BOARD_CATS = ("R", "HR", "RBI", "SB", "AVG", "W", "SV", "K", "ERA", "WHIP")
+_DYN_Z_CACHE = {"key": None, "map": {}, "stats": {}}
 
 
 def _dynasty_z_map():
-    """Per-player z's for the dynasty board's Category Fit panel.
+    return _dynasty_match_maps()[0]
+
+
+def _dynasty_stats_map():
+    """Raw projected stats per dynasty row — same matched projections as the
+    z map, so the board's stat line always agrees with the card."""
+    return _dynasty_match_maps()[1]
+
+
+def _dynasty_match_maps():
+    """Per-player z's for the dynasty board's Category Fit panel, plus raw
+    projected stats for the board's stat columns.
 
     The feed's z_scores field has never been produced (DD-producer gap), so
     matched projections are scored app-side across the fit panel's category
@@ -856,10 +870,10 @@ def _dynasty_z_map():
     FIT_INVERSE cats), while the engine emits value-oriented z's — flip
     those here. Cached per feed generation; ~0.1s to build."""
     if not dd_store.is_available:
-        return {}
+        return {}, {}
     key = dd_store.generated_at
     if _DYN_Z_CACHE.get("key") == key:
-        return _DYN_Z_CACHE["map"]
+        return _DYN_Z_CACHE["map"], _DYN_Z_CACHE["stats"]
     config = build_config(
         mode="categories", cats=list(FIT_CATS), pcats=list(FIT_PCATS),
         rules_str="", pt_params=None, split_rp=False, weights=None,
@@ -873,6 +887,7 @@ def _dynasty_z_map():
             by_id.setdefault(base, res)
     match_index = build_outlook_match_index(store.get_all())
     z_map = {}
+    stats_map = {}
     for row in dd_store.get_all():
         matches = find_outlook_projections(row, match_index) or []
         res = next((by_id[m.id] for m in matches if m.id in by_id), None)
@@ -880,7 +895,15 @@ def _dynasty_z_map():
             res = next(
                 (by_id[m.metadata.get("base_id") or m.id] for m in matches
                  if (m.metadata.get("base_id") or m.id) in by_id), None)
-        if res is None or not res.z_scores:
+        if res is None:
+            continue
+        stats = {
+            cat: raw for cat in DYN_BOARD_CATS
+            if (raw := res.raw_values.get(cat)) is not None
+        }
+        if stats:
+            stats_map[row.id] = stats
+        if not res.z_scores:
             continue
         z_map[row.id] = {
             cat: round(-z if cat in _FIT_STAT_SPACE_FLIP else z, 2)
@@ -889,7 +912,8 @@ def _dynasty_z_map():
         }
     _DYN_Z_CACHE["key"] = key
     _DYN_Z_CACHE["map"] = z_map
-    return z_map
+    _DYN_Z_CACHE["stats"] = stats_map
+    return z_map, stats_map
 
 
 def _prospect_tiers():
@@ -3660,6 +3684,8 @@ def _build_dynasty_context(args):
         "search": search,
         "dd_rows": rows,
         "dyn_z_map": _dynasty_z_map(),
+        "dyn_stats_map": _dynasty_stats_map(),
+        "dyn_stat_cats": DYN_BOARD_CATS,
         "dynasty_dollars": dynasty_dollars,
         "now_dollars": now_dollars,
         "custom_cats_active": custom_cats_active,

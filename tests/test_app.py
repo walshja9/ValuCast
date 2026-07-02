@@ -286,12 +286,19 @@ class TestDynastyMode(unittest.TestCase):
         response = self.client.get("/?mode=dd_dynasty")
         self.assertIn(b"Dynasty Value", response.data)
 
-    def test_dynasty_no_category_columns(self):
-        from app import dd_store
+    def test_dynasty_shows_projected_stat_columns(self):
+        # 7/2: the Redraft stat columns were "completely missing in the dynasty
+        # section" -- the board now carries the same classic 10, populated from
+        # the matched projections the Category Fit panel already uses.
+        from app import DYN_BOARD_CATS, dd_store
         if not dd_store.is_available:
             self.skipTest("DD feed not available")
         response = self.client.get("/?mode=dd_dynasty")
-        self.assertNotIn(b"col-cat", response.data)
+        html = response.data.decode("utf-8")
+        for cat in DYN_BOARD_CATS:
+            self.assertIn(f'rest of season">{cat}</th>', html)
+        # At least one row renders real numbers, not just em-dash placeholders.
+        self.assertIn('<td class="col-cat">', html)
 
     def test_dynasty_rankings_returns_200(self):
         response = self.client.get("/rankings?mode=dd_dynasty")

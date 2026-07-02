@@ -28,7 +28,10 @@
 {# Debut-filtered views renumber 1..N — a standalone list with P# holes (7, 9,
    11...) reads broken, and the share graphics already number sequentially. #}
 {% set callups_rerank = mode == 'prospects' and callups %}
-{% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 %}
+{# Projected stat columns (same 10 the Redraft board shows) — dd_dynasty only;
+   prospects mostly lack MLB projections and carry their own context strip. #}
+{% set show_stats = mode == 'dd_dynasty' and dyn_stats_map is defined and dyn_stats_map %}
+{% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 + (dyn_stat_cats | length if show_stats else 0) %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings{{ ' preset-fit-hidden' if preset_value_enabled|default(false) else '' }}">
     <thead>
@@ -49,6 +52,7 @@
             <th class="col-confidence">Confidence</th>
             {% endif %}
             {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank, not a value or dollar amount">Your League #</th>{% endif %}
+            {% if show_stats %}{% for cat in dyn_stat_cats %}<th class="col-cat" title="Projected {{ cat }}, rest of season">{{ cat }}</th>{% endfor %}{% endif %}
             <th class="col-compare"></th>
         </tr>
     </thead>
@@ -151,6 +155,13 @@
             </td>
             {% endif %}
             {% if prospect_rerank %}<td class="col-league-rank">{% set lr = (league_adapter_ranks or {}).get(row.id) %}{% if lr %}{{ lr }}{% else %}—{% endif %}</td>{% endif %}
+            {% if show_stats %}
+            {% set _stats = dyn_stats_map.get(row.id) or {} %}
+            {% for cat in dyn_stat_cats %}
+            {% set _raw = _stats.get(cat) %}
+            <td class="col-cat{{ ' na' if _raw is none else '' }}">{% if _raw is none %}&mdash;{% else %}{{ _raw | format_stat(cat) }}{% endif %}</td>
+            {% endfor %}
+            {% endif %}
             <td class="col-compare">
                 <button type="button" class="compare-cb" aria-label="Add {{ row.name }} to compare" onclick="event.stopPropagation(); toggleCompare('{{ row.id }}', this)">+</button>
             </td>

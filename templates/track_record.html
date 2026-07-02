@@ -109,9 +109,11 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
             {% if kind == 'retreat' and c.valucast_then is not none and c.valucast_now is not none %}
             <span class="ledger-row-delta neg">us {{ '%+d' | format(c.valucast_then - c.valucast_now) }}</span>
             {% elif kind in ('win', 'loss') and c.consensus_catch_up is not none %}
-            <span class="ledger-row-delta {{ 'pos' if c.consensus_catch_up > 0 else ('neg' if c.consensus_catch_up < 0 else '') }}">{{ '%+d' | format(c.consensus_catch_up) }}</span>
+            {# "field -12" not a bare "-12": the delta is the FIELD's convergence
+               (+ toward us, - away), and a bare number read like OUR move (7/2). #}
+            <span class="ledger-row-delta {{ 'pos' if c.consensus_catch_up > 0 else ('neg' if c.consensus_catch_up < 0 else '') }}">field {{ '%+d' | format(c.consensus_catch_up) }}</span>
             {% elif c.consensus_catch_up is not none %}
-            <span class="ledger-row-delta">{{ '%+d' | format(c.consensus_catch_up) }}</span>
+            <span class="ledger-row-delta">field {{ '%+d' | format(c.consensus_catch_up) }}</span>
             {% endif %}
         </div>
     </article>
