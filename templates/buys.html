@@ -63,7 +63,9 @@
         <span class="buys-rank">{{ p.rank }}</span>
         <img class="buys-thumb" src="{{ p.headshot_url }}" crossorigin="anonymous" alt="" loading="lazy">
         <div class="buys-main">
-            <a href="/player/{{ p.id }}">{{ p.name }}</a>
+            {# mode=prospects is load-bearing: without it a direct tap resolves against
+               the redraft store and 404s (found live 7/2). #}
+            <a href="/player/{{ p.id }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
         </div>
         <span class="buys-score" title="momentum {{ (p.terms.momentum * 100) | round | int }} &middot; breakout {{ (p.terms.breakout * 100) | round | int }} &middot; rank gap {{ (p.terms.gap * 100) | round | int }} &middot; runway {{ (p.terms.runway * 100) | round | int }}">{{ p.score }}</span>
