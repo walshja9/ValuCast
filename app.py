@@ -5464,6 +5464,7 @@ def _build_backfields_page_context():
         clean_name = str(raw_row.get("name") or "").strip().casefold()
         return rows_by_name.get(clean_name)
 
+    debuted_ids = _debuted_prospect_ids()
     rankings = []
     for rank, row in enumerate(prospect_rows, 1):
         key = identity_for(row)
@@ -5471,6 +5472,11 @@ def _build_backfields_page_context():
         link_fields = player_link_fields(row.name, row.id)
         level = level_for(row)
         rankings.append({
+            # Debut filter (7/2): active-roster retention OR prior MLB service.
+            "debuted": bool(
+                getattr(row, "active_mlb_callup", False)
+                or str(getattr(row, "mlbam_id", "")) in debuted_ids
+            ),
             "rank": rank,
             "name": row.name,
             **link_fields,
@@ -5794,16 +5800,23 @@ _ACTIVE_ROSTER_ROWS = None
 
 
 def _active_mlb_roster_rows():
-    """Rookie-eligible prospects already on an MLB active roster — the 'Got the Call'
-    companion to the Call-Up Desk's 'knocking on the door'. Read once from the rank_v1
-    artifact's active_mlb_roster_board (display-only, no rebuild), sorted by value."""
+    """Rookie-eligible prospects currently on an MLB active roster — the 'Got the
+    Call' companion to the Call-Up Desk. Sourced from the served snapshot's RETAINED
+    rows (7/2): rookie-rule retention keeps these players ranked on the board, so
+    the rank artifact's active_mlb_roster_board is graduates-only and correctly
+    empty — reading it here showed a false '0 rookie-eligible in the majors'."""
     global _ACTIVE_ROSTER_ROWS
     if _ACTIVE_ROSTER_ROWS is None:
-        path = Path(__file__).parent / "data" / "models" / "valucast_prospect_rank_v1.json"
-        try:
-            rows = (json.loads(path.read_text(encoding="utf-8")) or {}).get("active_mlb_roster_board") or []
-        except (OSError, ValueError):
-            rows = []
+        rows = []
+        if dd_store.is_available:
+            for r in dd_store.get_all():
+                if getattr(r, "is_prospect", False) and getattr(r, "active_mlb_callup", False):
+                    rows.append({
+                        "name": getattr(r, "name", None),
+                        "positions": list(getattr(r, "positions", None) or []),
+                        "mlb_team": getattr(r, "mlb_team", None) or getattr(r, "team", None),
+                        "score": getattr(r, "value", None),
+                    })
         _ACTIVE_ROSTER_ROWS = sorted(rows, key=lambda r: r.get("score") or 0, reverse=True)
     return _ACTIVE_ROSTER_ROWS
 

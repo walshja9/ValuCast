@@ -163,6 +163,11 @@
                     <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-bf-level="{{ level }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ level }}</button>
                     {% endfor %}
                 </div>
+                <div class="bf-filter-pills" aria-label="Filter rankings by debut status">
+                    {% for opt in ["All", "Debuted", "Not debuted"] %}
+                    <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-bf-debut="{{ opt }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"{% if opt == 'Debuted' %} title="Rookie-eligible players who have reached the majors — active roster or a prior call-up"{% elif opt == 'Not debuted' %} title="Prospects who have not yet reached the majors"{% endif %}>{{ opt }}</button>
+                    {% endfor %}
+                </div>
             </div>
             <div class="bf-table-card" data-bf-table data-bf-sort-current="rank" data-bf-sort-dir="asc">
                 <div class="bf-table-head" role="row">
@@ -176,6 +181,7 @@
                 {% for row in rankings %}
                 <article class="bf-rank-row bf-tier-{{ row.tier }}"
                     data-bf-row-level="{{ row.level }}"
+                    data-bf-row-debut="{{ '1' if row.debuted else '0' }}"
                     data-bf-sort-rank="{{ row.rank }}"
                     data-bf-sort-player="{{ row.name|lower }}"
                     data-bf-sort-level="{{ row.level_sort }}"
@@ -537,17 +543,38 @@
                 if (detailBody) { detailBody.innerHTML = ''; }
             });
         });
+        var bfActiveLevel = 'All';
+        var bfActiveDebut = 'All';
+        function bfApplyRowFilters() {
+            page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
+                var levelOk = bfActiveLevel === 'All'
+                    || row.getAttribute('data-bf-row-level') === bfActiveLevel;
+                var debut = row.getAttribute('data-bf-row-debut');
+                var debutOk = bfActiveDebut === 'All'
+                    || (bfActiveDebut === 'Debuted' ? debut === '1' : debut === '0');
+                row.hidden = !(levelOk && debutOk);
+            });
+        }
         page.querySelectorAll('[data-bf-level]').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var level = btn.getAttribute('data-bf-level');
+                bfActiveLevel = btn.getAttribute('data-bf-level');
                 page.querySelectorAll('[data-bf-level]').forEach(function (pill) {
                     var active = pill === btn;
                     pill.classList.toggle('is-active', active);
                     pill.setAttribute('aria-pressed', active ? 'true' : 'false');
                 });
-                page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
-                    row.hidden = level !== 'All' && row.getAttribute('data-bf-row-level') !== level;
+                bfApplyRowFilters();
+            });
+        });
+        page.querySelectorAll('[data-bf-debut]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                bfActiveDebut = btn.getAttribute('data-bf-debut');
+                page.querySelectorAll('[data-bf-debut]').forEach(function (pill) {
+                    var active = pill === btn;
+                    pill.classList.toggle('is-active', active);
+                    pill.setAttribute('aria-pressed', active ? 'true' : 'false');
                 });
+                bfApplyRowFilters();
             });
         });
         page.querySelectorAll('[data-bf-stat-tab]').forEach(function (btn) {
