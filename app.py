@@ -1739,15 +1739,18 @@ def _prospect_graphic_png(
                 score_size=16,
             )
         else:
+            # 4 wider columns instead of 5 so FULL names fit (7/2 request) —
+            # 100 rows = 25x41px fits the 1350 canvas, 200 = 50x41 fits 2400.
             draw_dense_prospect_grid(
                 rows,
-                cols=5,
-                cell_w=196,
-                cell_h=52,
+                cols=4,
+                cell_w=246,
+                cell_h=41,
                 start_x=48,
                 start_y=226,
                 show_tag=False,
-                rank_size=13,
+                full_name=True,
+                rank_size=12,
                 name_size=13,
                 score_size=13,
             )
