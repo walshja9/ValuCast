@@ -52,13 +52,33 @@ RAW_COLUMNS = {
 }
 
 
+def _read_with_retry(req, attempts: int = 3) -> str:
+    """Bounded retry with backoff -- one transient blip must not abort the
+    whole day's refresh (serial pipeline, check=True) (7/2 audit)."""
+    import time
+    from urllib.error import HTTPError, URLError
+    last = None
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+                return resp.read().decode("utf-8-sig")
+        except HTTPError as exc:
+            if exc.code < 500 and exc.code != 429:
+                raise
+            last = exc
+        except (URLError, TimeoutError, OSError) as exc:
+            last = exc
+        if attempt < attempts - 1:
+            time.sleep(2 * (attempt + 1))
+    raise last
+
+
 def _fetch_csv(kind: str, year: int) -> str:
     req = urllib.request.Request(
         URL.format(kind=kind, year=year),
         headers={"User-Agent": "Mozilla/5.0 (ValuCast snapshot fetch)"},
     )
-    with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-        return resp.read().decode("utf-8-sig")
+    return _read_with_retry(req)
 
 
 def _fetch_custom_csv(kind: str, year: int) -> str:
@@ -69,8 +89,7 @@ def _fetch_custom_csv(kind: str, year: int) -> str:
         CUSTOM_URL.format(kind=kind, year=year, selections=selections),
         headers={"User-Agent": "Mozilla/5.0 (ValuCast snapshot fetch)"},
     )
-    with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-        return resp.read().decode("utf-8-sig")
+    return _read_with_retry(req)
 
 
 def _parse(body: str) -> dict[str, dict[str, int]]:

@@ -222,7 +222,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"as_of": "2026-06-12"}), encoding="utf-8"
     )
     paths["MLB_DYNASTY_LAYER"].write_text(
-        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+        json.dumps({"generated_at": "2026-06-13", "players": [{}] * 300}),
+        encoding="utf-8",
     )
     paths["MLB_TRACK_RECORD"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
@@ -231,7 +232,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["MLB_ROSTER_STATUS"].write_text(
-        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+        json.dumps({"generated_at": "2026-06-13", "profiles": [{}] * 300}),
+        encoding="utf-8",
     )
     paths["VALUCAST_MOVERS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
@@ -273,7 +275,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_MODEL_V07"].write_text(
-        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+        json.dumps({"generated_at": "2026-06-13", "candidates": [{}] * 500}),
+        encoding="utf-8",
     )
     paths["PROSPECT_OUTCOME_BACKTEST"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
@@ -294,7 +297,8 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["PROSPECT_PEAK_PROJECTION"].write_text(
-        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+        json.dumps({"generated_at": "2026-06-13", "projections": [{}] * 500}),
+        encoding="utf-8",
     )
     paths["PROSPECT_PEAK_CALIBRATION"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
@@ -328,6 +332,14 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     assert problems == [
         "statcast.json as_of=2026-06-12, expected 2026-06-13"
     ]
+
+    # {"generated_at": today, "players": []} used to validate "fresh" -- the
+    # date-only gate certified semantically-empty artifacts (7/2 audit).
+    paths["MLB_DYNASTY_LAYER"].write_text(
+        json.dumps({"generated_at": "2026-06-13", "players": []}), encoding="utf-8"
+    )
+    problems = freshness.validate_public_data("2026-06-13")
+    assert any("semantically empty" in p for p in problems)
 
 
 def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed():

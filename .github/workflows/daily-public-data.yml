@@ -47,11 +47,15 @@ jobs:
         run: |
           proceed=true
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            latest=$(gh api "repos/${{ github.repository }}/commits/master" --jq '.commit.message' | head -n 1)
+            # Any commit today carrying the refresh marker counts — checking only
+            # HEAD meant one feature push after the morning refresh made every
+            # fallback cron re-run the full ~55-min pipeline (7/2 audit).
             today=$(date -u +%F)
-            if [ "$latest" = "data: daily public refresh $today" ]; then
+            marker="data: daily public refresh $today"
+            hits=$(gh api "repos/${{ github.repository }}/commits?sha=master&since=${today}T00:00:00Z&per_page=100"               --jq "[.[].commit.message | select(. == \"$marker\")] | length")
+            if [ "${hits:-0}" -gt 0 ]; then
               proceed=false
-              echo "Today's refresh already published ($latest) — fallback skipping."
+              echo "Today's refresh already published ($hits marker commit(s)) — fallback skipping."
             fi
           fi
           echo "proceed=$proceed" >> "$GITHUB_OUTPUT"
@@ -161,6 +165,7 @@ jobs:
             data/models/valucast_prospect_adapter_backtest.json \
             data/models/valucast_quality_governor.json \
             data/models/valucast_prospect_movers.json \
+            data/models/valucast_pooled_shadow.json \
             data/models/valucast_call_up_receipts.json \
             data/models/valucast_prospect_buys.json \
             data/models/valucast_prospect_buys_monitor.json \

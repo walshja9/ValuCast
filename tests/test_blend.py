@@ -139,3 +139,34 @@ class TestBlendAll(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+def _fg_hitter(i, hr=20, pa=600):
+    return {"playerids": str(i), "PlayerName": f"H{i}", "HR": hr, "PA": pa, "minpos": "OF"}
+
+
+def _fg_pitcher(i, ip=150):
+    return {"playerids": str(i), "PlayerName": f"P{i}", "IP": ip, "GS": 20, "G": 25, "SO": 150}
+
+
+def test_all_zero_projections_refuse_to_ship():
+    # Upstream field rename (HR -> homeRuns): IDs survive, every stat reads 0.0
+    # via _safe_float defaults, and the artifact would pass every date/non-empty
+    # gate downstream. The blend must fail LOUD instead (7/2 audit).
+    import pytest
+    from scraper.blend import blend_projections
+    zero = {
+        "steamer_hitters": [_fg_hitter(i, hr=0, pa=0) for i in range(60)],
+        "steamer_pitchers": [_fg_pitcher(i, ip=0) for i in range(60)],
+    }
+    with pytest.raises(RuntimeError, match="schema drift"):
+        blend_projections(zero)
+
+
+def test_healthy_projections_pass_the_zero_guard():
+    from scraper.blend import blend_projections
+    raw = {
+        "steamer_hitters": [_fg_hitter(i) for i in range(60)],
+        "steamer_pitchers": [_fg_pitcher(i) for i in range(60)],
+    }
+    assert len(blend_projections(raw)) == 120
+

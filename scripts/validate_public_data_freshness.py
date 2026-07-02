@@ -139,6 +139,15 @@ def validate_public_data(expected_date: str) -> list[str]:
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),
     ]
+    # A dated-but-empty artifact passes a date-only gate: a builder that emits
+    # {"generated_at": today, "players": []} validated "fresh" (7/2 audit).
+    # These payload lists can never legitimately be near-empty.
+    min_rows = {
+        MLB_DYNASTY_LAYER: ("players", 300),
+        MLB_ROSTER_STATUS: ("profiles", 300),
+        PROSPECT_MODEL_V07: ("candidates", 500),
+        PROSPECT_PEAK_PROJECTION: ("projections", 500),
+    }
     for path, field in dated_artifacts:
         try:
             payload = _load(path)
@@ -151,6 +160,14 @@ def validate_public_data(expected_date: str) -> list[str]:
                 f"{_display_path(path)} {field}={actual or 'missing'}, "
                 f"expected {expected_date}"
             )
+        if path in min_rows:
+            key, floor = min_rows[path]
+            n = len(payload.get(key) or [])
+            if n < floor:
+                problems.append(
+                    f"{_display_path(path)} {key} has {n} rows (< {floor}) -- "
+                    "dated-fresh but semantically empty"
+                )
 
     list_artifacts = [REDRAFT_CURRENT, REDRAFT_ROS]
     for path in list_artifacts:

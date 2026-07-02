@@ -163,10 +163,23 @@ def derive_qs_from_games(games: list[dict]) -> int:
 
 
 def _fetch_json(url: str) -> dict:
-    """Fetch JSON from a URL."""
+    """Fetch JSON from a URL, with bounded retries. One transient upstream blip aborts the ENTIRE day's refresh (serial, check=True), so bounded retries here protect every downstream surface (7/2 audit)."""
+    from urllib.error import HTTPError, URLError
     req = Request(url, headers={"User-Agent": USER_AGENT})
-    with urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    last = None
+    for attempt in range(3):
+        try:
+            with urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except HTTPError as exc:
+            if exc.code < 500 and exc.code != 429:
+                raise
+            last = exc
+        except (URLError, TimeoutError, OSError) as exc:
+            last = exc
+        if attempt < 2:
+            time.sleep(2 * (attempt + 1))
+    raise last
 
 
 def fetch_game_logs(mlbam_id: str, group: str, season: int = 2026, fetcher=None) -> list[dict]:

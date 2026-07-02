@@ -189,4 +189,34 @@ def _single_pitcher(p: dict, pid: str, source: str) -> dict:
 def blend_projections(raw: dict[str, list[dict]]) -> list[dict]:
     hitters = blend_hitters(raw.get("steamer_hitters", []), raw.get("zips_hitters", []))
     pitchers = blend_pitchers(raw.get("steamer_pitchers", []), raw.get("zips_pitchers", []))
+    _assert_not_all_zero(hitters, pitchers)
     return hitters + pitchers
+
+
+def _assert_not_all_zero(hitters: list[dict], pitchers: list[dict]) -> None:
+    """Fail LOUD on an upstream schema drift. Every stat access here is
+    _safe_float(default=0.0), so a FanGraphs field rename (HR -> homeRuns)
+    ships a structurally-valid, dated, non-empty artifact where everyone
+    projects zero -- and it passes every downstream freshness gate (7/2
+    audit). IDs surviving while all core stats zero out is exactly that
+    signature, never a real projection set."""
+    live_hitters = sum(
+        1 for p in hitters
+        if _safe_float(p.get("stats", {}).get("PA") if isinstance(p.get("stats"), dict) else p.get("PA")) > 0
+        or _safe_float(p.get("stats", {}).get("HR") if isinstance(p.get("stats"), dict) else p.get("HR")) > 0
+    )
+    live_pitchers = sum(
+        1 for p in pitchers
+        if _safe_float(p.get("stats", {}).get("IP") if isinstance(p.get("stats"), dict) else p.get("IP")) > 0
+    )
+    # Only meaningful on feed-sized pools -- unit fixtures use a handful of rows.
+    if len(hitters) >= 50 and live_hitters < 50:
+        raise RuntimeError(
+            f"blend sanity: only {live_hitters}/{len(hitters)} hitters have nonzero "
+            "PA/HR -- upstream schema drift, refusing to ship all-zero projections"
+        )
+    if len(pitchers) >= 50 and live_pitchers < 50:
+        raise RuntimeError(
+            f"blend sanity: only {live_pitchers}/{len(pitchers)} pitchers have nonzero "
+            "IP -- upstream schema drift, refusing to ship all-zero projections"
+        )
