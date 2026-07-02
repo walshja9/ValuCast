@@ -1226,7 +1226,9 @@ class TestInputHardening(unittest.TestCase):
             self.skipTest("DD feed not available")
         r = self.client.get("/prospects/share-card.png?limit=20")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.headers.get("Cache-Control"), "public, max-age=21600")
+        # 10 min (7/2): 6h edge caching served stale share cards after layout
+        # fixes and held yesterday's board past the daily refresh.
+        self.assertEqual(r.headers.get("Cache-Control"), "public, max-age=600")
 
 
 def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():

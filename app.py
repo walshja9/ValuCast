@@ -153,7 +153,9 @@ def _serve_cached_png():
 def _maybe_cache_png(response):
     if response.status_code != 200 or response.mimetype != "image/png":
         return response
-    response.headers.setdefault("Cache-Control", "public, max-age=21600")
+    # 10 min, not 6h (7/2): a 6h edge/browser cache served day-old share cards
+    # after layout fixes and holds yesterday's board after the daily refresh.
+    response.headers.setdefault("Cache-Control", "public, max-age=600")
     if app.config.get("TESTING"):
         return response
     key = _png_cache_key()

@@ -4,7 +4,7 @@
 
 {% block content %}
 {% from "partials/_board_nav.html" import board_nav with context %}
-{{ board_nav(aria='Ledger navigation') }}
+{{ board_nav(active='ledger', aria='Ledger navigation') }}
 {% include "partials/_stale_notice.html" %}
 
 <section class="buys-heading glass ledger-hero">
