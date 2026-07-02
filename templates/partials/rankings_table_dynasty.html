@@ -25,6 +25,9 @@
 {# Category Fit and Confidence render only from a v1.1 feed — with a
    v1.0 feed they'd be a dead column and an always-empty one. #}
 {% set prospect_rerank = mode == 'prospects' and custom_cats_active %}
+{# Debut-filtered views renumber 1..N — a standalone list with P# holes (7, 9,
+   11...) reads broken, and the share graphics already number sequentially. #}
+{% set callups_rerank = mode == 'prospects' and callups %}
 {% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 %}
 {% if dd_rows %}
 <table class="rankings-table dynasty-rankings{{ ' preset-fit-hidden' if preset_value_enabled|default(false) else '' }}">
@@ -59,8 +62,8 @@
         {% set _pr = (preset_rank_by_id|default({})).get(row.id) if _ap else None %}
         {# When re-ranked the displayed order is the adapter order, so the cutoff
            divider must follow the displayed position, not the model P#. #}
-        {% set this_rank = loop.index if prospect_rerank else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
-        {% set prev_rank = loop.index0 if prospect_rerank else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
+        {% set this_rank = loop.index if (prospect_rerank or callups_rerank) else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
+        {% set prev_rank = loop.index0 if (prospect_rerank or callups_rerank) else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
         {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
         <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} {% if mode == 'prospects' %}prospect slots{% else %}rostered{% endif %})</td></tr>
         {% endif %}
@@ -74,7 +77,9 @@
             data-z-scores="{{ z_row | tojson | forceescape if z_row else '{}' }}"
             onclick="toggleDetail('{{ row.id }}', this)">
             <td class="col-rank">
-                {% if mode == 'prospects' and row.prospect_rank %}
+                {% if callups_rerank %}
+                    {{ loop.index }}
+                {% elif mode == 'prospects' and row.prospect_rank %}
                     {{ row.prospect_rank }}
                 {% else %}
                     {{ _pr or row.dynasty_rank }}
