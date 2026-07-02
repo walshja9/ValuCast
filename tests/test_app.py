@@ -296,7 +296,7 @@ class TestDynastyMode(unittest.TestCase):
         response = self.client.get("/?mode=dd_dynasty")
         html = response.data.decode("utf-8")
         for cat in DYN_BOARD_CATS:
-            self.assertIn(f'rest of season">{cat}</th>', html)
+            self.assertIn(f'full-season line">{cat}</th>', html)
         # At least one row renders real numbers, not just em-dash placeholders.
         self.assertIn('<td class="col-cat">', html)
 

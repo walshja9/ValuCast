@@ -1,6 +1,8 @@
 """Blend Steamer and ZiPS projections into a single player set."""
 from __future__ import annotations
 
+import os
+
 
 HITTER_COUNTING = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "SO", "BB",
                     "1B", "2B", "3B", "HBP", "SF", "SH", "GDP", "CS", "IBB", "G")
@@ -200,6 +202,8 @@ def _assert_not_all_zero(hitters: list[dict], pitchers: list[dict]) -> None:
     projects zero -- and it passes every downstream freshness gate (7/2
     audit). IDs surviving while all core stats zero out is exactly that
     signature, never a real projection set."""
+    if os.environ.get("VALUCAST_SKIP_BLEND_ZERO_GUARD") == "1":
+        return  # end-of-season ROS feeds can legitimately zero out; see below
     live_hitters = sum(
         1 for p in hitters
         if _safe_float(p.get("stats", {}).get("PA") if isinstance(p.get("stats"), dict) else p.get("PA")) > 0
@@ -213,10 +217,12 @@ def _assert_not_all_zero(hitters: list[dict], pitchers: list[dict]) -> None:
     if len(hitters) >= 50 and live_hitters < 50:
         raise RuntimeError(
             f"blend sanity: only {live_hitters}/{len(hitters)} hitters have nonzero "
-            "PA/HR -- upstream schema drift, refusing to ship all-zero projections"
+            "PA/HR -- upstream schema drift, refusing to ship all-zero projections "
+            "(legitimate end-of-season ROS zeroes? set VALUCAST_SKIP_BLEND_ZERO_GUARD=1)"
         )
     if len(pitchers) >= 50 and live_pitchers < 50:
         raise RuntimeError(
             f"blend sanity: only {live_pitchers}/{len(pitchers)} pitchers have nonzero "
-            "IP -- upstream schema drift, refusing to ship all-zero projections"
+            "IP -- upstream schema drift, refusing to ship all-zero projections "
+            "(legitimate end-of-season ROS zeroes? set VALUCAST_SKIP_BLEND_ZERO_GUARD=1)"
         )

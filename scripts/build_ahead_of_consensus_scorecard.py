@@ -60,14 +60,16 @@ TARGET_DECIDED_RATE = 0.50
 TARGET_CONTROL_LIFT = 1.5
 
 
-def _all_divergence_rows(path: Path) -> dict[str, dict]:
+def _all_divergence_rows(path: Path) -> dict[str, dict] | None:
     """Every board row with a computable consensus, flagged guarded or not.
     Non-guarded rows are needed twice: to attribute WHY a call's divergence
-    closed (field caught up vs we backed off) and as the matched-control pool."""
+    closed (field caught up vs we backed off) and as the matched-control pool.
+    Returns None (not {}) for an UNREADABLE file so callers can drop the date
+    instead of treating it as an empty board."""
     try:
         board = (json.loads(path.read_text(encoding="utf-8")) or {}).get("board") or []
     except (OSError, ValueError):
-        return {}
+        return None
     out: dict[str, dict] = {}
     for raw in board:
         if not isinstance(raw, dict):
@@ -145,7 +147,13 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
 
     snaps: dict[str, dict[str, dict]] = {}
     for path in files:
-        snaps[os.path.basename(path)[:10]] = _all_divergence_rows(Path(path))
+        rows = _all_divergence_rows(Path(path))
+        if rows is None:
+            # Unreadable file: skip the DATE entirely (matching the sibling
+            # _ahead_streak_dates), or one corrupt snapshot resets every
+            # ledger streak and desyncs the ledger from the receipts card.
+            continue
+        snaps[os.path.basename(path)[:10]] = rows
     dates = sorted(snaps)
     latest_date = dates[-1] if dates else today
     latest = snaps.get(latest_date, {})

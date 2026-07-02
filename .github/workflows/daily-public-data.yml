@@ -52,7 +52,10 @@ jobs:
             # fallback cron re-run the full ~55-min pipeline (7/2 audit).
             today=$(date -u +%F)
             marker="data: daily public refresh $today"
-            hits=$(gh api "repos/${{ github.repository }}/commits?sha=master&since=${today}T00:00:00Z&per_page=100"               --jq "[.[].commit.message | select(. == \"$marker\")] | length")
+            # `|| echo 0` = fail OPEN: this check only skips redundant work, so a
+            # transient gh/API error must default to running the refresh, not
+            # killing the step under bash -e and skipping the day's publish.
+            hits=$(gh api "repos/${{ github.repository }}/commits?sha=master&since=${today}T00:00:00Z&per_page=100"               --jq "[.[].commit.message | select(. == \"$marker\")] | length" || echo 0)
             if [ "${hits:-0}" -gt 0 ]; then
               proceed=false
               echo "Today's refresh already published ($hits marker commit(s)) — fallback skipping."

@@ -93,6 +93,7 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
         'resolved_called_up_or_graduated': ('resolved', 'Called up / graduated'),
         'left_universe': ('resolved', 'Left universe'),
     } %}
+    <p class="ledger-empty buys-fineprint" hidden>No calls in this bucket yet — they'll appear here as calls resolve.</p>
     {% for c in sc.calls %}
     {% set kind, label = status_meta.get(c.status, ('open', c.status)) %}
     <article class="ledger-row" data-ledger-kind="{{ kind }}">
@@ -142,9 +143,13 @@ document.querySelectorAll('[data-ledger-filter]').forEach(function (btn) {
             pill.classList.toggle('is-active', active);
             pill.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
+        var visible = 0;
         document.querySelectorAll('[data-ledger-kind]').forEach(function (row) {
             row.hidden = kind !== 'all' && row.getAttribute('data-ledger-kind') !== kind;
+            if (!row.hidden) visible += 1;
         });
+        var empty = document.querySelector('.ledger-empty');
+        if (empty) empty.hidden = visible > 0;
     });
 });
 </script>

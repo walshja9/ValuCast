@@ -52,7 +52,7 @@
             <th class="col-confidence">Confidence</th>
             {% endif %}
             {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank, not a value or dollar amount">Your League #</th>{% endif %}
-            {% if show_stats %}{% for cat in dyn_stat_cats %}<th class="col-cat" title="Projected {{ cat }}, rest of season">{{ cat }}</th>{% endfor %}{% endif %}
+            {% if show_stats %}{% for cat in dyn_stat_cats %}<th class="col-cat" title="Projected {{ cat }} — full-season line">{{ cat }}</th>{% endfor %}{% endif %}
             <th class="col-compare"></th>
         </tr>
     </thead>

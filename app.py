@@ -123,11 +123,22 @@ def _png_cache_generation():
     return "|".join(parts)
 
 
-# Only params the PNG renderers actually read. Keying the cache on the FULL
-# query string let `?junk=1,2,3...` defeat the cache and force a fresh Pillow
-# render per request — an unauthenticated CPU hammer on the single 512MB
-# Render worker (7/2 audit). Unknown params now collapse to the canonical key.
-_PNG_CACHE_PARAMS = frozenset({"n", "limit", "pool", "position", "search", "callups"})
+# Every param ANY PNG renderer reads (board/share/player cards run the full
+# valuation via _build_context, category state via fit_cats, league settings
+# via teams/budget/...). Keying the cache on the FULL query string let
+# `?junk=1,2,3...` defeat the cache and force a fresh Pillow render per
+# request — an unauthenticated CPU hammer on the single 512MB Render worker
+# (7/2 audit). But the allowlist must cover ALL render-affecting params, or
+# two legitimately different cards collapse to one key and users get the
+# WRONG cached image (adversarial review of the first fix). Unknown params
+# still collapse to the canonical key.
+_PNG_CACHE_PARAMS = frozenset({
+    "n", "limit", "pool", "position", "search", "callups",
+    "mode", "source", "cats", "pcats", "rules", "split_rp", "display",
+    "fit_cats", "preset", "rank_by",
+    "teams", "budget", "roster", "pslots",
+})
+_PNG_CACHE_PARAM_PREFIXES = ("w_", "pt_")
 
 
 def _png_cache_key():
@@ -138,7 +149,7 @@ def _png_cache_key():
         request.path,
         tuple(sorted(
             (k, v) for k, v in request.args.items(multi=True)
-            if k in _PNG_CACHE_PARAMS
+            if k in _PNG_CACHE_PARAMS or k.startswith(_PNG_CACHE_PARAM_PREFIXES)
         )),
     )
 
