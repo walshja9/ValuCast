@@ -148,9 +148,61 @@ def test_ledger_page_renders_full_ledger():
     assert "/aotc-scorecard.json" in html               # raw artifact still linked
     assert "no call ever leaves this page silently" in html.lower()
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
+    assert 'data-ledger-filter="resolved"' in html      # resolved != undecided
+    assert "conviction, not evidence" in html           # worked-example explainer
 
     # Legacy route redirects permanently.
     r = client.get("/track-record")
     assert r.status_code == 301
     assert r.headers["Location"].endswith("/ledger")
+
+def test_streak_anchor_resets_after_a_lapse(tmp_path):
+    # Day 1 guarded (gap 75), day 2 the gap collapses below the 25-spot guard
+    # (still on the board), day 3 guarded again. Scoring stays pinned to the
+    # earliest date, but the DISPLAY streak must restart at day 3 -- "since
+    # day 1" on a lapsed call is falsifiable from our own archive.
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-02", [_row(1, 10, {"pipeline": 20, "hkb": 30})])
+    _board(tmp_path, "2026-06-03", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-03T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["ahead_since"] == "2026-06-01"      # scoring anchor unchanged
+    assert call["days_tracked"] == 2
+    assert call["streak_since"] == "2026-06-03"     # display anchor restarts
+    assert call["streak_days"] == 0
+
+
+def test_unbroken_run_streak_matches_ahead_since(tmp_path):
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-05", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["streak_since"] == call["ahead_since"] == "2026-06-01"
+    assert call["streak_days"] == call["days_tracked"] == 4
+
+
+def test_coverage_loss_without_our_retreat_is_not_a_retreat(tmp_path):
+    # Day 2: one public board drops him -> consensus uncomputable (MIN_BOARDS=2)
+    # while OUR rank never moved. Neither side's retreat is measurable, so this
+    # must exit-account as left_universe, NOT "we backed off" (whose row would
+    # contradict its own numbers).
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-05", [_row(1, 10, {"pipeline": 80})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["status"] == "left_universe"
+    assert payload["funnel"]["left_universe"] == 1
+    assert payload["funnel"]["retired_we_backed_off"] == 0
+    assert payload["summary"]["decided_count"] == 0
+
+
+def test_coverage_loss_with_our_retreat_still_counts_against_us(tmp_path):
+    # Same coverage loss, but WE also dropped him 10 -> 70: our side of the
+    # retreat is measurable from our own board, so it stays a retreat.
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-05", [_row(1, 70, {"pipeline": 80})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["status"] == "retired_we_backed_off"
+    assert payload["summary"]["decided_count"] == 1
 

@@ -6636,7 +6636,9 @@ def aotc_scorecard_json():
         abort(404)
     response = make_response(path.read_text(encoding="utf-8"))
     response.headers["Content-Type"] = "application/json"
-    response.headers.setdefault("Cache-Control", "public, max-age=3600")
+    # 10 min, matching the PNG cards: a 1h edge cache held yesterday's ledger
+    # after the daily refresh.
+    response.headers.setdefault("Cache-Control", "public, max-age=600")
     return response
 
 

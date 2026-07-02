@@ -157,6 +157,22 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             if row["guarded"] and key not in earliest:
                 earliest[key] = {"date": snap_date, "row": row}
 
+    # Continuous-streak anchor (DISPLAY-ONLY; scoring stays pinned to the
+    # earliest guarded date above): the unbroken run of guarded snapshots
+    # ending at the latest archive date. A ledger row that says "since 6/13
+    # · 19d" for a call that lapsed below the guard and re-qualified 6/30 is
+    # falsifiable from our own archive -- the row must show the streak (7/2).
+    streak_start: dict[str, str] = {}
+    for snap_date in dates:
+        rows = snaps[snap_date]
+        for key, row in rows.items():
+            if row["guarded"]:
+                streak_start.setdefault(key, snap_date)
+        for key in list(streak_start):
+            current = rows.get(key)
+            if current is None or not current["guarded"]:
+                streak_start.pop(key)
+
     active_ids, graduated_ids = _exit_context(root)
     ever_flagged_keys = set(earliest)
 
@@ -176,6 +192,11 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             "name": (now or f).get("name") or f.get("name"),
             "ahead_since": first["date"],
             "days_tracked": _days_between(first["date"], latest_date),
+            "streak_since": streak_start.get(key),
+            "streak_days": (
+                _days_between(streak_start[key], latest_date)
+                if key in streak_start else None
+            ),
             "consensus_then": f["consensus_rank"],
             "valucast_then": f["valucast_rank"],
             "initial_gap": initial_gap,
@@ -211,7 +232,14 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             # Divergence closed while still on the board: attribute the close.
             field_came = max(0, catch_up or 0)
             vc_backed = max(0, (now.get("valucast_rank") or 0) - (f.get("valucast_rank") or 0))
-            if field_came > vc_backed:
+            if catch_up is None and vc_backed <= 0:
+                # Board coverage vanished (consensus uncomputable) and our own
+                # rank never dropped: NEITHER side's retreat is measurable, so
+                # exit-account it. Labeling it "we backed off" would render a
+                # row whose own numbers contradict its chip (7/2 audit).
+                entry.update({"status": "left_universe", "bucket": None})
+                funnel["left_universe"] += 1
+            elif field_came > vc_backed:
                 entry.update({"status": "closed_caught_up", "bucket": "toward"})
                 funnel["closed_caught_up"] += 1
             else:

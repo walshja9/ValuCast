@@ -18,6 +18,10 @@
         our number</strong>. Field moving toward us = win. Field moving away = against us —
         counting only one direction would make this scorecard impossible to lose. Open calls
         update daily and can flip either way; only "caught up" and "we backed off" are final.</p>
+        <p class="buys-fineprint">Read a row like a position: our number is the thesis, the
+        field's number is the market price, and a call wins when the market comes to our
+        number. Us moving a player up is conviction, not evidence — only the field's
+        movement scores.</p>
         <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
         &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
     </div>
@@ -73,18 +77,21 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
 
 <section class="buys-list glass ledger-calls" aria-label="Every call on the ledger">
     <div class="bf-filter-pills ledger-pills" aria-label="Filter calls by outcome">
-        {% for key, label in [('all', 'All'), ('win', 'Wins'), ('loss', 'Losses'), ('retreat', 'Retreats'), ('open', 'Undecided')] %}
+        {% for key, label in [('all', 'All'), ('win', 'Wins'), ('loss', 'Losses'), ('retreat', 'Retreats'), ('open', 'Undecided'), ('resolved', 'Resolved')] %}
         <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-ledger-filter="{{ key }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ label }}</button>
         {% endfor %}
     </div>
+    {# Resolved (call-up/graduation/coverage exits) gets its own kind — folding
+       it into 'open' made the Undecided pill disagree with the Undecided tile,
+       which counts open_flat only (7/2 audit). #}
     {% set status_meta = {
         'open_toward': ('win', 'Field moving to us'),
         'closed_caught_up': ('win', 'Caught up — win'),
         'open_away': ('loss', 'Field moving away'),
         'retired_we_backed_off': ('retreat', 'We backed off'),
         'open_flat': ('open', 'No decisive move'),
-        'resolved_called_up_or_graduated': ('open', 'Called up / graduated'),
-        'left_universe': ('open', 'Left universe'),
+        'resolved_called_up_or_graduated': ('resolved', 'Called up / graduated'),
+        'left_universe': ('resolved', 'Left universe'),
     } %}
     {% for c in sc.calls %}
     {% set kind, label = status_meta.get(c.status, ('open', c.status)) %}
@@ -94,7 +101,13 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
             <span class="ledger-chip ledger-chip-{{ kind }}">{{ label }}</span>
         </div>
         <div class="ledger-row-detail">
-            <span>since {{ c.ahead_since }} &middot; {{ c.days_tracked }}d</span>
+            {# streak_since = the current UNBROKEN guarded run; a call that lapsed
+               and re-qualified must not claim its first-ever date as "since". #}
+            {% if c.streak_since %}
+            <span>since {{ c.streak_since }} &middot; {{ c.streak_days }}d</span>
+            {% else %}
+            <span>first flagged {{ c.ahead_since }} &middot; {{ c.days_tracked }}d</span>
+            {% endif %}
             {% if c.valucast_then is not none %}
             <span class="ledger-row-move">us #{{ c.valucast_then }} &rarr; {% if c.valucast_now is not none %}#{{ c.valucast_now }}{% else %}&mdash;{% endif %}</span>
             {% endif %}
