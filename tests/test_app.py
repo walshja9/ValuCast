@@ -1251,3 +1251,69 @@ def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():
     assert "MLB taste" in row_html
     assert "23.1 IP" in row_html
     assert "callup-chip" in row_html
+
+class TestBulletproofing(unittest.TestCase):
+    """7/2 hardening batch: input abuse, cache-key abuse, staleness honesty."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_points_params_garbage_does_not_500(self):
+        r = self.client.get("/?mode=points&pt_HR=abc")
+        self.assertEqual(r.status_code, 200)
+
+    def test_points_params_nonfinite_are_dropped(self):
+        # inf/nan parse as floats; the isfinite guard must drop them before
+        # they poison the valuation. (Board renders 200 with defaults.)
+        r = self.client.get("/?mode=points&pt_HR=inf&pt_R=nan")
+        self.assertEqual(r.status_code, 200)
+        self.assertNotIn(b"$nan", r.data.lower())
+        self.assertNotIn(b"$inf", r.data.lower())
+
+    def test_share_prospects_bad_n_does_not_500(self):
+        r = self.client.get("/share/prospects/SS.png?n=abc")
+        self.assertIn(r.status_code, (200, 404))  # bad param never a 500
+
+    def test_png_cache_key_ignores_junk_params(self):
+        from app import _png_cache_key
+        with app.test_request_context("/movers/share-card.png?limit=20&z=1&junk=x"):
+            noisy = _png_cache_key()
+        with app.test_request_context("/movers/share-card.png?limit=20"):
+            clean = _png_cache_key()
+        self.assertEqual(noisy, clean)
+
+    def test_ready_but_ancient_snapshot_wears_the_stale_label(self):
+        # "Ready" is baked in at build time and says nothing about age: a
+        # broken refresh must not serve week-old values labeled current.
+        from app import _select_dynasty_store
+
+        class _Candidate:
+            is_available = True
+            dynasty_ready = True
+            generated_at = "2020-01-01T00:00:00+00:00"
+
+        _, source = _select_dynasty_store(_Candidate(), use_public_snapshot=True)
+        self.assertEqual(source, "valucast_public_snapshot_stale")
+
+    def test_ready_fresh_snapshot_serves_normally(self):
+        from datetime import date
+        from app import _select_dynasty_store
+
+        class _Candidate:
+            is_available = True
+            dynasty_ready = True
+            generated_at = date.today().isoformat()
+
+        _, source = _select_dynasty_store(_Candidate(), use_public_snapshot=True)
+        self.assertEqual(source, "valucast_public_snapshot")
+
+    def test_buys_graphic_empty_rows_degrade_not_500(self):
+        from flask import render_template
+        with app.test_request_context("/buys"):
+            html = render_template(
+                "partials/_buys_graphic.html",
+                graphic_rows=[], buy_source_label="ValuCast", dd_generated_at=None,
+            )
+        self.assertIn("No buy signals", html)
+

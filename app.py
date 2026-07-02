@@ -5,6 +5,7 @@ import csv
 import gzip
 import io
 import json
+import logging
 import math
 import os
 import re
@@ -122,13 +123,23 @@ def _png_cache_generation():
     return "|".join(parts)
 
 
+# Only params the PNG renderers actually read. Keying the cache on the FULL
+# query string let `?junk=1,2,3...` defeat the cache and force a fresh Pillow
+# render per request — an unauthenticated CPU hammer on the single 512MB
+# Render worker (7/2 audit). Unknown params now collapse to the canonical key.
+_PNG_CACHE_PARAMS = frozenset({"n", "limit", "pool", "position", "search", "callups"})
+
+
 def _png_cache_key():
     if request.method != "GET" or not request.path.endswith(".png"):
         return None
     return (
         _png_cache_generation(),
         request.path,
-        tuple(sorted(request.args.items(multi=True))),
+        tuple(sorted(
+            (k, v) for k, v in request.args.items(multi=True)
+            if k in _PNG_CACHE_PARAMS
+        )),
     )
 
 
@@ -574,9 +585,17 @@ def _select_dynasty_store(snapshot_candidate, use_public_snapshot=None):
         else bool(use_public_snapshot)
     )
     if enabled and snapshot_candidate.is_available:
+        generated_at = getattr(snapshot_candidate, "generated_at", None)
         if snapshot_candidate.dynasty_ready:
-            return snapshot_candidate, "valucast_public_snapshot"
-        if _within_stale_window(getattr(snapshot_candidate, "generated_at", None)):
+            # "Ready" is a flag BAKED INTO the snapshot at build time — it says
+            # nothing about age. Without the window check here, a silently-broken
+            # refresh serves week-old values labeled current with no banner
+            # (7/2 audit). A ready snapshot past the window still serves (it
+            # passed validation once) but wears the stale label.
+            if _within_stale_window(generated_at):
+                return snapshot_candidate, "valucast_public_snapshot"
+            return snapshot_candidate, "valucast_public_snapshot_stale"
+        if _within_stale_window(generated_at):
             return snapshot_candidate, "valucast_public_snapshot_stale"
     return _UNAVAILABLE_DYNASTY_STORE, "unavailable"
 
@@ -688,17 +707,25 @@ def _dynasty_snapshot_row_for(mlbam_id, role):
         return None
     return _dynasty_snapshot_identity_index().get((str(mlbam_id), role))
 
-# Refuse to promote a deploy with no servable ValuCast snapshot: with gunicorn
-# --preload this raises in the master, so the candidate deploy fails and Render keeps
-# the prior healthy deploy live. DD is never a valuation fallback — only a ready or
-# stale-but-valid ValuCast snapshot is served, else the explicit unavailable state.
+# Refuse to promote a deploy whose snapshot is MISSING/CORRUPT: the boot failure
+# makes the candidate deploy fail health checks so Render keeps the prior healthy
+# deploy live. But an AGED-OUT snapshot must NOT raise — prod runs a single worker
+# without --preload and recycles at --max-requests, so a wall-clock age-out would
+# re-import app.py mid-deploy and crash-loop the LIVE site into a 503 (7/2 audit).
+# Aged-out serves the explicit unavailable state instead. DD is never a fallback.
 if (
     os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1"
     and dynasty_data_source == "unavailable"
 ):
-    raise RuntimeError(
-        "No servable ValuCast snapshot (not ready and not stale-valid). Refusing to "
-        "start so the prior healthy Render deploy stays live."
+    if not public_snapshot_store.is_available:
+        raise RuntimeError(
+            "Public snapshot missing or unreadable. Refusing to start so the "
+            "prior healthy Render deploy stays live."
+        )
+    logging.getLogger(__name__).critical(
+        "ValuCast snapshot is not ready and aged past the stale window; serving "
+        "the explicit unavailable state. The daily refresh has likely been "
+        "broken for %s+ days.", MAX_SNAPSHOT_STALE_DAYS,
     )
 
 def _compute_dynasty_dollars(rows, settings, value_of=None):
@@ -3936,11 +3963,18 @@ def _build_context(args):
     # (caught by the errorhandler -> 400) before any valuation runs.
     active = _active_store(args.get("source", ""))
 
-    # Collect pt_* params for points mode
+    # Collect pt_* params for points mode. Same guard as the w_* weights below:
+    # raw query params, so `pt_HR=abc` must not 500 and `pt_HR=inf` must not
+    # poison the valuation with non-finite point values (7/2 audit).
     pt_params = {}
     for key in args:
         if key.startswith("pt_"):
-            pt_params[key[3:]] = args[key]
+            try:
+                pts = float(args[key])
+            except ValueError:
+                continue
+            if math.isfinite(pts):
+                pt_params[key[3:]] = pts
 
     # Collect w_* params for category weights
     weights: dict[str, float] = {}
@@ -4253,10 +4287,15 @@ def methodology():
     import json as _json
     from projections.models.marcel_params import MarcelParams
     from projections.models.pitcher_params import PitcherMarcelParams
-    scorecard = _json.loads(
-        (Path(__file__).parent / "data" / "validation" / "methodology_scorecard.json")
-        .read_text(encoding="utf-8")
-    )
+    # A bad daily refresh must never 500 the site (7/2 audit): every sibling
+    # route degrades on a missing/corrupt artifact -- this one did not.
+    try:
+        scorecard = _json.loads(
+            (Path(__file__).parent / "data" / "validation" / "methodology_scorecard.json")
+            .read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        scorecard = None
     hp, pp = MarcelParams(), PitcherMarcelParams()
 
     # Worked example computed from the REAL params (drift-proof): an age-29 hitter
@@ -6144,7 +6183,10 @@ def positional_share_card_png(position):
     if position not in _POSITION_SHARE_GROUPS or not dd_store.is_available:
         abort(404)
     try:
-        limit = max(5, min(25, int(request.args.get("n", 20))))
+        try:
+            limit = max(5, min(25, int(request.args.get("n", 20))))
+        except (TypeError, ValueError):
+            limit = 20  # `n=abc` is a bad link, not a 500
     except (TypeError, ValueError):
         limit = 20
     rows = _positional_prospect_rows(position, limit)

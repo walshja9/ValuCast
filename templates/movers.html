@@ -25,7 +25,7 @@
         <span class="buys-heading-eyebrow">PROSPECT MOVERS</span>
         <h1>PROSPECT MOVERS</h1>
         <p class="buys-heading-sub">{{ mover_count }} movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
-        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last {{ (rising[0].window_days if rising else 10) or 10 }} days. We filter out the model's nightly re-baselines so you only see real, sustained movement.</p>
+        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last {% set _mv = ((rising or []) + (cooling or [])) | selectattr('window_days') | list %}{{ _mv[0].window_days if _mv else 10 }} days. We filter out the model's nightly re-baselines so you only see real, sustained movement.</p>
     </div>
     <div class="buys-actions">
         <a class="export-btn" href="/movers/share-card" target="_blank" rel="noopener">Preview graphic</a>

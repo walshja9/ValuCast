@@ -1909,6 +1909,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .fit-category-grid { grid-template-columns: 1fr; }
     .category-fit-intro { flex-direction: column; }
     .rankings-table td.col-confidence { display: none; }
+    /* Custom-preset re-rank: a bare unlabeled number reads as noise on a card. */
+    .rankings-table td.col-league-rank { text-align: left; font-size: 0.8rem; color: var(--c-muted); }
+    .rankings-table td.col-league-rank::before { content: "Your League # "; font-size: .75rem; font-weight: 600; }
     .rankings-table td.col-fit { text-align: left; }
     .rankings-table td.col-fit::before { content: "Category Fit "; color: var(--c-muted); font-size: .75rem; font-weight: 600; }
 }

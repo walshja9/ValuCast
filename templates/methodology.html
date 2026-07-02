@@ -7,9 +7,9 @@
         <h2>How ValuCast Works</h2>
         <a href="/" class="back">&larr; Back to board</a>
     </div>
-    <p class="methodology-version">As of June 2026 · {{ scorecard.version }}</p>
+    <p class="methodology-version">As of June 2026{% if scorecard %} · {{ scorecard.version }}{% endif %}</p>
 
-    {% if scorecard.generated_at %}
+    {% if scorecard and scorecard.generated_at %}
     <p class="methodology-version">Scorecard generated {{ editorial_date(scorecard.generated_at) }}</p>
     {% endif %}
 
@@ -148,6 +148,7 @@
             <strong>{{ worked.proj_hr }} HR</strong>.</p>
         </details>
 
+        {% if scorecard %}
         <details>
             <summary>Validation details</summary>
             <p>We hold out future seasons (<strong>{{ scorecard.hitting.seasons[0] }}–{{ scorecard.hitting.seasons[-1] }}</strong>),
@@ -173,10 +174,15 @@
             lower-confidence — they depend heavily on team decisions and opportunity, not
             pitcher skill.</p>
         </details>
+        {% endif %}
     </section>
 
     <section>
         <h3>MLB Projection Track Record — held-out scorecard</h3>
+        {% if not scorecard %}
+        <p>The held-out validation scorecard is temporarily unavailable — it
+        republishes with the next daily refresh.</p>
+        {% else %}
         {% if scorecard.pitching.aggregate_mae_ratio < 1.0 and scorecard.hitting.aggregate_mae_ratio < 1.0 %}
         <p>On seasons the model never saw, ValuCast made smaller errors than the
         standard baselines in the areas shown below. The gains are mostly in rate
@@ -204,6 +210,7 @@
             <tr><td>{{ row.name }}</td><td>{{ row.verdict }} — <strong>not shipped</strong></td></tr>
             {% endfor %}
         </table>
+        {% endif %}
     </section>
 
     <section>

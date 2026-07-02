@@ -37,7 +37,7 @@
         <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint"><strong>Source:</strong> {{ buy_source_label }}. {{ buy_source_note }}</p>
         <p class="buys-fineprint">{{ buy_formula_note }}. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
-        <p class="buys-fineprint">Form curves span the tracked value history — up to 30 days (tracking began June 13). The <a href="/movers">Movers board</a> measures 10-day change; different window, different question.</p>
+        <p class="buys-fineprint">Form curves span the tracked value history — up to 30 days (tracking began June 13). The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
         {% endif %}
     </div>
     {% if dd_available %}
@@ -74,7 +74,7 @@
         {% if p.label %}<span class="trend-chip buys-chip">{{ p.label | replace('_', ' ') | title }}</span>{% endif %}
         {% if p.spark %}
         <svg class="buys-spark {{ p.spark.direction }}" viewBox="0 0 {{ p.spark.width }} {{ p.spark.height }}"
-             preserveAspectRatio="none" role="img" aria-label="30-day value trend, change {{ p.spark.delta }}">
+             preserveAspectRatio="none" role="img" aria-label="{{ p.spark.window_days }}-day value trend, change {{ p.spark.delta }}">
             <polyline points="{{ p.spark.points }}" fill="none" vector-effect="non-scaling-stroke" />
             <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" />
         </svg>

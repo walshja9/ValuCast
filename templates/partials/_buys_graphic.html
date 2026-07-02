@@ -17,7 +17,11 @@
         </svg>
     </div>
 
-    {% set hero = graphic_rows[0] %}
+    {# Empty board must degrade, not 500: the backend validator rejects empty
+   buys today, but this template renders in three places and must defend
+   itself (7/2 audit). #}
+{% set hero = graphic_rows[0] if graphic_rows else none %}
+    {% if hero %}
     <div class="bg-featured">
         <article class="bg-featured-card bg-hero">
             <span class="bg-feature-rank">#1 &middot; TOP BUY</span>
@@ -66,6 +70,9 @@
             {% endfor %}
         </div>
     </div>
+    {% else %}
+    <div class="bg-featured"><p class="bg-support-tag">No buy signals published today.</p></div>
+    {% endif %}
 
     <div class="bg-grid">
         {% for p in graphic_rows[5:40] %}
