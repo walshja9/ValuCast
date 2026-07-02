@@ -133,16 +133,24 @@ def test_empty_archive_is_safe(tmp_path):
     assert payload["gate"]["publishable"] is False
 
 
-def test_track_record_page_renders_full_ledger():
-    """/track-record is the human-readable ledger — funnel, every call, honest
-    statuses — while the aggregate headline still honors the publish gate."""
+def test_ledger_page_renders_full_ledger():
+    """/ledger is the human-readable ledger — funnel tiles, every call with an
+    honest status chip — while the headline still honors the publish gate."""
     from app import app
 
     app.config["TESTING"] = True
-    html = app.test_client().get("/track-record").data.decode("utf-8")
+    client = app.test_client()
+    html = client.get("/ledger").data.decode("utf-8")
 
-    assert "Ahead of the Curve — Track Record" in html
+    assert "THE LEDGER" in html
     assert "We backed off" in html                      # misses are on the page
+    assert "Our retreats" in html                       # ...and in the funnel tiles
     assert "/aotc-scorecard.json" in html               # raw artifact still linked
-    assert "no call ever leaves this ledger silently" in html.lower()
+    assert "no call ever leaves this page silently" in html.lower()
+    assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
+
+    # Legacy route redirects permanently.
+    r = client.get("/track-record")
+    assert r.status_code == 301
+    assert r.headers["Location"].endswith("/ledger")
 

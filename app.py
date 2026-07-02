@@ -6569,18 +6569,24 @@ def _build_receipts_page_context():
     }
 
 
-@app.route("/track-record")
-def track_record():
+@app.route("/ledger")
+def ledger():
     """Human-readable Ahead-of-the-Curve ledger — the JSON artifact rendered for
     people (7/2: "no one could see the ledger hidden behind a json file"). The
     aggregate headline still honors the 30-day publish gate; the full funnel and
-    per-call ledger are live immediately, misses included."""
+    per-call ledger are live immediately, misses included. "It's on the ledger"
+    is the brand phrase — the URL matches it."""
     path = Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
     try:
         sc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         sc = None
     return render_template("track_record.html", sc=sc)
+
+
+@app.route("/track-record")
+def track_record():
+    return redirect("/ledger", code=301)
 
 
 @app.route("/aotc-scorecard.json")

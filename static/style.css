@@ -4215,3 +4215,55 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     font-weight: 600;
 }
 .graphic-menu-sizes a:hover { background: var(--surface-2); text-decoration: none; }
+
+/* --- The Ledger (/ledger) --- */
+.ledger-hero { margin-bottom: .9rem; }
+.ledger-headline { padding: .9rem 1.1rem; margin-bottom: .9rem; border-radius: var(--radius); }
+.ledger-gate-note { margin-bottom: .9rem; }
+.ledger-funnel {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .6rem;
+    margin-bottom: .5rem;
+}
+.ledger-tile { padding: .85rem .9rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .1rem; }
+.ledger-tile-n { font-family: var(--font-mono); font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+.ledger-tile-win .ledger-tile-n { color: var(--c-signal); }
+.ledger-tile-loss .ledger-tile-n { color: var(--c-clay); }
+.ledger-tile-open .ledger-tile-n { color: var(--c-slate); }
+.ledger-tile-label { font-weight: 700; font-size: .85rem; }
+.ledger-tile-sub { font-size: .72rem; color: var(--c-muted); }
+.ledger-context { margin: 0 .2rem 1rem; font-size: .8rem; color: var(--c-muted); }
+.ledger-pills { margin: .2rem 0 .6rem; }
+.ledger-calls { padding: .6rem .9rem .8rem; border-radius: var(--radius-lg); }
+.ledger-row { padding: .55rem .15rem; border-bottom: 1px solid rgba(148, 163, 184, .10); }
+.ledger-row:last-child { border-bottom: none; }
+.ledger-row-main { display: flex; align-items: center; gap: .55rem; }
+.ledger-row-name { font-family: var(--font-display); font-weight: 600; }
+.ledger-chip {
+    font-family: var(--font-mono);
+    font-size: .62rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .12rem .45rem;
+    border-radius: var(--radius-sm);
+}
+.ledger-chip-win { color: var(--c-signal); background: rgba(52, 226, 196, .12); }
+.ledger-chip-loss { color: var(--c-clay); background: rgba(208, 116, 92, .14); }
+.ledger-chip-retreat { color: var(--c-amber); background: rgba(251, 191, 36, .12); }
+.ledger-chip-open { color: var(--c-muted); background: rgba(94, 102, 120, .18); }
+.ledger-row-detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem .9rem;
+    margin-top: .15rem;
+    font-family: var(--font-mono);
+    font-size: .74rem;
+    color: var(--c-muted);
+}
+.ledger-row-delta.pos { color: var(--c-signal); font-weight: 700; }
+.ledger-row-delta.neg { color: var(--c-clay); font-weight: 700; }
+@media (max-width: 640px) {
+    .ledger-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ledger-tile-n { font-size: 1.6rem; }
+}

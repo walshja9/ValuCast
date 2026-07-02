@@ -1,88 +1,125 @@
 {% extends "base.html" %}
 
-{% block title %}Ahead of the Curve — Track Record | ValuCast{% endblock %}
+{% block title %}The Ledger — Ahead of the Curve Track Record | ValuCast{% endblock %}
 
 {% block content %}
 {% from "partials/_board_nav.html" import board_nav with context %}
-{{ board_nav(aria='Track record navigation') }}
+{{ board_nav(aria='Ledger navigation') }}
 {% include "partials/_stale_notice.html" %}
 
-<article class="methodology-page glass">
-    <header>
-        <h2>Ahead of the Curve — Track Record</h2>
-        <p>Every prospect ValuCast flags as ranked meaningfully ahead of the public field,
-        tracked to one of exactly seven outcomes — including the calls <strong>we backed off
-        ourselves</strong>, which count against us. No call ever leaves this ledger silently.
-        Definitions were <a href="/methodology#aotc-rules">pre-registered {{ sc.definitions.frozen.split(',')[0] if sc.definitions else '2026-07-02' }}</a>
-        and the raw artifact is public at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>.</p>
-    </header>
+<section class="buys-heading glass ledger-hero">
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">AHEAD OF THE CURVE</span>
+        <h1>THE LEDGER</h1>
+        <p class="buys-heading-sub">Every prospect we rank meaningfully ahead of the public field,
+        tracked to an outcome — including the calls <strong>we backed off ourselves</strong>.
+        No call ever leaves this page silently.</p>
+        <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
+        &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
+    </div>
+</section>
 
-    {% if sc %}
-    <section>
-        {% if sc.gate.publishable %}
-        <h3>Headline</h3>
-        <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
-        decided calls ended with the field coming to us
-        ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
-        <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
-        Pre-registered targets: {{ (sc.targets.decided_rate * 100) | round | int }}% decided-rate,
-        {{ sc.targets.control_lift }}x lift.</p>
-        {% else %}
-        <div class="notice">The aggregate publishes as a headline metric once the
-        {{ sc.gate.min_publish_horizon_days }}-day horizon matures
-        (currently {{ sc.summary.horizon_days }} days in) — the full ledger below is live now,
-        misses included. Pre-registered targets on record:
-        {{ (sc.targets.decided_rate * 100) | round | int }}% decided-rate,
-        {{ sc.targets.control_lift }}x matched-control lift.</div>
-        {% endif %}
-    </section>
+{% if sc %}
+{% if sc.gate.publishable and sc.summary.decided_rate is not none %}
+<section class="glass ledger-headline">
+    <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
+    decided calls ended with the field coming to us
+    ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
+    <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
+    Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
+    {{ sc.targets.control_lift }}x.</p>
+</section>
+{% else %}
+<div class="notice ledger-gate-note">The headline rate publishes once the
+{{ sc.gate.min_publish_horizon_days }}-day horizon matures — currently
+<strong>{{ sc.summary.horizon_days }} days in</strong>. The full ledger below is live now,
+misses included. Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}%
+decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
+{% endif %}
 
-    <section>
-        <h3>The funnel — every call accounted for</h3>
-        <table class="provenance-table ledger">
-            <tr><th>Outcome</th><th>Calls</th><th>Counts as</th></tr>
-            <tr><td>Field moved toward us (past the noise floor)</td><td><strong>{{ sc.funnel.open_toward }}</strong></td><td>win (open)</td></tr>
-            <tr><td>Field fully caught up — divergence closed</td><td><strong>{{ sc.funnel.closed_caught_up }}</strong></td><td>win (terminal)</td></tr>
-            <tr><td>Field moved further away</td><td><strong>{{ sc.funnel.open_away }}</strong></td><td>loss</td></tr>
-            <tr><td>We backed off our own call</td><td><strong>{{ sc.funnel.retired_we_backed_off }}</strong></td><td>loss — ours</td></tr>
-            <tr><td>Below the noise floor so far</td><td>{{ sc.funnel.open_flat }}</td><td>undecided</td></tr>
-            <tr><td>Called up / graduated before resolution</td><td>{{ sc.funnel.resolved_called_up_or_graduated }}</td><td>event-resolved</td></tr>
-            <tr><td>Left the tracked universe</td><td>{{ sc.funnel.left_universe }}</td><td>disclosed exit</td></tr>
-        </table>
-        <p class="profile-note">{{ sc.summary.ever_flagged }} calls ever flagged since
-        {{ sc.summary.first_call_date }} · matched-control comparison:
-        {% if sc.summary.control_rates %}never-flagged players at the same ranks moved toward us
-        {{ (sc.summary.control_rates.toward_rate * 100) | round | int }}% of the time vs
-        {{ (sc.summary.open_rates.toward_rate * 100) | round | int }}% for our calls{% else %}accruing{% endif %}.</p>
-    </section>
+<section class="ledger-funnel" aria-label="Every call accounted for">
+    <article class="ledger-tile glass ledger-tile-win">
+        <span class="ledger-tile-n">{{ sc.funnel.open_toward + sc.funnel.closed_caught_up }}</span>
+        <span class="ledger-tile-label">Wins</span>
+        <span class="ledger-tile-sub">field came to us ({{ sc.funnel.closed_caught_up }} all the way)</span>
+    </article>
+    <article class="ledger-tile glass ledger-tile-loss">
+        <span class="ledger-tile-n">{{ sc.funnel.open_away }}</span>
+        <span class="ledger-tile-label">Losses</span>
+        <span class="ledger-tile-sub">field moved further away</span>
+    </article>
+    <article class="ledger-tile glass ledger-tile-loss">
+        <span class="ledger-tile-n">{{ sc.funnel.retired_we_backed_off }}</span>
+        <span class="ledger-tile-label">Our retreats</span>
+        <span class="ledger-tile-sub">we backed off — counts against us</span>
+    </article>
+    <article class="ledger-tile glass ledger-tile-open">
+        <span class="ledger-tile-n">{{ sc.funnel.open_flat }}</span>
+        <span class="ledger-tile-label">Undecided</span>
+        <span class="ledger-tile-sub">below the noise floor so far</span>
+    </article>
+</section>
+<p class="ledger-context">{{ sc.summary.ever_flagged }} calls flagged since {{ sc.summary.first_call_date }}
+{% if sc.summary.control_rates and sc.summary.open_rates %} &middot; the field moves toward our calls
+<strong>{{ (sc.summary.open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
+<strong>{{ (sc.summary.control_rates.toward_rate * 100) | round | int }}%</strong> for matched players
+we never flagged{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
+{{ sc.funnel.resolved_called_up_or_graduated }} resolved by call-up/graduation{% endif %}.</p>
 
-    <section>
-        <h3>Every call</h3>
-        <table class="provenance-table ledger track-record-calls">
-            <tr><th>Player</th><th>Status</th><th>Since</th><th>Days</th><th>Field then → now</th><th>Catch-up</th></tr>
-            {% for c in sc.calls %}
-            <tr>
-                <td>{{ c.name }}</td>
-                <td>{{ {
-                    'open_toward': 'Field moving toward us',
-                    'open_away': 'Field moving away',
-                    'open_flat': 'No decisive move yet',
-                    'closed_caught_up': 'Caught up — win',
-                    'retired_we_backed_off': 'We backed off',
-                    'resolved_called_up_or_graduated': 'Called up / graduated',
-                    'left_universe': 'Left universe',
-                }.get(c.status, c.status) }}</td>
-                <td>{{ c.ahead_since }}</td>
-                <td>{{ c.days_tracked }}</td>
-                <td>{% if c.consensus_now is not none %}~#{{ c.consensus_then }} → ~#{{ c.consensus_now }}{% else %}~#{{ c.consensus_then }} → —{% endif %}</td>
-                <td>{% if c.consensus_catch_up is not none %}{{ '%+d' | format(c.consensus_catch_up) }}{% else %}—{% endif %}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    </section>
-    {% else %}
-    <section><p>The track-record artifact is not available right now — the raw ledger lives at
-    <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> when published.</p></section>
-    {% endif %}
-</article>
+<section class="buys-list glass ledger-calls" aria-label="Every call on the ledger">
+    <div class="bf-filter-pills ledger-pills" aria-label="Filter calls by outcome">
+        {% for key, label in [('all', 'All'), ('win', 'Wins'), ('loss', 'Losses'), ('retreat', 'Retreats'), ('open', 'Undecided')] %}
+        <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-ledger-filter="{{ key }}" aria-pressed="{{ 'true' if loop.first else 'false' }}">{{ label }}</button>
+        {% endfor %}
+    </div>
+    {% set status_meta = {
+        'open_toward': ('win', 'Field moving to us'),
+        'closed_caught_up': ('win', 'Caught up — win'),
+        'open_away': ('loss', 'Field moving away'),
+        'retired_we_backed_off': ('retreat', 'We backed off'),
+        'open_flat': ('open', 'No decisive move'),
+        'resolved_called_up_or_graduated': ('open', 'Called up / graduated'),
+        'left_universe': ('open', 'Left universe'),
+    } %}
+    {% for c in sc.calls %}
+    {% set kind, label = status_meta.get(c.status, ('open', c.status)) %}
+    <article class="ledger-row" data-ledger-kind="{{ kind }}">
+        <div class="ledger-row-main">
+            <span class="ledger-row-name">{{ c.name }}</span>
+            <span class="ledger-chip ledger-chip-{{ kind }}">{{ label }}</span>
+        </div>
+        <div class="ledger-row-detail">
+            <span>since {{ c.ahead_since }} &middot; {{ c.days_tracked }}d</span>
+            {% if c.consensus_now is not none %}
+            <span class="ledger-row-move">field ~#{{ c.consensus_then }} &rarr; ~#{{ c.consensus_now }}</span>
+            {% else %}
+            <span class="ledger-row-move">field ~#{{ c.consensus_then }} &rarr; &mdash;</span>
+            {% endif %}
+            {% if c.consensus_catch_up is not none %}
+            <span class="ledger-row-delta {{ 'pos' if c.consensus_catch_up > 0 else ('neg' if c.consensus_catch_up < 0 else '') }}">{{ '%+d' | format(c.consensus_catch_up) }}</span>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<script>
+document.querySelectorAll('[data-ledger-filter]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var kind = btn.getAttribute('data-ledger-filter');
+        document.querySelectorAll('[data-ledger-filter]').forEach(function (pill) {
+            var active = pill === btn;
+            pill.classList.toggle('is-active', active);
+            pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-ledger-kind]').forEach(function (row) {
+            row.hidden = kind !== 'all' && row.getAttribute('data-ledger-kind') !== kind;
+        });
+    });
+});
+</script>
+{% else %}
+<section class="glass ledger-headline"><p>The ledger artifact is not available right now —
+the raw feed lives at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>.</p></section>
+{% endif %}
 {% endblock %}
