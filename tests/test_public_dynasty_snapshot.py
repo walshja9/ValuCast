@@ -536,8 +536,13 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
     assert payload["validation"]["surface_readiness"]["prospects"] is False
     assert payload["validation"]["surface_blockers"]["prospects"] == [prospect_blocker]
 
+    import app as app_module
     from app import _select_dynasty_store
 
+    # Fixture dates are pinned to 2026-06-13; the staleness window is tested
+    # elsewhere (test_app TestBulletproofing) -- neutralize it here so this
+    # test keeps asserting readiness DECOUPLING, not age.
+    monkeypatch.setattr(app_module, "_within_stale_window", lambda *a, **k: True)
     store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
     selected, source = _select_dynasty_store(store, use_public_snapshot=True)
 
@@ -1731,12 +1736,16 @@ def test_app_selector_serves_stale_snapshot_when_recent():
 
 
 def test_app_selector_can_use_ready_public_snapshot():
+    from datetime import date
+
     from app import _select_dynasty_store
 
     snapshot = SimpleNamespace(
         is_available=True,
         dynasty_ready=True,
         ready_for_live_consumers=True,
+        # ready + FRESH serves normally; ready + aged wears the stale label (7/2)
+        generated_at=date.today().isoformat(),
     )
 
     selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
@@ -1746,12 +1755,15 @@ def test_app_selector_can_use_ready_public_snapshot():
 
 
 def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
+    from datetime import date
+
     from app import _select_dynasty_store
 
     snapshot = SimpleNamespace(
         is_available=True,
         dynasty_ready=True,
         ready_for_live_consumers=True,
+        generated_at=date.today().isoformat(),
     )
     monkeypatch.delenv("VALUCAST_USE_PUBLIC_SNAPSHOT", raising=False)
 
