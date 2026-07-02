@@ -227,11 +227,16 @@ def build_adapter_artifact(universal: dict) -> dict:
         )
         for key, config in PRESETS.items()
     }
+    from datetime import datetime, timezone
     return {
         "status": "shadow_only",
         "adapter_version": ADAPTER_VERSION,
+        # Freshness stamp (7/2): this artifact silently froze for weeks once —
+        # it now carries its own date and is freshness-validated nightly.
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "universal_model_name": universal.get("model_name"),
         "universal_model_version": universal.get("model_version"),
+        "universal_generated_at": universal.get("generated_at"),
         "candidate_count": len(profiles),
         "rule": "No adapter rank is emitted unless every configured category is supported.",
         "projection_contract": {

@@ -177,21 +177,27 @@
 
     <section>
         <h3>MLB Projection Track Record — held-out scorecard</h3>
+        {% if scorecard.pitching.aggregate_mae_ratio < 1.0 and scorecard.hitting.aggregate_mae_ratio < 1.0 %}
         <p>On seasons the model never saw, ValuCast made smaller errors than the
         standard baselines in the areas shown below. The gains are mostly in rate
         stats; playing-time and opportunity stats remain harder and are labeled that way.</p>
+        {% else %}
+        <p>On seasons the model never saw, ValuCast's error vs the standard baselines
+        is shown below — including where it currently does <strong>not</strong> beat
+        them. The claim follows the data, not the other way around.</p>
+        {% endif %}
         <table class="provenance-table ledger">
             <tr><th>Step</th><th>Held-out result</th></tr>
             <tr>
                 <td>Pitching vs persistence (skill)</td>
                 <td><strong>{{ scorecard.pitching.aggregate_mae_ratio }}</strong> MAE ratio
-                    (~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error) —
-                    IP and K roughly <strong>neutral</strong>; the win is driven by ERA / WHIP / K-9 / BB-9.</td>
+                    ({% if scorecard.pitching.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.pitching.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}) —
+                    IP and K roughly <strong>neutral</strong>; the signal is concentrated in ERA / WHIP / K-9 / BB-9.</td>
             </tr>
             <tr>
                 <td>Hitting vs classic Marcel</td>
                 <td><strong>{{ scorecard.hitting.aggregate_mae_ratio }}</strong> aggregate MAE ratio
-                    (~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error) — gains
+                    ({% if scorecard.hitting.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.hitting.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}) — signal
                     concentrated in <strong>AVG/OBP/SLG/OPS</strong>.</td>
             </tr>
             {% for row in scorecard.not_shipped %}

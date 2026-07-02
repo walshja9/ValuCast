@@ -177,6 +177,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "VALUCAST_MOVERS": tmp_path / "valucast_movers.json",
         "VALUCAST_RECEIPTS": tmp_path / "valucast_receipts.json",
         "VALUCAST_BUYS": tmp_path / "valucast_buys.json",
+        "PROSPECT_LEAGUE_ADAPTERS": tmp_path / "valucast_prospect_league_adapters.json",
         "VALUCAST_BUYS_MONITOR": tmp_path / "valucast_buys_monitor.json",
         "VALUCAST_QUALITY_GOVERNOR": tmp_path / "valucast_quality_governor.json",
         "MILB_STAT_FRESHNESS_AUDIT": tmp_path / "milb_stat_freshness.json",
@@ -308,6 +309,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["SCOUTING_REPORTS"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PROSPECT_LEAGUE_ADAPTERS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     for key in ("REDRAFT_CURRENT", "REDRAFT_ROS"):

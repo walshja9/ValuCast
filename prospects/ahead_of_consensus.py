@@ -175,29 +175,58 @@ def _conviction(row: dict) -> float:
     return 0.0
 
 
-def _earliest_ahead_dates() -> dict:
-    """{identity_key: earliest ISO date ValuCast ranked the player ahead of the
-    public field}. Scans the dated board archive and re-applies the SAME divergence
-    guard, so a receipt reads "ValuCast has been ahead since this date" -- provable
-    and timestamped (the brand wedge). Fail-soft: no archive -> {}."""
-    earliest: dict[str, str] = {}
+def _ahead_streak_dates() -> dict[str, dict]:
+    """identity_key -> {"streak_since", "first_flagged", "anchored_at_archive_start"}.
+
+    streak_since is the start of the current UNBROKEN run of guarded snapshots
+    ending at the latest archive day — a snapshot below the guard resets it.
+    The old earliest-ever date asserted a continuous "held ahead since" that the
+    committed archive itself could disprove (calls that dipped below the guard,
+    or flipped behind the field, mid-window). first_flagged is kept for context;
+    anchored_at_archive_start marks streaks that reach the first archive day,
+    where "since" is a records-begin floor, not a divergence origin.
+    Fail-soft: no archive -> {}."""
+    out: dict[str, dict] = {}
     try:
         files = sorted(ARCHIVE_DIR.glob("*.json"))
     except Exception:  # noqa: BLE001
-        return earliest
-    for path in files:  # ascending date -> first hit is the earliest
+        return out
+    if not files:
+        return out
+    guarded_by_date: dict[str, set[str]] = {}
+    first_flagged: dict[str, str] = {}
+    for path in files:  # ascending dates
         date = path.stem
         try:
             board = (json.loads(path.read_text(encoding="utf-8")) or {}).get("board") or []
         except (OSError, ValueError):
             continue
+        keys: set[str] = set()
         for raw in board:
             if not isinstance(raw, dict):
                 continue
             cand = _divergence_row(raw)
-            if cand and _is_guarded(cand) and cand["identity_key"] not in earliest:
-                earliest[cand["identity_key"]] = date
-    return earliest
+            if cand and _is_guarded(cand) and cand["identity_key"]:
+                keys.add(cand["identity_key"])
+                first_flagged.setdefault(cand["identity_key"], date)
+        guarded_by_date[date] = keys
+    dates = sorted(guarded_by_date)
+    if not dates:
+        return out
+    archive_start = dates[0]
+    for key in guarded_by_date[dates[-1]]:
+        streak_since = dates[-1]
+        for date in reversed(dates):
+            if key in guarded_by_date[date]:
+                streak_since = date
+            else:
+                break
+        out[key] = {
+            "streak_since": streak_since,
+            "first_flagged": first_flagged.get(key, streak_since),
+            "anchored_at_archive_start": streak_since == archive_start,
+        }
+    return out
 
 
 def _days_between(start: str | None, end: str) -> int:
@@ -246,20 +275,31 @@ def build_ahead_of_consensus_report(
     ahead_thin = _ranked(
         [row for row in rows if _is_guarded(row) and not _is_featured(row)]
     )
-    # Receipts: how long ValuCast has held each player ahead of the field (provable
-    # via the dated board archive). Accrues over time -- thin while the archive is young.
-    earliest_ahead = _earliest_ahead_dates()
+    # Receipts: the current UNBROKEN streak ValuCast has held each player ahead of
+    # the field (provable via the dated board archive — and disprovable, which is
+    # why it must be a streak, not an earliest-ever date).
+    streaks = _ahead_streak_dates()
     today = generated_at[:10]
     for row in (*ahead, *ahead_thin):
-        since = earliest_ahead.get(row["identity_key"])
+        info = streaks.get(row["identity_key"]) or {}
+        since = info.get("streak_since")
         row["ahead_since"] = since
         row["days_ahead"] = _days_between(since, today)
+        row["first_flagged"] = info.get("first_flagged")
+        row["ahead_since_is_archive_start"] = bool(info.get("anchored_at_archive_start"))
     divergence_by_identity = {
         row["identity_key"]: {
             "valucast_rank": row["valucast_rank"],
             "consensus_rank": row["consensus_rank"],
             "board_count": row["board_count"],
             "divergence": row["divergence"],
+            "ahead_since": (streaks.get(row["identity_key"]) or {}).get("streak_since"),
+            "days_ahead": _days_between(
+                (streaks.get(row["identity_key"]) or {}).get("streak_since"), today
+            ),
+            "ahead_since_is_archive_start": bool(
+                (streaks.get(row["identity_key"]) or {}).get("anchored_at_archive_start")
+            ),
         }
         for row in rows
         if row.get("identity_key") and _is_featured(row)

@@ -14,7 +14,8 @@
             <p>ValuCast connects custom league values, prospect intelligence, peak-role context, role tracking, buy signals, and validation into one independent baseball model.</p>
         </div>
         <div class="intelligence-score">
-            <span>{{ readiness.front_office_grade or "A" }}</span>
+            {# Never fabricate a grade: a missing report renders honestly, like /front-office does. #}
+            <span>{{ readiness.front_office_grade or "—" }}</span>
             <small>{% if readiness.front_office_score %}{{ readiness.front_office_score }}/100{% else %}front-office track{% endif %}</small>
         </div>
     </section>

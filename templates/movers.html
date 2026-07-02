@@ -15,6 +15,7 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 {{ board_nav(active='movers', aria='Movers board navigation') }}
+{% include "partials/_stale_notice.html" %}
 
 <section class="buys-heading movers-heading glass">
     <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">

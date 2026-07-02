@@ -40,7 +40,16 @@ def build_spark(value_history, width: int = W, height: int = H):
         "first_date": pts[0][0], "last_date": pts[-1][0],
         "min": round(lo, 1), "max": round(hi, 1),
         "last_value": round(values[-1], 1),
-        "window_days": len(pts),
+        # Calendar span, not point count — the card renders this as "over Nd" and
+        # archive gaps made the two numbers diverge.
+        "window_days": _calendar_days(pts[0][0], pts[-1][0]) or len(pts),
         "delta": delta,
         "direction": "up" if delta > 0 else ("down" if delta < 0 else "flat"),
     }
+
+def _calendar_days(first: str, last: str) -> int:
+    from datetime import date
+    try:
+        return max(0, (date.fromisoformat(str(last)) - date.fromisoformat(str(first))).days)
+    except (TypeError, ValueError):
+        return 0

@@ -90,18 +90,21 @@ def _load_crosswalk() -> dict:
 
 
 def _load_board_name_index() -> dict:
-    """normalized_name -> mlbam_id for unambiguous fallback joins."""
+    """normalized_name -> (mlbam_id, team) for unambiguous fallback joins.
+    Team rides along so the fallback can be corroborated — an unguarded
+    name-only join can hang the wrong player's scouting grades on a card."""
     try:
         board = json.loads(RANK_PATH.read_text(encoding="utf-8")).get("board", [])
     except Exception:  # noqa: BLE001
         return {}
-    idx: dict[str, list[str]] = {}
+    idx: dict[str, list[tuple[str, str]]] = {}
     for row in board:
         mid = row.get("mlbam_id")
         if mid is None:
             continue
         key = _norm(row.get("normalized_name") or row.get("name", ""))
-        idx.setdefault(key, []).append(str(mid))
+        team = str(row.get("mlb_team") or row.get("team") or "").strip().upper()
+        idx.setdefault(key, []).append((str(mid), team))
     # keep only unambiguous names
     return {k: v[0] for k, v in idx.items() if len(v) == 1}
 
@@ -144,7 +147,16 @@ def build_snapshot() -> dict:
     by_mlbam: dict[str, dict] = {}
     unmatched: list[dict] = []
     for pid, rec in players.items():
-        mid = xwalk.get(pid) or name_idx.get(_norm(rec["name"]))
+        mid = xwalk.get(pid)
+        if not mid:
+            # Name fallback only with org corroboration (7/2): same normalized
+            # name AND same org, or no match at all — never a blind name join.
+            candidate = name_idx.get(_norm(rec["name"]))
+            if candidate:
+                cand_mid, cand_team = candidate
+                rec_org = str(rec.get("org") or "").strip().upper()
+                if rec_org and cand_team and rec_org == cand_team:
+                    mid = cand_mid
         if mid:
             rec["mlbam_id"] = mid
             # last write wins is fine (FV identical across files for a pid)

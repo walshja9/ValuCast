@@ -15,6 +15,7 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 {{ board_nav(active='buys') }}
+{% include "partials/_stale_notice.html" %}
 
 <section class="buys-heading glass">
     {# Layered strokes (halo/glow/core + hot node) = the share-card neon curve.
@@ -68,7 +69,7 @@
             <a href="/player/{{ p.id }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
         </div>
-        <span class="buys-score" title="momentum {{ (p.terms.momentum * 100) | round | int }} &middot; breakout {{ (p.terms.breakout * 100) | round | int }} &middot; rank gap {{ (p.terms.gap * 100) | round | int }} &middot; runway {{ (p.terms.runway * 100) | round | int }}">{{ p.score }}</span>
+        <span class="buys-score" title="model strength {{ (p.terms.model_strength * 100) | round | int }} &middot; momentum {{ (p.terms.momentum * 100) | round | int }} &middot; buy window {{ (p.terms.buy_window * 100) | round | int }} &middot; runway {{ (p.terms.runway * 100) | round | int }} &middot; conviction {{ (p.terms.conviction * 100) | round | int }}">{{ p.score }}</span>
         {% if p.label %}<span class="trend-chip buys-chip">{{ p.label | replace('_', ' ') | title }}</span>{% endif %}
         {% if p.spark %}
         <svg class="buys-spark {{ p.spark.direction }}" viewBox="0 0 {{ p.spark.width }} {{ p.spark.height }}"
@@ -118,7 +119,8 @@
 .bg-sub { position: absolute; left: 48px; top: 152px; font-size: 22px; color: #e8e9ee; }
 .bg-source { position: absolute; left: 48px; top: 183px; font-size: 15px; color: #34e2c4; font-weight: 600; }
 .bg-arc { position: absolute; right: 48px; top: 28px; width: 240px; height: 130px; }
-.bg-arc path { fill: none; stroke: rgba(52, 226, 196, .55); stroke-width: 3px; }
+/* per-path stroke attributes carry the layered neon look; a CSS stroke rule here would override all of them */
+.bg-arc path { fill: none; }
 .bg-featured { position: absolute; left: 48px; top: 226px; width: 984px; height: 314px; display: grid; grid-template-columns: 370px 598px; gap: 16px; }
 .bg-featured-card { position: relative; box-sizing: border-box; background: linear-gradient(158deg, #1c1f27 0%, #141519 100%); border: 1px solid #2a2c34; border-radius: 10px; overflow: hidden; }
 .bg-hero { background: linear-gradient(158deg, #1c1f27 0%, #131418 100%); border-color: #2a2c34; }

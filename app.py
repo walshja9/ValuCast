@@ -204,6 +204,14 @@ def _security_headers(response):
 
 
 @app.context_processor
+def _snapshot_staleness():
+    """Every dd_store-backed surface gets the same honest stale flag — the banner
+    used to exist only on the home board while map/backfields/buys/movers served
+    the identical stale data silently (7/2)."""
+    return {"snapshot_stale": dynasty_data_source == "valucast_public_snapshot_stale"}
+
+
+@app.context_processor
 def _aotc_hold_context():
     return {"aotc_hold": AHEAD_OF_THE_CURVE_HOLD, "receipts_hold": RECEIPTS_HOLD}
 
@@ -4165,8 +4173,11 @@ def league_import():
         "pitching_categories": PITCHING_CATEGORIES,
         "category_presets": DYNASTY_CATEGORY_PRESETS,
     }
-    ip = (request.headers.get("X-Forwarded-For", request.remote_addr or "?")
-          .split(",")[0].strip())
+    # Rightmost XFF hop is the one Render's proxy appended; the leftmost is
+    # client-supplied and made the rate limit trivially spoofable.
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    ip = (forwarded.split(",")[-1].strip() if forwarded
+          else (request.remote_addr or "?"))
     if not app.config.get("TESTING") and _import_rate_limited(ip):
         return render_template(
             "partials/setup_dynasty.html",
@@ -4504,6 +4515,7 @@ def _ahead_of_consensus_for_key(key) -> dict | None:
         "board_count": receipt.get("board_count"),
         "days_ahead": receipt.get("days_ahead"),
         "ahead_since": receipt.get("ahead_since"),
+        "ahead_since_is_archive_start": receipt.get("ahead_since_is_archive_start"),
     }
 
 
@@ -4531,7 +4543,10 @@ def _ahead_of_consensus_receipt_text(receipt) -> str | None:
     except (TypeError, ValueError):
         days_ahead = 0
     if days_ahead > 0 and receipt.get("ahead_since"):
-        text = f"{text} \u00b7 {days_ahead}d early"
+        # "+" when the streak reaches the archive's first day: the true streak may
+        # predate our records, so the number is a floor, not an origin.
+        suffix = "+" if receipt.get("ahead_since_is_archive_start") else ""
+        text = f"{text} \u00b7 {days_ahead}d{suffix} early"
     return text
 
 

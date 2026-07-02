@@ -172,7 +172,12 @@ def _current_rows(rank_payload: dict) -> list[dict]:
         key = _identity_key(row)
         rank = _clean_int(row.get("rank"))
         score = _clean_float(row.get("score"))
-        if not key or key in seen or rank is None or rank > MAX_CURRENT_RANK or score is None:
+        # No current-rank cap here (7/2): capping the CURRENT rank made the biggest
+        # crash-outs structurally invisible on the cooling side — the same
+        # survivorship disease the AOTC scorecard v1 had. The cap is applied
+        # per-direction below: rising needs a top-N current rank, cooling needs a
+        # top-N rank at the WINDOW START.
+        if not key or key in seen or rank is None or score is None:
             continue
         seen.add(key)
         rows.append(row)
@@ -267,10 +272,16 @@ def build_movers_board(
             below_threshold_count += 1
             continue
         mover = _movement_row(row, start, end)
+        start_rank = _clean_int(start.get("rank"))
+        current_rank = _clean_int(end.get("rank"))
         if score_delta > 0:
-            rising.append(mover)
+            if current_rank is not None and current_rank <= MAX_CURRENT_RANK:
+                rising.append(mover)
         else:
-            cooling.append(mover)
+            # Cooling eligibility keys on where the window STARTED, so a player
+            # who fell out of the top-N entirely still shows as a cooler.
+            if start_rank is not None and start_rank <= MAX_CURRENT_RANK:
+                cooling.append(mover)
 
     rising.sort(
         key=lambda item: (

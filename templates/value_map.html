@@ -15,6 +15,7 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 {{ board_nav(active='map', aria='Value map navigation') }}
+{% include "partials/_stale_notice.html" %}
 
 <section class="map-heading glass">
     <div>

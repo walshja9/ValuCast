@@ -596,10 +596,17 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             # per-level breakdown, so nothing looks "unsupported" even though the text
             # now silently describes a narrower, outdated slice of the season as the
             # whole thing. sample_context_stale() closes that gap.
-            if guard["ok"] and not sample_context_stale(cached["text"], grounding):
+            # A traded/moved player must not keep prose about his old org — the
+            # numbers can all still validate while the narrative names the wrong
+            # team (7/2). Old cache entries without a team stay reusable.
+            cached_team = str(cached.get("team") or "").strip().upper()
+            grounding_team = str(grounding.get("team") or "").strip().upper()
+            team_changed = bool(cached_team and grounding_team and cached_team != grounding_team)
+            if guard["ok"] and not team_changed and not sample_context_stale(cached["text"], grounding):
                 result = {
                     **cached,
                     "hash": digest,
+                    "team": grounding_team or cached.get("team"),
                     "valid": True,
                     "hard_ok": guard["hard_ok"],
                     "problems": guard,

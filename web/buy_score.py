@@ -265,11 +265,15 @@ def build_valucast_board(rows, n=BOARD_SIZE):
             if len(score_history) >= MIN_VALUCAST_BUY_SPARK_POINTS
             else ()
         )
+        # Truthful component names (7/2): the tooltip used to call model_strength
+        # "breakout" and buy_window "rank gap", and dropped conviction entirely —
+        # the shown parts could not reconstruct the shown score.
         display_terms = {
             "momentum": valucast_terms.get("momentum", NEUTRAL_MOMENTUM),
-            "breakout": valucast_terms.get("model_strength", 0.0),
-            "gap": valucast_terms.get("buy_window", 0.0),
+            "model_strength": valucast_terms.get("model_strength", 0.0),
+            "buy_window": valucast_terms.get("buy_window", 0.0),
             "runway": valucast_terms.get("runway", 0.0),
+            "conviction": valucast_terms.get("conviction", 0.0),
         }
         reason = _availability_reason(row) or row.get("reason") or "ValuCast signal"
         board.append({

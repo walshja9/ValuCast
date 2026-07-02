@@ -88,6 +88,7 @@ def test_ahead_of_consensus_for_key_merges_showcase_receipt(monkeypatch):
         "board_count": 5,
         "days_ahead": 27,
         "ahead_since": "2026-05-29",
+        "ahead_since_is_archive_start": None,
     }
 
 

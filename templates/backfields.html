@@ -11,6 +11,7 @@
 {% block content %}
 <article class="backfields-page">
     <header class="bf-hero">
+        {% include "partials/_stale_notice.html" %}
         <div class="bf-hero-copy">
             <p class="bf-eyebrow">Minor Leagues</p>
             <h1>Backfields</h1>
@@ -111,7 +112,7 @@
                 </div>
                 <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
                 {% if call.days_ahead %}
-                <p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field since {{ call.ahead_since }}">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>
+                {% if call.ahead_since_is_archive_start %}<p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field for the full length of the tracking archive, which begins {{ call.ahead_since }} — the streak may predate our records">Ahead of the field {{ call.days_ahead }}+ day{{ '' if call.days_ahead == 1 else 's' }} &middot; tracked since {{ call.ahead_since }}</p>{% else %}<p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field every snapshot since {{ call.ahead_since }} (unbroken streak, verifiable in the dated archive)">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>{% endif %}
                 {% endif %}
                 <p class="bf-consensus-meta">{{ call.board_count }} board{{ '' if call.board_count == 1 else 's' }}</p>
             </article>
@@ -132,7 +133,7 @@
                     </div>
                     <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
                     {% if call.days_ahead %}
-                    <p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field since {{ call.ahead_since }}">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>
+                    {% if call.ahead_since_is_archive_start %}<p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field for the full length of the tracking archive, which begins {{ call.ahead_since }} — the streak may predate our records">Ahead of the field {{ call.days_ahead }}+ day{{ '' if call.days_ahead == 1 else 's' }} &middot; tracked since {{ call.ahead_since }}</p>{% else %}<p class="bf-consensus-receipt" title="ValuCast has held this player ahead of the public field every snapshot since {{ call.ahead_since }} (unbroken streak, verifiable in the dated archive)">Ahead of the field {{ call.days_ahead }} day{{ '' if call.days_ahead == 1 else 's' }} &middot; since {{ call.ahead_since }}</p>{% endif %}
                     {% endif %}
                     <p class="bf-consensus-meta">{{ call.board_count }} board{{ '' if call.board_count == 1 else 's' }}</p>
                 </article>
