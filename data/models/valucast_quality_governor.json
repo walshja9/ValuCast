@@ -1,9 +1,7 @@
 {
   "artifact": "valucast_quality_governor",
   "blockers": [
-    "Top prospect board is too pitcher-heavy for public promotion.",
-    "MiLB prospect-card stat freshness audit blocks public promotion.",
-    "Prospect card data audit blocks public promotion."
+    "Top prospect board is too pitcher-heavy for public promotion."
   ],
   "buy_blockers": [],
   "checks": [
@@ -66,15 +64,15 @@
               "SP"
             ],
             "rank": 7,
-            "value": 81.3
+            "value": 81.4
           },
           {
             "name": "Cristopher S\u00e1nchez",
             "positions": [
               "SP"
             ],
-            "rank": 14,
-            "value": 67.76
+            "rank": 15,
+            "value": 67.83
           },
           {
             "name": "Jacob Misiorowski",
@@ -82,8 +80,8 @@
               "SP",
               "RP"
             ],
-            "rank": 17,
-            "value": 66.78
+            "rank": 16,
+            "value": 66.92
           },
           {
             "name": "Chase Burns",
@@ -91,8 +89,8 @@
               "SP",
               "RP"
             ],
-            "rank": 21,
-            "value": 64.11
+            "rank": 22,
+            "value": 64.16
           }
         ],
         "reliever_count": 0,
@@ -119,65 +117,65 @@
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
-            "rank": 4,
+            "rank": 5,
             "role": "pitcher",
-            "score": 62.86
+            "score": 63.27
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
-            "rank": 5,
+            "rank": 6,
             "role": "pitcher",
-            "score": 61.17
+            "score": 61.57
+          },
+          {
+            "mlbam_id": 687312,
+            "name": "Gabriel Hughes",
+            "rank": 8,
+            "role": "pitcher",
+            "score": 56.92
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
-            "rank": 9,
+            "rank": 12,
             "role": "pitcher",
-            "score": 55.51
+            "score": 55.55
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 11,
+            "rank": 14,
             "role": "pitcher",
-            "score": 55.05
+            "score": 55.21
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
-            "rank": 13,
+            "rank": 16,
             "role": "pitcher",
-            "score": 53.11
+            "score": 53.58
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
-            "rank": 15,
+            "rank": 20,
             "role": "pitcher",
-            "score": 51.43
+            "score": 51.83
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
-            "rank": 17,
+            "rank": 22,
             "role": "pitcher",
-            "score": 50.74
+            "score": 51.09
           },
           {
             "mlbam_id": 815549,
             "name": "Ryan Sloan",
-            "rank": 24,
+            "rank": 35,
             "role": "pitcher",
-            "score": 48.12
-          },
-          {
-            "mlbam_id": 807284,
-            "name": "Cam Caminiti",
-            "rank": 26,
-            "role": "pitcher",
-            "score": 47.59
+            "score": 47.77
           }
         ],
         "top25_evaluated_count": 25,
@@ -186,8 +184,8 @@
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 18,
-        "top50_pitcher_rate": 0.36,
+        "top50_pitcher_count": 15,
+        "top50_pitcher_rate": 0.3,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -347,12 +345,12 @@
       "message": "Top prospect board factual context shape is within publication limits.",
       "metrics": {
         "band_counts": {
-          "balanced": 8,
+          "balanced": 7,
           "bat_missing": 4,
-          "impact": 20,
+          "impact": 22,
           "limited": 1,
-          "mixed": 4,
-          "starter_volume": 12,
+          "mixed": 6,
+          "starter_volume": 9,
           "thin": 1
         },
         "best_single_level_covered_count": 0,
@@ -371,7 +369,7 @@
             "level": "A",
             "mlbam_id": 800522,
             "name": "Josue Briceno",
-            "rank": 12,
+            "rank": 15,
             "role": "hitter",
             "sample": 3.0,
             "sample_unit": "PA",
@@ -381,7 +379,7 @@
             "level": "AA",
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 36,
+            "rank": 50,
             "role": "pitcher",
             "sample": 26.3,
             "sample_unit": "IP",
@@ -398,7 +396,7 @@
       "message": "Top prospect board stat lines align with current factual context.",
       "metrics": {
         "current_stat_context_mismatch_count": 0,
-        "evaluated_count": 48,
+        "evaluated_count": 50,
         "max_allowed_current_stat_context_mismatch_count": 0,
         "sample_ready": true,
         "samples": [],
@@ -409,40 +407,36 @@
     },
     {
       "id": "milb_stat_freshness_audit",
-      "message": "MiLB prospect-card stat freshness audit blocks public promotion.",
+      "message": "MiLB prospect-card stat freshness audit is clean.",
       "metrics": {
         "audit_present": true,
-        "audit_status": "blocked",
-        "blocker_count": 1,
-        "blockers": [
-          "top-50 prospect card context uses latest_milb_history fallback"
-        ],
-        "current_row_count": 6260,
-        "current_season_row_count": 6120,
+        "audit_status": "candidate_ready",
+        "blocker_count": 0,
+        "blockers": [],
+        "current_row_count": 6292,
+        "current_season_row_count": 6152,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 7,
-        "top50_history_fallback_count": 2,
+        "top50_history_fallback_count": 0,
         "top50_stat_context_mismatch_count": 0
       },
-      "status": "blocked",
+      "status": "passed",
       "surface": "prospects"
     },
     {
       "id": "prospect_card_data_audit",
-      "message": "Prospect card data audit blocks public promotion.",
+      "message": "Prospect card identity, level, stat-context, and graduation audit is clean.",
       "metrics": {
         "active_mlb_level_count": 0,
         "audit_present": true,
-        "audit_status": "blocked",
-        "blockers": [
-          "Top-50 cards still rely on MiLB history fallback stat context."
-        ],
+        "audit_status": "candidate_ready",
+        "blockers": [],
         "missing_stat_line_count": 0,
         "top200_count": 200,
         "top200_watch_count": 0
       },
-      "status": "blocked",
+      "status": "passed",
       "surface": "prospects"
     },
     {
@@ -493,7 +487,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 2,
+        "priced_availability_risk_count": 0,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,
@@ -558,7 +552,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 232
+        "row_count": 233
       },
       "status": "passed"
     },
@@ -614,7 +608,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-07-02T01:21:36.273944+00:00",
+  "generated_at": "2026-07-02T12:25:37.694299+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
@@ -630,9 +624,9 @@
       "public_snapshot": "2026-07-02",
       "recent_signal_report": "2026-07-02"
     },
-    "mlb_count": 981,
-    "prospect_count": 2701,
-    "public_row_count": 3682
+    "mlb_count": 920,
+    "prospect_count": 2767,
+    "public_row_count": 3687
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
@@ -652,9 +646,7 @@
     "dynasty": [],
     "movers": [],
     "prospects": [
-      "Top prospect board is too pitcher-heavy for public promotion.",
-      "MiLB prospect-card stat freshness audit blocks public promotion.",
-      "Prospect card data audit blocks public promotion."
+      "Top prospect board is too pitcher-heavy for public promotion."
     ]
   },
   "surface_readiness": {
