@@ -2805,7 +2805,7 @@ def _prospect_player_card_png(row):
         )
     else:
         # No ahead receipt: still show the field's read so the divergence is the story.
-        consensus_value = _card_consensus_value(receipt, fg_scouting)
+        consensus_value = _card_consensus_value(receipt, fg_scouting, row)
         if consensus_value:
             draw.rounded_rectangle(receipt_box, radius=7, fill=card_2, outline=(44, 46, 54), width=1)
             label = "CONSENSUS  "
@@ -4513,17 +4513,24 @@ def _ahead_of_consensus_receipt_text(receipt) -> str | None:
     return text
 
 
-def _card_consensus_value(receipt, fg_scouting) -> str | None:
-    """Consensus-rank value for the share card: the multi-board number when ValuCast
-    has one, else an honest 'outside top 100'. We only assert 'outside top 100' when
-    FanGraphs (the deepest public board) also gives no top-100 placement -- otherwise
-    we'd mislabel a player the field actually ranks (FG would list him), so stay
-    silent there."""
+def _card_consensus_value(receipt, fg_scouting, row=None) -> str | None:
+    """Consensus-rank value for the share card: the ahead-receipt's multi-board
+    number when ValuCast has one, else the row's public-board median (~#N — deep
+    boards rank past 100, so the divergence stays quantified instead of hiding
+    behind 'outside top 100'), else the honest fallbacks: silent if FanGraphs
+    ranks him (we'd mislabel a listed player), 'outside top 100' when no public
+    board has him at all."""
     if isinstance(receipt, dict):
         try:
             return f"#{int(receipt.get('consensus_rank'))}"
         except (TypeError, ValueError):
             pass
+    consensus = getattr(row, "public_source_consensus", None)
+    if consensus:
+        # Board count keeps the claim honest — "~#512" from one deep board reads
+        # very differently from a 4-board median, and says so on the card.
+        n = len(getattr(row, "public_source_ranks", None) or {})
+        return f"~#{int(consensus)} ({n} board{'s' if n != 1 else ''})"
     if (fg_scouting or {}).get("fg_top100"):
         return None
     return "outside top 100"
