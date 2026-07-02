@@ -915,9 +915,14 @@ def _prospect_tiers():
     return tiers
 
 
-def _prospect_rows(position=None, search=None):
-    """Return the dedicated Prospects board in DD's authoritative prospect order."""
+def _prospect_rows(position=None, search=None, row_filter=None):
+    """Return the dedicated Prospects board in DD's authoritative prospect order.
+    row_filter runs BEFORE the top-200 slice (like position/search) so a filtered
+    view repopulates to full depth — hiding 23 debuted players surfaces the next
+    23 ranked prospects instead of leaving a 177-row board."""
     rows = dd_store.filter(pool="prospect", position=position, search=search)
+    if row_filter is not None:
+        rows = [row for row in rows if row_filter(row)]
     return sorted(
         rows,
         key=lambda row: (
@@ -1179,14 +1184,11 @@ def _prospect_category_state(args):
 
 def _apply_prospect_board_context(ctx, args):
     """Apply dedicated prospect-board rows and metadata to a DD context."""
-    rows = _prospect_rows(
-        position=ctx.get("position") or None,
-        search=ctx.get("search") or None,
-    )
     # Debut-status view filter (renamed from "MiLB only" 7/2 — debut is the concept
     # users actually reason about). "Debuted" = has reached the majors: on an active
     # roster now (rookie-rule retention) OR a prior call-up since optioned back down
-    # (the MLB-taste guys). P# gaps are honest — same behavior as the position filter.
+    # (the MLB-taste guys). Applied BEFORE the top-200 slice so the board
+    # repopulates to full depth; P# gaps are honest — same as the position filter.
     raw_callups = args.get("callups") or ""
     callups = {"milb": "undebuted"}.get(raw_callups, raw_callups)
     if callups not in ("debuted", "undebuted"):
@@ -1199,10 +1201,16 @@ def _apply_prospect_board_context(ctx, args):
             or str(getattr(row, "mlbam_id", "")) in debuted_ids
         )
 
+    row_filter = None
     if callups == "undebuted":
-        rows = [row for row in rows if not _has_debuted(row)]
+        row_filter = lambda row: not _has_debuted(row)  # noqa: E731
     elif callups == "debuted":
-        rows = [row for row in rows if _has_debuted(row)]
+        row_filter = _has_debuted
+    rows = _prospect_rows(
+        position=ctx.get("position") or None,
+        search=ctx.get("search") or None,
+        row_filter=row_filter,
+    )
     ctx["callups"] = callups
     settings = parse_league_settings(args)
     ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)

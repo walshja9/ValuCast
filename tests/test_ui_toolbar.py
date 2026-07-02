@@ -47,18 +47,29 @@ class TestToolbar(unittest.TestCase):
         self.assertIn("openProspectGraphic", html)
 
     def test_prospects_debut_filter_hides_and_isolates_debuted_players(self):
+        # Debuted players carry SOME callup-chip variant ("Called up · TEAM" when
+        # the same-day pulse has them, "In MLB · rookie-eligible" otherwise,
+        # "MLB taste" for optioned-back guys) — assert on the chip class, not one
+        # wording, so pulse freshness can't flake this test.
         default = self.client.get("/?mode=prospects").data.decode("utf-8")
         undebuted = self.client.get("/?mode=prospects&callups=undebuted").data.decode("utf-8")
-        # Retained call-ups carry the explaining chip; the not-debuted view hides them.
-        if "In MLB · rookie-eligible" not in default:
-            self.skipTest("no retained call-ups in current data")
-        self.assertNotIn("In MLB · rookie-eligible", undebuted)
+        if 'class="callup-chip"' not in default:
+            self.skipTest("no debuted prospects in current data")
+        # The not-debuted view has no debuted players, hence no callup chips.
+        self.assertNotIn('class="callup-chip"', undebuted)
         # Legacy param value keeps working for any shared URLs.
         legacy = self.client.get("/?mode=prospects&callups=milb").data.decode("utf-8")
-        self.assertNotIn("In MLB · rookie-eligible", legacy)
-        # The debuted-only view keeps at least one retained call-up visible.
+        self.assertNotIn('class="callup-chip"', legacy)
+        # Filtering runs BEFORE the top-200 slice, so the not-debuted view
+        # repopulates to full depth instead of leaving a shorter board.
+        self.assertEqual(
+            default.count('class="player-row'),
+            undebuted.count('class="player-row'),
+        )
+        # The debuted view surfaces retained call-ups from BEYOND the unfiltered
+        # top-200 (62 active-roster retainees exist; only ~2 dozen rank inside it).
         debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
-        self.assertIn("In MLB · rookie-eligible", debuted)
+        self.assertGreater(debuted.count('class="player-row'), 30)
 
     def test_scoring_switch_updates_display_slot_oob(self):
         # P1 fix: switching Categories<->Points must restructure the toolbar (the
