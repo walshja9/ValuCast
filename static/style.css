@@ -4166,6 +4166,14 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
    Native <details> so no form change events fire (the board form re-ranks on any
    named-control change); base.html closes open menus on outside click. */
 .graphic-menu { position: relative; display: inline-block; }
+/* An open menu must beat every later sibling's stacking context — the
+   backfields sections painted over the dropdown's bottom rows (7/2). Raising
+   z inside the hero isn't enough: the HERO SECTION itself must outrank its
+   sibling sections while a menu is open. */
+.graphic-menu[open] { z-index: 300; }
+.bf-share-actions { position: relative; }
+.bf-share-actions[open] { z-index: 300; }
+.backfields-page .bf-hero:has(.graphic-menu[open]) { position: relative; z-index: 400; }
 .graphic-menu > summary { list-style: none; cursor: pointer; user-select: none; }
 .graphic-menu > summary::-webkit-details-marker { display: none; }
 .graphic-menu > summary::after { content: " \25BE"; color: var(--c-muted); }
@@ -4200,9 +4208,12 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     /* solid, not the glass token — without backdrop-filter the page bled through */
     background: #101218;
 }
-/* The backfields share button sits at the hero's LEFT edge — a right-anchored
-   dropdown hangs half off-screen on mobile. Anchor left there instead. */
-.bf-share-actions .graphic-menu-list { left: 0; right: auto; }
+/* The backfields share button follows the hero layout: right edge on desktop
+   (menu anchors right, as everywhere else), stacked LEFT on mobile — where a
+   right-anchored dropdown hangs half off-screen, so anchor left there only. */
+@media (max-width: 720px) {
+    .bf-share-actions .graphic-menu-list { left: 0; right: auto; }
+}
 .graphic-menu-label {
     padding: .34rem .6rem .1rem;
     font-family: var(--font-mono);
