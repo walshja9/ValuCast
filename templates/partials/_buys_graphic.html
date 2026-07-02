@@ -59,7 +59,9 @@
                     <circle cx="{{ p.spark.last_x }}" cy="{{ p.spark.last_y }}" r="2.5" fill="{{ spark_color }}" />
                 </svg>
                 {% endif %}
-                <span class="bg-support-reason">{{ p.spark_label or support_reason }}</span>
+                {# Drop the UP/DOWN word on support cards — the curve color already
+                   says it, and the full label clips at this cell width (7/2). #}
+                <span class="bg-support-reason">{{ (p.spark_label or support_reason) | replace('DOWN ', '') | replace('UP ', '') }}</span>
             </article>
             {% endfor %}
         </div>
