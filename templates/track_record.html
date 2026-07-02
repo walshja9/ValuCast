@@ -60,10 +60,11 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
     </article>
 </section>
 <p class="ledger-context">{{ sc.summary.ever_flagged }} calls flagged since {{ sc.summary.first_call_date }}
-{% if sc.summary.control_rates and sc.summary.open_rates %} &middot; the field moves toward our calls
+{% if sc.gate.publishable and sc.summary.control_rates and sc.summary.open_rates %} &middot; the field moves toward our calls
 <strong>{{ (sc.summary.open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
 <strong>{{ (sc.summary.control_rates.toward_rate * 100) | round | int }}%</strong> for matched players
-we never flagged{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
+we never flagged{% else %} &middot; success rate and matched-control comparison publish with the
+30-day scorecard{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
 {{ sc.funnel.resolved_called_up_or_graduated }} resolved by call-up/graduation{% endif %}.</p>
 
 <section class="buys-list glass ledger-calls" aria-label="Every call on the ledger">
