@@ -6462,7 +6462,13 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
     date_label = _editorial_date(generated_at)
-    subtitle = "Biggest 7-day risers & fallers on the prospect board"
+    # Window comes from the artifact rows — a hardcoded "7-day" shipped while the
+    # metric actually ran 10 days, contradicting the per-row labels (7/2).
+    window = next(
+        (r.get("window_days") for r in list(rising) + list(cooling) if r.get("window_days")),
+        10,
+    )
+    subtitle = f"Biggest {window}-day risers & fallers on the prospect board"
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
     _graphic_header(
@@ -6535,12 +6541,12 @@ def movers_share_card_png():
 def movers_share_card():
     html = build_share_preview_html(
         title="Prospect Movers",
-        subtitle="Biggest 7-day risers & fallers on the prospect board",
+        subtitle="Biggest risers & fallers on the prospect board",
         png_url="/movers/share-card.png",
         filename="valucast-prospect-movers.png",
         public_png_url=_public_url("/movers/share-card.png"),
         public_page_url=_public_url("/movers/share-card"),
-        description="The biggest weekly risers and fallers on the ValuCast prospect board.",
+        description="The biggest recent risers and fallers on the ValuCast prospect board.",
         image_alt="ValuCast Prospect Movers board",
         back_url="/movers",
         back_label="Back to Prospect Movers",
