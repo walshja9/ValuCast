@@ -1768,6 +1768,7 @@ def _validation(
     identity_only_fallback_count: int,
     current_stat_context_mismatches: list[dict],
     active_mlb_roster_ids: set[str] | None = None,
+    graduated_active_mlb_ids: set[str] | None = None,
     active_mlb_roster_excluded_count: int = 0,
     stale_inactive_excluded_count: int = 0,
     manual_graduated_excluded_count: int = 0,
@@ -1794,8 +1795,15 @@ def _validation(
     )
     top_200_scores = {row["score"] for row in board[:200]}
     active_mlb_roster_ids = active_mlb_roster_ids or set()
+    graduated_active_mlb_ids = graduated_active_mlb_ids or set()
+    # Rookie-rule retention (7/2): rookie-eligible active-roster call-ups are ALLOWED
+    # on the ranked board (reported as telemetry below); only a service-confirmed
+    # GRADUATE remaining ranked is a publication blocker.
     active_mlb_roster_overlap_count = sum(
         1 for row in board if str(row.get("mlbam_id")) in active_mlb_roster_ids
+    )
+    graduated_roster_overlap_count = sum(
+        1 for row in board if str(row.get("mlbam_id")) in graduated_active_mlb_ids
     )
     blockers = []
     if coverage_rate < MIN_PUBLIC_COVERAGE_RATE:
@@ -1818,8 +1826,8 @@ def _validation(
         blockers.append(
             "MLB roster status artifact is required for active-roster prospect exclusion."
         )
-    if active_mlb_roster_overlap_count:
-        blockers.append("Active MLB roster identities remain on the prospect board.")
+    if graduated_roster_overlap_count:
+        blockers.append("Graduated active-roster identities remain on the prospect board.")
 
     return {
         "public_migration_ready": not blockers,
@@ -1838,6 +1846,7 @@ def _validation(
         "active_mlb_roster_excluded_count": active_mlb_roster_excluded_count,
         "stale_inactive_excluded_count": stale_inactive_excluded_count,
         "active_mlb_roster_overlap_count": active_mlb_roster_overlap_count,
+        "graduated_roster_overlap_count": graduated_roster_overlap_count,
         "current_stat_context_mismatch_count": len(current_stat_context_mismatches),
         "current_stat_context_mismatch_sample": current_stat_context_mismatches[:20],
         "coverage_rate": coverage_rate,
@@ -1908,11 +1917,17 @@ def build_prospect_rank_v1(
         if key is None:
             missing_mlbam_count += 1
             continue
-        # Active-roster prospects stay OFF the ranked board, but we retain a scored row
-        # so the dynasty snapshot's call-up bridge can surface known graduates who aren't
-        # yet in the MLB layer (e.g. <40-IP call-ups). Routed to active_mlb_roster_board.
+        # Rookie-rule retention (7/2): roster membership alone is NOT graduation.
+        # A rookie-eligible call-up stays on the RANKED board (the Hughes case — called
+        # up at 0 MLB IP, evicted overnight by the old roster-membership test). Only
+        # service-confirmed graduates route to active_mlb_roster_board, where the
+        # dynasty snapshot's call-up bridge surfaces them until the MLB layer has them.
         is_active_mlb_roster = key[0] in active_mlb_roster_ids
-        if is_active_mlb_roster:
+        is_graduated_callup = (
+            is_active_mlb_roster
+            and (service_by_key.get(key) or {}).get("graduated") is True
+        )
+        if is_graduated_callup:
             active_mlb_roster_excluded_count += 1
         if key[0] in manual_graduated_ids:
             manual_graduated_excluded_count += 1
@@ -1983,7 +1998,7 @@ def build_prospect_rank_v1(
             or (layer_profile or {}).get("level")
         )
         eta = universe_row.get("eta")
-        target_board = active_mlb_roster_board if is_active_mlb_roster else board
+        target_board = active_mlb_roster_board if is_graduated_callup else board
         target_board.append(
             {
                 "mlbam_id": universe_row.get("mlbam_id"),
@@ -2043,6 +2058,14 @@ def build_prospect_rank_v1(
         identity_only_fallback_count,
         _current_stat_context_mismatches(board, expected_current_stat_by_key),
         active_mlb_roster_ids=active_mlb_roster_ids,
+        graduated_active_mlb_ids={
+            mlbam_id
+            for mlbam_id in active_mlb_roster_ids
+            if any(
+                (service_by_key.get((mlbam_id, role)) or {}).get("graduated") is True
+                for role in ("hitter", "pitcher")
+            )
+        },
         active_mlb_roster_excluded_count=active_mlb_roster_excluded_count,
         stale_inactive_excluded_count=stale_inactive_excluded_count,
         manual_graduated_excluded_count=manual_graduated_excluded_count,

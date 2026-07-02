@@ -313,7 +313,9 @@ def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
     assert payload["rank_contract"]["prohibited_score_inputs"] == PROHIBITED_SCORE_INPUTS
 
 
-def test_rank_v1_excludes_active_mlb_roster_identities():
+def test_rank_v1_retains_rookie_eligible_active_roster_identities():
+    # Rookie-rule retention (7/2): roster membership alone is not graduation — a
+    # call-up who hasn't crossed the AB/IP rookie line stays RANKED (Hughes case).
     payload = build_prospect_rank_v1(
         _universe(),
         _dynasty_layer(),
@@ -325,14 +327,39 @@ def test_rank_v1_excludes_active_mlb_roster_identities():
 
     board_ids = {row["mlbam_id"] for row in payload["board"]}
 
-    assert 1 not in board_ids
+    assert 1 in board_ids
     assert 2 in board_ids
     assert payload["candidate_count"] == 2
-    assert payload["ranked_count"] == 1
+    assert payload["ranked_count"] == 2
     assert payload["validation"]["mlb_roster_status_ready"] is True
+    assert payload["validation"]["active_mlb_roster_excluded_count"] == 0
+    assert payload["validation"]["active_mlb_roster_overlap_count"] == 1
+    assert payload["validation"]["graduated_roster_overlap_count"] == 0
+    assert payload["validation"]["blockers"] != [
+        "Graduated active-roster identities remain on the prospect board."
+    ]
+
+
+def test_rank_v1_excludes_graduated_active_roster_identities():
+    input_contract = _input_contract()
+    input_contract["mlb_service"] = [
+        {"mlbam_id": 1, "role": "hitter", "ab": 200.0, "pa": 220.0, "ip": 0.0, "graduated": True},
+    ]
+    payload = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        input_contract,
+        mlb_roster_status=_mlb_roster_status([1]),
+        require_mlb_roster_status=True,
+    )
+
+    board_ids = {row["mlbam_id"] for row in payload["board"]}
+
+    assert 1 not in board_ids
+    assert 2 in board_ids
     assert payload["validation"]["active_mlb_roster_excluded_count"] == 1
-    assert payload["validation"]["active_mlb_roster_overlap_count"] == 0
-    assert payload["validation"]["coverage_rate"] == 1.0
+    assert payload["validation"]["graduated_roster_overlap_count"] == 0
 
 
 def test_rank_v1_applies_bounded_availability_discount():

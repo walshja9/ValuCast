@@ -227,8 +227,13 @@ def _build_active_roster_graduate_snapshot():
     prospect_rank = {
         "generated_at": "2026-06-27",
         "board": [
+            # Graduated-but-still-on-main-board defensive case (rank_v1 normally
+            # routes graduates to active_mlb_roster_board; the snapshot must still
+            # bridge one that leaks through). Rookie-eligible actives are RETAINED
+            # as ranked prospects since 7/2 and never bridge.
             {"mlbam_id": "800001", "name": "Active Bridge", "role": "hitter",
-             "score": 40.0, "rank": 1, "level": "AAA"},
+             "score": 40.0, "rank": 1, "level": "AAA",
+             "context_only": {"graduation_context": {"graduated": True, "status": "graduated"}}},
         ],
         "active_mlb_roster_board": [
             {"mlbam_id": "700001", "name": "Denzer Guzman", "role": "hitter",

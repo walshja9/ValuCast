@@ -87,7 +87,18 @@ def test_mlb_player_detail_surfaces_role_tracker_context():
     assert response.status_code == 200
     assert "Playing-Time Tracker" in html
     assert "Projected Role" in html
-    assert "Everyday Regular" in html
+    # Wiring test: the tracker artifact regenerates daily, so read the expected
+    # role from it instead of pinning a label that drifts with the data.
+    import json
+    from pathlib import Path as _Path
+    tracker = json.loads(
+        _Path("data/models/valucast_playing_time_role_tracker.json").read_text(encoding="utf-8")
+    )
+    profile = next(
+        p for p in tracker["profiles"] if str(p.get("mlbam_id")) == "677951"
+    )
+    from app import _format_context_label
+    assert _format_context_label(profile["projected_role"]) in html
 
 
 def test_footer_links_to_scouting_reports_from_main_page():

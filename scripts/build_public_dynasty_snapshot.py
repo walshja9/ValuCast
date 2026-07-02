@@ -256,6 +256,31 @@ def _is_confirmed_mlb_level_prospect(row: dict) -> bool:
     return str(row.get("level") or "").strip().upper() == "MLB"
 
 
+def _rookie_graduated(row: dict) -> bool:
+    """True only when the rookie line is actually crossed. rank_v1 attaches a
+    graduation_context (from the MLB service data's AB/IP + graduated flag) only
+    for near/actual graduates — its absence means rookie-eligible. Active-roster
+    membership alone is NOT graduation: a cup-of-coffee call-up keeps rookie
+    status until the AB/IP limits."""
+    context = (row.get("context") or {}).get("graduation_context") or {}
+    return context.get("graduated") is True
+
+
+def _annotate_retained_callup_row(row: dict) -> None:
+    """Mark a rookie-eligible active-roster call-up retained on the prospect board
+    so UI chips can surface the call-up without reclassifying him."""
+    context = dict(row.get("context") or {})
+    context["active_mlb_callup"] = {
+        "status": "active_mlb_callup",
+        "graduated": False,
+        "surface": "prospect_board_rookie_retention",
+        "reason": "active_roster_rookie_eligible",
+    }
+    row["context"] = context
+    drivers = ["Got the call — rookie-eligible", *(row.get("drivers") or [])]
+    row["drivers"] = list(dict.fromkeys(d for d in drivers if d))[:6]
+
+
 def _mlb_collision_should_promote(prospect_row: dict, mlb_rows: list[dict]) -> bool:
     if _is_confirmed_mlb_level_prospect(prospect_row):
         return True
@@ -1104,11 +1129,36 @@ def build_snapshot(
         peak_projection=prospect_peak_projection,
         mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
     )
+    # Rookie-rule retention (7/2): an active-roster call-up who has NOT crossed the
+    # rookie line stays a ranked prospect (the Hughes case — called up at 0 MLB IP,
+    # the old roster-membership test graduated him overnight and gutted his card).
+    # His thin MLB-layer row is suppressed so the same identity never serves twice;
+    # value continuity stays with the prospect score until real graduation.
+    retained_callup_ids = {
+        mlbam_id
+        for row in all_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and not _rookie_graduated(row)
+    }
+    if retained_callup_ids:
+        mlb_rows = [
+            row for row in mlb_rows if _mlbam_id(row) not in retained_callup_ids
+        ]
+        mlb_identity_ids -= retained_callup_ids
+        mlb_rows_by_id = {
+            mlbam_id: rows
+            for mlbam_id, rows in mlb_rows_by_id.items()
+            if mlbam_id not in retained_callup_ids
+        }
+        for row in all_prospect_rows:
+            if _mlbam_id(row) in retained_callup_ids:
+                _annotate_retained_callup_row(row)
     active_callup_bridge_ids = {
         mlbam_id
         for row in all_prospect_rows
         if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
         and mlbam_id not in mlb_identity_ids
+        and mlbam_id not in retained_callup_ids
     }
     active_callup_bridge_rows = [
         _active_callup_bridge_row(row)
@@ -1121,6 +1171,7 @@ def build_snapshot(
         if (
             (mlbam_id := _mlbam_id(row)) in active_mlb_ids
             and mlbam_id not in active_callup_bridge_ids
+            and mlbam_id not in retained_callup_ids
         )
         or (
             mlbam_id in mlb_identity_ids

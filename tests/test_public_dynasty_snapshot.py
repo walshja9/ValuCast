@@ -1270,8 +1270,13 @@ def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
 
 
 def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_is_low():
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
     payload = build_snapshot(
-        _rank_payload(),
+        rank_payload,
         mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
         mlb_roster_status={
             "artifact": "valucast_mlb_roster_status",
@@ -1305,8 +1310,13 @@ def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_
 
 
 def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
     payload = build_snapshot(
-        _rank_payload(),
+        rank_payload,
         mlb_layer=_mlb_payload(mlbam_id=99),
         mlb_roster_status={
             "artifact": "valucast_mlb_roster_status",
@@ -1424,8 +1434,13 @@ def test_graduated_callup_absent_from_prospect_board_but_queryable_on_mlb(tmp_pa
     """Stranding check: a graduated call-up is excluded from the ranked prospect board
     yet stays queryable on the MLB/dynasty surface (not stranded), and the remaining
     prospect ranks stay contiguous."""
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
     payload = build_snapshot(
-        _rank_payload(),
+        rank_payload,
         mlb_layer=_mlb_payload(mlbam_id=99),
         mlb_roster_status={
             "artifact": "valucast_mlb_roster_status",
@@ -1760,3 +1775,44 @@ def test_app_selector_disabled_rollout_never_serves_dd(monkeypatch):
 
     assert source == "unavailable"
     assert selected.is_available is False
+
+
+def test_snapshot_retains_rookie_eligible_active_roster_callup_as_ranked_prospect():
+    """Rookie-rule retention (7/2, the Hughes case): an active-roster call-up who
+    has NOT crossed the rookie line stays a ranked prospect; his thin MLB-layer
+    row is suppressed so the identity never serves twice."""
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    rows = [row for row in payload["players"] if row["mlbam_id"] == 1]
+    assert len(rows) == 1
+    retained = rows[0]
+    assert retained["player_type"] == "prospect"
+    assert retained["prospect_rank"] is not None
+    callup = (retained.get("context") or {}).get("active_mlb_callup") or {}
+    assert callup.get("graduated") is False
+    assert callup.get("surface") == "prospect_board_rookie_retention"
+    assert "Got the call — rookie-eligible" in (retained.get("drivers") or [])
+    assert payload["validation"]["active_mlb_callup_bridge_count"] == 0
+    assert payload["validation"]["prospect_count"] == 2
