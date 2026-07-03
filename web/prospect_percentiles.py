@@ -80,6 +80,16 @@ _YOUNG_FOR_LEVEL = {
 }
 
 
+def exceptionally_young_for_level(age, level):
+    """Board-badge cut: a full year inside the young-for-level line. Rare by
+    design (~7 of the top 300) so the chip stays a signal, not decoration —
+    the plain <= threshold cut tagged 19 of the top 50 (7/3)."""
+    if age is None or not level or str(level) == "MLB":
+        return False
+    threshold = _YOUNG_FOR_LEVEL.get(str(level))
+    return threshold is not None and age <= threshold - 1
+
+
 class CardLineSelection(tuple):
     """Three-value card_line result with source metadata for display labels."""
 

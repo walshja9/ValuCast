@@ -126,6 +126,9 @@
                 {% if mode == 'prospects' and row.graduation_context_label %}
                 <span class="sample-risk-badge rank-context graduation" title="{{ row.graduation_context_note or 'Near MLB rookie-limit graduation.' }}">{{ row.graduation_context_label }}</span>
                 {% endif %}
+                {% if mode == 'prospects' and exceptionally_young_for_level(row.age, row.level) %}
+                <span class="sample-risk-badge rank-context positive" title="{{ row.age }} at {{ row.level }} — a full year inside the young-for-level line. Age vs level is one of the most durable prospect signals.">Young for {{ row.level }}</span>
+                {% endif %}
                 {% set badge_tier = (row.tier | int(0)) if row.tier is not none else computed_tier %}
                 {% set badge_tier = badge_tier if badge_tier and badge_tier > 0 else computed_tier %}
                 {% if badge_tier %}

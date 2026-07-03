@@ -301,6 +301,14 @@ def _editorial_date(value):
     return date_text
 
 
+# External boards stay initials-only on public surfaces (Alex ruling 7/3):
+# single-rank citation is defensible, but two of the five sources are paid
+# products and naming them advertises competitors on our own cards.
+app.jinja_env.globals["exceptionally_young_for_level"] = (
+    prospect_percentiles.exceptionally_young_for_level
+)
+
+
 @app.template_filter("format_stat")
 def format_stat(value, cat_id):
     """Format a projected stat for display, keyed by category id."""

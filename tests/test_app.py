@@ -1479,3 +1479,42 @@ class TestLlmsTxt(unittest.TestCase):
         # The pre-gate honesty rule travels with the citation guidance.
         self.assertIn("Do not state or estimate a success rate", body)
         self.assertIn("https://valucast.app/ledger", body)
+
+
+class TestConsensusLabelsAndYoungBadge(unittest.TestCase):
+    """Batch 4 display-only pair (7/3): source labels + young-for-level badge."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_young_for_level_cut_is_exceptional_not_common(self):
+        from web.prospect_percentiles import exceptionally_young_for_level
+        self.assertTrue(exceptionally_young_for_level(19, "AA"))
+        self.assertFalse(exceptionally_young_for_level(20, "AA"))   # plain young != badge
+        self.assertFalse(exceptionally_young_for_level(None, "AA"))
+        self.assertFalse(exceptionally_young_for_level(19, None))
+        self.assertFalse(exceptionally_young_for_level(21, "MLB"))  # majors never badge
+        self.assertFalse(exceptionally_young_for_level(19, "Rk"))   # unknown level -> no badge
+
+    def test_young_badge_renders_on_prospect_board(self):
+        html = self.client.get("/?mode=prospects").data.decode("utf-8")
+        self.assertIn("Young for", html)
+
+    def test_player_detail_keeps_source_initials_and_shows_gap(self):
+        """Alex ruling 7/3: external boards stay initials-only ("HKB", never
+        the full name) — but the gap vs the field renders on every card."""
+        import app as app_module
+        row = next(
+            r for r in app_module.dd_store.get_all()
+            if r.prospect_rank is not None
+            and r.public_source_consensus is not None
+            and "hkb" in (r.public_source_ranks or {})
+        )
+        html = self.client.get(
+            f"/player/{row.id}?mode=prospects",
+            headers={"HX-Request": "true"},       # direct hits redirect to the board
+        ).data.decode("utf-8")
+        self.assertIn("HKB", html)                # initials only
+        self.assertNotIn("Harry Knows Ball", html)
+        self.assertIn("the field", html)          # gap note vs consensus

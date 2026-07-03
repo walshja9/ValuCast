@@ -413,7 +413,12 @@
                 <div class="source-summary-item dd-rank-view">
                     <span class="stat-label">ValuCast Rank</span>
                     <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
+                    {% if row.public_source_consensus is not none %}
+                    {% set _gap = row.public_source_consensus - row.prospect_rank %}
+                    <span class="source-summary-note">{% if _gap > 0 %}{{ _gap }} spots ahead of the field{% elif _gap < 0 %}{{ -_gap }} spots behind the field{% else %}even with the field{% endif %}</span>
+                    {% else %}
                     <span class="source-summary-note">ValuCast model rank</span>
+                    {% endif %}
                 </div>
                 {% endif %}
                 {% if row.public_source_consensus is not none %}
