@@ -7339,6 +7339,16 @@ def _buys_share_card_png(
         pieces = [row.get("team"), row.get("pos"), row.get("level")]
         return " - ".join(str(p) for p in pieces if p)
 
+    def score_text(row):
+        # Integers, matching the HTML card's `round | int` — raw decimals
+        # ("74.6") overflow the fixed "/100" positions below (7/3, found the
+        # first day the PNG faced humans on /cards instead of crawlers).
+        value = row.get("score")
+        try:
+            return str(int(round(float(value))))
+        except (TypeError, ValueError):
+            return "--"
+
     hero_rows = list(rows or [])[:5]
     grid_rows = list(rows or [])[5:40]
     if not hero_rows:
@@ -7352,8 +7362,10 @@ def _buys_share_card_png(
         for idx, line in enumerate(name_lines[:2]):
             draw.text((70, 320 + idx * 39), line, fill=text, font=_graphic_font(34, bold=True))
         draw.text((70, 403), _graphic_fit_text(draw, tag(hero), _graphic_font(16, mono=True), 320), fill=muted, font=_graphic_font(16, mono=True))
-        draw.text((70, 455), str(hero.get("score", "--")), fill=green, font=f_hero_score)
-        draw.text((155, 498), "/100", fill=muted, font=f_small)
+        hero_score = score_text(hero)
+        draw.text((70, 455), hero_score, fill=green, font=f_hero_score)
+        draw.text((70 + _graphic_text_width(draw, hero_score, f_hero_score) + 8, 498),
+                  "/100", fill=muted, font=f_small)
         _draw_buys_spark(
             draw, hero.get("spark"), 226, 432, 130, 42,
             up_color=green, down_color=red, flat_color=muted,
@@ -7376,13 +7388,18 @@ def _buys_share_card_png(
             draw.text((x + 18, tag_y), _graphic_fit_text(draw, tag(row), f_small, 250),
                       fill=muted, font=f_small)
             draw.line((x + 14, y + 104, x + 275, y + 104), fill=border, width=1)
-            draw.text((x + 14, y + 112), str(row.get("score", "--")), fill=green, font=f_support_score)
-            draw.text((x + 58, y + 126), "/100", fill=muted, font=_graphic_font(11))
+            support_score = score_text(row)
+            draw.text((x + 14, y + 112), support_score, fill=green, font=f_support_score)
+            draw.text((x + 14 + _graphic_text_width(draw, support_score, f_support_score) + 6, y + 126),
+                      "/100", fill=muted, font=_graphic_font(11))
             _draw_buys_spark(
                 draw, row.get("spark"), x + 104, y + 117, 68, 18,
                 up_color=green, down_color=red, flat_color=muted,
             )
-            label = row.get("spark_label") or _graphic_fit_text(draw, row.get("reason"), f_small, 90).upper()
+            # Compact form for the 92px support slot — the full "UP +5.2 OVER 11D"
+            # truncated to "UP +5.2 OV..." (7/3).
+            label = row.get("spark_label") or (row.get("reason") or "").upper()
+            label = label.replace(" OVER ", " - ").removeprefix("UP ").removeprefix("DOWN ")
             draw.text((x + 183, y + 119), _graphic_fit_text(draw, label, f_small, 92),
                       fill=muted, font=f_small)
 
@@ -7399,7 +7416,7 @@ def _buys_share_card_png(
         if r:
             draw.line((x, y, x + cell_w, y), fill=border, width=1)
         draw.text((x + 10, y + 12), f"#{idx + 6}", fill=blue, font=_graphic_font(17, bold=True))
-        score = str(row.get("score", "--"))
+        score = score_text(row)
         draw.text((x + cell_w - 10 - _graphic_text_width(draw, score, f_cell_score), y + 10),
                   score, fill=green, font=f_cell_score)
         name = row.get("name") or "Unknown"
