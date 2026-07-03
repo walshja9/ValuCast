@@ -4287,7 +4287,28 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .ledger-tile-label { font-weight: 700; font-size: .85rem; }
 .ledger-tile-sub { font-size: .72rem; color: var(--c-muted); }
 .ledger-context { margin: 0 .2rem 1rem; font-size: .8rem; color: var(--c-muted); }
-.ledger-pills { margin: .2rem 0 .6rem; }
+.ledger-pills { display: flex; flex-wrap: wrap; gap: .4rem; margin: .2rem 0 .6rem; }
+/* bf-pill styling lives under .backfields-page (amber tokens); ledger needs its own */
+.ledger-pills .bf-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: .32rem .7rem;
+    color: var(--c-muted);
+    background: var(--surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    font-weight: 650;
+    cursor: pointer;
+}
+.ledger-pills .bf-pill.is-active {
+    color: #0b0c0f;
+    background: var(--c-signal);
+    border-color: var(--c-signal);
+}
 .ledger-calls { padding: .6rem .9rem .8rem; border-radius: var(--radius-lg); }
 .ledger-row { padding: .55rem .15rem; border-bottom: 1px solid rgba(148, 163, 184, .10); }
 .ledger-row:last-child { border-bottom: none; }
