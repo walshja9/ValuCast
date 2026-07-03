@@ -47,7 +47,10 @@
         </div>
     </footer>
     <script>
-    document.body.addEventListener('htmx:responseError', function () {
+    /* sendError/timeout too: a dropped connection (deploy restart, cold start)
+       otherwise fails SILENTLY — filter pills highlight but the board keeps the
+       old view, which reads as "the filter is broken" (7/3). */
+    function htmxFailureNotice() {
         let notice = document.getElementById('htmx-error-notice');
         if (!notice) {
             notice = document.createElement('div');
@@ -61,6 +64,9 @@
         notice.dataset.timerId = window.setTimeout(function () {
             notice.hidden = true;
         }, 5000);
+    }
+    ['htmx:responseError', 'htmx:sendError', 'htmx:timeout'].forEach(function (evt) {
+        document.body.addEventListener(evt, htmxFailureNotice);
     });
     document.addEventListener('click', function (e) {
         document.querySelectorAll('details.graphic-menu[open]').forEach(function (d) {

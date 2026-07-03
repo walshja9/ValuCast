@@ -71,6 +71,43 @@ class TestToolbar(unittest.TestCase):
         debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
         self.assertGreater(debuted.count('class="player-row'), 30)
 
+    def test_prospect_debut_filter_reads_same_day_pulse(self):
+        # 7/3 Jarvis bug: a player called up AFTER the morning build exists only
+        # in the call-up pulse -- the debut filter must read the pulse the badge
+        # reads, or "Not debuted" shows players the UI badges CALLED UP.
+        import app as app_module
+        pulse_keys = app_module._call_up_pulse_keys()
+        pulse_rows = [
+            r for r in app_module.dd_store.filter(pool="prospect")
+            if (app_module._row_identity_key(r) or "") in pulse_keys
+        ]
+        if not pulse_rows:
+            self.skipTest("no same-day pulse call-ups on the current board")
+        undebuted = self.client.get("/?mode=prospects&callups=undebuted").data.decode("utf-8")
+        debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
+        for row in pulse_rows:
+            self.assertNotIn(f'data-player-id="{row.id}"', undebuted)
+        self.assertTrue(
+            any(f'data-player-id="{row.id}"' in debuted for row in pulse_rows),
+            "pulse call-ups missing from the Debuted view",
+        )
+
+    def test_got_the_call_includes_same_day_pulse(self):
+        # Backfields "Got the Call" read only the morning feed flag -- same-day
+        # pulse call-ups (Jim Jarvis, 7/3) were invisible for a full day.
+        import app as app_module
+        pulse = app_module._load_artifact(
+            Path(app_module.__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+        ) or {}
+        by_identity = pulse.get("by_identity") or {}
+        if not by_identity:
+            self.skipTest("no call-up pulse entries in current data")
+        app_module._ACTIVE_ROSTER_ROWS = None  # reset process cache
+        names = {r.get("name") for r in app_module._active_mlb_roster_rows()}
+        missing = [e.get("name") for e in by_identity.values()
+                   if isinstance(e, dict) and e.get("name") not in names]
+        self.assertEqual(missing, [])
+
     def test_scoring_switch_updates_display_slot_oob(self):
         # P1 fix: switching Categories<->Points must restructure the toolbar (the
         # Category-value toggle), not just the table. The OOB #display-slot does it.

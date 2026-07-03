@@ -1259,18 +1259,13 @@ def _apply_prospect_board_context(ctx, args):
     if callups not in ("debuted", "undebuted"):
         callups = ""
     debuted_ids = _debuted_prospect_ids()
-
-    def _has_debuted(row) -> bool:
-        return (
-            getattr(row, "active_mlb_callup", False)
-            or str(getattr(row, "mlbam_id", "")) in debuted_ids
-        )
+    pulse_keys = _call_up_pulse_keys()
 
     row_filter = None
     if callups == "undebuted":
-        row_filter = lambda row: not _has_debuted(row)  # noqa: E731
+        row_filter = lambda row: not _prospect_has_debuted(row, debuted_ids, pulse_keys)  # noqa: E731
     elif callups == "debuted":
-        row_filter = _has_debuted
+        row_filter = lambda row: _prospect_has_debuted(row, debuted_ids, pulse_keys)  # noqa: E731
     rows = _prospect_rows(
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
@@ -5559,6 +5554,7 @@ def _build_backfields_page_context():
         return rows_by_name.get(clean_name)
 
     debuted_ids = _debuted_prospect_ids()
+    pulse_keys = _call_up_pulse_keys()
     rankings = []
     for rank, row in enumerate(prospect_rows, 1):
         key = identity_for(row)
@@ -5566,11 +5562,8 @@ def _build_backfields_page_context():
         link_fields = player_link_fields(row.name, row.id)
         level = level_for(row)
         rankings.append({
-            # Debut filter (7/2): active-roster retention OR prior MLB service.
-            "debuted": bool(
-                getattr(row, "active_mlb_callup", False)
-                or str(getattr(row, "mlbam_id", "")) in debuted_ids
-            ),
+            # Debut filter: shared predicate (active roster / MLB service / pulse).
+            "debuted": _prospect_has_debuted(row, debuted_ids, pulse_keys),
             "rank": rank,
             "name": row.name,
             **link_fields,
@@ -5902,15 +5895,36 @@ def _active_mlb_roster_rows():
     global _ACTIVE_ROSTER_ROWS
     if _ACTIVE_ROSTER_ROWS is None:
         rows = []
+        seen = set()
         if dd_store.is_available:
             for r in dd_store.get_all():
                 if getattr(r, "is_prospect", False) and getattr(r, "active_mlb_callup", False):
+                    seen.add(_row_identity_key(r) or "")
                     rows.append({
                         "name": getattr(r, "name", None),
                         "positions": list(getattr(r, "positions", None) or []),
                         "mlb_team": getattr(r, "mlb_team", None) or getattr(r, "team", None),
                         "score": getattr(r, "value", None),
                     })
+            # Same-day pulse call-ups: promoted AFTER the morning feed build, so
+            # the feed flag doesn't know them yet (7/3: Jim Jarvis was invisible
+            # here for a day). The pulse entry is thin — enrich from the feed row.
+            row_by_key = {_row_identity_key(r): r for r in dd_store.get_all()}
+            pulse = _load_artifact(
+                Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+            ) or {}
+            for key, entry in (pulse.get("by_identity") or {}).items():
+                if not isinstance(entry, dict) or key in seen:
+                    continue
+                r = row_by_key.get(key)
+                rows.append({
+                    "name": entry.get("name") or (getattr(r, "name", None) if r else None) or "Unknown",
+                    "positions": (list(getattr(r, "positions", None) or []) if r else [])
+                                 or ([entry.get("position")] if entry.get("position") else []),
+                    "mlb_team": entry.get("mlb_team")
+                                or (getattr(r, "mlb_team", None) or getattr(r, "team", None) if r else None),
+                    "score": getattr(r, "value", None) if r else None,
+                })
         _ACTIVE_ROSTER_ROWS = sorted(rows, key=lambda r: r.get("score") or 0, reverse=True)
     return _ACTIVE_ROSTER_ROWS
 
@@ -5946,6 +5960,28 @@ def _row_mlb_debut(row):
     """MLB-taste string ('2 PA' / '27 IP') if this row's player has debuted, else None."""
     mid = next((p for p in str(row.get("id", "")).split("_") if p.isdigit()), None)
     return _debuted_prospect_ids().get(mid) if mid else None
+
+
+def _call_up_pulse_keys() -> frozenset:
+    """Identity keys ('687312_pitcher') on a fresh MLB active roster per the
+    same-day call-up pulse — called up AFTER the morning feed build, so neither
+    active_mlb_callup nor the MLB-service taste knows them yet."""
+    pulse = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+    ) or {}
+    return frozenset(pulse.get("by_identity") or ())
+
+
+def _prospect_has_debuted(row, debuted_ids, pulse_keys) -> bool:
+    """The ONE debut predicate for every surface (board filter, share cards,
+    backfields). 7/3 bug: the filter didn't check the same-day pulse, so the
+    'Not debuted' board kept players the UI was simultaneously badging
+    CALLED UP (Gabriel Hughes) — filter and badge must read the same sources."""
+    return bool(
+        getattr(row, "active_mlb_callup", False)
+        or str(getattr(row, "mlbam_id", "")) in debuted_ids
+        or (_row_identity_key(row) or "") in pulse_keys
+    )
 
 
 def _team_board_share_card_png(board, *, limit):
@@ -7517,16 +7553,11 @@ def _prospect_share_debut_view(args):
     if callups not in ("debuted", "undebuted"):
         return None, None
     debuted_ids = _debuted_prospect_ids()
-
-    def _has_debuted(row):
-        return (
-            getattr(row, "active_mlb_callup", False)
-            or str(getattr(row, "mlbam_id", "")) in debuted_ids
-        )
+    pulse_keys = _call_up_pulse_keys()
 
     if callups == "debuted":
-        return _has_debuted, "debuted"
-    return (lambda row: not _has_debuted(row)), "undebuted"
+        return (lambda row: _prospect_has_debuted(row, debuted_ids, pulse_keys)), "debuted"
+    return (lambda row: not _prospect_has_debuted(row, debuted_ids, pulse_keys)), "undebuted"
 
 
 _DEBUT_VIEW_NOUN = {"debuted": "Debuted Prospects", "undebuted": "Not-Yet-Debuted Prospects"}
