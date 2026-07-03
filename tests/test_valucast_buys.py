@@ -468,6 +468,26 @@ def test_build_valucast_board_exposes_spark_history_after_real_history_accumulat
     assert board[0]["value_history"] == payload["board"][0]["score_history"]
 
 
+def test_build_valucast_board_spark_history_excludes_epoch_steps():
+    # 7/3 review: the sparkline must show the SAME cleaned series the momentum
+    # term scores — a 14-pt re-baseline step was rendering as a fake green
+    # "UP +15" surge on the public share graphic while momentum read neutral.
+    payload = build_buy_signals(_rank_payload(), _history())
+    payload["board"][0]["score_history"] = [
+        ("2026-06-11", 40.0),
+        ("2026-06-12", 41.0),
+        ("2026-06-13", 55.0),  # epoch step > STEP_THRESHOLD
+        ("2026-06-14", 55.5),
+        ("2026-06-15", 56.0),
+        ("2026-06-16", 56.5),
+    ]
+
+    board = buy_score.build_valucast_board(payload["board"], n=1)
+
+    dates = [d for d, _ in board[0]["value_history"]]
+    assert dates == ["2026-06-13", "2026-06-14", "2026-06-15", "2026-06-16"]
+
+
 def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     import app as app_module
 

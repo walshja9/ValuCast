@@ -60,6 +60,18 @@ def test_scouting_page_filters_reports_by_query():
     assert "matching report" in html
 
 
+def test_scouting_page_survives_mlb_reports_in_every_filter():
+    # 7/3 review: MLB reports carry no dynasty_value key at all; the template's
+    # `is not none` guard doesn't cover a MISSING key (Undefined is not none ==
+    # True), so 30 of 31 team filters 500'd the whole page.
+    client = app.test_client()
+
+    for url in ("/scouting?team=ATL", "/scouting?team=LAD", "/scouting?q=Ohtani"):
+        response = client.get(url)
+        assert response.status_code == 200, url
+        assert b"P#None" not in response.data, url
+
+
 def test_prospect_player_detail_surfaces_scouting_and_role_context():
     client = app.test_client()
 

@@ -6635,7 +6635,9 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
 
     draw_section("RISING", rising, 48, 242, 480, green)
     draw_section("COOLING", cooling, 552, 242, 480, red)
-    _graphic_footer(draw, right_note="ValuCast prospect score - last 7 days")
+    # Same derived window as the subtitle — a literal "last 7 days" survived the
+    # 7->10 subtitle fix and contradicted it on the same image (7/3 review).
+    _graphic_footer(draw, right_note=f"ValuCast prospect score - last {window} days")
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)

@@ -315,6 +315,33 @@ class TestDynastyMode(unittest.TestCase):
         self.assertNotIn('full-season line">OPS</th>', html)
         self.assertNotIn('full-season line">K/BB</th>', html)
 
+    def test_dynasty_cutoff_divider_at_most_one_under_reordered_views(self):
+        # 7/3 review: preset re-sorts make dynasty_rank non-monotonic down the
+        # page, and the replacement-level divider fired on dozens of arbitrary
+        # rows (41 dividers under preset=points at teams=8/roster=20).
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        for url in (
+            "/rankings?mode=dd_dynasty&teams=8&roster=20",
+            "/rankings?mode=dd_dynasty&teams=8&roster=20&preset=points",
+            "/rankings?mode=dd_dynasty&teams=8&roster=20&preset=5x5",
+        ):
+            html = self.client.get(url).data.decode("utf-8")
+            self.assertLessEqual(html.count('class="cutoff-row"'), 1, url)
+
+    def test_prospect_league_rank_shows_role_prefixed_ordinals(self):
+        # 7/3 review: adapter ranks are within-role (hitters 1..H, pitchers
+        # 1..P) — a bare interleaved column read 1,1,2,2 like a broken rank.
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        html = self.client.get("/?mode=prospects&preset=ops_7x7&rank_by=league").data.decode("utf-8")
+        if "col-league-rank" not in html:
+            self.skipTest("league re-rank not active for current data")
+        self.assertIn("H#1", html)
+        self.assertIn("P#1", html)
+
     def test_dynasty_rankings_returns_200(self):
         response = self.client.get("/rankings?mode=dd_dynasty")
         self.assertEqual(response.status_code, 200)

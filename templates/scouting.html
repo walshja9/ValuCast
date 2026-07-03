@@ -101,12 +101,18 @@
         <article class="scouting-player-card glass">
             <div class="scouting-player-head">
                 <div>
-                    <span class="rank-chip">P#{{ report.prospect_rank }}</span>
+                    {# MLB reports carry no prospect_rank / dynasty_value keys at all —
+                       a missing dict key is Undefined, and `Undefined is not none` is
+                       True, so the old format() call 500'd the page for 30 of 31 team
+                       filters (7/3). report.get() is the only safe read here. #}
+                    {% set _prank = report.get('prospect_rank') %}
+                    {% if _prank is not none %}<span class="rank-chip">P#{{ _prank }}</span>{% else %}<span class="rank-chip">MLB</span>{% endif %}
                     <h4><a href="{{ report.player_url }}">{{ report.name }}</a></h4>
                     <p>{{ report.team }} &middot; {{ report.positions | join("/") }}{% if report.level %} &middot; {{ report.level }}{% endif %}{% if report.age is not none %} &middot; Age {{ report.age }}{% endif %}</p>
                 </div>
                 <div class="scouting-value">
-                    <span>{{ "%.1f"|format(report.dynasty_value) if report.dynasty_value is not none else "—" }}</span>
+                    {% set _dv = report.get('dynasty_value') %}
+                    <span>{{ "%.1f"|format(_dv) if _dv is not none else "—" }}</span>
                     <small>ValuCast</small>
                 </div>
             </div>

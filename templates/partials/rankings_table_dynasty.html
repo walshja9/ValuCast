@@ -28,6 +28,10 @@
 {# Debut-filtered views renumber 1..N — a standalone list with P# holes (7, 9,
    11...) reads broken, and the share graphics already number sequentially. #}
 {% set callups_rerank = mode == 'prospects' and callups %}
+{# Preset-value and Now-$ views re-sort the dynasty rows, so dynasty_rank is
+   non-monotonic down the page — the cutoff divider must follow the DISPLAYED
+   position there or it fires on dozens of arbitrary rows (7/3 review). #}
+{% set dyn_rerank = mode == 'dd_dynasty' and (_ap or (rank_by | default('dynasty')) == 'now') %}
 {# Projected stat columns follow the active category selection — dd_dynasty only;
    prospects mostly lack MLB projections and carry their own context strip. #}
 {% set show_stats = mode == 'dd_dynasty' and dyn_stats_map is defined and dyn_stats_map %}
@@ -51,7 +55,7 @@
             {% if v11 %}
             <th class="col-confidence">Confidence</th>
             {% endif %}
-            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank, not a value or dollar amount">Your League #</th>{% endif %}
+            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank — hitters and pitchers ranked separately (H#/P#), not a value or dollar amount">Your League #</th>{% endif %}
             {% if show_stats %}{% for cat in dyn_stat_cats %}{% set _cl = (dyn_stat_labels | default({})).get(cat, cat) %}<th class="col-cat" title="Projected {{ _cl }} — full-season line">{{ _cl }}</th>{% endfor %}{% endif %}
             <th class="col-compare"></th>
         </tr>
@@ -66,8 +70,8 @@
         {% set _pr = (preset_rank_by_id|default({})).get(row.id) if _ap else None %}
         {# When re-ranked the displayed order is the adapter order, so the cutoff
            divider must follow the displayed position, not the model P#. #}
-        {% set this_rank = loop.index if (prospect_rerank or callups_rerank) else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
-        {% set prev_rank = loop.index0 if (prospect_rerank or callups_rerank) else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
+        {% set this_rank = loop.index if (prospect_rerank or callups_rerank or dyn_rerank) else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
+        {% set prev_rank = loop.index0 if (prospect_rerank or callups_rerank or dyn_rerank) else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
         {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
         <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} {% if mode == 'prospects' %}prospect slots{% else %}rostered{% endif %})</td></tr>
         {% endif %}
@@ -154,7 +158,10 @@
                 {% endif %}
             </td>
             {% endif %}
-            {% if prospect_rerank %}<td class="col-league-rank">{% set lr = (league_adapter_ranks or {}).get(row.id) %}{% if lr %}{{ lr }}{% else %}—{% endif %}</td>{% endif %}
+            {# Adapter ranks are within-role (hitters 1..H, pitchers 1..P), so a
+               bare interleaved column read 1,1,2,2 — the H/P prefix says which
+               race each ordinal belongs to (7/3 review). #}
+            {% if prospect_rerank %}<td class="col-league-rank">{% set lr = (league_adapter_ranks or {}).get(row.id) %}{% if lr %}{{ 'P' if row.role == 'pitcher' else 'H' }}#{{ lr }}{% else %}—{% endif %}</td>{% endif %}
             {% if show_stats %}
             {% set _stats = dyn_stats_map.get(row.id) or {} %}
             {% for cat in dyn_stat_cats %}

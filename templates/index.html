@@ -471,7 +471,14 @@ function toggleDetail(playerId, row) {
 
 function moverJump(id) {
     const row = document.querySelector(`tr.player-row[data-player-id="${id}"]`);
-    if (!row) return;
+    if (!row) {
+        /* Big coolers often collapse off the top-200 board, so the most
+           eye-catching chips had no row to jump to and clicked as silent
+           no-ops (7/3). /player/<id> without HX redirects to the board
+           searched for that player — the deep-link path. */
+        window.location.href = '/player/' + encodeURIComponent(id) + '?mode=prospects';
+        return;
+    }
     row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const detail = document.getElementById(`detail-${id}`);
     if (detail && detail.style.display === 'none') toggleDetail(id, row);

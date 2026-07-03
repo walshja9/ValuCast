@@ -259,7 +259,11 @@ def build_valucast_board(rows, n=BOARD_SIZE):
         team_id = TEAM_IDS.get(row.get("team"))
         mlbam = row.get("mlbam_id") if row.get("mlbam_id") else 0
         valucast_terms = row.get("terms") or {}
-        score_history = row.get("score_history") or ()
+        # clean_tail on the DISPLAYED series too: the momentum term already
+        # discards epoch/re-baseline steps, but the raw history was reaching the
+        # sparkline — a 13-pt role-normalization step rendered as a green "UP
+        # +15" surge the buy score itself had rejected (7/3 review).
+        score_history = clean_tail(row.get("score_history") or ())
         display_history = (
             score_history
             if len(score_history) >= MIN_VALUCAST_BUY_SPARK_POINTS
