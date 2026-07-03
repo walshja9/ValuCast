@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Share Cards | ValuCast{% endblock %}
+{% block og_title %}Share Cards | ValuCast{% endblock %}
+{% block og_description %}Every ValuCast board as a shareable graphic — rebuilt with each daily data refresh.{% endblock %}
+{% block og_url %}https://valucast.app/cards{% endblock %}
+
+{% block content %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='cards', aria='Cards gallery navigation') }}
+{% include "partials/_stale_notice.html" %}
+
+<section class="buys-heading glass">
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">SHARE CARDS</span>
+        <h1>THE CARD RACK</h1>
+        <p class="buys-heading-sub">{{ entries | length }} boards as shareable graphics &middot; rebuilt with every daily data refresh</p>
+        <p class="buys-fineprint">Post them anywhere — every card carries its own data date. The full board behind each one is free, no login.</p>
+    </div>
+</section>
+
+<section class="cards-grid" aria-label="Shareable graphics">
+    {% for c in entries %}
+    <article class="card-tile glass">
+        <a href="{{ c.page_url }}"><img loading="lazy" src="{{ c.png_url }}" alt="{{ c.title }} share graphic" width="1080" height="1350"></a>
+        <div class="card-tile-meta">
+            <span class="card-tile-title">{{ c.title }}{% if c.fresh %} <span class="fresh-chip">FRESH</span>{% endif %}</span>
+            <span class="card-tile-caption">{{ c.caption }}{% if c.date_label %} &middot; {{ c.date_label }}{% endif %}</span>
+            <span class="card-tile-links"><a href="{{ c.page_url }}">Preview</a> &middot; <a href="{{ c.png_url }}" download>Download PNG</a> &middot; <a href="{{ c.board_url }}">Open the board</a></span>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+
+<section class="glass cards-more">
+    <p class="buys-fineprint">Also available: <strong>team boards</strong> from any <a href="/backfields">Backfields</a> org page,
+    <strong>positional boards</strong> from the prospect board's position filters, and
+    <strong>player value cards</strong> from any player page — same daily data, same open formula.</p>
+</section>
+{% endblock %}

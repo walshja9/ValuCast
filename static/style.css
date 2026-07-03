@@ -4322,3 +4322,18 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     .ledger-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .ledger-tile-n { font-size: 1.6rem; }
 }
+
+/* --- Batch 2 trust grammar + Batch 3 cards gallery (7/3 landscape review) --- */
+.prov-line { margin: 6px 2px 0; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); opacity: .8; }
+.prov-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.new-chip { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: .6rem; font-weight: 700; letter-spacing: .08em; color: #0b0c0f; background: var(--c-signal); vertical-align: 1px; }
+.buys-why { font-style: italic; opacity: .9; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 14px; }
+.card-tile { padding: 12px; }
+.card-tile img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--c-border); display: block; background: var(--surface-2); min-height: 120px; }
+.card-tile-meta { display: flex; flex-direction: column; gap: 3px; margin-top: 10px; }
+.card-tile-title { font-weight: 650; }
+.fresh-chip { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: .6rem; font-weight: 700; letter-spacing: .08em; color: #0b0c0f; background: var(--c-signal); vertical-align: 1px; }
+.card-tile-caption { font-size: .78rem; color: var(--c-muted); }
+.card-tile-links { font-size: .78rem; }
+.cards-more { margin-top: 14px; padding: 14px 16px; }

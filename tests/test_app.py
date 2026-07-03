@@ -1407,3 +1407,57 @@ class TestTodayStrip(unittest.TestCase):
         self.assertEqual(html.count("today-strip"), 0)
         # Page itself still healthy.
         self.assertIn("rankings-table", html)
+
+
+class TestTrustGrammarAndCards(unittest.TestCase):
+    """Batch 2 trust grammar + Batch 3 cards gallery (7/3 landscape review)."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_buys_shows_qualification_funnel_and_why_lines(self):
+        html = self.client.get("/buys").data.decode("utf-8")
+        # Scarcity + funnel disclosure at point of use.
+        self.assertIn("of the pool by design", html)
+        self.assertIn("active-MLB call-ups excluded", html)
+        # Why-line: joined from the existing deterministic scouting reads.
+        self.assertIn("buys-why", html)
+
+    def test_movers_shows_qualification_thresholds(self):
+        html = self.client.get("/movers").data.decode("utf-8")
+        self.assertIn("rank cap", html)
+        self.assertIn("tracked prospects", html)
+
+    def test_provenance_line_on_every_board(self):
+        for path in ("/", "/movers", "/ledger", "/cards"):
+            html = self.client.get(path).data.decode("utf-8")
+            self.assertIn("publicly scored", html, path)
+            self.assertIn("free, no login", html, path)
+
+    def test_ledger_hero_carries_metadata_subtitle(self):
+        html = self.client.get("/ledger").data.decode("utf-8")
+        self.assertIn("calls tracked since", html)
+
+    def test_new_chip_on_opt_in_valucast_source(self):
+        html = self.client.get("/?source=valucast").data.decode("utf-8")
+        self.assertIn("new-chip", html)
+
+    def test_cards_gallery_indexes_share_cards(self):
+        import app as app_module
+        html = self.client.get("/cards").data.decode("utf-8")
+        self.assertIn("THE CARD RACK", html)
+        self.assertIn("The Ledger", html)
+        self.assertIn("Prospect Movers", html)
+        self.assertIn("/ledger/share-card.png", html)
+        # Held boards stay out of the gallery while held.
+        if app_module.RECEIPTS_HOLD:
+            self.assertNotIn("/receipts/share-card", html)
+        if not app_module.AHEAD_OF_THE_CURVE_HOLD:
+            self.assertIn("/buys/share-card.png", html)
+
+    def test_ledger_share_card_renders_png_counts_only(self):
+        r = self.client.get("/ledger/share-card.png")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertEqual(self.client.get("/ledger/share-card").status_code, 200)

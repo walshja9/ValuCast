@@ -6754,6 +6754,19 @@ def _build_receipts_page_context():
     }
 
 
+_LEDGER_SCORECARD_PATH = (
+    Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+)
+
+
+def _load_scorecard_payload():
+    try:
+        sc = json.loads(_LEDGER_SCORECARD_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return sc if isinstance(sc, dict) else None
+
+
 @app.route("/ledger")
 def ledger():
     """Human-readable Ahead-of-the-Curve ledger — the JSON artifact rendered for
@@ -6761,12 +6774,7 @@ def ledger():
     aggregate headline still honors the 30-day publish gate; the full funnel and
     per-call ledger are live immediately, misses included. "It's on the ledger"
     is the brand phrase — the URL matches it."""
-    path = Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
-    try:
-        sc = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        sc = None
-    return render_template("track_record.html", sc=sc)
+    return render_template("track_record.html", sc=_load_scorecard_payload())
 
 
 @app.route("/track-record")
@@ -6779,7 +6787,7 @@ def aotc_scorecard_json():
     """Public ledger: the raw Ahead-of-the-Curve scorecard artifact — definitions,
     targets, funnel, and every call including the retreats. Third parties can
     snapshot it themselves; that's the point."""
-    path = Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+    path = _LEDGER_SCORECARD_PATH
     if not path.exists():
         abort(404)
     response = make_response(path.read_text(encoding="utf-8"))
@@ -6925,6 +6933,240 @@ def receipts_share_card():
     return response
 
 
+def _ledger_share_card_png(sc):
+    """Counts-only Ledger graphic. Pre-gate rule: funnel counts and call rows
+    only — the success RATE never renders anywhere until the publish gate
+    matures (scorecard freeze). The card must stay honest without it."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    palette = _GRAPHIC_PALETTE
+    bg = palette["bg"]
+    card = palette["card"]
+    card_2 = palette["card_2"]
+    border = palette["border"]
+    green = palette["green"]
+    clay = palette.get("clay", "#c98a6a")
+    blue = palette["blue"]
+    text = palette["text"]
+    muted = palette["muted"]
+
+    funnel = (sc or {}).get("funnel") or {}
+    summary = (sc or {}).get("summary") or {}
+    calls = list((sc or {}).get("calls") or [])
+    wins = int(funnel.get("open_toward") or 0) + int(funnel.get("closed_caught_up") or 0)
+    losses = int(funnel.get("open_away") or 0)
+    retreats = int(funnel.get("retired_we_backed_off") or 0)
+    undecided = int(funnel.get("open_flat") or 0)
+    total = summary.get("ever_flagged") or 0
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    subtitle = f"{total} calls tracked publicly"
+    first = summary.get("first_call_date")
+    if first:
+        subtitle = f"{subtitle} since {first}"
+    date_label = _editorial_date((sc or {}).get("generated_at"))
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="THE LEDGER",
+        subtitle=subtitle,
+        extra_line="Wins, losses, and the calls we backed off - no call leaves this page silently",
+        tagline="The Ledger",
+    )
+
+    # Funnel tiles: the counts ARE the story pre-gate.
+    tiles = [
+        (str(wins), "WINS", "field came to us", green),
+        (str(losses), "LOSSES", "field moved away", clay),
+        (str(retreats), "RETREATS", "we backed off", clay),
+        (str(undecided), "UNDECIDED", "below the noise floor", muted),
+    ]
+    f_tile_n = _graphic_font(52, bold=True, mono=True)
+    f_tile_label = _graphic_font(17, bold=True)
+    f_tile_sub = _graphic_font(13)
+    x, w = 48, 984
+    tile_gap = 14
+    tile_w = (w - 3 * tile_gap) // 4
+    tile_y, tile_h = 242, 128
+    for i, (n_label, label, sub, accent) in enumerate(tiles):
+        tx = x + i * (tile_w + tile_gap)
+        draw.rounded_rectangle((tx, tile_y, tx + tile_w, tile_y + tile_h), radius=10,
+                               fill=card, outline=border, width=1)
+        draw.text((tx + 18, tile_y + 14), n_label, fill=accent, font=f_tile_n)
+        draw.text((tx + 18, tile_y + 76), label, fill=text, font=f_tile_label)
+        draw.text((tx + 18, tile_y + 100),
+                  _graphic_fit_text(draw, sub, f_tile_sub, tile_w - 34),
+                  fill=muted, font=f_tile_sub)
+
+    # Newest calls, statuses included — the two-sided ledger in miniature.
+    status_labels = {
+        "open_toward": ("FIELD MOVING TO US", green),
+        "closed_caught_up": ("CAUGHT UP - WIN", green),
+        "open_away": ("MOVING AWAY", clay),
+        "retired_we_backed_off": ("WE BACKED OFF", clay),
+        "open_flat": ("NO DECISIVE MOVE", muted),
+        "resolved_called_up_or_graduated": ("CALLED UP", blue),
+        "left_universe": ("LEFT UNIVERSE", muted),
+    }
+    newest = sorted(calls, key=lambda c: str(c.get("ahead_since") or ""), reverse=True)[:13]
+    f_section = _graphic_font(25, bold=True)
+    f_date = _graphic_font(15, bold=True, mono=True)
+    f_name = _graphic_font(22, bold=True)
+    f_rank = _graphic_font(15, bold=True, mono=True)
+    f_status = _graphic_font(14, bold=True)
+    row_h = 58
+    panel_y = tile_y + tile_h + 16
+    panel_h = 50 + max(1, len(newest)) * row_h + 8
+    draw.rounded_rectangle((x, panel_y, x + w, panel_y + panel_h), radius=10,
+                           fill=card, outline=border, width=1)
+    draw.text((x + 20, panel_y + 14), "NEWEST CALLS", fill=text, font=f_section)
+    if not newest:
+        draw.text((x + 20, panel_y + 62), "No calls on the ledger yet.", fill=muted, font=f_name)
+    for idx, c in enumerate(newest):
+        top = panel_y + 48 + idx * row_h
+        fill = card_2 if idx % 2 == 0 else card
+        draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
+        if idx:
+            draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
+        draw.text((x + 18, top + 20), str(c.get("ahead_since") or "")[:10], fill=blue, font=f_date)
+        draw.text((x + 150, top + 15),
+                  _graphic_fit_text(draw, c.get("name"), f_name, 320), fill=text, font=f_name)
+        vc_then, cons_then = c.get("valucast_then"), c.get("consensus_then")
+        if vc_then is not None and cons_then is not None:
+            ranks = f"us #{vc_then} vs field ~#{cons_then}"
+            draw.text((x + 500, top + 20),
+                      _graphic_fit_text(draw, ranks, f_rank, 240), fill=muted, font=f_rank)
+        label, accent = status_labels.get(c.get("status"), ("OPEN", muted))
+        draw.text((x + w - 22 - _graphic_text_width(draw, label, f_status), top + 21),
+                  label, fill=accent, font=f_status)
+
+    _graphic_footer(
+        draw,
+        right_note="Success rate publishes when the 30-day gate matures - rules pre-registered",
+    )
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/ledger/share-card.png")
+def ledger_share_card_png():
+    sc = _load_scorecard_payload()
+    if not sc:
+        abort(404)
+    png = _ledger_share_card_png(sc)
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-ledger.png"'
+    return response
+
+
+@app.route("/ledger/share-card")
+def ledger_share_card():
+    html = build_share_preview_html(
+        title="The Ledger",
+        subtitle="Every ahead-of-consensus call tracked to an outcome",
+        png_url="/ledger/share-card.png",
+        filename="valucast-ledger.png",
+        public_png_url=_public_url("/ledger/share-card.png"),
+        public_page_url=_public_url("/ledger/share-card"),
+        description="Every ValuCast ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.",
+        image_alt="ValuCast Ledger scorecard",
+        back_url="/ledger",
+        back_label="Back to The Ledger",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+def _artifact_is_fresh(generated_at, hours=36):
+    """FRESH badge honesty: computed from the artifact's own stamp, never assumed."""
+    if not generated_at:
+        return False
+    from datetime import datetime, timezone
+    try:
+        ts = datetime.fromisoformat(str(generated_at).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - ts).total_seconds() <= hours * 3600
+
+
+@app.route("/cards")
+def cards_gallery():
+    """Every share graphic in one place — the destination gallery for social
+    posts (7/3 landscape review: rankings-as-images is the growth loop; the
+    missing piece was a place to send people)."""
+    dd_gen = dd_store.generated_at if dd_store.is_available else None
+    movers_gen = _load_movers_payload().get("generated_at")
+    sc = _load_scorecard_payload()
+    entries = [
+        {
+            "title": "Top Prospects",
+            "caption": "The top of the prospect board — the whole 300 is free behind it.",
+            "page_url": "/prospects/share-card",
+            "png_url": "/prospects/share-card.png",
+            "board_url": "/?mode=prospects",
+            "generated_at": dd_gen,
+        },
+        {
+            "title": "Prospect Movers",
+            "caption": "Real risers and fallers — nightly re-baselines filtered out.",
+            "page_url": "/movers/share-card",
+            "png_url": "/movers/share-card.png",
+            "board_url": "/movers",
+            "generated_at": movers_gen,
+        },
+        {
+            "title": "The Ledger",
+            "caption": "Every ahead-of-consensus call tracked to an outcome — misses included.",
+            "page_url": "/ledger/share-card",
+            "png_url": "/ledger/share-card.png",
+            "board_url": "/ledger",
+            "generated_at": (sc or {}).get("generated_at"),
+        },
+        {
+            "title": "Value Map",
+            "caption": "Dynasty value vs age — the whole market on one chart.",
+            "page_url": "/map/share-card",
+            "png_url": "/map/share-card.png",
+            "board_url": "/map",
+            "generated_at": dd_gen,
+        },
+    ]
+    if not AHEAD_OF_THE_CURVE_HOLD:
+        entries.insert(2, {
+            "title": "Ahead of the Curve",
+            "caption": "The 40 best prospect buys by signal, not reputation.",
+            "page_url": "/buys/share-card",
+            "png_url": "/buys/share-card.png",
+            "board_url": "/buys",
+            "generated_at": valucast_buy_store.generated_at,
+        })
+    if not RECEIPTS_HOLD:
+        entries.append({
+            "title": "Call-Up Receipts",
+            "caption": "Every call-up vs the public consensus — both directions.",
+            "page_url": "/receipts/share-card",
+            "png_url": "/receipts/share-card.png",
+            "board_url": "/receipts",
+            "generated_at": _load_receipts_payload().get("generated_at"),
+        })
+    for entry in entries:
+        entry["fresh"] = _artifact_is_fresh(entry["generated_at"])
+        entry["date_label"] = _editorial_date(entry["generated_at"])
+    return render_template("cards.html", entries=entries)
+
+
 @app.route("/buys")
 def buys():
     """Top-40 prospect buys + the shareable 1080x1350 graphic node."""
@@ -6943,11 +7185,26 @@ def _build_buys_page_context(raw_n=None):
                      else buy_score.build_valucast_board(buy_store.get_all(), n=n))
         data_generated_at = buy_store.generated_at
         data_available = True
+        buy_validation = buy_store.validation
     else:
         # No ValuCast buys ready -> explicit unavailable. Never a DD-derived board.
         graphic_rows, list_rows = [], []
         data_generated_at = None
         data_available = False
+        buy_validation = {}
+    # Why-line: first sentence of the existing deterministic scouting read,
+    # joined by identity — never regenerated (Batch 2 trust grammar).
+    reads_by_identity = _indexed_artifact_rows(
+        _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_scouting_reports.json"),
+        "reports",
+    )
+    for row in list_rows:
+        report_row = reads_by_identity.get(
+            _identity_key(row.get("mlbam_id"), row.get("role")) or ""
+        )
+        row["why"] = _first_read_sentence(report_row)
+    buy_pool = buy_validation.get("candidate_count")
+    buy_qualified = buy_validation.get("row_count")
     buy_source_copy = _buy_source_copy(buy_data_source)
     for row in graphic_rows:
         row["spark"] = build_spark(row["value_history"])
@@ -6967,10 +7224,35 @@ def _build_buys_page_context(raw_n=None):
         "buy_source_label": buy_source_copy["label"],
         "buy_source_note": buy_source_copy["note"],
         "buy_formula_note": buy_source_copy["formula"],
+        # Qualification funnel straight from the artifact's validation block —
+        # the transparency header shows the math at point of use.
+        "buy_pool_count": buy_pool,
+        "buy_qualified_count": buy_qualified,
+        "buy_excluded_mlb_count": buy_validation.get("active_mlb_roster_excluded_count"),
+        "buy_qualified_pct": (
+            round(100 * buy_qualified / buy_pool)
+            if buy_qualified and buy_pool else None
+        ),
         "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
         "aotc_hold_message": "Ahead of the Curve returns later this week",
         "as_of": data_generated_at or store.as_of,
     }
+
+
+_READ_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
+
+
+def _first_read_sentence(report_row):
+    """One-line 'why' for a buys row: the deterministic read's first sentence."""
+    if not isinstance(report_row, dict):
+        return ""
+    text = str(report_row.get("report") or "").strip()
+    if not text:
+        return ""
+    first = _READ_SENTENCE_SPLIT.split(text, 1)[0].strip()
+    if len(first) > 160:
+        first = first[:157].rstrip() + "..."
+    return first
 
 
 def _draw_buys_spark(draw, spark, x, y, w, h, *, up_color, down_color, flat_color):

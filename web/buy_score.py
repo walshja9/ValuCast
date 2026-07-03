@@ -283,6 +283,9 @@ def build_valucast_board(rows, n=BOARD_SIZE):
         board.append({
             "rank": row.get("rank"),
             "id": row.get("player_id") or row.get("id"),
+            # identity passthrough for the scouting-reads join (why-line)
+            "mlbam_id": row.get("mlbam_id"),
+            "role": row.get("role"),
             "name": row.get("name"),
             "team": row.get("team") or "",
             "pos": "/".join(positions[:2]) or "-",

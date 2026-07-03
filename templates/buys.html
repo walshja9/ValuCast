@@ -37,6 +37,9 @@
         <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint"><strong>Source:</strong> {{ buy_source_label }}. {{ buy_source_note }}</p>
         <p class="buys-fineprint">{{ buy_formula_note }}. Window closes at MLB debut; fresh signings surface once they have enough data.</p>
+        {% if buy_qualified_count and buy_pool_count %}
+        <p class="buys-fineprint">Top {{ list_rows | length }} shown of {{ buy_qualified_count }} qualified &middot; {{ '{:,}'.format(buy_pool_count) }}-prospect pool &middot; {{ buy_excluded_mlb_count }} active-MLB call-ups excluded &middot; the signal qualifies ~{{ buy_qualified_pct }}% of the pool by design.</p>
+        {% endif %}
         <p class="buys-fineprint">Form curves span the tracked value history — up to 30 days (tracking began June 13). The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
         {% endif %}
     </div>
@@ -69,6 +72,7 @@
                the redraft store and 404s (found live 7/2). #}
             <a href="/player/{{ p.id }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
+            {% if p.why %}<span class="buys-tag buys-why">{{ p.why }}</span>{% endif %}
         </div>
         <span class="buys-score" title="model strength {{ (p.terms.model_strength * 100) | round | int }} &middot; momentum {{ (p.terms.momentum * 100) | round | int }} &middot; buy window {{ (p.terms.buy_window * 100) | round | int }} &middot; runway {{ (p.terms.runway * 100) | round | int }} &middot; conviction {{ (p.terms.conviction * 100) | round | int }}">{{ p.score }}</span>
         {% if p.label %}<span class="trend-chip buys-chip">{{ p.label | replace('_', ' ') | title }}</span>{% endif %}

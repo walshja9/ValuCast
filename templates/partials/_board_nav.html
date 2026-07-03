@@ -15,5 +15,8 @@
     {% endif %}
     {% endif %}
     <a href="/ledger" class="htab{% if active == 'ledger' %} on{% endif %}"{% if active == 'ledger' %} aria-current="page"{% endif %}>Ledger</a>
+    <a href="/cards" class="htab{% if active == 'cards' %} on{% endif %}"{% if active == 'cards' %} aria-current="page"{% endif %}>Cards</a>
 </nav>
+{# Provenance line: the identity claim, on every board (7/3 landscape review). #}
+<p class="prov-line">Deterministic &middot; committed daily &middot; {% if active == 'ledger' %}publicly scored{% else %}<a href="/ledger">publicly scored</a>{% endif %} &middot; free, no login</p>
 {% endmacro %}

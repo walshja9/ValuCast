@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 
 {% block title %}The Ledger — Ahead of the Curve Track Record | ValuCast{% endblock %}
+{% block og_title %}The Ledger | ValuCast{% endblock %}
+{% block og_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
+{% block og_url %}https://valucast.app/ledger{% endblock %}
+{% block og_image %}https://valucast.app/ledger/share-card.png{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1350{% endblock %}
+{% block twitter_title %}The Ledger | ValuCast{% endblock %}
+{% block twitter_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
+{% block twitter_image %}https://valucast.app/ledger/share-card.png{% endblock %}
 
 {% block content %}
 {% from "partials/_board_nav.html" import board_nav with context %}
+{% from "partials/_editorial_date.html" import editorial_date %}
 {{ board_nav(active='ledger', aria='Ledger navigation') }}
 {% include "partials/_stale_notice.html" %}
 
@@ -11,6 +21,9 @@
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">AHEAD OF THE CURVE</span>
         <h1>THE LEDGER</h1>
+        {% if sc %}
+        <p class="buys-heading-sub">{{ sc.summary.ever_flagged }} calls tracked since {{ sc.summary.first_call_date }}{% if sc.generated_at %} &middot; updated {{ editorial_date(sc.generated_at) }}{% endif %}</p>
+        {% endif %}
         <p class="buys-heading-sub">Every prospect we rank meaningfully ahead of the public field,
         tracked to an outcome — including the calls <strong>we backed off ourselves</strong>.
         No call ever leaves this page silently.</p>
@@ -30,6 +43,12 @@
         <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
         &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
     </div>
+    {% if sc %}
+    <div class="buys-actions">
+        <a class="export-btn" href="/ledger/share-card" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" href="/ledger/share-card.png" download="valucast-ledger.png">Download PNG</a>
+    </div>
+    {% endif %}
 </section>
 
 {% if sc %}
