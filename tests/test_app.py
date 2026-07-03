@@ -1446,7 +1446,7 @@ class TestTrustGrammarAndCards(unittest.TestCase):
     def test_cards_gallery_indexes_share_cards(self):
         import app as app_module
         html = self.client.get("/cards").data.decode("utf-8")
-        self.assertIn("THE CARD RACK", html)
+        self.assertIn("THE CARD SHOP", html)
         self.assertIn("The Ledger", html)
         self.assertIn("Prospect Movers", html)
         self.assertIn("/ledger/share-card.png", html)
