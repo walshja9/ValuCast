@@ -150,6 +150,10 @@ def test_ledger_page_renders_full_ledger():
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
     assert 'data-ledger-filter="resolved"' in html      # resolved != undecided
     assert "conviction, not evidence" in html           # worked-example explainer
+    # 7/3 retention-cohort disclosure: policy-change entries are labeled,
+    # never silent — and never curated out (scoring fields stay frozen).
+    assert "Board policy change 2026-07-02" in html
+    assert "ledger-chip-mlb" in html
 
     # Legacy route redirects permanently.
     r = client.get("/track-record")

@@ -22,6 +22,11 @@
         field's number is the market price, and a call wins when the market comes to our
         number. Us moving a player up is conviction, not evidence — only the field's
         movement scores.</p>
+        <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
+        ranked instead of leaving the board — 8 already-debuted players entered tracking that week
+        under the same pre-registered rules, disclosed rather than curated. Any call currently on an
+        MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
+        chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
         <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
         &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
     </div>
@@ -100,6 +105,7 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
         <div class="ledger-row-main">
             <span class="ledger-row-name">{{ c.name }}</span>
             <span class="ledger-chip ledger-chip-{{ kind }}">{{ label }}</span>
+            {% if c.in_mlb %}<span class="ledger-chip ledger-chip-mlb" title="On an MLB active roster — the dynasty-rank bet stays open until he graduates the rookie limits">in the majors</span>{% endif %}
         </div>
         <div class="ledger-row-detail">
             {# streak_since = the current UNBROKEN guarded run; a call that lapsed

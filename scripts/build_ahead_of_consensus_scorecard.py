@@ -208,6 +208,11 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             "consensus_then": f["consensus_rank"],
             "valucast_then": f["valucast_rank"],
             "initial_gap": initial_gap,
+            # DISPLAY-ONLY: current active-roster status, for the "in the
+            # majors" provenance chip (7/3: the rookie-retention board change
+            # entered 8 already-debuted players into tracking — disclosed,
+            # never silent). Feeds no status/funnel/rate math.
+            "in_mlb": str(f.get("mlbam_id") or key.split("_")[0]) in active_ids,
         }
         if now is None:
             mlbam = f.get("mlbam_id") or key.split("_")[0]
