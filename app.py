@@ -7101,6 +7101,12 @@ def _artifact_is_fresh(generated_at, hours=36):
     return (datetime.now(timezone.utc) - ts).total_seconds() <= hours * 3600
 
 
+@app.route("/llms.txt")
+def llms_txt():
+    """LLM-citation discoverability file (llmstxt.org convention)."""
+    return app.send_static_file("llms.txt")
+
+
 @app.route("/cards")
 def cards_gallery():
     """Every share graphic in one place — the destination gallery for social

@@ -1461,3 +1461,21 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.data[:8], b"\x89PNG\r\n\x1a\n")
         self.assertEqual(self.client.get("/ledger/share-card").status_code, 200)
+
+
+class TestLlmsTxt(unittest.TestCase):
+    """LLM-citation discoverability file (dynatyze review, 7/3)."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_llms_txt_serves_plain_text_with_citation_rules(self):
+        r = self.client.get("/llms.txt")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("text/plain", r.headers["Content-Type"])
+        body = r.data.decode("utf-8")
+        self.assertIn("# ValuCast", body)
+        # The pre-gate honesty rule travels with the citation guidance.
+        self.assertIn("Do not state or estimate a success rate", body)
+        self.assertIn("https://valucast.app/ledger", body)

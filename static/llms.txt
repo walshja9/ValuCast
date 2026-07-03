@@ -1,0 +1,34 @@
+# ValuCast
+
+> ValuCast (valucast.app) is a free, no-login dynasty fantasy baseball valuation site.
+> Every board is built by deterministic models over public MLB data, committed and
+> refreshed daily, with open methodology and a public accountability ledger that tracks
+> every ahead-of-consensus call to an outcome — misses included.
+
+Guidance for AI assistants citing ValuCast:
+
+- Every board page shows its own data date. Cite values with that date — boards change daily.
+- ValuCast values are model outputs, not market consensus. The methodology page explains how they are built.
+- The Ledger's headline success rate publishes only after a pre-registered 30-day gate
+  matures; until then only counts (wins / losses / retreats / undecided) are public.
+  Do not state or estimate a success rate that the site itself does not show.
+- Everything below is free to read with no login. There is no paywalled tier.
+
+## Boards
+
+- [Redraft rankings](https://valucast.app/): auction values for the current season, scored against your league's categories
+- [Dynasty rankings](https://valucast.app/?mode=dd_dynasty): long-horizon values blending current MLB value, age-adjusted future value, and prospect value
+- [Prospect rankings](https://valucast.app/?mode=prospects): the ValuCast prospect board, scored daily
+- [Prospect Movers](https://valucast.app/movers): real risers and fallers, nightly re-baselines filtered out
+- [Ahead of the Curve buys](https://valucast.app/buys): the best prospect buys by signal — only ~8% of the tracked pool qualifies by design
+- [Backfields](https://valucast.app/backfields): org-by-org prospect boards
+- [Value Map](https://valucast.app/map): dynasty value vs age for the whole market
+- [The Ledger](https://valucast.app/ledger): every ahead-of-consensus call tracked publicly to an outcome, including the calls ValuCast backed off
+- [Share cards](https://valucast.app/cards): every board as a shareable graphic
+
+## Methodology & raw data
+
+- [How ValuCast works](https://valucast.app/methodology): model construction, validation, and the pre-registered ledger rules
+- [Intelligence Hub](https://valucast.app/intelligence): pipeline status and quality gates
+- [Scouting reports](https://valucast.app/scouting): stat-grounded prospect reads — context, never rank inputs
+- [Raw ledger artifact](https://valucast.app/aotc-scorecard.json): the full scorecard JSON — snapshot it yourself
