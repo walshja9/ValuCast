@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -110,12 +110,26 @@ def _buy_index(payload: dict) -> dict[str, dict]:
     return indexed
 
 
-def _point_at_or_before(points: list[dict], target_index: int) -> dict | None:
-    if not points:
-        return None
-    if target_index < 0:
-        return points[0]
-    return points[target_index]
+def _point_days_back(points: list[dict], current_date: str, days: int, slack: int = 2) -> tuple[dict | None, int | None]:
+    """The newest point at least `days` CALENDAR days older than the current
+    point — or None when the archive has a hole wider than `days + slack`.
+
+    The old index math (points[-4] labeled "3d") lied across board gaps: a
+    player who vanished for 13 days came back wearing "up +6.6 in 3d" for a
+    move that really spanned 16 days, and the LLM read republished it
+    (Esmerlyn Valdez, 7/3). Returns (point, true_span_days)."""
+    try:
+        cur = date.fromisoformat(str(current_date)[:10])
+    except (TypeError, ValueError):
+        return None, None
+    for pt in reversed(points[:-1]):
+        try:
+            age = (cur - date.fromisoformat(str(pt.get("date"))[:10])).days
+        except (TypeError, ValueError):
+            continue
+        if age >= days:
+            return (pt, age) if age <= days + slack else (None, None)
+    return None, None
 
 
 def _movement_label(score_delta: float | None, rank_delta: int | None, days: int) -> str:
@@ -136,8 +150,8 @@ def _signal_row(row: dict, points: list[dict], buy_row: dict | None) -> dict:
         "rank": _clean_int(row.get("rank")),
         "score": _clean_float(row.get("score")),
     }
-    prior3 = _point_at_or_before(points, len(points) - 4)
-    prior7 = _point_at_or_before(points, len(points) - 8)
+    prior3, span3 = _point_days_back(points, current.get("date"), 3)
+    prior7, span7 = _point_days_back(points, current.get("date"), 7)
     score_now = _clean_float(current.get("score"))
     rank_now = _clean_int(current.get("rank"))
     score_3d = None
@@ -173,7 +187,8 @@ def _signal_row(row: dict, points: list[dict], buy_row: dict | None) -> dict:
         "rank_delta_3d": rank_3d,
         "score_delta_7d": score_7d,
         "rank_delta_7d": rank_7d,
-        "movement_label": _movement_label(score_3d, rank_3d, 3),
+        # Label with the TRUE calendar span (3-5d), never the nominal window.
+        "movement_label": _movement_label(score_3d, rank_3d, span3 or 3),
         "buy_rank": buy_rank,
         "buy_score": buy_score,
         "buy_reason": (buy_row or {}).get("reason"),
