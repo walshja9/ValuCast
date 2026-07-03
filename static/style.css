@@ -2073,6 +2073,30 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .freshness-badge { display: inline-flex; align-items: center; gap: .4rem; font-size: .74rem; font-weight: 600; color: var(--c-muted); margin: .2rem 0 var(--space-2); }
 .freshness-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--c-signal); box-shadow: 0 0 0 3px rgba(52, 226, 196, .18); }
 
+/* "Today on ValuCast" front-door strip */
+.today-strip { padding: .7rem .85rem .75rem; margin-bottom: var(--space-2); }
+.today-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); margin-bottom: .5rem; }
+.today-eyebrow { font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--c-signal); }
+.today-date { font-size: .7rem; color: var(--c-muted); letter-spacing: .06em; text-transform: uppercase; }
+.today-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .55rem; }
+.today-cell { display: flex; flex-direction: column; gap: .16rem; padding: .55rem .65rem; border-radius: var(--radius-md, 8px); background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .07); color: var(--c-text); text-decoration: none; min-width: 0; }
+.today-cell:hover, .today-cell:focus-visible { border-color: rgba(52, 226, 196, .4); text-decoration: none; }
+.tc-label { font-size: .64rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--c-muted); }
+.tc-line { font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-line em { font-style: normal; color: var(--c-signal); font-variant-numeric: tabular-nums; }
+.tc-muted { color: var(--c-muted); font-size: .74rem; }
+.tc-up { color: var(--c-signal); font-size: .66rem; }
+.tc-down { color: var(--c-clay, #d0745c); font-size: .66rem; }
+.tc-big { font-size: 1.3rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tc-big small { font-size: .7rem; font-weight: 600; color: var(--c-muted); }
+.today-ledger { display: block; margin-top: .55rem; font-size: .8rem; color: var(--c-text); text-decoration: none; padding: .45rem .65rem; border-radius: var(--radius-md, 8px); background: rgba(52, 226, 196, .07); border: 1px solid rgba(52, 226, 196, .22); }
+.today-ledger:hover, .today-ledger:focus-visible { border-color: rgba(52, 226, 196, .45); text-decoration: none; }
+.today-ledger strong { color: var(--c-signal); }
+.today-paths { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .55rem; }
+.today-chip { font-size: .74rem; font-weight: 650; color: var(--c-text); text-decoration: none; padding: .28rem .7rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .04); }
+.today-chip:hover, .today-chip:focus-visible { border-color: rgba(52, 226, 196, .45); text-decoration: none; }
+.rerank-note { font-size: .72rem; font-weight: 700; color: var(--c-signal); background: rgba(52, 226, 196, .1); border: 1px solid rgba(52, 226, 196, .25); border-radius: 999px; padding: .12rem .55rem; }
+
 /* Consensus spread strip */
 .spread-strip { display: flex; align-items: center; gap: .55rem; margin-top: .55rem; }
 .spread-rail { position: relative; flex: 1; max-width: 340px; height: var(--bar-h-rail); background: var(--bar-rail); border-radius: var(--bar-radius); }

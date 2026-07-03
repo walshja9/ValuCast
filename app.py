@@ -4125,6 +4125,56 @@ def _build_context(args):
     }
 
 
+def _front_door_digest():
+    """"Today on ValuCast" strip — assembled from the same committed artifacts
+    the deep pages render, so every line deep-links to its source. Every slot
+    is optional: a missing/corrupt artifact just drops its cell, and an empty
+    dict hides the strip entirely. Counts only from the AOTC scorecard — the
+    headline RATE stays behind the pre-registered gate."""
+    digest = {}
+    movers = _load_movers_payload()
+    rising = [r for r in (movers.get("rising") or []) if isinstance(r, dict)]
+    cooling = [r for r in (movers.get("cooling") or []) if isinstance(r, dict)]
+    if rising:
+        digest["risers"] = rising[:2]
+        digest["mover_window"] = next(
+            (r.get("window_days") for r in rising if r.get("window_days")), 10)
+    if cooling:
+        digest["faller"] = cooling[0]
+    pulse = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+    ) or {}
+    call_ups = [c for c in (pulse.get("call_ups") or []) if isinstance(c, dict)]
+    if call_ups:
+        digest["callup_count"] = len(call_ups)
+        digest["callup_top"] = min(
+            call_ups, key=lambda c: c.get("prospect_rank") or 10 ** 6)
+    buys = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_prospect_buys.json"
+    ) or {}
+    board = buys.get("board") or []
+    if board and isinstance(board[0], dict) and board[0].get("name"):
+        digest["top_buy"] = board[0]
+    scorecard = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
+    ) or {}
+    calls = [c for c in (scorecard.get("calls") or []) if isinstance(c, dict)]
+    if calls:
+        newest = max(calls, key=lambda c: str(c.get("ahead_since") or ""))
+        if newest.get("name") and newest.get("ahead_since"):
+            digest["newest_call"] = newest
+    funnel = scorecard.get("funnel") or {}
+    total = (scorecard.get("summary") or {}).get("ever_flagged")
+    if funnel and total:
+        digest["ledger"] = {
+            "total": total,
+            "wins": (funnel.get("open_toward") or 0) + (funnel.get("closed_caught_up") or 0),
+            "losses": funnel.get("open_away") or 0,
+            "retreats": funnel.get("retired_we_backed_off") or 0,
+        }
+    return digest
+
+
 @app.route("/")
 def index():
     mode = request.args.get("mode", "categories")
@@ -4138,14 +4188,17 @@ def index():
             ))
             ctx["notice"] = "Dynasty data is not available. Showing default rankings."
             ctx["dd_available"] = False
+            ctx["today_digest"] = _front_door_digest()
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
             _apply_prospect_board_context(ctx, request.args)
         ctx["snapshot_stale"] = dynasty_data_source == "valucast_public_snapshot_stale"
+        ctx["today_digest"] = _front_door_digest()
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
+    ctx["today_digest"] = _front_door_digest()
     return render_template("index.html", **ctx)
 
 

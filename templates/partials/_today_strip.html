@@ -1,0 +1,61 @@
+{# "Today on ValuCast" — the front-door daily loop. Lives OUTSIDE the htmx
+   swap target so preset/filter changes never redraw it; every cell deep-links
+   to the page that owns the number. Slots render only when their artifact
+   produced data (7/3 landscape review, Batch 1). #}
+{% from "partials/_editorial_date.html" import editorial_date %}
+{% if today_digest %}
+<section class="today-strip glass" aria-label="Today on ValuCast">
+    <div class="today-head">
+        <span class="today-eyebrow">Today on ValuCast</span>
+        {% if as_of %}<span class="today-date">{{ editorial_date(as_of) }}</span>{% endif %}
+    </div>
+    <div class="today-cells">
+        {% if today_digest.risers %}
+        <a class="today-cell" href="/movers">
+            <span class="tc-label">Moving &middot; {{ today_digest.mover_window }}d</span>
+            {% for r in today_digest.risers %}
+            <span class="tc-line"><span class="tc-up">&#9650;</span> {{ r.name }} <em>{{ "%+.1f" | format(r.score_delta) }}</em></span>
+            {% endfor %}
+            {% if today_digest.faller %}
+            <span class="tc-line"><span class="tc-down">&#9660;</span> {{ today_digest.faller.name }} <em>{{ "%+.1f" | format(today_digest.faller.score_delta) }}</em></span>
+            {% endif %}
+        </a>
+        {% endif %}
+        {% if today_digest.callup_count %}
+        <a class="today-cell" href="/backfields#got-the-call">
+            <span class="tc-label">Got the call</span>
+            <span class="tc-big">{{ today_digest.callup_count }}</span>
+            <span class="tc-line tc-muted">rookie-eligible in the majors{% if today_digest.callup_top %} &middot; top-ranked: {{ today_digest.callup_top.name }}{% endif %}</span>
+        </a>
+        {% endif %}
+        {% if today_digest.top_buy %}
+        <a class="today-cell" href="/buys">
+            <span class="tc-label">Top buy</span>
+            <span class="tc-big">{{ today_digest.top_buy.score | round | int }}<small>/100</small></span>
+            <span class="tc-line tc-muted">{{ today_digest.top_buy.name }}{% if today_digest.top_buy.team %} &middot; {{ today_digest.top_buy.team }}{% endif %}{% if today_digest.top_buy.level %} {{ today_digest.top_buy.level }}{% endif %}</span>
+        </a>
+        {% endif %}
+        {% if today_digest.newest_call %}
+        <a class="today-cell" href="/ledger">
+            <span class="tc-label">Newest call</span>
+            <span class="tc-line">{{ today_digest.newest_call.name }}</span>
+            <span class="tc-line tc-muted">ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}</span>
+        </a>
+        {% endif %}
+    </div>
+    {% if today_digest.ledger %}
+    {# Counts only — the headline rate publishes when the 30-day gate matures. #}
+    <a class="today-ledger" href="/ledger">
+        <strong>{{ today_digest.ledger.total }}</strong> calls tracked publicly &mdash;
+        {{ today_digest.ledger.wins }} the field came to us on,
+        {{ today_digest.ledger.losses }} against us,
+        {{ today_digest.ledger.retreats }} we backed off. Receipts open &rarr;
+    </a>
+    {% endif %}
+    <nav class="today-paths" aria-label="Start here">
+        <a class="today-chip" href="#setup-panel" onclick="if (window.openWelcomeSetup) { openWelcomeSetup(); return false; }">Set your league</a>
+        <a class="today-chip" href="/movers">See who's moving</a>
+        <a class="today-chip" href="/ledger">Check our record</a>
+    </nav>
+</section>
+{% endif %}

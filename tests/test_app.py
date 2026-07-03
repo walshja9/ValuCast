@@ -315,6 +315,17 @@ class TestDynastyMode(unittest.TestCase):
         self.assertNotIn('full-season line">OPS</th>', html)
         self.assertNotIn('full-season line">K/BB</th>', html)
 
+    def test_dynasty_preset_rerank_is_announced(self):
+        # 7/3 Batch 1: preset swaps re-rank silently — "tuned to your league"
+        # must be shown, not just claimed.
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        preset = self.client.get("/rankings?mode=dd_dynasty&preset=points").data.decode("utf-8")
+        default = self.client.get("/rankings?mode=dd_dynasty").data.decode("utf-8")
+        self.assertIn("re-ranked for points", preset)
+        self.assertNotIn("re-ranked for", default)
+
     def test_dynasty_cutoff_divider_at_most_one_under_reordered_views(self):
         # 7/3 review: preset re-sorts make dynasty_rank non-monotonic down the
         # page, and the replacement-level divider fired on dozens of arbitrary
@@ -1359,3 +1370,40 @@ class TestBulletproofing(unittest.TestCase):
             )
         self.assertIn("No buy signals", html)
 
+
+
+class TestTodayStrip(unittest.TestCase):
+    """Front-door "Today on ValuCast" digest (7/3 landscape review, Batch 1)."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_front_door_carries_daily_digest_and_ledger_counts(self):
+        html = self.client.get("/").data.decode("utf-8")
+        self.assertIn("Today on ValuCast", html)
+        self.assertIn("calls tracked publicly", html)
+        self.assertIn("Receipts open", html)
+        # Freshness stamp on the redraft front door (was the only page without one).
+        self.assertIn("freshness-badge", html)
+        # The strip must never leak a pre-gate success RATE — counts only.
+        import re
+        strip = re.search(r'class="today-ledger".*?</a>', html, re.S)
+        self.assertIsNotNone(strip)
+        self.assertNotIn("%", strip.group(0))
+
+    def test_digest_renders_on_all_horizons(self):
+        for url in ("/?mode=dd_dynasty", "/?mode=prospects"):
+            html = self.client.get(url).data.decode("utf-8")
+            self.assertIn("Today on ValuCast", html, url)
+
+    def test_digest_degrades_to_nothing_when_artifacts_missing(self):
+        import app as app_module
+        from unittest.mock import patch
+        with patch.object(app_module, "_load_movers_payload", return_value={}), \
+             patch.object(app_module, "_load_artifact", return_value=None):
+            self.assertEqual(app_module._front_door_digest(), {})
+            html = self.client.get("/").data.decode("utf-8")
+        self.assertEqual(html.count("today-strip"), 0)
+        # Page itself still healthy.
+        self.assertIn("rankings-table", html)

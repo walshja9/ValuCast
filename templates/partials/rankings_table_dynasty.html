@@ -19,6 +19,9 @@
 {% endif %}
 <div class="results-meta">
     <span>{{ dd_rows | length }} {% if mode == 'prospects' %}prospects{% else %}players{% endif %}{% if dd_rows | length == 200 %} (showing top 200){% endif %}</span>
+    {# Preset swaps re-rank silently — say so, or "tuned to your league" reads
+       as an unproven claim (7/3 landscape review, Batch 1). #}
+    {% if mode == 'dd_dynasty' and _ap %}<span class="rerank-note">re-ranked for {{ _ap }}</span>{% endif %}
     {% if mode == 'dd_dynasty' and v11 %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
 </div>
 
