@@ -163,6 +163,14 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
     for snap_date in dates:
         for key, row in snaps[snap_date].items():
             if row["guarded"] and key not in earliest:
+                # A call may only OPEN while the player is in the minors. Archived
+                # rows carry the active_mlb_roster stamp from 7/4 on (rookie-rule
+                # retention keeps call-ups ranked, and boards delisting them
+                # inflates the consensus median into a fake "gap"). Pre-stamp
+                # history is untouched, and only ENROLLMENT checks this -- a call
+                # opened in the minors survives its player's later debut.
+                if row.get("in_mlb"):
+                    continue
                 earliest[key] = {"date": snap_date, "row": row}
 
     # Continuous-streak anchor (DISPLAY-ONLY; scoring stays pinned to the
@@ -279,6 +287,12 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             and r.get("consensus_rank") is not None
             and lo <= r["consensus_rank"] <= hi
             and k in latest and latest[k].get("consensus_rank") is not None
+            # Symmetry with enrollment: an active-MLB retained call-up's consensus
+            # is an eligibility artifact (boards delist call-ups), and because the
+            # artifact drags his "catch-up" negative, letting him be a CONTROL
+            # would inflate control_lift in ValuCast's favor. Exclude stamped rows
+            # on either end of the control window (no-op before 7/4 stamps).
+            and not r.get("in_mlb") and not latest[k].get("in_mlb")
         ]
         pool.sort(key=lambda r: abs(r["consensus_rank"] - c["consensus_then"]))
         for r in pool[:CONTROLS_PER_CALL]:
@@ -323,6 +337,11 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
         "source_policy": {
             "kind": "valucast_ahead_of_consensus_scorecard",
             "inputs": "valucast_prospect_rank_v1_dated_archive",
+            # Post-freeze eligibility refinement, disclosed in-artifact: from
+            # 2026-07-04, a call can only OPEN (and a control only be drawn)
+            # while the player is in the minors. Calls enrolled before the
+            # archive stamp existed keep their full lifecycle, chipped in_mlb.
+            "enrollment_excludes_active_mlb_from": "2026-07-04",
             "feeds_model_score": False,
             "feeds_public_rank": False,
             "feeds_buy_score": False,

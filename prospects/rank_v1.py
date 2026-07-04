@@ -2009,6 +2009,11 @@ def build_prospect_rank_v1(
                 "role": role,
                 "positions": universe_row.get("positions"),
                 "mlb_team": universe_row.get("mlb_team"),
+                # Retained call-ups (rookie-rule retention) are stamped so archived
+                # board days record who was in the majors AT THAT DATE — the AOTC
+                # featured list and call enrollment key off this, and current
+                # roster status can't reconstruct history.
+                **({"active_mlb_roster": True} if is_active_mlb_roster else {}),
                 "age": display_age,
                 "level": display_level,
                 "eta": eta,

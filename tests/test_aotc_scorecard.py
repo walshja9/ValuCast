@@ -210,3 +210,64 @@ def test_coverage_loss_with_our_retreat_still_counts_against_us(tmp_path):
     assert call["status"] == "retired_we_backed_off"
     assert payload["summary"]["decided_count"] == 1
 
+
+def test_active_mlb_first_appearance_never_enrolls(tmp_path):
+    # Rookie-retention rows are stamped active_mlb_roster in the archive from
+    # 7/4 on. A player whose FIRST guarded appearance is stamped (Guzman case:
+    # in the majors, boards delisting him faked the gap) must never open a call.
+    row = _row(1, 15, {"pipeline": 250, "hkb": 280, "sts": 290})
+    row["active_mlb_roster"] = True
+    _board(tmp_path, "2026-07-04", [row])
+    _board(tmp_path, "2026-07-05", [row])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-05T00:00:00+00:00")
+    assert payload["calls"] == []
+    assert all(count == 0 for count in payload["funnel"].values())
+
+
+def test_call_opened_in_minors_survives_later_debut(tmp_path):
+    # Enrollment is the ONLY place the stamp is consulted: a call opened while
+    # the player was in the minors keeps its lifecycle after he debuts -- the
+    # debut is the receipt, not a reason to erase the call.
+    _board(tmp_path, "2026-07-04", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    stamped = _row(1, 10, {"pipeline": 50, "hkb": 60})
+    stamped["active_mlb_roster"] = True
+    _board(tmp_path, "2026-07-08", [stamped])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-08T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["ahead_since"] == "2026-07-04"
+    assert call["status"] == "open_toward"
+    assert payload["funnel"]["open_toward"] == 1
+
+
+def test_option_down_opens_a_fresh_dated_call(tmp_path):
+    # A call-up optioned back to the minors is a genuine minor-league
+    # divergence again: the first UNSTAMPED guarded day opens a new call dated
+    # from the option-down, never backdated into his MLB stint.
+    stamped = _row(1, 15, {"pipeline": 250, "hkb": 280, "sts": 290})
+    stamped["active_mlb_roster"] = True
+    _board(tmp_path, "2026-07-04", [stamped])
+    _board(tmp_path, "2026-07-10", [_row(1, 15, {"pipeline": 250, "hkb": 280, "sts": 290})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-10T00:00:00+00:00")
+    call = payload["calls"][0]
+    assert call["ahead_since"] == "2026-07-10"
+    assert call["status"].startswith("open_")
+
+
+def test_active_mlb_rows_never_serve_as_controls(tmp_path):
+    # Symmetry with enrollment: boards delisting a retained call-up drags his
+    # "catch-up" negative, so letting him be a matched CONTROL would inflate
+    # control_lift in ValuCast's favor. Stamped rows are excluded from the pool.
+    call_row = _row(1, 10, {"pipeline": 80, "hkb": 90})                      # the call, consensus 85
+    ctrl_clean = _row(2, 200, {"pipeline": 78, "hkb": 88})                   # clean control, consensus 83
+    ctrl_mlb = _row(3, 201, {"pipeline": 79, "hkb": 89})                     # in-MLB by day 2
+    _board(tmp_path, "2026-07-04", [call_row, ctrl_clean, ctrl_mlb])
+    day2_mlb = _row(3, 201, {"pipeline": 300, "hkb": 320})                   # delisting artifact
+    day2_mlb["active_mlb_roster"] = True
+    _board(
+        tmp_path,
+        "2026-07-08",
+        [_row(1, 10, {"pipeline": 50, "hkb": 60}), ctrl_clean, day2_mlb],
+    )
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-08T00:00:00+00:00")
+    assert payload["summary"]["control_rates"]["n"] == 1  # only the clean control
+

@@ -21,6 +21,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from mlb.roster_status import ARTIFACT_PATH as MLB_ROSTER_STATUS_PATH
+from mlb.roster_status import active_roster_lookup
+
 ROOT = Path(__file__).resolve().parents[1]
 RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_ahead_of_consensus.json"
@@ -140,6 +143,11 @@ def _divergence_row(row: dict) -> dict | None:
         "role": role,
         "name": row.get("name"),
         "team": row.get("mlb_team") or row.get("team"),
+        # Rookie-retention rows (on an MLB roster, still rookie-eligible) carry
+        # active_mlb_roster from 7/4 on. "Ahead of consensus" is a claim about a
+        # MINOR-leaguer the field hasn't priced; a retained call-up's field rank
+        # is an eligibility artifact (boards delist call-ups), not disagreement.
+        "in_mlb": row.get("active_mlb_roster") is True,
         "valucast_rank": valucast_rank,
         "consensus_rank": consensus,
         "board_count": board_count,
@@ -160,9 +168,17 @@ def _is_guarded(row: dict) -> bool:
 
 
 def _is_featured(row: dict) -> bool:
-    """Guarded AND corroborated by >= FEATURED_MIN_BOARDS public boards -- the bar
-    for the main showcase, the badge map, and the card/share AOTC framing."""
-    return _is_guarded(row) and row.get("board_count", 0) >= FEATURED_MIN_BOARDS
+    """Guarded AND corroborated by >= FEATURED_MIN_BOARDS public boards AND not
+    currently in the majors -- the bar for the main showcase, the badge map, and
+    the card/share AOTC framing. NOTE: in_mlb must NOT leak into _is_guarded --
+    the scorecard uses guarded-ness to attribute why an OPEN call's divergence
+    closed, and unguarding a called-up player would mislabel his call
+    "we backed off"."""
+    return (
+        _is_guarded(row)
+        and row.get("board_count", 0) >= FEATURED_MIN_BOARDS
+        and not row.get("in_mlb")
+    )
 
 
 def _conviction(row: dict) -> float:
@@ -242,6 +258,7 @@ def _days_between(start: str | None, end: str) -> int:
 def build_ahead_of_consensus_report(
     *,
     rank_path: Path = RANK_PATH,
+    roster_status_path: Path = MLB_ROSTER_STATUS_PATH,
     generated_at: str | None = None,
 ) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
@@ -255,6 +272,16 @@ def build_ahead_of_consensus_report(
         )
         if candidate is not None
     ]
+    # Live-roster belt on top of the row stamp: the committed board artifact can
+    # predate the active_mlb_roster stamp (or a same-day call-up), so the LIVE
+    # report also joins current roster status. Fail-soft; applies only to this
+    # report's featured/thin/badge selection -- the archive replay in
+    # _ahead_streak_dates and the scorecard never consult live status.
+    active_ids = set(active_roster_lookup(_load_optional(roster_status_path)))
+    if active_ids:
+        for row in rows:
+            if row.get("mlbam_id") in active_ids:
+                row["in_mlb"] = True
     # Rank the showcase by CONVICTION, not raw gap. Rank perception is logarithmic:
     # ValuCast #3 vs a field median of #73 (a 24x call on a marquee name) is a far
     # stronger "ahead of the curve" receipt than #148 vs #443 (a 3x deep-board gap),
@@ -272,8 +299,14 @@ def build_ahead_of_consensus_report(
     # The 2-board calls -- biggest raw gaps, weakest agreement -- go to the opt-in
     # "thin coverage" list, not the headline.
     ahead = _ranked([row for row in rows if _is_featured(row)])
+    # in_mlb rows must not slide into the thin list either -- it is the same
+    # "early call" framing, just with weaker corroboration.
     ahead_thin = _ranked(
-        [row for row in rows if _is_guarded(row) and not _is_featured(row)]
+        [
+            row
+            for row in rows
+            if _is_guarded(row) and not _is_featured(row) and not row.get("in_mlb")
+        ]
     )
     # Receipts: the current UNBROKEN streak ValuCast has held each player ahead of
     # the field (provable via the dated board archive — and disprovable, which is
@@ -332,6 +365,7 @@ def build_ahead_of_consensus_report(
             "max_valucast_rank": MAX_VALUCAST_RANK,
             "min_divergence": MIN_DIVERGENCE,
             "max_ahead_rows": MAX_AHEAD_ROWS,
+            "excludes_active_mlb_roster": True,
         },
         "input_artifacts": {
             "rank_generated_at": rank_payload.get("generated_at"),

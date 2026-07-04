@@ -109,6 +109,45 @@ def test_two_board_call_is_thin_not_featured(tmp_path):
     assert "3_pitcher" not in payload["divergence_by_identity"]
 
 
+def test_active_mlb_row_is_not_featured_thin_or_badged(tmp_path):
+    # Rookie-retention keeps a call-up RANKED, but "ahead of consensus" is a
+    # claim about a minor-leaguer: boards delist call-ups, so the "gap" is an
+    # eligibility artifact. A stamped row must vanish from featured, thin, AND
+    # the badge map (Guzman case, 7/4).
+    row = _row(9, "Retained Callup", "hitter", 15, {"pipeline": 250, "hkb": 280, "sts": 265})
+    row["active_mlb_roster"] = True
+    payload = _build(tmp_path, [row])
+    assert payload["ahead_of_consensus"] == []
+    assert payload["ahead_of_consensus_thin"] == []
+    assert payload["divergence_by_identity"] == {}
+    assert payload["guards"]["excludes_active_mlb_roster"] is True
+
+
+def test_live_roster_join_excludes_unstamped_row(tmp_path):
+    # The committed board artifact can predate the stamp (or a same-day
+    # call-up): the live report joins current roster status as a belt.
+    roster_path = tmp_path / "roster.json"
+    roster_path.write_text(
+        json.dumps({"profiles": [{"mlbam_id": 9, "active_mlb_roster": True}]}),
+        encoding="utf-8",
+    )
+    rank_path = tmp_path / "rank.json"
+    rank_path.write_text(
+        json.dumps(_rank_payload([
+            _row(9, "Called Up Today", "hitter", 15, {"pipeline": 250, "hkb": 280, "sts": 265}),
+            _row(3, "Owen Murphy", "pitcher", 166, {"pipeline": 250, "hkb": 280, "sts": 265}),
+        ])),
+        encoding="utf-8",
+    )
+    payload = build_ahead_of_consensus_report(
+        rank_path=rank_path,
+        roster_status_path=roster_path,
+        generated_at="2026-07-04T00:00:00+00:00",
+    )
+    assert [row["name"] for row in payload["ahead_of_consensus"]] == ["Owen Murphy"]
+    assert "9_hitter" not in payload["divergence_by_identity"]
+
+
 def test_three_board_call_is_featured(tmp_path):
     payload = _build(
         tmp_path,

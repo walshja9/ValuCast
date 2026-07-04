@@ -329,6 +329,12 @@ def test_rank_v1_retains_rookie_eligible_active_roster_identities():
 
     assert 1 in board_ids
     assert 2 in board_ids
+    # Retained rows are stamped so archived board days record who was in the
+    # majors at that date (AOTC featured/enrollment key off this); pure
+    # minor-leaguers must NOT carry the key at all.
+    by_id = {row["mlbam_id"]: row for row in payload["board"]}
+    assert by_id[1].get("active_mlb_roster") is True
+    assert "active_mlb_roster" not in by_id[2]
     assert payload["candidate_count"] == 2
     assert payload["ranked_count"] == 2
     assert payload["validation"]["mlb_roster_status_ready"] is True
