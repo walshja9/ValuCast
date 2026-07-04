@@ -113,6 +113,18 @@ def test_movers_routes_render_html_and_png():
     assert png.data[:8] == b"\x89PNG\r\n\x1a\n"
     assert "image/png" in png.content_type
 
+    # Windowed export renders (and differs from the default when the boards
+    # differ); junk windows fall back to the default graphic.
+    windowed = client.get("/movers/share-card.png?window=7")
+    assert windowed.status_code == 200
+    assert windowed.data[:8] == b"\x89PNG\r\n\x1a\n"
+    junk = client.get("/movers/share-card.png?window=999")
+    assert junk.data == png.data
+
+    preview = client.get("/movers/share-card?window=7")
+    assert preview.status_code == 200
+    assert b"share-card.png?window=7" in preview.data
+
 
 def test_build_movers_board_window_variants_floor_the_start():
     from prospects.movers import build_movers_board

@@ -38,9 +38,12 @@
             {% endfor %}
         </nav>
     </div>
+    {# Export follows the window you're looking at; bare URLs (og:image) stay
+       on the canonical default board. #}
+    {% set _wq = ('?window=' ~ movers_window) if movers_window else '' %}
     <div class="buys-actions">
-        <a class="export-btn" href="/movers/share-card" target="_blank" rel="noopener">Preview graphic</a>
-        <a class="export-btn secondary-action" href="/movers/share-card.png" download="valucast-prospect-movers.png">Download PNG</a>
+        <a class="export-btn" href="/movers/share-card{{ _wq }}" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" href="/movers/share-card.png{{ _wq }}" download="valucast-prospect-movers.png">Download PNG</a>
     </div>
 </section>
 

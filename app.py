@@ -6721,7 +6721,13 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
 
 @app.route("/movers/share-card.png")
 def movers_share_card_png():
-    context = _build_movers_page_context()
+    # Honors ?window= so the graphic matches the board view it was exported
+    # from; the og:image URL carries no param and stays the canonical default.
+    # The renderer derives its "N-day" subtitle/footer from the rows, so the
+    # windowed variant labels itself correctly for free.
+    context = _build_movers_page_context(
+        window=_parse_spark_window(request.args.get("window"))
+    )
     png = _movers_share_card_png(
         context["rising"],
         context["cooling"],
@@ -6735,12 +6741,17 @@ def movers_share_card_png():
 
 @app.route("/movers/share-card")
 def movers_share_card():
+    window = _parse_spark_window(request.args.get("window"))
+    png_path = f"/movers/share-card.png?window={window}" if window else "/movers/share-card.png"
     html = build_share_preview_html(
         title="Prospect Movers",
-        subtitle="Biggest risers & fallers on the prospect board",
-        png_url="/movers/share-card.png",
+        subtitle=(
+            f"Biggest {window}-day risers & fallers on the prospect board"
+            if window else "Biggest risers & fallers on the prospect board"
+        ),
+        png_url=png_path,
         filename="valucast-prospect-movers.png",
-        public_png_url=_public_url("/movers/share-card.png"),
+        public_png_url=_public_url(png_path),
         public_page_url=_public_url("/movers/share-card"),
         description="The biggest recent risers and fallers on the ValuCast prospect board.",
         image_alt="ValuCast Prospect Movers board",
