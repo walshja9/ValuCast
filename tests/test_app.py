@@ -1423,6 +1423,25 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         self.assertIn("active-MLB call-ups excluded", html)
         # Why-line: joined from the existing deterministic scouting reads.
         self.assertIn("buys-why", html)
+        # Form-curve window presets render with All active by default.
+        self.assertIn("buys-window-pills", html)
+        self.assertIn(">7d</a>", html)
+
+    def test_buys_window_param_trims_form_curves(self):
+        import re as _re
+
+        def spans(html):
+            return [int(m) for m in _re.findall(r'aria-label="(\d+)-day value trend', html)]
+
+        default_spans = spans(self.client.get("/buys").data.decode("utf-8"))
+        windowed = self.client.get("/buys?window=7")
+        self.assertEqual(windowed.status_code, 200)
+        seven_spans = spans(windowed.data.decode("utf-8"))
+        if seven_spans:
+            self.assertLessEqual(max(seven_spans), 7)
+        # Junk window falls back to the default view, never a 500.
+        junk = self.client.get("/buys?window=999").data.decode("utf-8")
+        self.assertEqual(spans(junk), default_spans)
 
     def test_movers_shows_qualification_thresholds(self):
         html = self.client.get("/movers").data.decode("utf-8")

@@ -102,6 +102,24 @@ class TestBuildSpark(unittest.TestCase):
         self.assertIsNone(build_spark(()))
         self.assertIsNone(build_spark((("2026-05-14", 50.0),)))
 
+    def test_window_days_trims_to_recent_points(self):
+        pts = (("2026-06-13", 40.0), ("2026-06-25", 50.0),
+               ("2026-06-30", 55.0), ("2026-07-04", 52.0))
+        spark = build_spark(pts, window_days=7)
+        self.assertEqual(spark["first_date"], "2026-06-30")
+        self.assertEqual(spark["delta"], -3.0)
+        self.assertEqual(spark["window_days"], 4)  # actual span, not the request
+
+    def test_oversized_window_clamps_to_available_history(self):
+        # 30d asked, 21d of records: label must show the true span.
+        pts = (("2026-06-13", 40.0), ("2026-07-04", 52.0))
+        spark = build_spark(pts, window_days=30)
+        self.assertEqual(spark["window_days"], 21)
+
+    def test_window_leaving_one_point_returns_none(self):
+        pts = (("2026-06-01", 40.0), ("2026-07-04", 52.0))
+        self.assertIsNone(build_spark(pts, window_days=7))
+
 
 class _CardCase(unittest.TestCase):
     @classmethod

@@ -9,9 +9,16 @@ from __future__ import annotations
 W, H, PAD = 280, 56, 4
 
 
-def build_spark(value_history, width: int = W, height: int = H):
-    """value_history: ((date, value), ...) chronological. None when < 2 pts."""
+def build_spark(value_history, width: int = W, height: int = H, window_days: int | None = None):
+    """value_history: ((date, value), ...) chronological. None when < 2 pts.
+
+    window_days trims to the last N calendar days of the (already epoch-masked)
+    history. The label always renders the ACTUAL span, so a 30d request against
+    13d of records honestly reads "over 13d" instead of faking a month."""
     pts = [(d, float(v)) for d, v in (value_history or ()) if d]
+    if window_days and pts:
+        last = pts[-1][0]
+        pts = [p for p in pts if _calendar_days(p[0], last) <= window_days]
     if len(pts) < 2:
         return None
     values = [v for _, v in pts]

@@ -40,7 +40,16 @@
         {% if buy_qualified_count and buy_pool_count %}
         <p class="buys-fineprint">Top {{ list_rows | length }} shown of {{ buy_qualified_count }} qualified &middot; {{ '{:,}'.format(buy_pool_count) }}-prospect pool &middot; {{ buy_excluded_mlb_count }} active-MLB call-ups excluded &middot; the signal qualifies ~{{ buy_qualified_pct }}% of the pool by design.</p>
         {% endif %}
-        <p class="buys-fineprint">Form curves span the tracked value history — up to 30 days (tracking began June 13). The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
+        <p class="buys-fineprint">Form curves span the tracked value history within the current scoring era (tracking began June 13). The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
+        {# Window presets reuse the ledger pill styling (site-tokened, not
+           backfields-scoped). Curves self-clamp to available records, so an
+           oversized pick still labels its true span. #}
+        <nav class="bf-filter-pills ledger-pills buys-window-pills" aria-label="Form curve window">
+            {% for w in [none] + (spark_window_choices | list) %}
+            <a class="bf-pill{% if spark_window == w %} is-active{% endif %}"
+               href="{{ url_for('buys', n=(n if n != 40 else none), window=w) }}">{{ 'All' if w is none else w ~ 'd' }}</a>
+            {% endfor %}
+        </nav>
         {% endif %}
     </div>
     {% if dd_available %}

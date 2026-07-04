@@ -7181,15 +7181,36 @@ def cards_gallery():
     return render_template("cards.html", entries=entries)
 
 
+# Form-curve window presets. None = the full (epoch-masked) tracked history;
+# the spark label renders the actual span, so oversized windows self-clamp.
+SPARK_WINDOW_CHOICES = (7, 21, 30)
+
+
+def _parse_spark_window(raw) -> int | None:
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value in SPARK_WINDOW_CHOICES else None
+
+
 @app.route("/buys")
 def buys():
     """Top-40 prospect buys + the shareable 1080x1350 graphic node."""
-    context = _build_buys_page_context(request.args.get("n", buy_score.BOARD_SIZE))
+    context = _build_buys_page_context(
+        request.args.get("n", buy_score.BOARD_SIZE),
+        spark_window=_parse_spark_window(request.args.get("window")),
+    )
     return render_template("buys.html", **context)
 
 
-def _build_buys_page_context(raw_n=None):
-    """Shared buys context for the page and deterministic share-card PNG."""
+def _build_buys_page_context(raw_n=None, spark_window=None):
+    """Shared buys context for the page and deterministic share-card PNG.
+
+    spark_window trims the form curves (page list + on-page export share the
+    same rows, so the user downloads what they see); the server-rendered
+    share-card PNG builds its own context without a window and stays on the
+    canonical epoch view."""
     n = buy_score.clamp_n(raw_n if raw_n is not None else buy_score.BOARD_SIZE)
     buy_store, buy_data_source = _select_buy_source(valucast_buy_store)
     if buy_data_source == "valucast_buys" and buy_store.is_available:
@@ -7221,17 +7242,19 @@ def _build_buys_page_context(raw_n=None):
     buy_qualified = buy_validation.get("row_count")
     buy_source_copy = _buy_source_copy(buy_data_source)
     for row in graphic_rows:
-        row["spark"] = build_spark(row["value_history"])
+        row["spark"] = build_spark(row["value_history"], window_days=spark_window)
         row["spark_label"] = _buy_spark_label(row["spark"])
     for row in list_rows:
         if "spark" not in row:
-            row["spark"] = build_spark(row["value_history"])
+            row["spark"] = build_spark(row["value_history"], window_days=spark_window)
         if "spark_label" not in row:
             row["spark_label"] = _buy_spark_label(row["spark"])
     return {
         "list_rows": list_rows,
         "graphic_rows": graphic_rows,
         "n": n,
+        "spark_window": spark_window,
+        "spark_window_choices": SPARK_WINDOW_CHOICES,
         "dd_available": data_available,
         "dd_generated_at": data_generated_at,
         "buy_data_source": buy_data_source,
