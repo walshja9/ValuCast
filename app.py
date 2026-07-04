@@ -6598,10 +6598,20 @@ def _load_movers_payload(path=VALUCAST_MOVERS_PATH):
     return payload if isinstance(payload, dict) else {}
 
 
-def _build_movers_page_context():
+def _build_movers_page_context(window=None):
     payload = _load_movers_payload()
-    rising = list(payload.get("rising") or [])
-    cooling = list(payload.get("cooling") or [])
+    # Window presets are precomputed in the artifact (never crunched per
+    # request). Fail-soft to the default board when the artifact predates the
+    # feature, and report the window we actually served so the pills stay honest.
+    sides = payload
+    if window:
+        windowed = (payload.get("windows") or {}).get(f"{window}d")
+        if windowed:
+            sides = windowed
+        else:
+            window = None
+    rising = list(sides.get("rising") or [])
+    cooling = list(sides.get("cooling") or [])
     generated_at = payload.get("generated_at")
     return {
         "rising": rising,
@@ -6611,13 +6621,17 @@ def _build_movers_page_context():
         "movers_generated_at": generated_at,
         "movers_summary": payload.get("summary") or {},
         "movers_validation": payload.get("validation") or {},
+        "movers_window": window,
+        "movers_window_choices": SPARK_WINDOW_CHOICES,
         "as_of": generated_at or store.as_of,
     }
 
 
 @app.route("/movers")
 def movers():
-    context = _build_movers_page_context()
+    context = _build_movers_page_context(
+        window=_parse_spark_window(request.args.get("window"))
+    )
     return render_template("movers.html", **context)
 
 

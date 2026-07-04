@@ -29,6 +29,14 @@
         {% if movers_summary and movers_summary.current_ranked_count %}
         <p class="buys-fineprint">{{ mover_count }} qualified of {{ '{:,}'.format(movers_summary.current_ranked_count) }} tracked prospects &middot; top-{{ movers_summary.current_rank_cap }} rank cap &middot; moves under &plusmn;{{ movers_summary.score_delta_threshold }} score don't qualify.</p>
         {% endif %}
+        {# Same pill pattern as /buys; windows floor at the scoring epoch, and
+           the fineprint above derives its day count from the served rows. #}
+        <nav class="bf-filter-pills ledger-pills movers-window-pills" aria-label="Movement window">
+            {% for w in [none] + (movers_window_choices | list) %}
+            <a class="bf-pill{% if movers_window == w %} is-active{% endif %}"
+               href="{{ url_for('movers', window=w) }}">{{ 'All' if w is none else w ~ 'd' }}</a>
+            {% endfor %}
+        </nav>
     </div>
     <div class="buys-actions">
         <a class="export-btn" href="/movers/share-card" target="_blank" rel="noopener">Preview graphic</a>

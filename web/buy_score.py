@@ -77,12 +77,18 @@ def _day_ordinal(date_str):
         return None
 
 
-def clean_tail(value_history):
+def clean_tail(value_history, window_days: int | None = None):
     """Walk back from the latest point; stop at an epoch step, a stale gap,
-    or the window edge. Returns chronological [(date, value), ...]."""
+    or the window edge. Returns chronological [(date, value), ...].
+
+    window_days overrides the walk-back limit (default: the buys momentum
+    window). The step/gap guards are data-integrity rules and always apply —
+    only the calendar reach is caller-tunable (movers window presets need
+    more than the 14d momentum horizon)."""
     pts = [(d, float(v)) for d, v in (value_history or ()) if d is not None]
     if not pts:
         return []
+    reach = window_days or MOMENTUM_WINDOW_DAYS
     tail = [pts[-1]]
     last_ord = _day_ordinal(pts[-1][0])
     for date_str, value in reversed(pts[:-1]):
@@ -94,7 +100,7 @@ def clean_tail(value_history):
             break  # epoch step — regardless of how many calendar days it spans
         if prev_ord - cur_ord > MAX_POINT_GAP_DAYS:
             break
-        if last_ord - cur_ord > MOMENTUM_WINDOW_DAYS:
+        if last_ord - cur_ord > reach:
             break
         tail.insert(0, (date_str, value))
     return tail

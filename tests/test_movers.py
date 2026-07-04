@@ -106,11 +106,59 @@ def test_movers_routes_render_html_and_png():
     assert response.status_code == 200
     assert b"PROSPECT MOVERS" in response.data
     assert b"/movers/share-card.png" in response.data
+    assert b"movers-window-pills" in response.data
 
     png = client.get("/movers/share-card.png")
     assert png.status_code == 200
     assert png.data[:8] == b"\x89PNG\r\n\x1a\n"
     assert "image/png" in png.content_type
+
+
+def test_build_movers_board_window_variants_floor_the_start():
+    from prospects.movers import build_movers_board
+
+    # Early climb then a late slide, sampled every 2 days (inside the 3-day
+    # gap guard). The full view nets out to -1.0, under the +/-2.0 threshold;
+    # only the 7d window isolates the slide from 6/28's peak.
+    current = {
+        "generated_at": "2026-07-04T12:00:00+00:00",
+        "board": [_rank_row(1, "Late Slider", 40, 50.0)],
+    }
+    history = [
+        {"date": "2026-06-24", "board": [_rank_row(1, "Late Slider", 30, 51.0)]},
+        {"date": "2026-06-26", "board": [_rank_row(1, "Late Slider", 27, 53.0)]},
+        {"date": "2026-06-28", "board": [_rank_row(1, "Late Slider", 25, 55.0)]},
+        {"date": "2026-06-30", "board": [_rank_row(1, "Late Slider", 28, 54.0)]},
+        {"date": "2026-07-02", "board": [_rank_row(1, "Late Slider", 33, 52.0)]},
+    ]
+    payload = build_movers_board(current, history_payloads=history)
+
+    assert set(payload["windows"]) == {"7d", "21d", "30d"}
+    # Full view: 51.0 -> 50.0 nets -1.0, under the threshold -> no mover.
+    assert payload["rising"] == [] and payload["cooling"] == []
+    seven = payload["windows"]["7d"]
+    assert [row["name"] for row in seven["cooling"]] == ["Late Slider"]
+    assert seven["cooling"][0]["score_delta"] == -5.0
+    assert seven["cooling"][0]["window_days"] <= 7
+
+
+def test_movers_window_param_serves_variant_and_falls_back(monkeypatch):
+    import app as app_module
+
+    client = app_module.app.test_client()
+
+    payload = {
+        "generated_at": "2026-07-04T12:00:00+00:00",
+        "summary": {}, "validation": {},
+        "rising": [], "cooling": [],
+        "windows": {"7d": {"rising": [], "cooling": []}},
+    }
+    monkeypatch.setattr(app_module, "_load_movers_payload", lambda: payload)
+    assert client.get("/movers?window=7").status_code == 200
+    # Unknown/junk windows and variants missing from an older artifact both
+    # fall back to the default board, never a 500.
+    assert client.get("/movers?window=999").status_code == 200
+    assert client.get("/movers?window=21").status_code == 200
 
 
 def _rank_row(mlbam_id, name, rank, score, role="hitter"):

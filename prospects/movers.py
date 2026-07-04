@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import math
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,8 @@ EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 MAX_CURRENT_RANK = 250
 SIDE_LIMIT = 12
 MIN_SCORE_DELTA = 2.0
+# Page window presets; keep in sync with the /movers selector.
+MOVER_WINDOW_CHOICES = (7, 21, 30)
 
 
 def _clean_float(value: Any) -> float | None:
@@ -58,14 +60,21 @@ def _day_ordinal(value: str | None) -> int | None:
         return None
 
 
-def clean_score_tail(series: list[tuple[str, float]]) -> list[tuple[str, float]]:
-    """Sort score history, then apply the shared buys step/gap guard."""
+def clean_score_tail(
+    series: list[tuple[str, float]],
+    window_days: int | None = None,
+) -> list[tuple[str, float]]:
+    """Sort score history, then apply the shared buys step/gap guard.
+
+    window_days widens the walk-back reach for the movers window presets —
+    without it every preset would silently cap at the buys 14d momentum
+    horizon and 21d/30d would be dead weight."""
     points = []
     for date_str, score in series or []:
         score = _clean_float(score)
         if date_str and score is not None:
             points.append((str(date_str), score))
-    return clean_tail(sorted(points))
+    return clean_tail(sorted(points), window_days=window_days)
 
 
 def _load_json(path: Path) -> dict:
@@ -224,20 +233,27 @@ def _movement_row(row: dict, start: dict, end: dict) -> dict:
     }
 
 
-def build_movers_board(
+def _movement_sides(
     rank_payload: dict,
-    history_payloads: list[dict] | None = None,
-    generated_at: str | None = None,
-) -> dict:
-    generated_at = generated_at or rank_payload.get("generated_at") or datetime.now(timezone.utc).isoformat()
-    current_date = _date_part(generated_at) or datetime.now(timezone.utc).date().isoformat()
-    history = _history_by_key(history_payloads or [])
-    rising = []
-    cooling = []
-    excluded_step_guard_count = 0
-    history_limited_count = 0
-    below_threshold_count = 0
+    history: dict,
+    current_date: str,
+    *,
+    min_start_date: str | None = None,
+    tail_window_days: int | None = None,
+) -> tuple[list[dict], list[dict], dict[str, int]]:
+    """Risers/coolers over history floored at max(epoch, min_start_date).
 
+    The floor never reaches before the scoring epoch, so no window can span a
+    model re-baseline and show a fake step as movement. tail_window_days rides
+    along to clean_score_tail so presets past 14d aren't silently capped."""
+    floor_date = max(EPOCH_DATE, min_start_date) if min_start_date else EPOCH_DATE
+    rising: list[dict] = []
+    cooling: list[dict] = []
+    counters = {
+        "excluded_step_guard_count": 0,
+        "history_limited_count": 0,
+        "below_threshold_count": 0,
+    }
     for row in _current_rows(rank_payload):
         key = _identity_key(row)
         if key is None:
@@ -250,26 +266,29 @@ def build_movers_board(
             "row": row,
         }
         points = sorted(points_by_date.values(), key=lambda item: item["date"])
-        has_pre_epoch = any(point["date"] < EPOCH_DATE for point in points)
-        filtered = [point for point in points if point["date"] >= EPOCH_DATE]
-        if has_pre_epoch and filtered:
-            excluded_step_guard_count += 1
-        clean_scores = clean_score_tail([(point["date"], point["score"]) for point in filtered])
+        has_pre_floor = any(point["date"] < floor_date for point in points)
+        filtered = [point for point in points if point["date"] >= floor_date]
+        if has_pre_floor and filtered:
+            counters["excluded_step_guard_count"] += 1
+        clean_scores = clean_score_tail(
+            [(point["date"], point["score"]) for point in filtered],
+            window_days=tail_window_days,
+        )
         if len(clean_scores) < len(filtered):
-            excluded_step_guard_count += 1
+            counters["excluded_step_guard_count"] += 1
         if len(clean_scores) < 2:
-            history_limited_count += 1
+            counters["history_limited_count"] += 1
             continue
         clean_dates = {clean_scores[0][0], clean_scores[-1][0]}
         clean_points = {point["date"]: point for point in filtered if point["date"] in clean_dates}
         start = clean_points.get(clean_scores[0][0])
         end = clean_points.get(clean_scores[-1][0])
         if not start or not end:
-            history_limited_count += 1
+            counters["history_limited_count"] += 1
             continue
         score_delta = end["score"] - start["score"]
         if abs(score_delta) < MIN_SCORE_DELTA:
-            below_threshold_count += 1
+            counters["below_threshold_count"] += 1
             continue
         mover = _movement_row(row, start, end)
         start_rank = _clean_int(start.get("rank"))
@@ -299,8 +318,39 @@ def build_movers_board(
             str(item.get("name") or ""),
         )
     )
-    rising = rising[:SIDE_LIMIT]
-    cooling = cooling[:SIDE_LIMIT]
+    return rising[:SIDE_LIMIT], cooling[:SIDE_LIMIT], counters
+
+
+def build_movers_board(
+    rank_payload: dict,
+    history_payloads: list[dict] | None = None,
+    generated_at: str | None = None,
+) -> dict:
+    generated_at = generated_at or rank_payload.get("generated_at") or datetime.now(timezone.utc).isoformat()
+    current_date = _date_part(generated_at) or datetime.now(timezone.utc).date().isoformat()
+    history = _history_by_key(history_payloads or [])
+    rising, cooling, counters = _movement_sides(rank_payload, history, current_date)
+    excluded_step_guard_count = counters["excluded_step_guard_count"]
+    history_limited_count = counters["history_limited_count"]
+    below_threshold_count = counters["below_threshold_count"]
+    # Preset windows for the page selector, computed at build time so the route
+    # never crunches the archive per request. Each floors at the epoch, so a
+    # 30d ask against a young scoring era clamps honestly (per-row labels carry
+    # the actual span). Summary/validation stay pinned to the default board.
+    window_boards = {}
+    for window in MOVER_WINDOW_CHOICES:
+        try:
+            floor = (date.fromisoformat(current_date) - timedelta(days=window)).isoformat()
+        except ValueError:
+            continue
+        w_rising, w_cooling, _ = _movement_sides(
+            rank_payload,
+            history,
+            current_date,
+            min_start_date=floor,
+            tail_window_days=window,
+        )
+        window_boards[f"{window}d"] = {"rising": w_rising, "cooling": w_cooling}
     archive_dates = sorted(
         {
             _date_part(payload.get("date") or payload.get("generated_at"))
@@ -361,6 +411,7 @@ def build_movers_board(
         "rising": rising,
         "cooling": cooling,
         "board": rising + cooling,
+        "windows": window_boards,
     }
 
 
