@@ -13,33 +13,33 @@
       }
     ],
     "forward_archive_progress": {
-      "buy_comparison_count": 11,
+      "buy_comparison_count": 12,
       "current_supported_grade": null,
       "minimum_buy_comparisons": 7,
       "minimum_rank_comparisons": 7,
       "minimum_span_days": 14,
       "missing": [
         {
-          "current": 11,
+          "current": 12,
           "metric": "observation_span_days",
           "required": 14
         }
       ],
       "next_target_grade": "A-",
-      "observation_span_days": 11,
-      "rank_comparison_count": 11,
+      "observation_span_days": 12,
+      "rank_comparison_count": 12,
       "remaining_buy_comparisons": 0,
       "remaining_rank_comparisons": 0,
-      "remaining_span_days": 3,
+      "remaining_span_days": 2,
       "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.95,
+    "latest_buy_retention_rate": 0.875,
     "latest_rank_bucket_count": 14,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-07-03T12:25:00.224189+00:00",
+  "generated_at": "2026-07-04T12:06:09.901201+00:00",
   "next_build_order": [
     "Collect enough forward archives to move from B+ evidence to A- evidence.",
     "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
@@ -58,7 +58,7 @@
     },
     "pipeline_observability": {
       "date_mismatch_count": 0,
-      "expected_date": "2026-07-03",
+      "expected_date": "2026-07-04",
       "missing_or_unreadable_count": 0,
       "ready_for_daily_publication": true,
       "status": "candidate_ready",
@@ -80,7 +80,7 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "row_count": 3695,
+        "row_count": 3700,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,
@@ -146,7 +146,7 @@
     },
     {
       "evidence": {
-        "buy_comparison_count": 11,
+        "buy_comparison_count": 12,
         "buy_comparisons_needed": 0,
         "buys_monitor_status": "collecting",
         "cap_reasons": [
@@ -171,17 +171,17 @@
             "minimum_span_days": 30,
             "missing": [
               {
-                "current": 11,
+                "current": 12,
                 "metric": "rank_comparison_count",
                 "required": 14
               },
               {
-                "current": 11,
+                "current": 12,
                 "metric": "buy_comparison_count",
                 "required": 14
               },
               {
-                "current": 11,
+                "current": 12,
                 "metric": "observation_span_days",
                 "required": 30
               }
@@ -195,17 +195,17 @@
             "minimum_span_days": 60,
             "missing": [
               {
-                "current": 11,
+                "current": 12,
                 "metric": "rank_comparison_count",
                 "required": 30
               },
               {
-                "current": 11,
+                "current": 12,
                 "metric": "buy_comparison_count",
                 "required": 30
               },
               {
-                "current": 11,
+                "current": 12,
                 "metric": "observation_span_days",
                 "required": 60
               }
@@ -219,7 +219,7 @@
             "minimum_span_days": 14,
             "missing": [
               {
-                "current": 11,
+                "current": 12,
                 "metric": "observation_span_days",
                 "required": 14
               }
@@ -228,8 +228,8 @@
           }
         },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-        "observation_days_needed": 3,
-        "observation_span_days": 11,
+        "observation_days_needed": 2,
+        "observation_span_days": 12,
         "rank_comparisons_needed": 0,
         "score_cap": 87,
         "target_grade": "A-",
