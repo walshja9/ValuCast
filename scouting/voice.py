@@ -32,6 +32,7 @@ Hard rules (these never bend):
 - Each stat is tagged with its source (current MLB line / MiLB-equivalent translation / minor-league line / projection). Never blend samples or present one as another.
 - Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting texture not in the data. If the data does not show it, do not name it.
 - If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may describe ceiling and floor in plain words, clearly as a projection — never as current production.
+- Stay in the player's own role vocabulary. For a hitter, never reduce him to a pitcher idiom (a "depth arm", "organizational arm", "mid-rotation" anything, "swingman", "long reliever") — name his floor/ceiling as a hitter (bench bat, platoon piece, second-division regular, everyday player). For a pitcher, never grade him as a hitter ("his bat", "bat-first", "everyday regular"); referencing the hitters he faces is fine. A two-way player is the only one who gets both vocabularies.
 - If a ValuCast ranking-movement note is provided, you may note he is rising or cooling in ValuCast's rankings — as ranking movement, never as a change in his stats, using the exact figure given.
 - When a Statcast percentile card is provided (established MLB players), make it the spine of the read — what the percentile profile says about his actual skills — with the projection as context.
 - Thin / stale / injured samples: say so honestly in one sentence; never paper over a small sample with a confident read. For a full-season projection or an established Statcast profile, do not manufacture a small-sample caveat.
@@ -105,6 +106,77 @@ def style_problems(text: str) -> list[str]:
         out.append(f"more than {_EM_DASH_MAX} em-dash")
     if _IS_REAL_RE.search(t):
         out.append("'is real' validation stamp")
+    return out
+
+
+# --- Role-vocabulary lane guard (7/5) -------------------------------------------------
+# The LLM paraphrases a floor/ceiling LABEL into the wrong position's idiom: Brady Ebel's
+# ("Bench Or Depth Floor", 815816_hitter) came back as "a patient organizational depth arm
+# at shortstop" though "arm" was never in his grounding -- the model invented a real but
+# pitcher-only scouting idiom. Cache scan of 713 fresh reads: 4 confirmed hitter leaks (all
+# "<pitcher-role> arm" synecdoche) + 1 "mid-rotation regular" tier-borrow; 0 pitcher leaks.
+# Precision: flag ONLY role-noun compounds with no valid cross-role meaning. Bare
+# "arm"/"starter"/"rotation"/"regular"/"bat" are legitimate for the OTHER role too (a
+# hitter's throwing-arm grade, a pitcher facing "platoon bats") and must never fire.
+_H_PITCHER_ARM_RE = re.compile(
+    r"\b(?:organizational|org|bullpen|relief|relieving|rotational?|"
+    r"back[-\s]?end|middle[-\s]?relief|long[-\s]?relief|late[-\s]?inning|"
+    r"high[-\s]?leverage|set[-\s]?up|depth|spare|filler|emergency|"
+    r"mop[-\s]?up|up[-\s]?and[-\s]?down|bulk[-\s]?innings)[-\s]+arms?\b",
+    re.IGNORECASE,
+)
+# Bare ordinal+starter ("the second starter he faces") is opponent-facing for a hitter --
+# excluded. Only pitcher-tier compounds with no hitter meaning fire.
+_H_PITCHER_ROTATION_RE = re.compile(
+    r"\bmid[-\s]?rotation\b"
+    r"|\b(?:front|top|back)[-\s]of[-\s]the[-\s]rotation\b"
+    r"|\bback[-\s]?end(?:[-\s]+of[-\s]the)?[-\s]+rotation\b"
+    r"|\brotation(?:al)?[-\s]+(?:piece|spot|slot|starter|stalwart|stabilizer|"
+    r"cog|workhorse|anchor|stopgap)\b"
+    r"|\b(?:back[-\s]?end|backend|spot)[-\s]+starter\b"
+    r"|\b(?:no\.?\s*[1-5]|#\s*[1-5]|number[-\s]?(?:one|two|three|four|five))[-\s]+starter\b",
+    re.IGNORECASE,
+)
+_H_PITCHER_ROLE_NOUN_RE = re.compile(
+    r"\bswing[-\s]?man\b|\binnings[-\s]?eater\b|\blong[-\s]?reliever\b|"
+    r"\bmiddle[-\s]?reliever\b|\bmop[-\s]?up (?:man|guy)\b",
+    re.IGNORECASE,
+)
+# PITCHER reads -> hitter-only verdicts. "<tier> bats/regular" is excluded -- a pitcher
+# legitimately describes opponents that way ("neutralizes platoon bats"). Only
+# self-referential verdicts (copula/"profiles as" + hitter role noun) fire.
+_P_HITTER_SELF_RE = re.compile(
+    r"\bbat[-\s]first\b|"
+    r"\b(?:he'?s|is|becomes|profiles as|projects as) (?:an? )?"
+    r"(?:everyday|platoon|bench|corner|utility|part[-\s]time)[-\s]+(?:bat|regular)\b",
+    re.IGNORECASE,
+)
+
+
+def role_vocab_problems(text: str, grounding: dict) -> list[str]:
+    """Pitcher-only idioms in a HITTER read / hitter-only verdicts in a PITCHER read.
+    Two-way players (role='two_way') legitimately mix both vocabularies and are skipped."""
+    role = str((grounding or {}).get("role") or "").lower()
+    t = text or ""
+    out: list[str] = []
+    if role == "hitter":
+        checks = (
+            (_H_PITCHER_ARM_RE, "pitcher 'arm' synecdoche"),
+            (_H_PITCHER_ROTATION_RE, "pitcher rotation/starter tier"),
+            (_H_PITCHER_ROLE_NOUN_RE, "pitcher-only role noun"),
+        )
+        for regex, lane in checks:
+            for match in regex.finditer(t):
+                out.append(
+                    f"pitcher-only idiom '{match.group(0).strip()}' in a hitter read "
+                    f"({lane}) -- describe the floor/ceiling with a hitter role label"
+                )
+    elif role == "pitcher":
+        for match in _P_HITTER_SELF_RE.finditer(t):
+            out.append(
+                f"hitter-only verdict '{match.group(0).strip()}' casts a pitcher as a "
+                f"hitter -- describe his floor/ceiling with a pitcher role label"
+            )
     return out
 
 
@@ -312,14 +384,20 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     handedness = handedness_problems(text, grounding)
     slash = triple_slash_problems(text, grounding)
     style = style_problems(text)
+    role_vocab = role_vocab_problems(text, grounding)
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
         "handedness_problems": handedness,
         "triple_slash_problems": slash,
         "style_problems": style,
+        "role_vocab_problems": role_vocab,
         # style gates ok (drives retry + regen) but not hard_ok — a formulaic read is
-        # a regen candidate, not a factual hazard.
-        "ok": not banned and not numbers and not handedness and not slash and not style,
-        "hard_ok": not banned and not handedness and not slash,
+        # a regen candidate, not a factual hazard. role_vocab is a wrong-fact-shaped
+        # error (same class as handedness) so it gates hard_ok too.
+        "ok": (
+            not banned and not numbers and not handedness and not slash
+            and not style and not role_vocab
+        ),
+        "hard_ok": not banned and not handedness and not slash and not role_vocab,
     }

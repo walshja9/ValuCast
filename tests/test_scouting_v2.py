@@ -11,6 +11,7 @@ from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
     handedness_problems,
+    role_vocab_problems,
     sample_context_stale,
     unsupported_numbers,
     validate_report_text,
@@ -50,6 +51,94 @@ class TestVoiceGuard(unittest.TestCase):
         self.assertTrue(guard["style_problems"])
         self.assertFalse(guard["ok"])
         self.assertTrue(guard["hard_ok"])
+
+    def test_role_vocab_catches_the_five_real_cache_leaks(self):
+        # 7/5 cache scan: 4 confirmed "<pitcher-role> arm" leaks + 1 "mid-rotation" tier
+        # borrow, all in HITTER reads. Verbatim fragments from the actual leaked text.
+        hitter = {"role": "hitter"}
+        self.assertTrue(role_vocab_problems(
+            "you're left with a patient organizational depth arm at shortstop", hitter))
+        self.assertTrue(role_vocab_problems(
+            "this is a depth arm at a position and nothing more", hitter))
+        self.assertTrue(role_vocab_problems(
+            "he's a depth arm behind the dish", hitter))
+        self.assertTrue(role_vocab_problems(
+            "a useful bench piece... and an organizational arm if the strikeouts", hitter))
+        self.assertTrue(role_vocab_problems(
+            "a .276/.339/.467 line ... is a mid-rotation regular", hitter))
+
+    def test_role_vocab_does_not_flag_legitimate_hitter_arm_usage(self):
+        hitter = {"role": "hitter"}
+        for text in (
+            "he's got a plus arm across the infield",
+            "a 70-grade arm that plays anywhere on the dirt",
+            "the arm is a carrying tool, strong and accurate",
+            "cannon arm, elite arm strength from center",
+            "he's a non-starter at short but the bat plays",
+            "not a starter at the position long-term",
+            "an everyday starter once the bat catches up",
+            "a rotation that actively hunts left-handed hitters",
+            "he's closer to a everyday regular than a bench bat",
+        ):
+            self.assertEqual(role_vocab_problems(text, hitter), [], text)
+
+    def test_role_vocab_catches_pitcher_arm_rephrasings(self):
+        # Adversarial-review addendum: the retry loop feeds the exact flagged phrase
+        # back, so the model's next paraphrase attempt must also be caught.
+        hitter = {"role": "hitter"}
+        for text in (
+            "he's just a spare arm off the bench",
+            "profiles as a filler arm at the position",
+            "an up-and-down arm if the bat never develops",
+            "nothing more than an emergency arm",
+            "a mop-up arm at best",
+            "a bulk-innings arm if the power doesn't show",
+            "profiles as a long reliever" ,
+            "settles in as a middle reliever type",
+        ):
+            self.assertTrue(role_vocab_problems(text, hitter), text)
+
+    def test_role_vocab_pitcher_direction_ignores_opponent_facing_language(self):
+        # Adversarial review's serious flaw: a pitcher legitimately describes the
+        # hitters he faces this way constantly. Must never fire.
+        pitcher = {"role": "pitcher"}
+        for text in (
+            "neutralizes platoon bats all night",
+            "keeps corner bats honest with the changeup",
+            "gets everyday bats out with the same fastball",
+            "fools utility bats but not stars",
+            "shuts down first-division bats in the division",
+            "works around the everyday regular in the three-hole",
+            "against a fringe regular he cruises",
+            "his batted-ball profile plays even in a bandbox",
+            "off his bat, contact quality craters against the slider",
+        ):
+            self.assertEqual(role_vocab_problems(text, pitcher), [], text)
+
+    def test_role_vocab_pitcher_direction_catches_self_referential_verdicts(self):
+        pitcher = {"role": "pitcher"}
+        for text in (
+            "he's an everyday bat masquerading as an arm",
+            "projects as a bench bat if the stuff never ticks up",
+            "bat-first profile with a fringe fastball",
+        ):
+            self.assertTrue(role_vocab_problems(text, pitcher), text)
+
+    def test_role_vocab_skips_two_way_players(self):
+        self.assertEqual(
+            role_vocab_problems("a depth arm at short and a mop-up arm on the mound",
+                                 {"role": "two_way"}),
+            [],
+        )
+
+    def test_role_vocab_gates_ok_and_hard_ok(self):
+        guard = validate_report_text(
+            "you're left with a patient organizational depth arm at shortstop",
+            {**GROUNDING, "role": "hitter"},
+        )
+        self.assertTrue(guard["role_vocab_problems"])
+        self.assertFalse(guard["ok"])
+        self.assertFalse(guard["hard_ok"])
 
     def test_supported_numbers_pass(self):
         # cites the line + an ordinal percentile, all present in grounding
