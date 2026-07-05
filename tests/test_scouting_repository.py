@@ -606,9 +606,10 @@ def test_scouting_repository_publishes_valid_llm_rows_with_row_level_fallback(
     class _FakeMessages:
         def __init__(self):
             self._responses = [
-                "Model Strong is a left-handed AA bat with a direct scouting read.",
-                "Starter Arm is a right-hander with a direct pitching read.",
-                "Starter Arm is a right-hander with a direct pitching read.",
+                "A direct scouting read on Model Strong, a left-handed AA bat.",
+                "A right-hander with a direct pitching read.",
+                "A right-hander with a direct pitching read.",
+                "A right-hander with a direct pitching read.",
             ]
 
         def create(self, **_kwargs):
@@ -649,7 +650,7 @@ def test_scouting_repository_publishes_valid_llm_rows_with_row_level_fallback(
     }
     hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
     assert hitter["published_report_source"] == "llm"
-    assert hitter["published_report"] == "Model Strong is a left-handed AA bat with a direct scouting read."
+    assert hitter["published_report"] == "A direct scouting read on Model Strong, a left-handed AA bat."
     assert pitcher["published_report_source"] == "deterministic"
     assert "right-hander" not in pitcher["published_report"]
 
@@ -752,8 +753,9 @@ def test_scouting_repository_reuses_cached_llm_when_generation_budget_is_zero(
                 "entries": {
                     "1_hitter": {
                         "hash": "same",
-                        "text": "Model Strong is a left-handed AA bat with a cached LLM read.",
+                        "text": "A cached LLM read on Model Strong, a left-handed AA bat.",
                         "model": "test",
+                        "prompt": report_generator.PROMPT_FINGERPRINT,
                         "valid": True,
                         "hard_ok": True,
                         "problems": {"ok": True, "hard_ok": True},
@@ -807,10 +809,11 @@ def test_scouting_repository_reuses_stale_cache_only_when_it_still_validates(
                     "1_hitter": {
                         "hash": "old",
                         "text": (
-                            "Model Strong is a left-handed AA hitter with a .976 OPS "
+                            "A left-handed AA hitter running a .976 OPS "
                             "over 224 PA."
                         ),
                         "model": "test",
+                        "prompt": report_generator.PROMPT_FINGERPRINT,
                         "valid": True,
                         "hard_ok": True,
                         "problems": {"ok": True, "hard_ok": True},
@@ -818,10 +821,11 @@ def test_scouting_repository_reuses_stale_cache_only_when_it_still_validates(
                     "2_pitcher": {
                         "hash": "old",
                         "text": (
-                            "Starter Arm is a left-handed pitcher with a made-up "
+                            "A left-handed pitcher with a made-up "
                             "99.9 K/9."
                         ),
                         "model": "test",
+                        "prompt": report_generator.PROMPT_FINGERPRINT,
                         "valid": True,
                         "hard_ok": True,
                         "problems": {"ok": True, "hard_ok": True},
@@ -882,10 +886,11 @@ def test_scouting_repository_rejects_stale_reuse_when_sample_size_changed(tmp_pa
                         "text": (
                             # Current combined_season_stat_line.sample is 224 PA --
                             # this stale text describes an earlier, smaller sample.
-                            "Model Strong is a left-handed AA hitter with a .976 OPS "
+                            "A left-handed AA hitter running a .976 OPS "
                             "over 142 PA."
                         ),
                         "model": "test",
+                        "prompt": report_generator.PROMPT_FINGERPRINT,
                         "valid": True,
                         "hard_ok": True,
                         "problems": {"ok": True, "hard_ok": True},
@@ -1051,3 +1056,56 @@ def test_scouting_repository_validator_blocks_wrong_pitcher_handedness(tmp_path)
     _, problems = validate_scouting_repository(artifact_path)
 
     assert any("handedness" in problem for problem in problems)
+
+
+def test_scouting_repository_prompt_change_busts_llm_cache(tmp_path, monkeypatch):
+    """A cache entry written under an older VOICE_PROMPT (missing or mismatched
+    fingerprint) must not be reused even when grounding hash and model still match."""
+    from scouting import report_generator, repository
+
+    class _FailMessages:
+        def create(self, **_kwargs):
+            raise AssertionError("generation budget should prevent API calls")
+
+    class _FakeClient:
+        messages = _FailMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    cache_path = Path(tmp_path) / "llm_cache.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "artifact": "valucast_scouting_llm_cache",
+                "entries": {
+                    "1_hitter": {
+                        "hash": "same",
+                        "text": "A cached LLM read on Model Strong, a left-handed AA bat.",
+                        "model": "test",
+                        "prompt": "stale-prompt-fingerprint",
+                        "valid": True,
+                        "hard_ok": True,
+                        "problems": {"ok": True, "hard_ok": True},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM_MAX_GENERATE", "0")
+    with (
+        patch.object(report_generator, "default_client", return_value=_FakeClient()),
+        patch.object(report_generator, "grounding_hash", return_value="same"),
+        patch.object(report_generator, "DEFAULT_MODEL", "test"),
+        patch.object(repository, "LLM_CACHE_PATH", cache_path),
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    assert payload["summary"]["llm_shadow"]["reused"] == 0
+    assert payload["summary"]["llm_shadow"]["reused_stale"] == 0
+    assert payload["summary"]["llm_shadow"]["skipped_due_to_budget"] == 2
+    hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
+    assert hitter["published_report_source"] == "deterministic"

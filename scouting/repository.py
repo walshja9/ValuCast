@@ -573,13 +573,16 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         cached = entries.get(key)
         result = None
         current_model = report_generator.DEFAULT_MODEL
-        # Reuse only when the grounding AND the model both match the current build — so a
-        # model/prompt swap forces regeneration instead of serving the old model's prose.
+        # Reuse only when the grounding, the model, AND the voice-prompt fingerprint all
+        # match the current build — so a model or prompt change forces regeneration
+        # instead of serving the old voice's prose.
+        current_prompt = report_generator.PROMPT_FINGERPRINT
         if (
             isinstance(cached, dict)
             and cached.get("hash") == digest
             and cached.get("valid") is True
             and cached.get("model") == current_model
+            and cached.get("prompt") == current_prompt
         ):
             result = cached
             reused += 1
@@ -588,6 +591,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             and cached.get("valid") is True
             and cached.get("text")
             and cached.get("model") == current_model
+            and cached.get("prompt") == current_prompt
         ):
             guard = validate_report_text(cached["text"], grounding)
             # unsupported_numbers() alone lets a stale report through when the player's
@@ -630,6 +634,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
                 continue
             result = {
                 "hash": digest, "text": gen["text"], "model": gen["model"],
+                "prompt": current_prompt,
                 "valid": gen["valid"], "hard_ok": gen["hard_ok"], "problems": gen["problems"],
             }
             generated += 1

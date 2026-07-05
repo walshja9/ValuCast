@@ -418,3 +418,18 @@ def test_build_peak_projection_blocks_inverted_run_prevention_artifact():
                 item["grade"] = 100 - item["grade"]
     with pytest.raises(PeakProjectionSentinelError):
         check_run_prevention_sentinel(inverted, _rank_payload(rows))
+
+
+def test_cohered_role_probabilities_follow_floored_ceiling():
+    from prospects.peak_projection import _cohere_role_probabilities
+
+    probs = {"regular_or_better": 0.059, "bench_or_platoon": 0.741, "depth_or_reserve": 0.2}
+
+    cohered = _cohere_role_probabilities(probs, "everyday_regular", "hitter", "medium")
+    assert max(cohered, key=cohered.get) == "regular_or_better"
+    assert sorted(cohered.values()) == sorted(probs.values())
+
+    # gates mirror the label floor: high risk, pitchers, non-floored tiers untouched
+    assert _cohere_role_probabilities(probs, "everyday_regular", "hitter", "high") == probs
+    assert _cohere_role_probabilities(probs, "everyday_regular", "pitcher", "medium") == probs
+    assert _cohere_role_probabilities(probs, "bench_or_platoon_bat", "hitter", "medium") == probs

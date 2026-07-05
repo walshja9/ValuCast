@@ -13,8 +13,14 @@ import os
 from scouting.voice import VOICE_PROMPT, validate_report_text
 
 DEFAULT_MODEL = os.environ.get("VALUCAST_SCOUTING_MODEL", "claude-sonnet-4-6")
+# Fingerprint of the voice prompt, stored on every cache entry: editing VOICE_PROMPT
+# busts the cache the same way a model swap does. Before this, prompt edits shipped
+# invisibly — every entry whose grounding+model still matched was served verbatim.
+PROMPT_FINGERPRINT = hashlib.blake2s(VOICE_PROMPT.encode("utf-8"), digest_size=8).hexdigest()
 MAX_TOKENS = 320
-MAX_ATTEMPTS = 2
+# 3 attempts now that retries carry the guard's rejection reasons (7/5) — a blind
+# re-roll repeated the same tell, a corrected retry usually lands on the next try.
+MAX_ATTEMPTS = 3
 DEFAULT_TIMEOUT_SECONDS = 20.0
 
 
@@ -97,12 +103,13 @@ def generate_report(
         return None
     attempts = max(1, int(max_attempts or 1))
     last: dict | None = None
+    messages = [{"role": "user", "content": build_prompt(grounding)}]
     for _ in range(attempts):
         response = client.messages.create(
             model=model,
             max_tokens=MAX_TOKENS,
             system=VOICE_PROMPT,
-            messages=[{"role": "user", "content": build_prompt(grounding)}],
+            messages=messages,
         )
         text = _extract_text(response)
         guard = validate_report_text(text, grounding)
@@ -115,4 +122,24 @@ def generate_report(
         }
         if guard["ok"]:
             return last
+        # A blind re-roll usually repeats the same tell (7/5 QA: 'the projection sees'
+        # failed the same way twice). Tell the model exactly what the guard rejected.
+        failures = {
+            key: value
+            for key, value in guard.items()
+            if value and key not in ("ok", "hard_ok")
+        }
+        messages = messages[:1] + [
+            {"role": "assistant", "content": text},
+            {
+                "role": "user",
+                "content": (
+                    "That draft was rejected by the ValuCast style guard: "
+                    f"{json.dumps(failures, default=str)}. Rewrite the read fixing every "
+                    "listed issue. Any number the guard called unsupported is not in the "
+                    "supplied facts — drop it or replace it with a figure that is. Keep "
+                    "the same facts, same length limit."
+                ),
+            },
+        ]
     return last

@@ -33,6 +33,24 @@ class TestVoiceGuard(unittest.TestCase):
         self.assertIn("most accurate", banned_phrase_hits("the MOST ACCURATE read"))
         self.assertEqual(banned_phrase_hits("A direct, plain read."), [])
 
+    def test_style_problems_flag_robotic_tells(self):
+        from scouting.voice import style_problems
+
+        # 7/5 audit tells: identity-template opener, em-dash chains, "is real" stamp
+        self.assertTrue(style_problems("Cam Cannarella is a 22-year-old center fielder who hits."))
+        self.assertTrue(style_problems("Josue De Paula is an advanced bat."))
+        self.assertTrue(style_problems("Good bat — real power — no glove to speak of."))
+        self.assertTrue(style_problems("His .236 ISO says the power is real."))
+        self.assertEqual(style_problems("The bat carries the profile — everything else follows."), [])
+        self.assertEqual(style_problems("A contact-first shortstop with sneaky pop."), [])
+
+    def test_style_problems_gate_ok_but_not_hard_ok(self):
+        text = "Test Prospect is a 21-year-old hitter with a .300 average."
+        guard = validate_report_text(text, GROUNDING)
+        self.assertTrue(guard["style_problems"])
+        self.assertFalse(guard["ok"])
+        self.assertTrue(guard["hard_ok"])
+
     def test_supported_numbers_pass(self):
         # cites the line + an ordinal percentile, all present in grounding
         text = "A .300/.380/.520 line over 240 PA, with a 96th-percentile OPS at age 21."

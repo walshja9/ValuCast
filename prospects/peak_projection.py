@@ -373,6 +373,28 @@ def _role_probability(row: dict, peak_score: float, risk: str, shape_average: fl
     }
 
 
+def _cohere_role_probabilities(probs: dict, ceiling: str, role: str, risk: str) -> dict:
+    """Keep the modal probability bucket from contradicting the shape-floored ceiling.
+
+    _role_probability derives from raw peak_score, so a hitter whose label was floored
+    up by _floor_ceiling_by_shape can still show bench_or_platoon as the most likely
+    outcome — the card's probability bars (and the LLM read grounded on them) then
+    contradict the card's own Role strip and Projection line. Same gate as the floor:
+    hitters only, high-risk untouched. Swapping keeps the distribution's mass; it only
+    re-orders which bucket is modal.
+    """
+    if role == "pitcher" or risk == "high":
+        return probs
+    if ceiling not in ("everyday_regular", "impact_regular"):
+        return probs
+    modal = max(probs, key=probs.get)
+    if modal == "regular_or_better":
+        return probs
+    out = dict(probs)
+    out["regular_or_better"], out[modal] = probs[modal], probs["regular_or_better"]
+    return out
+
+
 def _card_v2_context(
     row: dict,
     *,
@@ -401,7 +423,12 @@ def _card_v2_context(
         "floor_band": floor,
         "risk_band": risk,
         "confidence": confidence,
-        "role_probabilities": _role_probability(row, peak_score, risk, shape_average),
+        "role_probabilities": _cohere_role_probabilities(
+            _role_probability(row, peak_score, risk, shape_average),
+            ceiling,
+            str(row.get("role") or ""),
+            risk,
+        ),
         "card_copy": (
             f"Ceiling is {ceiling_label(ceiling)}; "
             f"floor is {floor.removesuffix('_floor').replace('_', ' ')}. "

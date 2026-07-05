@@ -10,13 +10,20 @@ from __future__ import annotations
 
 import re
 
-VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball player — a prospect or an established MLB player. Write like a sharp human scout with a point of view, not a model summarizing a stat sheet.
+VOICE_PROMPT = """You write one short ValuCast scouting read for a single baseball player — a prospect or an established MLB player. A read is a scout thinking out loud to another scout: a verdict with a reason, not an encyclopedia entry and not a stat recap.
 
 Voice:
-- Have a take. Lead with a real characterization of the player — what he IS, in plain baseball language — then let one or two numbers earn it. Don't open with a stat.
-- Sound like a person, not a generator. Vary your sentence shapes; never fall into a formula. Banned cadences (do not write these): "operating in the Nth percentile for...", "grades at N, suggest(s) his ceiling is...", "aligns with those rates/clean rates", "with low/medium/high risk to reach that role". Say it the way you'd say it out loud to another scout.
-- Be direct about the one thing that decides his outcome — the carrying skill or the real flaw. No false balance, no double-hedging.
-- Tight and confident. Cut filler. Every sentence should tell the reader something the slash line alone wouldn't.
+- Open with the verdict, the tension in the profile, or the one number that carries the argument. NEVER open with "<Name> is a <age>-year-old <position> who..." or any name-plus-identity template. The first sentence doesn't even need his name in it.
+- Pick the two or three numbers that carry the argument and weave them into the prose. Never recite a full stat line or projection line, and never chain stats with parenthetical percentiles like "X (91st percentile), Y (75th percentile)". For an established MLB player, translate the Statcast profile into what he actually is — don't inventory it.
+- Cite figures exactly as given and NEVER derive new ones: no arithmetic ("8 points above league average"), no rounding, no "top-5 percent", no "30-plus". If a comparison isn't in the data as a number, make it in words.
+- Make the rhythm lumpy: a long descriptive sentence, then a short blunt one. Never three same-shape sentences in a row. At most one em-dash in the whole read; commas and periods do the work.
+- Hedge by naming the specific dependency — what the profile hinges on and what happens if it doesn't hold — not with "though X, Y" scaffolding on every claim. No false balance, no double-hedging.
+- Give the verdict as a range when the outcome is genuinely open ("either a low-end regular or a good bench bat"), and commit when it isn't. Never write the words "the projection sees" in any sentence, for any purpose — say what he becomes if it works and what's left if it doesn't, in words that fit this player.
+- Match register to the player: short and confident for elite guys; honest, a little wry, about limited profiles; for thin-sample lottery tickets, lead with what's loud and name the red flag.
+- One idea per sentence. Never restate a fact with new adjectives, no triadic lists, no symmetrical "A with B, C with D" constructions.
+- ValuCast rank movement is background context. Mention it only when the move itself is the story, woven into the argument — never as a tacked-on final sentence.
+- Never certify a stat with "the power is real" / "not a fluke" — show why it's believable (the sample, the shape, the translation) instead of stamping it. Never spotlight with "the whole story/ballgame". Never close on "the honest question is whether...". Never crown anyone "one of the best/cleanest/nastiest ___ in the game". Don't tack on a confidence rating.
+- Comparing a rate to league average is fine, but never with the stock scaffold "X% against a league average of Y%" — vary how the comparison is said, or let one comparison carry the read.
 
 Hard rules (these never bend):
 - Use ONLY the data provided below. Never state a number that is not in the data; cite figures exactly as given (no rounding a "+22" move to "+20").
@@ -46,6 +53,15 @@ BANNED_PHRASES = (
     # robotic template cadences (the LLM's formulaic tells)
     "operating in the", "suggest his ceiling", "suggests his ceiling",
     "to reach that role", "aligns with those", "align with those",
+    # 7/5 voice audit: dominant Sonnet templates measured across 302 cached reads
+    "against a league average", "against the league average", "against a league norm",
+    "against a league mean", "against a league-average",
+    "not a fluke", "the whole story", "the whole ballgame", "is the thing that",
+    "the projection sees", "honest question", "last three days",
+    "the real tension", "tension in his profile", "in the game",
+    "boasts", "possesses", "showcases", "not just", "not only",
+    "making him", "makes him a", "one to watch", "valuable asset",
+    "confidence feels", "valucast carries",
 )
 
 # Leading-dot decimals (".28", ".070") are captured AS decimals (0.28, 0.07) — the
@@ -66,6 +82,30 @@ _TRIPLE_SLASH_RE = re.compile(r"(?<![\d.])(\.\d+|0?\.\d+)/(\.\d+|0?\.\d+)/(\.\d+
 def banned_phrase_hits(text: str) -> list[str]:
     lowered = (text or "").lower()
     return [phrase for phrase in BANNED_PHRASES if phrase in lowered]
+
+
+# 7/5 voice audit: "never fall into a formula" alone was ignored — 86% of reads opened
+# "<Name> is a ...", 100% used em-dashes (avg 2.44), 39% stamped a skill "is real".
+# These structural tells need deterministic checks, not prompt vibes.
+_IDENTITY_OPENER_RE = re.compile(r"^\s*(?:[A-Z][\w.'-]*\s+){1,4}is an?\s")
+# "is real enough to" / "is real rather than" are legitimate analyst constructions;
+# only the bare certification stamp ("the power is real") is a tell.
+_IS_REAL_RE = re.compile(
+    r"\b(?:is|are) (?:real|legit)\b(?!\s+(?:enough|rather))|\bthat's real\b", re.IGNORECASE
+)
+_EM_DASH_MAX = 1
+
+
+def style_problems(text: str) -> list[str]:
+    out = []
+    t = text or ""
+    if _IDENTITY_OPENER_RE.match(t):
+        out.append("identity-template opener ('<Name> is a ...')")
+    if t.count("—") + t.count("–") > _EM_DASH_MAX:
+        out.append(f"more than {_EM_DASH_MAX} em-dash")
+    if _IS_REAL_RE.search(t):
+        out.append("'is real' validation stamp")
+    return out
 
 
 # Key fragments that name a RATE metric whose grounding value may legitimately appear
@@ -271,11 +311,15 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     numbers = unsupported_numbers(text, grounding)
     handedness = handedness_problems(text, grounding)
     slash = triple_slash_problems(text, grounding)
+    style = style_problems(text)
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
         "handedness_problems": handedness,
         "triple_slash_problems": slash,
-        "ok": not banned and not numbers and not handedness and not slash,
+        "style_problems": style,
+        # style gates ok (drives retry + regen) but not hard_ok — a formulaic read is
+        # a regen candidate, not a factual hazard.
+        "ok": not banned and not numbers and not handedness and not slash and not style,
         "hard_ok": not banned and not handedness and not slash,
     }
