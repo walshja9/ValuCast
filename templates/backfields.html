@@ -575,25 +575,28 @@
             });
         }
         function bfApplyRowFilters() {
-            // The server now sends up to 100 debuted + 100 undebuted rankings rows
-            // (so a filtered view has full depth to draw from -- see
+            // Scoped to [data-bf-row-debut] specifically -- the Rankings filter pills
+            // ("Filter rankings by level"/"by debut status") must only ever touch the
+            // Rankings section. Team-board rows reuse data-bf-row-level for their own
+            // styling/sort but carry no data-bf-row-debut; querying [data-bf-row-level]
+            // instead used to match them too, so opening any team page (which renders
+            // both sections) and clicking any non-"All" debut pill hid the ENTIRE team
+            // board (debut attr null -> debutOk always false). Same scoping
+            // bfRenumberRankColumn already uses.
+            //
+            // The server can send up to 100 debuted + 100 undebuted rankings rows (so
+            // a filtered view has full depth to draw from -- see
             // _build_backfields_page_context), but "Showing top 100" must still hold
             // for every filter state, so cap visibility at the first 100 true-rank
-            // matches instead of showing everything that qualifies. Team-board rows
-            // (no data-bf-row-debut attribute) are untouched by the cap.
+            // matches instead of showing everything that qualifies.
             var visibleRankingsCount = 0;
-            page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
+            page.querySelectorAll('[data-bf-row-debut]').forEach(function (row) {
                 var levelOk = bfActiveLevel === 'All'
                     || row.getAttribute('data-bf-row-level') === bfActiveLevel;
                 var debut = row.getAttribute('data-bf-row-debut');
                 var debutOk = bfActiveDebut === 'All'
                     || (bfActiveDebut === 'Debuted' ? debut === '1' : debut === '0');
-                var matches = levelOk && debutOk;
-                if (debut === null) {
-                    row.hidden = !matches;
-                    return;
-                }
-                var visible = matches && visibleRankingsCount < 100;
+                var visible = levelOk && debutOk && visibleRankingsCount < 100;
                 row.hidden = !visible;
                 if (visible) { visibleRankingsCount += 1; }
             });

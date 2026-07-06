@@ -281,16 +281,35 @@ def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
     assert "bfApplyRowFilters();" in source
     # Must run after every visibility change (filter click) ...
     filters_idx = source.index("function bfApplyRowFilters()")
-    assert "bfRenumberRankColumn();" in source[filters_idx:filters_idx + 1500]
+    filters_end = source.index("page.querySelectorAll('[data-bf-level]')", filters_idx)
+    assert "bfRenumberRankColumn();" in source[filters_idx:filters_end]
     # ... and after every DOM reorder (column sort), or a filtered numbering goes
     # stale in the new row order.
     sort_idx = source.index("function sortRows(")
-    assert "bfRenumberRankColumn();" in source[sort_idx:sort_idx + 2500]
+    sort_end = source.index("page.querySelectorAll('[data-bf-sort]')", sort_idx)
+    assert "bfRenumberRankColumn();" in source[sort_idx:sort_end]
     # Scoped to the rankings rows specifically -- must never touch the team board,
     # which reuses data-bf-row-level with an unrelated org_rank.
     assert "querySelectorAll('[data-bf-row-debut]')" in source
     # Restores the true rank when both filters are back to "All".
     assert "row.getAttribute('data-bf-sort-rank')" in source
+
+
+def test_backfields_filter_pills_scoped_to_rankings_not_team_board():
+    # 7/6: bfApplyRowFilters queried [data-bf-row-level] page-wide, which also matched
+    # team-board rows (they carry data-bf-row-level for sort but never
+    # data-bf-row-debut). Any non-"All" debut pill made `debut === null` fail both
+    # '1' and '0' checks, so debutOk was always false and row.hidden = true for the
+    # ENTIRE team board -- clicking "Not debuted" on a team page (which renders both
+    # sections) silently wiped the team board below it.
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+    filters_idx = source.index("function bfApplyRowFilters()")
+    filters_end = source.index("page.querySelectorAll('[data-bf-level]')", filters_idx)
+    body = source[filters_idx:filters_end]
+    assert "querySelectorAll('[data-bf-row-debut]')" in body
+    assert "querySelectorAll('[data-bf-row-level]')" not in body
+    # The dead null-check branch (a stand-in for real scoping) must be gone.
+    assert "debut === null" not in body
 
 
 def test_backfields_rankings_repopulate_undebuted_beyond_the_top_100_slice(monkeypatch):
@@ -380,6 +399,93 @@ def test_backfields_callup_desk_and_stats_are_deeper_than_reference_stub():
     assert len(ctx["callups"]) >= 12
     assert len(ctx["stats"]["hitting"]) >= 12
     assert len(ctx["stats"]["pitching"]) >= 12
+
+
+def test_backfields_callup_desk_excludes_already_debuted_prospects(monkeypatch):
+    # 7/6: callup_rows never applied _prospect_has_debuted, so a rookie-eligible
+    # player already on an MLB roster (or in the same-day call-up pulse) still showed
+    # up "On the doorstep" -- a live self-contradiction with the same player being
+    # flagged debuted=True in the rankings a few sections up on the same page.
+    rows = []
+    for rank, (name, debuted) in enumerate(
+        [("On Deck", False), ("Already Debuted", True), ("Also Waiting", False)], 1
+    ):
+        row = _row(name, "BOS", prospect_rank=rank)
+        row.level = "AAA"
+        row.active_mlb_callup = debuted
+        rows.append(row)
+    fake_store = SimpleNamespace(
+        generated_at="2026-07-06",
+        is_available=True,
+        get_all=lambda: rows,
+        get_by_id=lambda _player_id: None,
+    )
+    monkeypatch.setattr(app_module, "dd_store", fake_store)
+    monkeypatch.setattr(app_module, "_prospect_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr(app_module, "_prospect_tiers", lambda: {})
+    monkeypatch.setattr(app_module, "_build_buys_page_context", lambda _size: {"graphic_rows": []})
+    monkeypatch.setattr(app_module, "_build_team_board_context", lambda *args, **kwargs: {})
+    monkeypatch.setattr(app_module, "_load_artifact", lambda _path: {})
+    monkeypatch.setattr(app_module, "_debuted_prospect_ids", lambda: {})
+    monkeypatch.setattr(app_module, "_call_up_pulse_keys", lambda: frozenset())
+
+    ctx = app_module._build_backfields_page_context()
+
+    desk_names = {c["name"] for c in ctx["callups"]}
+    assert "Already Debuted" not in desk_names
+    assert {"On Deck", "Also Waiting"} <= desk_names
+
+
+def test_backfields_early_calls_preserve_archive_start_hedge_flag(monkeypatch):
+    # 7/6: _shape_aotc dropped ahead_since_is_archive_start, so
+    # templates/backfields.html's honest "tracked since ... may predate our records"
+    # branch (for a streak that reaches back to day one of the tracking archive, whose
+    # true length is unknown) was permanently dead -- every row rendered the stronger
+    # "since ... unbroken streak, verifiable in the dated archive" claim instead.
+    rows = [_row("Rank One", "BOS", prospect_rank=1)]
+    fake_store = SimpleNamespace(
+        generated_at="2026-07-06",
+        is_available=True,
+        get_all=lambda: rows,
+        get_by_id=lambda _player_id: None,
+    )
+    aotc_payload = {
+        "ahead_of_consensus": [
+            {
+                "name": "Rank One",
+                "mlbam_id": None,
+                "role": "hitter",
+                "valucast_rank": 1,
+                "consensus_rank": 50,
+                "divergence": 49,
+                "board_count": 3,
+                "ahead_since": "2026-06-13",
+                "ahead_since_is_archive_start": True,
+                "days_ahead": 22,
+            }
+        ],
+        "ahead_of_consensus_thin": [],
+    }
+
+    def fake_load_artifact(path):
+        if str(path).endswith("valucast_ahead_of_consensus.json"):
+            return aotc_payload
+        return {}
+
+    monkeypatch.setattr(app_module, "dd_store", fake_store)
+    monkeypatch.setattr(app_module, "_prospect_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr(app_module, "_prospect_tiers", lambda: {})
+    monkeypatch.setattr(app_module, "_build_buys_page_context", lambda _size: {"graphic_rows": []})
+    monkeypatch.setattr(app_module, "_build_team_board_context", lambda *args, **kwargs: {})
+    monkeypatch.setattr(app_module, "_load_artifact", fake_load_artifact)
+    monkeypatch.setattr(app_module, "_debuted_prospect_ids", lambda: {})
+    monkeypatch.setattr(app_module, "_call_up_pulse_keys", lambda: frozenset())
+
+    ctx = app_module._build_backfields_page_context()
+
+    calls = ctx.get("ahead_of_consensus") or []
+    assert calls, "expected at least one shaped ahead_of_consensus row"
+    assert calls[0]["ahead_since_is_archive_start"] is True
 
 
 def test_team_board_org_normalization():

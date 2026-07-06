@@ -5356,8 +5356,12 @@ def _team_board_callup_status(row):
     return "Monitor"
 
 
-def _team_board_callups(org_rows, movements, *, limit=5):
-    candidates = [row for row in org_rows if _team_board_level(row) in _TEAM_BOARD_CALLUP_LEVELS]
+def _team_board_callups(org_rows, movements, debuted_ids, pulse_keys, *, limit=5):
+    candidates = [
+        row for row in org_rows
+        if _team_board_level(row) in _TEAM_BOARD_CALLUP_LEVELS
+        and not _prospect_has_debuted(row, debuted_ids, pulse_keys)
+    ]
     candidates.sort(key=lambda row: _team_board_callup_score(row, movements), reverse=True)
     callups = []
     for row in candidates[:limit]:
@@ -5438,6 +5442,8 @@ def _build_team_board_context(org=None, limit=20):
     scouting_repository = _load_artifact(Path(__file__).parent / "data" / "models" / "valucast_scouting_reports.json")
     reports_by_key = _indexed_artifact_rows(scouting_repository, "reports")
     movements = _team_board_movements()
+    debuted_ids = _debuted_prospect_ids()
+    pulse_keys = _call_up_pulse_keys()
     context.update({
         "selected": {
             "org": canonical,
@@ -5449,7 +5455,7 @@ def _build_team_board_context(org=None, limit=20):
             _team_board_row(row, idx, movements, reports_by_key)
             for idx, row in enumerate(selected_rows, 1)
         ],
-        "callups": _team_board_callups(org_rows, movements),
+        "callups": _team_board_callups(org_rows, movements, debuted_ids, pulse_keys),
         "reports": _team_board_reports(org_rows, reports_by_key, scouting_repository),
     })
     return context
@@ -5699,6 +5705,7 @@ def _build_backfields_page_context():
     callup_rows = [
         row for row in all_prospects
         if level_for(row) in {"AAA", "AA"}
+        and not _prospect_has_debuted(row, debuted_ids, pulse_keys)
     ]
     eta_points = {
         "This year": 28.0,
@@ -5895,6 +5902,7 @@ def _build_backfields_page_context():
                 "divergence": int(divergence),
                 "board_count": int(board_count) if board_count is not None else 0,
                 "ahead_since": row.get("ahead_since"),
+                "ahead_since_is_archive_start": bool(row.get("ahead_since_is_archive_start")),
                 "days_ahead": int(row.get("days_ahead") or 0),
             })
         return shaped
