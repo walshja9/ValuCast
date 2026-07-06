@@ -269,6 +269,30 @@ def test_backfields_rankings_are_client_sortable():
     assert "data-bf-sort-value" in html
 
 
+def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
+    # 7/5: the debut/level pill filters only ever set row.hidden client-side, so the
+    # rendered rank badges kept their true board position (row.rank) and a filtered
+    # view read "1, 2 ... 8, 11, 13" wherever a hidden row's number used to sit. The
+    # main rankings board fixed this exact bug for its own filter in 70ee73d
+    # (sequential 1..N while filtered, true rank when unfiltered) -- Backfields has an
+    # entirely separate client-side filter and never got the same treatment.
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+    assert "function bfRenumberRankColumn()" in source
+    assert "bfApplyRowFilters();" in source
+    # Must run after every visibility change (filter click) ...
+    filters_idx = source.index("function bfApplyRowFilters()")
+    assert "bfRenumberRankColumn();" in source[filters_idx:filters_idx + 600]
+    # ... and after every DOM reorder (column sort), or a filtered numbering goes
+    # stale in the new row order.
+    sort_idx = source.index("function sortRows(")
+    assert "bfRenumberRankColumn();" in source[sort_idx:sort_idx + 2500]
+    # Scoped to the rankings rows specifically -- must never touch the team board,
+    # which reuses data-bf-row-level with an unrelated org_rank.
+    assert "querySelectorAll('[data-bf-row-debut]')" in source
+    # Restores the true rank when both filters are back to "All".
+    assert "row.getAttribute('data-bf-sort-rank')" in source
+
+
 def test_backfields_rankings_expose_numeric_level_sort_weight(monkeypatch):
     rows = []
     for index, level in enumerate(("MLB", "AAA", "AA", "A+", "A", "CPX", None), 1):

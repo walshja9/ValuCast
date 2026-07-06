@@ -505,6 +505,10 @@
                 btn.classList.toggle('is-active', active);
                 btn.setAttribute('aria-sort', active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
             });
+            // Resorting changes DOM order, so a filtered view's sequential 1..N
+            // numbering must be re-walked in the new order -- harmless no-op on the
+            // team board (bfRenumberRankColumn only touches [data-bf-row-debut] rows).
+            bfRenumberRankColumn();
         }
 
         page.querySelectorAll('[data-bf-sort]').forEach(function (btn) {
@@ -551,6 +555,25 @@
         });
         var bfActiveLevel = 'All';
         var bfActiveDebut = 'All';
+        // Filtered views renumber 1..N (matches the main rankings board's convention,
+        // 70ee73d) so hiding debuted/off-level rows doesn't leave a "1, 2 ... 8, 11, 13"
+        // gap in the # column. Unfiltered restores each row's true overall board rank.
+        // Scoped to [data-bf-row-debut] specifically -- the team board reuses
+        // data-bf-row-level with an unrelated org_rank and must not be renumbered.
+        function bfRenumberRankColumn() {
+            var anyFilterActive = bfActiveLevel !== 'All' || bfActiveDebut !== 'All';
+            var visibleIndex = 0;
+            page.querySelectorAll('[data-bf-row-debut]').forEach(function (row) {
+                var rankEl = row.querySelector('.bf-rank');
+                if (!rankEl || row.hidden) { return; }
+                if (anyFilterActive) {
+                    visibleIndex += 1;
+                    rankEl.textContent = String(visibleIndex);
+                } else {
+                    rankEl.textContent = row.getAttribute('data-bf-sort-rank');
+                }
+            });
+        }
         function bfApplyRowFilters() {
             page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
                 var levelOk = bfActiveLevel === 'All'
@@ -560,6 +583,7 @@
                     || (bfActiveDebut === 'Debuted' ? debut === '1' : debut === '0');
                 row.hidden = !(levelOk && debutOk);
             });
+            bfRenumberRankColumn();
         }
         page.querySelectorAll('[data-bf-level]').forEach(function (btn) {
             btn.addEventListener('click', function () {
