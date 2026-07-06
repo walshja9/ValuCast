@@ -5976,6 +5976,7 @@ def _team_board_share_limit():
 
 
 _ACTIVE_ROSTER_ROWS = None
+_ACTIVE_ROSTER_PULSE_PATH = Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
 
 
 def _active_mlb_roster_rows():
@@ -5983,69 +5984,91 @@ def _active_mlb_roster_rows():
     Call' companion to the Call-Up Desk. Sourced from the served snapshot's RETAINED
     rows (7/2): rookie-rule retention keeps these players ranked on the board, so
     the rank artifact's active_mlb_roster_board is graduates-only and correctly
-    empty — reading it here showed a false '0 rookie-eligible in the majors'."""
+    empty — reading it here showed a false '0 rookie-eligible in the majors'.
+
+    Keyed on the call-up pulse file's mtime (7/6): the pulse refreshes intraday,
+    independent of the morning build, so a bare "compute once" cache could freeze a
+    long-lived worker's answer from before a same-day promotion. Without this, a
+    freshly-pulsed player could show debuted=True in the rankings (which reads the
+    pulse through the mtime-aware _load_artifact) while still missing from 'Got the
+    Call' and undercounted in recently_called_up_total — two facts about the same
+    player disagreeing purely from cache-freshness skew, not real data.
+    """
     global _ACTIVE_ROSTER_ROWS
-    if _ACTIVE_ROSTER_ROWS is None:
-        rows = []
-        seen = set()
-        if dd_store.is_available:
-            for r in dd_store.get_all():
-                if getattr(r, "is_prospect", False) and getattr(r, "active_mlb_callup", False):
-                    seen.add(_row_identity_key(r) or "")
-                    rows.append({
-                        "name": getattr(r, "name", None),
-                        "positions": list(getattr(r, "positions", None) or []),
-                        "mlb_team": getattr(r, "mlb_team", None) or getattr(r, "team", None),
-                        "score": getattr(r, "value", None),
-                    })
-            # Same-day pulse call-ups: promoted AFTER the morning feed build, so
-            # the feed flag doesn't know them yet (7/3: Jim Jarvis was invisible
-            # here for a day). The pulse entry is thin — enrich from the feed row.
-            row_by_key = {_row_identity_key(r): r for r in dd_store.get_all()}
-            pulse = _load_artifact(
-                Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
-            ) or {}
-            for key, entry in (pulse.get("by_identity") or {}).items():
-                if not isinstance(entry, dict) or key in seen:
-                    continue
-                r = row_by_key.get(key)
+    try:
+        pulse_stamp = _ACTIVE_ROSTER_PULSE_PATH.stat().st_mtime_ns
+    except OSError:
+        pulse_stamp = None
+    if _ACTIVE_ROSTER_ROWS is not None and _ACTIVE_ROSTER_ROWS[0] == pulse_stamp:
+        return _ACTIVE_ROSTER_ROWS[1]
+    rows = []
+    seen = set()
+    if dd_store.is_available:
+        for r in dd_store.get_all():
+            if getattr(r, "is_prospect", False) and getattr(r, "active_mlb_callup", False):
+                seen.add(_row_identity_key(r) or "")
                 rows.append({
-                    "name": entry.get("name") or (getattr(r, "name", None) if r else None) or "Unknown",
-                    "positions": (list(getattr(r, "positions", None) or []) if r else [])
-                                 or ([entry.get("position")] if entry.get("position") else []),
-                    "mlb_team": entry.get("mlb_team")
-                                or (getattr(r, "mlb_team", None) or getattr(r, "team", None) if r else None),
-                    "score": getattr(r, "value", None) if r else None,
+                    "name": getattr(r, "name", None),
+                    "positions": list(getattr(r, "positions", None) or []),
+                    "mlb_team": getattr(r, "mlb_team", None) or getattr(r, "team", None),
+                    "score": getattr(r, "value", None),
                 })
-        _ACTIVE_ROSTER_ROWS = sorted(rows, key=lambda r: r.get("score") or 0, reverse=True)
-    return _ACTIVE_ROSTER_ROWS
+        # Same-day pulse call-ups: promoted AFTER the morning feed build, so
+        # the feed flag doesn't know them yet (7/3: Jim Jarvis was invisible
+        # here for a day). The pulse entry is thin — enrich from the feed row.
+        row_by_key = {_row_identity_key(r): r for r in dd_store.get_all()}
+        pulse = _load_artifact(_ACTIVE_ROSTER_PULSE_PATH) or {}
+        for key, entry in (pulse.get("by_identity") or {}).items():
+            if not isinstance(entry, dict) or key in seen:
+                continue
+            r = row_by_key.get(key)
+            rows.append({
+                "name": entry.get("name") or (getattr(r, "name", None) if r else None) or "Unknown",
+                "positions": (list(getattr(r, "positions", None) or []) if r else [])
+                             or ([entry.get("position")] if entry.get("position") else []),
+                "mlb_team": entry.get("mlb_team")
+                            or (getattr(r, "mlb_team", None) or getattr(r, "team", None) if r else None),
+                "score": getattr(r, "value", None) if r else None,
+            })
+    result = sorted(rows, key=lambda r: r.get("score") or 0, reverse=True)
+    _ACTIVE_ROSTER_ROWS = (pulse_stamp, result)
+    return result
 
 
 _DEBUTED_PROSPECT_IDS = None
+_DEBUTED_PROSPECT_IDS_PATH = Path(__file__).parent / "data" / "prospects" / "prospect_model_inputs.json"
 
 
 def _debuted_prospect_ids():
     """{mlbam(str): taste} for rookie-eligible prospects who have logged MLB service
     (graduated=False) — taste is the MLB sample so far, e.g. '2 PA' or '27 IP'.
-    Powers the backfields 'MLB · <taste>' badge. Sourced offline from the model inputs."""
+    Powers the backfields 'MLB · <taste>' badge. Sourced offline from the model inputs.
+
+    Keyed on this file's mtime (7/6) — same cache-freshness fix as
+    _active_mlb_roster_rows, so a rebuilt prospect_model_inputs.json is picked up by
+    a long-lived worker instead of frozen from its first-ever read."""
     global _DEBUTED_PROSPECT_IDS
-    if _DEBUTED_PROSPECT_IDS is None:
-        path = Path(__file__).parent / "data" / "prospects" / "prospect_model_inputs.json"
-        try:
-            svc = (json.loads(path.read_text(encoding="utf-8")) or {}).get("mlb_service") or []
-        except (OSError, ValueError):
-            svc = []
-        out = {}
-        for s in svc:
-            if not isinstance(s, dict) or s.get("mlbam_id") is None or s.get("graduated"):
-                continue
-            pa, ip = s.get("pa") or 0, s.get("ip") or 0
-            if pa > 0:
-                out[str(s["mlbam_id"])] = f"{int(pa)} PA"
-            elif ip > 0:
-                out[str(s["mlbam_id"])] = f"{ip:g} IP"
-        _DEBUTED_PROSPECT_IDS = out
-    return _DEBUTED_PROSPECT_IDS
+    try:
+        stamp = _DEBUTED_PROSPECT_IDS_PATH.stat().st_mtime_ns
+    except OSError:
+        stamp = None
+    if _DEBUTED_PROSPECT_IDS is not None and _DEBUTED_PROSPECT_IDS[0] == stamp:
+        return _DEBUTED_PROSPECT_IDS[1]
+    try:
+        svc = (json.loads(_DEBUTED_PROSPECT_IDS_PATH.read_text(encoding="utf-8")) or {}).get("mlb_service") or []
+    except (OSError, ValueError):
+        svc = []
+    out = {}
+    for s in svc:
+        if not isinstance(s, dict) or s.get("mlbam_id") is None or s.get("graduated"):
+            continue
+        pa, ip = s.get("pa") or 0, s.get("ip") or 0
+        if pa > 0:
+            out[str(s["mlbam_id"])] = f"{int(pa)} PA"
+        elif ip > 0:
+            out[str(s["mlbam_id"])] = f"{ip:g} IP"
+    _DEBUTED_PROSPECT_IDS = (stamp, out)
+    return out
 
 
 def _row_mlb_debut(row):

@@ -217,6 +217,7 @@
                 {% else %}
                 <p class="bf-empty">Prospect rankings will appear after the next public build.</p>
                 {% endif %}
+                <p class="bf-empty" data-bf-no-results hidden>No prospects match these filters.</p>
                 <span class="bf-table-footer">Showing top 100</span>
             </div>
         </section>
@@ -517,6 +518,13 @@
             });
         });
 
+        // Request sequencing (7/6): fetch had no generation token, so clicking a
+        // second player before the first's response resolved could show player A's
+        // card under player B's title (or repopulate a since-closed panel) if A
+        // happened to resolve after B. The token is stored on detailPanel itself
+        // (rather than a closure var) so both the open and close handlers can share
+        // and bump it -- closing must also invalidate an in-flight fetch, or a slow
+        // response can still land in a panel the user already dismissed.
         page.querySelectorAll('[data-bf-detail-url]').forEach(function (link) {
             link.addEventListener('click', function (event) {
                 event.preventDefault();
@@ -529,16 +537,20 @@
                 loading.className = 'bf-empty';
                 loading.textContent = 'Loading ' + title + '...';
                 detailBody.appendChild(loading);
+                var reqId = (detailPanel._bfReq || 0) + 1;
+                detailPanel._bfReq = reqId;
                 fetch(link.getAttribute('data-bf-detail-url'), { headers: { 'HX-Request': 'true' } })
                     .then(function (response) {
                         if (!response.ok) { throw new Error('Unable to load player detail'); }
                         return response.text();
                     })
                     .then(function (html) {
+                        if (detailPanel._bfReq !== reqId || detailPanel.hidden) { return; }
                         detailBody.innerHTML = html;
                         detailPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
                     })
                     .catch(function () {
+                        if (detailPanel._bfReq !== reqId || detailPanel.hidden) { return; }
                         detailBody.textContent = '';
                         var fallback = document.createElement('p');
                         fallback.className = 'bf-empty';
@@ -549,7 +561,10 @@
         });
         page.querySelectorAll('[data-bf-detail-close]').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                if (detailPanel) { detailPanel.hidden = true; }
+                if (detailPanel) {
+                    detailPanel.hidden = true;
+                    detailPanel._bfReq = (detailPanel._bfReq || 0) + 1;
+                }
                 if (detailBody) { detailBody.innerHTML = ''; }
             });
         });
@@ -601,6 +616,15 @@
                 if (visible) { visibleRankingsCount += 1; }
             });
             bfRenumberRankColumn();
+            var anyFilterActive = bfActiveLevel !== 'All' || bfActiveDebut !== 'All';
+            var noResultsEl = page.querySelector('[data-bf-no-results]');
+            if (noResultsEl) { noResultsEl.hidden = visibleRankingsCount !== 0; }
+            var footer = page.querySelector('.bf-table-footer');
+            if (footer) {
+                footer.textContent = anyFilterActive
+                    ? 'Showing ' + visibleRankingsCount + ' of top 100'
+                    : 'Showing top 100';
+            }
         }
         page.querySelectorAll('[data-bf-level]').forEach(function (btn) {
             btn.addEventListener('click', function () {

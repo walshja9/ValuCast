@@ -1,4 +1,7 @@
+import json
+import os
 import re
+import time
 from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
@@ -295,6 +298,53 @@ def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
     assert "row.getAttribute('data-bf-sort-rank')" in source
 
 
+def test_backfields_detail_fetch_guards_stale_responses():
+    # 7/6: the fetch had no generation token, so clicking player B before player A's
+    # request resolved could show A's card rendered under B's title if A resolved
+    # after B (or repopulate a since-closed panel). A per-panel request counter,
+    # checked in both the success and error paths, prevents a stale response from
+    # ever being written into the DOM.
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+    open_idx = source.index("page.querySelectorAll('[data-bf-detail-url]')")
+    close_idx = source.index("page.querySelectorAll('[data-bf-detail-close]')")
+    open_body = source[open_idx:close_idx]
+    assert "detailPanel._bfReq" in open_body
+    # Guarded in the success path ...
+    assert open_body.count("detailPanel._bfReq !== reqId") == 2
+    # ... and closing must also invalidate any fetch still in flight.
+    close_body = source[close_idx:close_idx + 400]
+    assert "_bfReq = (detailPanel._bfReq || 0) + 1" in close_body
+
+
+def test_backfields_zero_matches_shows_no_results_message():
+    # 7/6: a filter combo matching nothing left the Rankings card silently empty
+    # (just header + footer, no explanation) -- the dynasty board has a "no results"
+    # affordance for the same case, Backfields' parallel filter never got one.
+    response, html = _html("/backfields")
+    assert response.status_code == 200
+    assert 'data-bf-no-results hidden' in html
+    assert "No prospects match these filters." in html
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+    filters_idx = source.index("function bfApplyRowFilters()")
+    filters_end = source.index("page.querySelectorAll('[data-bf-level]')", filters_idx)
+    body = source[filters_idx:filters_end]
+    assert "querySelector('[data-bf-no-results]')" in body
+    assert "noResultsEl.hidden = visibleRankingsCount !== 0" in body
+
+
+def test_backfields_footer_reflects_visible_count_under_a_filter():
+    # 7/6: the "Showing top 100" footer was a static string, never updated by the
+    # client filter -- misleading once a filter hides most rows (e.g. reading "top
+    # 100" while only 12 rows are visible).
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+    filters_idx = source.index("function bfApplyRowFilters()")
+    filters_end = source.index("page.querySelectorAll('[data-bf-level]')", filters_idx)
+    body = source[filters_idx:filters_end]
+    assert "querySelector('.bf-table-footer')" in body
+    assert "'Showing ' + visibleRankingsCount + ' of top 100'" in body
+    assert "'Showing top 100'" in body
+
+
 def test_backfields_filter_pills_scoped_to_rankings_not_team_board():
     # 7/6: bfApplyRowFilters queried [data-bf-row-level] page-wide, which also matched
     # team-board rows (they carry data-bf-row-level for sort but never
@@ -486,6 +536,57 @@ def test_backfields_early_calls_preserve_archive_start_hedge_flag(monkeypatch):
     calls = ctx.get("ahead_of_consensus") or []
     assert calls, "expected at least one shaped ahead_of_consensus row"
     assert calls[0]["ahead_since_is_archive_start"] is True
+
+
+def test_active_mlb_roster_rows_invalidates_on_pulse_mtime_change(monkeypatch, tmp_path):
+    # 7/6: _ACTIVE_ROSTER_ROWS cached its entire result forever (compute-once
+    # global), while the call-up pulse file it reads refreshes intraday independent
+    # of the morning build (confirmed live mtime skew between the pulse and the rest
+    # of the daily build). A long-lived worker's first request would freeze "Got the
+    # Call" from before a same-day promotion, even though the rankings' debuted flag
+    # (which reads the pulse through the already-mtime-aware _load_artifact) would
+    # correctly start flagging the newly-pulsed player -- two facts about the same
+    # player disagreeing purely from cache-freshness skew, not real data.
+    pulse_path = tmp_path / "valucast_call_up_pulse.json"
+    pulse_path.write_text('{"by_identity": {}}', encoding="utf-8")
+    monkeypatch.setattr(app_module, "_ACTIVE_ROSTER_PULSE_PATH", pulse_path)
+    monkeypatch.setattr(app_module, "_ACTIVE_ROSTER_ROWS", None)
+    monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(is_available=True, get_all=lambda: []))
+
+    assert app_module._active_mlb_roster_rows() == []
+
+    pulse_path.write_text(
+        json.dumps({"by_identity": {"1_hitter": {"name": "Fresh Callup"}}}),
+        encoding="utf-8",
+    )
+    # Force a distinct mtime -- coarse filesystem mtime resolution could otherwise
+    # make a same-tick rewrite look unchanged, which would mask the bug this test
+    # exists to catch rather than exercise the real invalidation path.
+    now_ns = time.time_ns()
+    os.utime(pulse_path, ns=(now_ns, now_ns + 10_000_000_000))
+
+    names = {r.get("name") for r in app_module._active_mlb_roster_rows()}
+    assert names == {"Fresh Callup"}
+
+
+def test_debuted_prospect_ids_invalidates_on_model_inputs_mtime_change(monkeypatch, tmp_path):
+    # Same cache-freshness bug, same fix, applied to _debuted_prospect_ids: it also
+    # cached forever in a bare "compute once" global.
+    inputs_path = tmp_path / "prospect_model_inputs.json"
+    inputs_path.write_text('{"mlb_service": []}', encoding="utf-8")
+    monkeypatch.setattr(app_module, "_DEBUTED_PROSPECT_IDS_PATH", inputs_path)
+    monkeypatch.setattr(app_module, "_DEBUTED_PROSPECT_IDS", None)
+
+    assert app_module._debuted_prospect_ids() == {}
+
+    inputs_path.write_text(
+        json.dumps({"mlb_service": [{"mlbam_id": 42, "pa": 5, "graduated": False}]}),
+        encoding="utf-8",
+    )
+    now_ns = time.time_ns()
+    os.utime(inputs_path, ns=(now_ns, now_ns + 10_000_000_000))
+
+    assert app_module._debuted_prospect_ids() == {"42": "5 PA"}
 
 
 def test_team_board_org_normalization():
