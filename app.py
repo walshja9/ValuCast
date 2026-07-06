@@ -5463,9 +5463,34 @@ def _build_backfields_page_context():
     aotc_scorecard = _load_artifact(models / "valucast_ahead_of_consensus_scorecard.json") or {}
     scouting_repository = _load_artifact(models / "valucast_scouting_reports.json")
     stat_payload = _load_artifact(root / "data" / "prospects" / "raw" / "milb_season_stats.json")
-    prospect_rows = _prospect_rows()[:100] if dd_store.is_available else []
     tiers = _prospect_tiers() if dd_store.is_available else {}
     all_prospects = _prospect_rows() if dd_store.is_available else []
+    debuted_ids = _debuted_prospect_ids()
+    pulse_keys = _call_up_pulse_keys()
+    # The debut/level filter pills are client-side only (no server round trip), so a
+    # naive top-100-of-everyone slice starves a filtered view: if 30 of the top 100
+    # have already debuted, "Not debuted" only ever has 70 rows to show, even though
+    # there are genuinely top-100-worthy undebuted prospects ranked 101+. Walk the
+    # full ranked pool (true rank preserved per row, NOT re-enumerated) until both the
+    # debuted and undebuted subsets independently reach 100 -- same "repopulate to
+    # full depth" fix the main board already applies via row_filter-before-slice
+    # (_apply_prospect_board_context).
+    ranked_prospect_rows = []
+    if dd_store.is_available:
+        seen_debuted = 0
+        seen_undebuted = 0
+        for true_rank, row in enumerate(all_prospects, 1):
+            if _prospect_has_debuted(row, debuted_ids, pulse_keys):
+                if seen_debuted >= 100:
+                    continue
+                seen_debuted += 1
+            else:
+                if seen_undebuted >= 100:
+                    continue
+                seen_undebuted += 1
+            ranked_prospect_rows.append((true_rank, row))
+            if seen_debuted >= 100 and seen_undebuted >= 100:
+                break
 
     def as_float(value):
         try:
@@ -5614,10 +5639,8 @@ def _build_backfields_page_context():
         clean_name = str(raw_row.get("name") or "").strip().casefold()
         return rows_by_name.get(clean_name)
 
-    debuted_ids = _debuted_prospect_ids()
-    pulse_keys = _call_up_pulse_keys()
     rankings = []
-    for rank, row in enumerate(prospect_rows, 1):
+    for rank, row in ranked_prospect_rows:
         key = identity_for(row)
         signal = signal_by_key.get(key) or signal_by_mlbam.get(str(getattr(row, "mlbam_id", "")))
         link_fields = player_link_fields(row.name, row.id)

@@ -281,7 +281,7 @@ def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
     assert "bfApplyRowFilters();" in source
     # Must run after every visibility change (filter click) ...
     filters_idx = source.index("function bfApplyRowFilters()")
-    assert "bfRenumberRankColumn();" in source[filters_idx:filters_idx + 600]
+    assert "bfRenumberRankColumn();" in source[filters_idx:filters_idx + 1500]
     # ... and after every DOM reorder (column sort), or a filtered numbering goes
     # stale in the new row order.
     sort_idx = source.index("function sortRows(")
@@ -291,6 +291,53 @@ def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
     assert "querySelectorAll('[data-bf-row-debut]')" in source
     # Restores the true rank when both filters are back to "All".
     assert "row.getAttribute('data-bf-sort-rank')" in source
+
+
+def test_backfields_rankings_repopulate_undebuted_beyond_the_top_100_slice(monkeypatch):
+    # 7/6: prospect_rows was a naive _prospect_rows()[:100] slice computed BEFORE any
+    # debut filtering, so a "Not debuted" view could only ever show whatever survived
+    # after hiding debuted rows out of that fixed top-100 window -- if the top 100
+    # happened to be all-debuted, the filtered view showed ZERO rows even though
+    # plenty of genuinely top-100-worthy undebuted prospects existed just past rank
+    # 100. The main board already solved this for its own filter (row_filter applied
+    # BEFORE the slice, in _apply_prospect_board_context) -- Backfields never got it.
+    rows = []
+    for rank in range(1, 101):
+        row = _row(f"Debuted {rank}", "BOS", prospect_rank=rank)
+        row.active_mlb_callup = True
+        rows.append(row)
+    for rank in range(101, 161):
+        row = _row(f"Prospect {rank}", "BOS", prospect_rank=rank)
+        row.active_mlb_callup = False
+        rows.append(row)
+    fake_store = SimpleNamespace(
+        generated_at="2026-07-06",
+        is_available=True,
+        get_all=lambda: rows,
+        get_by_id=lambda _player_id: None,
+    )
+    monkeypatch.setattr(app_module, "dd_store", fake_store)
+    monkeypatch.setattr(app_module, "_prospect_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr(app_module, "_prospect_tiers", lambda: {})
+    monkeypatch.setattr(app_module, "_build_buys_page_context", lambda _size: {"graphic_rows": []})
+    monkeypatch.setattr(app_module, "_build_team_board_context", lambda *args, **kwargs: {})
+    monkeypatch.setattr(app_module, "_load_artifact", lambda _path: {})
+    monkeypatch.setattr(app_module, "_debuted_prospect_ids", lambda: {})
+    monkeypatch.setattr(app_module, "_call_up_pulse_keys", lambda: frozenset())
+
+    ctx = app_module._build_backfields_page_context()
+    rankings = ctx["rankings"]
+    undebuted = [row for row in rankings if not row["debuted"]]
+    debuted = [row for row in rankings if row["debuted"]]
+
+    # All 60 undebuted prospects must be present -- the old top-100-first slice would
+    # have shown 0, since ranks 1-100 are entirely debuted in this fixture.
+    assert len(undebuted) == 60
+    assert {row["name"] for row in undebuted} == {f"Prospect {r}" for r in range(101, 161)}
+    # The debuted subset is still capped at 100 (matches the pre-existing "top 100"
+    # contract for that filter state) and true rank is preserved, not re-enumerated.
+    assert len(debuted) == 100
+    assert sorted(row["rank"] for row in rankings) == list(range(1, 161))
 
 
 def test_backfields_rankings_expose_numeric_level_sort_weight(monkeypatch):

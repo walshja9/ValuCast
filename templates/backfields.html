@@ -575,13 +575,27 @@
             });
         }
         function bfApplyRowFilters() {
+            // The server now sends up to 100 debuted + 100 undebuted rankings rows
+            // (so a filtered view has full depth to draw from -- see
+            // _build_backfields_page_context), but "Showing top 100" must still hold
+            // for every filter state, so cap visibility at the first 100 true-rank
+            // matches instead of showing everything that qualifies. Team-board rows
+            // (no data-bf-row-debut attribute) are untouched by the cap.
+            var visibleRankingsCount = 0;
             page.querySelectorAll('[data-bf-row-level]').forEach(function (row) {
                 var levelOk = bfActiveLevel === 'All'
                     || row.getAttribute('data-bf-row-level') === bfActiveLevel;
                 var debut = row.getAttribute('data-bf-row-debut');
                 var debutOk = bfActiveDebut === 'All'
                     || (bfActiveDebut === 'Debuted' ? debut === '1' : debut === '0');
-                row.hidden = !(levelOk && debutOk);
+                var matches = levelOk && debutOk;
+                if (debut === null) {
+                    row.hidden = !matches;
+                    return;
+                }
+                var visible = matches && visibleRankingsCount < 100;
+                row.hidden = !visible;
+                if (visible) { visibleRankingsCount += 1; }
             });
             bfRenumberRankColumn();
         }
@@ -607,6 +621,10 @@
                 bfApplyRowFilters();
             });
         });
+        // The server can render more than 100 rankings rows now (see comment in
+        // bfApplyRowFilters), so the initial "All" state needs the same 100-row cap
+        // applied once on load -- not just after a filter click.
+        bfApplyRowFilters();
         page.querySelectorAll('[data-bf-stat-tab]').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 var target = btn.getAttribute('data-bf-stat-tab');
