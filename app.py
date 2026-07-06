@@ -5166,7 +5166,14 @@ def _team_board_prospect_sort_key(row):
 
 
 def _team_board_prospect_rows(rows=None):
-    """Full prospect pool for org boards; intentionally not the public top-200 slice."""
+    """Full prospect pool for org boards; intentionally not the public top-200 slice.
+
+    Deduped by player identity (7/6): a two-way player has separate hitter/pitcher
+    store rows sharing one mlbam_id (e.g. Sean Barnett, SDP). Undeduped, every count
+    downstream (org pool size, the picker pill, the top-N slice) double-counts them,
+    and a two-way player ranked inside an org's top-N would render as two identical
+    rows. Kept the best-ranked (first, since rows are sorted below) role per player.
+    """
     if rows is None:
         if not dd_store.is_available:
             return []
@@ -5175,7 +5182,17 @@ def _team_board_prospect_rows(rows=None):
         row for row in rows
         if _team_board_org_for(row) is not None
     ]
-    return sorted(rows, key=_team_board_prospect_sort_key)
+    rows = sorted(rows, key=_team_board_prospect_sort_key)
+    seen = set()
+    deduped = []
+    for row in rows:
+        mlbam_id = getattr(row, "mlbam_id", None)
+        key = str(mlbam_id) if mlbam_id not in (None, "") else f"name:{str(getattr(row, 'name', '') or '').casefold()}"
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(row)
+    return deduped
 
 
 def _team_board_movements():

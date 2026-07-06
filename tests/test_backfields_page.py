@@ -611,6 +611,26 @@ def test_team_board_pool_uses_full_prospect_pool_not_top_200_slice():
     assert len(ordered) == 2
 
 
+def test_team_board_pool_dedups_two_way_players_by_identity():
+    # 7/6: a two-way player has separate hitter/pitcher store rows sharing one
+    # mlbam_id (confirmed live: Sean Barnett, SDP, mlbam 826141). Undeduped, the org
+    # pool count, picker pill, and top-N slice all double-counted him, and any
+    # two-way player ranked inside an org's top-N would render as two identical rows.
+    hitter = _row("Two Way Guy", "BOS", prospect_rank=5, dynasty_rank=5, value=40)
+    hitter.mlbam_id = 999001
+    pitcher = _row("Two Way Guy", "BOS", prospect_rank=2300, dynasty_rank=2300, value=5)
+    pitcher.mlbam_id = 999001
+    other = _row("Someone Else", "BOS", prospect_rank=10, dynasty_rank=10, value=30)
+    other.mlbam_id = 999002
+
+    ordered = app_module._team_board_prospect_rows([hitter, pitcher, other])
+
+    assert len(ordered) == 2
+    assert [row.name for row in ordered] == ["Two Way Guy", "Someone Else"]
+    # The better-ranked (hitter) role is the one kept.
+    assert ordered[0] is hitter
+
+
 def test_team_board_sort_places_ranked_rows_before_fallback_rows():
     rows = [
         _row("Dynasty Only", "BOS", prospect_rank=None, dynasty_rank=20, value=20),
