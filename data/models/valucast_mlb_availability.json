@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-07-05",
+  "generated_at": "2026-07-06",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -351,18 +351,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Houston Astros transferred LHP Bennett Sousa from the 15-day injured list to the 60-day injured list. Left elbow inflammation.",
-      "effective_date": "2026-07-03",
-      "list_type": "60-day injured list",
+      "description": "Houston Astros sent LHP Bennett Sousa on a rehab assignment to Sugar Land Space Cowboys.",
+      "effective_date": "2026-07-05",
+      "list_type": null,
       "mlbam_id": 656986,
       "name": "Bennett Sousa",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Houston Astros",
-      "transaction_date": "2026-07-03",
-      "transaction_id": 924760,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Sugar Land Space Cowboys",
+      "transaction_date": "2026-07-05",
+      "transaction_id": 925302,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -526,6 +526,21 @@
       "team": "Cincinnati Reds",
       "transaction_date": "2026-05-06",
       "transaction_id": 906270,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Milwaukee Brewers placed RHP Brandon Woodruff on the 15-day injured list. Right shoulder inflammation.",
+      "effective_date": "2026-07-05",
+      "list_type": "15-day injured list",
+      "mlbam_id": 605540,
+      "name": "Brandon Woodruff",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-07-05",
+      "transaction_id": 925251,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -1551,16 +1566,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Houston Astros sent RHP Hayden Wesneski on a rehab assignment to FCL Astros.",
-      "effective_date": "2026-06-30",
+      "description": "Houston Astros sent RHP Hayden Wesneski on a rehab assignment to Corpus Christi Hooks.",
+      "effective_date": "2026-07-05",
       "list_type": null,
       "mlbam_id": 669713,
       "name": "Hayden Wesneski",
       "source": "official_mlb_statsapi_transactions",
       "status": "rehab",
-      "team": "FCL Astros",
-      "transaction_date": "2026-06-30",
-      "transaction_id": 923561,
+      "team": "Corpus Christi Hooks",
+      "transaction_date": "2026-07-05",
+      "transaction_id": 925281,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -1776,18 +1791,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Chicago Cubs placed RHP Jameson Taillon on the 15-day injured list retroactive to June 8, 2026. Strained left hamstring.",
-      "effective_date": "2026-06-08",
-      "list_type": "15-day injured list",
+      "description": "Chicago Cubs sent RHP Jameson Taillon on a rehab assignment to South Bend Cubs.",
+      "effective_date": "2026-07-05",
+      "list_type": null,
       "mlbam_id": 592791,
       "name": "Jameson Taillon",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Chicago Cubs",
-      "transaction_date": "2026-06-09",
-      "transaction_id": 917167,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "South Bend Cubs",
+      "transaction_date": "2026-07-05",
+      "transaction_id": 925273,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2286,16 +2301,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Francisco Giants sent RHP Keaton Winn on a rehab assignment to ACL Giants.",
-      "effective_date": "2026-07-03",
+      "description": "San Francisco Giants sent RHP Keaton Winn on a rehab assignment to San Jose Giants.",
+      "effective_date": "2026-07-05",
       "list_type": null,
       "mlbam_id": 676775,
       "name": "Keaton Winn",
       "source": "official_mlb_statsapi_transactions",
       "status": "rehab",
-      "team": "ACL Giants",
-      "transaction_date": "2026-07-03",
-      "transaction_id": 924923,
+      "team": "San Jose Giants",
+      "transaction_date": "2026-07-05",
+      "transaction_id": 925314,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -2541,7 +2556,7 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Francisco Giants placed LHP Matt Gage on the 15-day injured list. Left embow strain.",
+      "description": "San Francisco Giants placed LHP Matt Gage on the 15-day injured list. Left elbow strain.",
       "effective_date": "2026-07-04",
       "list_type": "15-day injured list",
       "mlbam_id": 657424,
@@ -3961,21 +3976,6 @@
       "team": "Colorado Rockies",
       "transaction_date": "2026-04-04",
       "transaction_id": 897186,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Milwaukee Brewers activated RHP Brandon Woodruff from the 15-day injured list.",
-      "effective_date": "2026-06-22",
-      "list_type": "15-day injured list",
-      "mlbam_id": 605540,
-      "name": "Brandon Woodruff",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Milwaukee Brewers",
-      "transaction_date": "2026-06-22",
-      "transaction_id": 921049,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -7026,7 +7026,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-07-05",
+    "end_date": "2026-07-06",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -7044,15 +7044,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 220,
+    "available_after_il_count": 219,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 197,
+    "injured_count": 196,
     "profile_count": 467,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 50,
-    "risk_profile_count": 247,
-    "tracked_mlbam_count": 10436,
-    "transaction_count": 7500
+    "rehab_count": 52,
+    "risk_profile_count": 248,
+    "tracked_mlbam_count": 10458,
+    "transaction_count": 7534
   }
 }

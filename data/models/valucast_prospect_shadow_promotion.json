@@ -1,13 +1,13 @@
 {
   "artifact": "valucast_prospect_shadow_promotion",
-  "generated_at": "2026-07-05T12:09:13.990750+00:00",
+  "generated_at": "2026-07-06T12:58:17.530934+00:00",
   "generated_by": "valucast",
   "harness_version": "0.1.0",
   "models": [
     {
       "archive": "valucast_playing_time_role_tracker",
       "feeds_card": false,
-      "forecast_horizon_days": 17,
+      "forecast_horizon_days": 18,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -19,7 +19,7 @@
         "reason": "sample_size 0 < min_sample 50",
         "sample_size": 0,
         "status": "insufficient_sample",
-        "validated_through": "2026-07-05"
+        "validated_through": "2026-07-06"
       },
       "gradeable_when": {
         "horizon_met": false,
@@ -29,19 +29,19 @@
       },
       "key": "playing_time_role_v2",
       "metric": "volume_forecast_mae_vs_realized",
-      "observation_count": 18,
+      "observation_count": 19,
       "observed_first": "2026-06-18",
-      "observed_last": "2026-07-05",
+      "observed_last": "2026-07-06",
       "promotion_target": "playing_time_role_tracker.role_v2 -> card",
       "realized_outcome_kind": "same_season_actuals",
       "realized_sample": 0,
-      "realized_status": "earliest forecast 17d old (<30d to grade)",
-      "span_days": 17
+      "realized_status": "earliest forecast 18d old (<30d to grade)",
+      "span_days": 18
     },
     {
       "archive": "valucast_prospect_peak_projection_v1",
       "feeds_card": false,
-      "forecast_horizon_days": 20,
+      "forecast_horizon_days": 21,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -53,7 +53,7 @@
         "reason": "sample_size 0 < min_sample 250",
         "sample_size": 0,
         "status": "insufficient_sample",
-        "validated_through": "2026-07-05"
+        "validated_through": "2026-07-06"
       },
       "gradeable_when": {
         "horizon_met": true,
@@ -63,19 +63,19 @@
       },
       "key": "peak_projection_v2",
       "metric": "peak_role_outcome_brier",
-      "observation_count": 19,
+      "observation_count": 20,
       "observed_first": "2026-06-15",
-      "observed_last": "2026-07-05",
+      "observed_last": "2026-07-06",
       "promotion_target": "peak_projection.peak_v2 -> card",
       "realized_outcome_kind": "multi_year_horizon",
       "realized_sample": 0,
       "realized_status": "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
-      "span_days": 20
+      "span_days": 21
     },
     {
       "archive": "valucast_prospect_dynasty_layer",
       "feeds_card": null,
-      "forecast_horizon_days": 22,
+      "forecast_horizon_days": 23,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -87,7 +87,7 @@
         "reason": "sample_size 0 < min_sample 250",
         "sample_size": 0,
         "status": "insufficient_sample",
-        "validated_through": "2026-07-05"
+        "validated_through": "2026-07-06"
       },
       "gradeable_when": {
         "horizon_met": true,
@@ -97,14 +97,14 @@
       },
       "key": "prospect_dynasty_layer",
       "metric": "bust_role_star_brier",
-      "observation_count": 23,
+      "observation_count": 24,
       "observed_first": "2026-06-13",
-      "observed_last": "2026-07-05",
+      "observed_last": "2026-07-06",
       "promotion_target": "prospect dynasty_signal -> live consumer",
       "realized_outcome_kind": "multi_year_horizon",
       "realized_sample": 0,
       "realized_status": "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
-      "span_days": 22
+      "span_days": 23
     }
   ],
   "purpose": "Grade shadow models against realized outcomes and gate card promotion by evidence, not by date.",

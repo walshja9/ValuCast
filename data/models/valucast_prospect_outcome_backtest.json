@@ -303,15 +303,15 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 13,
+        "buy_comparison_count": 14,
         "latest_rank_bucket_count": 14,
-        "observation_span_days": 13,
-        "rank_comparison_count": 13
+        "observation_span_days": 14,
+        "rank_comparison_count": 14
       },
       "recommendations": [
         "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
       ],
-      "status": "collecting"
+      "status": "review_ready"
     },
     "model_v07_readiness": {
       "model_version": "0.7.0-preview.1",
@@ -319,7 +319,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2789,
+        "candidate_count": 2796,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -331,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-05T12:07:41.065901+00:00",
+        "activated_at": "2026-07-06T12:56:43.522925+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -343,9 +343,9 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2825,
+      "candidate_count": 2831,
       "impact_board_gate": {
-        "activated_at": "2026-07-05T12:07:41.065901+00:00",
+        "activated_at": "2026-07-06T12:56:43.522925+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.173285,
         "cv_method": "walk_forward",
@@ -361,11 +361,9 @@
     }
   },
   "front_office_track": {
-    "cap_reasons": [
-      "Forward observations are not review-ready yet."
-    ],
-    "forward_next_target_grade": "A-",
-    "forward_supported_grade": null,
+    "cap_reasons": [],
+    "forward_next_target_grade": "A",
+    "forward_supported_grade": "A-",
     "forward_thresholds": {
       "A": {
         "minimum_buy_comparisons": 14,
@@ -374,17 +372,7 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 13,
-            "metric": "rank_comparison_count",
-            "required": 14
-          },
-          {
-            "current": 13,
-            "metric": "buy_comparison_count",
-            "required": 14
-          },
-          {
-            "current": 13,
+            "current": 14,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -398,17 +386,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 13,
+            "current": 14,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 13,
+            "current": 14,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 13,
+            "current": 14,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -420,29 +408,23 @@
         "minimum_buy_retention_rate": 0.45,
         "minimum_rank_comparisons": 7,
         "minimum_span_days": 14,
-        "missing": [
-          {
-            "current": 13,
-            "metric": "observation_span_days",
-            "required": 14
-          }
-        ],
-        "passed": false
+        "missing": [],
+        "passed": true
       }
     },
-    "grade": "B+",
+    "grade": "A",
     "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-    "score": 87,
-    "score_cap": 87,
+    "score": 100,
+    "score_cap": null,
     "target_grade": "A-",
-    "uncapped_score": 97
+    "uncapped_score": 100
   },
-  "generated_at": "2026-07-05T00:00:00+00:00",
+  "generated_at": "2026-07-06T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-07-05",
-    "dynasty_backtest": "2026-07-05",
-    "forward_validation": "2026-07-05",
-    "model_v07": "2026-07-05",
+    "adapter_backtest": "2026-07-06",
+    "dynasty_backtest": "2026-07-06",
+    "forward_validation": "2026-07-06",
+    "model_v07": "2026-07-06",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
@@ -461,15 +443,8 @@
   "validation": {
     "blockers": [],
     "bucket_cohort_evidence_ready": true,
-    "evidence_gates": [
-      {
-        "current": "collecting",
-        "kind": "forward_archives",
-        "message": "Forward archives are still collecting; no live-outcome stability review yet.",
-        "required": "review_ready"
-      }
-    ],
-    "forward_evidence_ready": false,
+    "evidence_gates": [],
+    "forward_evidence_ready": true,
     "minimum_realized_outcome_sample_size": 2000,
     "realized_evidence_ready": true,
     "realized_outcome_sample_size": 2218
