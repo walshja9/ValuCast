@@ -246,6 +246,57 @@
     </section>
 
     <section>
+        <h3 id="sensitivity">Sensitivity Analysis — how much do our assumptions matter?</h3>
+        <p>The Prospect Rank model runs on dozens of tuned constants — how hard to regress
+        a thin sample, how much a bad current line should override last year's, how much
+        weight to put on a prospect's odds of reaching the majors versus his fantasy impact
+        if he gets there. None of these constants is the only defensible choice. Rather than
+        publish a single ranking and ask you to trust it, we re-ran the full board — all
+        2,796 ranked prospects — with individual assumptions changed one at a time, and
+        measured exactly how much the rankings moved. This is a live re-scoring of the real
+        model against the real committed board, not a simulation.</p>
+        <table class="provenance-table ledger">
+            <tr><th>Assumption changed</th><th>Measured effect</th></tr>
+            <tr>
+                <td>Outcome-vs-impact weighting<br><span class="methodology-version">how much a prospect's odds of reaching the majors matter vs. his fantasy value once there (0.58/0.42 &rarr; 0.50/0.50)</span></td>
+                <td><strong>152 players</strong> move 25+ spots, <strong>1,255</strong> move
+                10+ spots, average move <strong>12.6</strong> spots. This is the single most
+                leveraged constant in the model — the churn concentrates in the lower half
+                of the board, where low-probability-but-high-impact arms get pulled up out
+                of the basement.</td>
+            </tr>
+            <tr>
+                <td>Thin-sample confidence penalty<br><span class="methodology-version">how far an unproven hot streak should sort behind a proven line (28 &rarr; 20 or 35)</span></td>
+                <td>The top 100 does not move at all in either direction — this penalty
+                never touches an established profile. It surgically arbitrates a small,
+                identifiable cohort of pedigreed-but-thin prospects: at the current setting
+                a hot but unproven bat sorts around #250; loosen the guardrail and he rises
+                toward #160, tighten it and he falls toward #370.</td>
+            </tr>
+            <tr>
+                <td>Sample regression strength<br><span class="methodology-version">how many PA/IP before a hot line is trusted (200 &rarr; 150 or 300)</span></td>
+                <td>Trusting thin samples more moves <strong>590 players</strong> 25+ spots;
+                regressing harder moves <strong>772</strong>. Real top-400 prospects swing
+                200+ spots depending on the setting — this constant visibly changes the top
+                of the board, not just the tail.</td>
+            </tr>
+            <tr>
+                <td>Stale-line pull weight<br><span class="methodology-version">how hard a bad current-season line overrides an inflated prior year (0.40/0.60 &rarr; 0.50/0.75)</span></td>
+                <td>The smallest and most surgical of the four: only <strong>13 players</strong>
+                move 25+ spots, all of them pitchers whose current season has genuinely
+                soured, and all moving the same direction (down). Everyone else drifts a spot
+                or two as the board reorders around them.</td>
+            </tr>
+        </table>
+        <p>Two things this analysis does <strong>not</strong> tell you: whether any of these
+        alternate settings would have predicted real outcomes better — that's a separate,
+        harder question we validate with held-out backtests before changing anything live —
+        and it isn't run automatically on every page load, since a full four-way board
+        rebuild takes real compute. This is a dated study (run 2026-07-07 against the
+        committed board) that we'll re-run and republish as the model changes.</p>
+    </section>
+
+    <section>
         <h3>What we have and haven't proven</h3>
         <p>Our validation is against internal baselines (persistence and classic Marcel),
         which it beats on held-out data. ValuCast has <strong>not yet proven</strong> it

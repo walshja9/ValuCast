@@ -97,6 +97,30 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn(str(proj_hr), self.html)              # ~24.4, not 22
         self.assertNotIn("22 projected HR", self.html)      # the old wrong number is gone
 
+    # 7/7: sensitivity analysis section -- these are hardcoded numbers from a real,
+    # dated re-scoring run (not live-computed), so this test locks the exact figures
+    # reported to Alex rather than re-deriving them from a live model rebuild (that
+    # rebuild takes real compute and isn't something a page-render test should do).
+    def test_sensitivity_analysis_section_present_with_real_numbers(self):
+        self.assertIn('id="sensitivity"', self.html)
+        self.assertIn("2,796", self.html)
+        # outcome/impact weighting -- the most leveraged lever
+        self.assertIn("152 players", self.html)
+        self.assertIn("1,255", self.html)
+        # thin-sample penalty -- top 100 untouched
+        self.assertIn("does not move at all", self.html)
+        # sample regression -- moves the real top of the board, not just the tail
+        self.assertIn("590 players", self.html)
+        self.assertIn("772", self.html)
+        # stale-line pull -- smallest, most surgical lever
+        self.assertIn("13 players", self.html)
+        # dated, not live-recomputed -- must say so explicitly, and must not claim
+        # to prove that any alternate setting predicts real outcomes better (that's
+        # a separate, harder validation question this analysis explicitly declines
+        # to answer).
+        self.assertIn("2026-07-07", self.html)
+        self.assertIn("does <strong>not</strong> tell you", self.html)
+
 
 class TestBuilderGuard(unittest.TestCase):
     def test_requires_full_pitching_history(self):
