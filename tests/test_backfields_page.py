@@ -272,6 +272,80 @@ def test_backfields_rankings_are_client_sortable():
     assert "data-bf-sort-value" in html
 
 
+def test_backfields_sort_controls_use_columnheader_aria_sort():
+    response, html = _html("/backfields")
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+
+    assert response.status_code == 200
+    assert 'data-bf-table role="table"' in html
+    assert 'class="bf-sort-cell" role="columnheader" aria-sort="ascending"' in html
+    assert re.search(
+        r'<span class="bf-sort-cell" role="columnheader" aria-sort="none">\s*'
+        r'<button type="button" data-bf-sort="player">',
+        html,
+    )
+    assert 'data-bf-sort="rank" aria-sort' not in html
+    assert "closest('[role=\"columnheader\"]')" in source
+
+
+def test_backfields_detail_drawer_updates_expanded_state_and_focus():
+    response, html = _html("/backfields")
+    source = Path("templates/backfields.html").read_text(encoding="utf-8")
+
+    assert response.status_code == 200
+    assert 'data-bf-detail-panel hidden aria-live="polite" role="region"' in html
+    assert 'aria-labelledby="bf-detail-title" tabindex="-1"' in html
+    assert 'id="bf-detail-title" data-bf-detail-title' in html
+    assert re.search(
+        r'<a class="bf-player-link" href="/player/[^"]+" '
+        r'data-bf-detail-url="/player/[^"]+" data-bf-player-name="[^"]+" '
+        r'aria-expanded="false">',
+        html,
+    )
+    assert "setExpandedLink(link)" in source
+    assert "detailPanel.focus({ preventScroll: true })" in source
+    assert "lastDetailTrigger.focus({ preventScroll: true })" in source
+    # role="region" (non-modal) was chosen over role="dialog" -- that choice only
+    # holds up paired with an Escape-to-close handler; a plain Close button click
+    # alone isn't enough for a keyboard user who never tabs to it.
+    assert "event.key === 'Escape'" in source
+    assert re.search(r"function closeDetailPanel\(\)[\s\S]*?detailPanel\.hidden = true", source)
+
+
+def test_backfields_tier_and_report_badges_are_accessible_tap_targets():
+    response, html = _html("/backfields")
+    css = Path("static/style.css").read_text(encoding="utf-8")
+
+    assert response.status_code == 200
+    assert 'class="bf-tier-badge" aria-label="Prospect tier ' in html
+    assert ".backfields-page .bf-tier-badge" in css
+    assert ".backfields-page .bf-report-badge" in css
+    assert "min-height: 32px" in css
+    assert "min-width: 44px" in css
+
+
+def test_backfields_stat_toggle_does_not_misdeclare_tabs():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert 'class="bf-stat-tabs" role="tablist"' not in html
+    assert 'class="bf-stat-tabs" aria-label="Stat leader type"' in html
+    assert 'data-bf-stat-tab="hitting" aria-pressed="true"' in html
+
+
+def test_backfields_mobile_keeps_sort_controls_available():
+    css = Path("static/style.css").read_text(encoding="utf-8")
+
+    mobile_idx = css.index("@media (max-width: 640px)")
+    backfields_mobile_idx = css.index(".backfields-page", mobile_idx)
+    backfields_mobile_end = css.index("/* Mobile board tab-bar", backfields_mobile_idx)
+    backfields_mobile_css = css[backfields_mobile_idx:backfields_mobile_end]
+
+    assert ".backfields-page .bf-table-head" in backfields_mobile_css
+    assert ".backfields-page .bf-table-head {\n        display: none;" not in backfields_mobile_css
+    assert "overflow-x: auto" in backfields_mobile_css
+
+
 def test_backfields_debut_filter_renumbers_instead_of_leaving_rank_gaps():
     # 7/5: the debut/level pill filters only ever set row.hidden client-side, so the
     # rendered rank badges kept their true board position (row.rank) and a filtered
@@ -311,9 +385,12 @@ def test_backfields_detail_fetch_guards_stale_responses():
     assert "detailPanel._bfReq" in open_body
     # Guarded in the success path ...
     assert open_body.count("detailPanel._bfReq !== reqId") == 2
-    # ... and closing must also invalidate any fetch still in flight.
-    close_body = source[close_idx:close_idx + 400]
-    assert "_bfReq = (detailPanel._bfReq || 0) + 1" in close_body
+    # ... and closing must also invalidate any fetch still in flight. The bump now
+    # lives in a shared closeDetailPanel() (reused by the Escape handler), not
+    # inline in the close-button listener, so search the whole close-side region
+    # rather than a fixed window after the button-registration marker.
+    close_region = source[open_idx:close_idx + 400]
+    assert "_bfReq = (detailPanel._bfReq || 0) + 1" in close_region
 
 
 def test_backfields_zero_matches_shows_no_results_message():

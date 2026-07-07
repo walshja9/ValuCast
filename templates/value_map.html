@@ -111,10 +111,14 @@
     }
 
     function showTooltip(player, x, y) {
-        tooltip.innerHTML =
-            '<strong>' + player.name.replaceAll('&', '&amp;').replaceAll('<', '&lt;') + '</strong>' +
-            '<span>' + player.position + ' · age ' + player.age + ' · value ' + player.value.toFixed(1) + '</span>' +
-            '<a href="' + boardUrl(player) + '">Find on board</a>';
+        const nameEl = document.createElement('strong');
+        const metaEl = document.createElement('span');
+        const linkEl = document.createElement('a');
+        nameEl.textContent = player.name;
+        metaEl.textContent = player.position + ' · age ' + player.age + ' · value ' + player.value.toFixed(1);
+        linkEl.href = boardUrl(player);
+        linkEl.textContent = 'Find on board';
+        tooltip.replaceChildren(nameEl, metaEl, linkEl);
         tooltip.hidden = false;
         const left = Math.max(8, Math.min(shell.clientWidth - 190, x + 12));
         const top = Math.max(8, Math.min(shell.clientHeight - 92, y - 42));

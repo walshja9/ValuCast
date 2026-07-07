@@ -3796,6 +3796,10 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     border-bottom: 1px solid var(--bf-line);
 }
 
+.backfields-page .bf-sort-cell {
+    min-width: 0;
+}
+
 .backfields-page .bf-table-head button {
     padding: 0;
     color: inherit;
@@ -3806,6 +3810,9 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     text-align: left;
     text-transform: inherit;
 }
+
+.backfields-page .bf-sort-cell[aria-sort="ascending"] button::after { content: " \25B2"; }
+.backfields-page .bf-sort-cell[aria-sort="descending"] button::after { content: " \25BC"; }
 
 .backfields-page .bf-table-head button[data-bf-sort="value"],
 .backfields-page .bf-table-head button[data-bf-sort="move"] {
@@ -3855,9 +3862,26 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     font-weight: 650;
 }
 
-.backfields-page .bf-report-badge {
+.backfields-page .bf-tier-badge {
     flex: 0 0 auto;
-    padding: .08rem .28rem;
+    color: #0b0d13;
+    background: var(--bf-amber);
+    border-radius: var(--radius-sm);
+    padding: .1rem .25rem;
+    font-family: var(--font-mono);
+    font-size: .62rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.backfields-page .bf-report-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: 44px;
+    min-height: 32px;
+    padding: .18rem .34rem;
     color: var(--bf-muted);
     border: 1px solid var(--bf-line);
     border-radius: var(--radius-sm);
@@ -4044,8 +4068,23 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
         flex-direction: column;
     }
 
+    .backfields-page .bf-table-card,
+    .backfields-page .bf-team-board-card {
+        overflow-x: auto;
+    }
+
     .backfields-page .bf-table-head {
-        display: none;
+        grid-template-columns: repeat(5, max-content);
+        gap: .45rem;
+        min-width: max-content;
+    }
+
+    .backfields-page .bf-table-head button {
+        min-height: 36px;
+        padding: .3rem .5rem;
+        border: 1px solid var(--bf-line);
+        border-radius: var(--radius-sm);
+        background: rgba(21, 17, 12, .65);
     }
 
     .backfields-page .bf-rank-row {

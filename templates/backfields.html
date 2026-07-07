@@ -60,7 +60,7 @@
             <article class="bf-riser-card">
                 <div class="bf-riser-top">
                     <div>
-                        <h3><a class="bf-player-link" href="{{ riser.url }}" data-bf-detail-url="{{ riser.detail_url }}" data-bf-player-name="{{ riser.name }}">{{ riser.name }}</a></h3>
+                        <h3><a class="bf-player-link" href="{{ riser.url }}" data-bf-detail-url="{{ riser.detail_url }}" data-bf-player-name="{{ riser.name }}" aria-expanded="false">{{ riser.name }}</a></h3>
                         <p>{{ riser.meta }}</p>
                     </div>
                     <span class="bf-move bf-move-{{ riser.move.direction }}">
@@ -113,7 +113,7 @@
             {% for call in ahead_of_consensus %}
             <article class="bf-consensus-card">
                 <div class="bf-consensus-top">
-                    <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}">{{ call.name }}</a></h3>
+                    <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a></h3>
                     <span class="bf-consensus-badge">+{{ call.divergence }}</span>
                 </div>
                 <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
@@ -134,7 +134,7 @@
                 {% for call in ahead_of_consensus_thin %}
                 <article class="bf-consensus-card">
                     <div class="bf-consensus-top">
-                        <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}">{{ call.name }}</a></h3>
+                        <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a></h3>
                         <span class="bf-consensus-badge">+{{ call.divergence }}</span>
                     </div>
                     <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
@@ -149,11 +149,11 @@
         {% endif %}
     </section>
 
-    <section class="bf-detail-drawer" data-bf-detail-panel hidden aria-live="polite">
+    <section class="bf-detail-drawer" data-bf-detail-panel hidden aria-live="polite" role="region" aria-labelledby="bf-detail-title" tabindex="-1">
         <div class="bf-detail-drawer-head">
             <div>
                 <span>Backfields detail</span>
-                <strong data-bf-detail-title>Player card</strong>
+                <strong id="bf-detail-title" data-bf-detail-title>Player card</strong>
             </div>
             <button type="button" data-bf-detail-close>Close</button>
         </div>
@@ -175,17 +175,17 @@
                     {% endfor %}
                 </div>
             </div>
-            <div class="bf-table-card" data-bf-table data-bf-sort-current="rank" data-bf-sort-dir="asc">
+            <div class="bf-table-card" data-bf-table role="table" data-bf-sort-current="rank" data-bf-sort-dir="asc">
                 <div class="bf-table-head" role="row">
-                    <button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button>
-                    <button type="button" data-bf-sort="player">Player</button>
-                    <button type="button" data-bf-sort="level">Level</button>
-                    <button type="button" data-bf-sort="move">Move</button>
-                    <button type="button" data-bf-sort="value">Value</button>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="ascending"><button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button></span>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="player">Player</button></span>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="level">Level</button></span>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move">Move</button></span>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="value">Value</button></span>
                 </div>
                 {% if rankings %}
                 {% for row in rankings %}
-                <article class="bf-rank-row bf-tier-{{ row.tier }}"
+                <article class="bf-rank-row bf-tier-{{ row.tier }}" role="row"
                     data-bf-row-level="{{ row.level }}"
                     data-bf-row-debut="{{ '1' if row.debuted else '0' }}"
                     data-bf-sort-rank="{{ row.rank }}"
@@ -193,10 +193,11 @@
                     data-bf-sort-level="{{ row.level_sort }}"
                     data-bf-sort-move="{{ row.move_sort }}"
                     data-bf-sort-value="{{ row.value_sort }}">
-                    <span class="bf-rank">{{ row.rank }}</span>
-                    <div class="bf-player">
+                    <span class="bf-rank" role="cell">{{ row.rank }}</span>
+                    <div class="bf-player" role="cell">
                         <div class="bf-player-name">
-                            <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}">{{ row.name }}</a>
+                            <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>
+                            <span class="bf-tier-badge" aria-label="Prospect tier {{ row.tier }}">T{{ row.tier }}</span>
                             {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                         </div>
                         <p class="bf-player-meta">
@@ -205,13 +206,13 @@
                             {% if row.eta %}<span>{{ row.eta }}</span>{% endif %}
                         </p>
                     </div>
-                    <span class="bf-level">{{ row.level }}</span>
-                    <span class="bf-move bf-move-{{ row.move.direction }}">
+                    <span class="bf-level" role="cell">{{ row.level }}</span>
+                    <span class="bf-move bf-move-{{ row.move.direction }}" role="cell">
                         {% if row.move.direction == "up" %}&#9650; {{ row.move.label }}
                         {% elif row.move.direction == "down" %}&#9660; {{ row.move.label }}
                         {% else %}{{ row.move.label }}{% endif %}
                     </span>
-                    <span class="bf-value">{{ row.value }}</span>
+                    <span class="bf-value" role="cell">{{ row.value }}</span>
                 </article>
                 {% endfor %}
                 {% else %}
@@ -236,7 +237,7 @@
                     {% for player in callups %}
                     <article class="bf-callup-row">
                         <div>
-                            <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}">{{ player.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}" aria-expanded="false">{{ player.name }}</a></h3>
                             <p>{{ player.flag }}</p>
                             <p class="bf-callup-why">{{ player.why }}</p>
                         </div>
@@ -292,7 +293,7 @@
                         <p>Minors leaders</p>
                     </div>
                 </div>
-                <div class="bf-stat-tabs" role="tablist" aria-label="Stat leader type">
+                <div class="bf-stat-tabs" aria-label="Stat leader type" role="group">
                     <button type="button" class="bf-stat-tab is-active" data-bf-stat-tab="hitting" aria-pressed="true">Hitting</button>
                     <button type="button" class="bf-stat-tab" data-bf-stat-tab="pitching" aria-pressed="false">Pitching</button>
                 </div>
@@ -303,7 +304,7 @@
                     <article class="bf-stat-row">
                         <span>{{ leader.stat }}</span>
                         <div>
-                            <h3><a class="bf-player-link" href="{{ leader.url }}" data-bf-detail-url="{{ leader.detail_url }}" data-bf-player-name="{{ leader.name }}">{{ leader.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ leader.url }}" data-bf-detail-url="{{ leader.detail_url }}" data-bf-player-name="{{ leader.name }}" aria-expanded="false">{{ leader.name }}</a></h3>
                             <p>{{ leader.level }}{% if leader.team %} / {{ leader.team }}{% endif %}</p>
                         </div>
                         <strong>{{ leader.value }}</strong>
@@ -341,7 +342,7 @@
         </div>
         {% endif %}
         {% if team_boards.selected %}
-        <div class="bf-team-board-card" data-bf-table data-bf-sort-current="rank" data-bf-sort-dir="asc">
+        <div class="bf-team-board-card" data-bf-table role="table" data-bf-sort-current="rank" data-bf-sort-dir="asc">
             <div class="bf-team-title">
                 <div>
                     <h3>{{ team_boards.selected.name }}</h3>
@@ -353,24 +354,24 @@
                 </span>
             </div>
             <div class="bf-table-head" role="row">
-                <button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button>
-                <button type="button" data-bf-sort="player">Player</button>
-                <button type="button" data-bf-sort="level">Level</button>
-                <button type="button" data-bf-sort="move">Move</button>
-                <button type="button" data-bf-sort="value">Value</button>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="ascending"><button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button></span>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="player">Player</button></span>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="level">Level</button></span>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move">Move</button></span>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="value">Value</button></span>
             </div>
             {% for row in team_boards.rows %}
-            <article class="bf-rank-row bf-team-row"
+            <article class="bf-rank-row bf-team-row" role="row"
                 data-bf-row-level="{{ row.level }}"
                 data-bf-sort-rank="{{ row.org_rank }}"
                 data-bf-sort-player="{{ row.name|lower }}"
                 data-bf-sort-level="{{ row.level_sort }}"
                 data-bf-sort-move="{{ row.move_sort }}"
                 data-bf-sort-value="{{ row.value_sort }}">
-                <span class="bf-rank">{{ row.org_rank }}</span>
-                <div class="bf-player">
+                <span class="bf-rank" role="cell">{{ row.org_rank }}</span>
+                <div class="bf-player" role="cell">
                     <div class="bf-player-name">
-                        <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}">{{ row.name }}</a>
+                        <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>
                         {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                     </div>
                     <p class="bf-player-meta">
@@ -379,13 +380,13 @@
                         {% if row.eta %}<span>{{ row.eta }}</span>{% endif %}
                     </p>
                 </div>
-                <span class="bf-level">{{ row.level }}</span>
-                <span class="bf-move bf-move-{{ row.move.direction }}">
+                <span class="bf-level" role="cell">{{ row.level }}</span>
+                <span class="bf-move bf-move-{{ row.move.direction }}" role="cell">
                     {% if row.move.direction == "up" %}&#9650; {{ row.move.label }}
                     {% elif row.move.direction == "down" %}&#9660; {{ row.move.label }}
                     {% else %}{{ row.move.label }}{% endif %}
                 </span>
-                <span class="bf-value">{{ row.value }}</span>
+                <span class="bf-value" role="cell">{{ row.value }}</span>
             </article>
             {% endfor %}
             <div class="bf-team-extras">
@@ -446,7 +447,7 @@
                     <span>{{ report.tag }}</span>
                     {% if report.date %}<time datetime="{{ report.date[:10] }}">{{ editorial_date(report.date) }}</time>{% endif %}
                 </div>
-                <h3><a class="bf-player-link" href="{{ report.url }}" data-bf-detail-url="{{ report.detail_url }}" data-bf-player-name="{{ report.name }}">{{ report.name }}</a></h3>
+                <h3><a class="bf-player-link" href="{{ report.url }}" data-bf-detail-url="{{ report.detail_url }}" data-bf-player-name="{{ report.name }}" aria-expanded="false">{{ report.name }}</a></h3>
                 <p class="bf-report-meta">{{ report.meta }}</p>
                 <p class="bf-report-line">{{ report.line }}</p>
             </article>
@@ -471,6 +472,13 @@
         var detailPanel = page.querySelector('[data-bf-detail-panel]');
         var detailTitle = page.querySelector('[data-bf-detail-title]');
         var detailBody = page.querySelector('[data-bf-detail-body]');
+        var lastDetailTrigger = null;
+
+        function setExpandedLink(activeLink) {
+            page.querySelectorAll('[data-bf-detail-url]').forEach(function (link) {
+                link.setAttribute('aria-expanded', link === activeLink ? 'true' : 'false');
+            });
+        }
 
         function sortValue(row, sortKey) {
             var value = row.getAttribute('data-bf-sort-' + sortKey) || '';
@@ -503,8 +511,11 @@
             table.setAttribute('data-bf-sort-dir', dir);
             table.querySelectorAll('[data-bf-sort]').forEach(function (btn) {
                 var active = btn.getAttribute('data-bf-sort') === sortKey;
+                var header = btn.closest('[role="columnheader"]');
                 btn.classList.toggle('is-active', active);
-                btn.setAttribute('aria-sort', active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+                if (header) {
+                    header.setAttribute('aria-sort', active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+                }
             });
             // Resorting changes DOM order, so a filtered view's sequential 1..N
             // numbering must be re-walked in the new order -- harmless no-op on the
@@ -531,12 +542,15 @@
                 if (!detailPanel || !detailBody) { window.location.href = link.href; return; }
                 var title = link.getAttribute('data-bf-player-name') || link.textContent.trim() || 'Player card';
                 detailPanel.hidden = false;
+                lastDetailTrigger = link;
+                setExpandedLink(link);
                 if (detailTitle) { detailTitle.textContent = title; }
                 detailBody.textContent = '';
                 var loading = document.createElement('p');
                 loading.className = 'bf-empty';
                 loading.textContent = 'Loading ' + title + '...';
                 detailBody.appendChild(loading);
+                detailPanel.focus({ preventScroll: true });
                 var reqId = (detailPanel._bfReq || 0) + 1;
                 detailPanel._bfReq = reqId;
                 fetch(link.getAttribute('data-bf-detail-url'), { headers: { 'HX-Request': 'true' } })
@@ -559,15 +573,26 @@
                     });
             });
         });
+        function closeDetailPanel() {
+            if (detailPanel) {
+                detailPanel.hidden = true;
+                detailPanel._bfReq = (detailPanel._bfReq || 0) + 1;
+            }
+            setExpandedLink(null);
+            if (detailBody) { detailBody.innerHTML = ''; }
+            if (lastDetailTrigger) { lastDetailTrigger.focus({ preventScroll: true }); }
+            lastDetailTrigger = null;
+        }
         page.querySelectorAll('[data-bf-detail-close]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                if (detailPanel) {
-                    detailPanel.hidden = true;
-                    detailPanel._bfReq = (detailPanel._bfReq || 0) + 1;
-                }
-                if (detailBody) { detailBody.innerHTML = ''; }
-            });
+            btn.addEventListener('click', closeDetailPanel);
         });
+        if (detailPanel) {
+            detailPanel.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !detailPanel.hidden) {
+                    closeDetailPanel();
+                }
+            });
+        }
         var bfActiveLevel = 'All';
         var bfActiveDebut = 'All';
         // Filtered views renumber 1..N (matches the main rankings board's convention,

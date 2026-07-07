@@ -572,6 +572,14 @@ class TestDynastyMode(unittest.TestCase):
             self.assertIn("name", payload["players"][0])
             self.assertIn("value", payload["players"][0])
 
+    def test_value_map_tooltip_uses_text_nodes(self):
+        source = Path("templates/value_map.html").read_text(encoding="utf-8")
+
+        self.assertNotIn("tooltip.innerHTML", source)
+        self.assertIn("tooltip.replaceChildren", source)
+        self.assertIn("nameEl.textContent = player.name", source)
+        self.assertIn("metaEl.textContent =", source)
+
     def test_buys_share_card_png_and_preview(self):
         # Held-path coverage: the "returns later this week" share card + placeholder
         # render when the AOTC hold is ON (the live default is now hold off).
