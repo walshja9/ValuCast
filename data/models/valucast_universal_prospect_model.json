@@ -1,7 +1,7 @@
 {
   "candidate_count": 2831,
   "input_contract": {
-    "generated_at": "2026-07-06T00:00:00+00:00",
+    "generated_at": "2026-07-07T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -223314,7 +223314,7 @@
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 95.16,
+          "prediction": 99.88,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
@@ -223328,7 +223328,7 @@
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "fallback",
-          "prediction": 7.92,
+          "prediction": 8.01,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -223370,7 +223370,7 @@
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1346,
+          "prediction": 0.1361,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -295592,7 +295592,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-06T00:00:00+00:00",
+          "activated_at": "2026-07-07T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.069292,
           "cv_method": "walk_forward",
@@ -298378,7 +298378,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-06T00:00:00+00:00",
+          "activated_at": "2026-07-07T00:00:00+00:00",
           "baseline": "historical_neighbors_25",
           "baseline_score": 0.052212,
           "cv_method": "walk_forward",

@@ -303,10 +303,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 14,
+        "buy_comparison_count": 15,
         "latest_rank_bucket_count": 14,
-        "observation_span_days": 14,
-        "rank_comparison_count": 14
+        "observation_span_days": 15,
+        "rank_comparison_count": 15
       },
       "recommendations": [
         "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
@@ -331,28 +331,28 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-06T12:56:43.522925+00:00",
+        "activated_at": "2026-07-07T16:53:16.706749+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
-        "improvement_pct": 5.8854,
+        "improvement_pct": 6.3566,
         "metric": "outcome_score_mae",
-        "model_score": 0.132461,
-        "reason": "beats historical_neighbors_25 by 5.89% OOS (outcome_score_mae)",
+        "model_score": 0.131798,
+        "reason": "beats historical_neighbors_25 by 6.36% OOS (outcome_score_mae)",
         "sample_size": 2901,
         "status": "active",
         "validated_through": "2019"
       },
       "candidate_count": 2831,
       "impact_board_gate": {
-        "activated_at": "2026-07-06T12:56:43.522925+00:00",
+        "activated_at": "2026-07-07T16:53:16.706749+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.173285,
+        "baseline_score": 0.172411,
         "cv_method": "walk_forward",
-        "improvement_pct": 4.1139,
+        "improvement_pct": 4.1523,
         "metric": "category_impact_mae",
-        "model_score": 0.166156,
-        "reason": "beats historical_neighbors_25 by 4.11% OOS (category_impact_mae)",
+        "model_score": 0.165252,
+        "reason": "beats historical_neighbors_25 by 4.15% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
         "validated_through": "2019"
@@ -372,7 +372,7 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 14,
+            "current": 15,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -386,17 +386,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 14,
+            "current": 15,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 14,
+            "current": 15,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 14,
+            "current": 15,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -419,12 +419,12 @@
     "target_grade": "A-",
     "uncapped_score": 100
   },
-  "generated_at": "2026-07-06T00:00:00+00:00",
+  "generated_at": "2026-07-07T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-07-06",
-    "dynasty_backtest": "2026-07-06",
-    "forward_validation": "2026-07-06",
-    "model_v07": "2026-07-06",
+    "adapter_backtest": "2026-07-07",
+    "dynasty_backtest": "2026-07-07",
+    "forward_validation": "2026-07-07",
+    "model_v07": "2026-07-07",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",

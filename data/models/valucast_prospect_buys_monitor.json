@@ -1,8 +1,8 @@
 {
   "artifact": "valucast_prospect_buys_monitor",
-  "generated_at": "2026-07-06T00:00:00+00:00",
+  "generated_at": "2026-07-07T00:00:00+00:00",
   "input_artifacts": {
-    "buy_generated_at": "2026-07-06T00:00:00+00:00",
+    "buy_generated_at": "2026-07-07T00:00:00+00:00",
     "buy_signal_version": "1.0.0",
     "forward_validation_report_version": "0.1.0",
     "forward_validation_status": "review_ready"
@@ -17,13 +17,13 @@
   "monitor_name": "ValuCast Prospect Buys v1 Monitor",
   "monitor_version": "0.1.0",
   "monitoring": {
-    "buy_comparison_count": 14,
+    "buy_comparison_count": 15,
     "feeds_live_buys": true,
-    "latest_top40_exited_count": 11,
-    "latest_top40_new_count": 11,
-    "latest_top40_retention_rate": 0.725,
+    "latest_top40_exited_count": 13,
+    "latest_top40_new_count": 13,
+    "latest_top40_retention_rate": 0.675,
     "next_action": "review_bucket_movement_before_next_calibration",
-    "observation_span_days": 14,
+    "observation_span_days": 15,
     "ready_for_live_consumers": true,
     "review_ready": true
   },
