@@ -354,10 +354,22 @@ def _role_probability(row: dict, peak_score: float, risk: str, shape_average: fl
 
     These are not calibrated scouting probabilities. They are a display layer
     that keeps the peak read from pretending to be a single-point answer.
+
+    The "top" (regular-or-better) term is anchored to the real peak_score
+    distribution (7/7 audit against the live 2,796-player board: p10≈11.5,
+    p95≈46.1, median≈23.6) -- the prior anchor (45.0, /35.0) assumed peak_score
+    behaved like a roughly-centered 0-100 scale, but it's heavily right-skewed,
+    so that anchor sat at the ~94th percentile. Only players ABOVE that
+    threshold ever moved off the 0.05 floor -- 96% of the real board was
+    pinned to an identical, non-informative floor value regardless of whether
+    they were a median prospect or a replacement-level one. Rebased so the
+    floor-to-cap ramp spans the real bulk of the distribution (~p10-p95)
+    instead of only its top sliver. Revisit if the pool's peak_score
+    distribution shifts materially (e.g. a scoring-model change).
     """
     role = str(row.get("role") or "")
     risk_penalty = {"low": 0.0, "medium": 0.10, "high": 0.20}.get(risk, 0.10)
-    top = _clamp((peak_score - 45.0) / 35.0 - risk_penalty, 0.05, 0.70)
+    top = _clamp((peak_score - 12.0) / 34.0 - risk_penalty, 0.05, 0.70)
     floor = _clamp((52.0 - shape_average) / 40.0 + risk_penalty, 0.10, 0.70)
     middle = max(0.05, 1.0 - top - floor)
     total = top + middle + floor

@@ -7,10 +7,42 @@ from prospects.peak_projection import PeakProjectionSentinelError
 from prospects.peak_projection import RUN_PREVENTION_MIN_PITCHERS
 from prospects.peak_projection import _correlation
 from prospects.peak_projection import _pitcher_shape
+from prospects.peak_projection import _role_probability
 from prospects.peak_projection import build_peak_projection
 from prospects.peak_projection import check_run_prevention_sentinel
 from prospects.peak_projection import run_peak_projection
 from scripts.validate_prospect_peak_projection import validate_peak_projection
+
+
+def test_role_probability_top_term_is_not_degenerate_across_the_real_range():
+    # 7/7: the "top" (regular-or-better) term was anchored at peak_score=45.0,
+    # /35.0 -- but the real board's peak_score distribution is heavily
+    # right-skewed (median ~23.6, p95 ~46.1), so that anchor sat at the ~94th
+    # percentile and 96% of the real 2,796-player board was pinned to an
+    # identical 0.05 floor regardless of whether they were a median prospect
+    # or a replacement-level one. Exercise the function across representative
+    # peak_score values spanning the real distribution (not just the top
+    # sliver) and confirm it actually differentiates them now.
+    row = {"role": "hitter"}
+    # (peak_score, expected real-board percentile it roughly represents)
+    p01, p10, p25, p50, p75, p90, p95, p99 = 7.2, 11.5, 15.7, 23.6, 32.8, 41.1, 46.1, 58.1
+    values = {
+        pct: _role_probability(row, score, "low", 45.0)["regular_or_better"]
+        for pct, score in (
+            ("p01", p01), ("p10", p10), ("p25", p25), ("p50", p50),
+            ("p75", p75), ("p90", p90), ("p95", p95), ("p99", p99),
+        )
+    }
+    ordered = list(values.values())
+    assert ordered == sorted(ordered)  # monotonic in peak_score
+    # The bottom decile legitimately saturates at the floor and the top few
+    # percent at the cap -- that's correct clamping, not the bug. The bug was
+    # that 90% of the REAL DISTRIBUTION (p10 through p95) was ALSO flattened
+    # onto that same floor. Assert the middle actually differentiates now.
+    assert values["p01"] == values["p10"] == 0.05  # bottom decile: floor, correctly
+    middle = [values["p25"], values["p50"], values["p75"], values["p90"]]
+    assert len(set(middle)) == len(middle), "the middle of the real distribution must not collapse to one value"
+    assert 0.05 < values["p50"] < 0.65, "the real board median must land meaningfully off both endpoints"
 
 
 def _run_prevention_grade(era, whip):
