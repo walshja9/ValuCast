@@ -95,6 +95,17 @@ OUTCOME_FEATURE_NAMES = {
         "ops_x_level",
         "k_pct_x_level",
         "bb_pct_x_level",
+        # 7/7: promoted from prospects/hitter_pedigree_shadow.py after a real
+        # walk-forward gate check. Lean by design -- the full 8-field pitcher
+        # pedigree block was tested on hitters first and made accuracy WORSE
+        # (sparse coverage: pick_value 15%, signing_bonus 24%, school_type 13%
+        # -- the ridge model overfit the rare non-zero spikes). Only these two,
+        # high-coverage (~68%) fields held up: hitter gate +1.10% -> +2.16%,
+        # pooled board gate +5.89% -> +6.36%, and the previously-found age
+        # 20-21 soft spot (a real loss to the naive kNN baseline) flipped from
+        # -0.68% to +0.01%.
+        "draft_record_known",
+        "inverse_draft_pick",
     ),
     "pitcher": FEATURE_NAMES["pitcher"]
     + (
@@ -308,6 +319,7 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
         iso, strikeout_pct, walk_pct, ops, youth, level = base
         plate_appearances = _sample(record, role)
         discipline = walk_pct - strikeout_pct
+        draft_pick = _zero_num(record.get("draft_pick_number"))
         extra = [
             _zero_num(record.get("avg")),
             _zero_num(record.get("obp")),
@@ -328,6 +340,8 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
             ops * level,
             strikeout_pct * level,
             walk_pct * level,
+            1.0 if _truthy(record.get("draft_record_known")) else 0.0,
+            1.0 / (draft_pick or 999.0),
         ]
     else:
         k_per_9, bb_per_9, k_bb_pct, era, whip, youth, level, is_starter = base
