@@ -4367,6 +4367,13 @@ def methodology():
         )
     except (OSError, ValueError):
         scorecard = None
+    try:
+        sensitivity = _json.loads(
+            (Path(__file__).parent / "data" / "validation" / "sensitivity_scorecard.json")
+            .read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        sensitivity = None
     hp, pp = MarcelParams(), PitcherMarcelParams()
 
     # Worked example computed from the REAL params (drift-proof): an age-29 hitter
@@ -4388,6 +4395,7 @@ def methodology():
     }
     return render_template(
         "methodology.html", methodology_page=True, scorecard=scorecard,
+        sensitivity=sensitivity,
         hit_weights=",".join(str(w) for w in hp.season_weights),
         hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),

@@ -95,15 +95,19 @@ OUTCOME_FEATURE_NAMES = {
         "ops_x_level",
         "k_pct_x_level",
         "bb_pct_x_level",
-        # 7/7: promoted from prospects/hitter_pedigree_shadow.py after a real
-        # walk-forward gate check. Lean by design -- the full 8-field pitcher
-        # pedigree block was tested on hitters first and made accuracy WORSE
-        # (sparse coverage: pick_value 15%, signing_bonus 24%, school_type 13%
-        # -- the ridge model overfit the rare non-zero spikes). Only these two,
-        # high-coverage (~68%) fields held up: hitter gate +1.10% -> +2.16%,
-        # pooled board gate +5.89% -> +6.36%, and the previously-found age
-        # 20-21 soft spot (a real loss to the naive kNN baseline) flipped from
-        # -0.68% to +0.01%.
+        # 7/7: promoted after a real walk-forward gate check. Lean by design --
+        # the full 8-field pitcher pedigree block was tested on hitters first and
+        # made accuracy WORSE (sparse coverage: pick_value 15%, signing_bonus 24%,
+        # school_type 13% -- the ridge model overfit the rare non-zero spikes).
+        # The measured lift (hitter gate +1.10% -> +2.16%, pooled board gate
+        # +5.89% -> +6.36%, and the age 20-21 soft spot flipping from -0.68% to
+        # +0.01%) comes ENTIRELY from inverse_draft_pick. draft_record_known is
+        # currently INERT: the mature training cohort (<=2019) is 100% known
+        # draftees, so it's a constant column -> standardizes to zero -> ridge
+        # weight exactly 0.0 in every served sub-model. It's kept as a
+        # forward-looking placeholder: the moment the training cohort includes
+        # undrafted (e.g. international) players it becomes a real 0/1 split.
+        # Until then it changes no served score. Do not cite it as a contributor.
         "draft_record_known",
         "inverse_draft_pick",
     ),

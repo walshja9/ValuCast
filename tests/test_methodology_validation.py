@@ -97,28 +97,33 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn(str(proj_hr), self.html)              # ~24.4, not 22
         self.assertNotIn("22 projected HR", self.html)      # the old wrong number is gone
 
-    # 7/7: sensitivity analysis section -- these are hardcoded numbers from a real,
-    # dated re-scoring run (not live-computed), so this test locks the exact figures
-    # reported to Alex rather than re-deriving them from a live model rebuild (that
-    # rebuild takes real compute and isn't something a page-render test should do).
-    def test_sensitivity_analysis_section_present_with_real_numbers(self):
+    # 7/7 (revised): the sensitivity section is now rendered from a committed,
+    # reproducible artifact (data/validation/sensitivity_scorecard.json, built by
+    # scripts/build_sensitivity_scorecard.py), NOT hardcoded prose. This test
+    # drift-locks the page to that artifact the same way test_renders_artifact_*
+    # locks the held-out scorecard: every published movement number must match a
+    # number the script actually produced against the real board.
+    def test_sensitivity_section_drift_locks_to_the_committed_artifact(self):
+        sens = json.loads(
+            (ROOT / "data" / "validation" / "sensitivity_scorecard.json").read_text(
+                encoding="utf-8"
+            )
+        )
         self.assertIn('id="sensitivity"', self.html)
-        self.assertIn("2,796", self.html)
-        # outcome/impact weighting -- the most leveraged lever
-        self.assertIn("152 players", self.html)
-        self.assertIn("1,255", self.html)
-        # thin-sample penalty -- top 100 untouched
-        self.assertIn("does not move at all", self.html)
-        # sample regression -- moves the real top of the board, not just the tail
-        self.assertIn("590 players", self.html)
-        self.assertIn("772", self.html)
-        # stale-line pull -- smallest, most surgical lever
-        self.assertIn("13 players", self.html)
-        # dated, not live-recomputed -- must say so explicitly, and must not claim
-        # to prove that any alternate setting predicts real outcomes better (that's
-        # a separate, harder validation question this analysis explicitly declines
-        # to answer).
-        self.assertIn("2026-07-07", self.html)
+        # board size rendered from the artifact (comma-formatted, as the page shows it)
+        self.assertIn("{:,}".format(sens["board_size"]), self.html)
+        self.assertTrue(sens["levers"], "artifact must carry at least one lever")
+        for lever in sens["levers"]:
+            self.assertIn(lever["label"], self.html)
+            for variant in lever["variants"]:
+                # the load-bearing measured numbers must appear verbatim on the page
+                self.assertIn("{:,}".format(variant["moved_25plus"]), self.html)
+                self.assertIn("{:,}".format(variant["moved_10plus"]), self.html)
+        # reproducibility pointer -- the public claim "not a simulation" is only
+        # honest if the reader can regenerate it; the script name must be on the page.
+        self.assertIn("build_sensitivity_scorecard.py", self.html)
+        # dated, and must still decline to claim any setting predicts outcomes better
+        self.assertIn(sens["generated_at"][:10], self.html)
         self.assertIn("does <strong>not</strong> tell you", self.html)
 
 

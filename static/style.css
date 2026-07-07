@@ -640,6 +640,27 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .provenance-table th, .provenance-table td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--c-border); }
 .provenance-table th { color: var(--c-muted); font-weight: 600; }
 .provenance-table td:first-child { color: var(--c-text); font-weight: 500; }
+/* Mobile: the methodology ledger tables are label|dense-detail two-columns whose
+   first column is nowrap (line above) -- on a phone that overflows the viewport and
+   squishes the detail. Stack each row into a labeled card (same idiom as the board
+   table), drop the header row, and let the label wrap. */
+@media (max-width: 640px) {
+    .methodology .ledger,
+    .methodology .ledger tbody,
+    .methodology .ledger tr,
+    .methodology .ledger td { display: block; width: 100%; }
+    .methodology .ledger tr:first-child { display: none; }
+    .methodology .ledger tr:not(:first-child) {
+        border: 1px solid var(--c-border);
+        border-radius: var(--radius-sm);
+        background: var(--surface-2);
+        padding: 0.6rem 0.7rem;
+        margin-bottom: 0.5rem;
+    }
+    .methodology .ledger td { border: none; padding: 0; }
+    .methodology .ledger td:first-child { white-space: normal; margin-bottom: 0.35rem; }
+    .methodology .ledger td:last-child { font-size: 0.85rem; }
+}
 
 .setup-panel {
     background: var(--surface);

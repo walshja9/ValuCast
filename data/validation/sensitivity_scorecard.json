@@ -1,0 +1,161 @@
+{
+  "artifact": "valucast_sensitivity_scorecard",
+  "big_move_spots": 25,
+  "board_size": 2796,
+  "generated_at": "2026-07-07T20:41:24.108681+00:00",
+  "levers": [
+    {
+      "key": "outcome_vs_impact",
+      "label": "Outcome-vs-impact weighting",
+      "live_value": "0.58 / 0.42",
+      "plain": "how much a prospect's odds of reaching the majors matter vs. his fantasy value once there",
+      "variants": [
+        {
+          "added": 0,
+          "avg_abs_move": 12.8,
+          "big_move_direction": {
+            "down": 46,
+            "up": 118
+          },
+          "big_move_role": {
+            "hitter": 56,
+            "pitcher": 108
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 720,
+          "moved_10plus": 1295,
+          "moved_25plus": 164,
+          "top_100_moved_25plus": 0,
+          "value": "0.50 / 0.50"
+        }
+      ]
+    },
+    {
+      "key": "thin_sample_penalty",
+      "label": "Thin-sample confidence penalty",
+      "live_value": "28",
+      "plain": "how far an unproven hot streak should sort behind a proven line",
+      "variants": [
+        {
+          "added": 0,
+          "avg_abs_move": 53.6,
+          "big_move_direction": {
+            "down": 1281,
+            "up": 169
+          },
+          "big_move_role": {
+            "hitter": 691,
+            "pitcher": 759
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 1125,
+          "moved_10plus": 2250,
+          "moved_25plus": 1450,
+          "top_100_moved_25plus": 0,
+          "value": "20 (looser)"
+        },
+        {
+          "added": 0,
+          "avg_abs_move": 31.4,
+          "big_move_direction": {
+            "down": 109,
+            "up": 762
+          },
+          "big_move_role": {
+            "hitter": 462,
+            "pitcher": 409
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 1175,
+          "moved_10plus": 1680,
+          "moved_25plus": 871,
+          "top_100_moved_25plus": 0,
+          "value": "35 (tighter)"
+        }
+      ]
+    },
+    {
+      "key": "sample_regression",
+      "label": "Sample regression strength",
+      "live_value": "200",
+      "plain": "how many PA/IP before a hot line is trusted",
+      "variants": [
+        {
+          "added": 0,
+          "avg_abs_move": 16.0,
+          "big_move_direction": {
+            "down": 284,
+            "up": 291
+          },
+          "big_move_role": {
+            "hitter": 518,
+            "pitcher": 57
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 558,
+          "moved_10plus": 1000,
+          "moved_25plus": 575,
+          "top_100_moved_25plus": 0,
+          "value": "150 (trust thin samples more)"
+        },
+        {
+          "added": 0,
+          "avg_abs_move": 22.8,
+          "big_move_direction": {
+            "down": 364,
+            "up": 380
+          },
+          "big_move_role": {
+            "hitter": 669,
+            "pitcher": 75
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 562,
+          "moved_10plus": 1147,
+          "moved_25plus": 744,
+          "top_100_moved_25plus": 3,
+          "value": "300 (regress harder)"
+        }
+      ]
+    },
+    {
+      "key": "stale_line_pull",
+      "label": "Stale-line pull weight",
+      "live_value": "0.40 / 0.60",
+      "plain": "how hard a bad current-season line overrides an inflated prior year",
+      "variants": [
+        {
+          "added": 0,
+          "avg_abs_move": 1.5,
+          "big_move_direction": {
+            "down": 12,
+            "up": 0
+          },
+          "big_move_role": {
+            "hitter": 1,
+            "pitcher": 11
+          },
+          "common_players": 2796,
+          "dropped": 0,
+          "max_move": 301,
+          "moved_10plus": 17,
+          "moved_25plus": 12,
+          "top_100_moved_25plus": 0,
+          "value": "0.50 / 0.75"
+        }
+      ]
+    }
+  ],
+  "method": "Each lever is perturbed one at a time; the full board is re-scored and re-ranked against the same committed inputs, and movements are measured against an in-process baseline build. A live re-scoring of the real model, not a simulation.",
+  "notable_move_spots": 10,
+  "source_policy": {
+    "display_only": true,
+    "feeds_live_valucast_rank": false
+  },
+  "top_band": 100
+}
