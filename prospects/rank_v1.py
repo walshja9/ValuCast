@@ -845,14 +845,28 @@ def _model_score(model_profile: dict | None) -> float | None:
 
 
 def _universal_outcome_index(layer_profile: dict | None) -> float:
+    """Role-or-better only (7/7) -- the star-ceiling component is deliberately
+    excluded from the live score. Per the universal model's own held-out gate
+    (data/prediction_archive/valucast_universal_prospect_model/), star_probability
+    fails validation in both roles (hitter ridge -0.51% vs the naive
+    historical-neighbor baseline; pitcher +0.98%, below the 2.0% promotion bar),
+    while role/regular-probability passes (+2.04% hitter / +5.63% pitcher
+    rotation). The old formula (role*50 + star*100, or the equivalent
+    expected_factual_outcome_tier = role + 2*star shortcut) let an unvalidated,
+    currently-losing signal carry 2x the weight of a validated one inside a
+    component that already drives 15-76% of live rank depending on score
+    source. Revisit once star clears its own gate -- see
+    data/models/valucast_prospect_dynasty_backtest.json / shadow_promotion.
+    """
     signal = (layer_profile or {}).get("dynasty_signal") or {}
-    tier = _clean_float(signal.get("expected_factual_outcome_tier"))
-    if tier is not None:
-        return round(max(0.0, min(100.0, tier * 50.0)), 2)
+    role_or_better = _clean_float(signal.get("role_or_better_probability"))
+    if role_or_better is not None:
+        star = _clean_float(signal.get("star_ceiling_probability")) or 0.0
+        role = max(0.0, role_or_better - star)
+        return round(max(0.0, min(100.0, role * 50.0)), 2)
     distribution = (layer_profile or {}).get("outcome_distribution") or {}
     role = _clean_float(distribution.get("role_probability")) or 0.0
-    star = _clean_float(distribution.get("star_probability")) or 0.0
-    return round(max(0.0, min(100.0, role * 50.0 + star * 100.0)), 2)
+    return round(max(0.0, min(100.0, role * 50.0)), 2)
 
 
 def _sample_reliability_score(

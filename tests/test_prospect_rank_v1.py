@@ -11,9 +11,43 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
     _input_lookup,
+    _universal_outcome_index,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
+
+
+def test_universal_outcome_index_excludes_star_ceiling():
+    # 7/7: star_probability fails its own held-out validation gate (worse than
+    # a naive historical-neighbor baseline for hitters; below the promotion
+    # threshold for pitchers), while role/regular-probability passes. The old
+    # formula (role*50 + star*100, or the equivalent expected_factual_outcome_tier
+    # = role + 2*star shortcut) let the losing signal outweigh the winning one
+    # 2:1 inside a component that drives 15-76% of live rank. Two prospects
+    # with IDENTICAL role-or-better odds but very different star upside must
+    # now score identically here -- star must contribute nothing.
+    # role_or_better_probability = role + star (cumulative, per decision_signal
+    # in prospects/dynasty.py) -- both fixtures hold the pure role component at
+    # 0.5 constant and only vary star, so role_or_better differs accordingly.
+    high_star = {"dynasty_signal": {
+        "role_or_better_probability": 0.9, "star_ceiling_probability": 0.4,
+        "expected_factual_outcome_tier": 1.7,
+    }}
+    low_star = {"dynasty_signal": {
+        "role_or_better_probability": 0.5, "star_ceiling_probability": 0.0,
+        "expected_factual_outcome_tier": 0.5,
+    }}
+    assert _universal_outcome_index(high_star) == _universal_outcome_index(low_star) == 25.0
+
+    # A pure role_probability/star_probability distribution (no dynasty_signal
+    # tier shortcut) must fall back the same way -- role only, no star.
+    dist_high_star = {"outcome_distribution": {"role_probability": 0.3, "star_probability": 0.4}}
+    dist_low_star = {"outcome_distribution": {"role_probability": 0.3, "star_probability": 0.0}}
+    assert _universal_outcome_index(dist_high_star) == _universal_outcome_index(dist_low_star) == 15.0
+
+    # Missing/empty profile still degrades safely to 0, not an exception.
+    assert _universal_outcome_index(None) == 0.0
+    assert _universal_outcome_index({}) == 0.0
 
 
 def _feed(extra_players=None):
