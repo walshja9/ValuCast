@@ -127,6 +127,26 @@ def _save_cache(cache: dict, path: Path) -> None:
     os.replace(tmp, path)
 
 
+CACHE_QUERIES_KEEP = 3
+
+
+def _prune_stale_queries(queries: dict, keep: int = CACHE_QUERIES_KEEP) -> None:
+    """The season-start is fixed and end_date advances daily, so each day's
+    entry is a near-duplicate of the last (same start_date, one more day of
+    transactions) and nothing ever reads an older end_date's entry again --
+    unpruned, this grew one ever-larger entry per day forever (23 entries,
+    100MB+, enough to blow the daily refresh's GitHub push limit for 3 straight
+    runs on 2026-07-07). Mutates in place; keeps the `keep` most-recent."""
+    if len(queries) <= keep:
+        return
+    ordered = sorted(
+        queries.keys(),
+        key=lambda k: queries[k].get("fetched_at") or queries[k].get("end_date") or "",
+    )
+    for stale_key in ordered[:-keep]:
+        queries.pop(stale_key, None)
+
+
 def _transactions_from_cache_or_fetch(
     *,
     start_date: str,
@@ -149,6 +169,7 @@ def _transactions_from_cache_or_fetch(
         "end_date": end_date,
         "transactions": transactions,
     }
+    _prune_stale_queries(queries)
     return transactions, True
 
 

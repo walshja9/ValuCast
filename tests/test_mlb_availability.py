@@ -1,6 +1,9 @@
 """Tests for the ValuCast MLB availability contract."""
 
 from mlb.availability import (
+    CACHE_QUERIES_KEEP,
+    _prune_stale_queries,
+    _transactions_from_cache_or_fetch,
     availability_lookup,
     build_mlb_availability,
 )
@@ -136,3 +139,55 @@ def test_mlb_availability_ignores_untracked_transaction_identities():
 
     assert availability_lookup(payload) == {}
     assert payload["validation"]["profile_count"] == 0
+
+
+# 7/7: the query cache key includes end_date, and production always fetches a
+# fixed season-start through today -- so every daily run added a fresh,
+# near-duplicate, ever-larger entry and nothing ever pruned the old ones. Grew
+# to 100MB+ over ~23 days and broke the daily refresh's GitHub push 3 runs
+# straight before this was caught.
+def test_prune_stale_queries_keeps_only_the_most_recent_entries():
+    queries = {
+        f"2026-03-01:2026-06-{day:02d}:sportId=1": {
+            "fetched_at": f"2026-06-{day:02d}T12:00:00Z",
+            "end_date": f"2026-06-{day:02d}",
+            "transactions": [{"id": day}],
+        }
+        for day in range(1, 21)
+    }
+    assert len(queries) == 20
+
+    _prune_stale_queries(queries)
+
+    assert len(queries) == CACHE_QUERIES_KEEP
+    kept_days = sorted(v["end_date"] for v in queries.values())
+    assert kept_days == [f"2026-06-{day:02d}" for day in range(21 - CACHE_QUERIES_KEEP, 21)]
+
+
+def test_prune_stale_queries_is_a_noop_under_the_keep_limit():
+    queries = {"only-key": {"fetched_at": "2026-06-01T00:00:00Z", "transactions": []}}
+    _prune_stale_queries(queries)
+    assert len(queries) == 1
+
+
+def test_transactions_from_cache_or_fetch_prunes_after_each_new_fetch():
+    cache = {
+        "queries": {
+            f"2026-03-01:2026-06-{day:02d}:sportId=1": {
+                "fetched_at": f"2026-06-{day:02d}T12:00:00Z",
+                "end_date": f"2026-06-{day:02d}",
+                "transactions": [],
+            }
+            for day in range(1, 11)
+        }
+    }
+
+    _transactions_from_cache_or_fetch(
+        start_date="2026-03-01",
+        end_date="2026-06-11",
+        cache=cache,
+        fetcher=lambda start, end: [{"id": 1}],
+        fetched_at="2026-06-11T12:00:00Z",
+    )
+
+    assert len(cache["queries"]) == CACHE_QUERIES_KEEP
