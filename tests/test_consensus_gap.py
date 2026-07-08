@@ -36,8 +36,10 @@ def test_two_sided_split_uses_the_same_consensus_math():
     assert payload["higher"][0]["divergence"] == 160
     assert [row["name"] for row in payload["lower"]] == ["Fade Guy"]
     assert payload["lower"][0]["divergence"] == -220
-    # boards breakdown travels with every row — the receipt
-    assert payload["higher"][0]["boards"] == {"hkb": 200, "pl": 210, "sts": 190}
+    # ToS rule (7/8): only the aggregate median + board count are published —
+    # per-source ranks must NEVER appear in the artifact or on the page.
+    assert "boards" not in payload["higher"][0]
+    assert payload["higher"][0]["board_count"] == 3
 
 
 def test_guards_thin_boards_callups_and_the_symmetric_depth_rule():

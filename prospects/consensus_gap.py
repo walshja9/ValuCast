@@ -85,12 +85,16 @@ def _qualifies_fade(row: dict) -> bool:
 
 
 def _display_row(row: dict) -> dict:
+    # Aggregate consensus only — the per-source `boards` dict never enters this
+    # artifact (7/8, Alex): the median across boards is our transformative
+    # figure; republishing each outside site's exact per-player rank would
+    # redistribute their product against their terms of service.
     return {
         key: row.get(key)
         for key in (
             "identity_key", "mlbam_id", "name", "team", "role",
             "valucast_rank", "consensus_rank", "board_count",
-            "divergence", "boards",
+            "divergence",
         )
     }
 

@@ -41,8 +41,11 @@
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
                 <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                {# Aggregate consensus ONLY — never per-source ranks. The median
+                   across boards is our transformative figure; reprinting each
+                   outside site's exact rank would redistribute their product
+                   (same rule as every other surface on the site). #}
                 <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
-                <span class="buys-tag gap-boards">{% for source, rank in p.boards.items() %}{{ source }} #{{ rank }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</span>
             </div>
             <span class="mover-delta up">+{{ p.divergence }}</span>
         </article>
@@ -58,7 +61,6 @@
             <div class="buys-main">
                 <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
                 <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
-                <span class="buys-tag gap-boards">{% for source, rank in p.boards.items() %}{{ source }} #{{ rank }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</span>
             </div>
             <span class="mover-delta down">{{ p.divergence }}</span>
         </article>
