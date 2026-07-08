@@ -2690,6 +2690,38 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
     return _with_note(f"{intro} {loud}{weak}", note)
 
 
+def _share_card_comp_lines(comp):
+    """Twins + cohort strings for the share card, or None when not comped.
+
+    Copy rules mirror the on-site card (7/8 review): tier words describe
+    playing time, never a role verdict, and the cohort is counts, not odds.
+    """
+    if not comp or not comp.get("twins"):
+        return None
+    twins = "   ".join(
+        f"{twin['name']} '{twin['season'] % 100:02d} ({twin.get('pos') or '?'})"
+        for twin in comp["twins"][:3]
+    )
+    cohort = comp.get("cohort") or {}
+    tiers = cohort.get("tiers") or {}
+    if cohort.get("size"):
+        short = {
+            "impact_regular": "above-avg regular",
+            "everyday": "everyday",
+            "part_time": "limited time",
+            "faded": "faded out",
+        }
+        parts = ", ".join(
+            f"{tiers.get(key, 0)} {label}" for key, label in short.items()
+        )
+        cohort_line = (
+            f"How the {cohort['size']} nearest resolved matches aged: {parts}"
+        )
+    else:
+        cohort_line = "No matches old enough to grade a five-year outcome yet."
+    return twins, cohort_line
+
+
 def _prospect_player_card_png(row):
     """Render a single-prospect share card from ValuCast-owned current context."""
     from PIL import Image, ImageDraw
@@ -2702,6 +2734,11 @@ def _prospect_player_card_png(row):
     shape_title = "PROJECTED PEAK SHAPE" if peak_shape else "CURRENT SKILL SHAPE"
     pool_label = prospect_percentiles.pool_label(row)
     fg_scouting = fg_fv.get(getattr(row, "mlbam_id", None))
+    comps_payload = _load_artifact(PROSPECT_COMPS_PATH) or {}
+    comp_lines = _share_card_comp_lines(
+        (comps_payload.get("players") or {}).get(str(getattr(row, "mlbam_id", "") or ""))
+    )
+    comps_extra = 132 if comp_lines else 0
     context = getattr(row, "context", None)
     if not isinstance(context, dict):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
@@ -2854,7 +2891,7 @@ def _prospect_player_card_png(row):
         peak_label_y = read_body_bottom + 6
     read_extra = peak_label_y - 1250  # delta applied to the shape/FG/footer below
 
-    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra
+    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra + comps_extra
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -3101,19 +3138,37 @@ def _prospect_player_card_png(row):
         draw.text((x + 150, 1285 + read_extra), str(grade), fill=color, font=_graphic_font(25, bold=True))
         draw.text((x + 14, 1306 + read_extra), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
 
+    # Measured shape comps -- twins + how the shape aged, display-only. Sits
+    # between the skill shape and the FG reference; everything below shifts by
+    # comps_extra so non-comped players stay pixel-identical.
+    if comp_lines:
+        twins_line, cohort_line = comp_lines
+        comps_y = 1356 + read_extra
+        _graphic_glass_panel(img, draw, (48, comps_y, 1032, comps_y + 118), radius=12)
+        draw.text((74, comps_y + 14),
+                  "CLOSEST MLB SHAPES - era-adjusted match on translated K%/BB%/ISO - descriptive, not a forecast",
+                  fill=muted, font=_graphic_font(14, bold=True))
+        twins_font = _graphic_font(21, bold=True)
+        draw.text((74, comps_y + 42), _graphic_fit_text(draw, twins_line, twins_font, 934),
+                  fill=text, font=twins_font)
+        cohort_font = _graphic_font(15)
+        draw.text((74, comps_y + 82), _graphic_fit_text(draw, cohort_line, cohort_font, 934),
+                  fill=muted, font=cohort_font)
+
     # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
     # Skipped when the player has no FG board entry.
+    fg_y = read_extra + comps_extra
     if fg_scouting and fg_scouting.get("fv"):
-        _graphic_glass_panel(img, draw, (48, 1356 + read_extra, 1032, 1482 + read_extra), radius=12)
-        draw.text((74, 1370 + read_extra), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
+        _graphic_glass_panel(img, draw, (48, 1356 + fg_y, 1032, 1482 + fg_y), radius=12)
+        draw.text((74, 1370 + fg_y), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
                   fill=muted, font=_graphic_font(14, bold=True))
-        draw.text((74, 1396 + read_extra), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
+        draw.text((74, 1396 + fg_y), f"FV {fg_scouting['fv']}", fill=text, font=_graphic_font(40, bold=True))
         org = fg_scouting.get("org")
         org_rk = fg_scouting.get("fg_org_rank")
         if org:
             org_label = f"{org}" + (f" - org #{int(org_rk)}" if org_rk else "")
-            draw.text((74, 1448 + read_extra), org_label, fill=muted, font=_graphic_font(16, mono=True))
+            draw.text((74, 1448 + fg_y), org_label, fill=muted, font=_graphic_font(16, mono=True))
         hit_g = fg_scouting.get("hit_grades") or {}
         pit_g = fg_scouting.get("pitch_grades") or {}
         if hit_g:
@@ -3126,8 +3181,8 @@ def _prospect_player_card_png(row):
         for label, val in tools:
             if not val:
                 continue
-            draw.text((tx, 1394 + read_extra), label, fill=muted, font=_graphic_font(13, bold=True))
-            draw.text((tx, 1414 + read_extra), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
+            draw.text((tx, 1394 + fg_y), label, fill=muted, font=_graphic_font(13, bold=True))
+            draw.text((tx, 1414 + fg_y), str(val), fill=text, font=_graphic_font(19, bold=True, mono=True))
             tx += 150
 
     source = (

@@ -269,3 +269,48 @@ def test_2020_short_season_is_prorated_in_outcomes():
     # in everyday territory either way, but the scaled figure must be ~600+.
     assert outcome["pa_per_year"] > 550
     assert outcome["tier"] in ("everyday", "impact_regular")
+
+
+def test_share_card_comp_lines_formats_and_gates():
+    from app import _share_card_comp_lines
+
+    assert _share_card_comp_lines(None) is None
+    assert _share_card_comp_lines({"twins": []}) is None
+    comp = {
+        "twins": [
+            {"name": "Max Kepler", "season": 2016, "pos": "RF"},
+            {"name": "Paul DeJong", "season": 2019, "pos": "SS"},
+        ],
+        "cohort": {
+            "size": 25,
+            "tiers": {"impact_regular": 5, "everyday": 12, "part_time": 8, "faded": 0},
+        },
+    }
+    twins, cohort = _share_card_comp_lines(comp)
+    assert "Max Kepler '16 (RF)" in twins
+    assert "How the 25 nearest resolved matches aged" in cohort
+    assert "5 above-avg regular" in cohort and "0 faded out" in cohort
+    # measured playing-time language only — never a role verdict
+    assert "platoon" not in cohort
+
+
+def test_share_card_png_renders_with_comps_strip():
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).parent.parent
+    artifact = json.loads(
+        (root / "data" / "models" / "valucast_prospect_comps.json").read_text(encoding="utf-8")
+    )
+    snapshot = json.loads(
+        (root / "data" / "public" / "public_dynasty_snapshot.json").read_text(encoding="utf-8")
+    )
+    row = next(
+        r for r in snapshot["players"]
+        if str(r.get("mlbam_id")) in artifact["players"] and r.get("player_type") == "prospect"
+    )
+    import app as app_module
+    client = app_module.app.test_client()
+    response = client.get(f"/prospects/player-card/{row['id']}.png")
+    assert response.status_code == 200
+    assert response.data[:8] == b"\x89PNG\r\n\x1a\n"
