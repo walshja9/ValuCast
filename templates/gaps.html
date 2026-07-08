@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Consensus Gaps | ValuCast{% endblock %}
+{% block og_title %}Consensus Gaps | ValuCast{% endblock %}
+{% block og_description %}Where the ValuCast board diverges most from the public consensus — both directions, published as testable claims.{% endblock %}
+{% block og_url %}https://valucast.app/gaps{% endblock %}
+{% block twitter_title %}Consensus Gaps | ValuCast{% endblock %}
+{% block twitter_description %}Where the ValuCast board diverges most from the public consensus — both directions, published as testable claims.{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='gaps', aria='Gaps board navigation') }}
+{% include "partials/_stale_notice.html" %}
+
+<section class="buys-heading movers-heading glass">
+    <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
+        <path d="M318 10 C220 2 126 34 14 140" />
+    </svg>
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">CONSENSUS GAPS</span>
+        <h1>WHERE WE DISAGREE</h1>
+        <p class="buys-heading-sub">{{ gap_count }} gaps{% if gaps_generated_at %} &middot; {{ editorial_date(gaps_generated_at) }}{% endif %}</p>
+        <p class="buys-fineprint">The prospects where the ValuCast board sits furthest from the public consensus (median of {{ gaps_method.min_boards }}+ outside boards), in both directions. Every row is a testable claim: the higher side feeds the publicly scored <a href="/ledger">ledger</a>; fades are published but not ledger-scored yet &mdash; we say so rather than borrow credibility.</p>
+        <p class="buys-fineprint">Gaps under {{ gaps_method.min_divergence }} spots don't qualify, call-ups are excluded (boards delist them &mdash; that's eligibility, not disagreement), and one symmetric depth rule applies to both sides: our rank <em>and</em> the field's must sit inside the top {{ gaps_method.max_rank_both_sides }}. Deeper than that, a rank is a sample-size statement (ours) or past the boards' reliable depth (theirs) &mdash; not a price, so we don't publish it as a call.</p>
+    </div>
+</section>
+
+{% if not gaps_available %}
+<section class="map-heading glass">
+    <h2>Gap board unavailable</h2>
+    <p>The board will populate after the next daily build.</p>
+</section>
+{% else %}
+<div class="movers-grid">
+    <section class="buys-list movers-section glass" aria-label="Prospects ValuCast ranks higher than consensus">
+        <h2>WE'RE HIGHER 🔭</h2>
+        <p class="buys-fineprint">{{ gaps_summary.ahead_qualified }} qualified &middot; scored by the <a href="/ledger">AOTC ledger</a>.</p>
+        {% for p in gaps_higher %}
+        <article class="movers-row">
+            <span class="buys-rank">#{{ p.valucast_rank }}</span>
+            <div class="buys-main">
+                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
+                <span class="buys-tag gap-boards">{% for source, rank in p.boards.items() %}{{ source }} #{{ rank }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</span>
+            </div>
+            <span class="mover-delta up">+{{ p.divergence }}</span>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="buys-list movers-section glass" aria-label="Prospects ValuCast ranks lower than consensus">
+        <h2>WE'RE LOWER 🧊</h2>
+        <p class="buys-fineprint">{{ gaps_summary.fade_qualified }} qualified &middot; published, not ledger-scored yet.</p>
+        {% for p in gaps_lower %}
+        <article class="movers-row">
+            <span class="buys-rank">#{{ p.valucast_rank }}</span>
+            <div class="buys-main">
+                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
+                <span class="buys-tag gap-boards">{% for source, rank in p.boards.items() %}{{ source }} #{{ rank }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</span>
+            </div>
+            <span class="mover-delta down">{{ p.divergence }}</span>
+        </article>
+        {% endfor %}
+    </section>
+</div>
+<p class="buys-fineprint gaps-footnote">Consensus is the same rounded-median, computed by the same code, from the same inputs as the AOTC badge, cards, and scorecard. Rebuilt nightly by <code>scripts/build_consensus_gap_board.py</code>. Being different isn't being right; the ledger decides.</p>
+{% endif %}
+{% endblock %}

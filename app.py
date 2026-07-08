@@ -521,6 +521,9 @@ VALUCAST_RECEIPTS_PATH = Path(os.environ.get(
 PROSPECT_COMPS_PATH = Path(
     Path(__file__).parent / "data" / "models" / "valucast_prospect_comps.json"
 )
+CONSENSUS_GAP_PATH = Path(
+    Path(__file__).parent / "data" / "models" / "valucast_consensus_gap.json"
+)
 
 
 def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
@@ -6936,6 +6939,28 @@ def _load_scorecard_payload():
     except (OSError, ValueError):
         return None
     return sc if isinstance(sc, dict) else None
+
+
+@app.route("/gaps")
+def gaps():
+    """Two-sided consensus-gap board — where the ValuCast board diverges most
+    from the public consensus, published as testable claims. The higher side is
+    the AOTC ledger's input; the fade side is published-but-not-scored and the
+    page says so."""
+    payload = _load_artifact(CONSENSUS_GAP_PATH) or {}
+    higher = payload.get("higher") or []
+    lower = payload.get("lower") or []
+    return render_template(
+        "gaps.html",
+        gaps_available=bool(higher or lower),
+        gaps_generated_at=payload.get("generated_at"),
+        gaps_method=payload.get("method") or {},
+        gaps_summary=payload.get("summary") or {},
+        gaps_higher=higher,
+        gaps_lower=lower,
+        gap_count=len(higher) + len(lower),
+        as_of=payload.get("generated_at") or store.as_of,
+    )
 
 
 @app.route("/ledger")

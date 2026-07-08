@@ -87,6 +87,8 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_prospectslive_consensus_snapshot.py", "--write"),
     ("scripts/build_ahead_of_consensus.py",),
     ("scripts/build_ahead_of_consensus_scorecard.py",),
+    # Two-sided gap board reuses the AOTC consensus math; build right after it.
+    ("scripts/build_consensus_gap_board.py",),
     ("scripts/build_scouting_repository.py",),
     ("scripts/build_valucast_quality_governor.py",),
     ("scripts/build_pipeline_observability.py",),
