@@ -76,6 +76,8 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_front_office_failures.py",),
     ("scripts/build_raw_data_independence_audit.py",),
     ("scripts/build_public_dynasty_snapshot.py",),
+    # Comps read the snapshot's translated lines, so they build right after it.
+    ("scripts/build_prospect_comps.py",),
     ("scripts/build_milb_stat_freshness_audit.py",),
     ("scripts/build_prospect_card_data_audit.py",),
     ("scripts/build_recent_signal_report.py",),

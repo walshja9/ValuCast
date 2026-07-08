@@ -91,6 +91,33 @@
                     game impact.</li>
             </ul>
         </details>
+
+        <details>
+            <summary>Shape comps (measured, not vibes)</summary>
+            <p>Hitter prospect cards show <strong>Closest MLB Shapes</strong>: the real
+            MLB seasons (2000&ndash;2025, age 26 or younger, 400+ PA) nearest the
+            prospect's MLB-translated K% / BB% / ISO. Rates are compared
+            <em>era-relative</em> &mdash; z-scored within each season's population of
+            regulars &mdash; so a strikeout rate means what it meant in that run
+            environment. Alongside the named matches we show how the nearest matches with
+            a complete five-season follow-up window actually aged, deduped by player so
+            no career votes twice. Outcome tiers are measured, with published cut points:
+            450+ PA/yr with a 110+ era-relative OPS ("regular with an above-average
+            bat"), 400+ PA/yr ("everyday regular"), 150+ ("limited playing time"), under
+            150 ("faded out") &mdash; playing time is the yardstick, so an injury year or
+            a light-workload position (catchers) counts against a player, and 2020 is
+            pro-rated to 162 games.</p>
+            <p><strong>The bias we can't remove, named:</strong> comps can only be made
+            to players who actually earned a qualifying young-MLB season. Players who
+            reached that bar and then declined are counted (the "faded out" tier), but a
+            prospect with this exact shape who never got a real MLB look is absent from
+            the pool by construction. That structural survivorship is exactly why a shape
+            comp is a <em>descriptive</em> lens, never an outcome forecast &mdash; the
+            model's role probabilities are the forecast. Comps never feed a ValuCast
+            score, know nothing about defense or speed, and only render for prospects
+            whose translation is high-confidence with a real sample. Rebuilt nightly by
+            <code>scripts/build_prospect_comps.py</code>.</p>
+        </details>
     </section>
 
     <section>

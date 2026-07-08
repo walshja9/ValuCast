@@ -518,6 +518,9 @@ VALUCAST_RECEIPTS_PATH = Path(os.environ.get(
     "VALUCAST_RECEIPTS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_call_up_receipts.json"),
 ))
+PROSPECT_COMPS_PATH = Path(
+    Path(__file__).parent / "data" / "models" / "valucast_prospect_comps.json"
+)
 
 
 def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
@@ -7767,6 +7770,12 @@ def _build_dynasty_player_detail_context(player_id, args):
         if not isinstance(profile_stat_context, dict):
             profile_stat_context = {}
         identity = _prospect_player_card_read(dd_row, stat_percentiles, profile_stat_context)
+        # Measured shape comps (display-only artifact; absent players/artifact
+        # simply render no section).
+        comps_payload = _load_artifact(PROSPECT_COMPS_PATH) or {}
+        shape_comps = (comps_payload.get("players") or {}).get(
+            str(getattr(dd_row, "mlbam_id", "") or "")
+        )
         prospect_context = {
             "stat_percentiles": stat_percentiles,
             "stat_captions": stat_captions,
@@ -7776,6 +7785,8 @@ def _build_dynasty_player_detail_context(player_id, args):
             "skill_shape": skill_shape,
             "profile_pool_label": prospect_percentiles.pool_label(dd_row),
             "profile_stat_context": profile_stat_context,
+            "shape_comps": shape_comps,
+            "shape_comp_tier_labels": comps_payload.get("tier_labels") or {},
         }
 
     # Same-engine category z's as the active dynasty category configuration.

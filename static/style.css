@@ -1809,6 +1809,44 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-variant-numeric: tabular-nums;
     text-align: right;
 }
+.shape-twin-list {
+    display: grid;
+    gap: .45rem;
+    margin: .55rem 0 .35rem;
+}
+.shape-twin-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem .7rem;
+    align-items: baseline;
+    padding: .45rem .6rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    font-size: .78rem;
+}
+.shape-twin-name {
+    color: var(--c-text);
+    font-weight: 700;
+}
+.shape-twin-meta,
+.shape-twin-line {
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
+}
+.shape-twin-outcome {
+    margin-left: auto;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--c-muted);
+}
+.shape-twin-outcome.tier-impact_regular { color: var(--c-pos); }
+.shape-twin-outcome.tier-everyday { color: var(--c-text); }
+/* Cohort bars are COUNTS of matched careers, not probabilities — they must
+   not look like the Peak Outlook forecast bars (7/8 review). */
+.shape-cohort-bars .role-probability-track i { background: var(--c-positive-muted); }
 .scouting-context-card {
     border-color: rgba(52, 226, 196, .20);
     background: var(--surface);
