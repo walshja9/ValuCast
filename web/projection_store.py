@@ -5,6 +5,8 @@ from pathlib import Path
 
 from league_values.models import PlayerPool, PlayerProjection
 
+from .search_fold import fold
+
 
 class ProjectionStore:
     """Loads and caches player projections from a JSON file."""
@@ -83,8 +85,8 @@ class ProjectionStore:
         if position:
             results = [p for p in results if position in p.positions]
         if search:
-            query = search.lower()
-            results = [p for p in results if query in p.name.lower()]
+            query = fold(search)
+            results = [p for p in results if query in fold(p.name)]
         return results
 
     @property

@@ -53,6 +53,7 @@ from web.season_outlook import (
 from web.statcast_store import StatcastStore
 from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
+from web.search_fold import fold as fold_search
 from web.prospect_league_ranks import format_ranks_for
 from web.value_spark import build_spark
 from web import buy_score
@@ -4041,16 +4042,16 @@ def _build_context(args):
     if position:
         results = [r for r in results if position in r.player.positions]
     if search:
-        query = search.lower()
-        results = [r for r in results if query in r.player.name.lower()]
+        query = fold_search(search)
+        results = [r for r in results if query in fold_search(r.player.name)]
         if not results:
             # Sub-threshold name match: value it on demand for display (no metadata).
-            search_keep = {p.id for p in active.get_all() if query in p.name.lower()}
+            search_keep = {p.id for p in active.get_all() if query in fold_search(p.name)}
             if search_keep:
                 extra = _redraft_value_players(
                     _valuation_players(search_keep, active_store=active), config
                 )
-                results = [r for r in extra if query in r.player.name.lower()]
+                results = [r for r in extra if query in fold_search(r.player.name)]
 
     # Limit to top 200 for display
     results = results[:200]
@@ -4886,12 +4887,12 @@ def scouting_reports():
         {str(row.get("report_status") or "") for row in reports if row.get("report_status")}
     )
     if filters["q"]:
-        needle = filters["q"].lower()
+        needle = fold_search(filters["q"])
         reports = [
             row for row in reports
-            if needle in str(row.get("name") or "").lower()
-            or needle in str(row.get("team") or "").lower()
-            or needle in " ".join(str(p) for p in row.get("positions") or ()).lower()
+            if needle in fold_search(row.get("name"))
+            or needle in fold_search(row.get("team"))
+            or needle in fold_search(" ".join(str(p) for p in row.get("positions") or ()))
         ]
     if filters["team"]:
         reports = [row for row in reports if str(row.get("team") or "").upper() == filters["team"]]

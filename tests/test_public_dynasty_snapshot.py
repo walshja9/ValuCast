@@ -1828,3 +1828,23 @@ def test_snapshot_retains_rookie_eligible_active_roster_callup_as_ranked_prospec
     assert "Got the call — rookie-eligible" in (retained.get("drivers") or [])
     assert payload["validation"]["active_mlb_callup_bridge_count"] == 0
     assert payload["validation"]["prospect_count"] == 2
+
+
+def test_name_search_is_accent_insensitive():
+    # 7/7: searching "Hector" on the live board returned nothing for
+    # "Héctor Rodríguez" (P#36) — the filter compared raw .lower() strings, so
+    # accented board names never matched unaccented queries. Both sides fold now.
+    store = PublicSnapshotStore.__new__(PublicSnapshotStore)
+    store._rows = [
+        SimpleNamespace(
+            name="Héctor Rodríguez",
+            player_type="prospect",
+            is_prospect=True,
+            positions=("RF",),
+        )
+    ]
+    assert store.filter(search="hector") == store._rows
+    assert store.filter(search="Rodriguez") == store._rows
+    # accented QUERY against the accented name folds too
+    assert store.filter(search="Héctor") == store._rows
+    assert store.filter(search="hcetor") == []

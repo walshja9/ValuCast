@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .public_snapshot_models import PublicSnapshotRow
 from .position_matching import has_hitter_position, has_pitcher_position, matches_position
+from .search_fold import fold
 
 logger = logging.getLogger(__name__)
 
@@ -292,6 +293,6 @@ class PublicSnapshotStore:
         if position:
             results = [row for row in results if matches_position(row, position)]
         if search:
-            query = search.lower()
-            results = [row for row in results if query in row.name.lower()]
+            query = fold(search)
+            results = [row for row in results if query in fold(row.name)]
         return results
