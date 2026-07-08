@@ -200,3 +200,34 @@ def _rank_row(mlbam_id, name, rank, score, role="hitter"):
             },
         },
     }
+
+
+def test_default_board_reaches_the_epoch_not_the_14d_momentum_cap():
+    from prospects.movers import build_movers_board
+
+    # 7/7 bug: the page's "All" view spanned 14 days while the 21d/30d presets
+    # spanned 15 — the default board inherited the buys 14d momentum cap
+    # instead of walking back to the scoring epoch, so "All" was the SHORTEST
+    # window on the page. A slow 16-day climb (small daily steps, inside the
+    # gap guard) must be measured in full on the default board.
+    current = {
+        "generated_at": "2026-07-09T12:00:00+00:00",
+        "board": [_rank_row(1, "Slow Burner", 10, 56.0)],
+    }
+    history = [
+        {"date": d, "board": [_rank_row(1, "Slow Burner", 20, s)]}
+        for d, s in [
+            ("2026-06-23", 50.0), ("2026-06-25", 50.7), ("2026-06-27", 51.4),
+            ("2026-06-29", 52.1), ("2026-07-01", 52.8), ("2026-07-03", 53.5),
+            ("2026-07-05", 54.2), ("2026-07-07", 55.0),
+        ]
+    ]
+    payload = build_movers_board(current, history_payloads=history)
+
+    riser = payload["rising"][0]
+    assert riser["window_days"] == 16  # 6/23 -> 7/9, past the old 14d cap
+    assert riser["score_delta"] == 6.0
+    # "All" must never span less than any windowed preset serves.
+    for windowed in payload["windows"].values():
+        for row in windowed["rising"]:
+            assert riser["window_days"] >= row["window_days"]

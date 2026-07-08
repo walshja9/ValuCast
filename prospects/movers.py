@@ -329,7 +329,19 @@ def build_movers_board(
     generated_at = generated_at or rank_payload.get("generated_at") or datetime.now(timezone.utc).isoformat()
     current_date = _date_part(generated_at) or datetime.now(timezone.utc).date().isoformat()
     history = _history_by_key(history_payloads or [])
-    rising, cooling, counters = _movement_sides(rank_payload, history, current_date)
+    # The default board is the page's "All" view, so it must walk back to the
+    # scoring epoch, not the buys 14d momentum horizon. Without an explicit
+    # reach, "All" silently spanned LESS than the 21d/30d presets once the
+    # epoch was 15+ days old (7/7: All said 14d while 21d/30d said 15d).
+    try:
+        epoch_reach = (
+            date.fromisoformat(current_date) - date.fromisoformat(EPOCH_DATE)
+        ).days
+    except ValueError:
+        epoch_reach = None
+    rising, cooling, counters = _movement_sides(
+        rank_payload, history, current_date, tail_window_days=epoch_reach or None
+    )
     excluded_step_guard_count = counters["excluded_step_guard_count"]
     history_limited_count = counters["history_limited_count"]
     below_threshold_count = counters["below_threshold_count"]
