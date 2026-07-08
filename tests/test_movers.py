@@ -145,7 +145,7 @@ def test_build_movers_board_window_variants_floor_the_start():
     ]
     payload = build_movers_board(current, history_payloads=history)
 
-    assert set(payload["windows"]) == {"7d", "21d", "30d"}
+    assert set(payload["windows"]) == {"7d", "14d", "21d", "30d"}
     # Full view: 51.0 -> 50.0 nets -1.0, under the threshold -> no mover.
     assert payload["rising"] == [] and payload["cooling"] == []
     seven = payload["windows"]["7d"]
@@ -159,17 +159,39 @@ def test_movers_window_param_serves_variant_and_falls_back(monkeypatch):
 
     client = app_module.app.test_client()
 
+    fourteen_riser = {
+        "id": "vc_mover_9_hitter", "player_id": "vc_prospect_9_hitter",
+        "mlbam_id": 9, "name": "Fourteen Flag", "team": "BOS", "role": "hitter",
+        "positions": ["SS"], "pos": "SS", "level": "AA", "age": 20, "eta": 2027,
+        "current_rank": 5, "current_score": 55.0, "score_delta": 4.0,
+        "rank_delta": 6, "window_days": 14,
+        "movement_label": "UP +4.0 over 14d", "why": "AA 120 PA, .912 OPS",
+        "history_tail": [
+            {"date": "2026-06-20", "score": 51.0, "rank": 11},
+            {"date": "2026-07-04", "score": 55.0, "rank": 5},
+        ],
+    }
     payload = {
         "generated_at": "2026-07-04T12:00:00+00:00",
         "summary": {}, "validation": {},
         "rising": [], "cooling": [],
-        "windows": {"7d": {"rising": [], "cooling": []}},
+        "windows": {
+            "7d": {"rising": [], "cooling": []},
+            "14d": {"rising": [fourteen_riser], "cooling": []},
+        },
     }
     monkeypatch.setattr(app_module, "_load_movers_payload", lambda: payload)
     assert client.get("/movers?window=7").status_code == 200
-    # Unknown/junk windows and variants missing from an older artifact both
-    # fall back to the default board, never a 500.
-    assert client.get("/movers?window=999").status_code == 200
+    # No param serves the DEFAULT window (14d) — there is no "All" view.
+    default = client.get("/movers")
+    assert default.status_code == 200
+    assert b"Fourteen Flag" in default.data
+    # Unknown/junk windows fall back to the default window too.
+    junk = client.get("/movers?window=999")
+    assert junk.status_code == 200
+    assert b"Fourteen Flag" in junk.data
+    # A variant missing from an older artifact falls back to the top-level
+    # board, never a 500.
     assert client.get("/movers?window=21").status_code == 200
 
 

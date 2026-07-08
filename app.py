@@ -6710,7 +6710,7 @@ def _build_movers_page_context(window=None):
 @app.route("/movers")
 def movers():
     context = _build_movers_page_context(
-        window=_parse_spark_window(request.args.get("window"))
+        window=_parse_spark_window(request.args.get("window")) or DEFAULT_MOVER_WINDOW
     )
     return render_template("movers.html", **context)
 
@@ -6802,11 +6802,11 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
 @app.route("/movers/share-card.png")
 def movers_share_card_png():
     # Honors ?window= so the graphic matches the board view it was exported
-    # from; the og:image URL carries no param and stays the canonical default.
+    # from; the bare og:image URL serves the same default window as the page.
     # The renderer derives its "N-day" subtitle/footer from the rows, so the
     # windowed variant labels itself correctly for free.
     context = _build_movers_page_context(
-        window=_parse_spark_window(request.args.get("window"))
+        window=_parse_spark_window(request.args.get("window")) or DEFAULT_MOVER_WINDOW
     )
     png = _movers_share_card_png(
         context["rising"],
@@ -7288,7 +7288,10 @@ def cards_gallery():
 
 # Form-curve window presets. None = the full (epoch-masked) tracked history;
 # the spark label renders the actual span, so oversized windows self-clamp.
-SPARK_WINDOW_CHOICES = (7, 21, 30)
+SPARK_WINDOW_CHOICES = (7, 14, 21, 30)
+# The movers page has no "All" pill — every view is a fixed window so each
+# pill means the same thing every day; 14d is the default horizon.
+DEFAULT_MOVER_WINDOW = 14
 
 
 def _parse_spark_window(raw) -> int | None:

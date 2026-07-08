@@ -24,8 +24,8 @@ EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 MAX_CURRENT_RANK = 250
 SIDE_LIMIT = 12
 MIN_SCORE_DELTA = 2.0
-# Page window presets; keep in sync with the /movers selector.
-MOVER_WINDOW_CHOICES = (7, 21, 30)
+# Page window presets; keep in sync with the /movers selector (14d = default).
+MOVER_WINDOW_CHOICES = (7, 14, 21, 30)
 
 
 def _clean_float(value: Any) -> float | None:

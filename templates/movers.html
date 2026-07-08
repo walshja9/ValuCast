@@ -25,16 +25,17 @@
         <span class="buys-heading-eyebrow">PROSPECT MOVERS</span>
         <h1>PROSPECT MOVERS</h1>
         <p class="buys-heading-sub">{{ mover_count }} movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
-        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last {% set _mv = ((rising or []) + (cooling or [])) | selectattr('window_days') | list %}{% set _mv_days = _mv[0].window_days if _mv else 10 %}{{ _mv_days }} days. We filter out the model's nightly re-baselines so you only see real, sustained movement.{% if movers_window and _mv_days < movers_window %} The {{ movers_window }}d view currently clamps to the scoring epoch &mdash; comparable score history only goes back {{ _mv_days }} days.{% endif %}</p>
+        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last {% set _mv = ((rising or []) + (cooling or [])) | selectattr('window_days') | list %}{% set _mv_days = (_mv | map(attribute='window_days') | max) if _mv else 10 %}{{ _mv_days }} days. We filter out the model's nightly re-baselines so you only see real, sustained movement.{% if movers_window and _mv_days < movers_window %} The {{ movers_window }}d view currently clamps to the scoring epoch &mdash; comparable score history only goes back {{ _mv_days }} days.{% endif %}</p>
         {% if movers_summary and movers_summary.current_ranked_count %}
         <p class="buys-fineprint">{{ mover_count }} qualified of {{ '{:,}'.format(movers_summary.current_ranked_count) }} tracked prospects &middot; top-{{ movers_summary.current_rank_cap }} rank cap &middot; moves under &plusmn;{{ movers_summary.score_delta_threshold }} score don't qualify.</p>
         {% endif %}
-        {# Same pill pattern as /buys; windows floor at the scoring epoch, and
-           the fineprint above derives its day count from the served rows. #}
+        {# Fixed windows only (no "All" — its span drifted with the epoch's
+           age); windows floor at the scoring epoch, and the fineprint above
+           derives its day count from the served rows. #}
         <nav class="bf-filter-pills ledger-pills movers-window-pills" aria-label="Movement window">
-            {% for w in [none] + (movers_window_choices | list) %}
+            {% for w in movers_window_choices %}
             <a class="bf-pill{% if movers_window == w %} is-active{% endif %}"
-               href="{{ url_for('movers', window=w) }}">{{ 'All' if w is none else w ~ 'd' }}</a>
+               href="{{ url_for('movers', window=w) }}">{{ w }}d</a>
             {% endfor %}
         </nav>
     </div>
