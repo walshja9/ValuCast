@@ -66,6 +66,14 @@ TRANSACTIONS_CACHE_PATH = ROOT / "data" / "mlb" / "mlb_availability_transactions
 # transactions_cache to do anything; without one, nothing changes (same as today).
 LAUNCH_DATE = "2026-06-16"
 
+# Field-unranked auto lane: mint a receipt for the strongest calls the divergence
+# gate CAN'T score -- a post-launch call-up we ranked highly that the public field
+# had NO real read on (fewer than MIN_BOARDS public boards inside the 600 cap at
+# promotion). Replaces hand-seeding these. STRICT rank cap (25, not MAX_VALUCAST_RANK
+# 300): only the most-differentiated calls earn an auto row; Kuroda-Grauer(#41)/
+# Cauley(#61)/Watson(#80) stay legacy seeds by design. Pre-registered; frozen.
+FIELD_UNRANKED_MAX_VALUCAST_RANK = 25
+
 
 def _load_json(path: Path) -> dict:
     try:
@@ -176,11 +184,37 @@ def _pos(row: dict) -> str:
 
 
 def _existing_receipts(existing_log: dict | list | None) -> list[dict]:
+    # Only SCORED receipts belong to the receipts lane. Field-unranked auto rows are
+    # persisted inside ``receipts`` too (they render on that side) but are owned by the
+    # field-unranked lane (_existing_field_unranked); excluding them here keeps a
+    # committed field-unranked row from being carried by BOTH lanes on the next build
+    # (which would duplicate the identity and trip the pre-merge uniqueness assert).
     if isinstance(existing_log, dict):
         rows = existing_log.get("receipts") or []
     else:
         rows = existing_log or []
-    return [dict(row) for row in rows if isinstance(row, dict) and row.get("identity_key")]
+    return [
+        dict(row)
+        for row in rows
+        if isinstance(row, dict) and row.get("identity_key") and not row.get("field_unranked")
+    ]
+
+
+def _existing_field_unranked(existing_log: dict | list | None) -> list[dict]:
+    """Committed field-unranked auto rows, read from the SAME place they're written:
+    ``field_unranked``-marked rows inside the persisted ``receipts`` list. (No separate
+    top-level key -- the marker rides on the row, so a committed field-unranked row
+    round-trips through ``receipts`` on the incremental merge. Reader and writer MUST
+    agree on this location; see the idempotency test.)"""
+    if isinstance(existing_log, dict):
+        rows = existing_log.get("receipts") or []
+    else:
+        rows = existing_log or []
+    return [
+        dict(row)
+        for row in rows
+        if isinstance(row, dict) and row.get("identity_key") and row.get("field_unranked")
+    ]
 
 
 def _seed_receipts(seed_path: Path = SEED_PATH) -> list[dict]:
@@ -278,6 +312,17 @@ def _apply_seed_field_labels(
             row["field_label"] = derived
 
 
+def _field_unranked_label(public_ranks: dict) -> str:
+    """Human line for a field-unranked auto receipt, derived from the at-promotion
+    board coverage. 0 boards inside the 600 cap -> 'no public board inside 600';
+    exactly 1 -> '1 board, ~#<rank>'. (This lane only fires below MIN_BOARDS, so the
+    count is 0 or 1.)"""
+    if not public_ranks:
+        return "no public board inside 600"
+    rank = round(min(public_ranks.values()))
+    return f"1 board, ~#{rank}"
+
+
 def _sort_receipts(receipts: list[dict]) -> list[dict]:
     """Scored rows lead, biggest gap over the field first (the receipt's whole point);
     ties break to the better prospect. Curated (field-unranked) rows follow, newest-first."""
@@ -360,6 +405,45 @@ def _receipt_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
 def _miss_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
     base, kind = _call_up_row(row, cur_date, logged_at)
     return base if kind == "miss" else None
+
+
+def _field_unranked_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
+    """Mint a field-unranked receipt: a call-up we ranked <= FIELD_UNRANKED_MAX_VALUCAST_RANK
+    at promotion that the public field had < MIN_BOARDS boards inside the 600 cap on.
+    consensus_rank/divergence are None (there's no field consensus to diff) -- the card
+    renders the derived field_label + an AHEAD chip via the existing no-divergence path.
+
+    This classifier and _receipt_from_row are mutually exclusive on the same row: this
+    lane requires < MIN_BOARDS public boards, the scored lane requires >= MIN_BOARDS, so
+    wiring both against the same event can never double-mint a player as a scored hit AND
+    a field-unranked row.
+    """
+    key = _identity_key(row)
+    valucast_rank = _clean_int(row.get("rank"))
+    if not key or valucast_rank is None:
+        return None
+    public_ranks = _public_source_ranks(_source_ranks(row))
+    # Only the bucket the scored classifier CAN'T handle: sub-MIN_BOARDS coverage.
+    if len(public_ranks) >= MIN_BOARDS:
+        return None
+    if valucast_rank > FIELD_UNRANKED_MAX_VALUCAST_RANK:
+        return None
+    return {
+        "identity_key": key,
+        "mlbam_id": str(row.get("mlbam_id")),
+        "role": str(row.get("role")).lower(),
+        "name": row.get("name"),
+        "team": row.get("mlb_team") or row.get("team") or "-",
+        "pos": _pos(row),
+        "level": row.get("level") or "-",
+        "valucast_rank": valucast_rank,
+        "consensus_rank": None,
+        "divergence": None,
+        "field_label": _field_unranked_label(public_ranks),
+        "call_up_date": cur_date,
+        "logged_at": logged_at,
+        "field_unranked": True,
+    }
 
 
 def _on_mlb_roster(row: dict) -> bool:
@@ -624,6 +708,37 @@ def detect_misses(
     )
 
 
+def detect_field_unranked(
+    prev_board: dict | list,
+    cur_board: dict | list,
+    cur_date: str,
+    roster_lookup: dict[str, dict],
+    existing_log: dict | list | None,
+    *,
+    logged_at: str | None = None,
+    prev_date: str | None = None,
+    actual_dates: dict[str, str] | None = None,
+    archive_by_date_key: dict[str, dict[str, dict]] | None = None,
+    no_claim: dict[str, str] | None = None,
+) -> list[dict]:
+    """Merge field-unranked auto receipts: the strongest calls the divergence gate can't
+    score -- a post-launch call-up ranked <= FIELD_UNRANKED_MAX_VALUCAST_RANK at promotion
+    that the public field had < MIN_BOARDS boards inside the 600 cap on. Shares the SAME
+    event stream / roster guard / at-promotion re-source as receipts/misses; only the
+    ``from_row`` classifier differs. ``existing_log`` may be a list of already-committed
+    field-unranked rows (from _existing_field_unranked)."""
+    existing_rows = (
+        existing_log if isinstance(existing_log, list)
+        else _existing_field_unranked(existing_log)
+    )
+    return _detect_call_ups(
+        prev_board, cur_board, cur_date, roster_lookup,
+        existing_rows, _field_unranked_from_row, logged_at=logged_at,
+        prev_date=prev_date, actual_dates=actual_dates,
+        archive_by_date_key=archive_by_date_key, no_claim=no_claim,
+    )
+
+
 def _revalidate_existing(
     rows: list[dict],
     want_kind: str,
@@ -661,6 +776,47 @@ def _revalidate_existing(
         prom_row = archive_by_date_key[max(at_or_before)].get(key)
         _base, kind = (None, None) if prom_row is None else _call_up_row(prom_row, event_date, "")
         if kind == want_kind:
+            kept.append(row)
+        elif key not in no_claim or event_date < no_claim[key]:
+            no_claim[key] = event_date
+    return kept
+
+
+def _revalidate_field_unranked(
+    rows: list[dict],
+    actual_dates: dict[str, str],
+    archive_by_date_key: dict[str, dict[str, dict]],
+    no_claim: dict[str, str],
+) -> list[dict]:
+    """Re-validate already-committed FIELD-UNRANKED auto rows under the at-promotion
+    standard. These have ``divergence is None``, so ``_revalidate_existing`` exempts them
+    -- but a later archive can show the field actually DID rank the player (>= MIN_BOARDS
+    boards) at his real promotion, which would retroactively mean he never was a
+    field-unranked call. Re-source the at-promotion archive row and KEEP the row only if
+    it still satisfies ``< MIN_BOARDS`` boards AND ``rank <= FIELD_UNRANKED_MAX_VALUCAST_RANK``;
+    otherwise drop it into the neither bucket. Also RE-DERIVE ``field_label`` from the
+    at-promotion coverage so a committed row's label can't go stale against its own data
+    (the claims-register honesty fix, enforced at revalidation as well as mint). When no
+    real date / no covering archive exists, KEEP (can't re-score -> don't guess), matching
+    the scored path's conservatism."""
+    kept: list[dict] = []
+    for row in rows:
+        key = row.get("identity_key")
+        if not key or not row.get("field_unranked"):
+            kept.append(row)
+            continue
+        actual = actual_dates.get(str(row.get("mlbam_id")))
+        event_date = str(row.get("call_up_date") or "")
+        at_or_before = [d for d in archive_by_date_key if d <= actual] if (actual and event_date) else []
+        if not actual or not event_date or not at_or_before or actual >= event_date:
+            kept.append(row)
+            continue
+        prom_row = archive_by_date_key[max(at_or_before)].get(key)
+        prom = None if prom_row is None else _field_unranked_from_row(prom_row, event_date, row.get("logged_at") or "")
+        if prom is not None:
+            # Re-derive the honest label from the at-promotion coverage; keep everything
+            # else on the committed row (identity/date/logged_at) as-is.
+            row["field_label"] = prom["field_label"]
             kept.append(row)
         elif key not in no_claim or event_date < no_claim[key]:
             no_claim[key] = event_date
@@ -713,6 +869,7 @@ def build_call_up_receipts(
     roster_lookup = active_roster_lookup(roster_payload)
     receipts = _existing_receipts(existing_log)
     misses = _existing_misses(existing_log)
+    field_unranked = _existing_field_unranked(existing_log)
     archive_dates = [
         date
         for payload in archive_payloads
@@ -740,6 +897,16 @@ def build_call_up_receipts(
                 prev_date=prev_date, actual_dates=actual_dates,
                 archive_by_date_key=archive_index, no_claim=no_claim,
             )
+            # Third lane: auto-mint the field-unranked calls the divergence gate can't
+            # score. Shares the same no_claim dict -- a player who fails the strict rank
+            # cap still belongs in the neither bucket; one who becomes a field-unranked
+            # ROW is removed from no_claim later via claimed_keys (he's folded into
+            # receipts before that count is taken).
+            field_unranked = detect_field_unranked(
+                prev, cur, cur_date, roster_lookup, field_unranked, logged_at=generated_at,
+                prev_date=prev_date, actual_dates=actual_dates,
+                archive_by_date_key=archive_index, no_claim=no_claim,
+            )
 
     # Re-validate INCREMENTAL rows under the at-promotion standard. The merge above only
     # adds/updates; it can't drop an already-committed row that the corrected standard no
@@ -750,6 +917,38 @@ def build_call_up_receipts(
     # through to the neither bucket. Seeds are curated (no divergence) and exempt.
     receipts = _revalidate_existing(receipts, "hit", actual_dates, archive_index, no_claim)
     misses = _revalidate_existing(misses, "miss", actual_dates, archive_index, no_claim)
+    # Field-unranked rows carry divergence=None, so _revalidate_existing exempts them; they
+    # get their OWN revalidation (still < MIN_BOARDS boards AND rank <= cap at promotion),
+    # which also re-derives the honest field_label. A row that no longer qualifies drops to
+    # the neither bucket, exactly like a de-qualified scored hit/miss.
+    field_unranked = _revalidate_field_unranked(field_unranked, actual_dates, archive_index, no_claim)
+
+    # Fold the field-unranked auto rows into the receipts board (they render on the
+    # "AHEAD OF THE FIELD" side via the no-divergence field_label + AHEAD path, and
+    # _sort_receipts drops them into the trailing no-divergence group with the seeds).
+    # They must appear BEFORE the seed merge so a seed for the same identity is deduped
+    # out below -- field-unranked (auto) wins over seed on identity.
+    #
+    # Precedence when an identity qualifies via more than one lane: scored > field-unranked
+    # > seed. _field_unranked_from_row and _receipt_from_row are mutually exclusive on the
+    # SAME at-promotion row (one needs < MIN_BOARDS boards, the other >= MIN_BOARDS), so a
+    # single event can't double-mint. But ACROSS events a player can produce both -- e.g. a
+    # disappearance dated when the field had < 2 boards on him (field-unranked) AND a later
+    # retention-flip dated when >= 2 boards had appeared (scored hit). The scored hit has
+    # field corroboration, so it is the stronger claim: field-unranked defers to a SCORED
+    # receipt (int divergence) on identity. It does NOT defer to a committed SEED -- the
+    # whole point of this lane is that auto wins over seed, so a field-unranked mint
+    # SUPERSEDES a carried-forward seed for the same identity (the seed is dropped here; the
+    # by_key merge below then keeps only the field-unranked row). Both may still be launch-
+    # guarded downstream, but resolving precedence here keeps a player off the board twice.
+    scored_keys = {row["identity_key"] for row in receipts if isinstance(row.get("divergence"), int)}
+    field_unranked = [row for row in field_unranked if row["identity_key"] not in scored_keys]
+    superseded_seed_keys = {row["identity_key"] for row in field_unranked}
+    receipts = [
+        row for row in receipts
+        if not (row.get("seed") and row["identity_key"] in superseded_seed_keys)
+    ]
+    receipts = receipts + field_unranked
 
     # Merge curated seeds; auto-detected rows win on identity (they carry a real divergence).
     by_key = {row["identity_key"]: row for row in receipts}
@@ -847,9 +1046,14 @@ def build_call_up_receipts(
             "market_values_used": False,
         },
         "summary": {
+            # receipt_count counts the FINAL receipts list, which now INCLUDES the
+            # field-unranked auto rows (they render on that side), so it grows by
+            # field_unranked_count naturally. field_unranked_count is derived from the
+            # final list by marker so pre-launch/denylist/revalidation drops are reflected.
             "receipt_count": len(receipts),
             "miss_count": len(misses),
             "seed_count": seed_count,
+            "field_unranked_count": sum(1 for r in receipts if r.get("field_unranked")),
             "no_claim_call_up_count": len(no_claim_keys),
             "archive_dates_scanned": archive_dates,
             "pre_launch_excluded_count": len(pre_launch_excluded),

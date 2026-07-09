@@ -1,5 +1,5 @@
 {
-  "_comment": "Curated call-up receipts the auto-scan can't score: the public boards don't rank these guys (no >=2-board consensus to compute a divergence), or the roster artifact lags a same-day promotion. consensus_rank/divergence null => the card shows 'field outside top 100' + an AHEAD marker instead of a +N gap. Auto-detected rows override on identity. Edit field_label per row if you want a more specific line.",
+  "_comment": "LEGACY-ONLY seed lane for field-unranked call-ups: as of plan 019 the strongest field-unranked calls (ValuCast rank <= FIELD_UNRANKED_MAX_VALUCAST_RANK, currently 25) auto-mint via _field_unranked_from_row -- their field_label is DERIVED from the at-promotion board coverage, not typed here. These remaining seeds are the WEAKER field-unranked calls that don't clear vc#25 (Kuroda-Grauer #41, Cauley #61, Watson #80), which the auto lane deliberately leaves as hand-seeds. Gabriel Hughes (vc#9) was removed -- he now auto-mints. consensus_rank/divergence null => the card shows the field_label + an AHEAD marker instead of a +N gap; a seed's typed field_label is re-derived truthfully from the archive at build time (_apply_seed_field_labels). Auto-detected rows override on identity -- a seed here that later clears vc#25 will be deduped out by its auto row.",
   "receipts": [
     {
       "identity_key": "811965_hitter",
@@ -42,21 +42,6 @@
       "divergence": null,
       "field_label": "field outside top 100",
       "call_up_date": "2026-06-19"
-    },
-    {
-      "identity_key": "687312_pitcher",
-      "mlbam_id": "687312",
-      "role": "pitcher",
-      "name": "Gabriel Hughes",
-      "team": "COL",
-      "pos": "SP",
-      "level": "AAA",
-      "valucast_rank": 9,
-      "consensus_rank": null,
-      "divergence": null,
-      "field_label": "field outside top 100",
-      "call_up_date": "2026-07-01",
-      "logged_at": "2026-07-09T00:00:00+00:00"
     }
   ]
 }

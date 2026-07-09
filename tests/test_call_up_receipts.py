@@ -162,7 +162,10 @@ def test_guards_still_filter_flip_detected_players():
     from prospects import call_up_receipts as cur
 
     prev = [
-        _rank_row(101, "One Board Only", 20, {"pipeline": 90}),                 # MIN_BOARDS fail
+        # vc#200 keeps this a pure scored-lane MIN_BOARDS fail: a 1-board player ranked
+        # ABOVE the field-unranked cap (25) so the plan-019 auto lane doesn't claim him
+        # (that lane is exercised in its own tests); this asserts only the scored guard.
+        _rank_row(101, "One Board Only", 200, {"pipeline": 90}),                 # MIN_BOARDS fail
         _rank_row(102, "Field Agrees", 50, {"pipeline": 55, "hkb": 52, "sts": 60}),  # divergence in noise band
         _rank_row(103, "Not On Roster", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),  # roster confirm fail
         _rank_row(682634, "Denylisted", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),  # EXCLUDED
@@ -872,6 +875,223 @@ def test_validator_fails_seed_field_label_contradicted_by_a_board(tmp_path, monk
     artifact.write_text(json.dumps(payload), encoding="utf-8")
     _payload, problems = validator.validate_file(artifact)
     assert any("outside top 100" in p for p in problems)
+
+
+# --- Field-unranked auto lane (plan 019) ------------------------------------------
+
+def test_field_unranked_hughes_worked_example_auto_mints():
+    """Headline: a vc#9 pitcher, ZERO public boards, genuine post-launch call-up auto-mints
+    a field-unranked receipt -- no divergence, derived label, field_unranked marker, NOT a
+    seed -- lands on receipts, counts in field_unranked_count, and is OUT of the neither
+    bucket (he became a claim)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(687312, "Gabriel Hughes", 9, {})]},
+        {"date": "2026-07-01", "board": []},  # disappears into the roster
+    ]
+    roster = {"profiles": [{"mlbam_id": 687312, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(687312, "2026-06-30")),
+    )
+    by_key = {r["identity_key"]: r for r in payload["receipts"]}
+    assert "687312_hitter" in by_key
+    row = by_key["687312_hitter"]
+    assert row["consensus_rank"] is None
+    assert row["divergence"] is None
+    assert row["field_label"] == "no public board inside 600"
+    assert row["field_unranked"] is True
+    assert "seed" not in row
+    assert payload["summary"]["field_unranked_count"] == 1
+    assert payload["summary"]["no_claim_call_up_count"] == 0  # he's a claim, not neither
+
+
+def test_field_unranked_one_board_label_derivation():
+    """A vc#12 player with exactly one in-cap board at ~#512 mints a field-unranked row
+    whose label is derived to '1 board, ~#512'."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(500, "One Board Deep", 12, {"sts": 512})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 500, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(500, "2026-06-30")),
+    )
+    by_key = {r["identity_key"]: r for r in payload["receipts"]}
+    assert by_key["500_hitter"]["field_label"] == "1 board, ~#512"
+    assert by_key["500_hitter"]["field_unranked"] is True
+
+
+def test_field_unranked_rank_cap_rejection_stays_in_neither_bucket():
+    """Kuroda-Grauer case: a vc#41 player, zero boards, genuine call-up FAILS the strict
+    25 cap -> NO field-unranked row -> he stays in the neither bucket, proving the strict
+    cap keeps the weaker calls as (legacy) seeds, not auto rows."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(811965, "Weaker Call", 41, {})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 811965, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(811965, "2026-06-30")),
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert "811965_hitter" not in keys  # no auto row
+    assert payload["summary"]["field_unranked_count"] == 0
+    assert payload["summary"]["no_claim_call_up_count"] == 1  # stays in the neither bucket
+
+
+def test_two_board_player_is_scored_not_field_unranked():
+    """Mutual exclusivity: a vc#20 player with 2+ boards and a real gap mints as a SCORED
+    hit (int divergence), NOT a field-unranked row -- no double-mint."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [
+            _rank_row(600, "Corroborated Call", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 600, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+    )
+    by_key = {r["identity_key"]: r for r in payload["receipts"]}
+    row = by_key["600_hitter"]
+    assert isinstance(row["divergence"], int)  # scored hit
+    assert "field_unranked" not in row  # not a field-unranked row
+    assert payload["summary"]["field_unranked_count"] == 0
+
+
+def test_field_unranked_auto_wins_over_seed_on_identity():
+    """A seed for Hughes' identity AND an auto field-unranked mint -> exactly one Hughes
+    row, the AUTO one (field_unranked True, seed absent); seed_count does not count him."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(687312, "Gabriel Hughes", 9, {})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 687312, "active_mlb_roster": True}]}
+    seed = [{  # legacy seed for the same identity -- auto must win
+        "identity_key": "687312_hitter", "mlbam_id": "687312", "role": "hitter",
+        "name": "Gabriel Hughes", "valucast_rank": 9, "consensus_rank": None,
+        "divergence": None, "field_label": "field outside top 100", "call_up_date": "2026-07-01",
+    }]
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=seed, generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(687312, "2026-06-30")),
+    )
+    hughes = [r for r in payload["receipts"] if r["identity_key"] == "687312_hitter"]
+    assert len(hughes) == 1  # exactly one Hughes row
+    assert hughes[0]["field_unranked"] is True  # the auto one won
+    assert "seed" not in hughes[0]
+    assert payload["summary"]["seed_count"] == 0  # seed deduped out on identity
+
+
+def test_field_unranked_idempotent_through_existing_log():
+    """Incremental merge: build once, feed the artifact back as existing_log, build again
+    with the same inputs -> the field-unranked rows are byte-identical (committed rows
+    round-trip through the receipts list via the field_unranked marker)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(687312, "Gabriel Hughes", 9, {})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 687312, "active_mlb_roster": True}]}
+    txns = _cache(_cu(687312, "2026-06-30"))
+    first = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00", transactions_cache=txns,
+    )
+    second = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=first,
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00", transactions_cache=txns,
+    )
+    fu_first = [r for r in first["receipts"] if r.get("field_unranked")]
+    fu_second = [r for r in second["receipts"] if r.get("field_unranked")]
+    assert fu_first == fu_second  # committed field-unranked rows survive the merge unchanged
+    assert len(fu_second) == 1
+
+
+def test_field_unranked_revalidation_drops_row_when_field_later_ranks_him():
+    """Revalidation: a committed field-unranked row is DROPPED when the at-promotion archive
+    (keyed on the real call-up date) shows the field actually had >= MIN_BOARDS boards on him
+    -> he was never a field-unranked call. Here the at-promotion boards are dead-even with
+    ValuCast (no qualifying gap), so he isn't a scored hit either -> neither bucket."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    # The committed row claims a field-unranked call on 2026-07-04, but his REAL call-up was
+    # 2026-06-27, and the 06-27 archive shows 3 public boards with a consensus ~#62 vs his
+    # vc#60 -> a dead-even call (gap inside the noise band): not field-unranked, not scored.
+    archives = [
+        {"date": "2026-06-27", "board": [
+            _rank_row(101, "Actually Ranked", 60, {"pipeline": 61, "hkb": 62, "sts": 63})]},
+        {"date": "2026-07-04", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    committed = {
+        "receipts": [{
+            "identity_key": "101_hitter", "mlbam_id": "101", "role": "hitter",
+            "name": "Actually Ranked", "team": "BOS", "pos": "SS", "level": "AAA",
+            "valucast_rank": 60, "consensus_rank": None, "divergence": None,
+            "field_label": "no public board inside 600", "call_up_date": "2026-07-04",
+            "logged_at": "2026-07-04T00:00:00+00:00", "field_unranked": True,
+        }],
+        "misses": [],
+    }
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=committed,
+        seed_rows=[], generated_at="2026-07-05T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-06-27")),
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert "101_hitter" not in keys  # dropped -- no longer field-unranked at promotion
+    assert payload["summary"]["field_unranked_count"] == 0
+    assert payload["summary"]["no_claim_call_up_count"] == 1  # moved to the neither bucket
+
+
+def test_field_unranked_denylist_and_launch_guard_still_bind():
+    """The denylist and pre-launch guard bind field-unranked rows exactly like scored ones:
+    a denylisted identity and a pre-launch real call-up, each otherwise field-unranked-
+    qualifying, both fail to mint."""
+    from prospects import call_up_receipts as cur
+
+    # 682634 is denylisted; 700 has a pre-launch real call-up. Both are vc<=25, zero-board,
+    # roster-confirmed -- so only the guards can stop them.
+    archives = [
+        {"date": "2026-06-30", "board": [
+            _rank_row(682634, "Denylisted FU", 9, {}),
+            _rank_row(700, "Pre-Launch FU", 9, {})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 682634, "active_mlb_roster": True},
+        {"mlbam_id": 700, "active_mlb_roster": True},
+    ]}
+    payload = cur.build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(
+            _cu(682634, "2026-06-30"),   # denylisted -> excluded
+            _cu(700, "2026-05-01"),      # pre-launch real date -> launch-guarded
+        ),
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert "682634_hitter" not in keys  # denylist binds
+    assert "700_hitter" not in keys     # launch guard binds
+    assert payload["summary"]["field_unranked_count"] == 0
 
 
 def _rank_row(
