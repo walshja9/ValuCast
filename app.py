@@ -10,6 +10,7 @@ import math
 import os
 import re
 import sys
+import threading
 import time
 from datetime import date
 from functools import lru_cache
@@ -100,6 +101,14 @@ _CSP_POLICY = (
 )
 _PNG_CACHE_MAX = 32  # ~32 x ~0.5MB PNGs: bound worst-case RAM on the 512MB Render box
 _PNG_CACHE: OrderedDict[tuple, tuple[bytes, dict[str, str]]] = OrderedDict()
+# gunicorn runs --threads 4: every _PNG_CACHE mutation must be atomic. Without
+# this lock the store path did `_PNG_CACHE[key]=...` then `move_to_end(key)` as
+# two statements; a concurrent request could pop the key in between, and
+# move_to_end on an absent key raises KeyError inside after_request -> a 500 on
+# a request that had already rendered a valid PNG (exactly what unfurl bots hit
+# with concurrent same-key fetches). The lock only guards dict ops on
+# already-built bytes -- no Pillow render ever runs while it's held.
+_PNG_CACHE_LOCK = threading.Lock()
 
 
 def _append_vary(response, value):
@@ -133,13 +142,46 @@ def _png_cache_generation():
 # two legitimately different cards collapse to one key and users get the
 # WRONG cached image (adversarial review of the first fix). Unknown params
 # still collapse to the canonical key.
+#
+# The w_*/pt_* weight & point-rule params are open-suffixed: keying on the
+# prefix alone let `?w_junk1=1&w_junk2=1...` mint unlimited distinct keys →
+# guaranteed miss, full render per request, and eviction of all 32 real
+# entries. So the SUFFIX is validated against a registry-derived vocabulary
+# (below): only real category / point-rule stat ids fold into the key; unknown
+# w_/pt_ suffixes collapse to the canonical key like any other junk param.
 _PNG_CACHE_PARAMS = frozenset({
     "n", "limit", "pool", "position", "search", "callups",
     "mode", "source", "cats", "pcats", "rules", "split_rp", "display",
     "fit_cats", "preset", "rank_by",
     "teams", "budget", "roster", "pslots",
 })
-_PNG_CACHE_PARAM_PREFIXES = ("w_", "pt_")
+# The complete points-mode stat vocabulary: every stat id a pt_<stat> param may
+# legitimately score. Single source of truth shared by the cache key below AND
+# the pt_ parse in _build_context — the parse DROPS any pt_ suffix outside this
+# set, which is what makes collapsing unknown pt_ keys to the canonical cache
+# key sound. Without that parse guard, `?pt_AB=1` (AB is a real key in
+# player.stats that the engine's `stats.get(rule.stat)` would score) changes
+# the rendered card but not the cache key — the poisoned PNG gets cached under
+# the canonical key and served to every legit request (cache-poisoning, worse
+# than the DoS). Invariant: any param that affects rendering must be in the
+# cache-key vocabulary.
+_POINT_STAT_IDS = frozenset(
+    {c.id for c in (*HITTING_CATEGORIES, *PITCHING_CATEGORIES)}
+    | {rule.stat for rules in POINTS_PRESETS.values() for rule in rules}
+)
+# w_<cat id> = category weight (_build_context weights[key[2:]]; split-RP looks
+#   the weight up by BASE id, so w_SP_K/w_RP_K variants never exist — only base
+#   category ids, per web/config_builder.py:80-85; unknown w_ suffixes are
+#   render-inert because build_config only reads weights by category id).
+# pt_<stat> = points-mode point value (build_config makes a PointRule per stat).
+#   The points UI (templates/partials/setup_points.html) only emits stats that
+#   are either a category id or a POINTS_PRESETS point-rule stat — the union
+#   in _POINT_STAT_IDS covers all of them (verified against that template).
+# Deriving from the registry means a new category id is picked up automatically.
+_PNG_CACHE_PREFIXED_KEYS = frozenset(
+    {f"w_{c.id}" for c in (*HITTING_CATEGORIES, *PITCHING_CATEGORIES)}
+    | {f"pt_{stat}" for stat in _POINT_STAT_IDS}
+)
 
 
 def _png_cache_key():
@@ -150,7 +192,7 @@ def _png_cache_key():
         request.path,
         tuple(sorted(
             (k, v) for k, v in request.args.items(multi=True)
-            if k in _PNG_CACHE_PARAMS or k.startswith(_PNG_CACHE_PARAM_PREFIXES)
+            if k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS
         )),
     )
 
@@ -162,11 +204,12 @@ def _serve_cached_png():
     key = _png_cache_key()
     if key is None:
         return None
-    cached = _PNG_CACHE.pop(key, None)  # pop-or-None: check-then-pop races under gunicorn --threads 4
-    if cached is None:
-        return None
+    with _PNG_CACHE_LOCK:
+        cached = _PNG_CACHE.pop(key, None)  # pop-or-None: check-then-pop races under gunicorn --threads 4
+        if cached is None:
+            return None
+        _PNG_CACHE[key] = cached  # re-insert as most-recently-used (LRU)
     body, headers = cached
-    _PNG_CACHE[key] = cached
     response = make_response(body)
     for name, value in headers.items():
         response.headers[name] = value
@@ -190,10 +233,11 @@ def _maybe_cache_png(response):
         for name, value in response.headers.items()
         if name in {"Content-Type", "Content-Disposition", "Cache-Control"}
     }
-    _PNG_CACHE[key] = (body, headers)
-    _PNG_CACHE.move_to_end(key)
-    while len(_PNG_CACHE) > _PNG_CACHE_MAX:
-        _PNG_CACHE.popitem(last=False)
+    with _PNG_CACHE_LOCK:
+        _PNG_CACHE.pop(key, None)
+        _PNG_CACHE[key] = (body, headers)  # fresh insert is always last: LRU preserved, no absent-key move_to_end
+        while len(_PNG_CACHE) > _PNG_CACHE_MAX:
+            _PNG_CACHE.popitem(last=False)
     return response
 
 
@@ -4046,15 +4090,24 @@ def _build_context(args):
     # Collect pt_* params for points mode. Same guard as the w_* weights below:
     # raw query params, so `pt_HR=abc` must not 500 and `pt_HR=inf` must not
     # poison the valuation with non-finite point values (7/2 audit).
+    # Suffixes outside _POINT_STAT_IDS are DROPPED: any param that affects
+    # rendering must be in the PNG cache-key vocabulary, and the cache collapses
+    # unknown pt_ suffixes to the canonical key. A real-but-unlisted stat like
+    # pt_AB would render a different card under the canonical key — a poisoned
+    # PNG served to every legit request. Dropping it here makes unknown pt_
+    # params render-inert, so the key collapse is sound.
     pt_params = {}
     for key in args:
         if key.startswith("pt_"):
+            stat = key[3:]
+            if stat not in _POINT_STAT_IDS:
+                continue
             try:
                 pts = float(args[key])
             except ValueError:
                 continue
             if math.isfinite(pts):
-                pt_params[key[3:]] = pts
+                pt_params[stat] = pts
 
     # Collect w_* params for category weights
     weights: dict[str, float] = {}

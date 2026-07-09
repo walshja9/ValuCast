@@ -57,7 +57,7 @@ classified per the requested taxonomy:
 | 004  | Pipeline honesty: season/offseason guards + gates for ungated surfaces | P1 | M | — | TODO |
 | 005  | Serving cache pass: generation-keyed caches on the hot routes | P1 | M | 007 first (both edit app.py) | TODO |
 | 006  | Archive growth containment: shallow CI clones + retention decision memo | P2 | S | — | TODO |
-| 007  | PNG cache: thread race fix + w_/pt_ key hardening | P1 | S | — | TODO |
+| 007  | PNG cache: thread race fix + w_/pt_ key hardening | P1 | S | — | DONE (opus executor + Fable review, 7/8; review caught a pt_ cache-poisoning hole — unknown-but-real stat suffixes now dropped at parse via `_POINT_STAT_IDS`; 154 pass) |
 | 008  | Self-host web fonts; drop Google origins from CSP | P2 | S-M | — | TODO |
 
 ## Batch 2 — 2026-07-08 full-stack audit (planned at `72e68864`)

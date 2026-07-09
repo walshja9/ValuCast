@@ -1344,6 +1344,103 @@ class TestBulletproofing(unittest.TestCase):
             clean = _png_cache_key()
         self.assertEqual(noisy, clean)
 
+    def test_png_cache_key_ignores_junk_prefix_params(self):
+        # w_junk/pt_junk suffixes must NOT fold into the key -- keying on the
+        # bare w_/pt_ prefix let `?w_junk1=1&w_junk2=1...` mint unlimited keys
+        # (guaranteed miss + full render per request, evicting all 32 real
+        # entries). Unknown suffixes now collapse to the canonical key.
+        from app import _png_cache_key
+        with app.test_request_context(
+            "/dynasty/share-card.png?limit=20&w_zzz=1&w_zzz2=3&pt_bogus=9"
+        ):
+            noisy = _png_cache_key()
+        with app.test_request_context("/dynasty/share-card.png?limit=20"):
+            clean = _png_cache_key()
+        self.assertEqual(noisy, clean)
+
+    def test_png_cache_key_honors_legit_weight_suffixes(self):
+        # A real category weight IS render-affecting: it must stay in the key so
+        # two legitimately different cards don't collapse to one cached image.
+        from app import _png_cache_key
+        with app.test_request_context("/dynasty/share-card.png?limit=20&w_HR=2"):
+            w2 = _png_cache_key()
+        with app.test_request_context("/dynasty/share-card.png?limit=20&w_HR=3"):
+            w3 = _png_cache_key()
+        with app.test_request_context("/dynasty/share-card.png?limit=20"):
+            base = _png_cache_key()
+        self.assertNotEqual(w2, w3)   # different weight -> different key
+        self.assertNotEqual(w2, base)  # weighted -> distinct from unweighted
+
+    def test_png_cache_key_honors_legit_point_suffixes(self):
+        # A real point-rule stat (incl. points-UI stats like pt_QS/pt_HLD that
+        # aren't in the default preset) is render-affecting and must key.
+        from app import _png_cache_key
+        with app.test_request_context(
+            "/dynasty/share-card.png?mode=points&pt_HR=4"
+        ):
+            p4 = _png_cache_key()
+        with app.test_request_context(
+            "/dynasty/share-card.png?mode=points&pt_HR=5"
+        ):
+            p5 = _png_cache_key()
+        with app.test_request_context(
+            "/dynasty/share-card.png?mode=points&pt_QS=2"
+        ):
+            pqs = _png_cache_key()
+        self.assertNotEqual(p4, p5)
+        self.assertNotEqual(p4, pqs)
+
+    def test_unknown_pt_stat_is_render_inert_and_collapses_key(self):
+        # pt_AB names a REAL key in player.stats -- the engine's
+        # `stats.get(rule.stat)` would score it -- but AB is outside
+        # _POINT_STAT_IDS, so the cache collapses `?pt_AB=1` to the canonical
+        # key. If the parse KEPT it, the differently-rendered card would be
+        # cached under the canonical key and served to every legit request
+        # (cache poisoning). The parse must drop it so the collapse is sound.
+        from werkzeug.datastructures import MultiDict
+        from app import _build_context, _png_cache_key
+
+        poisoned = _build_context(MultiDict({"mode": "points", "pt_AB": "1"}))
+        clean = _build_context(MultiDict({"mode": "points"}))
+        self.assertEqual(poisoned["pt_params"], clean["pt_params"])  # AB dropped
+        self.assertEqual(  # identical board, not just identical params
+            [(r.player.name, r.total_value) for r in poisoned["results"][:25]],
+            [(r.player.name, r.total_value) for r in clean["results"][:25]],
+        )
+        kept = _build_context(MultiDict({"mode": "points", "pt_HR": "4"}))
+        self.assertEqual(kept["pt_params"], {"HR": 4.0})  # legit stat still parses
+
+        with app.test_request_context(
+            "/dynasty/share-card.png?mode=points&pt_AB=1"
+        ):
+            noisy = _png_cache_key()
+        with app.test_request_context("/dynasty/share-card.png?mode=points"):
+            canonical = _png_cache_key()
+        self.assertEqual(noisy, canonical)
+
+    def test_maybe_cache_png_store_survives_emptied_cache(self):
+        # Regression for the thread race: the store path used to do
+        # `_PNG_CACHE[key]=...` then `move_to_end(key)`; a concurrent pop between
+        # them raised KeyError inside after_request -> a 500 on an already-valid
+        # PNG. The locked pop+insert must never touch an absent key.
+        import app as app_module
+
+        try:
+            was_testing = app.config.get("TESTING")
+            app.config["TESTING"] = False
+            app_module._PNG_CACHE.clear()
+            with app.test_request_context("/dynasty/share-card.png?limit=20"):
+                resp = app_module.make_response(b"\x89PNG\r\n\x1a\npayload")
+                resp.headers["Content-Type"] = "image/png"
+                # Simulate a concurrent pop having already emptied the dict:
+                app_module._PNG_CACHE.clear()
+                out = app_module._maybe_cache_png(resp)  # must not raise
+            self.assertEqual(out.status_code, 200)
+            self.assertEqual(len(app_module._PNG_CACHE), 1)
+        finally:
+            app_module._PNG_CACHE.clear()
+            app.config["TESTING"] = was_testing
+
     def test_ready_but_ancient_snapshot_wears_the_stale_label(self):
         # "Ready" is baked in at build time and says nothing about age: a
         # broken refresh must not serve week-old values labeled current.
