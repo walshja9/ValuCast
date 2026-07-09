@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 from prospects.ahead_of_consensus import (
@@ -55,6 +56,46 @@ MAX_ROWS_PER_SIDE = 15
 # sample-size statement (ours) or past the boards' reliable depth (theirs),
 # not a price.
 MAX_GAP_RANK = MAX_VALUCAST_RANK
+
+
+# 7/9 claims audit (Surface 3, gap a/b): the /gaps page stamps today's date on a
+# field consensus whose source boards are 9-15 days old, and nothing gates the page
+# on that vintage. Record the real per-board dates so the page can disclose them.
+# Only HKB and Pipeline snapshots carry an internal date; PL/STS derive from their
+# source CSV; FG has no dependable committed vintage. See plan 020 "Current state".
+_BOARD_SOURCES = {
+    "hkb": ROOT / "data" / "hkb" / "hkb_consensus_snapshot.json",
+    "pipeline": ROOT / "data" / "pipeline" / "pipeline_consensus_snapshot.json",
+    "pl": ROOT / "data" / "prospectslive" / "prospectslive_top600.csv",
+    "sts": ROOT / "data" / "sts" / "sts_consensus_hitters.csv",
+    # fg intentionally omitted: no dependable committed vintage on the export CSV today.
+}
+
+
+def _board_source_date(source: str, path: Path) -> str | None:
+    """Best available YYYY-MM-DD vintage for one board. Internal generated_at/as_of
+    for JSON snapshots that carry one; file mtime otherwise. Fail-soft -> None."""
+    try:
+        if path.suffix == ".json":
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            stamp = payload.get("generated_at") or payload.get("as_of")
+            if stamp:
+                return str(stamp)[:10]
+        # dateless snapshots / CSVs: fall back to filesystem mtime (the committed
+        # CSV's date). NOT the *_consensus_snapshot.json commit date, which the
+        # daily build re-stamps to today even when the CSV is 2 weeks old.
+        return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).date().isoformat()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _board_vintages() -> dict:
+    dates = {src: _board_source_date(src, p) for src, p in _BOARD_SOURCES.items()}
+    present = sorted(d for d in dates.values() if d)
+    return {
+        "board_source_dates": {k: v for k, v in dates.items() if v},
+        "board_min_date": present[0] if present else None,
+    }
 
 
 def _within_depth(row: dict) -> bool:
@@ -89,7 +130,15 @@ def _display_row(row: dict) -> dict:
     # artifact (7/8, Alex): the median across boards is our transformative
     # figure; republishing each outside site's exact per-player rank would
     # redistribute their product against their terms of service.
-    return {
+    #
+    # But the min/max of that dict ARE publishable as a dispersion signal (7/9
+    # audit, Surface 3 gap c): they reveal a split field (Condon #30-#157) vs a
+    # tight one (De Vries #2-#23) without redistributing any single board's exact
+    # per-player rank. Two anonymous integers, never the dict.
+    board_ranks = [
+        r for r in (row.get("boards") or {}).values() if isinstance(r, (int, float))
+    ]
+    out = {
         key: row.get(key)
         for key in (
             "identity_key", "mlbam_id", "name", "team", "role",
@@ -97,12 +146,17 @@ def _display_row(row: dict) -> dict:
             "divergence",
         )
     }
+    if board_ranks:
+        out["board_min"] = int(min(board_ranks))
+        out["board_max"] = int(max(board_ranks))
+    return out
 
 
 def build_consensus_gap_board(
     rank_payload: dict,
     generated_at: str | None = None,
     roster_status: dict | None = None,
+    board_vintages: dict | None = None,
 ) -> dict:
     rows = [
         divergence
@@ -127,9 +181,15 @@ def build_consensus_gap_board(
         key=lambda row: _conviction(row),  # most negative first
     )
 
+    vintages = board_vintages or {}
     return {
         "artifact": ARTIFACT_NAME,
         "generated_at": generated_at or rank_payload.get("generated_at"),
+        # 7/9 audit (gap a): the field's ranks are 9-15 days old even though the
+        # artifact is regenerated today. Record the honest per-board vintage and
+        # the oldest of them so the page can disclose the field's real age.
+        "board_source_dates": vintages.get("board_source_dates") or {},
+        "board_min_date": vintages.get("board_min_date"),
         "source_policy": {
             "display_only": True,
             "feeds_live_valucast_rank": False,
@@ -173,7 +233,9 @@ def build_consensus_gap_board(
 def run(artifact_path: Path = ARTIFACT_PATH) -> dict:
     rank_payload = json.loads(RANK_PATH.read_text(encoding="utf-8"))
     payload = build_consensus_gap_board(
-        rank_payload, roster_status=_load_optional(MLB_ROSTER_STATUS_PATH)
+        rank_payload,
+        roster_status=_load_optional(MLB_ROSTER_STATUS_PATH),
+        board_vintages=_board_vintages(),
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

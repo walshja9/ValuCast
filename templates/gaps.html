@@ -12,6 +12,12 @@
 {% from "partials/_board_nav.html" import board_nav with context %}
 {{ board_nav(active='gaps', aria='Gaps board navigation') }}
 {% include "partials/_stale_notice.html" %}
+{# 7/9 audit (gap b): a page-local staleness notice, DISTINCT from the DD
+   `snapshot_stale` banner above — the outside boards go stale on their own
+   cadence, and /gaps must be able to say so instead of riding an unrelated flag. #}
+{% if gap_boards_stale %}
+<div class="notice">The outside prospect boards behind these gaps were last refreshed {{ editorial_date(gaps_board_min_date) }}, past our 7-day freshness bar &mdash; the field's ranks may have moved since. We refresh boards on their own cadence, not daily.</div>
+{% endif %}
 
 <section class="buys-heading movers-heading glass">
     <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
@@ -22,6 +28,7 @@
         <h1>WHERE WE DISAGREE</h1>
         <p class="buys-heading-sub">{{ gap_count }} gaps{% if gaps_generated_at %} &middot; {{ editorial_date(gaps_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint">The prospects where the ValuCast board sits furthest from the public consensus (median of {{ gaps_method.min_boards }}+ outside boards), in both directions. Every row is a testable claim: the higher side feeds the publicly scored <a href="/ledger">ledger</a>; fades are published but not ledger-scored yet &mdash; we say so rather than borrow credibility.</p>
+        {% if gaps_board_min_date %}<p class="buys-fineprint">The field ranks come from outside boards last refreshed {{ editorial_date(gaps_board_min_date) }} &mdash; the divergence is measured against that vintage, not today's boards.</p>{% endif %}
         <p class="buys-fineprint">Gaps under {{ gaps_method.min_divergence }} spots don't qualify, call-ups are excluded (boards delist them &mdash; that's eligibility, not disagreement), and one symmetric depth rule applies to both sides: our rank <em>and</em> the field's must sit inside the top {{ gaps_method.max_rank_both_sides }}. Deeper than that, a rank is a sample-size statement (ours) or past the boards' reliable depth (theirs) &mdash; not a price, so we don't publish it as a call.</p>
     </div>
 </section>
@@ -45,7 +52,7 @@
                    across boards is our transformative figure; reprinting each
                    outside site's exact rank would redistribute their product
                    (same rule as every other surface on the site). #}
-                <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
+                <span class="buys-tag">{{ p.team }} &middot; field {% if p.board_min is not none and p.board_max is not none and p.board_min != p.board_max %}#{{ p.board_min }}&ndash;#{{ p.board_max }}, median {% endif %}~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
             </div>
             <span class="mover-delta up">+{{ p.divergence }}</span>
         </article>
@@ -60,7 +67,7 @@
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
                 <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
-                <span class="buys-tag">{{ p.team }} &middot; field ~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
+                <span class="buys-tag">{{ p.team }} &middot; field {% if p.board_min is not none and p.board_max is not none and p.board_min != p.board_max %}#{{ p.board_min }}&ndash;#{{ p.board_max }}, median {% endif %}~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
             </div>
             <span class="mover-delta down">{{ p.divergence }}</span>
         </article>

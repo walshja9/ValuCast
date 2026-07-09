@@ -7142,6 +7142,11 @@ def gaps():
     payload = _load_artifact(CONSENSUS_GAP_PATH) or {}
     higher = payload.get("higher") or []
     lower = payload.get("lower") or []
+    # 7/9 audit (gap b): /gaps rode the DD `snapshot_stale` flag, so it could never
+    # warn that its OWN field consensus had gone stale. Gate the page on the oldest
+    # board vintage against the site's single 7-day bar (_within_stale_window).
+    board_min_date = payload.get("board_min_date")
+    gap_boards_stale = bool(board_min_date) and not _within_stale_window(board_min_date)
     return render_template(
         "gaps.html",
         gaps_available=bool(higher or lower),
@@ -7151,6 +7156,9 @@ def gaps():
         gaps_higher=higher,
         gaps_lower=lower,
         gap_count=len(higher) + len(lower),
+        gaps_board_min_date=board_min_date,
+        gaps_board_source_dates=payload.get("board_source_dates") or {},
+        gap_boards_stale=gap_boards_stale,
         as_of=payload.get("generated_at") or store.as_of,
     )
 
@@ -7264,7 +7272,9 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None):
             draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
             if idx:
                 draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
-            call_date = str(row.get("call_up_date") or "")[:10]
+            # Prefer the transaction-confirmed date; call_up_date is the archive
+            # detection date and can lag the real call-up by days (Hughes: 7/04 vs 7/01).
+            call_date = str(row.get("actual_call_up_date") or row.get("call_up_date") or "")[:10]
             draw.text((x + 18, top + 11), call_date, fill=blue, font=f_date)
             name = _graphic_fit_text(draw, row.get("name"), f_name, 350)
             draw.text((x + 150, top + 7), name, fill=text, font=f_name)

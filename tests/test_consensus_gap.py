@@ -42,6 +42,52 @@ def test_two_sided_split_uses_the_same_consensus_math():
     assert payload["higher"][0]["board_count"] == 3
 
 
+def test_dispersion_published_as_min_max_never_the_dict():
+    # 7/9 audit (gap c): a split field must read differently from a tight one.
+    # We publish the min/max of the per-source ranks as two anonymous integers —
+    # the dispersion signal — but NEVER the per-source `boards` dict itself.
+    payload = build_consensus_gap_board({"board": [
+        _rank_row(1, "Split Field", 3, boards={"hkb": 30, "pl": 44, "sts": 157}),
+    ]})
+    row = payload["higher"][0]
+    assert row["board_min"] == 30
+    assert row["board_max"] == 157
+    assert row["consensus_rank"] == 44  # median unchanged by the min/max add
+    # ToS invariant re-pinned alongside the new fields
+    assert "boards" not in row
+
+
+def test_unanimous_field_collapses_min_to_max():
+    # When every board agrees, min == max — the template falls back to the plain
+    # "field ~#N across M boards" phrasing (no misleading range).
+    payload = build_consensus_gap_board({"board": [
+        _rank_row(1, "Tight Field", 250, boards={"hkb": 20, "pl": 20, "sts": 20}),
+    ]})
+    row = payload["lower"][0]
+    assert row["board_min"] == row["board_max"] == 20
+
+
+def test_board_vintages_injected_into_the_artifact():
+    # 7/9 audit (gap a): the honest per-board vintage is recorded so the page can
+    # disclose the field's real age. Test the injection path only — reading the
+    # real snapshot files would drift daily.
+    payload = build_consensus_gap_board(
+        {"board": []},
+        board_vintages={
+            "board_source_dates": {"hkb": "2026-06-30", "sts": "2026-06-24"},
+            "board_min_date": "2026-06-24",
+        },
+    )
+    assert payload["board_min_date"] == "2026-06-24"
+    assert payload["board_source_dates"] == {"hkb": "2026-06-30", "sts": "2026-06-24"}
+
+
+def test_board_vintages_default_to_empty_when_absent():
+    payload = build_consensus_gap_board({"board": []})
+    assert payload["board_min_date"] is None
+    assert payload["board_source_dates"] == {}
+
+
 def test_guards_thin_boards_callups_and_the_symmetric_depth_rule():
     payload = build_consensus_gap_board({"board": [
         # only 2 boards -> below the 3-board corroboration bar, both sides
@@ -98,6 +144,10 @@ def test_gaps_page_drift_locks_to_the_committed_artifact():
     assert "sample-size statement" in html
     # consensus provenance: same math as the AOTC surfaces
     assert "build_consensus_gap_board.py" in html
+    # 7/9 audit (gap a): when the committed artifact carries a board_min_date, the
+    # page discloses the field's real vintage rather than stamping today only.
+    if artifact.get("board_min_date"):
+        assert "last refreshed" in html
 
 
 def test_gaps_wired_into_nav_llms_and_daily_build():
