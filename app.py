@@ -70,12 +70,13 @@ app = Flask(__name__)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
 # Deliberate public hold of the buys/AOTC surface until release; flip to False (and redeploy) to re-enable.
 AHEAD_OF_THE_CURVE_HOLD = False
-# Deliberate public hold of the call-up receipts board (7/1): the pre-launch exclusion
-# fix dropped the sample to 4 hits / 0 misses, too thin and too "perfect" to show
-# credibly. The daily build keeps computing valucast_call_up_receipts.json as usual
-# (shadow -- grabbing more post-launch data); only the public page/nav/share-card are
-# held. Flip to False (and redeploy) once there's a real sample.
-RECEIPTS_HOLD = True
+# Call-up receipts board: held 7/1 on a too-thin 4-0 sample; flipped public 7/9
+# after the detector fixes (flip detection, 40-man paperwork dates, at-promotion
+# standard), a 12-agent row-by-row verification, and the label-honesty batch --
+# board stands at 8 ahead / 0 behind / 22 no-claims with archive-provable lead
+# times. Flip back to True (and redeploy) to re-hold the page/nav/share-card;
+# the daily build computes the artifact either way.
+RECEIPTS_HOLD = False
 _GZIP_MIN_BYTES = 1024
 _GZIP_MIMETYPES = {
     "application/javascript",
