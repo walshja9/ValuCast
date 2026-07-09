@@ -358,6 +358,93 @@ def test_actual_call_up_date_shadow_absent_without_a_transactions_cache():
     assert "actual_call_up_date" not in payload["receipts"][0]
 
 
+def test_selection_with_same_day_option_is_not_a_call_up_date():
+    """A contract selection paired with a SAME-DAY option back to the minors is 40-man
+    roster paperwork (Rule-5 protection), not a promotion -- it must not count as the
+    player's call-up date. Proven case: Cooper Pratt, 2026-04-03 SE + same-day OPT."""
+    from prospects.call_up_receipts import _actual_call_up_dates
+
+    cache = {
+        "queries": {
+            "q": {
+                "transactions": [
+                    {"typeCode": "SE", "date": "2026-04-03", "effectiveDate": "2026-04-03",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"},
+                     "description": "selected the contract of SS Cooper Pratt"},
+                    {"typeCode": "OPT", "date": "2026-04-03", "effectiveDate": "2026-04-03",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"},
+                     "description": "optioned SS Cooper Pratt to Nashville Sounds"},
+                    {"typeCode": "CU", "date": "2026-06-16", "effectiveDate": "2026-06-16",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"},
+                     "description": "recalled SS Cooper Pratt from Nashville Sounds"},
+                ]
+            }
+        }
+    }
+    # The 4/03 SE+OPT paperwork is skipped; the real call-up is the 6/16 recall.
+    assert _actual_call_up_dates(cache) == {"806198": "2026-06-16"}
+
+
+def test_selection_without_same_day_option_still_counts():
+    """A genuine selection-to-active-roster with no same-day option counts as the call-up
+    date -- Noah Schultz's 2026-04-14 SE is the documented example."""
+    from prospects.call_up_receipts import _actual_call_up_dates
+
+    cache = {
+        "queries": {
+            "q": {
+                "transactions": [
+                    {"typeCode": "SE", "date": "2026-04-14", "effectiveDate": "2026-04-14",
+                     "person": {"id": 702273, "fullName": "Noah Schultz"},
+                     "description": "selected the contract of LHP Noah Schultz"},
+                    {"typeCode": "OPT", "date": "2026-05-01", "effectiveDate": "2026-05-01",
+                     "person": {"id": 702273, "fullName": "Noah Schultz"},
+                     "description": "optioned LHP Noah Schultz (different day)"},
+                ]
+            }
+        }
+    }
+    assert _actual_call_up_dates(cache) == {"702273": "2026-04-14"}
+
+
+def test_pratt_shaped_flow_passes_launch_guard_end_to_end():
+    """Pratt-shaped: a pre-launch SE+same-day OPT (40-man paperwork) plus a post-launch
+    recall. Corrected, the real call-up dates AFTER launch, so the row survives the
+    LAUNCH_DATE guard instead of being wrongly dropped as pre-launch."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-16", "board": [_rank_row(806198, "Cooper Pratt", 25, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-17", "board": []},  # disappears into the roster on/after launch
+    ]
+    roster = {"profiles": [{"mlbam_id": 806198, "active_mlb_roster": True}]}
+    transactions_cache = {
+        "queries": {
+            "q": {
+                "transactions": [
+                    {"typeCode": "SE", "date": "2026-04-03", "effectiveDate": "2026-04-03",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"}},
+                    {"typeCode": "OPT", "date": "2026-04-03", "effectiveDate": "2026-04-03",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"}},
+                    {"typeCode": "CU", "date": "2026-06-16", "effectiveDate": "2026-06-16",
+                     "person": {"id": 806198, "fullName": "Cooper Pratt"}},
+                ]
+            }
+        }
+    }
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-17T00:00:00+00:00",
+        transactions_cache=transactions_cache,
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert "806198_hitter" in keys  # survives -- real call-up (6/16) is not pre-launch
+    receipt = next(r for r in payload["receipts"] if r["identity_key"] == "806198_hitter")
+    assert receipt["actual_call_up_date"] == "2026-06-16"
+    assert payload["summary"]["pre_launch_excluded_count"] == 0
+
+
 def _rank_row(
     mlbam_id: int,
     name: str,

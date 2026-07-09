@@ -46,6 +46,13 @@ EXCLUDED_IDENTITY_KEYS = {"682634_hitter", "702273_pitcher"}
 # rehab assignments, trades, etc., which can make a player disappear from / reappear on
 # the ranked board without a fresh call-up actually happening (see Schultz above).
 CALL_UP_TRANSACTION_TYPE_CODES = {"SE", "CU", "PUR", "CP"}
+# Transactions that send a player back DOWN to the minors. When one of these lands on the
+# same date as a "call-up" (e.g. SE selected), the selection was 40-man roster paperwork,
+# not a genuine promotion -- the player never joins the active MLB roster (see Pratt in
+# _actual_call_up_dates). "OPT" (Optioned) and "OUT" (Outrighted) are both unambiguously
+# minors-directed per the cache descriptions; "ASG" (Assigned) is direction-ambiguous and
+# never co-occurs same-day with a call-up in the cache, so it's deliberately left out.
+TO_MINORS_TRANSACTION_TYPE_CODES = {"OPT", "OUT"}
 TRANSACTIONS_CACHE_PATH = ROOT / "data" / "mlb" / "mlb_availability_transactions_cache.json"
 
 # ValuCast's public board went live 2026-06-16 (Alex, 7/1). A call-up whose real date
@@ -84,11 +91,42 @@ def _clean_int(value: Any) -> int | None:
         return None
 
 
+def _to_minors_dates(transactions_cache: dict) -> set[tuple[str, str]]:
+    """(mlbam_id, date) pairs where the player was sent DOWN to the minors that day
+    (optioned/outrighted). Used to disqualify same-date "call-up" transactions that are
+    really 40-man roster paperwork -- see _actual_call_up_dates."""
+    pairs: set[tuple[str, str]] = set()
+    for query in (transactions_cache.get("queries") or {}).values():
+        if not isinstance(query, dict):
+            continue
+        for row in query.get("transactions") or []:
+            if not isinstance(row, dict) or row.get("typeCode") not in TO_MINORS_TRANSACTION_TYPE_CODES:
+                continue
+            mlbam_id = (row.get("person") or {}).get("id")
+            date = _date_part(row.get("effectiveDate") or row.get("date"))
+            if mlbam_id in (None, "") or not date:
+                continue
+            pairs.add((str(mlbam_id), date))
+    return pairs
+
+
 def _actual_call_up_dates(transactions_cache: dict) -> dict[str, str]:
     """Earliest genuine call-up transaction date per mlbam_id, across every cached
     transaction query. Observe-only: does not change call_up_date, sorting, or which
     rows count as receipts/misses -- it's a shadow field so the real date is visible
-    next to the archive-diff-inferred one (which can be wrong, e.g. Schultz above)."""
+    next to the archive-diff-inferred one (which can be wrong, e.g. Schultz above).
+
+    A call-up-typed transaction (SE/CU/PUR/CP) is IGNORED when the same player has a
+    same-date option/outright back to the minors. That pairing is 40-man roster
+    paperwork -- a contract SELECTION plus a SAME-DAY option to keep a Rule-5-protected
+    guy on the 40-man without ever putting him on the active MLB roster -- not a genuine
+    promotion. Proven case: Cooper Pratt (mlbam 806198), 2026-04-03 "selected the
+    contract" + SAME DAY "optioned to Nashville Sounds"; his real first call-up was the
+    2026-06-16 "recalled" (first MLB game 6/16). Without this guard the 4/03 pair dated
+    him pre-launch and the LAUNCH_DATE guard wrongly dropped him. (Luis Lara, mlbam
+    800325, is the same shape: 6/09 SE+OPT paperwork, real recall 7/07.) A GENUINE
+    selection with no same-day option still counts -- e.g. Noah Schultz's 2026-04-14 SE."""
+    to_minors = _to_minors_dates(transactions_cache)
     earliest: dict[str, str] = {}
     for query in (transactions_cache.get("queries") or {}).values():
         if not isinstance(query, dict):
@@ -101,6 +139,8 @@ def _actual_call_up_dates(transactions_cache: dict) -> dict[str, str]:
             if mlbam_id in (None, "") or not date:
                 continue
             key = str(mlbam_id)
+            if (key, date) in to_minors:
+                continue
             if key not in earliest or date < earliest[key]:
                 earliest[key] = date
     return earliest
