@@ -201,6 +201,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "RECENT_FORM_SIGNAL": tmp_path / "recent_form_signal.json",
         "CALL_UP_PULSE": tmp_path / "call_up_pulse.json",
         "AHEAD_OF_CONSENSUS_SCORECARD": tmp_path / "aotc_scorecard.json",
+        "VALUCAST_PROSPECT_COMPS": tmp_path / "valucast_prospect_comps.json",
+        "VALUCAST_CONSENSUS_GAP": tmp_path / "valucast_consensus_gap.json",
+        "VALUCAST_PROSPECT_RANK_V1": tmp_path / "valucast_prospect_rank_v1.json",
     }
     paths["VALUCAST_PROSPECT_INPUTS"].write_text(
         json.dumps(_valid_prospect_inputs()), encoding="utf-8"
@@ -216,7 +219,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     paths["REDRAFT_METADATA"].write_text(
-        json.dumps({"as_of": "2026-06-13"}), encoding="utf-8"
+        json.dumps({"as_of": "2026-06-13", "season": 2026}), encoding="utf-8"
     )
     paths["STATCAST"].write_text(
         json.dumps({"as_of": "2026-06-12"}), encoding="utf-8"
@@ -314,6 +317,20 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     )
     paths["SCOUTING_REPORTS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["VALUCAST_PROSPECT_COMPS"].write_text(
+        json.dumps({"generated_at": "2026-06-13", "players": [{}] * 20}),
+        encoding="utf-8",
+    )
+    paths["VALUCAST_CONSENSUS_GAP"].write_text(
+        json.dumps(
+            {"generated_at": "2026-06-13", "higher": [{}] * 3, "lower": [{}] * 3}
+        ),
+        encoding="utf-8",
+    )
+    paths["VALUCAST_PROSPECT_RANK_V1"].write_text(
+        json.dumps({"generated_at": "2026-06-13", "board": [{}] * 1500}),
+        encoding="utf-8",
     )
     paths["PROSPECT_LEAGUE_ADAPTERS"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"

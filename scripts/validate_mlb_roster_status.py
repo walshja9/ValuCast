@@ -42,8 +42,13 @@ def validate_mlb_roster_status(path: Path = ARTIFACT_PATH) -> list[str]:
         problems.append("validation.ready_for_public_snapshot must be true")
     if validation.get("duplicate_identity_count", 0) != 0:
         problems.append("duplicate_identity_count must be zero")
-    if validation.get("active_roster_profile_count", 0) <= 0:
+    active_count = validation.get("active_roster_profile_count", 0)
+    if active_count <= 0:
         problems.append("active_roster_profile_count must be positive")
+    elif active_count < 300:
+        problems.append(
+            f"active roster has {active_count} profiles (< 300) -- degraded fetch"
+        )
 
     seen = set()
     for idx, row in enumerate(payload.get("profiles") or []):

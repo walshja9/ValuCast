@@ -34,9 +34,10 @@ def refresh(
     metadata_path: str = DEFAULT_METADATA,
     raw_dir: str = DEFAULT_RAW_DIR,
     delay: float = 1.0,
-    season: int = 2026,
+    season: int | None = None,
 ) -> list[dict]:
     as_of = date.today().isoformat()
+    season = season or int(os.environ.get("VALUCAST_ACTUALS_SEASON") or date.today().year)
 
     # Step 1: Fetch and blend ROS projections
     print("Fetching ROS projections from FanGraphs...")
@@ -51,7 +52,7 @@ def refresh(
     _write_json(ros_players, ros_output_path)
 
     # Step 2: Fetch actuals from MLB Stats API
-    print("Fetching 2026 actuals from MLB Stats API...")
+    print(f"Fetching {season} actuals from MLB Stats API...")
     actual_players = build_actuals(season=season, as_of=as_of)
     actual_hitters = sum(1 for p in actual_players if p["pool"] == "hitter")
     actual_pitchers = len(actual_players) - actual_hitters
@@ -72,6 +73,7 @@ def refresh(
 
     metadata = {
         "as_of": as_of,
+        "season": season,
         "actuals_source": "mlb_stats_api",
         "ros_source": "fangraphs_steamer_ros",
         "actuals_hitters": actual_hitters,

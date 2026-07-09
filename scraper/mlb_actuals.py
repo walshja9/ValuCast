@@ -1,13 +1,19 @@
-"""Fetch 2026 YTD actuals from MLB Stats API and normalize to engine schema."""
+"""Fetch current-season YTD actuals from MLB Stats API and normalize to engine schema."""
 from __future__ import annotations
 
 import json
+import os
 import time
-from datetime import datetime
+from datetime import date, datetime
 from urllib.request import Request, urlopen
 
 MLB_API_BASE = "https://statsapi.mlb.com/api/v1"
 USER_AGENT = "Mozilla/5.0"
+
+
+def _default_season() -> int:
+    """Resolve the actuals season: env override, else current calendar year."""
+    return int(os.environ.get("VALUCAST_ACTUALS_SEASON") or date.today().year)
 
 HITTER_GAME_LOG_COUNTING = (
     "hits", "homeRuns", "runs", "rbi", "doubles", "triples", "strikeOuts",
@@ -182,8 +188,11 @@ def _fetch_json(url: str) -> dict:
     raise last
 
 
-def fetch_game_logs(mlbam_id: str, group: str, season: int = 2026, fetcher=None) -> list[dict]:
+def fetch_game_logs(
+    mlbam_id: str, group: str, season: int | None = None, fetcher=None
+) -> list[dict]:
     """Fetch one player's regular-season MLB game logs."""
+    season = season or _default_season()
     fetcher = fetcher or _fetch_json
     url = (
         f"{MLB_API_BASE}/people/{mlbam_id}/stats?"
@@ -242,23 +251,25 @@ def build_historical_actuals(
     return rows
 
 
-def fetch_actuals(season: int = 2026) -> dict[str, list[dict]]:
+def fetch_actuals(season: int | None = None) -> dict[str, list[dict]]:
     """Fetch YTD hitter and pitcher actuals from MLB Stats API.
 
     Returns {"hitters": [...], "pitchers": [...]} with raw API records.
     Raises on any fetch failure.
     """
+    season = season or _default_season()
     base = f"{MLB_API_BASE}/stats?stats=season&season={season}&sportId=1&limit=5000&playerPool=ALL"
     hitters = _fetch_json(f"{base}&group=hitting")["stats"][0]["splits"]
     pitchers = _fetch_json(f"{base}&group=pitching")["stats"][0]["splits"]
     return {"hitters": hitters, "pitchers": pitchers}
 
 
-def fetch_qs(pitchers: list[dict], season: int = 2026) -> dict[str, int]:
+def fetch_qs(pitchers: list[dict], season: int | None = None) -> dict[str, int]:
     """Derive QS from game logs for all pitchers with starts.
 
     Returns {mlbam_id_str: qs_count}. Raises on any game log fetch failure.
     """
+    season = season or _default_season()
     qs_map: dict[str, int] = {}
     for p in pitchers:
         gs = int(p["stat"].get("gamesStarted", 0))
@@ -271,10 +282,10 @@ def fetch_qs(pitchers: list[dict], season: int = 2026) -> dict[str, int]:
     return qs_map
 
 
-def build_actuals(season: int = 2026, as_of: str = "") -> list[dict]:
+def build_actuals(season: int | None = None, as_of: str = "") -> list[dict]:
     """Full pipeline: fetch actuals + QS, normalize, return player list."""
+    season = season or _default_season()
     if not as_of:
-        from datetime import date
         as_of = date.today().isoformat()
 
     raw = fetch_actuals(season)

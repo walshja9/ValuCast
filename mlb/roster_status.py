@@ -272,20 +272,47 @@ def run_mlb_roster_status(
     fetch_roster = roster_fetcher or _fetch_active_roster
     rosters_by_team = {}
     fetched_rosters = 0
+    degraded_teams: list[str] = []
     for team in teams:
         team_id = team.get("id")
         if team_id in (None, ""):
             continue
+        key = f"team:{team_id}:rosterType=active"
+        prior_entry = (cache.get("queries", {}).get(key) or {})
+        prior_rows = list(prior_entry.get("rows") or [])
         rows, fetched = _load_or_fetch(
-            key=f"team:{team_id}:rosterType=active",
+            key=key,
             cache=cache,
             fetcher=lambda team_id=team_id: fetch_roster(team_id),
             refresh=refresh,
             fetched_at=generated_at,
         )
+        # A statsapi 200-with-empty-roster would otherwise overwrite a good cached
+        # roster with []. When a refetch comes back empty but we have prior rows,
+        # keep the prior roster (and preserve its fetched_at) rather than publish
+        # a silently-degraded team.
+        if fetched and not rows and prior_rows:
+            rows = prior_rows
+            cache["queries"][key] = {
+                "fetched_at": prior_entry.get("fetched_at") or generated_at,
+                "rows": prior_rows,
+            }
+            degraded_teams.append(str(team_id))
         rosters_by_team[str(team_id)] = rows
         fetched_rosters += int(fetched)
     _save_cache(cache, cache_path)
+
+    if len(degraded_teams) > 5:
+        raise RuntimeError(
+            f"roster refetch returned empty for {len(degraded_teams)} teams "
+            "(> 5) -- likely a league-wide statsapi outage; refusing to publish"
+        )
+    if degraded_teams:
+        print(
+            "WARNING: kept prior cached roster for "
+            f"{len(degraded_teams)} team(s) that refetched empty: "
+            + ", ".join(degraded_teams)
+        )
 
     payload = build_mlb_roster_status(
         generated_at=generated_at,

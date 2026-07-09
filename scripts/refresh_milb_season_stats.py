@@ -286,6 +286,8 @@ def _prior_row_count(path: Path) -> int:
 
 
 def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
+    if os.environ.get("VALUCAST_SKIP_MILB_TINY_GUARD") == "1":
+        return  # offseason/season-rollover windows legitimately go tiny
     prior = _prior_row_count(path)
     if prior <= 0:
         return
@@ -295,6 +297,7 @@ def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
         raise ValueError(
             "refusing to write tiny MiLB stats refresh: "
             f"rows={rows} prior_rows={prior} floor={floor}"
+            " (legitimate offseason/rollover shrink? set VALUCAST_SKIP_MILB_TINY_GUARD=1)"
         )
 
 

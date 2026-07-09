@@ -51,6 +51,9 @@ jobs:
       - name: Rebuild same-day call-up pulse
         run: python scripts/build_call_up_pulse.py
 
+      - name: Validate roster status
+        run: python scripts/validate_mlb_roster_status.py
+
       - name: Validate call-up pulse
         run: python scripts/validate_call_up_pulse.py
 

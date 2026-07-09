@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import date
 from pathlib import Path
 
@@ -81,6 +82,9 @@ PLAYING_TIME_ROLE_TRACKER = (
     ROOT / "data" / "models" / "valucast_playing_time_role_tracker.json"
 )
 SCOUTING_REPORTS = ROOT / "data" / "models" / "valucast_scouting_reports.json"
+VALUCAST_PROSPECT_COMPS = ROOT / "data" / "models" / "valucast_prospect_comps.json"
+VALUCAST_CONSENSUS_GAP = ROOT / "data" / "models" / "valucast_consensus_gap.json"
+VALUCAST_PROSPECT_RANK_V1 = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 PUBLIC_SNAPSHOT = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 
 
@@ -135,18 +139,25 @@ def validate_public_data(expected_date: str) -> list[str]:
         (FRONT_OFFICE_REPORT, "generated_at"),
         (PLAYING_TIME_ROLE_TRACKER, "generated_at"),
         (SCOUTING_REPORTS, "generated_at"),
+        (VALUCAST_PROSPECT_COMPS, "generated_at"),
+        (VALUCAST_CONSENSUS_GAP, "generated_at"),
+        (VALUCAST_PROSPECT_RANK_V1, "generated_at"),
         (PUBLIC_SNAPSHOT, "generated_at"),
         (REDRAFT_METADATA, "as_of"),
         (STATCAST, "as_of"),
     ]
     # A dated-but-empty artifact passes a date-only gate: a builder that emits
     # {"generated_at": today, "players": []} validated "fresh" (7/2 audit).
-    # These payload lists can never legitimately be near-empty.
+    # These payload lists can never legitimately be near-empty. Each artifact
+    # maps to a tuple of (key, floor) pairs so one file can floor several keys.
     min_rows = {
-        MLB_DYNASTY_LAYER: ("players", 300),
-        MLB_ROSTER_STATUS: ("profiles", 300),
-        PROSPECT_MODEL_V07: ("candidates", 500),
-        PROSPECT_PEAK_PROJECTION: ("projections", 500),
+        MLB_DYNASTY_LAYER: (("players", 300),),
+        MLB_ROSTER_STATUS: (("profiles", 300),),
+        PROSPECT_MODEL_V07: (("candidates", 500),),
+        PROSPECT_PEAK_PROJECTION: (("projections", 500),),
+        VALUCAST_PROSPECT_COMPS: (("players", 20),),
+        VALUCAST_CONSENSUS_GAP: (("higher", 3), ("lower", 3)),
+        VALUCAST_PROSPECT_RANK_V1: (("board", 1500),),
     }
     for path, field in dated_artifacts:
         try:
@@ -160,13 +171,28 @@ def validate_public_data(expected_date: str) -> list[str]:
                 f"{_display_path(path)} {field}={actual or 'missing'}, "
                 f"expected {expected_date}"
             )
-        if path in min_rows:
-            key, floor = min_rows[path]
+        for key, floor in min_rows.get(path, ()):
             n = len(payload.get(key) or [])
             if n < floor:
                 problems.append(
                     f"{_display_path(path)} {key} has {n} rows (< {floor}) -- "
                     "dated-fresh but semantically empty"
+                )
+        # The actuals metadata re-stamps as_of=today daily, so a stale-season
+        # scrape can pass the date gate while silently serving last year's stats.
+        # Assert the recorded season matches the expected year (env override lets
+        # an intentional cross-year backfill through).
+        if path is REDRAFT_METADATA and not os.environ.get("VALUCAST_ACTUALS_SEASON"):
+            season = payload.get("season")
+            if season is None:
+                problems.append(
+                    f"{_display_path(path)} season is missing -- "
+                    "cannot verify actuals are current-year"
+                )
+            elif int(season) != int(expected_date[:4]):
+                problems.append(
+                    f"{_display_path(path)} season={season}, "
+                    f"expected {expected_date[:4]}"
                 )
 
     list_artifacts = [REDRAFT_CURRENT, REDRAFT_ROS]

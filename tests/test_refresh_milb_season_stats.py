@@ -118,3 +118,18 @@ def test_write_refuses_tiny_refresh_against_existing_file(tmp_path):
         refresh.write_milb_season_stats({"hitters": [], "pitchers": []}, path)
 
     assert json.loads(path.read_text(encoding="utf-8")) == existing
+
+
+def test_write_allows_tiny_refresh_when_skip_flag_set(tmp_path, monkeypatch):
+    path = tmp_path / "milb_season_stats.json"
+    existing = {
+        "hitters": [{"mlbam_id": i} for i in range(800)],
+        "pitchers": [{"mlbam_id": 1000 + i} for i in range(800)],
+    }
+    path.write_text(json.dumps(existing), encoding="utf-8")
+
+    monkeypatch.setenv("VALUCAST_SKIP_MILB_TINY_GUARD", "1")
+    tiny = {"hitters": [{"mlbam_id": 42}], "pitchers": []}
+    refresh.write_milb_season_stats(tiny, path)
+
+    assert json.loads(path.read_text(encoding="utf-8")) == tiny
