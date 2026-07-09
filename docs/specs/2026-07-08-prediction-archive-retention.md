@@ -2,8 +2,17 @@
 
 Status: **decision deferred until after the AOTC gate unlock (~2026-07-13)**.
 This memo exists so that call is a 30-minute decision instead of a
-re-investigation. The free, output-identical win (shallow CI clones,
-`fetch-depth: 1` in all three scheduled workflows) shipped with this memo.
+re-investigation. Shallow clones (`fetch-depth: 1`) shipped with this memo for
+prospect-shadow and roster-pulse only.
+
+**Correction (2026-07-09):** the original claim that no build step reads git
+history was WRONG. `load_steamer_ros_from_git`
+(`mlb/projection_source_comparison.py:380`) runs `git log --before=<as_of-20d>`
+against `data/projections/ros.json` inside the daily-public-data build, so that
+workflow requires full history — depth 1 broke the 7/9 build and was reverted.
+If daily clone cost ever matters, the right move is `fetch-depth: 0` +
+`filter: blob:none` (blobless clone keeps history, lazy-fetches only the blobs
+the comparison actually reads) — test on a dispatch run first.
 
 ## The growth numbers (as of 2026-07-08, commit `72e68864`)
 
