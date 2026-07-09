@@ -576,9 +576,8 @@ def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_P
     Reads the denoised valucast_prospect_movers.json and surfaces the biggest
     score moves (risers + fallers), so the strip carries zero DD-sourced fields.
     """
-    try:
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    data = _load_artifact(Path(path))
+    if not isinstance(data, dict):
         return []
     strip = []
     for row in (data.get("rising") or []) + (data.get("cooling") or []):
@@ -597,11 +596,13 @@ def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_P
 public_snapshot_store = PublicSnapshotStore(PUBLIC_SNAPSHOT_PATH)
 valucast_buy_store = ValuCastBuyStore(VALUCAST_BUYS_PATH)
 
-# Universal prospect profiles loaded ONCE at startup (9.4MB) for the live
-# settings-aware re-ranking adapter — never read per-request. Keyed
-# (int(mlbam_id), role) -> profile, mirroring prospects.forward_shadow._profile_index.
-# If the artifact is missing/empty the feature degrades to unavailable and the
-# board still serves its default order (every path returns 200).
+# Universal prospect profiles for the live settings-aware re-ranking adapter —
+# parsed lazily on FIRST USE, not at import: the artifact is ~11MB and workers
+# recycle every ~300 requests, so an import-time parse taxed every boot even
+# when no prospect re-rank ever ran. Keyed (int(mlbam_id), role) -> profile,
+# mirroring prospects.forward_shadow._profile_index. If the artifact is
+# missing/empty the feature degrades to unavailable and the board still serves
+# its default order (every path returns 200).
 UNIVERSAL_PROSPECT_MODEL_PATH = Path(os.environ.get(
     "VALUCAST_UNIVERSAL_PROSPECT_MODEL_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_universal_prospect_model.json"),
@@ -624,9 +625,18 @@ def _load_universal_prospect_profiles(path):
     return index, bool(index)
 
 
-_UNIVERSAL_PROSPECT_PROFILES, _UNIVERSAL_PROSPECT_AVAILABLE = (
-    _load_universal_prospect_profiles(UNIVERSAL_PROSPECT_MODEL_PATH)
-)
+@lru_cache(maxsize=1)
+def _universal_prospect_profiles_cached():
+    """One-time lazy parse of the universal model (thread-safe: worst case
+    under --threads 4 is a duplicate parse, never a torn read)."""
+    return _load_universal_prospect_profiles(UNIVERSAL_PROSPECT_MODEL_PATH)
+
+
+# Availability gate = a cheap existence stat, so routes can branch without
+# triggering the 11MB parse. (A present-but-corrupt artifact now parses to an
+# empty index on first use instead of flipping this flag at import — the
+# adapter path degrades the same way: no re-rank, still 200.)
+_UNIVERSAL_PROSPECT_AVAILABLE = UNIVERSAL_PROSPECT_MODEL_PATH.exists()
 # Null-object served when no ValuCast snapshot is usable: is_available is False, so
 # routes fall through to their existing "unavailable" handling. DD is NEVER served as
 # a valuation source — only a ready or stale-but-valid ValuCast snapshot, else this.
@@ -903,15 +913,45 @@ def _dynasty_tiers_for(rows, settings, value_of=None):
     return tiers
 
 
-def _dynasty_metadata(settings, value_of=None):
+_DYNASTY_METADATA_CACHE: OrderedDict[tuple, tuple] = OrderedDict()
+# settings fields are clamped user input and presets are a fixed vocabulary, but
+# the cross product is still user-driven — bound the LRU like the redraft bundle.
+_DYNASTY_METADATA_MAX = 16
+
+
+def _dynasty_metadata(settings, preset=None):
     """Dynasty $ and tiers computed on the FULL DD universe shaped by league
-    settings, so they don't change when the displayed rows are filtered."""
-    value_of = value_of or (lambda r: r.dynasty_value)
+    settings, so they don't change when the displayed rows are filtered.
+
+    Memoized per (feed generation, settings, preset): `preset` — not a value_of
+    callable — is the cache identity because it fully determines the sort key
+    (`row.value_for(preset)` when set, `row.dynasty_value` otherwise), and
+    LeagueSettings is a frozen dataclass whose four fields are its whole state.
+    A daily refresh restamps `generated_at`, so the key can never serve stale
+    rows within a process. Returned dicts are read-only to all consumers."""
+    key = (
+        dd_store.generated_at,
+        (settings.teams, settings.budget, settings.roster, settings.pslots),
+        preset,
+    )
+    hit = _DYNASTY_METADATA_CACHE.get(key)
+    if hit is not None:
+        return hit
+    value_of = (
+        (lambda r: r.value_for(preset)) if preset else (lambda r: r.dynasty_value)
+    )
     all_rows = sorted(dd_store.get_all(), key=value_of, reverse=True)
-    return (
+    result = (
         _compute_dynasty_dollars(all_rows, settings, value_of=value_of),
         _dynasty_tiers_for(all_rows, settings, value_of=value_of),
     )
+    _DYNASTY_METADATA_CACHE[key] = result  # single-reference assign, fully built
+    while len(_DYNASTY_METADATA_CACHE) > _DYNASTY_METADATA_MAX:
+        try:
+            _DYNASTY_METADATA_CACHE.popitem(last=False)
+        except KeyError:
+            break
+    return result
 
 
 FIT_CATS = ("R", "HR", "RBI", "SB", "AVG", "OBP", "OPS", "SLG", "H", "BB",
@@ -1228,7 +1268,7 @@ def _custom_prospect_ranks(cats_tuple, pcats_tuple):
     from prospects.adapters import adapt_categories
     hitter_cats = {_to_adapter_category(cat): weight for cat, weight in cats_tuple}
     pitcher_cats = {_to_adapter_category(cat): weight for cat, weight in pcats_tuple}
-    profiles = list(_UNIVERSAL_PROSPECT_PROFILES.values())
+    profiles = list(_universal_prospect_profiles_cached()[0].values())
     result = adapt_categories(
         profiles,
         name="prospect_board",
@@ -3823,7 +3863,9 @@ def _build_dynasty_context(args):
         }
     else:
         preset_rank_by_id = {}
-    dynasty_dollars, tiers = _dynasty_metadata(settings, value_of=value_of)
+    # `active_preset` (not the value_of closure) is the cache identity: it fully
+    # determines value_of above, and it's a stable string/None.
+    dynasty_dollars, tiers = _dynasty_metadata(settings, preset=active_preset)
     summary = f"{settings.summary()} · {_dynasty_category_summary(cats, pcats)}"
     return {
         "mode": "dd_dynasty",
@@ -4068,6 +4110,55 @@ def _horizon_of(mode: str) -> str:
     return "redraft"
 
 
+_REDRAFT_BUNDLE_CACHE: OrderedDict[tuple, dict] = OrderedDict()
+# weights/pt params are raw user input -> unbounded key space; bound the LRU so a
+# fuzzed query stream can't grow this without limit on the 512MB worker.
+_REDRAFT_BUNDLE_MAX = 16
+
+
+def _redraft_board_bundle(active, config, source_name, generation,
+                          mode, cats_t, pcats_t, rules_str, pt_t, split_rp, weights_t):
+    """Value the canonical universe and its display metadata once per
+    (source, config) generation. Everything here depends ONLY on the active
+    store and the config — never on pool/position/search filter args — so it's
+    safe to memoize across every filtered view of the same board. The key
+    includes the store's generation (`active.as_of`), so a daily refresh (new
+    `as_of`) misses and recomputes; nothing can go stale within a process.
+    Cached objects are treated as immutable by callers (filtering rebinds new
+    lists; it never mutates `all_results`/`metadata_pool`/the metadata dicts)."""
+    key = (source_name, generation, mode, cats_t, pcats_t, rules_str, pt_t,
+           split_rp, weights_t)
+    hit = _REDRAFT_BUNDLE_CACHE.get(key)
+    if hit is not None:
+        return hit
+    all_results = _redraft_value_players(_valuation_players(active_store=active), config)
+    all_results.sort(key=lambda r: r.total_value, reverse=True)
+    redraft_value_scale = _redraft_value_scale(all_results)
+    metadata_pool = all_results[:200]
+    position_ranks = _compute_position_ranks(metadata_pool)
+    dollar_values = _compute_dollar_values(metadata_pool)
+    tiers = _compute_tiers(metadata_pool)
+    overall_ranks = {r.player.id: i for i, r in enumerate(all_results, 1)}
+    canonical_ids = {r.player.id for r in all_results}
+    bundle = {
+        "all_results": all_results,
+        "redraft_value_scale": redraft_value_scale,
+        "metadata_pool": metadata_pool,
+        "position_ranks": position_ranks,
+        "dollar_values": dollar_values,
+        "tiers": tiers,
+        "overall_ranks": overall_ranks,
+        "canonical_ids": canonical_ids,
+    }
+    _REDRAFT_BUNDLE_CACHE[key] = bundle  # single-reference assign, fully built above
+    while len(_REDRAFT_BUNDLE_CACHE) > _REDRAFT_BUNDLE_MAX:
+        try:
+            _REDRAFT_BUNDLE_CACHE.popitem(last=False)
+        except KeyError:
+            break
+    return bundle
+
+
 def _build_context(args):
     """Parse request args and build template context."""
     mode = args.get("mode", "categories")
@@ -4128,15 +4219,23 @@ def _build_context(args):
     )
     # Value the canonical universe (search/filter-independent) so display metadata is
     # stable. A search may surface sub-threshold players for DISPLAY only; it must not
-    # change the pool the metadata is computed on.
-    all_results = _redraft_value_players(_valuation_players(active_store=active), config)
-    all_results.sort(key=lambda r: r.total_value, reverse=True)
-    redraft_value_scale = _redraft_value_scale(all_results)
-
+    # change the pool the metadata is computed on. The whole bundle (results, scale,
+    # metadata_pool, $/ranks/tiers, overall ranks) depends only on (source, config)
+    # generation, so it is memoized per that key — filtering below rebinds new lists
+    # and never mutates the cached objects.
+    bundle = _redraft_board_bundle(
+        active, config,
+        args.get("source", "") or "steamer", active.as_of,
+        mode, tuple(cats), tuple(pcats), rules_str,
+        tuple(sorted(pt_params.items())), split_rp,
+        tuple(sorted(weights.items())),
+    )
+    all_results = bundle["all_results"]
+    redraft_value_scale = bundle["redraft_value_scale"]
     # Metadata pool = the fixed top-200-by-value of the full universe (the same set the
     # default unfiltered board shows). Computing $/ranks/tiers here keeps the default
     # board byte-identical AND makes filtered views show the SAME numbers.
-    metadata_pool = all_results[:200]
+    metadata_pool = bundle["metadata_pool"]
 
     # Display set: filter the full universe, then surface sub-threshold search matches.
     results = all_results
@@ -4202,16 +4301,16 @@ def _build_context(args):
             for cat in active_categories
         ]
 
-    # Position ranks, auction dollar values, and tier visualization
-    position_ranks = _compute_position_ranks(metadata_pool)
-    dollar_values = _compute_dollar_values(metadata_pool)
-    tiers = _compute_tiers(metadata_pool)
+    # Position ranks, auction dollar values, and tier visualization (from the bundle).
+    position_ranks = bundle["position_ranks"]
+    dollar_values = bundle["dollar_values"]
+    tiers = bundle["tiers"]
 
     # Overall rank from the canonical universe (filter-independent). Players not in the
     # canonical universe (sub-threshold search matches) are below the valuation floor:
     # they show a projection but no rank/value/$/tier.
-    overall_ranks = {r.player.id: i for i, r in enumerate(all_results, 1)}
-    canonical_ids = {r.player.id for r in all_results}
+    overall_ranks = bundle["overall_ranks"]
+    canonical_ids = bundle["canonical_ids"]
 
     return {
         "mode": mode,
@@ -6506,6 +6605,26 @@ def positional_share_card_png(position):
     return response
 
 
+_VALUE_MAP_CACHE = (None, None)  # (generation_key, players) — swapped atomically
+
+
+def _value_map_payload():
+    """Memoized value-map payload, keyed on the DD feed generation. The map's
+    three consumers (/map, /api/value-map-players, the share card) all read this
+    ~2,700-row list built from the full dd_store; it changes only on a daily
+    refresh (new `generated_at`). Consumers treat the list as read-only."""
+    global _VALUE_MAP_CACHE
+    key = dd_store.generated_at
+    cached_key, cached_players = _VALUE_MAP_CACHE  # one read of the tuple ref
+    if cached_key == key and cached_players is not None:
+        return cached_players
+    players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
+    # Build the (key, players) pair fully, then swap the tuple in one assignment
+    # (no key-before-payload window under --threads 4; worst case = duplicate build).
+    _VALUE_MAP_CACHE = (key, players)
+    return players
+
+
 def _value_map_players(rows):
     """Slim, committed-feed-only payload for the value map."""
     payload = []
@@ -6538,7 +6657,7 @@ def _value_map_players(rows):
 
 @app.route("/map")
 def value_map():
-    players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
+    players = _value_map_payload()
     return render_template(
         "value_map.html",
         player_count=len(players),
@@ -6553,7 +6672,7 @@ def value_map():
 
 @app.route("/api/value-map-players")
 def value_map_players_api():
-    players = _value_map_players(dd_store.get_all()) if dd_store.is_available else []
+    players = _value_map_payload()
     return jsonify({
         "players": players,
         "count": len(players),
@@ -6754,7 +6873,7 @@ def value_map_share_card_png():
         return "", 503
     pool = request.args.get("pool") or "all"
     position = request.args.get("position") or None
-    players = _value_map_players(dd_store.get_all())
+    players = _value_map_payload()
     png = _value_map_share_card_png(players, pool=pool, position=position)
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
@@ -6785,10 +6904,7 @@ def value_map_share_card():
 
 
 def _load_movers_payload(path=VALUCAST_MOVERS_PATH):
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    payload = _load_artifact(Path(path))
     return payload if isinstance(payload, dict) else {}
 
 
@@ -6958,10 +7074,7 @@ def movers_share_card():
 
 
 def _load_receipts_payload(path=VALUCAST_RECEIPTS_PATH):
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    payload = _load_artifact(Path(path))
     return payload if isinstance(payload, dict) else {}
 
 
@@ -6987,10 +7100,7 @@ _LEDGER_SCORECARD_PATH = (
 
 
 def _load_scorecard_payload():
-    try:
-        sc = json.loads(_LEDGER_SCORECARD_PATH.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
+    sc = _load_artifact(_LEDGER_SCORECARD_PATH)
     return sc if isinstance(sc, dict) else None
 
 

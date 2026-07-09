@@ -1642,3 +1642,61 @@ class TestConsensusLabelsAndYoungBadge(unittest.TestCase):
         self.assertIn("HKB", html)                # initials only
         self.assertNotIn("Harry Knows Ball", html)
         self.assertIn("the field", html)          # gap note vs consensus
+
+
+class TestServingCaches(unittest.TestCase):
+    """Generation-keyed caches across the serving layer (plan 005): the caches
+    change WHEN work happens, never WHAT is served."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_home_page_byte_identical_across_repeat_requests(self):
+        first = self.client.get("/")
+        second = self.client.get("/")
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(first.status_code, second.status_code)
+        self.assertEqual(first.data, second.data)
+
+    def test_value_map_api_stable_across_calls(self):
+        first = self.client.get("/api/value-map-players")
+        second = self.client.get("/api/value-map-players")
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(first.data, second.data)
+
+    def test_redraft_bundle_cache_hits_then_misses_on_new_generation(self):
+        # Repeated identical (source, generation, config) keys return the SAME
+        # cached bundle object; a new generation stamp must MISS and recompute.
+        config = app_module.build_config(mode="categories")
+        default_key = (
+            "categories",
+            tuple(app_module.DEFAULT_CATS), tuple(app_module.DEFAULT_PCATS),
+            "", (), False, (),
+        )
+        b1 = app_module._redraft_board_bundle(
+            store, config, "steamer", store.as_of, *default_key)
+        b2 = app_module._redraft_board_bundle(
+            store, config, "steamer", store.as_of, *default_key)
+        self.assertIs(b1, b2)  # cache HIT: same object, no recompute
+        b3 = app_module._redraft_board_bundle(
+            store, config, "steamer", "9999-99-99", *default_key)
+        self.assertIsNot(b1, b3)  # new generation -> MISS
+
+    def test_value_map_cache_misses_on_new_generation(self):
+        if not app_module.dd_store.is_available:
+            self.skipTest("dd snapshot not available")
+        players_a = app_module._value_map_payload()
+        players_again = app_module._value_map_payload()
+        self.assertIs(players_a, players_again)  # HIT: identical list object
+        # generated_at is a read-only property over _generated_at — patch the
+        # backing field to simulate a daily refresh restamping the feed.
+        original = app_module.dd_store._generated_at
+        try:
+            app_module.dd_store._generated_at = "0000-00-00"
+            players_b = app_module._value_map_payload()
+            self.assertIsNot(players_a, players_b)  # MISS: recomputed
+        finally:
+            app_module.dd_store._generated_at = original
+            app_module._value_map_payload()  # restore cache to the real generation
