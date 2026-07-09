@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 1  # no build step reads git history; .git is 1.6GB — full clones cost real minutes
 
       - name: Sync to latest origin/master
         run: |

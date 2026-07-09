@@ -56,7 +56,7 @@ classified per the requested taxonomy:
 | 003  | Strip unused DD context keys from public snapshot + tighten panel label | P2 | S | — | DONE (Fable, 6/17; 1312 pass, ruff clean) |
 | 004  | Pipeline honesty: season/offseason guards + gates for ungated surfaces | P1 | M | — | DONE (opus executor + Fable review, 7/8; 27 targeted pass, both validators green; also fixed a 4th hardcoded season in fetch_game_logs; freshness gate reports metadata season missing until the next daily build writes it — by design) |
 | 005  | Serving cache pass: generation-keyed caches on the hot routes | P1 | M | 007 first (both edit app.py) | TODO |
-| 006  | Archive growth containment: shallow CI clones + retention decision memo | P2 | S | — | TODO |
+| 006  | Archive growth containment: shallow CI clones + retention decision memo | P2 | S | — | DONE (Fable direct, 7/8; fetch-depth 1 ×3, YAML valid, memo at docs/specs/2026-07-08-prediction-archive-retention.md; retention itself = plan 009 post-7/13) |
 | 007  | PNG cache: thread race fix + w_/pt_ key hardening | P1 | S | — | DONE (opus executor + Fable review, 7/8; review caught a pt_ cache-poisoning hole — unknown-but-real stat suffixes now dropped at parse via `_POINT_STAT_IDS`; 154 pass) |
 | 008  | Self-host web fonts; drop Google origins from CSP | P2 | S-M | — | TODO |
 
