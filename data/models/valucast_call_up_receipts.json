@@ -1,7 +1,38 @@
 {
   "artifact": "valucast_call_up_receipts",
-  "generated_at": "2026-07-09T13:36:07.771996+00:00",
-  "misses": [],
+  "generated_at": "2026-07-09T17:28:14.068801+00:00",
+  "misses": [
+    {
+      "actual_call_up_date": "2026-06-21",
+      "call_up_date": "2026-07-04",
+      "consensus_rank": 184,
+      "divergence": -778,
+      "identity_key": "703615_pitcher",
+      "level": "AAA",
+      "logged_at": "2026-07-09T17:28:14.068801+00:00",
+      "mlbam_id": "703615",
+      "name": "Jose Cabrera",
+      "pos": "P",
+      "role": "pitcher",
+      "team": "ARI",
+      "valucast_rank": 962
+    },
+    {
+      "actual_call_up_date": "2026-06-27",
+      "call_up_date": "2026-07-04",
+      "consensus_rank": 162,
+      "divergence": -360,
+      "identity_key": "815873_hitter",
+      "level": "AAA",
+      "logged_at": "2026-07-09T17:28:14.068801+00:00",
+      "mlbam_id": "815873",
+      "name": "Sean Keys",
+      "pos": "1B",
+      "role": "hitter",
+      "team": "TOR",
+      "valucast_rank": 522
+    }
+  ],
   "receipts": [
     {
       "actual_call_up_date": "2026-06-26",
@@ -17,6 +48,23 @@
       "role": "hitter",
       "team": "CLE",
       "valucast_rank": 54
+    },
+    {
+      "actual_call_up_date": "2026-07-01",
+      "call_up_date": "2026-07-01",
+      "consensus_rank": null,
+      "divergence": null,
+      "field_label": "field outside top 100",
+      "identity_key": "687312_pitcher",
+      "level": "AAA",
+      "logged_at": "2026-07-09T00:00:00+00:00",
+      "mlbam_id": "687312",
+      "name": "Gabriel Hughes",
+      "pos": "SP",
+      "role": "pitcher",
+      "seed": true,
+      "team": "COL",
+      "valucast_rank": 9
     },
     {
       "actual_call_up_date": "2026-06-29",
@@ -117,19 +165,32 @@
       "2026-07-08",
       "2026-07-09"
     ],
-    "miss_count": 0,
-    "pre_launch_excluded_count": 7,
+    "miss_count": 2,
+    "pre_launch_excluded_count": 20,
     "pre_launch_excluded_names": [
       "A.J. Ewing",
+      "Blaze Jordan",
       "Braden Montgomery",
+      "Cole Carrigg",
+      "Colt Emerson",
       "Cooper Pratt",
+      "Denzer Guzman",
+      "Didier Fuentes",
       "Edwin Arroyo",
+      "Esmerlyn Valdez",
+      "Gage Jump",
       "JR Ritchie",
+      "Jacob Gonzalez",
+      "Jake Bennett",
+      "Jesus Rodriguez",
+      "Jimmy Crooks",
       "Joe Mack",
-      "Pedro Ram\u00edrez"
+      "Luis Lara",
+      "Pedro Ram\u00edrez",
+      "Tommy Troy"
     ],
-    "receipt_count": 4,
-    "seed_count": 0
+    "receipt_count": 5,
+    "seed_count": 1
   },
   "validation": {
     "blockers": [],

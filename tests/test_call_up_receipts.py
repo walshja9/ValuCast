@@ -76,6 +76,91 @@ def test_detect_receipts_recomputes_consensus_and_merges_idempotently():
     assert second == first
 
 
+def test_detect_receipts_flags_on_board_active_roster_flip():
+    """7/4+ the board RETAINS called-up rookies on-board with active_mlb_roster=True
+    instead of dropping them, so a call-up is no longer a disappearance. The flag
+    flipping falsy->True while the player stays on-board must still mint a receipt,
+    dated the archive where the flip is first observed."""
+    from prospects.call_up_receipts import detect_receipts
+
+    prev_board = {
+        "date": "2026-07-03",
+        "board": [_rank_row(101, "Flipped Up", 20, {"pipeline": 90, "hkb": 95, "sts": 100})],
+    }
+    cur_board = {
+        "date": "2026-07-04",
+        "board": [
+            _rank_row(101, "Flipped Up", 20, {"pipeline": 90, "hkb": 95, "sts": 100},
+                      active_mlb_roster=True),
+        ],
+    }
+    roster = {"101": {"active_mlb_roster": True}}
+
+    receipts = detect_receipts(prev_board, cur_board, "2026-07-04", roster, [])
+
+    assert [r["identity_key"] for r in receipts] == ["101_hitter"]
+    assert receipts[0]["consensus_rank"] == 95 and receipts[0]["divergence"] == 75
+    assert receipts[0]["call_up_date"] == "2026-07-04"  # the archive where the flip shows
+
+
+def test_flip_and_later_disappearance_do_not_double_mint():
+    """A player who flips on-board active_mlb_roster=True, then later drops off the
+    board entirely, must keep exactly one receipt (earliest call-up date), not two."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-07-03", "board": [
+            _rank_row(101, "Flip Then Gone", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-07-04", "board": [  # flip observed here
+            _rank_row(101, "Flip Then Gone", 20, {"pipeline": 90, "hkb": 95, "sts": 100},
+                      active_mlb_roster=True)]},
+        {"date": "2026-07-05", "board": []},  # now disappears entirely
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-05T00:00:00+00:00",
+    )
+    hits = [r for r in payload["receipts"] if r["identity_key"] == "101_hitter"]
+    assert len(hits) == 1  # exactly one receipt, no double-count
+    assert hits[0]["call_up_date"] == "2026-07-04"  # earliest event (the flip) wins
+
+
+def test_guards_still_filter_flip_detected_players():
+    """The full guard chain (MIN_BOARDS, hit-magnitude band, roster confirmation,
+    EXCLUDED_IDENTITY_KEYS) applies to flip-detected rows exactly as to disappearances."""
+    from prospects import call_up_receipts as cur
+
+    prev = [
+        _rank_row(101, "One Board Only", 20, {"pipeline": 90}),                 # MIN_BOARDS fail
+        _rank_row(102, "Field Agrees", 50, {"pipeline": 55, "hkb": 52, "sts": 60}),  # divergence in noise band
+        _rank_row(103, "Not On Roster", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),  # roster confirm fail
+        _rank_row(682634, "Denylisted", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),  # EXCLUDED
+        _rank_row(200, "Clean Hit", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),      # passes
+    ]
+    on = lambda r: {**r, "active_mlb_roster": True}
+    archives = [
+        {"date": "2026-07-03", "board": prev},
+        {"date": "2026-07-04", "board": [on(r) for r in prev]},  # all flip on-board
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 101, "active_mlb_roster": True},
+        {"mlbam_id": 102, "active_mlb_roster": True},
+        # 103 deliberately absent from the roster lookup
+        {"mlbam_id": 682634, "active_mlb_roster": True},
+        {"mlbam_id": 200, "active_mlb_roster": True},
+    ]}
+
+    payload = cur.build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-04T00:00:00+00:00",
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert keys == ["200_hitter"]  # only the clean, corroborated, on-roster hit survives
+    assert "682634_hitter" not in keys  # denylist still applies to flips
+
+
 def test_build_merges_seed_rows_and_auto_wins_on_identity_collision():
     from prospects.call_up_receipts import build_call_up_receipts
 
@@ -273,8 +358,15 @@ def test_actual_call_up_date_shadow_absent_without_a_transactions_cache():
     assert "actual_call_up_date" not in payload["receipts"][0]
 
 
-def _rank_row(mlbam_id: int, name: str, rank: int, source_ranks: dict) -> dict:
-    return {
+def _rank_row(
+    mlbam_id: int,
+    name: str,
+    rank: int,
+    source_ranks: dict,
+    *,
+    active_mlb_roster: bool | None = None,
+) -> dict:
+    row = {
         "mlbam_id": mlbam_id,
         "role": "hitter",
         "name": name,
@@ -284,3 +376,6 @@ def _rank_row(mlbam_id: int, name: str, rank: int, source_ranks: dict) -> dict:
         "rank": rank,
         "context_only": {"source_ranks": source_ranks},
     }
+    if active_mlb_roster is not None:
+        row["active_mlb_roster"] = active_mlb_roster
+    return row

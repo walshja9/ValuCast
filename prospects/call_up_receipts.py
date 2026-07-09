@@ -257,6 +257,44 @@ def _miss_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
     return base if kind == "miss" else None
 
 
+def _on_mlb_roster(row: dict) -> bool:
+    """True when the ranked-board row itself carries the active-MLB-roster flag.
+
+    Since 2026-07-04 the prospect board RETAINS called-up rookies on-board with
+    ``active_mlb_roster: True`` (see prospects/ahead_of_consensus.py rookie-retention
+    note) instead of dropping them, so a call-up no longer shows up as a disappearance.
+    The flag flipping falsy->True is the on-board signal that the promotion happened.
+    """
+    return row.get("active_mlb_roster") is True
+
+
+def _call_up_events(
+    prev_by_key: dict[str, dict],
+    cur_by_key: dict[str, dict],
+) -> list[tuple[str, dict, dict]]:
+    """(identity_key, source_row, cur_row) pairs that look like a fresh call-up.
+
+    Two shapes, both minted through the same path/guards downstream:
+      * disappearance -- on last board, gone from this one (the pre-7/04 signal); the
+        source row is the PREV row, since the player is no longer in ``cur``.
+      * flip -- on-board in both, ``active_mlb_roster`` newly True this board (the
+        7/04+ retention signal); the source row is the CUR row, where the flip is
+        first observed, so its date (cur_date) is the defensible committed call-up date.
+    Disappearance and flip are mutually exclusive within a pair (a disappearance is not
+    in ``cur`` at all), so a player yields at most one event here; cross-pair dedupe by
+    identity_key happens in the merge loop below (a player who flips then later
+    disappears/reappears keeps his earliest receipt, never gets a second row).
+    """
+    events: list[tuple[str, dict, dict]] = []
+    cur_keys = set(cur_by_key)
+    for key in sorted(set(prev_by_key) - cur_keys):
+        events.append((key, prev_by_key[key], prev_by_key[key]))
+    for key in sorted(prev_by_key.keys() & cur_keys):
+        if not _on_mlb_roster(prev_by_key[key]) and _on_mlb_roster(cur_by_key[key]):
+            events.append((key, cur_by_key[key], cur_by_key[key]))
+    return events
+
+
 def _detect_call_ups(
     prev_board: dict | list,
     cur_board: dict | list,
@@ -267,7 +305,8 @@ def _detect_call_ups(
     *,
     logged_at: str | None = None,
 ) -> list[dict]:
-    """Merge call-ups (built by ``from_row``) for prospects that disappeared into the roster."""
+    """Merge call-ups (built by ``from_row``) for prospects that disappeared into the
+    roster OR whose on-board ``active_mlb_roster`` flag flipped falsy->True."""
     logged_at = logged_at or f"{cur_date}T00:00:00+00:00"
     merged = {row["identity_key"]: row for row in existing_rows}
     prev_by_key = {
@@ -275,18 +314,17 @@ def _detect_call_ups(
         for row in _rows(prev_board)
         if (key := _identity_key(row)) is not None
     }
-    cur_keys = {
-        key
+    cur_by_key = {
+        key: row
         for row in _rows(cur_board)
         if (key := _identity_key(row)) is not None
     }
 
-    for key in sorted(set(prev_by_key) - cur_keys):
-        row = prev_by_key[key]
-        mlbam_id = row.get("mlbam_id")
+    for key, source_row, _cur_row in _call_up_events(prev_by_key, cur_by_key):
+        mlbam_id = source_row.get("mlbam_id")
         if str(mlbam_id) not in roster_lookup:
             continue
-        receipt = from_row(row, cur_date, logged_at)
+        receipt = from_row(source_row, cur_date, logged_at)
         if not receipt:
             continue
         existing = merged.get(key)
@@ -317,7 +355,8 @@ def detect_receipts(
     *,
     logged_at: str | None = None,
 ) -> list[dict]:
-    """Merge ahead-of-field receipts for prospects that disappeared into the MLB roster."""
+    """Merge ahead-of-field receipts for prospects that reached the MLB roster (either
+    by disappearing from the board or by flipping ``active_mlb_roster`` True on-board)."""
     return _detect_call_ups(
         prev_board, cur_board, cur_date, roster_lookup,
         _existing_receipts(existing_log), _receipt_from_row, logged_at=logged_at,
