@@ -51,7 +51,7 @@ class TestTranslatePeripherals(unittest.TestCase):
         out = translate_peripherals(rows, "hitter")
         self.assertEqual(out["level"], "AAA")          # top level by rank
         self.assertEqual(out["levels"], ["AAA", "AA"])
-        self.assertEqual(out["level_label"], "AAA+AA")
+        self.assertEqual(out["level_label"], "AAA & AA")
         self.assertEqual(out["sample"], 200)
         by_key = {s["key"]: s for s in out["stats"]}
         # equiv = (30*1.08*50 + 20*1.15*150)/200 = 25.35 ; mlb = 22 + (25.35-22)*0.5 = 23.675
@@ -141,7 +141,7 @@ class TestCombinedSeasonStatLine(unittest.TestCase):
         self.assertEqual(out["season"], 2026)
         self.assertEqual(out["level"], "AAA")
         self.assertEqual(out["levels"], ["AAA", "AA"])
-        self.assertEqual(out["level_label"], "AAA+AA")
+        self.assertEqual(out["level_label"], "AAA & AA")
         self.assertEqual(out["sample"], 200)
         self.assertEqual(out["sample_unit"], "PA")
         self.assertEqual(out["pa"], 200)
@@ -178,7 +178,7 @@ class TestCombinedSeasonStatLine(unittest.TestCase):
         self.assertIsNotNone(out)
         self.assertEqual(out["level"], "AA")
         self.assertEqual(out["levels"], ["AA", "A+"])
-        self.assertEqual(out["level_label"], "AA+A+")
+        self.assertEqual(out["level_label"], "AA & A+")
         self.assertEqual(out["sample"], 30.0)
         self.assertEqual(out["sample_unit"], "IP")
         self.assertEqual(out["ip"], 30.0)

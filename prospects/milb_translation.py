@@ -88,7 +88,8 @@ def translate_peripherals(rows: list, role: str | None = None) -> dict | None:
         lv = (r.get("level") or "").upper()
         if lv and (r.get(samp_field) or 0) > 0 and lv not in levels_in_season:
             levels_in_season.append(lv)
-    level_label = "+".join(levels_in_season) if levels_in_season else (top_level or "")
+    # " & " not "+": the "A+" level contains a literal "+", so a "+" join reads as "A++A".
+    level_label = " & ".join(levels_in_season) if levels_in_season else (top_level or "")
 
     spec = _PITCHER if role == "pitcher" else _HITTER
     out_stats = []
@@ -338,7 +339,8 @@ def combined_season_stat_line(history_rows: list[dict], role: str, season: int) 
         if level and level not in levels:
             levels.append(level)
     level = levels[0] if levels else None
-    level_label = "+".join(levels) if levels else None
+    # " & " not "+": the "A+" level contains a literal "+", so a "+" join reads as "A++A".
+    level_label = " & ".join(levels) if levels else None
     sample = _sample_value(total_sample, role)
 
     out = {
