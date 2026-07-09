@@ -283,7 +283,28 @@ def test_front_office_page_renders():
     assert "Watch items" in html
     assert "Risk flags" not in html
     assert "Next evidence milestone:" in html
-    assert "MLB front-office score is capped at B+" in html
+    # The B+ cap line renders only while the live MLB front-office track is
+    # actually capped. That cap lifts as forward archives collect (the track
+    # graduated past B+ to A+ on the 2026-07-06 daily refresh), so assert the
+    # cap copy tracks the real artifact state rather than pinning one transient
+    # capped state. This still fails if the template drops the cap line while a
+    # cap exists, or shows it when there is none.
+    from pathlib import Path as _Path
+
+    report_path = (
+        _Path(app_module.__file__).parent
+        / "data"
+        / "models"
+        / "valucast_front_office_report.json"
+    )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    front_track = next(
+        (p for p in report.get("pillars", []) if p.get("name") == "MLB front-office track"),
+        {},
+    )
+    has_score_cap = bool((front_track.get("evidence") or {}).get("score_cap"))
+    cap_line = "MLB front-office score is capped at B+"
+    assert (cap_line in html) == has_score_cap
     # Merged into one paragraph — no duplicated cap/milestone copy.
     assert "Next MLB evidence milestone:" not in html
     assert "Current score is capped" not in html

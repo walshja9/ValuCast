@@ -89,18 +89,61 @@ def test_combined_level_shadow_keeps_served_rank_stage_penalties():
 
 
 def test_combined_level_shadow_excludes_prior_year_served_model_lines():
-    from prospects.combined_level_shadow import build_combined_level_shadow
+    # Invariant, not pinned IDs: a prospect is shadowed ONLY when its served
+    # model line matches a current-season line. Which specific prospects have a
+    # stale (prior-year) served line rotates daily as the served board and model
+    # regenerate (e.g. Andrew Sears' served line flipped from 2025 A+ to a 2026
+    # AA line on 2026-07-04), so we assert the exclusion rule holds across the
+    # live board rather than naming players that graduate/rotate out.
+    import json
+
+    from prospects.combined_level_shadow import (
+        _current_rows_by_key,
+        _identity,
+        _served_model_line_is_current,
+        build_combined_level_shadow,
+    )
+    from prospects.model import ARTIFACT_PATH as MODEL_PATH, INPUT_PATH
 
     payload = build_combined_level_shadow(generated_at="2026-06-27T12:00:00+00:00")
-    keys = {(row["mlbam_id"], row["role"]) for row in payload["shadows"]}
 
     # Positive control: current-season multi-level prospects ARE shadowed (so the
-    # exclusions below are meaningful, not vacuous).
+    # exclusion invariant below is meaningful, not vacuous).
     assert any(len(row["levels_scored"]) >= 2 for row in payload["shadows"])
-    # Prospects whose served model line is a prior-year (stale) line are excluded.
-    assert (808825, "pitcher") not in keys  # Andrew Sears: served line is 2025 A+.
-    assert (686628, "pitcher") not in keys  # Blake Burkhalter: served line is 2025 AA.
-    assert (811291, "pitcher") not in keys  # Eriq Swan: served line is 2025 A+.
+
+    model_payload = json.loads(Path(MODEL_PATH).read_text(encoding="utf-8"))
+    input_payload = json.loads(Path(INPUT_PATH).read_text(encoding="utf-8"))
+    model_by_key = {
+        key: row
+        for row in model_payload.get("ranked", [])
+        if (key := _identity(row)) is not None
+    }
+    current_by_key = _current_rows_by_key(input_payload)
+
+    # Every shadowed prospect's served model line must match a current-season
+    # line -- i.e. no prospect whose served line is a prior-year (stale) line is
+    # ever shadowed. Removing that gate in build_combined_level_shadow would
+    # admit stale-served prospects and fail this assertion.
+    for row in payload["shadows"]:
+        key = (row["mlbam_id"], row["role"])
+        model_row = model_by_key.get(key)
+        current_rows = current_by_key.get(key)
+        assert model_row is not None and current_rows is not None
+        assert _served_model_line_is_current(model_row, current_rows, row["role"]), (
+            f"shadowed prospect {key} has a stale (non-current) served model line"
+        )
+
+    # Non-vacuous: at least one multi-level prospect IS excluded specifically
+    # because its served line is stale (confirms the gate is doing real work).
+    shadowed_keys = {(row["mlbam_id"], row["role"]) for row in payload["shadows"]}
+    stale_excluded = [
+        key
+        for key, current_rows in current_by_key.items()
+        if key not in shadowed_keys
+        and (model_row := model_by_key.get(key)) is not None
+        and not _served_model_line_is_current(model_row, current_rows, key[1])
+    ]
+    assert stale_excluded, "expected at least one stale-served-line exclusion on the live board"
 
 
 def test_combined_level_shadow_artifact_and_validator_round_trip(tmp_path):
