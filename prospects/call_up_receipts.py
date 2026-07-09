@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -391,6 +392,35 @@ def _archive_by_date_key(archive_payloads: list[dict]) -> dict[str, dict[str, di
     return out
 
 
+def _flagged_days_early(
+    identity_key: str | None,
+    claimed_rank: int | None,
+    anchor_date: str | None,
+    archive_by_date_key: dict[str, dict[str, dict]],
+) -> int | None:
+    """Consecutive archive days of foresight before a call-up (see the plan's
+    definition block). Walking back from the latest archive date strictly before
+    ``anchor_date``, count each day the player's archive ``rank`` sits inside the
+    claimed band (rank <= ceil(claimed_rank * 1.25)); stop at the first out-of-band
+    day or the first day with no row. Returns the run length, or ``None`` when the
+    archives can't support the claim (no anchor, no earlier archive, or a zero-length
+    run). Never returns 0 -- absence means unprovable, presence means >=1 proven day.
+    Monotone: a continuous run only, so a distant in-band day across an out-of-band
+    gap can't inflate it."""
+    if claimed_rank is None or not anchor_date:
+        return None
+    band = math.ceil(claimed_rank * 1.25)
+    earlier = sorted((d for d in archive_by_date_key if d < anchor_date), reverse=True)
+    run = 0
+    for date in earlier:
+        arc_row = archive_by_date_key[date].get(identity_key)
+        rank = _clean_int(arc_row.get("rank")) if isinstance(arc_row, dict) else None
+        if rank is None or rank > band:
+            break
+        run += 1
+    return run or None
+
+
 def _at_promotion_source_row(
     key: str,
     source_row: dict,
@@ -744,11 +774,25 @@ def build_call_up_receipts(
     # Attach the real call-up date next to the archive-diff-inferred one, when a genuine
     # call-up transaction exists for that player. Never changes call_up_date or sorting.
     # (actual_dates was already computed above to drive the at-promotion standard.)
-    if actual_dates:
-        for row in receipts + misses:
-            real_date = actual_dates.get(str(row.get("mlbam_id")))
-            if real_date:
-                row["actual_call_up_date"] = real_date
+    for row in receipts + misses:
+        real_date = actual_dates.get(str(row.get("mlbam_id")))
+        if real_date:
+            row["actual_call_up_date"] = real_date
+        # Lead time: days ValuCast held this call before the field's trigger fired.
+        # Anchor on the real date when known, else the board-observed call_up_date.
+        # Recomputed every build from the archive index (no migration needed -- the
+        # incremental merge preserves the row, and this just re-derives the field). The
+        # loop runs even when actual_dates is empty (real_date is None-safe).
+        days_early = _flagged_days_early(
+            row.get("identity_key"),
+            _clean_int(row.get("valucast_rank")),
+            real_date or _date_part(row.get("call_up_date")),
+            archive_index,
+        )
+        if days_early is not None:
+            row["flagged_days_early"] = days_early
+        else:
+            row.pop("flagged_days_early", None)  # keep stale committed values from surviving
 
     # Drop anyone whose REAL call-up predates launch -- see LAUNCH_DATE above. Only acts
     # on a confirmed actual_call_up_date; a row with no real-date match is left alone.

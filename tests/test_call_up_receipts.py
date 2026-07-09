@@ -474,6 +474,169 @@ def test_pratt_shaped_flow_passes_launch_guard_end_to_end():
     assert payload["summary"]["pre_launch_excluded_count"] == 0
 
 
+def test_flagged_days_early_counts_continuous_in_band_run():
+    """The helper counts only the SINGLE continuous run of in-band archive days walking
+    back from the anchor, and a distant in-band day across an out-of-band gap does NOT
+    bridge it (monotone/continuous, not a lifetime tally)."""
+    from prospects.call_up_receipts import _flagged_days_early
+
+    key = "101_hitter"
+    # claimed_rank=20 -> band ceil(20*1.25)=25. anchor 2026-07-10.
+    # Three in-band days immediately before, then an out-of-band day, then an earlier
+    # in-band day that must NOT be bridged.
+    archive_by_date_key = {
+        "2026-07-09": {key: {"rank": 22}},   # in-band (day 1 of run)
+        "2026-07-08": {key: {"rank": 24}},   # in-band (day 2)
+        "2026-07-07": {key: {"rank": 25}},   # in-band (day 3, ==band)
+        "2026-07-06": {key: {"rank": 40}},   # OUT of band -> run stops here
+        "2026-07-05": {key: {"rank": 10}},   # in-band but past the gap -> not counted
+    }
+    assert _flagged_days_early(key, 20, "2026-07-10", archive_by_date_key) == 3
+
+
+def test_flagged_days_early_omitted_when_unprovable():
+    """Never returns 0: no anchor, no earlier archive, or a zero-length run (out-of-band
+    on the first day before the anchor) all yield None (omit, don't fake a 0)."""
+    from prospects.call_up_receipts import _flagged_days_early
+
+    key = "101_hitter"
+    full_index = {"2026-07-09": {key: {"rank": 22}}}
+
+    # (a) no anchor date -> None
+    assert _flagged_days_early(key, 20, None, full_index) is None
+    # (a2) no claimed rank -> None (band can't be computed)
+    assert _flagged_days_early(key, None, "2026-07-10", full_index) is None
+    # (b) anchor with no committed archive date strictly before it -> None
+    assert _flagged_days_early(key, 20, "2026-07-09", {"2026-07-09": {key: {"rank": 22}}}) is None
+    # (c) out-of-band on the first day before the anchor (zero-length run) -> None, not 0
+    out_of_band = {"2026-07-09": {key: {"rank": 99}}}
+    assert _flagged_days_early(key, 20, "2026-07-10", out_of_band) is None
+
+
+def test_build_attaches_flagged_days_early_to_auto_rows():
+    """End-to-end: an auto receipt with in-band archive history before its call-up gains
+    flagged_days_early == the run length, while a row without supporting history does NOT
+    carry the key. call_up_date, divergence, and sort order are unchanged (additive-only)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    # Player 101 is in-band (rank <= ceil(15*1.25)=19) for the two days before disappearing
+    # into the roster on 2026-06-27. Player 202 has no earlier archive coverage at all.
+    archives = [
+        {"date": "2026-06-24", "board": [
+            _rank_row(101, "Held Guy", 15, {"pipeline": 90, "hkb": 95, "sts": 100}),
+        ]},
+        {"date": "2026-06-25", "board": [
+            _rank_row(101, "Held Guy", 16, {"pipeline": 90, "hkb": 95, "sts": 100}),
+        ]},
+        {"date": "2026-06-26", "board": [
+            _rank_row(101, "Held Guy", 15, {"pipeline": 90, "hkb": 95, "sts": 100}),
+            _rank_row(202, "First Sight", 12, {"pipeline": 88, "hkb": 92, "sts": 96}),
+        ]},
+        {"date": "2026-06-27", "board": []},  # both disappear into the roster
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 101, "active_mlb_roster": True},
+        {"mlbam_id": 202, "active_mlb_roster": True},
+    ]}
+
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-27T00:00:00+00:00",
+    )
+    by_key = {r["identity_key"]: r for r in payload["receipts"]}
+    held = by_key["101_hitter"]
+    first_sight = by_key["202_hitter"]
+
+    # Anchor is call_up_date 2026-06-27; in-band on 06-26 and 06-25 (ranks 15,16 <= 19),
+    # then 06-24 rank 15 <= 19 too -> a 3-day continuous run.
+    assert held["flagged_days_early"] == 3
+    # First Sight only appears on 06-26, which is the day before its 06-27 call-up... but
+    # 06-26 IS strictly < anchor, rank 12 <= ceil(12*1.25)=15 -> 1 day. Verify it's present
+    # and correct rather than absent (it has exactly one supporting day).
+    assert first_sight.get("flagged_days_early") == 1
+
+    # Additive-only guarantee: the shadow field never rewrites core semantics.
+    assert held["call_up_date"] == "2026-06-27"
+    assert "divergence" in held and isinstance(held["divergence"], int)
+    # Sort order unchanged: _sort_receipts orders by divergence desc; assert it's still sorted.
+    divs = [r["divergence"] for r in payload["receipts"]]
+    assert divs == sorted(divs, reverse=True)
+
+
+def test_build_truncates_run_at_out_of_band_day_end_to_end():
+    """End-to-end continuity: the run stops at the first out-of-band day. Player 303's
+    day-before-call-up rank is in-band but the day before THAT is out of band, so the run
+    truncates. The zero-length omit path is covered directly by the helper unit test
+    (a disappearance-detected auto row always has its own last on-board day in band, so
+    its minimum end-to-end run is 1 -- the omit case needs no-earlier-archive/lagged real
+    dates, exercised in the unit test)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    # Player 303 (claimed rank 10 -> band ceil(10*1.25)=13): in-band on 06-24 (rank 10) but
+    # OUT of band on 06-23 (rank 40) -> the run truncates to exactly 1 in-band day.
+    archives = [
+        {"date": "2026-06-22", "board": [
+            _rank_row(303, "Truncated Run", 9, {"pipeline": 90, "hkb": 95, "sts": 100}),
+        ]},
+        {"date": "2026-06-23", "board": [
+            _rank_row(303, "Truncated Run", 40, {"pipeline": 90, "hkb": 95, "sts": 100}),
+        ]},
+        {"date": "2026-06-24", "board": [
+            _rank_row(303, "Truncated Run", 10, {"pipeline": 90, "hkb": 95, "sts": 100}),
+        ]},
+        {"date": "2026-06-25", "board": []},  # disappears -> call_up_date 2026-06-25
+    ]
+    roster = {"profiles": [{"mlbam_id": 303, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+    )
+    receipt = payload["receipts"][0]
+    # anchor 2026-06-25: 06-24 rank 10 <= 13 (1 day), 06-23 rank 40 > 13 breaks it. The
+    # in-band 06-22 day (rank 9) is across the gap and must NOT be bridged.
+    assert receipt.get("flagged_days_early") == 1
+
+
+def test_receipts_page_renders_flagged_days_early_when_present(monkeypatch):
+    """The template emits 'flagged Nd early' when a receipt row carries the field and
+    omits it (no 'flagged' text) when the row does not."""
+    import app as app_mod
+
+    monkeypatch.setattr(app_mod, "RECEIPTS_HOLD", False)
+
+    with_lead = {
+        "identity_key": "1_hitter", "mlbam_id": "1", "role": "hitter",
+        "name": "Lead Guy", "team": "BOS", "pos": "SS", "level": "AAA",
+        "valucast_rank": 5, "consensus_rank": 60, "divergence": 55,
+        "call_up_date": "2026-07-01", "flagged_days_early": 12,
+    }
+    without_lead = {
+        "identity_key": "2_hitter", "mlbam_id": "2", "role": "hitter",
+        "name": "No Lead Guy", "team": "NYY", "pos": "CF", "level": "AA",
+        "valucast_rank": 7, "consensus_rank": 70, "divergence": 63,
+        "call_up_date": "2026-07-02",
+    }
+
+    def fake_context():
+        # Mirror the real _build_receipts_page_context return shape (receipts_hold comes
+        # from the app context processor, so it isn't returned here).
+        return {
+            "receipts": [with_lead, without_lead],
+            "receipt_count": 2,
+            "misses": [],
+            "miss_count": 0,
+            "no_claim_call_up_count": 0,
+            "receipts_available": True,
+            "receipts_generated_at": "2026-07-09",
+            "as_of": "2026-07-09",
+        }
+
+    monkeypatch.setattr(app_mod, "_build_receipts_page_context", fake_context)
+    page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
+    assert "flagged 12d early" in page  # present row rendered
+    assert page.count("flagged") == 1  # the no-lead row did NOT render a flagged suffix
+
+
 def _cu(mlbam_id: int, date: str) -> dict:
     """A genuine call-up transaction (typeCode SE) for the at-promotion standard tests."""
     return {

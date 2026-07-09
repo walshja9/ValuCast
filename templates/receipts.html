@@ -64,9 +64,9 @@
             <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
             {% if p.consensus_rank is not none %}
-            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}</span>
+            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}{% if p.flagged_days_early %} &middot; flagged {{ p.flagged_days_early }}d early{% endif %}</span>
             {% else %}
-            <span class="buys-tag">{{ p.field_label or 'Field had him outside the top 100' }} &middot; called up {{ p.call_up_date }}</span>
+            <span class="buys-tag">{{ p.field_label or 'Field had him outside the top 100' }} &middot; called up {{ p.call_up_date }}{% if p.flagged_days_early %} &middot; flagged {{ p.flagged_days_early }}d early{% endif %}</span>
             {% endif %}
         </div>
         {% if p.divergence is not none %}
@@ -89,7 +89,7 @@
         <div class="buys-main">
             <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
-            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}</span>
+            <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.call_up_date }}{% if p.flagged_days_early %} &middot; flagged {{ p.flagged_days_early }}d early{% endif %}</span>
         </div>
         <span class="mover-delta down">{{ p.divergence }}</span>
         <span class="trend-chip buys-chip">miss</span>
