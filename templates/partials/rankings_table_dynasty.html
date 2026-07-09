@@ -136,6 +136,15 @@
                 {% endif %}
                 {% if mode == 'prospects' and row.factual_context_stat_items %}
                 <div class="mobile-stat-strip" aria-label="{{ row.name }} ValuCast model context">
+                    {# Tag the strip with the level of the line it prints (its own
+                       factual_current_context.level), so the OPS/ISO can never sit
+                       unlabeled under the Level badge's combined label (e.g. "A+ & A"). #}
+                    {% if row.factual_context_level %}
+                    <span class="mobile-stat">
+                        <span class="mobile-stat-label">Level</span>
+                        <span class="mobile-stat-value">{{ row.factual_context_level }}</span>
+                    </span>
+                    {% endif %}
                     {% for item in row.factual_context_stat_items[:4] %}
                     <span class="mobile-stat">
                         <span class="mobile-stat-label">{{ item.label }}</span>

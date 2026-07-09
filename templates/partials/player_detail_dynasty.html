@@ -448,8 +448,25 @@
             <p class="market-context-note">
                 External board context — not used in ValuCast score. These boards never feed ValuCast rank or value.
             </p>
+            {# Single-source the AOTC claim: when this player has an ahead_of_consensus
+               receipt (the SAME artifact the share PNG stamps), the on-card ValuCast
+               rank / consensus / spots-ahead must render that receipt's numbers, never
+               the feed's prospect_rank — otherwise the card and the PNG disagree
+               (register gap c: card P#53 vs PNG VC #3). No receipt = no second source,
+               so the feed rendering below is unchanged. #}
+            {% set aotc = ahead_of_consensus if (ahead_of_consensus and ahead_of_consensus.valucast_rank is not none) else None %}
             <div class="source-summary">
-                {% if row.prospect_rank is not none %}
+                {% if aotc and not row.active_mlb_callup %}
+                <div class="source-summary-item dd-rank-view">
+                    <span class="stat-label">ValuCast Rank</span>
+                    <span class="source-summary-rank">P#{{ aotc.valucast_rank }}</span>
+                    {% if aotc.divergence is not none %}
+                    <span class="source-summary-note">{% if aotc.divergence > 0 %}{{ aotc.divergence }} spots ahead of the field{% elif aotc.divergence < 0 %}{{ -aotc.divergence }} spots behind the field{% else %}even with the field{% endif %}</span>
+                    {% else %}
+                    <span class="source-summary-note">ValuCast model rank</span>
+                    {% endif %}
+                </div>
+                {% elif row.prospect_rank is not none %}
                 <div class="source-summary-item dd-rank-view">
                     <span class="stat-label">ValuCast Rank</span>
                     <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
@@ -464,7 +481,19 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                {% if row.public_source_consensus is not none %}
+                {% if aotc and not row.active_mlb_callup and aotc.consensus_rank is not none %}
+                <div class="source-summary-item public-consensus">
+                    <span class="stat-label">Public Consensus</span>
+                    <span class="source-summary-rank">~P#{{ aotc.consensus_rank }}</span>
+                    <span class="source-summary-note">{{ aotc.board_count if aotc.board_count is not none else (row.public_source_ranks | length) }} boards</span>
+                    {# board_count >= 3 matches the feed-path chip's display floor; the
+                       artifact's own guard floor is 2, so enforce 3 here or the
+                       "(3+ boards)" tooltip could lie on a future 2-board build. #}
+                    {% if aotc.divergence is not none and aotc.divergence >= 25 and (aotc.board_count or 0) >= 3 %}
+                    <span class="source-ahead-chip" title="ValuCast ranks this player ahead of the public field (3+ boards)">Ahead of the Curve +{{ aotc.divergence }}</span>
+                    {% endif %}
+                </div>
+                {% elif row.public_source_consensus is not none %}
                 <div class="source-summary-item public-consensus">
                     <span class="stat-label">Public Consensus</span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>

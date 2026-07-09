@@ -1084,7 +1084,7 @@ class TestCardIntelligenceUI(unittest.TestCase):
         self.assertIn(b"The ValuCast Read", response.data)
         self.assertIn(b"How His Skills Rank", response.data)
         read_pos = response.data.find(b"The ValuCast Read")
-        trend_pos = response.data.find(b"Form Curve")
+        trend_pos = response.data.find(b"ValuCast Value Trend")
         if trend_pos != -1:
             self.assertLess(read_pos, trend_pos)
         self.assertIn(b"100 = best in the ValuCast prospect pool", response.data)

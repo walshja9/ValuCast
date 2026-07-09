@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import scripts.build_public_dynasty_snapshot as snapshot_builder
+from prospects.rank_v1 import _confidence
 from scripts.build_public_dynasty_snapshot import (
     COMMON_VALUE_SCALE,
     GRAD_FLOOR_DECAY_DAYS,
@@ -1031,6 +1032,61 @@ def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
     )
 
 
+def test_thin_sample_chip_never_co_occurs_with_high_confidence():
+    """Plan 010 gap (a): a rendered board row must never show the "Thin sample"
+    why-rank chip beside a "high" confidence chip. Both chips derive from the SAME
+    factual_current_context.skill_band, so when that band is "thin", _confidence
+    (the source of the row's confidence field) must cap at "medium" and the
+    surfaces can't contradict each other on one line."""
+    thin_context = {
+        "version": "0.1.0",
+        "role": "hitter",
+        "level": "AA",
+        "sample": 19,
+        "sample_unit": "PA",
+        "skill_band": "thin",
+        "ops": 0.700,
+    }
+    # The confidence carried on the snapshot row is produced by _confidence for a
+    # model-strong profile; even fully gated, a thin current sample caps it.
+    confidence = _confidence(
+        "prospect_model_v0_6",
+        {"role_gate": "active", "impact_gate": "active"},
+        90.0,
+        thin_context,
+    )
+    assert confidence == "medium"
+
+    row = PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_28_hitter",
+            "name": "Thin Sample Prospect",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "BOS",
+            "age": 19,
+            "rank": 28,
+            "value": 40.0,
+            "value_scale": "0_100_valucast_dynasty_score",
+            "value_source": "prospect_model_v0_6",
+            "confidence": confidence,
+            "updated_at": "2026-06-13T12:00:00+00:00",
+            "mlbam_id": "28",
+            "role": "hitter",
+            "prospect_rank": 28,
+            "level": "AA",
+            "score_source": "prospect_model_v0_6",
+            "components": {"factual_current_context": thin_context},
+        }
+    )
+
+    chip_labels = {chip["label"] for chip in row.why_rank_chips}
+    assert "Thin sample" in chip_labels
+    # The invariant: the two surfaces derived from the shared thin band can't
+    # contradict — no "high" confidence sits beside the "Thin sample" chip.
+    assert (row.confidence or {}).get("level") != "high"
+
+
 def test_split_level_sample_ignores_rounding_noise(tmp_path):
     payload = build_snapshot(
         _rank_payload(),
@@ -1213,6 +1269,75 @@ def test_card_level_label_matches_combined_bars_level_over_current_slice(tmp_pat
     assert row is not None
     assert row.level == "A+"
     assert row.card_level_label == "AAA & AA"
+
+
+def test_stat_strip_carries_its_own_level_when_badge_is_combined():
+    """Plan 010 gap (d): the mobile stat strip prints the single-level slice
+    (factual_current_context.level == "A"), while the Level badge names the combined
+    level ("A+ & A"). The strip must expose its OWN level so its OPS/ISO can never sit
+    unlabeled under the badge's combined label. Willits is the live example."""
+    row = PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_1_hitter",
+            "name": "Eli Willits",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "WSH",
+            "age": 18,
+            "rank": 1,
+            "value": 60.0,
+            "value_scale": "0_100_valucast_dynasty_score",
+            "value_source": "prospect_model_v0_6",
+            "confidence": "medium",
+            "updated_at": "2026-06-13",
+            "mlbam_id": "1",
+            "role": "hitter",
+            "prospect_rank": 1,
+            "level": "A+",
+            "score_source": "prospect_model_v0_6",
+            "components": {
+                "factual_current_context": {
+                    "role": "hitter",
+                    "level": "A",
+                    "sample": 232,
+                    "sample_unit": "PA",
+                    "skill_band": "impact",
+                    "ops": 0.918,
+                    "iso": 0.2,
+                }
+            },
+            "combined_season_stat_line": {
+                "role": "hitter",
+                "season": 2026,
+                "level": "A+",
+                "levels": ["A+", "A"],
+                "level_label": "A++A",
+                "sample": 300,
+                "sample_unit": "PA",
+                "pa": 300,
+                "ops": 0.900,
+                "iso": 0.2,
+                "k_pct": 15.0,
+                "bb_pct": 10.0,
+            },
+            "context": {
+                "stat_line_source_kind": "current_season",
+                "stat_line_level": "A",
+                "stat_line_sample": 232,
+                "stat_line_sample_unit": "PA",
+                "stat_line_sample_season": 2026,
+            },
+            "stat_line": {"pa": 232, "ops": 0.918},
+        }
+    )
+
+    # The badge names the combined level; the strip prints the single "A" slice.
+    assert row.card_level_label == "A+ & A"
+    # The strip now surfaces ITS level, sourced from the same line its numbers are.
+    assert row.factual_context_level == "A"
+    assert row.factual_context_level != row.card_level_label
+    # The numbers beside that level are the "A"-slice numbers, not a combined line.
+    assert {"label": "OPS", "value": "0.918"} in row.factual_context_stat_items
 
 
 def test_card_level_label_keeps_single_level_combined_label(tmp_path):

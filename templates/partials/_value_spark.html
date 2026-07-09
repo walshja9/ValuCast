@@ -1,12 +1,15 @@
-{# Form Curve — premium rolling-daily dynasty-value panel (the velocity-of-change
-   hero). Context: spark (build_spark output or None), row. No JS — server SVG. #}
+{# ValuCast Value Trend — premium rolling-daily dynasty-value panel (the
+   velocity-of-change hero). This is the delta of ValuCast's own model value, NOT
+   on-field form; the "Recent form" chip elsewhere on the card is the on-field
+   stat-momentum signal. Context: spark (build_spark output or None), row.
+   No JS — server SVG. #}
 {% if spark %}
 {% set fc_id = "fc-" ~ (row.id if row is defined and row.id else spark.last_date) %}
 <div class="detail-section form-curve-section">
     <div class="form-curve-head">
         <div class="form-curve-title">
-            <h4>Form Curve</h4>
-            <span class="form-curve-sub">rolling daily dynasty value</span>
+            <h4>ValuCast Value Trend</h4>
+            <span class="form-curve-sub">rolling daily ValuCast value — not on-field form</span>
         </div>
         <div class="form-curve-delta {{ spark.direction }}">
             <span class="fc-delta-num">{{ "%+.1f" | format(spark.delta) }}</span>

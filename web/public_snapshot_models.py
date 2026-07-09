@@ -458,6 +458,13 @@ class PublicSnapshotRow:
         return stat_items(self.factual_current_context)
 
     @property
+    def factual_context_level(self) -> str | None:
+        # The level of the SAME line the stat strip prints, so the strip's numbers
+        # can never sit unlabeled under a badge naming a different (combined) level.
+        level = self.factual_current_context.get("level")
+        return str(level) if level not in (None, "") else None
+
+    @property
     def uncertainty_context(self) -> dict:
         raw = self.prospect_components.get("uncertainty")
         return raw if isinstance(raw, dict) else {}
