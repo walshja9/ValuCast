@@ -7083,11 +7083,13 @@ def _build_receipts_page_context():
     receipts = [] if RECEIPTS_HOLD else list(payload.get("receipts") or [])
     misses = [] if RECEIPTS_HOLD else list(payload.get("misses") or [])
     generated_at = payload.get("generated_at")
+    summary = payload.get("summary") or {}
     return {
         "receipts": receipts,
         "receipt_count": len(receipts),
         "misses": misses,
         "miss_count": len(misses),
+        "no_claim_call_up_count": summary.get("no_claim_call_up_count") or 0,
         "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,

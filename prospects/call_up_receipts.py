@@ -308,6 +308,56 @@ def _on_mlb_roster(row: dict) -> bool:
     return row.get("active_mlb_roster") is True
 
 
+def _archive_by_date_key(archive_payloads: list[dict]) -> dict[str, dict[str, dict]]:
+    """date -> {identity_key: rank_row} across every walked archive payload.
+
+    Built once from the payloads the builder already loaded (no per-event file reads)
+    so a lagged call-up event can re-source its rank/consensus row from the archive that
+    actually covers the real promotion date -- see ``_at_promotion_source_row``."""
+    out: dict[str, dict[str, dict]] = {}
+    for payload in archive_payloads:
+        date = _date_part(payload.get("date") or payload.get("generated_at"))
+        if not date:
+            continue
+        by_key = out.setdefault(date, {})
+        for row in _rows(payload):
+            key = _identity_key(row)
+            if key is not None:
+                by_key.setdefault(key, row)
+    return out
+
+
+def _at_promotion_source_row(
+    key: str,
+    source_row: dict,
+    source_row_date: str,
+    actual_call_up_date: str | None,
+    archive_by_date_key: dict[str, dict[str, dict]],
+) -> dict | None:
+    """The rank row that should score a call-up event, correcting for detection lag.
+
+    A detection event (board disappearance or active_mlb_roster flip) can postdate the
+    player's real call-up by days-to-weeks, and the post-call-up board rows are
+    contaminated: once a graduate's internal sources drop out, his public rank collapses,
+    so a lagged event manufactures a false "field was way ahead" miss (Sean Keys) or a
+    false gap. The honest fix -- the "at-promotion standard" -- scores from the archive
+    that actually covered the real promotion date.
+
+    When ``actual_call_up_date`` (from the transactions parser) is EARLIER than
+    ``source_row_date`` (the date the event's source row came from), re-source from the
+    LAST walked archive dated <= the real call-up date. Return that archive's row for the
+    player, or ``None`` if he has no row there (an honest no-claim outcome -- Keys/Cabrera
+    were even-with / unranked-by the field at their real promotion, so no row is correct).
+    When no real date is known, or it isn't earlier than the event, the event-day source
+    row stands (current behavior)."""
+    if not actual_call_up_date or actual_call_up_date >= source_row_date:
+        return source_row
+    at_or_before = [d for d in archive_by_date_key if d <= actual_call_up_date]
+    if not at_or_before:
+        return source_row
+    return archive_by_date_key[max(at_or_before)].get(key)
+
+
 def _call_up_events(
     prev_by_key: dict[str, dict],
     cur_by_key: dict[str, dict],
@@ -335,6 +385,26 @@ def _call_up_events(
     return events
 
 
+def _roster_confirmed(
+    mlbam_id: Any,
+    roster_lookup: dict[str, dict],
+    actual_call_up_date: str | None,
+) -> bool:
+    """True when the disappearance/flip is corroborated as a real MLB arrival.
+
+    Two independent kinds of evidence, either one is enough:
+      (a) the player is on TODAY's active roster snapshot (the original check), OR
+      (b) the transactions parser found a genuine in-window call-up (CU/SE-not-negated)
+          for him -- a real transaction is direct evidence he reached MLB even if he was
+          optioned back down before today's snapshot was taken.
+    (b) is what rescues Owen Murphy: real MLB debut 7/06, SE 7/06 + OPT 7/07, so he was
+    off the active roster by the time the roster artifact was built, yet the SE
+    transaction proves the call-up happened. The guard's original job -- rejecting
+    phantom disappearances (IL moves, options, trades, which produce no call-up
+    transaction) -- is preserved, because those have neither (a) nor (b)."""
+    return str(mlbam_id) in roster_lookup or actual_call_up_date is not None
+
+
 def _detect_call_ups(
     prev_board: dict | list,
     cur_board: dict | list,
@@ -344,10 +414,23 @@ def _detect_call_ups(
     from_row,
     *,
     logged_at: str | None = None,
+    prev_date: str | None = None,
+    actual_dates: dict[str, str] | None = None,
+    archive_by_date_key: dict[str, dict[str, dict]] | None = None,
+    no_claim: dict[str, str] | None = None,
 ) -> list[dict]:
     """Merge call-ups (built by ``from_row``) for prospects that disappeared into the
-    roster OR whose on-board ``active_mlb_roster`` flag flipped falsy->True."""
+    roster OR whose on-board ``active_mlb_roster`` flag flipped falsy->True.
+
+    ``actual_dates`` / ``archive_by_date_key`` enable the at-promotion standard: a lagged
+    event is re-scored from the archive covering the real call-up date (see
+    ``_at_promotion_source_row``). ``no_claim`` (identity_key -> earliest event cur_date)
+    collects genuine post-launch call-ups that produced NO ledger row -- the neither
+    bucket, surfaced as a count so an empty misses side is honest, not hollow. All three
+    default empty so the historical two-argument call sites keep event-day behavior."""
     logged_at = logged_at or f"{cur_date}T00:00:00+00:00"
+    actual_dates = actual_dates or {}
+    archive_by_date_key = archive_by_date_key or {}
     merged = {row["identity_key"]: row for row in existing_rows}
     prev_by_key = {
         key: row
@@ -362,10 +445,26 @@ def _detect_call_ups(
 
     for key, source_row, _cur_row in _call_up_events(prev_by_key, cur_by_key):
         mlbam_id = source_row.get("mlbam_id")
-        if str(mlbam_id) not in roster_lookup:
+        actual = actual_dates.get(str(mlbam_id))
+        if not _roster_confirmed(mlbam_id, roster_lookup, actual):
             continue
-        receipt = from_row(source_row, cur_date, logged_at)
+        # A flip's source row is the CUR row (dated cur_date); a disappearance's is the
+        # PREV row (dated prev_date). The at-promotion re-source keys off that date.
+        source_row_date = cur_date if key in cur_by_key else (prev_date or cur_date)
+        scored_row = _at_promotion_source_row(
+            key, source_row, source_row_date, actual, archive_by_date_key
+        )
+        # call_up_date keeps its meaning: the board-observation date the event was seen
+        # (cur_date). Only the ROW that supplies rank/consensus is re-sourced; the real
+        # promotion date already rides along separately as actual_call_up_date.
+        receipt = from_row(scored_row, cur_date, logged_at) if scored_row is not None else None
         if not receipt:
+            # Genuine post-launch call-up (real transaction) that produced no row: even
+            # at promotion (dead-even divergence, no qualifying consensus, or rank over
+            # cap). Record it for the neither bucket, earliest event wins.
+            if actual is not None and no_claim is not None:
+                if key not in no_claim or cur_date < no_claim[key]:
+                    no_claim[key] = cur_date
             continue
         existing = merged.get(key)
         if not existing:
@@ -394,12 +493,18 @@ def detect_receipts(
     existing_log: dict | list | None,
     *,
     logged_at: str | None = None,
+    prev_date: str | None = None,
+    actual_dates: dict[str, str] | None = None,
+    archive_by_date_key: dict[str, dict[str, dict]] | None = None,
+    no_claim: dict[str, str] | None = None,
 ) -> list[dict]:
     """Merge ahead-of-field receipts for prospects that reached the MLB roster (either
     by disappearing from the board or by flipping ``active_mlb_roster`` True on-board)."""
     return _detect_call_ups(
         prev_board, cur_board, cur_date, roster_lookup,
         _existing_receipts(existing_log), _receipt_from_row, logged_at=logged_at,
+        prev_date=prev_date, actual_dates=actual_dates,
+        archive_by_date_key=archive_by_date_key, no_claim=no_claim,
     )
 
 
@@ -411,12 +516,61 @@ def detect_misses(
     existing_log: dict | list | None,
     *,
     logged_at: str | None = None,
+    prev_date: str | None = None,
+    actual_dates: dict[str, str] | None = None,
+    archive_by_date_key: dict[str, dict[str, dict]] | None = None,
+    no_claim: dict[str, str] | None = None,
 ) -> list[dict]:
     """Merge call-ups where ValuCast sat BEHIND the field (the accountability side)."""
     return _detect_call_ups(
         prev_board, cur_board, cur_date, roster_lookup,
         _existing_misses(existing_log), _miss_from_row, logged_at=logged_at,
+        prev_date=prev_date, actual_dates=actual_dates,
+        archive_by_date_key=archive_by_date_key, no_claim=no_claim,
     )
+
+
+def _revalidate_existing(
+    rows: list[dict],
+    want_kind: str,
+    actual_dates: dict[str, str],
+    archive_by_date_key: dict[str, dict[str, dict]],
+    no_claim: dict[str, str],
+) -> list[dict]:
+    """Re-score already-committed AUTO rows under the at-promotion standard, dropping any
+    that no longer classify as ``want_kind`` ("hit" for receipts, "miss" for misses).
+
+    Needed because the incremental merge can only add/update -- a stale row booked under
+    the old event-window behavior (Keys/Cabrera) would otherwise survive forever. Only
+    rows with a known real call-up date are re-sourced (that's the only case the standard
+    changes); rows without one, and curated seeds, are left untouched. A dropped genuine
+    call-up is recorded in the neither bucket. call_up_date is treated as the event date
+    the archive-diff row came from -- the same date the standard compares against."""
+    kept: list[dict] = []
+    for row in rows:
+        key = row.get("identity_key")
+        if not key or row.get("seed") or row.get("divergence") is None:
+            kept.append(row)
+            continue
+        actual = actual_dates.get(str(row.get("mlbam_id")))
+        event_date = str(row.get("call_up_date") or "")
+        # Only re-validate when the real call-up predates the event AND an archive
+        # actually covers that real date -- that's the only case the standard re-scores.
+        # Without a covering archive we can't compute an at-promotion score, so we keep
+        # the committed row rather than reclassify a receipt-shaped row as if it were a
+        # rank row. (A rank ROW carries ``rank``/source_ranks; a committed RECEIPT does
+        # not, so passing the latter to _call_up_row would spuriously fail.)
+        at_or_before = [d for d in archive_by_date_key if d <= actual] if (actual and event_date) else []
+        if not actual or not event_date or not at_or_before or actual >= event_date:
+            kept.append(row)
+            continue
+        prom_row = archive_by_date_key[max(at_or_before)].get(key)
+        _base, kind = (None, None) if prom_row is None else _call_up_row(prom_row, event_date, "")
+        if kind == want_kind:
+            kept.append(row)
+        elif key not in no_claim or event_date < no_claim[key]:
+            no_claim[key] = event_date
+    return kept
 
 
 def _archive_payloads(path: Path = RANK_ARCHIVE_DIR) -> list[dict]:
@@ -470,11 +624,38 @@ def build_call_up_receipts(
         for payload in archive_payloads
         if (date := _date_part(payload.get("date") or payload.get("generated_at")))
     ]
+    # Real call-up dates + a date->key->row index, both derived from inputs the builder
+    # already loaded, drive the at-promotion standard: lagged events re-score from the
+    # archive covering the real promotion date, and the roster guard accepts a genuine
+    # call-up transaction as MLB-arrival evidence. no_claim collects genuine post-launch
+    # call-ups that produced no ledger row (the neither bucket).
+    actual_dates = _actual_call_up_dates(transactions_cache) if transactions_cache else {}
+    archive_index = _archive_by_date_key(archive_payloads)
+    no_claim: dict[str, str] = {}
     for prev, cur in zip(archive_payloads, archive_payloads[1:]):
         cur_date = _date_part(cur.get("date") or cur.get("generated_at"))
+        prev_date = _date_part(prev.get("date") or prev.get("generated_at"))
         if cur_date:
-            receipts = detect_receipts(prev, cur, cur_date, roster_lookup, receipts, logged_at=generated_at)
-            misses = detect_misses(prev, cur, cur_date, roster_lookup, misses, logged_at=generated_at)
+            receipts = detect_receipts(
+                prev, cur, cur_date, roster_lookup, receipts, logged_at=generated_at,
+                prev_date=prev_date, actual_dates=actual_dates,
+                archive_by_date_key=archive_index, no_claim=no_claim,
+            )
+            misses = detect_misses(
+                prev, cur, cur_date, roster_lookup, misses, logged_at=generated_at,
+                prev_date=prev_date, actual_dates=actual_dates,
+                archive_by_date_key=archive_index, no_claim=no_claim,
+            )
+
+    # Re-validate INCREMENTAL rows under the at-promotion standard. The merge above only
+    # adds/updates; it can't drop an already-committed row that the corrected standard no
+    # longer supports (Sean Keys / Jose Cabrera were booked as misses off a lagged
+    # retention-flip, but at their real promotion the field was even-with / hadn't-ranked
+    # them -> no honest row). Re-score each existing AUTO row against its at-promotion
+    # archive and drop the ones that no longer qualify; a dropped genuine call-up falls
+    # through to the neither bucket. Seeds are curated (no divergence) and exempt.
+    receipts = _revalidate_existing(receipts, "hit", actual_dates, archive_index, no_claim)
+    misses = _revalidate_existing(misses, "miss", actual_dates, archive_index, no_claim)
 
     # Merge curated seeds; auto-detected rows win on identity (they carry a real divergence).
     by_key = {row["identity_key"]: row for row in receipts}
@@ -491,7 +672,7 @@ def build_call_up_receipts(
 
     # Attach the real call-up date next to the archive-diff-inferred one, when a genuine
     # call-up transaction exists for that player. Never changes call_up_date or sorting.
-    actual_dates = _actual_call_up_dates(transactions_cache) if transactions_cache else {}
+    # (actual_dates was already computed above to drive the at-promotion standard.)
     if actual_dates:
         for row in receipts + misses:
             real_date = actual_dates.get(str(row.get("mlbam_id")))
@@ -508,6 +689,21 @@ def build_call_up_receipts(
         dropped_keys = {row["identity_key"] for row in pre_launch_excluded}
         receipts = [r for r in receipts if r["identity_key"] not in dropped_keys]
         misses = [m for m in misses if m["identity_key"] not in dropped_keys]
+
+    # Neither bucket: genuine post-launch call-ups that produced no ledger row (model and
+    # field even, no qualifying consensus at promotion, or rank over cap). This is the
+    # honesty cure for an empty misses side -- the field's silence is counted, not hidden.
+    # A row that ended up a hit/miss, a pre-launch call-up (already out of scope), and the
+    # code denylist are all excluded so the count is genuine-and-in-scope no-claims only.
+    claimed_keys = {r["identity_key"] for r in receipts} | {m["identity_key"] for m in misses}
+    no_claim_keys = {
+        key for key, event_date in no_claim.items()
+        if key not in claimed_keys
+        and key not in EXCLUDED_IDENTITY_KEYS
+        and not (
+            (real := actual_dates.get(str(key.split("_")[0]))) and real < LAUNCH_DATE
+        )
+    }
 
     blockers = []
     if len(archive_payloads) < 2:
@@ -539,6 +735,7 @@ def build_call_up_receipts(
             "receipt_count": len(receipts),
             "miss_count": len(misses),
             "seed_count": seed_count,
+            "no_claim_call_up_count": len(no_claim_keys),
             "archive_dates_scanned": archive_dates,
             "pre_launch_excluded_count": len(pre_launch_excluded),
             "pre_launch_excluded_names": sorted(

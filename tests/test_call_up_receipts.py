@@ -445,6 +445,152 @@ def test_pratt_shaped_flow_passes_launch_guard_end_to_end():
     assert payload["summary"]["pre_launch_excluded_count"] == 0
 
 
+def _cu(mlbam_id: int, date: str) -> dict:
+    """A genuine call-up transaction (typeCode SE) for the at-promotion standard tests."""
+    return {
+        "typeCode": "SE", "date": date, "effectiveDate": date,
+        "person": {"id": mlbam_id, "fullName": str(mlbam_id)},
+    }
+
+
+def _cache(*transactions: dict) -> dict:
+    return {"queries": {"q": {"transactions": list(transactions)}}}
+
+
+def test_lagged_flip_rescored_from_at_promotion_archive_even_then_no_row():
+    """Keys-shaped: a retention-flip event (7/04) postdates the real call-up (6/27). The
+    board row on the flip day is a post-graduation collapse (rank 522 vs field 162 = a
+    false -360 "miss"). Scored from the AT-PROMOTION archive (6/27, where the field had
+    him even), the honest outcome is NO ROW -- so no miss is minted, and he lands in the
+    neither bucket. Pre-fix this booked a false miss; that OLD behavior was the defect."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        # 6/27 = the real call-up archive: field even with us, no qualifying gap.
+        {"date": "2026-06-27", "board": [
+            _rank_row(101, "Sean-shaped", 160, {"pipeline": 162, "hkb": 165, "sts": 161})]},
+        # 7/04: post-graduation collapse -- our rank craters to 522, manufacturing a
+        # false miss if scored from THIS row. active_mlb_roster flips True here.
+        {"date": "2026-07-03", "board": [
+            _rank_row(101, "Sean-shaped", 522, {"pipeline": 162, "hkb": 246, "sts": 71})]},
+        {"date": "2026-07-04", "board": [
+            _rank_row(101, "Sean-shaped", 522, {"pipeline": 162, "hkb": 246, "sts": 71},
+                      active_mlb_roster=True)]},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-07-04T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-06-27")),
+    )
+    assert payload["misses"] == []  # the false -360 miss is gone
+    assert payload["receipts"] == []
+    assert payload["summary"]["no_claim_call_up_count"] == 1  # honest neither outcome
+
+
+def test_no_consensus_at_promotion_produces_no_row():
+    """Cabrera-shaped: at the real call-up the player had ZERO qualifying public boards
+    (no computable consensus), so no honest row exists. A later contaminated event where
+    boards reappear must NOT manufacture one -- it re-sources to the at-promotion archive
+    and finds no consensus -> neither bucket."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        # 6/21 real call-up: no public boards rate him -> no consensus.
+        {"date": "2026-06-21", "board": [_rank_row(101, "Jose-shaped", 377, {})]},
+        {"date": "2026-07-03", "board": [
+            _rank_row(101, "Jose-shaped", 962, {"hkb": 262, "sts": 107})]},
+        {"date": "2026-07-04", "board": [
+            _rank_row(101, "Jose-shaped", 962, {"hkb": 262, "sts": 107},
+                      active_mlb_roster=True)]},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-07-04T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-06-21")),
+    )
+    assert payload["misses"] == [] and payload["receipts"] == []
+    assert payload["summary"]["no_claim_call_up_count"] == 1
+
+
+def test_genuine_call_up_transaction_satisfies_roster_guard_when_off_todays_snapshot():
+    """Murphy-shaped: real MLB debut, but optioned back down before today's roster
+    snapshot was taken, so he's ABSENT from roster_lookup. A genuine call-up transaction
+    is direct evidence he reached MLB -- the roster guard must accept it and mint the
+    clean at-promotion hit. Pre-fix the today's-snapshot-only guard wrongly dropped him."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-07-06", "board": [
+            _rank_row(101, "Owen-shaped", 26, {"pipeline": 90, "hkb": 146, "sts": 267})]},
+        {"date": "2026-07-07", "board": [
+            _rank_row(101, "Owen-shaped", 16, {"pipeline": 90, "hkb": 146, "sts": 267},
+                      active_mlb_roster=True)]},
+    ]
+    roster = {"profiles": []}  # deliberately NOT on today's snapshot
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-07-07T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-07-06")),
+    )
+    keys = [r["identity_key"] for r in payload["receipts"]]
+    assert keys == ["101_hitter"]  # minted despite absent from today's roster
+    receipt = payload["receipts"][0]
+    assert receipt["divergence"] == 120  # scored at promotion (vc 26 vs consensus 146)
+    assert receipt["actual_call_up_date"] == "2026-07-06"
+
+
+def test_il_style_phantom_disappearance_without_call_up_transaction_still_rejected():
+    """The roster guard's original job is preserved: a disappearance with NO call-up
+    transaction (an IL move / option / trade that delisted him, not a promotion) and no
+    active-roster confirmation must still be rejected -- neither a row nor a neither-bucket
+    entry (there's no evidence he reached MLB)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [
+            _rank_row(101, "Phantom", 20, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-06-25", "board": []},  # disappears, but no call-up transaction
+    ]
+    roster = {"profiles": []}  # not on the roster either
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=_cache(),  # no transactions at all
+    )
+    assert payload["receipts"] == [] and payload["misses"] == []
+    assert payload["summary"]["no_claim_call_up_count"] == 0  # not a confirmed call-up
+
+
+def test_neither_bucket_counter_counts_genuine_no_claim_call_ups():
+    """The neither-bucket counter tallies genuine post-launch call-ups that produced no
+    row, and only those: a clean hit is a claim (not neither), a phantom disappearance is
+    not a confirmed call-up (not counted), and a dead-even at-promotion call-up IS a
+    genuine no-claim (counted)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [
+            _rank_row(101, "Clean Hit", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),   # hit
+            _rank_row(102, "Dead Even", 60, {"pipeline": 61, "hkb": 62, "sts": 60}),    # neither
+            _rank_row(103, "Phantom", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),     # no CU txn
+        ]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 101, "active_mlb_roster": True},
+        {"mlbam_id": 102, "active_mlb_roster": True},
+    ]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-06-24"), _cu(102, "2026-06-24")),
+    )
+    assert [r["identity_key"] for r in payload["receipts"]] == ["101_hitter"]  # the hit
+    assert payload["summary"]["no_claim_call_up_count"] == 1  # only the dead-even 102
+
+
 def _rank_row(
     mlbam_id: int,
     name: str,
