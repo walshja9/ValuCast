@@ -131,6 +131,33 @@ is absent, and **self-seeds** its baseline (`data/models/dd_independence_baselin
 from the first real daily build that emits the counts. No baseline file shipped yet
 — it appears on the first build that carries the counts, then enforces ≤ ceiling.
 
+## Batch 3 — 2026-07-09 claims-layer audit + receipts epistemics (planned at `fb360066`)
+
+Source: the 10-surface claims-layer audit (`docs/audit-2026-07-09-claims-register.json`,
+180 claims, 25 high / 31 medium / 13 low) plus the receipts scoring-philosophy review
+(arrival-not-outcome, survivorship bias, seed asymmetry, unweighted lead time). The
+at-promotion standard, the no-claim bucket, and the page disclaimer already shipped
+directly (`fb360066`); these plans are the rest.
+
+| Plan | Title | Priority | Effort | Depends on | Execution window | Status |
+|------|-------|----------|--------|------------|------------------|--------|
+| 010  | Single source of truth for contradicting chips (High+Thin, form spark, AOTC chip vs PNG, strip level) | P1 | M | 011 first (shared `_confidence`) | pre-flip | TODO |
+| 011  | Label honesty (confidence sample gate, 1-board consensus, ETA window, seed field_label, value-scale explainer, dead elite floor) | P1 | M | — | pre-flip | TODO |
+| 012  | Binding gates (prospects readiness banner, receipts-PNG disclaimer parity, ledger Wins tile split) | P1 | M | — | pre-flip | TODO |
+| 013  | Comps cohort + buys/movers window honesty (incl. the INERT window pills bug) | P2 | M | — | anytime | TODO |
+| 014  | Methodology honesty polish (correlation coin-flip line, n= and noise caveats, forward-gate paragraph) | P2 | S | — | anytime | TODO |
+| 015  | Scouting-read word-form number guard (2.09% measured flag rate) | P2 | S | — | anytime | TODO |
+| 016  | Receipts maturation layer (pending → confirmed/decayed, frozen thresholds) | P1 | M | — | post-7/13 | TODO |
+| 017  | Gaps → ledger claim lifecycle (kills survivorship bias; enrolls full qualified sets, not the 15-row display cut) | P1 | M | coordinate w/ 004 validator surface | post-7/13 | TODO |
+| 018  | Lead time on every receipt row (omit-never-zero, archive-provable) | P2 | S | — | anytime | TODO |
+| 019  | Field-unranked auto lane (replaces hand-seeding; data-derived field labels) | P2 | M | 018 helpful first (shared receipts surfaces) | anytime | TODO |
+
+Ordering: **011 → 010 → 012** sequential (shared `_confidence` + board template), then
+013/014/015 independent; receipts cluster **018 → 019** then **016 → 017** post-7/13
+(017 also depends on the AOTC unlock; both forbid touching frozen scorecard files).
+Every plan: master only, do NOT push, reviewer gates. The receipts public flip
+(RECEIPTS_HOLD app.py:78) is Alex's call and is expected after 011/012 land.
+
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
 ## Dependency notes
