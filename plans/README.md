@@ -142,7 +142,7 @@ directly (`fb360066`); these plans are the rest.
 | Plan | Title | Priority | Effort | Depends on | Execution window | Status |
 |------|-------|----------|--------|------------|------------------|--------|
 | 010  | Single source of truth for contradicting chips (High+Thin, form spark, AOTC chip vs PNG, strip level) | P1 | M | 011 first (shared `_confidence`) | pre-flip | TODO |
-| 011  | Label honesty (confidence sample gate, 1-board consensus, ETA window, seed field_label, value-scale explainer, dead elite floor) | P1 | M | — | pre-flip | TODO |
+| 011  | Label honesty (confidence sample gate, 1-board consensus, ETA window, seed field_label, value-scale explainer, dead elite floor) | P1 | M | — | pre-flip | DONE (opus executor + Fable review, 7/9; did BOTH 4a derive + 4b validator — validator caught Watson seeded "outside top 100" vs STS #90, artifact regenerated with honest labels; elite floor 140→95, 4 clear; 1781 pass) |
 | 012  | Binding gates (prospects readiness banner, receipts-PNG disclaimer parity, ledger Wins tile split) | P1 | M | — | pre-flip | TODO |
 | 013  | Comps cohort + buys/movers window honesty (incl. the INERT window pills bug) | P2 | M | — | anytime | TODO |
 | 014  | Methodology honesty polish (correlation coin-flip line, n= and noise caveats, forward-gate paragraph) | P2 | S | — | anytime | TODO |

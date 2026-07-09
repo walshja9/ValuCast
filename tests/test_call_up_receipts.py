@@ -591,6 +591,97 @@ def test_neither_bucket_counter_counts_genuine_no_claim_call_ups():
     assert payload["summary"]["no_claim_call_up_count"] == 1  # only the dead-even 102
 
 
+def test_seed_field_label_derived_from_archive_not_typed_contradiction():
+    """A seed the boards actually rank (Gabriel Hughes: 1 board, STS ~#512) must not
+    render "field outside top 100" -- the label is derived from the same ranked-board
+    archive the builder loads. 0 boards -> "no public board inside 600"; 1 board ->
+    "1 board, ~#r"; >=2 boards -> "N boards, consensus ~#c". Label-only: divergence
+    stays None (still a seed, never auto-scored)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [
+            # 1 in-cap board (#512); the second (630) is over the 600 cap -> excluded.
+            _rank_row(700, "One Board Deep", 9, {"sts": 512, "hkb": 630}),
+            _rank_row(701, "Three Board", 55, {"sts": 90, "hkb": 162, "pl": 443}),
+        ]},
+        {"date": "2026-07-01", "board": []},  # keep archive quiet; seeds drive the labels
+    ]
+    seed = [
+        {  # 1-board case (Hughes shape): typed label contradicts the archive
+            "identity_key": "700_hitter", "mlbam_id": "700", "role": "hitter",
+            "name": "One Board Deep", "valucast_rank": 9, "consensus_rank": None,
+            "divergence": None, "field_label": "field outside top 100",
+            "call_up_date": "2026-07-01",
+        },
+        {  # >=2 board case: a consensus actually exists, so report it
+            "identity_key": "701_hitter", "mlbam_id": "701", "role": "hitter",
+            "name": "Three Board", "valucast_rank": 55, "consensus_rank": None,
+            "divergence": None, "field_label": "field outside top 100",
+            "call_up_date": "2026-07-01",
+        },
+        {  # field-unranked case: no board in the archive at all
+            "identity_key": "702_hitter", "mlbam_id": "702", "role": "hitter",
+            "name": "Field Ignores Him", "valucast_rank": 41, "consensus_rank": None,
+            "divergence": None, "field_label": "field outside top 100",
+            "call_up_date": "2026-07-01",
+        },
+    ]
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload={"profiles": []}, existing_log=[],
+        seed_rows=seed, generated_at="2026-07-01T00:00:00+00:00",
+    )
+    by_key = {r["identity_key"]: r for r in payload["receipts"]}
+    assert by_key["700_hitter"]["field_label"] == "1 board, ~#512"
+    assert by_key["700_hitter"]["divergence"] is None  # still a seed, not auto-scored
+    assert by_key["701_hitter"]["field_label"] == "3 boards, consensus ~#162"
+    # No archive row for 702 -> nothing to derive from, typed label stands.
+    assert by_key["702_hitter"]["field_label"] == "field outside top 100"
+
+
+def test_validator_fails_seed_field_label_contradicted_by_a_board(tmp_path, monkeypatch):
+    """The build-time validator is the honesty backstop: a typed "outside top N" label
+    can't survive if a public board in the archive ranks the identity at <= N."""
+    import json
+    import scripts.validate_valucast_call_up_receipts as validator
+
+    # An identity the archive ranks at #90 on STS but seeded "outside top 100".
+    archive_index = {
+        "2026-07-01": {
+            "703_hitter": _rank_row(703, "Ranked But Typed Out", 20, {"sts": 90, "hkb": 162}),
+        }
+    }
+    receipts = [{
+        "identity_key": "703_hitter", "mlbam_id": "703", "role": "hitter",
+        "name": "Ranked But Typed Out", "team": "BOS", "pos": "SS", "level": "AAA",
+        "valucast_rank": 20, "consensus_rank": None, "divergence": None,
+        "field_label": "field outside top 100", "call_up_date": "2026-07-01",
+        "logged_at": "2026-07-01T00:00:00+00:00", "seed": True,
+    }]
+    problems = validator._field_label_contradictions(receipts, archive_index)
+    assert any("outside top 100" in p and "sts" in p and "#90" in p for p in problems)
+
+    # Full validate_file must FAIL when the artifact carries that contradicted label.
+    # Point the validator's archive read at the synthetic index above.
+    monkeypatch.setattr(validator, "_archive_payloads", lambda *a, **k: [])
+    monkeypatch.setattr(validator, "_archive_by_date_key", lambda *a, **k: archive_index)
+    payload = {
+        "artifact": validator.ARTIFACT_NAME, "signal_version": validator.SIGNAL_VERSION,
+        "generated_at": "2026-07-01T00:00:00+00:00", "status": "candidate_ready",
+        "summary": {"receipt_count": 1, "miss_count": 0, "archive_dates_scanned": []},
+        "source_policy": {flag: False for flag in (
+            "name_matching_used", "feeds_model_score", "feeds_public_rank",
+            "feeds_buy_score", "dd_values_used", "dd_ranks_used",
+            "external_rankings_used", "market_values_used",
+        )},
+        "receipts": receipts, "misses": [],
+    }
+    artifact = tmp_path / "artifact.json"
+    artifact.write_text(json.dumps(payload), encoding="utf-8")
+    _payload, problems = validator.validate_file(artifact)
+    assert any("outside top 100" in p for p in problems)
+
+
 def _rank_row(
     mlbam_id: int,
     name: str,

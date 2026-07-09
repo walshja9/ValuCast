@@ -49,7 +49,7 @@
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
             <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
-            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
+            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
             {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="This season only, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button></th>{% endif %}

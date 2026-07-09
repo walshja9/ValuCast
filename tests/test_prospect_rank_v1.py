@@ -10,6 +10,7 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
+    _confidence,
     _input_lookup,
     _universal_outcome_index,
     build_prospect_rank_v1,
@@ -936,6 +937,22 @@ def test_pedigree_confidence_tracks_current_sample_not_score_source():
     full_row = next(r for r in full_payload["board"] if r["name"] == "Fallback Good")
     assert full_row["score_source"] == "prospect_pedigree_v0_7"
     assert full_row["confidence"] == "medium"
+
+
+def test_model_scored_high_confidence_requires_a_non_thin_current_sample():
+    """The model-scored branch may only return "high" when the model gates AND a
+    real current sample agree. A model-strong profile over a thin/absent current
+    line caps at "medium" -- "high" must never sit on essentially no MLB/MiLB line."""
+    model_profile = {"role_gate": "active", "impact_gate": "active"}
+    # Same model-strong inputs, only the current sample band differs.
+    assert _confidence(
+        "model_scored", model_profile, 60.0, {"skill_band": "solid"}
+    ) == "high"
+    assert _confidence(
+        "model_scored", model_profile, 60.0, {"skill_band": "thin"}
+    ) == "medium"
+    # No current context at all is treated as thin -> medium, never high.
+    assert _confidence("model_scored", model_profile, 60.0, None) == "medium"
 
 
 def test_rank_v1_applies_lower_minors_pedigree_bucket_calibration():

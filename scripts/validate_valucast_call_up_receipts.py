@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +11,51 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from prospects.call_up_receipts import ARTIFACT_NAME, ARTIFACT_PATH, SIGNAL_VERSION  # noqa: E402
+from prospects.ahead_of_consensus import _public_source_ranks  # noqa: E402
+from prospects.call_up_receipts import (  # noqa: E402
+    ARTIFACT_NAME,
+    ARTIFACT_PATH,
+    RANK_ARCHIVE_DIR,
+    SIGNAL_VERSION,
+    _archive_by_date_key,
+    _archive_payloads,
+    _latest_source_row,
+    _source_ranks,
+)
+
+# "field outside top 100" / "outside the top 100" -> the claimed field ceiling.
+_OUTSIDE_TOP_RE = re.compile(r"outside (?:the )?top\s+(\d+)", re.IGNORECASE)
+
+
+def _field_label_contradictions(
+    receipts: list, archive_by_date_key: dict[str, dict[str, dict]]
+) -> list[str]:
+    """Fail any seed whose typed field_label claims "outside top N" while a public
+    board in the ranked archive actually ranks the identity at <= N.
+
+    This is the honesty backstop: a hand-typed label can never survive the build if
+    the archive disproves it. Only fires on the "outside top N" phrasing (the one that
+    makes a falsifiable claim); derived labels ("1 board, ~#512") carry no such claim
+    and are left alone. No archive row / no in-cap board => nothing to contradict."""
+    problems: list[str] = []
+    for index, row in enumerate(receipts, 1):
+        if not isinstance(row, dict):
+            continue
+        match = _OUTSIDE_TOP_RE.search(str(row.get("field_label") or ""))
+        key = row.get("identity_key")
+        if not match or not key:
+            continue
+        ceiling = int(match.group(1))
+        source_row = _latest_source_row(key, archive_by_date_key)
+        if source_row is None:
+            continue
+        for board, rank in _public_source_ranks(_source_ranks(source_row)).items():
+            if rank <= ceiling:
+                problems.append(
+                    f"receipt {index} ({row.get('name') or key}) field_label claims "
+                    f"'outside top {ceiling}' but board '{board}' ranks him #{round(rank)}"
+                )
+    return problems
 
 
 def _validate_call_up(row, index, label, seen, *, require_consensus, negative=False) -> list[str]:
@@ -91,6 +136,16 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str]]:
     seen = set()
     for index, row in enumerate(receipts, 1):
         problems.extend(_validate_call_up(row, index, "receipt", seen, require_consensus=False))
+
+    # Honesty backstop: a typed "outside top N" field_label can't survive if a public
+    # board in the ranked archive actually ranks the player at <= N. Best-effort -- if
+    # the archive can't be read (e.g. a CI checkout without it), skip rather than error.
+    try:
+        archive_index = _archive_by_date_key(_archive_payloads(RANK_ARCHIVE_DIR))
+    except Exception:  # noqa: BLE001
+        archive_index = {}
+    if archive_index:
+        problems.extend(_field_label_contradictions(receipts, archive_index))
 
     misses = payload.get("misses")
     if not isinstance(misses, list):

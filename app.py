@@ -833,15 +833,18 @@ def _compute_dynasty_dollars(rows, settings, value_of=None):
     return dollars
 
 
-DYNASTY_ELITE_FLOOR = 140.0
+DYNASTY_ELITE_FLOOR = 95.0
 
 
 def _compute_dynasty_tiers(rows, num_tiers=8, value_of=None):
     """Assign tiers from dynasty value gaps.
 
-    Values >= DYNASTY_ELITE_FLOOR (the 140+ band on the 0-150 scale) are always
-    tier 1 — elite is an absolute badge, never merged into the tier below by the
-    min-3 rule. Gap-based tiering applies below the floor, starting at tier 2.
+    Values >= DYNASTY_ELITE_FLOOR (the 95+ band on the 0-100 dynasty value scale)
+    are always tier 1 — elite is an absolute badge, never merged into the tier
+    below by the min-3 rule. Gap-based tiering applies below the floor, starting
+    at tier 2. The floor is scale-specific: the served snapshot is a 0-100 score
+    (value_scale = 0_100_valucast_dynasty_score, max 100); if the snapshot ever
+    moves off 0-100 this floor and its liveness test must move with it.
     """
     value_of = value_of or (lambda r: r.dynasty_value)
     if len(rows) < 2:

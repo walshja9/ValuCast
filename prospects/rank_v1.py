@@ -1546,7 +1546,17 @@ def _confidence(
         return "medium"
     role_gate = (model_profile or {}).get("role_gate")
     impact_gate = (model_profile or {}).get("impact_gate")
-    if role_gate == "active" and impact_gate == "active" and (reliability or 0.0) >= 45:
+    # "high" must mean the model AND a real current sample agree. A thin/absent
+    # current line caps the chip at "medium" -- the same skill_band signal the
+    # pedigree branch above already trusts, so the two branches stay consistent.
+    band = str((current_context or {}).get("skill_band") or "").lower()
+    current_is_thin = (not current_context) or band == "thin"
+    if (
+        role_gate == "active"
+        and impact_gate == "active"
+        and (reliability or 0.0) >= 45
+        and not current_is_thin
+    ):
         return "high"
     return "medium"
 

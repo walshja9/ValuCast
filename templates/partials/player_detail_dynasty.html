@@ -38,7 +38,7 @@
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
-            <span class="headline-value"><span>Dynasty Value</span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            <span class="headline-value"><span>Dynasty Value <a href="/methodology#dynasty-value-scale" class="value-explainer-link" title="What does this 0-100 number mean?">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
             {% set headline_context = namespace(parts=[]) %}
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
             {% set headline_context.parts = headline_context.parts + ["Range " ~ ("%.0f" | format(confidence_range.get('low'))) ~ "–" ~ ("%.0f" | format(confidence_range.get('high')))] %}
@@ -468,10 +468,15 @@
                 <div class="source-summary-item public-consensus">
                     <span class="stat-label">Public Consensus</span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
-                    <span class="source-summary-note">{{ row.public_source_ranks | length }} board{{ '' if row.public_source_ranks | length == 1 else 's' }}</span>
+                    <span class="source-summary-note">{{ row.public_source_ranks | length }} boards</span>
                     {% if row.prospect_rank is not none and not row.active_mlb_callup and (row.public_source_ranks | length) >= 3 and (row.public_source_consensus - row.prospect_rank) >= 25 %}
                     <span class="source-ahead-chip" title="ValuCast ranks this player ahead of the public field (3+ boards)">Ahead of the Curve +{{ row.public_source_consensus - row.prospect_rank }}</span>
                     {% endif %}
+                </div>
+                {% elif row.public_source_ranks | length == 1 %}
+                <div class="source-summary-item public-consensus">
+                    <span class="stat-label">Public boards</span>
+                    <span class="source-summary-note" title="A single board is not a consensus (min 2 boards)">1 board (not a consensus)</span>
                 </div>
                 {% endif %}
                 {% if row.milb_performance_rank is not none %}

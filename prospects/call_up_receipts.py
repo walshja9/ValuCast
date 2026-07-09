@@ -213,6 +213,70 @@ def _seed_receipts(seed_path: Path = SEED_PATH) -> list[dict]:
     return out
 
 
+def _latest_source_row(
+    key: str, archive_by_date_key: dict[str, dict[str, dict]]
+) -> dict | None:
+    """The most recent walked archive row for a seed identity (or None if unranked).
+
+    Curated seed rows carry no ``source_ranks`` of their own, so their honest
+    field label has to come from the same ranked-board archive the builder already
+    loaded. Newest board wins -- it's the current read of what the field says."""
+    dates = [d for d in archive_by_date_key if key in archive_by_date_key[d]]
+    if not dates:
+        return None
+    return archive_by_date_key[max(dates)].get(key)
+
+
+def _derive_seed_field_label(
+    key: str, archive_by_date_key: dict[str, dict[str, dict]]
+) -> str | None:
+    """Honest ``field_label`` for a curated seed, derived from the ranked-board archive.
+
+    A seed exists because the divergence gate can't SCORE it (< MIN_BOARDS boards,
+    so no consensus), but the boards may still RANK the player deep -- and a typed
+    "field outside top 100" then contradicts the archive (Gabriel Hughes: STS ~#512).
+    Derive the label from the public boards inside the cap the model already trusts:
+      * 0 boards inside the cap -> "no public board inside 600" (truly field-unranked).
+      * exactly 1 board at rank r -> "1 board, ~#r" (ranked, just below the 2-board
+        consensus floor -- not "outside the top 100").
+      * >= 2 boards -> a consensus exists; report it ("N boards, consensus ~#c") rather
+        than claiming the field ignored him. (The auto path owns SCORING such rows; here
+        we only make the seed's LABEL truthful, never its divergence/rank/seed status.)
+    Returns None when the identity has no archive row at all (keep the typed label)."""
+    source_row = _latest_source_row(key, archive_by_date_key)
+    if source_row is None:
+        return None
+    public_ranks = _public_source_ranks(_source_ranks(source_row))
+    if not public_ranks:
+        return "no public board inside 600"
+    if len(public_ranks) == 1:
+        rank = round(next(iter(public_ranks.values())))
+        return f"1 board, ~#{rank}"
+    consensus = _public_source_consensus(public_ranks)
+    return f"{len(public_ranks)} boards, consensus ~#{consensus}"
+
+
+def _apply_seed_field_labels(
+    rows: list[dict], archive_by_date_key: dict[str, dict[str, dict]]
+) -> None:
+    """Overwrite each SEED row's ``field_label`` with the archive-derived one, in place.
+
+    Label-only: never touches divergence, rank, consensus, or which rows are seeds.
+    Runs over the FINAL receipts list so it also corrects seed rows carried forward
+    from the committed artifact (the incremental merge keeps existing rows, so a
+    stale typed label would otherwise survive forever). No-op when the archive has
+    no row for the identity (typed label stands)."""
+    for row in rows:
+        if not row.get("seed"):
+            continue
+        key = row.get("identity_key")
+        if not key:
+            continue
+        derived = _derive_seed_field_label(key, archive_by_date_key)
+        if derived:
+            row["field_label"] = derived
+
+
 def _sort_receipts(receipts: list[dict]) -> list[dict]:
     """Scored rows lead, biggest gap over the field first (the receipt's whole point);
     ties break to the better prospect. Curated (field-unranked) rows follow, newest-first."""
@@ -669,6 +733,13 @@ def build_call_up_receipts(
             seed_count += 1
     receipts = [r for r in _sort_receipts(list(by_key.values())) if r.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
     misses = [m for m in _sort_misses(misses) if m.get("identity_key") not in EXCLUDED_IDENTITY_KEYS]
+
+    # Make each seed's field_label truthful against the ranked-board archive. A typed
+    # "field outside top 100" can contradict the boards (Hughes: STS ~#512); derive the
+    # label from the same archive the builder already loaded. Runs over the final list so
+    # seed rows carried forward from the committed artifact get corrected too (the merge
+    # only ever adds/keeps existing rows). Label-only -- no scoring/divergence change.
+    _apply_seed_field_labels(receipts, archive_index)
 
     # Attach the real call-up date next to the archive-diff-inferred one, when a genuine
     # call-up transaction exists for that player. Never changes call_up_date or sorting.

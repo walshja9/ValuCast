@@ -23,6 +23,10 @@ _INTERNAL_SOURCES = frozenset({"milb_perf", "milb_breakout", "cfr", "cfr_raw"})
 # Only count ranks inside the top-prospect ceiling (600, ~PL+/HKB depth) so
 # deep-list ranks (sts/fg run thousands deep) can't poison the median consensus.
 _CONSENSUS_RANK_CAP = 600
+# A single board is not a consensus. Must stay equal to
+# prospects.ahead_of_consensus.MIN_BOARDS (2) -- deliberately duplicated rather
+# than imported so the live request path never couples to the frozen AOTC module.
+_MIN_CONSENSUS_BOARDS = 2
 
 
 def _clean_float(raw) -> float | None:
@@ -104,7 +108,8 @@ class DynastyRankingRow:
     def public_source_consensus(self) -> int | None:
         """Rounded median public-board rank for a compact consensus comparison."""
         ranks = sorted(self.public_source_ranks.values())
-        if not ranks:
+        if len(ranks) < _MIN_CONSENSUS_BOARDS:
+            # a single board is not a consensus (MIN_BOARDS)
             return None
         midpoint = len(ranks) // 2
         if len(ranks) % 2:

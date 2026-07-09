@@ -111,6 +111,17 @@ class TestDynastyRankingRow(unittest.TestCase):
         self.assertEqual(row.public_source_consensus, 6)
         self.assertIsNone(row.milb_performance_rank)
 
+    def test_public_consensus_requires_at_least_two_boards(self):
+        # A single external board is not a consensus (MIN_BOARDS floor): the median
+        # figure must not be minted from one board.
+        one_board = dict(SAMPLE_PROSPECT, source_ranks={"pipeline": 6, "cfr": 9.0})
+        row = self._row(one_board)
+        self.assertEqual(row.public_source_ranks, {"pipeline": 6})
+        self.assertIsNone(row.public_source_consensus)
+        # Two boards do produce a consensus (rounded median).
+        two_boards = dict(SAMPLE_PROSPECT, source_ranks={"pipeline": 6, "hkb": 7})
+        self.assertEqual(self._row(two_boards).public_source_consensus, 6)
+
     def test_prospect_sample_context_properties(self):
         record = dict(
             SAMPLE_PROSPECT,

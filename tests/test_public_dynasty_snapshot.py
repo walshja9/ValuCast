@@ -880,7 +880,9 @@ def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
     assert row.source_divergence is None
     assert row.prospect_rank == 1
     assert not hasattr(row, "breakout_label")
-    assert row.public_source_consensus == 10
+    # A single external board ({"pipeline": 10}) is not a consensus (MIN_BOARDS floor).
+    assert row.public_source_ranks == {"pipeline": 10}
+    assert row.public_source_consensus is None
     assert row.stat_line == {"ops": 0.900, "pa": 200}
     assert row.stat_line_translated == {
         "level_label": "AA+A+",
