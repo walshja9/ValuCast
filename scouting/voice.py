@@ -109,6 +109,59 @@ def style_problems(text: str) -> list[str]:
     return out
 
 
+# 7/9 claims audit: the digit-only _NUMBER_RE lets a DERIVED numeric delta spelled as
+# a WORD pass the fact guard -- e.g. Eli Willits "more than three points above the
+# big-league average" (a subtraction the model invented; no league baseline is in the
+# grounding to check it against). VOICE_PROMPT forbids exactly this ("no arithmetic")
+# and BANNED_PHRASES catches the digit-form scaffold, but not the word-form.
+_NUMBER_WORD = (
+    r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    r"couple|several)"
+)
+# Template A: "<word|digits> [full] points/percentage points/percent/ticks above|below ..."
+# All 10 live hits on this template are real violations -- no exclusion needed.
+_WORD_DELTA_RE = re.compile(
+    r"\b(?:" + _NUMBER_WORD + r"|\d+)\s+(?:full\s+)?"
+    r"(?:points?|percentage\s+points?|percent|ticks?)\s+"
+    r"(?:above|below|better|worse|higher|lower|more|fewer)\b",
+    re.IGNORECASE,
+)
+# Template B: multiplier comparative ("double/triple/half the league norm"). The
+# leading alternation is ONLY the multiplier WORDS -- NOT bare digits/number-words.
+# (Allowing a bare number token there over-fires massively: "20.0% ... rate" and every
+# "N% ... walk rate" phrase matches -> ~25% flag rate. Verified.) MUST also anchor on
+# an average/norm/mean/baseline/rate/clip word or it fires on non-numeric prose
+# ("scrubs half the power", "depth more than half the time").
+_MULTIPLIER_DELTA_RE = re.compile(
+    r"\b(?:double|triple|quadruple|half)\s+"
+    r"(?:the\s+)?"
+    r"(?:[\w.%-]+\s+){0,3}?"
+    r"(?:average|norm|mean|baseline|rate|clip)\b",
+    re.IGNORECASE,
+)
+# Template C: the "N times the league" comparative (separate from the multiplier words).
+_TIMES_DELTA_RE = re.compile(
+    r"\b(?:" + _NUMBER_WORD + r"|\d+)\s+times\s+(?:the|as|higher|more|league)\b",
+    re.IGNORECASE,
+)
+
+
+def derived_word_number_problems(text: str) -> list[str]:
+    """Derived numeric deltas spelled as WORDS, which the digit-only number guard
+    (unsupported_numbers) cannot see. VOICE_PROMPT bans arithmetic derivation; this
+    catches the word-form the digit scan misses. Soft signal (drives regen), same
+    class as unsupported_numbers -- surfaced, not a hard fact-hazard."""
+    out: list[str] = []
+    t = text or ""
+    for match in _WORD_DELTA_RE.finditer(t):
+        out.append(f"word-form derived delta '{match.group(0).strip()}'")
+    for match in _MULTIPLIER_DELTA_RE.finditer(t):
+        out.append(f"word-form multiplier comparison '{match.group(0).strip()}'")
+    for match in _TIMES_DELTA_RE.finditer(t):
+        out.append(f"word-form 'N times' comparison '{match.group(0).strip()}'")
+    return out
+
+
 # --- Role-vocabulary lane guard (7/5) -------------------------------------------------
 # The LLM paraphrases a floor/ceiling LABEL into the wrong position's idiom: Brady Ebel's
 # ("Bench Or Depth Floor", 815816_hitter) came back as "a patient organizational depth arm
@@ -381,6 +434,7 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     (tolerant), surfaced for spot-check rather than auto-discarding on rounding noise."""
     banned = banned_phrase_hits(text)
     numbers = unsupported_numbers(text, grounding)
+    derived = derived_word_number_problems(text)
     handedness = handedness_problems(text, grounding)
     slash = triple_slash_problems(text, grounding)
     style = style_problems(text)
@@ -388,6 +442,7 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
+        "derived_word_number_problems": derived,
         "handedness_problems": handedness,
         "triple_slash_problems": slash,
         "style_problems": style,
@@ -395,9 +450,11 @@ def validate_report_text(text: str, grounding: dict) -> dict:
         # style gates ok (drives retry + regen) but not hard_ok — a formulaic read is
         # a regen candidate, not a factual hazard. role_vocab is a wrong-fact-shaped
         # error (same class as handedness) so it gates hard_ok too.
+        # derived_word_number_problems is a soft signal like unsupported_numbers/style:
+        # a word-form derived delta is a regen candidate, not a hard fact-hazard.
         "ok": (
-            not banned and not numbers and not handedness and not slash
-            and not style and not role_vocab
+            not banned and not numbers and not derived and not handedness
+            and not slash and not style and not role_vocab
         ),
         "hard_ok": not banned and not handedness and not slash and not role_vocab,
     }

@@ -10,6 +10,7 @@ from scouting.mlb_read import stat_line_stats
 from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
+    derived_word_number_problems,
     handedness_problems,
     role_vocab_problems,
     sample_context_stale,
@@ -49,6 +50,49 @@ class TestVoiceGuard(unittest.TestCase):
         text = "Test Prospect is a 21-year-old hitter with a .300 average."
         guard = validate_report_text(text, GROUNDING)
         self.assertTrue(guard["style_problems"])
+        self.assertFalse(guard["ok"])
+        self.assertTrue(guard["hard_ok"])
+
+    def test_derived_word_number_problems_catches_real_examples(self):
+        # 7/9 claims audit: a derived numeric delta spelled as a WORD slips the
+        # digit-only number guard. Verbatim caught fragments from the live artifact.
+        # Template A: "<word> points/ticks above|below" (Eli Willits, 816113_hitter).
+        self.assertTrue(derived_word_number_problems(
+            "translates to a 12.0% MLB-equivalent rate, more than three points above "
+            "the big-league average"))
+        # Template B: multiplier comparative "double the ... norm" (Brody Hopkins).
+        self.assertTrue(derived_word_number_problems(
+            "the MLB-equivalent BB/9 of 6.5 is double the major-league norm"))
+        # Sirota's "double the 8.5% major-league baseline" — the modifier rides the gap.
+        self.assertTrue(derived_word_number_problems(
+            "sits at double the 8.5% major-league baseline for the position"))
+
+    def test_derived_word_number_problems_excludes_measured_false_positives(self):
+        # Regression pins for the precision anchor. Both are real artifact text the
+        # naive pattern flagged and the tightened regex correctly clears.
+        # Jacob Gonzalez: "half the power" is not a numeric claim (no anchor word).
+        self.assertEqual(
+            derived_word_number_problems("translation normally scrubs half the power"), [])
+        # Enrique Bradfield Jr.: "more than half the time" is an idiom, not a delta.
+        self.assertEqual(
+            derived_word_number_problems(
+                "lands him as organizational depth more than half the time"), [])
+
+    def test_derived_word_number_problems_ignores_clean_cited_rate(self):
+        # A grounded rate cited plainly is fine — no multiplier word before "rate",
+        # so Template B's anchor must not fire on a bare cited rate.
+        self.assertEqual(
+            derived_word_number_problems(
+                "A .416 OBP at 18 with a 12.0% MLB-equivalent walk rate."), [])
+
+    def test_derived_word_number_gates_ok_but_not_hard_ok(self):
+        # Same soft-signal class as unsupported_numbers: gates ok (drives regen),
+        # leaves hard_ok True (not a factual hazard that discards a good read).
+        guard = validate_report_text(
+            "A clean opener. It runs three points above the big-league average over 240 PA.",
+            GROUNDING,
+        )
+        self.assertTrue(guard["derived_word_number_problems"])
         self.assertFalse(guard["ok"])
         self.assertTrue(guard["hard_ok"])
 
