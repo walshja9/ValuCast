@@ -1325,6 +1325,71 @@ def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():
     assert "23.1 IP" in row_html
     assert "callup-chip" in row_html
 
+
+class _GateOverrideStore:
+    """Wraps the real served store, delegating everything (rows, generated_at,
+    filter, ...) but overriding only the two surface-gate dicts the banner reads."""
+
+    def __init__(self, real, surface_readiness, surface_blockers):
+        self._real = real
+        self._surface_readiness = surface_readiness
+        self._surface_blockers = surface_blockers
+
+    @property
+    def surface_readiness(self):
+        return self._surface_readiness
+
+    @property
+    def surface_blockers(self):
+        return self._surface_blockers
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+def _prospect_ctx_with_gate(monkeypatch, surface_readiness, surface_blockers):
+    """Drive _apply_prospect_board_context with a served store whose surface
+    readiness/blockers are swapped, keeping the real row path intact."""
+    from werkzeug.datastructures import ImmutableMultiDict
+
+    fake = _GateOverrideStore(app_module.dd_store, surface_readiness, surface_blockers)
+    monkeypatch.setattr(app_module, "dd_store", fake)
+    args = ImmutableMultiDict([("mode", "prospects")])
+    ctx = app_module._build_dynasty_context(args)
+    app_module._apply_prospect_board_context(ctx, args)
+    return ctx
+
+
+def test_prospect_gate_banner_fires_when_surface_not_ready(monkeypatch):
+    """7/9 claims-register gap (a): the per-surface readiness verdict must bind on
+    the served board -- when surface_readiness.prospects is False, the board says
+    'Preliminary -- publication gate not met: <blocker>' instead of shipping as if
+    it passed."""
+    blocker = "Top prospect board is too pitcher-heavy for public promotion."
+    ctx = _prospect_ctx_with_gate(
+        monkeypatch,
+        {"dynasty": True, "prospects": False},
+        {"prospects": [blocker]},
+    )
+    notice = ctx.get("prospect_gate_notice")
+    assert notice, "banner must fire when the prospects surface gate is False"
+    assert "Preliminary" in notice
+    assert "pitcher-heavy" in notice
+
+
+def test_prospect_gate_banner_silent_when_ready_or_unknown(monkeypatch):
+    """The banner uses `is False`, not falsy: a passing gate (True) or a MISSING
+    prospects key (older schema / unavailable store) must NOT raise a spurious
+    'gate not met' notice."""
+    ctx_ready = _prospect_ctx_with_gate(
+        monkeypatch, {"dynasty": True, "prospects": True}, {}
+    )
+    assert not ctx_ready.get("prospect_gate_notice")
+
+    ctx_absent = _prospect_ctx_with_gate(monkeypatch, {"dynasty": True}, {})
+    assert not ctx_absent.get("prospect_gate_notice")
+
+
 class TestBulletproofing(unittest.TestCase):
     """7/2 hardening batch: input abuse, cache-key abuse, staleness honesty."""
 

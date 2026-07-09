@@ -4,6 +4,9 @@
 {% if mode == 'prospects' and coverage_notice %}
 <div class="notice coverage-notice" role="status">{{ coverage_notice }}</div>
 {% endif %}
+{% if mode == 'prospects' and prospect_gate_notice %}
+<div class="notice prospect-gate-notice" role="status">{{ prospect_gate_notice }}</div>
+{% endif %}
 {% if mode == 'prospects' and custom_cats_active %}
 <p class="profile-note prospect-rerank-caption">Re-ranked for your league's categories ({{ prospect_preset_label }}) from ValuCast's factual prospect projections — within hitters and pitchers separately. Not a dollar value.</p>
 {% endif %}

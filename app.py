@@ -1469,6 +1469,23 @@ def _apply_prospect_board_context(ctx, args):
             )
             ctx["league_adapter_ranks"] = adapter_ranks
             ctx["custom_cats_active"] = True
+    # Bind the prospects publication gate: the build computes a per-surface
+    # readiness verdict (surface_readiness.prospects) but serving only ever
+    # honored the dynasty verdict. When the governor marks the prospect board
+    # not-ready, say so on the surface instead of shipping it as if it passed
+    # (7/9 claims-register: a gate that fires "not ready" and ships anyway is
+    # the brand-worst failure). Display-only — never reorders or drops rows.
+    # `is False` (not falsy) on purpose: a MISSING key (older snapshot schema
+    # or the unavailable-store null object whose surface_readiness is {}) must
+    # NOT raise a banner — only an explicit False verdict does. getattr for the
+    # same reason: duck-typed stores (test fakes, legacy feeds) may not expose
+    # the gate at all — unknown gate means no banner, never a crash.
+    if getattr(dd_store, "surface_readiness", {}).get("prospects") is False:
+        blockers = getattr(dd_store, "surface_blockers", {}).get("prospects") or []
+        blocker_text = "; ".join(str(b) for b in blockers) or "not yet promoted for public view"
+        ctx["prospect_gate_notice"] = (
+            f"Preliminary — publication gate not met: {blocker_text}"
+        )
     ctx["dd_rows"] = rows
 
 
@@ -7202,6 +7219,20 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None):
         subtitle=subtitle,
         extra_line="Every prospect call-up vs the public-board consensus, both directions",
         tagline="Call-Up Receipts",
+    )
+
+    # Travel the arrival-not-outcome caveat WITH the image, not just on the page:
+    # the PNG is the og:image + Download target, detached from a page a re-sharer
+    # never links to (7/9 claims-register gap b). This must stay in sync with the
+    # arrival-caveat line in templates/receipts.html — the page is the source of
+    # truth; two renderings of the same load-bearing claim. ASCII hyphen only
+    # (the Pillow brand font + Windows PS5.1 tooling choke on em-dashes).
+    _receipts_caveat = "Scores arrival vs the field, not career outcome - outcome calls live on the ledger"
+    draw.text(
+        (48, 210),
+        _graphic_fit_text(draw, _receipts_caveat, _graphic_font(14), 984),
+        fill=_GRAPHIC_PALETTE["muted"],
+        font=_graphic_font(14),
     )
 
     f_section = _graphic_font(25, bold=True)

@@ -146,6 +146,15 @@ def test_ledger_page_renders_full_ledger():
     assert "We backed off" in html                      # misses are on the page
     assert "Our retreats" in html                       # ...and in the funnel tiles
     assert "/aotc-scorecard.json" in html               # raw artifact still linked
+
+    # 7/9 claims-register gap (c): the leading tile must NOT sum provisional
+    # open_toward into a bare green "Wins" number. It splits final vs trending
+    # so the headline stops implying 31 final wins when 23 are still provisional.
+    # (Assert on the TILE label span, not a bare ">Wins<" -- the outcome filter
+    # pill legitimately still says "Wins".)
+    assert '<span class="ledger-tile-label">Leading</span>' in html
+    assert '<span class="ledger-tile-label">Wins</span>' not in html
+    assert "final" in html and "trending our way" in html  # both counts distinct
     assert "no call ever leaves this page silently" in html.lower()
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
     assert 'data-ledger-filter="resolved"' in html      # resolved != undecided

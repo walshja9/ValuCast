@@ -33,6 +33,35 @@ def test_receipts_page_renders_normally_when_not_held(monkeypatch):
     assert client.get("/receipts/share-card").status_code == 200
 
 
+def test_receipts_png_travels_arrival_not_outcome_caveat():
+    """7/9 claims-register gap (b): the share-card PNG is the og:image + Download
+    target, detached from the page. The arrival-not-outcome caveat that lives on
+    receipts.html must travel WITH the image. Render must succeed (non-empty PNG)
+    and the caveat literal must exist in the builder so it stays in sync with the
+    page disclaimer."""
+    import inspect
+
+    receipts = [
+        {
+            "name": "Test Prospect",
+            "team": "TB",
+            "pos": "SS",
+            "level": "AAA",
+            "call_up_date": "2026-07-01",
+            "valucast_rank": 3,
+            "consensus_rank": 69,
+            "divergence": 66,
+        }
+    ]
+    png = app_module._receipts_share_card_png(receipts, [], generated_at="2026-07-09")
+    assert png[:8] == b"\x89PNG\r\n\x1a\n", "must render valid PNG bytes"
+    assert len(png) > 0
+
+    src = inspect.getsource(app_module._receipts_share_card_png)
+    assert "arrival" in src, "arrival-not-outcome caveat must live in the PNG builder"
+    assert "outcome calls live on the ledger" in src
+
+
 def test_call_up_receipts_wired_into_daily_public_build_and_publish_workflow():
     from scripts import run_daily_public_build
     from scripts import validate_public_data_freshness as freshness

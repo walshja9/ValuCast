@@ -72,8 +72,8 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
 <section class="ledger-funnel" aria-label="Every call accounted for">
     <article class="ledger-tile glass ledger-tile-win">
         <span class="ledger-tile-n">{{ sc.funnel.open_toward + sc.funnel.closed_caught_up }}</span>
-        <span class="ledger-tile-label">Wins</span>
-        <span class="ledger-tile-sub">field came to us ({{ sc.funnel.closed_caught_up }} all the way)</span>
+        <span class="ledger-tile-label">Leading</span>
+        <span class="ledger-tile-sub">{{ sc.funnel.closed_caught_up }} final &middot; {{ sc.funnel.open_toward }} trending our way</span>
     </article>
     <article class="ledger-tile glass ledger-tile-loss">
         <span class="ledger-tile-n">{{ sc.funnel.open_away }}</span>
