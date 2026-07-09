@@ -54,6 +54,43 @@ classified per the requested taxonomy:
 | 001  | Fail-loud DD/external independence validators | P1 | M | — | DONE (Fable, 6/17; 1310 pass, ruff clean) |
 | 002  | Remove DD as a live valuation fallback + retire 3 deploy gates | P1 | M | 001 | DONE (Fable, 6/17; 1311 pass, ruff clean) |
 | 003  | Strip unused DD context keys from public snapshot + tighten panel label | P2 | S | — | DONE (Fable, 6/17; 1312 pass, ruff clean) |
+| 004  | Pipeline honesty: season/offseason guards + gates for ungated surfaces | P1 | M | — | TODO |
+| 005  | Serving cache pass: generation-keyed caches on the hot routes | P1 | M | 007 first (both edit app.py) | TODO |
+| 006  | Archive growth containment: shallow CI clones + retention decision memo | P2 | S | — | TODO |
+| 007  | PNG cache: thread race fix + w_/pt_ key hardening | P1 | S | — | TODO |
+| 008  | Self-host web fonts; drop Google origins from CSP | P2 | S-M | — | TODO |
+
+## Batch 2 — 2026-07-08 full-stack audit (planned at `72e68864`)
+
+Plans 004–008 come from the 7/8 deep audit (9 dimensions, adversarially
+verified findings). Recommended order: **007 → 005** (007 is minutes and both
+touch app.py's cache region), **004** any time (pipeline files, no overlap),
+**006** and **008** whenever convenient. None depend on the daily build's
+timing, but every plan forbids pushing — master auto-deploys valucast.app, so
+the reviewer gates all pushes.
+
+### Findings audited 7/8 but NOT planned (so nobody re-audits them)
+
+- **app.py monolith extraction** (share-card Pillow renderers → web/ module):
+  real, L-effort, deliberately deferred — do it as the first slice of the
+  incremental extraction when app.py next fights back; not before the 7/13
+  ledger week.
+- **CSP `unsafe-inline` in script-src**: real but decorative-CSP is
+  defense-in-depth only (no XSS sink found; autoescape intact, zero |safe).
+  Needs an inline-handler migration (12 scripts / 64 handlers) — plan it as
+  its own project, not a batch rider.
+- **Two-nav reconciliation (header vs horizon tabs)**: confirmed UX debt;
+  Alex decision on the canonical nav model needed before any plan is honest.
+- **Dead legacy buy-score path + its tests; dead tier-color rainbow;
+  README post-processor drift (ReplacementLevel/PositionScarcity documented
+  but unwired); buys dual-renderer bg/border drift; theme-token drift
+  (#23252c ×13)**: all verified, all S — good rainy-day batch, none urgent.
+- **19 LOW passthrough items** (unverified investigate list): recorded in the
+  7/8 audit output; notable: /compare lacks the HX-Request guard other
+  partials got; receipts missing the shared stale banner; pyproject.toml
+  runtime deps a stale subset of requirements.txt.
+- **Refuted (do not re-report)**: transactions-fetcher "no empty floor" — the
+  real validator catches it; the finder read only the freshness gate.
 
 ### 003 completion note
 
