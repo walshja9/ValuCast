@@ -151,12 +151,23 @@ directly (`fb360066`); these plans are the rest.
 | 017  | Gaps → ledger claim lifecycle (kills survivorship bias; enrolls full qualified sets, not the 15-row display cut) | P1 | M | coordinate w/ 004 validator surface | post-7/13 | TODO |
 | 018  | Lead time on every receipt row (omit-never-zero, archive-provable) | P2 | S | — | anytime | TODO |
 | 019  | Field-unranked auto lane (replaces hand-seeding; data-derived field labels) | P2 | M | 018 helpful first (shared receipts surfaces) | anytime | TODO |
+| 020  | /gaps board-source freshness + consensus dispersion (2 HIGH + 1 MED register gaps no earlier plan absorbed) | P1 | M | — (land before 017; disjoint regions, same files) | anytime | TODO |
+| 021  | Scouting grounding rounding: IP/AB precision leak ("182.888 innings"; real hook is mlb_read.py, not the register's repository.py guess; 7 dirty reads heal on next scheduled regen) | P2 | S | — (015's scoped-out upstream fix) | anytime | TODO |
 
 Ordering: **011 → 010 → 012** sequential (shared `_confidence` + board template), then
 013/014/015 independent; receipts cluster **018 → 019** then **016 → 017** post-7/13
 (017 also depends on the AOTC unlock; both forbid touching frozen scorecard files).
 Every plan: master only, do NOT push, reviewer gates. The receipts public flip
 (RECEIPTS_HOLD app.py:78) is Alex's call and is expected after 011/012 land.
+
+### Register triage 7/9 (so nobody re-audits the leftovers)
+
+All 69 register gaps mapped against plans 010-021: 55 absorbed, 14 leftovers triaged.
+- **Fixed direct (8801cb5c):** multi-level `level_label` "+"-join ("A++A" class, HIGH) — now " & ".
+- **Fix-now queue (apply after 011 lands; its files):** positional share-card dangling `· {date_label}` separators (app.py:6515/6535); /map tooltip `toFixed(1)` → whole; board Dynasty Value `%.1f` → whole; scouting Source-line freshness hedge (player_detail_dynasty.html:584-587).
+- **Planned:** 020 (gaps freshness/dispersion), 021 (grounding rounding).
+- **Accepted (defensible/documented, do not re-report):** methodology headline scoping + opt-in caption (014 defers, by design); percentile bars pool MiLB levels + per-card confidence-floor divergence (documented in code); auction-$ model knobs (honest labels, internally consistent); movers "why" season-line + 7d/2d slope mix (fineprint discloses); scouting exact-hash reuse within 10-pt percentile bucket (3 guards already).
+- **Post-7/13 plan candidate (not authored):** /map cross-universe axis = two separate 0-100 normalizations relabeled as one scale (`value_mutation:"none"`) — touches the value pipeline; pair with the model-gated valuation findings at the AOTC unlock.
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
