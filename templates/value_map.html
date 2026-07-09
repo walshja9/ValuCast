@@ -115,7 +115,7 @@
         const metaEl = document.createElement('span');
         const linkEl = document.createElement('a');
         nameEl.textContent = player.name;
-        metaEl.textContent = player.position + ' · age ' + player.age + ' · value ' + player.value.toFixed(1);
+        metaEl.textContent = player.position + ' · age ' + player.age + ' · value ' + Math.round(player.value);
         linkEl.href = boardUrl(player);
         linkEl.textContent = 'Find on board';
         tooltip.replaceChildren(nameEl, metaEl, linkEl);

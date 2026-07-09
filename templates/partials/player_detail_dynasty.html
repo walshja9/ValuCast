@@ -590,6 +590,7 @@
                 Source:
                 {{ "guarded LLM read" if scouting_report.display_report_source == "llm" else "deterministic ValuCast read" }}
                 from projection stats{% if scouting_report.statcast_groups %} and MLB Statcast percentiles{% endif %}.
+                Reads are refreshed on a schedule and can lag the latest stat line.
             </p>
         </div>
         {% endif %}

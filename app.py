@@ -6516,7 +6516,7 @@ def _positional_share_card_png(rows, *, position, limit):
         draw,
         headline="ValuCast",
         subtitle="Ahead of the Curve",
-        extra_line=f"Prospect rankings · {date_label}",
+        extra_line="Prospect rankings" + (f" · {date_label}" if date_label else ""),
     )
 
     title_font = _graphic_font(46, bold=True)
@@ -6535,7 +6535,7 @@ def _positional_share_card_png(rows, *, position, limit):
 
     draw.text((48, 226), f"TOP {len(rows)} {label.upper()}", fill=amber, font=label_font)
     draw.text((48, 256), f"{label} Prospects", fill=text, font=title_font)
-    deck = f"ValuCast board · {date_label} · teal = ahead of consensus"
+    deck = "ValuCast board" + (f" · {date_label}" if date_label else "") + " · teal = ahead of consensus"
     draw.text((48, 314), _graphic_fit_text(draw, deck, meta_font, 900), fill=muted, font=meta_font)
 
     # Divergence map (mlbam_role -> +N) so the brand marker rides on the card.
