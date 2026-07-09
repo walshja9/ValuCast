@@ -206,11 +206,13 @@
             error than the baseline.</p>
             <ul>
                 <li><strong>Hitting</strong> vs classic Marcel, n = {{ scorecard.hitting.sample_size }} qualified hitter-seasons,
-                    correlation-win rate {{ scorecard.hitting.correlation_win_rate }}.
+                    correlation-win rate {{ scorecard.hitting.correlation_win_rate }}
+                    — essentially even on ranking (a near coin-flip); the edge is in error magnitude on rate stats, not in re-ordering players.
                     {{ scorecard.hitting.eligibility }}.</li>
                 <li><strong>Pitching</strong> vs persistence (last-year carry-forward),
                     n = {{ scorecard.pitching.sample_size }} qualified pitcher-seasons,
-                    skill correlation-win rate {{ scorecard.pitching.correlation_win_rate }}.
+                    skill correlation-win rate {{ scorecard.pitching.correlation_win_rate }}
+                    — a modest ranking edge; most of the improvement is smaller error on the rate stats below, not re-ordering pitchers.
                     {{ scorecard.pitching.eligibility }}.</li>
             </ul>
             <p>Per-stat MAE ratios:</p>
@@ -246,14 +248,16 @@
             <tr>
                 <td>Pitching vs persistence (skill)</td>
                 <td><strong>{{ scorecard.pitching.aggregate_mae_ratio }}</strong> MAE ratio
-                    ({% if scorecard.pitching.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.pitching.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}) —
-                    IP and K roughly <strong>neutral</strong>; the signal is concentrated in ERA / WHIP / K-9 / BB-9.</td>
+                    ({% if scorecard.pitching.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.pitching.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}, n = {{ scorecard.pitching.sample_size }} pitcher-seasons) —
+                    IP and K roughly <strong>neutral</strong>; the signal is concentrated in ERA / WHIP / K-9 / BB-9.
+                    The pitching gain concentrates in ERA and BB-9 — the noisiest, most luck-driven stats — and the hold-out includes the 60-game 2020 season, so read the point estimate as directional, not precise.</td>
             </tr>
             <tr>
                 <td>Hitting vs classic Marcel</td>
                 <td><strong>{{ scorecard.hitting.aggregate_mae_ratio }}</strong> aggregate MAE ratio
-                    ({% if scorecard.hitting.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.hitting.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}) — signal
-                    concentrated in <strong>AVG/OBP/SLG/OPS</strong>.</td>
+                    ({% if scorecard.hitting.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.hitting.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}, n = {{ scorecard.hitting.sample_size }} hitter-seasons) — signal
+                    concentrated in <strong>AVG/OBP/SLG/OPS</strong>.
+                    Aggregate over {{ scorecard.hitting.sample_size }} seasons; the win comes from four correlated rate stats, so it is a narrow edge, not an across-the-board one.</td>
             </tr>
             {% for row in scorecard.not_shipped %}
             <tr><td>{{ row.name }}</td><td>{{ row.verdict }} — <strong>not shipped</strong></td></tr>
@@ -344,6 +348,17 @@
         apples-to-apples historical backtest. So Steamer is an <strong>external comparison
         board, with a matching historical benchmark pending</strong> — not a benchmark we've
         beaten.</p>
+        {% if forward_gate and forward_gate.gate %}
+        <p><strong>A live forward check is running — and currently losing.</strong> We also run a
+        day-by-day forward comparison of ValuCast H+P against the Steamer board on this season's
+        actuals. As of {{ forward_gate.gate.validated_through }}, ValuCast's rate-stat error is
+        about {{ ((forward_gate.gate.model_score - 1) * 100) | round | int }}% <em>higher</em> than
+        Steamer's ({{ forward_gate.gate.model_score }}× its error) over a
+        {{ forward_gate.comparison_basis.horizon_days }}-day window — but the sample is still below
+        our {{ forward_gate.comparison_basis.min_horizon_days }}-day gate, so it is
+        <strong>not yet decisive</strong> and does not flip the live board. We publish it here
+        rather than wait for it to look better.</p>
+        {% endif %}
     </section>
 </article>
 {% endblock %}

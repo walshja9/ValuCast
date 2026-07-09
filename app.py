@@ -4608,6 +4608,13 @@ def methodology():
         )
     except (OSError, ValueError):
         sensitivity = None
+    try:
+        forward_gate = _json.loads(
+            (Path(__file__).parent / "data" / "models" / "valucast_mlb_projection_source_comparison.json")
+            .read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        forward_gate = None
     hp, pp = MarcelParams(), PitcherMarcelParams()
 
     # Worked example computed from the REAL params (drift-proof): an age-29 hitter
@@ -4629,7 +4636,7 @@ def methodology():
     }
     return render_template(
         "methodology.html", methodology_page=True, scorecard=scorecard,
-        sensitivity=sensitivity,
+        sensitivity=sensitivity, forward_gate=forward_gate,
         hit_weights=",".join(str(w) for w in hp.season_weights),
         hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),
@@ -7261,7 +7268,10 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None):
             draw.text((x + 18, top + 11), call_date, fill=blue, font=f_date)
             name = _graphic_fit_text(draw, row.get("name"), f_name, 350)
             draw.text((x + 150, top + 7), name, fill=text, font=f_name)
-            meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
+            meta_parts = [row.get("team"), row.get("pos"), row.get("level")]
+            if row.get("flagged_days_early"):
+                meta_parts.append(f"flagged {row['flagged_days_early']}d early")
+            meta = " - ".join(str(part) for part in meta_parts if part)
             draw.text((x + 150, top + 35), _graphic_fit_text(draw, meta, f_meta, 350), fill=muted, font=f_meta)
             consensus_rank = row.get("consensus_rank")
             if consensus_rank not in (None, ""):

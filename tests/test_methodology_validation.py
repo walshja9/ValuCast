@@ -61,6 +61,25 @@ class TestMethodologyValidation(unittest.TestCase):
     def test_no_internal_corr_leak(self):
         self.assertNotIn("0.87", self.html)
 
+    # 014: methodology honesty polish — win-rate interpreted, MAE headlines banded
+    # with sample size + a noise caveat, and the live Steamer forward loss surfaced.
+    def test_honesty_polish_present(self):
+        flat = " ".join(self.html.split())
+        low = flat.lower()
+        # gap (a): win-rate interpreted, not flat
+        self.assertIn("even on ranking", flat)
+        self.assertIn("re-ordering players", flat)
+        # gap (b): sample size on the aggregate ledger rows + 2020 noise caveat
+        self.assertIn(str(self.art["hitting"]["sample_size"]), self.html)
+        self.assertIn(str(self.art["pitching"]["sample_size"]), self.html)
+        self.assertIn("2020", flat)
+        self.assertIn("directional, not precise", flat)
+        # gap (c): live forward loss surfaced, positive "higher" framing, still not decisive
+        self.assertIn("currently losing", low)
+        self.assertIn("higher", low)
+        self.assertIn("not yet decisive", low)
+        self.assertNotIn("-21%", self.html)  # sign must be positive
+
     def test_prospect_rank_v1_explains_scoring_boundary(self):
         flat = " ".join(self.html.split())
         self.assertIn("Top prospects are generated", flat)
