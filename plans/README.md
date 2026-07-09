@@ -58,7 +58,7 @@ classified per the requested taxonomy:
 | 005  | Serving cache pass: generation-keyed caches on the hot routes | P1 | M | 007 first (both edit app.py) | DONE (opus executor + Fable review, 7/8; byte-parity 8/9 exact + 1 attributed hour-badge exclusion, 1762 pass; dynasty metadata keyed on preset-not-closure; survived a mid-run API-529 resume) |
 | 006  | Archive growth containment: shallow CI clones + retention decision memo | P2 | S | — | DONE (Fable direct, 7/8; fetch-depth 1 ×3, YAML valid, memo at docs/specs/2026-07-08-prediction-archive-retention.md; retention itself = plan 009 post-7/13) |
 | 007  | PNG cache: thread race fix + w_/pt_ key hardening | P1 | S | — | DONE (opus executor + Fable review, 7/8; review caught a pt_ cache-poisoning hole — unknown-but-real stat suffixes now dropped at parse via `_POINT_STAT_IDS`; 154 pass) |
-| 008  | Self-host web fonts; drop Google origins from CSP | P2 | S-M | — | TODO |
+| 008  | Self-host web fonts; drop Google origins from CSP | P2 | S-M | — | DONE (opus executor + Fable review, 7/8; 3 variable woff2 latin subsets self-hosted incl. Archivo, CSP dropped both Google hosts, 1763 pass; visual smoke = Alex on next deploy) |
 
 ## Batch 2 — 2026-07-08 full-stack audit (planned at `72e68864`)
 

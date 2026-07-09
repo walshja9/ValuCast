@@ -1,3 +1,24 @@
+/* Self-hosted brand fonts (OFL, Google Fonts) — no CDN, no cross-origin fetch,
+   no visitor IP leak. Variable woff2, latin subset. See plans/008. */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("fonts/SpaceGrotesk[wght].woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Archivo";
+  src: url("fonts/Archivo[wght].woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/JetBrainsMono[wght].woff2") format("woff2");
+  font-weight: 400 500;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
 

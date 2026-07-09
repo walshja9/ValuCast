@@ -20,9 +20,7 @@
     <meta name="twitter:title" content="{% block twitter_title %}ValuCast - player values tuned to your league{% endblock %}">
     <meta name="twitter:description" content="{% block twitter_description %}H2H categories, roto, or points - values scored for your league's settings, with a public methodology and held-out validation.{% endblock %}">
     <meta name="twitter:image" content="{% block twitter_image %}https://valucast.app/static/og-card.png{% endblock %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    <link rel="preload" href="{{ url_for('static', filename='fonts/Archivo[wght].woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
 </head>

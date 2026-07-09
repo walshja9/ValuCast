@@ -1281,7 +1281,19 @@ class TestInputHardening(unittest.TestCase):
         r = self.client.get("/")
         self.assertEqual(r.headers.get("X-Content-Type-Options"), "nosniff")
         self.assertEqual(r.headers.get("X-Frame-Options"), "DENY")
-        self.assertIn("default-src 'self'", r.headers.get("Content-Security-Policy", ""))
+        csp = r.headers.get("Content-Security-Policy", "")
+        self.assertIn("default-src 'self'", csp)
+        # Fonts are self-hosted (plan 008): no Google origins anywhere in the CSP.
+        self.assertNotIn("fonts.googleapis.com", csp)
+        self.assertNotIn("fonts.gstatic.com", csp)
+        # Directives still present, now scoped to 'self'.
+        self.assertIn("style-src 'self' 'unsafe-inline'", csp)
+        self.assertIn("font-src 'self' data:", csp)
+
+    def test_self_hosted_font_is_served(self):
+        r = self.client.get("/static/fonts/Archivo[wght].woff2")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("font", r.headers.get("Content-Type", ""))
 
     def test_html_is_gzipped_when_requested(self):
         r = self.client.get("/", headers={"Accept-Encoding": "gzip"})

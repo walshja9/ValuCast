@@ -94,8 +94,8 @@ _CSP_POLICY = (
     "frame-ancestors 'none'; "
     "img-src 'self' data: https:; "
     "script-src 'self' 'unsafe-inline'; "
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-    "font-src 'self' https://fonts.gstatic.com data:; "
+    "style-src 'self' 'unsafe-inline'; "
+    "font-src 'self' data:; "
     "connect-src 'self'; "
     "form-action 'self'"
 )
