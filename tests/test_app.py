@@ -1627,7 +1627,10 @@ class TestTrustGrammarAndCards(unittest.TestCase):
 
     def test_movers_shows_qualification_thresholds(self):
         html = self.client.get("/movers").data.decode("utf-8")
-        self.assertIn("rank cap", html)
+        # Plan 013: the cap fineprint is two-sided — Rising capped at the current
+        # top-N, Cooling qualified at the window start (a faller can drop past it).
+        self.assertIn("Rank cap", html)
+        self.assertIn("at the window start", html)
         self.assertIn("tracked prospects", html)
 
     def test_provenance_line_on_every_board(self):

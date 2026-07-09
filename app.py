@@ -7604,10 +7604,12 @@ def _build_buys_page_context(raw_n=None, spark_window=None):
     n = buy_score.clamp_n(raw_n if raw_n is not None else buy_score.BOARD_SIZE)
     buy_store, buy_data_source = _select_buy_source(valucast_buy_store)
     if buy_data_source == "valucast_buys" and buy_store.is_available:
-        graphic_rows = buy_score.build_valucast_board(buy_store.get_all())
+        graphic_rows = buy_score.build_valucast_board(
+            buy_store.get_all(), window_days=spark_window)
         # n drives the interactive list only; the 2x20 graphic always takes 40
         list_rows = (graphic_rows[:n] if n <= buy_score.BOARD_SIZE
-                     else buy_score.build_valucast_board(buy_store.get_all(), n=n))
+                     else buy_score.build_valucast_board(
+                         buy_store.get_all(), n=n, window_days=spark_window))
         data_generated_at = buy_store.generated_at
         data_available = True
         buy_validation = buy_store.validation
@@ -7645,6 +7647,10 @@ def _build_buys_page_context(raw_n=None, spark_window=None):
         "n": n,
         "spark_window": spark_window,
         "spark_window_choices": SPARK_WINDOW_CHOICES,
+        # Honest fineprint reach: the selected window, or the 14d "All" fallback
+        # (clean_tail's reach = window_days or MOMENTUM_WINDOW_DAYS).
+        "buy_curve_max_days": spark_window or buy_score.MOMENTUM_WINDOW_DAYS,
+        "buy_curve_all_days": buy_score.MOMENTUM_WINDOW_DAYS,
         "dd_available": data_available,
         "dd_generated_at": data_generated_at,
         "buy_data_source": buy_data_source,

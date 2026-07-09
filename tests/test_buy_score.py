@@ -246,6 +246,50 @@ class TestBoard(unittest.TestCase):
         board = buy_score.build_valucast_board(rows)
         self.assertIn("/team/120/spots/64", board[0]["logo_url"])
 
+    def _long_history_row(self):
+        # 24 clean daily points 5/24..6/16, each step < STEP_THRESHOLD and no
+        # gap > MAX_POINT_GAP_DAYS, so only the window edge can truncate it.
+        hist = tuple(
+            [(f"2026-05-{day:02d}", 50.0 + (day - 24) * 0.1)
+             for day in range(24, 32)] +
+            [(f"2026-06-{day:02d}", 50.8 + day * 0.1)
+             for day in range(1, 17)])
+        return {
+            "rank": 1,
+            "player_id": "wide",
+            "name": "Wide History",
+            "team": "MIL",
+            "positions": ["SS"],
+            "level": "AA",
+            "age": 20,
+            "score": 55.0,
+            "terms": {},
+            "score_history": hist,
+        }
+
+    def test_valucast_board_window_days_widens_curve_pills_are_not_inert(self):
+        # Regression: the /buys window pills were inert because the board build
+        # never threaded window_days into clean_tail, hard-capping every curve at
+        # MOMENTUM_WINDOW_DAYS (14). Default caps at 14d; a 30d window re-spans.
+        row = self._long_history_row()
+        default_hist = buy_score.build_valucast_board([row])[0]["value_history"]
+        wide_hist = buy_score.build_valucast_board(
+            [row], window_days=30)[0]["value_history"]
+
+        self.assertGreater(len(wide_hist), len(default_hist))
+        # Default reach is 14 days back from the latest point (6/16 -> 6/02).
+        self.assertEqual(default_hist[0][0], "2026-06-02")
+        # 30d reach spans the whole clean series back to its first point (5/24).
+        self.assertEqual(wide_hist[0][0], "2026-05-24")
+
+    def test_valucast_board_default_window_matches_bare_clean_tail(self):
+        # window_days=None must be identical to today's behavior for every
+        # existing caller (share-card PNG stays on the canonical 14d view).
+        row = self._long_history_row()
+        default_hist = buy_score.build_valucast_board([row])[0]["value_history"]
+        self.assertEqual(
+            default_hist, buy_score.clean_tail(row["score_history"]))
+
     def test_graphic_presentation_fields(self):
         board = buy_score.build_board(self._rows())
         self.assertEqual(board[0]["initials"], "AS")
@@ -329,6 +373,18 @@ class TestBuysRoute(_RealAppCase):
         self.assertEqual(html.count('class="buys-row"'), 10)
         self.assertEqual(html.count('class="bg-featured-card'), 10)
         self.assertEqual(html.count('class="bg-cell"'), 70)
+
+    def test_buys_context_fineprint_reach_tracks_selected_window(self):
+        # The fineprint reach must equal the pill window (not a hardcoded 14),
+        # and the false "June 13 / tracked value history" copy must be gone.
+        ctx_30 = app_module._build_buys_page_context(spark_window=30)
+        self.assertEqual(ctx_30["buy_curve_max_days"], 30)
+        self.assertEqual(
+            ctx_30["buy_curve_all_days"], buy_score.MOMENTUM_WINDOW_DAYS)
+        # "All" (window None) falls back to the 14d momentum window.
+        ctx_all = app_module._build_buys_page_context(spark_window=None)
+        self.assertEqual(
+            ctx_all["buy_curve_max_days"], buy_score.MOMENTUM_WINDOW_DAYS)
 
     def test_no_callups_and_prospects_only(self):
         board = buy_score.build_board(self.dd_rows)

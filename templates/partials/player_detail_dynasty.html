@@ -196,13 +196,13 @@
                     <span class="shape-twin-name">{{ twin.name }} <b>&rsquo;{{ "%02d" | format(twin.season % 100) }}</b></span>
                     <span class="shape-twin-meta">age {{ twin.age }} &middot; {{ twin.pos }}{% if twin.bats %} &middot; bats {{ twin.bats }}{% endif %}</span>
                     <span class="shape-twin-line">K {{ twin.k_pct }}% &middot; BB {{ twin.bb_pct }}% &middot; ISO {{ "%.3f" | format(twin.iso) | replace("0.", ".", 1) }}</span>
-                    {% if twin.outcome %}<span class="shape-twin-outcome tier-{{ twin.outcome.tier }}">{{ shape_comp_tier_labels.get(twin.outcome.tier, twin.outcome.tier) }} &middot; {{ twin.outcome.pa_per_year | round | int }} PA/yr</span>{% endif %}
+                    {% if twin.outcome %}<span class="shape-twin-outcome tier-{{ twin.outcome.tier }}">{{ shape_comp_tier_labels.get(twin.outcome.tier, twin.outcome.tier) }} &middot; {{ twin.outcome.pa_per_year | round | int }} PA/yr</span>{% elif shape_comps.cohort and shape_comps.cohort.resolved_through and twin.season > shape_comps.cohort.resolved_through %}<span class="shape-twin-outcome">too recent to grade &middot; needs a 5-year window</span>{% endif %}
                 </div>
                 {% endfor %}
             </div>
             {% if shape_comps.cohort and shape_comps.cohort.size %}
             <div class="shape-cohort">
-                <p class="sample-context-note">How this shape aged &mdash; the {{ shape_comps.cohort.size }} nearest matches old enough to judge (seasons through {{ shape_comps.cohort.resolved_through }}), measured on playing time kept and era-relative bat over their next five years:</p>
+                <p class="sample-context-note">How this shape aged &mdash; the {{ shape_comps.cohort.size }} nearest matches old enough to judge (matches from 2000&ndash;{{ shape_comps.cohort.resolved_through }} &mdash; the seasons with a complete 5-year outcome window, 2020 pro-rated to a full schedule), measured on playing time kept and era-relative bat over their next five years:</p>
                 <div class="role-probability-bars shape-cohort-bars">
                     {% for tier in ["impact_regular", "everyday", "part_time", "faded"] %}
                     {% set count = shape_comps.cohort.tiers.get(tier, 0) %}
@@ -217,7 +217,7 @@
                 </div>
             </div>
             {% endif %}
-            <p class="sample-context-note">A shape match on three translated rates &mdash; descriptive, not a forecast. The forecast is the model's role probabilities on the Peak Outlook card; these bars are counts of matched careers, not odds. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
+            <p class="sample-context-note">A shape match on three translated rates &mdash; descriptive, not a forecast. The forecast is the model's role probabilities on the Peak Outlook card; these bars are counts of matched careers, not odds. The aging bars include only matches old enough to grade, so the closest named twin may be too recent to appear in the bars. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
         </div>
         {% endif %}
 

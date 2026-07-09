@@ -40,7 +40,7 @@
         {% if buy_qualified_count and buy_pool_count %}
         <p class="buys-fineprint">Top {{ list_rows | length }} shown of {{ buy_qualified_count }} qualified &middot; {{ '{:,}'.format(buy_pool_count) }}-prospect pool &middot; {{ buy_excluded_mlb_count }} active-MLB call-ups excluded &middot; the signal qualifies ~{{ buy_qualified_pct }}% of the pool by design.</p>
         {% endif %}
-        <p class="buys-fineprint">Form curves span the tracked value history within the current scoring era (tracking began June 13). The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
+        <p class="buys-fineprint">Form curves span up to {{ buy_curve_max_days }} days within the current scoring era (re-based June 22); "All" shows the last {{ buy_curve_all_days }} days. The <a href="/movers">Movers board</a> measures change over its own shorter window; different window, different question.</p>
         {# Window presets reuse the ledger pill styling (site-tokened, not
            backfields-scoped). Curves self-clamp to available records, so an
            oversized pick still labels its true span. #}

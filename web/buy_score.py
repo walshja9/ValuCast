@@ -254,10 +254,15 @@ def build_board(rows, n=BOARD_SIZE):
     return board
 
 
-def build_valucast_board(rows, n=BOARD_SIZE):
+def build_valucast_board(rows, n=BOARD_SIZE, window_days: int | None = None):
     """Format ValuCast-owned buy signal rows for the existing `/buys` template.
 
     The live route only consumes this when the ValuCast buy artifact is promoted.
+
+    window_days widens the displayed form-curve reach so the page's window pills
+    are real (default None keeps the canonical 14d view for share-card callers).
+    The step/gap guards in clean_tail still always fire, so a wider window can
+    never span the 6/22 re-baseline into a fake surge.
     """
     board = []
     for row in list(rows)[:n]:
@@ -269,7 +274,7 @@ def build_valucast_board(rows, n=BOARD_SIZE):
         # discards epoch/re-baseline steps, but the raw history was reaching the
         # sparkline — a 13-pt role-normalization step rendered as a green "UP
         # +15" surge the buy score itself had rejected (7/3 review).
-        score_history = clean_tail(row.get("score_history") or ())
+        score_history = clean_tail(row.get("score_history") or (), window_days=window_days)
         display_history = (
             score_history
             if len(score_history) >= MIN_VALUCAST_BUY_SPARK_POINTS

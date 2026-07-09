@@ -468,6 +468,30 @@ def test_build_valucast_board_exposes_spark_history_after_real_history_accumulat
     assert board[0]["value_history"] == payload["board"][0]["score_history"]
 
 
+def test_build_valucast_board_window_days_widens_displayed_curve():
+    # Plan 013: the /buys window pills were inert — build_valucast_board never
+    # passed window_days to clean_tail, capping every curve at 14 days. A wider
+    # window must now re-span the displayed history.
+    payload = build_buy_signals(_rank_payload(), _history())
+    long_history = [
+        (f"2026-05-{day:02d}", 50.0 + (day - 24) * 0.1)
+        for day in range(24, 32)
+    ] + [
+        (f"2026-06-{day:02d}", 50.8 + day * 0.1)
+        for day in range(1, 17)
+    ]
+    payload["board"][0]["score_history"] = long_history
+
+    default_board = buy_score.build_valucast_board(payload["board"], n=1)
+    wide_board = buy_score.build_valucast_board(
+        payload["board"], n=1, window_days=30)
+
+    assert len(wide_board[0]["value_history"]) > len(
+        default_board[0]["value_history"])
+    assert default_board[0]["value_history"][0][0] == "2026-06-02"
+    assert wide_board[0]["value_history"][0][0] == "2026-05-24"
+
+
 def test_build_valucast_board_spark_history_excludes_epoch_steps():
     # 7/3 review: the sparkline must show the SAME cleaned series the momentum
     # term scores — a 14-pt re-baseline step was rendering as a fake green
