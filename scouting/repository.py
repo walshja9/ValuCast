@@ -238,8 +238,8 @@ def _mlb_row_report(row, statcast_groups: list[dict] | None = None) -> dict:
 # Rate stats carry false precision off the raw runtime line (e.g. 14.597 K/9). Round
 # them in the grounding before the LLM sees them so a model read cannot echo the
 # spurious decimals: 1 decimal for per-9 / ERA / WHIP, whole number for percentages.
-_RATE_ROUND_1DP = ("k_per_9", "bb_per_9", "era", "whip")
-_RATE_ROUND_WHOLE = ("k_pct", "bb_pct", "k_bb_pct")
+_RATE_ROUND_1DP = ("k_per_9", "bb_per_9", "era", "whip", "ip")
+_RATE_ROUND_WHOLE = ("k_pct", "bb_pct", "k_bb_pct", "pa", "ab")
 
 
 def _round_grounding_rates(line: dict) -> dict:

@@ -194,6 +194,19 @@ class TestVoiceGuard(unittest.TestCase):
 
         self.assertEqual(stats["SLG"], 0.520)
 
+    def test_stat_line_stats_rounds_ip_and_ab_but_not_rate(self):
+        # Real values from the live artifact (Skenes "182.888 innings"): IP/AB must be
+        # rounded in the MLB grounding BEFORE the LLM reads it, but rate stats stay 3dp.
+        stats = stat_line_stats({"stats": {"IP": 182.888, "AB": 550.4, "PA": 620.9, "OPS": 1.006, "ERA": 3.32}})
+        self.assertEqual(stats["IP"], 182.9)      # 1dp, no thousandth-of-an-inning
+        self.assertEqual(stats["AB"], 550.0)      # whole
+        self.assertEqual(stats["PA"], 621.0)      # whole (already covered, pinned here)
+        self.assertEqual(stats["OPS"], 1.006)     # rate untouched — NOT a leak
+        self.assertEqual(stats["ERA"], 3.32)      # rate untouched
+
+    def test_stat_line_stats_keeps_integral_ip_clean(self):
+        self.assertEqual(stat_line_stats({"stats": {"IP": 200.0}})["IP"], 200.0)
+
     def test_ops_in_triple_slash_slg_slot_is_hard_fail(self):
         result = validate_report_text("A .300/.380/.900 line over 240 PA.", GROUNDING)
 

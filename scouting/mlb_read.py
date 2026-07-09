@@ -6,10 +6,15 @@ WHOLE_COUNTING_STATS = {"HR", "SB", "R", "RBI", "W", "QS", "SV", "HLD", "K", "PA
 
 
 def _normalized_stat_value(key: str, value):
-    if not isinstance(value, (int, float)):
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
         return value
     number = float(value)
-    if key in WHOLE_COUNTING_STATS:
+    if key == "IP":
+        # Match _format_stat: whole if integral, else 1dp. No pitcher throws
+        # 0.888 of an inning — the raw model float must not reach the LLM grounding
+        # (7/9 claims audit: Skenes "182.888 innings").
+        return float(f"{number:.0f}") if number.is_integer() else round(number, 1)
+    if key == "AB" or key in WHOLE_COUNTING_STATS:
         return float(f"{number:.0f}")
     return value
 
