@@ -2306,30 +2306,6 @@ def _graphic_font(size, *, bold=False, serif=False, mono=False):
     return ImageFont.load_default()
 
 
-def _graphic_trend_glyph(draw, x, y, kind, color, size=22):
-    """Small vector stand-ins for the page headers' emoji (RISING/AHEAD pages use
-    a chart-up, COOLING/BEHIND use a snowflake) -- Pillow can't render color emoji
-    with the brand font, so draw them. (x, y) = top-left of a size x size box."""
-    s = size
-    if kind == "up":
-        # chart-up: rising zigzag + arrowhead, like the page's up-trend emoji
-        pts = [(x, y + s * 0.85), (x + s * 0.35, y + s * 0.5),
-               (x + s * 0.55, y + s * 0.65), (x + s * 0.95, y + s * 0.18)]
-        draw.line(pts, fill=color, width=3)
-        ax, ay = pts[-1]
-        draw.polygon([(ax, ay), (ax - s * 0.28, ay + s * 0.02), (ax - s * 0.05, ay + s * 0.3)], fill=color)
-    else:
-        # snowflake: six spokes with small ticks
-        cx, cy, r = x + s / 2, y + s / 2, s * 0.46
-        import math as _math
-        for k in range(6):
-            a = _math.radians(k * 60)
-            dx, dy = r * _math.cos(a), r * _math.sin(a)
-            draw.line([(cx - dx, cy - dy), (cx + dx, cy + dy)], fill=color, width=2)
-        draw.ellipse((cx - 2, cy - 2, cx + 2, cy + 2), fill=color)
-
-
-
 def _graphic_text_width(draw, text, fnt):
     box = draw.textbbox((0, 0), text, font=fnt)
     return box[2] - box[0]
@@ -7047,9 +7023,6 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
     def draw_section(title, rows, x, y, w, color):
         draw.rounded_rectangle((x, y, x + w, y + 926), radius=10, fill=card, outline=border, width=1)
         draw.text((x + 20, y + 18), title, fill=color, font=f_section)
-        _graphic_trend_glyph(
-            draw, x + 28 + _graphic_text_width(draw, title, f_section), y + 24,
-            "up" if title == "RISING" else "flake", color)
         if not rows:
             draw.text((x + 20, y + 98), "Sparse board: no clean movers passed +/-2.0.", fill=muted, font=f_name)
             return
@@ -7294,9 +7267,6 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None, no_cla
         panel_h = 50 + n * row_h + 8
         draw.rounded_rectangle((x, top_y, x + w, top_y + panel_h), radius=10, fill=card, outline=border, width=1)
         draw.text((x + 20, top_y + 14), title, fill=accent, font=f_section)
-        _graphic_trend_glyph(
-            draw, x + 28 + _graphic_text_width(draw, title, f_section), top_y + 19,
-            "flake" if is_miss else "up", accent)
         if not rows:
             draw.text((x + 20, top_y + 62), "None logged yet.", fill=muted, font=f_name)
         for idx, row in enumerate(rows):
