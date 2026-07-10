@@ -1090,7 +1090,15 @@ def _build_no_claim_rows(
         if real_date:
             row["actual_call_up_date"] = real_date
         rows.append(row)
-    rows.sort(key=lambda r: (str(r.get("call_up_date") or ""), str(r.get("name") or "")), reverse=True)
+    # Sort by the date the PAGE displays (real call-up date when known, else the
+    # detection date) so a newest-first list never shows an older date above a newer one.
+    rows.sort(
+        key=lambda r: (
+            str(r.get("actual_call_up_date") or r.get("call_up_date") or ""),
+            str(r.get("name") or ""),
+        ),
+        reverse=True,
+    )
     return rows
 
 

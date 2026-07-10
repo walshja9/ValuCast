@@ -1,47 +1,4 @@
 {
-  "_comment": "LEGACY-ONLY seed lane for field-unranked call-ups: as of plan 019 the strongest field-unranked calls (ValuCast rank <= FIELD_UNRANKED_MAX_VALUCAST_RANK, currently 25) auto-mint via _field_unranked_from_row -- their field_label is DERIVED from the at-promotion board coverage, not typed here. These remaining seeds are the WEAKER field-unranked calls that don't clear vc#25 (Kuroda-Grauer #41, Cauley #61, Watson #80), which the auto lane deliberately leaves as hand-seeds. Gabriel Hughes (vc#9) was removed -- he now auto-mints. consensus_rank/divergence null => the card shows the field_label + an AHEAD marker instead of a +N gap; a seed's typed field_label is re-derived truthfully from the archive at build time (_apply_seed_field_labels). Auto-detected rows override on identity -- a seed here that later clears vc#25 will be deduped out by its auto row.",
-  "receipts": [
-    {
-      "identity_key": "811965_hitter",
-      "mlbam_id": "811965",
-      "role": "hitter",
-      "name": "Joshua Kuroda-Grauer",
-      "team": "ATH",
-      "pos": "SS",
-      "level": "AAA",
-      "valucast_rank": 41,
-      "consensus_rank": null,
-      "divergence": null,
-      "field_label": "field outside top 100",
-      "call_up_date": "2026-06-29"
-    },
-    {
-      "identity_key": "695508_hitter",
-      "mlbam_id": "695508",
-      "role": "hitter",
-      "name": "Cameron Cauley",
-      "team": "TEX",
-      "pos": "SS",
-      "level": "AAA",
-      "valucast_rank": 61,
-      "consensus_rank": null,
-      "divergence": null,
-      "field_label": "field outside top 100",
-      "call_up_date": "2026-06-29"
-    },
-    {
-      "identity_key": "696135_hitter",
-      "mlbam_id": "696135",
-      "role": "hitter",
-      "name": "Kahlil Watson",
-      "team": "CLE",
-      "pos": "CF",
-      "level": "AAA",
-      "valucast_rank": 80,
-      "consensus_rank": null,
-      "divergence": null,
-      "field_label": "field outside top 100",
-      "call_up_date": "2026-06-19"
-    }
-  ]
+  "_comment": "RETIRED 7/10 (Alex): hand-seeding is over -- every receipts row is now rule-generated. The auto lanes own the whole surface: scored hits/misses (>=2 boards, divergence >= 25), field-unranked AHEAD (VC <= 25, <2 boards), and field-unranked BEHIND (1 board <= 25, VC 25+ behind). The last three seeds were retired on a from-scratch rebuild: Watson converted to a SCORED hit (3 boards, consensus vs VC clears every guard), Kuroda-Grauer (#41) and Cauley (#61) dropped to the public no-claims list -- identical treatment to any other no-board call outside the top-25 cap. The seed mechanism (_seed_receipts) still reads this file for emergencies, but adding a row here should be treated as a failure of the auto lanes and fixed there instead.",
+  "receipts": []
 }
