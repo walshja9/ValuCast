@@ -155,12 +155,17 @@ directly (`fb360066`); these plans are the rest.
 | 021  | Scouting grounding rounding: IP/AB precision leak ("182.888 innings"; real hook is mlb_read.py, not the register's repository.py guess; 7 dirty reads heal on next scheduled regen) | P2 | S | — (015's scoped-out upstream fix) | anytime | DONE (opus executor + Fable review, 7/9; Skenes 182.888→182.9 on the live path, 7 dirty reads documented — heal on next scheduled scouting build, no regen triggered) |
 | 022b | (unplanned, Alex 7/9) No-claim disclosure + field-unranked BEHIND mirror lane | P1 | M | 019 | anytime | DONE (opus executor + Fable review, 7/10 UTC; all 22 no-claims listed collapsed w/ near-notes (Bratt/Gastelum/Johnson miss-shape, Cavanaugh/Ullola hit-shape); mirror lane symmetric to 019 — found Eldridge (1 board #20 vs VC #231), launch guard correctly excluded him, board stays 8/0; 1829 pass) |
 | 022  | Trade Analyzer V1: free /trade verdict page from served values (Jim's-question-as-product; noise-band honesty, consolidation note, cross-universe disclosure; PNG = cut-to-M lever w/ mandatory cache-key add) | P2 | M | — | anytime | DONE (opus executor + Fable review, 7/10; PNG SHIPPED w/ give/get cache-key + 3 regression tests; all 3 honesty features render-verified with real players; footer link only, nav tab = Alex's call; 1871 pass) |
+| 023  | Plate-Discipline Data Layer: pitch-level Swing/Whiff/SwStr (exact, ProspectSavant-matched) + Chase/Z-Swing/Z-Contact (pixel-calibrated ESTIMATES, tagged) from StatsAPI play-by-play; per-level cohort percentiles w/ hard min-pitch gate; new prospect-card bars + methodology; zone group = cut-to-M lever; EV forbidden; cards-only (no board/PNG) | P2 | L | — | post-7/13 | AUTHORED (Fable, 7/10; planned at 93304857; execute post-7/13) |
 
 Ordering: **011 → 010 → 012** sequential (shared `_confidence` + board template), then
 013/014/015 independent; receipts cluster **018 → 019** then **016 → 017** post-7/13
 (017 also depends on the AOTC unlock; both forbid touching frozen scorecard files).
-Every plan: master only, do NOT push, reviewer gates. The receipts public flip
-(RECEIPTS_HOLD app.py:78) is Alex's call and is expected after 011/012 land.
+**023** (plate-discipline data layer) is independent of the receipts cluster and also
+executes post-7/13; it is effort-L and self-contained (new build script + committed
+artifact + fail-soft reader + card section), so it slots in whenever there is a full
+session for it after the 7/13 unlock — order it after the receipts cluster if hands
+are limited. Every plan: master only, do NOT push, reviewer gates. The receipts public
+flip (RECEIPTS_HOLD app.py:78) is Alex's call and is expected after 011/012 land.
 
 ### Register triage 7/9 (so nobody re-audits the leftovers)
 
