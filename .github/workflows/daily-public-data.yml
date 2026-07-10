@@ -270,3 +270,14 @@ jobs:
         # already in progress) instead of failing the refresh on a blip.
         if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
         run: curl -fsS --retry 5 --retry-all-errors --retry-delay 10 -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Post-drafts digest (Telegram)
+        # Scans the freshly built + committed artifacts, renders ready-to-paste
+        # drafts, and relays them to Alex so posting is a 2-minute selection task.
+        # Nothing auto-posts. success() default: runs only after the build steps
+        # above succeeded; missing Telegram secrets are handled inside the script
+        # (prints only, exits 0) so CI never fails on an unset secret.
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/build_post_drafts.py --send
