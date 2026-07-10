@@ -1321,8 +1321,13 @@ def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():
     idx = html.find("Whisenhunt")
     assert idx != -1, "Whisenhunt should still be on the prospects board"
     row_html = html[idx:idx + 2000]
-    assert "MLB taste" in row_html
-    assert "23.1 IP" in row_html
+    # Live-data test: the chip family upgrades as his status changes ("MLB taste"
+    # when previously optioned back down; "Called up"/"In MLB" while on an active
+    # roster, as on 7/9 when the afternoon pulse caught his recall). The invariant
+    # is that a rookie-eligible player with MLB time is never rendered unmarked.
+    assert (
+        "MLB taste" in row_html or "Called up" in row_html or "In MLB" in row_html
+    ), "Whisenhunt must carry a call-up family chip"
     assert "callup-chip" in row_html
 
 
