@@ -142,6 +142,46 @@
         </div>
         {% endif %}
 
+        {% if plate_discipline %}
+        <div class="detail-section plate-discipline-card">
+            <div class="prospect-profile-top">
+                <div>
+                    <span class="profile-card-kicker">Plate Discipline</span>
+                    <h4>How He Handles the Zone</h4>
+                    <p class="profile-note">vs same-level cohort &middot; higher percentile is better</p>
+                    <p class="profile-percentile-legend">Computed from MLB play-by-play feeds. <a href="/methodology#plate-discipline">How this is measured</a>.</p>
+                </div>
+            </div>
+            {% for group in plate_discipline %}
+            <div class="plate-discipline-level">
+                <div class="plate-discipline-level-head">
+                    <span class="plate-discipline-level-label">{{ group.level }}</span>
+                    {% if group.pitches %}<span class="plate-discipline-sample">{{ group.pitches }} pitches</span>{% endif %}
+                </div>
+                <div class="prospect-profile-bars">
+                    {% for metric in group.metrics %}
+                    <div class="prospect-profile-bar">
+                        <span class="profile-bar-label">{{ metric.label }}{% if metric.estimated %} <a class="pd-est-tag" href="/methodology#plate-discipline" title="Estimated from a pixel-coordinate calibration — see methodology">est.</a>{% endif %}</span>
+                        {% if metric.pct is not none %}
+                        <div class="profile-bar-track" role="img" aria-label="{{ metric.label }}: {{ ordinal(metric.pct) }} percentile in the {{ group.level }} cohort">
+                            <span class="profile-bar-fill {{ 'elite' if metric.pct >= 90 else ('good' if metric.pct >= 75 else ('risk' if metric.pct <= 25 else 'neutral')) }}" style="width: {{ metric.pct }}%"></span>
+                            <span class="profile-bar-num" style="left: {{ metric.pct }}%">{{ metric.pct }}</span>
+                        </div>
+                        {% else %}
+                        <div class="profile-bar-track pd-no-pct" role="img" aria-label="{{ metric.label }}: {{ metric.display }} (no cohort percentile)">
+                            <span class="pd-raw-only">{{ metric.display }}</span>
+                        </div>
+                        {% endif %}
+                        <span class="profile-bar-value">{{ metric.display }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if group.estimated %}<p class="plate-discipline-est-note">Zone metrics (Chase%, Z-Swing%, Z-Contact%, Zone%) are <span class="pd-est-inline">est.</span> &mdash; estimated from a pixel-coordinate calibration because tracked coordinates are absent at this level.</p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% if row.is_prospect %}
         {% include "partials/_value_spark.html" %}
         {% endif %}

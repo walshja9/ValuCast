@@ -1956,3 +1956,91 @@ class TestServingCaches(unittest.TestCase):
         finally:
             app_module.dd_store._generated_at = original
             app_module._value_map_payload()  # restore cache to the real generation
+
+
+class TestPlateDisciplineCard(unittest.TestCase):
+    """The plate-discipline card section renders (or doesn't) off the reader.
+
+    Uses a fixture-backed PitchDisciplineStore so the test is independent of whether
+    the committed artifact has been built — the reviewer builds the full artifact
+    after review, and the card must still render correctly against a known fixture.
+    """
+
+    PROSPECT_ID = "vc_prospect_701527_hitter"   # Mike Sirota (mlbam 701527)
+    MLBAM = "701527"
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+        if not app_module.dd_store.is_available:
+            self.skipTest("dd snapshot not available")
+        if app_module.dd_store.get_by_id(self.PROSPECT_ID) is None:
+            self.skipTest("Sirota prospect id not in current universe")
+
+    def _fixture_store(self, tmp, *, qualifies=True, zone_estimated=True):
+        import json
+        from web.pitch_discipline_store import PitchDisciplineStore
+        payload = {
+            "artifact": "valucast_pitch_discipline",
+            "as_of": "2026-07-10",
+            "metric_labels": {
+                "swing_pct": "Swing%", "whiff_pct": "Whiff%", "swstr_pct": "SwStr%",
+                "chase_pct": "Chase%", "z_swing_pct": "Z-Swing%",
+                "z_contact_pct": "Z-Contact%", "zone_pct": "Zone%",
+            },
+            "cohorts": {"min_pitches": 300, "zone_metrics_shipped": True},
+            "players": {self.MLBAM: {"AA": {
+                "pitches": 811, "qualifies": qualifies, "zone_estimated": zone_estimated,
+                "rates": {"swing_pct": 37.4, "whiff_pct": 24.8, "swstr_pct": 9.2,
+                          "chase_pct": 15.8, "z_swing_pct": 64.3, "z_contact_pct": 80.6,
+                          "zone_pct": 44.5},
+                "percentiles": {"whiff_pct": 75, "swstr_pct": 75, "chase_pct": 60,
+                                "z_contact_pct": 25},
+            }}},
+        }
+        path = tmp / "disc.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return PitchDisciplineStore(path=path)
+
+    def _render(self, store):
+        with patch.object(app_module, "pitch_discipline_store", store):
+            return self.client.get(
+                f"/player/{self.PROSPECT_ID}?mode=prospects",
+                headers={"HX-Request": "true"},
+            )
+
+    def test_card_renders_section_with_data(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td))
+            r = self._render(store)
+            self.assertEqual(r.status_code, 200)
+            html = r.data.decode("utf-8", "replace")
+            self.assertIn("Plate Discipline", html)
+            self.assertIn("/methodology#plate-discipline", html)
+            self.assertIn("Computed from MLB play-by-play feeds", html)
+            self.assertIn("37.4%", html)   # exact Swing% value
+
+    def test_estimated_rows_tagged(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td), zone_estimated=True)
+            html = self._render(store).data.decode("utf-8", "replace")
+            self.assertIn("est.", html)
+            self.assertIn("pd-est-tag", html)
+
+    def test_no_section_without_data(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            # A qualifying=False bucket -> no group -> no card shell.
+            store = self._fixture_store(Path(td), qualifies=False)
+            html = self._render(store).data.decode("utf-8", "replace")
+            self.assertNotIn("plate-discipline-card", html)
+
+    def test_reader_is_network_free(self):
+        """Structural lock: the serving reader imports no network library."""
+        import inspect
+        import web.pitch_discipline_store as reader
+        src = inspect.getsource(reader)
+        for banned in ("import urllib", "import requests", "import http", "urlopen"):
+            self.assertNotIn(banned, src)

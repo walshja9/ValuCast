@@ -360,5 +360,42 @@
         rather than wait for it to look better.</p>
         {% endif %}
     </section>
+
+    <section id="plate-discipline">
+        <h3>Plate discipline: measured vs. estimated</h3>
+        <p>Prospect cards show <strong>plate-discipline rates counted directly from
+        MLB's own public play-by-play</strong> &mdash; the same feed the league uses
+        to score games. There are two kinds of number here, and we keep them
+        visibly separate.</p>
+        <ul>
+            <li><strong>Measured (exact): Swing%, Whiff%, SwStr%.</strong> These come
+            straight from each pitch's outcome description (swing, foul, swinging
+            strike, ball in play), so they are deterministic and reproducible. We
+            validated them against a public reference to the decimal &mdash; for one
+            Double-A hitter over 41 games our Swing% and SwStr% matched the outside
+            source exactly. No estimation is involved.</li>
+            <li><strong>Estimated: Chase%, Z-Swing%, Z-Contact%, Zone%.</strong> These
+            depend on <em>where</em> each pitch crossed the zone. Modern tracked
+            coordinates are present at Triple-A but absent at the lower minor-league
+            levels, which publish only legacy pixel coordinates. We fit a
+            pixel-to-feet calibration (from Triple-A games that carry both) to place
+            those pitches in or out of the zone. Because it is a calibration, every
+            such number is labeled <span class="pd-est-inline">est.</span> on the
+            card and links back here. At Triple-A, where real coordinates exist, the
+            zone metrics are measured rather than estimated.</li>
+        </ul>
+        <p><strong>Why there is no exit velocity or contact-quality data.</strong>
+        Public minor-league play-by-play carries no batted-ball tracking, so ValuCast
+        does not show &mdash; and will not estimate &mdash; exit velocity, launch
+        angle, or hard-hit rate at these levels. We would rather leave a box empty
+        than fabricate a number.</p>
+        <p><strong>Cohorts and sample.</strong> Percentiles compare a player only to
+        others <em>at the same level</em>, and a bucket must clear a minimum
+        pitches-seen sample before any bar renders &mdash; below that floor we show no
+        percentile at all, the same small-sample discipline the skill bars use. A
+        player who changed levels shows a separate row set per level; we never blend a
+        percentile across two levels. These are observe-only card context: they never
+        feed a player's value, rank, or projection.</p>
+    </section>
 </article>
 {% endblock %}

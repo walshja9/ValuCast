@@ -1608,6 +1608,61 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-size: .68rem;
     font-style: italic;
 }
+/* Plate-discipline card: reuses the profile-bar widget, per level, with an "est."
+   tag on the pixel-calibrated (estimated) zone metrics. */
+.plate-discipline-level {
+    margin-top: .7rem;
+}
+.plate-discipline-level:first-of-type {
+    margin-top: .35rem;
+}
+.plate-discipline-level-head {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .35rem;
+}
+.plate-discipline-level-label {
+    font-weight: 800;
+    font-size: .82rem;
+    color: var(--c-text);
+    letter-spacing: .02em;
+}
+.plate-discipline-sample {
+    color: var(--c-muted);
+    font-size: .7rem;
+    font-variant-numeric: tabular-nums;
+}
+.pd-est-tag {
+    font-size: .62rem;
+    font-weight: 700;
+    color: var(--c-amber);
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+    vertical-align: super;
+}
+.pd-est-tag:hover { text-decoration: none; opacity: .85; }
+.pd-est-inline { color: var(--c-amber); font-weight: 700; }
+.profile-bar-track.pd-no-pct {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 .5rem;
+    background: #1c1e24;
+}
+.pd-raw-only {
+    color: var(--c-muted);
+    font-size: .72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.plate-discipline-est-note {
+    margin: .3rem 0 0;
+    color: var(--c-muted);
+    font-size: .66rem;
+    font-style: italic;
+    line-height: 1.4;
+}
 .skill-shape-card {
     margin-top: .85rem;
     padding-top: .75rem;
