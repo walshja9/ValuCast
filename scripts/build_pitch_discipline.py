@@ -193,10 +193,10 @@ def load_cache(path: Path = CACHE_PATH) -> dict:
     return payload
 
 
-def _atomic_write(path: Path, payload: dict) -> None:
+def _atomic_write(path: Path, payload: dict, *, indent: int | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.write_text(json.dumps(payload, sort_keys=True, indent=indent) + "\n", encoding="utf-8")
     os.replace(tmp, path)
 
 
@@ -517,9 +517,8 @@ def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
 
 def write_artifact(payload: dict, path: Path = ARTIFACT_PATH) -> Path:
     _assert_not_tiny_refresh(payload, path)
-    _atomic_write(path, {**payload})
-    # Pretty-print for a committed artifact (parity with other data/models files).
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    # Single atomic pretty write (indent=2 for parity with other data/models files).
+    _atomic_write(path, payload, indent=2)
     return path
 
 
