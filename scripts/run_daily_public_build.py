@@ -57,6 +57,11 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_prospect_universe.py",),
     ("scripts/build_prospect_availability.py",),
     ("scripts/build_prospect_rank_v1.py",),
+    # Plate-discipline (StatsAPI play-by-play) needs the fresh tracked-hitter id
+    # list from the universe above. Default (incremental) mode fetches only new
+    # games and no-ops gracefully on a StatsAPI outage (stale artifact keeps
+    # serving), so a broken fetch never stalls the rest of the daily build.
+    ("scripts/build_pitch_discipline.py",),
     ("scripts/build_combined_level_shadow.py",),
     ("scripts/build_valucast_movers.py",),
     ("scripts/build_call_up_pulse.py",),
@@ -105,6 +110,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_mlb_projection_source_comparison.py",),
     ("scripts/validate_valucast_prospect_inputs.py",),
     ("scripts/validate_prospect_availability.py",),
+    ("scripts/validate_pitch_discipline.py",),
     ("scripts/validate_prospect_model_v07.py",),
     ("scripts/validate_prospect_coverage_audit.py",),
     ("scripts/validate_prospect_calibration_report.py",),
