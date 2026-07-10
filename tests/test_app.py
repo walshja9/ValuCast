@@ -1971,6 +1971,59 @@ class TestPlateDisciplineReaderStructural(unittest.TestCase):
             self.assertNotIn(banned, src)
 
 
+class TestPlateDisciplineCardRows(unittest.TestCase):
+    """Pure row-builder for the share-PNG strip: labels, est flags, pct-None."""
+
+    def _group(self, level="AA"):
+        return {
+            "level": level, "pitches": 811, "estimated": True,
+            "metrics": [
+                {"key": "swing_pct", "label": "Swing%", "display": "37.4%", "pct": None, "estimated": False},
+                {"key": "whiff_pct", "label": "Whiff%", "display": "24.8%", "pct": 60, "estimated": False},
+                {"key": "swstr_pct", "label": "SwStr%", "display": "9.2%", "pct": 83, "estimated": False},
+                {"key": "chase_pct", "label": "Chase%", "display": "15.8%", "pct": 99, "estimated": True},
+                {"key": "z_swing_pct", "label": "Z-Swing%", "display": "64.3%", "pct": None, "estimated": True},
+                {"key": "z_contact_pct", "label": "Z-Contact%", "display": "80.6%", "pct": 34, "estimated": True},
+                {"key": "zone_pct", "label": "Zone%", "display": "44.5%", "pct": None, "estimated": True},
+            ],
+        }
+
+    def test_headline_metrics_in_order_with_est_flags(self):
+        rows = app_module._prospect_discipline_card_rows([self._group()])
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        self.assertEqual(row["level"], "AA")
+        self.assertEqual(row["pitches"], 811)
+        # The five headline metrics, in order; z_swing/zone stay page-only.
+        self.assertEqual([m["label"] for m in row["metrics"]],
+                         ["Swing%", "Whiff%", "SwStr%", "Chase%", "Z-Contact%"])
+        self.assertEqual([m["est"] for m in row["metrics"]],
+                         [False, False, False, True, True])
+        self.assertTrue(row["any_est"])
+
+    def test_pct_none_passes_through_for_contextual_metric(self):
+        rows = app_module._prospect_discipline_card_rows([self._group()])
+        by_key = {m["key"]: m for m in rows[0]["metrics"]}
+        self.assertIsNone(by_key["swing_pct"]["pct"])   # renderer draws no chip
+        self.assertEqual(by_key["swstr_pct"]["pct"], 83)
+
+    def test_max_two_levels(self):
+        rows = app_module._prospect_discipline_card_rows(
+            [self._group("AAA"), self._group("AA"), self._group("A+")]
+        )
+        self.assertEqual([r["level"] for r in rows], ["AAA", "AA"])
+
+    def test_empty_and_missing_metrics(self):
+        self.assertEqual(app_module._prospect_discipline_card_rows([]), [])
+        self.assertEqual(app_module._prospect_discipline_card_rows(None), [])
+        # A group missing one headline metric omits just that metric.
+        group = self._group()
+        group["metrics"] = [m for m in group["metrics"] if m["key"] != "chase_pct"]
+        rows = app_module._prospect_discipline_card_rows([group])
+        self.assertEqual([m["key"] for m in rows[0]["metrics"]],
+                         ["swing_pct", "whiff_pct", "swstr_pct", "z_contact_pct"])
+
+
 class TestPlateDisciplineCard(unittest.TestCase):
     """The plate-discipline card section renders (or doesn't) off the reader.
 
@@ -2055,3 +2108,33 @@ class TestPlateDisciplineCard(unittest.TestCase):
             store = self._fixture_store(Path(td), qualifies=False)
             html = self._render(store).data.decode("utf-8", "replace")
             self.assertNotIn("plate-discipline-card", html)
+
+    def _share_png(self, store):
+        with patch.object(app_module, "pitch_discipline_store", store):
+            return self.client.get(f"/prospects/player-card/{self.prospect_id}.png")
+
+    def test_share_png_renders_without_discipline_data(self):
+        # Empty store path: the share PNG renders exactly as before the strip
+        # existed (200, valid PNG, no exception).
+        from web.pitch_discipline_store import PitchDisciplineStore
+        empty = PitchDisciplineStore(path=Path("definitely-missing") / "no.json")
+        response = self._share_png(empty)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[:8], b"\x89PNG\r\n\x1a\n")
+
+    def test_share_png_with_discipline_data_is_taller(self):
+        # Same prospect with vs without discipline data: the with-data render
+        # carries the strip, so the canvas is taller (never crowds sections).
+        import struct
+        import tempfile
+        from web.pitch_discipline_store import PitchDisciplineStore
+        empty = PitchDisciplineStore(path=Path("definitely-missing") / "no.json")
+        base = self._share_png(empty)
+        self.assertEqual(base.status_code, 200)
+        with tempfile.TemporaryDirectory() as td:
+            with_data = self._share_png(self._fixture_store(Path(td)))
+        self.assertEqual(with_data.status_code, 200)
+        self.assertEqual(with_data.data[:8], b"\x89PNG\r\n\x1a\n")
+        base_height = struct.unpack(">I", base.data[20:24])[0]
+        data_height = struct.unpack(">I", with_data.data[20:24])[0]
+        self.assertGreater(data_height, base_height)

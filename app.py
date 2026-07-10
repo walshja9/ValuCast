@@ -2838,6 +2838,52 @@ def _share_card_comp_lines(comp):
     return twins, cohort_line
 
 
+# The share-PNG plate-discipline strip shows the five headline metrics per level.
+# z_swing_pct / zone_pct stay page-only (the strip is compact by design).
+_DISCIPLINE_CARD_METRICS = ("swing_pct", "whiff_pct", "swstr_pct", "chase_pct", "z_contact_pct")
+
+
+def _prospect_discipline_card_rows(groups):
+    """Share-PNG rows for the plate-discipline strip (max 2 levels).
+
+    Pure reshaping of pitch_discipline_store.groups_for output: per level, the
+    five headline metrics with label/value/pct/est. pct stays None where the
+    reader gave no percentile (contextual metric, e.g. Swing%) - the renderer
+    draws the value with NO chip. The estimated flag passes through untouched so
+    the PNG carries the same "est." honesty marker as the page (the PNG travels
+    detached from the page, so the disclosure must travel with it).
+    """
+    rows = []
+    for group in (groups or [])[:2]:
+        by_key = {
+            m.get("key"): m
+            for m in group.get("metrics") or ()
+            if isinstance(m, dict)
+        }
+        metrics = []
+        for key in _DISCIPLINE_CARD_METRICS:
+            metric = by_key.get(key)
+            if not isinstance(metric, dict) or not metric.get("display"):
+                continue
+            pct = metric.get("pct")
+            metrics.append({
+                "key": key,
+                "label": str(metric.get("label") or key),
+                "value": str(metric.get("display")),
+                "pct": int(pct) if isinstance(pct, (int, float)) else None,
+                "est": bool(metric.get("estimated")),
+            })
+        if not metrics:
+            continue
+        rows.append({
+            "level": str(group.get("level") or ""),
+            "pitches": group.get("pitches"),
+            "metrics": metrics,
+            "any_est": any(m["est"] for m in metrics),
+        })
+    return rows
+
+
 def _prospect_player_card_png(row):
     """Render a single-prospect share card from ValuCast-owned current context."""
     from PIL import Image, ImageDraw
@@ -2855,6 +2901,19 @@ def _prospect_player_card_png(row):
         (comps_payload.get("players") or {}).get(str(getattr(row, "mlbam_id", "") or ""))
     )
     comps_extra = 132 if comp_lines else 0
+    # Plate-discipline strip (same reader as the page card). Empty store/player ->
+    # discipline_extra == 0 and the card renders pixel-identical to today.
+    discipline_rows = _prospect_discipline_card_rows(
+        pitch_discipline_store.groups_for(getattr(row, "mlbam_id", None))
+    )
+    discipline_est = any(r["any_est"] for r in discipline_rows)
+    if discipline_rows:
+        # header 44 + 52 per level row + est disclosure line + bottom padding.
+        discipline_h = 44 + 52 * len(discipline_rows) + (22 if discipline_est else 0) + 12
+        discipline_extra = discipline_h + 8   # strip + the 8px section gap
+    else:
+        discipline_h = 0
+        discipline_extra = 0
     context = getattr(row, "context", None)
     if not isinstance(context, dict):
         context = row.metadata.get("context") if isinstance(row.metadata, dict) else {}
@@ -3007,7 +3066,7 @@ def _prospect_player_card_png(row):
         peak_label_y = read_body_bottom + 6
     read_extra = peak_label_y - 1250  # delta applied to the shape/FG/footer below
 
-    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra + comps_extra
+    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra + comps_extra + discipline_extra
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -3137,9 +3196,58 @@ def _prospect_player_card_png(row):
     else:
         draw.text((74, 560), "Current sample does not meet the percentile-pool threshold.", fill=muted, font=_graphic_font(22))
 
+    # Plate discipline strip -- swing/whiff outcomes from MLB play-by-play, per
+    # level (max 2). Estimated (pixel-calibrated) zone metrics carry a visible
+    # "est." marker + a one-line disclosure: the PNG travels detached from the
+    # page, so the honesty labeling must travel with it. Everything below shifts
+    # by discipline_extra; players without data stay pixel-identical.
+    if discipline_rows:
+        pd_top = 820
+        _graphic_glass_panel(img, draw, (48, pd_top, 1032, pd_top + discipline_h), radius=12)
+        draw.text((74, pd_top + 12), "PLATE DISCIPLINE", fill=muted, font=_graphic_font(20, bold=True))
+        prov_font = _graphic_font(13, bold=True, mono=True)
+        prov = "FROM MLB PLAY-BY-PLAY"
+        draw.text((1006 - _graphic_text_width(draw, prov, prov_font), pd_top + 18), prov, fill=muted, font=prov_font)
+        pd_label_font = _graphic_font(13, bold=True)
+        pd_value_font = _graphic_font(18, bold=True, mono=True)
+        pd_est_font = _graphic_font(11, bold=True)
+        pd_chip_font = _graphic_font(12, bold=True)
+        pd_level_font = _graphic_font(16, bold=True)
+        pd_sample_font = _graphic_font(11, mono=True)
+        pd_row_y = pd_top + 44
+        for pd_row in discipline_rows:
+            draw.text((74, pd_row_y + 4), pd_row["level"], fill=text, font=pd_level_font)
+            if pd_row.get("pitches"):
+                draw.text((74, pd_row_y + 26), f"{pd_row['pitches']}p", fill=muted, font=pd_sample_font)
+            tx = 168
+            for metric in pd_row["metrics"][:5]:
+                draw.text((tx, pd_row_y), metric["label"], fill=muted, font=pd_label_font)
+                if metric["pct"] is not None:
+                    pct = metric["pct"]
+                    chip_x = tx + _graphic_text_width(draw, metric["label"], pd_label_font) + 8
+                    draw.rounded_rectangle((chip_x, pd_row_y - 2, chip_x + 32, pd_row_y + 14), radius=4, fill=(10, 11, 15))
+                    chip_color = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
+                    pct_text = str(pct)
+                    draw.text(
+                        (chip_x + 16 - _graphic_text_width(draw, pct_text, pd_chip_font) // 2, pd_row_y),
+                        pct_text, fill=chip_color, font=pd_chip_font,
+                    )
+                draw.text((tx, pd_row_y + 19), metric["value"], fill=text, font=pd_value_font)
+                if metric["est"]:
+                    est_x = tx + _graphic_text_width(draw, metric["value"], pd_value_font) + 5
+                    draw.text((est_x, pd_row_y + 23), "est.", fill=amber, font=pd_est_font)
+                tx += 172
+            pd_row_y += 52
+        if discipline_est:
+            draw.text(
+                (74, pd_row_y + 2),
+                "zone metrics estimated from pixel calibration - see valucast.app/methodology",
+                fill=muted, font=_graphic_font(13),
+            )
+
     # 2026 season production by MiLB level
     if season_table_rows:
-        stats_top = 820
+        stats_top = 820 + discipline_extra
         stats_bottom = stats_top + STATS_BLOCK_H
         draw.rounded_rectangle(
             (48, stats_top, 1032, stats_bottom),
@@ -3234,32 +3342,34 @@ def _prospect_player_card_png(row):
                 else:
                     _draw_right_cell(x, row_y, value, value_font, row_fill)
 
-    # Narrative + 20-80 shape. The read box grows with the full report (read_extra);
-    # everything below shifts down by the same delta so the short-report case is
-    # pixel-identical (read_extra == 0).
-    _graphic_glass_panel(img, draw, (48, 1050, 1032, 1342 + read_extra), radius=12)
-    draw.text((74, 1080), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
+    # Narrative + 20-80 shape. The read box grows with the full report (read_extra)
+    # and the whole block sits below the discipline strip (discipline_extra);
+    # everything below shifts down by the same deltas so the short-report /
+    # no-discipline case is pixel-identical (both extras == 0).
+    body_shift = read_extra + discipline_extra
+    _graphic_glass_panel(img, draw, (48, 1050 + discipline_extra, 1032, 1342 + body_shift), radius=12)
+    draw.text((74, 1080 + discipline_extra), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
     for idx, line in enumerate(read_lines):
-        draw.text((74, 1120 + idx * 31), line, fill=text, font=read_font)
+        draw.text((74, 1120 + discipline_extra + idx * 31), line, fill=text, font=read_font)
     for idx, line in enumerate(proj_lines):
-        draw.text((74, proj_y0 + idx * 26), line, fill=muted, font=proj_font)
+        draw.text((74, proj_y0 + discipline_extra + idx * 26), line, fill=muted, font=proj_font)
 
-    draw.text((74, 1250 + read_extra), shape_title, fill=muted, font=_graphic_font(18, bold=True))
+    draw.text((74, 1250 + body_shift), shape_title, fill=muted, font=_graphic_font(18, bold=True))
     for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
-        draw.rounded_rectangle((x, 1278 + read_extra, x + 205, 1324 + read_extra), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
+        draw.rounded_rectangle((x, 1278 + body_shift, x + 205, 1324 + body_shift), radius=10, fill=card_2, outline=(44, 46, 54), width=1)
         grade = int(skill["grade"])
         color = bar_elite if grade >= 60 else bar_low if grade <= 40 else text
-        draw.text((x + 14, 1288 + read_extra), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
-        draw.text((x + 150, 1285 + read_extra), str(grade), fill=color, font=_graphic_font(25, bold=True))
-        draw.text((x + 14, 1306 + read_extra), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
+        draw.text((x + 14, 1288 + body_shift), _graphic_fit_text(draw, skill["label"], _graphic_font(15, bold=True), 120), fill=muted, font=_graphic_font(15, bold=True))
+        draw.text((x + 150, 1285 + body_shift), str(grade), fill=color, font=_graphic_font(25, bold=True))
+        draw.text((x + 14, 1306 + body_shift), _graphic_fit_text(draw, skill["metrics"], _graphic_font(12), 132), fill=muted, font=_graphic_font(12))
 
     # Measured shape comps -- twins + how the shape aged, display-only. Sits
     # between the skill shape and the FG reference; everything below shifts by
     # comps_extra so non-comped players stay pixel-identical.
     if comp_lines:
         twins_line, cohort_line = comp_lines
-        comps_y = 1356 + read_extra
+        comps_y = 1356 + body_shift
         _graphic_glass_panel(img, draw, (48, comps_y, 1032, comps_y + 118), radius=12)
         draw.text((74, comps_y + 14),
                   "CLOSEST MLB SHAPES - era-adjusted match on translated K%/BB%/ISO - descriptive, not a forecast",
@@ -3274,7 +3384,7 @@ def _prospect_player_card_png(row):
     # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
     # Skipped when the player has no FG board entry.
-    fg_y = read_extra + comps_extra
+    fg_y = body_shift + comps_extra
     if fg_scouting and fg_scouting.get("fv"):
         _graphic_glass_panel(img, draw, (48, 1356 + fg_y, 1032, 1482 + fg_y), radius=12)
         draw.text((74, 1370 + fg_y), "FANGRAPHS SCOUTING - FV 20-80 - scouting reference, not in ValuCast value",
