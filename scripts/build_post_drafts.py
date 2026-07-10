@@ -380,10 +380,27 @@ def _closed_call_keys(scorecard) -> set:
 # ---------------------------------------------------------------------------
 # Scanner d: BIG MOVER (top fresh riser/faller).
 # ---------------------------------------------------------------------------
-def _mover_ids(payload, key) -> set:
+# The digest must read the SAME board the attached share card renders: the page
+# and the bare /movers/share-card.png default to the 14d window
+# (app.DEFAULT_MOVER_WINDOW = 14). The artifact's top-level rising/cooling lists
+# are the era-clamped legacy view (e.g. "over 18d" since the 6/22 re-baseline),
+# which contradicts the card's pills (7/14/21/30) in a public post.
+_MOVER_WINDOW_KEY = "14d"
+
+
+def _mover_board(payload) -> dict:
+    """The default-window board (windows['14d']); legacy top-level fallback."""
     if not isinstance(payload, dict):
-        return set()
-    return {r.get("id") for r in payload.get(key) or [] if r.get("id")}
+        return {}
+    windows = payload.get("windows")
+    if isinstance(windows, dict) and isinstance(windows.get(_MOVER_WINDOW_KEY), dict):
+        return windows[_MOVER_WINDOW_KEY]
+    return payload
+
+
+def _mover_ids(payload, key) -> set:
+    board = _mover_board(payload)
+    return {r.get("id") for r in board.get(key) or [] if r.get("id")}
 
 
 def _mover_draft_body(row: dict, direction: str) -> str:
@@ -406,11 +423,12 @@ def _mover_draft_body(row: dict, direction: str) -> str:
 def scan_big_mover(today, prior) -> list[Draft]:
     if not isinstance(today, dict):
         return []
+    board = _mover_board(today)
     prior_rising = _mover_ids(prior, "rising")
     prior_cooling = _mover_ids(prior, "cooling")
 
     def top_fresh(key, prior_ids):
-        for row in today.get(key) or []:
+        for row in board.get(key) or []:
             if abs(row.get("score_delta") or 0) < MOVER_MIN_DELTA:
                 continue
             if row.get("id") in prior_ids:

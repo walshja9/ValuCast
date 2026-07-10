@@ -223,6 +223,26 @@ def test_fresh_big_mover_detected():
     assert "vc_prospect_694230_hitter" in drafts[0].extra_url
 
 
+def test_mover_scanner_reads_the_default_window_board_not_the_legacy_lists():
+    # The attached share card renders the 14d default board; the artifact's
+    # top-level rising/cooling are the era-clamped legacy view ("over 18d").
+    # The digest must quote the same board the graphic shows.
+    legacy = _mover("vc_mover_111111_hitter", "Legacy Faller", -9.0)
+    windowed = _mover("vc_mover_694230_hitter", "Windowed Faller", -7.0)
+    today = {
+        "rising": [],
+        "cooling": [legacy],
+        "windows": {"14d": {"rising": [], "cooling": [windowed]}},
+    }
+    prior = {"rising": [], "cooling": [], "windows": {"14d": {"rising": [], "cooling": []}}}
+
+    drafts = bpd.scan_big_mover(today, prior)
+
+    assert len(drafts) == 1
+    assert "Windowed Faller" in drafts[0].body
+    assert "Legacy Faller" not in drafts[0].body
+
+
 def test_repeat_mover_suppressed():
     row = _mover("vc_mover_694230_hitter", "Repeat Mover", 8.0)
     today = {"rising": [row], "cooling": []}
