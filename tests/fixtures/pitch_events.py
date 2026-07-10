@@ -28,9 +28,9 @@ def _pitch(description, *, is_in_play=False, coords=None, sz_top=None, sz_bottom
 
 # A single plate appearance for PID covering the full description taxonomy plus
 # every coordinate case. Counts we expect for PID over this one play:
-#   pitches = 8 (all isPitch events below)
-#   swings  = 5 (swinging strike, foul, foul bunt, missed bunt, in-play)
-#   whiffs  = 2 (swinging strike, missed bunt)
+#   pitches = 9 (all isPitch events below)
+#   swings  = 6 (swinging strike, foul, foul bunt, missed bunt, swinging pitchout, in-play)
+#   whiffs  = 3 (swinging strike, missed bunt, swinging pitchout)
 #   contact = 3 (foul, foul bunt, in-play)
 _PID_EVENTS = [
     # Real tracked coords, clearly in-zone (|pX|<=0.83, szB<=pZ<=szT):
@@ -44,6 +44,7 @@ _PID_EVENTS = [
            sz_top=3.4, sz_bottom=1.6),
     _pitch("Foul Bunt"),                              # bunt attempt = swing + contact
     _pitch("Missed Bunt"),                            # missed bunt = swing + whiff
+    _pitch("Swinging Pitchout"),                      # swung at a pitchout = swing + whiff
     _pitch("In play, out(s)", is_in_play=True,        # in play = swing + contact
            coords={"pX": 0.0, "pZ": 2.5, "x": 116.0, "y": 148.0},
            sz_top=3.4, sz_bottom=1.6),

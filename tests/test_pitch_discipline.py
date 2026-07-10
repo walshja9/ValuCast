@@ -26,11 +26,12 @@ from prospects.pitch_discipline import (
 
 def test_swing_and_whiff_detection_over_taxonomy():
     c = count_player_pitches(SYNTHETIC_FEED, PID)
-    # 8 pitches to PID; swinging strike + foul + foul bunt + missed bunt + in-play
-    # = 5 swings; swinging strike + missed bunt = 2 whiffs; the rest contact.
-    assert c["pitches"] == 8
-    assert c["swings"] == 5
-    assert c["whiffs"] == 2
+    # 9 pitches to PID; swinging strike + foul + foul bunt + missed bunt +
+    # swinging pitchout + in-play = 6 swings; swinging strike + missed bunt +
+    # swinging pitchout = 3 whiffs; the rest contact.
+    assert c["pitches"] == 9
+    assert c["swings"] == 6
+    assert c["whiffs"] == 3
     assert c["contact"] == 3
 
 
@@ -76,11 +77,25 @@ def test_batter_filter_excludes_other_batter():
 def test_exact_denominators():
     c = count_player_pitches(SYNTHETIC_FEED, PID)
     r = rates_from_counts(c)
-    # Swing% = swings/pitches = 5/8, Whiff% = whiffs/swings = 2/5,
-    # SwStr% = whiffs/pitches = 2/8.
-    assert r["swing_pct"] == round(5 / 8 * 100, 1)
-    assert r["whiff_pct"] == round(2 / 5 * 100, 1)
-    assert r["swstr_pct"] == round(2 / 8 * 100, 1)
+    # Swing% = swings/pitches = 6/9, Whiff% = whiffs/swings = 3/6,
+    # SwStr% = whiffs/pitches = 3/9.
+    assert r["swing_pct"] == round(6 / 9 * 100, 1)
+    assert r["whiff_pct"] == round(3 / 6 * 100, 1)
+    assert r["swstr_pct"] == round(3 / 9 * 100, 1)
+
+
+def test_pitchout_taxonomy():
+    # A plain Pitchout is a pitch seen but NOT a swing; a Swinging Pitchout is a
+    # swing AND a whiff (the batter offered at the pitchout and missed).
+    play = [{"matchup": {"batter": {"id": PID}}, "playEvents": [
+        {"isPitch": True, "details": {"description": "Pitchout"}},
+        {"isPitch": True, "details": {"description": "Swinging Pitchout"}},
+    ]}]
+    c = count_player_pitches(play, PID)
+    assert c["pitches"] == 2
+    assert c["swings"] == 1
+    assert c["whiffs"] == 1
+    assert c["contact"] == 0
 
 
 def test_zone_classify_real_coords():
@@ -141,6 +156,18 @@ def test_pixel_calibration_zone_counts_with_calib():
     assert c["in_zone"] >= 1
     assert c["out_zone"] >= 1
     assert c["z_swings"] >= 1     # the foul was a swing on an in-zone pixel pitch
+    # Both zone calls came from the pixel calibration (no real pX/pZ here) — the
+    # per-pitch counter behind the level's zone_estimated flag.
+    assert c["zone_pitches_calibrated"] == 2
+
+
+def test_real_coords_pitches_not_counted_as_calibrated():
+    # SYNTHETIC_FEED's coordinate-bearing pitches all carry real pX/pZ + sz, so
+    # NONE of their zone calls are pixel-calibrated (zone_estimated stays honest
+    # even in mixed-coordinate games).
+    c = count_player_pitches(SYNTHETIC_FEED, PID)
+    assert c["zone_pitches_with_coords"] == 4
+    assert c["zone_pitches_calibrated"] == 0
 
 
 def test_missing_strike_zone_uses_fallback_band_and_flags_quality():
@@ -153,13 +180,28 @@ def test_missing_strike_zone_uses_fallback_band_and_flags_quality():
 
 
 def test_calibration_agreement_high_on_consistent_pairs():
+    # 6-tuples: (x, y, pX, pZ, szTop, szBottom) — each pair's OWN strike zone
+    # scores both the real-coords truth and the calibrated call.
     pairs = [
-        (118.0, 150.0, 0.0, 2.5),
-        (200.0, 150.0, 1.6, 2.5),
-        (100.0, 120.0, -0.4, 3.0),
-        (160.0, 180.0, 0.8, 2.0),
-        (130.0, 160.0, 0.2, 2.3),
+        (118.0, 150.0, 0.0, 2.5, 3.4, 1.6),
+        (200.0, 150.0, 1.6, 2.5, 3.4, 1.6),
+        (100.0, 120.0, -0.4, 3.0, 3.5, 1.7),
+        (160.0, 180.0, 0.8, 2.0, 3.3, 1.5),
+        (130.0, 160.0, 0.2, 2.3, 3.4, 1.6),
     ]
     calib, _ = fit_pixel_calibration(pairs)
-    agree = calibration_agreement(pairs, calib, sz_top=3.4, sz_bottom=1.6)
+    agree = calibration_agreement(pairs, calib)
     assert agree is not None and agree >= 80.0
+
+
+def test_calibration_agreement_uses_per_pair_strike_zone():
+    # Identity-ish calibration so pixel == feet. A pitch at pZ=3.0 is IN a tall
+    # zone (top 3.4) but OUT of a short zone (top 2.8). Agreement must score each
+    # pair against its OWN zone: with matching per-pair zones both cases agree.
+    from prospects.pitch_discipline import PixelCalibration
+    calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
+    pairs = [
+        (0.0, 3.0, 0.0, 3.0, 3.4, 1.6),   # in tall zone -> both sides say in
+        (0.0, 3.0, 0.0, 3.0, 2.8, 1.6),   # out of short zone -> both sides say out
+    ]
+    assert calibration_agreement(pairs, calib) == 100.0

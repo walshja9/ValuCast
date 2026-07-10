@@ -53,9 +53,34 @@ def _is_swing(desc: str, is_in_play: bool) -> bool:
 
 
 def _is_whiff(desc: str) -> bool:
-    """A whiff = swing that missed: "swinging strike" (incl. "...blocked") or a
-    missed bunt. NOT a foul (a foul is contact)."""
-    return "swinging strike" in desc or "missed bunt" in desc
+    """A whiff = swing that missed: "swinging strike" (incl. "...blocked"), a
+    swinging pitchout, or a missed bunt. NOT a foul (a foul is contact)."""
+    return (
+        "swinging strike" in desc
+        or "swinging pitchout" in desc
+        or "missed bunt" in desc
+    )
+
+
+def _real_zone_coords(pitch_data: dict) -> tuple[float, float, float, float] | None:
+    """(pX, pZ, szTop, szBottom) when ALL are usable real numbers, else None.
+
+    This is the single source of truth for "did this pitch carry MEASURED zone
+    inputs" — classify_zone uses it to pick the real path, and count_player_pitches
+    uses it to count zone_pitches_calibrated (the pitches where the pixel
+    calibration, not real coords, made the zone call). Keeping one predicate means
+    the estimated/measured split can never drift between the two."""
+    co = pitch_data.get("coordinates") or {}
+    px, pz = co.get("pX"), co.get("pZ")
+    szt, szb = pitch_data.get("strikeZoneTop"), pitch_data.get("strikeZoneBottom")
+    if (
+        isinstance(px, (int, float))
+        and isinstance(pz, (int, float))
+        and isinstance(szt, (int, float))
+        and isinstance(szb, (int, float))
+    ):
+        return float(px), float(pz), float(szt), float(szb)
+    return None
 
 
 def classify_zone(pitch_data: dict, calib: "PixelCalibration | None" = None) -> bool | None:
@@ -71,17 +96,14 @@ def classify_zone(pitch_data: dict, calib: "PixelCalibration | None" = None) -> 
          estimate; PixelCalibration.classify flags it toward estimated_quality).
       4. No usable coords at all -> None (excluded from zone denominators).
     """
-    co = pitch_data.get("coordinates") or {}
-    px, pz = co.get("pX"), co.get("pZ")
-    szt, szb = pitch_data.get("strikeZoneTop"), pitch_data.get("strikeZoneBottom")
-    if (
-        isinstance(px, (int, float))
-        and isinstance(pz, (int, float))
-        and isinstance(szt, (int, float))
-        and isinstance(szb, (int, float))
-    ):
+    real = _real_zone_coords(pitch_data)
+    if real is not None:
+        px, pz, szt, szb = real
         return abs(px) <= _ZONE_HALF_WIDTH_FT and szb <= pz <= szt
+    co = pitch_data.get("coordinates") or {}
     x, y = co.get("x"), co.get("y")
+    szt = pitch_data.get("strikeZoneTop")
+    szb = pitch_data.get("strikeZoneBottom")
     if calib is not None and isinstance(x, (int, float)) and isinstance(y, (int, float)):
         return calib.classify(x, y, szt, szb)
     return None
@@ -93,7 +115,9 @@ def count_player_pitches(all_plays: list, batter_id: int, calib: "PixelCalibrati
     Returns a dict of raw integer counts (never rates): pitches, swings, whiffs,
     contact, plus zone-conditioned counts when coordinates are usable:
     in_zone, out_zone, o_swings (chase), z_swings, z_contact, plus
-    zone_pitches_with_coords (denominator honesty) and zone_pitches_fallback_sz
+    zone_pitches_with_coords (denominator honesty), zone_pitches_calibrated (zone
+    calls made by the pixel calibration rather than real pX/pZ — the per-pitch
+    truth behind the level's zone_estimated flag), and zone_pitches_fallback_sz
     (how many zone calls used the default vertical band). Rates are computed later,
     once, from summed counts (rates_from_counts) — so multi-game aggregation stays
     exact (sum counts, then divide once; never average rates).
@@ -104,7 +128,8 @@ def count_player_pitches(all_plays: list, batter_id: int, calib: "PixelCalibrati
     c = {
         "pitches": 0, "swings": 0, "whiffs": 0, "contact": 0,
         "in_zone": 0, "out_zone": 0, "o_swings": 0, "z_swings": 0,
-        "z_contact": 0, "zone_pitches_with_coords": 0, "zone_pitches_fallback_sz": 0,
+        "z_contact": 0, "zone_pitches_with_coords": 0,
+        "zone_pitches_calibrated": 0, "zone_pitches_fallback_sz": 0,
     }
     for play in all_plays:
         matchup = play.get("matchup") or {}
@@ -132,6 +157,9 @@ def count_player_pitches(all_plays: list, batter_id: int, calib: "PixelCalibrati
             zone = classify_zone(pd, calib)   # True=in, False=out, None=unusable
             if zone is not None:
                 c["zone_pitches_with_coords"] += 1
+                if _real_zone_coords(pd) is None:
+                    # The pixel calibration (not real pX/pZ) made this zone call.
+                    c["zone_pitches_calibrated"] += 1
                 szt = pd.get("strikeZoneTop")
                 szb = pd.get("strikeZoneBottom")
                 if not (isinstance(szt, (int, float)) and isinstance(szb, (int, float))):
@@ -229,13 +257,16 @@ class PixelCalibration:
             return None
 
 
-def fit_pixel_calibration(pairs: list[tuple[float, float, float, float]]) -> tuple["PixelCalibration | None", dict]:
-    """Least-squares fit of pX~=a*x+b and pZ~=c*y+d over (x, y, pX, pZ) pairs.
+def fit_pixel_calibration(pairs: list[tuple]) -> tuple["PixelCalibration | None", dict]:
+    """Least-squares fit of pX~=a*x+b and pZ~=c*y+d over paired samples.
 
-    Returns (PixelCalibration or None, quality dict). The two axes fit independently
-    (a 1-D least squares each). Quality reports n_pairs and per-axis R^2 so the
-    global-vs-per-venue-fit follow-up decision is data-driven. Returns (None, {...})
-    when there are too few pairs to fit (needs >= 2 distinct x and 2 distinct y).
+    Each pair's first four elements are (x, y, pX, pZ); longer tuples (e.g. the
+    6-tuples carrying szTop/szBottom for the held-out agreement check) are fine —
+    only the first four are read. Returns (PixelCalibration or None, quality dict).
+    The two axes fit independently (a 1-D least squares each). Quality reports
+    n_pairs and per-axis R^2 so the global-vs-per-venue-fit follow-up decision is
+    data-driven. Returns (None, {...}) when there are too few pairs to fit
+    (needs >= 2 distinct x and 2 distinct y).
     """
     xs = [p[0] for p in pairs]
     ys = [p[1] for p in pairs]
@@ -278,11 +309,16 @@ def _fit_line(xs: list[float], ys: list[float]) -> tuple[float, float, float] | 
     return slope, intercept, r2
 
 
-def calibration_agreement(pairs: list[tuple[float, float, float, float]],
-                          calib: "PixelCalibration",
-                          sz_top=None, sz_bottom=None) -> float | None:
-    """Held-out agreement %: on (x, y, pX, pZ) pairs where the REAL pX/pZ give a
-    ground-truth in/out call, what fraction does the pixel calibration match?
+def calibration_agreement(pairs: list[tuple],
+                          calib: "PixelCalibration") -> float | None:
+    """Held-out agreement %: on (x, y, pX, pZ, szTop, szBottom) tuples where the
+    REAL pX/pZ give a ground-truth in/out call, what fraction does the pixel
+    calibration match?
+
+    Each pair's OWN strike zone scores BOTH sides (the real-coords truth and the
+    calibrated call); the league-default band is only the fallback when a pair's
+    szTop/szBottom are absent. Score this on pairs HELD OUT of the fit — an
+    in-sample number overstates quality.
 
     This is the calibration-quality check (Step 3): ship the estimate only when the
     calibrated call agrees with the real coords on a high fraction (plan bar: >85%).
@@ -291,11 +327,11 @@ def calibration_agreement(pairs: list[tuple[float, float, float, float]],
         return None
     agree = 0
     total = 0
-    for x, y, px, pz in pairs:
-        top = sz_top if isinstance(sz_top, (int, float)) else _DEFAULT_SZ_TOP_FT
-        bottom = sz_bottom if isinstance(sz_bottom, (int, float)) else _DEFAULT_SZ_BOTTOM_FT
+    for x, y, px, pz, szt, szb in pairs:
+        top = szt if isinstance(szt, (int, float)) else _DEFAULT_SZ_TOP_FT
+        bottom = szb if isinstance(szb, (int, float)) else _DEFAULT_SZ_BOTTOM_FT
         real = abs(px) <= _ZONE_HALF_WIDTH_FT and bottom <= pz <= top
-        est = calib.classify(x, y, sz_top, sz_bottom)
+        est = calib.classify(x, y, szt, szb)
         total += 1
         if real == est:
             agree += 1
