@@ -291,16 +291,6 @@
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
-    "694378_hitter": {
-      "mlb_team": "CWS",
-      "mlbam_id": "694378",
-      "name": "Jacob Gonzalez",
-      "position": "1B",
-      "prospect_rank": 33,
-      "role": "hitter",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
     "695001_pitcher": {
       "mlb_team": "HOU",
       "mlbam_id": "695001",
@@ -377,6 +367,16 @@
       "name": "Ryan Johnson",
       "position": "P",
       "prospect_rank": 1360,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    "699008_pitcher": {
+      "mlb_team": "PIT",
+      "mlbam_id": "699008",
+      "name": "Antwone Kelly",
+      "position": "P",
+      "prospect_rank": 375,
       "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -518,6 +518,16 @@
       "position": "CF",
       "prospect_rank": 8,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    "802419_pitcher": {
+      "mlb_team": "PIT",
+      "mlbam_id": "802419",
+      "name": "Thomas Harrington",
+      "position": "P",
+      "prospect_rank": 419,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -689,16 +699,6 @@
       "name": "Denzer Guzman",
       "position": "3B",
       "prospect_rank": 32,
-      "role": "hitter",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
-      "mlb_team": "CWS",
-      "mlbam_id": "694378",
-      "name": "Jacob Gonzalez",
-      "position": "1B",
-      "prospect_rank": 33,
       "role": "hitter",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -904,12 +904,32 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
     {
+      "mlb_team": "PIT",
+      "mlbam_id": "699008",
+      "name": "Antwone Kelly",
+      "position": "P",
+      "prospect_rank": 375,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
       "mlb_team": "SF",
       "mlbam_id": "682674",
       "name": "Victor Bericoto",
       "position": "RF",
       "prospect_rank": 404,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
+      "mlb_team": "PIT",
+      "mlbam_id": "802419",
+      "name": "Thomas Harrington",
+      "position": "P",
+      "prospect_rank": 419,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -1244,7 +1264,7 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     }
   ],
-  "generated_at": "2026-07-10T12:29:13.821986+00:00",
+  "generated_at": "2026-07-10T20:36:16.453898+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "board_generated_at": "2026-07-10T00:00:00+00:00",
@@ -1265,7 +1285,7 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "call_up_count": 62
+    "call_up_count": 63
   },
   "validation": {
     "blockers": [],
