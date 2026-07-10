@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Trade Analyzer | ValuCast{% endblock %}
+{% block og_title %}Trade Analyzer | ValuCast{% endblock %}
+{% block og_description %}Drop two sides into the free ValuCast Trade Analyzer and see the board's verdict, computed from the same 0-100 dynasty values ValuCast serves.{% endblock %}
+{% block og_url %}https://valucast.app/trade{% endblock %}
+{% block og_image %}{{ og_share_image or 'https://valucast.app/static/og-card.png' }}{% endblock %}
+{% block og_image_width %}{{ '1080' if og_share_image else '1200' }}{% endblock %}
+{% block og_image_height %}{{ '1350' if og_share_image else '630' }}{% endblock %}
+{% block twitter_title %}Trade Analyzer | ValuCast{% endblock %}
+{% block twitter_description %}Drop two sides into the free ValuCast Trade Analyzer and see the board's verdict on any dynasty trade.{% endblock %}
+{% block twitter_image %}{{ og_share_image or 'https://valucast.app/static/og-card.png' }}{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+
+<section class="buys-heading movers-heading glass">
+    <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
+        <path d="M318 10 C220 2 126 34 14 140" />
+    </svg>
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">TRADE ANALYZER</span>
+        <h1>WHO WINS THE TRADE?</h1>
+        <p class="buys-heading-sub">Two sides, the board's verdict{% if as_of %} &middot; {{ editorial_date(as_of) }}{% endif %}</p>
+        <p class="buys-fineprint">Add players to each side and the board renders its verdict from the same 0-100 dynasty values it serves everywhere else &mdash; no new math, no conversion. <strong>The Trade Analyzer is free, like every ValuCast number.</strong></p>
+        <p class="buys-fineprint">The value-aware, league-aware version (your roster, your league settings, your contention window) is coming. <a href="mailto:valucast.feedback@gmail.com?subject=League-aware%20trade%20analyzer%20interest">Tell us you want it</a>.</p>
+    </div>
+</section>
+
+{% if not dd_available %}
+<section class="map-heading glass">
+    <h2>Board unavailable</h2>
+    <p>The Trade Analyzer will populate after the next daily build.</p>
+</section>
+{% else %}
+
+<section class="trade-search glass" aria-label="Add players to the trade">
+    <div class="movers-grid trade-search-grid">
+        <div class="trade-search-side">
+            <label class="trade-search-label" for="trade-search-give">You give</label>
+            <input type="text" id="trade-search-give" class="trade-search-input"
+                   data-side="give" autocomplete="off" spellcheck="false"
+                   placeholder="Search a player to give away&hellip;" aria-label="Search a player you give">
+            <div class="trade-search-results" id="trade-results-give" data-side="give" hidden></div>
+        </div>
+        <div class="trade-search-side">
+            <label class="trade-search-label" for="trade-search-get">You get</label>
+            <input type="text" id="trade-search-get" class="trade-search-input"
+                   data-side="get" autocomplete="off" spellcheck="false"
+                   placeholder="Search a player to get&hellip;" aria-label="Search a player you get">
+            <div class="trade-search-results" id="trade-results-get" data-side="get" hidden></div>
+        </div>
+    </div>
+    <p class="buys-fineprint">Up to {{ 6 }} players per side. The trade lives in the page URL &mdash; copy the link to share it. Works with search off: a <code>/trade?give=&hellip;&amp;get=&hellip;</code> link still renders.</p>
+</section>
+
+<div id="trade-result">
+{% include "partials/_trade_result.html" %}
+</div>
+
+{% endif %}
+
+<script>
+(function () {
+    // Client-side search over the value-map payload the board already serves.
+    // The SERVER is the source of truth for the verdict; this island only manages
+    // the two id lists + the accent-tolerant search. A JS-off user can still open
+    // and share a /trade?give=...&get=... URL because the page renders from params.
+    var MAP_URL = {{ map_data_url | tojson }};
+    var MAX_PER_SIDE = 6;
+    var sides = {
+        give: {{ give_ids | tojson }},
+        get: {{ get_ids | tojson }}
+    };
+    var players = [];
+    var byId = {};
+
+    // Mirror the server's accent-tolerant fold (web/search_fold.py): NFKD-decompose,
+    // strip combining marks, casefold. "hector" then matches "Héctor".
+    function fold(text) {
+        return String(text == null ? '' : text)
+            .normalize('NFKD')
+            .replace(/\p{Diacritic}/gu, '')
+            .toLowerCase();
+    }
+
+    function currentUrl() {
+        var qs = [];
+        if (sides.give.length) qs.push('give=' + sides.give.map(encodeURIComponent).join(','));
+        if (sides.get.length) qs.push('get=' + sides.get.map(encodeURIComponent).join(','));
+        return '/trade' + (qs.length ? '?' + qs.join('&') : '');
+    }
+
+    function rerender() {
+        var url = currentUrl();
+        history.replaceState(null, '', url);
+        // Full navigation keeps the server the single source of truth for the
+        // verdict and its honesty notes (htmx is loaded, but a plain fetch+swap
+        // of #trade-result would duplicate the verdict logic client-side).
+        window.location.href = url;
+    }
+
+    function addPlayer(side, id) {
+        var list = sides[side];
+        if (!id || list.indexOf(id) !== -1 || list.length >= MAX_PER_SIDE) return;
+        list.push(id);
+        rerender();
+    }
+
+    function renderResults(side, matches, box) {
+        box.innerHTML = '';
+        if (!matches.length) { box.hidden = true; return; }
+        matches.slice(0, 8).forEach(function (p) {
+            var item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'trade-search-result';
+            var rank = p.player_type === 'prospect'
+                ? (p.prospect_rank ? 'P#' + p.prospect_rank : 'prospect')
+                : '';
+            var meta = [p.position, rank].filter(Boolean).join(' · ');
+            item.innerHTML = '<span class="trade-search-name"></span>' +
+                '<span class="trade-search-meta"></span>' +
+                '<span class="trade-search-val"></span>';
+            item.querySelector('.trade-search-name').textContent = p.name;
+            item.querySelector('.trade-search-meta').textContent = meta;
+            item.querySelector('.trade-search-val').textContent =
+                (Math.round(p.value * 10) / 10).toFixed(1);
+            item.addEventListener('click', function () { addPlayer(side, p.id); });
+            box.appendChild(item);
+        });
+        box.hidden = false;
+    }
+
+    function wireInput(input) {
+        var side = input.dataset.side;
+        var box = document.getElementById('trade-results-' + side);
+        input.addEventListener('input', function () {
+            var q = fold(input.value.trim());
+            if (q.length < 2 || !players.length) { box.hidden = true; return; }
+            var matches = players.filter(function (p) {
+                return p._fold.indexOf(q) !== -1 && sides[side].indexOf(p.id) === -1;
+            });
+            renderResults(side, matches, box);
+        });
+        input.addEventListener('blur', function () {
+            // Delay so a result click registers before the box hides.
+            window.setTimeout(function () { box.hidden = true; }, 150);
+        });
+    }
+
+    // Remove control on already-selected pieces (server renders them; wire here).
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-trade-remove]');
+        if (!btn) return;
+        var side = btn.getAttribute('data-side');
+        var id = btn.getAttribute('data-trade-remove');
+        var idx = sides[side] ? sides[side].indexOf(id) : -1;
+        if (idx !== -1) { sides[side].splice(idx, 1); rerender(); }
+    });
+
+    fetch(MAP_URL).then(function (r) { return r.json(); }).then(function (data) {
+        players = (data.players || []).map(function (p) {
+            p._fold = fold(p.name);
+            byId[p.id] = p;
+            return p;
+        });
+        Array.prototype.forEach.call(
+            document.querySelectorAll('.trade-search-input'), wireInput
+        );
+    }).catch(function () { /* search is a convenience; the URL still works */ });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{# Trade Analyzer result: two sides + verdict + honesty notes. Included by
+   trade.html; rendered entirely server-side so the verdict and its honesty
+   copy are the single source of truth (a JS-off shared URL still renders). #}
+<div class="movers-grid trade-grid">
+    <section class="buys-list glass trade-side{% if verdict and verdict.favored_side == 'give' %} trade-side-fav{% endif %}"
+             aria-label="Players you give">
+        <h2 class="trade-side-title">YOU GIVE{% if give_pieces %} &middot; {{ verdict.give_total if verdict else '' }}{% endif %}</h2>
+        {% if not give_pieces %}
+        <p class="buys-fineprint">Search above to add players to this side.</p>
+        {% endif %}
+        {% for p in give_pieces %}
+        <article class="movers-row trade-row">
+            <div class="buys-main trade-main">
+                <a href="/player/{{ p.id }}?mode={{ 'prospects' if p.is_prospect else 'dd_dynasty' }}">{{ p.name }}</a>
+                <span class="buys-tag">{% if p.rank_label %}{{ p.rank_label }} &middot; {% endif %}{{ p.team }}{% if p.pos %} &middot; {{ p.pos }}{% endif %}{% if p.level %} &middot; {{ p.level }}{% endif %}{% if p.confidence %} &middot; {{ p.confidence }} confidence{% endif %}{% if p.momentum %} &middot; {{ p.momentum }}{% endif %}</span>
+            </div>
+            <span class="trade-val">{{ p.value }}</span>
+            <button type="button" class="trade-remove" data-trade-remove="{{ p.id }}" data-side="give"
+                    aria-label="Remove {{ p.name }} from your side">&times;</button>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="buys-list glass trade-side{% if verdict and verdict.favored_side == 'get' %} trade-side-fav{% endif %}"
+             aria-label="Players you get">
+        <h2 class="trade-side-title">YOU GET{% if get_pieces %} &middot; {{ verdict.get_total if verdict else '' }}{% endif %}</h2>
+        {% if not get_pieces %}
+        <p class="buys-fineprint">Search above to add players to this side.</p>
+        {% endif %}
+        {% for p in get_pieces %}
+        <article class="movers-row trade-row">
+            <div class="buys-main trade-main">
+                <a href="/player/{{ p.id }}?mode={{ 'prospects' if p.is_prospect else 'dd_dynasty' }}">{{ p.name }}</a>
+                <span class="buys-tag">{% if p.rank_label %}{{ p.rank_label }} &middot; {% endif %}{{ p.team }}{% if p.pos %} &middot; {{ p.pos }}{% endif %}{% if p.level %} &middot; {{ p.level }}{% endif %}{% if p.confidence %} &middot; {{ p.confidence }} confidence{% endif %}{% if p.momentum %} &middot; {{ p.momentum }}{% endif %}</span>
+            </div>
+            <span class="trade-val">{{ p.value }}</span>
+            <button type="button" class="trade-remove" data-trade-remove="{{ p.id }}" data-side="get"
+                    aria-label="Remove {{ p.name }} from the other side">&times;</button>
+        </article>
+        {% endfor %}
+    </section>
+</div>
+
+{% if verdict %}
+<section class="trade-verdict glass{% if verdict.inside_noise %} trade-verdict-even{% elif verdict.favored_side == 'get' %} trade-verdict-win{% else %} trade-verdict-loss{% endif %}"
+         aria-label="Trade verdict">
+    <h2 class="trade-verdict-headline">{{ verdict.headline }}</h2>
+    <p class="trade-verdict-totals">
+        You give <strong>{{ verdict.give_total }}</strong> &middot;
+        You get <strong>{{ verdict.get_total }}</strong> &middot;
+        Margin <strong>{{ '%+.1f' % verdict.margin }}</strong>
+    </p>
+
+    {# 4a: margin inside the noise band -> "call it even", never a false winner. #}
+    {% if verdict.inside_noise %}
+    <p class="trade-note trade-note-even">Totals are within the value band (about &plusmn;9 per player). That is a coin-flip on these numbers &mdash; call it even, not a win.</p>
+    {% endif %}
+
+    {# 4b: unequal player counts -> static consolidation note (no computation). #}
+    {% if verdict.count_mismatch %}
+    <p class="trade-note trade-note-count">Heads up: the sides have different player counts. Fewer, better players usually win dynasty trades &mdash; a pile of depth sums to a big number but you still start one lineup. Sums flatter the quantity side.</p>
+    {% endif %}
+
+    {# 4c: cross-universe trade -> separate-normalizations disclosure, mirroring
+       the methodology language exactly and linking to it. #}
+    {% if verdict.crosses_universes %}
+    <p class="trade-note trade-note-universe">This trade mixes prospects and big-leaguers. Their 0-100 values come from two separate normalizations aligned at the top &mdash; comparable in ballpark, not to the decimal. <a href="/methodology#dynasty-value-scale">How the value scale works</a>.</p>
+    {% endif %}
+
+    {% if og_share_image %}
+    <div class="buys-actions trade-actions">
+        <a class="export-btn" href="{{ trade_share_preview_url }}" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" href="{{ trade_share_png_url }}" download="valucast-trade.png">Download PNG</a>
+    </div>
+    {% endif %}
+</section>
+{% elif give_pieces or get_pieces %}
+<section class="trade-verdict glass" aria-label="Trade verdict">
+    <p class="buys-fineprint">Add at least one player to each side to see the verdict.</p>
+</section>
+{% endif %}

@@ -1559,6 +1559,177 @@ class TestBulletproofing(unittest.TestCase):
 
 
 
+class TestTradeAnalyzer(unittest.TestCase):
+    """Free /trade page (plan 022): two-sided verdict from served values plus the
+    three non-negotiable honesty features and the PNG cache poisoning guard."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    @staticmethod
+    def _row(value, is_prospect=False):
+        from types import SimpleNamespace
+        return SimpleNamespace(dynasty_value=value, is_prospect=is_prospect)
+
+    # --- Step 1: the pure verdict function -------------------------------
+    def test_verdict_inside_noise_calls_it_even(self):
+        from app import _trade_verdict
+        v = _trade_verdict([self._row(80)], [self._row(82)])  # margin 2 <= 9
+        self.assertTrue(v["inside_noise"])
+        self.assertIn("call it even", v["headline"])
+        self.assertIsNone(v["favored_side"])
+
+    def test_verdict_clear_margin_names_a_winner(self):
+        from app import _trade_verdict
+        v = _trade_verdict([self._row(80)], [self._row(95)])  # margin 15 > 9
+        self.assertFalse(v["inside_noise"])
+        self.assertEqual(v["favored_side"], "get")
+        self.assertNotIn("call it even", v["headline"])
+
+    def test_verdict_band_boundary_is_inclusive(self):
+        # margin == noise is INSIDE; margin == noise + 0.1 is OUTSIDE.
+        from app import _trade_verdict, _TRADE_NOISE_PER_PLAYER
+        band = _TRADE_NOISE_PER_PLAYER  # n == 1 here
+        at = _trade_verdict([self._row(50)], [self._row(50 + band)])
+        just_over = _trade_verdict([self._row(50)], [self._row(50 + band + 0.1)])
+        self.assertTrue(at["inside_noise"])
+        self.assertFalse(just_over["inside_noise"])
+
+    def test_verdict_band_scales_with_side_size(self):
+        # A 2-for-2 gets a wider band (noise = 9 * 2) than a 1-for-1.
+        from app import _trade_verdict
+        v = _trade_verdict(
+            [self._row(50), self._row(50)],
+            [self._row(58), self._row(58)],   # margin 16 <= 18
+        )
+        self.assertTrue(v["inside_noise"])
+
+    def test_verdict_count_mismatch_flag(self):
+        from app import _trade_verdict
+        v = _trade_verdict([self._row(40), self._row(40)], [self._row(85)])
+        self.assertTrue(v["count_mismatch"])
+        even = _trade_verdict([self._row(40)], [self._row(41)])
+        self.assertFalse(even["count_mismatch"])
+
+    def test_verdict_cross_universe_flag(self):
+        from app import _trade_verdict
+        mixed = _trade_verdict(
+            [self._row(80, is_prospect=False)],
+            [self._row(70, is_prospect=True)],
+        )
+        self.assertTrue(mixed["crosses_universes"])
+        same = _trade_verdict([self._row(80)], [self._row(70)])
+        self.assertFalse(same["crosses_universes"])
+
+    # --- Step 2/5: the route -------------------------------------------
+    def test_trade_empty_state_renders_search(self):
+        r = self.client.get("/trade")
+        self.assertEqual(r.status_code, 200)
+        body = r.data.decode()
+        self.assertIn("/api/value-map-players", body)
+        self.assertIn("search", body.lower())
+        # free-forever framing is on the page copy
+        self.assertIn("free, like every ValuCast number", body)
+
+    def test_trade_from_params_renders_verdict(self):
+        from app import dd_store
+        rows = dd_store.get_all()
+        mlb = next(x for x in rows if not x.is_prospect)
+        pros = next(x for x in rows if x.is_prospect)
+        r = self.client.get(f"/trade?give={mlb.id}&get={pros.id}")
+        self.assertEqual(r.status_code, 200)
+        body = r.data.decode()
+        # 4c cross-universe disclosure + methodology link (mlb + prospect mix)
+        self.assertIn("comparable in ballpark, not to the decimal", body)
+        self.assertIn("/methodology#dynasty-value-scale", body)
+
+    def test_trade_inside_noise_shows_no_false_winner(self):
+        # Two near-identical MLB values -> "call it even", never a winner headline.
+        from app import dd_store
+        mlbs = sorted(
+            (x for x in dd_store.get_all() if not x.is_prospect and x.dynasty_value),
+            key=lambda x: -x.dynasty_value,
+        )
+        pair = next(
+            (mlbs[i], mlbs[i + 1]) for i in range(len(mlbs) - 1)
+            if abs(mlbs[i].dynasty_value - mlbs[i + 1].dynasty_value) <= 3
+        )
+        r = self.client.get(f"/trade?give={pair[0].id}&get={pair[1].id}")
+        body = r.data.decode()
+        self.assertIn("call it even", body)
+        self.assertNotIn("You come out ahead", body)
+        self.assertNotIn("You give up more than you get", body)
+
+    def test_trade_count_mismatch_note(self):
+        from app import dd_store
+        mlbs = [x for x in dd_store.get_all() if not x.is_prospect and x.dynasty_value]
+        give = f"{mlbs[30].id},{mlbs[42].id}"
+        get = mlbs[4].id
+        r = self.client.get(f"/trade?give={give}&get={get}")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("different player counts", r.data.decode())
+
+    def test_trade_junk_ids_dropped_not_fatal(self):
+        from app import dd_store
+        real = dd_store.get_all()[0].id
+        r = self.client.get(f"/trade?give=nonsense123,{real}")
+        self.assertEqual(r.status_code, 200)
+
+    def test_trade_side_cap_at_six(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+        ids = ",".join(r.id for r in dd_store.get_all()[:8])
+        ctx = _build_trade_page_context(MultiDict([("give", ids), ("get", "")]))
+        self.assertEqual(len(ctx["give_pieces"]), 6)
+
+    def test_trade_no_per_source_ranks_leak(self):
+        # ToS: the page shows ValuCast value/rank ONLY -- no outside-board source.
+        from app import dd_store
+        mlb = next(x for x in dd_store.get_all() if not x.is_prospect)
+        pros = next(x for x in dd_store.get_all() if x.is_prospect)
+        body = self.client.get(f"/trade?give={mlb.id}&get={pros.id}").data.decode().lower()
+        for token in ("hkb", "pipeline", "fg_ord", "source_ranks"):
+            self.assertNotIn(token, body)
+
+    # --- Step 6: the share card + the poisoning guard ------------------
+    def test_trade_share_png_renders(self):
+        from app import dd_store, _trade_share_card_png
+        ids = [r.id for r in dd_store.get_all()[:3]]
+        png = _trade_share_card_png(ids[:1], ids[1:3])
+        self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertGreater(len(png), 0)
+
+    def test_trade_png_cache_key_distinguishes_trades(self):
+        # THE poisoning guard: different trades MUST produce different cache keys.
+        # If someone drops give/get from _PNG_CACHE_PARAMS, both collapse to one key
+        # and the first-rendered card is served to everyone (cross-user poisoning).
+        from app import _png_cache_key
+        with app.test_request_context("/trade/share-card.png?give=a&get=b"):
+            k1 = _png_cache_key()
+        with app.test_request_context("/trade/share-card.png?give=c&get=d"):
+            k2 = _png_cache_key()
+        self.assertNotEqual(k1, k2)
+
+    def test_trade_png_cache_key_stable_for_same_trade(self):
+        from app import _png_cache_key
+        with app.test_request_context("/trade/share-card.png?give=a&get=b"):
+            k1 = _png_cache_key()
+        with app.test_request_context("/trade/share-card.png?give=a&get=b"):
+            k2 = _png_cache_key()
+        self.assertEqual(k1, k2)
+
+    def test_give_get_in_png_cache_vocabulary(self):
+        from app import _PNG_CACHE_PARAMS
+        self.assertIn("give", _PNG_CACHE_PARAMS)
+        self.assertIn("get", _PNG_CACHE_PARAMS)
+
+    def test_trade_template_renders(self):
+        import jinja2
+        env = jinja2.Environment(loader=jinja2.FileSystemLoader("templates"))
+        env.get_template("trade.html")  # raises TemplateNotFound / syntax error on failure
+
+
 class TestTodayStrip(unittest.TestCase):
     """Front-door "Today on ValuCast" digest (7/3 landscape review, Batch 1)."""
 

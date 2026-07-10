@@ -2391,6 +2391,72 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .movers-row .buys-chip { display: none; }
 }
 
+/* ---- Trade Analyzer (plan 022) ---- */
+/* Reuses .movers-grid (2-col -> 1-col at 640px), .buys-list, .glass, .buys-tag,
+   .buys-fineprint. New rules only where those don't cover it. */
+.trade-search { padding: var(--space-3); margin-bottom: var(--space-3); }
+.trade-search-grid { align-items: start; }
+.trade-search-side { position: relative; display: flex; flex-direction: column; gap: var(--space-1); }
+.trade-search-label { font-weight: 700; letter-spacing: .06em; font-size: .8rem; color: var(--c-muted); }
+.trade-search-input { width: 100%; }
+.trade-search-results {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+    background: var(--surface-2); border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); max-height: 320px; overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+.trade-search-result {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: var(--space-2); align-items: baseline; width: 100%; text-align: left;
+    padding: .5rem .75rem; background: none; border: none;
+    border-bottom: 1px solid var(--c-border); cursor: pointer; color: var(--c-text);
+}
+.trade-search-result:last-child { border-bottom: none; }
+.trade-search-result:hover, .trade-search-result:focus { background: rgba(110, 161, 255, .12); }
+.trade-search-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trade-search-meta { font-size: .74rem; color: var(--c-muted); white-space: nowrap; }
+.trade-search-val { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--c-prospect); }
+
+.trade-grid { margin-top: var(--space-3); align-items: start; }
+.trade-side { padding: var(--space-3); }
+.trade-side-title { margin: 0 0 var(--space-2); font-size: 1rem; letter-spacing: .08em; }
+.trade-side-fav { outline: 1px solid rgba(52, 226, 196, .35); }
+.trade-row { grid-template-columns: minmax(0, 1fr) auto auto; min-height: 0; }
+.trade-main a { font-weight: 600; }
+.trade-val {
+    font-weight: 700; font-variant-numeric: tabular-nums; color: var(--c-prospect);
+    background: var(--surface-2); border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm); padding: 2px 8px;
+}
+.trade-remove {
+    background: none; border: none; color: var(--c-muted); cursor: pointer;
+    font-size: 1.2rem; line-height: 1; padding: 0 .35rem;
+}
+.trade-remove:hover { color: var(--c-neg); }
+
+.trade-verdict { margin-top: var(--space-3); padding: var(--space-4); }
+.trade-verdict-headline { margin: 0 0 var(--space-2); font-size: 1.4rem; }
+.trade-verdict-win .trade-verdict-headline { color: var(--c-prospect); }
+.trade-verdict-loss .trade-verdict-headline { color: var(--c-neg); }
+.trade-verdict-even .trade-verdict-headline { color: var(--c-text); }
+.trade-verdict-totals { margin: 0 0 var(--space-2); color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.trade-verdict-totals strong { color: var(--c-text); }
+.trade-note {
+    margin: var(--space-2) 0 0; padding: .6rem .8rem; font-size: .82rem;
+    line-height: 1.45; border-radius: var(--radius-sm);
+    background: var(--surface-2); border: 1px solid var(--c-border);
+}
+.trade-note-universe { border-left: 3px solid var(--c-blue-strong); }
+.trade-note-count { border-left: 3px solid var(--c-amber); }
+.trade-note-even { border-left: 3px solid var(--c-muted); }
+.trade-actions { margin-top: var(--space-3); align-items: flex-start; }
+@media (max-width: 640px) {
+    .trade-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .trade-search-result { grid-template-columns: minmax(0, 1fr) auto; }
+    .trade-search-result .trade-search-val { grid-column: 2; }
+    .trade-search-result .trade-search-meta { grid-column: 1 / -1; }
+}
+
 /* ---- Theme v2 polish layer ---- */
 body {
     background: #0a0b0e;

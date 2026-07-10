@@ -155,6 +155,9 @@ _PNG_CACHE_PARAMS = frozenset({
     "mode", "source", "cats", "pcats", "rules", "split_rp", "display",
     "fit_cats", "preset", "rank_by",
     "teams", "budget", "roster", "pslots",
+    "give", "get",     # plan 022: the /trade card renders from these; they MUST be
+    # in the cache key or every trade collapses to one key and the first-rendered
+    # card is served to everyone (cross-user poisoning). Fixed names, not prefixed.
 })
 # The complete points-mode stat vocabulary: every stat id a pt_<stat> param may
 # legitimately score. Single source of truth shared by the cache key below AND
@@ -6706,6 +6709,328 @@ def value_map_players_api():
         "count": len(players),
         "generated_at": dd_store.generated_at,
     })
+
+
+# ---------------------------------------------------------------------------
+# Trade Analyzer v1 (plan 022): a free, no-login /trade page that renders the
+# board's verdict on any two-sided trade from the SAME 0-100 dynasty values the
+# board already serves. No new math, no cross-universe reconciliation, no data
+# written, no accounts. The honesty guards below are the whole point: never
+# claim precision the two separate 0-100 normalizations do not support.
+# ---------------------------------------------------------------------------
+_TRADE_NOISE_PER_PLAYER = 9.0  # a fixed tolerance (~+/-9/player). MLB rows carry no
+# per-row error bar (only prospect rows have uncertainty.lower/upper), so a uniform
+# heuristic band is the honest choice over a false per-row band. See plan 022 4a.
+_TRADE_MAX_PER_SIDE = 6         # guard: cap each side (matches the URL param cap)
+
+_TRADE_MOMENTUM_CACHE = (None, None)  # (generation_key, form_by_key) swapped atomically
+
+
+def _trade_verdict(give_rows, get_rows):
+    """Pure verdict: sums + margin over the served 0-100 dynasty values.
+
+    No I/O, no request access, no new math. The three honesty flags below
+    (inside_noise, crosses_universes, count_mismatch) are what keep the verdict
+    from claiming precision the two separate normalizations do not support.
+    """
+    def _val(r):
+        return float(getattr(r, "dynasty_value", 0.0) or 0.0)
+    give_total = sum(_val(r) for r in give_rows)
+    get_total = sum(_val(r) for r in get_rows)
+    margin = get_total - give_total                     # + = you win, - = you lose
+    n = max(len(give_rows), len(get_rows), 1)
+    noise = _TRADE_NOISE_PER_PLAYER * n                 # band scales with side size
+    inside_noise = abs(margin) <= noise
+    all_rows = list(give_rows) + list(get_rows)
+    crosses_universes = (
+        any(r.is_prospect for r in all_rows)
+        and any(not r.is_prospect for r in all_rows)
+    )
+    count_mismatch = len(give_rows) != len(get_rows)
+    if inside_noise:
+        headline = "Inside the noise band - call it even"
+    elif margin > 0:
+        headline = "You come out ahead"
+    else:
+        headline = "You give up more than you get"
+    return {
+        "give_total": round(give_total, 1),
+        "get_total": round(get_total, 1),
+        "margin": round(margin, 1),
+        "abs_margin": round(abs(margin), 1),
+        "noise": round(noise, 1),
+        "inside_noise": inside_noise,
+        "crosses_universes": crosses_universes,
+        "count_mismatch": count_mismatch,
+        "headline": headline,
+        "favored_side": None if inside_noise else ("get" if margin > 0 else "give"),
+    }
+
+
+def _trade_momentum_map():
+    """Memoized recent-form momentum map, keyed on the DD generation.
+
+    Mirrors the board's load-and-key pattern (_apply_prospect_board_context) so
+    /trade momentum chips match the board exactly. Only the top-25 heating/cooling
+    movers appear, so most rows have no entry -- that is correct and honest.
+    """
+    global _TRADE_MOMENTUM_CACHE
+    key = dd_store.generated_at
+    cached_key, cached_map = _TRADE_MOMENTUM_CACHE
+    if cached_key == key and cached_map is not None:
+        return cached_map
+    recent_form = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_recent_form_signal.json"
+    ) or {}
+    form_by_key = {}
+    for entry in (recent_form.get("heating_up") or []) + (recent_form.get("cooling_off") or []):
+        fk = _identity_key(entry.get("mlbam_id"), entry.get("role"))
+        if fk:
+            form_by_key[fk] = entry
+    _TRADE_MOMENTUM_CACHE = (key, form_by_key)
+    return form_by_key
+
+
+def _trade_momentum_label(row):
+    """Recent-form momentum label ("Heating Up"/"Steady"/"Cooling Off") when the
+    row is a prominent mover, else None. Display-only; never touches score."""
+    key = _row_identity_key(row)
+    if not key:
+        return None
+    entry = _trade_momentum_map().get(key)
+    return entry.get("momentum_label") if entry else None
+
+
+def _trade_piece(row):
+    """Read an existing PublicSnapshotRow into a template-friendly dict.
+    No computation -- just display fields the verdict page needs."""
+    is_prospect = row.is_prospect
+    rank_label = (
+        f"P#{row.prospect_rank}" if is_prospect and row.prospect_rank
+        else (f"#{row.dynasty_rank}" if row.dynasty_rank else None)
+    )
+    pos = "/".join(row.positions or ()) or (row.role or "")
+    # confidence is coerced to {"level": "<word>"} in the served data (verified);
+    # read ["level"]. Handle a bare string / None defensively.
+    confidence = (
+        row.confidence.get("level") if isinstance(row.confidence, dict)
+        else row.confidence if isinstance(row.confidence, str) else None
+    )
+    return {
+        "id": row.id,
+        "name": row.name,
+        "team": row.team,
+        "pos": pos,
+        "level": row.level if is_prospect else None,
+        "is_prospect": is_prospect,
+        "value": round(float(row.dynasty_value or 0.0), 1),
+        "rank_label": rank_label,
+        "confidence": confidence,
+        "momentum": _trade_momentum_label(row),   # None when not a prominent mover
+    }
+
+
+def _parse_trade_ids(raw):
+    ids = [s for s in (raw or "").split(",") if s.strip()]
+    seen, out = set(), []
+    for pid in ids:
+        pid = pid.strip()
+        if pid and pid not in seen:      # dedupe, preserve order (URL is canonical)
+            seen.add(pid)
+            out.append(pid)
+        if len(out) >= _TRADE_MAX_PER_SIDE:
+            break
+    return out
+
+
+def _build_trade_page_context(args):
+    give_ids = _parse_trade_ids(args.get("give"))
+    get_ids = _parse_trade_ids(args.get("get"))
+    give_rows = [row for pid in give_ids if (row := dd_store.get_by_id(pid))]
+    get_rows = [row for pid in get_ids if (row := dd_store.get_by_id(pid))]
+    verdict = _trade_verdict(give_rows, get_rows) if (give_rows or get_rows) else None
+    # Canonical, resolved id lists (unknown ids dropped) so the shareable URL and
+    # the share card key describe the exact trade that rendered.
+    give_resolved = [r.id for r in give_rows]
+    get_resolved = [r.id for r in get_rows]
+    return {
+        "mode": "dd_dynasty",                 # so footer/context branches match the board
+        "give_pieces": [_trade_piece(r) for r in give_rows],
+        "get_pieces": [_trade_piece(r) for r in get_rows],
+        "give_ids": give_resolved,
+        "get_ids": get_resolved,
+        "give_param": ",".join(give_resolved),
+        "get_param": ",".join(get_resolved),
+        "verdict": verdict,
+        "map_data_url": "/api/value-map-players",   # the search payload the JS loads
+        "as_of": dd_store.generated_at or store.as_of,
+        "dd_generated_at": dd_store.generated_at,
+        "dd_available": dd_store.is_available,
+        "trade_page": True,
+    }
+
+
+@app.route("/trade")
+def trade():
+    context = _build_trade_page_context(request.args)
+    # og:image unfurls the share card ONLY when the trade actually resolved to a
+    # verdict; a bare /trade (no players) keeps the default site card.
+    if context.get("verdict") and (context["give_param"] or context["get_param"]):
+        query = urlencode(
+            [("give", context["give_param"]), ("get", context["get_param"])]
+        )
+        context["og_share_image"] = _public_url(f"/trade/share-card.png?{query}")
+        context["trade_share_png_url"] = f"/trade/share-card.png?{query}"
+        context["trade_share_preview_url"] = f"/trade/share-card?{query}"
+    return render_template("trade.html", **context)
+
+
+def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
+    """Deterministic two-sided Trade Analyzer graphic (GIVE vs GET).
+
+    Models the receipts two-panel layout. Resolves ids via dd_store.get_by_id and
+    reuses _trade_verdict -- no new math. ALL strings ASCII (the Pillow brand font
+    + Windows PS5.1 tooling choke on em-dashes; use ' - ', no middot/smart quotes).
+    """
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    palette = _GRAPHIC_PALETTE
+    bg = palette["bg"]
+    card = palette["card"]
+    card_2 = palette["card_2"]
+    border = palette["border"]
+    green = palette["green"]
+    clay = palette.get("clay", (208, 116, 92))
+    blue = palette["blue"]
+    text = palette["text"]
+    muted = palette["muted"]
+
+    give_rows = [row for pid in (give_ids or []) if (row := dd_store.get_by_id(pid))]
+    get_rows = [row for pid in (get_ids or []) if (row := dd_store.get_by_id(pid))]
+    verdict = _trade_verdict(give_rows, get_rows)
+
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    date_label = _editorial_date(generated_at)
+    subtitle = f"You give {verdict['give_total']} - You get {verdict['get_total']} - Margin {verdict['margin']:+.1f}"
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="TRADE ANALYZER",
+        subtitle=subtitle,
+        extra_line="Free ValuCast trade verdict - same 0-100 values, no conversion",
+        tagline="Trade Analyzer",
+    )
+
+    f_section = _graphic_font(25, bold=True)
+    f_name = _graphic_font(23, bold=True)
+    f_meta = _graphic_font(14)
+    f_val = _graphic_font(24, bold=True, mono=True)
+    row_h = 58
+    x, w = 48, 984
+
+    def draw_section(title, rows, top_y, accent, total):
+        n = max(1, len(rows))
+        panel_h = 50 + n * row_h + 8
+        draw.rounded_rectangle((x, top_y, x + w, top_y + panel_h), radius=10, fill=card, outline=border, width=1)
+        draw.text((x + 20, top_y + 14), title, fill=accent, font=f_section)
+        total_text = f"{total:.1f}"
+        draw.text((x + w - 22 - _graphic_text_width(draw, total_text, f_section), top_y + 14), total_text, fill=accent, font=f_section)
+        if not rows:
+            draw.text((x + 20, top_y + 62), "No players on this side.", fill=muted, font=f_name)
+        for idx, row in enumerate(rows):
+            top = top_y + 48 + idx * row_h
+            fill = card_2 if idx % 2 == 0 else card
+            draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
+            if idx:
+                draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
+            piece = _trade_piece(row)
+            name = _graphic_fit_text(draw, piece["name"], f_name, 560)
+            draw.text((x + 20, top + 7), name, fill=text, font=f_name)
+            meta_parts = [piece["rank_label"], piece["team"], piece["pos"]]
+            meta = " - ".join(str(part) for part in meta_parts if part)
+            draw.text((x + 20, top + 34), _graphic_fit_text(draw, meta, f_meta, 560), fill=muted, font=f_meta)
+            val_text = f"{piece['value']:.1f}"
+            draw.text((x + w - 22 - _graphic_text_width(draw, val_text, f_val), top + 16), val_text, fill=blue, font=f_val)
+        return top_y + panel_h
+
+    give_accent = clay if verdict["favored_side"] == "get" else green
+    get_accent = green if verdict["favored_side"] == "get" else clay
+    if verdict["inside_noise"]:
+        give_accent = get_accent = muted
+    y = 242
+    y = draw_section("YOU GIVE", give_rows[:6], y, give_accent, verdict["give_total"])
+    y = draw_section("YOU GET", get_rows[:6], y + 16, get_accent, verdict["get_total"])
+
+    # The verdict headline + the single most salient honesty caveat travel WITH the
+    # image (the PNG is the og:image, detached from the page a re-sharer never links).
+    headline_font = _graphic_font(30, bold=True)
+    verdict_color = (
+        muted if verdict["inside_noise"]
+        else green if verdict["favored_side"] == "get"
+        else clay
+    )
+    draw.text((48, y + 26), _graphic_fit_text(draw, verdict["headline"], headline_font, 984), fill=verdict_color, font=headline_font)
+
+    if verdict["inside_noise"]:
+        caveat = "Totals are within the value band (about +/-9 per player) - call it even, not a win."
+    elif verdict["crosses_universes"]:
+        caveat = "Mixes prospects and big-leaguers - two separate 0-100 scales, comparable in ballpark, not to the decimal."
+    elif verdict["count_mismatch"]:
+        caveat = "Uneven player counts - fewer, better players usually win dynasty trades; sums flatter the quantity side."
+    else:
+        caveat = "Verdict is the value margin - dynasty context (age, window, roster fit) is yours to weigh."
+    draw.text(
+        (48, y + 68),
+        _graphic_fit_text(draw, caveat, _graphic_font(15), 984),
+        fill=muted,
+        font=_graphic_font(15),
+    )
+
+    _graphic_footer(draw, right_note="valucast.app/trade")
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/trade/share-card.png")
+def trade_share_card_png():
+    give_ids = _parse_trade_ids(request.args.get("give"))
+    get_ids = _parse_trade_ids(request.args.get("get"))
+    png = _trade_share_card_png(
+        give_ids, get_ids, generated_at=dd_store.generated_at
+    )
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-trade.png"'
+    return response
+
+
+@app.route("/trade/share-card")
+def trade_share_card():
+    give = ",".join(_parse_trade_ids(request.args.get("give")))
+    get = ",".join(_parse_trade_ids(request.args.get("get")))
+    query = urlencode([("give", give), ("get", get)])
+    png_path = f"/trade/share-card.png?{query}"
+    html = build_share_preview_html(
+        title="Trade Analyzer",
+        subtitle="The board's verdict on this dynasty trade",
+        png_url=png_path,
+        filename="valucast-trade.png",
+        public_png_url=_public_url(png_path),
+        public_page_url=_public_url(f"/trade/share-card?{query}"),
+        description="The board's verdict on this dynasty trade, from the same 0-100 values ValuCast serves.",
+        image_alt="ValuCast Trade Analyzer verdict card",
+        back_url=f"/trade?{query}",
+        back_label="Back to the Trade Analyzer",
+    )
+    return html
 
 
 def _value_map_share_card_png(players, *, pool="all", position=None):
