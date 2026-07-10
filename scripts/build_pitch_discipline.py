@@ -64,6 +64,18 @@ _FETCH_TIMEOUT = 60
 _RATE_LIMIT_SECONDS = 0.15
 _FLUSH_EVERY = 50
 
+# Incremental-mode safety budgets (the daily CI invariant: a broken/cold fetch must
+# never stall — or silently become a backfill inside — the daily build).
+# More than this many NEW gamePks in incremental mode aborts before any feed fetch:
+# a cold or stale cache on an ephemeral runner must never turn the ~60-90-game daily
+# increment into a ~13k-request backfill inside the publish job.
+_INCREMENTAL_NEW_PK_BUDGET = 300
+# Failure tolerance: individual transient errors are skipped and counted; only when
+# they exceed these budgets does the run keep the stale artifact (partial cache
+# progress still persists via the periodic flush).
+_INCREMENTAL_FEED_FAILURE_BUDGET = 25
+_INCREMENTAL_GAMELOG_FAILURE_FRACTION = 0.10
+
 # --- Tunables (stated in artifact metadata for reproducibility) -------------
 # Hard minimum pitches-seen for a player-level bucket to (a) enter the cohort pool
 # AND (b) render a bar. Below it, NO percentile bar renders — small-sample honesty,
@@ -124,8 +136,13 @@ def fetch_game_pks(pid: int, season: int, sport_id: int) -> list[int]:
     return pks
 
 
-def fetch_compact_feed(game_pk: int) -> list[dict]:
+def fetch_compact_feed(game_pk: int) -> list[dict] | None:
     """Fetch a game feed and extract ONLY the per-pitch fields the counter needs.
+
+    Returns None for a game that is not Final (live/suspended/postponed): a
+    non-final feed's partial pitch counts must never be cached — a cached gamePk is
+    never re-fetched, so caching a partial game would freeze wrong counts into
+    every future artifact. The pk simply gets retried on a later run once Final.
 
     The compact slice (never the raw feed) is what gets cached/committed. Each play:
       {"batter": id, "pitches": [{"description","isInPlay","pX","pZ","x","y",
@@ -133,6 +150,9 @@ def fetch_compact_feed(game_pk: int) -> list[dict]:
     """
     url = f"https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
     data = _get_json(url)
+    state = (((data.get("gameData") or {}).get("status") or {}).get("abstractGameState"))
+    if state != "Final":
+        return None
     all_plays = (((data.get("liveData") or {}).get("plays") or {}).get("allPlays")) or []
     compact = []
     for play in all_plays:
@@ -236,10 +256,6 @@ def load_tracked_hitters(path: Path = UNIVERSE_PATH) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Fetch driver (backfill / incremental)
 # ---------------------------------------------------------------------------
-def _known_pks(cache: dict) -> set[str]:
-    return set((cache.get("games") or {}).keys())
-
-
 def gather_games(
     hitters: list[dict],
     season: int,
@@ -248,72 +264,138 @@ def gather_games(
     levels: list[str] | None = None,
     limit_games: int | None = None,
     incremental: bool = False,
-) -> tuple[int, int, int]:
-    """Fetch new game feeds into the cache. Returns (fetched, cached_total, skipped).
+) -> dict:
+    """Fetch new game feeds into the cache. Returns a stats dict.
 
-    In incremental mode, a network failure raises so the caller can no-op. In
-    backfill mode it flushes the cache periodically for resumability.
+    Two phases:
+      1. Discover NEW gamePks via each tracked hitter's per-level gameLog,
+         tolerating per-request failures (skip + count, never abort the run on a
+         single transient error).
+      2. Fetch only the new feeds, tolerating per-feed failures, checkpoint-
+         flushing every _FLUSH_EVERY feeds in BOTH modes so partial progress
+         survives interruption. Non-Final games (fetch_compact_feed -> None) are
+         skipped WITHOUT caching (retried once Final) and are not failures.
+
+    In incremental mode, a new-pk count over _INCREMENTAL_NEW_PK_BUDGET aborts
+    BEFORE any feed fetch (budget_exceeded=True) — a cold or stale cache must never
+    turn the daily job into a backfill. The caller (main) applies the failure
+    budgets to decide whether the artifact gets rewritten.
     """
     sport_ids = (
         [LEVEL_TO_SPORT[l] for l in levels] if levels else list(SPORT_LEVELS.keys())
     )
     games = cache.setdefault("games", {})
-    fetched = skipped = 0
-    processed = 0
+    stats = {
+        "fetched": 0, "skipped": 0, "new_pks": 0,
+        "gamelog_total": 0, "gamelog_failures": 0,
+        "feed_failures": 0, "non_final_skipped": 0,
+        "budget_exceeded": False, "cached_total": len(games),
+    }
+    # Phase 1: gameLog discovery (dedup across players/levels; a shared game
+    # between two tracked teammates is fetched once).
+    new_items: list[tuple[int, str]] = []
+    seen_new: set[str] = set()
     for hitter in hitters:
         pid = hitter["mlbam_id"]
         for sport_id in sport_ids:
             level = SPORT_LEVELS[sport_id]
+            stats["gamelog_total"] += 1
             try:
                 pks = fetch_game_pks(pid, season, sport_id)
             except Exception as exc:  # noqa: BLE001
-                if incremental:
-                    raise
+                stats["gamelog_failures"] += 1
                 print(f"  ! gameLog {pid}/{level} failed: {exc}", flush=True)
                 continue
             time.sleep(_RATE_LIMIT_SECONDS)
             for pk in pks:
                 key = str(pk)
                 if key in games:
-                    skipped += 1
-                    continue
-                if limit_games is not None and fetched >= limit_games:
-                    return fetched, len(games), skipped
-                try:
-                    compact = fetch_compact_feed(pk)
-                except Exception as exc:  # noqa: BLE001
-                    if incremental:
-                        raise
-                    print(f"  ! feed {pk} failed: {exc}", flush=True)
-                    continue
-                games[key] = {"level": level, "season": season, "plays": compact}
-                fetched += 1
-                processed += 1
-                time.sleep(_RATE_LIMIT_SECONDS)
-                if not incremental and processed % _FLUSH_EVERY == 0:
-                    flush_cache(cache)
-                    print(f"  … fetched {fetched}, cached {len(games)}, skipped {skipped}",
-                          flush=True)
-    return fetched, len(games), skipped
+                    stats["skipped"] += 1
+                elif key not in seen_new:
+                    seen_new.add(key)
+                    new_items.append((pk, level))
+    stats["new_pks"] = len(new_items)
+    if incremental and len(new_items) > _INCREMENTAL_NEW_PK_BUDGET:
+        stats["budget_exceeded"] = True
+        return stats
+    # Phase 2: feed fetch (new pks only).
+    processed = 0
+    for pk, level in new_items:
+        if limit_games is not None and stats["fetched"] >= limit_games:
+            break
+        try:
+            compact = fetch_compact_feed(pk)
+        except Exception as exc:  # noqa: BLE001
+            stats["feed_failures"] += 1
+            print(f"  ! feed {pk} failed: {exc}", flush=True)
+            continue
+        time.sleep(_RATE_LIMIT_SECONDS)
+        if compact is None:
+            # Live/suspended game: do NOT cache; retried on a future run.
+            stats["non_final_skipped"] += 1
+            continue
+        games[str(pk)] = {"level": level, "season": season, "plays": compact}
+        stats["fetched"] += 1
+        processed += 1
+        if processed % _FLUSH_EVERY == 0:
+            flush_cache(cache)
+            print(
+                f"  … fetched {stats['fetched']}/{len(new_items)}, cached {len(games)}, "
+                f"skipped {stats['skipped']}",
+                flush=True,
+            )
+    stats["cached_total"] = len(games)
+    return stats
+
+
+def _failures_over_budget(stats: dict) -> bool:
+    """True when incremental fetch failures exceed the keep-stale-artifact budget."""
+    if stats["feed_failures"] > _INCREMENTAL_FEED_FAILURE_BUDGET:
+        return True
+    total = stats["gamelog_total"]
+    return bool(total) and (
+        stats["gamelog_failures"] / total > _INCREMENTAL_GAMELOG_FAILURE_FRACTION
+    )
 
 
 # ---------------------------------------------------------------------------
 # Calibration (Step 3)
 # ---------------------------------------------------------------------------
+def _split_pairs(pairs: list) -> tuple[list, list]:
+    """Deterministic 80/20 train/held-out split: index i%5==0 -> held, else train.
+
+    No randomness — the daily build must produce reproducible calibration metadata
+    from the same cache. The two sets are disjoint by construction, so the
+    agreement number is honestly out-of-sample.
+    """
+    train = [p for i, p in enumerate(pairs) if i % 5 != 0]
+    held = [p for i, p in enumerate(pairs) if i % 5 == 0]
+    return train, held
+
+
 def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
     """Fit the global pixel->feet map from cached pitches carrying BOTH x/y and
-    pX/pZ (AAA). Also compute held-out agreement %. Returns (calib, metadata)."""
+    pX/pZ (AAA). Honest quality: fit on the deterministic 80% train split, score
+    in/out agreement on the held-out 20% against each pitch's OWN strike zone
+    (an in-sample number scored on a default band overstates quality).
+    Returns (calib, metadata)."""
     pairs = []
     for game in (cache.get("games") or {}).values():
         for cp in game.get("plays") or ():
             for p in cp.get("pitches") or ():
                 x, y, px, pz = p.get("x"), p.get("y"), p.get("pX"), p.get("pZ")
                 if all(isinstance(v, (int, float)) for v in (x, y, px, pz)):
-                    pairs.append((float(x), float(y), float(px), float(pz)))
-    calib, quality = fit_pixel_calibration(pairs)
-    agreement = calibration_agreement(pairs, calib) if calib is not None else None
+                    pairs.append((
+                        float(x), float(y), float(px), float(pz),
+                        p.get("szTop"), p.get("szBottom"),
+                    ))
+    train, held = _split_pairs(pairs)
+    calib, quality = fit_pixel_calibration(train)
+    agreement = calibration_agreement(held, calib) if calib is not None else None
     meta = {
-        "n_pairs": quality.get("n_pairs", 0),
+        "n_pairs": len(pairs),
+        "n_train": len(train),
+        "n_held": len(held),
         "fit_r2": quality.get("fit_r2"),
         "fit_r2_x": quality.get("fit_r2_x"),
         "fit_r2_y": quality.get("fit_r2_y"),
@@ -341,15 +423,16 @@ def assemble_player_levels(
     """{ "<mlbam>": { "AA": {counts+rates, "zone_estimated": bool}, ... } }.
 
     Level buckets are NEVER blended: a player's AA games and AAA games sum into
-    separate buckets. zone_estimated is True when the level's zone counts came from
-    the pixel calibration rather than real pX/pZ.
+    separate buckets. zone_estimated comes from the per-pitch
+    zone_pitches_calibrated counter (True when ANY of the level's zone calls were
+    made by the pixel calibration rather than real pX/pZ) — not a per-game
+    coordinate heuristic, so mixed-coordinate games and pixel-fallback pitches at
+    AAA stay honestly labeled.
     """
     ids = {h["mlbam_id"] for h in hitters}
-    # Index cache games by (level) so each player's per-level sum is cheap.
     games = cache.get("games") or {}
-    # counts[mlbam][level] = merged counts; est[mlbam][level] = used pixel calib
+    # counts[mlbam][level] = merged counts
     counts: dict[int, dict[str, dict]] = {}
-    est: dict[int, dict[str, bool]] = {}
     for game in games.values():
         level = game.get("level")
         all_plays = _compact_to_all_plays(game.get("plays") or [])
@@ -358,41 +441,23 @@ def assemble_player_levels(
             (play.get("matchup") or {}).get("batter", {}).get("id")
             for play in all_plays
         } & ids
-        # Does this game carry real tracked pX/pZ (AAA) or only pixel coords?
-        game_has_real = _game_has_real_coords(game)
         for pid in present:
             c = count_player_pitches(all_plays, pid, calib=calib)
             pc = counts.setdefault(pid, {})
             pc[level] = merge_counts(pc.get(level, {}), c)
-            pe = est.setdefault(pid, {})
-            # Estimated whenever any zone count leaned on the pixel calibration.
-            if not game_has_real:
-                pe[level] = True
-            else:
-                pe.setdefault(level, False)
     out = {}
     for pid, per_level in counts.items():
         levels_out = {}
         for level, c in per_level.items():
             rates = rates_from_counts(c)
-            zone_estimated = bool(est.get(pid, {}).get(level, True))
             levels_out[level] = {
                 "pitches": c.get("pitches", 0),
                 "counts": c,
                 "rates": rates,
-                "zone_estimated": zone_estimated,
+                "zone_estimated": c.get("zone_pitches_calibrated", 0) > 0,
             }
         out[str(pid)] = levels_out
     return out
-
-
-def _game_has_real_coords(game: dict) -> bool:
-    """True if any pitch in the cached game carries real pX/pZ (AAA marker)."""
-    for cp in game.get("plays") or ():
-        for p in cp.get("pitches") or ():
-            if isinstance(p.get("pX"), (int, float)) and isinstance(p.get("pZ"), (int, float)):
-                return True
-    return False
 
 
 def _midrank_percentile(sorted_vals: list[float], value: float, lower_is_better: bool) -> int:
@@ -560,25 +625,68 @@ def main(argv: list[str] | None = None) -> int:
         prune_cache(cache, keep)
 
     incremental = not args.backfill
+    if incremental and not (cache.get("games") or {}):
+        # Cold-cache guard: GitHub runners are ephemeral and the cache is
+        # uncommitted, so an empty cache in incremental mode means the "increment"
+        # would be a full backfill inside the daily job. Never do that here.
+        print(
+            "empty pitch cache; skipping incremental fetch, keeping stale artifact "
+            "(cold cache — run --backfill manually to rebuild)",
+            flush=True,
+        )
+        return 0
+
     try:
-        fetched, cached_total, skipped = gather_games(
+        stats = gather_games(
             hitters, args.season, cache,
             levels=args.level, limit_games=args.limit_games, incremental=incremental,
         )
     except Exception as exc:  # noqa: BLE001
-        # Incremental outage no-op: leave artifact + cache untouched, exit 0.
+        if not incremental:
+            raise
+        # Backstop for unexpected (non-per-request) errors: leave artifact + cache
+        # untouched, exit 0 so the daily build continues.
         print(f"plate-discipline incremental fetch failed, keeping stale artifact: {exc}",
               flush=True)
         return 0
 
     flush_cache(cache)
-    print(f"fetched={fetched} cached_total={cached_total} skipped={skipped}", flush=True)
+    print(
+        f"fetched={stats['fetched']} cached_total={stats['cached_total']} "
+        f"skipped={stats['skipped']} new_pks={stats['new_pks']} "
+        f"gamelog_failures={stats['gamelog_failures']}/{stats['gamelog_total']} "
+        f"feed_failures={stats['feed_failures']} non_final={stats['non_final_skipped']}",
+        flush=True,
+    )
+
+    if incremental and stats["budget_exceeded"]:
+        print(
+            f"incremental new-game budget exceeded ({stats['new_pks']} > "
+            f"{_INCREMENTAL_NEW_PK_BUDGET}); skipping fetch, keeping stale artifact "
+            "(stale cache — run --backfill manually to catch up)",
+            flush=True,
+        )
+        return 0
+    if incremental and _failures_over_budget(stats):
+        print(
+            "incremental fetch failures over budget; keeping stale artifact "
+            f"(feed_failures={stats['feed_failures']}, "
+            f"gamelog_failures={stats['gamelog_failures']}/{stats['gamelog_total']})",
+            flush=True,
+        )
+        return 0
 
     if args.no_write_artifact:
         return 0
 
     payload = build_artifact(hitters, cache, args.season)
-    path = write_artifact(payload)
+    try:
+        path = write_artifact(payload)
+    except ValueError as exc:
+        if not incremental:
+            raise  # backfill/manual runs must fail loudly on a tiny refresh
+        print(f"tiny-refresh guard tripped; keeping stale artifact: {exc}", flush=True)
+        return 0
     cal = payload["cohorts"]["calibration"]
     print(
         "plate-discipline artifact: "

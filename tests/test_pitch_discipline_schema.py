@@ -28,7 +28,8 @@ def _good_payload():
             "zone_metrics_shipped": True,
             "calibration": {
                 "a": 0.02, "b": -2.3, "c": -0.01, "d": 4.0,
-                "held_out_agreement_pct": 97.7, "agreement_floor_pct": 85.0,
+                "n_pairs": 1000, "n_train": 800, "n_held": 200,
+                "held_out_agreement_pct": 92.0, "agreement_floor_pct": 85.0,
             },
         },
         "players": {

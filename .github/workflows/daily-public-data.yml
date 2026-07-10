@@ -175,7 +175,6 @@ jobs:
             data/models/valucast_prospect_buys_monitor.json \
             data/models/valucast_prospect_buys_review.json \
             data/models/valucast_prospect_availability.json \
-            data/models/valucast_pitch_discipline.json \
             data/models/valucast_prospect_model.json \
             data/prediction_archive/valucast_prospect_model \
             data/models/valucast_prospect_coverage_audit.json \
@@ -244,6 +243,12 @@ jobs:
             projections/data/identity.json
           if [ -f data/models/valucast_scouting_llm_cache.json ]; then
             git add data/models/valucast_scouting_llm_cache.json
+          fi
+          # Plate-discipline artifact: guarded add — absent until the first full
+          # backfill lands (and on any cold-cache/no-op morning at HEAD without
+          # it), and an unconditional pathspec would fail the whole publish step.
+          if [ -f data/models/valucast_pitch_discipline.json ]; then
+            git add data/models/valucast_pitch_discipline.json
           fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
