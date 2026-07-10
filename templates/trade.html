@@ -1,28 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}Trade Analyzer | ValuCast{% endblock %}
-{% block og_title %}Trade Analyzer | ValuCast{% endblock %}
-{% block og_description %}Drop two sides into the free ValuCast Trade Analyzer and see the board's verdict, computed from the same 0-100 dynasty values ValuCast serves.{% endblock %}
+{% block title %}The Second Opinion | ValuCast{% endblock %}
+{% block og_title %}The Second Opinion | ValuCast{% endblock %}
+{% block og_description %}The Second Opinion: the mainstream boards say one thing - see what the ValuCast board says about your dynasty trade, free.{% endblock %}
 {% block og_url %}https://valucast.app/trade{% endblock %}
 {% block og_image %}{{ og_share_image or 'https://valucast.app/static/og-card.png' }}{% endblock %}
 {% block og_image_width %}{{ '1080' if og_share_image else '1200' }}{% endblock %}
 {% block og_image_height %}{{ '1350' if og_share_image else '630' }}{% endblock %}
-{% block twitter_title %}Trade Analyzer | ValuCast{% endblock %}
-{% block twitter_description %}Drop two sides into the free ValuCast Trade Analyzer and see the board's verdict on any dynasty trade.{% endblock %}
+{% block twitter_title %}The Second Opinion | ValuCast{% endblock %}
+{% block twitter_description %}The Second Opinion: see what the ValuCast board says about your dynasty trade, free.{% endblock %}
 {% block twitter_image %}{{ og_share_image or 'https://valucast.app/static/og-card.png' }}{% endblock %}
 
 {% block content %}
 {% from "partials/_editorial_date.html" import editorial_date %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='trade', aria='Second Opinion board navigation') }}
 
 <section class="buys-heading movers-heading glass">
     <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
         <path d="M318 10 C220 2 126 34 14 140" />
     </svg>
     <div class="buys-heading-copy">
-        <span class="buys-heading-eyebrow">TRADE ANALYZER</span>
-        <h1>WHO WINS THE TRADE?</h1>
-        <p class="buys-heading-sub">Two sides, the board's verdict{% if as_of %} &middot; {{ editorial_date(as_of) }}{% endif %}</p>
-        <p class="buys-fineprint">Add players to each side and the board renders its verdict from the same 0-100 dynasty values it serves everywhere else &mdash; no new math, no conversion. <strong>The Trade Analyzer is free, like every ValuCast number.</strong></p>
+        <span class="buys-heading-eyebrow">THE SECOND OPINION</span>
+        <h1>THE SECOND OPINION</h1>
+        <p class="buys-heading-sub">The boards say one thing. Here's what ours says{% if as_of %} &middot; {{ editorial_date(as_of) }}{% endif %}</p>
+        <p class="buys-fineprint">Add players to each side and the board renders its verdict from the same 0-100 dynasty values it serves everywhere else &mdash; no new math, no conversion. <strong>The Second Opinion is free, like every ValuCast number.</strong></p>
         <p class="buys-fineprint">The value-aware, league-aware version (your roster, your league settings, your contention window) is coming. <a href="mailto:valucast.feedback@gmail.com?subject=League-aware%20trade%20analyzer%20interest">Tell us you want it</a>.</p>
     </div>
 </section>
@@ -30,7 +32,7 @@
 {% if not dd_available %}
 <section class="map-heading glass">
     <h2>Board unavailable</h2>
-    <p>The Trade Analyzer will populate after the next daily build.</p>
+    <p>The Second Opinion will populate after the next daily build.</p>
 </section>
 {% else %}
 
@@ -131,16 +133,29 @@
         box.hidden = false;
     }
 
+    function lookup(side, raw) {
+        var q = fold(raw.trim());
+        var pool = players.filter(function (p) {
+            return sides[side].indexOf(p.id) === -1 && (!q || p._fold.indexOf(q) !== -1);
+        });
+        // Empty query = a browsable dropdown of the most valuable names,
+        // so the picker works before anyone types a letter.
+        if (!q) {
+            pool.sort(function (a, b) { return (b.value || 0) - (a.value || 0); });
+        }
+        return pool;
+    }
+
     function wireInput(input) {
         var side = input.dataset.side;
         var box = document.getElementById('trade-results-' + side);
         input.addEventListener('input', function () {
-            var q = fold(input.value.trim());
-            if (q.length < 2 || !players.length) { box.hidden = true; return; }
-            var matches = players.filter(function (p) {
-                return p._fold.indexOf(q) !== -1 && sides[side].indexOf(p.id) === -1;
-            });
-            renderResults(side, matches, box);
+            if (!players.length) { box.hidden = true; return; }
+            renderResults(side, lookup(side, input.value), box);
+        });
+        input.addEventListener('focus', function () {
+            if (!players.length) { return; }
+            renderResults(side, lookup(side, input.value), box);
         });
         input.addEventListener('blur', function () {
             // Delay so a result click registers before the box hides.

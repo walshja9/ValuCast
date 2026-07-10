@@ -6924,7 +6924,7 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
         headline="TRADE ANALYZER",
         subtitle=subtitle,
         extra_line="Free ValuCast trade verdict - same 0-100 values, no conversion",
-        tagline="Trade Analyzer",
+        tagline="The Second Opinion",
     )
 
     f_section = _graphic_font(25, bold=True)
@@ -7019,7 +7019,7 @@ def trade_share_card():
     query = urlencode([("give", give), ("get", get)])
     png_path = f"/trade/share-card.png?{query}"
     html = build_share_preview_html(
-        title="Trade Analyzer",
+        title="The Second Opinion",
         subtitle="The board's verdict on this dynasty trade",
         png_url=png_path,
         filename="valucast-trade.png",
