@@ -6895,7 +6895,7 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     import io as _io
     from PIL import Image, ImageDraw
 
-    width, height = 1080, 1350
+    width = 1080
     palette = _GRAPHIC_PALETTE
     bg = palette["bg"]
     card = palette["card"]
@@ -6910,6 +6910,39 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     give_rows = [row for pid in (give_ids or []) if (row := dd_store.get_by_id(pid))]
     get_rows = [row for pid in (get_ids or []) if (row := dd_store.get_by_id(pid))]
     verdict = _trade_verdict(give_rows, get_rows)
+
+    f_note = _graphic_font(17)
+    row_h = 58
+    x, w = 48, 984
+
+    # Every applicable honesty note travels with the image (page parity), not just
+    # the single most salient one - the PNG is the og:image a re-sharer never links.
+    notes = []
+    if verdict["inside_noise"]:
+        notes.append((muted, "Totals are within the value band (about +/-9 per player). That is a coin-flip on these numbers - call it even, not a win."))
+    if verdict["count_mismatch"]:
+        notes.append((clay, "The sides have different player counts. Fewer, better players usually win dynasty trades - depth sums to a big number but you still start one lineup."))
+    if verdict["crosses_universes"]:
+        notes.append((blue, "Mixes prospects and big-leaguers - their 0-100 values come from two separate normalizations aligned at the top. Comparable in ballpark, not to the decimal."))
+    if not notes:
+        notes.append((muted, "Verdict is the value margin - dynasty context (age, window, roster fit) is yours to weigh."))
+
+    # Content-fit canvas (min square): panels + headline + notes decide the height,
+    # so a 2-for-1 doesn't ship a fixed-1350 void and a 6-for-6 doesn't clip.
+    meas = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    note_pad, note_line_h = 14, 24
+    wrapped_notes = []
+    for accent, note_text in notes:
+        lines = _graphic_wrap_text(meas, note_text, f_note, w - 50, max_lines=4)
+        wrapped_notes.append((accent, lines, note_pad * 2 + len(lines) * note_line_h))
+
+    def panel_height(rows):
+        return 50 + max(1, min(6, len(rows))) * row_h + 8
+
+    panels_bottom = 242 + panel_height(give_rows) + 16 + panel_height(get_rows)
+    notes_top = panels_bottom + 26 + 48
+    notes_height = sum(h for _, _, h in wrapped_notes) + 12 * (len(wrapped_notes) - 1)
+    height = max(1080, notes_top + notes_height + 96)
 
     img = Image.new("RGB", (width, height), bg)
     _graphic_fill_background(img)
@@ -6931,8 +6964,6 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     f_name = _graphic_font(23, bold=True)
     f_meta = _graphic_font(14)
     f_val = _graphic_font(24, bold=True, mono=True)
-    row_h = 58
-    x, w = 48, 984
 
     def draw_section(title, rows, top_y, accent, total):
         n = max(1, len(rows))
@@ -6967,8 +6998,6 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     y = draw_section("YOU GIVE", give_rows[:6], y, give_accent, verdict["give_total"])
     y = draw_section("YOU GET", get_rows[:6], y + 16, get_accent, verdict["get_total"])
 
-    # The verdict headline + the single most salient honesty caveat travel WITH the
-    # image (the PNG is the og:image, detached from the page a re-sharer never links).
     headline_font = _graphic_font(30, bold=True)
     verdict_color = (
         muted if verdict["inside_noise"]
@@ -6977,22 +7006,15 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     )
     draw.text((48, y + 26), _graphic_fit_text(draw, verdict["headline"], headline_font, 984), fill=verdict_color, font=headline_font)
 
-    if verdict["inside_noise"]:
-        caveat = "Totals are within the value band (about +/-9 per player) - call it even, not a win."
-    elif verdict["crosses_universes"]:
-        caveat = "Mixes prospects and big-leaguers - two separate 0-100 scales, comparable in ballpark, not to the decimal."
-    elif verdict["count_mismatch"]:
-        caveat = "Uneven player counts - fewer, better players usually win dynasty trades; sums flatter the quantity side."
-    else:
-        caveat = "Verdict is the value margin - dynasty context (age, window, roster fit) is yours to weigh."
-    draw.text(
-        (48, y + 68),
-        _graphic_fit_text(draw, caveat, _graphic_font(15), 984),
-        fill=muted,
-        font=_graphic_font(15),
-    )
+    ny = y + 26 + 48
+    for accent, lines, block_h in wrapped_notes:
+        draw.rounded_rectangle((x, ny, x + w, ny + block_h), radius=10, fill=card, outline=border, width=1)
+        draw.rectangle((x + 1, ny + 8, x + 5, ny + block_h - 8), fill=accent)
+        for i, line in enumerate(lines):
+            draw.text((x + 26, ny + note_pad + i * note_line_h), line, fill=muted, font=f_note)
+        ny += block_h + 12
 
-    _graphic_footer(draw, right_note="valucast.app/trade")
+    _graphic_footer(draw, right_note="valucast.app/trade", card_height=height)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
