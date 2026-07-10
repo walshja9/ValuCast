@@ -62,8 +62,11 @@ def _validate_call_up(row, index, label, seen, *, require_consensus, negative=Fa
     """Validate one call-up row (a receipt/hit or a miss).
 
     A scored row carries an integer consensus_rank + divergence. A field-unranked
-    seed receipt has no consensus (field outside the public boards) and instead must
-    carry a field_label. Misses are always scored and must diverge negative.
+    seed receipt (ahead side) OR a field-unranked-behind auto row (behind side) has no
+    consensus (below the MIN_BOARDS floor) and instead must carry a field_label; both
+    correctly have null consensus/divergence. Otherwise misses are scored and must diverge
+    negative. A behind row that carries a numeric divergence is malformed -- that would
+    belong to the scored miss lane, not the field-unranked mirror.
     """
     problems: list[str] = []
     if not isinstance(row, dict):
@@ -84,6 +87,19 @@ def _validate_call_up(row, index, label, seen, *, require_consensus, negative=Fa
     seen.add(row.get("identity_key"))
     if not isinstance(row.get("valucast_rank"), int):
         problems.append(f"{label} {index} valucast_rank must be an integer")
+
+    # Field-unranked-behind: the unscored mirror of the ahead field-unranked lane. No
+    # consensus (only 1 board -> below MIN_BOARDS), so it's exempt from require_consensus
+    # and must NOT carry a numeric divergence (that would be a scored miss).
+    behind = bool(row.get("field_unranked_behind"))
+    if behind:
+        if isinstance(row.get("divergence"), int):
+            problems.append(f"{label} {index} field_unranked_behind row must not carry a numeric divergence (belongs to the scored miss lane)")
+        if row.get("consensus_rank") is not None:
+            problems.append(f"{label} {index} field_unranked_behind row must have null consensus_rank")
+        if not row.get("field_label"):
+            problems.append(f"{label} {index} field_unranked_behind row needs a field_label")
+        return problems
 
     consensus = row.get("consensus_rank")
     scored = isinstance(consensus, int)
@@ -158,6 +174,23 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str]]:
     miss_seen = set()
     for index, row in enumerate(misses, 1):
         problems.extend(_validate_call_up(row, index, "miss", miss_seen, require_consensus=True, negative=True))
+
+    # No-claim bucket parity: the persisted rows must match the published count exactly
+    # (the builder builds one row per published no-claim identity). Tolerate absent
+    # no_claim_rows for artifacts written before this field existed. Also run the same
+    # board-name-hygiene backstop over the no-claim labels (a typed "outside top N" can't
+    # survive if a board actually ranks him <= N) -- the derived labels are anonymous, so
+    # this only ever catches a hand-edit that reintroduced a falsifiable claim.
+    no_claim_rows = payload.get("no_claim_rows")
+    if no_claim_rows is not None:
+        if not isinstance(no_claim_rows, list):
+            problems.append("no_claim_rows must be a list")
+        else:
+            declared = summary.get("no_claim_call_up_count")
+            if isinstance(declared, int) and len(no_claim_rows) != declared:
+                problems.append("len(no_claim_rows) must equal summary.no_claim_call_up_count")
+            if archive_index:
+                problems.extend(_field_label_contradictions(no_claim_rows, archive_index))
 
     policy = payload.get("source_policy") or {}
     for flag in (

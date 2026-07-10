@@ -43,7 +43,7 @@
     {% endif %}
 </section>
 
-{% if not receipts_available or (not receipts and not misses) %}
+{% if not receipts_available or (not receipts and not misses and not no_claim_rows) %}
 <section class="map-heading glass">
     {% if receipts_hold %}
     <h2>Board on hold</h2>
@@ -82,20 +82,41 @@
 {% if misses %}
 <section class="buys-list movers-section glass" aria-label="Call-ups the field was ahead of ValuCast on">
     <h2>BEHIND THE FIELD ❄️</h2>
-    <p class="buys-fineprint">Call-ups where the public boards had them higher than we did. We log these too — that's the point.</p>
+    <p class="buys-fineprint">Call-ups where the public boards had them higher than we did — including single-board calls that had a guy top-25 while we sat well below. We log these too, that's the point.</p>
     {% for p in misses %}
     <article class="movers-row">
         <span class="buys-rank">#{{ p.valucast_rank }}</span>
         <div class="buys-main">
             <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}</span>
+            {% if p.divergence is not none %}
             <span class="buys-tag">Field had him #{{ p.consensus_rank }} on last prospect board &middot; called up {{ p.actual_call_up_date or p.call_up_date }}{% if p.flagged_days_early %} &middot; flagged {{ p.flagged_days_early }}d early{% endif %}</span>
+            {% else %}
+            <span class="buys-tag">{{ p.field_label or 'A single board had him well ahead of us' }} &middot; called up {{ p.actual_call_up_date or p.call_up_date }}</span>
+            {% endif %}
         </div>
+        {% if p.divergence is not none %}
         <span class="mover-delta down">{{ p.divergence }}</span>
+        {% else %}
+        <span class="mover-delta down">BEHIND</span>
+        {% endif %}
         <span class="trend-chip buys-chip">miss</span>
     </article>
     {% endfor %}
 </section>
+{% endif %}
+{% if no_claim_rows %}
+<details class="buys-list movers-section glass" aria-label="Call-ups ValuCast did not score either way">
+    <summary class="buys-fineprint" style="cursor:pointer;list-style:revert;">Every call-up we didn't score — the {{ no_claim_rows | length }} no-claims</summary>
+    <p class="buys-fineprint">Same thresholds both directions; these produced no claim either way.</p>
+    {% for p in no_claim_rows %}
+    <article class="movers-row">
+        <div class="buys-main">
+            <span class="buys-tag">{{ p.name or 'Unlisted call-up' }} &mdash; {{ p.team or '-' }} &middot; {{ p.pos or '-' }} &middot; {{ p.level or '-' }} &mdash; {% if p.valucast_rank is not none %}we had him #{{ p.valucast_rank }}{% else %}no ValuCast rank at promotion{% endif %} &mdash; {{ p.field_label or 'no public board inside 600' }} &middot; called up {{ p.actual_call_up_date or p.call_up_date }}{% if p.near_note %} &middot; <em class="buys-fineprint">{{ p.near_note }}</em>{% endif %}</span>
+        </div>
+    </article>
+    {% endfor %}
+</details>
 {% endif %}
 {% endif %}
 {% endblock %}

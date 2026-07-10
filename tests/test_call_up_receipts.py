@@ -1094,6 +1094,395 @@ def test_field_unranked_denylist_and_launch_guard_still_bind():
     assert payload["summary"]["field_unranked_count"] == 0
 
 
+# --- Feature 1: no-claim bucket persisted + disclosed --------------------------------
+
+def test_no_claim_rows_parity_and_anonymous_labels():
+    """Every published no-claim identity gets a persisted row: count parity with
+    summary.no_claim_call_up_count (hard invariant), labels are anonymous (never a board
+    name), sourced at the player's last on-board read at/before promotion."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [
+            _rank_row(101, "Clean Hit", 20, {"pipeline": 90, "hkb": 95, "sts": 100}),  # hit
+            _rank_row(102, "Dead Even", 60, {"pipeline": 61, "hkb": 62, "sts": 60}),   # no-claim (even)
+            _rank_row(103, "Field Blind", 400, {}),                                    # no-claim (0 boards)
+        ]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [
+        {"mlbam_id": 101, "active_mlb_roster": True},
+        {"mlbam_id": 102, "active_mlb_roster": True},
+        {"mlbam_id": 103, "active_mlb_roster": True},
+    ]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=_cache(_cu(101, "2026-06-24"), _cu(102, "2026-06-24"), _cu(103, "2026-06-24")),
+    )
+    rows = payload["no_claim_rows"]
+    assert len(rows) == payload["summary"]["no_claim_call_up_count"] == 2  # parity
+    by_key = {r["identity_key"]: r for r in rows}
+    assert set(by_key) == {"102_hitter", "103_hitter"}  # the hit is a claim, excluded
+    # Even call: 3 boards -> consensus label; field-blind: 0 boards -> anonymous no-board label.
+    assert by_key["102_hitter"]["field_label"] == "3 boards, consensus ~#61"
+    assert by_key["103_hitter"]["field_label"] == "no public board inside 600"
+    assert by_key["102_hitter"]["valucast_rank"] == 60  # our rank at promotion
+    # No board NAME appears anywhere in the new rows (ToS).
+    import json as _json
+    blob = _json.dumps(rows)
+    for board_name in ("pipeline", "hkb", "sts", "cfr"):
+        assert board_name not in blob
+
+
+def test_no_claim_near_note_fires_for_miss_and_hit_shapes_only():
+    """near_note fires ONLY on a single-board no-claim: board >= 25 better than us -> miss
+    note; us >= 25 better than the board -> hit note; a <25 gap or a 2-board row -> no note."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-24", "board": [
+            # 1 board #215, us #671 -> field 456 ahead -> miss note (Bratt shape)
+            _rank_row(201, "Miss Shape", 671, {"sts": 215}),
+            # 1 board #240, us #165 -> we're 75 ahead -> hit note (Cavanaugh shape)
+            _rank_row(202, "Hit Shape", 165, {"sts": 240}),
+            # 1 board #170, us #160 -> gap 10 < 25 -> no note
+            _rank_row(203, "Too Close", 160, {"sts": 170}),
+            # 2 boards, even -> a scored/no-claim path, but never a near_note (needs 1 board)
+            _rank_row(204, "Two Board Even", 60, {"sts": 61, "hkb": 62}),
+        ]},
+        {"date": "2026-06-25", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": m, "active_mlb_roster": True} for m in (201, 202, 203, 204)]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log={},
+        seed_rows=[], generated_at="2026-06-25T00:00:00+00:00",
+        transactions_cache=_cache(*[_cu(m, "2026-06-24") for m in (201, 202, 203, 204)]),
+    )
+    by_key = {r["identity_key"]: r for r in payload["no_claim_rows"]}
+    assert by_key["201_hitter"]["near_note"] == "a second board and this scores as a miss"
+    assert by_key["202_hitter"]["near_note"] == "a second board and this scores as a hit"
+    assert by_key["203_hitter"]["near_note"] is None  # gap inside the noise band
+    assert by_key["204_hitter"]["near_note"] is None  # 2 boards -> not a single-board shape
+
+
+def test_no_claim_row_with_no_archive_row_emits_nulls_not_dropped():
+    """Count parity beats field completeness: a published no-claim whose real call-up was
+    detected but who has NO ranked-board archive row still emits a row (nulls), never
+    dropped -- so len(no_claim_rows) always == the published count."""
+    from prospects.call_up_receipts import _build_no_claim_rows
+
+    # 999_hitter is a published no-claim but the archive index has no row for him at all.
+    rows = _build_no_claim_rows(
+        no_claim_keys={"999_hitter"},
+        no_claim={"999_hitter": "2026-07-01"},
+        actual_dates={},
+        archive_by_date_key={"2026-07-01": {}},
+    )
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["identity_key"] == "999_hitter"
+    assert row["call_up_date"] == "2026-07-01"
+    assert row["name"] is None and row["valucast_rank"] is None
+    assert row["board_count"] == 0
+    assert row["near_note"] is None
+
+
+def test_receipts_page_renders_no_claim_details_block_with_near_note(monkeypatch):
+    """The receipts page renders the collapsed no-claims details block, including a
+    near_note on a single-board row."""
+    import app as app_mod
+
+    monkeypatch.setattr(app_mod, "RECEIPTS_HOLD", False)
+
+    def fake_context():
+        return {
+            "receipts": [], "receipt_count": 0, "misses": [], "miss_count": 0,
+            "no_claim_rows": [{
+                "name": "Mitch Bratt", "identity_key": "201_pitcher", "mlbam_id": "201",
+                "team": "TEX", "pos": "P", "level": "AAA", "call_up_date": "2026-07-01",
+                "valucast_rank": 671, "field_label": "1 board, ~#215", "board_count": 1,
+                "near_note": "a second board and this scores as a miss",
+            }],
+            "no_claim_call_up_count": 1,
+            "receipts_available": True, "receipts_generated_at": "2026-07-09",
+            "as_of": "2026-07-09",
+        }
+
+    monkeypatch.setattr(app_mod, "_build_receipts_page_context", fake_context)
+    page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
+    assert "the 1 no-claims" in page
+    assert "Same thresholds both directions" in page
+    assert "we had him #671" in page
+    assert "1 board, ~#215" in page
+    assert "a second board and this scores as a miss" in page
+
+
+# --- Feature 2: field-unranked-behind mirror lane ------------------------------------
+
+def test_field_unranked_behind_mints_into_misses_no_divergence():
+    """Mirror of the ahead field-unranked lane: a single board rated a call-up top-25
+    while ValuCast sat far below -> an unscored BEHIND row in misses (no divergence,
+    derived label, field_unranked_behind marker), counting toward miss_count."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(400, "Field Loved Him", 300, {"sts": 10})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 400, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(400, "2026-06-30")),
+    )
+    misses = {m["identity_key"]: m for m in payload["misses"]}
+    assert "400_hitter" in misses
+    row = misses["400_hitter"]
+    assert row["field_unranked_behind"] is True
+    assert row["consensus_rank"] is None and row["divergence"] is None
+    assert row["field_label"] == "1 board, ~#10"
+    assert row["valucast_rank"] == 300
+    assert payload["summary"]["miss_count"] == 1  # counted in "N behind"
+    assert payload["summary"]["field_unranked_behind_count"] == 1
+    assert payload["summary"]["no_claim_call_up_count"] == 0  # he's a claim now
+    assert "flagged_days_early" not in row  # excluded from lead-time attach
+
+
+def test_field_unranked_behind_gap_below_min_divergence_stays_no_claim():
+    """A single top-25 board but our rank within MIN_DIVERGENCE of it -> not a behind row;
+    he stays in the neither bucket (the guard needs a real gap, same bar as a scored miss)."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        # board #10, us #30 -> gap 20 < 25 -> no behind mint
+        {"date": "2026-06-30", "board": [_rank_row(401, "Barely Behind", 30, {"sts": 10})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 401, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(401, "2026-06-30")),
+    )
+    assert payload["misses"] == []
+    assert payload["summary"]["field_unranked_behind_count"] == 0
+    assert payload["summary"]["no_claim_call_up_count"] == 1  # stays neither
+
+
+def test_field_unranked_behind_board_over_top25_stays_no_claim():
+    """The single board must rate him <= 25 (mirror of the ahead cap). A single board at
+    #40 (over the strict cap) -> no behind row even with a huge gap -> neither bucket."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(402, "Board Below 25", 300, {"sts": 40})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 402, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(402, "2026-06-30")),
+    )
+    assert payload["misses"] == []
+    assert payload["summary"]["no_claim_call_up_count"] == 1
+
+
+def test_field_unranked_behind_two_boards_goes_to_scored_lane():
+    """Mutual exclusivity: 2+ boards with the field well ahead is a SCORED miss (int
+    divergence), NOT a field-unranked-behind row -- no double-mint."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [
+            _rank_row(403, "Corroborated Miss", 200, {"sts": 40, "hkb": 50, "pipeline": 60})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 403, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00",
+        transactions_cache=_cache(_cu(403, "2026-06-30")),
+    )
+    miss = payload["misses"][0]
+    assert isinstance(miss["divergence"], int)  # scored miss
+    assert "field_unranked_behind" not in miss
+    assert payload["summary"]["field_unranked_behind_count"] == 0
+
+
+def test_scored_miss_wins_over_behind_on_same_identity():
+    """Precedence scored > field_unranked_behind: a player who produces BOTH a
+    field-unranked-behind event and a scored miss keeps only the scored miss (int
+    divergence); the behind row is deduped out."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    # 6/30 disappearance: 1 board #10 vs us #300 -> field-unranked-behind event.
+    # 7/03 retention flip: 3 boards consensus ~#50 vs us #300 -> scored miss event.
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(404, "Both Lanes", 300, {"sts": 10})]},
+        {"date": "2026-07-02", "board": [
+            _rank_row(404, "Both Lanes", 300, {"sts": 40, "hkb": 50, "pipeline": 60})]},
+        {"date": "2026-07-03", "board": [
+            _rank_row(404, "Both Lanes", 300, {"sts": 40, "hkb": 50, "pipeline": 60},
+                      active_mlb_roster=True)]},
+    ]
+    roster = {"profiles": [{"mlbam_id": 404, "active_mlb_roster": True}]}
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-03T00:00:00+00:00",
+    )
+    rows = [m for m in payload["misses"] if m["identity_key"] == "404_hitter"]
+    assert len(rows) == 1  # exactly one row for the identity
+    assert isinstance(rows[0]["divergence"], int)  # the scored miss won
+    assert "field_unranked_behind" not in rows[0]
+
+
+def test_field_unranked_behind_idempotent_through_existing_log():
+    """A committed field-unranked-behind row round-trips through misses on the incremental
+    merge, owned by its own lane -- byte-identical on rebuild, never double-carried."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-30", "board": [_rank_row(405, "Behind Mirror", 300, {"sts": 10})]},
+        {"date": "2026-07-01", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 405, "active_mlb_roster": True}]}
+    txns = _cache(_cu(405, "2026-06-30"))
+    first = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[],
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00", transactions_cache=txns,
+    )
+    second = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=first,
+        seed_rows=[], generated_at="2026-07-01T00:00:00+00:00", transactions_cache=txns,
+    )
+    fb_first = [m for m in first["misses"] if m.get("field_unranked_behind")]
+    fb_second = [m for m in second["misses"] if m.get("field_unranked_behind")]
+    assert fb_first == fb_second and len(fb_second) == 1
+
+
+def test_field_unranked_behind_revalidation_drops_when_second_board_appears():
+    """Revalidation: a committed behind row is dropped when the at-promotion archive (real
+    call-up date) shows the field actually had >= MIN_BOARDS boards -> the scored lane owns
+    it. Here the at-promotion boards are even with us (no gap) -> neither bucket."""
+    from prospects.call_up_receipts import build_call_up_receipts
+
+    archives = [
+        {"date": "2026-06-27", "board": [
+            _rank_row(406, "Reranked", 60, {"pipeline": 61, "hkb": 62, "sts": 63})]},
+        {"date": "2026-07-04", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 406, "active_mlb_roster": True}]}
+    committed = {
+        "receipts": [],
+        "misses": [{
+            "identity_key": "406_hitter", "mlbam_id": "406", "role": "hitter",
+            "name": "Reranked", "team": "BOS", "pos": "SS", "level": "AAA",
+            "valucast_rank": 60, "consensus_rank": None, "divergence": None,
+            "field_label": "1 board, ~#10", "call_up_date": "2026-07-04",
+            "logged_at": "2026-07-04T00:00:00+00:00", "field_unranked_behind": True,
+        }],
+    }
+    payload = build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=committed,
+        seed_rows=[], generated_at="2026-07-05T00:00:00+00:00",
+        transactions_cache=_cache(_cu(406, "2026-06-27")),
+    )
+    keys = [m["identity_key"] for m in payload["misses"]]
+    assert "406_hitter" not in keys  # dropped -- field ranked him at promotion
+    assert payload["summary"]["field_unranked_behind_count"] == 0
+    assert payload["summary"]["no_claim_call_up_count"] == 1
+
+
+def test_receipts_page_renders_behind_row_null_safe(monkeypatch):
+    """The misses section renders a null-divergence field-unranked-behind row without
+    crashing: field_label line + a BEHIND chip instead of a numeric delta."""
+    import app as app_mod
+
+    monkeypatch.setattr(app_mod, "RECEIPTS_HOLD", False)
+
+    def fake_context():
+        return {
+            "receipts": [], "receipt_count": 0,
+            "misses": [{
+                "identity_key": "400_hitter", "mlbam_id": "400", "role": "hitter",
+                "name": "Field Loved Him", "team": "TB", "pos": "SS", "level": "AAA",
+                "valucast_rank": 300, "consensus_rank": None, "divergence": None,
+                "field_label": "1 board, ~#10", "call_up_date": "2026-07-01",
+                "field_unranked_behind": True,
+            }],
+            "miss_count": 1, "no_claim_rows": [], "no_claim_call_up_count": 0,
+            "receipts_available": True, "receipts_generated_at": "2026-07-09",
+            "as_of": "2026-07-09",
+        }
+
+    monkeypatch.setattr(app_mod, "_build_receipts_page_context", fake_context)
+    page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
+    assert "BEHIND THE FIELD" in page
+    assert "1 board, ~#10" in page
+    assert ">BEHIND<" in page  # the BEHIND chip, not a numeric divergence
+    # And the share PNG renders without crashing on the null-divergence miss row.
+    png = app_mod._receipts_share_card_png([], fake_context()["misses"], generated_at="2026-07-09")
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+# --- Feature 1d/2f: validator ---------------------------------------------------------
+
+def test_validator_no_claim_rows_parity_and_behind_acceptance(tmp_path, monkeypatch):
+    """The validator: (1) fails when len(no_claim_rows) != summary count; (2) accepts a
+    field-unranked-behind miss (null consensus/divergence + field_label); (3) rejects a
+    behind row carrying a numeric divergence."""
+    import json
+    import scripts.validate_valucast_call_up_receipts as validator
+
+    monkeypatch.setattr(validator, "_archive_payloads", lambda *a, **k: [])
+    monkeypatch.setattr(validator, "_archive_by_date_key", lambda *a, **k: {})
+
+    def base_payload(no_claim_rows, misses):
+        return {
+            "artifact": validator.ARTIFACT_NAME, "signal_version": validator.SIGNAL_VERSION,
+            "generated_at": "2026-07-01T00:00:00+00:00", "status": "candidate_ready",
+            "summary": {"receipt_count": 0, "miss_count": len(misses),
+                        "no_claim_call_up_count": 1, "archive_dates_scanned": []},
+            "source_policy": {flag: False for flag in (
+                "name_matching_used", "feeds_model_score", "feeds_public_rank",
+                "feeds_buy_score", "dd_values_used", "dd_ranks_used",
+                "external_rankings_used", "market_values_used",
+            )},
+            "receipts": [], "misses": misses, "no_claim_rows": no_claim_rows,
+        }
+
+    good_no_claim = [{
+        "identity_key": "9_hitter", "mlbam_id": "9", "role": "hitter", "name": "NC",
+        "team": "TB", "pos": "SS", "level": "AAA", "call_up_date": "2026-07-01",
+        "valucast_rank": 400, "field_label": "no public board inside 600",
+        "board_count": 0, "near_note": None,
+    }]
+    behind_ok = [{
+        "identity_key": "8_hitter", "mlbam_id": "8", "role": "hitter", "name": "Behind",
+        "team": "TB", "pos": "SS", "level": "AAA", "valucast_rank": 300,
+        "consensus_rank": None, "divergence": None, "field_label": "1 board, ~#10",
+        "call_up_date": "2026-07-01", "logged_at": "2026-07-01T00:00:00+00:00",
+        "field_unranked_behind": True,
+    }]
+
+    # (1) parity mismatch (declared 1, gave 0 rows)
+    def _write(payload):
+        f = tmp_path / "a.json"; f.write_text(json.dumps(payload), encoding="utf-8"); return f
+    _p, problems = validator.validate_file(_write(base_payload([], behind_ok)))
+    assert any("no_claim_rows" in p and "no_claim_call_up_count" in p for p in problems)
+
+    # (2) parity OK + behind row accepted -> no problems
+    _p, problems = validator.validate_file(_write(base_payload(good_no_claim, behind_ok)))
+    assert problems == [], problems
+
+    # (3) behind row carrying a numeric divergence is rejected
+    behind_bad = [dict(behind_ok[0], divergence=-290, consensus_rank=10)]
+    _p, problems = validator.validate_file(_write(base_payload(good_no_claim, behind_bad)))
+    assert any("field_unranked_behind" in p and "divergence" in p for p in problems)
+
+
 def _rank_row(
     mlbam_id: int,
     name: str,

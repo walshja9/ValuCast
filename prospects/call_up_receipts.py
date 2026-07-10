@@ -262,23 +262,15 @@ def _latest_source_row(
     return archive_by_date_key[max(dates)].get(key)
 
 
-def _derive_seed_field_label(
-    key: str, archive_by_date_key: dict[str, dict[str, dict]]
-) -> str | None:
-    """Honest ``field_label`` for a curated seed, derived from the ranked-board archive.
-
-    A seed exists because the divergence gate can't SCORE it (< MIN_BOARDS boards,
-    so no consensus), but the boards may still RANK the player deep -- and a typed
-    "field outside top 100" then contradicts the archive (Gabriel Hughes: STS ~#512).
-    Derive the label from the public boards inside the cap the model already trusts:
+def _field_label_from_source_row(source_row: dict | None) -> str | None:
+    """The anonymous ``field_label`` for a call-up, derived from ONE ranked-board row's
+    public-board coverage inside the cap:
       * 0 boards inside the cap -> "no public board inside 600" (truly field-unranked).
-      * exactly 1 board at rank r -> "1 board, ~#r" (ranked, just below the 2-board
-        consensus floor -- not "outside the top 100").
-      * >= 2 boards -> a consensus exists; report it ("N boards, consensus ~#c") rather
-        than claiming the field ignored him. (The auto path owns SCORING such rows; here
-        we only make the seed's LABEL truthful, never its divergence/rank/seed status.)
-    Returns None when the identity has no archive row at all (keep the typed label)."""
-    source_row = _latest_source_row(key, archive_by_date_key)
+      * exactly 1 board at rank r -> "1 board, ~#r".
+      * >= 2 boards -> a consensus exists; report it ("N boards, consensus ~#c").
+    Returns None when there's no source row at all (keep whatever label the caller has).
+    Single source of the three-way phrasing shared by seeds and no-claim rows; never
+    names a board (ToS)."""
     if source_row is None:
         return None
     public_ranks = _public_source_ranks(_source_ranks(source_row))
@@ -289,6 +281,20 @@ def _derive_seed_field_label(
         return f"1 board, ~#{rank}"
     consensus = _public_source_consensus(public_ranks)
     return f"{len(public_ranks)} boards, consensus ~#{consensus}"
+
+
+def _derive_seed_field_label(
+    key: str, archive_by_date_key: dict[str, dict[str, dict]]
+) -> str | None:
+    """Honest ``field_label`` for a curated seed, derived from the ranked-board archive.
+
+    A seed exists because the divergence gate can't SCORE it (< MIN_BOARDS boards,
+    so no consensus), but the boards may still RANK the player deep -- and a typed
+    "field outside top 100" then contradicts the archive (Gabriel Hughes: STS ~#512).
+    Derive the label from the public boards inside the cap the model already trusts
+    (newest board wins). Returns None when the identity has no archive row at all
+    (keep the typed label)."""
+    return _field_label_from_source_row(_latest_source_row(key, archive_by_date_key))
 
 
 def _apply_seed_field_labels(
@@ -340,19 +346,53 @@ def _sort_receipts(receipts: list[dict]) -> list[dict]:
 
 
 def _existing_misses(existing_log: dict | list | None) -> list[dict]:
+    # Only SCORED misses belong to the misses lane here. Field-unranked-behind auto rows
+    # are persisted inside ``misses`` too (they render on that side) but are owned by the
+    # mirror lane (_existing_field_unranked_behind); excluding them keeps a committed
+    # behind row from being carried by BOTH lanes on the next build (which would duplicate
+    # the identity and trip the pre-merge uniqueness assert) -- exactly like 019 does on
+    # the receipts side with _existing_receipts / _existing_field_unranked.
     if isinstance(existing_log, dict):
         rows = existing_log.get("misses") or []
     else:
         rows = existing_log or []
-    return [dict(row) for row in rows if isinstance(row, dict) and row.get("identity_key")]
+    return [
+        dict(row)
+        for row in rows
+        if isinstance(row, dict) and row.get("identity_key") and not row.get("field_unranked_behind")
+    ]
+
+
+def _existing_field_unranked_behind(existing_log: dict | list | None) -> list[dict]:
+    """Committed field-unranked-behind auto rows, read from the SAME place they're written:
+    ``field_unranked_behind``-marked rows inside the persisted ``misses`` list. Mirror of
+    _existing_field_unranked on the receipts side -- the marker rides on the row, so a
+    committed behind row round-trips through ``misses`` on the incremental merge."""
+    if isinstance(existing_log, dict):
+        rows = existing_log.get("misses") or []
+    else:
+        rows = existing_log or []
+    return [
+        dict(row)
+        for row in rows
+        if isinstance(row, dict) and row.get("identity_key") and row.get("field_unranked_behind")
+    ]
 
 
 def _sort_misses(misses: list[dict]) -> list[dict]:
-    """Biggest miss first: most-negative divergence (field furthest ahead of us)."""
-    return sorted(
-        misses,
-        key=lambda r: (r.get("divergence", 0), r.get("valucast_rank") or 0),
+    """Biggest scored miss first: most-negative divergence (field furthest ahead of us).
+    Field-unranked-behind rows carry divergence=None (no consensus to diff); they follow the
+    scored misses, newest-first, mirroring how _sort_receipts trails the no-divergence rows."""
+    scored = sorted(
+        (r for r in misses if isinstance(r.get("divergence"), int)),
+        key=lambda r: (r["divergence"], r.get("valucast_rank") or 0),
     )
+    unscored = sorted(
+        (r for r in misses if not isinstance(r.get("divergence"), int)),
+        key=lambda r: (str(r.get("call_up_date") or ""), str(r.get("name") or "")),
+        reverse=True,
+    )
+    return scored + unscored
 
 
 def _call_up_row(row: dict, cur_date: str, logged_at: str) -> tuple[dict | None, str | None]:
@@ -443,6 +483,57 @@ def _field_unranked_from_row(row: dict, cur_date: str, logged_at: str) -> dict |
         "call_up_date": cur_date,
         "logged_at": logged_at,
         "field_unranked": True,
+    }
+
+
+def _field_unranked_behind_from_row(row: dict, cur_date: str, logged_at: str) -> dict | None:
+    """Mirror of _field_unranked_from_row on the BEHIND side: a call-up a SINGLE public
+    board rated top-25 while ValuCast sat far below it. The divergence gate can't score it
+    (only 1 board -> no MIN_BOARDS consensus), so it would otherwise vanish into no-claims --
+    but its ahead-side twin (a vc-top-25 call the field ignored) mints an unscored AHEAD and
+    counts in "N ahead", so the guard has to be symmetric: this mints an unscored BEHIND that
+    counts in "N behind".
+
+    Fires when the call-up has EXACTLY 1 public board inside the cap, that board's rank
+    <= FIELD_UNRANKED_MAX_VALUCAST_RANK (25, the same strict constant the ahead lane uses),
+    and (our_rank - board_rank) >= MIN_DIVERGENCE (25). consensus_rank/divergence are None
+    (no MIN_BOARDS consensus to diff), field_label comes from the same anonymous derivation,
+    and valucast_rank is our at-promotion rank. The row is marked ``field_unranked_behind``
+    and lives on the MISSES side.
+
+    Mutually exclusive with the scored lane on the same at-promotion row: the scored miss
+    needs >= MIN_BOARDS public boards, this needs exactly 1, so a single event can never
+    double-mint a player as a scored miss AND a field-unranked-behind row.
+    """
+    key = _identity_key(row)
+    valucast_rank = _clean_int(row.get("rank"))
+    if not key or valucast_rank is None:
+        return None
+    public_ranks = _public_source_ranks(_source_ranks(row))
+    # Exactly one public board: below MIN_BOARDS (so unscorable), but a real read (so the
+    # field genuinely called him top-25 -- not "no read", which is the ahead-side lane).
+    if len(public_ranks) != 1:
+        return None
+    board_rank = round(next(iter(public_ranks.values())))
+    if board_rank > FIELD_UNRANKED_MAX_VALUCAST_RANK:
+        return None
+    if valucast_rank - board_rank < MIN_DIVERGENCE:
+        return None
+    return {
+        "identity_key": key,
+        "mlbam_id": str(row.get("mlbam_id")),
+        "role": str(row.get("role")).lower(),
+        "name": row.get("name"),
+        "team": row.get("mlb_team") or row.get("team") or "-",
+        "pos": _pos(row),
+        "level": row.get("level") or "-",
+        "valucast_rank": valucast_rank,
+        "consensus_rank": None,
+        "divergence": None,
+        "field_label": _field_unranked_label(public_ranks),
+        "call_up_date": cur_date,
+        "logged_at": logged_at,
+        "field_unranked_behind": True,
     }
 
 
@@ -739,6 +830,37 @@ def detect_field_unranked(
     )
 
 
+def detect_field_unranked_behind(
+    prev_board: dict | list,
+    cur_board: dict | list,
+    cur_date: str,
+    roster_lookup: dict[str, dict],
+    existing_log: dict | list | None,
+    *,
+    logged_at: str | None = None,
+    prev_date: str | None = None,
+    actual_dates: dict[str, str] | None = None,
+    archive_by_date_key: dict[str, dict[str, dict]] | None = None,
+    no_claim: dict[str, str] | None = None,
+) -> list[dict]:
+    """Merge field-unranked-BEHIND auto rows: the mirror of detect_field_unranked. A
+    post-launch call-up a SINGLE public board rated <= FIELD_UNRANKED_MAX_VALUCAST_RANK
+    while ValuCast sat >= MIN_DIVERGENCE below it. Shares the SAME event stream / roster
+    guard / at-promotion re-source as receipts/misses; only the ``from_row`` classifier
+    differs. ``existing_log`` may be a list of already-committed behind rows (from
+    _existing_field_unranked_behind)."""
+    existing_rows = (
+        existing_log if isinstance(existing_log, list)
+        else _existing_field_unranked_behind(existing_log)
+    )
+    return _detect_call_ups(
+        prev_board, cur_board, cur_date, roster_lookup,
+        existing_rows, _field_unranked_behind_from_row, logged_at=logged_at,
+        prev_date=prev_date, actual_dates=actual_dates,
+        archive_by_date_key=archive_by_date_key, no_claim=no_claim,
+    )
+
+
 def _revalidate_existing(
     rows: list[dict],
     want_kind: str,
@@ -823,6 +945,44 @@ def _revalidate_field_unranked(
     return kept
 
 
+def _revalidate_field_unranked_behind(
+    rows: list[dict],
+    actual_dates: dict[str, str],
+    archive_by_date_key: dict[str, dict[str, dict]],
+    no_claim: dict[str, str],
+) -> list[dict]:
+    """Re-validate already-committed FIELD-UNRANKED-BEHIND auto rows under the at-promotion
+    standard -- the mirror of _revalidate_field_unranked. These carry ``divergence is None``,
+    so _revalidate_existing exempts them, but a later archive can show the field actually
+    ranked the player on >= MIN_BOARDS boards at his real promotion (the scored miss lane
+    would own him next build), or that the single board no longer clears the top-25 / gap
+    bars. Re-source the at-promotion archive row and KEEP the row only if it still satisfies
+    the mirror guard (exactly 1 in-cap board <= 25, our_rank - board_rank >= MIN_DIVERGENCE);
+    otherwise drop it into the neither bucket. Also RE-DERIVE ``field_label`` from the
+    at-promotion coverage so a committed label can't go stale. When no real date / no
+    covering archive exists, KEEP (can't re-score -> don't guess)."""
+    kept: list[dict] = []
+    for row in rows:
+        key = row.get("identity_key")
+        if not key or not row.get("field_unranked_behind"):
+            kept.append(row)
+            continue
+        actual = actual_dates.get(str(row.get("mlbam_id")))
+        event_date = str(row.get("call_up_date") or "")
+        at_or_before = [d for d in archive_by_date_key if d <= actual] if (actual and event_date) else []
+        if not actual or not event_date or not at_or_before or actual >= event_date:
+            kept.append(row)
+            continue
+        prom_row = archive_by_date_key[max(at_or_before)].get(key)
+        prom = None if prom_row is None else _field_unranked_behind_from_row(prom_row, event_date, row.get("logged_at") or "")
+        if prom is not None:
+            row["field_label"] = prom["field_label"]
+            kept.append(row)
+        elif key not in no_claim or event_date < no_claim[key]:
+            no_claim[key] = event_date
+    return kept
+
+
 def _archive_payloads(path: Path = RANK_ARCHIVE_DIR) -> list[dict]:
     payloads = []
     if not path.exists():
@@ -856,6 +1016,84 @@ def archive_call_up_receipts(payload: dict, date_str: str, archive_dir: Path = A
     return path, True
 
 
+def _no_claim_near_note(source_row: dict | None, valucast_rank: int | None) -> str | None:
+    """Near-scoring nudge for a no-claim row, set ONLY when the at-promotion coverage is
+    exactly ONE public board inside the cap (the shape one more board would flip into a
+    scored call). With a single board at rank r vs our rank v:
+      * r at least MIN_DIVERGENCE better than us (v - r >= 25) -> a second board scores
+        him as a MISS (the field was well ahead): "a second board and this scores as a miss".
+      * us at least MIN_DIVERGENCE better than the board (r - v >= 25) -> a second board
+        scores him as a HIT: "a second board and this scores as a hit".
+      * gap inside the noise band, or 0/2+ boards -> no note.
+    Never names the board (ToS)."""
+    if source_row is None or valucast_rank is None:
+        return None
+    public_ranks = _public_source_ranks(_source_ranks(source_row))
+    if len(public_ranks) != 1:
+        return None
+    board_rank = round(next(iter(public_ranks.values())))
+    if valucast_rank - board_rank >= MIN_DIVERGENCE:
+        return "a second board and this scores as a miss"
+    if board_rank - valucast_rank >= MIN_DIVERGENCE:
+        return "a second board and this scores as a hit"
+    return None
+
+
+def _build_no_claim_rows(
+    no_claim_keys: set[str],
+    no_claim: dict[str, str],
+    actual_dates: dict[str, str],
+    archive_by_date_key: dict[str, dict[str, dict]],
+) -> list[dict]:
+    """Persist the no-claim bucket as disclosable rows -- one per PUBLISHED no-claim
+    identity (same set as ``no_claim_keys``; count parity is a hard invariant). For each,
+    source the at-promotion row (last walked archive <= the real call-up date when known,
+    else the event date) and emit an anonymous, ToS-safe row. An identity with no archive
+    row at all is emitted with null fields rather than dropped -- count parity beats field
+    completeness. Sorted newest-first by call-up date."""
+    rows: list[dict] = []
+    for key in no_claim_keys:
+        event_date = no_claim.get(key)
+        mlbam_id = key.split("_")[0]
+        real_date = actual_dates.get(mlbam_id)
+        # At-promotion anchor: the real call-up date when it's known and earlier than the
+        # detection event, else the event date itself.
+        anchor = real_date if (real_date and event_date and real_date < event_date) else event_date
+        # Source the LAST archive at/before the anchor that actually RANKS him -- the
+        # honest "our rank at promotion". A no-claim is often a DISAPPEARANCE, so on the
+        # anchor date itself he's already gone from the board; walking back to his last
+        # on-board read is the same at-promotion standard the scored lanes use, just
+        # tolerant of the board no longer carrying a graduate. If he was never ranked at
+        # or before the anchor (all his reads postdate it), fall back to his earliest
+        # archive read so the row still carries a real rank/label rather than nulls.
+        dates_with_key = [d for d in archive_by_date_key if key in archive_by_date_key[d]]
+        source_row = None
+        if dates_with_key:
+            at_or_before = [d for d in dates_with_key if not anchor or d <= anchor]
+            pick = max(at_or_before) if at_or_before else min(dates_with_key)
+            source_row = archive_by_date_key[pick].get(key)
+        valucast_rank = _clean_int(source_row.get("rank")) if isinstance(source_row, dict) else None
+        public_ranks = _public_source_ranks(_source_ranks(source_row)) if isinstance(source_row, dict) else {}
+        row = {
+            "name": (source_row.get("name") if isinstance(source_row, dict) else None),
+            "identity_key": key,
+            "mlbam_id": mlbam_id,
+            "team": (source_row.get("mlb_team") or source_row.get("team")) if isinstance(source_row, dict) else None,
+            "pos": _pos(source_row) if isinstance(source_row, dict) else None,
+            "level": (source_row.get("level") if isinstance(source_row, dict) else None),
+            "call_up_date": event_date,
+            "valucast_rank": valucast_rank,
+            "field_label": _field_label_from_source_row(source_row),
+            "board_count": len(public_ranks),
+            "near_note": _no_claim_near_note(source_row, valucast_rank),
+        }
+        if real_date:
+            row["actual_call_up_date"] = real_date
+        rows.append(row)
+    rows.sort(key=lambda r: (str(r.get("call_up_date") or ""), str(r.get("name") or "")), reverse=True)
+    return rows
+
+
 def build_call_up_receipts(
     *,
     archive_payloads: list[dict],
@@ -870,6 +1108,7 @@ def build_call_up_receipts(
     receipts = _existing_receipts(existing_log)
     misses = _existing_misses(existing_log)
     field_unranked = _existing_field_unranked(existing_log)
+    field_unranked_behind = _existing_field_unranked_behind(existing_log)
     archive_dates = [
         date
         for payload in archive_payloads
@@ -907,6 +1146,17 @@ def build_call_up_receipts(
                 prev_date=prev_date, actual_dates=actual_dates,
                 archive_by_date_key=archive_index, no_claim=no_claim,
             )
+            # Fourth lane: the mirror of field_unranked on the BEHIND side -- a single
+            # board calling a guy top-25 while we sat far below. Symmetry with the ahead
+            # lane: today zero rows qualify (built for the future). Shares the same
+            # no_claim dict -- a player who fails the mirror bars stays in the neither
+            # bucket; one who becomes a behind ROW is folded into misses before the
+            # count is taken (removed from no_claim via claimed_keys).
+            field_unranked_behind = detect_field_unranked_behind(
+                prev, cur, cur_date, roster_lookup, field_unranked_behind, logged_at=generated_at,
+                prev_date=prev_date, actual_dates=actual_dates,
+                archive_by_date_key=archive_index, no_claim=no_claim,
+            )
 
     # Re-validate INCREMENTAL rows under the at-promotion standard. The merge above only
     # adds/updates; it can't drop an already-committed row that the corrected standard no
@@ -922,6 +1172,14 @@ def build_call_up_receipts(
     # which also re-derives the honest field_label. A row that no longer qualifies drops to
     # the neither bucket, exactly like a de-qualified scored hit/miss.
     field_unranked = _revalidate_field_unranked(field_unranked, actual_dates, archive_index, no_claim)
+    # Field-unranked-BEHIND rows also carry divergence=None; their own revalidation checks
+    # the mirror guard still holds at promotion (exactly 1 in-cap board <= 25, our_rank -
+    # board_rank >= MIN_DIVERGENCE) and re-derives the label. A de-qualified row (e.g. a
+    # second board appeared -> the scored miss lane owns it next build) drops to the neither
+    # bucket, exactly like a de-qualified field-unranked hit.
+    field_unranked_behind = _revalidate_field_unranked_behind(
+        field_unranked_behind, actual_dates, archive_index, no_claim
+    )
 
     # Fold the field-unranked auto rows into the receipts board (they render on the
     # "AHEAD OF THE FIELD" side via the no-divergence field_label + AHEAD path, and
@@ -950,6 +1208,15 @@ def build_call_up_receipts(
     ]
     receipts = receipts + field_unranked
 
+    # Fold the field-unranked-BEHIND auto rows into the misses board (they render on the
+    # "BEHIND THE FIELD" side via the no-divergence field_label + BEHIND path). Precedence:
+    # scored > field_unranked_behind, same as the ahead side. A scored miss (int divergence)
+    # has field corroboration (>= MIN_BOARDS boards), so it is the stronger claim -- a behind
+    # row defers to a scored miss on identity, and the two can never coexist for one player.
+    scored_miss_keys = {row["identity_key"] for row in misses if isinstance(row.get("divergence"), int)}
+    field_unranked_behind = [row for row in field_unranked_behind if row["identity_key"] not in scored_miss_keys]
+    misses = misses + field_unranked_behind
+
     # Merge curated seeds; auto-detected rows win on identity (they carry a real divergence).
     by_key = {row["identity_key"]: row for row in receipts}
     seed_count = 0
@@ -977,6 +1244,12 @@ def build_call_up_receipts(
         real_date = actual_dates.get(str(row.get("mlbam_id")))
         if real_date:
             row["actual_call_up_date"] = real_date
+        # field_unranked_behind rows are EXCLUDED from the lead-time attach: the helper walks
+        # OUR claimed-rank band, which is meaningless praise on a row whose whole point is
+        # that the field beat us. Pop any stale committed value and skip the compute.
+        if row.get("field_unranked_behind"):
+            row.pop("flagged_days_early", None)
+            continue
         # Lead time: days ValuCast held this call before the field's trigger fired.
         # Anchor on the real date when known, else the board-observed call_up_date.
         # Recomputed every build from the archive index (no migration needed -- the
@@ -1018,6 +1291,11 @@ def build_call_up_receipts(
             (real := actual_dates.get(str(key.split("_")[0]))) and real < LAUNCH_DATE
         )
     }
+    # Persist + disclose the neither bucket: one anonymous, at-promotion-sourced row per
+    # PUBLISHED no-claim identity (SAME set as no_claim_keys -- count parity is a hard
+    # invariant asserted by the validator). Both directions used the same thresholds, so
+    # the board can now SHOW every call-up it didn't score instead of only counting them.
+    no_claim_rows = _build_no_claim_rows(no_claim_keys, no_claim, actual_dates, archive_index)
 
     blockers = []
     if len(archive_payloads) < 2:
@@ -1054,6 +1332,10 @@ def build_call_up_receipts(
             "miss_count": len(misses),
             "seed_count": seed_count,
             "field_unranked_count": sum(1 for r in receipts if r.get("field_unranked")),
+            # miss_count now naturally includes field-unranked-behind rows (they render on
+            # the behind side), so "N behind" counts unscored behinds exactly as "N ahead"
+            # counts unscored aheads -- the whole point of the mirror lane.
+            "field_unranked_behind_count": sum(1 for m in misses if m.get("field_unranked_behind")),
             "no_claim_call_up_count": len(no_claim_keys),
             "archive_dates_scanned": archive_dates,
             "pre_launch_excluded_count": len(pre_launch_excluded),
@@ -1067,6 +1349,7 @@ def build_call_up_receipts(
         },
         "receipts": receipts,
         "misses": misses,
+        "no_claim_rows": no_claim_rows,
     }
 
 

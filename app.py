@@ -7110,6 +7110,7 @@ def _build_receipts_page_context():
     payload = _load_receipts_payload()
     receipts = [] if RECEIPTS_HOLD else list(payload.get("receipts") or [])
     misses = [] if RECEIPTS_HOLD else list(payload.get("misses") or [])
+    no_claim_rows = [] if RECEIPTS_HOLD else list(payload.get("no_claim_rows") or [])
     generated_at = payload.get("generated_at")
     summary = payload.get("summary") or {}
     return {
@@ -7117,6 +7118,7 @@ def _build_receipts_page_context():
         "receipt_count": len(receipts),
         "misses": misses,
         "miss_count": len(misses),
+        "no_claim_rows": no_claim_rows,
         "no_claim_call_up_count": summary.get("no_claim_call_up_count") or 0,
         "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
@@ -7296,8 +7298,11 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None, no_cla
                 color = clay if is_miss else green
                 draw.text((x + w - 22 - _graphic_text_width(draw, label, f_gap), top + 16), label, fill=color, font=f_gap)
             else:
-                label = "AHEAD"
-                draw.text((x + w - 22 - _graphic_text_width(draw, label, f_rank), top + 22), label, fill=green, font=f_rank)
+                # Null-divergence rows: the ahead lane (field-unranked) renders "AHEAD";
+                # its behind mirror (field_unranked_behind) renders "BEHIND" in clay.
+                label = "BEHIND" if is_miss else "AHEAD"
+                chip_color = clay if is_miss else green
+                draw.text((x + w - 22 - _graphic_text_width(draw, label, f_rank), top + 22), label, fill=chip_color, font=f_rank)
         return top_y + panel_h
 
     y = 242
