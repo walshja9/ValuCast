@@ -1,5 +1,9 @@
 data/projections/raw/*.json
 data/prospects/raw/milb_season_stats_*.json
+# Plate-discipline compact per-pitch cache: rebuildable from network, ~350MB at
+# full scale (past the commit ceiling), so it stays uncommitted. The daily-build
+# `git add data/prospects/raw` line must never sweep it in.
+data/prospects/raw/pitch_discipline_pitch_cache.json
 __pycache__/
 *.py[cod]
 .pytest_cache/
