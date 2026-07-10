@@ -49,6 +49,28 @@ def test_fail_soft_malformed_artifact(tmp_path):
     assert store.groups_for("701527") == []
 
 
+def test_fail_soft_top_level_list_artifact(tmp_path):
+    # Valid JSON, wrong schema: a top-level list must degrade to empty, not raise.
+    path = tmp_path / "list.json"
+    path.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
+    store = PitchDisciplineStore(path=path)
+    assert store.groups_for("701527") == []
+    assert store.as_of is None
+
+
+def test_fail_soft_rates_as_string(tmp_path):
+    # Valid JSON, per-bucket wrong schema: rates/percentiles as strings must not
+    # raise; the empty-metrics group is filtered out.
+    path = _write_artifact(tmp_path, {
+        "1": {"AA": {
+            "pitches": 400, "qualifies": True, "zone_estimated": True,
+            "rates": "not-a-dict", "percentiles": "also-not-a-dict",
+        }},
+    })
+    store = PitchDisciplineStore(path=path)
+    assert store.groups_for("1") == []
+
+
 def test_empty_id_returns_empty(tmp_path):
     path = _write_artifact(tmp_path, {"1": {"AA": _bucket(400, qualifies=True)}})
     store = PitchDisciplineStore(path=path)

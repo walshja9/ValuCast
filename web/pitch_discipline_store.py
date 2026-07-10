@@ -59,6 +59,10 @@ class PitchDisciplineStore:
         self._loaded = True
         try:
             raw = json.loads(self._path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                # Valid JSON but wrong shape (e.g. a top-level list) degrades the
+                # same as a malformed file: empty store, no exception.
+                raw = {}
             players = raw.get("players")
             self._players = players if isinstance(players, dict) else {}
             labels = raw.get("metric_labels")
@@ -110,8 +114,12 @@ class PitchDisciplineStore:
         return ranked
 
     def _build_group(self, level: str, bucket: dict) -> dict:
-        rates = bucket.get("rates") or {}
-        pcts = bucket.get("percentiles") or {}
+        # Wrong-schema tolerance: non-dict rates/percentiles (e.g. a string) yield
+        # an empty-metrics group, which groups_for already filters out.
+        rates = bucket.get("rates")
+        rates = rates if isinstance(rates, dict) else {}
+        pcts = bucket.get("percentiles")
+        pcts = pcts if isinstance(pcts, dict) else {}
         metrics = []
         for key in _EXACT_ORDER:
             row = self._metric_row(key, rates, pcts, estimated=False)
