@@ -52,6 +52,7 @@ from web.season_outlook import (
     split_outlook,
 )
 from web.statcast_store import StatcastStore
+from web.pitch_discipline_store import PitchDisciplineStore
 from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
 from web.search_fold import fold as fold_search
@@ -407,6 +408,10 @@ store = CATALOG.store_for("steamer")   # module-level default (kept for existing
 # Committed Statcast percentile snapshot (Baseball Savant) for player cards.
 # Missing artifact -> cards simply render without the percentile section.
 statcast = StatcastStore()
+
+# Committed plate-discipline snapshot (MLB StatsAPI play-by-play) for prospect cards.
+# Observe-only display context; missing artifact -> no plate-discipline section.
+pitch_discipline_store = PitchDisciplineStore()
 
 # Committed FanGraphs FV + tool-grade snapshot (The Board) for player cards.
 # Display-only scouting reference; never feeds rank/value/score (independence).
@@ -8461,6 +8466,12 @@ def _build_dynasty_player_detail_context(player_id, args):
             "profile_stat_context": profile_stat_context,
             "shape_comps": shape_comps,
             "shape_comp_tier_labels": comps_payload.get("tier_labels") or {},
+            # Plate-discipline card bars (observe-only, keyed by mlbam id). Empty
+            # list -> the template renders no section. Discipline numbers are card
+            # bars ONLY: never a value input, never routed into scouting-read text.
+            "plate_discipline": pitch_discipline_store.groups_for(
+                getattr(dd_row, "mlbam_id", None)
+            ),
         }
 
     # Same-engine category z's as the active dynasty category configuration.
