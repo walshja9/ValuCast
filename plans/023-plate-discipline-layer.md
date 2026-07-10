@@ -567,6 +567,13 @@ pixel calibration rather than real pX/pZ; AAA may be exact, AA/A+/A estimated).
 
 ### Step 3: The pixel→feet calibration (the estimated part; CUT-CANDIDATE)
 
+> **PRE-FLIGHT VERIFIED 7/10 (live StatsAPI, 3 games/level, 2026-07-09 slate):**
+> AAA carries BOTH pixel `x,y` AND tracked `pX/pZ` on **99.7%** of pitches (942
+> sampled) — the calibration fit set is effectively every AAA pitch. AA and A+ are
+> **100% pixel-only** (978 / 905 sampled), and `strikeZoneTop/Bottom` were present
+> on **100%** of pitches at all three levels, so the missing-sz fallback is a rare
+> edge, not a common path. The fit-set assumption below is confirmed viable.
+
 Legacy `pitchData.coordinates.{x,y}` are screen pixels; `pX`/`pZ` are feet. Fit a
 mapping so AA/A+/A pixel coords can be classified in/out of zone.
 
