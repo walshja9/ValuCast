@@ -821,6 +821,16 @@ byproduct is restored.
 - **A verdict is about to render without a committed evidence artifact** (or the
   usage-features row is being asserted from MEMORY with no in-repo artifact). No
   verdict without evidence — omit the row or find the artifact. STOP.
+- **An evidence-load failure is about to render as a benign empty state.** If a
+  row's artifact exists in the registry but is unreadable/missing at request
+  time, that row MUST render an explicit "EVIDENCE UNAVAILABLE" error state,
+  visually distinct from any "pending / insufficient data" message. A reader
+  must always be able to tell "no data yet" from "the evidence link is broken."
+  (The live counter-example, 7/11: eephus.io marks its source-comparison claim
+  `validated` while its backtest artifact 404s, and the failure renders as a
+  plausible "no resolved cohorts yet" message that its own changelog
+  contradicts. That disguised-empty-state pattern is the exact failure mode
+  this page must make impossible.) STOP and add the error state.
 - **A verdict overclaims** — a `shadow_only` / `insufficient_sample` /
   `needs_review` / `candidate_ready` artifact is being labeled VALIDATED. That is
   the exact dishonesty this page exists to prevent. STOP and downgrade to
