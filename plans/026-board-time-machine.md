@@ -810,6 +810,30 @@ Summarized in Step 5. The load-bearing assertions:
   already-committed archives.
 - **No per-source board ranks** — aggregate only, historically and always.
 
+## Registered fast-follows (from the eephus live-UI review, 2026-07-11)
+
+Two features observed working on eephus's Time Machine that ValuCast should take
+in the follow-up plan once V1 ships — registered here so the next author inherits
+the spec instead of rediscovering it:
+
+1. **Compare-two-dates diff mode.** A second tab: pick dates A and B, render the
+   changelog — risers/fallers by rank delta, new entrants, exits. This generalizes
+   the movers boards (fixed 7/14/21/30d windows) to arbitrary historical windows
+   from the same archives. Must engage the epoch/`clean_tail` masking V1 defers:
+   a diff whose window crosses the 2026-06-22 role-normalization epoch must say so
+   and refuse rank-delta claims across the boundary (or mask to the clean side).
+2. **Hindsight-outcomes overlay.** An off-by-default toggle on any historical board:
+   annotate each row with what is known NOW (current value/rank, debuted, out of
+   universe) — VISUALLY DISTINCT from the as-of state, mirroring eephus's
+   "hindsight outcomes are realized results known only now, distinct from the
+   as-of grade" split. This is the receipts at-promotion grammar generalized to
+   every archive view; it must never silently blend into the as-of columns.
+
+Copy requirement carried into V1's methodology section: state plainly that
+ValuCast's history replays the committed artifact as published that day
+("as-shown"), not a current-model re-scoring of the past ("as-reconstructed") —
+short history, real receipts.
+
 ## Rollout order
 
 1. **Reader + fixture-based unit tests** (`web/board_time_machine_store.py`,
