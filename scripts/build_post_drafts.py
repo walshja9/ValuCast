@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -114,6 +115,18 @@ def _forbidden_strings(text: str) -> list[str]:
                 break
             start = idx + 1
     return hits
+
+
+def _fold_ascii(text: str) -> str:
+    """Fold accented characters to their ASCII base (Vasquez, Pena) so real
+    player names arriving from board artifacts pass the ASCII guard. ONLY
+    combining marks are stripped -- em-dashes and smart quotes survive folding
+    unchanged, so the guard still catches the defect class it exists for."""
+    return "".join(
+        ch
+        for ch in unicodedata.normalize("NFKD", text)
+        if not unicodedata.combining(ch)
+    )
 
 
 def _assert_draft_clean(body: str) -> None:
@@ -516,8 +529,11 @@ def build_digest(drafts: list[Draft], today: date | None = None) -> str:
     rule = "\n\n" + ("-" * 40) + "\n\n"
     rendered = []
     for draft in drafts:
-        _assert_draft_clean(draft.body)
-        rendered.append(draft.render())
+        # Fold accents BEFORE the guard: an accented player name is data, not
+        # a defect. The guard then runs on the exact text that ships.
+        text = _fold_ascii(draft.render())
+        _assert_draft_clean(text)
+        rendered.append(text)
     return header + "\n\n" + rule.join(rendered)
 
 

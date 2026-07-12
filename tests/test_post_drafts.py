@@ -369,6 +369,21 @@ def test_non_ascii_draft_raises():
         bpd.build_digest([bad])
 
 
+def test_accented_player_name_folds_and_passes():
+    # An accented name is data, not a defect: it must fold to ASCII and ship.
+    # (This exact class failed the 7/11 + 7/12 daily runs at the digest step.)
+    ok = bpd.Draft(
+        priority=1,
+        source="MOVERS",
+        why="test",
+        graphic_url="x",
+        body="J. Vásquez and E. Peña are climbing this week.",
+    )
+    digest = bpd.build_digest([ok])
+    assert "Vasquez" in digest and "Pena" in digest
+    assert all(ord(ch) < 128 for ch in digest)
+
+
 # ---------------------------------------------------------------------------
 # Telegram split + missing secrets.
 # ---------------------------------------------------------------------------
