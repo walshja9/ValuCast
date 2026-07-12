@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 0.89,
+        "gap": 0.85,
         "max_allowed_gap": 18.0,
         "second": {
-          "mlbam_id": 691406,
-          "name": "Junior Caminero",
+          "mlbam_id": 695578,
+          "name": "James Wood",
           "rank": 2,
-          "value": 99.11
+          "value": 99.15
         },
         "top": {
           "mlbam_id": 660271,
@@ -47,7 +47,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 4,
+        "pitcher_count": 5,
         "pitcher_samples": [
           {
             "name": "Shohei Ohtani",
@@ -64,7 +64,7 @@
               "SP"
             ],
             "rank": 7,
-            "value": 77.93
+            "value": 76.05
           },
           {
             "name": "Jacob Misiorowski",
@@ -72,8 +72,8 @@
               "SP",
               "RP"
             ],
-            "rank": 9,
-            "value": 72.13
+            "rank": 10,
+            "value": 70.73
           },
           {
             "name": "Cam Schlittler",
@@ -81,7 +81,15 @@
               "SP"
             ],
             "rank": 21,
-            "value": 62.94
+            "value": 62.59
+          },
+          {
+            "name": "Cristopher S\u00e1nchez",
+            "positions": [
+              "SP"
+            ],
+            "rank": 24,
+            "value": 62.41
           }
         ],
         "reliever_count": 0,
@@ -110,7 +118,7 @@
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 64.34
+            "score": 64.35
           },
           {
             "mlbam_id": 696146,
@@ -124,19 +132,19 @@
             "name": "Seth Hernandez",
             "rank": 9,
             "role": "pitcher",
-            "score": 56.84
+            "score": 56.86
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
             "rank": 10,
             "role": "pitcher",
-            "score": 55.47
+            "score": 55.49
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
-            "rank": 12,
+            "rank": 11,
             "role": "pitcher",
             "score": 54.55
           },
@@ -145,28 +153,28 @@
             "name": "Liam Doyle",
             "rank": 14,
             "role": "pitcher",
-            "score": 52.35
+            "score": 52.47
           },
           {
             "mlbam_id": 805906,
             "name": "Gage Wood",
             "rank": 15,
             "role": "pitcher",
-            "score": 51.38
+            "score": 51.63
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
             "rank": 16,
             "role": "pitcher",
-            "score": 50.7
+            "score": 50.96
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 17,
             "role": "pitcher",
-            "score": 50.37
+            "score": 50.48
           }
         ],
         "top25_evaluated_count": 25,
@@ -372,7 +380,7 @@
             "name": "Josue Briceno",
             "rank": 37,
             "role": "hitter",
-            "sample": 19.0,
+            "sample": 25.0,
             "sample_unit": "PA",
             "skill_band": "thin"
           },
@@ -414,8 +422,8 @@
         "audit_status": "candidate_ready",
         "blocker_count": 0,
         "blockers": [],
-        "current_row_count": 6469,
-        "current_season_row_count": 6341,
+        "current_row_count": 6489,
+        "current_season_row_count": 6363,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 7,
@@ -444,7 +452,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 29,
+        "archive_day_span": 30,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -553,7 +561,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 232
+        "row_count": 229
       },
       "status": "passed"
     },
@@ -562,7 +570,7 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 12,
-        "generated_at": "2026-07-11T00:00:00+00:00",
+        "generated_at": "2026-07-12T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -609,25 +617,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-07-11T11:59:15.768747+00:00",
+  "generated_at": "2026-07-12T12:00:09.506112+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-07-11",
-      "buy_signals": "2026-07-11",
-      "milb_stat_freshness_audit": "2026-07-11",
-      "mlb_layer": "2026-07-11",
-      "movers": "2026-07-11",
-      "prospect_card_data_audit": "2026-07-11",
-      "prospect_coverage_audit": "2026-07-11",
-      "prospect_rank": "2026-07-11",
-      "public_snapshot": "2026-07-11",
-      "recent_signal_report": "2026-07-11"
+      "buy_review": "2026-07-12",
+      "buy_signals": "2026-07-12",
+      "milb_stat_freshness_audit": "2026-07-12",
+      "mlb_layer": "2026-07-12",
+      "movers": "2026-07-12",
+      "prospect_card_data_audit": "2026-07-12",
+      "prospect_coverage_audit": "2026-07-12",
+      "prospect_rank": "2026-07-12",
+      "public_snapshot": "2026-07-12",
+      "recent_signal_report": "2026-07-12"
     },
-    "mlb_count": 918,
-    "prospect_count": 2831,
-    "public_row_count": 3749
+    "mlb_count": 912,
+    "prospect_count": 2842,
+    "public_row_count": 3754
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
