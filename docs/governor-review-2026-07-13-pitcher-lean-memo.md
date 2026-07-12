@@ -1,0 +1,50 @@
+All 14 buckets confirm negative_delta_count=0 — the peak layer structurally cannot mark anyone down. Every load-bearing fact across all four lenses is now independently verified against the committed artifacts. I have enough to write the decision memo.
+
+---
+
+# GOVERNOR REVIEW DECISION MEMO — Prospect Board Pitcher Lean (7/13)
+
+## 1. VERDICT
+
+**(C) MIXED — partial model fix + keep the banner until it self-clears.** The pitcher lean is predominantly a **model defect** (pedigree over-weighting on the model's weakest, out-of-validation axis), not a defensible contrarian view — so the fix belongs in the model, not the thresholds; but because the AOTC unlock gates model changes until after 7/13 and the top-band is tie-noise-fragile, the correct 7/13 action is to **hold the banner and schedule the model fix**, not relax the governor.
+
+Three of four lenses lean **defect** (decomposition, calibration, counterfactual); one leans **mixed** (routing-cliff). None found a genuine contrarian justification. That is a clean signal for C over A only because of the post-7/13 gating — on the merits it is A.
+
+## 2. THE EVIDENCE
+
+**The single decisive fact (verified against the 7/11 archive myself): the field is not pitcher-heavy — our board is the outlier.**
+Ranking the identical universe by internal source-rank median, the consensus top-25 holds **5–6 pitchers at every coverage floor** (≥1 src: 6, ≥3: 5, ≥4: 5, ≥5: 6) — **never 11**. Of our 11 top-25 pitchers, **8 sit outside the field's consensus top-25**: Bremner (field med #61), Smith (#65), Hughes (#571, 2 src), Witherspoon (#85), Doyle (#43), Wood (#52), Murphy (#146), Arnold (#56). Only **Anderson (#5), Hernandez (#6), Sloan (#19)** have real consensus support. A genuine contrarian view would diverge from the market on a *performance* thesis; instead we diverge on *draft slot*, and the industry has seen the same pro lines.
+
+**What drives the divergent scores is pedigree, not performance (decomposition lens).** model_score is 0.76 of each pitcher's pre-availability score, and the pitcher OUTCOME axis is **100% draft-pedigree for 8 of 11** (≥73% for all 11); IMPACT axis 100% pedigree for 7 of 11 (mean ~92%). Largest single driver is `pick_value`/`inverse_draft_round` for 10 of 11. The counterfactual lens corroborates: the 8 divergent arms carry 2026 pro ERAs of 4.15–5.46 (several at AAA) yet rank top-17 on 91–100% pedigree drivers. **Two are outright stale-pedigree bugs** the existing decay guardrails failed to catch: Hughes (#10, 2022 pick, age 24, ~6–40 IP, FV 40, consensus #571) and Murphy (#16, 2022 pick, age 22, ~20 IP).
+
+**The model's own eval says pitchers are the role it predicts worst (calibration lens).** Realized-outcome backtest: adapter rank-concordance **hitter 0.78 vs pitcher 0.49** (0.5 = random), top-quartile precision 0.37 vs 0.26; dynasty Brier 0.158 vs 0.222. The board is concentrating its top-25 on the role its own backtest orders near-randomly, for a 2024–26 draft cohort **entirely outside the ≤2019 validation window**. I confirmed the peak-projection layer is structurally incapable of pricing downside: **negative_delta_count = 0 in all 14 buckets** (avg_delta +12 to +17) — it never marks anyone down. And there is **zero explicit attrition/TINSTAAPP discount** anywhere in `prospects/` (grep = 0 hits); a healthy full-sample pitcher gets the same risk_discount as a healthy hitter.
+
+**I verified the lean survives a thin-sample-only fix — so a narrow patch will not clear the governor (counterfactual lens, reproduced exactly).** Cutting points from every <60-pro-IP arm: −3 → still 11 in top-25; −5 → 10; −8 → 9 (still >7 cap), top-50 exactly at 0.30. Only 5 of 11 top-25 pitchers are <60 IP. **The pedigree over-weighting is broad, not concentrated in the thin subset.**
+
+**The count itself is tie-band noise (decomposition, confirmed by governor history).** Ranks 9–17 span 6.47 pts (~0.81/rank); a sub-1-point perturbation reorders pitchers vs hitters freely. Archive top-25 pitcher count swung **7 → 10 → 8 → 11** (6/22, 6/29, 7/05, 7/11) with no methodology change, while the recomputed consensus count stayed flat at 4–6. The governor's hard 7-cap is being tripped by jitter, but the jitter rides on a genuine upward drift.
+
+**Honest contradiction between lenses.** The routing-cliff lens (lean: mixed) is the dissent and it is worth naming: it found the role-quantile normalization does **not** wholesale-inflate pitchers — re-normalizing on a pooled percentile actually *raises* them (Bremner +10.2, Smith +10.0). So "the role split inflates pitchers" is **false**. What it *did* find is two real structural amplifiers: (1) the outcome and impact heads run on the **same feature vector** and are near-collinear for elite pitchers (top-25 r=0.92 vs hitters 0.78), so the 0.58/0.42 blend double-counts one signal; (2) the pitcher impact target takes **max() over starter/reliever role shapes**, which can only push pitcher impact up. These are smaller levers (~2–8 final pts on the top arms) than the pedigree dominance, but they are real and point the same direction (model, not thresholds). Also flagged honestly: the "routing cliff Adams/Jenkins" and "double-count" findings queued from the 7/3 review are **not committed in-repo** — both mechanisms were reconstructed from code, and Adams/Jenkins turned out to be **hitters** near the boundary, a hitter-tail resolution artifact, not the pitcher story. Don't cite them as pre-established findings on 7/13.
+
+## 3. WHAT SUNDAY SHOULD DO
+
+1. **Governor: no change. Keep the banner.** Do not touch `max_top25_prospect_pitcher_count=7` or `max_top50_prospect_pitcher_rate=0.30`. The evidence justifying a relaxation would be "our pitcher ordering is good and the market is wrong" — the opposite is true (0.49 concordance, 8/11 outside consensus). Relaxing would publish a board the field disagrees with on 8 of 11 top arms. The banner is honest state — `next_allowed_step: repair_model_quality_before_public_promotion` is exactly right.
+
+2. **Log the verdict as "model defect, fix gated to post-7/13 AOTC unlock."** This is the decision the review must record so it isn't re-litigated. The model's own remediation string already says it: `calibration_report.py:469` → *"Review pitcher outcome weighting and availability gates."*
+
+3. **After the 7/13 unlock, in priority order, brief Codex on these fixes** (Fable reviews diffs + reruns the backtest as the gate):
+   - **(a) Pedigree cap / stale-pedigree decay in `rank_v1.py`** — highest ROI, fixes the two bugs (Hughes, Murphy) and dampens the 8 divergent arms. The pedigree share should not be able to carry an arm to top-16 on a 3–4-year-old draft slot with a mediocre current line.
+   - **(b) Down-weight pitcher outcome/impact to reflect the measured 0.49-vs-0.78 concordance gap** (the model's own recommendation), and/or add a **pitcher attrition base-rate discount** in `availability.py` — there is currently none.
+   - **(c) Decorrelate the pitcher blend** — retrain with a single pitcher head or a decorrelated impact target, and reconsider the `max()`-over-starter/reliever impact target (`model.py:495-516`). Smaller lever; do after (a)/(b).
+
+4. **Re-run the governor after each fix and let the banner self-clear.** Expected board shape after (a)+(b): the counterfactual haircut shows an ~8-point effective pedigree correction lands top-25 at ~9 pitchers and top-50 at exactly 0.30 — i.e. (a) alone likely won't fully clear the 7-cap, so (a)+(b) together are needed. **Do not hand-tune to exactly 7**; fix the mechanism and take whatever count falls out. The 3 consensus-supported arms (Anderson, Hernandez, Sloan) should survive — that's the tell that the fix corrected the defect rather than just deleting pitchers.
+
+## 4. RISKS
+
+- **Over-correction.** Down-weighting pedigree could bury legitimately elite un-pitched arms (the Anderson/Hernandez/Sloan tier, who *do* have consensus support). Mitigation: gate every retrain on the backtest concordance **and** check those three stay top-25.
+- **The count is noisy, so any fix looks unstable day-to-day.** Because the top band is tie-noise (7↔11 swing), a fix that lands at "8" one day may print "7" or "9" the next. Judge success on the **backtest metrics and consensus alignment**, not a single day's count — otherwise you'll chase jitter.
+- **Model changes are gated post-7/13 and touch the AOTC-scored path.** Any retrain risks disturbing the frozen AOTC scorecard targets. Confirm the pitcher-scoring fix does not alter the pre-registered AOTC funnel before shipping.
+- **Reconstructed findings.** The double-count / max()-over-roles levers are code-reconstructed, not from a committed writeup, and their per-player stake (~2–8 pts) is an estimate that can't be isolated without a retrain. Treat (c) as hypothesis-to-validate, not established fact — the retrain in (b)/(c) *is* the validation.
+- **Doing nothing (option D) is the quiet failure mode.** The lean is drifting up (3→11 over June) and two stale-pedigree bugs are live. Holding the banner without scheduling the fix lets the defect compound and keeps the prospect surface dark indefinitely.
+
+---
+Artifacts cited (all under `C:/Users/Alex/Documents/Codex/2026-05-18/league-values/`): `data/models/valucast_quality_governor.json` (blocked check `prospect_top_board_role_shape`, lines 94–184; `next_allowed_step` line 633; MLB board passes at 4 pitchers, lines 44–93; pedigree guardrails pass at 0.0 — lines 240–304); `data/prediction_archive/valucast_prospect_rank_v1/2026-07-11.json` (board, `context_only.source_ranks`); `data/models/valucast_prospect_peak_projection_calibration.json` (14 buckets, neg_delta=0); `data/models/valucast_prospect_outcome_backtest.json`; `prospects/rank_v1.py`, `prospects/model.py`, `prospects/availability.py`, `prospects/gate.py`, `prospects/calibration_report.py:469`.
