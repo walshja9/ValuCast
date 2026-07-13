@@ -44,6 +44,11 @@
         chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
         <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
         &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
+        {% if board_min_date %}
+        <p class="buys-fineprint">Field-consensus vintage: the oldest source board was last
+        refreshed {{ board_min_date }}. Outside boards move on their own schedules — a slow
+        board slows apparent field movement in both directions, for us and against us.</p>
+        {% endif %}
     </div>
     {% if sc %}
     <div class="buys-actions">

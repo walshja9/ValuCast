@@ -496,6 +496,22 @@ MIN_RP_IP = 20
 
 _PROJECTION_ONLY_UNAVAILABLE_STATUSES = {"injured", "rehab"}
 
+_INELIGIBLE_PLAYERS_PATH = Path(__file__).parent / "data" / "manual" / "ineligible_players.json"
+
+
+@lru_cache(maxsize=1)
+def _ineligible_mlbam_ids():
+    """Players editorially removed from every served board (restricted list,
+    bans). The availability feeds carry no roster/IL status for them -- no
+    active roster, no IL stint -- so nothing upstream excludes them and their
+    stale projections keep generating value. Manual by design: rare,
+    judgment-call events. Fail-soft: unreadable file = empty set, never a 500."""
+    try:
+        payload = json.loads(_INELIGIBLE_PLAYERS_PATH.read_text(encoding="utf-8"))
+        return frozenset(str(k) for k in payload)
+    except Exception:  # noqa: BLE001
+        return frozenset()
+
 
 @lru_cache(maxsize=1)
 def _mlb_availability_by_id():
@@ -552,7 +568,11 @@ def _valuation_players(always_keep=None, active_store=None):
         rp_ip=MIN_RP_IP,
         always_keep=always_keep or frozenset(),
     )
-    return [player for player in players if _is_live_redraft_projection(player)]
+    ineligible = _ineligible_mlbam_ids()
+    return [
+        player for player in players
+        if _is_live_redraft_projection(player) and _mlbam_id(player) not in ineligible
+    ]
 
 
 PUBLIC_SNAPSHOT_PATH = Path(os.environ.get(
@@ -7656,7 +7676,19 @@ def ledger():
     aggregate headline still honors the 30-day publish gate; the full funnel and
     per-call ledger are live immediately, misses included. "It's on the ledger"
     is the brand phrase — the URL matches it."""
-    return render_template("track_record.html", sc=_load_scorecard_payload())
+    # 7/12 audit F6: the scorecard restamps generated_at daily while its consensus
+    # inputs age on their own schedules (/gaps got this disclosure 7/9; the ledger
+    # publishes the same field consensus and must not imply freshness it lacks).
+    try:
+        from prospects.consensus_gap import _board_vintages
+        board_min_date = _board_vintages().get("board_min_date")
+    except Exception:  # noqa: BLE001 — disclosure line is fail-soft, never a 500
+        board_min_date = None
+    return render_template(
+        "track_record.html",
+        sc=_load_scorecard_payload(),
+        board_min_date=board_min_date,
+    )
 
 
 @app.route("/track-record")

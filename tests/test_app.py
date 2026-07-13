@@ -1559,6 +1559,30 @@ class TestBulletproofing(unittest.TestCase):
 
 
 
+class TestIneligiblePlayers(unittest.TestCase):
+    """Manual ineligible list (data/manual/ineligible_players.json): restricted-list
+    players carry no roster/IL status in the availability feeds, so nothing
+    upstream excludes them and their stale projections keep generating value.
+    7/12: Emmanuel Clase (MLB restricted list) surfaced on board search — the
+    always_keep search path retains sub-threshold players past the playing-time
+    filter, so the ineligible gate must sit after it."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_manual_list_loads(self):
+        from app import _ineligible_mlbam_ids
+        self.assertIn("661403", _ineligible_mlbam_ids())
+
+    def test_ineligible_player_never_reaches_a_board_surface(self):
+        body = self.client.get("/rankings?mode=categories&search=Clase").data.decode()
+        self.assertNotIn("Emmanuel", body)
+        self.assertIn("Jonatan", body)   # same-surname ACTIVE player must survive
+        payload = self.client.get("/api/value-map-players").data.decode()
+        self.assertNotIn("Emmanuel Clase", payload)
+
+
 class TestTradeAnalyzer(unittest.TestCase):
     """Free /trade page (plan 022): two-sided verdict from served values plus the
     three non-negotiable honesty features and the PNG cache poisoning guard."""

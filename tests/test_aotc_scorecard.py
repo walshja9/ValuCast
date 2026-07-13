@@ -198,6 +198,9 @@ def test_ledger_page_renders_full_ledger():
     assert '<span class="ledger-tile-label">Leading</span>' in html
     assert '<span class="ledger-tile-label">Wins</span>' not in html
     assert "caught up" in html and "trending our way" in html  # both counts distinct
+    # 7/12 audit F6: the ledger must disclose the field-consensus vintage — the
+    # scorecard restamps daily while source boards age on their own schedules.
+    assert "Field-consensus vintage" in html
     # 7/12 audit: statuses recompute every build and can reopen — the page must
     # never promise a finality the code cannot deliver (King/Bitonti flapped
     # closed->open in the real archive while the copy said "final").

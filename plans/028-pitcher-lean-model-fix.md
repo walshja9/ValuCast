@@ -878,3 +878,75 @@ the code. Where these conflict with anything above, the amendment wins.
    and later mid-season crossings are outside the one-time epoch mask (and, per
    amendment 2, unmasked on buys/movers below 6 points). Add a score-continuity
    sweep around every chosen boundary to the test plan.
+
+## Epoch-batch additions — 2026-07-12 audit #2 (Sol model-core audit, all verified)
+
+The following confirmed defects ride 028's SINGLE epoch bump. The epoch bump's
+scope statement must name all of them — none may ship separately (each would
+otherwise cost its own public re-baseline).
+
+- **A. Availability thin-sample cliffs (audit F1, CRITICAL).** Two unreconciled
+  mechanisms: availability.py's discrete IP/PA floors gate rank_v1.py's
+  CONTINUOUS thin_current_sample_confidence penalty ON/OFF, producing verified
+  score cliffs of +15.38 (upper starter at 45 IP), +15.60 (lower starter 30 IP),
+  +11.49 (reliever 12 IP), +14.66 (upper hitter 150 PA), -14.17 (GS 2->3 at
+  20 IP). Fix: taper the continuous penalty to zero as reliability rises instead
+  of gating it on the discrete status flip (the discrete availability DISCOUNT
+  steps of ~1-2 pts may stay). This is the same cliff class amendment 4 bans at
+  the pedigree floor — fix both with the same ramp idiom.
+- **B. Call-up renormalization split (audit F2).** rank_v1.py Pass-2 board
+  renormalization excludes ALL active-roster ids, leaving retained rookie
+  call-ups on the Pass-1 full-universe distribution while their board neighbors
+  use the board distribution (~66 of 69 call-up scores shift <=0.68 pts /
+  <=41 rank spots if unified). Fix: exclude only service-graduated ids at the
+  Pass-2 predicate so every main-board row shares one distribution. NOTE: the
+  plan's earlier "do NOT touch the role-quantile normalization" line refers to
+  028's own surgery; this is an explicitly scoped ADDITION to the epoch bump.
+- **C. Consensus identity joins (audit F3, CRITICAL).** HKB/Pipeline snapshot
+  builders join on normalized name ONLY (PL/STS add role only) — the MIN
+  catcher Luis Hernandez (801346) publicly carries consensus 36 built from the
+  17-year-old SFG shortstop's HKB/PL/Pipeline ranks. Fix: key joins on
+  (normalized_name + age/team tolerance) using the Team/Age/Level columns the
+  source files already carry; unmatched-on-attribute rows go to the unmatched
+  list, never silently collide. Verified blast radius: zero AOTC ledger calls
+  affected (all collision identities rank far past the 300 enrollment ceiling),
+  /gaps unaffected; one player card wrong today.
+- **D. Category-impact label leakage (audit F4).** model.py _impact_target has
+  no upper season clip (dynasty/adapter backtests correctly clip at cohort+4),
+  so walk-forward folds train on post-fold outcomes and the shadow artifact's
+  "4.15% OOS" gate-reason is in-sample. Fix: clip at cohort_year +
+  OUTCOME_HORIZON_YEARS in the 3c retrain this plan already schedules. FOLLOW-UP
+  (unverified lead from the verifier, NOT yet a finding): prospects/universal.py
+  _future_seasons also uses an unbounded window — assess during execution.
+
+## Acceptance-gate restatement — 2026-07-12 (audit F5, verified; supersedes the 0.4903 baseline)
+
+The pre-registered pitcher baseline 0.4903 was computed on a TRUNCATED cohort:
+adapter_backtest.py drops any established pitcher whose representative season
+lacks QS (58 genuine successful-outcome seasons removed; 1,069 obs instead of
+1,127). Verified corrected numbers (QS=0 imputation, replay reproduces the
+committed artifact bit-for-bit before the correction): pitcher concordance
+baseline 0.4903 -> 0.4692 on n=1127; improvement over baseline 4.61% -> 3.61%;
+hitter numbers unchanged (0.7791, n=1091). Therefore, executor order:
+
+1. FIRST fix the QS exclusion (impute QS=0 for pre-QS-era/missing seasons, or
+   score the pitcher concordance on the QS-free category subset — state which
+   in the diff) and re-emit the backtest artifact.
+2. THEN the acceptance gate becomes: pitcher candidate_rank_concordance
+   IMPROVED over the corrected baseline (expected ~0.4692) on the corrected
+   n=1127 cohort. The 0.4903 figure is dead — improving over it on the
+   truncated cohort proves nothing.
+3. The rank-artifact assertions from amendment 1 (Hughes/Murphy out of top 16,
+   three consensus arms in top 25, governor pitcher-share green) are unchanged.
+
+## Memo correction — 2026-07-12 (audit F7, verified)
+
+The pitcher-lean memo's claim that "the peak layer cannot mark anyone down"
+(and this plan's line repeating it) is literally false: five committed
+projections carry negative deltas (min -4.66 — Yoniel Curet). The zero came
+from peak_calibration.py's negative_delta_count counting only deltas <= -10.
+Correct reading: the peak layer's downside signal EXISTS but is small; the
+counter is mislabeled. Fix in this batch: count all negative deltas (keep a
+separate big_negative_delta_count if the >=10 cut is wanted) and rename
+honestly. The memo's conclusion (pitcher downside adjustment is effectively
+absent at material magnitudes) still stands.
