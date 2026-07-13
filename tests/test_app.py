@@ -1194,8 +1194,26 @@ class TestPlayingTimeFilter(unittest.TestCase):
 
     def test_inactive_projection_only_player_not_readded_by_search(self):
         # Search can bypass PA/IP floors, but not official inactive/rehab context.
-        response = self.client.get("/?search=Jason+Foley")
-        self.assertNotIn(b"Add Jason Foley to compare", response.data)
+        # Pick a currently-inactive projection-only player DYNAMICALLY so this
+        # never drifts when someone comes off the IL (Jason Foley did on 7/13).
+        from app import (
+            store, _mlb_availability_by_id, _mlbam_id,
+            _has_current_actual_stats, _PROJECTION_ONLY_UNAVAILABLE_STATUSES,
+        )
+        byid = _mlb_availability_by_id()
+        inactive = next(
+            (p for p in store.get_all()
+             if getattr(p, "name", None)
+             and not _has_current_actual_stats(p)
+             and str((byid.get(_mlbam_id(p)) or {}).get("status") or "").lower()
+                 in _PROJECTION_ONLY_UNAVAILABLE_STATUSES),
+            None,
+        )
+        if inactive is None:
+            self.skipTest("no inactive projection-only player in current data")
+        response = self.client.get("/?search=" + inactive.name.replace(" ", "+"))
+        self.assertNotIn(
+            f"Add {inactive.name} to compare".encode(), response.data)
 
     def test_qualifying_player_still_shown(self):
         # End-to-end sanity: a real everyday player still appears by default.
