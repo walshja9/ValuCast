@@ -97,3 +97,19 @@ class TestLookup(unittest.TestCase):
     def test_get_point_rules_empty_string(self):
         rules = get_point_rules("")
         self.assertEqual(len(rules), 0)
+
+    def test_get_point_rules_hostile_input_is_dropped_not_raised(self):
+        # 7/12 audit: rules= comes off a public URL. A non-numeric value used to
+        # raise ValueError -> HTTP 500; a non-finite value poisoned the board
+        # (stat * inf = inf). Both must be dropped, never raised, and the valid
+        # rule alongside them must survive.
+        import math
+        rules = get_point_rules("HR:abc,K:inf,ER:nan,SB:2")
+        stats = {r.stat: r.points for r in rules}
+        self.assertEqual(stats, {"SB": 2.0})
+        self.assertTrue(all(math.isfinite(r.points) for r in rules))
+
+    def test_get_point_rules_count_is_capped(self):
+        # A giant rules string can't multiply engine work by players * rules.
+        huge = ",".join(f"S{i}:1" for i in range(500))
+        self.assertLessEqual(len(get_point_rules(huge)), 64)

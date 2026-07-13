@@ -46,14 +46,17 @@ def build_config(
 
     if scoring_mode is ScoringMode.POINTS:
         if pt_params:
-            point_rules = tuple(
-                PointRule(stat=stat, points=float(pts))
-                for stat, pts in pt_params.items()
-                if pts
-            )
+            point_rules = tuple(get_point_rules(
+                ",".join(f"{stat}:{pts}" for stat, pts in pt_params.items() if pts)
+            ))
         elif rules_str:
             point_rules = tuple(get_point_rules(rules_str))
         else:
+            point_rules = ()
+        # A hostile or all-invalid rules= / pt_ set parses to zero rules; an empty
+        # points league is a ValueError (models.py) -> 500. Fall back to the default
+        # preset instead, same fail-soft-to-default as the unknown-mode guard above.
+        if not point_rules:
             point_rules = POINTS_PRESETS["default"]
 
         return LeagueConfig(

@@ -156,6 +156,10 @@ _PNG_CACHE_PARAMS = frozenset({
     "mode", "source", "cats", "pcats", "rules", "split_rp", "display",
     "fit_cats", "preset", "rank_by",
     "teams", "budget", "roster", "pslots",
+    "window",           # /movers/share-card.png renders 7/14/21/30d rows from this;
+    # omitting it collapsed every window to one key and served the first-rendered
+    # (e.g. 7d) image to a visitor asking for 21d (cross-user poisoning). Bounded
+    # to 4 values by _parse_spark_window, so no unbounded-key risk.
     "give", "get",     # plan 022: the /trade card renders from these; they MUST be
     # in the cache key or every trade collapses to one key and the first-rendered
     # card is served to everyone (cross-user poisoning). Fixed names, not prefixed.

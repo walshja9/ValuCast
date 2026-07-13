@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections import OrderedDict
 
 from league_values.models import CategorySpec, Direction, PlayerPool, PointRule
@@ -228,15 +229,29 @@ def get_split_pitching_categories(ids: list[str]) -> list[CategorySpec]:
     return result
 
 
+# The legacy rules= param comes straight off a public URL. Mirror the pt_* guard
+# (app.py): a non-numeric value must not 500, a non-finite value must not poison
+# the board (stat * inf = inf), and the rule count is capped so a giant rules
+# string can't multiply engine work by players * rules.
+_MAX_POINT_RULES = 64
+
+
 def get_point_rules(rules_str: str) -> list[PointRule]:
-    """Parse 'HR:4,K:1,ER:-2' into PointRule objects."""
+    """Parse 'HR:4,K:1,ER:-2' into PointRule objects. Hostile-input tolerant:
+    non-numeric / non-finite / over-cap rules are dropped, never raised."""
     if not rules_str.strip():
         return []
     rules = []
-    for pair in rules_str.split(","):
+    for pair in rules_str.split(",")[:_MAX_POINT_RULES]:
         pair = pair.strip()
         if ":" not in pair:
             continue
         stat, points = pair.rsplit(":", 1)
-        rules.append(PointRule(stat=stat.strip(), points=float(points.strip())))
+        try:
+            value = float(points.strip())
+        except ValueError:
+            continue
+        if not math.isfinite(value):
+            continue
+        rules.append(PointRule(stat=stat.strip(), points=value))
     return rules

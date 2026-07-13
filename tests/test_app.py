@@ -1787,6 +1787,18 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertIn("give", _PNG_CACHE_PARAMS)
         self.assertIn("get", _PNG_CACHE_PARAMS)
 
+    def test_movers_png_cache_key_distinguishes_window(self):
+        # 7/12 audit: window changes the movers card's rows/subtitle/footer, so it
+        # MUST be in the key or a 21d request gets served the cached 7d image
+        # (cross-user poisoning). Different windows -> different keys.
+        from app import _png_cache_key, _PNG_CACHE_PARAMS
+        self.assertIn("window", _PNG_CACHE_PARAMS)
+        with app.test_request_context("/movers/share-card.png?window=7"):
+            k7 = _png_cache_key()
+        with app.test_request_context("/movers/share-card.png?window=21"):
+            k21 = _png_cache_key()
+        self.assertNotEqual(k7, k21)
+
     def test_trade_template_renders(self):
         import jinja2
         env = jinja2.Environment(loader=jinja2.FileSystemLoader("templates"))
