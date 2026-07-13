@@ -30,6 +30,7 @@ POOLED_SHADOW_ENABLED = os.environ.get("VALUCAST_POOLED_SHADOW", "1") != "0"
 POOLED_SHADOW_VERSION = "0.1.0"
 POOLED_SHADOW_USAGE = "pooled_line_shadow_observe_only_not_live_score_or_value"
 MATURE_THROUGH = 2019
+OUTCOME_HORIZON_YEARS = 4  # fixed training-label window (mirrors adapter/dynasty backtests)
 MAX_AGE = 25
 MIN_CURRENT_SAMPLE = {"hitter": 50.0, "pitcher": 15.0}
 SAMPLE_REGRESSION = {"hitter": 200.0, "pitcher": 50.0}
@@ -487,7 +488,12 @@ def _impact_target(
         return 0.0
     scores = []
     for season in seasons_by_player.get(key, []):
-        if int(season.get("year") or 0) <= int(record["cohort_year"]):
+        year = int(season.get("year") or 0)
+        cohort_year = int(record["cohort_year"])
+        # Seasons past cohort_year + horizon are post-fold look-ahead: at training
+        # time for this cohort they hadn't happened. Clip to the fixed outcome
+        # window so walk-forward labels stay honest (F4 leak; mirrors siblings).
+        if year <= cohort_year or year > cohort_year + OUTCOME_HORIZON_YEARS:
             continue
         if (_num(season.get(sample_key)) or 0.0) < IMPACT_TARGET_MIN[role]:
             continue

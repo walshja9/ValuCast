@@ -2,6 +2,7 @@
 import json
 
 from prospects.adapter_backtest import (
+    _actual_row,
     _temporal_stability_guard,
     _top_quartile_precision,
     _weighted_fold_metric,
@@ -167,3 +168,28 @@ def test_run_backtest_writes_promotion_artifact(tmp_path):
     assert payload["promotion"]["next_allowed_step"] == (
         "improve_model_or_historical_evidence"
     )
+
+
+def test_actual_row_imputes_missing_qs_instead_of_dropping_the_pitcher():
+    # A missing QS (pre-QS-era / gappy feed) must not drop an established pitcher
+    # season; impute 0 so the row still scores. Regression lock for the F5 cohort
+    # truncation (58 outcome-correlated rows silently excluded, 1069 vs 1127).
+    seasons = {
+        "555_pitcher": [
+            {
+                "year": 2019,
+                "ip": 150,
+                "so": 160,
+                "era": 3.20,
+                "whip": 1.10,
+                "k_bb": 3.5,
+                "l": 8,
+                "sv": 0,
+                "hld": 0,
+                # no "qs" key
+            }
+        ]
+    }
+    actual = _actual_row({"mlbam_id": 555, "cohort_year": 2018}, "pitcher", seasons)
+    assert actual is not None
+    assert actual["categories"]["QS"] == 0.0

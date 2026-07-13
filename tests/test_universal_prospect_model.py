@@ -19,6 +19,25 @@ from prospects.universal import (
 )
 
 
+def test_horizon_clipped_seasons_drops_post_horizon_outcomes():
+    # cohort 2018 + 4-year horizon closes at 2022; outcomes past 2022 are post-fold
+    # look-ahead and must never reach the served model's training labels.
+    # Regression lock for the universal `_future_seasons` leak (Task 3, audit #2).
+    from prospects.universal import _horizon_clipped_seasons
+
+    row = _historical("pitcher", 2018, 10001)
+    seasons = {
+        "10001_pitcher": [
+            {"year": 2019, "ip": 150, "so": 150, "qs": 12, "era": 3.5, "whip": 1.2},
+            {"year": 2024, "ip": 200, "so": 260, "qs": 30, "era": 1.9, "whip": 0.8},
+        ]
+    }
+    clipped = _horizon_clipped_seasons([row], seasons)
+    years = [season["year"] for season in clipped["10001_pitcher"]]
+    assert 2019 in years
+    assert 2024 not in years
+
+
 def _historical(role, year, mlbam_id):
     row = {
         "cohort_year": year,

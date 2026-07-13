@@ -918,6 +918,13 @@ otherwise cost its own public re-baseline).
   OUTCOME_HORIZON_YEARS in the 3c retrain this plan already schedules. FOLLOW-UP
   (unverified lead from the verifier, NOT yet a finding): prospects/universal.py
   _future_seasons also uses an unbounded window — assess during execution.
+  RESOLVED 2026-07-13 (Phase 0): confirmed a real training-label leak — the
+  training feed (`build_shadow_model`) passes the raw, unclipped seasons dict all
+  the way down to `_future_seasons`. Fixed by clipping the seasons feed upstream
+  in `build_shadow_model` (new `_horizon_clipped_seasons`), NOT inside
+  `_future_seasons`, which the mature-cohort evaluator legitimately reads in full.
+  The served universal re-emit is code-only for now and MUST ride this plan's
+  epoch bump (do not rebuild/push the served model without it).
 
 ## Acceptance-gate restatement — 2026-07-12 (audit F5, verified; supersedes the 0.4903 baseline)
 

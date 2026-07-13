@@ -139,9 +139,14 @@ def _actual_row(row: dict, role: str, seasons_by_player: dict) -> dict | None:
             category: season.get(field) for category, field in fields.items()
         }
     else:
+        # QS is absent for pre-QS-era / gappy feeds. Impute 0 rather than let the
+        # completeness check below drop the whole pitcher-season: the dropped rows
+        # were outcome-correlated (all cleared the established-IP bar), so excluding
+        # them biased the concordance gate (F5, audit #2).
+        qs = season.get("qs")
         required = {
             "K": season.get("so"),
-            "QS": season.get("qs"),
+            "QS": 0.0 if qs is None else qs,
             "ERA": season.get("era"),
             "WHIP": season.get("whip"),
             "K/BB": season.get("k_bb"),

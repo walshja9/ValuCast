@@ -38,6 +38,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_universal_prospect_model.js
 ARCHIVE_DIR = (
     ROOT / "data" / "prediction_archive" / "valucast_universal_prospect_model"
 )
+OUTCOME_HORIZON_YEARS = 4  # fixed training-label window (mirrors adapter/dynasty backtests)
 
 MODEL_NAME = "ValuCast Universal Prospect Model"
 MODEL_VERSION = "0.4.0"
@@ -980,11 +981,44 @@ def _target_contract() -> dict:
     }
 
 
+def _horizon_clipped_seasons(dataset_rows: list[dict], seasons_by_player: dict) -> dict:
+    """Clip each player's outcome seasons to the fixed training horizon.
+
+    Training labels for a cohort in year Y may only see outcome seasons through
+    Y + OUTCOME_HORIZON_YEARS; later seasons are post-fold look-ahead. Mirrors the
+    upstream clip adapter_backtest/dynasty_backtest apply, so the served model
+    can't leak future outcomes into its own targets (Task 3, audit #2). Applied to
+    the training feed only; score_current and the mature-cohort evaluator, which
+    legitimately read the full future window, are untouched.
+    """
+    cohort_by_key = {}
+    for role in ("hitter", "pitcher"):
+        for row in _base_historical_rows(dataset_rows, role):
+            cohort_by_key[f"{row['mlbam_id']}_{role}"] = int(row["cohort_year"])
+    clipped = {}
+    for key, seasons in seasons_by_player.items():
+        cohort_year = cohort_by_key.get(key)
+        if cohort_year is None:
+            clipped[key] = seasons
+            continue
+        clipped[key] = [
+            season
+            for season in seasons
+            if int(season.get("year") or 0) <= cohort_year + OUTCOME_HORIZON_YEARS
+        ]
+    return clipped
+
+
 def build_shadow_model(contract: dict, now: str | None = None) -> dict:
     validate_input_contract(contract)
     now = now or datetime.now(timezone.utc).isoformat()
     dataset_rows = contract["historical"].get("rows", [])
-    seasons_by_player = contract["historical_mlb_seasons"]
+    # Clip outcome seasons to the fixed horizon before training so walk-forward
+    # labels can't consume post-fold results (Task 3). Not clipped inside
+    # _future_seasons because the mature-cohort evaluator reads the full window.
+    seasons_by_player = _horizon_clipped_seasons(
+        dataset_rows, contract["historical_mlb_seasons"]
+    )
     role_targets = {
         role: {
             target_name: train_target(

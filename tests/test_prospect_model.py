@@ -355,6 +355,35 @@ def test_pitcher_impact_uses_better_applicable_sp_or_rp_category_group():
     )
 
 
+def test_impact_target_ignores_seasons_past_the_outcome_horizon():
+    # cohort 2018 + 4-year horizon closes at 2022; a 2024 season is post-fold
+    # look-ahead and must not seal the training label. Regression lock for the F4
+    # walk-forward leak (labels were sealed with results after the fold year).
+    elite = {
+        "year": 2024,
+        "ip": 200,
+        "so": 240,
+        "qs": 25,
+        "sv": 0,
+        "hld": 0,
+        "era": 2.20,
+        "whip": 0.90,
+        "k_bb": 6.0,
+        "l": 4,
+    }
+    record = {"mlbam_id": 77, "cohort_year": 2018}
+    seasons_out = {"77_pitcher": [elite]}
+    assert (
+        _impact_target(record, "pitcher", seasons_out, _impact_references(seasons_out))
+        == 0.0
+    )
+    seasons_in = {"77_pitcher": [dict(elite, year=2021)]}
+    assert (
+        _impact_target(record, "pitcher", seasons_in, _impact_references(seasons_in))
+        > 0
+    )
+
+
 def test_partial_impact_training_emits_valid_gate():
     contract = _contract()
     references = _impact_references(contract["historical_mlb_seasons"])
