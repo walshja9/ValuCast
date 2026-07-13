@@ -1643,18 +1643,18 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 }
 .pd-est-tag:hover { text-decoration: none; opacity: .85; }
 .pd-est-inline { color: var(--c-amber); font-weight: 700; }
-.profile-bar-track.pd-no-pct {
+/* No-percentile rows (Swing%, Z-Swing%, Zone%): descriptive rates, not ranked.
+   No track — an empty bar reads as a rendering failure next to the ranked ones. */
+.pd-context {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    padding: 0 .5rem;
-    background: #1c1e24;
+    height: 18px;
 }
-.pd-raw-only {
+.pd-context-label {
     color: var(--c-muted);
-    font-size: .72rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+    font-size: .66rem;
+    font-style: italic;
+    letter-spacing: .01em;
 }
 .plate-discipline-est-note {
     margin: .3rem 0 0;

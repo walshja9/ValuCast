@@ -168,8 +168,13 @@
                             <span class="profile-bar-num" style="left: {{ metric.pct }}%">{{ metric.pct }}</span>
                         </div>
                         {% else %}
-                        <div class="profile-bar-track pd-no-pct" role="img" aria-label="{{ metric.label }}: {{ metric.display }} (no cohort percentile)">
-                            <span class="pd-raw-only">{{ metric.display }}</span>
+                        {# Swing%, Z-Swing%, Zone% are descriptive rates with no good/bad
+                           direction (Zone% is the pitcher's choice, not his skill), so they
+                           carry no cohort percentile by design. Render as an explicit
+                           "context, not ranked" note rather than an empty track that reads
+                           as a broken bar next to the ranked metrics. #}
+                        <div class="pd-context" aria-label="{{ metric.label }}: {{ metric.display }} — context stat, not ranked">
+                            <span class="pd-context-label">context &middot; not ranked</span>
                         </div>
                         {% endif %}
                         <span class="profile-bar-value">{{ metric.display }}</span>

@@ -7676,19 +7676,14 @@ def ledger():
     aggregate headline still honors the 30-day publish gate; the full funnel and
     per-call ledger are live immediately, misses included. "It's on the ledger"
     is the brand phrase — the URL matches it."""
-    # 7/12 audit F6: the scorecard restamps generated_at daily while its consensus
-    # inputs age on their own schedules (/gaps got this disclosure 7/9; the ledger
-    # publishes the same field consensus and must not imply freshness it lacks).
-    try:
-        from prospects.consensus_gap import _board_vintages
-        board_min_date = _board_vintages().get("board_min_date")
-    except Exception:  # noqa: BLE001 — disclosure line is fail-soft, never a 500
-        board_min_date = None
-    return render_template(
-        "track_record.html",
-        sc=_load_scorecard_payload(),
-        board_min_date=board_min_date,
-    )
+    # 7/12 audit F6/F9: the scorecard restamps daily while its consensus inputs age,
+    # so the ledger must disclose that the field side is slow-moving. A PRECISE
+    # "last refreshed" date is NOT trustworthy yet — the per-board vintage is derived
+    # from file mtime, which is checkout-time on a fresh Render/CI build (git drops
+    # mtimes), so a stale board reads as fresh. Until that derivation uses a real
+    # content date (git log / committed sidecar — queued), the disclosure stays
+    # qualitative rather than shipping a false date on the honesty page.
+    return render_template("track_record.html", sc=_load_scorecard_payload())
 
 
 @app.route("/track-record")
