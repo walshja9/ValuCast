@@ -24,21 +24,22 @@ def _row(mlbam, vc_rank, source_ranks, name=None, role="hitter"):
 def test_catch_up_and_earliest_date(tmp_path):
     # Day 1: field has him ~#85 (median of 80/90), VC #10 -> divergence 75, guarded.
     _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
-    # Day 3: field moved toward us (median 55). catch_up = 85 - 55 = 30 — well past
-    # the noise floor (max(10, 15% of 75) = 11.25) -> open_toward.
-    _board(tmp_path, "2026-06-03", [_row(1, 10, {"pipeline": 50, "hkb": 60})])
+    # Day 20 (matured: headline counts only 14d+ calls): field moved toward us
+    # (median 55). catch_up = 85 - 55 = 30 — well past the noise floor
+    # (max(10, 15% of 75) = 11.25) -> open_toward.
+    _board(tmp_path, "2026-06-20", [_row(1, 10, {"pipeline": 50, "hkb": 60})])
 
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-03T00:00:00+00:00")
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
 
     call = payload["calls"][0]
-    assert call["ahead_since"] == "2026-06-01"     # earliest guarded date, not day 3
+    assert call["ahead_since"] == "2026-06-01"     # earliest guarded date, not day 20
     assert call["consensus_then"] == 85
     assert call["consensus_now"] == 55
     assert call["consensus_catch_up"] == 30
     assert call["status"] == "open_toward"
     assert payload["funnel"]["open_toward"] == 1
     assert payload["summary"]["wins"] == 1
-    # 2-day horizon is far below the publish gate -> number stays withheld.
+    # 19-day horizon is below the publish gate -> number stays withheld.
     assert payload["gate"]["publishable"] is False
     # Independence firewall.
     assert payload["source_policy"]["feeds_model_score"] is False
@@ -46,8 +47,8 @@ def test_catch_up_and_earliest_date(tmp_path):
 
 def test_field_moving_away_is_not_a_win(tmp_path):
     _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 60, "hkb": 70})])   # median 65
-    _board(tmp_path, "2026-06-05", [_row(1, 10, {"pipeline": 90, "hkb": 100})])  # median 95 -> AWAY
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    _board(tmp_path, "2026-06-20", [_row(1, 10, {"pipeline": 90, "hkb": 100})])  # median 95 -> AWAY
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
     call = payload["calls"][0]
     assert call["consensus_catch_up"] == -30
     assert call["status"] == "open_away"
@@ -73,8 +74,8 @@ def test_retreat_attribution_counts_against_valucast(tmp_path):
     # Divergence closes because VC came DOWN (10 -> 70) while the field barely
     # moved: retired_we_backed_off, in the decided denominator as a loss.
     _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])   # gap 75
-    _board(tmp_path, "2026-06-05", [_row(1, 70, {"pipeline": 78, "hkb": 88})])   # gap 13 < guard
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    _board(tmp_path, "2026-06-20", [_row(1, 70, {"pipeline": 78, "hkb": 88})])   # gap 13 < guard
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
     call = payload["calls"][0]
     assert call["status"] == "retired_we_backed_off"
     assert payload["funnel"]["retired_we_backed_off"] == 1
@@ -86,8 +87,8 @@ def test_full_catch_up_that_closes_the_gap_is_a_terminal_win(tmp_path):
     # Field comes all the way to VC (median 85 -> 18) while VC holds: the call
     # leaves the guarded set as closed_caught_up — a WIN the v1 metric dropped.
     _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
-    _board(tmp_path, "2026-06-05", [_row(1, 10, {"pipeline": 16, "hkb": 20})])
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    _board(tmp_path, "2026-06-20", [_row(1, 10, {"pipeline": 16, "hkb": 20})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
     call = payload["calls"][0]
     assert call["status"] == "closed_caught_up"
     assert payload["summary"]["wins"] == 1
@@ -106,8 +107,8 @@ def test_matched_controls_and_lift(tmp_path):
         _row(2, 84, {"pipeline": 78, "hkb": 92}),           # control: unmoved
     ]
     _board(tmp_path, "2026-06-01", day1)
-    _board(tmp_path, "2026-06-05", day2)
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    _board(tmp_path, "2026-06-20", day2)
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
     controls = payload["summary"]["control_rates"]
     assert controls["n"] == 1
     assert controls["toward"] == 0
@@ -124,6 +125,48 @@ def test_funnel_sums_to_ever_flagged_and_targets_present(tmp_path):
     assert payload["targets"]["decided_rate"] == 0.50
     assert payload["targets"]["control_lift"] == 1.5
     assert "frozen" in payload["definitions"]
+
+
+def test_headline_counts_only_matured_calls(tmp_path):
+    # Registered maturity rule (7/12 compliance fix): the headline decided-rate
+    # counts only calls >= 14 days old. Two retreats — one matured (19d), one
+    # young (2d): the young one sits in the funnel and immature_decided, NOT in
+    # the headline denominator.
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-18", [
+        _row(1, 10, {"pipeline": 80, "hkb": 90}),
+        _row(2, 10, {"pipeline": 80, "hkb": 90}),
+    ])
+    _board(tmp_path, "2026-06-20", [
+        _row(1, 70, {"pipeline": 78, "hkb": 88}),   # matured retreat (gap 13 < guard)
+        _row(2, 70, {"pipeline": 78, "hkb": 88}),   # 2-day-old retreat
+    ])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
+    assert payload["funnel"]["retired_we_backed_off"] == 2   # full account keeps both
+    assert payload["summary"]["decided_count"] == 1          # headline: matured only
+    assert payload["summary"]["wins"] == 0
+    assert payload["summary"]["decided_rate"] == 0.0
+    assert payload["summary"]["immature_decided"] == 1       # excluded, never hidden
+
+
+def test_control_lift_compares_matured_with_matured(tmp_path):
+    # 7/12 compliance fix regression lock: lift = matured open calls vs matured
+    # controls. A young open call must NOT dilute the numerator (the old
+    # all-calls lift here would read 0.5; the registered matured lift is 1.0).
+    _board(tmp_path, "2026-06-01", [
+        _row(1, 10, {"pipeline": 80, "hkb": 90}),   # the matured call, consensus 85
+        _row(2, 84, {"pipeline": 78, "hkb": 92}),   # never-flagged control, consensus 85
+    ])
+    _board(tmp_path, "2026-06-18", [_row(3, 10, {"pipeline": 80, "hkb": 90})])  # young call
+    _board(tmp_path, "2026-06-20", [
+        _row(1, 10, {"pipeline": 50, "hkb": 60}),   # call: field came +30 -> toward
+        _row(2, 84, {"pipeline": 48, "hkb": 62}),   # control: field came +30 -> toward
+        _row(3, 10, {"pipeline": 80, "hkb": 90}),   # young call: flat
+    ])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
+    assert payload["summary"]["matured_open_rates"]["toward_rate"] == 1.0
+    assert payload["summary"]["open_rates"]["toward_rate"] == 0.5   # diluted by the young flat
+    assert payload["summary"]["control_lift"] == 1.0                # matured / matured
 
 
 def test_empty_archive_is_safe(tmp_path):
@@ -154,7 +197,13 @@ def test_ledger_page_renders_full_ledger():
     # pill legitimately still says "Wins".)
     assert '<span class="ledger-tile-label">Leading</span>' in html
     assert '<span class="ledger-tile-label">Wins</span>' not in html
-    assert "final" in html and "trending our way" in html  # both counts distinct
+    assert "caught up" in html and "trending our way" in html  # both counts distinct
+    # 7/12 audit: statuses recompute every build and can reopen — the page must
+    # never promise a finality the code cannot deliver (King/Bitonti flapped
+    # closed->open in the real archive while the copy said "final").
+    assert "are final" not in html
+    assert '"final"' not in html and "5 final" not in html
+    assert "nothing is hand-frozen" in html
     assert "no call ever leaves this page silently" in html.lower()
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
     assert 'data-ledger-filter="resolved"' in html      # resolved != undecided
@@ -213,8 +262,8 @@ def test_coverage_loss_with_our_retreat_still_counts_against_us(tmp_path):
     # Same coverage loss, but WE also dropped him 10 -> 70: our side of the
     # retreat is measurable from our own board, so it stays a retreat.
     _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
-    _board(tmp_path, "2026-06-05", [_row(1, 70, {"pipeline": 80})])
-    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
+    _board(tmp_path, "2026-06-20", [_row(1, 70, {"pipeline": 80})])
+    payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-20T00:00:00+00:00")
     call = payload["calls"][0]
     assert call["status"] == "retired_we_backed_off"
     assert payload["summary"]["decided_count"] == 1

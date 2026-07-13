@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 from scripts.build_ahead_of_consensus_scorecard import (  # noqa: E402
     ARTIFACT_NAME,
     ARTIFACT_PATH,
+    MATURITY_DAYS,
     SIGNAL_VERSION,
 )
 
@@ -63,10 +64,23 @@ def validate_scorecard(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[st
     wins = summary.get("wins")
     decided = summary.get("decided_count")
     if isinstance(wins, int) and isinstance(decided, int):
-        expected_wins = funnel.get("open_toward", 0) + funnel.get("closed_caught_up", 0)
-        expected_decided = expected_wins + funnel.get("open_away", 0) + funnel.get("retired_we_backed_off", 0)
-        if wins != expected_wins or decided != expected_decided:
-            problems.append("wins/decided_count must match the funnel arithmetic")
+        # Registered maturity rule: the headline counts only decided calls at
+        # least MATURITY_DAYS old. Recompute from the calls list, not the
+        # funnel (the funnel is the full account and includes immature calls).
+        decided_statuses = {"open_toward", "closed_caught_up", "open_away", "retired_we_backed_off"}
+        mature = [
+            c for c in (payload.get("calls") or [])
+            if isinstance(c, dict) and c.get("status") in decided_statuses
+            and isinstance(c.get("days_tracked"), int) and c["days_tracked"] >= MATURITY_DAYS
+        ]
+        expected_wins = sum(1 for c in mature if c.get("status") in ("open_toward", "closed_caught_up"))
+        if wins != expected_wins or decided != len(mature):
+            problems.append("wins/decided_count must match the matured-call arithmetic (registered headline cohort)")
+        immature = summary.get("immature_decided")
+        all_decided = sum(1 for c in (payload.get("calls") or [])
+                          if isinstance(c, dict) and c.get("status") in decided_statuses)
+        if not isinstance(immature, int) or decided + immature != all_decided:
+            problems.append("immature_decided must account for every decided call excluded from the headline")
     targets = payload.get("targets") or {}
     if not (isinstance(targets.get("decided_rate"), float) and isinstance(targets.get("control_lift"), (int, float))):
         problems.append("targets must carry decided_rate and control_lift")

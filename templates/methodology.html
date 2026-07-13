@@ -296,6 +296,44 @@
         human-readable at <a href="/ledger">/ledger</a> — misses included —
         and the raw artifact is public at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>
         for anyone who wants to snapshot it themselves.</p>
+
+        <h4 id="aotc-scoring-notes">Scoring notes — 2026-07-12, the night before first publish</h4>
+        <p>Before the gate matured we ran an independent adversarial audit of the
+        scorecard math (a different AI model family from the ones that built and
+        reviewed it, then every finding re-verified against the raw archive).
+        Everything it found is disclosed here, dated, before the first number
+        published — including what cuts against us.</p>
+        <ul>
+            <li><strong>Compliance fix, disclosed:</strong> the headline decided-rate and
+            control lift had been computed on the <em>all-calls</em> cohort, contradicting
+            the registered maturity rule above ("headline cohort = calls at least 14 days
+            old"). Pinned to the matured cohort before first publish. On that day's data
+            the decided rate moved <strong>up</strong> (24.6% &rarr; 28.7%) and the lift
+            moved <strong>down</strong> (1.36x &rarr; 1.31x); both still miss our
+            pre-registered targets. Artifact version 0.2.0 &rarr; 0.2.1; decided calls
+            younger than 14 days now publish alongside as <code>immature_decided</code>,
+            never hidden.</li>
+            <li><strong>Known contaminant, published as registered:</strong> "we backed
+            off" is attributed mechanically — our rank moved more than the field's.
+            Model retraining nights move our whole board at once, and 50 of the current
+            65 retreats happened without the field moving away (in 20 of them the field
+            actually moved <em>toward</em> us). The registered rule counts every one
+            against us, so that is how we publish it. A re-baseline-aware retreat rule
+            will be pre-registered as a dated v0.3 and applied forward only — rewriting
+            the rule after seeing the score is exactly what pre-registration exists to
+            prevent.</li>
+            <li><strong>Statuses recompute; nothing is hand-frozen:</strong> every build
+            re-derives every call from the full archive, so a "caught up" call whose gap
+            re-opens later re-opens with it and the headline moves both ways. Ledger copy
+            that previously described those outcomes as "final" has been corrected.</li>
+            <li><strong>Conservative choices we are keeping:</strong> controls are drawn
+            from players never flagged as of the latest build (an as-of-call-date pool
+            would read ~1.40x on all calls instead of 1.36x), and controls are matched on
+            rank band, role, and date but <em>not</em> development level (a same-level-only
+            sensitivity reads ~1.65x matured instead of 1.31x — above target). Both
+            alternatives would raise our self-grade, so neither ships as a post-hoc
+            change; they live here as published sensitivities.</li>
+        </ul>
     </section>
 
     <section>
@@ -376,13 +414,15 @@
             source exactly. No estimation is involved.</li>
             <li><strong>Estimated: Chase%, Z-Swing%, Z-Contact%, Zone%.</strong> These
             depend on <em>where</em> each pitch crossed the zone. Modern tracked
-            coordinates are present at Triple-A but absent at the lower minor-league
-            levels, which publish only legacy pixel coordinates. We fit a
-            pixel-to-feet calibration (from Triple-A games that carry both) to place
-            those pitches in or out of the zone. Because it is a calibration, every
-            such number is labeled <span class="pd-est-inline">est.</span> on the
-            card and links back here. At Triple-A, where real coordinates exist, the
-            zone metrics are measured rather than estimated.</li>
+            coordinates are common at Triple-A and rare below it &mdash; but coverage
+            varies game by game, not level by level, so we label each player's
+            level sample individually. Pitches without tracked coordinates get a
+            pixel-to-feet calibration (fit on Triple-A games that carry both) to
+            place them in or out of the zone. A sample's zone metrics are labeled
+            <span class="pd-est-inline">est.</span> whenever <em>any</em> of its
+            zone calls used that calibration &mdash; which is why some Triple-A
+            samples carry the tag and some lower-level samples measured on real
+            coordinates do not. The flag follows the data, not the level.</li>
         </ul>
         <p><strong>Why there is no exit velocity or contact-quality data.</strong>
         Public minor-league play-by-play carries no batted-ball tracking, so ValuCast

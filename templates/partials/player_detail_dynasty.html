@@ -176,7 +176,7 @@
                     </div>
                     {% endfor %}
                 </div>
-                {% if group.estimated %}<p class="plate-discipline-est-note">Zone metrics (Chase%, Z-Swing%, Z-Contact%, Zone%) are <span class="pd-est-inline">est.</span> &mdash; estimated from a pixel-coordinate calibration because tracked coordinates are absent at this level.</p>{% endif %}
+                {% if group.estimated %}<p class="plate-discipline-est-note">Zone metrics (Chase%, Z-Swing%, Z-Contact%, Zone%) are <span class="pd-est-inline">est.</span> &mdash; some pitches in this sample lack tracked coordinates, so their zone calls use a pixel-coordinate calibration.</p>{% endif %}
             </div>
             {% endfor %}
         </div>

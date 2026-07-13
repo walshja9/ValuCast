@@ -33,7 +33,9 @@ from prospects.ahead_of_consensus import (  # noqa: E402
 
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
 ARTIFACT_NAME = "valucast_ahead_of_consensus_scorecard"
-SIGNAL_VERSION = "0.2.0"
+# 0.2.1 = the 2026-07-12 compliance fix (headline pinned to the registered
+# matured cohort). Scoring rules are otherwise the frozen 2026-07-02 set.
+SIGNAL_VERSION = "0.2.1"
 
 # Gate the public catch-up number until the record is credible. Boards move
 # slowly, so a few days of history is pure noise.
@@ -310,17 +312,29 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
     control_matured_rates = _bucket_rates(
         [c for c in control_entries if c["days_tracked"] >= MATURITY_DAYS]
     )
+    # Registered maturity rule (frozen 2026-07-02): "headline cohort = calls at
+    # least 14 days old". Lift compares matured open calls against matured
+    # controls -- like with like. Compliance fix 2026-07-12, disclosed
+    # pre-publish: this previously divided ALL open calls by ALL controls,
+    # contradicting the registered rule (all-calls read 1.36x; matured 1.31x).
     control_lift = (
-        round(open_rates["toward_rate"] / control_rates["toward_rate"], 2)
-        if open_rates and control_rates and control_rates["toward_rate"]
+        round(matured_rates["toward_rate"] / control_matured_rates["toward_rate"], 2)
+        if matured_rates and control_matured_rates and control_matured_rates["toward_rate"]
         else None
     )
 
-    # --- decided-rate headline: wins over every call that went SOMEWHERE.
-    # Retreats sit in the denominator; only flats/undecided are excluded. ---
-    wins = funnel["open_toward"] + funnel["closed_caught_up"]
-    decided = wins + funnel["open_away"] + funnel["retired_we_backed_off"]
+    # --- decided-rate headline: wins over every MATURED call that went
+    # SOMEWHERE. Retreats sit in the denominator; flats/undecided are excluded;
+    # decided calls younger than MATURITY_DAYS surface in immature_decided until
+    # they mature -- excluded from the rate, never hidden. (Same compliance fix:
+    # previously counted all calls, 29/118 = 24.6%; matured 29/101 = 28.7%.) ---
+    decided_statuses = {"open_toward", "closed_caught_up", "open_away", "retired_we_backed_off"}
+    decided_all = [c for c in calls if c["status"] in decided_statuses]
+    decided_mature = [c for c in decided_all if c["days_tracked"] >= MATURITY_DAYS]
+    wins = sum(1 for c in decided_mature if c["status"] in ("open_toward", "closed_caught_up"))
+    decided = len(decided_mature)
     decided_rate = round(wins / decided, 3) if decided else None
+    immature_decided = len(decided_all) - decided
 
     first_call_date = min((e["date"] for e in earliest.values()), default=today)
     horizon_days = _days_between(first_call_date, latest_date)
@@ -368,10 +382,12 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             "maturity_days": MATURITY_DAYS,
             "control_band": list(CONTROL_BAND),
             "controls_per_call": CONTROLS_PER_CALL,
-            "decided_rate": "wins (open_toward + closed_caught_up) / (wins + open_away + retired_we_backed_off)",
+            "decided_rate": "wins (open_toward + closed_caught_up) / (wins + open_away + retired_we_backed_off), matured cohort only",
+            "headline_cohort": "calls at least " + str(MATURITY_DAYS) + " days old (registered maturity rule); younger decided calls surface in summary.immature_decided",
             "retreat_attribution": "divergence closes -> whichever side moved more; ties count against ValuCast",
             "one_sided_note": "conservative: only credits the field coming toward ValuCast, never widening-right calls",
             "frozen": "2026-07-02, pre-registered before the publish gate",
+            "compliance_fix_2026_07_12": "pre-publish, disclosed: headline decided_rate/control_lift had been computed on the all-calls cohort, contradicting the registered maturity rule; pinned to the matured cohort before first publish (that day: decided rate 24.6% -> 28.7%, lift 1.36x -> 1.31x)",
         },
         "targets": {
             "decided_rate": TARGET_DECIDED_RATE,
@@ -384,6 +400,7 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             "decided_count": decided,
             "wins": wins,
             "decided_rate": decided_rate,
+            "immature_decided": immature_decided,
             "open_count": len(open_calls),
             "open_rates": open_rates,
             "matured_open_rates": matured_rates,

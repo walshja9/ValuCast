@@ -3250,13 +3250,15 @@
     }
   ],
   "definitions": {
+    "compliance_fix_2026_07_12": "pre-publish, disclosed: headline decided_rate/control_lift had been computed on the all-calls cohort, contradicting the registered maturity rule; pinned to the matured cohort before first publish (that day: decided rate 24.6% -> 28.7%, lift 1.36x -> 1.31x)",
     "control_band": [
       0.8,
       1.25
     ],
     "controls_per_call": 5,
-    "decided_rate": "wins (open_toward + closed_caught_up) / (wins + open_away + retired_we_backed_off)",
+    "decided_rate": "wins (open_toward + closed_caught_up) / (wins + open_away + retired_we_backed_off), matured cohort only",
     "frozen": "2026-07-02, pre-registered before the publish gate",
+    "headline_cohort": "calls at least 14 days old (registered maturity rule); younger decided calls surface in summary.immature_decided",
     "maturity_days": 14,
     "noise_floor": "max(10 spots, 15% of the call's initial gap)",
     "one_sided_note": "conservative: only credits the field coming toward ValuCast, never widening-right calls",
@@ -3275,11 +3277,11 @@
     "min_publish_horizon_days": 30,
     "min_publish_resolved": 25,
     "publishable": false,
-    "reason": "accruing: 29d horizon / 118 decided (need 30d and 25)"
+    "reason": "accruing: 29d horizon / 101 decided (need 30d and 25)"
   },
-  "generated_at": "2026-07-12T12:00:32.160474+00:00",
+  "generated_at": "2026-07-13T00:12:23.273977+00:00",
   "generated_by": "valucast",
-  "signal_version": "0.2.0",
+  "signal_version": "0.2.1",
   "source_policy": {
     "dd_ranks_used": false,
     "dd_values_used": false,
@@ -3294,7 +3296,7 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "control_lift": 1.36,
+    "control_lift": 1.31,
     "control_matured_rates": {
       "away": 27,
       "flat": 89,
@@ -3313,11 +3315,12 @@
       "toward": 31,
       "toward_rate": 0.146
     },
-    "decided_count": 118,
-    "decided_rate": 0.246,
+    "decided_count": 101,
+    "decided_rate": 0.287,
     "ever_flagged": 191,
     "first_call_date": "2026-06-13",
     "horizon_days": 29,
+    "immature_decided": 17,
     "matured_open_rates": {
       "away": 23,
       "flat": 40,

@@ -827,3 +827,54 @@ untracked `data/dd/*` is NOT staged and the archive byproduct is restored.
 - **AOTC stays blind to the model score for past calls.** Future flagging shifts with
   the re-score (expected); matured calls are frozen. Never edit the frozen AOTC files
   to accommodate a model change.
+
+## Amendments — 2026-07-12 (external audit, verified; supersede conflicting text above)
+
+Four design defects found by the 7/12 Sol audit and independently verified against
+the code. Where these conflict with anything above, the amendment wins.
+
+1. **The concordance gate cannot validate the preferred scoring-side path (supersedes
+   the acceptance gate as sole criterion).** `prospects/adapter_backtest.py` imports
+   neither `rank_v1.py` nor `prospects/availability.py` — `candidate_rank_concordance`
+   is computed on trained-model category projections and NEVER sees the scoring-side
+   pedigree cap, the concordance-gap multiplier at the rank layer, or the attrition
+   discount. The >0.4903 pitcher-concordance gate therefore validates ONLY
+   model.py-retrain changes (fix a locus-1 / fix c). For the "lighter, surgical"
+   scoring-side loci, the acceptance check is instead the rank-artifact assertion set:
+   Hughes and Murphy leave the top 16, the three named consensus arms
+   (Anderson 807739 / Hernandez 815825 / Sloan) survive the top 25, and the governor's
+   pitcher-share checks pass. Do not present concordance as validating those loci.
+
+2. **The epoch bump does NOT mask the fix-day re-score on buys/movers (corrects
+   Step 6 and the "epoch is the honesty lever" maintenance note).** `PROSPECT_BUYS_EPOCH`
+   is emitted as metadata and a forward-validation clock marker only; nothing in
+   `momentum_score`/`clean_tail` consumes it. The actual masking is the
+   `STEP_THRESHOLD = 6.0` step guard in `web/buy_score.py` — shared by BOTH buys and
+   movers (there is no movers/buys asymmetry). Consequence: a fix-day score drop
+   under 6 points stays inside the momentum window and prints as real cooling on
+   both surfaces. The executor must either (i) verify the fix-day per-player deltas
+   exceed 6.0 for every player the fix moves, or (ii) add explicit fix-day
+   epoch-boundary handling to `clean_tail` keyed on the epoch date, or (iii) accept
+   and disclose the sub-6-point contamination. Pick one in the diff; silence is not
+   an option.
+
+3. **The three AOTC acceptance clauses are mutually incompatible as written — this
+   ONE rule replaces them.** The frozen AOTC *scoring logic* (divergence formula,
+   guard thresholds, catch-up attribution) must be zero-diff. The funnel — INCLUDING
+   matured-call membership — MAY move, because `_is_guarded` is rank-coupled
+   (valucast_rank <= 300 AND divergence >= 25): a re-scored arm can legitimately fall
+   out of the guarded set. Strike every "funnel stable for matured calls" /
+   "scorecard identical for past calls" acceptance criterion; a reviewer must not
+   STOP on rank-attributable funnel movement, and must not demand past-call identity
+   the code cannot deliver. What IS a stop: any diff in the AOTC scoring files
+   themselves.
+
+4. **The pedigree "adequate sample" floor must be numeric and ramped, not a cliff.**
+   "Adequate (clears a pitch/IP/PA floor)" is never assigned a number above. The
+   executor must (i) pick explicit floors (IP for pitchers, PA for hitters, stated in
+   the diff), and (ii) engage the cap on a RAMP across the floor (e.g. linear
+   phase-in over the final 25% of the floor) rather than a hard step — a hard step
+   hands a stale draftee full pedigree at 29.9 IP and a multi-point cliff at 30.0 IP,
+   and later mid-season crossings are outside the one-time epoch mask (and, per
+   amendment 2, unmasked on buys/movers below 6 points). Add a score-continuity
+   sweep around every chosen boundary to the test plan.

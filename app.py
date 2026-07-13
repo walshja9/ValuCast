@@ -6958,12 +6958,28 @@ def _parse_trade_ids(raw):
     return out
 
 
+def _trade_cancel_cross_side_dupes(give_rows, get_rows):
+    """The same player on both sides is a wash: cancel him from both. Leaving
+    him in inflates the per-player noise band and can flip the verdict (give A /
+    get A+B reads 'call it even' when the real trade is just 'get B')."""
+    dupes = {r.id for r in give_rows} & {r.id for r in get_rows}
+    if not dupes:
+        return give_rows, get_rows
+    return (
+        [r for r in give_rows if r.id not in dupes],
+        [r for r in get_rows if r.id not in dupes],
+    )
+
+
 def _build_trade_page_context(args):
     give_ids = _parse_trade_ids(args.get("give"))
     get_ids = _parse_trade_ids(args.get("get"))
     give_rows = [row for pid in give_ids if (row := dd_store.get_by_id(pid))]
     get_rows = [row for pid in get_ids if (row := dd_store.get_by_id(pid))]
-    verdict = _trade_verdict(give_rows, get_rows) if (give_rows or get_rows) else None
+    give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
+    # A verdict needs BOTH sides: one-sided input renders the add-players empty
+    # state, never "you give up more than you get" against nobody.
+    verdict = _trade_verdict(give_rows, get_rows) if (give_rows and get_rows) else None
     # Canonical, resolved id lists (unknown ids dropped) so the shareable URL and
     # the share card key describe the exact trade that rendered.
     give_resolved = [r.id for r in give_rows]
@@ -7024,6 +7040,9 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
 
     give_rows = [row for pid in (give_ids or []) if (row := dd_store.get_by_id(pid))]
     get_rows = [row for pid in (get_ids or []) if (row := dd_store.get_by_id(pid))]
+    give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
+    if not (give_rows and get_rows):
+        return None   # one-sided "trade": no verdict, no graphic (route 404s)
     verdict = _trade_verdict(give_rows, get_rows)
 
     f_note = _graphic_font(17)
@@ -7143,6 +7162,8 @@ def trade_share_card_png():
     png = _trade_share_card_png(
         give_ids, get_ids, generated_at=dd_store.generated_at
     )
+    if png is None:
+        abort(404)
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
     response.headers["Content-Disposition"] = 'inline; filename="valucast-trade.png"'
@@ -7870,12 +7891,23 @@ def _ledger_share_card_png(sc):
     date_label = _editorial_date((sc or {}).get("generated_at"))
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
+    # Exit lanes ride the caption the moment they fire: four tiles can't sum to
+    # the headline count once a call graduates or leaves coverage, and this
+    # card literally promises nothing leaves silently.
+    extra_line = "Wins, losses, and the calls we backed off - no call leaves this page silently"
+    resolved = int(funnel.get("resolved_called_up_or_graduated") or 0)
+    left = int(funnel.get("left_universe") or 0)
+    if resolved or left:
+        exits = [f"{resolved} resolved by call-up"] if resolved else []
+        if left:
+            exits.append(f"{left} left coverage")
+        extra_line = f"{extra_line} - plus {', '.join(exits)}"
     _graphic_header(
         img,
         draw,
         headline="THE LEDGER",
         subtitle=subtitle,
-        extra_line="Wins, losses, and the calls we backed off - no call leaves this page silently",
+        extra_line=extra_line,
         tagline="The Ledger",
     )
 
@@ -7947,7 +7979,11 @@ def _ledger_share_card_png(sc):
 
     _graphic_footer(
         draw,
-        right_note="Success rate publishes when the 30-day gate matures - rules pre-registered",
+        right_note=(
+            "Success rate live at valucast.app/ledger - rules pre-registered"
+            if ((sc or {}).get("gate") or {}).get("publishable")
+            else "Success rate publishes when the 30-day gate matures - rules pre-registered"
+        ),
     )
 
     out = _io.BytesIO()

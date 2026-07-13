@@ -29,8 +29,10 @@
         No call ever leaves this page silently.</p>
         <p class="buys-fineprint">The bet being graded: <strong>the industry eventually comes to
         our number</strong>. Field moving toward us = win. Field moving away = against us —
-        counting only one direction would make this scorecard impossible to lose. Open calls
-        update daily and can flip either way; only "caught up" and "we backed off" are final.</p>
+        counting only one direction would make this scorecard impossible to lose. Every status
+        is recomputed from the full archive on every build — nothing is hand-frozen. "Caught up"
+        and "we backed off" describe the latest snapshot; if the gap re-opens later, the call
+        re-opens with it and the headline moves both ways.</p>
         <p class="buys-fineprint">Read a row like a position: our number is the thesis, the
         field's number is the market price, and a call wins when the market comes to our
         number. Us moving a player up is conviction, not evidence — only the field's
@@ -55,7 +57,7 @@
 {% if sc.gate.publishable and sc.summary.decided_rate is not none %}
 <section class="glass ledger-headline">
     <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
-    decided calls ended with the field coming to us
+    matured decided calls (14+ days tracked) ended with the field coming to us
     ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
     <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
     Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
@@ -73,7 +75,7 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
     <article class="ledger-tile glass ledger-tile-win">
         <span class="ledger-tile-n">{{ sc.funnel.open_toward + sc.funnel.closed_caught_up }}</span>
         <span class="ledger-tile-label">Leading</span>
-        <span class="ledger-tile-sub">{{ sc.funnel.closed_caught_up }} final &middot; {{ sc.funnel.open_toward }} trending our way</span>
+        <span class="ledger-tile-sub">{{ sc.funnel.closed_caught_up }} caught up &middot; {{ sc.funnel.open_toward }} trending our way</span>
     </article>
     <article class="ledger-tile glass ledger-tile-loss">
         <span class="ledger-tile-n">{{ sc.funnel.open_away }}</span>
@@ -92,12 +94,14 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
     </article>
 </section>
 <p class="ledger-context">{{ sc.summary.ever_flagged }} calls flagged since {{ sc.summary.first_call_date }}
-{% if sc.gate.publishable and sc.summary.control_rates and sc.summary.open_rates %} &middot; the field moves toward our calls
-<strong>{{ (sc.summary.open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
-<strong>{{ (sc.summary.control_rates.toward_rate * 100) | round | int }}%</strong> for matched players
+{% if sc.gate.publishable and sc.summary.control_matured_rates and sc.summary.matured_open_rates %} &middot; the field moves toward our matured calls
+<strong>{{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
+<strong>{{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%</strong> for matched players
 we never flagged{% else %} &middot; success rate and matched-control comparison publish with the
-30-day scorecard{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
-{{ sc.funnel.resolved_called_up_or_graduated }} resolved by call-up/graduation{% endif %}.</p>
+30-day scorecard{% endif %}{% if sc.summary.immature_decided %} &middot;
+{{ sc.summary.immature_decided }} decided calls under 14 days old mature into the headline, not around it{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
+{{ sc.funnel.resolved_called_up_or_graduated }} resolved by call-up/graduation{% endif %}{% if sc.funnel.left_universe %} &middot;
+{{ sc.funnel.left_universe }} left the tracked universe (coverage exit){% endif %}.</p>
 
 <section class="buys-list glass ledger-calls" aria-label="Every call on the ledger">
     <div class="bf-filter-pills ledger-pills" aria-label="Filter calls by outcome">

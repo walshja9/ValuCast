@@ -1683,6 +1683,45 @@ class TestTradeAnalyzer(unittest.TestCase):
         ctx = _build_trade_page_context(MultiDict([("give", ids), ("get", "")]))
         self.assertEqual(len(ctx["give_pieces"]), 6)
 
+    def test_trade_one_sided_never_renders_a_verdict(self):
+        # 7/12 audit F7: give-only input renders the add-players empty state,
+        # never "You give up more than you get" against an empty side.
+        from app import dd_store
+        real = dd_store.get_all()[0].id
+        r = self.client.get(f"/trade?give={real}")
+        self.assertEqual(r.status_code, 200)
+        body = r.data.decode()
+        self.assertIn("Add at least one player to each side", body)
+        self.assertNotIn("You give up more than you get", body)
+        # ...and the directly-fetchable PNG refuses to draw the same non-trade.
+        png = self.client.get(f"/trade/share-card.png?give={real}")
+        self.assertEqual(png.status_code, 404)
+
+    def test_trade_same_player_both_sides_cancels_to_empty(self):
+        # 7/12 audit F8 (degenerate case): give A / get A is no trade at all
+        # once the duplicate cancels -- empty state, not a padded noise band.
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+        a, b = dd_store.get_all()[:2]
+        ctx = _build_trade_page_context(
+            MultiDict([("give", a.id), ("get", f"{a.id},{b.id}")]))
+        self.assertEqual(ctx["give_ids"], [])
+        self.assertEqual(ctx["get_ids"], [b.id])
+        self.assertIsNone(ctx["verdict"])          # one side left -> no verdict
+
+    def test_trade_cross_side_cancel_scores_the_real_remainder(self):
+        # 7/12 audit F8: give A,C / get A,B is really C-for-B. The duplicate
+        # must not survive to widen the band (2v2 = +/-18) around a 1v1 trade.
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+        a, b, c = dd_store.get_all()[:3]
+        ctx = _build_trade_page_context(
+            MultiDict([("give", f"{a.id},{c.id}"), ("get", f"{a.id},{b.id}")]))
+        self.assertEqual(ctx["give_ids"], [c.id])
+        self.assertEqual(ctx["get_ids"], [b.id])
+        self.assertIsNotNone(ctx["verdict"])
+        self.assertEqual(ctx["verdict"]["noise"], 9.0)   # 1v1 band, not 2v2
+
     def test_trade_no_per_source_ranks_leak(self):
         # ToS: the page shows ValuCast value/rank ONLY -- no outside-board source.
         from app import dd_store
