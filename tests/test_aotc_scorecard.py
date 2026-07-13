@@ -169,6 +169,66 @@ def test_control_lift_compares_matured_with_matured(tmp_path):
     assert payload["summary"]["control_lift"] == 1.0                # matured / matured
 
 
+def test_as_of_date_filters_the_archive(tmp_path):
+    # Replay support for the stabilized window: as_of_date must make the build
+    # see only archives on or before that date (so a past build reproduces).
+    from scripts.build_ahead_of_consensus_scorecard import build_scorecard
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-20", [_row(1, 10, {"pipeline": 50, "hkb": 60})])
+    early = build_scorecard(archive_dir=tmp_path,
+                            generated_at="2026-06-01T00:00:00+00:00", as_of_date="2026-06-01")
+    late = build_scorecard(archive_dir=tmp_path,
+                           generated_at="2026-06-20T00:00:00+00:00", as_of_date="2026-06-20")
+    assert early["summary"]["horizon_days"] == 0     # only 6-01 visible
+    assert late["summary"]["horizon_days"] == 19      # both boards visible
+
+
+def test_stabilized_window_is_additive_summary_of_daily(tmp_path):
+    # The stabilized read replays the SAME daily metric over a trailing window
+    # and aggregates it. Assert the mechanics + invariants (mean inside min/max,
+    # never claims more readings than the window), not exact values.
+    import datetime as _dt
+    from scripts.build_ahead_of_consensus_scorecard import (
+        _stabilized_window, STABILIZED_WINDOW_DAYS, STABILIZED_MIN_READINGS,
+    )
+    # 20 consecutive boards; the field steadily creeps toward VC #10, with a
+    # matched control in the same band.
+    for i in range(20):
+        d = (_dt.date(2026, 6, 1) + _dt.timedelta(days=i)).isoformat()
+        cons = max(20, 90 - i * 3)
+        _board(tmp_path, d, [
+            _row(1, 10, {"pipeline": cons - 5, "hkb": cons + 5}),
+            _row(2, cons, {"pipeline": cons - 5, "hkb": cons + 5}),
+        ])
+    stab = _stabilized_window(archive_dir=tmp_path)
+    assert stab["window_days"] == STABILIZED_WINDOW_DAYS
+    assert len(stab["readings"]) == STABILIZED_WINDOW_DAYS      # last 14 of 20
+    for key in ("decided_rate", "control_lift"):
+        agg = stab[key]
+        if agg is not None:
+            assert agg["min"] <= agg["mean"] <= agg["max"]
+            assert 0 < agg["n"] <= STABILIZED_WINDOW_DAYS
+    # publishable iff enough valid decided-rate readings accumulated
+    dr = stab["decided_rate"]
+    assert stab["publishable"] == (bool(dr) and dr["n"] >= STABILIZED_MIN_READINGS)
+
+
+def test_run_scorecard_writes_stabilized_into_artifact(tmp_path):
+    # The written artifact must carry summary.stabilized (additive) without the
+    # daily headline changing.
+    from scripts.build_ahead_of_consensus_scorecard import build_scorecard, run_scorecard
+    _board(tmp_path, "2026-06-01", [_row(1, 10, {"pipeline": 80, "hkb": 90})])
+    _board(tmp_path, "2026-06-20", [_row(1, 10, {"pipeline": 50, "hkb": 60})])
+    art = tmp_path / "sc.json"
+    daily = build_scorecard(archive_dir=tmp_path)
+    run_scorecard(archive_dir=tmp_path, artifact_path=art)
+    written = json.loads(art.read_text(encoding="utf-8"))
+    assert "stabilized" in written["summary"]
+    # daily headline untouched by the additive summary
+    assert written["summary"]["decided_rate"] == daily["summary"]["decided_rate"]
+    assert written["summary"]["control_lift"] == daily["summary"]["control_lift"]
+
+
 def test_empty_archive_is_safe(tmp_path):
     payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-06-05T00:00:00+00:00")
     assert payload["status"] == "blocked"

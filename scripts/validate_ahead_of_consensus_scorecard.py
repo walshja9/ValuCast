@@ -52,6 +52,28 @@ def validate_scorecard(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[st
     lift = summary.get("control_lift")
     if lift is not None and lift < 0:
         problems.append("summary.control_lift must be >= 0 or null")
+    # Stabilized trailing summary (0.3.0): additive, must never claim to be more
+    # than a summary of the daily numbers. Validate shape and that its aggregates
+    # sit inside the min/max band they report (a mean outside its own range means
+    # a broken replay).
+    stab = summary.get("stabilized")
+    if stab is not None:
+        if not isinstance(stab.get("window_days"), int):
+            problems.append("summary.stabilized.window_days must be an int")
+        if not isinstance(stab.get("publishable"), bool):
+            problems.append("summary.stabilized.publishable must be boolean")
+        for key, lo, hi in (("decided_rate", 0.0, 1.0), ("control_lift", 0.0, None)):
+            agg = stab.get(key)
+            if agg is None:
+                continue
+            if not all(isinstance(agg.get(k), (int, float)) for k in ("mean", "min", "max")) \
+                    or not isinstance(agg.get("n"), int):
+                problems.append(f"summary.stabilized.{key} must carry mean/min/max/n")
+                continue
+            if not (agg["min"] <= agg["mean"] <= agg["max"]):
+                problems.append(f"summary.stabilized.{key} mean must sit within its min/max")
+            if agg["min"] < lo or (hi is not None and agg["max"] > hi):
+                problems.append(f"summary.stabilized.{key} out of range")
     funnel = payload.get("funnel") or {}
     required_buckets = {
         "open_toward", "open_away", "open_flat", "closed_caught_up",

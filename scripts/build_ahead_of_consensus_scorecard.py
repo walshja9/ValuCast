@@ -33,14 +33,27 @@ from prospects.ahead_of_consensus import (  # noqa: E402
 
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
 ARTIFACT_NAME = "valucast_ahead_of_consensus_scorecard"
-# 0.2.1 = the 2026-07-12 compliance fix (headline pinned to the registered
-# matured cohort). Scoring rules are otherwise the frozen 2026-07-02 set.
-SIGNAL_VERSION = "0.2.1"
+# 0.3.0 = the 2026-07-13 stabilized read (ADDITIVE). The frozen 2026-07-02
+# daily scoring rules are UNCHANGED; this version only ADDS a trailing-window
+# summary of the daily metric (summary.stabilized) so a single noisy build isn't
+# mistaken for a track record. 0.2.1 was the 7/12 matured-cohort compliance fix.
+SIGNAL_VERSION = "0.3.0"
 
 # Gate the public catch-up number until the record is credible. Boards move
 # slowly, so a few days of history is pure noise.
 MIN_PUBLISH_HORIZON_DAYS = 30
 MIN_PUBLISH_RESOLVED = 25
+
+# Stabilized read (0.3.0, pre-registered 2026-07-13, forward): the daily headline
+# re-rolls against the latest board every build, so a single reading swings wide
+# (7/12 build read lift 1.31x, 7/13 read 1.00x on one day of new data). The
+# trailing mean over the last STABILIZED_WINDOW_DAYS builds is the speakable
+# central tendency; the min/max is the honest noise band. It NEVER alters the
+# pre-registered daily number -- it only summarizes it. Publishes once it has
+# STABILIZED_MIN_READINGS valid daily readings, same "don't show noise" posture
+# as the 30-day gate.
+STABILIZED_WINDOW_DAYS = 14
+STABILIZED_MIN_READINGS = 7
 
 # --- v2 (0.2.0, frozen 2026-07-02, pre-registered before the publish gate) ---
 # Noise floor: a move only counts as toward/away when it clears BOTH board jitter
@@ -141,9 +154,19 @@ def _days_between(start: str, end: str) -> int:
         return 0
 
 
-def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None = None) -> dict:
+def build_scorecard(
+    *,
+    archive_dir: Path = ARCHIVE_DIR,
+    generated_at: str | None = None,
+    as_of_date: str | None = None,
+) -> dict:
     generated_at = generated_at or datetime.now(timezone.utc).isoformat()
     files = sorted(glob.glob(str(archive_dir / "*.json")))
+    if as_of_date:
+        # Replay the scorecard as it WOULD have read on a past build: consider
+        # only archives dated on or before as_of_date. Used by the stabilized
+        # trailing window; a no-op for the live daily build.
+        files = [f for f in files if os.path.basename(f)[:10] <= as_of_date]
     today = generated_at[:10]
     root = Path(__file__).resolve().parents[1]
 
@@ -388,6 +411,7 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
             "one_sided_note": "conservative: only credits the field coming toward ValuCast, never widening-right calls",
             "frozen": "2026-07-02, pre-registered before the publish gate",
             "compliance_fix_2026_07_12": "pre-publish, disclosed: headline decided_rate/control_lift had been computed on the all-calls cohort, contradicting the registered maturity rule; pinned to the matured cohort before first publish (that day: decided rate 24.6% -> 28.7%, lift 1.36x -> 1.31x)",
+            "stabilized_2026_07_13": "ADDITIVE, pre-registered forward: the daily metric re-rolls against the latest board each build and a single reading swings wide (7/12 lift 1.31x vs 7/13 1.00x). summary.stabilized reports the trailing " + str(STABILIZED_WINDOW_DAYS) + "-build mean and min/max of the SAME daily numbers, replayed from the committed archive. The frozen daily scoring is unchanged; this only summarizes it so a noisy single day isn't read as a track record.",
         },
         "targets": {
             "decided_rate": TARGET_DECIDED_RATE,
@@ -414,12 +438,62 @@ def build_scorecard(*, archive_dir: Path = ARCHIVE_DIR, generated_at: str | None
     }
 
 
+def _stabilized_window(*, archive_dir: Path = ARCHIVE_DIR,
+                       window_days: int = STABILIZED_WINDOW_DAYS) -> dict:
+    """Trailing-window summary of the daily headline, replayed from the committed
+    archive so it is fully reproducible by anyone. ADDITIVE: it calls the same
+    build_scorecard per past date and only aggregates the numbers it already
+    produces -- it never changes the daily metric. Aggregates are computed over
+    the daily readings that HAVE a value (control_lift is None on days with no
+    matched controls); publishable only once STABILIZED_MIN_READINGS are present."""
+    dated = sorted(
+        os.path.basename(p)[:10] for p in glob.glob(str(archive_dir / "*.json"))
+    )
+    window = dated[-window_days:]
+    readings: list[dict] = []
+    rates: list[float] = []
+    lifts: list[float] = []
+    for d in window:
+        sc = build_scorecard(archive_dir=archive_dir,
+                             generated_at=d + "T00:00:00+00:00", as_of_date=d)
+        s = sc["summary"]
+        rate, lift = s.get("decided_rate"), s.get("control_lift")
+        readings.append({"date": d, "decided_rate": rate, "control_lift": lift})
+        if isinstance(rate, (int, float)):
+            rates.append(rate)
+        if isinstance(lift, (int, float)):
+            lifts.append(lift)
+
+    def _agg(vals: list[float]) -> dict | None:
+        if not vals:
+            return None
+        return {
+            "mean": round(statistics.mean(vals), 3),
+            "min": round(min(vals), 3),
+            "max": round(max(vals), 3),
+            "n": len(vals),
+        }
+
+    dr, cl = _agg(rates), _agg(lifts)
+    return {
+        "window_days": window_days,
+        "publishable": bool(dr) and dr["n"] >= STABILIZED_MIN_READINGS,
+        "min_readings": STABILIZED_MIN_READINGS,
+        "decided_rate": dr,
+        "control_lift": cl,
+        "readings": readings,
+    }
+
+
 def run_scorecard(*, archive_dir: Path = ARCHIVE_DIR, artifact_path: Path = ARTIFACT_PATH) -> dict:
     payload = build_scorecard(archive_dir=archive_dir)
+    # ADDITIVE trailing summary -- never mutates the daily headline above.
+    payload["summary"]["stabilized"] = _stabilized_window(archive_dir=archive_dir)
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, artifact_path)
+    stab = payload["summary"]["stabilized"]
     return {
         "artifact_path": str(artifact_path),
         "publishable": payload["gate"]["publishable"],
@@ -427,6 +501,9 @@ def run_scorecard(*, archive_dir: Path = ARCHIVE_DIR, artifact_path: Path = ARTI
         "decided_rate": payload["summary"]["decided_rate"],
         "control_lift": payload["summary"]["control_lift"],
         "horizon_days": payload["summary"]["horizon_days"],
+        "stabilized_lift": (stab["control_lift"] or {}).get("mean"),
+        "stabilized_rate": (stab["decided_rate"] or {}).get("mean"),
+        "stabilized_publishable": stab["publishable"],
     }
 
 
@@ -436,7 +513,10 @@ def main() -> int:
         "ahead-of-consensus scorecard: "
         f"publishable={r['publishable']} decided={r['decided']} "
         f"decided_rate={r['decided_rate']} lift={r['control_lift']} "
-        f"horizon={r['horizon_days']}d -> {r['artifact_path']}"
+        f"horizon={r['horizon_days']}d "
+        f"| stabilized(pub={r['stabilized_publishable']}): "
+        f"rate={r['stabilized_rate']} lift={r['stabilized_lift']} "
+        f"-> {r['artifact_path']}"
     )
     return 0
 
