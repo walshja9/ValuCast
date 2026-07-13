@@ -3347,7 +3347,8 @@
     "maturity_days": 14,
     "noise_floor": "max(10 spots, 15% of the call's initial gap)",
     "one_sided_note": "conservative: only credits the field coming toward ValuCast, never widening-right calls",
-    "retreat_attribution": "divergence closes -> whichever side moved more; ties count against ValuCast"
+    "retreat_attribution": "divergence closes -> whichever side moved more; ties count against ValuCast",
+    "stabilized_2026_07_13": "ADDITIVE, pre-registered forward: the daily metric re-rolls against the latest board each build and a single reading swings wide (7/12 lift 1.31x vs 7/13 1.00x). summary.stabilized reports the trailing 14-build mean and min/max of the SAME daily numbers, replayed from the committed archive. The frozen daily scoring is unchanged; this only summarizes it so a noisy single day isn't read as a track record."
   },
   "funnel": {
     "closed_caught_up": 6,
@@ -3364,9 +3365,9 @@
     "publishable": true,
     "reason": "ready"
   },
-  "generated_at": "2026-07-13T12:33:42.565440+00:00",
+  "generated_at": "2026-07-13T18:40:30.430627+00:00",
   "generated_by": "valucast",
-  "signal_version": "0.2.1",
+  "signal_version": "0.3.0",
   "source_policy": {
     "dd_ranks_used": false,
     "dd_values_used": false,
@@ -3424,6 +3425,95 @@
       "n": 120,
       "toward": 27,
       "toward_rate": 0.225
+    },
+    "stabilized": {
+      "control_lift": {
+        "max": 1.52,
+        "mean": 1.129,
+        "min": 0.51,
+        "n": 14
+      },
+      "decided_rate": {
+        "max": 0.456,
+        "mean": 0.324,
+        "min": 0.182,
+        "n": 14
+      },
+      "min_readings": 7,
+      "publishable": true,
+      "readings": [
+        {
+          "control_lift": 1.52,
+          "date": "2026-06-30",
+          "decided_rate": 0.364
+        },
+        {
+          "control_lift": 1.52,
+          "date": "2026-07-01",
+          "decided_rate": 0.364
+        },
+        {
+          "control_lift": 1.36,
+          "date": "2026-07-02",
+          "decided_rate": 0.417
+        },
+        {
+          "control_lift": 1.22,
+          "date": "2026-07-03",
+          "decided_rate": 0.308
+        },
+        {
+          "control_lift": 1.17,
+          "date": "2026-07-04",
+          "decided_rate": 0.308
+        },
+        {
+          "control_lift": 1.06,
+          "date": "2026-07-05",
+          "decided_rate": 0.333
+        },
+        {
+          "control_lift": 0.67,
+          "date": "2026-07-06",
+          "decided_rate": 0.182
+        },
+        {
+          "control_lift": 0.51,
+          "date": "2026-07-07",
+          "decided_rate": 0.182
+        },
+        {
+          "control_lift": 1.04,
+          "date": "2026-07-08",
+          "decided_rate": 0.444
+        },
+        {
+          "control_lift": 1.02,
+          "date": "2026-07-09",
+          "decided_rate": 0.456
+        },
+        {
+          "control_lift": 1.21,
+          "date": "2026-07-10",
+          "decided_rate": 0.326
+        },
+        {
+          "control_lift": 1.2,
+          "date": "2026-07-11",
+          "decided_rate": 0.299
+        },
+        {
+          "control_lift": 1.31,
+          "date": "2026-07-12",
+          "decided_rate": 0.287
+        },
+        {
+          "control_lift": 1.0,
+          "date": "2026-07-13",
+          "decided_rate": 0.265
+        }
+      ],
+      "window_days": 14
     },
     "wins": 26
   },
