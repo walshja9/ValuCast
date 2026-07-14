@@ -1,6 +1,17 @@
 {
   "artifact": "valucast_call_up_receipts",
-  "generated_at": "2026-07-14T14:14:00.409860+00:00",
+  "definitions": {
+    "maturation": {
+      "append_only": "a CONFIRMED receipt never reverts; a later demotion is career noise, not a receipt reversal",
+      "confirmed": "hitter: games >= 20 OR PA >= 60; pitcher: games >= 12 OR IP >= 20.0 -- cumulative MLB workload from ValuCast's own archived actuals snapshots; 'he stuck and actually played' floors, comfortably above a cup of coffee, comfortably below 'must be a star'.",
+      "decayed": "past the horizon, under the confirmed bar, and off the active MLB roster -- or the 90-day final look elapsed with the bar never cleared.",
+      "final_days": 90,
+      "frozen": "2026-07-14, pre-registered before the first row matures (~2026-09-09)",
+      "horizon_days": 60,
+      "pending": "under 60 days since call-up, or on the active roster and still accumulating before the 90-day final look."
+    }
+  },
+  "generated_at": "2026-07-14T17:59:29.391418+00:00",
   "misses": [],
   "no_claim_rows": [
     {
@@ -434,6 +445,7 @@
       "identity_key": "702566_pitcher",
       "level": "AAA",
       "logged_at": "2026-07-10T01:33:16.953959+00:00",
+      "maturation_status": "PENDING",
       "mlbam_id": "702566",
       "name": "Owen Murphy",
       "pos": "P",
@@ -450,6 +462,7 @@
       "identity_key": "806198_hitter",
       "level": "AAA",
       "logged_at": "2026-07-10T01:33:16.953959+00:00",
+      "maturation_status": "PENDING",
       "mlbam_id": "806198",
       "name": "Cooper Pratt",
       "pos": "SS",
@@ -466,6 +479,7 @@
       "identity_key": "800325_hitter",
       "level": "AAA",
       "logged_at": "2026-07-10T01:33:16.953959+00:00",
+      "maturation_status": "PENDING",
       "mlbam_id": "800325",
       "name": "Luis Lara",
       "pos": "CF",
@@ -482,6 +496,7 @@
       "identity_key": "694876_hitter",
       "level": "AAA",
       "logged_at": "2026-07-10T01:33:16.953959+00:00",
+      "maturation_status": "PENDING",
       "mlbam_id": "694876",
       "name": "Cooper Ingle",
       "pos": "C",
@@ -499,6 +514,7 @@
       "identity_key": "687312_pitcher",
       "level": "AAA",
       "logged_at": "2026-07-10T01:33:16.953959+00:00",
+      "maturation_status": "PENDING",
       "mlbam_id": "687312",
       "name": "Gabriel Hughes",
       "pos": "P",
@@ -561,6 +577,11 @@
     ],
     "field_unranked_behind_count": 0,
     "field_unranked_count": 1,
+    "maturation": {
+      "confirmed": 0,
+      "decayed": 0,
+      "pending": 5
+    },
     "miss_count": 0,
     "no_claim_call_up_count": 30,
     "pre_launch_excluded_count": 30,

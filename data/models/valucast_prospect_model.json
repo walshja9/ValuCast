@@ -1,6 +1,6 @@
 {
   "board_gate": {
-    "activated_at": "2026-07-14T14:12:39.981071+00:00",
+    "activated_at": "2026-07-14T17:58:08.768846+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.140745,
     "cv_method": "walk_forward",
@@ -14,7 +14,7 @@
   },
   "candidate_count": 2865,
   "impact_board_gate": {
-    "activated_at": "2026-07-14T14:12:39.981071+00:00",
+    "activated_at": "2026-07-14T17:58:08.768846+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.130598,
     "cv_method": "walk_forward",
@@ -393,7 +393,7 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-07-14T14:12:39.981071+00:00",
+        "activated_at": "2026-07-14T17:58:08.768846+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.161236,
         "cv_method": "walk_forward",
@@ -33804,6 +33804,54 @@
       "valucast_prospect_rank": 649
     },
     {
+      "age": 19,
+      "confidence": "high",
+      "drivers": [
+        {
+          "contribution": 0.0515,
+          "feature": "ops_x_youth"
+        },
+        {
+          "contribution": 0.0442,
+          "feature": "iso_x_youth"
+        },
+        {
+          "contribution": -0.0418,
+          "feature": "level"
+        }
+      ],
+      "expected_category_impact_score": 0.1113,
+      "expected_outcome_score": 0.1774,
+      "impact_drivers": [
+        {
+          "contribution": -0.0469,
+          "feature": "aaa_translation"
+        },
+        {
+          "contribution": 0.035,
+          "feature": "youth"
+        },
+        {
+          "contribution": 0.0339,
+          "feature": "iso_x_youth"
+        }
+      ],
+      "impact_gate": "fallback",
+      "level": "A",
+      "mlbam_id": 815829,
+      "name": "Ryan Mitchell",
+      "normalized_name": "ryan mitchell",
+      "position": "CF",
+      "role": "hitter",
+      "role_gate": "active",
+      "sample": 316.0,
+      "sample_reliability": 0.612,
+      "sample_unit": "PA",
+      "team": "Palm Beach Cardinals",
+      "valucast_impact_rank": 1204,
+      "valucast_prospect_rank": 650
+    },
+    {
       "age": 23,
       "confidence": "high",
       "drivers": [
@@ -33849,7 +33897,7 @@
       "sample_unit": "PA",
       "team": "Rocket City Trash Pandas",
       "valucast_impact_rank": 704,
-      "valucast_prospect_rank": 650
+      "valucast_prospect_rank": 651
     },
     {
       "age": 23,
@@ -33897,7 +33945,7 @@
       "sample_unit": "IP",
       "team": "Hillsboro Hops",
       "valucast_impact_rank": 646,
-      "valucast_prospect_rank": 651
+      "valucast_prospect_rank": 652
     },
     {
       "age": 22,
@@ -33945,7 +33993,7 @@
       "sample_unit": "IP",
       "team": "Harrisburg Senators",
       "valucast_impact_rank": 803,
-      "valucast_prospect_rank": 652
+      "valucast_prospect_rank": 653
     },
     {
       "age": 20,
@@ -33993,7 +34041,7 @@
       "sample_unit": "PA",
       "team": "Kannapolis Cannon Ballers",
       "valucast_impact_rank": 1120,
-      "valucast_prospect_rank": 653
+      "valucast_prospect_rank": 654
     },
     {
       "age": 20,
@@ -34041,7 +34089,7 @@
       "sample_unit": "IP",
       "team": "Delmarva Shorebirds",
       "valucast_impact_rank": 541,
-      "valucast_prospect_rank": 654
+      "valucast_prospect_rank": 655
     },
     {
       "age": 22,
@@ -34089,7 +34137,7 @@
       "sample_unit": "IP",
       "team": "Indianapolis Indians",
       "valucast_impact_rank": 526,
-      "valucast_prospect_rank": 655
+      "valucast_prospect_rank": 656
     },
     {
       "age": 20,
@@ -34151,7 +34199,7 @@
       "sample_unit": "IP",
       "team": "Clearwater Threshers",
       "valucast_impact_rank": 546,
-      "valucast_prospect_rank": 656
+      "valucast_prospect_rank": 657
     },
     {
       "age": 23,
@@ -34199,7 +34247,7 @@
       "sample_unit": "IP",
       "team": "Oklahoma City Comets",
       "valucast_impact_rank": 419,
-      "valucast_prospect_rank": 657
+      "valucast_prospect_rank": 658
     },
     {
       "age": 24,
@@ -34261,7 +34309,7 @@
       "sample_unit": "IP",
       "team": "Altoona Curve",
       "valucast_impact_rank": 508,
-      "valucast_prospect_rank": 658
+      "valucast_prospect_rank": 659
     },
     {
       "age": 24,
@@ -34309,7 +34357,7 @@
       "sample_unit": "PA",
       "team": "Richmond Flying Squirrels",
       "valucast_impact_rank": 626,
-      "valucast_prospect_rank": 659
+      "valucast_prospect_rank": 660
     },
     {
       "age": 25,
@@ -34357,7 +34405,7 @@
       "sample_unit": "PA",
       "team": "Reading Fightin Phils",
       "valucast_impact_rank": 358,
-      "valucast_prospect_rank": 660
+      "valucast_prospect_rank": 661
     },
     {
       "age": 19,
@@ -34405,7 +34453,7 @@
       "sample_unit": "IP",
       "team": "Wilson Warbirds",
       "valucast_impact_rank": 705,
-      "valucast_prospect_rank": 661
+      "valucast_prospect_rank": 662
     },
     {
       "age": 23,
@@ -34453,7 +34501,7 @@
       "sample_unit": "PA",
       "team": "Frisco RoughRiders",
       "valucast_impact_rank": 642,
-      "valucast_prospect_rank": 662
+      "valucast_prospect_rank": 663
     },
     {
       "age": 22,
@@ -34501,54 +34549,6 @@
       "sample_unit": "PA",
       "team": "Hudson Valley Renegades",
       "valucast_impact_rank": 788,
-      "valucast_prospect_rank": 663
-    },
-    {
-      "age": 19,
-      "confidence": "high",
-      "drivers": [
-        {
-          "contribution": 0.0514,
-          "feature": "ops_x_youth"
-        },
-        {
-          "contribution": 0.0441,
-          "feature": "iso_x_youth"
-        },
-        {
-          "contribution": -0.0417,
-          "feature": "level"
-        }
-      ],
-      "expected_category_impact_score": 0.1098,
-      "expected_outcome_score": 0.1752,
-      "impact_drivers": [
-        {
-          "contribution": -0.0467,
-          "feature": "aaa_translation"
-        },
-        {
-          "contribution": 0.0352,
-          "feature": "youth"
-        },
-        {
-          "contribution": 0.0338,
-          "feature": "iso_x_youth"
-        }
-      ],
-      "impact_gate": "fallback",
-      "level": "A",
-      "mlbam_id": 815829,
-      "name": "Ryan Mitchell",
-      "normalized_name": "ryan mitchell",
-      "position": "CF",
-      "role": "hitter",
-      "role_gate": "active",
-      "sample": 316.0,
-      "sample_reliability": 0.612,
-      "sample_unit": "PA",
-      "team": "Palm Beach Cardinals",
-      "valucast_impact_rank": 1215,
       "valucast_prospect_rank": 664
     },
     {
@@ -40427,7 +40427,7 @@
       "sample_reliability": 0.566,
       "sample_unit": "PA",
       "team": "Dunedin Blue Jays",
-      "valucast_impact_rank": 1206,
+      "valucast_impact_rank": 1207,
       "valucast_prospect_rank": 780
     },
     {
@@ -48721,7 +48721,7 @@
       "sample_reliability": 0.254,
       "sample_unit": "PA",
       "team": "Wilson Warbirds",
-      "valucast_impact_rank": 1214,
+      "valucast_impact_rank": 1215,
       "valucast_prospect_rank": 943
     },
     {
@@ -56206,7 +56206,7 @@
       "sample_reliability": 0.515,
       "sample_unit": "PA",
       "team": "Lake County Captains",
-      "valucast_impact_rank": 1204,
+      "valucast_impact_rank": 1205,
       "valucast_prospect_rank": 1091
     },
     {
@@ -61213,7 +61213,7 @@
       "sample_reliability": 0.63,
       "sample_unit": "PA",
       "team": "Myrtle Beach Pelicans",
-      "valucast_impact_rank": 1662,
+      "valucast_impact_rank": 1663,
       "valucast_prospect_rank": 1190
     },
     {
@@ -62043,7 +62043,7 @@
       "sample_reliability": 0.415,
       "sample_unit": "PA",
       "team": "Lake County Captains",
-      "valucast_impact_rank": 1211,
+      "valucast_impact_rank": 1212,
       "valucast_prospect_rank": 1207
     },
     {
@@ -66352,7 +66352,7 @@
       "sample_reliability": 0.574,
       "sample_unit": "PA",
       "team": "Kannapolis Cannon Ballers",
-      "valucast_impact_rank": 1657,
+      "valucast_impact_rank": 1658,
       "valucast_prospect_rank": 1293
     },
     {
@@ -67541,7 +67541,7 @@
       "sample_reliability": 0.375,
       "sample_unit": "IP",
       "team": "Visalia Rawhide",
-      "valucast_impact_rank": 1212,
+      "valucast_impact_rank": 1213,
       "valucast_prospect_rank": 1317
     },
     {
@@ -68755,7 +68755,7 @@
       "sample_reliability": 0.624,
       "sample_unit": "PA",
       "team": "Binghamton Rumble Ponies",
-      "valucast_impact_rank": 1209,
+      "valucast_impact_rank": 1210,
       "valucast_prospect_rank": 1342
     },
     {
@@ -69800,7 +69800,7 @@
       "sample_reliability": 0.234,
       "sample_unit": "IP",
       "team": "Visalia Rawhide",
-      "valucast_impact_rank": 1210,
+      "valucast_impact_rank": 1211,
       "valucast_prospect_rank": 1363
     },
     {
@@ -69992,7 +69992,7 @@
       "sample_reliability": 0.415,
       "sample_unit": "PA",
       "team": "Palm Beach Cardinals",
-      "valucast_impact_rank": 1669,
+      "valucast_impact_rank": 1670,
       "valucast_prospect_rank": 1367
     },
     {
@@ -70390,7 +70390,7 @@
       "sample_reliability": 0.581,
       "sample_unit": "PA",
       "team": "Clearwater Threshers",
-      "valucast_impact_rank": 1673,
+      "valucast_impact_rank": 1674,
       "valucast_prospect_rank": 1375
     },
     {
@@ -70822,7 +70822,7 @@
       "sample_reliability": 0.602,
       "sample_unit": "IP",
       "team": "Augusta GreenJackets",
-      "valucast_impact_rank": 1207,
+      "valucast_impact_rank": 1208,
       "valucast_prospect_rank": 1384
     },
     {
@@ -71330,7 +71330,7 @@
       "sample_reliability": 0.441,
       "sample_unit": "PA",
       "team": "San Antonio Missions",
-      "valucast_impact_rank": 1205,
+      "valucast_impact_rank": 1206,
       "valucast_prospect_rank": 1394
     },
     {
@@ -74676,6 +74676,54 @@
       "valucast_prospect_rank": 1461
     },
     {
+      "age": 20,
+      "confidence": "moderate",
+      "drivers": [
+        {
+          "contribution": 0.0415,
+          "feature": "start_rate"
+        },
+        {
+          "contribution": -0.0271,
+          "feature": "era_x_whip"
+        },
+        {
+          "contribution": -0.02,
+          "feature": "era_x_level"
+        }
+      ],
+      "expected_category_impact_score": 0.0853,
+      "expected_outcome_score": 0.075,
+      "impact_drivers": [
+        {
+          "contribution": 0.0373,
+          "feature": "start_rate"
+        },
+        {
+          "contribution": -0.0237,
+          "feature": "hr_per_9"
+        },
+        {
+          "contribution": -0.0217,
+          "feature": "k_bb_pct"
+        }
+      ],
+      "impact_gate": "active",
+      "level": "A",
+      "mlbam_id": 820941,
+      "name": "Stharlin Torres",
+      "normalized_name": "stharlin torres",
+      "position": "P",
+      "role": "pitcher",
+      "role_gate": "active",
+      "sample": 58.3,
+      "sample_reliability": 0.538,
+      "sample_unit": "IP",
+      "team": "Daytona Tortugas",
+      "valucast_impact_rank": 1442,
+      "valucast_prospect_rank": 1462
+    },
+    {
       "age": 21,
       "confidence": "moderate",
       "drivers": [
@@ -74721,7 +74769,7 @@
       "sample_unit": "IP",
       "team": "San Jose Giants",
       "valucast_impact_rank": 1511,
-      "valucast_prospect_rank": 1462
+      "valucast_prospect_rank": 1463
     },
     {
       "age": 19,
@@ -74769,7 +74817,55 @@
       "sample_unit": "PA",
       "team": "Stockton Ports",
       "valucast_impact_rank": 1786,
-      "valucast_prospect_rank": 1463
+      "valucast_prospect_rank": 1464
+    },
+    {
+      "age": 18,
+      "confidence": "low",
+      "drivers": [
+        {
+          "contribution": -0.0446,
+          "feature": "level"
+        },
+        {
+          "contribution": 0.0422,
+          "feature": "youth"
+        },
+        {
+          "contribution": -0.0383,
+          "feature": "log_pa"
+        }
+      ],
+      "expected_category_impact_score": 0.0642,
+      "expected_outcome_score": 0.0749,
+      "impact_drivers": [
+        {
+          "contribution": 0.0538,
+          "feature": "youth"
+        },
+        {
+          "contribution": -0.0436,
+          "feature": "aaa_translation"
+        },
+        {
+          "contribution": -0.024,
+          "feature": "slg"
+        }
+      ],
+      "impact_gate": "fallback",
+      "level": "A",
+      "mlbam_id": 829741,
+      "name": "Sebastian Dos Santos",
+      "normalized_name": "sebastian dos santos",
+      "position": "SS",
+      "role": "hitter",
+      "role_gate": "active",
+      "sample": 93.0,
+      "sample_reliability": 0.317,
+      "sample_unit": "PA",
+      "team": "Palm Beach Cardinals",
+      "valucast_impact_rank": 1654,
+      "valucast_prospect_rank": 1465
     },
     {
       "age": 22,
@@ -74817,7 +74913,7 @@
       "sample_unit": "PA",
       "team": "Inland Empire 66ers",
       "valucast_impact_rank": 1873,
-      "valucast_prospect_rank": 1464
+      "valucast_prospect_rank": 1466
     },
     {
       "age": 24,
@@ -74865,55 +74961,7 @@
       "sample_unit": "IP",
       "team": "Memphis Redbirds",
       "valucast_impact_rank": 732,
-      "valucast_prospect_rank": 1465
-    },
-    {
-      "age": 20,
-      "confidence": "moderate",
-      "drivers": [
-        {
-          "contribution": 0.0413,
-          "feature": "start_rate"
-        },
-        {
-          "contribution": -0.0263,
-          "feature": "era_x_whip"
-        },
-        {
-          "contribution": -0.0199,
-          "feature": "era_x_level"
-        }
-      ],
-      "expected_category_impact_score": 0.0853,
-      "expected_outcome_score": 0.0746,
-      "impact_drivers": [
-        {
-          "contribution": 0.0372,
-          "feature": "start_rate"
-        },
-        {
-          "contribution": -0.0237,
-          "feature": "hr_per_9"
-        },
-        {
-          "contribution": -0.0198,
-          "feature": "k_bb_pct"
-        }
-      ],
-      "impact_gate": "active",
-      "level": "A",
-      "mlbam_id": 820941,
-      "name": "Stharlin Torres",
-      "normalized_name": "stharlin torres",
-      "position": "P",
-      "role": "pitcher",
-      "role_gate": "active",
-      "sample": 58.3,
-      "sample_reliability": 0.538,
-      "sample_unit": "IP",
-      "team": "Daytona Tortugas",
-      "valucast_impact_rank": 1442,
-      "valucast_prospect_rank": 1466
+      "valucast_prospect_rank": 1467
     },
     {
       "age": 22,
@@ -74970,7 +75018,7 @@
       "sample_unit": "IP",
       "team": "Charleston RiverDogs",
       "valucast_impact_rank": 1725,
-      "valucast_prospect_rank": 1467
+      "valucast_prospect_rank": 1468
     },
     {
       "age": 25,
@@ -75027,7 +75075,7 @@
       },
       "team": "Sacramento River Cats",
       "valucast_impact_rank": 800,
-      "valucast_prospect_rank": 1468
+      "valucast_prospect_rank": 1469
     },
     {
       "age": 20,
@@ -75075,7 +75123,7 @@
       "sample_unit": "PA",
       "team": "Fayetteville Woodpeckers",
       "valucast_impact_rank": 1761,
-      "valucast_prospect_rank": 1469
+      "valucast_prospect_rank": 1470
     },
     {
       "age": 24,
@@ -75123,7 +75171,7 @@
       "sample_unit": "PA",
       "team": "Bowling Green Hot Rods",
       "valucast_impact_rank": 1291,
-      "valucast_prospect_rank": 1470
+      "valucast_prospect_rank": 1471
     },
     {
       "age": 22,
@@ -75171,7 +75219,7 @@
       "sample_unit": "PA",
       "team": "Myrtle Beach Pelicans",
       "valucast_impact_rank": 1872,
-      "valucast_prospect_rank": 1471
+      "valucast_prospect_rank": 1472
     },
     {
       "age": 24,
@@ -75233,7 +75281,7 @@
       "sample_unit": "PA",
       "team": "Cedar Rapids Kernels",
       "valucast_impact_rank": 1514,
-      "valucast_prospect_rank": 1472
+      "valucast_prospect_rank": 1473
     },
     {
       "age": 25,
@@ -75281,7 +75329,7 @@
       "sample_unit": "IP",
       "team": "Reading Fightin Phils",
       "valucast_impact_rank": 1230,
-      "valucast_prospect_rank": 1473
+      "valucast_prospect_rank": 1474
     },
     {
       "age": 21,
@@ -75343,7 +75391,7 @@
       "sample_unit": "PA",
       "team": "Lansing Lugnuts",
       "valucast_impact_rank": 1407,
-      "valucast_prospect_rank": 1474
+      "valucast_prospect_rank": 1475
     },
     {
       "age": 22,
@@ -75391,7 +75439,7 @@
       "sample_unit": "IP",
       "team": "Knoxville Smokies",
       "valucast_impact_rank": 1135,
-      "valucast_prospect_rank": 1475
+      "valucast_prospect_rank": 1476
     },
     {
       "age": 23,
@@ -75439,7 +75487,7 @@
       "sample_unit": "IP",
       "team": "Greenville Drive",
       "valucast_impact_rank": 1426,
-      "valucast_prospect_rank": 1476
+      "valucast_prospect_rank": 1477
     },
     {
       "age": 22,
@@ -75487,7 +75535,7 @@
       "sample_unit": "IP",
       "team": "Tampa Tarpons",
       "valucast_impact_rank": 1618,
-      "valucast_prospect_rank": 1477
+      "valucast_prospect_rank": 1478
     },
     {
       "age": 23,
@@ -75535,7 +75583,7 @@
       "sample_unit": "PA",
       "team": "South Bend Cubs",
       "valucast_impact_rank": 1580,
-      "valucast_prospect_rank": 1478
+      "valucast_prospect_rank": 1479
     },
     {
       "age": 23,
@@ -75583,7 +75631,7 @@
       "sample_unit": "PA",
       "team": "Vancouver Canadians",
       "valucast_impact_rank": 1704,
-      "valucast_prospect_rank": 1479
+      "valucast_prospect_rank": 1480
     },
     {
       "age": 21,
@@ -75645,54 +75693,6 @@
       "sample_unit": "IP",
       "team": "Dunedin Blue Jays",
       "valucast_impact_rank": 1622,
-      "valucast_prospect_rank": 1480
-    },
-    {
-      "age": 18,
-      "confidence": "low",
-      "drivers": [
-        {
-          "contribution": -0.0447,
-          "feature": "level"
-        },
-        {
-          "contribution": 0.0423,
-          "feature": "youth"
-        },
-        {
-          "contribution": -0.0386,
-          "feature": "log_pa"
-        }
-      ],
-      "expected_category_impact_score": 0.0624,
-      "expected_outcome_score": 0.0732,
-      "impact_drivers": [
-        {
-          "contribution": 0.0535,
-          "feature": "youth"
-        },
-        {
-          "contribution": -0.0432,
-          "feature": "aaa_translation"
-        },
-        {
-          "contribution": -0.0238,
-          "feature": "slg"
-        }
-      ],
-      "impact_gate": "fallback",
-      "level": "A",
-      "mlbam_id": 829741,
-      "name": "Sebastian Dos Santos",
-      "normalized_name": "sebastian dos santos",
-      "position": "SS",
-      "role": "hitter",
-      "role_gate": "active",
-      "sample": 93.0,
-      "sample_reliability": 0.317,
-      "sample_unit": "PA",
-      "team": "Palm Beach Cardinals",
-      "valucast_impact_rank": 1674,
       "valucast_prospect_rank": 1481
     },
     {
@@ -77011,7 +77011,7 @@
       "sample_reliability": 0.443,
       "sample_unit": "PA",
       "team": "Bowling Green Hot Rods",
-      "valucast_impact_rank": 1658,
+      "valucast_impact_rank": 1659,
       "valucast_prospect_rank": 1508
     },
     {
@@ -79560,7 +79560,7 @@
       "sample_reliability": 0.449,
       "sample_unit": "PA",
       "team": "Lansing Lugnuts",
-      "valucast_impact_rank": 1665,
+      "valucast_impact_rank": 1666,
       "valucast_prospect_rank": 1559
     },
     {
@@ -79713,7 +79713,7 @@
       "sample_reliability": 0.446,
       "sample_unit": "PA",
       "team": "Lansing Lugnuts",
-      "valucast_impact_rank": 1655,
+      "valucast_impact_rank": 1656,
       "valucast_prospect_rank": 1562
     },
     {
@@ -79919,7 +79919,7 @@
       "sample_reliability": 0.54,
       "sample_unit": "IP",
       "team": "Kannapolis Cannon Ballers",
-      "valucast_impact_rank": 1664,
+      "valucast_impact_rank": 1665,
       "valucast_prospect_rank": 1566
     },
     {
@@ -80940,7 +80940,7 @@
       "sample_reliability": 0.434,
       "sample_unit": "IP",
       "team": "Eugene Emeralds",
-      "valucast_impact_rank": 1208,
+      "valucast_impact_rank": 1209,
       "valucast_prospect_rank": 1586
     },
     {
@@ -81372,7 +81372,7 @@
       "sample_reliability": 0.395,
       "sample_unit": "IP",
       "team": "Jupiter Hammerheads",
-      "valucast_impact_rank": 1213,
+      "valucast_impact_rank": 1214,
       "valucast_prospect_rank": 1595
     },
     {
@@ -81985,7 +81985,7 @@
       "sample_reliability": 0.408,
       "sample_unit": "PA",
       "team": "Peoria Chiefs",
-      "valucast_impact_rank": 1666,
+      "valucast_impact_rank": 1667,
       "valucast_prospect_rank": 1607
     },
     {
@@ -82335,7 +82335,7 @@
       "sample_reliability": 0.286,
       "sample_unit": "IP",
       "team": "Memphis Redbirds",
-      "valucast_impact_rank": 1654,
+      "valucast_impact_rank": 1655,
       "valucast_prospect_rank": 1614
     },
     {
@@ -86696,7 +86696,7 @@
       "sample_reliability": 0.308,
       "sample_unit": "IP",
       "team": "Hartford Yard Goats",
-      "valucast_impact_rank": 1668,
+      "valucast_impact_rank": 1669,
       "valucast_prospect_rank": 1700
     },
     {
@@ -87631,7 +87631,7 @@
       "sample_reliability": 0.552,
       "sample_unit": "IP",
       "team": "Asheville Tourists",
-      "valucast_impact_rank": 1667,
+      "valucast_impact_rank": 1668,
       "valucast_prospect_rank": 1719
     },
     {
@@ -87823,7 +87823,7 @@
       "sample_reliability": 0.522,
       "sample_unit": "IP",
       "team": "Stockton Ports",
-      "valucast_impact_rank": 1672,
+      "valucast_impact_rank": 1673,
       "valucast_prospect_rank": 1723
     },
     {
@@ -92994,7 +92994,7 @@
       "sample_reliability": 0.455,
       "sample_unit": "IP",
       "team": "Akron RubberDucks",
-      "valucast_impact_rank": 1663,
+      "valucast_impact_rank": 1664,
       "valucast_prospect_rank": 1828
     },
     {
@@ -95074,7 +95074,7 @@
       "sample_reliability": 0.375,
       "sample_unit": "PA",
       "team": "Jupiter Hammerheads",
-      "valucast_impact_rank": 1661,
+      "valucast_impact_rank": 1662,
       "valucast_prospect_rank": 1869
     },
     {
@@ -95419,7 +95419,7 @@
       "sample_reliability": 0.356,
       "sample_unit": "IP",
       "team": "Amarillo Sod Poodles",
-      "valucast_impact_rank": 1670,
+      "valucast_impact_rank": 1671,
       "valucast_prospect_rank": 1876
     },
     {
@@ -100225,7 +100225,7 @@
       "sample_reliability": 0.296,
       "sample_unit": "IP",
       "team": "Hudson Valley Renegades",
-      "valucast_impact_rank": 1660,
+      "valucast_impact_rank": 1661,
       "valucast_prospect_rank": 1974
     },
     {
@@ -100877,7 +100877,7 @@
       "sample_reliability": 0.261,
       "sample_unit": "IP",
       "team": "Louisville Bats",
-      "valucast_impact_rank": 1671,
+      "valucast_impact_rank": 1672,
       "valucast_prospect_rank": 1987
     },
     {
@@ -102574,7 +102574,7 @@
       "sample_reliability": 0.327,
       "sample_unit": "IP",
       "team": "Birmingham Barons",
-      "valucast_impact_rank": 1656,
+      "valucast_impact_rank": 1657,
       "valucast_prospect_rank": 2021
     },
     {
@@ -104133,7 +104133,7 @@
       "sample_reliability": 0.348,
       "sample_unit": "IP",
       "team": "Corpus Christi Hooks",
-      "valucast_impact_rank": 1659,
+      "valucast_impact_rank": 1660,
       "valucast_prospect_rank": 2053
     },
     {
@@ -144020,7 +144020,7 @@
         "inverse_draft_pick"
       ],
       "gate": {
-        "activated_at": "2026-07-14T14:12:39.981071+00:00",
+        "activated_at": "2026-07-14T17:58:08.768846+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.131269,
         "cv_method": "walk_forward",
@@ -144353,7 +144353,7 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-07-14T14:12:39.981071+00:00",
+        "activated_at": "2026-07-14T17:58:08.768846+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.14933,
         "cv_method": "walk_forward",
