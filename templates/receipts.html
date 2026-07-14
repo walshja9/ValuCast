@@ -57,6 +57,9 @@
 {% if receipts %}
 <section class="buys-list movers-section glass" aria-label="Call-ups ValuCast was ahead of the field on">
     <h2>AHEAD OF THE FIELD 📈</h2>
+    {% if maturation and (maturation.confirmed or maturation.pending or maturation.decayed) %}
+    <p class="buys-fineprint">{{ maturation.confirmed }} confirmed &middot; {{ maturation.pending }} pending &middot; {{ maturation.decayed }} cup-of-coffee</p>
+    {% endif %}
     {% for p in receipts %}
     <article class="movers-row">
         <span class="buys-rank">#{{ p.valucast_rank }}</span>
@@ -75,6 +78,9 @@
         <span class="mover-delta up">AHEAD</span>
         {% endif %}
         <span class="trend-chip buys-chip">ahead</span>
+        {% if p.maturation_status == 'CONFIRMED' %}<span class="trend-chip buys-chip">confirmed ✅</span>
+        {% elif p.maturation_status == 'DECAYED' %}<span class="trend-chip">cup of coffee</span>
+        {% else %}<span class="trend-chip">pending</span>{% endif %}
     </article>
     {% endfor %}
 </section>

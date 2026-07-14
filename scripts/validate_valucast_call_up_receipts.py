@@ -88,6 +88,12 @@ def _validate_call_up(row, index, label, seen, *, require_consensus, negative=Fa
     if not isinstance(row.get("valucast_rank"), int):
         problems.append(f"{label} {index} valucast_rank must be an integer")
 
+    # Maturation layer (plan 016): receipts (the ahead side) resolve PENDING/CONFIRMED/DECAYED.
+    # Misses/no-claim carry no maturation status (they're already an outcome), so this is
+    # receipts-only. The summary sum invariant is checked in validate_file.
+    if label == "receipt" and row.get("maturation_status") not in {"PENDING", "CONFIRMED", "DECAYED"}:
+        problems.append(f"{label} {index} maturation_status must be PENDING/CONFIRMED/DECAYED")
+
     # Field-unranked-behind: the unscored mirror of the ahead field-unranked lane. No
     # consensus (only 1 board -> below MIN_BOARDS), so it's exempt from require_consensus
     # and must NOT carry a numeric divergence (that would be a scored miss).
@@ -152,6 +158,18 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str]]:
     seen = set()
     for index, row in enumerate(receipts, 1):
         problems.extend(_validate_call_up(row, index, "receipt", seen, require_consensus=False))
+
+    # Maturation summary must be a dict of integer pending/confirmed/decayed whose sum equals
+    # len(receipts) -- every receipt resolves to exactly one bucket (plan 016 invariant).
+    maturation = summary.get("maturation")
+    if not isinstance(maturation, dict):
+        problems.append("summary.maturation must be a dict")
+    else:
+        buckets = ("pending", "confirmed", "decayed")
+        if not all(isinstance(maturation.get(k), int) for k in buckets):
+            problems.append("summary.maturation pending/confirmed/decayed must be integers")
+        elif sum(maturation.get(k, 0) for k in buckets) != len(receipts):
+            problems.append("summary.maturation pending+confirmed+decayed must equal len(receipts)")
 
     # Honesty backstop: a typed "outside top N" field_label can't survive if a public
     # board in the ranked archive actually ranks the player at <= N. Best-effort -- if

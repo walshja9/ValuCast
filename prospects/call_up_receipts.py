@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_call_up_receipts.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_call_up_receipts"
 RANK_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
+ACTUALS_SNAPSHOT_DIR = ROOT / "data" / "prediction_archive" / "valucast_actuals_snapshot"
 ROSTER_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 # Curated call-ups the auto-scan can't score (field doesn't rank them, or the roster
 # artifact lags a same-day promotion). ponytail: hand-maintained JSON, no admin UI.
@@ -73,6 +74,117 @@ LAUNCH_DATE = "2026-06-16"
 # 300): only the most-differentiated calls earn an auto row; Kuroda-Grauer(#41)/
 # Cauley(#61)/Watson(#80) stay legacy seeds by design. Pre-registered; frozen.
 FIELD_UNRANKED_MAX_VALUCAST_RANK = 25
+
+# --- Maturation layer (plan 016): PRE-REGISTERED, FROZEN 2026-07-14 ------------
+# A receipt scores ARRIVAL; maturation scores OUTCOME. Every receipt opens PENDING
+# and resolves CONFIRMED (the player stuck and produced real MLB workload) or
+# DECAYED (a cup of coffee) at a pre-registered horizon, from ValuCast's own
+# archived actuals snapshots. Do NOT tune these after seeing resolutions -- that
+# destroys the accountability the layer exists for (bump SIGNAL_VERSION and
+# freeze NEW values instead, keeping the old on record, same as AOTC v1 -> v2).
+MATURATION_HORIZON_DAYS = 60   # first look: eligible to resolve
+MATURATION_FINAL_DAYS = 90     # terminal look: resolve on the counting bar alone
+CONFIRM_HITTER_GAMES = 20      # "he stuck and actually played" floors -- roughly a
+CONFIRM_HITTER_PA = 60         # month of everyday reps for a hitter...
+CONFIRM_PITCHER_GAMES = 12     # ...or a starter's ~4 turns / a reliever's regular
+CONFIRM_PITCHER_IP = 20.0      # usage; above cup-of-coffee, below "must be a star"
+
+
+def _mlb_workload(snapshot_dir: Path = ACTUALS_SNAPSHOT_DIR) -> dict[str, dict]:
+    """{mlbam_id: {"games", "pa", "ip", "as_of"}} -- cumulative season MLB workload
+    per player, read from the archived actuals snapshots. Stats are already
+    season-cumulative, so the MAX over the archive is the peak observed. A pitcher
+    can appear under a hitter row (empty batting line) AND a reliever/starter row;
+    take the max across ALL rows for the id so his real IP/G isn't read as zero
+    off his batting line (live proof case: Owen Murphy 702566)."""
+    workload: dict[str, dict] = {}
+    try:
+        files = sorted(snapshot_dir.glob("*.json"))
+    except OSError:
+        return {}
+    for path in files:
+        try:
+            rows = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001 -- fail-soft, same as _archive_payloads
+            continue
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            metadata = row.get("metadata") or {}
+            mid = str(metadata.get("mlbam_id") or "")
+            if not mid:
+                continue
+            stats = row.get("stats") or {}
+            try:
+                games = int(stats.get("G") or 0)
+            except (TypeError, ValueError):
+                games = 0
+            try:
+                pa = int(stats.get("PA") or 0)
+            except (TypeError, ValueError):
+                pa = 0
+            try:
+                ip = float(stats.get("IP") or 0.0)
+            except (TypeError, ValueError):
+                ip = 0.0
+            entry = workload.setdefault(
+                mid, {"games": 0, "pa": 0, "ip": 0.0, "as_of": ""}
+            )
+            entry["games"] = max(entry["games"], games)
+            entry["pa"] = max(entry["pa"], pa)
+            entry["ip"] = max(entry["ip"], ip)
+            as_of = str(metadata.get("as_of") or "")
+            if as_of > entry["as_of"]:
+                entry["as_of"] = as_of
+    return workload
+
+
+def _maturation_age_days(anchor: str | None, today: str | None) -> int | None:
+    """Days between two YYYY-MM-DD strings; None when either is unparseable."""
+    try:
+        start = datetime.fromisoformat(str(anchor)[:10]).date()
+        end = datetime.fromisoformat(str(today)[:10]).date()
+    except (TypeError, ValueError):
+        return None
+    return (end - start).days
+
+
+def _maturation_status(
+    row: dict,
+    workload: dict[str, dict],
+    roster_lookup: dict,
+    today: str,
+    *,
+    prior_status: str | None = None,
+) -> str:
+    """Resolve a receipt row to PENDING / CONFIRMED / DECAYED (plan 016 rules)."""
+    # Rule 1 -- APPEND-ONLY FLOOR: a CONFIRMED row NEVER reverts. The receipt
+    # claimed ValuCast saw an MLB-caliber player early; once he demonstrably
+    # played at MLB level, the claim is settled regardless of what his career
+    # does afterward (a later demotion is career noise, not a receipt reversal).
+    if prior_status == "CONFIRMED":
+        return "CONFIRMED"
+    anchor = row.get("actual_call_up_date") or row.get("call_up_date")
+    age = _maturation_age_days(anchor, today)
+    if age is None:
+        return "PENDING"  # unparseable anchor: don't guess
+    if age < MATURATION_HORIZON_DAYS:
+        return "PENDING"
+    w = workload.get(str(row.get("mlbam_id"))) or {}
+    games = w.get("games") or 0
+    if row.get("role") == "pitcher":
+        confirmed_bar = games >= CONFIRM_PITCHER_GAMES or (w.get("ip") or 0.0) >= CONFIRM_PITCHER_IP
+    else:
+        confirmed_bar = games >= CONFIRM_HITTER_GAMES or (w.get("pa") or 0) >= CONFIRM_HITTER_PA
+    if confirmed_bar:
+        return "CONFIRMED"
+    if age >= MATURATION_FINAL_DAYS:
+        return "DECAYED"  # 90d elapsed, bar never cleared -- terminal
+    if str(row.get("mlbam_id")) in roster_lookup:
+        return "PENDING"  # up and playing, slow accumulator, not yet 90d
+    return "DECAYED"  # off roster, under bar, past 60d: the cup of coffee ended
 
 
 def _load_json(path: Path) -> dict:
@@ -741,6 +853,10 @@ def _detect_call_ups(
             continue
         if str(receipt["call_up_date"]) < str(existing.get("call_up_date") or "9999-99-99"):
             receipt["logged_at"] = existing.get("logged_at") or receipt["logged_at"]
+            # Carry the resolved status too: the rebuilt receipt has none, and the
+            # append-only CONFIRMED floor must survive an earlier-date replacement.
+            if existing.get("maturation_status"):
+                receipt["maturation_status"] = existing["maturation_status"]
             merged[key] = receipt
 
     return sorted(
@@ -1305,6 +1421,26 @@ def build_call_up_receipts(
     # the board can now SHOW every call-up it didn't score instead of only counting them.
     no_claim_rows = _build_no_claim_rows(no_claim_keys, no_claim, actual_dates, archive_index)
 
+    # Maturation resolution (plan 016): runs on the FINAL receipts list (post
+    # denylist, post real-date attach, post pre-launch drop). prior_status rides
+    # in on the merged row from existing_log, so the append-only CONFIRMED floor
+    # holds across rebuilds. today is the build date, not wall clock.
+    workload = _mlb_workload()
+    today = _date_part(generated_at) or ""
+    for row in receipts:
+        row["maturation_status"] = _maturation_status(
+            row,
+            workload,
+            roster_lookup,
+            today,
+            prior_status=row.get("maturation_status"),
+        )
+    maturation_counts = {
+        "pending": sum(1 for r in receipts if r["maturation_status"] == "PENDING"),
+        "confirmed": sum(1 for r in receipts if r["maturation_status"] == "CONFIRMED"),
+        "decayed": sum(1 for r in receipts if r["maturation_status"] == "DECAYED"),
+    }
+
     blockers = []
     if len(archive_payloads) < 2:
         blockers.append("Fewer than two dated Rank v1 archives are available.")
@@ -1350,6 +1486,35 @@ def build_call_up_receipts(
             "pre_launch_excluded_names": sorted(
                 {row.get("name") for row in pre_launch_excluded if row.get("name")}
             ),
+            "maturation": maturation_counts,
+        },
+        "definitions": {
+            "maturation": {
+                "horizon_days": MATURATION_HORIZON_DAYS,
+                "final_days": MATURATION_FINAL_DAYS,
+                "confirmed": (
+                    f"hitter: games >= {CONFIRM_HITTER_GAMES} OR PA >= {CONFIRM_HITTER_PA}; "
+                    f"pitcher: games >= {CONFIRM_PITCHER_GAMES} OR IP >= {CONFIRM_PITCHER_IP} "
+                    "-- cumulative MLB workload from ValuCast's own archived actuals "
+                    "snapshots; 'he stuck and actually played' floors, comfortably above "
+                    "a cup of coffee, comfortably below 'must be a star'."
+                ),
+                "decayed": (
+                    "past the horizon, under the confirmed bar, and off the active MLB "
+                    "roster -- or the 90-day final look elapsed with the bar never cleared."
+                ),
+                "pending": (
+                    "under 60 days since call-up, or on the active roster and still "
+                    "accumulating before the 90-day final look."
+                ),
+                "append_only": (
+                    "a CONFIRMED receipt never reverts; a later demotion is career "
+                    "noise, not a receipt reversal"
+                ),
+                "frozen": (
+                    "2026-07-14, pre-registered before the first row matures (~2026-09-09)"
+                ),
+            },
         },
         "validation": {
             "ready_for_call_up_receipts": not blockers,

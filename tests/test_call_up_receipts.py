@@ -1,6 +1,7 @@
 """Tests for permanent ValuCast call-up receipts."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import app as app_module
@@ -1444,7 +1445,8 @@ def test_validator_no_claim_rows_parity_and_behind_acceptance(tmp_path, monkeypa
             "artifact": validator.ARTIFACT_NAME, "signal_version": validator.SIGNAL_VERSION,
             "generated_at": "2026-07-01T00:00:00+00:00", "status": "candidate_ready",
             "summary": {"receipt_count": 0, "miss_count": len(misses),
-                        "no_claim_call_up_count": 1, "archive_dates_scanned": []},
+                        "no_claim_call_up_count": 1, "archive_dates_scanned": [],
+                        "maturation": {"pending": 0, "confirmed": 0, "decayed": 0}},
             "source_policy": {flag: False for flag in (
                 "name_matching_used", "feeds_model_score", "feeds_public_rank",
                 "feeds_buy_score", "dd_values_used", "dd_ranks_used",
@@ -1481,6 +1483,198 @@ def test_validator_no_claim_rows_parity_and_behind_acceptance(tmp_path, monkeypa
     behind_bad = [dict(behind_ok[0], divergence=-290, consensus_rank=10)]
     _p, problems = validator.validate_file(_write(base_payload(good_no_claim, behind_bad)))
     assert any("field_unranked_behind" in p and "divergence" in p for p in problems)
+
+
+# --- Maturation layer (plan 016) ------------------------------------------------------
+
+def _receipt(mlbam_id, role, anchor, *, valucast_rank=5, actual=None):
+    """A minimal resolved receipt row for the pure _maturation_status tests."""
+    row = {
+        "identity_key": f"{mlbam_id}_{role}", "mlbam_id": str(mlbam_id), "role": role,
+        "name": str(mlbam_id), "team": "BOS", "pos": "SS", "level": "AAA",
+        "valucast_rank": valucast_rank, "call_up_date": anchor,
+        "logged_at": f"{anchor}T00:00:00+00:00",
+    }
+    if actual is not None:
+        row["actual_call_up_date"] = actual
+    return row
+
+
+def test_mlb_workload_reader_maxes_across_dates_and_pools(tmp_path):
+    """Cumulative G grows across two dated files -> reader returns the MAX; a player who
+    appears as both a hitter (empty batting line) and a reliever row returns the max games
+    and the reliever's IP; a missing dir returns {}."""
+    from prospects.call_up_receipts import _mlb_workload
+
+    def snap(as_of, rows):
+        (tmp_path / f"{as_of}.json").write_text(json.dumps(rows), encoding="utf-8")
+
+    def hrow(mid, as_of, g, pa):
+        return {"metadata": {"mlbam_id": str(mid), "as_of": as_of}, "pool": "hitter",
+                "stats": {"G": g, "PA": pa}}
+
+    def prow(mid, as_of, g, ip):
+        return {"metadata": {"mlbam_id": str(mid), "as_of": as_of}, "pool": "reliever",
+                "stats": {"G": g, "IP": ip}}
+
+    snap("2026-07-05", [hrow(806198, "2026-07-05", 17, 60),
+                        hrow(702566, "2026-07-05", 1, 0), prow(702566, "2026-07-05", 1, 1.0)])
+    snap("2026-07-09", [hrow(806198, "2026-07-09", 21, 77),
+                        hrow(702566, "2026-07-09", 2, 0), prow(702566, "2026-07-09", 2, 4.0)])
+
+    wl = _mlb_workload(tmp_path)
+    assert wl["806198"]["games"] == 21 and wl["806198"]["pa"] == 77  # max across dates
+    assert wl["806198"]["as_of"] == "2026-07-09"
+    assert wl["702566"]["games"] == 2  # max games across the two pool rows
+    assert wl["702566"]["ip"] == 4.0   # reliever IP not read off the empty batting line
+
+    assert _mlb_workload(tmp_path / "does_not_exist") == {}
+
+
+def test_maturation_pending_before_horizon():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-07-01")  # 13 days before today
+    wl = {"1": {"games": 99, "pa": 99, "ip": 99.0}}  # confirming workload ignored pre-horizon
+    assert _maturation_status(row, wl, {"1": {}}, "2026-07-14") == "PENDING"
+
+
+def test_maturation_confirmed_by_games():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-05-01")  # ~74 days -> past 60d
+    wl = {"1": {"games": 20, "pa": 0, "ip": 0.0}}
+    assert _maturation_status(row, wl, {}, "2026-07-14") == "CONFIRMED"
+
+
+def test_maturation_confirmed_by_ip_pitcher():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "pitcher", "2026-05-01")
+    wl = {"1": {"games": 3, "pa": 0, "ip": 20.0}}  # games under 12, IP clears 20.0
+    assert _maturation_status(row, wl, {}, "2026-07-14") == "CONFIRMED"
+
+
+def test_maturation_decayed_off_roster_under_bar():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-05-01")  # ~74d, past 60d under 90d
+    wl = {"1": {"games": 4, "pa": 10, "ip": 0.0}}  # under bar
+    assert _maturation_status(row, wl, {}, "2026-07-14") == "DECAYED"  # not in roster_lookup
+
+
+def test_maturation_slow_accumulator_stays_pending_on_roster():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-05-01")  # ~74d, past 60d, under 90d
+    wl = {"1": {"games": 4, "pa": 10, "ip": 0.0}}  # under bar
+    assert _maturation_status(row, wl, {"1": {}}, "2026-07-14") == "PENDING"  # up and playing
+
+
+def test_maturation_90d_terminal_decays_even_on_roster():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-04-01")  # ~104 days -> past 90d
+    wl = {"1": {"games": 4, "pa": 10, "ip": 0.0}}  # never cleared the bar
+    assert _maturation_status(row, wl, {"1": {}}, "2026-07-14") == "DECAYED"  # terminal look
+
+
+def test_maturation_append_only_floor_never_reverts():
+    from prospects.call_up_receipts import _maturation_status
+    row = _receipt(1, "hitter", "2026-05-01")
+    wl = {"1": {"games": 0, "pa": 0, "ip": 0.0}}  # today's workload BELOW the bar
+    # off roster + under bar would say DECAYED, but a prior CONFIRMED is a floor
+    assert _maturation_status(row, wl, {}, "2026-07-14", prior_status="CONFIRMED") == "CONFIRMED"
+
+
+def test_maturation_end_to_end_idempotent_confirmed_never_reverts(monkeypatch):
+    """Build once with a confirming workload, feed the artifact back as existing_log, rebuild
+    with a workload that would now DECAY the row -> it stays CONFIRMED and the summary count
+    is unchanged. This is the receipts-INCREMENTAL append-only contract."""
+    from prospects import call_up_receipts as cur
+
+    archives = [
+        {"date": "2026-05-01", "board": [_rank_row(101, "Sticker", 5, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-05-02", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    kw = dict(archive_payloads=archives, roster_payload=roster, seed_rows=[],
+              generated_at="2026-07-14T00:00:00+00:00")
+
+    monkeypatch.setattr(cur, "_mlb_workload", lambda *a, **k: {"101": {"games": 25, "pa": 90, "ip": 0.0}})
+    first = cur.build_call_up_receipts(existing_log=[], **kw)
+    r1 = next(r for r in first["receipts"] if r["identity_key"] == "101_hitter")
+    assert r1["maturation_status"] == "CONFIRMED"
+    assert first["summary"]["maturation"]["confirmed"] == 1
+
+    # Now a workload that (absent the floor) would DECAY him; append-only must hold.
+    monkeypatch.setattr(cur, "_mlb_workload", lambda *a, **k: {"101": {"games": 1, "pa": 1, "ip": 0.0}})
+    second = cur.build_call_up_receipts(existing_log=first, **kw)
+    r2 = next(r for r in second["receipts"] if r["identity_key"] == "101_hitter")
+    assert r2["maturation_status"] == "CONFIRMED"
+    assert second["summary"]["maturation"]["confirmed"] == 1
+
+
+def test_maturation_confirmed_survives_earlier_call_up_date_replacement(monkeypatch):
+    """The 'earlier board date wins' replacement in _detect_call_ups rebuilds the row
+    fresh (no maturation_status); the merge must carry the CONFIRMED floor forward or
+    a backfilled archive could silently un-confirm a settled receipt."""
+    from prospects import call_up_receipts as cur
+
+    row = _rank_row(101, "Sticker", 5, {"pipeline": 90, "hkb": 95, "sts": 100})
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    monkeypatch.setattr(cur, "_mlb_workload", lambda *a, **k: {"101": {"games": 25, "pa": 90, "ip": 0.0}})
+    first = cur.build_call_up_receipts(
+        archive_payloads=[
+            {"date": "2026-05-01", "board": [row]},
+            {"date": "2026-05-02", "board": []},
+        ],
+        roster_payload=roster, existing_log=[], seed_rows=[],
+        generated_at="2026-07-14T00:00:00+00:00",
+    )
+    r1 = next(r for r in first["receipts"] if r["identity_key"] == "101_hitter")
+    assert r1["maturation_status"] == "CONFIRMED"
+
+    # A backfilled archive surfaces an EARLIER observation of the same call-up; the
+    # replacement receipt is rebuilt without a status. Workload now reads under the
+    # bar -- the carried CONFIRMED floor must win over a fresh DECAYED resolution.
+    monkeypatch.setattr(cur, "_mlb_workload", lambda *a, **k: {"101": {"games": 1, "pa": 1, "ip": 0.0}})
+    second = cur.build_call_up_receipts(
+        archive_payloads=[
+            {"date": "2026-04-01", "board": [row]},
+            {"date": "2026-04-02", "board": []},
+            {"date": "2026-05-01", "board": [row]},
+            {"date": "2026-05-02", "board": []},
+        ],
+        roster_payload=roster, existing_log=first, seed_rows=[],
+        generated_at="2026-07-14T00:00:00+00:00",
+    )
+    r2 = next(r for r in second["receipts"] if r["identity_key"] == "101_hitter")
+    assert str(r2["call_up_date"]) < str(r1["call_up_date"])  # replacement path actually fired
+    assert r2["maturation_status"] == "CONFIRMED"
+
+
+def test_maturation_summary_sum_invariant(monkeypatch):
+    """pending + confirmed + decayed == receipt_count on a real build."""
+    from prospects import call_up_receipts as cur
+
+    archives = [
+        {"date": "2026-05-01", "board": [_rank_row(101, "Sticker", 5, {"pipeline": 90, "hkb": 95, "sts": 100})]},
+        {"date": "2026-05-02", "board": []},
+    ]
+    roster = {"profiles": [{"mlbam_id": 101, "active_mlb_roster": True}]}
+    monkeypatch.setattr(cur, "_mlb_workload", lambda *a, **k: {"101": {"games": 25, "pa": 90, "ip": 0.0}})
+    payload = cur.build_call_up_receipts(
+        archive_payloads=archives, roster_payload=roster, existing_log=[], seed_rows=[],
+        generated_at="2026-07-14T00:00:00+00:00",
+    )
+    m = payload["summary"]["maturation"]
+    assert m["pending"] + m["confirmed"] + m["decayed"] == payload["summary"]["receipt_count"]
+
+
+def test_maturation_seed_row_confirms_off_call_up_date():
+    """A seed (no actual_call_up_date) past 60d with a confirming workload resolves CONFIRMED,
+    anchoring on call_up_date."""
+    from prospects.call_up_receipts import _maturation_status
+    seed = {"identity_key": "900_hitter", "mlbam_id": "900", "role": "hitter",
+            "name": "Seed Guy", "valucast_rank": 41, "call_up_date": "2026-05-01", "seed": True}
+    assert "actual_call_up_date" not in seed
+    wl = {"900": {"games": 22, "pa": 70, "ip": 0.0}}
+    assert _maturation_status(seed, wl, {}, "2026-07-14") == "CONFIRMED"
 
 
 def _rank_row(

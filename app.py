@@ -7627,6 +7627,7 @@ def _build_receipts_page_context():
         "miss_count": len(misses),
         "no_claim_rows": no_claim_rows,
         "no_claim_call_up_count": summary.get("no_claim_call_up_count") or 0,
+        "maturation": summary.get("maturation") or {"pending": 0, "confirmed": 0, "decayed": 0},
         "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,
