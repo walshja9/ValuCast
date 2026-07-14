@@ -869,13 +869,24 @@ def refresh_mlb_service_cache(
         )
     )
     mlb_seasons = mlb_seasons if mlb_seasons is not None else _load_json(cache_path)
-    missing = _missing_service_keys(current, mlb_seasons)
+    # A cached player's current-season line keeps growing (and anyone can debut
+    # mid-season), so fetch-only-missing froze MLB service at its first snapshot:
+    # stale taste chips and starved graduation flags. Refetch EVERY candidate each
+    # run; a failed fetch keeps the prior cached entry, so the cache is a
+    # fetch-failure fallback, not a freezer.
+    missing = {(m, r) for m, r, _ in _missing_service_keys(current, mlb_seasons)}
+    targets = [
+        (int(row["mlbam_id"]), role, str(row.get("name") or ""))
+        for row, role in _service_candidates(current)
+    ]
+    targets.sort(key=lambda t: (t[0], t[1]) not in missing)  # never-cached first
     if limit is not None:
-        missing = missing[: max(0, limit)]
-    if not missing:
+        targets = targets[: max(0, limit)]
+    if not targets:
         return {
             "cache_path": str(cache_path),
-            "missing_before": 0,
+            "missing_before": len(missing),
+            "targets": 0,
             "fetched": 0,
             "failed": 0,
             "written": False,
@@ -887,7 +898,7 @@ def refresh_mlb_service_cache(
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {
             pool.submit(_statsapi_service_seasons, mlbam_id, role): (mlbam_id, role, name)
-            for mlbam_id, role, name in missing
+            for mlbam_id, role, name in targets
         }
         for future in as_completed(futures):
             mlbam_id, role, _name = futures[future]
@@ -903,6 +914,7 @@ def refresh_mlb_service_cache(
     return {
         "cache_path": str(cache_path),
         "missing_before": len(missing),
+        "targets": len(targets),
         "fetched": fetched,
         "failed": failed,
         "written": bool(fetched),

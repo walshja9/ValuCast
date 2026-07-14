@@ -510,6 +510,50 @@ def test_refresh_mlb_service_cache_fetches_missing_mlbam_keys(monkeypatch, tmp_p
     assert cached["101_hitter"][0]["ab"] == 132
 
 
+def test_refresh_mlb_service_cache_updates_stale_cached_entries(monkeypatch, tmp_path):
+    """Already-cached players MUST be refetched: current-season MLB lines keep
+    growing, and fetch-only-missing froze them at their first snapshot (the
+    Bolte 87-AB / missed-graduation bug)."""
+
+    def fake_fetch(mlbam_id, role):
+        return [{"year": 2026, "pa": 202, "ab": 176, "r": 20, "hr": 5, "rbi": 20,
+                 "sb": 3, "avg": 0.260, "ops": 0.750, "so": 50}]
+
+    monkeypatch.setattr(exporter, "_statsapi_service_seasons", fake_fetch)
+    cache_path = tmp_path / "mlb_service_cache.json"
+    stale = {"101_hitter": [{"year": 2026, "pa": 100, "ab": 87}]}
+
+    result = exporter.refresh_mlb_service_cache(
+        current=_current(),
+        mlb_seasons=stale,
+        cache_path=cache_path,
+        max_workers=1,
+    )
+
+    assert result["missing_before"] == 0
+    assert result["fetched"] == 1
+    cached = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert cached["101_hitter"][0]["ab"] == 176
+
+
+def test_refresh_mlb_service_cache_keeps_prior_entry_on_fetch_failure(monkeypatch, tmp_path):
+    monkeypatch.setattr(exporter, "_statsapi_service_seasons", lambda m, r: None)
+    cache_path = tmp_path / "mlb_service_cache.json"
+    prior = {"101_hitter": [{"year": 2026, "pa": 100, "ab": 87}]}
+
+    result = exporter.refresh_mlb_service_cache(
+        current=_current(),
+        mlb_seasons=prior,
+        cache_path=cache_path,
+        max_workers=1,
+    )
+
+    assert result["failed"] == 1
+    assert result["written"] is False
+    assert prior["101_hitter"][0]["ab"] == 87
+    assert not cache_path.exists()
+
+
 def test_write_contract_round_trips(tmp_path):
     payload = exporter.build_contract(
         dataset=_historical(),
