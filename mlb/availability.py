@@ -397,6 +397,31 @@ def _check_transaction_count_ratio_guard(payload: dict, artifact_path: Path) -> 
         )
 
 
+# Per-player fields the archive keeps so historical IL membership stays exactly
+# replayable (gate-extension review 2026-07-13: the old counts-only archive made
+# every historical replay a pseudo-profile). Risk profiles only -- healthy
+# players carry no availability signal, so archiving them adds size, not replay.
+_ARCHIVE_PROFILE_FIELDS = (
+    "mlbam_id",
+    "status",
+    "active_injury_risk",
+    "list_type",
+    "effective_date",
+    "description",
+)
+_ARCHIVE_RISK_STATUSES = {"injured", "rehab"}
+
+
+def _archive_profiles(payload: dict) -> list[dict]:
+    profiles = []
+    for profile in payload.get("profiles") or []:
+        if str(profile.get("status") or "") not in _ARCHIVE_RISK_STATUSES:
+            continue
+        profiles.append({field: profile.get(field) for field in _ARCHIVE_PROFILE_FIELDS})
+    profiles.sort(key=lambda row: str(row.get("mlbam_id") or ""))
+    return profiles
+
+
 def archive_mlb_availability(payload: dict, archive_dir: Path = ARCHIVE_DIR) -> tuple[Path, bool]:
     generated_date = _date_part(payload.get("generated_at")) or datetime.now(
         timezone.utc
@@ -408,6 +433,7 @@ def archive_mlb_availability(payload: dict, archive_dir: Path = ARCHIVE_DIR) -> 
         "contract_version": payload.get("contract_version"),
         "query": payload.get("query") or {},
         "validation": payload.get("validation") or {},
+        "risk_profiles": _archive_profiles(payload),
     }
     text = json.dumps(archive_payload, indent=2, sort_keys=True)
     changed = not archive_path.exists() or archive_path.read_text(encoding="utf-8") != text

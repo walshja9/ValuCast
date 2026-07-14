@@ -273,3 +273,39 @@ def test_validate_mlb_availability_flags_degraded_transaction_count(tmp_path):
     problems = validate_mlb_availability(path)
 
     assert any("transaction_count 50" in problem for problem in problems)
+
+
+def test_archive_retains_risk_profiles_for_exact_replay(tmp_path):
+    # Gate-extension review 2026-07-13: the counts-only archive made historical
+    # IL membership unreconstructable. The archive must keep per-player risk
+    # profiles (injured/rehab only -- healthy rows carry no signal).
+    from mlb.availability import archive_mlb_availability
+
+    payload = {
+        "generated_at": "2026-07-14T12:00:00+00:00",
+        "contract_version": "0.1.0",
+        "query": {},
+        "validation": {"transaction_count": 5000},
+        "profiles": [
+            {
+                "mlbam_id": 111, "status": "injured", "active_injury_risk": True,
+                "list_type": "60-day IL", "effective_date": "2026-07-01",
+                "description": "elbow", "name": "Hurt Guy", "team": "NYM",
+            },
+            {
+                "mlbam_id": 222, "status": "rehab", "active_injury_risk": True,
+                "list_type": "rehab", "effective_date": "2026-07-10",
+                "description": "hamstring", "name": "Rehab Guy", "team": "BOS",
+            },
+            {"mlbam_id": 333, "status": "active", "name": "Healthy Guy"},
+        ],
+    }
+    path, changed = archive_mlb_availability(payload, archive_dir=tmp_path)
+    assert changed is True
+    import json as _json
+
+    archived = _json.loads(path.read_text(encoding="utf-8"))
+    assert [row["mlbam_id"] for row in archived["risk_profiles"]] == [111, 222]
+    assert archived["risk_profiles"][0]["list_type"] == "60-day IL"
+    # healthy players and audit-only fields stay out of the archive
+    assert all("name" not in row for row in archived["risk_profiles"])

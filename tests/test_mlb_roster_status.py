@@ -209,3 +209,28 @@ def test_mass_empty_refetch_raises(tmp_path):
             roster_fetcher=lambda _team_id: [],
             refresh=True,
         )
+
+
+def test_archive_retains_active_roster_membership_for_exact_replay(tmp_path):
+    # Gate-extension review 2026-07-13: the rank normalization pool depends on
+    # active-roster ids, so the dated archive must keep per-player membership.
+    from mlb.roster_status import archive_mlb_roster_status
+
+    payload = {
+        "generated_at": "2026-07-14T12:00:00+00:00",
+        "contract_version": "0.1.0",
+        "validation": {"team_count": 30},
+        "profiles": [
+            {"mlbam_id": 111, "team_abbreviation": "NYM", "active_mlb_roster": True, "name": "A"},
+            {"mlbam_id": 222, "team_abbreviation": "BOS", "active_mlb_roster": False, "name": "B"},
+            {"mlbam_id": 333, "team_abbreviation": "LAD", "active_mlb_roster": True, "name": "C"},
+        ],
+    }
+    path, changed = archive_mlb_roster_status(payload, archive_dir=tmp_path)
+    assert changed is True
+    import json as _json
+
+    archived = _json.loads(path.read_text(encoding="utf-8"))
+    assert [row["mlbam_id"] for row in archived["active_roster"]] == [111, 333]
+    assert archived["active_roster"][0]["team_abbreviation"] == "NYM"
+    assert all("name" not in row for row in archived["active_roster"])

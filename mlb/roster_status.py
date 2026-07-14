@@ -232,6 +232,24 @@ def _write_json(payload: dict, path: Path) -> Path:
     return path
 
 
+def _archive_membership(payload: dict) -> list[dict]:
+    """Per-player active-roster membership kept in the dated archive so a
+    historical replay can reconstruct the rank normalization pool exactly
+    (gate-extension review 2026-07-13: the counts-only archive could not)."""
+    rows = []
+    for profile in payload.get("profiles") or []:
+        if not profile.get("active_mlb_roster"):
+            continue
+        rows.append(
+            {
+                "mlbam_id": profile.get("mlbam_id"),
+                "team_abbreviation": profile.get("team_abbreviation"),
+            }
+        )
+    rows.sort(key=lambda row: str(row.get("mlbam_id") or ""))
+    return rows
+
+
 def archive_mlb_roster_status(payload: dict, archive_dir: Path = ARCHIVE_DIR) -> tuple[Path, bool]:
     generated_date = _date_part(payload.get("generated_at")) or datetime.now(
         timezone.utc
@@ -242,6 +260,7 @@ def archive_mlb_roster_status(payload: dict, archive_dir: Path = ARCHIVE_DIR) ->
         "generated_at": payload.get("generated_at"),
         "contract_version": payload.get("contract_version"),
         "validation": payload.get("validation") or {},
+        "active_roster": _archive_membership(payload),
     }
     text = json.dumps(archive_payload, indent=2, sort_keys=True)
     changed = not archive_path.exists() or archive_path.read_text(encoding="utf-8") != text
