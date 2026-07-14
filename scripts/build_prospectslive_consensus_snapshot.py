@@ -154,9 +154,11 @@ if __name__ == "__main__":
     top = sorted(payload["players_by_mlbam"].values(), key=lambda r: r["pl_rank"])[:5]
     for r in top:
         print(f"  pl#{r['pl_rank']:<3} {r['name']:<20} {r['role']}")
-    # Tuned to the July-2026 Live Rankings export (~60 rows). Re-tune if PL changes depth.
-    assert 30 <= c["total_rows"] <= 800, c
-    assert c["matched_to_mlbam"] >= 20, c
+    # Tuned to the full July-2026 Live Rankings export (~711 rows, 580 matched
+    # under the org+age join; unmatched = players outside our universe plus
+    # correctly-rejected twins/mid-trade org mismatches). Re-tune if PL depth changes.
+    assert 500 <= c["total_rows"] <= 900, c
+    assert c["matched_to_mlbam"] >= 400, c
     if "--write" in sys.argv:
         print("wrote", OUT_PATH, write_snapshot())
     else:
