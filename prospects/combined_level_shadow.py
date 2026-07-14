@@ -286,6 +286,12 @@ def _apply_served_rank_adjustments(
     discount = max(0.0, min(1.0, _num(availability.get("risk_discount")) or 0.0))
     after_availability = round(max(0.0, score * (1.0 - discount)), 2)
     shadow_components = dict(components)
+    # The served row's own bucket application rides in via components; drop it
+    # so the emitted metadata is exactly what the SHADOW recomputed (when the
+    # shadow fires no adjustments, the early return would otherwise leave the
+    # served board's bucket dict here, misattributed as a shadow application).
+    shadow_components.pop("bucket_calibration", None)
+    shadow_components.pop("score_before_bucket_calibration", None)
     shadow_components["sample_reliability"] = reliability
     shadow_components["availability"] = availability
     shadow_components["score_before_availability_adjustment"] = round(score, 2)

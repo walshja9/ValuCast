@@ -78,14 +78,37 @@ def test_combined_level_shadow_keeps_served_rank_stage_penalties():
     ]
     assert penalized, "expected a thin-current-sample penalized shadow on the live board"
 
-    row = penalized[0]
-    # The thin-sample confidence haircut is carried from the served board ...
-    assert row["rank_adjustments"]["bucket_calibration"]["adjustment"] < 0
-    # ... and craters the final shadow well below the raw combined-level blend.
-    assert row["shadow_score"] < row["shadow_score_before_rank_adjustments"]
-    assert row["shadow_score_before_rank_adjustments"] - row["shadow_score"] >= 5.0
-    # served_score mirrors the penalized board score, not the raw blend.
-    assert row["served_score"] <= row["shadow_score_before_rank_adjustments"]
+    # The rank-stage penalties are RECOMPUTED on the shadow blend (that is the
+    # shadow's purpose: a fuller combined sample earns a smaller thin haircut,
+    # especially after epoch-batch item A's taper -- the old fixed >=5.0
+    # magnitude pinned the un-tapered penalty scale). The emitted bucket is now
+    # exactly the SHADOW's application (the served row's bucket no longer leaks
+    # into the metadata), so the invariant is exact flow-through arithmetic:
+    # availability discount first, then the bucket total, floored at zero.
+    for row in penalized:
+        bucket = row["rank_adjustments"]["bucket_calibration"]
+        thin = [
+            rule
+            for rule in bucket.get("rules", [])
+            if rule["bucket"] == "thin_current_sample_confidence"
+        ]
+        assert thin and thin[0]["adjustment"] < 0
+        rules_total = round(
+            sum(rule["adjustment"] for rule in bucket.get("rules", [])), 2
+        )
+        assert bucket["adjustment"] == rules_total  # total, honestly labeled
+        after_availability = row["rank_adjustments"][
+            "score_after_availability_adjustment"
+        ]
+        expected = max(0.0, after_availability + rules_total)  # floors at 0
+        assert abs(row["shadow_score"] - expected) <= 0.05, (
+            row["mlbam_id"],
+            row["shadow_score"],
+            after_availability,
+            rules_total,
+        )
+        # served_score mirrors the penalized board score, not the raw blend.
+        assert row["served_score"] <= row["shadow_score_before_rank_adjustments"]
 
 
 def test_combined_level_shadow_excludes_prior_year_served_model_lines():
