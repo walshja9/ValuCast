@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_mlb_track_record",
   "cache": {
-    "fetched_count": 7,
+    "fetched_count": 1,
     "missing_history_count": 0,
-    "pruned_player_count": 9
+    "pruned_player_count": 0
   },
   "contract": {
     "eligibility": {
@@ -29,7 +29,7 @@
   },
   "contract_name": "ValuCast MLB Track Record Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-07-13",
+  "generated_at": "2026-07-14",
   "profiles": [
     {
       "career": {
@@ -77084,6 +77084,97 @@
     },
     {
       "career": {
+        "BB": 22.0,
+        "BB_9": 2.0769,
+        "ER": 63.0,
+        "ERA": 5.9476,
+        "G": 24.0,
+        "GS": 15.0,
+        "HLD": 0.0,
+        "H_ALLOWED": 124.0,
+        "IP": 95.3333,
+        "K": 83.0,
+        "K_9": 7.8357,
+        "K_BB": 3.7727,
+        "L": 4.0,
+        "SV": 1.0,
+        "SV_HLD": 1.0,
+        "W": 6.0,
+        "WHIP": 1.5315
+      },
+      "current_season": {
+        "BB": 3.0,
+        "BB_9": 2.8929,
+        "ER": 12.0,
+        "ERA": 11.5715,
+        "G": 4.0,
+        "GS": 1.0,
+        "HLD": 0.0,
+        "H_ALLOWED": 21.0,
+        "IP": 9.3333,
+        "K": 11.0,
+        "K_9": 10.6072,
+        "K_BB": 3.6667,
+        "L": 0.0,
+        "SV": 0.0,
+        "SV_HLD": 0.0,
+        "W": 0.0,
+        "WHIP": 2.5714
+      },
+      "experience_band": "current_year_only_or_limited",
+      "mlb_debut_date": "2025-05-14",
+      "mlbam_id": 676467,
+      "prior_mlb": {
+        "BB": 19.0,
+        "BB_9": 1.9884,
+        "ER": 51.0,
+        "ERA": 5.3372,
+        "G": 20.0,
+        "GS": 14.0,
+        "HLD": 0.0,
+        "H_ALLOWED": 103.0,
+        "IP": 86.0,
+        "K": 72.0,
+        "K_9": 7.5349,
+        "K_BB": 3.7895,
+        "L": 4.0,
+        "SV": 1.0,
+        "SV_HLD": 1.0,
+        "W": 6.0,
+        "WHIP": 1.4186
+      },
+      "recent_3yr_prior": {
+        "BB": 19.0,
+        "BB_9": 1.9884,
+        "ER": 51.0,
+        "ERA": 5.3372,
+        "G": 20.0,
+        "GS": 14.0,
+        "HLD": 0.0,
+        "H_ALLOWED": 103.0,
+        "IP": 86.0,
+        "K": 72.0,
+        "K_9": 7.5349,
+        "K_BB": 3.7895,
+        "L": 4.0,
+        "SV": 1.0,
+        "SV_HLD": 1.0,
+        "W": 6.0,
+        "WHIP": 1.4186
+      },
+      "role": "pitcher",
+      "source": "mlb_stats_api_year_by_year_and_current_actuals",
+      "track_record_certainty": 20.74,
+      "track_record_floor_score": 30.5,
+      "volume": {
+        "career": 95.333,
+        "current_season": 9.333,
+        "prior_mlb": 86.0,
+        "recent_3yr_prior": 86.0
+      }
+    },
+    {
+      "career": {
         "BB": 82.0,
         "BB_9": 2.1288,
         "ER": 117.0,
@@ -95876,8 +95967,8 @@
     "duplicate_identity_count": 0,
     "missing_history_count": 0,
     "missing_history_sample": [],
-    "profile_count": 982,
+    "profile_count": 983,
     "ready_for_mlb_dynasty_layer": true,
-    "tracked_identity_count": 982
+    "tracked_identity_count": 983
   }
 }
