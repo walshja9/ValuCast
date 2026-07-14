@@ -341,7 +341,15 @@ def _summary(row: dict, peak_score: float, ceiling: str, risk: str) -> str:
     unit = str(current.get("sample_unit") or "")
     skill_band = str(current.get("skill_band") or "current evidence").replace("_", " ")
     role = "pitching" if row.get("role") == "pitcher" else "bat"
-    sample_text = f"{sample:g} {unit}" if sample is not None and unit else "the current sample"
+    # Label the sample's level so this deterministic PA cite ("over 199 AA PA") cannot
+    # read as a silent contradiction of a combined-line scouting read that pooled more
+    # levels ("358 PA across AA & A+"). This is a TEXT LABEL ONLY -- the scored line the
+    # peak projection consumes is unchanged; only the summary prose names its level.
+    level = str(current.get("level") or "").strip()
+    if sample is not None and unit:
+        sample_text = f"{sample:g} {level} {unit}" if level else f"{sample:g} {unit}"
+    else:
+        sample_text = "the current sample"
     return (
         f"Peak read: {ceiling_label(ceiling)} with {risk} risk. "
         f"The current {role} shape is {skill_band} over {sample_text}; "

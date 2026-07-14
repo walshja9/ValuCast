@@ -30,6 +30,8 @@ Hard rules (these never bend):
 - AVG/OBP/SLG/OPS/ISO in decimal form like .252, never 25.2%. Only BB%, K%, K-BB%, and percentiles use percent wording.
 - If a pitcher's throws hand is provided, use it exactly. If it is missing, do not mention pitcher handedness.
 - Each stat is tagged with its source (current MLB line / MiLB-equivalent translation / minor-league line / projection). Never blend samples or present one as another.
+- Cite a count (walks, strikeouts, hits, home runs, plate appearances) ONLY as the exact number given in the data. Never state a count that is not in the data, and never derive one from a rate or reuse one stat's count for another — if the data gives a walk total but no strikeout total, do not state a strikeout total.
+- Every stat carries the exact level of the line it comes from: cite it with that line's level_label and no other. Never attribute a pooled multi-level line to a single one of its sub-levels — when a line's level_label names more than one level (e.g. "AA & A+"), a number from it is "across AA & A+", never "at AA".
 - Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting texture not in the data. If the data does not show it, do not name it.
 - If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may describe ceiling and floor in plain words, clearly as a projection — never as current production.
 - Stay in the player's own role vocabulary. For a hitter, never reduce him to a pitcher idiom (a "depth arm", "organizational arm", "mid-rotation" anything, "swingman", "long reliever") — name his floor/ceiling as a hitter (bench bat, platoon piece, second-division regular, everyday player). For a pitcher, never grade him as a hitter ("his bat", "bat-first", "everyday regular"); referencing the hitters he faces is fine. A two-way player is the only one who gets both vocabularies.
@@ -83,6 +85,30 @@ _TRIPLE_SLASH_RE = re.compile(r"(?<![\d.])(\.\d+|0?\.\d+)/(\.\d+|0?\.\d+)/(\.\d+
 def banned_phrase_hits(text: str) -> list[str]:
     lowered = (text or "").lower()
     return [phrase for phrase in BANNED_PHRASES if phrase in lowered]
+
+
+# 7/14 grounding audit: the literal "against a league average" bans caught only the exact
+# scaffold; the drift variants (measured on 171/728 published reads, 23.5%, zero caught)
+# slipped through as "big-league average", "major-league average", "league mark", "league
+# backdrop", "majors' 8.5% average", "above/below the ... average". This regex covers the
+# family. SOFT signal (drives regen) like unsupported_numbers/style -- a stale scaffold is
+# a rewrite candidate, not a factual hazard, so it gates ok but never hard_ok.
+_LEAGUE_AVG_SCAFFOLD_RE = re.compile(
+    r"\b(?:big[-\s]league|major[-\s]league|majors'?)\s+"
+    r"(?:[\w.%-]+\s+){0,3}?(?:average|mean|norm|baseline|mark)\b"
+    r"|\bleague\s+(?:mark|backdrop)\b"
+    r"|\b(?:above|below)\s+the\s+(?:[\w.%'-]+\s+){0,4}?average\b",
+    re.IGNORECASE,
+)
+
+
+def league_average_scaffold_problems(text: str) -> list[str]:
+    """Drift variants of the banned 'against a league average' scaffold that the literal
+    substring bans miss. Soft signal: surfaced for regen, not a hard fact-hazard."""
+    return [
+        f"league-average scaffold variant '{match.group(0).strip()}'"
+        for match in _LEAGUE_AVG_SCAFFOLD_RE.finditer(text or "")
+    ]
 
 
 # 7/5 voice audit: "never fall into a formula" alone was ignored — 86% of reads opened
@@ -380,6 +406,180 @@ def triple_slash_problems(text: str, grounding: dict) -> list[str]:
     return problems
 
 
+# --- Pooled-line level attribution guard (7/14) ------------------------------------------
+# The proven Sirota defect: card_display_line.source_kind == "combined_season_line" pooling
+# AA + A+, and the read wrote "a .475 OBP at AA" -- attributing the whole pooled sample to a
+# single sub-level. Fires ONLY when the citable line is combined AND the text pins a stat to
+# one of the pooled sub-levels WITHOUT naming the pooled label nearby. A single-level read
+# citing "at AA" is legitimate and never trips this (source_kind is not combined).
+# Only real level TOKENS -- never the bare article "a"/"an" (an early over-fire: "in a
+# pinch", "at a level where" tokenized the article as Single-A). "A"/"A+" as a level must
+# be spelled with the "+" or a level word (Single-A / Low-A), so a lone "a" cannot match.
+# A trailing \b after "A+" fails (the "+" is non-word, so a following space is not a word
+# boundary), which silently dropped every "A+" token. Use a lookahead for "not another level
+# char" instead of \b so "A+" tokenizes. High-A/Low-A come before bare A+ so the longer alias
+# wins. "AAA"/"AA" are ordered longest-first so "AAA" is never read as "AA"+"A".
+_LEVEL_TOKEN = (
+    r"(?:Triple-?A|Double-?A|Single-?A|High[-\s]?A|Low[-\s]?A|"
+    r"AAA|AA|A\+|Rookie|Complex|DSL)(?![A-Za-z+])"
+)
+_AT_LEVEL_RE = re.compile(
+    r"\b(?:at|in|across|through|between)\s+"
+    r"(" + _LEVEL_TOKEN + r"|the\s+(?:majors|minors)\b)",
+    re.IGNORECASE,
+)
+# A read that names EVERY sub-level ("at AAA and AA", "Triple-A and Double-A") has framed the
+# pooled sample correctly even without the exact "&" label. Detect the sub-levels the text
+# names so a fully-named pool clears.
+_TEXT_LEVEL_TOKEN_RE = re.compile(r"\b(" + _LEVEL_TOKEN + r")", re.IGNORECASE)
+
+
+def _combined_line_levels(grounding: dict) -> tuple[list[str], str | None]:
+    """The sub-levels and pooled label of a combined card line, or ([], None) when the
+    citable line is not a pooled multi-level line. Reads card_display_line first, then
+    sample_context -- either can carry the source_kind/levels/level_label the build set."""
+    for scope in ("card_display_line", "sample_context"):
+        block = (grounding or {}).get(scope)
+        if not isinstance(block, dict):
+            continue
+        if block.get("source_kind") != "combined_season_line":
+            continue
+        levels = [str(lv).strip() for lv in (block.get("levels") or []) if lv]
+        if len(levels) <= 1:
+            continue
+        return levels, (str(block.get("level_label")).strip() if block.get("level_label") else None)
+    return [], None
+
+
+def _norm_level(level: str) -> str:
+    return (
+        re.sub(r"[\s-]", "", level).lower()
+        .replace("triplea", "aaa").replace("doublea", "aa").replace("singlea", "a")
+    )
+
+
+def _level_token_matches(cited: str, level: str) -> bool:
+    """A cited level string names the given sub-level (case/spacing/alias tolerant)."""
+    c = _norm_level(cited)
+    return bool(c) and c == _norm_level(level)
+
+
+def level_attribution_problems(text: str, grounding: dict) -> list[str]:
+    """Combined pooled line cited as a single sub-level (wrong-fact class -> gates hard_ok).
+    Flags '<stat> at <sub-level>' only when the citable line pooled multiple levels and the
+    read does NOT frame the pool (neither the pooled label nor all sub-levels named). Never
+    fires on a single-level read."""
+    levels, pooled = _combined_line_levels(grounding)
+    if len(levels) <= 1:
+        return []
+    t = text or ""
+    # Pool framed correctly -> do not flag. Two accepted framings:
+    #   1. the exact pooled label appears ("AA & A+").
+    #   2. the text names EVERY sub-level anywhere ("at AAA and AA", "Triple-A and Double-A").
+    if pooled and _norm_level(pooled) in re.sub(r"[\s-]", "", t).lower():
+        return []
+    named = {_norm_level(m.group(1)) for m in _TEXT_LEVEL_TOKEN_RE.finditer(t)}
+    if named >= {_norm_level(lv) for lv in levels}:
+        return []
+    out: list[str] = []
+    for match in _AT_LEVEL_RE.finditer(t):
+        prep = match.group(0).split()[0].lower()
+        cited = match.group(1)
+        # "across"/"between" are pooling prepositions -- naming a sub-level after them is how
+        # a correct pooled read reads ("across AA & A+"); only single-level pins fire.
+        if prep in ("across", "between"):
+            continue
+        if any(_level_token_matches(cited, lvl) for lvl in levels):
+            label = pooled or " & ".join(levels)
+            out.append(
+                f"pooled {label} line attributed to a single sub-level "
+                f"('{match.group(0).strip()}')"
+            )
+    return out
+
+
+# --- Count-role guard (7/14) -------------------------------------------------------------
+# Sirota: "74 walks against 74 strikeouts" -- the model reused the walk count for strikeouts
+# because no strikeout COUNT was in the grounding. Field-aware: the cited strikeout count
+# must exist in the grounding AS a strikeout-count value (repository now injects it), not
+# merely appear somewhere (74 walks must not "ground" 74 strikeouts). Wrong-fact class ->
+# gates hard_ok.
+# A strikeout COUNT is an integer ("74 strikeouts"); a K/9 RATE is a decimal followed by
+# "per nine" ("15.0 strikeouts per nine") and must NOT be read as a count. Require an integer
+# (no decimal point) and a negative lookahead for the "per (nine|9)" / "rate" rate tail. Also
+# exclude "whiff"/"K%" which are rates, not counts -- only true count nouns.
+_K_COUNT_RE = re.compile(
+    r"(?<![.\d/])(\d{1,3})\s+(?:strikeouts?|k'?s|punch[-\s]?outs?)"
+    r"(?!\s+(?:per|/)\s*(?:nine|9)|\s+rate|\s*%|[-\s]*to[-\s]*(?:walk|bb)|/)\b",
+    re.IGNORECASE,
+)
+_WALK_COUNT_RE = re.compile(r"(\d{1,3})\s+(?:walks?|free\s+passes|bases?\s+on\s+balls)\b", re.IGNORECASE)
+
+
+def _grounding_count(grounding: dict, keys: tuple[str, ...]) -> set[int]:
+    """Every integer value stored under any of the named count keys, anywhere in the
+    grounding tree. Field-aware: only these keys count, so a walk total cannot satisfy a
+    strikeout-count claim."""
+    found: set[int] = set()
+
+    def walk(obj):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(k, str) and k.lower() in keys and isinstance(v, (int, float)) and not isinstance(v, bool):
+                    found.add(round(float(v)))
+                walk(v)
+        elif isinstance(obj, (list, tuple)):
+            for v in obj:
+                walk(v)
+
+    walk(grounding or {})
+    return found
+
+
+def count_role_problems(text: str, grounding: dict) -> list[str]:
+    """A cited strikeout count with no matching strikeout-count value in the grounding
+    (the model derived or reused it). Wrong-fact class -> gates hard_ok."""
+    cited_ks = {int(m.group(1)) for m in _K_COUNT_RE.finditer(text or "")}
+    if not cited_ks:
+        return []
+    allowed = _grounding_count(grounding, ("strikeouts", "so", "k", "strike_outs"))
+    out: list[str] = []
+    for k in sorted(cited_ks):
+        if k not in allowed:
+            out.append(
+                f"strikeout count '{k}' is not a strikeout total in the data "
+                f"(fabricated or reused from another stat)"
+            )
+    return out
+
+
+# --- Cross-surface PA consistency (7/14) -------------------------------------------------
+# The Sirota card contradicted itself: the read cited 358 PA (pooled) while the deterministic
+# peak_summary cited 199 PA (a single sub-level). A read PA claim must match the grounding's
+# current sample. Soft signal -- surfaced for regen, not a hard fact-hazard.
+_PA_CLAIM_RE = re.compile(r"(\d{2,4})\s+(?:plate\s+appearances|pa)\b", re.IGNORECASE)
+
+
+def pa_consistency_problems(text: str, grounding: dict) -> list[str]:
+    """A read PA count that does not match the grounding sample. Soft signal."""
+    sample_context = (grounding or {}).get("sample_context")
+    sample = sample_context.get("sample") if isinstance(sample_context, dict) else None
+    if not isinstance(sample, (int, float)) or isinstance(sample, bool) or sample <= 0:
+        return []
+    unit = str(sample_context.get("sample_unit") or "").upper()
+    if unit and unit != "PA":
+        return []
+    target = round(float(sample))
+    out: list[str] = []
+    for match in _PA_CLAIM_RE.finditer(text or ""):
+        cited = int(match.group(1))
+        if abs(cited - target) > 1:
+            out.append(
+                f"read cites {cited} PA but the grounding sample is {target} PA"
+            )
+    return out
+
+
 def _raw_hand_text(value) -> str:
     """Uppercased string form of a handedness value (unwrapping the dict form), used to
     detect switch hitters before resolving an L/R code."""
@@ -439,6 +639,10 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     slash = triple_slash_problems(text, grounding)
     style = style_problems(text)
     role_vocab = role_vocab_problems(text, grounding)
+    level_attribution = level_attribution_problems(text, grounding)
+    count_role = count_role_problems(text, grounding)
+    league_scaffold = league_average_scaffold_problems(text)
+    pa_consistency = pa_consistency_problems(text, grounding)
     return {
         "banned": banned,
         "unsupported_numbers": numbers,
@@ -447,14 +651,26 @@ def validate_report_text(text: str, grounding: dict) -> dict:
         "triple_slash_problems": slash,
         "style_problems": style,
         "role_vocab_problems": role_vocab,
+        "level_attribution_problems": level_attribution,
+        "count_role_problems": count_role,
+        "league_average_scaffold_problems": league_scaffold,
+        "pa_consistency_problems": pa_consistency,
         # style gates ok (drives retry + regen) but not hard_ok — a formulaic read is
         # a regen candidate, not a factual hazard. role_vocab is a wrong-fact-shaped
         # error (same class as handedness) so it gates hard_ok too.
         # derived_word_number_problems is a soft signal like unsupported_numbers/style:
         # a word-form derived delta is a regen candidate, not a hard fact-hazard.
+        # level_attribution + count_role are wrong-fact class (misattributed pooled level,
+        # fabricated strikeout count) -> gate hard_ok. league_average_scaffold (drift
+        # variants) and pa_consistency are soft -> gate ok only.
         "ok": (
             not banned and not numbers and not derived and not handedness
             and not slash and not style and not role_vocab
+            and not level_attribution and not count_role
+            and not league_scaffold and not pa_consistency
         ),
-        "hard_ok": not banned and not handedness and not slash and not role_vocab,
+        "hard_ok": (
+            not banned and not handedness and not slash and not role_vocab
+            and not level_attribution and not count_role
+        ),
     }

@@ -8,6 +8,7 @@ from prospects.peak_projection import RUN_PREVENTION_MIN_PITCHERS
 from prospects.peak_projection import _correlation
 from prospects.peak_projection import _pitcher_shape
 from prospects.peak_projection import _role_probability
+from prospects.peak_projection import _summary
 from prospects.peak_projection import build_peak_projection
 from prospects.peak_projection import check_run_prevention_sentinel
 from prospects.peak_projection import run_peak_projection
@@ -115,6 +116,35 @@ def _rank_payload(rows):
         "ranked_count": len(rows),
         "board": rows,
     }
+
+
+def test_peak_summary_labels_the_sample_level():
+    # (1c) TEXT LABEL ONLY: the deterministic PA cite must name its level ("over 199 AA PA")
+    # so it can't read as a silent contradiction of a combined-line scouting read that pooled
+    # more levels ("358 PA across AA & A+"). The scored line is unchanged; only prose labels.
+    row = {
+        "role": "hitter",
+        "components": {
+            "factual_current_context": {
+                "sample": 199, "sample_unit": "PA", "level": "AA", "skill_band": "impact",
+            }
+        },
+    }
+    text = _summary(row, 55.0, "everyday_regular", "moderate")
+    assert "199 AA PA" in text
+
+
+def test_peak_summary_without_level_omits_the_label():
+    # No level in the context -> the cite falls back to the bare sample (no dangling label).
+    row = {
+        "role": "hitter",
+        "components": {
+            "factual_current_context": {"sample": 199, "sample_unit": "PA", "skill_band": "impact"}
+        },
+    }
+    text = _summary(row, 55.0, "everyday_regular", "moderate")
+    assert "199 PA" in text
+    assert "199  PA" not in text
 
 
 def test_peak_projection_builds_card_ready_role_and_shape_without_rank_mutation():

@@ -255,6 +255,15 @@ def _round_grounding_rates(line: dict) -> dict:
     return rounded
 
 
+def _pooled_level_label(line: dict) -> str | None:
+    """The citable level for a multi-level pooled line: its combined label, never a
+    single sub-level. Returns None for a single-level line (the bare level is honest)."""
+    levels = [lv for lv in (line.get("levels") or []) if lv]
+    if len(levels) <= 1:
+        return None
+    return line.get("level_label") or " & ".join(str(lv) for lv in levels)
+
+
 def _card_display_line_grounding(
     line: dict | None,
     is_best: bool,
@@ -262,12 +271,51 @@ def _card_display_line_grounding(
 ) -> dict | None:
     if not isinstance(line, dict) or not line:
         return None
-    return {
+    grounding = {
         **_round_grounding_rates(line),
         "usage": "the line shown on the card skill bars",
         "source_kind": source_kind
         or ("best_single_level_stat_line" if is_best else "current_minor_league_line"),
     }
+    # A pooled multi-level line carries a bare sub-level "level" (e.g. "AA") copied off
+    # the raw line. Exposed to the model it becomes the direct cause of "a .475 OBP at
+    # AA" when the sample was actually AA+A+. Replace the bare sub-level with the pooled
+    # label everywhere the model can cite it, so the ONLY level string in this line is
+    # the combined one; keep the per-level "levels" list for reference.
+    pooled = _pooled_level_label(line)
+    if pooled is not None:
+        grounding["level"] = pooled
+        grounding["level_label"] = pooled
+    # Rate-only stats the voice prompt invites the model to cite as counts must be
+    # supplied AS counts, not left for the model to derive (or, worse, reuse the walk
+    # total for). Strikeouts is the measured failure (Sirota: 74 walks -> "74 strikeouts").
+    _inject_citable_counts(grounding, line)
+    return grounding
+
+
+# The voice prompt lets the model "weave numbers into the prose"; a K% with a PA count in
+# view is an open invitation to state a strikeout COUNT. When the count is absent the model
+# fabricates it (Sirota reused the 74 walks). Precompute every rate-derived count the prose
+# might cite so the guard can hold the model to a supplied figure, never a derived one.
+# (walks already ride the line as a real count; strikeouts is the one it lacked.)
+_COUNT_FROM_RATE = (
+    # (count_key, rate_pct_key) — count = round(rate_pct/100 * pa)
+    ("strikeouts", "k_pct"),
+)
+
+
+def _inject_citable_counts(grounding: dict, line: dict) -> None:
+    pa = line.get("pa")
+    if pa is None:
+        pa = line.get("sample")
+    if not isinstance(pa, (int, float)) or isinstance(pa, bool) or pa <= 0:
+        return
+    for count_key, rate_key in _COUNT_FROM_RATE:
+        if count_key in grounding:
+            continue
+        rate = line.get(rate_key)
+        if isinstance(rate, (int, float)) and not isinstance(rate, bool):
+            grounding[count_key] = round(rate / 100.0 * float(pa))
 
 
 def _line_sample_context(
@@ -287,10 +335,13 @@ def _line_sample_context(
     context = row.context if isinstance(getattr(row, "context", None), dict) else {}
     # A combined multi-level line's sample spans every level it pooled. Ground the level
     # as the combined label (and expose the levels) so a generated report never claims
-    # "235 PA in Triple-A" when only part of that sample was at Triple-A.
+    # "235 PA in Triple-A" when only part of that sample was at Triple-A. Reuse the same
+    # pooled-label helper the card_display_line uses so both surfaces name one string
+    # ("358 PA across AA & A+"), which the level-attribution guard keys on.
     sample_levels = [lv for lv in (line.get("levels") or []) if lv]
-    if len(sample_levels) > 1:
-        level_value = line.get("level_label") or "+".join(str(lv) for lv in sample_levels)
+    pooled = _pooled_level_label(line)
+    if pooled is not None:
+        level_value = pooled
     else:
         level_value = level or line.get("level") or row.level
     return {
@@ -312,6 +363,14 @@ def _mlb_equivalent_translation_grounding(translated: dict | None) -> dict | Non
         for key, value in translated.items()
         if key != "stats" and value not in (None, {}, [], "")
     }
+    # Same pooled-line trap as card_display_line: a multi-level translation carries a
+    # bare sub-level "level" alongside its pooled "level_label". Collapse the bare
+    # sub-level to the pooled label so no citable view offers a single level for a
+    # pooled sample.
+    pooled = _pooled_level_label(translated)
+    if pooled is not None:
+        grounding["level"] = pooled
+        grounding["level_label"] = pooled
     grounding["usage"] = (
         "MLB-equivalent context only; lead with card_display_line for displayed MiLB values"
     )
@@ -487,6 +546,13 @@ def _llm_grounding(
         if card_selection.is_combined or card_selection.is_best
         else None
     )
+    # For a combined-line card the citable level is the pooled label, not row.level's
+    # bare sub-level. Expose the pooled label as the top-level "level" too, so no view
+    # the model reads (top-level level / card_display_line / sample_context) offers a
+    # single sub-level to hang "at AA" on for a pooled sample.
+    citable_level = row.level
+    if card_selection.is_combined and isinstance(card_stat_line, dict):
+        citable_level = _pooled_level_label(card_stat_line) or row.level
     grounding = {
         "name": row.name,
         "role": row.role,
@@ -494,7 +560,7 @@ def _llm_grounding(
         "throws": _hand_code(getattr(row, "throws", None) or row.context.get("throws")),
         "positions": list(row.positions or []),
         "team": row.team,
-        "level": row.level,
+        "level": citable_level,
         "age": row.age,
         "prospect_rank": row.prospect_rank,
         "card_display_line": _card_display_line_grounding(
@@ -584,8 +650,18 @@ def _attach_llm_reports(rows, reports, store) -> dict:
             and cached.get("model") == current_model
             and cached.get("prompt") == current_prompt
         ):
-            result = cached
-            reused += 1
+            # Re-validate cached text against the CURRENT guard before serving it verbatim.
+            # Without this, a guard tightening is invisible to every already-cached entry:
+            # the hash/model/prompt still match, so old prose that a new check would reject
+            # keeps publishing until its grounding happens to change. Re-running the guard
+            # makes tightenings retroactive -- on failure, flip valid:false so the entry
+            # falls through to regeneration on budget instead of being reused.
+            guard = validate_report_text(cached["text"], grounding)
+            if guard["ok"]:
+                result = {**cached, "valid": True, "hard_ok": guard["hard_ok"], "problems": guard}
+                reused += 1
+            else:
+                fresh[key] = {**cached, "valid": False, "hard_ok": guard["hard_ok"], "problems": guard}
         elif (
             isinstance(cached, dict)
             and cached.get("valid") is True

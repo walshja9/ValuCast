@@ -495,6 +495,75 @@ def test_llm_grounding_uses_card_display_line_for_thin_current_best_single():
     assert "milb" not in grounding["mlb_equivalent_translation"]["stats"][0]
 
 
+def _combined_hitter_row(**overrides):
+    """A prospect whose card line is a pooled AA+A+ combined line (the Sirota shape)."""
+    combined = {
+        "role": "hitter", "season": 2026, "level": "AA",
+        "levels": ["AA", "A+"], "level_label": "AA & A+",
+        "sample": 358, "sample_unit": "PA", "pa": 358,
+        "avg": 0.319, "obp": 0.475, "slg": 0.561, "ops": 1.036, "iso": 0.243,
+        "k_pct": 22.0, "bb_pct": 21.0, "babip": 0.405, "walks": 74,
+    }
+    base = dict(
+        is_prospect=True, name="Pooled Bat", role="hitter", bats="R", throws="R",
+        positions=["CF"], team="LAD", level="AA", age=23, prospect_rank=204,
+        stat_line=combined, stat_line_translated=None, best_single_level_stat_line=None,
+        combined_season_stat_line=combined, context={}, metadata={},
+        availability_context={}, has_peak_projection=False, peak_projection_summary=None,
+    )
+    base.update(overrides)
+    return SimpleNamespace(**base)
+
+
+def test_llm_grounding_combined_line_exposes_pooled_level_not_bare_sub_level():
+    # (1a) The proven Sirota fix: a pooled AA+A+ line must NOT expose a bare "AA" level
+    # anywhere the model can cite it -- the citable level is the pooled label everywhere.
+    row = _combined_hitter_row()
+    grounding = repository._llm_grounding(row, {"obp": 96}, "vs test pool")
+    cdl = grounding["card_display_line"]
+
+    assert cdl["source_kind"] == "combined_season_line"
+    assert cdl["level"] == "AA & A+"          # bare "AA" replaced by the pooled label
+    assert cdl["level_label"] == "AA & A+"
+    assert cdl["levels"] == ["AA", "A+"]       # per-level breakdown still available
+    assert grounding["level"] == "AA & A+"     # top-level citable level pooled too
+    assert grounding["sample_context"]["level"] == "AA & A+"
+
+
+def test_llm_grounding_injects_strikeout_count_next_to_walks():
+    # (1b) Precompute the strikeout COUNT so the model cites a supplied figure instead of
+    # reusing the walk total (Sirota reused 74). round(22.0/100 * 358) = 79.
+    row = _combined_hitter_row()
+    grounding = repository._llm_grounding(row, {}, "vs test pool")
+    cdl = grounding["card_display_line"]
+
+    assert cdl["walks"] == 74
+    assert cdl["strikeouts"] == 79
+
+
+def test_llm_grounding_single_level_keeps_its_own_level():
+    # False-positive discipline at the grounding layer: a single-level line keeps its
+    # honest sub-level; the pooled-label rewrite only applies to multi-level lines.
+    single = {
+        "role": "hitter", "season": 2026, "level": "AA", "levels": ["AA"], "level_label": "AA",
+        "sample": 240, "sample_unit": "PA", "pa": 240,
+        "avg": 0.300, "obp": 0.380, "slg": 0.520, "ops": 0.900, "iso": 0.220,
+        "k_pct": 18.0, "bb_pct": 11.0,
+    }
+    row = _combined_hitter_row(stat_line=single, combined_season_stat_line=single, level="AA")
+    grounding = repository._llm_grounding(row, {}, "vs test pool")
+    cdl = grounding["card_display_line"]
+    # A single-level line pools nothing, so the pooled-label rewrite must NOT fire: the level
+    # stays the honest bare sub-level everywhere the model can cite it. (source_kind can still
+    # read "combined_season_line" for a one-level combined line -- what matters is the LABEL.)
+    assert cdl["level"] == "AA"
+    assert grounding["level"] == "AA"
+    assert grounding["sample_context"]["level"] == "AA"
+    # A single-level read citing "at AA" must NOT trip the level-attribution guard.
+    from scouting.voice import level_attribution_problems
+    assert level_attribution_problems("A .300 bat at AA over 240 PA.", grounding) == []
+
+
 def test_llm_grounding_rounds_card_line_rate_stats():
     # Seth Hernandez regression: the card_line the read narrates is the combined
     # season line, and its raw rate stats carry false precision (14.597 K/9). The
@@ -1109,3 +1178,69 @@ def test_scouting_repository_prompt_change_busts_llm_cache(tmp_path, monkeypatch
     assert payload["summary"]["llm_shadow"]["skipped_due_to_budget"] == 2
     hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
     assert hitter["published_report_source"] == "deterministic"
+
+
+def test_scouting_repository_reuse_branch_revalidates_against_current_guard(
+    tmp_path, monkeypatch
+):
+    """(4) A cache entry whose hash/model/prompt all still match the current build must be
+    re-validated against the CURRENT guard before being served verbatim. A guard tightening
+    (here: the strikeout-count check) is otherwise invisible to already-cached prose. The
+    entry that now fails must flip valid:false so it regenerates on budget -- not reuse."""
+    from scouting import report_generator, repository
+
+    class _FailMessages:
+        def create(self, **_kwargs):
+            raise AssertionError("generation budget should prevent API calls")
+
+    class _FakeClient:
+        messages = _FailMessages()
+
+    snapshot_path = _write_snapshot(tmp_path)
+    cache_path = Path(tmp_path) / "llm_cache.json"
+    # Model Strong's combined line is 12.9 K% over 224 PA -> injected strikeouts = 29.
+    # This cached text claims "50 strikeouts", which the count-role guard now rejects; under
+    # the old guard (no count check) it validated and was served verbatim.
+    cache_path.write_text(
+        json.dumps(
+            {
+                "artifact": "valucast_scouting_llm_cache",
+                "entries": {
+                    "1_hitter": {
+                        "hash": "same",
+                        "text": (
+                            "A left-handed AA bat pairing 22 walks against 50 strikeouts "
+                            "over 224 PA, the approach carries the profile."
+                        ),
+                        "model": "test",
+                        "prompt": report_generator.PROMPT_FINGERPRINT,
+                        "valid": True,
+                        "hard_ok": True,
+                        "problems": {"ok": True, "hard_ok": True},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM_MAX_GENERATE", "0")
+    with (
+        patch.object(report_generator, "default_client", return_value=_FakeClient()),
+        patch.object(report_generator, "grounding_hash", return_value="same"),
+        patch.object(report_generator, "DEFAULT_MODEL", "test"),
+        patch.object(repository, "LLM_CACHE_PATH", cache_path),
+    ):
+        payload = build_scouting_repository(
+            snapshot_path=snapshot_path,
+            generated_at="2026-06-16T00:00:00+00:00",
+        )
+
+    # Not reused: the re-validation failed, so it fell through to (budget-blocked) regen.
+    assert payload["summary"]["llm_shadow"]["reused"] == 0
+    hitter = next(report for report in payload["reports"] if report["name"] == "Model Strong")
+    assert hitter["published_report_source"] == "deterministic"
+    # The persisted cache entry is flipped to valid:false so it regenerates next budget window.
+    saved = json.loads(cache_path.read_text(encoding="utf-8"))["entries"]["1_hitter"]
+    assert saved["valid"] is False
+    assert saved["problems"]["count_role_problems"]

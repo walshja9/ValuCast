@@ -10,8 +10,12 @@ from scouting.mlb_read import stat_line_stats
 from scouting.voice import (
     VOICE_PROMPT,
     banned_phrase_hits,
+    count_role_problems,
     derived_word_number_problems,
     handedness_problems,
+    league_average_scaffold_problems,
+    level_attribution_problems,
+    pa_consistency_problems,
     role_vocab_problems,
     sample_context_stale,
     unsupported_numbers,
@@ -26,6 +30,33 @@ GROUNDING = {
         "usage": "the line shown on the card skill bars",
     },
     "current_skill_percentiles": {"ops": 96, "iso": 92, "k_pct": 70},
+}
+
+# The proven live defect (Mike Sirota, mlbam 701527_hitter): the card_display_line is a
+# combined AA+A+ pooled line, and the read pinned the pooled .475 OBP / 358 PA sample to a
+# single sub-level ("at AA") and fabricated a strikeout count by reusing the walk total
+# ("74 walks against 74 strikeouts"; the real K count is ~79). Canonical A+B fixture.
+SIROTA_TEXT = (
+    "A .475 OBP at AA, with 74 walks against 74 strikeouts in 358 plate appearances, "
+    "the discipline is the whole case. Sirota's translated walk rate lands at 14.4%, "
+    "against a big-league average of 8.5%, and even with a BABIP-aided surface line, the "
+    "underlying approach grades 75 on the projection, the same as his power and impact."
+)
+# The grounding the fixed repository build now produces for that card: pooled level label
+# everywhere the model can cite it, and an injected strikeout COUNT (round(22/100 * 358)).
+SIROTA_GROUNDING = {
+    "name": "Mike Sirota", "role": "hitter", "level": "AA & A+", "age": 23,
+    "card_display_line": {
+        "obp": 0.475, "bb_pct": 21, "k_pct": 22, "pa": 358,
+        "walks": 74, "strikeouts": 79,
+        "level": "AA & A+", "level_label": "AA & A+", "levels": ["AA", "A+"],
+        "source_kind": "combined_season_line",
+        "usage": "the line shown on the card skill bars",
+    },
+    "sample_context": {
+        "sample": 358, "sample_unit": "PA", "level": "AA & A+",
+        "levels": ["AA", "A+"], "source_kind": "combined_season_line",
+    },
 }
 
 
@@ -183,6 +214,104 @@ class TestVoiceGuard(unittest.TestCase):
         self.assertTrue(guard["role_vocab_problems"])
         self.assertFalse(guard["ok"])
         self.assertFalse(guard["hard_ok"])
+
+    def test_level_attribution_flags_pooled_line_pinned_to_sub_level(self):
+        # (a) The proven Sirota defect: a combined AA+A+ line cited "at AA".
+        self.assertTrue(level_attribution_problems(SIROTA_TEXT, SIROTA_GROUNDING))
+
+    def test_level_attribution_clears_single_level_read(self):
+        # False-positive discipline: a single-level read citing "at AA" is LEGITIMATE.
+        single = {"card_display_line": {
+            "level": "AA", "level_label": "AA", "source_kind": "current_minor_league_line",
+            "pa": 240,
+        }}
+        self.assertEqual(level_attribution_problems("A .300 bat at AA over 240 PA.", single), [])
+
+    def test_level_attribution_clears_when_pool_is_named(self):
+        # Naming the pooled label, or every sub-level ("AAA and A+"), is correct framing.
+        combined = {"card_display_line": {
+            "levels": ["AAA", "A+"], "level_label": "AAA & A+",
+            "source_kind": "combined_season_line", "pa": 200,
+        }}
+        self.assertEqual(
+            level_attribution_problems("A 9.9 K/9 across AAA & A+ over 200 PA.", combined), [])
+        self.assertEqual(
+            level_attribution_problems("A 9.9 K/9 at AAA and A+ over 200 PA.", combined), [])
+
+    def test_level_attribution_ignores_bare_article_a(self):
+        # Regression: the article "a" must never tokenize as Single-A ("in a pinch").
+        self.assertEqual(level_attribution_problems("fill a CF spot in a pinch", SIROTA_GROUNDING), [])
+
+    def test_level_attribution_gates_hard_ok(self):
+        guard = validate_report_text(SIROTA_TEXT, SIROTA_GROUNDING)
+        self.assertTrue(guard["level_attribution_problems"])
+        self.assertFalse(guard["hard_ok"])
+        self.assertFalse(guard["ok"])
+
+    def test_count_role_flags_reused_walk_count_as_strikeouts(self):
+        # (b) Sirota reused the 74 walks as the strikeout count; the real K count is 79.
+        self.assertTrue(count_role_problems(SIROTA_TEXT, SIROTA_GROUNDING))
+
+    def test_count_role_clears_correct_strikeout_count(self):
+        text = "74 walks against 79 strikeouts in 358 plate appearances."
+        self.assertEqual(count_role_problems(text, SIROTA_GROUNDING), [])
+
+    def test_count_role_is_field_aware_not_presence_based(self):
+        # A walk total of 74 in the grounding must NOT ground a "74 strikeouts" claim.
+        g = {"card_display_line": {"walks": 74, "pa": 358}}
+        self.assertTrue(count_role_problems("has 74 strikeouts on the year", g))
+
+    def test_count_role_ignores_strikeout_rate(self):
+        # A K/9 RATE ("15.0 strikeouts per nine") is not a count and must never fire.
+        self.assertEqual(count_role_problems("15.0 strikeouts per nine at AA.", SIROTA_GROUNDING), [])
+        self.assertEqual(count_role_problems("a 13/13 strikeout-to-walk mark.", SIROTA_GROUNDING), [])
+
+    def test_count_role_gates_hard_ok(self):
+        guard = validate_report_text(SIROTA_TEXT, SIROTA_GROUNDING)
+        self.assertTrue(guard["count_role_problems"])
+        self.assertFalse(guard["hard_ok"])
+
+    def test_league_average_scaffold_catches_drift_variants(self):
+        # (c) The measured drift variants the literal "against a league average" ban missed.
+        for text in (
+            "against a big-league average of 8.5%",
+            "against a major-league average",
+            "translating to a league mark",
+            "sits against the league backdrop",
+            "above the 8.5% majors' average",
+            "well below the league average",
+        ):
+            self.assertTrue(league_average_scaffold_problems(text), text)
+
+    def test_league_average_scaffold_is_soft_not_hard(self):
+        # (c) soft (ok) only -- a stale scaffold is a regen candidate, not a fact-hazard.
+        guard = validate_report_text(
+            "A patient bat at AA over 240 PA, sitting above the major-league average.",
+            {**GROUNDING, "card_display_line": {**GROUNDING["card_display_line"], "level": "AA"}},
+        )
+        self.assertTrue(guard["league_average_scaffold_problems"])
+        self.assertFalse(guard["ok"])
+        self.assertTrue(guard["hard_ok"])
+
+    def test_league_average_scaffold_clears_clean_text(self):
+        self.assertEqual(league_average_scaffold_problems("A direct read with real pop."), [])
+
+    def test_pa_consistency_flags_mismatched_pa(self):
+        # (d) The read/peak_summary contradiction: read cites 358 PA, but a 199-PA claim
+        # against the same 358-PA grounding sample is a cross-surface mismatch.
+        self.assertTrue(pa_consistency_problems("a strong look over 199 plate appearances", SIROTA_GROUNDING))
+
+    def test_pa_consistency_clears_matching_pa(self):
+        self.assertEqual(
+            pa_consistency_problems("over 358 plate appearances", SIROTA_GROUNDING), [])
+
+    def test_pa_consistency_is_soft_not_hard(self):
+        guard = validate_report_text(
+            "A patient bat over 199 plate appearances.", SIROTA_GROUNDING)
+        self.assertTrue(guard["pa_consistency_problems"])
+        self.assertFalse(guard["ok"])
+        # pa_consistency alone (no level/count claim here) leaves hard_ok True.
+        self.assertTrue(guard["hard_ok"])
 
     def test_supported_numbers_pass(self):
         # cites the line + an ordinal percentile, all present in grounding
