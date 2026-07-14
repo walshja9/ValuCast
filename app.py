@@ -54,6 +54,7 @@ from web.season_outlook import (
 from web.statcast_store import StatcastStore
 from web.pitch_discipline_store import PitchDisciplineStore
 from web.aaa_statcast_store import AaaStatcastStore
+from web.rank_history_store import RankHistoryStore
 from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
 from web.search_fold import fold as fold_search
@@ -423,6 +424,12 @@ pitch_discipline_store = PitchDisciplineStore()
 # labeled source alongside pitch_discipline (which ESTIMATES zone at AAA): this one
 # measures it. Observe-only; missing artifact -> no AAA-Statcast section.
 aaa_statcast_store = AaaStatcastStore()
+
+# Committed ValuCast rank-history snapshot (dated rank archive rolled per player).
+# DISPLAY-ONLY card context: ranks are relative and epoch-robust (survive score
+# re-baselines), so the trend proves early calls even after a re-baseline. Missing
+# artifact -> no rank-trend section. NEVER a value/rank/buy/AOTC input.
+rank_history_store = RankHistoryStore()
 
 # Committed FanGraphs FV + tool-grade snapshot (The Board) for player cards.
 # Display-only scouting reference; never feeds rank/value/score (independence).
@@ -8889,6 +8896,13 @@ def _build_dynasty_player_detail_context(player_id, args):
                 getattr(dd_row, "mlbam_id", None)
             ),
             "aaa_contact_quality": aaa_statcast_store.contact_quality_for(
+                getattr(dd_row, "mlbam_id", None)
+            ),
+            # ValuCast rank trend (dated rank archive). Inverted-axis sparkline +
+            # caption for prospects with >= 2 archived rank points. Empty dict ->
+            # the template renders no section. DISPLAY-ONLY: never a value/rank/
+            # buy/AOTC input, never routed into scouting-read text.
+            "vc_rank_trend": rank_history_store.trend_for(
                 getattr(dd_row, "mlbam_id", None)
             ),
         }

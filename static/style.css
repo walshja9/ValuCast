@@ -2287,6 +2287,13 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .form-curve-foot { display: flex; justify-content: space-between; max-width: 480px; font-size: .7rem; color: var(--c-muted); margin-top: .4rem; }
 .fc-now strong { color: var(--c-signal); font-weight: 700; }
 
+/* VC Rank Trend — inverted-axis rank sparkline (#1 at the top). Display-only. */
+.vc-rank-trend-card { margin-top: 1rem; }
+.vc-rank-trend-spark { width: 100%; max-width: 480px; height: 60px; display: block; margin-top: .55rem; }
+.vc-rank-trend-line { stroke: var(--c-signal); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.vc-rank-trend-dot { fill: var(--c-signal); }
+.vc-rank-trend-caption { font-size: .72rem; color: var(--c-muted); margin-top: .4rem; }
+
 /* MLB-equivalent peripherals */
 .translated-from { display: block; font-size: .68rem; color: var(--c-muted); margin-top: .15rem; }
 

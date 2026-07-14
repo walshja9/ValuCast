@@ -192,3 +192,43 @@ def test_primary_nav_hold_flags_hide_buys_and_receipts(monkeypatch):
     # Unheld promoted items stay.
     assert 'href="/movers">Movers</a>' in html
     assert 'href="/gaps">Gaps</a>' in html
+
+
+def _arias_card_html():
+    return app.test_client().get(
+        "/player/vc_prospect_808265_hitter?mode=prospects",
+        headers={"HX-Request": "true"},
+    )
+
+
+def test_prospect_card_renders_vc_rank_trend_block():
+    # Arias is #1 on 2026-06-18 in the committed rank-history artifact; the card must
+    # surface the inverted-axis sparkline + a caption that names the #1 peak.
+    response = _arias_card_html()
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "VC Rank Trend" in html
+    assert "vc-rank-trend-spark" in html          # the SVG sparkline rendered
+    assert "vc-rank-trend-line" in html           # the polyline path rendered
+    assert "Best #1 (Jun 18)" in html             # caption anchors on the #1 peak
+    assert "#1" in html
+
+
+def test_prospect_card_survives_missing_rank_history_artifact(monkeypatch):
+    # Missing/absent artifact -> the store degrades to empty, the block is hidden,
+    # and the page still renders 200 (never 500).
+    import app as app_module
+    from web.rank_history_store import RankHistoryStore
+
+    monkeypatch.setattr(
+        app_module,
+        "rank_history_store",
+        RankHistoryStore(path="data/models/__does_not_exist__.json"),
+    )
+    response = _arias_card_html()
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "VC Rank Trend" not in html
+    assert "vc-rank-trend-spark" not in html

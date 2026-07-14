@@ -144,6 +144,16 @@ jobs:
           VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
         run: python scripts/run_daily_public_build.py --only build
 
+      # Rolls the dated peak-projection rank archive (written by the build step above,
+      # which archives today's rank_v1_rank into
+      # data/prediction_archive/valucast_prospect_peak_projection_v1/) into a compact
+      # per-player rank-history artifact for the prospect cards. DISPLAY-ONLY: never a
+      # model/rank/buy input. Must run AFTER the build step so today's archive file
+      # exists; the committed artifact below MUST be in the git-add list or it is
+      # silently discarded.
+      - name: Build prospect rank-history artifact
+        run: python scripts/build_prospect_rank_history.py
+
       - name: Validate public artifacts
         run: python scripts/run_daily_public_build.py --only validate
 
@@ -184,6 +194,7 @@ jobs:
             data/models/valucast_prospect_coverage_audit.json \
             data/models/valucast_prospect_calibration_report.json \
             data/models/valucast_prospect_peak_projection_v1.json \
+            data/models/valucast_prospect_rank_history.json \
             data/models/valucast_prospect_peak_projection_calibration.json \
             data/models/valucast_prospect_forward_validation.json \
             data/models/valucast_prospect_model_v0_7.json \

@@ -251,6 +251,25 @@
         </div>
         {% endif %}
 
+        {% if vc_rank_trend is defined and vc_rank_trend and vc_rank_trend.points %}
+        <div class="detail-section vc-rank-trend-card">
+            <div class="prospect-profile-top">
+                <div>
+                    <span class="profile-card-kicker">ValuCast Rank</span>
+                    <h4>VC Rank Trend</h4>
+                    <p class="profile-note">prospect-board rank over time &middot; ranks are relative (survive score re-baselines) &middot; display context</p>
+                </div>
+            </div>
+            <svg class="vc-rank-trend-spark" viewBox="0 0 {{ vc_rank_trend.view_w }} {{ vc_rank_trend.view_h }}"
+                 preserveAspectRatio="none" role="img"
+                 aria-label="ValuCast rank trend: best #{{ vc_rank_trend.best_rank }} on {{ vc_rank_trend.best_date }}, now #{{ vc_rank_trend.latest_rank }}">
+                <polyline class="vc-rank-trend-line" points="{{ vc_rank_trend.points }}" fill="none" vector-effect="non-scaling-stroke" />
+                <circle class="vc-rank-trend-dot" cx="{{ vc_rank_trend.dot_x }}" cy="{{ vc_rank_trend.dot_y }}" r="3" />
+            </svg>
+            <p class="vc-rank-trend-caption">{{ vc_rank_trend.caption }}</p>
+        </div>
+        {% endif %}
+
         {% if row.is_prospect %}
         {% include "partials/_value_spark.html" %}
         {% endif %}
