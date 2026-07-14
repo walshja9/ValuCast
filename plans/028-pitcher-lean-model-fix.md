@@ -1122,3 +1122,63 @@ order, not distance); rare-star harm masked by the bust-heavy mix; concept
 drift. The eventual answer is the prospectively archived profile-complete
 inputs (shipping nightly since 2026-07-14: projection_source_ros weekly,
 IL risk_profiles + active_roster membership daily).
+
+### Amendment 2 — C1 lever registration + normalization-interaction
+### corrections (2026-07-14, BEFORE the gate look; no deltas seen)
+
+**C1 lever, fully specified (locus 1 of fix (a) — feature construction).**
+In `model.py:_outcome_feature_vector`, PITCHER branch only: multiply the four
+pedigree MAGNITUDE features — `pick_value`, `1/(draft_pick or 999)`,
+`1/(draft_round or 99)`, `log1p(signing_bonus)` (model.py:384-387) — by a
+years-since-draft freshness factor that EXACTLY mirrors the codebase's
+existing staleness semantics (`_pedigree_spare_credit`, rank_v1.py:1205-1223):
+1.0 at <= 2 years since draft, linear to 0.0 at >= 5 years. Years since draft
+= (cohort_year for historical rows, else sample_season) - draft_year; unknown
+draft_year or unknown as-of season -> 1.0 (conservative, preserves prior
+behavior, mirrors the spare credit). The structural flags (rule4_drafted,
+draft_record_known, school type, handedness) are NOT decayed. The hitter
+branch is untouched. Toggle: module flag `PITCHER_STALE_PEDIGREE_DECAY_ENABLED`
+(default False = C0; flipped True in the epoch batch only if the gate
+passes). The decay applies identically in training and scoring (it lives in
+feature construction), so C1 folds retrain per the harness's existing
+fold-local training. MAGNITUDE RATIONALE (registered): no new tuned numbers —
+the 2y/5y ramp reuses PEDIGREE_SPARE_FRESH_YEARS/PEDIGREE_SPARE_STALE_YEARS,
+constants that predate this gate. Locus 1 chosen over the scoring-side cap
+because it has no sample-floor cliffs (amendment 4 satisfied structurally: the
+decay is continuous and unconditional), needs no pedigree-attribution
+machinery, and the rank harness retrains per fold so the gate sees the full
+effect. Registered residual: international/undrafted signees with a bonus but
+no draft_year keep full log1p(bonus) (no decay anchor); fix-(a) hard
+constraint 3 (governor extension) is superseded for locus 1 — the defect is
+removed at feature construction, so a main-path stale-pedigree-dominance
+counter would be structurally zero; unit locks on the decay replace it.
+
+**Normalization-interaction corrections to the ablation guard.** Traced
+2026-07-14: `_apply_role_quantile_model_score_normalization`
+(rank_v1.py:741-782) maps WITHIN-ROLE percentiles onto the CROSS-ROLE POOLED
+score distribution ("within_role_percentile_to_pooled_distribution",
+rank_v1.py:816). Consequence: ANY change to pitcher raw model scores reshapes
+the pooled distribution and therefore shifts every row's NORMALIZED score,
+hitters included. Three guard clauses were drafted before this interaction was
+traced and are unsatisfiable as written for any lever; they are amended to
+their intents (evidence criteria — thresholds, bootstrap, one-look budget —
+are UNCHANGED):
+- "ALL hitter rows byte-identical" -> hitter FEATURE VECTORS, raw
+  expected_outcome_score / expected_category_impact_score, and within-role
+  percentiles byte-identical; hitter WITHIN-ROLE ORDERING exactly unchanged
+  (the percentile->pooled map is monotone, so this is checkable and C_hitter
+  is structurally zero-delta); hitter normalized-score drift via the shared
+  pooled distribution is exempt but must be reported (max |drift|).
+- "a cap/discount never increases a score" -> the lever's DIRECT effect is
+  non-increasing (the freshness factor is <= 1.0 multiplicative on
+  non-negative features); redistribution via percentile/pooled normalization
+  is exempt (a non-decayed pitcher's percentile legitimately rises when a
+  stale-pedigree arm falls).
+- "C1 leaves fresh-pedigree (<= 2 years since draft) rows exactly unchanged"
+  -> fresh-pedigree pitcher FEATURE VECTORS byte-identical (decay = 1.0 in
+  that region); their scores may move via retrain + redistribution, bounded
+  by the unchanged overlap/rank-move/score-decrease limits.
+All other guard clauses (identity set, top-25/50/100 overlap >= 20/42/90,
+p95 |rank move| <= 50 on baseline top-200, consensus-gap bounds, max score
+decrease 12.0, realized-effect >= 25 pitcher scores by >= 0.5) stand
+unchanged and are redistribution-aware by construction.
