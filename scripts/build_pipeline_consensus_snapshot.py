@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from prospects.raw_input_builder import _normalize_name  # noqa: E402
+from scripts.consensus_join_util import build_candidate_index, resolve_mlbam  # noqa: E402
 
 SOURCE_PATH = ROOT / "data" / "pipeline" / "pipeline_top100.json"
 SNAPSHOT_PATH = ROOT / "data" / "pipeline" / "pipeline_consensus_snapshot.json"
@@ -35,24 +36,14 @@ def _load(path: Path) -> dict:
         return {}
 
 
-def _name_index() -> dict[str, str]:
-    """normalized_name -> mlbam_id, from the board (ranked + graduated) then universe.
-    Earlier (more authoritative) sources win on collision."""
-    index: dict[str, str] = {}
+def _name_index() -> dict[str, list[dict]]:
+    """normalized_name -> [candidate identities], from the board (ranked + graduated)
+    then universe. First writer per id wins on collision."""
     board = _load(RANK_V1_PATH)
     rows = list(board.get("board") or []) + list(board.get("active_mlb_roster_board") or [])
     universe = _load(UNIVERSE_PATH)
     rows += list(universe.get("players") or universe.get("candidates") or [])
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        mlbam = row.get("mlbam_id")
-        if mlbam in (None, ""):
-            continue
-        key = row.get("normalized_name") or _normalize_name(row.get("name"))
-        if key and key not in index:
-            index[key] = str(mlbam)
-    return index
+    return build_candidate_index(rows, _normalize_name)
 
 
 def build_pipeline_consensus_snapshot() -> dict:
@@ -67,7 +58,10 @@ def build_pipeline_consensus_snapshot() -> dict:
         name = entry.get("name")
         if rank is None or not name:
             continue
-        mlbam = index.get(_normalize_name(name))
+        # Pipeline carries name + rank ONLY (no team/age/role to self-disambiguate),
+        # so it can match only when the normalized name resolves to exactly ONE board
+        # identity; a shared name (>=2 ids) is left unmatched rather than guessing.
+        mlbam = resolve_mlbam(index.get(_normalize_name(name), []))
         if mlbam is None:
             unmatched.append({"rank": rank, "name": name})
             continue

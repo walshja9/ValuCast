@@ -27,10 +27,18 @@ import os
 import re
 import sys
 import unicodedata
-from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.consensus_join_util import (  # noqa: E402
+    build_candidate_index,
+    normalize_org,
+    parse_age,
+    resolve_mlbam,
+)
+
 HIT_CSV = ROOT / "data" / "sts" / "sts_consensus_hitters.csv"
 PIT_CSV = ROOT / "data" / "sts" / "sts_consensus_pitchers.csv"
 RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
@@ -58,19 +66,12 @@ def _load_csv(path: Path, role: str) -> list[dict]:
 
 
 def _board_name_index() -> dict:
-    """normalized_name -> {role: mlbam_id} for role-disambiguated joins."""
+    """normalized_name -> [candidate identities] for role/org/age-gated joins."""
     try:
         board = json.loads(RANK_PATH.read_text(encoding="utf-8")).get("board", [])
     except Exception:  # noqa: BLE001
         return {}
-    idx: dict[str, dict[str, str]] = defaultdict(dict)
-    for row in board:
-        mid = row.get("mlbam_id")
-        role = row.get("role")
-        if mid is None or role not in {"hitter", "pitcher"}:
-            continue
-        idx[_norm(row.get("normalized_name") or row.get("name", ""))][role] = str(mid)
-    return idx
+    return build_candidate_index(board, _norm)
 
 
 def build_snapshot() -> dict:
@@ -85,9 +86,16 @@ def build_snapshot() -> dict:
     unmatched: list[dict] = []
     for combined_rank, r in enumerate(rows, 1):
         name = (r.get("Name") or "").strip()
-        candidates = name_idx.get(_norm(name), {})
-        mid = candidates.get(r["_role"]) or (
-            next(iter(candidates.values())) if len(candidates) == 1 else None
+        # STS carries Team + Age + role: keep the role gate, then require org equality
+        # AND age +/-1. A row missing team/age falls back to unique-name resolution.
+        mid = resolve_mlbam(
+            name_idx.get(_norm(name), []),
+            ext_org=normalize_org(r.get("Team")),
+            ext_age=parse_age(r.get("Age")),
+            ext_role=r["_role"],
+            require_org=True,
+            require_age=True,
+            require_role=True,
         )
         record = {
             "name": name,

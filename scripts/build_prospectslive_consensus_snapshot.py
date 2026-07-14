@@ -1,13 +1,17 @@
-"""Build a network-free ProspectsLive Top 600 consensus snapshot.
+"""Build a network-free ProspectsLive "Live Rankings" consensus snapshot.
 
-Input (committed, refreshed by re-exporting from ProspectsLive ~monthly):
+Input (committed, replaced by re-exporting from ProspectsLive when they re-rank):
   data/prospectslive/prospectslive_top600.csv
+This file arrives MANUALLY (operator drops in a fresh export); there is no fetch.
+Header: Rk,Player,Pos,Team,Level,Age,Min,Max,App,Var,High,Low,Greg,Kyle,PJ,Tom.
 
-ProspectsLive publishes a single Top-600 fantasy prospect board with a composite
-consensus rank `Rk` (its own blend of rankers: Greg/Kyle/Lucas/PJ/Tom). We take
-that one composite `Rk` as ProspectsLive's vote -- it is treated as ONE source
-(like STS, itself a 7-system consensus), NOT five. Join is name-based (PL carries
-no mlbam), role-disambiguated against the current prospect board.
+ProspectsLive publishes a continuously-updated board with a composite consensus
+rank `Rk` (its own blend of rankers). We take that one composite `Rk` as
+ProspectsLive's single vote -- treated as ONE source (like STS, itself a 7-system
+consensus), NOT five. We NEVER read or persist the per-ranker columns
+(Greg/Kyle/PJ/Tom) or the spread columns (Min/Max/App/Var/High/Low): rank aggregate
+only, a ToS posture. Join is name-based (PL carries no mlbam), gated on role + org +
+age against the current prospect board.
 
 Output: data/prospectslive/prospectslive_consensus_snapshot.json keyed by mlbam_id (str).
 
@@ -25,10 +29,19 @@ import os
 import re
 import sys
 import unicodedata
-from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.consensus_join_util import (  # noqa: E402
+    build_candidate_index,
+    normalize_org,
+    parse_age,
+    resolve_mlbam,
+)
+
 PL_CSV = ROOT / "data" / "prospectslive" / "prospectslive_top600.csv"
 RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 OUT_PATH = ROOT / "data" / "prospectslive" / "prospectslive_consensus_snapshot.json"
@@ -50,19 +63,18 @@ def _role_from_pos(pos: str) -> str:
 
 
 def _board_name_index() -> dict:
-    """normalized_name -> {role: mlbam_id} for role-disambiguated joins."""
+    """normalized_name -> [candidate identities] for role/org/age-gated joins."""
     try:
         board = json.loads(RANK_PATH.read_text(encoding="utf-8")).get("board", [])
     except Exception:  # noqa: BLE001
         return {}
-    idx: dict[str, dict[str, str]] = defaultdict(dict)
-    for row in board:
-        mid = row.get("mlbam_id")
-        role = row.get("role")
-        if mid is None or role not in {"hitter", "pitcher"}:
-            continue
-        idx[_norm(row.get("normalized_name") or row.get("name", ""))][role] = str(mid)
-    return idx
+    return build_candidate_index(board, _norm)
+
+
+def _source_as_of() -> str:
+    """Operator-supplied export date: the raw CSV file mtime (manual export, not a
+    fetch). Date only, UTC, labeled honestly by the caller."""
+    return datetime.fromtimestamp(PL_CSV.stat().st_mtime, timezone.utc).date().isoformat()
 
 
 def build_snapshot() -> dict:
@@ -81,9 +93,16 @@ def build_snapshot() -> dict:
         pl_rank = int(rk)
         name = (r.get("Player") or "").strip()
         role = _role_from_pos(r.get("Pos", ""))
-        candidates = name_idx.get(_norm(name), {})
-        mid = candidates.get(role) or (
-            next(iter(candidates.values())) if len(candidates) == 1 else None
+        # PL carries Team + Age + role: keep the role gate, then require org equality
+        # AND age +/-1. A row missing team/age falls back to unique-name resolution.
+        mid = resolve_mlbam(
+            name_idx.get(_norm(name), []),
+            ext_org=normalize_org(r.get("Team")),
+            ext_age=parse_age(r.get("Age")),
+            ext_role=role,
+            require_org=True,
+            require_age=True,
+            require_role=True,
         )
         if not mid:
             unmatched.append({"name": name, "role": role, "pl_rank": pl_rank})
@@ -97,6 +116,8 @@ def build_snapshot() -> dict:
         "artifact": "prospectslive_consensus_snapshot",
         "snapshot_version": "1.0.0",
         "source": "prospectslive_top600_fantasy",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "source_as_of": _source_as_of(),
         "usage": "consensus_reference_for_divergence_display_only",
         "source_policy": {
             "feeds_model_score": False,
@@ -133,9 +154,9 @@ if __name__ == "__main__":
     top = sorted(payload["players_by_mlbam"].values(), key=lambda r: r["pl_rank"])[:5]
     for r in top:
         print(f"  pl#{r['pl_rank']:<3} {r['name']:<20} {r['role']}")
-    # Tuned to the June-2026 Top-600 export (688 rows). Re-tune if PL changes depth.
-    assert 500 <= c["total_rows"] <= 800, c
-    assert c["matched_to_mlbam"] >= 400, c
+    # Tuned to the July-2026 Live Rankings export (~60 rows). Re-tune if PL changes depth.
+    assert 30 <= c["total_rows"] <= 800, c
+    assert c["matched_to_mlbam"] >= 20, c
     if "--write" in sys.argv:
         print("wrote", OUT_PATH, write_snapshot())
     else:

@@ -22,6 +22,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from prospects.raw_input_builder import _normalize_name  # noqa: E402
+from scripts.consensus_join_util import (  # noqa: E402
+    build_candidate_index,
+    normalize_org,
+    parse_age,
+    resolve_mlbam,
+)
 
 SOURCE_CSV = ROOT / "data" / "hkb" / "hkb_source.csv"
 SNAPSHOT_PATH = ROOT / "data" / "hkb" / "hkb_consensus_snapshot.json"
@@ -36,23 +42,14 @@ def _load(path: Path) -> dict:
         return {}
 
 
-def _name_index() -> dict[str, str]:
-    """normalized_name -> mlbam_id from the board (ranked + graduated) then universe."""
-    index: dict[str, str] = {}
+def _name_index() -> dict[str, list[dict]]:
+    """normalized_name -> [candidate identities] from the board (ranked + graduated)
+    then universe. Candidates carry org + age so the join can gate on them."""
     board = _load(RANK_V1_PATH)
     rows = list(board.get("board") or []) + list(board.get("active_mlb_roster_board") or [])
     universe = _load(UNIVERSE_PATH)
     rows += list(universe.get("players") or universe.get("candidates") or [])
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        mlbam = row.get("mlbam_id")
-        if mlbam in (None, ""):
-            continue
-        key = row.get("normalized_name") or _normalize_name(row.get("name"))
-        if key and key not in index:
-            index[key] = str(mlbam)
-    return index
+    return build_candidate_index(rows, _normalize_name)
 
 
 def build_hkb_snapshot() -> dict:
@@ -70,7 +67,17 @@ def build_hkb_snapshot() -> dict:
             if not name:
                 continue
             input_count += 1
-            mlbam = index.get(_normalize_name(name))
+            # HKB carries Team + Age (no role): require org equality AND age +/-1.
+            # A row missing team/age falls back to unique-name resolution (that gate
+            # is skipped), so an absent attribute never re-routes onto a twin.
+            candidates = index.get(_normalize_name(name), [])
+            mlbam = resolve_mlbam(
+                candidates,
+                ext_org=normalize_org(entry.get("Team")),
+                ext_age=parse_age(entry.get("Age")),
+                require_org=True,
+                require_age=True,
+            )
             if mlbam is None:
                 unmatched.append({"rank": rank, "name": name})
                 continue
