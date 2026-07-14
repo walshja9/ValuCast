@@ -120,14 +120,16 @@ class PitchDisciplineStore:
         rates = rates if isinstance(rates, dict) else {}
         pcts = bucket.get("percentiles")
         pcts = pcts if isinstance(pcts, dict) else {}
+        pos_pcts = bucket.get("position_percentiles")
+        pos_pcts = pos_pcts if isinstance(pos_pcts, dict) else {}
         metrics = []
         for key in _EXACT_ORDER:
-            row = self._metric_row(key, rates, pcts, estimated=False)
+            row = self._metric_row(key, rates, pcts, pos_pcts, estimated=False)
             if row:
                 metrics.append(row)
         zone_estimated = bool(bucket.get("zone_estimated", True))
         for key in _ESTIMATED_ORDER:
-            row = self._metric_row(key, rates, pcts, estimated=zone_estimated)
+            row = self._metric_row(key, rates, pcts, pos_pcts, estimated=zone_estimated)
             if row:
                 metrics.append(row)
         any_estimated = any(m["estimated"] for m in metrics)
@@ -140,11 +142,19 @@ class PitchDisciplineStore:
             "metrics": metrics,
         }
 
-    def _metric_row(self, key: str, rates: dict, pcts: dict, *, estimated: bool) -> dict | None:
+    def _metric_row(
+        self, key: str, rates: dict, pcts: dict, pos_pcts: dict, *, estimated: bool
+    ) -> dict | None:
         raw = rates.get(key)
         if not isinstance(raw, (int, float)):
             return None
         pct = pcts.get(key)
+        positional = False
+        if not isinstance(pct, (int, float)):
+            # Contextual metrics carry a cohort POSITION, not a grade -- the
+            # template renders these as neutral bars with no quality color.
+            pct = pos_pcts.get(key)
+            positional = isinstance(pct, (int, float))
         pct = int(max(0, min(100, pct))) if isinstance(pct, (int, float)) else None
         return {
             "key": key,
@@ -152,6 +162,7 @@ class PitchDisciplineStore:
             "raw": float(raw),
             "display": _format_pct(raw),
             "pct": pct,
+            "positional": positional and pct is not None,
             "estimated": estimated,
-            "color": percentile_color(pct) if pct is not None else None,
+            "color": percentile_color(pct) if pct is not None and not positional else None,
         }

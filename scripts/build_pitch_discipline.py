@@ -495,19 +495,28 @@ def compute_cohort_percentiles(player_levels: dict) -> tuple[dict, dict]:
         for level, bucket in levels.items():
             if bucket.get("pitches", 0) < MIN_PITCHES:
                 bucket["percentiles"] = {}
+                bucket["position_percentiles"] = {}
                 bucket["qualifies"] = False
                 continue
             bucket["qualifies"] = True
             cohort_sizes[level] = cohort_sizes.get(level, 0) + 1
             pcts = {}
+            pos_pcts = {}
             for m in ALL_METRICS:
-                if m not in LOWER_IS_BETTER and m not in HIGHER_IS_BETTER:
-                    continue  # contextual metric: raw value only, no fill judgment
                 v = (bucket.get("rates") or {}).get(m)
                 vals = pools.get(level, {}).get(m) or []
-                if isinstance(v, (int, float)) and vals:
+                if not (isinstance(v, (int, float)) and vals):
+                    continue
+                if m in LOWER_IS_BETTER or m in HIGHER_IS_BETTER:
                     pcts[m] = _midrank_percentile(vals, float(v), m in LOWER_IS_BETTER)
+                else:
+                    # Contextual metric (Swing%, Z-Swing%, Zone%): no quality
+                    # direction, so it gets a cohort POSITION (never inverted,
+                    # never a grade) kept in a separate key so consumers cannot
+                    # confuse position with quality.
+                    pos_pcts[m] = _midrank_percentile(vals, float(v), False)
             bucket["percentiles"] = pcts
+            bucket["position_percentiles"] = pos_pcts
     cohorts_meta = {
         "min_pitches": MIN_PITCHES,
         "cohort_sizes": cohort_sizes,

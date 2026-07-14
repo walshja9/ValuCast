@@ -1580,6 +1580,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .profile-bar-fill.elite { background: var(--c-prospect); }
 .profile-bar-fill.good { background: var(--c-prospect); }  /* was off-token #2bcdb2 */
 .profile-bar-fill.risk { background: var(--c-clay); }
+/* Cohort-position bars (Swing%/Z-Swing%/Zone%): deliberately colorless --
+   position in the distribution, not a quality grade. */
+.profile-bar-fill.positional { background: var(--c-slate); opacity: 0.45; }
 .profile-bar-num {
     position: absolute;
     top: 50%;

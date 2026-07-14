@@ -148,7 +148,7 @@
                 <div>
                     <span class="profile-card-kicker">Plate Discipline</span>
                     <h4>How He Handles the Zone</h4>
-                    <p class="profile-note">vs same-level cohort &middot; higher percentile is better</p>
+                    <p class="profile-note">vs same-level cohort &middot; colored bars: higher is better &middot; gray bars: cohort position only, not a grade</p>
                     <p class="profile-percentile-legend">Computed from MLB play-by-play feeds. <a href="/methodology#plate-discipline">How this is measured</a>.</p>
                 </div>
             </div>
@@ -162,18 +162,25 @@
                     {% for metric in group.metrics %}
                     <div class="prospect-profile-bar">
                         <span class="profile-bar-label">{{ metric.label }}{% if metric.estimated %} <a class="pd-est-tag" href="/methodology#plate-discipline" title="Estimated from a pixel-coordinate calibration — see methodology">est.</a>{% endif %}</span>
-                        {% if metric.pct is not none %}
+                        {% if metric.pct is not none and metric.positional %}
+                        {# Swing%, Z-Swing%, Zone% have no good/bad direction (Zone% is
+                           the pitcher's choice, not his skill), so they render a NEUTRAL
+                           cohort-position bar: where the rate sits in the level cohort,
+                           deliberately un-graded and un-colored. #}
+                        <div class="profile-bar-track" role="img" title="Cohort position, not a grade — this rate has no good/bad direction" aria-label="{{ metric.label }}: {{ ordinal(metric.pct) }} in the {{ group.level }} cohort by rate — position only, not a grade">
+                            <span class="profile-bar-fill positional" style="width: {{ metric.pct }}%"></span>
+                            <span class="profile-bar-num" style="left: {{ metric.pct }}%">{{ metric.pct }}</span>
+                        </div>
+                        {% elif metric.pct is not none %}
                         <div class="profile-bar-track" role="img" aria-label="{{ metric.label }}: {{ ordinal(metric.pct) }} percentile in the {{ group.level }} cohort">
                             <span class="profile-bar-fill {{ 'elite' if metric.pct >= 90 else ('good' if metric.pct >= 75 else ('risk' if metric.pct <= 25 else 'neutral')) }}" style="width: {{ metric.pct }}%"></span>
                             <span class="profile-bar-num" style="left: {{ metric.pct }}%">{{ metric.pct }}</span>
                         </div>
                         {% else %}
-                        {# Swing%, Z-Swing%, Zone% are descriptive rates with no good/bad
-                           direction (Zone% is the pitcher's choice, not his skill), so they
-                           carry no cohort percentile by design. Render as an explicit
-                           "context, not ranked" note rather than an empty track that reads
+                        {# Below the cohort sample floor: no percentile of any kind.
+                           Render an explicit note rather than an empty track that reads
                            as a broken bar next to the ranked metrics. #}
-                        <div class="pd-context" aria-label="{{ metric.label }}: {{ metric.display }} — context stat, not ranked">
+                        <div class="pd-context" aria-label="{{ metric.label }}: {{ metric.display }} — below the cohort sample floor, not ranked">
                             <span class="pd-context-label">context &middot; not ranked</span>
                         </div>
                         {% endif %}
