@@ -132,6 +132,53 @@ def test_empty_refetch_keeps_prior_cached_rows(tmp_path):
     assert saved_rows[0]["person"]["id"] == 805811
 
 
+def test_truncated_refetch_keeps_prior_cached_rows(tmp_path):
+    paths = _run_paths(tmp_path)
+    # Warm cache: team 137 previously had a full active roster.
+    prior_rows = [_roster_row(800000 + i, f"Player {i}") for i in range(26)]
+    paths["cache_path"].write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "queries": {
+                    "team:137:rosterType=active": {
+                        "fetched_at": "2026-06-13T12:00:00Z",
+                        "rows": prior_rows,
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    truncated_rows = [_roster_row(805811, "Bryce Eldridge") for _ in range(3)]
+    payload = run_mlb_roster_status(
+        paths["metadata_path"],
+        paths["artifact_path"],
+        paths["cache_path"],
+        paths["archive_dir"],
+        generated_at="2026-06-14T12:00:00Z",
+        season=2026,
+        teams_fetcher=lambda _season: [
+            {"id": 137, "name": "San Francisco Giants", "abbreviation": "SF"}
+        ],
+        roster_fetcher=lambda _team_id: truncated_rows,  # statsapi partial response
+        refresh=True,
+    )
+
+    # Prior rows survive in the published payload...
+    assert payload["active_roster_profile_count"] == 26
+    profiles = active_roster_lookup(
+        json.loads(paths["artifact_path"].read_text(encoding="utf-8"))
+    )
+    assert profiles["800000"]["name"] == "Player 0"
+
+    # ...and in the saved cache (never overwritten with the truncated rows).
+    saved = json.loads(paths["cache_path"].read_text(encoding="utf-8"))
+    saved_rows = saved["queries"]["team:137:rosterType=active"]["rows"]
+    assert len(saved_rows) == 26
+
+
 def test_mass_empty_refetch_raises(tmp_path):
     paths = _run_paths(tmp_path)
     teams = [

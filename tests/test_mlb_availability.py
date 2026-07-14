@@ -1,12 +1,18 @@
 """Tests for the ValuCast MLB availability contract."""
 
+import json
+
+import pytest
+
 from mlb.availability import (
     CACHE_QUERIES_KEEP,
+    _check_transaction_count_ratio_guard,
     _prune_stale_queries,
     _transactions_from_cache_or_fetch,
     availability_lookup,
     build_mlb_availability,
 )
+from scripts.validate_mlb_availability import validate_mlb_availability
 
 
 def _projection(mlbam_id=101, name="Player One"):
@@ -191,3 +197,79 @@ def test_transactions_from_cache_or_fetch_prunes_after_each_new_fetch():
     )
 
     assert len(cache["queries"]) == CACHE_QUERIES_KEEP
+
+
+# 7/13: build-chain audit F4 -- transaction_count only checked "<= 0", so a
+# feed that silently halves still validates clean and overwrites a good
+# artifact. Same-season day-over-day drop >10% must refuse to overwrite.
+def _availability_payload(season, transaction_count, artifact="valucast_mlb_availability"):
+    return {
+        "artifact": artifact,
+        "season": season,
+        "validation": {"transaction_count": transaction_count},
+    }
+
+
+def test_transaction_count_ratio_guard_raises_on_same_season_halving(tmp_path):
+    artifact_path = tmp_path / "valucast_mlb_availability.json"
+    artifact_path.write_text(
+        json.dumps(_availability_payload(2026, 8000)), encoding="utf-8"
+    )
+    new_payload = _availability_payload(2026, 4000)
+
+    with pytest.raises(RuntimeError, match="4000.*8000|transaction_count"):
+        _check_transaction_count_ratio_guard(new_payload, artifact_path)
+
+
+def test_transaction_count_ratio_guard_allows_missing_or_different_season(tmp_path):
+    artifact_path = tmp_path / "valucast_mlb_availability.json"
+    new_payload = _availability_payload(2026, 4000)
+
+    # No prior artifact on disk yet.
+    _check_transaction_count_ratio_guard(new_payload, artifact_path)
+
+    # Prior artifact exists but is a different season (rollover) -- no raise.
+    artifact_path.write_text(
+        json.dumps(_availability_payload(2025, 8000)), encoding="utf-8"
+    )
+    _check_transaction_count_ratio_guard(new_payload, artifact_path)
+
+
+def test_transaction_count_ratio_guard_escape_hatch_env_var(tmp_path, monkeypatch):
+    artifact_path = tmp_path / "valucast_mlb_availability.json"
+    artifact_path.write_text(
+        json.dumps(_availability_payload(2026, 8000)), encoding="utf-8"
+    )
+    new_payload = _availability_payload(2026, 4000)
+
+    monkeypatch.setenv("VALUCAST_SKIP_AVAILABILITY_RATIO_GUARD", "1")
+    _check_transaction_count_ratio_guard(new_payload, artifact_path)
+
+
+def test_validate_mlb_availability_flags_degraded_transaction_count(tmp_path):
+    path = tmp_path / "valucast_mlb_availability.json"
+    payload = {
+        "artifact": "valucast_mlb_availability",
+        "generated_at": "2026-06-14T12:00:00Z",
+        "source_policy": {
+            "kind": "official_mlb_transaction_availability",
+            "name_matching_used": False,
+            "dd_values_used": False,
+            "dd_ranks_used": False,
+            "external_rankings_used": False,
+            "market_values_used": False,
+            "public_prospect_ranks_used": False,
+            "official_mlb_transactions_used": True,
+        },
+        "validation": {
+            "ready_for_mlb_dynasty_layer": True,
+            "duplicate_identity_count": 0,
+            "transaction_count": 50,
+        },
+        "profiles": [],
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    problems = validate_mlb_availability(path)
+
+    assert any("transaction_count 50" in problem for problem in problems)

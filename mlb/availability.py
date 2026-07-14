@@ -369,6 +369,34 @@ def _write_json(payload: dict, path: Path) -> Path:
     return path
 
 
+def _check_transaction_count_ratio_guard(payload: dict, artifact_path: Path) -> None:
+    """Fail LOUD on a day-over-day transaction count collapse. Transactions
+    accumulate monotonically during a season, so a >10% drop in the same
+    season always means a broken feed, never a legitimate reading -- and the
+    same-season check avoids false fires at season rollover."""
+    if os.environ.get("VALUCAST_SKIP_AVAILABILITY_RATIO_GUARD") == "1":
+        return
+    if not artifact_path.exists():
+        return
+    try:
+        prior_payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return
+    if prior_payload.get("season") != payload.get("season"):
+        return
+    prior_count = (prior_payload.get("validation") or {}).get("transaction_count", 0)
+    if not prior_count or prior_count <= 0:
+        return
+    new_count = (payload.get("validation") or {}).get("transaction_count", 0)
+    if new_count < 0.9 * prior_count:
+        raise RuntimeError(
+            f"availability sanity: new transaction_count {new_count} is more than "
+            f"10% below prior transaction_count {prior_count} for the same season "
+            "-- refusing to overwrite with a degraded transactions feed "
+            "(set VALUCAST_SKIP_AVAILABILITY_RATIO_GUARD=1 to override)"
+        )
+
+
 def archive_mlb_availability(payload: dict, archive_dir: Path = ARCHIVE_DIR) -> tuple[Path, bool]:
     generated_date = _date_part(payload.get("generated_at")) or datetime.now(
         timezone.utc
@@ -422,6 +450,7 @@ def run_mlb_availability(
         transactions=transactions,
         season=season,
     )
+    _check_transaction_count_ratio_guard(payload, artifact_path)
     _write_json(payload, artifact_path)
     archive_path, archive_changed = archive_mlb_availability(payload, archive_dir)
     validation = payload["validation"]

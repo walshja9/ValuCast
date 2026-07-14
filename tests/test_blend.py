@@ -1,4 +1,6 @@
+import os
 import unittest
+from unittest.mock import patch
 from scraper.blend import blend_projections, blend_hitters, blend_pitchers
 
 STEAMER_HITTERS = [
@@ -118,6 +120,7 @@ class TestPitcherHAllowed(unittest.TestCase):
 
 
 class TestBlendAll(unittest.TestCase):
+    @patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"})
     def test_blend_projections_returns_all_players(self):
         raw = {"steamer_hitters": STEAMER_HITTERS, "steamer_pitchers": STEAMER_PITCHERS,
                "zips_hitters": ZIPS_HITTERS, "zips_pitchers": ZIPS_PITCHERS}
@@ -128,6 +131,7 @@ class TestBlendAll(unittest.TestCase):
         self.assertIn("Ace Starter", names)
         self.assertIn("Shutdown Closer", names)
 
+    @patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"})
     def test_blend_output_is_list_of_dicts(self):
         raw = {"steamer_hitters": STEAMER_HITTERS, "steamer_pitchers": STEAMER_PITCHERS,
                "zips_hitters": ZIPS_HITTERS, "zips_pitchers": ZIPS_PITCHERS}
@@ -168,5 +172,39 @@ def test_healthy_projections_pass_the_zero_guard():
         "steamer_hitters": [_fg_hitter(i) for i in range(60)],
         "steamer_pitchers": [_fg_pitcher(i) for i in range(60)],
     }
-    assert len(blend_projections(raw)) == 120
+    with patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"}):
+        assert len(blend_projections(raw)) == 120
+
+
+def test_truncated_pool_refuses_to_ship():
+    # Feed truncated to a couple hundred real hitters is still "live" (nonzero
+    # PA/HR on every row), so _assert_not_all_zero passes cleanly -- only the
+    # pool floor catches this.
+    import pytest
+    from scraper.blend import blend_projections
+    truncated = {
+        "steamer_hitters": [_fg_hitter(i) for i in range(100)],
+        "steamer_pitchers": [_fg_pitcher(i) for i in range(3600)],
+    }
+    with pytest.raises(RuntimeError, match="below floor"):
+        blend_projections(truncated)
+
+
+def test_truncated_pool_escape_hatch_suppresses():
+    from scraper.blend import blend_projections
+    truncated = {
+        "steamer_hitters": [_fg_hitter(i) for i in range(100)],
+        "steamer_pitchers": [_fg_pitcher(i) for i in range(3600)],
+    }
+    with patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"}):
+        assert len(blend_projections(truncated)) == 3700
+
+
+def test_normal_shaped_pool_passes_the_floor():
+    from scraper.blend import blend_projections
+    raw = {
+        "steamer_hitters": [_fg_hitter(i) for i in range(3000)],
+        "steamer_pitchers": [_fg_pitcher(i) for i in range(3500)],
+    }
+    assert len(blend_projections(raw)) == 6500
 

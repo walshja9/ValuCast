@@ -147,6 +147,31 @@ def test_milb_stat_freshness_blocks_top50_history_fallbacks():
     ]
 
 
+def test_validate_milb_stat_freshness_audit_rejects_blocked_with_fallback_rows(tmp_path):
+    payload = build_milb_stat_freshness_audit(
+        _inputs(),
+        _rank_payload(history_rank=20),
+        _snapshot(),
+    )
+    assert payload["status"] == "blocked"
+    assert payload["metrics"]["top50_history_fallback_count"] == 1
+
+    artifact_path = tmp_path / "blocked_with_fallback.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+    _, problems = validate_milb_stat_freshness_audit(artifact_path)
+    assert any(
+        "status=blocked feed is serving 1 top50_history_fallback rows" in problem
+        for problem in problems
+    )
+
+    clean_payload = dict(payload)
+    clean_payload["metrics"] = dict(payload["metrics"], top50_history_fallback_count=0)
+    clean_path = tmp_path / "blocked_without_fallback.json"
+    clean_path.write_text(json.dumps(clean_payload), encoding="utf-8")
+    _, clean_problems = validate_milb_stat_freshness_audit(clean_path)
+    assert not any("top50_history_fallback rows" in problem for problem in clean_problems)
+
+
 def test_run_and_validate_milb_stat_freshness_audit(tmp_path):
     inputs_path = tmp_path / "inputs.json"
     rank_path = tmp_path / "rank.json"

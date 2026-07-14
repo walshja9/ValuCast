@@ -26,6 +26,10 @@ USER_AGENT = "ValuCast MLB roster-status builder"
 CONTRACT_NAME = "ValuCast MLB Roster Status Contract"
 CONTRACT_VERSION = "0.1.0"
 
+# MLB active rosters carry 26 players. A refetch below this floor is treated
+# as a partial/truncated statsapi response, not a real roster.
+PER_TEAM_ROSTER_FLOOR = 15
+
 
 def _date_part(value: Any) -> str | None:
     if not value:
@@ -287,11 +291,13 @@ def run_mlb_roster_status(
             refresh=refresh,
             fetched_at=generated_at,
         )
-        # A statsapi 200-with-empty-roster would otherwise overwrite a good cached
-        # roster with []. When a refetch comes back empty but we have prior rows,
-        # keep the prior roster (and preserve its fetched_at) rather than publish
-        # a silently-degraded team.
-        if fetched and not rows and prior_rows:
+        # A statsapi 200-with-empty-or-truncated roster would otherwise overwrite
+        # a good cached roster with a partial one. When a refetch comes back below
+        # PER_TEAM_ROSTER_FLOOR (an active roster carries 26 players) and prior_rows
+        # has more rows than the refetch, keep the prior roster (and preserve its
+        # fetched_at) rather than publish a silently-degraded team. This also
+        # covers the fully-empty-refetch case.
+        if fetched and len(rows) < PER_TEAM_ROSTER_FLOOR and len(prior_rows) > len(rows):
             rows = prior_rows
             cache["queries"][key] = {
                 "fetched_at": prior_entry.get("fetched_at") or generated_at,

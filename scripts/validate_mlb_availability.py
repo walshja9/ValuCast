@@ -42,8 +42,13 @@ def validate_mlb_availability(path: Path = ARTIFACT_PATH) -> list[str]:
         problems.append("validation.ready_for_mlb_dynasty_layer must be true")
     if validation.get("duplicate_identity_count", 0) != 0:
         problems.append("duplicate_identity_count must be zero")
-    if validation.get("transaction_count", 0) <= 0:
+    transaction_count = validation.get("transaction_count", 0)
+    if transaction_count <= 0:
         problems.append("transaction_count must be positive")
+    elif transaction_count < 100:
+        problems.append(
+            f"transaction_count {transaction_count} (< 100) -- degraded transactions feed"
+        )
 
     seen = set()
     for idx, row in enumerate(payload.get("profiles") or []):

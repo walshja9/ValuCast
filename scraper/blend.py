@@ -12,6 +12,11 @@ PITCHER_COUNTING = ("IP", "SO", "W", "L", "GS", "G", "SV", "HLD", "ER", "H",
 HITTER_RATE = ("AVG", "OBP", "SLG", "OPS")
 PITCHER_RATE = ("ERA", "WHIP")
 
+# Normal pool sizes run ~4693 hitters / ~5883 pitchers. Floors sit at roughly
+# 60-65% of that so legitimate early-season pool shrinkage does not false-fire.
+POOL_FLOOR_HITTERS = 3000
+POOL_FLOOR_PITCHERS = 3500
+
 
 def _safe_float(val, default: float = 0.0) -> float:
     if val is None:
@@ -192,6 +197,7 @@ def blend_projections(raw: dict[str, list[dict]]) -> list[dict]:
     hitters = blend_hitters(raw.get("steamer_hitters", []), raw.get("zips_hitters", []))
     pitchers = blend_pitchers(raw.get("steamer_pitchers", []), raw.get("zips_pitchers", []))
     _assert_not_all_zero(hitters, pitchers)
+    _assert_pool_floor(hitters, pitchers)
     return hitters + pitchers
 
 
@@ -225,4 +231,29 @@ def _assert_not_all_zero(hitters: list[dict], pitchers: list[dict]) -> None:
             f"blend sanity: only {live_pitchers}/{len(pitchers)} pitchers have nonzero "
             "IP -- upstream schema drift, refusing to ship all-zero projections "
             "(legitimate end-of-season ROS zeroes? set VALUCAST_SKIP_BLEND_ZERO_GUARD=1)"
+        )
+
+
+def _assert_pool_floor(hitters: list[dict], pitchers: list[dict]) -> None:
+    """Fail LOUD on a silently truncated feed. _assert_not_all_zero only checks
+    liveness (nonzero PA/IP) -- a feed that upstream truncated to a few hundred
+    real hitters passes that check cleanly since every row is still live. Normal
+    pool sizes run ~4693 hitters / ~5883 pitchers; dropping far below that means
+    the source feed was partially loaded, and shipping it overwrites a complete
+    ros.json with an incomplete one."""
+    if os.environ.get("VALUCAST_SKIP_BLEND_POOL_FLOOR") == "1":
+        return  # early-season pool shrinkage can legitimately dip low; see below
+    if len(hitters) < POOL_FLOOR_HITTERS:
+        raise RuntimeError(
+            f"blend sanity: only {len(hitters)} hitters, below floor of "
+            f"{POOL_FLOOR_HITTERS} -- feed likely truncated, refusing to ship a "
+            "partial pool (legitimate early-season shrinkage? set "
+            "VALUCAST_SKIP_BLEND_POOL_FLOOR=1)"
+        )
+    if len(pitchers) < POOL_FLOOR_PITCHERS:
+        raise RuntimeError(
+            f"blend sanity: only {len(pitchers)} pitchers, below floor of "
+            f"{POOL_FLOOR_PITCHERS} -- feed likely truncated, refusing to ship a "
+            "partial pool (legitimate early-season shrinkage? set "
+            "VALUCAST_SKIP_BLEND_POOL_FLOOR=1)"
         )

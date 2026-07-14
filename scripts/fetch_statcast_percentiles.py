@@ -26,6 +26,9 @@ CUSTOM_URL = (
 )
 OUT_PATH = Path(__file__).parent.parent / "data" / "statcast" / "percentiles.json"
 _TIMEOUT = 30
+# Normal counts are ~544 batters / ~585 pitchers; a half-loaded feed (e.g. a
+# truncated CSV) must not silently overwrite the committed artifact.
+STATCAST_POOL_FLOOR = 300
 _SKIP_FIELDS = {"player_name", "player_id", "year"}
 _ID_FIELDS = ("player_id", "batter", "pitcher")
 
@@ -174,8 +177,11 @@ def main() -> int:
     pitchers_raw = _parse_raw(_fetch_custom_csv("pitcher", year))
     batters = _combine(batters_pct, batters_raw)
     pitchers = _combine(pitchers_pct, pitchers_raw)
-    if not batters or not pitchers:
-        print(f"refusing to write: batters={len(batters)} pitchers={len(pitchers)}")
+    if len(batters) < STATCAST_POOL_FLOOR or len(pitchers) < STATCAST_POOL_FLOOR:
+        print(
+            f"refusing to write: batters={len(batters)} pitchers={len(pitchers)} "
+            f"floor={STATCAST_POOL_FLOOR}"
+        )
         return 1
 
     artifact = {

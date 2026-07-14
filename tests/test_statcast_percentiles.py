@@ -17,6 +17,8 @@ from web.statcast_store import (
     PITCHER_METRICS,
 )
 
+from scripts import fetch_statcast_percentiles as fetch_mod
+
 
 def _write(tmpdir: str, payload) -> Path:
     path = Path(tmpdir) / "percentiles.json"
@@ -144,6 +146,58 @@ class TestCommittedArtifact(unittest.TestCase):
         judge = store.display_groups("592450")
         self.assertTrue(judge, "Aaron Judge should have batter percentiles")
         self.assertEqual(judge[0]["label"], "Batting")
+
+
+def _fake_pool(n: int) -> dict:
+    return {str(i): {"xwoba": 50} for i in range(n)}
+
+
+def test_main_refuses_sub_floor_pool(tmp_path, monkeypatch, capsys):
+    """F8: a half-loaded feed (e.g. 50/585 batters) must be refused, not
+    silently overwrite the committed artifact."""
+    out_path = tmp_path / "percentiles.json"
+    out_path.write_text('{"batters": {}, "pitchers": {}}', encoding="utf-8")
+    monkeypatch.setattr(fetch_mod, "OUT_PATH", out_path)
+    monkeypatch.setattr(sys, "argv", ["fetch_statcast_percentiles.py", "2026"])
+    # _fetch_csv("batter", ...) / _fetch_csv("pitcher", ...) return a body
+    # tagged with the kind so the stubbed _parse can size each pool.
+    monkeypatch.setattr(fetch_mod, "_fetch_csv", lambda kind, year: kind)
+    monkeypatch.setattr(fetch_mod, "_fetch_custom_csv", lambda kind, year: kind)
+    monkeypatch.setattr(
+        fetch_mod, "_parse",
+        lambda body: _fake_pool(50) if body == "batter" else _fake_pool(585),
+    )
+    monkeypatch.setattr(fetch_mod, "_parse_raw", lambda body: {})
+
+    rc = fetch_mod.main()
+
+    captured = capsys.readouterr()
+    assert rc == 1
+    assert "refusing to write" in captured.out
+    assert "batters=50" in captured.out
+    assert "pitchers=585" in captured.out
+    assert str(fetch_mod.STATCAST_POOL_FLOOR) in captured.out
+    # Existing artifact must be untouched.
+    assert json.loads(out_path.read_text(encoding="utf-8")) == {
+        "batters": {}, "pitchers": {}
+    }
+
+
+def test_main_writes_when_both_pools_meet_floor(tmp_path, monkeypatch):
+    out_path = tmp_path / "percentiles.json"
+    monkeypatch.setattr(fetch_mod, "OUT_PATH", out_path)
+    monkeypatch.setattr(sys, "argv", ["fetch_statcast_percentiles.py", "2026"])
+    monkeypatch.setattr(fetch_mod, "_fetch_csv", lambda kind, year: "")
+    monkeypatch.setattr(fetch_mod, "_fetch_custom_csv", lambda kind, year: "")
+    monkeypatch.setattr(fetch_mod, "_parse", lambda body: _fake_pool(544))
+    monkeypatch.setattr(fetch_mod, "_parse_raw", lambda body: {})
+
+    rc = fetch_mod.main()
+
+    assert rc == 0
+    written = json.loads(out_path.read_text(encoding="utf-8"))
+    assert len(written["batters"]) == 544
+    assert len(written["pitchers"]) == 544
 
 
 if __name__ == "__main__":

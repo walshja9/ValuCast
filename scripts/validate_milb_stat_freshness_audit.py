@@ -45,6 +45,13 @@ def validate_milb_stat_freshness_audit(
         ):
             if not isinstance(metrics.get(field), int):
                 problems.append(f"metrics.{field} must be an integer")
+        fallback_count = metrics.get("top50_history_fallback_count")
+        if payload.get("status") == "blocked" and isinstance(fallback_count, int) and fallback_count > 0:
+            problems.append(
+                "status=blocked feed is serving "
+                f"{fallback_count} top50_history_fallback rows; blocked feeds must not "
+                "serve fallback history"
+            )
     if not isinstance(payload.get("criteria"), dict):
         problems.append("criteria must be an object")
     if not isinstance(payload.get("blockers"), list):
