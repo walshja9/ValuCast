@@ -57,6 +57,17 @@ THIN_UPPER_LEVEL_PITCHER_MODEL_ADJUSTMENT = -2.0
 # "thin_current_sample" availability signal the quality governor's top-50
 # bucket-shape check uses, so the board and the guardrail stay aligned.
 THIN_SAMPLE_CONFIDENCE_PENALTY_MAX = 28.0
+# Epoch-batch item A (plan 028): the thin penalty tapers linearly to zero as
+# CURRENT-sample reliability approaches this ceiling. The discrete
+# availability-status flip at the IP/PA floors previously switched the FULL
+# penalty on/off (verified 11-15 pt cliffs: 44.9 vs 45.0 IP was +15.38; the
+# GS 2->3 starter reclassification -14.17). With the taper, the status flip
+# hands the row to the moderate-thin haircut with at most a ~2.5 pt step --
+# the irreducible gap between the two branches' deliberately different
+# pedigree/career crediting (INV-THIN-2/3/4 populations unchanged). 45.0
+# fully tapers the widest floor (45 IP -> reliability 47.4 >= ceiling) and
+# keeps deep-thin penalties nearly intact (2 IP still ~-24).
+THIN_SAMPLE_RELIABILITY_RAMP = 45.0
 # Moderate-thin scored-line haircut -- the gap below B. A gaudy line whose own model
 # reliability is low but the availability layer does NOT flag thin_current_sample, so
 # B's haircut never fires (e.g. a 94-PA A+ masher at 32% reliability ranking #18 vs
@@ -1145,14 +1156,24 @@ def _board_model_score_normalization_rows(
     rows: list[dict],
     model_by_key: dict[tuple[str, str], dict],
     input_by_key: dict[tuple[str, str], dict],
-    active_mlb_roster_ids: set[str],
+    board_excluded_mlb_ids: set[str],
 ) -> list[dict]:
+    """Pass-2 normalization pool = exactly the main board's membership.
+
+    Epoch-batch item B (plan 028): the pool previously excluded ALL
+    active-roster ids while the board loop only routes SERVICE-GRADUATED
+    call-ups off the board -- so a retained rookie call-up stayed on the board
+    carrying Pass-1 full-universe normalized values while every neighbor used
+    the board distribution. Callers pass the ids actually excluded from the
+    main board (service-graduated + manual graduates) so every main-board row
+    shares one distribution.
+    """
     normalization_rows = []
     seen: set[tuple[str, str]] = set()
     for universe_row in rows:
         role = universe_row.get("role")
         key = identity_key(universe_row.get("mlbam_id"), role)
-        if key is None or key in seen or key[0] in active_mlb_roster_ids:
+        if key is None or key in seen or key[0] in board_excluded_mlb_ids:
             continue
         seen.add(key)
         input_row = input_by_key.get(key)
@@ -1368,25 +1389,37 @@ def _bucket_calibration_adjustment(
         sample = _sample_size(input_row or {}, str(role or ""))
         sample_unit = "IP" if role == "pitcher" else "PA"
     reliability = _clean_float(components.get("sample_reliability"))
-    status = str(availability.get("status") or "")
+    # Epoch-batch item A: the thin penalty TAPERS to zero as current-sample
+    # reliability approaches THIN_SAMPLE_RELIABILITY_RAMP, so the discrete
+    # availability status flip at the IP/PA floors (which previously switched
+    # the full penalty ON/OFF -- verified 11-15 pt single-step cliffs, incl.
+    # the GS 2->3 starter reclassification) now moves a score by at most the
+    # small gap between this branch and the moderate-thin branch (~2.5 pts).
+    # The status still selects WHICH haircut applies -- the two branches
+    # deliberately credit pedigree/career evidence differently and their
+    # populations are unchanged (INV-THIN-2/3/4).
+    regression = 200.0 if role == "hitter" else 50.0
+    current_reliability = (
+        100.0 * sample / (sample + regression)
+        if sample is not None and sample > 0
+        else 0.0
+    )
     if (
         source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
-        and status == "thin_current_sample"
+        and str(availability.get("status") or "") == "thin_current_sample"
         and reliability is not None
     ):
         # The penalty scales with how little evidence exists (1 - reliability),
-        # so a 2-IP line drops far more than a near-full one. This catches the
-        # governor's failing "thin upper-level pitcher" bucket (e.g. an AAA arm
-        # under 45 IP) plus any other thin-sample profile floating up on model
-        # or pedigree strength, role-agnostically.
-        regression = 200.0 if role == "hitter" else 50.0
-        current_reliability = (
-            100.0 * sample / (sample + regression)
-            if sample is not None and sample > 0
-            else 0.0
-        )
+        # so a 2-IP line drops far more than a near-full one, then phases out
+        # linearly as reliability approaches the ramp ceiling so no single
+        # IP/PA step can move a score by more than the ramp slope.
         thinness = max(0.0, min(1.0, 1.0 - current_reliability / 100.0))
-        penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness
+        ramp = max(
+            0.0,
+            (THIN_SAMPLE_RELIABILITY_RAMP - current_reliability)
+            / THIN_SAMPLE_RELIABILITY_RAMP,
+        )
+        penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness * ramp
         # Credit draft pedigree (a large-N outcome signal: ~52% vs 16% established)
         # so a thin-but-pedigreed profile isn't sunk as hard as a thin no-name --
         # decayed once the pedigree goes stale (the pro record is then the evidence).
@@ -1416,7 +1449,7 @@ def _bucket_calibration_adjustment(
 
     if (
         source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
-        and status != "thin_current_sample"
+        and str(availability.get("status") or "") != "thin_current_sample"
         and reliability is not None
         and reliability < MODERATE_THIN_RELIABILITY_FLOOR
     ):
@@ -1916,12 +1949,23 @@ def build_prospect_rank_v1(
     )
 
     rows = _universe_rows(prospect_universe)
+    graduated_active_mlb_ids = {
+        mlbam_id
+        for mlbam_id in active_mlb_roster_ids
+        if any(
+            (service_by_key.get((mlbam_id, role)) or {}).get("graduated") is True
+            for role in ("hitter", "pitcher")
+        )
+    }
     _apply_role_quantile_model_score_normalization(
         _board_model_score_normalization_rows(
             rows,
             model_by_key,
             input_by_key,
-            active_mlb_roster_ids,
+            # Item B: exclude only ids the board loop itself excludes, so the
+            # Pass-2 pool matches main-board membership exactly (retained
+            # rookie call-ups stay IN the pool).
+            graduated_active_mlb_ids | manual_graduated_ids,
         )
     )
     seen: set[tuple[str, str]] = set()
@@ -2087,14 +2131,7 @@ def build_prospect_rank_v1(
         identity_only_fallback_count,
         _current_stat_context_mismatches(board, expected_current_stat_by_key),
         active_mlb_roster_ids=active_mlb_roster_ids,
-        graduated_active_mlb_ids={
-            mlbam_id
-            for mlbam_id in active_mlb_roster_ids
-            if any(
-                (service_by_key.get((mlbam_id, role)) or {}).get("graduated") is True
-                for role in ("hitter", "pitcher")
-            )
-        },
+        graduated_active_mlb_ids=graduated_active_mlb_ids,
         active_mlb_roster_excluded_count=active_mlb_roster_excluded_count,
         stale_inactive_excluded_count=stale_inactive_excluded_count,
         manual_graduated_excluded_count=manual_graduated_excluded_count,

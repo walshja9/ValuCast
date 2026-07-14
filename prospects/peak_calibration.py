@@ -64,7 +64,8 @@ def _bucket_row(key: tuple[str, str, str, str], rows: list[dict]) -> dict:
         if peak is not None and current is not None
     ]
     high_delta = [row for row in rows if (_num(row.get("peak_score")) or 0) - (_num(row.get("rank_v1_score")) or 0) >= 10]
-    negative_delta = [row for row in rows if (_num(row.get("peak_score")) or 0) - (_num(row.get("rank_v1_score")) or 0) <= -10]
+    negative_delta = [row for row in rows if (_num(row.get("peak_score")) or 0) - (_num(row.get("rank_v1_score")) or 0) < 0]
+    big_negative_delta = [row for row in rows if (_num(row.get("peak_score")) or 0) - (_num(row.get("rank_v1_score")) or 0) <= -10]
     role, level_band, risk, confidence = key
     return {
         "role": role,
@@ -77,6 +78,7 @@ def _bucket_row(key: tuple[str, str, str, str], rows: list[dict]) -> dict:
         "avg_delta": _avg(deltas),
         "high_delta_count": len(high_delta),
         "negative_delta_count": len(negative_delta),
+        "big_negative_delta_count": len(big_negative_delta),
         "sample_players": [
             {
                 "name": str(row.get("name") or ""),

@@ -1181,6 +1181,198 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     )
 
 
+def _thin_penalty(*, role, sample, status, blended_reliability=None):
+    """Item A harness: the thin + moderate-thin adjustments for one profile."""
+    from prospects.rank_v1 import _bucket_calibration_adjustment
+
+    regression = 50.0 if role == "pitcher" else 200.0
+    reliability = (
+        blended_reliability
+        if blended_reliability is not None
+        else round(100.0 * sample / (sample + regression), 2)
+    )
+    components = {
+        "factual_current_context": {"source_kind": "current_season", "role": role},
+        "availability": {
+            "status": status,
+            "sample": sample,
+            "sample_unit": "IP" if role == "pitcher" else "PA",
+        },
+        "sample_reliability": reliability,
+    }
+    _, comp = _bucket_calibration_adjustment(
+        30.0, "prospect_model_v0_6", None, {}, {"role": role, "level": "AAA"},
+        components,
+    )
+    rules = (comp.get("bucket_calibration") or {}).get("rules") or []
+    by_bucket = {rule["bucket"]: rule["adjustment"] for rule in rules}
+    return (
+        by_bucket.get("thin_current_sample_confidence", 0.0),
+        by_bucket.get("moderate_thin_sample_confidence", 0.0),
+    )
+
+
+def test_thin_sample_penalty_has_no_boundary_cliffs():
+    """Epoch-batch item A: the thin penalty tapers to zero as current-sample
+    reliability approaches the ramp, so the availability status flip at each
+    IP/PA floor hands the row to the moderate-thin haircut with a bounded
+    step (<= ~2.6 pts) instead of the verified 11-15 pt cliffs (44.9 vs
+    45.0 IP was +15.38)."""
+    # (role, availability floor, sweep lo, sweep hi) -- status flips at the
+    # floor exactly as prospects/availability.py assigns it.
+    boundaries = [("pitcher", 45.0, 43.0, 47.0), ("pitcher", 30.0, 28.0, 32.0),
+                  ("pitcher", 12.0, 10.0, 14.0), ("hitter", 150.0, 147.0, 153.0),
+                  ("hitter", 100.0, 97.0, 103.0)]
+    for role, floor, lo, hi in boundaries:
+        prev = None
+        sample = lo
+        while sample <= hi:
+            status = "thin_current_sample" if sample < floor else "available"
+            thin, moderate = _thin_penalty(role=role, sample=sample, status=status)
+            # Exactly one haircut per row (populations unchanged).
+            assert thin == 0.0 or moderate == 0.0, (role, sample)
+            total = thin + moderate
+            if prev is not None:
+                assert abs(total - prev) <= 2.6, (role, floor, sample, prev, total)
+            prev = total
+            sample += 0.5
+    # Anchors: deep-thin keeps a large penalty; a full sample takes none.
+    deep, _ = _thin_penalty(
+        role="pitcher", sample=2.0, status="thin_current_sample")
+    assert deep < -20.0
+    thin, moderate = _thin_penalty(
+        role="pitcher", sample=120.0, status="available")
+    assert thin == 0.0 and moderate == 0.0
+
+
+def test_gs_reclassification_step_is_bounded():
+    """Item A: the GS 2->3 starter reclassification at 20 IP flipped which
+    floor applied (12 vs 30 IP) and previously moved the score -14.17. With
+    the taper, the reclassification hand-off between the two haircuts is a
+    bounded ~2 pt step."""
+    # As a 3-GS starter at 20 IP: under the 30 IP floor -> flagged thin.
+    starter_thin, starter_moderate = _thin_penalty(
+        role="pitcher", sample=20.0, status="thin_current_sample")
+    # As a 2-GS reliever at 20 IP: above the 12 IP floor -> unflagged.
+    reliever_thin, reliever_moderate = _thin_penalty(
+        role="pitcher", sample=20.0, status="available")
+    assert starter_thin < 0.0 and starter_moderate == 0.0
+    assert reliever_thin == 0.0 and reliever_moderate < 0.0
+    step = abs(
+        (starter_thin + starter_moderate) - (reliever_thin + reliever_moderate)
+    )
+    assert step <= 2.6, step
+
+
+def _three_hitter_board(*, active_ids, graduated_ids):
+    """Item B harness: 3 hitters with distinct raw model scores; id 11 can be
+    an active-roster call-up (retained or graduated via mlb_service)."""
+    players = []
+    profiles = []
+    ranked = []
+    current = []
+    for mlbam_id, outcome, impact in ((11, 0.9, 0.8), (12, 0.6, 0.5), (13, 0.3, 0.2)):
+        players.append({
+            "mlbam_id": mlbam_id,
+            "name": f"Pool Hitter {mlbam_id}",
+            "normalized_name": f"pool hitter {mlbam_id}",
+            "role": "hitter",
+            "positions": ["SS"],
+            "mlb_team": "BOS",
+            "age": 21,
+            "level": "AAA",
+            "eta": 2026,
+            "universe_source": "valucast_prospect_dynasty_layer",
+        })
+        profile = _profile(mlbam_id, 0.8)
+        profile["name"] = f"Pool Hitter {mlbam_id}"
+        profile["normalized_name"] = f"pool hitter {mlbam_id}"
+        profiles.append(profile)
+        ranked.append({
+            "mlbam_id": mlbam_id,
+            "name": f"Pool Hitter {mlbam_id}",
+            "normalized_name": f"pool hitter {mlbam_id}",
+            "role": "hitter",
+            "expected_outcome_score": outcome,
+            "expected_category_impact_score": impact,
+            "sample_reliability": 0.6,
+            "role_gate": "active",
+            "impact_gate": "active",
+        })
+        current.append({
+            "mlbam_id": mlbam_id,
+            "name": f"Pool Hitter {mlbam_id}",
+            "source_kind": "current_season",
+            "plate_appearances": 250,
+        })
+    universe = {
+        "schema_version": "1.0",
+        "artifact": "valucast_prospect_universe",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": len(players),
+        "players": players,
+    }
+    dynasty_layer = {
+        "status": "shadow_only",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "layer_version": "0.1.0",
+        "profiles": profiles,
+    }
+    prospect_model = {"status": "shadow_only", "model_version": "0.6.0", "ranked": ranked}
+    input_contract = {
+        "schema_version": "1.1",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "current": {"hitters": current, "pitchers": []},
+        "mlb_service": [
+            {"mlbam_id": mlbam_id, "role": "hitter", "ab": 50.0, "pa": 60.0,
+             "ip": 0.0, "graduated": mlbam_id in graduated_ids}
+            for mlbam_id in (11, 12, 13)
+        ],
+    }
+    return build_prospect_rank_v1(
+        universe,
+        dynasty_layer,
+        prospect_model,
+        input_contract,
+        mlb_roster_status=_mlb_roster_status(list(active_ids)),
+        require_mlb_roster_status=True,
+    )
+
+
+def _role_percentiles(payload):
+    out = {}
+    for row in payload["board"]:
+        fields = (row["components"].get("model_score_normalization") or {}).get(
+            "fields") or {}
+        outcome = fields.get("expected_outcome_score") or {}
+        out[row["mlbam_id"]] = outcome.get("role_percentile")
+    return out
+
+
+def test_retained_callup_shares_the_board_normalization_pool():
+    """Epoch-batch item B: a retained (non-graduated) rookie call-up stays on
+    the main board and must share the board's Pass-2 normalization pool. The
+    old predicate excluded ALL active-roster ids, leaving the call-up on
+    Pass-1 full-universe values while neighbors used the board distribution."""
+    payload = _three_hitter_board(active_ids=[11], graduated_ids=set())
+    pcts = _role_percentiles(payload)
+    # One 3-row pool: percentiles (i+1)/(N+1) = 0.75 / 0.5 / 0.25. Under the
+    # old split, 12 would carry 2/3 (a 2-row pool) while 11 kept 0.75.
+    assert pcts[11] == 0.75
+    assert pcts[12] == 0.5
+    assert pcts[13] == 0.25
+
+
+def test_graduated_callup_stays_out_of_the_board_pool():
+    payload = _three_hitter_board(active_ids=[11], graduated_ids={11})
+    board_ids = {row["mlbam_id"] for row in payload["board"]}
+    assert 11 not in board_ids
+    pcts = _role_percentiles(payload)
+    # The graduated id is off the board AND out of the pool: 2-row pool.
+    assert pcts[12] == round(2 / 3, 6)
+    assert pcts[13] == round(1 / 3, 6)
+
+
 def test_no_current_season_penalty_is_prior_pedigree_injury_aware_and_destacked():
     from prospects.rank_v1 import _bucket_calibration_adjustment
 

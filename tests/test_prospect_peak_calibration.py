@@ -7,12 +7,12 @@ from scripts.validate_prospect_peak_calibration_report import (
 )
 
 
-def _projection(rank, role="hitter", level="AA", risk="medium", confidence="medium"):
+def _projection(rank, role="hitter", level="AA", risk="medium", confidence="medium", peak_score=60.0):
     return {
         "name": f"Prospect {rank}",
         "rank_v1_rank": rank,
         "rank_v1_score": 50.0,
-        "peak_score": 60.0,
+        "peak_score": peak_score,
         "role": role,
         "level": level,
         "risk_band": risk,
@@ -52,6 +52,20 @@ def test_peak_calibration_groups_projection_rows_by_bucket():
     assert first["role"] == "hitter"
     assert first["level_band"] == "upper_minors"
     assert first["avg_delta"] == 10.0
+
+
+def test_negative_delta_counts_all_negatives_and_big_cut():
+    payload = build_peak_calibration_report(
+        _peak_payload([
+            _projection(1, peak_score=48.0),  # delta -2
+            _projection(2, peak_score=38.0),  # delta -12
+            _projection(3, peak_score=60.0),  # delta +10
+        ])
+    )
+
+    bucket = payload["buckets"][0]
+    assert bucket["negative_delta_count"] == 2
+    assert bucket["big_negative_delta_count"] == 1
 
 
 def test_peak_calibration_validator_rejects_external_source_flags(tmp_path):
