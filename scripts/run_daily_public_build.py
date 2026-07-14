@@ -22,6 +22,11 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ),
     ("scripts/archive_valucast_actuals_snapshot.py",),
     ("scripts/build_valucast_hp_run.py",),
+    # Weekly dated per-source ROS snapshot (ValuCast H+P, Steamer, ZiPS at the
+    # SAME vintage) for the future source-accuracy backtest (model-core Phase 3).
+    # Additive: reads the hp run just built + this run's raw FanGraphs pulls,
+    # serves nothing. Skips itself inside the 7-day cadence.
+    ("scripts/archive_projection_sources.py",),
     ("scripts/build_mlb_track_record.py",),
     ("scripts/build_mlb_availability.py",),
     ("scripts/build_validation_scorecard.py",),
