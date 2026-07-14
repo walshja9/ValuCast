@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-07-14T18:01:25.469162+00:00",
+  "generated_at": "2026-07-14T18:26:11.188457+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-07-14T18:00:02.453494+00:00",
+    "card_data_audit_generated_at": "2026-07-14T18:24:52.774569+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
-    "public_snapshot_generated_at": "2026-07-14T17:59:58.028669+00:00",
+    "public_snapshot_generated_at": "2026-07-14T18:24:48.567414+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-07-14T18:00:02.954996+00:00",
+    "recent_signal_generated_at": "2026-07-14T18:24:53.257774+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -50638,8 +50638,8 @@
         "P"
       ],
       "prospect_rank": 295,
-      "published_report": "Keep the starter path open, but the walk rate has to move before the bullpen risk fades; the bat-missing is starter-caliber. The walks are the separator, not the stuff; the sample covers 50 IP in Triple-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Twelve-point-two strikeouts per nine at Triple-A, and the profile falls apart the moment you look at the walk rate. Ullola is punching out batters at a genuinely elite clip, a grade-70 miss tool by any reasonable measure, but he's issuing 6.3 walks per nine, and the MLB translation brings that to 4.9 while the strikeout rate shrinks to 9.7. The K-BB% lands at 12.8 in that translation, just below the MLB average of 13.5, meaning the whole profile hinges on whether the command ever closes the gap with the stuff. If it doesn't, he's a depth arm eating innings while opponents wait him out; if it does, there's a late-inning profile in here somewhere, because the miss is real enough to play up in shorter stints where command demands ease.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -50659,16 +50659,14 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "ok": false,
+          "ok": true,
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The strikeout rate is loud \u2014 12.2 K/9 at AAA, which translates to 9.7 against MLB hitters, above the big-league mean \u2014 but the walk rate is the whole argument against him.\n\nRewrite: Remove one of the two em-dashes. Convert one to a comma or period construction.\n\n---\n\nThe strikeout rate is the loudest thing in this profile. At 12.2 K/9 in AAA, translating to 9.7 against MLB hitters, the miss tool grades out well above league average, but a 6.3 BB/9 is eating the dividend. That walk rate lands at 4.9 in translation against a big-league mean of 3.2, which is why a genuinely elite strikeout tool produces a 5.2 ERA and a K-BB% that sits right at the MLB average line. Everything here hinges on command development; without it, the ceiling is a depth arm who runs deep counts and gets through lineups once.",
-        "valid": false
+        "text": "Twelve-point-two strikeouts per nine at Triple-A, and the profile falls apart the moment you look at the walk rate. Ullola is punching out batters at a genuinely elite clip, a grade-70 miss tool by any reasonable measure, but he's issuing 6.3 walks per nine, and the MLB translation brings that to 4.9 while the strikeout rate shrinks to 9.7. The K-BB% lands at 12.8 in that translation, just below the MLB average of 13.5, meaning the whole profile hinges on whether the command ever closes the gap with the stuff. If it doesn't, he's a depth arm eating innings while opponents wait him out; if it does, there's a late-inning profile in here somewhere, because the miss is real enough to play up in shorter stints where command demands ease.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -54813,8 +54811,8 @@
         "P"
       ],
       "prospect_rank": 370,
-      "published_report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. There's no repeatable way to retire hitters in the line yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 38 IP in Triple-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "The ERA sits at 3.50 over 38 AAA innings, which looks better than the underlying shape deserves. Translated to a major-league context, his strikeout rate comes in just below the MLB average of 8.6 and his walk rate runs above the 3.2 mark, leaving a K-BB% that falls short of average at 11.5%. The run prevention has outrun the stuff, and 38 innings is thin enough that none of this is settled. If the command tightens, a depth or swing role is in range; if the walks stay where they are, he profiles as organizational filler.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. There's no repeatable way to retire hitters in the line yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 38 IP in Triple-A, so confidence is low.",
       "report_llm": {
@@ -54826,16 +54824,14 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "ok": false,
+          "ok": true,
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The ERA looks fine \u2014 3.50 over 9 starts at AAA \u2014 but the translation underneath it is what matters, and that picture is murkier. Converted to MLB context, his strikeout rate barely touches 8.3 per nine while his walk rate comes out to 3.9, both sitting below where a league-average arm lands, and his K-BB% at 11.5% trails the MLB mean of 13.5%. All three measurables grade out at 40 across the board, so the ERA is doing more presentational work than the underlying shape supports, and 38 innings is too thin a sample to bet against that verdict. If the command tightens and the whiff rate climbs, there's a 41% shot at a starter or late-inning role; if neither moves, you're looking at a depth arm who keeps getting stretched out in triple-A.",
-        "valid": false
+        "text": "The ERA sits at 3.50 over 38 AAA innings, which looks better than the underlying shape deserves. Translated to a major-league context, his strikeout rate comes in just below the MLB average of 8.6 and his walk rate runs above the 3.2 mark, leaving a K-BB% that falls short of average at 11.5%. The run prevention has outrun the stuff, and 38 innings is thin enough that none of this is settled. If the command tightens, a depth or swing role is in range; if the walks stay where they are, he profiles as organizational filler.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -62018,18 +62014,18 @@
     "recent_signal_used_for_context": true
   },
   "summary": {
-    "deterministic_published_report_count": 2,
-    "llm_published_report_count": 726,
+    "deterministic_published_report_count": 0,
+    "llm_published_report_count": 728,
     "llm_shadow": {
       "available": true,
       "enabled": true,
       "errored": 0,
-      "flagged": 2,
-      "generated": 72,
+      "flagged": 0,
+      "generated": 2,
       "generation_limit": 300,
       "report_count": 1083,
-      "reused": 231,
-      "reused_stale": 425,
+      "reused": 726,
+      "reused_stale": 0,
       "skipped_due_to_budget": 0
     },
     "max_dynasty_rank": 500,
