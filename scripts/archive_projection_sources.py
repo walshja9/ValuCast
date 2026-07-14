@@ -86,21 +86,35 @@ def _load_raw(raw_dir: Path, name: str) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _assert_raw_vintage(raw_dir: Path, as_of: str) -> None:
-    """Refuse a false vintage: raw pulls are NOT committed, so their mtime is a
+def _raw_vintage_block(raw_dir: Path, as_of: str) -> str | None:
+    """Reason the raw pulls cannot honestly be archived under as_of, or None.
+
+    Refuse a false vintage: raw pulls are NOT committed, so their mtime is a
     real local-write date (unlike committed files, where checkout fakes it).
     If the pulls were not written on the as_of date, archiving them under that
-    date would lie about what the sources knew."""
+    date would lie about what the sources knew.
+
+    Returns a SKIP REASON instead of raising: the steamer/zips pulls are
+    manual, local-only artifacts (FanGraphs blocks CI fetches), so the nightly
+    runner structurally never has them -- a hard error here killed the whole
+    2026-07-14 public build. The archive is an observational side artifact;
+    it must never take the public product down with it. Vintages get archived
+    on whatever machine actually refreshes the raw pulls.
+    """
     for name in ("steamer_hitters", "steamer_pitchers", "zips_hitters", "zips_pitchers"):
         path = raw_dir / f"{name}.json"
         if not path.exists():
-            raise RuntimeError(f"raw projection pull missing: {path}")
+            return (
+                f"raw pull {name}.json not present (manual-refresh artifact; "
+                "the CI runner never has raw pulls)"
+            )
         written = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).date().isoformat()
         if written != as_of:
-            raise RuntimeError(
+            return (
                 f"raw pull {name}.json written {written} but archive as_of is {as_of} "
                 "-- refusing to archive a stale pull under a fresh vintage"
             )
+    return None
 
 
 def _due(archive_dir: Path, as_of: str, cadence_days: int = CADENCE_DAYS) -> bool:
@@ -178,7 +192,9 @@ def run_archive(
     season = int(metadata.get("season") or 0)
     if not _due(archive_dir, as_of):
         return {"as_of": as_of, "skipped": True, "reason": f"within {CADENCE_DAYS}-day cadence"}
-    _assert_raw_vintage(raw_dir, as_of)
+    block = _raw_vintage_block(raw_dir, as_of)
+    if block:
+        return {"as_of": as_of, "skipped": True, "reason": block}
 
     valucast_rows = json.loads((hp_run_path or _hp_run_path()).read_text(encoding="utf-8"))
     steamer_rows = blend_hitters(_load_raw(raw_dir, "steamer_hitters"), []) + blend_pitchers(

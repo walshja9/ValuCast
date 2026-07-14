@@ -161,14 +161,36 @@ def test_run_archive_writes_dated_snapshot_with_all_three_sources(tmp_path):
     assert again.get("changed") is False or again.get("skipped") is True
 
 
-def test_run_archive_refuses_stale_raw_pulls_as_fresh_vintage(tmp_path):
+def test_run_archive_skips_stale_raw_pulls_with_disclosed_reason(tmp_path):
+    """A stale pull must never be archived under a fresh vintage -- but as a
+    DISCLOSED SKIP, not a crash: the raw pulls are manual local artifacts the
+    CI runner never has, and a hard error here killed the whole 2026-07-14
+    public build."""
     as_of = _today_utc()
     raw_dir, metadata_path, hp_path = _write_fixture_repo(tmp_path, as_of=as_of, stale_raw=True)
-    with pytest.raises(RuntimeError, match="stale pull under a fresh vintage"):
-        run_archive(
-            archive_dir=tmp_path / "arch",
-            raw_dir=raw_dir,
-            metadata_path=metadata_path,
-            hp_run_path=hp_path,
-            min_rows=3,
-        )
+    result = run_archive(
+        archive_dir=tmp_path / "arch",
+        raw_dir=raw_dir,
+        metadata_path=metadata_path,
+        hp_run_path=hp_path,
+        min_rows=3,
+    )
+    assert result["skipped"] is True
+    assert "stale pull under a fresh vintage" in result["reason"]
+    assert not (tmp_path / "arch").exists()  # nothing archived
+
+
+def test_run_archive_skips_missing_raw_pulls_with_disclosed_reason(tmp_path):
+    as_of = _today_utc()
+    raw_dir, metadata_path, hp_path = _write_fixture_repo(tmp_path, as_of=as_of)
+    (raw_dir / "zips_hitters.json").unlink()  # the exact 2026-07-14 CI state
+    result = run_archive(
+        archive_dir=tmp_path / "arch",
+        raw_dir=raw_dir,
+        metadata_path=metadata_path,
+        hp_run_path=hp_path,
+        min_rows=3,
+    )
+    assert result["skipped"] is True
+    assert "zips_hitters.json not present" in result["reason"]
+    assert not (tmp_path / "arch").exists()
