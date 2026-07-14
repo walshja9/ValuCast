@@ -5,7 +5,7 @@
     "buy_generated_at": "2026-07-14T00:00:00+00:00",
     "buy_signal_version": "1.0.0",
     "forward_validation_report_version": "0.1.0",
-    "forward_validation_status": "review_ready"
+    "forward_validation_status": "collecting"
   },
   "monitor_contract": {
     "minimum_buy_comparisons_for_review": 7,
@@ -17,15 +17,15 @@
   "monitor_name": "ValuCast Prospect Buys v1 Monitor",
   "monitor_version": "0.1.0",
   "monitoring": {
-    "buy_comparison_count": 22,
+    "buy_comparison_count": 0,
     "feeds_live_buys": true,
-    "latest_top40_exited_count": 1,
-    "latest_top40_new_count": 1,
-    "latest_top40_retention_rate": 0.975,
-    "next_action": "review_bucket_movement_before_next_calibration",
-    "observation_span_days": 22,
+    "latest_top40_exited_count": null,
+    "latest_top40_new_count": null,
+    "latest_top40_retention_rate": null,
+    "next_action": "collect_more_valucast_owned_buy_observations",
+    "observation_span_days": 0,
     "ready_for_live_consumers": true,
-    "review_ready": true
+    "review_ready": false
   },
   "recommendations": [
     "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
@@ -40,7 +40,7 @@
     "kind": "observe_only_valucast_buy_monitor",
     "market_values_used": false
   },
-  "status": "review_ready",
+  "status": "collecting",
   "validation": {
     "blockers": [],
     "min_top40_retention_rate": 0.45,

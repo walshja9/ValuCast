@@ -29,18 +29,18 @@
         },
         {
           "baseline_multiclass_brier": null,
-          "baseline_rank_concordance": 0.468691,
-          "baseline_top_quartile_precision": 0.246068,
+          "baseline_rank_concordance": 0.452883,
+          "baseline_top_quartile_precision": 0.243861,
           "candidate_multiclass_brier": null,
-          "candidate_rank_concordance": 0.490276,
-          "candidate_top_quartile_precision": 0.255657,
+          "candidate_rank_concordance": 0.469247,
+          "candidate_top_quartile_precision": 0.252939,
           "fold_count": 3,
           "research_gate": "active",
           "role": "pitcher",
-          "sample_size": 1069
+          "sample_size": 1127
         }
       ],
-      "sample_size": 2160,
+      "sample_size": 2218,
       "status": "active"
     },
     "bucket_cohort": {
@@ -195,15 +195,15 @@
           "bucket": "adapter|pitcher|cohort_2018",
           "layer": "adapter",
           "metrics": {
-            "baseline_rank_concordance": 0.440921,
-            "baseline_top_quartile_precision": 0.234028,
-            "candidate_rank_concordance": 0.440921,
-            "candidate_top_quartile_precision": 0.234028
+            "baseline_rank_concordance": 0.450922,
+            "baseline_top_quartile_precision": 0.248216,
+            "candidate_rank_concordance": 0.450922,
+            "candidate_top_quartile_precision": 0.248216
           },
           "passed": true,
           "primary_non_regression": true,
           "role": "pitcher",
-          "sample_size": 334,
+          "sample_size": 352,
           "secondary_non_regression": true,
           "test_cohort": 2018
         },
@@ -211,15 +211,15 @@
           "bucket": "adapter|pitcher|cohort_2019",
           "layer": "adapter",
           "metrics": {
-            "baseline_rank_concordance": 0.53792,
-            "baseline_top_quartile_precision": 0.260045,
-            "candidate_rank_concordance": 0.53792,
-            "candidate_top_quartile_precision": 0.260045
+            "baseline_rank_concordance": 0.48498,
+            "baseline_top_quartile_precision": 0.246056,
+            "candidate_rank_concordance": 0.48498,
+            "candidate_top_quartile_precision": 0.246056
           },
           "passed": true,
           "primary_non_regression": true,
           "role": "pitcher",
-          "sample_size": 388,
+          "sample_size": 410,
           "secondary_non_regression": true,
           "test_cohort": 2019
         },
@@ -227,15 +227,15 @@
           "bucket": "adapter|pitcher|cohort_2021",
           "layer": "adapter",
           "metrics": {
-            "baseline_rank_concordance": 0.418013,
-            "baseline_top_quartile_precision": 0.242029,
-            "candidate_rank_concordance": 0.484509,
-            "candidate_top_quartile_precision": 0.271568
+            "baseline_rank_concordance": 0.418721,
+            "baseline_top_quartile_precision": 0.237194,
+            "candidate_rank_concordance": 0.469247,
+            "candidate_top_quartile_precision": 0.265225
           },
           "passed": true,
           "primary_non_regression": true,
           "role": "pitcher",
-          "sample_size": 347,
+          "sample_size": 365,
           "secondary_non_regression": true,
           "test_cohort": 2021
         }
@@ -303,15 +303,15 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 22,
-        "latest_rank_bucket_count": 14,
-        "observation_span_days": 22,
-        "rank_comparison_count": 22
+        "buy_comparison_count": 0,
+        "latest_rank_bucket_count": 0,
+        "observation_span_days": 0,
+        "rank_comparison_count": 0
       },
       "recommendations": [
         "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
       ],
-      "status": "review_ready"
+      "status": "collecting"
     },
     "model_v07_readiness": {
       "model_version": "0.7.0-preview.1",
@@ -331,7 +331,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-14T12:57:38.146603+00:00",
+        "activated_at": "2026-07-14T14:12:39.981071+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -345,14 +345,14 @@
       },
       "candidate_count": 2865,
       "impact_board_gate": {
-        "activated_at": "2026-07-14T12:57:38.146603+00:00",
+        "activated_at": "2026-07-14T14:12:39.981071+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.172487,
+        "baseline_score": 0.130598,
         "cv_method": "walk_forward",
-        "improvement_pct": 4.1529,
+        "improvement_pct": 3.0315,
         "metric": "category_impact_mae",
-        "model_score": 0.165323,
-        "reason": "beats historical_neighbors_25 by 4.15% OOS (category_impact_mae)",
+        "model_score": 0.126639,
+        "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
         "validated_through": "2019"
@@ -361,9 +361,11 @@
     }
   },
   "front_office_track": {
-    "cap_reasons": [],
-    "forward_next_target_grade": "A",
-    "forward_supported_grade": "A-",
+    "cap_reasons": [
+      "Forward observations are not review-ready yet."
+    ],
+    "forward_next_target_grade": "A-",
+    "forward_supported_grade": null,
     "forward_thresholds": {
       "A": {
         "minimum_buy_comparisons": 14,
@@ -372,9 +374,24 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 22,
+            "current": 0,
+            "metric": "rank_comparison_count",
+            "required": 14
+          },
+          {
+            "current": 0,
+            "metric": "buy_comparison_count",
+            "required": 14
+          },
+          {
+            "current": 0,
             "metric": "observation_span_days",
             "required": 30
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.55
           }
         ],
         "passed": false
@@ -386,19 +403,24 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 22,
+            "current": 0,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 22,
+            "current": 0,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 22,
+            "current": 0,
             "metric": "observation_span_days",
             "required": 60
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.6
           }
         ],
         "passed": false
@@ -408,16 +430,37 @@
         "minimum_buy_retention_rate": 0.45,
         "minimum_rank_comparisons": 7,
         "minimum_span_days": 14,
-        "missing": [],
-        "passed": true
+        "missing": [
+          {
+            "current": 0,
+            "metric": "rank_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
+            "metric": "buy_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
+            "metric": "observation_span_days",
+            "required": 14
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.45
+          }
+        ],
+        "passed": false
       }
     },
-    "grade": "A",
+    "grade": "B+",
     "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-    "score": 100,
-    "score_cap": null,
+    "score": 87,
+    "score_cap": 87,
     "target_grade": "A-",
-    "uncapped_score": 100
+    "uncapped_score": 97
   },
   "generated_at": "2026-07-14T00:00:00+00:00",
   "generated_dates": {
@@ -443,8 +486,15 @@
   "validation": {
     "blockers": [],
     "bucket_cohort_evidence_ready": true,
-    "evidence_gates": [],
-    "forward_evidence_ready": true,
+    "evidence_gates": [
+      {
+        "current": "collecting",
+        "kind": "forward_archives",
+        "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+        "required": "review_ready"
+      }
+    ],
+    "forward_evidence_ready": false,
     "minimum_realized_outcome_sample_size": 2000,
     "realized_evidence_ready": true,
     "realized_outcome_sample_size": 2218

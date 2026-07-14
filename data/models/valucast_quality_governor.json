@@ -72,7 +72,7 @@
               "SP",
               "RP"
             ],
-            "rank": 10,
+            "rank": 8,
             "value": 70.0
           },
           {
@@ -80,7 +80,7 @@
             "positions": [
               "SP"
             ],
-            "rank": 23,
+            "rank": 20,
             "value": 61.29
           },
           {
@@ -88,7 +88,7 @@
             "positions": [
               "SP"
             ],
-            "rank": 24,
+            "rank": 21,
             "value": 60.8
           }
         ],
@@ -109,72 +109,72 @@
           {
             "mlbam_id": 807739,
             "name": "Kade Anderson",
-            "rank": 2,
+            "rank": 1,
             "role": "pitcher",
-            "score": 71.61
+            "score": 67.87
           },
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 64.33
+            "score": 59.28
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
-            "rank": 7,
+            "rank": 6,
             "role": "pitcher",
-            "score": 59.88
+            "score": 56.75
+          },
+          {
+            "mlbam_id": 687312,
+            "name": "Gabriel Hughes",
+            "rank": 8,
+            "role": "pitcher",
+            "score": 52.78
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
             "rank": 9,
             "role": "pitcher",
-            "score": 56.71
-          },
-          {
-            "mlbam_id": 687312,
-            "name": "Gabriel Hughes",
-            "rank": 10,
-            "role": "pitcher",
-            "score": 55.49
+            "score": 52.72
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
             "rank": 13,
             "role": "pitcher",
-            "score": 54.25
+            "score": 49.48
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 14,
             "role": "pitcher",
-            "score": 52.4
-          },
-          {
-            "mlbam_id": 805906,
-            "name": "Gage Wood",
-            "rank": 15,
-            "role": "pitcher",
-            "score": 51.75
+            "score": 48.56
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
-            "rank": 16,
+            "rank": 15,
             "role": "pitcher",
-            "score": 50.77
+            "score": 47.61
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
+            "rank": 16,
+            "role": "pitcher",
+            "score": 47.31
+          },
+          {
+            "mlbam_id": 805906,
+            "name": "Gage Wood",
             "rank": 18,
             "role": "pitcher",
-            "score": 50.17
+            "score": 46.27
           }
         ],
         "top25_evaluated_count": 25,
@@ -368,7 +368,7 @@
             "level": "AA",
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 15,
+            "rank": 18,
             "role": "pitcher",
             "sample": 28.7,
             "sample_unit": "IP",
@@ -378,7 +378,7 @@
             "level": "A",
             "mlbam_id": 800522,
             "name": "Josue Briceno",
-            "rank": 32,
+            "rank": 33,
             "role": "hitter",
             "sample": 25.0,
             "sample_unit": "PA",
@@ -388,7 +388,7 @@
             "level": "AAA",
             "mlbam_id": 686628,
             "name": "Blake Burkhalter",
-            "rank": 45,
+            "rank": 43,
             "role": "pitcher",
             "sample": 6.3,
             "sample_unit": "IP",
@@ -426,7 +426,7 @@
         "current_season_row_count": 6383,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 7,
+        "top200_history_fallback_count": 5,
         "top50_history_fallback_count": 0,
         "top50_stat_context_mismatch_count": 0
       },
@@ -549,9 +549,9 @@
         "buy_artifact_present": true,
         "buy_review_present": true,
         "buy_validation_ready": true,
-        "history_launch_approved": false,
-        "history_limited_count": 0,
-        "history_limited_rate": 0.0,
+        "history_launch_approved": true,
+        "history_limited_count": 221,
+        "history_limited_rate": 1.0,
         "history_ready": true,
         "low_confidence_rate": 0.0,
         "max_history_limited_rate": 0.5,
@@ -569,11 +569,11 @@
       "id": "movers_surface_gate",
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
-        "cooling_count": 12,
+        "cooling_count": 0,
         "generated_at": "2026-07-14T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
-        "rising_count": 12
+        "rising_count": 0
       },
       "status": "passed"
     }
@@ -617,7 +617,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-07-14T12:59:29.815771+00:00",
+  "generated_at": "2026-07-14T14:14:29.242223+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.2",
   "metrics": {
