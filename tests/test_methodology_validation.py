@@ -139,8 +139,10 @@ class TestMethodologyValidation(unittest.TestCase):
                 self.assertIn("{:,}".format(variant["moved_25plus"]), self.html)
                 self.assertIn("{:,}".format(variant["moved_10plus"]), self.html)
         # reproducibility pointer -- the public claim "not a simulation" is only
-        # honest if the reader can regenerate it; the script name must be on the page.
-        self.assertIn("build_sensitivity_scorecard.py", self.html)
+        # honest if the reader knows it is regenerated, not hand-typed. The
+        # provenance is stated in plain language now (no visitor-facing script path).
+        self.assertIn("regenerates nightly from the public data pipeline", self.html)
+        self.assertNotIn("build_sensitivity_scorecard.py", self.html)
         # dated, and must still decline to claim any setting predicts outcomes better
         self.assertIn(sens["generated_at"][:10], self.html)
         self.assertIn("does <strong>not</strong> tell you", self.html)

@@ -164,10 +164,31 @@ def test_primary_nav_links_to_intelligence_surfaces():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert 'href="/intelligence">Intelligence Hub</a>' in html
-    assert 'href="/backfields">Backfields</a>' in html
-    assert 'href="/buys">Buys</a>' not in html
+    # Original five surfaces stay in the primary nav.
+    assert 'href="/">Board</a>' in html
+    assert 'href="/backfields"' in html and ">Backfields</a>" in html
     assert 'href="/map">Map</a>' in html
-    # Scouting is consolidated into Backfields; no longer a top-nav item.
-    assert 'href="/scouting">Scouting</a>' not in html
+    assert 'href="/intelligence">Intelligence Hub</a>' in html
     assert 'href="/methodology">Methodology</a>' in html
+    # Intelligence surfaces promoted into the primary nav (hold flags default off).
+    assert 'href="/movers">Movers</a>' in html
+    assert 'href="/buys">Buys</a>' in html
+    assert 'href="/receipts">Receipts</a>' in html
+    assert 'href="/gaps">Gaps</a>' in html
+    # Scouting is consolidated into Backfields; still no top-nav item.
+    assert 'href="/scouting">Scouting</a>' not in html
+
+
+def test_primary_nav_hold_flags_hide_buys_and_receipts(monkeypatch):
+    # The nav guards must track the live hold constants: a held surface never
+    # advertises itself in the primary nav.
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
+    html = app.test_client().get("/").data.decode("utf-8")
+    assert 'href="/buys">Buys</a>' not in html
+    assert 'href="/receipts">Receipts</a>' not in html
+    # Unheld promoted items stay.
+    assert 'href="/movers">Movers</a>' in html
+    assert 'href="/gaps">Gaps</a>' in html

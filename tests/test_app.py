@@ -1859,6 +1859,112 @@ class TestTodayStrip(unittest.TestCase):
         # Page itself still healthy.
         self.assertIn("rankings-table", html)
 
+    def test_digest_today_cells_render_when_present_and_fail_soft(self):
+        """Two "logged today" cells (receipts logged, gaps claims resolved) appear
+        only when their count is > 0, carry NO percent sign, and drop cleanly when
+        the artifact is absent."""
+        from datetime import date
+        today = date.today().isoformat()
+
+        receipts_artifact = {"receipts": [
+            {"logged_at": today + "T01:00:00+00:00"},
+            {"logged_at": today + "T02:00:00+00:00"},
+            {"logged_at": "2026-01-01T00:00:00+00:00"},  # a different day, excluded
+        ]}
+        gaps_ledger = {"claims": [
+            {"resolved_date": today}, {"resolved_date": today}, {"resolved_date": today},
+            {"resolved_date": "2026-01-01"},  # excluded
+            {"resolved_date": None},          # excluded
+        ]}
+
+        def fake_load(path):
+            p = str(path)
+            if "valucast_call_up_receipts.json" in p:
+                return receipts_artifact
+            return None
+
+        with patch.object(app_module, "_load_artifact", side_effect=fake_load), \
+             patch.object(app_module, "_load_gaps_ledger", return_value=gaps_ledger):
+            digest = app_module._front_door_digest()
+        self.assertEqual(digest.get("receipts_today"), 2)
+        self.assertEqual(digest.get("gaps_resolved_today"), 3)
+
+        # Render: cells present, no percent sign leaks in.
+        with patch.object(app_module, "_load_artifact", side_effect=fake_load), \
+             patch.object(app_module, "_load_gaps_ledger", return_value=gaps_ledger):
+            html = self.client.get("/").data.decode("utf-8")
+        self.assertIn("Receipts logged today", html)
+        self.assertIn("Claims resolved today", html)
+
+        # Fail-soft: absent artifacts -> no cells, no crash.
+        with patch.object(app_module, "_load_movers_payload", return_value={}), \
+             patch.object(app_module, "_load_artifact", return_value=None), \
+             patch.object(app_module, "_load_gaps_ledger", return_value={}):
+            digest = app_module._front_door_digest()
+        self.assertNotIn("receipts_today", digest)
+        self.assertNotIn("gaps_resolved_today", digest)
+
+
+class TestFamiliarNameOnRamp(unittest.TestCase):
+    """"Where we differ from the field" home on-ramp (3 recognizable names)."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_onramp_selects_three_by_field_prominence(self):
+        scorecard = {"calls": [
+            {"name": "Prominent", "valucast_now": 20, "consensus_now": 45, "days_tracked": 30},
+            {"name": "Less Prominent", "valucast_now": 30, "consensus_now": 60, "days_tracked": 20},
+            {"name": "Deep Cut", "valucast_now": 40, "consensus_now": 80, "days_tracked": 15},
+            {"name": "Fourth", "valucast_now": 50, "consensus_now": 90, "days_tracked": 15},
+            {"name": "Too Fresh", "valucast_now": 10, "consensus_now": 40, "days_tracked": 3},   # < 7 days
+            {"name": "Too Close", "valucast_now": 44, "consensus_now": 50, "days_tracked": 30},  # < 20 divergence
+            {"name": "No Field", "valucast_now": 5, "consensus_now": None, "days_tracked": 30},  # no consensus
+        ]}
+        with patch.object(app_module, "_load_scorecard_payload", return_value=scorecard):
+            picks = app_module._front_door_onramp()
+        self.assertEqual([p["name"] for p in picks], ["Prominent", "Less Prominent", "Deep Cut"])
+        # Aggregate median only — never a per-source/third-party board rank field.
+        for p in picks:
+            self.assertEqual(set(p.keys()), {"name", "valucast_now", "consensus_now"})
+
+    def test_onramp_renders_rows_and_carries_no_per_source_rank(self):
+        scorecard = {"calls": [
+            {"name": "Alpha Guy", "valucast_now": 20, "consensus_now": 45, "days_tracked": 30},
+            {"name": "Beta Guy", "valucast_now": 30, "consensus_now": 60, "days_tracked": 20},
+            {"name": "Gamma Guy", "valucast_now": 40, "consensus_now": 80, "days_tracked": 15},
+        ]}
+        with patch.object(app_module, "_load_scorecard_payload", return_value=scorecard):
+            html = self.client.get("/").data.decode("utf-8")
+        self.assertIn("Where we differ from the field", html)
+        self.assertIn("Alpha Guy", html)
+        self.assertIn("#20 here", html)
+        self.assertIn("~#45 field median", html)
+        # No per-source board attribution anywhere in the on-ramp markup.
+        import re
+        strip = re.search(r'class="onramp-strip[^"]*".*?</section>', html, re.S)
+        self.assertIsNotNone(strip)
+        for banned in ("consensus_rank", "source_rank", "board_rank", "per_source", "third_party"):
+            self.assertNotIn(banned, strip.group(0))
+
+    def test_onramp_hides_when_scorecard_missing(self):
+        with patch.object(app_module, "_load_scorecard_payload", return_value=None):
+            self.assertEqual(app_module._front_door_onramp(), [])
+            html = self.client.get("/").data.decode("utf-8")
+        self.assertEqual(html.count("onramp-strip"), 0)
+
+
+class TestProspectsRedirect(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_prospects_redirects_301_to_canonical_board(self):
+        response = self.client.get("/prospects")
+        self.assertEqual(response.status_code, 301)
+        self.assertIn("/?mode=prospects", response.headers.get("Location", ""))
+
 
 class TestTrustGrammarAndCards(unittest.TestCase):
     """Batch 2 trust grammar + Batch 3 cards gallery (7/3 landscape review)."""

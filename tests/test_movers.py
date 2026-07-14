@@ -207,6 +207,49 @@ def test_movers_window_param_serves_variant_and_falls_back(monkeypatch):
     assert client.get("/movers?window=21").status_code == 200
 
 
+def test_movers_empty_state_distinguishes_epoch_drought_from_genuine_sparse(monkeypatch):
+    """Right after a re-baseline every prospect is history-limited, so an empty
+    board is a countdown ("history refills"), NOT "nothing cleared the filters".
+    A day where some prospects have history but none cleared the +/-2.0 filter is
+    the genuine-sparse case and keeps the original copy."""
+    import app as app_module
+
+    client = app_module.app.test_client()
+
+    # Drought: mover_count == 0 AND every ranked prospect is history-limited.
+    drought = {
+        "generated_at": f"{EPOCH_DATE}T00:00:00+00:00",
+        "rising": [], "cooling": [],
+        "summary": {"current_ranked_count": 2833},
+        "validation": {"history_limited_count": 2833},
+        "windows": {f"{w}d": {"rising": [], "cooling": []} for w in (7, 14, 21, 30)},
+    }
+    monkeypatch.setattr(app_module, "_load_movers_payload", lambda: drought)
+    html = client.get("/movers").data.decode("utf-8")
+    assert "Score history restarted July 14" in html
+    assert "history refills" in html
+    # The countdown quotes the served window and a build estimate (epoch == today
+    # here, so the 14d default view needs ~14 more builds).
+    assert "14d view needs about 14 more nightly builds" in html
+    # Genuine-sparse copy must NOT appear when it's actually a drought.
+    assert "no risers cleared" not in html
+    assert "no fallers cleared" not in html
+
+    # Genuine sparse: history exists (limited < ranked), still nothing qualified.
+    sparse = {
+        "generated_at": f"{EPOCH_DATE}T00:00:00+00:00",
+        "rising": [], "cooling": [],
+        "summary": {"current_ranked_count": 2833},
+        "validation": {"history_limited_count": 40},
+        "windows": {f"{w}d": {"rising": [], "cooling": []} for w in (7, 14, 21, 30)},
+    }
+    monkeypatch.setattr(app_module, "_load_movers_payload", lambda: sparse)
+    html = client.get("/movers").data.decode("utf-8")
+    assert "no risers cleared" in html
+    assert "no fallers cleared" in html
+    assert "Score history restarted" not in html
+
+
 def _rank_row(mlbam_id, name, rank, score, role="hitter"):
     return {
         "mlbam_id": mlbam_id,

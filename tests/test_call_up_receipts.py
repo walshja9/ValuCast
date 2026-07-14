@@ -641,6 +641,91 @@ def test_receipts_page_renders_flagged_days_early_when_present(monkeypatch):
     assert page.count("flagged") == 1  # the no-lead row did NOT render a flagged suffix
 
 
+def test_receipts_marquee_selects_max_lead_time_with_consensus_rank():
+    """The hero marquee is the biggest provable win: max flagged_days_early among
+    receipts that ALSO carry a consensus rank (so the #here/#field comparison is
+    real). Rows without a consensus rank or without a lead time never win."""
+    import app as app_mod
+
+    receipts = [
+        {"name": "No Field Read", "valucast_rank": 3, "consensus_rank": None,
+         "flagged_days_early": 99},  # bigger lead, but no consensus rank -> excluded
+        {"name": "Small Lead", "valucast_rank": 10, "consensus_rank": 40,
+         "flagged_days_early": 4},
+        {"name": "Big Lead", "valucast_rank": 8, "consensus_rank": 63,
+         "flagged_days_early": 24},
+        {"name": "No Lead", "valucast_rank": 5, "consensus_rank": 50,
+         "flagged_days_early": 0},  # zero lead -> excluded
+    ]
+    marquee = app_mod._receipts_marquee(receipts)
+    assert marquee is not None
+    assert marquee["name"] == "Big Lead"
+    assert marquee["flagged_days_early"] == 24
+
+
+def test_receipts_marquee_falls_back_to_none_when_nothing_qualifies():
+    import app as app_mod
+
+    # Only rows without a consensus rank -> no marquee, hero falls back to summary.
+    assert app_mod._receipts_marquee([
+        {"name": "A", "valucast_rank": 3, "consensus_rank": None, "flagged_days_early": 12},
+    ]) is None
+    assert app_mod._receipts_marquee([]) is None
+    assert app_mod._receipts_marquee(None) is None
+
+
+def test_receipts_hero_renders_marquee_line_and_secondary_counts(monkeypatch):
+    """When a qualifying receipt exists the hero leads with the marquee provable
+    win and the ahead/behind counts drop to a smaller secondary line; when none
+    qualifies the counts line stays the lead. The arrival-not-outcome caveat is
+    present in both cases."""
+    import app as app_mod
+
+    monkeypatch.setattr(app_mod, "RECEIPTS_HOLD", False)
+
+    marquee_row = {
+        "identity_key": "8_hitter", "mlbam_id": "8", "role": "hitter",
+        "name": "Luis Lara", "team": "MIL", "pos": "CF", "level": "AA",
+        "valucast_rank": 8, "consensus_rank": 63, "divergence": 55,
+        "call_up_date": "2026-07-06", "flagged_days_early": 24,
+    }
+
+    def ctx_with_marquee():
+        return {
+            "receipts": [marquee_row], "receipt_count": 1,
+            "misses": [], "miss_count": 0, "no_claim_call_up_count": 0,
+            "receipts_marquee": app_mod._receipts_marquee([marquee_row]),
+            "receipts_available": True,
+            "receipts_generated_at": "2026-07-14", "as_of": "2026-07-14",
+        }
+
+    monkeypatch.setattr(app_mod, "_build_receipts_page_context", ctx_with_marquee)
+    page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
+    assert "Called Luis Lara up 24 days before the field did" in page
+    assert "#8 here, #63 field median" in page
+    assert "receipts-counts" in page  # counts moved to the secondary line
+    assert "1 ahead" in page and "0 behind" in page
+    assert "arrival" in page.lower()  # honesty caveat preserved
+
+    # No qualifying receipt (consensus rank absent): hero falls back to the
+    # counts-led summary and does NOT emit a marquee line.
+    def ctx_no_marquee():
+        return {
+            "receipts": [], "receipt_count": 0,
+            "misses": [], "miss_count": 0, "no_claim_call_up_count": 0,
+            "receipts_marquee": None,
+            "receipts_available": True,
+            "receipts_generated_at": "2026-07-14", "as_of": "2026-07-14",
+        }
+
+    monkeypatch.setattr(app_mod, "_build_receipts_page_context", ctx_no_marquee)
+    page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
+    assert "before the field did" not in page
+    assert "receipts-counts" not in page
+    assert "0 ahead" in page and "0 behind" in page
+    assert "arrival" in page.lower()
+
+
 def _cu(mlbam_id: int, date: str) -> dict:
     """A genuine call-up transaction (typeCode SE) for the at-promotion standard tests."""
     return {

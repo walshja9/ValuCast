@@ -78,7 +78,8 @@ def test_backfields_nav_link_and_active_state():
     assert response.status_code == 200
     nav = _site_nav(html)
     assert 'href="/backfields">Backfields' in nav
-    assert 'href="/buys">Buys' not in nav
+    # Intelligence surfaces are promoted into the primary nav (hold flags off).
+    assert 'href="/buys">Buys' in nav
 
     response, html = _html("/backfields")
     assert response.status_code == 200
@@ -105,7 +106,12 @@ def test_primary_nav_uses_backfields_as_prospect_hub():
     nav_html = html[nav_start:nav_end]
 
     assert 'href="/backfields"' in nav_html
-    assert 'href="/buys"' not in nav_html
+    # Backfields stays the prospect/minors hub; the promoted intelligence surfaces
+    # (Buys/Movers/Receipts/Gaps) now sit alongside it. Scouting stays folded in.
+    assert 'href="/buys"' in nav_html
+    assert 'href="/movers"' in nav_html
+    assert 'href="/receipts"' in nav_html
+    assert 'href="/gaps"' in nav_html
     assert 'href="/scouting"' not in nav_html
 
 

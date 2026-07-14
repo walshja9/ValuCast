@@ -30,6 +30,10 @@
         <p class="tagline">Independent player values tuned to your league</p>
         <nav class="site-nav" aria-label="Primary navigation">
             <a href="/">Board</a>
+            <a href="/movers">Movers</a>
+            {% if not aotc_hold %}<a href="/buys">Buys</a>{% endif %}
+            {% if not receipts_hold %}<a href="/receipts">Receipts</a>{% endif %}
+            <a href="/gaps">Gaps</a>
             <a href="/backfields"{% if backfields_page %} aria-current="page"{% endif %}>Backfields</a>
             <a href="/map">Map</a>
             <a href="/intelligence">Intelligence Hub</a>

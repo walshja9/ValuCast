@@ -71,6 +71,8 @@
                 <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
             </article>
             {% endfor %}
+        {% elif movers_epoch_drought %}
+            <p class="buys-fineprint">Score history restarted {{ movers_epoch_label or "at the re-baseline" }}{{ " (re-baseline)" if movers_epoch_label else "" }}. The {{ movers_window or 14 }}d view needs about {{ movers_builds_needed or 'a few' }} more nightly build{{ 's' if movers_builds_needed != 1 else '' }} before risers can qualify &mdash; trend arrows return as history refills.</p>
         {% else %}
             <p class="buys-fineprint">Sparse board: no risers cleared the clean-tail and +2.0 score filters.</p>
         {% endif %}
@@ -91,6 +93,8 @@
                 <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
             </article>
             {% endfor %}
+        {% elif movers_epoch_drought %}
+            <p class="buys-fineprint">Score history restarted {{ movers_epoch_label or "at the re-baseline" }}{{ " (re-baseline)" if movers_epoch_label else "" }}. The {{ movers_window or 14 }}d view needs about {{ movers_builds_needed or 'a few' }} more nightly build{{ 's' if movers_builds_needed != 1 else '' }} before fallers can qualify &mdash; trend arrows return as history refills.</p>
         {% else %}
             <p class="buys-fineprint">Sparse board: no fallers cleared the clean-tail and -2.0 score filters.</p>
         {% endif %}

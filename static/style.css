@@ -2233,6 +2233,15 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .today-paths { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .55rem; }
 .today-chip { font-size: .74rem; font-weight: 650; color: var(--c-text); text-decoration: none; padding: .28rem .7rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .04); }
 .today-chip:hover, .today-chip:focus-visible { border-color: rgba(52, 226, 196, .45); text-decoration: none; }
+/* "Where we differ from the field" familiar-name on-ramp. */
+.onramp-strip { padding: .6rem .85rem .7rem; margin-bottom: var(--space-2); }
+.onramp-eyebrow { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--c-muted); }
+.onramp-names { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .5rem; margin-top: .5rem; }
+.onramp-name { display: flex; flex-direction: column; gap: .12rem; padding: .5rem .6rem; border-radius: var(--radius-md, 8px); background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .07); color: var(--c-text); text-decoration: none; min-width: 0; }
+.onramp-name:hover, .onramp-name:focus-visible { border-color: rgba(52, 226, 196, .4); text-decoration: none; }
+.onramp-player { font-size: .9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.onramp-ranks { font-size: .74rem; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.onramp-sep { color: rgba(255, 255, 255, .3); }
 .rerank-note { font-size: .72rem; font-weight: 700; color: var(--c-signal); background: rgba(52, 226, 196, .1); border: 1px solid rgba(52, 226, 196, .25); border-radius: 999px; padding: .12rem .55rem; }
 
 /* Consensus spread strip */
@@ -2355,6 +2364,9 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-weight: 700; letter-spacing: .01em;
 }
 .buys-heading-sub { margin-top: .7rem; color: var(--c-muted); font-size: .9rem; }
+/* Receipts hero: lead with the marquee provable win, counts drop to a secondary line. */
+.buys-heading-sub.receipts-marquee { color: var(--c-text); font-size: 1.02rem; font-weight: 650; }
+.receipts-counts { margin-top: .3rem; }
 .buys-heading-arc {
     position: absolute; z-index: 0; right: 1rem; top: .7rem;
     width: min(36%, 330px); height: auto; opacity: .8;

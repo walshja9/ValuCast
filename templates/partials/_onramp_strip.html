@@ -1,0 +1,17 @@
+{# "Where we differ from the field" — a familiar-name on-ramp for a casual
+   visitor. Aggregate consensus median ONLY (never a per-source board rank).
+   Lives OUTSIDE the htmx swap target so filter changes never redraw it, and
+   renders only when the scorecard produced at least one qualifying name. #}
+{% if onramp_names %}
+<section class="onramp-strip glass" aria-label="Where we differ from the field">
+    <span class="onramp-eyebrow">Where we differ from the field</span>
+    <div class="onramp-names">
+        {% for p in onramp_names %}
+        <a class="onramp-name" href="/gaps">
+            <span class="onramp-player">{{ p.name }}</span>
+            <span class="onramp-ranks">#{{ p.valucast_now }} here <span class="onramp-sep">/</span> ~#{{ p.consensus_now }} field median</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

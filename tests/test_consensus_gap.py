@@ -142,8 +142,10 @@ def test_gaps_page_drift_locks_to_the_committed_artifact():
     # the honesty spine: fades are published, not ledger-scored
     assert "not ledger-scored yet" in html
     assert "sample-size statement" in html
-    # consensus provenance: same math as the AOTC surfaces
-    assert "build_consensus_gap_board.py" in html
+    # consensus provenance: same math as the AOTC surfaces (provenance stated in
+    # plain language now — no visitor-facing build-script path)
+    assert "Rebuilt nightly by the public data pipeline" in html
+    assert "build_consensus_gap_board.py" not in html
     # 7/9 audit (gap a): when the committed artifact carries a board_min_date, the
     # page discloses the field's real vintage rather than stamping today only.
     if artifact.get("board_min_date"):

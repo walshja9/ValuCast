@@ -224,7 +224,9 @@ def test_methodology_documents_shape_comps():
     client = app_module.app.test_client()
     html = client.get("/methodology").data.decode("utf-8")
     assert "Shape comps" in html
-    assert "build_prospect_comps.py" in html
+    # Provenance stated in plain language now (no visitor-facing build-script path).
+    assert "Rebuilt nightly by the public data pipeline" in html
+    assert "build_prospect_comps.py" not in html
     assert "era-relative" in html
     # 7/8 review: the residual survivorship must be NAMED and the tier cut
     # points published — reproducibility is the product.

@@ -4536,6 +4536,19 @@ def _front_door_digest():
             (r.get("window_days") for r in rising if r.get("window_days")), 10)
     if cooling:
         digest["faller"] = cooling[0]
+    # Re-baseline drought: no movers yet AND every ranked prospect is
+    # history-limited. The home CTA to /movers softens so it doesn't promise
+    # trend content the page can't show yet. Fail-soft: a missing/partial
+    # artifact just leaves the flag falsy.
+    _mv_drought, _ = _movers_epoch_drought(
+        movers.get("validation") or {},
+        movers.get("summary") or {},
+        len(rising) + len(cooling),
+        DEFAULT_MOVER_WINDOW,
+        movers.get("generated_at"),
+    )
+    if _mv_drought:
+        digest["movers_drought"] = True
     pulse = _load_artifact(
         Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
     ) or {}
@@ -4567,7 +4580,61 @@ def _front_door_digest():
             "losses": funnel.get("open_away") or 0,
             "retreats": funnel.get("retired_we_backed_off") or 0,
         }
+    # Two "logged today" cells — only render when the count is >0, so most days
+    # the strip is unchanged. Both read committed artifacts through _load_artifact
+    # so a missing artifact drops the cell (and the whole digest stays == {} when
+    # everything is absent).
+    today_iso = date.today().isoformat()
+    receipts_artifact = _load_artifact(
+        Path(__file__).parent / "data" / "models" / "valucast_call_up_receipts.json"
+    ) or {}
+    receipts_today = sum(
+        1
+        for r in (receipts_artifact.get("receipts") or [])
+        if isinstance(r, dict) and str(r.get("logged_at") or "")[:10] == today_iso
+    )
+    if receipts_today:
+        digest["receipts_today"] = receipts_today
+    gaps_resolved_today = sum(
+        1
+        for c in (_load_gaps_ledger().get("claims") or [])
+        if isinstance(c, dict) and str(c.get("resolved_date") or "")[:10] == today_iso
+    )
+    if gaps_resolved_today:
+        digest["gaps_resolved_today"] = gaps_resolved_today
     return digest
+
+
+def _front_door_onramp():
+    """"Where we differ from the field" — a 3-name on-ramp for a casual visitor,
+    built from the AOTC scorecard's tracked calls. Selection: calls with a real
+    consensus rank, tracked >= 7 days, diverging >= 20 spots from the field;
+    sorted by consensus rank ascending (most field-prominent first) so a visitor
+    is likeliest to recognize the names. Aggregate consensus median ONLY — never a
+    per-source board rank. Fail-soft to [] so the strip simply hides."""
+    scorecard = _load_scorecard_payload() or {}
+    picks = []
+    for c in scorecard.get("calls") or []:
+        if not isinstance(c, dict):
+            continue
+        consensus = c.get("consensus_now")
+        valucast = c.get("valucast_now")
+        days = c.get("days_tracked")
+        if consensus is None or valucast is None or not c.get("name"):
+            continue
+        if not isinstance(days, int) or days < 7:
+            continue
+        if abs(consensus - valucast) < 20:
+            continue
+        picks.append(
+            {
+                "name": c.get("name"),
+                "valucast_now": valucast,
+                "consensus_now": consensus,
+            }
+        )
+    picks.sort(key=lambda p: p["consensus_now"])
+    return picks[:3]
 
 
 @app.route("/")
@@ -4584,17 +4651,28 @@ def index():
             ctx["notice"] = "Dynasty data is not available. Showing default rankings."
             ctx["dd_available"] = False
             ctx["today_digest"] = _front_door_digest()
+            ctx["onramp_names"] = _front_door_onramp()
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
             _apply_prospect_board_context(ctx, request.args)
         ctx["snapshot_stale"] = dynasty_data_source == "valucast_public_snapshot_stale"
         ctx["today_digest"] = _front_door_digest()
+        ctx["onramp_names"] = _front_door_onramp()
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
     ctx["today_digest"] = _front_door_digest()
+    ctx["onramp_names"] = _front_door_onramp()
     return render_template("index.html", **ctx)
+
+
+@app.route("/prospects")
+def prospects_redirect():
+    """The prospect board lives at /?mode=prospects; /prospects is a friendly alias
+    people type or link. 301 so search engines and shares collapse onto the canonical
+    URL."""
+    return redirect("/?mode=prospects", code=301)
 
 
 @app.route("/rankings")
@@ -7453,6 +7531,54 @@ def _load_movers_payload(path=VALUCAST_MOVERS_PATH):
     return payload if isinstance(payload, dict) else {}
 
 
+def _movers_epoch_drought(validation, summary, mover_count, window, generated_at):
+    """Distinguish the post-re-baseline history drought from a genuine
+    no-movers-cleared-the-filters day.
+
+    Drought = the board has zero movers AND every ranked prospect is
+    history-limited (its score history only reaches back to the re-baseline
+    epoch, so no window can span enough days to qualify a move yet). In that
+    case the honest story is a countdown — the trend arrows return as nightly
+    builds refill history — not "sparse board, nothing cleared the filters".
+
+    Returns (is_drought, builds_needed) with builds_needed a fail-soft estimate
+    of how many more nightly builds the window needs before movers can qualify.
+    """
+    limited = (validation or {}).get("history_limited_count")
+    # current_ranked_count lives on summary; validation carries the limited count.
+    ranked = (summary or {}).get("current_ranked_count")
+    is_drought = (
+        mover_count == 0
+        and isinstance(limited, int)
+        and isinstance(ranked, int)
+        and ranked > 0
+        and limited == ranked
+    )
+    builds_needed = None
+    if is_drought:
+        try:
+            from prospects.movers import EPOCH_DATE
+            from datetime import date as _date
+            epoch = _date.fromisoformat(EPOCH_DATE)
+            gen = _date.fromisoformat(str(generated_at)[:10]) if generated_at else epoch
+            days_of_history = max(0, (gen - epoch).days)
+            builds_needed = max(1, int(window or DEFAULT_MOVER_WINDOW) - days_of_history)
+        except (ValueError, TypeError):
+            builds_needed = None
+    return is_drought, builds_needed
+
+
+def _movers_epoch_label():
+    """Human date for the re-baseline epoch, derived from the same constant the
+    countdown uses so the visible copy can never drift from the arithmetic."""
+    try:
+        from prospects.movers import EPOCH_DATE
+        from datetime import date as _date
+        return _date.fromisoformat(EPOCH_DATE).strftime("%B %d").replace(" 0", " ")
+    except (ValueError, TypeError, ImportError):
+        return None
+
+
 def _build_movers_page_context(window=None):
     payload = _load_movers_payload()
     # Window presets are precomputed in the artifact (never crunched per
@@ -7468,16 +7594,25 @@ def _build_movers_page_context(window=None):
     rising = list(sides.get("rising") or [])
     cooling = list(sides.get("cooling") or [])
     generated_at = payload.get("generated_at")
+    validation = payload.get("validation") or {}
+    summary = payload.get("summary") or {}
+    mover_count = len(rising) + len(cooling)
+    is_drought, builds_needed = _movers_epoch_drought(
+        validation, summary, mover_count, window or DEFAULT_MOVER_WINDOW, generated_at
+    )
     return {
         "rising": rising,
         "cooling": cooling,
-        "mover_count": len(rising) + len(cooling),
+        "mover_count": mover_count,
         "movers_available": bool(payload),
         "movers_generated_at": generated_at,
-        "movers_summary": payload.get("summary") or {},
-        "movers_validation": payload.get("validation") or {},
+        "movers_summary": summary,
+        "movers_validation": validation,
         "movers_window": window,
         "movers_window_choices": SPARK_WINDOW_CHOICES,
+        "movers_epoch_drought": is_drought,
+        "movers_builds_needed": builds_needed,
+        "movers_epoch_label": _movers_epoch_label(),
         "as_of": generated_at or store.as_of,
     }
 
@@ -7623,6 +7758,26 @@ def _load_receipts_payload(path=VALUCAST_RECEIPTS_PATH):
     return payload if isinstance(payload, dict) else {}
 
 
+def _receipts_marquee(receipts):
+    """The single most-provable win to lead the hero: the receipt with the largest
+    flagged_days_early that ALSO has a consensus rank (so the "#N here vs #M field"
+    comparison is real, not a "field had no read" placeholder). Fail-soft to None
+    when nothing qualifies — the hero then falls back to the summary line."""
+    qualifying = [
+        r
+        for r in (receipts or [])
+        if isinstance(r, dict)
+        and r.get("consensus_rank") is not None
+        and isinstance(r.get("flagged_days_early"), int)
+        and r.get("flagged_days_early") > 0
+        and r.get("valucast_rank") is not None
+        and r.get("name")
+    ]
+    if not qualifying:
+        return None
+    return max(qualifying, key=lambda r: r["flagged_days_early"])
+
+
 def _build_receipts_page_context():
     payload = _load_receipts_payload()
     receipts = [] if RECEIPTS_HOLD else list(payload.get("receipts") or [])
@@ -7638,6 +7793,7 @@ def _build_receipts_page_context():
         "no_claim_rows": no_claim_rows,
         "no_claim_call_up_count": summary.get("no_claim_call_up_count") or 0,
         "maturation": summary.get("maturation") or {"pending": 0, "confirmed": 0, "decayed": 0},
+        "receipts_marquee": _receipts_marquee(receipts),
         "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,

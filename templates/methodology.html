@@ -137,8 +137,8 @@
             comp is a <em>descriptive</em> lens, never an outcome forecast &mdash; the
             model's role probabilities are the forecast. Comps never feed a ValuCast
             score, know nothing about defense or speed, and only render for prospects
-            whose translation is high-confidence with a real sample. Rebuilt nightly by
-            <code>scripts/build_prospect_comps.py</code>.</p>
+            whose translation is high-confidence with a real sample.
+            Rebuilt nightly by the public data pipeline.</p>
         </details>
     </section>
 
@@ -364,8 +364,7 @@
         {{ "{:,}".format(sensitivity.board_size) }} ranked prospects, and counted how many
         actually changed spots. It's us showing our work — which assumptions move the board
         a lot, and which barely matter. This is a real re-scoring of the live model, not a
-        simulation; every figure below regenerates from
-        <code>scripts/build_sensitivity_scorecard.py</code>.</p>
+        simulation; every figure below regenerates nightly from the public data pipeline.</p>
         <table class="provenance-table ledger">
             <tr><th>Assumption changed</th><th>Measured effect</th></tr>
             {% for lever in sensitivity.levers %}

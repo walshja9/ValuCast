@@ -42,6 +42,20 @@
             <span class="tc-line tc-muted">ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}</span>
         </a>
         {% endif %}
+        {% if today_digest.receipts_today %}
+        <a class="today-cell" href="/receipts">
+            <span class="tc-label">Receipts logged today</span>
+            <span class="tc-big">{{ today_digest.receipts_today }}</span>
+            <span class="tc-line tc-muted">new call-up{{ 's' if today_digest.receipts_today != 1 else '' }} vs the field</span>
+        </a>
+        {% endif %}
+        {% if today_digest.gaps_resolved_today %}
+        <a class="today-cell" href="/gaps">
+            <span class="tc-label">Claims resolved today</span>
+            <span class="tc-big">{{ today_digest.gaps_resolved_today }}</span>
+            <span class="tc-line tc-muted">gap call{{ 's' if today_digest.gaps_resolved_today != 1 else '' }} settled on the ledger</span>
+        </a>
+        {% endif %}
     </div>
     {% if today_digest.ledger %}
     {# Counts only — the headline rate publishes when the 30-day gate matures. #}
@@ -54,7 +68,7 @@
     {% endif %}
     <nav class="today-paths" aria-label="Start here">
         <a class="today-chip" href="#setup-panel" onclick="if (window.openWelcomeSetup) { openWelcomeSetup(); return false; }">Set your league</a>
-        <a class="today-chip" href="/movers">See who's moving</a>
+        <a class="today-chip" href="/movers">{% if today_digest.movers_drought %}Movers rebuilding after re-baseline{% else %}See who's moving{% endif %}</a>
         <a class="today-chip" href="/ledger">Check our record</a>
     </nav>
 </section>
