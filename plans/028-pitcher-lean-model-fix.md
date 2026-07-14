@@ -957,3 +957,156 @@ counter is mislabeled. Fix in this batch: count all negative deltas (keep a
 separate big_negative_delta_count if the >=10 cut is wanted) and rename
 honestly. The memo's conclusion (pitcher downside adjustment is effectively
 absent at material magnitudes) still stands.
+
+## Rank-gate v1 registration — 2026-07-13 (FROZEN before any gate run; supersedes the named-player assertion set as ACCEPTANCE)
+
+Registered BEFORE `prospects/rank_backtest.py` exists or has run, per the
+gate-extension design (docs/design-brief-sol-gate-extension-2026-07-13.md,
+response verified 2026-07-13: 17 confirmed / 3 partial / 0 refuted). Named-player
+positions (Hughes/Murphy etc.) become DIAGNOSTICS ONLY — they may illustrate
+mechanics after the gate decides; they can never influence pass/fail. The
+governor top-25<=7 / top-50<=0.30 pitcher-share check remains a PUBLICATION
+VETO, never efficacy evidence.
+
+### Harness (what runs)
+
+`prospects/rank_backtest.py`, replaying the rank scoring core over the three
+existing fold cohorts (2018, 2019, 2021; train <= test-4), calling
+`build_prospect_rank_v1` with ALL SEVEN fold-local params injected. Verified
+neutralizations (hard errors if violated, never warnings):
+
+- Never call `run_prospect_rank_v1` (defaults inject today's availability,
+  roster status, and MiLB history — rank_v1.py:2277-2296).
+- `MANUAL_GRADUATION_PATH` -> empty fold-local file (today's list silently
+  edits historical board membership).
+- Consensus/FV snapshots -> `{}` (verified score-inert: context_only only).
+- `generated_at` set explicitly per fold; never rely on the current-time
+  fallback (missing fetch dates ZERO staleness; missing generated_at INFLATES
+  it to today — two different corruptions).
+- Fold-local `mlb_roster_status` for the normalization pool (scores are not
+  row-local: the pool excludes active-roster ids, rank_v1.py:1155).
+- Fold-local `milb_history_by_key` (loader has no as-of cutoff).
+- Class-(b) inputs (official IL, upstream Fantrax status, manual availability
+  overrides, day-level staleness, career-history softener) NEUTRALIZED in all
+  variants; the structural attrition base rate is the only availability
+  difference permitted between variants.
+
+### Cross-role outcome tier (registered definition)
+
+No cross-role comparable tier exists in the codebase (verified: dynasty
+backtest is fully role-separated). Registered definition for C_cross: the
+per-role bust/role/star labels map to the shared ordinal {0, 0.5, 1}
+(model.py OUTCOME_TARGET values) and are DECLARED comparable across roles at
+equal tier. This is a definition choice, frozen here so it cannot be tuned
+against results.
+
+### Variants (nested, sequential)
+
+- C0: frozen pre-028 baseline (this plan's baseline commit).
+- C1: C0 + stale-pedigree cap — MUST be role-gated to pitchers; the gate
+  asserts hitter rows byte-identical C1 vs C0 (the pedigree feature mechanism
+  is role-agnostic in code; an unguarded implementation leaks a hitter effect
+  Delta-C_pitcher cannot see).
+- C2: C1 + pitcher concordance-gap down-weight.
+- C3: C2 + structural pitcher attrition discount.
+
+Sequential eligibility: C2 is evaluated only if C1 passes; C3 only if C2
+passes. A failed lever is CUT, not retuned-and-rerun on these cohorts.
+
+### Realized-effect (anti-no-op) assertion
+
+Each accepted lever must demonstrably act: in the paired current-board
+ablation, at least 25 pitcher scores change by >= 0.5 points. Registered
+because the down-weight is WASHED OUT ENTIRELY if applied before the
+within-role percentile remap (quantile normalization is scale-invariant) — a
+no-op lever shipping as "risk pricing" would be a false public claim.
+
+### Primary criteria (thresholds pending the registered power check)
+
+Metrics: C_pitcher (within-pitcher pairs) for C1; C_cross (hitter-pitcher
+pairs, differing registered tier) for C2 and C3. Weighted per-fold like the
+adapter harness. Evidence procedure: 10,000 paired bootstraps stratified by
+fold (and role where pooled), seed 28013, Bonferroni familywise alpha
+0.05/3 -> one-sided 98.33% lower bound. EXACTLY ONE historical look, all
+three nested comparisons in one batch. After unblinding, retune-and-rerun on
+these cohorts is exploratory, never confirmatory.
+
+THRESHOLDS: set from scripts/power_check_rank_gate.py output (committed at
+data/models/rank_gate_power_check.json) — the pass bar must be one a true
+effect of plausible size clears with >= ~70% probability, else the gate is an
+unpassable veto dressed as rigor. Filled in the amendment immediately below
+BEFORE the harness is built.
+
+### Amendment — registered thresholds (2026-07-14, power check committed)
+
+Power check facts (seed 28013, 200 sims x 1500 bootstraps, oracle levers =
+upper-bound power; artifact: data/models/rank_gate_power_check.json):
+
+- E1 within-pitcher (C1 shape): the bar "point >= +0.005 AND one-sided
+  98.33% paired-bootstrap LB > 0" has power 1.00 at true Delta-C = 0.010
+  (0.41 at 0.005; 1.00 at 0.020/0.030).
+- E2 cross-role (C2/C3 shape): the same bar has power ~0.00 at EVERY
+  injected effect up to 0.030 — even under a PERFECT correction of the
+  injected bias, the median LB sits at -0.036 to -0.023. Bootstrap-implied
+  per-comparison sampling SD is ~0.02 concordance points at n=3 folds; a
+  null-calibrated point-only bar would need SD <~ 0.007 to reach 70% power
+  at plausible effects. No statistic on C_cross can be adequately powered
+  at current data scale.
+
+Registered consequences (frozen before any gate run):
+
+1. C1 PASS BAR (binding): Delta-C_pitcher point >= +0.005 AND one-sided
+   98.33% paired-bootstrap LB > 0. Plausible-effect anchor: 0.010-0.030
+   (the order of magnitude of known measurement artifacts in these cohorts,
+   e.g. the QS-truncation fix moved measured pitcher concordance by 0.021);
+   power at the 0.010 floor is 1.00. The +0.005 point bar is the care
+   floor, deliberately half the minimum plausible effect.
+2. C_cross is REPORT-ONLY. It is computed and reported for every variant
+   but can never be pass/fail evidence — at 3 folds the instrument cannot
+   certify any plausible effect (an unpassable veto dressed as rigor is
+   exactly what this rule exists to prevent).
+3. C2 and C3 are therefore UNFALSIFIABLE at current data scale: their
+   designed effect is cross-role-only (a within-role monotone down-weight
+   is invisible to C_pitcher by construction — the registered no-op
+   analysis), and the only instrument that could see it is unpowered. They
+   DO NOT SHIP in 028 on evidence. Re-proposal paths: a 4th fold (2022
+   cohort completes after the 2026 season under OUTCOME_HORIZON_YEARS=4),
+   or an alternative registered instrument demonstrating >= 70% power
+   BEFORE unblinding. Cutting them here is a power decision made before
+   any results existed, not a results decision.
+4. C1 remains subject to the realized-effect assertion, common invariants,
+   and the ablation guard, unchanged. rank_backtest.py therefore needs to
+   EVALUATE only C0 vs C1; C2/C3 evaluation code is not built.
+
+### Common invariants (every accepted step)
+
+- >= 250 eligible players per role, >= 2 folds (existing gate floors).
+- Delta-C_all >= 0; Delta-C_hitter >= -0.005; no fold's primary delta below
+  -0.010; tie-aware top-quartile precision delta >= -0.005.
+- Identical identity set between baseline and candidate; all coefficients
+  derived from that fold's training cohorts only.
+
+### Current-board paired ablation guard (safety gate, NOT evidence)
+
+Same frozen current snapshot scored twice, only the registered lever changing:
+input hashes and ranked identity set exactly equal; a cap/discount never
+increases a score; C1 leaves fresh-pedigree (<= 2 years since draft) rows
+exactly unchanged and ALL hitter rows byte-identical; C2/C3 leave hitter score
+components byte-identical; top-25/50/100 overlap >= 20/42/90; baseline
+top-200 95th-percentile |rank move| <= 50; on baseline top-200 identities
+with >= 3 qualifying boards (the FEATURED tier standard — the general floor
+is 2), consensus median |gap| may worsen <= 5 ranks, p90 <= 15. Max
+per-player score decrease: 12.0 points (chosen as 2x the buys momentum step
+guard; the previously cited "6.0 downstream step boundary" was misread — 
+buy_score.py's STEP_THRESHOLD=6.0 is a value-history discontinuity filter,
+not a score gate).
+
+### What this gate cannot catch (registered residual)
+
+Historical correctness of IL/override/status discounts and their interaction
+with the structural attrition rate; exact historical membership/routing/
+normalization-pool effects; score-magnitude calibration (concordance sees
+order, not distance); rare-star harm masked by the bust-heavy mix; concept
+drift. The eventual answer is the prospectively archived profile-complete
+inputs (shipping nightly since 2026-07-14: projection_source_ros weekly,
+IL risk_profiles + active_roster membership daily).
