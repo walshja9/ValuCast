@@ -70,6 +70,13 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # games and no-ops gracefully on a StatsAPI outage (stale artifact keeps
     # serving), so a broken fetch never stalls the rest of the daily build.
     ("scripts/build_pitch_discipline.py",),
+    # AAA Statcast (Baseball Savant pitch-level): a fetch step then a pure build.
+    # Incremental fetch only pulls game-dates since the cache max (cold/stale cache =
+    # no-op + stale artifact keeps serving), and the build no-ops on a cold cache, so
+    # a broken fetch never stalls the rest of the daily build -- same posture as the
+    # pitch-discipline step above. Observe-only display context (AAA only, measured).
+    ("scripts/refresh_aaa_statcast.py",),
+    ("scripts/build_aaa_statcast_features.py",),
     ("scripts/build_valucast_movers.py",),
     ("scripts/build_call_up_pulse.py",),
     ("scripts/build_valucast_call_up_receipts.py",),
@@ -121,6 +128,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_valucast_prospect_inputs.py",),
     ("scripts/validate_prospect_availability.py",),
     ("scripts/validate_pitch_discipline.py",),
+    ("scripts/validate_aaa_statcast_features.py",),
     ("scripts/validate_prospect_model_v07.py",),
     ("scripts/validate_prospect_coverage_audit.py",),
     ("scripts/validate_prospect_calibration_report.py",),

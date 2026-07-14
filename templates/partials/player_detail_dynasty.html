@@ -194,6 +194,63 @@
         </div>
         {% endif %}
 
+        {% if aaa_pitch_shape is defined and aaa_pitch_shape and (aaa_pitch_shape.pitch_types or aaa_pitch_shape.outcomes) %}
+        <div class="detail-section aaa-statcast-card">
+            <div class="prospect-profile-top">
+                <div>
+                    <span class="profile-card-kicker">AAA Statcast</span>
+                    <h4>Pitch Shape</h4>
+                    <p class="profile-note">measured AAA Statcast (Savant) &middot; AAA only &middot; display context &mdash; not a model input</p>
+                    <p class="profile-percentile-legend">Statcast-tracked AAA. <a href="/methodology#aaa-statcast">How this is measured</a>.</p>
+                </div>
+            </div>
+            {% if aaa_pitch_shape.pitch_types %}
+            <div class="aaa-statcast-pitch-types">
+                {% for pt in aaa_pitch_shape.pitch_types %}
+                <div class="aaa-statcast-pitch">
+                    <div class="aaa-statcast-pitch-head">
+                        <span class="aaa-statcast-pitch-label">{{ pt.label }}</span>
+                        {% if pt.usage %}<span class="aaa-statcast-usage">{{ pt.usage }}</span>{% endif %}
+                    </div>
+                    <div class="aaa-statcast-pitch-metrics">
+                        {% for m in pt.rows %}
+                        <span class="aaa-statcast-metric"><b>{{ m.label }}</b> {{ m.value }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if aaa_pitch_shape.outcomes %}
+            <div class="aaa-statcast-outcomes">
+                {% for o in aaa_pitch_shape.outcomes %}
+                <span class="aaa-statcast-outcome"><b>{{ o.label }}</b> {{ o.value }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if aaa_pitch_shape.n_pitches %}<p class="aaa-statcast-sample">{{ aaa_pitch_shape.n_pitches }} tracked AAA pitches</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if aaa_contact_quality is defined and aaa_contact_quality and aaa_contact_quality.rows %}
+        <div class="detail-section aaa-statcast-card">
+            <div class="prospect-profile-top">
+                <div>
+                    <span class="profile-card-kicker">AAA Statcast</span>
+                    <h4>Contact Quality</h4>
+                    <p class="profile-note">measured AAA Statcast (Savant) &middot; AAA only &middot; display context &mdash; not a model input</p>
+                    <p class="profile-percentile-legend">Statcast-tracked AAA. <a href="/methodology#aaa-statcast">How this is measured</a>.</p>
+                </div>
+            </div>
+            <div class="aaa-statcast-outcomes">
+                {% for r in aaa_contact_quality.rows %}
+                <span class="aaa-statcast-outcome"><b>{{ r.label }}</b> {{ r.value }}</span>
+                {% endfor %}
+            </div>
+            {% if aaa_contact_quality.n_bip %}<p class="aaa-statcast-sample">{{ aaa_contact_quality.n_bip }} tracked balls in play &middot; {{ aaa_contact_quality.n_pitches }} pitches</p>{% endif %}
+        </div>
+        {% endif %}
+
         {% if row.is_prospect %}
         {% include "partials/_value_spark.html" %}
         {% endif %}

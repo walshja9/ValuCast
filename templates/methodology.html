@@ -453,5 +453,36 @@
         percentile across two levels. These are observe-only card context: they never
         feed a player's value, rank, or projection.</p>
     </section>
+
+    <section id="aaa-statcast">
+        <h3>AAA Statcast: measured pitch shape and contact quality</h3>
+        <p>At Triple-A, MLB tracks pitches and batted balls with the same Statcast
+        system it uses in the majors, and Baseball Savant publishes the pitch-level
+        data. For Triple-A players we show a second, separate source built straight
+        from those tracked measurements: <strong>measured AAA Statcast (Savant), AAA
+        only, display context &mdash; not a model input.</strong></p>
+        <ul>
+            <li><strong>Pitch shape (pitchers): velocity, induced vertical break, horizontal
+            break, spin, extension, and usage per pitch type.</strong> These come directly
+            from the tracked release and movement measurements &mdash; not estimates.</li>
+            <li><strong>Contact quality (hitters): average and max exit velocity, hard-hit
+            rate, and launch angle.</strong> These are tracked batted-ball measurements,
+            shown for Triple-A only.</li>
+        </ul>
+        <p>Because these are <em>measured</em> values, they carry <strong>no
+        &ldquo;est.&rdquo; tag</strong>. This is a parallel source to the plate-discipline
+        section above, not a replacement: plate discipline <em>estimates</em> zone
+        metrics below Triple-A from a pixel calibration, whereas this AAA source
+        <em>measures</em> the zone from real tracked pitch locations. We do not restate
+        either source in terms of the other.</p>
+        <p><strong>Why exit velocity appears here but not on the plate-discipline
+        section.</strong> Public minor-league <em>play-by-play</em> carries no
+        batted-ball tracking, so the play-by-play plate-discipline layer will never
+        show or estimate exit velocity at any level &mdash; that limit stands. This
+        AAA source is different data: Statcast's own Triple-A batted-ball tracking,
+        which does measure exit velocity. It is shown for Triple-A only, and never for
+        Double-A or High-A. Like everything on this page, it is observe-only: it never
+        feeds a player's value, rank, or projection.</p>
+    </section>
 </article>
 {% endblock %}

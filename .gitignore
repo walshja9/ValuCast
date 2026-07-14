@@ -4,6 +4,9 @@ data/prospects/raw/milb_season_stats_*.json
 # full scale (past the commit ceiling), so it stays uncommitted. The daily-build
 # `git add data/prospects/raw` line must never sweep it in.
 data/prospects/raw/pitch_discipline_pitch_cache.json
+# AAA-Statcast compact per-pitch cache: rebuildable from Baseball Savant, large at
+# full-season scale, so it stays uncommitted. Never commit raw pitch rows.
+data/prospects/raw/aaa_statcast_pitch_cache.json
 __pycache__/
 *.py[cod]
 .pytest_cache/

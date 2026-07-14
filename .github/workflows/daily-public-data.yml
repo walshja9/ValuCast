@@ -255,6 +255,12 @@ jobs:
           if [ -f data/models/valucast_pitch_discipline.json ]; then
             git add data/models/valucast_pitch_discipline.json
           fi
+          # AAA-Statcast feature artifact: same guarded add — absent until the first
+          # backfill lands (the pitch cache is uncommitted, so a cold-cache CI morning
+          # produces no artifact) and an unconditional pathspec would fail the publish.
+          if [ -f data/models/valucast_aaa_statcast_features.json ]; then
+            git add data/models/valucast_aaa_statcast_features.json
+          fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
           # We synced to the latest origin/master right after checkout and built on
