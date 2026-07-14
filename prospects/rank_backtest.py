@@ -35,6 +35,7 @@ import numpy as np
 
 from prospects import model as prospect_model_module
 from prospects import rank_v1
+from prospects import universe
 from prospects.dynasty import build_layer
 from prospects.dynasty_backtest import (
     OUTCOME_COMPLETE_THROUGH,
@@ -89,27 +90,34 @@ class NeutralizationError(RuntimeError):
 
 @contextmanager
 def _neutralized_module_state():
-    """Patch rank_v1's disk-read constants to a nonexistent path, hard-verified.
+    """Patch rank_v1's + universe's disk-read constants to a nonexistent path,
+    hard-verified.
 
     build_prospect_rank_v1 internally reads today's manual-graduation list and
-    five consensus snapshots (rank_v1.py:1908-1913). Both are score-inert but
-    anachronistic; the registration requires them empty, verified, restored.
+    five consensus snapshots (rank_v1.py:1908-1913); build_universe reads
+    today's current-org cache (universe.CURRENT_ORG_PATH). All are score-inert
+    but anachronistic; the registration requires them empty, verified, restored.
     """
     void = ROOT / "data" / "models" / "__rank_backtest_void__.json"
     if void.exists():
         raise NeutralizationError(f"neutralization sentinel exists: {void}")
     saved = {attr: getattr(rank_v1, attr) for attr in _NEUTRALIZED_PATH_ATTRS}
+    saved_org_path = universe.CURRENT_ORG_PATH
     try:
         for attr in _NEUTRALIZED_PATH_ATTRS:
             setattr(rank_v1, attr, void)
+        universe.CURRENT_ORG_PATH = void
         if rank_v1._manual_graduated_ids() != set():
             raise NeutralizationError("manual graduation list not empty")
         if rank_v1._snapshot_by_mlbam(void) != {}:
             raise NeutralizationError("consensus snapshot not empty")
+        if universe._load_current_orgs() != {}:
+            raise NeutralizationError("current-org cache not empty")
         yield
     finally:
         for attr, value in saved.items():
             setattr(rank_v1, attr, value)
+        universe.CURRENT_ORG_PATH = saved_org_path
 
 
 _VARIANT_SPEC_KEYS = {"rank_kwargs", "model_flags"}

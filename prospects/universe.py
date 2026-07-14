@@ -15,6 +15,10 @@ from prospects.universal import ARTIFACT_PATH as UNIVERSAL_MODEL_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
+# Fetched current-org cache (scripts/refresh_prospect_orgs.py, nightly). The
+# affiliate-name fallback below labels a player with the org his stat line was
+# EARNED under, which goes stale on trades; this cache is org-as-of-today.
+CURRENT_ORG_PATH = ROOT / "data" / "prospects" / "raw" / "prospect_current_org.json"
 
 SCHEMA_VERSION = "1.0"
 AFFILIATE_MAP_VERSION = "2026-06-14.mlb-statsapi-parent-orgs"
@@ -177,7 +181,20 @@ def _positions(profile: dict) -> list[str]:
     return []
 
 
-def _mlb_team(profile: dict) -> str | None:
+def _load_current_orgs() -> dict:
+    """mlbam_id (str) -> current MLB org. Missing/invalid cache -> {} (fallback)."""
+    try:
+        payload = json.loads(Path(CURRENT_ORG_PATH).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    orgs = payload.get("orgs")
+    return orgs if isinstance(orgs, dict) else {}
+
+
+def _mlb_team(profile: dict, current_orgs: dict) -> str | None:
+    org = current_orgs.get(str(profile.get("mlbam_id") or ""))
+    if org:
+        return org
     if profile.get("mlb_team"):
         return profile.get("mlb_team")
     team = profile.get("team")
@@ -208,6 +225,7 @@ def build_universe(
         or datetime.now(timezone.utc).isoformat()
     )
 
+    current_orgs = _load_current_orgs()
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_identity_count = 0
@@ -251,7 +269,7 @@ def build_universe(
             "positions": _positions(profile),
             "position": profile.get("position"),
             "team": profile.get("team"),
-            "mlb_team": _mlb_team(profile),
+            "mlb_team": _mlb_team(profile, current_orgs),
             "level": profile.get("level"),
             "age": profile.get("age"),
             "sample": profile.get("sample"),
@@ -314,6 +332,11 @@ def build_universe(
                 and row.get("team")
             ),
             "missing_mlb_team_count": sum(1 for row in players if not row.get("mlb_team")),
+            "current_org_cache_count": sum(
+                1
+                for row in players
+                if current_orgs.get(str(row.get("mlbam_id")))
+            ),
         },
         "players": players,
     }

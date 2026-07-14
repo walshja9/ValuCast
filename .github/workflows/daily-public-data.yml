@@ -118,6 +118,9 @@ jobs:
       - name: Refresh trailing-window MiLB stats (recent form)
         run: python scripts/refresh_milb_season_stats.py --stats-type byDateRange --window-days 30 --output data/prospects/raw/milb_recent_stats.json
 
+      - name: Refresh prospect current-org cache (trade-lag fix)
+        run: python scripts/refresh_prospect_orgs.py --write
+
       - name: Build ValuCast canonical prospect input contract
         run: python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
 

@@ -118,3 +118,43 @@ def test_universe_excludes_age_twenty_six_profiles():
     assert payload["validation"]["age_excluded_sample"][0]["name"] == "Graduated Pitcher"
 
 
+
+
+def test_universe_prefers_current_org_cache_over_affiliate_map(tmp_path, monkeypatch):
+    """A traded player's fetched org must beat the stat-line affiliate fallback."""
+    import prospects.universe as universe_module
+
+    cache = tmp_path / "prospect_current_org.json"
+    cache.write_text(
+        '{"orgs": {"1": "STL"}}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(universe_module, "CURRENT_ORG_PATH", cache)
+
+    payload = build_universe(
+        _layer(
+            [
+                _profile(mlbam_id=1, team="Greenville Drive"),  # map says BOS
+                _profile(mlbam_id=2, name="Untraded", team="Greenville Drive"),
+            ]
+        ),
+        _universal(),
+    )
+
+    by_id = {row["mlbam_id"]: row for row in payload["players"]}
+    assert by_id[1]["mlb_team"] == "STL"  # cache wins
+    assert by_id[2]["mlb_team"] == "BOS"  # no cache entry -> affiliate fallback
+    assert payload["validation"]["current_org_cache_count"] == 1
+
+
+def test_universe_missing_org_cache_falls_back_cleanly(tmp_path, monkeypatch):
+    import prospects.universe as universe_module
+
+    monkeypatch.setattr(
+        universe_module, "CURRENT_ORG_PATH", tmp_path / "nonexistent.json"
+    )
+
+    payload = build_universe(_layer([_profile(team="Greenville Drive")]), _universal())
+
+    assert payload["players"][0]["mlb_team"] == "BOS"
+    assert payload["validation"]["current_org_cache_count"] == 0
