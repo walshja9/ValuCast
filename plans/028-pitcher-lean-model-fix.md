@@ -1078,6 +1078,18 @@ Registered consequences (frozen before any gate run):
    and the ablation guard, unchanged. rank_backtest.py therefore needs to
    EVALUATE only C0 vs C1; C2/C3 evaluation code is not built.
 
+Harness validation record (2026-07-14, C0 absolutes only — no deltas seen):
+prospects/rank_backtest.py replayed all three folds end-to-end. Zero rows
+lost (pseudo-universe == board == scored+labeled: 697/770/751); every row on
+the full model path; per-role samples 345-410 (>= 250 floor); 3 folds
+(>= 2 floor). C0 weighted: C_pitcher 0.7556, C_hitter 0.8567, C_all 0.8090,
+C_cross 0.8100 (data/models/valucast_rank_backtest.json). Note: the power
+check was calibrated at the ADAPTER'S pitcher operating point (~0.469); the
+rank-gate tier metric operates at ~0.76, where pair variance is LOWER — E1's
+"passable" conclusion is therefore conservative, and E2's power deficit
+(median LB -0.036 at 4x the needed SD) is far beyond what the ~0.8x variance
+scaling could flip, so the C2/C3 cut stands. Recorded pre-unblinding.
+
 ### Common invariants (every accepted step)
 
 - >= 250 eligible players per role, >= 2 folds (existing gate floors).

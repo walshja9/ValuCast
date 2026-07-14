@@ -1,0 +1,93 @@
+{
+  "backtest_version": "0.1.0",
+  "fold_diagnostics": [
+    {
+      "board_rows": 697,
+      "hitters": 345,
+      "pitchers": 352,
+      "pseudo_universe": 697,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 697
+      },
+      "scored_and_labeled": 697,
+      "test_cohort": 2018,
+      "train_cohort_max": 2014
+    },
+    {
+      "board_rows": 770,
+      "hitters": 360,
+      "pitchers": 410,
+      "pseudo_universe": 770,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 770
+      },
+      "scored_and_labeled": 770,
+      "test_cohort": 2019,
+      "train_cohort_max": 2015
+    },
+    {
+      "board_rows": 751,
+      "hitters": 386,
+      "pitchers": 365,
+      "pseudo_universe": 751,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 751
+      },
+      "scored_and_labeled": 751,
+      "test_cohort": 2021,
+      "train_cohort_max": 2017
+    }
+  ],
+  "fold_years": [
+    2018,
+    2019,
+    2021
+  ],
+  "registration": "plans/028-pitcher-lean-model-fix.md#rank-gate-v1-registration",
+  "status": "research_only",
+  "variants": {
+    "C0": {
+      "folds": [
+        {
+          "c_all": 0.849247,
+          "c_cross_report_only": 0.848651,
+          "c_hitter": 0.875458,
+          "c_pitcher": 0.8265,
+          "hitter_sample": 345,
+          "pitcher_sample": 352,
+          "sample_size": 697,
+          "test_cohort": 2018
+        },
+        {
+          "c_all": 0.810611,
+          "c_cross_report_only": 0.813226,
+          "c_hitter": 0.849209,
+          "c_pitcher": 0.777844,
+          "hitter_sample": 360,
+          "pitcher_sample": 410,
+          "sample_size": 770,
+          "test_cohort": 2019
+        },
+        {
+          "c_all": 0.770032,
+          "c_cross_report_only": 0.770809,
+          "c_hitter": 0.846802,
+          "c_pitcher": 0.662351,
+          "hitter_sample": 386,
+          "pitcher_sample": 365,
+          "sample_size": 751,
+          "test_cohort": 2021
+        }
+      ],
+      "weighted": {
+        "c_all": 0.8090123731244796,
+        "c_cross_report_only": 0.8099963885701069,
+        "c_hitter": 0.8566580874384535,
+        "c_pitcher": 0.7556360101928411
+      }
+    }
+  }
+}

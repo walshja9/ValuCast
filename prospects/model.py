@@ -15,7 +15,7 @@ from pathlib import Path
 from statistics import mean, pstdev
 from zoneinfo import ZoneInfo
 
-from prospects.gate import decide_gate
+from prospects.gate import _round as _gate_round, decide_gate
 from prospects.input_contract import VALUCAST_INPUT_PATH, validate_factual_contract
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -878,10 +878,14 @@ def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> d
         "stds": [round(value, 8) for value in driver_model["stds"]],
         "training_sample": len(rows),
         "validation_sample": len(validation["targets"]),
-        "model_mae": round(validation["model_mae"], 6),
-        "prior_mae": round(validation["prior_mae"], 6),
-        "neighbor_mae": round(validation["neighbor_mae"], 6),
-        "rank_concordance": round(validation["rank_concordance"], 6),
+        # None-tolerant: walk-forward needs >= 3 training cohorts to emit any
+        # validation fold. Production always has them; fold-local backtest
+        # training may not, and the model is still servable (the gate reads
+        # insufficient_sample). Crash-on-None here would forbid honest replay.
+        "model_mae": _gate_round(validation["model_mae"]),
+        "prior_mae": _gate_round(validation["prior_mae"]),
+        "neighbor_mae": _gate_round(validation["neighbor_mae"]),
+        "rank_concordance": _gate_round(validation["rank_concordance"]),
         "gate": gate,
         "_validation": validation,
     }
@@ -934,13 +938,15 @@ def train_impact_role(
         "stds": [round(value, 8) for value in driver_model["stds"]],
         "training_sample": len(rows),
         "validation_sample": len(validation["targets"]),
-        "model_mae": round(validation["model_mae"], 6),
-        "prior_mae": round(validation["prior_mae"], 6),
-        "neighbor_mae": round(validation["neighbor_mae"], 6),
-        "canonical_neighbor_mae": round(
-            validation["canonical_neighbor_mae"], 6
+        # None-tolerant for the same reason as train_role: fold-local backtest
+        # training can have < 3 cohorts, leaving no validation folds.
+        "model_mae": _gate_round(validation["model_mae"]),
+        "prior_mae": _gate_round(validation["prior_mae"]),
+        "neighbor_mae": _gate_round(validation["neighbor_mae"]),
+        "canonical_neighbor_mae": _gate_round(
+            validation["canonical_neighbor_mae"]
         ),
-        "rank_concordance": round(validation["rank_concordance"], 6),
+        "rank_concordance": _gate_round(validation["rank_concordance"]),
         "gate": gate,
         "_validation": validation,
     }

@@ -289,6 +289,23 @@ def test_role_training_emits_valid_honest_gate():
     assert result["prediction_model"]["model_kind"] == "hurdle_ridge"
 
 
+def test_role_training_servable_when_validation_infeasible():
+    """Walk-forward needs >= 3 training cohorts to emit a validation fold.
+    Fold-local backtest training (rank-gate v1) can have fewer: the model must
+    still be servable, with None metrics and an insufficient-sample gate --
+    never a crash."""
+    single_cohort = [
+        _historical("hitter", 2014, mlbam_id, ("bust", "role", "star")[mlbam_id % 3])
+        for mlbam_id in range(1, 40)
+    ]
+    result = train_role("hitter", single_cohort, now="2026-06-12")
+    assert result["prediction_model"]
+    assert result["validation_sample"] == 0
+    assert result["model_mae"] is None
+    assert result["rank_concordance"] is None
+    assert result["gate"]["status"] == "insufficient_sample"
+
+
 def test_partial_impact_axis_values_reliever_season_without_starter_volume():
     seasons = {
         "99_pitcher": [{
