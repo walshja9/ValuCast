@@ -101,6 +101,9 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_ahead_of_consensus_scorecard.py",),
     # Two-sided gap board reuses the AOTC consensus math; build right after it.
     ("scripts/build_consensus_gap_board.py",),
+    # Gaps claim lifecycle ledger reads the gap board's qualification logic over the
+    # dated rank archive; must run AFTER the gap board (plan 017).
+    ("scripts/build_gaps_claim_ledger.py",),
     ("scripts/build_scouting_repository.py",),
     ("scripts/build_valucast_quality_governor.py",),
     ("scripts/build_pipeline_observability.py",),
@@ -139,6 +142,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_valucast_call_up_receipts.py",),
     ("scripts/validate_ahead_of_consensus.py",),
     ("scripts/validate_ahead_of_consensus_scorecard.py",),
+    ("scripts/validate_gaps_claim_ledger.py",),
     ("scripts/validate_valucast_movers.py",),
     ("scripts/validate_valucast_buys.py",),
     ("scripts/validate_valucast_buys_monitor.py",),

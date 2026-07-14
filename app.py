@@ -601,6 +601,9 @@ PROSPECT_COMPS_PATH = Path(
 CONSENSUS_GAP_PATH = Path(
     Path(__file__).parent / "data" / "models" / "valucast_consensus_gap.json"
 )
+GAPS_CLAIM_LEDGER_PATH = Path(
+    Path(__file__).parent / "data" / "models" / "valucast_gaps_claim_ledger.json"
+)
 
 
 def _native_prospect_movers_strip(limit: int = 8, path: Path = VALUCAST_MOVERS_PATH) -> list[dict]:
@@ -7644,6 +7647,50 @@ def _load_scorecard_payload():
     return sc if isinstance(sc, dict) else None
 
 
+def _load_gaps_ledger():
+    """Fail-soft loader for the gaps claim lifecycle ledger (plan 017). Returns {}
+    when the artifact is absent so the /gaps strip simply doesn't render."""
+    ledger = _load_artifact(GAPS_CLAIM_LEDGER_PATH)
+    return ledger if isinstance(ledger, dict) else {}
+
+
+def _gaps_ledger_resolved(ledger: dict, limit: int = 8) -> list[dict]:
+    """The most informative recent resolutions (both sides) for the /gaps strip.
+
+    Ordered so the marquee outcomes lead — a call-up (with its lead_time_days,
+    the field the mandate flags as currently unweighted) or a field-move
+    resolution reads first, then expiries, then the bulk model-retractions —
+    and within an outcome, newest resolution first. This keeps the previously
+    invisible outcomes (a fade that expired, a lead time) visible instead of
+    being buried under dozens of same-day "we backed off" rows."""
+    priority = {
+        "resolved_by_callup": 0,
+        "resolved_by_consensus_move": 1,
+        "expired_unresolved": 2,
+        "retracted_by_model_move": 3,
+    }
+    resolved = [
+        c
+        for c in (ledger.get("claims") or [])
+        if isinstance(c, dict) and c.get("outcome") in priority
+    ]
+    resolved.sort(
+        key=lambda c: (
+            priority[c["outcome"]],
+            _neg_date(c.get("resolved_date")),
+            str(c.get("name") or ""),
+        )
+    )
+    return resolved[:limit]
+
+
+def _neg_date(value) -> str:
+    """Sort key that puts the NEWEST date first under an ascending sort (invert each
+    character so a later ISO date compares 'smaller')."""
+    text = str(value or "")
+    return "".join(chr(255 - ord(ch)) for ch in text)
+
+
 @app.route("/gaps")
 def gaps():
     """Two-sided consensus-gap board — where the ValuCast board diverges most
@@ -7658,6 +7705,10 @@ def gaps():
     # board vintage against the site's single 7-day bar (_within_stale_window).
     board_min_date = payload.get("board_min_date")
     gap_boards_stale = bool(board_min_date) and not _within_stale_window(board_min_date)
+    # Claim lifecycle ledger (plan 017): every gap row is a dated claim that must
+    # resolve or expire. Fail-soft — an absent artifact keeps today's fineprint.
+    ledger = _load_gaps_ledger()
+    ledger_summary = ledger.get("summary") or {}
     return render_template(
         "gaps.html",
         gaps_available=bool(higher or lower),
@@ -7670,6 +7721,9 @@ def gaps():
         gaps_board_min_date=board_min_date,
         gaps_board_source_dates=payload.get("board_source_dates") or {},
         gap_boards_stale=gap_boards_stale,
+        gaps_ledger_available=bool(ledger_summary),
+        gaps_ledger_summary=ledger_summary,
+        gaps_ledger_resolved=_gaps_ledger_resolved(ledger),
         as_of=payload.get("generated_at") or store.as_of,
     )
 
@@ -7708,6 +7762,20 @@ def aotc_scorecard_json():
     response.headers["Content-Type"] = "application/json"
     # 10 min, matching the PNG cards: a 1h edge cache held yesterday's ledger
     # after the daily refresh.
+    response.headers.setdefault("Cache-Control", "public, max-age=600")
+    return response
+
+
+@app.route("/gaps-ledger.json")
+def gaps_ledger_json():
+    """Public gaps claim lifecycle ledger — every gap claim, both sides, with its
+    terminal outcome (or open) and lead-time on call-up resolutions. Third parties
+    can snapshot it themselves (plan 017)."""
+    path = GAPS_CLAIM_LEDGER_PATH
+    if not path.exists():
+        abort(404)
+    response = make_response(path.read_text(encoding="utf-8"))
+    response.headers["Content-Type"] = "application/json"
     response.headers.setdefault("Cache-Control", "public, max-age=600")
     return response
 

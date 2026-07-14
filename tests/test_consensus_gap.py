@@ -150,6 +150,30 @@ def test_gaps_page_drift_locks_to_the_committed_artifact():
         assert "last refreshed" in html
 
 
+def test_higher_all_lower_all_expose_the_full_qualified_sets():
+    # Plan 017: the claim ledger must enroll EVERY qualified row, not just the 15
+    # displayed per side, or survivorship bias sneaks back in at the display cutoff.
+    # higher_all/lower_all are the untruncated qualified sets; the public
+    # higher/lower stay capped and are a subset of them.
+    board = {"board": (
+        [_rank_row(i, f"Ahead {i}", 40, boards=BOARDS_HIGH) for i in range(1, 21)]
+        + [_rank_row(100 + i, f"Fade {i}", 250, boards=BOARDS_LOW) for i in range(1, 21)]
+    )}
+    payload = build_consensus_gap_board(board)
+
+    assert len(payload["higher"]) == 15  # truncated public list unchanged
+    assert len(payload["higher_all"]) == 20  # every qualified ahead row
+    assert len(payload["lower"]) == 15
+    assert len(payload["lower_all"]) == 20
+    for side in ("higher", "lower"):
+        assert len(payload[f"{side}_all"]) >= len(payload[side])
+        all_keys = {row["identity_key"] for row in payload[f"{side}_all"]}
+        for row in payload[side]:
+            assert row["identity_key"] in all_keys
+        # same display shape — no per-source boards leak into the full set either
+        assert all("boards" not in row for row in payload[f"{side}_all"])
+
+
 def test_gaps_wired_into_nav_llms_and_daily_build():
     from scripts import run_daily_public_build
 
@@ -157,6 +181,13 @@ def test_gaps_wired_into_nav_llms_and_daily_build():
     assert steps.index("scripts/build_consensus_gap_board.py") > steps.index(
         "scripts/build_ahead_of_consensus.py"
     )
+    # Plan 017: the claim-ledger build step runs immediately after the gap board
+    # (it re-derives the gap board's qualification logic over the dated archive).
+    assert steps.index("scripts/build_gaps_claim_ledger.py") == (
+        steps.index("scripts/build_consensus_gap_board.py") + 1
+    )
+    validate = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
+    assert "scripts/validate_gaps_claim_ledger.py" in validate
     workflow = (ROOT / ".github" / "workflows" / "daily-public-data.yml").read_text(encoding="utf-8")
     assert "data/models/valucast_consensus_gap.json" in workflow
     nav = (ROOT / "templates" / "partials" / "_board_nav.html").read_text(encoding="utf-8")

@@ -227,6 +227,12 @@ def build_consensus_gap_board(
         },
         "higher": [_display_row(row) for row in ahead[:MAX_ROWS_PER_SIDE]],
         "lower": [_display_row(row) for row in fade[:MAX_ROWS_PER_SIDE]],
+        # Full qualified sets (untruncated). The public `higher`/`lower` lists are
+        # capped at MAX_ROWS_PER_SIDE for display, but the claim ledger (plan 017)
+        # must enroll EVERY qualified row or survivorship bias sneaks back in at the
+        # 15-row display cutoff. Same _display_row shape; no per-source `boards`.
+        "higher_all": [_display_row(row) for row in ahead],
+        "lower_all": [_display_row(row) for row in fade],
     }
 
 

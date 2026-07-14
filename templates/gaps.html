@@ -74,6 +74,51 @@
         {% endfor %}
     </section>
 </div>
+{% if gaps_ledger_available %}
+{# Plan 017: every gap row — both sides, not just the 15 shown — is a dated claim
+   that must resolve or expire. This strip replaces the fade side's old "not
+   ledger-scored yet" hedge with real, two-sided accountability: the previously
+   invisible fades-that-expired and the lead-time on call-ups both surface here.
+   NEVER prints per-source board ranks (aggregate consensus only). #}
+<section class="buys-list glass gaps-claim-ledger" aria-label="Gaps claim lifecycle ledger">
+    <h2>CLAIM LEDGER 🧾</h2>
+    <p class="buys-fineprint">Every gap becomes a dated claim that must resolve or expire — both sides now, not just the higher one. Claims age out after {{ gaps_ledger_summary.expiry_days }} days if nothing settles them.</p>
+    <div class="movers-grid">
+        {% for side, label in [('higher', "HIGHER claims"), ('lower', "LOWER (fade) claims")] %}
+        {% set s = gaps_ledger_summary[side] %}
+        {% if s %}
+        <div class="gaps-claim-side">
+            <h3>{{ label }} &middot; {{ s.total }}</h3>
+            <ul class="gaps-claim-counts">
+                <li>{{ s.open }} open</li>
+                <li>{{ s.resolved_by_callup }} resolved by call-up</li>
+                <li>{{ s.resolved_by_consensus_move }} resolved by field move</li>
+                <li>{{ s.retracted_by_model_move }} retracted (we backed off)</li>
+                <li>{{ s.expired_unresolved }} expired unresolved</li>
+            </ul>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% if gaps_ledger_resolved %}
+    <p class="buys-fineprint">Recently resolved:</p>
+    <ul class="gaps-claim-resolved">
+        {% for c in gaps_ledger_resolved %}
+        <li>
+            <span class="gaps-claim-name">{{ c.name }}</span>
+            <span class="buys-tag">{{ c.side }} &middot;
+                {% if c.outcome == 'resolved_by_callup' %}called up{% if c.lead_time_days is not none %} &mdash; {{ c.lead_time_days }} day{{ 's' if c.lead_time_days != 1 else '' }} early{% endif %}
+                {% elif c.outcome == 'resolved_by_consensus_move' %}field moved toward us
+                {% elif c.outcome == 'retracted_by_model_move' %}we backed off
+                {% else %}expired unresolved{% endif %}
+                {% if c.resolved_date %} &middot; {{ editorial_date(c.resolved_date) }}{% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</section>
+{% endif %}
 <p class="buys-fineprint gaps-footnote">Consensus is the same rounded-median, computed by the same code, from the same inputs as the AOTC badge, cards, and scorecard. Rebuilt nightly by <code>scripts/build_consensus_gap_board.py</code>. Being different isn't being right; the ledger decides.</p>
 {% endif %}
 {% endblock %}
