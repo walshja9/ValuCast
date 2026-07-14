@@ -289,6 +289,77 @@ def test_role_training_emits_valid_honest_gate():
     assert result["prediction_model"]["model_kind"] == "hurdle_ridge"
 
 
+def _stale_arm(draft_year, cohort_year=2021, **overrides):
+    return _historical(
+        "pitcher", cohort_year, 11, "bust",
+        draft_year=draft_year, draft_pick_number=10, draft_round=1,
+        signing_bonus=4_000_000, pick_value=8.0, **overrides,
+    )
+
+
+def test_pitcher_pedigree_decay_is_flag_gated_and_stale_zeroes_magnitudes(monkeypatch):
+    """C1 lever (plan 028 amendment 2): flag off = byte-identical baseline;
+    flag on zeroes exactly the four pedigree magnitude features at >= 5 years
+    since draft, touching nothing else."""
+    from prospects import model
+
+    record = _stale_arm(draft_year=2016)  # 5 years stale in the 2021 cohort
+    off = _outcome_feature_vector(record, "pitcher")
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    on = _outcome_feature_vector(record, "pitcher")
+
+    diffs = [i for i, (a, b) in enumerate(zip(off, on)) if a != b]
+    assert len(diffs) == 4
+    assert all(on[i] == 0.0 for i in diffs)
+    assert all(off[i] > 0.0 for i in diffs)
+    # pick_value 8.0 and 1/draft_round 1.0 are among the zeroed features.
+    assert {8.0, 1.0} <= {off[i] for i in diffs}
+
+
+def test_pitcher_pedigree_decay_fresh_and_midpoint_and_unknown(monkeypatch):
+    from prospects import model
+
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    fresh = _stale_arm(draft_year=2020)  # 1 year: factor 1.0
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", False)
+    fresh_off = _outcome_feature_vector(fresh, "pitcher")
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    assert _outcome_feature_vector(fresh, "pitcher") == fresh_off
+
+    mid = _stale_arm(draft_year=2018)  # 3 years: factor (5-3)/(5-2) = 2/3
+    vector = _outcome_feature_vector(mid, "pitcher")
+    assert any(abs(value - 8.0 * (2 / 3)) < 1e-9 for value in vector)
+
+    unknown = _stale_arm(draft_year=None)
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", False)
+    unknown_off = _outcome_feature_vector(unknown, "pitcher")
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    assert _outcome_feature_vector(unknown, "pitcher") == unknown_off
+
+
+def test_pitcher_pedigree_decay_uses_sample_season_for_current_rows(monkeypatch):
+    from prospects import model
+
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    current = _stale_arm(draft_year=2020)
+    del current["cohort_year"]
+    current["sample_season"] = 2026  # 6 years since draft -> fully decayed
+    vector = _outcome_feature_vector(current, "pitcher")
+    assert 8.0 not in vector  # pick_value zeroed
+
+
+def test_pitcher_pedigree_decay_never_touches_hitters(monkeypatch):
+    from prospects import model
+
+    hitter = _historical(
+        "hitter", 2021, 12, "role",
+        draft_year=2015, draft_pick_number=5, signing_bonus=6_000_000,
+    )
+    off = _outcome_feature_vector(hitter, "hitter")
+    monkeypatch.setattr(model, "PITCHER_STALE_PEDIGREE_DECAY_ENABLED", True)
+    assert _outcome_feature_vector(hitter, "hitter") == off
+
+
 def test_role_training_servable_when_validation_infeasible():
     """Walk-forward needs >= 3 training cohorts to emit a validation fold.
     Fold-local backtest training (rank-gate v1) can have fewer: the model must

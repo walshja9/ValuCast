@@ -33,6 +33,7 @@ from pathlib import Path
 
 import numpy as np
 
+from prospects import model as prospect_model_module
 from prospects import rank_v1
 from prospects.dynasty import build_layer
 from prospects.dynasty_backtest import (
@@ -109,6 +110,39 @@ def _neutralized_module_state():
     finally:
         for attr, value in saved.items():
             setattr(rank_v1, attr, value)
+
+
+_VARIANT_SPEC_KEYS = {"rank_kwargs", "model_flags"}
+
+
+def _validate_variant_spec(name: str, spec: dict) -> None:
+    unknown = set(spec or {}) - _VARIANT_SPEC_KEYS
+    if unknown:
+        raise NeutralizationError(
+            f"variant {name!r} has unknown spec keys {sorted(unknown)}; "
+            f"allowed: {sorted(_VARIANT_SPEC_KEYS)}"
+        )
+
+
+@contextmanager
+def _model_flags(flags: dict | None):
+    """Set registered lever flags on prospects.model for one fold, restored after.
+
+    Wraps TRAINING and scoring together: a feature-construction lever (like the
+    C1 pedigree decay) must apply identically in both or the fold is incoherent.
+    """
+    flags = flags or {}
+    for name in flags:
+        if not hasattr(prospect_model_module, name):
+            raise NeutralizationError(f"unknown model flag {name!r}")
+    saved = {name: getattr(prospect_model_module, name) for name in flags}
+    try:
+        for name, value in flags.items():
+            setattr(prospect_model_module, name, value)
+        yield
+    finally:
+        for name, value in saved.items():
+            setattr(prospect_model_module, name, value)
 
 
 def _fold_now(test_year: int) -> str:
@@ -205,13 +239,27 @@ def _fold_contract(contract: dict, fold_rows: dict, test_year: int) -> dict:
 def _fold_board_scores(
     contract: dict,
     test_year: int,
-    rank_kwargs: dict | None = None,
+    variant: dict | None = None,
 ) -> tuple[dict, dict]:
     """Score one fold through the production pipeline; return scores + diagnostics.
 
-    rank_kwargs threads registered lever toggles into build_prospect_rank_v1
-    (the C1 stale-pedigree cap, once it exists). C0 = no kwargs.
+    variant spec: {"model_flags": {...}} flips registered levers on
+    prospects.model around BOTH training and scoring (the C1 pedigree decay
+    lives in feature construction); {"rank_kwargs": {...}} threads kwargs into
+    build_prospect_rank_v1 for scoring-side levers. C0 = empty spec.
     """
+    variant = variant or {}
+    with _model_flags(variant.get("model_flags")):
+        return _fold_board_scores_inner(
+            contract, test_year, variant.get("rank_kwargs")
+        )
+
+
+def _fold_board_scores_inner(
+    contract: dict,
+    test_year: int,
+    rank_kwargs: dict | None = None,
+) -> tuple[dict, dict]:
     now = _fold_now(test_year)
     train_through = test_year - OUTCOME_HORIZON_YEARS
     training_rows = [
@@ -298,13 +346,38 @@ def _fold_board_scores(
     return {"scores": scores, "tiers": tiers}, diagnostics
 
 
+def _tier_concordance_fast(scores: np.ndarray, tiers: np.ndarray) -> float | None:
+    """Vectorized _pair_concordance (identical values, property-locked in tests).
+
+    The bootstrap runs 30k+ evaluations; the O(n^2) reference loop is fine for
+    one fold but not for that. Between each ordered tier pair, count
+    higher-tier scores strictly above (concordant) and equal (0.5) via
+    searchsorted on the sorted lower-tier scores: O(n log n) per eval.
+    """
+    values = np.unique(tiers)
+    if len(values) < 2:
+        return None
+    by_tier = {value: np.sort(scores[tiers == value]) for value in values}
+    concordant = 0.0
+    total = 0
+    for i in range(len(values)):
+        for j in range(i + 1, len(values)):
+            low = by_tier[values[i]]
+            high = by_tier[values[j]]
+            below = np.searchsorted(low, high, side="left")
+            at_or_below = np.searchsorted(low, high, side="right")
+            concordant += below.sum() + 0.5 * (at_or_below - below).sum()
+            total += len(low) * len(high)
+    return concordant / total if total else None
+
+
 def _pair_concordance(items: list[tuple[float, float]]) -> float | None:
     """Tier-pair concordance: pairs with differing outcome tier; score ties 0.5.
 
     Matches the estimator scripts/power_check_rank_gate.py calibrated the
     registered thresholds under. items = [(score, tier), ...].
-    ponytail: O(n^2) pair loop — folds are a few hundred rows; exact and obvious
-    beats a cumsum trick here.
+    ponytail: O(n^2) reference implementation — kept as the readable spec that
+    _tier_concordance_fast is property-tested against.
     """
     concordant = 0.0
     total = 0
@@ -392,26 +465,27 @@ def paired_bootstrap_lower_bound(
     """
     rng = np.random.default_rng(seed)
 
-    def role_items(fold: dict, variant: str, keys: list) -> list[tuple[float, float]]:
-        return [(fold[variant][key], fold["tiers"][key]) for key in keys]
-
-    fold_keys = [
-        sorted(
+    prepared = []
+    point_deltas = []
+    weights = []
+    for fold in fold_pairs:
+        keys = sorted(
             key
             for key in fold["baseline"]
             if metric_role == "all" or key[1] == metric_role
         )
-        for fold in fold_pairs
-    ]
-    point_deltas = []
-    weights = []
-    for fold, keys in zip(fold_pairs, fold_keys):
-        base = _pair_concordance(role_items(fold, "baseline", keys))
-        cand = _pair_concordance(role_items(fold, "candidate", keys))
-        if base is None or cand is None:
+        if not keys:
             continue
-        point_deltas.append(cand - base)
+        base = np.array([fold["baseline"][key] for key in keys], dtype=float)
+        cand = np.array([fold["candidate"][key] for key in keys], dtype=float)
+        tiers = np.array([fold["tiers"][key] for key in keys], dtype=float)
+        base_c = _tier_concordance_fast(base, tiers)
+        cand_c = _tier_concordance_fast(cand, tiers)
+        if base_c is None or cand_c is None:
+            continue
+        point_deltas.append(cand_c - base_c)
         weights.append(len(keys))
+        prepared.append((base, cand, tiers, len(keys)))
     if not point_deltas:
         return {"point": None, "lower_bound": None}
     point = float(np.average(point_deltas, weights=weights))
@@ -420,16 +494,14 @@ def paired_bootstrap_lower_bound(
     for b in range(n_bootstraps):
         deltas = []
         w = []
-        for fold, keys in zip(fold_pairs, fold_keys):
-            if not keys:
+        for base, cand, tiers, count in prepared:
+            index = rng.integers(0, count, count)
+            base_c = _tier_concordance_fast(base[index], tiers[index])
+            cand_c = _tier_concordance_fast(cand[index], tiers[index])
+            if base_c is None or cand_c is None:
                 continue
-            resample = [keys[i] for i in rng.integers(0, len(keys), len(keys))]
-            base = _pair_concordance(role_items(fold, "baseline", resample))
-            cand = _pair_concordance(role_items(fold, "candidate", resample))
-            if base is None or cand is None:
-                continue
-            deltas.append(cand - base)
-            w.append(len(keys))
+            deltas.append(cand_c - base_c)
+            w.append(count)
         boot_deltas[b] = np.average(deltas, weights=w) if deltas else np.nan
     sd = float(np.nanstd(boot_deltas, ddof=1))
     return {
@@ -443,14 +515,16 @@ def paired_bootstrap_lower_bound(
 
 def build_rank_backtest(
     contract: dict,
-    rank_kwargs_by_variant: dict[str, dict] | None = None,
+    variant_specs: dict[str, dict] | None = None,
 ) -> dict:
     """Replay every fold for each variant. Default: C0 only (harness validation).
 
-    Passing {"C0": {}, "C1": {<lever kwarg>}} is THE one registered historical
-    look — run it once, after the C1 lever exists.
+    Passing {"C0": {}, "C1": {"model_flags": {"PITCHER_STALE_PEDIGREE_DECAY_ENABLED":
+    True}}} is THE one registered historical look — run it exactly once.
     """
-    variants = rank_kwargs_by_variant or {"C0": {}}
+    variants = variant_specs or {"C0": {}}
+    for name, spec in variants.items():
+        _validate_variant_spec(name, spec)
     cohorts = sorted(
         {
             int(row.get("cohort_year") or 0)
@@ -468,8 +542,8 @@ def build_rank_backtest(
     diagnostics = []
     for test_year in fold_years:
         per_variant = {}
-        for name, kwargs in variants.items():
-            data, diag = _fold_board_scores(contract, test_year, kwargs or None)
+        for name, spec in variants.items():
+            data, diag = _fold_board_scores(contract, test_year, spec or None)
             per_variant[name] = data
             if name == next(iter(variants)):
                 diagnostics.append(diag)
@@ -555,11 +629,9 @@ def build_rank_backtest(
 def run_rank_backtest(
     input_path: Path = INPUT_PATH,
     artifact_path: Path = ARTIFACT_PATH,
-    rank_kwargs_by_variant: dict[str, dict] | None = None,
+    variant_specs: dict[str, dict] | None = None,
 ) -> dict:
-    payload = build_rank_backtest(
-        load_input_contract(input_path), rank_kwargs_by_variant
-    )
+    payload = build_rank_backtest(load_input_contract(input_path), variant_specs)
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")

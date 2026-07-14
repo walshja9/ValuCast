@@ -1182,3 +1182,29 @@ All other guard clauses (identity set, top-25/50/100 overlap >= 20/42/90,
 p95 |rank move| <= 50 on baseline top-200, consensus-gap bounds, max score
 decrease 12.0, realized-effect >= 25 pitcher scores by >= 0.5) stand
 unchanged and are redistribution-aware by construction.
+
+### GATE VERDICT — 2026-07-14: C1 FAILED. CUT. (The one look is SPENT.)
+
+The registered look ran once (data/models/valucast_rank_backtest.json, seed
+28013, 10,000 paired fold-stratified bootstraps): Delta-C_pitcher point =
++0.00067 (bar: >= +0.005), one-sided 98.33% lower bound = -0.0048 (bar: > 0).
+The stale-pedigree decay produces no detectable improvement in historical
+within-pitcher outcome ordering. Registered consequence applied: C1 is CUT.
+The lever code remains in prospects/model.py behind
+PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False and that flag MUST NOT be
+flipped without a NEW registered confirmatory gate on a genuinely new
+outcome vintage (2022 cohort matures after the 2026 season). Any earlier
+rerun on the 2018/2019/2021 cohorts is exploratory by registration.
+
+Honest reading, recorded: the likely mechanism is that the trained ridge
+already assigns stale pedigree features whatever weight they historically
+earned — decaying an already-small learned contribution barely reorders
+pitchers. The Hughes/Murphy CURRENT-board anomaly may be real but is a
+handful of rows; a bulk ordering metric cannot see it, and per this
+program's spine we do not ship score-moving levers a registered instrument
+cannot confirm. The product-level protection for pitcher-heavy boards
+remains the governor veto (top-25 <= 7 / top-50 <= 0.30), which makes no
+accuracy claim. FINAL 028 SCOPE after this verdict: Phase 0 (done) +
+calibration slice (epoch-batch items A/B/C + F7 counter rename) + the
+single epoch bump. Zero scoring levers ship: C1 cut on evidence, C2/C3 cut
+on power. The score surgery program ends with the honest null.

@@ -46,6 +46,18 @@
     2019,
     2021
   ],
+  "gate": {
+    "bootstrap_sd": 0.002578,
+    "comparison": "C1 vs C0",
+    "lower_bound": -0.004817,
+    "n_bootstraps": 10000,
+    "note": "One registered historical look. C_cross is report-only (2026-07-14 power-check amendment); it can never be evidence.",
+    "passed": false,
+    "point": 0.00067,
+    "point_threshold": 0.005,
+    "primary_metric": "delta_c_pitcher",
+    "seed": 28013
+  },
   "registration": "plans/028-pitcher-lean-model-fix.md#rank-gate-v1-registration",
   "status": "research_only",
   "variants": {
@@ -87,6 +99,46 @@
         "c_cross_report_only": 0.8099963885701069,
         "c_hitter": 0.8566580874384535,
         "c_pitcher": 0.7556360101928411
+      }
+    },
+    "C1": {
+      "folds": [
+        {
+          "c_all": 0.847029,
+          "c_cross_report_only": 0.846481,
+          "c_hitter": 0.875903,
+          "c_pitcher": 0.821767,
+          "hitter_sample": 345,
+          "pitcher_sample": 352,
+          "sample_size": 697,
+          "test_cohort": 2018
+        },
+        {
+          "c_all": 0.810488,
+          "c_cross_report_only": 0.813635,
+          "c_hitter": 0.849151,
+          "c_pitcher": 0.776761,
+          "hitter_sample": 360,
+          "pitcher_sample": 410,
+          "sample_size": 770,
+          "test_cohort": 2019
+        },
+        {
+          "c_all": 0.772912,
+          "c_cross_report_only": 0.772935,
+          "c_hitter": 0.847378,
+          "c_pitcher": 0.670199,
+          "hitter_sample": 386,
+          "pitcher_sample": 365,
+          "sample_size": 751,
+          "test_cohort": 2021
+        }
+      ],
+      "weighted": {
+        "c_all": 0.8092478896227657,
+        "c_cross_report_only": 0.8101757261705398,
+        "c_hitter": 0.8569830998067057,
+        "c_pitcher": 0.756305675158272
       }
     }
   }

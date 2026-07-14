@@ -54,6 +54,14 @@ STALE_PULL_CAP = 0.60
 LEVEL_CODE = {"A": -2.0, "A+": -1.0, "AA": 0.0, "AAA": 1.0}
 EXPECTED_AGE = {"A": 20.0, "A+": 21.0, "AA": 22.5, "AAA": 24.0}
 OUTCOME_TARGET = {"bust": 0.0, "role": 0.5, "star": 1.0}
+# C1 stale-pedigree decay (plan 028, Rank-gate v1 amendment 2). Mirrors
+# rank_v1._pedigree_spare_credit's staleness semantics -- deliberately reused,
+# not tuned: full pedigree weight <= 2 years since draft, linear to zero at 5.
+# Flag default False = C0 baseline; flipped True only in the 028 epoch batch
+# if the registered gate passes.
+PEDIGREE_FRESH_YEARS = 2.0
+PEDIGREE_STALE_YEARS = 5.0
+PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
 RIDGE_LAMBDA = 10.0
@@ -273,6 +281,33 @@ def _truthy(value) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "y"}
 
 
+def _pitcher_pedigree_freshness(record: dict) -> float:
+    """Years-since-draft decay for the pitcher pedigree magnitude features.
+
+    C1 lever (plan 028, Rank-gate v1 amendment 2). Mirrors
+    rank_v1._pedigree_spare_credit: 1.0 fresh (<= PEDIGREE_FRESH_YEARS, or
+    unknown draft/as-of year -- conservative, preserves prior behavior),
+    linear to 0.0 at >= PEDIGREE_STALE_YEARS. As-of season = cohort_year for
+    historical rows, else sample_season for current rows, so training and
+    scoring decay identically. Behind the module flag so C0 replay and the
+    served baseline are byte-identical until the epoch batch flips it.
+    """
+    if not PITCHER_STALE_PEDIGREE_DECAY_ENABLED:
+        return 1.0
+    draft_year = _num(record.get("draft_year"))
+    as_of = _num(record.get("cohort_year"))
+    if as_of is None:
+        as_of = _num(record.get("sample_season"))
+    if draft_year is None or as_of is None:
+        return 1.0
+    years = as_of - draft_year
+    if years <= PEDIGREE_FRESH_YEARS:
+        return 1.0
+    if years >= PEDIGREE_STALE_YEARS:
+        return 0.0
+    return (PEDIGREE_STALE_YEARS - years) / (PEDIGREE_STALE_YEARS - PEDIGREE_FRESH_YEARS)
+
+
 def _sample(record: dict, role: str) -> float:
     key = "plate_appearances" if role == "hitter" else "innings_pitched"
     return _num(record.get(key)) or 0.0
@@ -354,6 +389,7 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
         draft_pick = _zero_num(record.get("draft_pick_number"))
         draft_round = _zero_num(record.get("draft_round"))
         bonus = _zero_num(record.get("signing_bonus"))
+        pedigree_freshness = _pitcher_pedigree_freshness(record)
         school_type = str(record.get("school_type") or "").strip().lower()
         bats = str(record.get("bats") or record.get("bat_side") or "").strip().upper()
         throws = (
@@ -381,10 +417,13 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
             whip * level,
             1.0 if _truthy(record.get("rule4_drafted")) else 0.0,
             1.0 if _truthy(record.get("draft_record_known")) else 0.0,
-            _zero_num(record.get("pick_value")),
-            1.0 / (draft_pick or 999.0),
-            1.0 / (draft_round or 99.0),
-            _safe_log1p(bonus),
+            # The four pedigree MAGNITUDE features decay by years-since-draft
+            # (C1, plan 028 amendment 2); the structural flags above/below
+            # do not. A 2022 slot must not price like a fresh one in 2026.
+            _zero_num(record.get("pick_value")) * pedigree_freshness,
+            1.0 / (draft_pick or 999.0) * pedigree_freshness,
+            1.0 / (draft_round or 99.0) * pedigree_freshness,
+            _safe_log1p(bonus) * pedigree_freshness,
             1.0 if school_type == "college" else 0.0,
             1.0 if school_type in ("prep", "high_school", "highschool", "hs") else 0.0,
             1.0 if bats == "L" else 0.0,
