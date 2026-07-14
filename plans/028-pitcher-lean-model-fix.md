@@ -1208,3 +1208,44 @@ accuracy claim. FINAL 028 SCOPE after this verdict: Phase 0 (done) +
 calibration slice (epoch-batch items A/B/C + F7 counter rename) + the
 single epoch bump. Zero scoring levers ship: C1 cut on evidence, C2/C3 cut
 on power. The score surgery program ends with the honest null.
+
+## Epoch bump executed — 2026-07-14 (scope statement)
+
+`PROSPECT_BUYS_EPOCH = "2026-07-14-gate-fix-calibration-batch"`. This single
+epoch covers, per the epoch-batch rule ("none may ship separately"):
+
+- Phase 0 gate fixes: F5 QS=0 imputation (adapter backtest), F4 impact-label
+  horizon clip (model.py), universal training-label clip
+  (`_horizon_clipped_seasons`) — the last RETRAINS the served shadow model,
+  which is why the whole local stack waited for this epoch.
+- Item A: thin-sample confidence penalty tapered on current-sample
+  reliability (THIN_SAMPLE_RELIABILITY_RAMP=45); status-flip steps bounded
+  ~2.6 pts (were +11 to +15.6, incl. GS 2->3 at -14.17). Haircut populations
+  and their pedigree/career crediting unchanged (INV-THIN-2/3/4 hold).
+- Item B: Pass-2 normalization pool == main-board membership (retained
+  rookie call-ups included; service-graduated + manual graduates excluded).
+- Item C: consensus identity joins on normalized_name + org + age(+/-1) with
+  unmatched fallback across HKB/Pipeline/PL/STS; PL builder ingests the new
+  manually-exported Live Rankings format (rank aggregate only, per-ranker
+  columns never read). Fixes the Luis Hernandez 801346 collision.
+- Item F7: peak_calibration negative_delta_count counts ALL negatives;
+  big_negative_delta_count carries the old <=-10 cut.
+- Collateral fix: combined-level shadow no longer misattributes the served
+  row's bucket application as its own recomputation (surfaced by item A).
+- C1 lever code ships INERT (PITCHER_STALE_PEDIGREE_DECAY_ENABLED=False,
+  gate-failed; see verdict above). No scoring levers in this epoch.
+
+Masking (amendment 2 resolution): movers/value-trend windows already floor
+at the epoch date by construction (movers.py EPOCH_DATE); buys momentum now
+floors its history at the same date (option (ii): `_score_history` epoch
+floor — the 6-pt step guard alone let sub-6 fix-day drift print as real
+cooling). Forward-validation evidence clock resets via the epoch string.
+AOTC integrity (Step 7): zero diffs under the AOTC scoring path, verified
+against origin/master before push; funnel movement from re-scored ranks is
+expected and allowed.
+
+Push discipline: the full local stack (Phase 0 through this bump) pushes as
+ONE event, outside the 12:20-13:15 UTC nightly window. Outstanding data
+follow-up: the committed PL CSV is the upload-clipped 60-row copy; the full
+630-row export replaces it before or with the push (data-only, join code
+unaffected).

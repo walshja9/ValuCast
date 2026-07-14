@@ -1,15 +1,30 @@
 """Tests for ValuCast-owned prospect buy signals."""
 import json
 from copy import deepcopy
+from datetime import date, timedelta
 from types import SimpleNamespace
 
-from prospects.buys import build_buy_signals, buy_window_score
+from prospects.buys import (
+    PROSPECT_BUYS_EPOCH_DATE,
+    build_buy_signals,
+    buy_window_score,
+)
 from scripts.review_valucast_buys import build_review
 from web import buy_score
 from web.valucast_buy_store import (
     ValuCastBuyStore,
     validate_valucast_buy_payload,
 )
+
+# Epoch-relative fixture dates: buys momentum floors history at the scoring
+# epoch (_score_history drops any point before PROSPECT_BUYS_EPOCH_DATE), so
+# fixtures must sit on/after the epoch. Deriving offsets from the epoch keeps
+# these tests correct across future epoch bumps. _d(0) == the epoch floor.
+_EPOCH = date.fromisoformat(PROSPECT_BUYS_EPOCH_DATE)
+
+
+def _d(offset):
+    return (_EPOCH + timedelta(days=offset)).isoformat()
 
 
 def _row(
@@ -63,7 +78,7 @@ def _rank_payload(rows=None):
     return {
         "status": "candidate_shadow",
         "rank_version": "0.1.0",
-        "generated_at": "2026-06-13T12:00:00+00:00",
+        "generated_at": f"{_d(1)}T12:00:00+00:00",
         "ranked_count": len(rows or []),
         "board": rows
         or [
@@ -77,7 +92,7 @@ def _rank_payload(rows=None):
 def _history():
     return [
         {
-            "date": "2026-06-12",
+            "date": _d(0),
             "board": [
                 {"mlbam_id": 1, "role": "hitter", "score": 53.0},
                 {"mlbam_id": 2, "role": "hitter", "score": 60.0},
@@ -198,7 +213,7 @@ def test_build_buy_signals_can_be_candidate_ready_after_review():
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
-            "date": "2026-06-12",
+            "date": _d(0),
             "board": [
                 {"mlbam_id": index, "role": "hitter", "score": 53.0}
                 for index in range(1, 45)
@@ -264,7 +279,7 @@ def test_history_drives_momentum_from_valucast_scores():
     row = next(item for item in payload["board"] if item["mlbam_id"] == 1)
 
     assert row["terms"]["momentum"] > 0.4
-    assert row["score_history"] == [("2026-06-12", 53.0), ("2026-06-13", 58.0)]
+    assert row["score_history"] == [(_d(0), 53.0), (_d(1), 58.0)]
 
 
 def test_neutral_momentum_does_not_become_the_headline_reason():
@@ -376,7 +391,7 @@ def test_validator_rejects_ready_v1_payload_without_locked_release_contract():
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
-            "date": "2026-06-12",
+            "date": _d(0),
             "board": [
                 {"mlbam_id": index, "role": "hitter", "score": 53.0}
                 for index in range(1, 45)
@@ -408,7 +423,7 @@ def test_validator_rejects_ready_legacy_signal_version_even_with_ready_flags():
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
-            "date": "2026-06-12",
+            "date": _d(0),
             "board": [
                 {"mlbam_id": index, "role": "hitter", "score": 53.0}
                 for index in range(1, 45)

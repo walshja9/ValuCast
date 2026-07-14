@@ -9,6 +9,7 @@ from scripts.build_public_dynasty_snapshot import (
     COMMON_VALUE_SCALE,
     GRAD_FLOOR_DECAY_DAYS,
     GRAD_FLOOR_DISCOUNT,
+    PROSPECT_VALUE_HISTORY_EPOCH_DATE,
     TWO_WAY_SECONDARY_VALUE_WEIGHT,
     _apply_graduation_transition_floor,
     build_snapshot,
@@ -21,6 +22,15 @@ from web.public_snapshot_store import (
 
 
 PRESET_IDS = ("5x5", "obp", "6x6", "sv_hld", "7x7", "7x7_ops", "points")
+
+# Prospect value history is floored at the scoring epoch, so this fixture's
+# archive dates must be epoch-relative or every point gets clamped away.
+# _pd(0) == the epoch floor; _pd(-1) sits just below it (floored on purpose).
+_PVH_EPOCH = date.fromisoformat(PROSPECT_VALUE_HISTORY_EPOCH_DATE)
+
+
+def _pd(offset):
+    return (_PVH_EPOCH + timedelta(days=offset)).isoformat()
 
 
 def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
@@ -614,10 +624,13 @@ def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
 
 
 def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):
+    # _pd(-1) sits just below the epoch floor and must be dropped; _pd(0) is the
+    # floor itself and survives; the current score at generated_at (_pd(2))
+    # overrides that day's archived value.
     for date_str, score, dd_value in [
-        ("2026-06-21", 10.0, 777.0),
-        ("2026-06-22", 51.25, 888.0),
-        ("2026-06-24", 52.0, 999.0),
+        (_pd(-1), 10.0, 777.0),
+        (_pd(0), 51.25, 888.0),
+        (_pd(2), 52.0, 999.0),
     ]:
         (tmp_path / f"{date_str}.json").write_text(
             json.dumps(
@@ -639,7 +652,7 @@ def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
         buy_signals=_buy_payload(),
-        generated_at="2026-06-24T12:00:00+00:00",
+        generated_at=f"{_pd(2)}T12:00:00+00:00",
         mlb_value_history_archive_dir=None,
         prospect_value_history_archive_dir=tmp_path,
     )
@@ -647,8 +660,8 @@ def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):
     prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
 
     assert prospect["context"]["value_history"] == [
-        ("2026-06-22", 51.25),
-        ("2026-06-24", 55.5),
+        (_pd(0), 51.25),
+        (_pd(2), 55.5),
     ]
     assert 888.0 not in [value for _, value in prospect["context"]["value_history"]]
     assert 999.0 not in [value for _, value in prospect["context"]["value_history"]]

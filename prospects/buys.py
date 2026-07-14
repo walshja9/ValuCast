@@ -29,7 +29,17 @@ SIGNAL_NAME = "ValuCast Prospect Buy Signals"
 SIGNAL_VERSION = "1.0.0"
 # Bumping this constant on any future re-baseline deliberately resets the
 # forward-validation evidence clock.
-PROSPECT_BUYS_EPOCH = "2026-06-22-role-normalization"
+# 2026-07-14 epoch (plan 028): the gate-fix + calibration batch -- Phase 0
+# label-leak fixes (retrains the served shadow model), thin-sample cliff
+# taper, board-pool renorm parity, consensus identity joins, honest peak
+# counters. ZERO scoring levers (C1 cut on evidence, C2/C3 cut on power).
+PROSPECT_BUYS_EPOCH = "2026-07-14-gate-fix-calibration-batch"
+# Buys momentum must not read history across a scoring epoch: movers already
+# floor every window at the epoch date (movers.py), but momentum_score's only
+# guard is the 6-pt step filter, so a fix-day re-baseline UNDER 6 pts printed
+# as real cooling/warming inside the momentum window (plan 028 amendment 2,
+# option ii).
+PROSPECT_BUYS_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 SIGNAL_RELEASE = "valucast_prospect_buys_v1"
 LOCKED_RELEASE_STATUS = "locked"
 MAX_HISTORY_LIMITED_RATE = 0.50
@@ -153,7 +163,8 @@ def _score_history(
 
     by_date: dict[str, float] = {}
     for date, value in points:
-        if date:
+        # Epoch floor: momentum never reads across a re-baseline (option ii).
+        if date and date >= PROSPECT_BUYS_EPOCH_DATE:
             by_date[date] = value
     return sorted(by_date.items())
 

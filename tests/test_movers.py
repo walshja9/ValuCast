@@ -1,7 +1,19 @@
 """Tests for the ValuCast Prospect Movers board."""
 from __future__ import annotations
 
+from datetime import date, timedelta
 from pathlib import Path
+
+from prospects.movers import EPOCH_DATE
+
+# Epoch-relative fixture dates: the movers board floors every window at the
+# scoring epoch, so fixtures must live on/after it or they get clamped away.
+# Deriving from EPOCH_DATE keeps these tests correct across future epoch bumps.
+_EPOCH = date.fromisoformat(EPOCH_DATE)
+
+
+def _d(offset):
+    return (_EPOCH + timedelta(days=offset)).isoformat()
 
 
 def test_clean_score_tail_stops_at_epoch_step():
@@ -44,7 +56,7 @@ def test_build_movers_board_uses_rank_v1_score_and_native_policy():
     from prospects.movers import build_movers_board
 
     current = {
-        "generated_at": "2026-06-29T12:00:00+00:00",
+        "generated_at": f"{_d(9)}T12:00:00+00:00",
         "rank_version": "rank-v1-test",
         "board": [
             _rank_row(1, "Clean Riser", 10, 50.0),
@@ -53,9 +65,9 @@ def test_build_movers_board_uses_rank_v1_score_and_native_policy():
         ],
     }
     history = [
-        {"date": "2026-06-20", "board": [_rank_row(2, "Epoch Jump", 12, 42.0)]},
+        {"date": _d(0), "board": [_rank_row(2, "Epoch Jump", 12, 42.0)]},
         {
-            "date": "2026-06-26",
+            "date": _d(6),
             "board": [
                 _rank_row(1, "Clean Riser", 18, 45.0),
                 _rank_row(2, "Epoch Jump", 13, 60.0),
@@ -131,17 +143,17 @@ def test_build_movers_board_window_variants_floor_the_start():
 
     # Early climb then a late slide, sampled every 2 days (inside the 3-day
     # gap guard). The full view nets out to -1.0, under the +/-2.0 threshold;
-    # only the 7d window isolates the slide from 6/28's peak.
+    # only the 7d window isolates the slide from the day-4 peak (_d(4)).
     current = {
-        "generated_at": "2026-07-04T12:00:00+00:00",
+        "generated_at": f"{_d(10)}T12:00:00+00:00",
         "board": [_rank_row(1, "Late Slider", 40, 50.0)],
     }
     history = [
-        {"date": "2026-06-24", "board": [_rank_row(1, "Late Slider", 30, 51.0)]},
-        {"date": "2026-06-26", "board": [_rank_row(1, "Late Slider", 27, 53.0)]},
-        {"date": "2026-06-28", "board": [_rank_row(1, "Late Slider", 25, 55.0)]},
-        {"date": "2026-06-30", "board": [_rank_row(1, "Late Slider", 28, 54.0)]},
-        {"date": "2026-07-02", "board": [_rank_row(1, "Late Slider", 33, 52.0)]},
+        {"date": _d(0), "board": [_rank_row(1, "Late Slider", 30, 51.0)]},
+        {"date": _d(2), "board": [_rank_row(1, "Late Slider", 27, 53.0)]},
+        {"date": _d(4), "board": [_rank_row(1, "Late Slider", 25, 55.0)]},
+        {"date": _d(6), "board": [_rank_row(1, "Late Slider", 28, 54.0)]},
+        {"date": _d(8), "board": [_rank_row(1, "Late Slider", 33, 52.0)]},
     ]
     payload = build_movers_board(current, history_payloads=history)
 
@@ -233,21 +245,21 @@ def test_default_board_reaches_the_epoch_not_the_14d_momentum_cap():
     # window on the page. A slow 16-day climb (small daily steps, inside the
     # gap guard) must be measured in full on the default board.
     current = {
-        "generated_at": "2026-07-09T12:00:00+00:00",
+        "generated_at": f"{_d(16)}T12:00:00+00:00",
         "board": [_rank_row(1, "Slow Burner", 10, 56.0)],
     }
     history = [
-        {"date": d, "board": [_rank_row(1, "Slow Burner", 20, s)]}
-        for d, s in [
-            ("2026-06-23", 50.0), ("2026-06-25", 50.7), ("2026-06-27", 51.4),
-            ("2026-06-29", 52.1), ("2026-07-01", 52.8), ("2026-07-03", 53.5),
-            ("2026-07-05", 54.2), ("2026-07-07", 55.0),
+        {"date": _d(offset), "board": [_rank_row(1, "Slow Burner", 20, s)]}
+        for offset, s in [
+            (0, 50.0), (2, 50.7), (4, 51.4),
+            (6, 52.1), (8, 52.8), (10, 53.5),
+            (12, 54.2), (14, 55.0),
         ]
     ]
     payload = build_movers_board(current, history_payloads=history)
 
     riser = payload["rising"][0]
-    assert riser["window_days"] == 16  # 6/23 -> 7/9, past the old 14d cap
+    assert riser["window_days"] == 16  # _d(0) -> _d(16), past the old 14d cap
     assert riser["score_delta"] == 6.0
     # "All" must never span less than any windowed preset serves.
     for windowed in payload["windows"].values():
