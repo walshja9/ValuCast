@@ -56,9 +56,13 @@ def _run_refresh(tmpdir, **extra_kwargs):
     metadata_path = os.path.join(tmpdir, "metadata.json")
     raw_dir = os.path.join(tmpdir, "raw")
 
+    # Fixture pools are tiny by design; skip the population-floor guards so
+    # these tests keep exercising refresh plumbing (floors have their own
+    # tests in tests/test_blend.py).
     with patch("scraper.refresh.fetch_all", return_value=_RAW_RETURN), \
          patch("scraper.refresh.build_actuals", return_value=[_FAKE_ACTUAL_HITTER]), \
-         patch("scraper.refresh.combine_outlook", return_value=_FAKE_OUTLOOK):
+         patch("scraper.refresh.combine_outlook", return_value=_FAKE_OUTLOOK), \
+         patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"}):
         result = refresh(
             output_path=output,
             ros_output_path=ros_output,
