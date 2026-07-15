@@ -499,3 +499,6 @@ def test_prospect_shadow_workflow_keys_off_valucast_inputs():
     assert "data/prospects/prospect_model_inputs.json" in workflow
     assert "data/prospects/raw/**" in workflow
     assert "data/dd/prospect_model_inputs.json" not in workflow
+    assert "dd_7x7" not in workflow
+    assert "valucast_dd_7x7_prospect_adapter" not in workflow
+    assert "test_dd_7x7_prospect_adapter.py" not in workflow

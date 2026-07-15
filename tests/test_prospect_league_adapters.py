@@ -60,17 +60,16 @@ def _universal():
     }
 
 
-def test_dd_adapter_ranks_complete_profile_but_5x5_refuses_missing_pitcher_stats():
+def test_adapter_artifact_contains_only_public_presets():
     payload = build_adapter_artifact(_universal())
     assert payload["scoring_contract"]["rank_scope"] == "within_role"
     assert payload["scoring_contract"]["is_dynasty_value"] is False
-    assert payload["scoring_contract"]["feeds_live_dd_value"] is False
-    dd = payload["presets"]["dd_7x7"]
-    assert dd["status"] == "research_ranked"
-    assert all(role["missing_categories"] == [] for role in dd["roles"].values())
-    assert dd["roles"]["hitter"]["players"][0]["mlbam_id"] == 1
-    assert dd["roles"]["pitcher"]["players"][0]["mlbam_id"] == 3
-    assert dd["roles"]["hitter"]["players"][0]["adapter_rank"] == 1
+    assert payload["scoring_contract"]["feeds_live_value"] is False
+    assert set(payload["presets"]) == {"ops_7x7", "roto_5x5"}
+
+    ops = payload["presets"]["ops_7x7"]
+    assert ops["status"] == "insufficient_category_coverage"
+    assert ops["roles"]["pitcher"]["missing_categories"] == ["HLD", "SV"]
 
     standard = payload["presets"]["roto_5x5"]
     assert standard["status"] == "insufficient_category_coverage"
@@ -84,11 +83,11 @@ def test_dd_adapter_ranks_complete_profile_but_5x5_refuses_missing_pitcher_stats
 def test_adapter_refuses_rank_when_artifact_lacks_a_supported_target():
     universal = _universal()
     del universal["profiles"][0]["outcomes"]["representative_rbi_per_600"]
-    dd = build_adapter_artifact(universal)["presets"]["dd_7x7"]
-    assert dd["status"] == "insufficient_category_coverage"
-    assert dd["roles"]["hitter"]["missing_categories"] == ["RBI"]
+    ops = build_adapter_artifact(universal)["presets"]["ops_7x7"]
+    assert ops["status"] == "insufficient_category_coverage"
+    assert ops["roles"]["hitter"]["missing_categories"] == ["RBI"]
     assert all(
-        "adapter_rank" not in player for player in dd["roles"]["hitter"]["players"]
+        "adapter_rank" not in player for player in ops["roles"]["hitter"]["players"]
     )
 
 

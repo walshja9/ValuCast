@@ -986,8 +986,8 @@ def _horizon_clipped_seasons(dataset_rows: list[dict], seasons_by_player: dict) 
 
     Training labels for a cohort in year Y may only see outcome seasons through
     Y + OUTCOME_HORIZON_YEARS; later seasons are post-fold look-ahead. Mirrors the
-    upstream clip adapter_backtest/dynasty_backtest apply, so the served model
-    can't leak future outcomes into its own targets (Task 3, audit #2). Applied to
+    upstream dynasty backtest clip, so the served model can't leak future outcomes
+    into its own targets (Task 3, audit #2). Applied to
     the training feed only; score_current and the mature-cohort evaluator, which
     legitimately read the full future window, are untouched.
     """

@@ -1277,19 +1277,27 @@ def _prospect_canonical_signs():
     """Per-category sign (+1/-1) in board vocabulary for arbitrary user picks.
 
     Signs are DERIVED from the shipped adapter PRESETS — every category's
-    direction is consistent across presets (lower-is-better cats like ERA/WHIP/SO/L
-    carry a negative weight), so the board never invents one. The few supported
-    categories absent from any preset (the PA / IP volume anchors) are not flips in
-    the existing dynasty fit machinery either, so they default to +1 like every
-    other counting stat. Keyed by board vocabulary (SV_HLD / K_BB) to match the
-    URL/state contract.
+    direction is consistent across presets. Supported categories absent from every
+    preset inherit the existing dynasty fit direction, so retiring a preset cannot
+    silently flip a custom category such as lower-is-better L. Keyed by board
+    vocabulary (SV_HLD / K_BB) to match the URL/state contract.
     """
-    from prospects.adapters import PRESETS as _ADAPTER_PRESETS
+    from prospects.adapters import (
+        PRESETS as _ADAPTER_PRESETS,
+        SUPPORTED_CATEGORIES as _SUPPORTED_CATEGORIES,
+    )
     signs = {}
     for preset in _ADAPTER_PRESETS.values():
         for role in ("hitter", "pitcher"):
             for cat, weight in preset[role].items():
                 signs[_to_board_category(cat)] = 1 if weight >= 0 else -1
+    for categories in _SUPPORTED_CATEGORIES.values():
+        for cat in categories:
+            board_cat = _to_board_category(cat)
+            signs.setdefault(
+                board_cat,
+                -1 if board_cat in _FIT_STAT_SPACE_FLIP else 1,
+            )
     return signs
 
 

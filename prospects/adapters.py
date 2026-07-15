@@ -19,7 +19,7 @@ from projections.league_adapter import (
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_league_adapters.json"
-ADAPTER_VERSION = "0.3.0"
+ADAPTER_VERSION = "0.4.0"
 
 PRESETS = {
     "roto_5x5": {
@@ -35,29 +35,6 @@ PRESETS = {
         "name": "7x7 OPS",
         "hitter": {"R": 1, "HR": 1, "RBI": 1, "SB": 1, "AVG": 1, "OPS": 1, "SO": -1},
         "pitcher": {"K": 1, "QS": 1, "SV": 1, "HLD": 1, "ERA": -1, "WHIP": -1, "K/BB": 1},
-    },
-    # Build-chain only (dd_adapter / adapter_backtest artifacts) — no longer surfaced
-    # in the public UI. Candidate for the DD-residue kill list.
-    "dd_7x7": {
-        "name": "Diamond Dynasties 7x7",
-        "hitter": {
-            "R": 1,
-            "HR": 1,
-            "RBI": 1,
-            "SB": 1,
-            "AVG": 1,
-            "OPS": 1,
-            "SO": -1,
-        },
-        "pitcher": {
-            "K": 1,
-            "QS": 1,
-            "SV+HLD": 1,
-            "ERA": -1,
-            "WHIP": -1,
-            "K/BB": 1,
-            "L": -1,
-        },
     },
 }
 SUPPORTED_CATEGORIES = {
@@ -255,7 +232,7 @@ def build_adapter_artifact(universal: dict) -> dict:
                 "rotation probability allocates QS versus SV+HLD production"
             ),
             "is_dynasty_value": False,
-            "feeds_live_dd_value": False,
+            "feeds_live_value": False,
         },
         "supported_categories": {
             role: sorted(categories) for role, categories in SUPPORTED_CATEGORIES.items()

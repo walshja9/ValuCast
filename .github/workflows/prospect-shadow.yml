@@ -58,9 +58,6 @@ jobs:
             tests/test_prospect_dynasty_layer.py \
             tests/test_universal_prospect_index.py \
             tests/test_universal_prospect_index_backtest.py \
-            tests/test_prospect_adapter_backtest.py \
-            tests/test_dd_7x7_prospect_adapter.py \
-            tests/test_dd_prospect_lens_feed.py \
             tests/test_prospect_forward_shadow.py \
             tests/test_pooled_shadow.py \
             tests/test_combined_level_shadow.py
@@ -78,13 +75,9 @@ jobs:
             data/models/valucast_combined_level_shadow.json \
             data/models/valucast_universal_prospect_index.json \
             data/models/valucast_universal_prospect_index_backtest.json \
-            data/models/valucast_prospect_adapter_backtest.json \
-            data/models/valucast_dd_7x7_prospect_adapter.json \
-            data/exports/valucast_dd_prospect_lens.json \
             data/prediction_archive/valucast_universal_prospect_model \
             data/prediction_archive/valucast_prospect_dynasty_layer \
             data/prediction_archive/valucast_universal_prospect_index \
-            data/prediction_archive/valucast_dd_7x7_prospect_adapter \
             data/prediction_archive/valucast_prospect_forward_shadow \
             data/prediction_archive/valucast_pooled_shadow \
             data/prediction_archive/valucast_combined_level_shadow

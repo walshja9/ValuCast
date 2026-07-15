@@ -20,17 +20,6 @@ from prospects.dynasty import (
     run_layer,
 )
 from prospects.dynasty_backtest import run_backtest
-from prospects.dd_adapter import (
-    ARCHIVE_DIR as DD_ADAPTER_ARCHIVE_DIR,
-    ARTIFACT_PATH as DD_ADAPTER_ARTIFACT_PATH,
-    BACKTEST_PATH as DD_ADAPTER_BACKTEST_PATH,
-    run_dd_adapter,
-)
-from prospects.dd_lens_feed import (
-    ARTIFACT_PATH as DD_LENS_FEED_ARTIFACT_PATH,
-    run_feed as run_dd_lens_feed,
-)
-from prospects.adapter_backtest import run_backtest as run_adapter_backtest
 from prospects.index import (
     ARCHIVE_DIR as INDEX_ARCHIVE_DIR,
     ARTIFACT_PATH as INDEX_ARTIFACT_PATH,
@@ -51,7 +40,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_forward_shadow.jso
 RUN_ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_forward_shadow"
 
 TRACKER_NAME = "ValuCast Prospect Forward Shadow Tracker"
-TRACKER_VERSION = "0.2.0"
+TRACKER_VERSION = "0.3.0"
 MIN_OBSERVATIONS = 30
 MIN_OBSERVATION_SPAN_DAYS = 60
 MIN_OVERLAP_RATE = 0.70
@@ -219,62 +208,6 @@ def _index_board(snapshot: dict) -> tuple[dict[tuple[int, str], dict], dict]:
     }
 
 
-def _dd_adapter_board(snapshot: dict) -> tuple[dict[tuple[int, str], dict], dict]:
-    board = {}
-    duplicate_count = 0
-    invalid_count = 0
-    ordering_valid = True
-    role_candidate_mismatch_count = 0
-    rows = []
-    for role in ("hitter", "pitcher"):
-        result = (snapshot.get("roles") or {}).get(role) or {}
-        players = result.get("players") or []
-        if result.get("candidate_count") != len(players):
-            role_candidate_mismatch_count += 1
-        previous_score = None
-        previous_rank = 0
-        for position, row in enumerate(players, 1):
-            mlbam_id = row.get("mlbam_id")
-            score = row.get("adapter_score")
-            rank = row.get("adapter_rank")
-            if (
-                not isinstance(mlbam_id, int)
-                or row.get("role") != role
-                or not isinstance(score, (int, float))
-                or isinstance(score, bool)
-                or not isinstance(rank, int)
-                or isinstance(rank, bool)
-                or rank < 1
-            ):
-                invalid_count += 1
-                continue
-            expected_rank = (
-                previous_rank
-                if previous_score is not None and score == previous_score
-                else position
-            )
-            if (
-                (previous_score is not None and score > previous_score)
-                or rank != expected_rank
-            ):
-                ordering_valid = False
-            previous_score = score
-            previous_rank = rank
-            key = (mlbam_id, role)
-            if key in board:
-                duplicate_count += 1
-                continue
-            board[key] = row
-            rows.append(row)
-    return board, {
-        "duplicate_identity_count": duplicate_count,
-        "invalid_profile_count": invalid_count,
-        "candidate_count_matches_board": snapshot.get("candidate_count") == len(rows),
-        "role_candidate_mismatch_count": role_candidate_mismatch_count,
-        "rank_ordering_valid": ordering_valid,
-    }
-
-
 def _percentile(values: list[float], fraction: float) -> float | None:
     if not values:
         return None
@@ -431,76 +364,6 @@ def compare_index_snapshots(previous: dict, current: dict) -> dict:
     }
 
 
-def compare_dd_adapter_snapshots(previous: dict, current: dict) -> dict:
-    previous_board, previous_integrity = _dd_adapter_board(previous)
-    current_board, current_integrity = _dd_adapter_board(current)
-    overlap = sorted(set(previous_board) & set(current_board))
-    denominator = min(len(previous_board), len(current_board))
-    overlap_rate = len(overlap) / denominator if denominator else None
-    score_changes = [
-        abs(
-            float(current_board[key]["adapter_score"])
-            - float(previous_board[key]["adapter_score"])
-        )
-        for key in overlap
-    ]
-    rank_changes = [
-        abs(
-            int(current_board[key]["adapter_rank"])
-            - int(previous_board[key]["adapter_rank"])
-        )
-        for key in overlap
-    ]
-    movers = sorted(
-        (
-            {
-                "mlbam_id": key[0],
-                "role": key[1],
-                "name": current_board[key].get("name"),
-                "previous_rank": previous_board[key]["adapter_rank"],
-                "current_rank": current_board[key]["adapter_rank"],
-                "absolute_rank_change": abs(
-                    int(current_board[key]["adapter_rank"])
-                    - int(previous_board[key]["adapter_rank"])
-                ),
-                "previous_score": previous_board[key]["adapter_score"],
-                "current_score": current_board[key]["adapter_score"],
-                "absolute_score_change": round(
-                    abs(
-                        float(current_board[key]["adapter_score"])
-                        - float(previous_board[key]["adapter_score"])
-                    ),
-                    6,
-                ),
-            }
-            for key in overlap
-        ),
-        key=lambda row: (
-            -row["absolute_rank_change"],
-            -row["absolute_score_change"],
-            row["role"],
-            row["mlbam_id"],
-        ),
-    )[:25]
-    return {
-        "previous_date": previous.get("date"),
-        "current_date": current.get("date"),
-        "previous_candidate_count": len(previous_board),
-        "current_candidate_count": len(current_board),
-        "overlap_count": len(overlap),
-        "overlap_rate": round(overlap_rate, 6) if overlap_rate is not None else None,
-        "new_identity_count": len(set(current_board) - set(previous_board)),
-        "exited_identity_count": len(set(previous_board) - set(current_board)),
-        "integrity": {
-            "previous": previous_integrity,
-            "current": current_integrity,
-        },
-        "score_movement": _movement_summary(score_changes),
-        "rank_movement": _movement_summary(rank_changes),
-        "largest_rank_movers": movers,
-    }
-
-
 def _observation_span_days(manifests: list[dict]) -> int:
     if len(manifests) < 2:
         return 0
@@ -513,7 +376,6 @@ def build_report(
     run_archive_dir: Path = RUN_ARCHIVE_DIR,
     dynasty_archive_dir: Path = DYNASTY_ARCHIVE_DIR,
     index_archive_dir: Path = INDEX_ARCHIVE_DIR,
-    dd_adapter_archive_dir: Path = DD_ADAPTER_ARCHIVE_DIR,
 ) -> dict:
     manifests = [_load_json(path) for path in _archive_paths(run_archive_dir)]
     manifest_by_date = {
@@ -525,8 +387,6 @@ def build_report(
     missing_snapshot_dates = []
     index_snapshots = []
     missing_index_snapshot_dates = []
-    dd_adapter_snapshots = []
-    missing_dd_adapter_snapshot_dates = []
     for date_str in sorted(manifest_by_date):
         path = dynasty_archive_dir / f"{date_str}.json"
         if path.exists():
@@ -538,11 +398,6 @@ def build_report(
             index_snapshots.append(_load_json(index_path))
         else:
             missing_index_snapshot_dates.append(date_str)
-        dd_adapter_path = dd_adapter_archive_dir / f"{date_str}.json"
-        if dd_adapter_path.exists():
-            dd_adapter_snapshots.append(_load_json(dd_adapter_path))
-        else:
-            missing_dd_adapter_snapshot_dates.append(date_str)
 
     comparisons = [
         compare_snapshots(previous, current)
@@ -552,16 +407,9 @@ def build_report(
         compare_index_snapshots(previous, current)
         for previous, current in zip(index_snapshots, index_snapshots[1:])
     ]
-    dd_adapter_comparisons = [
-        compare_dd_adapter_snapshots(previous, current)
-        for previous, current in zip(dd_adapter_snapshots, dd_adapter_snapshots[1:])
-    ]
     snapshot_integrity = [_profile_index(snapshot)[1] for snapshot in snapshots]
     index_snapshot_integrity = [
         _index_board(snapshot)[1] for snapshot in index_snapshots
-    ]
-    dd_adapter_snapshot_integrity = [
-        _dd_adapter_board(snapshot)[1] for snapshot in dd_adapter_snapshots
     ]
     duplicate_count = sum(item["duplicate_identity_count"] for item in snapshot_integrity)
     invalid_count = sum(item["invalid_profile_count"] for item in snapshot_integrity)
@@ -580,23 +428,6 @@ def build_report(
     index_ordering_failure_count = sum(
         not item["rank_ordering_valid"] for item in index_snapshot_integrity
     )
-    dd_adapter_duplicate_count = sum(
-        item["duplicate_identity_count"] for item in dd_adapter_snapshot_integrity
-    )
-    dd_adapter_invalid_count = sum(
-        item["invalid_profile_count"] for item in dd_adapter_snapshot_integrity
-    )
-    dd_adapter_candidate_mismatch_count = sum(
-        not item["candidate_count_matches_board"]
-        for item in dd_adapter_snapshot_integrity
-    )
-    dd_adapter_role_candidate_mismatch_count = sum(
-        item["role_candidate_mismatch_count"]
-        for item in dd_adapter_snapshot_integrity
-    )
-    dd_adapter_ordering_failure_count = sum(
-        not item["rank_ordering_valid"] for item in dd_adapter_snapshot_integrity
-    )
     overlap_rates = [
         comparison["overlap_rate"]
         for comparison in comparisons
@@ -611,21 +442,12 @@ def build_report(
     minimum_index_overlap_rate = (
         min(index_overlap_rates) if index_overlap_rates else None
     )
-    dd_adapter_overlap_rates = [
-        comparison["overlap_rate"]
-        for comparison in dd_adapter_comparisons
-        if comparison["overlap_rate"] is not None
-    ]
-    minimum_dd_adapter_overlap_rate = (
-        min(dd_adapter_overlap_rates) if dd_adapter_overlap_rates else None
-    )
     span_days = _observation_span_days(
         [manifest_by_date[date_str] for date_str in sorted(manifest_by_date)]
     )
     integrity_ok = not (
         missing_snapshot_dates
         or missing_index_snapshot_dates
-        or missing_dd_adapter_snapshot_dates
         or duplicate_count
         or invalid_count
         or candidate_mismatch_count
@@ -633,11 +455,6 @@ def build_report(
         or index_invalid_count
         or index_candidate_mismatch_count
         or index_ordering_failure_count
-        or dd_adapter_duplicate_count
-        or dd_adapter_invalid_count
-        or dd_adapter_candidate_mismatch_count
-        or dd_adapter_role_candidate_mismatch_count
-        or dd_adapter_ordering_failure_count
     )
     enough_observations = len(snapshots) >= MIN_OBSERVATIONS
     enough_span = span_days >= MIN_OBSERVATION_SPAN_DAYS
@@ -648,17 +465,12 @@ def build_report(
         minimum_index_overlap_rate is not None
         and minimum_index_overlap_rate >= MIN_OVERLAP_RATE
     )
-    dd_adapter_overlap_ok = (
-        minimum_dd_adapter_overlap_rate is not None
-        and minimum_dd_adapter_overlap_rate >= MIN_OVERLAP_RATE
-    )
     review_ready = (
         integrity_ok
         and enough_observations
         and enough_span
         and overlap_ok
         and index_overlap_ok
-        and dd_adapter_overlap_ok
     )
     status = (
         "blocked_integrity"
@@ -689,7 +501,6 @@ def build_report(
             "observation_span_days": span_days,
             "comparison_count": len(comparisons),
             "index_comparison_count": len(index_comparisons),
-            "dd_adapter_comparison_count": len(dd_adapter_comparisons),
             "minimum_overlap_rate": (
                 round(minimum_overlap_rate, 6)
                 if minimum_overlap_rate is not None
@@ -700,18 +511,12 @@ def build_report(
                 if minimum_index_overlap_rate is not None
                 else None
             ),
-            "minimum_dd_adapter_overlap_rate": (
-                round(minimum_dd_adapter_overlap_rate, 6)
-                if minimum_dd_adapter_overlap_rate is not None
-                else None
-            ),
             "latest_observation_date": snapshots[-1]["date"] if snapshots else None,
         },
         "integrity": {
             "status": "active" if integrity_ok else "blocked",
             "missing_snapshot_dates": missing_snapshot_dates,
             "missing_index_snapshot_dates": missing_index_snapshot_dates,
-            "missing_dd_adapter_snapshot_dates": missing_dd_adapter_snapshot_dates,
             "duplicate_identity_count": duplicate_count,
             "invalid_profile_count": invalid_count,
             "candidate_count_mismatch_count": candidate_mismatch_count,
@@ -719,43 +524,27 @@ def build_report(
             "index_invalid_profile_count": index_invalid_count,
             "index_candidate_count_mismatch_count": index_candidate_mismatch_count,
             "index_rank_ordering_failure_count": index_ordering_failure_count,
-            "dd_adapter_duplicate_identity_count": dd_adapter_duplicate_count,
-            "dd_adapter_invalid_profile_count": dd_adapter_invalid_count,
-            "dd_adapter_candidate_count_mismatch_count": (
-                dd_adapter_candidate_mismatch_count
-            ),
-            "dd_adapter_role_candidate_mismatch_count": (
-                dd_adapter_role_candidate_mismatch_count
-            ),
-            "dd_adapter_rank_ordering_failure_count": (
-                dd_adapter_ordering_failure_count
-            ),
         },
         "readiness_checks": {
             "enough_observations": enough_observations,
             "enough_observation_span": enough_span,
             "overlap_guard": overlap_ok,
             "index_overlap_guard": index_overlap_ok,
-            "dd_adapter_overlap_guard": dd_adapter_overlap_ok,
             "integrity_guard": integrity_ok,
         },
         "latest_comparison": comparisons[-1] if comparisons else None,
         "latest_index_comparison": (
             index_comparisons[-1] if index_comparisons else None
         ),
-        "latest_dd_adapter_comparison": (
-            dd_adapter_comparisons[-1] if dd_adapter_comparisons else None
-        ),
         "comparisons": comparisons,
         "index_comparisons": index_comparisons,
-        "dd_adapter_comparisons": dd_adapter_comparisons,
         "promotion": {
             "forward_observation_status": status,
             "next_allowed_step": (
                 "human_consumer_design_review" if review_ready else "continue_collection"
             ),
             "live_consumer": "blocked",
-            "feeds_live_dd_value": False,
+            "feeds_live_value": False,
             "feeds_live_valucast_rank": False,
         },
     }
@@ -776,10 +565,6 @@ def run_pipeline(
     index_backtest_path: Path = INDEX_BACKTEST_PATH,
     index_artifact_path: Path = INDEX_ARTIFACT_PATH,
     index_archive_dir: Path = INDEX_ARCHIVE_DIR,
-    dd_adapter_backtest_path: Path = DD_ADAPTER_BACKTEST_PATH,
-    dd_adapter_artifact_path: Path = DD_ADAPTER_ARTIFACT_PATH,
-    dd_adapter_archive_dir: Path = DD_ADAPTER_ARCHIVE_DIR,
-    dd_lens_feed_artifact_path: Path = DD_LENS_FEED_ARTIFACT_PATH,
     run_archive_dir: Path = RUN_ARCHIVE_DIR,
     report_path: Path = ARTIFACT_PATH,
     now: str | None = None,
@@ -810,7 +595,6 @@ def run_pipeline(
             run_archive_dir,
             dynasty_archive_dir,
             index_archive_dir,
-            dd_adapter_archive_dir,
         )
         write_report(report, report_path)
         return {
@@ -839,11 +623,6 @@ def run_pipeline(
         artifact_path=index_backtest_path,
         now=observation_now,
     )
-    dd_adapter_backtest = run_adapter_backtest(
-        input_path=input_path,
-        artifact_path=dd_adapter_backtest_path,
-        now=observation_now,
-    )
     dynasty = run_layer(
         universal_path=universal_artifact_path,
         backtest_path=dynasty_backtest_path,
@@ -855,18 +634,6 @@ def run_pipeline(
         backtest_path=index_backtest_path,
         artifact_path=index_artifact_path,
         archive_dir=index_archive_dir,
-    )
-    dd_adapter = run_dd_adapter(
-        universal_path=universal_artifact_path,
-        backtest_path=dd_adapter_backtest_path,
-        artifact_path=dd_adapter_artifact_path,
-        archive_dir=dd_adapter_archive_dir,
-    )
-    dd_lens_feed = run_dd_lens_feed(
-        adapter_path=dd_adapter_artifact_path,
-        universal_path=universal_artifact_path,
-        artifact_path=dd_lens_feed_artifact_path,
-        published_at=observation_now,
     )
     manifest = {
         "status": "completed",
@@ -886,13 +653,10 @@ def run_pipeline(
             "dynasty_layer": _portable_output(dynasty),
             "universal_index_backtest": _portable_output(index_backtest),
             "universal_index": _portable_output(index),
-            "dd_7x7_adapter_backtest": _portable_output(dd_adapter_backtest),
-            "dd_7x7_adapter": _portable_output(dd_adapter),
-            "dd_prospect_lens_feed": _portable_output(dd_lens_feed),
         },
         "promotion": {
             "live_consumer": "blocked",
-            "feeds_live_dd_value": False,
+            "feeds_live_value": False,
             "feeds_live_valucast_rank": False,
         },
     }
@@ -905,7 +669,6 @@ def run_pipeline(
         run_archive_dir,
         dynasty_archive_dir,
         index_archive_dir,
-        dd_adapter_archive_dir,
     )
     write_report(report, report_path)
     return {
@@ -921,6 +684,4 @@ def run_pipeline(
         "dynasty_research_gate": dynasty["research_gate"],
         "universal_index_candidates": index["candidate_count"],
         "universal_index_research_gate": index["research_gate"],
-        "dd_7x7_adapter_candidates": dd_adapter["candidate_count"],
-        "dd_7x7_adapter_research_gate": dd_adapter["research_gate"],
     }
