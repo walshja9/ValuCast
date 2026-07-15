@@ -48,6 +48,30 @@ Use the blocked-state message `Cross-role calibration is under review. Rankings 
 - Gate AAA coverage against the current top-25 AAA-eligible pitcher denominator and report total top-25 pitcher coverage separately.
 - Preserve source dates and sample sizes in the artifact.
 
+## Registered amendment record — 2026-07-15
+
+Plan 028 Amendment 3 is authoritative for changes made after the first coverage
+look. The original all-top-25-pitcher denominator produced 3/10 = 0.30 against
+the 0.60 floor and failed. The later AAA-eligible denominator produced 3/3 =
+1.00, but is post-look feed-completeness evidence only. It cannot confirm
+cross-role calibration, and it cannot pass with fewer than 3 eligible pitchers.
+The artifact retains both population and eligible rates.
+
+The model-to-served role-shape description is now computed in the committed
+artifact rather than asserted in prose. On this snapshot,
+`checks.current_board_shape.model_component_top25_pitcher_count` is 13 from
+2,833 rows with numeric `components.model_score`; the served top 25 contains 10
+pitchers; the publication cap is 7. This 13 → 10 → 7 sequence shows that later
+rank construction reduces the model component's pitcher lean without clearing
+the public shape guard. It describes scale mixing and board construction, not
+predictive accuracy.
+
+The alternative role-conditional outcome instrument is registered in Plan 028
+before implementation. It must use the same fold-trained out-of-fold scores,
+pass both registered simulation scenarios at power >= 0.70, and commit that
+power artifact before the single historical role-coefficient look. No result
+from that instrument directly authorizes a scoring lever.
+
 ## Verification
 
 - Focused RED/GREEN tests for DD removal, shadow gate semantics, AAA coverage, outcome-report replacement, workflow wiring, and advisory copy.
