@@ -53,6 +53,9 @@ PROSPECT_MODEL_V07 = ROOT / "data" / "models" / "valucast_prospect_model_v0_7.js
 PROSPECT_OUTCOME_BACKTEST = (
     ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.json"
 )
+PROSPECT_CROSS_ROLE_SHADOW = (
+    ROOT / "data" / "models" / "valucast_prospect_cross_role_shadow.json"
+)
 RAW_DATA_INDEPENDENCE_AUDIT = (
     ROOT / "data" / "models" / "valucast_raw_data_independence_audit.json"
 )
@@ -120,6 +123,7 @@ def validate_public_data(expected_date: str) -> list[str]:
         (PROSPECT_COVERAGE_AUDIT, "generated_at"),
         (PROSPECT_MODEL_V07, "generated_at"),
         (PROSPECT_OUTCOME_BACKTEST, "generated_at"),
+        (PROSPECT_CROSS_ROLE_SHADOW, "generated_at"),
         (RAW_DATA_INDEPENDENCE_AUDIT, "generated_at"),
         (VALUCAST_MOVERS, "generated_at"),
         (VALUCAST_RECEIPTS, "generated_at"),

@@ -77,6 +77,7 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # pitch-discipline step above. Observe-only display context (AAA only, measured).
     ("scripts/refresh_aaa_statcast.py",),
     ("scripts/build_aaa_statcast_features.py",),
+    ("scripts/build_prospect_cross_role_shadow.py",),
     ("scripts/build_valucast_movers.py",),
     ("scripts/build_call_up_pulse.py",),
     ("scripts/build_valucast_call_up_receipts.py",),
@@ -129,6 +130,7 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_prospect_availability.py",),
     ("scripts/validate_pitch_discipline.py",),
     ("scripts/validate_aaa_statcast_features.py",),
+    ("scripts/validate_prospect_cross_role_shadow.py",),
     ("scripts/validate_prospect_model_v07.py",),
     ("scripts/validate_prospect_coverage_audit.py",),
     ("scripts/validate_prospect_calibration_report.py",),

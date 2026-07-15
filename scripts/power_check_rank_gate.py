@@ -7,8 +7,9 @@ true effect of plausible size fails most of the time, the gate is not strict,
 it is an unpassable veto -- and the honest move is registering a threshold the
 evidence could actually clear.
 
-Anchored to committed reality (data/models/valucast_prospect_adapter_backtest.json
-+ data/prospects/prospect_model_inputs.json):
+Anchored to the frozen historical fold structure registered in Plan 028 and
+data/prospects/prospect_model_inputs.json (the former DD adapter artifact is
+retired and is not a runtime dependency):
 - real fold sizes and per-fold candidate concordances,
 - real bust/role/star tier mixes per fold (ties are dropped by the metric, so
   the ~80% bust share collapses the effective sample),

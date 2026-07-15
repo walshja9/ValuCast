@@ -20,9 +20,10 @@ eligible historical rows), with class-(b) inputs neutralized as HARD errors:
 
 Evidence budget (registered): C0 absolute replay is harness validation and
 does not unblind anything; the C0-vs-C1 delta may be looked at EXACTLY ONCE,
-via run_gate() with the C1 lever kwargs, after the lever exists. C_cross is
-REPORT-ONLY (2026-07-14 power-check amendment): it is emitted for the record
-and can never be pass/fail evidence.
+via run_gate() with the C1 lever kwargs, after the lever exists. C_cross DELTA
+is report-only (2026-07-14 power-check amendment). The absolute C0 value may
+be checked against a registered diagnostic floor, but neither result can
+authorize a scoring change.
 """
 from __future__ import annotations
 
@@ -627,8 +628,9 @@ def build_rank_backtest(
                 and lower > 0
             ),
             "note": (
-                "One registered historical look. C_cross is report-only "
-                "(2026-07-14 power-check amendment); it can never be evidence."
+                "One registered historical look. C_cross delta is report-only "
+                "(2026-07-14 power-check amendment). The absolute C0 diagnostic "
+                "floor cannot authorize a scoring change."
             ),
         }
     return payload

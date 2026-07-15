@@ -187,6 +187,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         "PIPELINE_OBSERVABILITY": tmp_path / "pipeline_observability.json",
         "PROSPECT_MODEL_V07": tmp_path / "prospect_model_v07.json",
         "PROSPECT_OUTCOME_BACKTEST": tmp_path / "prospect_outcome_backtest.json",
+        "PROSPECT_CROSS_ROLE_SHADOW": tmp_path / "prospect_cross_role_shadow.json",
         "RAW_DATA_INDEPENDENCE_AUDIT": tmp_path / "raw_data_independence.json",
         "FRONT_OFFICE_REPORT": tmp_path / "front_office_report.json",
         "FRONT_OFFICE_FAILURES": tmp_path / "front_office_failures.json",
@@ -282,6 +283,9 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         encoding="utf-8",
     )
     paths["PROSPECT_OUTCOME_BACKTEST"].write_text(
+        json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
+    )
+    paths["PROSPECT_CROSS_ROLE_SHADOW"].write_text(
         json.dumps({"generated_at": "2026-06-13"}), encoding="utf-8"
     )
     paths["RAW_DATA_INDEPENDENCE_AUDIT"].write_text(
@@ -415,6 +419,13 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "scripts/build_valucast_buys_monitor.py" in build_commands
     assert "scripts/build_valucast_movers.py" in build_commands
     assert "scripts/build_prospect_outcome_backtest.py" in build_commands
+    assert "scripts/build_prospect_cross_role_shadow.py" in build_commands
+    assert build_commands.index(
+        "scripts/build_aaa_statcast_features.py"
+    ) < build_commands.index("scripts/build_prospect_cross_role_shadow.py")
+    assert build_commands.index(
+        "scripts/build_prospect_cross_role_shadow.py"
+    ) < build_commands.index("scripts/build_prospect_outcome_backtest.py")
     assert "scripts/build_raw_data_independence_audit.py" in build_commands
     assert "scripts/build_front_office_failures.py" in build_commands
     assert "scripts/build_milb_stat_freshness_audit.py" in build_commands
@@ -429,6 +440,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "scripts/validate_prospect_peak_calibration_report.py" in validate_commands
     assert "scripts/validate_prospect_forward_validation.py" in validate_commands
     assert "scripts/validate_prospect_outcome_backtest.py" in validate_commands
+    assert "scripts/validate_prospect_cross_role_shadow.py" in validate_commands
     assert "scripts/validate_front_office_failures.py" in validate_commands
     assert "scripts/validate_raw_data_independence_audit.py" in validate_commands
     assert "scripts/validate_valucast_buys_monitor.py" in validate_commands
@@ -455,6 +467,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "data/models/valucast_prospect_buys_monitor.json" in workflow
     assert "data/models/valucast_prospect_movers.json" in workflow
     assert "data/models/valucast_prospect_outcome_backtest.json" in workflow
+    assert "data/models/valucast_prospect_cross_role_shadow.json" in workflow
     assert "data/models/valucast_front_office_failures.json" in workflow
     assert "data/models/valucast_raw_data_independence_audit.json" in workflow
     assert "data/models/valucast_front_office_report.json" in workflow
