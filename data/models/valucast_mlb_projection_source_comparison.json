@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 26,
+    "horizon_days": 27,
     "horizon_sufficient": false,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -3531,56 +3531,56 @@
     "scoreable_players": 320,
     "scores": {
       "marcel_mae": {
-        "BB": 5.23517,
-        "ER": 7.13921,
-        "HLD": 0.11953,
-        "HR": 1.99344,
-        "H_ALLOWED": 14.52573,
-        "K": 15.37472,
-        "R": 5.38558,
-        "RBI": 5.54571,
-        "SB": 1.35167,
-        "SV": 0.03196,
-        "W": 1.38754
+        "BB": 5.18841,
+        "ER": 7.08409,
+        "HLD": 0.12413,
+        "HR": 2.00218,
+        "H_ALLOWED": 14.33393,
+        "K": 15.33183,
+        "R": 5.36715,
+        "RBI": 5.55911,
+        "SB": 1.37818,
+        "SV": 0.03278,
+        "W": 1.39712
       },
-      "marcel_mean_ratio_vs_steamer": 2.1513,
+      "marcel_mean_ratio_vs_steamer": 2.1652,
       "per_stat_ratio": {
-        "BB": 2.3693,
-        "ER": 1.9308,
-        "HLD": 2.8626,
-        "HR": 1.3398,
-        "H_ALLOWED": 3.0455,
-        "K": 2.6545,
-        "R": 1.7145,
-        "RBI": 1.5767,
-        "SB": 1.4422,
-        "SV": 3.004,
-        "W": 1.7239
+        "BB": 2.3563,
+        "ER": 1.9078,
+        "HLD": 2.8495,
+        "HR": 1.351,
+        "H_ALLOWED": 3.0648,
+        "K": 2.6952,
+        "R": 1.7207,
+        "RBI": 1.5875,
+        "SB": 1.4554,
+        "SV": 3.0812,
+        "W": 1.7485
       },
       "steamer_mae": {
-        "BB": 2.20959,
-        "ER": 3.69751,
-        "HLD": 0.04176,
-        "HR": 1.48792,
-        "H_ALLOWED": 4.76952,
-        "K": 5.79201,
-        "R": 3.14125,
-        "RBI": 3.51724,
-        "SB": 0.93722,
+        "BB": 2.20192,
+        "ER": 3.7133,
+        "HLD": 0.04356,
+        "HR": 1.48199,
+        "H_ALLOWED": 4.67703,
+        "K": 5.68863,
+        "R": 3.11914,
+        "RBI": 3.50188,
+        "SB": 0.94697,
         "SV": 0.01064,
-        "W": 0.80489
+        "W": 0.79903
       }
     },
     "status": "scored",
-    "steamer_ros_git_commit": "3001f9f85e11fbd2569c7e07e3550357ba348ce2",
+    "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 26,
-      "proration_factor": 0.2574,
+      "elapsed_days": 27,
+      "proration_factor": 0.2673,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-07-14"
+      "through": "2026-07-15"
     }
   },
   "gate": {
@@ -3591,12 +3591,12 @@
     "improvement_pct": null,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "model_score": 1.2225,
-    "reason": "forward horizon 26d < required 30d",
+    "reason": "forward horizon 27d < required 30d",
     "sample_size": 0,
     "status": "insufficient_sample",
-    "validated_through": "2026-07-14"
+    "validated_through": "2026-07-15"
   },
-  "generated_at": "2026-07-14T22:53:01.275994+00:00",
+  "generated_at": "2026-07-15T01:42:22.259580+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
