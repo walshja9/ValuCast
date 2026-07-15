@@ -1315,3 +1315,19 @@ ship one. Any score change still requires a separately registered, fold-trained
 candidate comparison and the existing publication/ablation safety guards. No
 manual adjustment to the seven named/current pitchers and no change to
 `PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False` are permitted by this amendment.
+
+**Verification record (2026-07-15).** On branch
+`codex/pitcher-cross-role-shadow` at `7df578df`, `python -m pytest -q` completed
+in 336.46 seconds with 2 failed, 2,113 passed, and 17 subtests passed. The only
+failures were:
+
+- `tests/test_card_intelligence.py::TestCardIntelligenceUI::test_prospects_board_eta_cutoff_and_movers`
+- `tests/test_combined_level_shadow.py::test_combined_level_shadow_keeps_served_rank_stage_penalties`
+
+Running those two exact nodes on master also produced 2 failures, so the branch
+added no failure. The pass-count difference is fully reconciled: master collects
+2,123 tests and this branch collects 2,115. DD retirement removed 16 tests; the
+new cross-role suite added 9; forward-shadow DD cleanup removed 2; outcome-shadow
+replacement added 1. Net: -8 collected tests and, with the same 2 failures,
+2,121 -> 2,113 passes. Focused cross-role/outcome/public-build verification was
+22 passed; the rebuilt schema-1.2.0 shadow validated with status `collecting`.
