@@ -23,6 +23,7 @@ HTML_ROUTES = (
     "/buys",
     "/map",
     "/backfields",
+    "/farms",
     "/?mode=prospects&preset=dd_7x7&rank_by=league",
     "/?mode=prospects&preset=roto_5x5&rank_by=league",
     "/?mode=prospects&preset=zzz&rank_by=league",

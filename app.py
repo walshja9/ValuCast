@@ -6108,9 +6108,8 @@ def _build_farm_rankings_context():
             "org": org,
             "name": _team_board_org_name(org),
             "url": f"/backfields/team/{quote(org, safe='')}",
-            "top20_value": round(
-                sum((_team_board_value(row) or 0.0) for row in rows[:20]),
-                1,
+            "top20_value": sum(
+                (_team_board_value(row) or 0.0) for row in rows[:20]
             ),
             "top100_count": sum(rank <= 100 for rank in ranks),
             "pool_count": len(rows),
@@ -6132,6 +6131,7 @@ def _build_farm_rankings_context():
     ))
     for rank, system in enumerate(systems, 1):
         system["rank"] = rank
+        system["top20_value"] = round(system["top20_value"], 1)
     return {"available": bool(systems), "systems": systems}
 
 

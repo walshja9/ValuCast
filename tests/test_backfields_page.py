@@ -718,6 +718,22 @@ def test_farm_rankings_sum_top_20_and_use_documented_tiebreaks(monkeypatch):
     ]
 
 
+def test_farm_rankings_sort_before_rounding_display_values(monkeypatch):
+    monkeypatch.setattr(
+        app_module,
+        "_team_board_prospect_rows",
+        lambda rows=None: [
+            _row("Better Total", "BOS", prospect_rank=2, value=1.04),
+            _row("Better Rank", "SEA", prospect_rank=1, value=1.01),
+        ],
+    )
+
+    systems = app_module._build_farm_rankings_context()["systems"]
+
+    assert [system["org"] for system in systems] == ["BOS", "SEA"]
+    assert [system["top20_value"] for system in systems] == [1.0, 1.0]
+
+
 def test_team_board_pool_uses_full_prospect_pool_not_top_200_slice():
     rows = [
         _row("Top Public", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
@@ -967,6 +983,7 @@ def test_farm_rankings_route_renders_method_and_team_links(monkeypatch):
     assert response.status_code == 200
     assert "Farm-System Rankings" in html
     assert "sum of each system's top 20" in html
+    assert "Top 100 breaks ties; pool count explains depth." in html
     assert 'href="/backfields/team/MIL"' in html
     assert "Luis Lara" in html
     assert 'class="provenance-table farm-rankings-table"' in html
