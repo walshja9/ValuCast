@@ -21,6 +21,14 @@ from urllib.parse import quote, urlencode
 
 from flask import Flask, abort, render_template, request, make_response, jsonify, redirect
 
+# Optional: QR codes on share graphics (points a posted snapshot back at the live,
+# self-updating page). Guarded so graphics render exactly as before if the lib is
+# absent at runtime — declared in requirements.txt / pyproject for the Render deploy.
+try:
+    import qrcode as _qrcode
+except Exception:  # pragma: no cover - offline/lib-missing fallback
+    _qrcode = None
+
 from dataclasses import replace as dc_replace
 
 from league_values.engine import ValuationEngine
@@ -1704,11 +1712,13 @@ def _prospect_graphic_png(
     hero_kicker=None,
     footer_note=None,
     as_of=None,
+    qr_url=None,
 ):
     """Render an Ahead of the Curve-style PNG for easy posting/saving.
 
     noun/hero_kicker/footer_note let other ranked boards (Dynasty, Redraft) reuse
     this renderer with their own labels; defaults keep the prospect output identical.
+    qr_url, when given, adds a bottom-right QR back to the live board (prospects only).
     """
     from PIL import Image, ImageDraw
 
@@ -2041,6 +2051,14 @@ def _prospect_graphic_png(
 
     footer = footer_note or "ValuCast Prospect Rank - stats + age/level + investment + availability"
     _graphic_footer(draw, right_note=footer, card_height=height)
+    # QR back to the live board — sits in the gap between the last row and the footer
+    # band, bottom-right. Only wired for the prospects board (qr_url); no-ops otherwise
+    # so Dynasty/Redraft reuse stays pixel-identical.
+    if qr_url:
+        _graphic_place_qr(
+            img, draw, qr_url,
+            bottom=height - 72, size=88, caption="live board", caption_side="left",
+        )
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -2284,6 +2302,65 @@ def _graphic_footer(draw, *, right_note=None, card_height=1350):
             fill=muted,
             font=note_font,
         )
+
+
+def _graphic_qr(url, size_px):
+    """A scannable QR PIL image for ``url`` sized to ~``size_px`` square, or None.
+
+    Classic dark-modules-on-light so a stock phone camera reads it reliably
+    (inverted light-on-dark QRs are hit-or-miss on many cameras); the light tile
+    is placed on the dark graphic by the caller. Returns None when the qrcode
+    lib is unavailable so callers can skip the QR and render as before.
+    """
+    if _qrcode is None or not url:
+        return None
+    try:
+        qr = _qrcode.QRCode(
+            error_correction=_qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,   # scaled to size_px below; keep modules crisp
+            border=2,      # quiet zone (min 4 modules recommended; 2 is fine on a light tile)
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color=(17, 18, 24), back_color=(240, 242, 247)).convert("RGB")
+        from PIL import Image
+        return img.resize((int(size_px), int(size_px)), Image.NEAREST)
+    except Exception:  # pragma: no cover - defensive: never break a graphic over a QR
+        return None
+
+
+def _graphic_place_qr(
+    img, draw, url, *, bottom, right=1032, size=104, caption="live card", caption_side="above"
+):
+    """Paste a QR (light panel + optional caption) anchored above ``bottom``.
+
+    ``bottom`` is the y just above the footer band; the QR sits in the bottom-right
+    corner without shifting existing layout. ``caption_side`` places the muted label
+    "above" the panel (needs vertical room) or "left" of it (needs horizontal room in
+    a short gap). No-ops if the QR can't be built.
+    """
+    qr = _graphic_qr(url, size)
+    if qr is None:
+        return
+    muted = _GRAPHIC_PALETTE["muted"]
+    border = _GRAPHIC_PALETTE["border"]
+    pad = 6
+    panel = size + pad * 2
+    cap_font = _graphic_font(13)
+    x1 = right
+    x0 = x1 - panel
+    y1 = bottom
+    y0 = y1 - panel
+    # Light rounded tile behind the QR so dark modules stay high-contrast on the dark theme.
+    draw.rounded_rectangle((x0, y0, x1, y1), radius=10, fill=(240, 242, 247), outline=border, width=1)
+    img.paste(qr, (x0 + pad, y0 + pad))
+    if caption:
+        cap_w = _graphic_text_width(draw, caption, cap_font)
+        if caption_side == "left":
+            # baseline-align to the QR's vertical center, sit to the left of the tile.
+            draw.text((x0 - 12 - cap_w, y0 + panel // 2 - 8), caption, fill=muted, font=cap_font)
+        else:
+            draw.text((x1 - cap_w, y0 - 20), caption, fill=muted, font=cap_font)
 
 
 def _graphic_monogram(draw, cx, cy, r, name, *, size=None):
@@ -3107,7 +3184,21 @@ def _prospect_player_card_png(row):
         peak_label_y = read_body_bottom + 6
     read_extra = peak_label_y - 1250  # delta applied to the shape/FG/footer below
 
-    width, height = 1080, 1350 + STATS_BLOCK_H + read_extra + comps_extra + discipline_extra
+    # QR back to the live card. The card packs the FanGraphs panel to ~10px above the
+    # footer, so there's no free corner — add a dedicated strip BELOW the footer for it
+    # instead of overlapping content. Footer stays anchored to the content bottom
+    # (card_height below), so nothing above the footer shifts. qr_extra == 0 (lib
+    # unavailable / no id) keeps the card pixel-identical.
+    player_id = getattr(row, "id", None)
+    qr_page_url = (
+        _public_url(f"/prospects/player-card/{player_id}")
+        if (player_id and _qrcode is not None)
+        else None
+    )
+    qr_extra = 128 if qr_page_url else 0
+
+    content_height = 1350 + STATS_BLOCK_H + read_extra + comps_extra + discipline_extra
+    width, height = 1080, content_height + qr_extra
     bg = _GRAPHIC_PALETTE["bg"]
     card = _GRAPHIC_PALETTE["card"]
     card_2 = _GRAPHIC_PALETTE["card_2"]
@@ -3474,7 +3565,14 @@ def _prospect_player_card_png(row):
         if peak_shape
         else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     )
-    _graphic_footer(draw, right_note=source, card_height=height)
+    # Footer anchored to the content bottom (not the taller canvas) so the QR strip
+    # below it doesn't push the footer around; content above is untouched.
+    _graphic_footer(draw, right_note=source, card_height=content_height)
+    if qr_page_url:
+        _graphic_place_qr(
+            img, draw, qr_page_url,
+            bottom=height - 12, size=92, caption="live card", caption_side="left",
+        )
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -9284,7 +9382,10 @@ def prospects_share_card_png():
     row_filter, debut_view = _prospect_share_debut_view(request.args)
     rows = _prospect_rows(position=position, search=search, row_filter=row_filter)[:limit]
     noun = _DEBUT_VIEW_NOUN.get(debut_view, "Prospects")
-    png = _prospect_graphic_png(rows, limit=limit, position=position, search=search, noun=noun)
+    png = _prospect_graphic_png(
+        rows, limit=limit, position=position, search=search, noun=noun,
+        qr_url=_public_url("/?mode=prospects"),
+    )
     scope = (position or "all").lower()
     view_slug = f"-{debut_view}" if debut_view else ""
     response = make_response(png)

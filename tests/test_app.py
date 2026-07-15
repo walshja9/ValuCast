@@ -674,6 +674,44 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("image/png", png.content_type)
         self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
 
+    def test_player_card_png_renders_with_qr_lib_present(self):
+        # With the qrcode lib available, the Arias card PNG still returns a valid PNG
+        # (the QR strip is drawn without crashing the dynamic-height renderer).
+        from app import dd_store
+        import app as app_module
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        if app_module._qrcode is None:
+            self.skipTest("qrcode lib not installed")
+        png = self.client.get("/prospects/player-card/vc_prospect_808265_hitter.png")
+        self.assertEqual(png.status_code, 200)
+        self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertIn("image/png", png.content_type)
+
+    def test_graphic_qr_helper_returns_pil_image_of_size(self):
+        import app as app_module
+        from PIL import Image
+        if app_module._qrcode is None:
+            self.skipTest("qrcode lib not installed")
+        img = app_module._graphic_qr("https://valucast.app/prospects/player-card/x", 92)
+        self.assertIsInstance(img, Image.Image)
+        self.assertEqual(img.size, (92, 92))
+        # No URL -> no QR.
+        self.assertIsNone(app_module._graphic_qr("", 92))
+
+    def test_player_card_png_fail_soft_without_qr_lib(self):
+        # If the qrcode lib is unavailable at runtime, the card still renders a valid
+        # PNG (no QR, no crash) — the QR is strictly additive.
+        from app import dd_store
+        import app as app_module
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        with patch.object(app_module, "_qrcode", None):
+            self.assertIsNone(app_module._graphic_qr("https://valucast.app/x", 92))
+            png = self.client.get("/prospects/player-card/vc_prospect_808265_hitter.png")
+            self.assertEqual(png.status_code, 200)
+            self.assertEqual(png.data[:8], b"\x89PNG\r\n\x1a\n")
+
     def test_graphic_availability_badge_flags_only_real_risks(self):
         from app import _graphic_availability_badge
         from types import SimpleNamespace
