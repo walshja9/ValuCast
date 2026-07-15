@@ -1331,3 +1331,27 @@ new cross-role suite added 9; forward-shadow DD cleanup removed 2; outcome-shado
 replacement added 1. Net: -8 collected tests and, with the same 2 failures,
 2,121 -> 2,113 passes. Focused cross-role/outcome/public-build verification was
 22 passed; the rebuilt schema-1.2.0 shadow validated with status `collecting`.
+
+### Amendment 4 — post-look interpretation fork (2026-07-15, frozen before
+### the ordinal power result and before any historical role fit)
+
+If either registered simulation scenario has power below 0.70, the historical
+pitcher intercept and pitcher-by-score slope remain unfit and unreported. The
+alternative instrument is rejected as underpowered and authorizes no look.
+
+If both scenarios clear 0.70, the separately approved one historical look lands
+in this pre-committed fork:
+
+- **Material role miscalibration:** the registered 2-df test is significant and
+  the practical-effect rule for the relevant shape is met. This authorizes only
+  a lever proposal. Any candidate must be registered before evaluation and must
+  clear the within-pitcher gate plus the existing publication and ablation
+  guards. A significant slope interaction without the registered negative
+  average gap may motivate a scale-aware proposal, never a flat discount.
+- **Calibrated or immaterial role difference:** the 2-df test is nonsignificant
+  or the registered practical-effect floor is not met. The model stays frozen.
+  The pitcher-heavy publication veto then receives a methodology/threshold
+  review; the veto failure is not reclassified as evidence for score surgery.
+
+Neither branch flips `PITCHER_STALE_PEDIGREE_DECAY_ENABLED`, hand-adjusts the
+current board, or ships a scoring change from the historical look itself.
