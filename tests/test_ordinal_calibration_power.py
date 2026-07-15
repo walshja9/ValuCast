@@ -198,17 +198,21 @@ def test_two_df_lrt_detects_strong_simulated_role_effect():
 def test_power_validator_locks_protocol_and_forbids_historical_role_fit():
     payload = build_power_artifact(
         oof_sha256="c" * 64,
+        effect_anchor_sha256="d" * 64,
+        effect_anchor_relative_reduction=0.120876784279,
         row_count=2218,
         common_support_count=2000,
         scenario_results={
             "intercept_penalty": {
-                "target": -0.1,
-                "achieved": -0.1,
+                "target": 0.120876784279,
+                "metric": "relative_common_support_expected_tier_reduction",
+                "achieved": 0.120876784279,
                 "injected_effect": -0.8,
                 "rejections": 750,
             },
             "slope_interaction": {
                 "target": 0.1,
+                "metric": "rms_common_support_expected_tier_separation",
                 "achieved": 0.1,
                 "injected_effect": -0.7,
                 "rejections": 690,
@@ -218,12 +222,18 @@ def test_power_validator_locks_protocol_and_forbids_historical_role_fit():
     )
 
     assert payload["status"] == "underpowered"
+    assert payload["effect_anchor"]["sha256"] == "d" * 64
+    assert payload["scenarios"]["intercept_penalty"]["target"] == payload[
+        "effect_anchor"
+    ]["relative_reduction"]
     assert payload["historical_fit"]["pitcher_intercept_fitted"] is False
     assert payload["promotion"]["historical_look_authorized"] is False
     assert validate_power_artifact(payload) == []
 
     payload["protocol"]["seed"] = 1
+    payload["scenarios"]["intercept_penalty"]["target"] = 0.5
     payload["historical_fit"]["pitcher_score_slope_fitted"] = True
     problems = validate_power_artifact(payload)
     assert "protocol does not match the registered simulation" in problems
+    assert "intercept_penalty.target does not match the committed anchor" in problems
     assert "historical pitcher terms must remain unfit and unreported" in problems

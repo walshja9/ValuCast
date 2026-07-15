@@ -28,8 +28,9 @@ POWER_ARTIFACT_PATH = (
 )
 FOLD_YEARS = (2018, 2019, 2021)
 REGISTRATION_COMMIT = "13c3730ada59f2441ecda06f187f2f5377a70535"
-POWER_REGISTRATION_COMMIT = "f7eaf83fca1d12c19cb294d1130c1672ac9b5e33"
+POWER_REGISTRATION_COMMIT = "eecb96c131ab19608506947d45207ff9899a1091"
 EFFECT_ANCHOR_REGISTRATION_COMMIT = "eecb96c131ab19608506947d45207ff9899a1091"
+EFFECT_ANCHOR_COMMIT = "7b236849cec377fa63ba0f957f691c052250dde3"
 SIMULATION_SEED = 28015
 N_SIMULATIONS = 1_000
 LRT_DEGREES_OF_FREEDOM = 2
@@ -59,6 +60,7 @@ TOP_LEVEL_FIELDS = {
 POWER_TOP_LEVEL_FIELDS = {
     "artifact",
     "design",
+    "effect_anchor",
     "generated_at",
     "historical_fit",
     "oof_artifact",
@@ -882,6 +884,8 @@ def run_effect_anchor_artifact(
 def build_power_artifact(
     *,
     oof_sha256: str,
+    effect_anchor_sha256: str,
+    effect_anchor_relative_reduction: float,
     row_count: int,
     common_support_count: int,
     scenario_results: dict,
@@ -905,12 +909,18 @@ def build_power_artifact(
         "schema_version": "1.0.0",
         "status": "powered" if authorized else "underpowered",
         "generated_at": _generated_at(generated_at),
-        "registration": "plans/028-pitcher-lean-model-fix.md#amendment-5",
+        "registration": "plans/028-pitcher-lean-model-fix.md#amendment-6",
         "registration_commit": POWER_REGISTRATION_COMMIT,
         "oof_artifact": {
             "path": "data/models/valucast_ordinal_oof_scores.json",
             "sha256": oof_sha256,
             "row_count": row_count,
+        },
+        "effect_anchor": {
+            "path": "data/models/valucast_ordinal_effect_anchor.json",
+            "sha256": effect_anchor_sha256,
+            "commit": EFFECT_ANCHOR_COMMIT,
+            "relative_reduction": effect_anchor_relative_reduction,
         },
         "protocol": {
             "seed": SIMULATION_SEED,
@@ -944,7 +954,13 @@ def build_power_artifact(
     }
 
 
-def validate_power_artifact(payload: dict, *, oof_bytes: bytes | None = None) -> list[str]:
+def validate_power_artifact(
+    payload: dict,
+    *,
+    oof_bytes: bytes | None = None,
+    effect_anchor_bytes: bytes | None = None,
+    rank_bytes: bytes | None = None,
+) -> list[str]:
     problems = []
     unexpected = sorted(set(payload) - POWER_TOP_LEVEL_FIELDS)
     if unexpected:
@@ -967,18 +983,63 @@ def validate_power_artifact(payload: dict, *, oof_bytes: bytes | None = None) ->
     oof = payload.get("oof_artifact") or {}
     if oof_bytes is not None and oof.get("sha256") != hashlib.sha256(oof_bytes).hexdigest():
         problems.append("oof_artifact.sha256 does not match the committed input")
+    effect_anchor = payload.get("effect_anchor") or {}
+    if effect_anchor.get("commit") != EFFECT_ANCHOR_COMMIT:
+        problems.append("effect_anchor.commit does not match the committed target")
+    if effect_anchor_bytes is not None:
+        if effect_anchor.get("sha256") != hashlib.sha256(
+            effect_anchor_bytes
+        ).hexdigest():
+            problems.append("effect_anchor.sha256 does not match the committed target")
+        else:
+            anchor_payload = json.loads(effect_anchor_bytes)
+            anchor_problems = validate_effect_anchor_artifact(
+                anchor_payload,
+                oof_bytes=oof_bytes,
+                rank_bytes=rank_bytes,
+            )
+            problems.extend(f"effect_anchor: {problem}" for problem in anchor_problems)
+            anchor_reduction = (anchor_payload.get("derivation") or {}).get(
+                "relative_reduction"
+            )
+            if effect_anchor.get("relative_reduction") != anchor_reduction:
+                problems.append(
+                    "effect_anchor.relative_reduction does not match the artifact"
+                )
+    anchor_target = effect_anchor.get("relative_reduction")
+    if (
+        isinstance(anchor_target, bool)
+        or not isinstance(anchor_target, (int, float))
+        or not 0.0 < anchor_target <= 1.0
+    ):
+        problems.append("effect_anchor.relative_reduction is invalid")
     scenarios = payload.get("scenarios") or {}
     if set(scenarios) != {"intercept_penalty", "slope_interaction"}:
         problems.append("scenarios do not match the registered pair")
         scenarios = {}
-    for name, expected_target in (
-        ("intercept_penalty", -0.10),
-        ("slope_interaction", 0.10),
+    for name, expected_target, expected_metric in (
+        (
+            "intercept_penalty",
+            anchor_target,
+            "relative_common_support_expected_tier_reduction",
+        ),
+        (
+            "slope_interaction",
+            0.10,
+            "rms_common_support_expected_tier_separation",
+        ),
     ):
         row = scenarios.get(name) or {}
         rejections = row.get("rejections")
         if row.get("target") != expected_target:
-            problems.append(f"{name}.target is invalid")
+            if name == "intercept_penalty":
+                problems.append(
+                    "intercept_penalty.target does not match the committed anchor"
+                )
+            else:
+                problems.append(f"{name}.target is invalid")
+        if row.get("metric") != expected_metric:
+            problems.append(f"{name}.metric is invalid")
         if row.get("simulations") != N_SIMULATIONS:
             problems.append(f"{name}.simulations is invalid")
         if not isinstance(rejections, int) or not 0 <= rejections <= N_SIMULATIONS:
@@ -1009,23 +1070,40 @@ def validate_power_artifact(payload: dict, *, oof_bytes: bytes | None = None) ->
 def run_power_artifact(
     *,
     oof_path: Path = OOF_ARTIFACT_PATH,
+    effect_anchor_path: Path = EFFECT_ANCHOR_ARTIFACT_PATH,
+    rank_path: Path = RANK_ARTIFACT_PATH,
     artifact_path: Path = POWER_ARTIFACT_PATH,
     generated_at: str | None = None,
     progress=None,
 ) -> dict:
     oof_bytes = oof_path.read_bytes()
+    effect_anchor_bytes = effect_anchor_path.read_bytes()
+    rank_bytes = rank_path.read_bytes()
     oof_payload = json.loads(oof_bytes)
     oof_problems = validate_oof_score_artifact(oof_payload)
     if oof_problems:
         raise ValueError("; ".join(oof_problems))
+    effect_anchor_payload = json.loads(effect_anchor_bytes)
+    effect_anchor_problems = validate_effect_anchor_artifact(
+        effect_anchor_payload,
+        oof_bytes=oof_bytes,
+        rank_bytes=rank_bytes,
+    )
+    if effect_anchor_problems:
+        raise ValueError("; ".join(effect_anchor_problems))
+    intercept_target = effect_anchor_payload["derivation"]["relative_reduction"]
     design = _design_from_oof(oof_payload)
     blind_design = design["blind_design"]
     pitcher = design["pitcher"]
     nuisance = _fit_ordered_logit(blind_design, design["outcomes"])["params"]
     blind_support = blind_design[design["support"]]
-    intercept = _calibrate_intercept_effect(nuisance, blind_support)
+    intercept = _calibrate_intercept_effect(
+        nuisance, blind_support, intercept_target
+    )
     slope = _calibrate_slope_effect(nuisance, blind_support)
-    intercept_gap = _expected_tier_gap(nuisance, blind_support, intercept, 0.0)
+    intercept_reduction = _relative_expected_tier_reduction(
+        nuisance, blind_support, intercept
+    )
     slope_gap = _expected_tier_gap(nuisance, blind_support, 0.0, slope)
     rng = np.random.default_rng(SIMULATION_SEED)
 
@@ -1047,13 +1125,15 @@ def run_power_artifact(
 
     scenario_results = {
         "intercept_penalty": {
-            "target": -0.10,
-            "achieved": round(float(intercept_gap.mean()), 9),
+            "target": intercept_target,
+            "metric": "relative_common_support_expected_tier_reduction",
+            "achieved": round(intercept_reduction, 12),
             "injected_effect": round(intercept, 9),
             "rejections": run_one("intercept_penalty", intercept, 0.0),
         },
         "slope_interaction": {
             "target": 0.10,
+            "metric": "rms_common_support_expected_tier_separation",
             "achieved": round(
                 float(np.sqrt(np.mean(np.square(slope_gap)))), 9
             ),
@@ -1063,13 +1143,20 @@ def run_power_artifact(
     }
     payload = build_power_artifact(
         oof_sha256=hashlib.sha256(oof_bytes).hexdigest(),
+        effect_anchor_sha256=hashlib.sha256(effect_anchor_bytes).hexdigest(),
+        effect_anchor_relative_reduction=intercept_target,
         row_count=len(oof_payload["rows"]),
         common_support_count=int(np.count_nonzero(design["support"])),
         scenario_results=scenario_results,
         support_ranges=design["support_ranges"],
         generated_at=generated_at,
     )
-    problems = validate_power_artifact(payload, oof_bytes=oof_bytes)
+    problems = validate_power_artifact(
+        payload,
+        oof_bytes=oof_bytes,
+        effect_anchor_bytes=effect_anchor_bytes,
+        rank_bytes=rank_bytes,
+    )
     if problems:
         raise ValueError("; ".join(problems))
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
