@@ -1386,3 +1386,70 @@ optimizer failure aborts the artifact rather than counting as a rejection or
 non-rejection. Power is the point fraction of 1,000 rejections; each scenario
 must be >= 0.70. The real outcomes may fit the role-blind nuisance model only.
 No code path in this step may fit the historical pitcher terms.
+
+### Amendment 6 — feasible relative-effect anchor and gate (2026-07-15,
+### frozen before any simulation draw and before any historical role fit)
+
+This append-only amendment supersedes only Amendment 3 step 3(a), Amendment 3
+step 4's flat-discount practical-effect rule, and Amendment 5's intercept-scenario
+target. The slope scenario and every other protocol lock remain unchanged.
+
+The registered raw intercept target was infeasible. Under the committed
+role-blind nuisance fit, common-support expected tier is bounded below by zero;
+even a latent pitcher intercept of -20 produces a mean pitcher-minus-hitter gap
+of only -0.098153485. The registered -0.10 raw gap therefore cannot be reached.
+The same raw -0.10 threshold also made the future flat-discount authorization
+gate impossible. This defect was found before simulation 1 and before fitting or
+reporting any historical pitcher coefficient. The one historical look is intact.
+
+There is no outcome-standardized effect in the amended protocol. The only
+standardization is the already frozen score transform `(served_score - 50) / 10`.
+For an intercept-shaped role effect, the practical-effect metric is now the
+**relative reduction in common-support expected tier at identical scores**:
+
+`R = 1 - mean(E[pitcher tier | score, fold]) /
+          mean(E[hitter tier | score, fold])`.
+
+Both means use the same pooled common-support score/fold rows defined in
+Amendment 5. Thus `R=0` is no average role difference, `R=0.25` means pitchers
+deliver 25% less expected outcome than hitters at identical scores, and the
+metric remains bounded as expected tier approaches zero.
+
+The target `R*` must be derived once, without role-conditional historical
+outcomes, from the decision the proposed flat correction would need to change:
+move the current committed model component from 13 pitchers toward the existing
+7-pitcher publication limit in its top 25. The derivation must:
+
+1. read numeric `components.model_score` values from the committed rank artifact;
+2. map each score through the committed role-blind ordinal nuisance calibration,
+   pooling its fold-specific expected tiers with empirical OOF fold-row weights;
+3. leave hitter expected tier unchanged and multiply pitcher expected tier by
+   `(1 - R)`;
+4. rank by adjusted expected tier descending, then served rank ascending,
+   MLBAM id ascending, and role ascending; and
+5. select the smallest `R` in `[0, 1]` whose adjusted top 25 contains at most
+   seven pitchers. At `R=0`, the derivation must reproduce the committed
+   13-pitcher model-component top 25.
+
+The derivation artifact must record input hashes, nuisance-fit identity, fold
+weights, before/after role counts, the selected `R*`, and whether fallback was
+used. It and its validator must be committed before the power run. If no value in
+`[0, 1]` can reach the seven-pitcher limit, the derivation is degenerate and the
+pre-registered fallback is `R*=0.50`. The target is chosen for decision relevance
+before power is known; it may not be changed in response to the power result.
+
+For the amended intercept power scenario, keep the pitcher-by-score interaction
+at zero and solve the latent pitcher intercept so the relative reduction on the
+OOF common-support rows equals the committed `R*`. The simulation design, random
+stream, test, alpha, simulation count, power floor, and scenario order remain
+exactly as frozen in Amendment 5.
+
+If a later separately approved historical look is powered, its intercept-shaped
+practical-effect estimate uses this same `R` definition. A flat pitcher
+risk-discount lever is worth re-proposing only if the registered 2-df test is
+significant, the point estimate satisfies `R >= R*`, and the one-sided 95%
+bootstrap lower bound for `R` is greater than zero. A significant interaction
+without that relative average reduction still diagnoses scale mixing and does
+not authorize a flat discount. The look remains diagnostic only; any scoring
+lever still requires a separately registered candidate and the existing
+within-pitcher, publication, and ablation gates.
