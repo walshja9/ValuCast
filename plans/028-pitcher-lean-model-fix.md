@@ -1355,3 +1355,34 @@ in this pre-committed fork:
 
 Neither branch flips `PITCHER_STALE_PEDIGREE_DECAY_ENABLED`, hand-adjusts the
 current board, or ships a scoring change from the historical look itself.
+
+### Amendment 5 — ordinal power implementation lock (2026-07-15, frozen
+### before simulator code and before the power result)
+
+The empirical design is the committed OOF artifact at `97d88ef8`: 2,218 C0
+fold-trained rows from the frozen 2018/2019/2021 folds. The role-blind nuisance
+fit uses all rows and only `(served_score - 50) / 10` plus 2019 and 2021 fold
+fixed effects; 2018 is the reference fold. The proportional-odds model uses two
+ordered cut points and the logit link. The nested full simulation model adds
+only a pitcher indicator and pitcher-by-normalized-score interaction.
+
+“Pooled common support” means the union of empirical OOF rows whose score falls
+inside that row's fold-specific hitter/pitcher score-range intersection. Every
+such row receives equal weight. For each support row, expected tier is evaluated
+twice at the identical score and fold, once as hitter and once as pitcher.
+Expected tier is `0.5 * P(role) + P(star)`.
+
+- Intercept scenario: interaction exactly zero; solve the negative pitcher
+  intercept so the mean pitcher-minus-hitter expected-tier gap is -0.10.
+- Slope scenario: pitcher intercept exactly zero; solve the negative interaction
+  so the root-mean-square pitcher-minus-hitter expected-tier separation is 0.10.
+  The registered score centering fixes the crossing at served score 50.
+
+Simulated outcomes are drawn on all 2,218 empirical role/score/fold rows. A
+single `default_rng(28015)` stream runs the intercept scenario's 1,000 draws
+first and the slope scenario's 1,000 draws second. Each draw refits both nested
+models; rejection is `chi2.sf(2 * (LL_full - LL_blind), df=2) < 0.05`. Any
+optimizer failure aborts the artifact rather than counting as a rejection or
+non-rejection. Power is the point fraction of 1,000 rejections; each scenario
+must be >= 0.70. The real outcomes may fit the role-blind nuisance model only.
+No code path in this step may fit the historical pitcher terms.
