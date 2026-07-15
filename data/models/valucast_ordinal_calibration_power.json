@@ -1,0 +1,87 @@
+{
+  "artifact": "valucast_ordinal_calibration_power",
+  "design": {
+    "common_support": "fold_role_range_intersection_pooled_equal_weight",
+    "common_support_count": 2208,
+    "row_count": 2218,
+    "support_ranges": {
+      "2018": {
+        "normalized_score_max": -0.010999999999999944,
+        "normalized_score_min": -4.777
+      },
+      "2019": {
+        "normalized_score_max": -0.6289999999999999,
+        "normalized_score_min": -4.807
+      },
+      "2021": {
+        "normalized_score_max": 0.10200000000000031,
+        "normalized_score_min": -4.829
+      }
+    }
+  },
+  "effect_anchor": {
+    "commit": "7b236849cec377fa63ba0f957f691c052250dde3",
+    "path": "data/models/valucast_ordinal_effect_anchor.json",
+    "relative_reduction": 0.120876784279,
+    "sha256": "58570425894406e9697d8c9fe7b41477a43f8a386d9bf7135afd20a1b7d822bb"
+  },
+  "generated_at": "2026-07-15T18:15:41.734316+00:00",
+  "historical_fit": {
+    "historical_role_coefficients_reported": false,
+    "pitcher_intercept_fitted": false,
+    "pitcher_score_slope_fitted": false,
+    "role_blind_nuisance_fitted": true
+  },
+  "oof_artifact": {
+    "path": "data/models/valucast_ordinal_oof_scores.json",
+    "row_count": 2218,
+    "sha256": "644f80bc530b9ea934c1e5bc0cfd8327a46991dbd029d0cf0f3ed3ecaa27b343"
+  },
+  "promotion": {
+    "historical_look_authorized": false,
+    "next_step": "stop_underpowered"
+  },
+  "protocol": {
+    "alpha": 0.05,
+    "lrt_degrees_of_freedom": 2,
+    "power_floor": 0.7,
+    "scenario_order": [
+      "intercept_penalty",
+      "slope_interaction"
+    ],
+    "score_transform": "(served_score - 50) / 10",
+    "seed": 28015,
+    "simulations_per_scenario": 1000
+  },
+  "registration": "plans/028-pitcher-lean-model-fix.md#amendment-6",
+  "registration_commit": "eecb96c131ab19608506947d45207ff9899a1091",
+  "scenarios": {
+    "intercept_penalty": {
+      "achieved": 0.120876784279,
+      "injected_effect": -0.184593791,
+      "metric": "relative_common_support_expected_tier_reduction",
+      "passed": false,
+      "power": 0.261,
+      "power_floor": 0.7,
+      "rejections": 261,
+      "simulations": 1000,
+      "target": 0.120876784279
+    },
+    "slope_interaction": {
+      "achieved": 0.1,
+      "injected_effect": -0.303537682,
+      "metric": "rms_common_support_expected_tier_separation",
+      "passed": true,
+      "power": 1.0,
+      "power_floor": 0.7,
+      "rejections": 1000,
+      "simulations": 1000,
+      "target": 0.1
+    }
+  },
+  "schema_version": "1.0.0",
+  "status": "underpowered",
+  "validation": {
+    "problems": []
+  }
+}
