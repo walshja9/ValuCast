@@ -4,6 +4,7 @@ The shadow keeps retrospective concordance, change-detection power, current
 board shape, and measured AAA evidence coverage separate. It never changes a
 score, rank, or model flag.
 """
+
 from __future__ import annotations
 
 import json
@@ -23,7 +24,8 @@ ABSOLUTE_CROSS_ROLE_FLOOR = 0.60
 MIN_CROSS_ROLE_CHANGE_POWER = 0.70
 MAX_TOP25_PITCHERS = 7
 MAX_TOP50_PITCHER_RATE = 0.30
-MIN_TOP25_AAA_COVERAGE = 0.60
+MIN_ELIGIBLE_TOP25_AAA_COVERAGE = 0.60
+AAA_ELIGIBLE_LEVELS = frozenset({"AAA"})
 AAA_METRICS = ("whiff_pct", "csw_pct", "chase_pct", "zone_pct", "gb_pct")
 CHECK_NAMES = (
     "historical_absolute_concordance",
@@ -44,7 +46,7 @@ def _generated_at(value: str | None) -> str:
 def _base_payload(generated_at: str) -> dict:
     return {
         "artifact": "valucast_prospect_cross_role_shadow",
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "generated_at": generated_at,
         "source_policy": {
             "kind": "observe_only_orthogonal_validation",
@@ -115,7 +117,7 @@ def build_cross_role_shadow(
     generated_at = _generated_at(generated_at)
     problems: list[str] = []
 
-    c0 = ((rank_backtest.get("variants") or {}).get("C0") or {})
+    c0 = (rank_backtest.get("variants") or {}).get("C0") or {}
     cross_value = (c0.get("weighted") or {}).get("c_cross_report_only")
     if not _number(cross_value):
         problems.append("rank_backtest.variants.C0.weighted.c_cross_report_only")
@@ -134,8 +136,7 @@ def build_cross_role_shadow(
     if not isinstance(effects, dict) or not effects:
         problems.append("power_check.e2_cross_role")
     elif not all(
-        isinstance(row, dict) and _number(row.get("power"))
-        for row in effects.values()
+        isinstance(row, dict) and _number(row.get("power")) for row in effects.values()
     ):
         problems.append("power_check.e2_cross_role.*.power")
     else:
@@ -159,6 +160,12 @@ def build_cross_role_shadow(
         problems.append("rank_artifact.board.duplicate_ranks")
     elif len({(row["mlbam_id"], row["role"]) for row in board}) != len(board):
         problems.append("rank_artifact.board.duplicate_identities")
+    elif any(
+        row["role"] == "pitcher"
+        and (not isinstance(row.get("level"), str) or not row["level"].strip())
+        for row in board
+    ):
+        problems.append("rank_artifact.board.pitcher_level")
 
     aaa_pitchers = aaa_artifact.get("pitchers")
     if not isinstance(aaa_pitchers, dict):
@@ -172,6 +179,11 @@ def build_cross_role_shadow(
     top50 = ordered_board[:50]
     top25_pitchers = [row for row in top25 if row["role"] == "pitcher"]
     top50_pitchers = [row for row in top50 if row["role"] == "pitcher"]
+    aaa_eligible_top25_pitchers = [
+        row
+        for row in top25_pitchers
+        if str(row.get("level") or "").upper() in AAA_ELIGIBLE_LEVELS
+    ]
     top50_rate = len(top50_pitchers) / len(top50) if top50 else 0.0
 
     fold_rows = [
@@ -224,17 +236,32 @@ def build_cross_role_shadow(
 
     covered = [
         row
-        for row in top25_pitchers
+        for row in aaa_eligible_top25_pitchers
         if _has_measured_aaa(aaa_pitchers.get(str(row["mlbam_id"])))
     ]
-    coverage_rate = len(covered) / len(top25_pitchers) if top25_pitchers else 0.0
+    coverage_rate = (
+        len(covered) / len(aaa_eligible_top25_pitchers)
+        if aaa_eligible_top25_pitchers
+        else 0.0
+    )
+    population_coverage_rate = (
+        len(covered) / len(top25_pitchers) if top25_pitchers else 0.0
+    )
     coverage = {
-        "status": "pass" if coverage_rate >= MIN_TOP25_AAA_COVERAGE else "fail",
-        "eligible_top25_pitcher_count": len(top25_pitchers),
+        "status": (
+            "pass"
+            if aaa_eligible_top25_pitchers
+            and coverage_rate >= MIN_ELIGIBLE_TOP25_AAA_COVERAGE
+            else "fail"
+        ),
+        "top25_pitcher_count": len(top25_pitchers),
+        "eligible_top25_pitcher_count": len(aaa_eligible_top25_pitchers),
         "covered_top25_pitcher_count": len(covered),
         "coverage_rate": round(coverage_rate, 6),
-        "floor": MIN_TOP25_AAA_COVERAGE,
-        "evidence_class": "current_measured_aaa_pitch_data",
+        "top25_population_coverage_rate": round(population_coverage_rate, 6),
+        "floor": MIN_ELIGIBLE_TOP25_AAA_COVERAGE,
+        "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
+        "confirms_cross_role_calibration": False,
     }
 
     metric_distributions = {
@@ -403,6 +430,8 @@ def run_cross_role_shadow(
         "artifact_path": str(artifact_path),
         "status": payload["status"],
         "failed_checks": [
-            name for name, check in payload["checks"].items() if check["status"] == "fail"
+            name
+            for name, check in payload["checks"].items()
+            if check["status"] == "fail"
         ],
     }

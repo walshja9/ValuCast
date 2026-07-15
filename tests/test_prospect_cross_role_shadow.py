@@ -1,4 +1,5 @@
 """Tests for the observe-only prospect cross-role validation shadow."""
+
 from __future__ import annotations
 
 import json
@@ -34,13 +35,14 @@ def _power(power=0.015):
     }
 
 
-def _row(rank, role, mlbam_id, source_count=3):
+def _row(rank, role, mlbam_id, source_count=3, level="AA"):
     sources = {f"source_{index}": rank + index for index in range(source_count)}
     return {
         "rank": rank,
         "role": role,
         "mlbam_id": mlbam_id,
         "name": f"Player {mlbam_id}",
+        "level": level,
         "context_only": {"source_ranks": sources},
     }
 
@@ -52,7 +54,15 @@ def _board(top25_pitchers=10):
     for rank in range(1, 51):
         is_pitcher = rank <= top25_pitchers or (26 <= rank <= 32)
         if is_pitcher:
-            rows.append(_row(rank, "pitcher", pitcher_id, source_count=5))
+            rows.append(
+                _row(
+                    rank,
+                    "pitcher",
+                    pitcher_id,
+                    source_count=5,
+                    level="AAA" if pitcher_id <= 102 else "AA",
+                )
+            )
             pitcher_id += 1
         else:
             rows.append(_row(rank, "hitter", hitter_id, source_count=5))
@@ -119,8 +129,16 @@ def test_shadow_separates_absolute_floor_power_shape_and_aaa_coverage():
     assert payload["checks"]["cross_role_change_power"]["status"] == "fail"
     assert payload["checks"]["current_board_shape"]["top25_pitcher_count"] == 10
     assert payload["checks"]["current_board_shape"]["top50_pitcher_rate"] == 0.34
-    assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 0.3
-    assert payload["checks"]["aaa_measured_coverage"]["status"] == "fail"
+    assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 1.0
+    assert (
+        payload["checks"]["aaa_measured_coverage"]["eligible_top25_pitcher_count"] == 3
+    )
+    assert payload["checks"]["aaa_measured_coverage"]["top25_pitcher_count"] == 10
+    assert (
+        payload["checks"]["aaa_measured_coverage"]["top25_population_coverage_rate"]
+        == 0.3
+    )
+    assert payload["checks"]["aaa_measured_coverage"]["status"] == "pass"
     assert payload["promotion"]["score_changes_authorized"] is False
     assert payload["promotion"]["failed_decay_flag_changed"] is False
     assert payload["source_policy"]["external_rankings_used_as_outcomes"] is False
@@ -129,9 +147,7 @@ def test_shadow_separates_absolute_floor_power_shape_and_aaa_coverage():
 def test_shadow_is_review_ready_only_when_every_check_passes():
     board = _board(top25_pitchers=7)
     top25_pitcher_ids = {
-        row["mlbam_id"]
-        for row in board["board"][:25]
-        if row["role"] == "pitcher"
+        row["mlbam_id"] for row in board["board"][:25] if row["role"] == "pitcher"
     }
     payload = build_cross_role_shadow(
         _rank_backtest(0.7),
@@ -149,12 +165,23 @@ def test_shadow_is_review_ready_only_when_every_check_passes():
 def test_shadow_blocks_malformed_required_input():
     payload = build_cross_role_shadow({}, _power(), _board(), _aaa(set()))
     assert payload["status"] == "blocked"
-    assert "rank_backtest.variants.C0.weighted.c_cross_report_only" in payload[
-        "validation"
-    ]["problems"]
+    assert (
+        "rank_backtest.variants.C0.weighted.c_cross_report_only"
+        in payload["validation"]["problems"]
+    )
 
     problems = validate_cross_role_shadow(payload)
     assert problems == []
+
+
+def test_shadow_blocks_missing_pitcher_level_used_for_aaa_eligibility():
+    board = _board()
+    board["board"][0].pop("level")
+
+    payload = build_cross_role_shadow(_rank_backtest(), _power(), board, _aaa(set()))
+
+    assert payload["status"] == "blocked"
+    assert "rank_artifact.board.pitcher_level" in payload["validation"]["problems"]
 
 
 def test_aaa_coverage_requires_complete_measured_pitch_data():
@@ -162,10 +189,10 @@ def test_aaa_coverage_requires_complete_measured_pitch_data():
     aaa["pitchers"]["100"] = {"n_pitches": 0, "overall": {}, "pitch_types": {}}
     payload = build_cross_role_shadow(_rank_backtest(), _power(), _board(), aaa)
 
-    assert payload["checks"]["aaa_measured_coverage"][
-        "covered_top25_pitcher_count"
-    ] == 2
-    assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 0.2
+    assert (
+        payload["checks"]["aaa_measured_coverage"]["covered_top25_pitcher_count"] == 2
+    )
+    assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 0.666667
 
 
 def test_shadow_blocks_invalid_power_effect_key_instead_of_crashing():

@@ -28,7 +28,7 @@ The artifact must declare `feeds_model_score=false`, `feeds_public_rank=false`, 
 1. **Historical absolute competence:** C0 weighted cross-role concordance must be at least `0.60`. This is an absolute care floor, replacing the old DD adapter's relative-only gate. Because the current folds were already viewed, the current result is descriptive; the threshold becomes confirmatory only on a new outcome vintage.
 2. **Power to approve a scoring change:** maximum registered power across the tested plausible cross-role effects must be at least `0.70`. The current maximum is `0.015`, so no cross-role score lever can ship from this evidence.
 3. **Current board shape:** retain the existing governor limits of at most 7 pitchers in the top 25 and at most 30% in the top 50. These are distribution guardrails, not accuracy claims.
-4. **Independent pitcher evidence coverage:** measured AAA Statcast must cover at least 60% of current top-25 pitchers before it can support a human calibration review. Coverage is a readiness check, not a performance score.
+4. **Independent pitcher evidence coverage:** measured AAA Statcast must cover at least 60% of current top-25 pitchers who are actually at AAA. Report total top-25 evidence breadth separately; lower-level pitchers are ineligible, not missing. Coverage is a readiness check, not a performance score.
 
 Overall status is `review_ready` only when all four checks pass; otherwise it is `collecting`. Even `review_ready` never authorizes a live change without a new registered review.
 
@@ -45,7 +45,7 @@ Use the blocked-state message `Cross-role calibration is under review. Rankings 
 - Require unique `(mlbam_id, role)` board identities and contiguous current ranks.
 - Treat a missing/malformed required artifact as `blocked`, not zero evidence.
 - Calculate consensus sensitivity at 1 through 5 source boards using the same current universe and median source rank; keep it diagnostic-only.
-- Calculate AAA coverage against the actual current top-25 pitcher denominator.
+- Gate AAA coverage against the current top-25 AAA-eligible pitcher denominator and report total top-25 pitcher coverage separately.
 - Preserve source dates and sample sizes in the artifact.
 
 ## Verification

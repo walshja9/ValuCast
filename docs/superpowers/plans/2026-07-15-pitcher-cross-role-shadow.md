@@ -106,7 +106,7 @@ Expected: import failure because the module does not exist.
 
 - [ ] **Step 3: Implement the pure builder**
 
-Implement only artifact loading, board integrity checks, the `0.60` absolute floor, `0.70` power floor, existing 7/30% shape limits, 60% AAA top-25 pitcher coverage floor, 1-5 source consensus sensitivity, empirical AAA metric percentiles, and raw pitch-type evidence.
+Implement only artifact loading, board integrity checks, the `0.60` absolute floor, `0.70` power floor, existing 7/30% shape limits, 60% coverage among AAA-eligible top-25 pitchers, total top-25 evidence breadth, 1-5 source consensus sensitivity, empirical AAA metric percentiles, and raw pitch-type evidence.
 
 - [ ] **Step 4: Wire daily build, validation, freshness, and commit path**
 
@@ -122,7 +122,7 @@ python scripts/build_prospect_cross_role_shadow.py
 python scripts/validate_prospect_cross_role_shadow.py
 ```
 
-Expected: tests pass; real artifact reports historical absolute pass, power fail, current shape fail, AAA coverage `0.30`, overall `collecting`.
+Expected: tests pass; real artifact reports historical absolute pass, power fail, current shape fail, eligible AAA coverage `1.00`, total top-25 evidence breadth `0.30`, overall `collecting`.
 
 - [ ] **Step 6: Commit**
 

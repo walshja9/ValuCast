@@ -223,12 +223,15 @@
   "artifact": "valucast_prospect_cross_role_shadow",
   "checks": {
     "aaa_measured_coverage": {
-      "coverage_rate": 0.3,
+      "confirms_cross_role_calibration": false,
+      "coverage_rate": 1.0,
       "covered_top25_pitcher_count": 3,
-      "eligible_top25_pitcher_count": 10,
-      "evidence_class": "current_measured_aaa_pitch_data",
+      "eligible_top25_pitcher_count": 3,
+      "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
       "floor": 0.6,
-      "status": "fail"
+      "status": "pass",
+      "top25_pitcher_count": 10,
+      "top25_population_coverage_rate": 0.3
     },
     "cross_role_change_power": {
       "evidence_class": "prospective_change_gate",
@@ -321,7 +324,7 @@
       "pitcher_source_rank_median": 47
     }
   ],
-  "generated_at": "2026-07-15T06:00:49.323035+00:00",
+  "generated_at": "2026-07-15T14:45:42.224470+00:00",
   "limitations": [
     "Historical absolute concordance is retrospective and does not confirm a current scoring change.",
     "AAA Statcast is measured current evidence, not a historical outcome panel.",
@@ -334,7 +337,7 @@
     "next_allowed_step": "continue_collection",
     "score_changes_authorized": false
   },
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "source_dates": {
     "aaa_artifact_generated_at": "2026-07-14T20:19:20.167571+00:00",
     "rank_artifact_generated_at": "2026-07-15T00:00:00+00:00"

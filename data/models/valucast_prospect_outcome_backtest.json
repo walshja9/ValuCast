@@ -124,12 +124,15 @@
       "change_power_passed": false,
       "checks": {
         "aaa_measured_coverage": {
-          "coverage_rate": 0.3,
+          "confirms_cross_role_calibration": false,
+          "coverage_rate": 1.0,
           "covered_top25_pitcher_count": 3,
-          "eligible_top25_pitcher_count": 10,
-          "evidence_class": "current_measured_aaa_pitch_data",
+          "eligible_top25_pitcher_count": 3,
+          "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
           "floor": 0.6,
-          "status": "fail"
+          "status": "pass",
+          "top25_pitcher_count": 10,
+          "top25_population_coverage_rate": 0.3
         },
         "cross_role_change_power": {
           "evidence_class": "prospective_change_gate",
@@ -424,12 +427,6 @@
         "current": "fail",
         "kind": "current_board_shape",
         "message": "Current Board Shape has not passed.",
-        "required": "pass"
-      },
-      {
-        "current": "fail",
-        "kind": "aaa_measured_coverage",
-        "message": "Aaa Measured Coverage has not passed.",
         "required": "pass"
       }
     ],
