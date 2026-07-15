@@ -25,6 +25,7 @@ MIN_CROSS_ROLE_CHANGE_POWER = 0.70
 MAX_TOP25_PITCHERS = 7
 MAX_TOP50_PITCHER_RATE = 0.30
 MIN_ELIGIBLE_TOP25_AAA_COVERAGE = 0.60
+MIN_ELIGIBLE_TOP25_AAA_PITCHERS = 3
 AAA_ELIGIBLE_LEVELS = frozenset({"AAA"})
 AAA_METRICS = ("whiff_pct", "csw_pct", "chase_pct", "zone_pct", "gb_pct")
 CHECK_NAMES = (
@@ -46,7 +47,7 @@ def _generated_at(value: str | None) -> str:
 def _base_payload(generated_at: str) -> dict:
     return {
         "artifact": "valucast_prospect_cross_role_shadow",
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "generated_at": generated_at,
         "source_policy": {
             "kind": "observe_only_orthogonal_validation",
@@ -166,6 +167,14 @@ def build_cross_role_shadow(
         for row in board
     ):
         problems.append("rank_artifact.board.pitcher_level")
+    elif (
+        sum(
+            _number((row.get("components") or {}).get("model_score"))
+            for row in board
+        )
+        < 25
+    ):
+        problems.append("rank_artifact.board.components.model_score_top25")
 
     aaa_pitchers = aaa_artifact.get("pitchers")
     if not isinstance(aaa_pitchers, dict):
@@ -179,6 +188,23 @@ def build_cross_role_shadow(
     top50 = ordered_board[:50]
     top25_pitchers = [row for row in top25 if row["role"] == "pitcher"]
     top50_pitchers = [row for row in top50 if row["role"] == "pitcher"]
+    model_component_board = [
+        row
+        for row in board
+        if _number((row.get("components") or {}).get("model_score"))
+    ]
+    model_component_top25 = sorted(
+        model_component_board,
+        key=lambda row: (
+            -float(row["components"]["model_score"]),
+            row["rank"],
+            row["mlbam_id"],
+            row["role"],
+        ),
+    )[:25]
+    model_component_top25_pitchers = [
+        row for row in model_component_top25 if row["role"] == "pitcher"
+    ]
     aaa_eligible_top25_pitchers = [
         row
         for row in top25_pitchers
@@ -231,6 +257,18 @@ def build_cross_role_shadow(
         "top50_pitcher_count": len(top50_pitchers),
         "top50_pitcher_rate": round(top50_rate, 6),
         "max_top50_pitcher_rate": MAX_TOP50_PITCHER_RATE,
+        "model_component_field": "components.model_score",
+        "model_component_sort": (
+            "model_score_desc_then_served_rank_asc_then_mlbam_id_asc"
+        ),
+        "model_component_eligible_board_count": len(model_component_board),
+        "model_component_top25_evaluated_count": len(model_component_top25),
+        "model_component_top25_pitcher_count": len(
+            model_component_top25_pitchers
+        ),
+        "model_component_top25_hitter_count": (
+            len(model_component_top25) - len(model_component_top25_pitchers)
+        ),
         "evidence_class": "current_publication_shape",
     }
 
@@ -247,20 +285,25 @@ def build_cross_role_shadow(
     population_coverage_rate = (
         len(covered) / len(top25_pitchers) if top25_pitchers else 0.0
     )
+    eligible_sample_ready = (
+        len(aaa_eligible_top25_pitchers) >= MIN_ELIGIBLE_TOP25_AAA_PITCHERS
+    )
     coverage = {
         "status": (
             "pass"
-            if aaa_eligible_top25_pitchers
+            if eligible_sample_ready
             and coverage_rate >= MIN_ELIGIBLE_TOP25_AAA_COVERAGE
             else "fail"
         ),
         "top25_pitcher_count": len(top25_pitchers),
         "eligible_top25_pitcher_count": len(aaa_eligible_top25_pitchers),
+        "minimum_eligible_top25_pitcher_count": MIN_ELIGIBLE_TOP25_AAA_PITCHERS,
+        "eligible_sample_ready": eligible_sample_ready,
         "covered_top25_pitcher_count": len(covered),
         "coverage_rate": round(coverage_rate, 6),
         "top25_population_coverage_rate": round(population_coverage_rate, 6),
         "floor": MIN_ELIGIBLE_TOP25_AAA_COVERAGE,
-        "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
+        "evidence_class": "post_first_look_aaa_feed_completeness",
         "confirms_cross_role_calibration": False,
     }
 

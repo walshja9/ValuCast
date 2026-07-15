@@ -226,9 +226,11 @@
       "confirms_cross_role_calibration": false,
       "coverage_rate": 1.0,
       "covered_top25_pitcher_count": 3,
+      "eligible_sample_ready": true,
       "eligible_top25_pitcher_count": 3,
-      "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
+      "evidence_class": "post_first_look_aaa_feed_completeness",
       "floor": 0.6,
+      "minimum_eligible_top25_pitcher_count": 3,
       "status": "pass",
       "top25_pitcher_count": 10,
       "top25_population_coverage_rate": 0.3
@@ -262,6 +264,12 @@
       "evidence_class": "current_publication_shape",
       "max_top25_pitchers": 7,
       "max_top50_pitcher_rate": 0.3,
+      "model_component_eligible_board_count": 2833,
+      "model_component_field": "components.model_score",
+      "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
+      "model_component_top25_evaluated_count": 25,
+      "model_component_top25_hitter_count": 12,
+      "model_component_top25_pitcher_count": 13,
       "status": "fail",
       "top25_pitcher_count": 10,
       "top50_pitcher_count": 17,
@@ -324,7 +332,7 @@
       "pitcher_source_rank_median": 47
     }
   ],
-  "generated_at": "2026-07-15T14:45:42.224470+00:00",
+  "generated_at": "2026-07-15T15:19:47.113184+00:00",
   "limitations": [
     "Historical absolute concordance is retrospective and does not confirm a current scoring change.",
     "AAA Statcast is measured current evidence, not a historical outcome panel.",
@@ -337,7 +345,7 @@
     "next_allowed_step": "continue_collection",
     "score_changes_authorized": false
   },
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "source_dates": {
     "aaa_artifact_generated_at": "2026-07-14T20:19:20.167571+00:00",
     "rank_artifact_generated_at": "2026-07-15T00:00:00+00:00"

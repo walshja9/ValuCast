@@ -43,6 +43,7 @@ def _row(rank, role, mlbam_id, source_count=3, level="AA"):
         "mlbam_id": mlbam_id,
         "name": f"Player {mlbam_id}",
         "level": level,
+        "components": {"model_score": 1000.0 - rank},
         "context_only": {"source_ranks": sources},
     }
 
@@ -128,6 +129,12 @@ def test_shadow_separates_absolute_floor_power_shape_and_aaa_coverage():
     assert payload["checks"]["cross_role_change_power"]["max_power"] == 0.015
     assert payload["checks"]["cross_role_change_power"]["status"] == "fail"
     assert payload["checks"]["current_board_shape"]["top25_pitcher_count"] == 10
+    assert (
+        payload["checks"]["current_board_shape"][
+            "model_component_top25_pitcher_count"
+        ]
+        == 10
+    )
     assert payload["checks"]["current_board_shape"]["top50_pitcher_rate"] == 0.34
     assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 1.0
     assert (
@@ -139,6 +146,13 @@ def test_shadow_separates_absolute_floor_power_shape_and_aaa_coverage():
         == 0.3
     )
     assert payload["checks"]["aaa_measured_coverage"]["status"] == "pass"
+    assert (
+        payload["checks"]["aaa_measured_coverage"][
+            "minimum_eligible_top25_pitcher_count"
+        ]
+        == 3
+    )
+    assert payload["checks"]["aaa_measured_coverage"]["eligible_sample_ready"] is True
     assert payload["promotion"]["score_changes_authorized"] is False
     assert payload["promotion"]["failed_decay_flag_changed"] is False
     assert payload["source_policy"]["external_rankings_used_as_outcomes"] is False
@@ -193,6 +207,48 @@ def test_aaa_coverage_requires_complete_measured_pitch_data():
         payload["checks"]["aaa_measured_coverage"]["covered_top25_pitcher_count"] == 2
     )
     assert payload["checks"]["aaa_measured_coverage"]["coverage_rate"] == 0.666667
+
+
+def test_aaa_coverage_cannot_pass_with_one_of_one_eligible_pitchers():
+    board = _board()
+    for row in board["board"]:
+        if row["role"] == "pitcher":
+            row["level"] = "AAA" if row["mlbam_id"] == 100 else "AA"
+
+    payload = build_cross_role_shadow(
+        _rank_backtest(), _power(), board, _aaa({100})
+    )
+
+    coverage = payload["checks"]["aaa_measured_coverage"]
+    assert coverage["eligible_top25_pitcher_count"] == 1
+    assert coverage["covered_top25_pitcher_count"] == 1
+    assert coverage["coverage_rate"] == 1.0
+    assert coverage["minimum_eligible_top25_pitcher_count"] == 3
+    assert coverage["eligible_sample_ready"] is False
+    assert coverage["status"] == "fail"
+
+
+def test_board_shape_computes_model_component_top25_role_mix():
+    board = _board()
+    pitchers = [row for row in board["board"] if row["role"] == "pitcher"][:13]
+    hitters = [row for row in board["board"] if row["role"] == "hitter"][:12]
+    selected = pitchers + hitters
+    for row in board["board"]:
+        row["components"]["model_score"] = -float(row["rank"])
+    for index, row in enumerate(selected):
+        row["components"]["model_score"] = 1000.0 - index
+
+    payload = build_cross_role_shadow(
+        _rank_backtest(), _power(), board, _aaa({100, 101, 102})
+    )
+
+    shape = payload["checks"]["current_board_shape"]
+    assert shape["top25_pitcher_count"] == 10
+    assert shape["model_component_field"] == "components.model_score"
+    assert shape["model_component_eligible_board_count"] == 50
+    assert shape["model_component_top25_evaluated_count"] == 25
+    assert shape["model_component_top25_pitcher_count"] == 13
+    assert shape["model_component_top25_hitter_count"] == 12
 
 
 def test_shadow_blocks_invalid_power_effect_key_instead_of_crashing():
