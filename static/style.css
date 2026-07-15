@@ -663,6 +663,8 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .provenance-table th, .provenance-table td { text-align: left; padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--c-border); }
 .provenance-table th { color: var(--c-muted); font-weight: 600; }
 .provenance-table td:first-child { color: var(--c-text); font-weight: 500; }
+.farm-rankings-card { overflow-x: auto; }
+.farm-rankings-table { min-width: 760px; margin-top: 0; }
 /* Mobile: the methodology ledger tables are label|dense-detail two-columns whose
    first column is nowrap (line above) -- on a phone that overflows the viewport and
    squishes the detail. Stack each row into a labeled card (same idiom as the board

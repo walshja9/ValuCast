@@ -969,6 +969,8 @@ def test_farm_rankings_route_renders_method_and_team_links(monkeypatch):
     assert "sum of each system's top 20" in html
     assert 'href="/backfields/team/MIL"' in html
     assert "Luis Lara" in html
+    assert 'class="provenance-table farm-rankings-table"' in html
+    assert 'class="rankings-table"' not in html
     assert 'href="/farms"' not in _site_nav(html)
 
 
