@@ -5569,6 +5569,10 @@ def scouting_reports():
 
 _TEAM_BOARD_ORG_ALIASES = {
     "KCR": "KC",
+    "SD": "SDP",
+    "SF": "SFG",
+    "TB": "TBR",
+    "WSH": "WSN",
 }
 _TEAM_BOARD_EXCLUDED_ORGS = {"FA"}
 _TEAM_BOARD_ORG_NAMES = {
@@ -6085,6 +6089,50 @@ def _build_team_board_context(org=None, limit=20):
         "reports": _team_board_reports(org_rows, reports_by_key, scouting_repository),
     })
     return context
+
+
+def _build_farm_rankings_context():
+    grouped = {}
+    for row in _team_board_prospect_rows():
+        org = _team_board_org_for(row)
+        if org:
+            grouped.setdefault(org, []).append(row)
+
+    systems = []
+    for org, rows in grouped.items():
+        ranks = [
+            _team_board_rank_value(getattr(row, "prospect_rank", None))
+            for row in rows
+        ]
+        systems.append({
+            "org": org,
+            "name": _team_board_org_name(org),
+            "url": f"/backfields/team/{quote(org, safe='')}",
+            "top20_value": round(
+                sum((_team_board_value(row) or 0.0) for row in rows[:20]),
+                1,
+            ),
+            "top100_count": sum(rank <= 100 for rank in ranks),
+            "pool_count": len(rows),
+            "best_rank": min(ranks, default=10_000_000),
+            "top_prospects": [
+                {
+                    "name": getattr(row, "name", None) or "Unknown",
+                    "url": _team_board_player_url(row),
+                }
+                for row in rows[:3]
+            ],
+        })
+
+    systems.sort(key=lambda system: (
+        -system["top20_value"],
+        -system["top100_count"],
+        system["best_rank"],
+        system["name"],
+    ))
+    for rank, system in enumerate(systems, 1):
+        system["rank"] = rank
+    return {"available": bool(systems), "systems": systems}
 
 
 def _build_backfields_page_context():

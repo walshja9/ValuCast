@@ -676,10 +676,46 @@ def test_team_board_org_normalization():
     assert app_module._canonical_team_board_org("KC") == "KC"
     assert app_module._canonical_team_board_org("KCR") == "KC"
     assert app_module._canonical_team_board_org("kcr") == "KC"
+    assert app_module._canonical_team_board_org("SD") == "SDP"
+    assert app_module._canonical_team_board_org("SF") == "SFG"
+    assert app_module._canonical_team_board_org("TB") == "TBR"
+    assert app_module._canonical_team_board_org("WSH") == "WSN"
     assert app_module._canonical_team_board_org("ATH") == "ATH"
     assert app_module._canonical_team_board_org("FA") is None
     assert app_module._canonical_team_board_org("") is None
     assert app_module._canonical_team_board_org(None) is None
+
+
+def test_farm_rankings_sum_top_20_and_use_documented_tiebreaks(monkeypatch):
+    bos = [
+        _row(f"Boston {index}", "BOS", prospect_rank=index, value=1)
+        for index in range(1, 22)
+    ]
+    bos[-1].dynasty_value = bos[-1].value = 999
+    sea = [
+        _row(f"Seattle {index}", "SEA", prospect_rank=100 + index, value=1)
+        for index in range(1, 21)
+    ]
+    mil = [_row("Milwaukee One", "MIL", prospect_rank=50, value=30)]
+    monkeypatch.setattr(
+        app_module,
+        "_team_board_prospect_rows",
+        lambda rows=None: mil + bos + sea,
+    )
+
+    context = app_module._build_farm_rankings_context()
+
+    assert context["available"] is True
+    assert [system["org"] for system in context["systems"]] == ["MIL", "BOS", "SEA"]
+    assert [system["rank"] for system in context["systems"]] == [1, 2, 3]
+    assert context["systems"][1]["top20_value"] == 20.0
+    assert context["systems"][1]["top100_count"] == 21
+    assert context["systems"][1]["pool_count"] == 21
+    assert [player["name"] for player in context["systems"][1]["top_prospects"]] == [
+        "Boston 1",
+        "Boston 2",
+        "Boston 3",
+    ]
 
 
 def test_team_board_pool_uses_full_prospect_pool_not_top_200_slice():
