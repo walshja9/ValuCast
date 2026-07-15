@@ -38,7 +38,7 @@ For covered pitchers, emit measured pitch counts, overall whiff/CSW/chase/zone/g
 
 ### 5. Make the public advisory precise
 
-Rename the role-shape message to say that current cross-role calibration is outside the publication range. Keep the board visible and preserve the display-only advisory. The message must not cite DD adapter concordance or imply that the shape threshold measures predictive accuracy.
+Use the blocked-state message `Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates.` Keep the board visible and preserve the display-only advisory. The message must not cite DD adapter concordance or imply that the shape threshold measures predictive accuracy.
 
 ## Data-quality rules
 

@@ -466,7 +466,7 @@ def _prospect_top_board_role_shape(
         (
             "Current prospect cross-role calibration is within the publication range."
             if passed
-            else "Current prospect cross-role calibration is outside the publication range."
+            else "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
         ),
         top25_n=PROSPECT_INVESTMENT_TOP_N,
         top50_n=PROSPECT_FALLBACK_TOP_N,

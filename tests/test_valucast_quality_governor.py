@@ -625,15 +625,15 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
     assert crowded_check["status"] == "blocked"
     assert crowded_check["metrics"]["top25_pitcher_count"] == 8
     assert (
-        "Current prospect cross-role calibration is outside the publication range."
+        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
         in crowded_payload["blockers"]
     )
     assert (
-        "Current prospect cross-role calibration is outside the publication range."
+        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
         not in crowded_payload["surface_blockers"]["dynasty"]
     )
     assert crowded_payload["surface_blockers"]["prospects"] == [
-        "Current prospect cross-role calibration is outside the publication range."
+        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
     ]
 
 
@@ -655,7 +655,7 @@ def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    blocker = "Current prospect cross-role calibration is outside the publication range."
+    blocker = "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
     assert payload["ready_for_public_snapshot"] is False
     assert payload["ready_for_buys_promotion"] is True
     assert blocker in payload["blockers"]
@@ -692,7 +692,7 @@ def test_buy_gate_decoupled_from_prospect_board_freshness_and_shape():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    shape_blocker = "Current prospect cross-role calibration is outside the publication range."
+    shape_blocker = "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
     freshness_blocker = "MiLB prospect-card stat freshness audit blocks public promotion."
     # Both block the prospects surface and the public snapshot ...
     assert payload["ready_for_public_snapshot"] is False

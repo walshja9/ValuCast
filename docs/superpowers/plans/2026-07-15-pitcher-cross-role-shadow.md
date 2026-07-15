@@ -145,7 +145,7 @@ Commit Task 2 as `Add prospect cross-role shadow`.
 
 **Interfaces:**
 - `build_outcome_backtest(...)` consumes `cross_role_shadow` instead of `adapter_backtest`.
-- Governor check id stays stable; message becomes `Current prospect cross-role calibration is outside the publication range.`
+- Governor check id stays stable; blocked-state message becomes `Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates.`
 
 - [ ] **Step 1: Write failing outcome/advisory tests**
 
