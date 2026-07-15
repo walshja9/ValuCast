@@ -108,3 +108,27 @@ def test_key_is_str_mlbam(tmp_path):
     path = _write_artifact(tmp_path, {"808265": _player([["2026-06-18", 1], ["2026-06-19", 2]])})
     store = RankHistoryStore(path)
     assert store.trend_for(808265)["caption"] == store.trend_for("808265")["caption"]
+
+
+def test_graphic_rank_trend_text_uses_store_caption():
+    # The share graphic must carry the same dated receipt as the card page, from
+    # the same store caption, so the two surfaces can never disagree.
+    import app as app_module
+
+    assert (
+        app_module._graphic_rank_trend_text({"caption": "Best #1 (Jun 18) - now #7"})
+        == "Best #1 (Jun 18) - now #7"
+    )
+    assert app_module._graphic_rank_trend_text({}) is None
+    assert app_module._graphic_rank_trend_text(None) is None
+    assert app_module._graphic_rank_trend_text({"caption": "   "}) is None
+
+
+def test_prospect_player_card_png_renders_with_rank_trend_chip():
+    # End-to-end: the PNG route exercises the new chip-drawing branch for a
+    # player with rank history (Arias) without crashing the renderer.
+    from app import app as flask_app
+
+    r = flask_app.test_client().get("/prospects/player-card/vc_prospect_808265_hitter.png")
+    assert r.status_code == 200
+    assert r.data[:8] == b"\x89PNG\r\n\x1a\n"

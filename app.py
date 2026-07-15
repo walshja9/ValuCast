@@ -3169,19 +3169,36 @@ def _prospect_player_card_png(row):
             font=receipt_font,
         )
     else:
-        # No ahead receipt: still show the field's read so the divergence is the story.
+        # No ahead receipt: still show the field's read so the divergence is the story,
+        # plus the dated rank receipt ("Best #1 (Jun 18) - now #7") when the archive
+        # has one — the share graphic is the surface people actually post, so the
+        # early-call proof has to ride it, not just the card page.
         consensus_value = _card_consensus_value(receipt, fg_scouting, row)
+        trend_text = _graphic_rank_trend_text(
+            rank_history_store.trend_for(getattr(row, "mlbam_id", None))
+        )
+        chips = []
         if consensus_value:
-            draw.rounded_rectangle(receipt_box, radius=7, fill=card_2, outline=(44, 46, 54), width=1)
-            label = "CONSENSUS  "
-            draw.text((receipt_box[0] + 14, receipt_box[1] + 7), label, fill=muted, font=receipt_font)
-            lx = receipt_box[0] + 14 + draw.textbbox((0, 0), label, font=receipt_font)[2]
-            draw.text(
-                (lx, receipt_box[1] + 7),
-                _graphic_fit_text(draw, consensus_value, receipt_font, receipt_box[2] - lx - 14),
-                fill=text,
-                font=receipt_font,
-            )
+            chips.append(("CONSENSUS  ", consensus_value, text))
+        if trend_text:
+            chips.append(("VC RANK  ", trend_text, green))
+        if chips:
+            span = receipt_box[2] - receipt_box[0]
+            gap = 16 if len(chips) == 2 else 0
+            slot_w = (span - gap) // len(chips)
+            cx = receipt_box[0]
+            for label, value, value_fill in chips:
+                box = (cx, receipt_box[1], cx + slot_w, receipt_box[3])
+                draw.rounded_rectangle(box, radius=7, fill=card_2, outline=(44, 46, 54), width=1)
+                draw.text((box[0] + 14, box[1] + 7), label, fill=muted, font=receipt_font)
+                lx = box[0] + 14 + draw.textbbox((0, 0), label, font=receipt_font)[2]
+                draw.text(
+                    (lx, box[1] + 7),
+                    _graphic_fit_text(draw, value, receipt_font, box[2] - lx - 14),
+                    fill=value_fill,
+                    font=receipt_font,
+                )
+                cx = box[2] + gap
 
     avail_badge = _graphic_availability_badge(row)
     if avail_badge:
@@ -5208,6 +5225,16 @@ def _card_consensus_value(receipt, fg_scouting, row=None) -> str | None:
     if (fg_scouting or {}).get("fg_top100"):
         return None
     return "outside top 100"
+
+
+def _graphic_rank_trend_text(trend) -> str | None:
+    """Dated rank receipt for the share graphic, from the rank-history store's
+    caption ("Best #1 (Jun 18) - now #7"). Display-only, same source as the card
+    page's trend section so the two surfaces can never disagree."""
+    if not isinstance(trend, dict):
+        return None
+    caption = str(trend.get("caption") or "").strip()
+    return caption or None
 
 
 def _format_context_label(value) -> str | None:
