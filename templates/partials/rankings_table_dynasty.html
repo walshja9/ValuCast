@@ -148,7 +148,10 @@
                         <span class="mobile-stat-value">{{ row.factual_context_level }}</span>
                     </span>
                     {% endif %}
-                    {% for item in row.factual_context_stat_items[:4] %}
+                    {# 7/14 declutter: Level + the single headline stat on the
+                       collapsed row — the full stat context lives in the
+                       expandable detail. #}
+                    {% for item in row.factual_context_stat_items[:1] %}
                     <span class="mobile-stat">
                         <span class="mobile-stat-label">{{ item.label }}</span>
                         <span class="mobile-stat-value">{{ item.value }}</span>

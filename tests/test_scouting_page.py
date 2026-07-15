@@ -97,7 +97,10 @@ def test_mlb_player_detail_surfaces_role_tracker_context():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Playing-Time Tracker" in html
+    # 7/14 declutter: the standalone "Playing-Time Tracker" card folded into the
+    # merged Role & Read card; the tracker grid now renders under that header
+    # with a "Projected Role" stat label (matching the prospect path).
+    assert "Role & Read" in html
     assert "Projected Role" in html
     # Wiring test: the tracker artifact regenerates daily, so read the expected
     # role from it instead of pinning a label that drifts with the data.
@@ -164,12 +167,17 @@ def test_primary_nav_links_to_intelligence_surfaces():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    # Original five surfaces stay in the primary nav.
+    # Core surfaces stay in the primary nav.
     assert 'href="/">Board</a>' in html
     assert 'href="/backfields"' in html and ">Backfields</a>" in html
     assert 'href="/map">Map</a>' in html
-    assert 'href="/intelligence">Intelligence Hub</a>' in html
     assert 'href="/methodology">Methodology</a>' in html
+    # Intelligence Hub demoted out of the site-nav (7/14 declutter); the footer
+    # still links it on every page.
+    import re
+    site_nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.S).group(0)
+    assert 'href="/intelligence"' not in site_nav
+    assert 'href="/intelligence">Intelligence Hub</a>' in html
     # Intelligence surfaces promoted into the primary nav (hold flags default off).
     assert 'href="/movers">Movers</a>' in html
     assert 'href="/buys">Buys</a>' in html

@@ -1873,8 +1873,9 @@ class TestTodayStrip(unittest.TestCase):
         self.assertIn("Today on ValuCast", html)
         self.assertIn("calls tracked publicly", html)
         self.assertIn("Receipts open", html)
-        # Freshness stamp on the redraft front door (was the only page without one).
-        self.assertIn("freshness-badge", html)
+        # 7/14 declutter: the freshness badge is gone from the front door — the
+        # prov-line and toolbar "Updated" stamps carry freshness now.
+        self.assertNotIn("freshness-badge", html)
         # The strip must never leak a pre-gate success RATE — counts only.
         import re
         strip = re.search(r'class="today-ledger".*?</a>', html, re.S)
@@ -1973,8 +1974,17 @@ class TestFamiliarNameOnRamp(unittest.TestCase):
             {"name": "Beta Guy", "valucast_now": 30, "consensus_now": 60, "days_tracked": 20},
             {"name": "Gamma Guy", "valucast_now": 40, "consensus_now": 80, "days_tracked": 15},
         ]}
+        # 7/14 declutter: the on-ramp strip no longer renders on the front door —
+        # render the partial directly (it stays available for other surfaces).
+        from flask import render_template
         with patch.object(app_module, "_load_scorecard_payload", return_value=scorecard):
-            html = self.client.get("/").data.decode("utf-8")
+            front = self.client.get("/").data.decode("utf-8")
+            with app.test_request_context("/"):
+                html = render_template(
+                    "partials/_onramp_strip.html",
+                    onramp_names=app_module._front_door_onramp(),
+                )
+        self.assertEqual(front.count("onramp-strip"), 0)
         self.assertIn("Where we differ from the field", html)
         self.assertIn("Alpha Guy", html)
         self.assertIn("#20 here", html)
@@ -2039,12 +2049,27 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         self.assertEqual(spans(junk), default_spans)
 
     def test_movers_shows_qualification_thresholds(self):
+        # 7/14 declutter: the qualification fineprint describes rows on the board,
+        # so it renders only when movers exist; empty states carry their own honest
+        # drought/sparse copy instead of caveats about rows that don't exist. The
+        # expectation reads the committed artifact so the lock holds in both states.
+        import json
+        from pathlib import Path as _Path
+
+        payload = json.loads(
+            _Path("data/models/valucast_prospect_movers.json").read_text(encoding="utf-8")
+        )
+        mover_count = len(payload.get("rising") or []) + len(payload.get("cooling") or [])
         html = self.client.get("/movers").data.decode("utf-8")
-        # Plan 013: the cap fineprint is two-sided — Rising capped at the current
-        # top-N, Cooling qualified at the window start (a faller can drop past it).
-        self.assertIn("Rank cap", html)
-        self.assertIn("at the window start", html)
-        self.assertIn("tracked prospects", html)
+        if mover_count:
+            # Plan 013: the cap fineprint is two-sided — Rising capped at the current
+            # top-N, Cooling qualified at the window start (a faller can drop past it).
+            self.assertIn("Rank cap", html)
+            self.assertIn("at the window start", html)
+            self.assertIn("tracked prospects", html)
+        else:
+            self.assertNotIn("Rank cap", html)
+            self.assertIn("0 movers", html)
 
     def test_provenance_line_on_every_board(self):
         for path in ("/", "/movers", "/ledger", "/cards"):

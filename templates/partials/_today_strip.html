@@ -35,35 +35,23 @@
             <span class="tc-line tc-muted">{{ today_digest.top_buy.name }}{% if today_digest.top_buy.team %} &middot; {{ today_digest.top_buy.team }}{% endif %}{% if today_digest.top_buy.level %} {{ today_digest.top_buy.level }}{% endif %}</span>
         </a>
         {% endif %}
-        {% if today_digest.newest_call %}
-        <a class="today-cell" href="/ledger">
-            <span class="tc-label">Newest call</span>
-            <span class="tc-line">{{ today_digest.newest_call.name }}</span>
-            <span class="tc-line tc-muted">ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}</span>
-        </a>
-        {% endif %}
-        {% if today_digest.receipts_today %}
-        <a class="today-cell" href="/receipts">
-            <span class="tc-label">Receipts logged today</span>
-            <span class="tc-big">{{ today_digest.receipts_today }}</span>
-            <span class="tc-line tc-muted">new call-up{{ 's' if today_digest.receipts_today != 1 else '' }} vs the field</span>
-        </a>
-        {% endif %}
-        {% if today_digest.gaps_resolved_today %}
-        <a class="today-cell" href="/gaps">
-            <span class="tc-label">Claims resolved today</span>
-            <span class="tc-big">{{ today_digest.gaps_resolved_today }}</span>
-            <span class="tc-line tc-muted">gap call{{ 's' if today_digest.gaps_resolved_today != 1 else '' }} settled on the ledger</span>
-        </a>
-        {% endif %}
     </div>
-    {% if today_digest.ledger %}
-    {# Counts only — the headline rate publishes when the 30-day gate matures. #}
+    {# Counts only — the headline rate publishes when the 30-day gate matures.
+       7/14 declutter: the Newest call / Receipts logged today / Claims resolved
+       today cells folded into this sentence so the facts survive in prose (and
+       still surface when the ledger counts themselves are unavailable). #}
+    {% if today_digest.ledger or today_digest.newest_call or today_digest.receipts_today or today_digest.gaps_resolved_today %}
     <a class="today-ledger" href="/ledger">
+        {%- if today_digest.ledger %}
         <strong>{{ today_digest.ledger.total }}</strong> calls tracked publicly &mdash;
         {{ today_digest.ledger.wins }} the field came to us on,
         {{ today_digest.ledger.losses }} against us,
-        {{ today_digest.ledger.retreats }} we backed off. Receipts open &rarr;
+        {{ today_digest.ledger.retreats }} we backed off.
+        {%- endif %}
+        {%- if today_digest.newest_call %} Newest call: {{ today_digest.newest_call.name }}, ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}.{% endif %}
+        {%- if today_digest.receipts_today %} Receipts logged today: {{ today_digest.receipts_today }} new call-up{{ 's' if today_digest.receipts_today != 1 else '' }} vs the field.{% endif %}
+        {%- if today_digest.gaps_resolved_today %} Claims resolved today: {{ today_digest.gaps_resolved_today }} gap call{{ 's' if today_digest.gaps_resolved_today != 1 else '' }} settled on the ledger.{% endif %}
+        Receipts open &rarr;
     </a>
     {% endif %}
     <nav class="today-paths" aria-label="Start here">

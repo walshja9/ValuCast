@@ -99,10 +99,13 @@ class TestLaunchPolish(unittest.TestCase):
             self.assertEqual(self.client.get(path).status_code, 200)
 
     def test_customize_and_methodology_link_are_promoted(self):
+        # 7/14 declutter: the toolbar "How it works" link is gone on ALL
+        # horizons — Methodology stays reachable via site-nav + welcome strip.
         for path in ("/", "/?mode=dd_dynasty"):
             html = self.html(path)
             self.assertIn('class="customize-toggle primary-action"', html)
-            self.assertIn('class="toolbar-how-link" href="/methodology">How it works</a>', html)
+            self.assertNotIn('class="toolbar-how-link"', html)
+            self.assertIn('href="/methodology">Methodology</a>', html)
 
         prospects = self.html("/?mode=prospects")
         self.assertNotIn('class="customize-toggle primary-action"', prospects)

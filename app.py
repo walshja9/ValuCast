@@ -4773,19 +4773,16 @@ def index():
             ctx["notice"] = "Dynasty data is not available. Showing default rankings."
             ctx["dd_available"] = False
             ctx["today_digest"] = _front_door_digest()
-            ctx["onramp_names"] = _front_door_onramp()
             return render_template("index.html", **ctx)
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
             _apply_prospect_board_context(ctx, request.args)
         ctx["snapshot_stale"] = dynasty_data_source == "valucast_public_snapshot_stale"
         ctx["today_digest"] = _front_door_digest()
-        ctx["onramp_names"] = _front_door_onramp()
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
     ctx["dd_available"] = dd_store.is_available
     ctx["today_digest"] = _front_door_digest()
-    ctx["onramp_names"] = _front_door_onramp()
     return render_template("index.html", **ctx)
 
 

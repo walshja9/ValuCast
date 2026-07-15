@@ -198,6 +198,8 @@ def test_movers_window_param_serves_variant_and_falls_back(monkeypatch):
     default = client.get("/movers")
     assert default.status_code == 200
     assert b"Fourteen Flag" in default.data
+    # 7/14 declutter: the filter-methodology fineprint renders when movers exist...
+    assert b"sustained movement" in default.data
     # Unknown/junk windows fall back to the default window too.
     junk = client.get("/movers?window=999")
     assert junk.status_code == 200
@@ -234,6 +236,10 @@ def test_movers_empty_state_distinguishes_epoch_drought_from_genuine_sparse(monk
     # Genuine-sparse copy must NOT appear when it's actually a drought.
     assert "no risers cleared" not in html
     assert "no fallers cleared" not in html
+    # 7/14 declutter: ...and with zero movers the filter caveats (about rows that
+    # don't exist) stay hidden — the drought sentence + window pills carry the state.
+    assert "sustained movement" not in html
+    assert "movers-window-pills" in html
 
     # Genuine sparse: history exists (limited < ranked), still nothing qualified.
     sparse = {

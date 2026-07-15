@@ -28,8 +28,12 @@
         <h1>WHERE WE DISAGREE</h1>
         <p class="buys-heading-sub">{{ gap_count }} gaps{% if gaps_generated_at %} &middot; {{ editorial_date(gaps_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint">The prospects where the ValuCast board sits furthest from the public consensus (median of {{ gaps_method.min_boards }}+ outside boards), in both directions. Every row is a testable claim: the higher side feeds the publicly scored <a href="/ledger">ledger</a>; fades are published but not ledger-scored yet &mdash; we say so rather than borrow credibility.</p>
-        {% if gaps_board_min_date %}<p class="buys-fineprint">The field ranks come from outside boards last refreshed {{ editorial_date(gaps_board_min_date) }} &mdash; the divergence is measured against that vintage, not today's boards.</p>{% endif %}
-        <p class="buys-fineprint">Gaps under {{ gaps_method.min_divergence }} spots don't qualify, call-ups are excluded (boards delist them &mdash; that's eligibility, not disagreement), and one symmetric depth rule applies to both sides: our rank <em>and</em> the field's must sit inside the top {{ gaps_method.max_rank_both_sides }}. Deeper than that, a rank is a sample-size statement (ours) or past the boards' reliable depth (theirs) &mdash; not a price, so we don't publish it as a call.</p>
+        {# 7/14 declutter: methodology fineprint collapsed — every sentence kept, just behind a toggle. #}
+        <details class="hero-fineprint-details">
+            <summary class="buys-fineprint">How this is scored</summary>
+            {% if gaps_board_min_date %}<p class="buys-fineprint">The field ranks come from outside boards last refreshed {{ editorial_date(gaps_board_min_date) }} &mdash; the divergence is measured against that vintage, not today's boards.</p>{% endif %}
+            <p class="buys-fineprint">Gaps under {{ gaps_method.min_divergence }} spots don't qualify, call-ups are excluded (boards delist them &mdash; that's eligibility, not disagreement), and one symmetric depth rule applies to both sides: our rank <em>and</em> the field's must sit inside the top {{ gaps_method.max_rank_both_sides }}. Deeper than that, a rank is a sample-size statement (ours) or past the boards' reliable depth (theirs) &mdash; not a price, so we don't publish it as a call.</p>
+        </details>
     </div>
 </section>
 

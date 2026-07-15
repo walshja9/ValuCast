@@ -27,7 +27,6 @@
 <body>
     <header class="site-header">
         <h1><a href="/"><img class="site-logo" src="{{ url_for('static', filename='brand/valucast-mark-64.png') }}" alt=""><span class="brand-word">ValuCast</span></a></h1>
-        <p class="tagline">Independent player values tuned to your league</p>
         <nav class="site-nav" aria-label="Primary navigation">
             <a href="/">Board</a>
             <a href="/movers">Movers</a>
@@ -36,7 +35,7 @@
             <a href="/gaps">Gaps</a>
             <a href="/backfields"{% if backfields_page %} aria-current="page"{% endif %}>Backfields</a>
             <a href="/map">Map</a>
-            <a href="/intelligence">Intelligence Hub</a>
+            {# Intelligence Hub demoted to the footer (7/14 declutter) — _footer_provenance.html links /intelligence on every page. #}
             <a href="/methodology">Methodology</a>
         </nav>
     </header>

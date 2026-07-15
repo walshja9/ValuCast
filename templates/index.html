@@ -18,17 +18,11 @@
 
     {{ board_nav(active=horizon, dd_available=dd_available, aria='Board horizon') }}
 
-    {# Redraft has no dd_generated_at, so it was the ONLY page without a
-       freshness stamp — fall back to the projection store's as_of (7/3). #}
-    {% set _fresh_ts = dd_generated_at or as_of %}
-    {% if _fresh_ts %}
-    <div class="freshness-badge" title="Board data last refreshed {{ editorial_date(_fresh_ts) }}">
-        <span class="freshness-dot" aria-hidden="true"></span>Updated {{ _fresh_ts | humanize_since }}
-    </div>
-    {% endif %}
-
+    {# 7/14 declutter: freshness badge and on-ramp strip dropped from the front
+       door — the prov-line and the footer "Updated" line carry freshness, and the
+       on-ramp's differ-from-the-field job is covered by the today-strip ledger
+       line + /gaps (partial kept; tests render it directly). #}
     {% include "partials/_today_strip.html" %}
-    {% include "partials/_onramp_strip.html" %}
 
     {% if horizon in ['redraft', 'dynasty'] %}
     {% include "partials/_welcome_strip.html" %}
@@ -63,7 +57,6 @@
     <div class="rank-toolbar rank-toolbar-redraft glass" id="rank-toolbar">
         <span class="config-summary-line">
             <span class="config-summary">{{ config_summary }}</span>
-            <a class="toolbar-how-link" href="/methodology">How it works</a>
         </span>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>
@@ -121,7 +114,6 @@
         <span class="config-summary-line">
             <span class="config-summary">{{ config_summary }}{% if dd_generated_at %} · Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
             <span class="board-source">Board source: ValuCast public snapshot</span>
-            <a class="toolbar-how-link" href="/methodology">How it works</a>
         </span>
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search players..." value="{{ search }}">
         <button type="button" class="toolbar-filters-btn" aria-expanded="false" aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">Filters &amp; view</button>

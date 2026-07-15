@@ -297,6 +297,10 @@
         and the raw artifact is public at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>
         for anyone who wants to snapshot it themselves.</p>
 
+        {# 7/14 declutter: dated audit narratives collapsed — every word kept, just
+           behind a toggle. Pre-registration dates + forward-gate loss stay top-level. #}
+        <details>
+            <summary>Adversarial audit log — dated</summary>
         <h4 id="aotc-scoring-notes">Scoring notes — 2026-07-12, the night before first publish</h4>
         <p>Before the gate matured we ran an independent adversarial audit of the
         scorecard math (a different AI model family from the ones that built and
@@ -350,11 +354,15 @@
         on top of it, not a rewrite of it. We report the average, we show the
         range, and we let the number be as modest and as noisy as it honestly
         is.</p>
+        </details>
     </section>
 
     <section>
         <h3 id="sensitivity">Sensitivity Analysis — how much do our assumptions matter?</h3>
         {% if sensitivity %}
+        {# 7/14 declutter: long-form study collapsed — no copy removed. #}
+        <details>
+            <summary>The full study — every dial, measured</summary>
         <p>Our rankings depend on a bunch of judgment-call dials — how much to trust a hot
         three-week stretch with no track record behind it, how much a bad current season
         should outweigh a great last year, how much a prospect's odds of <em>reaching</em>
@@ -388,6 +396,7 @@
         and it isn't recomputed on every page load, since a full board rebuild takes real
         compute. This is a dated study (run {{ sensitivity.generated_at[:10] }} against that
         day's committed board) that we re-run and republish as the model changes.</p>
+        </details>
         {% else %}
         <p>The sensitivity scorecard is regenerating and will be back shortly.</p>
         {% endif %}

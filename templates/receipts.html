@@ -34,10 +34,14 @@
         <p class="buys-heading-sub">{{ receipt_count }} ahead &middot; {{ miss_count }} behind{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
         {% endif %}
         <p class="buys-fineprint">Every prospect call-up, with where ValuCast had them vs the public-board consensus &mdash; the ones we were ahead on <strong>and</strong> the ones we were behind on. Logged automatically the day they reach the majors, no cherry-picking. Small sample, growing.</p>
-        <p class="buys-fineprint">Receipts score <em>arrival</em>, not career value &mdash; who reached the majors while we were ahead of (or behind) the field, not whether the call-up stuck. Outcome-scored calls live on <a href="/ledger">the ledger</a>.</p>
-        {% if no_claim_call_up_count %}
-        <p class="buys-fineprint">{{ no_claim_call_up_count }} more call-ups produced no claim &mdash; the model and the field were even, or the field had no read on them at promotion, so there's nothing to score either way.</p>
-        {% endif %}
+        {# 7/14 declutter: methodology fineprint collapsed — every sentence kept, just behind a toggle. #}
+        <details class="hero-fineprint-details">
+            <summary class="buys-fineprint">How this is scored</summary>
+            <p class="buys-fineprint">Receipts score <em>arrival</em>, not career value &mdash; who reached the majors while we were ahead of (or behind) the field, not whether the call-up stuck. Outcome-scored calls live on <a href="/ledger">the ledger</a>.</p>
+            {% if no_claim_call_up_count %}
+            <p class="buys-fineprint">{{ no_claim_call_up_count }} more call-ups produced no claim &mdash; the model and the field were even, or the field had no read on them at promotion, so there's nothing to score either way.</p>
+            {% endif %}
+        </details>
         {% endif %}
     </div>
     {% if not receipts_hold %}
@@ -118,7 +122,7 @@
 {% endif %}
 {% if no_claim_rows %}
 <details class="buys-list movers-section glass" aria-label="Call-ups ValuCast did not score either way">
-    <summary class="buys-fineprint" style="cursor:pointer;list-style:revert;">Every call-up we didn't score — the {{ no_claim_rows | length }} no-claims</summary>
+    <summary class="buys-fineprint">Every call-up we didn't score — the {{ no_claim_rows | length }} no-claims</summary>
     <p class="buys-fineprint">Same thresholds both directions; these produced no claim either way.</p>
     {% for p in no_claim_rows %}
     <article class="movers-row">
