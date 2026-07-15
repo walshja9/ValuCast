@@ -19,12 +19,17 @@ from prospects.universal import INPUT_PATH, load_input_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 OOF_ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_ordinal_oof_scores.json"
+RANK_ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+EFFECT_ANCHOR_ARTIFACT_PATH = (
+    ROOT / "data" / "models" / "valucast_ordinal_effect_anchor.json"
+)
 POWER_ARTIFACT_PATH = (
     ROOT / "data" / "models" / "valucast_ordinal_calibration_power.json"
 )
 FOLD_YEARS = (2018, 2019, 2021)
 REGISTRATION_COMMIT = "13c3730ada59f2441ecda06f187f2f5377a70535"
 POWER_REGISTRATION_COMMIT = "f7eaf83fca1d12c19cb294d1130c1672ac9b5e33"
+EFFECT_ANCHOR_REGISTRATION_COMMIT = "eecb96c131ab19608506947d45207ff9899a1091"
 SIMULATION_SEED = 28015
 N_SIMULATIONS = 1_000
 LRT_DEGREES_OF_FREEDOM = 2
@@ -62,6 +67,19 @@ POWER_TOP_LEVEL_FIELDS = {
     "registration",
     "registration_commit",
     "scenarios",
+    "schema_version",
+    "status",
+    "validation",
+}
+EFFECT_ANCHOR_TOP_LEVEL_FIELDS = {
+    "artifact",
+    "derivation",
+    "generated_at",
+    "historical_fit",
+    "inputs",
+    "nuisance_fit",
+    "registration",
+    "registration_commit",
     "schema_version",
     "status",
     "validation",
@@ -411,22 +429,45 @@ def _expected_tier_gap(
     return pitcher - hitter
 
 
-def _calibrate_intercept_effect(
-    nuisance_params: np.ndarray, blind_support: np.ndarray
+def _relative_expected_tier_reduction(
+    nuisance_params: np.ndarray,
+    blind_support: np.ndarray,
+    pitcher_intercept: float,
 ) -> float:
+    hitter = _expected_tier(_ordered_probabilities(nuisance_params, blind_support))
+    pitcher = hitter + _expected_tier_gap(
+        nuisance_params, blind_support, pitcher_intercept, 0.0
+    )
+    hitter_mean = float(hitter.mean())
+    if hitter_mean <= 0.0:
+        raise ValueError("common-support hitter expected tier must be positive")
+    return 1.0 - float(pitcher.mean()) / hitter_mean
+
+
+def _calibrate_intercept_effect(
+    nuisance_params: np.ndarray,
+    blind_support: np.ndarray,
+    target_relative_reduction: float | None = None,
+) -> float:
+    if target_relative_reduction is None:
+        raise ValueError("Amendment 6 requires a committed relative-effect target")
+    if not 0.0 < target_relative_reduction <= 1.0:
+        raise ValueError("relative-effect target must be in (0, 1]")
     lower, upper = -20.0, 0.0
-    target = -0.10
-    if float(_expected_tier_gap(nuisance_params, blind_support, lower, 0.0).mean()) > target:
+    if (
+        _relative_expected_tier_reduction(nuisance_params, blind_support, lower)
+        < target_relative_reduction
+    ):
         raise ValueError("intercept search range cannot reach the registered target")
     for _ in range(80):
         midpoint = (lower + upper) / 2.0
-        gap = float(
-            _expected_tier_gap(nuisance_params, blind_support, midpoint, 0.0).mean()
+        reduction = _relative_expected_tier_reduction(
+            nuisance_params, blind_support, midpoint
         )
-        if gap < target:
-            lower = midpoint
-        else:
+        if reduction < target_relative_reduction:
             upper = midpoint
+        else:
+            lower = midpoint
     return (lower + upper) / 2.0
 
 
@@ -526,6 +567,316 @@ def _simulate_scenario(
         if progress and (simulation % 100 == 0 or simulation == n_simulations):
             progress(simulation, n_simulations, rejections)
     return rejections
+
+
+def _board_pitcher_count(
+    rows: list[dict],
+    expected_tiers: np.ndarray,
+    relative_reduction: float,
+    top_n: int,
+) -> int:
+    adjusted = np.asarray(expected_tiers, dtype=float).copy()
+    for index, row in enumerate(rows):
+        if row["role"] == "pitcher":
+            adjusted[index] *= 1.0 - relative_reduction
+    order = sorted(
+        range(len(rows)),
+        key=lambda index: (
+            -float(adjusted[index]),
+            rows[index]["rank"],
+            rows[index]["mlbam_id"],
+            rows[index]["role"],
+        ),
+    )[:top_n]
+    return sum(rows[index]["role"] == "pitcher" for index in order)
+
+
+def _derive_board_anchor(
+    rows: list[dict],
+    expected_tiers: np.ndarray,
+    *,
+    top_n: int = 25,
+    max_pitchers: int = 7,
+) -> dict:
+    if len(rows) != len(expected_tiers) or len(rows) < top_n:
+        raise ValueError("board rows and expected tiers must cover the requested top N")
+    before = _board_pitcher_count(rows, expected_tiers, 0.0, top_n)
+    fallback = 0.50
+    if _board_pitcher_count(rows, expected_tiers, 1.0, top_n) > max_pitchers:
+        selected = fallback
+        fallback_used = True
+    else:
+        lower, upper = 0.0, 1.0
+        for _ in range(80):
+            midpoint = (lower + upper) / 2.0
+            if (
+                _board_pitcher_count(rows, expected_tiers, midpoint, top_n)
+                <= max_pitchers
+            ):
+                upper = midpoint
+            else:
+                lower = midpoint
+        selected = math.ceil(upper * 1_000_000_000_000) / 1_000_000_000_000
+        fallback_used = False
+    after = _board_pitcher_count(rows, expected_tiers, selected, top_n)
+    return {
+        "top_n": top_n,
+        "max_pitchers": max_pitchers,
+        "before_pitcher_count": before,
+        "before_hitter_count": top_n - before,
+        "after_pitcher_count": after,
+        "after_hitter_count": top_n - after,
+        "relative_reduction": selected,
+        "fallback_relative_reduction": fallback,
+        "fallback_used": fallback_used,
+    }
+
+
+def _parameter_sha256(params: np.ndarray) -> str:
+    values = [round(float(value), 12) for value in params]
+    encoded = json.dumps(values, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _derive_effect_anchor_inputs(oof_payload: dict, rank_payload: dict) -> dict:
+    oof_problems = validate_oof_score_artifact(oof_payload)
+    if oof_problems:
+        raise ValueError("; ".join(oof_problems))
+    design = _design_from_oof(oof_payload)
+    nuisance = _fit_ordered_logit(
+        design["blind_design"], design["outcomes"]
+    )["params"]
+    board = rank_payload.get("board")
+    if not isinstance(board, list):
+        raise ValueError("rank artifact board must be a list")
+    rows = []
+    scores = []
+    for row in board:
+        score = (row.get("components") or {}).get("model_score")
+        if (
+            isinstance(score, bool)
+            or not isinstance(score, (int, float))
+            or not math.isfinite(float(score))
+        ):
+            continue
+        if (
+            row.get("role") not in {"hitter", "pitcher"}
+            or not isinstance(row.get("rank"), int)
+            or not isinstance(row.get("mlbam_id"), int)
+        ):
+            raise ValueError("rank artifact model-component row is invalid")
+        rows.append(
+            {
+                "rank": row["rank"],
+                "mlbam_id": row["mlbam_id"],
+                "role": row["role"],
+            }
+        )
+        scores.append((float(score) - 50.0) / 10.0)
+    normalized_scores = np.asarray(scores, dtype=float)
+    expected_tiers = np.zeros(len(rows), dtype=float)
+    fold_weights = {}
+    total = len(oof_payload["rows"])
+    for cohort in FOLD_YEARS:
+        count = sum(row["test_cohort"] == cohort for row in oof_payload["rows"])
+        weight = count / total
+        fold_design = np.column_stack(
+            (
+                normalized_scores,
+                np.full(len(rows), cohort == 2019),
+                np.full(len(rows), cohort == 2021),
+            )
+        ).astype(float)
+        expected_tiers += weight * _expected_tier(
+            _ordered_probabilities(nuisance, fold_design)
+        )
+        fold_weights[str(cohort)] = {
+            "row_count": count,
+            "weight": round(weight, 9),
+        }
+    derivation = _derive_board_anchor(rows, expected_tiers)
+    if derivation["before_pitcher_count"] != 13:
+        raise ValueError("outcome-blind derivation did not reproduce 13 pitchers")
+    return {
+        "oof_row_count": total,
+        "rank_row_count": len(rows),
+        "fold_weights": fold_weights,
+        "nuisance_parameter_sha256": _parameter_sha256(nuisance),
+        "derivation": derivation,
+    }
+
+
+def build_effect_anchor_artifact(
+    *,
+    oof_sha256: str,
+    rank_sha256: str,
+    oof_row_count: int,
+    rank_row_count: int,
+    fold_weights: dict,
+    nuisance_parameter_sha256: str,
+    derivation: dict,
+    generated_at: str | None = None,
+) -> dict:
+    return {
+        "artifact": "valucast_ordinal_effect_anchor",
+        "schema_version": "1.0.0",
+        "status": "registered_target",
+        "generated_at": _generated_at(generated_at),
+        "registration": "plans/028-pitcher-lean-model-fix.md#amendment-6",
+        "registration_commit": EFFECT_ANCHOR_REGISTRATION_COMMIT,
+        "inputs": {
+            "oof_artifact": {
+                "path": "data/models/valucast_ordinal_oof_scores.json",
+                "sha256": oof_sha256,
+                "row_count": oof_row_count,
+            },
+            "rank_artifact": {
+                "path": "data/models/valucast_prospect_rank_v1.json",
+                "sha256": rank_sha256,
+                "model_component_field": "components.model_score",
+                "eligible_row_count": rank_row_count,
+            },
+        },
+        "nuisance_fit": {
+            "model": "role_blind_proportional_odds_logit",
+            "score_transform": "(score - 50) / 10",
+            "fold_fixed_effects": [2019, 2021],
+            "fold_weights": fold_weights,
+            "parameter_sha256": nuisance_parameter_sha256,
+            "role_conditional_outcomes_used": False,
+        },
+        "derivation": {
+            **derivation,
+            "metric": "relative_common_support_expected_tier_reduction",
+            "ranking": (
+                "adjusted_expected_tier_desc_then_served_rank_asc_then_"
+                "mlbam_id_asc_then_role_asc"
+            ),
+        },
+        "historical_fit": {
+            "pitcher_intercept_fitted": False,
+            "pitcher_score_slope_fitted": False,
+            "historical_role_coefficients_reported": False,
+        },
+        "validation": {"problems": []},
+    }
+
+
+def validate_effect_anchor_artifact(
+    payload: dict,
+    *,
+    oof_bytes: bytes | None = None,
+    rank_bytes: bytes | None = None,
+) -> list[str]:
+    problems = []
+    unexpected = sorted(set(payload) - EFFECT_ANCHOR_TOP_LEVEL_FIELDS)
+    if unexpected:
+        problems.append(f"unexpected top-level fields: {', '.join(unexpected)}")
+    if payload.get("artifact") != "valucast_ordinal_effect_anchor":
+        problems.append("artifact must be valucast_ordinal_effect_anchor")
+    if payload.get("status") != "registered_target":
+        problems.append("status must be registered_target")
+    if payload.get("registration_commit") != EFFECT_ANCHOR_REGISTRATION_COMMIT:
+        problems.append("registration_commit does not match Amendment 6")
+    inputs = payload.get("inputs") or {}
+    oof_input = inputs.get("oof_artifact") or {}
+    rank_input = inputs.get("rank_artifact") or {}
+    if oof_bytes is not None and oof_input.get("sha256") != hashlib.sha256(
+        oof_bytes
+    ).hexdigest():
+        problems.append("oof_artifact.sha256 does not match the committed input")
+    if rank_bytes is not None and rank_input.get("sha256") != hashlib.sha256(
+        rank_bytes
+    ).hexdigest():
+        problems.append("rank_artifact.sha256 does not match the committed input")
+    nuisance = payload.get("nuisance_fit") or {}
+    if nuisance.get("role_conditional_outcomes_used") is not False:
+        problems.append("anchor derivation must remain role-outcome blind")
+    if nuisance.get("model") != "role_blind_proportional_odds_logit":
+        problems.append("nuisance model is invalid")
+    if nuisance.get("score_transform") != "(score - 50) / 10":
+        problems.append("nuisance score transform is invalid")
+    if nuisance.get("fold_fixed_effects") != [2019, 2021]:
+        problems.append("nuisance fold fixed effects are invalid")
+    parameter_sha = nuisance.get("parameter_sha256")
+    if not isinstance(parameter_sha, str) or len(parameter_sha) != 64:
+        problems.append("nuisance parameter_sha256 must be a 64-character digest")
+    derivation = payload.get("derivation") or {}
+    if derivation.get("top_n") != 25 or derivation.get("before_pitcher_count") != 13:
+        problems.append("derivation must start from the committed 13-pitcher top 25")
+    if derivation.get("max_pitchers") != 7:
+        problems.append("derivation must target the seven-pitcher limit")
+    reduction = derivation.get("relative_reduction")
+    if (
+        isinstance(reduction, bool)
+        or not isinstance(reduction, (int, float))
+        or not 0.0 <= reduction <= 1.0
+    ):
+        problems.append("relative_reduction must be in [0, 1]")
+    if derivation.get("metric") != "relative_common_support_expected_tier_reduction":
+        problems.append("derivation metric is invalid")
+    historical = payload.get("historical_fit") or {}
+    if historical != {
+        "pitcher_intercept_fitted": False,
+        "pitcher_score_slope_fitted": False,
+        "historical_role_coefficients_reported": False,
+    }:
+        problems.append("historical pitcher terms must remain unfit and unreported")
+    if oof_bytes is not None and rank_bytes is not None and not problems:
+        expected = _derive_effect_anchor_inputs(
+            json.loads(oof_bytes), json.loads(rank_bytes)
+        )
+        if nuisance.get("fold_weights") != expected["fold_weights"]:
+            problems.append("fold_weights do not match the committed OOF rows")
+        if parameter_sha != expected["nuisance_parameter_sha256"]:
+            problems.append("nuisance parameter hash does not match the committed fit")
+        expected_derivation = {
+            **expected["derivation"],
+            "metric": "relative_common_support_expected_tier_reduction",
+            "ranking": (
+                "adjusted_expected_tier_desc_then_served_rank_asc_then_"
+                "mlbam_id_asc_then_role_asc"
+            ),
+        }
+        if derivation != expected_derivation:
+            problems.append("derivation does not match the committed inputs")
+    return problems
+
+
+def run_effect_anchor_artifact(
+    *,
+    oof_path: Path = OOF_ARTIFACT_PATH,
+    rank_path: Path = RANK_ARTIFACT_PATH,
+    artifact_path: Path = EFFECT_ANCHOR_ARTIFACT_PATH,
+    generated_at: str | None = None,
+) -> dict:
+    oof_bytes = oof_path.read_bytes()
+    rank_bytes = rank_path.read_bytes()
+    derived = _derive_effect_anchor_inputs(
+        json.loads(oof_bytes), json.loads(rank_bytes)
+    )
+    payload = build_effect_anchor_artifact(
+        oof_sha256=hashlib.sha256(oof_bytes).hexdigest(),
+        rank_sha256=hashlib.sha256(rank_bytes).hexdigest(),
+        generated_at=generated_at,
+        **derived,
+    )
+    problems = validate_effect_anchor_artifact(
+        payload, oof_bytes=oof_bytes, rank_bytes=rank_bytes
+    )
+    if problems:
+        raise ValueError("; ".join(problems))
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, artifact_path)
+    return {
+        "artifact_path": str(artifact_path),
+        "derivation": payload["derivation"],
+        "nuisance_fit": payload["nuisance_fit"],
+    }
 
 
 def build_power_artifact(
