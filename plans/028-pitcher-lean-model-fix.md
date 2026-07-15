@@ -1249,3 +1249,69 @@ ONE event, outside the 12:20-13:15 UTC nightly window. Outstanding data
 follow-up: the committed PL CSV is the upload-clipped 60-row copy; the full
 630-row export replaces it before or with the push (data-only, join code
 unaffected).
+
+### Amendment 3 — post-look AAA denominator disclosure and alternative
+### cross-role instrument registration (2026-07-15)
+
+This amendment is append-only. It does not recast a failed first look as a gate
+correction.
+
+**AAA coverage denominator (registered after the first look).** The original
+coverage check used every pitcher on the served top 25. Its first observed result
+was 3/10 = 0.30 against a 0.60 floor: FAIL. The implementation was then changed to
+use only served top-25 pitchers whose current level is AAA, because lower-level
+pitchers are not eligible for the AAA Statcast feed rather than missing from it.
+That revised result was 3/3 = 1.00: PASS. Because the denominator was changed after
+the 3/10 result was seen, 3/3 is descriptive feed-completeness evidence only. It
+cannot overturn the original failure or confirm cross-role calibration. The
+artifact must retain both denominators and rates.
+
+The revised check also requires at least 3 AAA-eligible served top-25 pitchers;
+1/1 and 2/2 cannot pass. The current 3/3 result sits exactly at that floor. This
+minimum is an operational anti-triviality guard, not a statistical sample-size or
+power claim. It establishes only that measured AAA evidence is present for the
+small eligible slice. The all-pitcher population rate (currently 3/10 = 0.30)
+remains a mandatory descriptive field.
+
+**Alternative registered instrument (registration precedes its power run and any
+historical role coefficient).** The pair-concordance C_cross delta remains
+report-only and C2/C3 remain cut. A new role-conditional outcome-calibration
+instrument may be evaluated only in this sequence:
+
+1. Rebuild the same C0 fold-trained, out-of-fold served scores and shared ordinal
+   outcomes for the frozen 2018, 2019, and 2021 cohorts. Every observation must be
+   produced by the existing fold-local training/neutralization contract. In-sample
+   predictions, today's model, current-board rows, and current outcomes are
+   forbidden. The artifact must report exact row counts and identity hashes by
+   fold and role.
+2. Fit a proportional-odds calibration regression to the three outcome tiers
+   {bust=0, role=0.5, star=1}. Use the served score centered at 50 and divided by
+   10, fold fixed effects, a pitcher intercept, and pitcher-by-score slope. The
+   role-blind nested model omits both pitcher terms. No covariates, interactions,
+   cut-point changes, pooling changes, or alternate links may be added after the
+   power artifact is committed.
+3. Before fitting or emitting either historical pitcher coefficient, run a fixed
+   simulation power check on the empirical fold/role/score design. A role-blind
+   nuisance fit may set the common score-to-outcome curve, but the historical
+   pitcher intercept and slope must remain unfit and unreported. Use seed 28015,
+   1,000 simulations per scenario, and a 2-degree-of-freedom likelihood-ratio test
+   at alpha 0.05. Two registered alternatives must each reach power >= 0.70:
+   (a) an intercept-shaped pitcher penalty calibrated to a -0.10 standardized
+   expected-tier gap at identical scores, and (b) a slope-shaped role effect with
+   0.10 root-mean-square expected-tier separation over the common score support.
+   The simulation artifact and validator must be committed before the one look.
+4. Only if both power checks pass may the historical role model be fit exactly
+   once. Its primary statistical result is the registered 2-df likelihood-ratio
+   test. Its frozen practical-effect result is the standardized pitcher-minus-
+   hitter expected-tier gap over the pooled common-support score distribution.
+   A flat pitcher risk-discount lever is worth re-proposing only if the point gap
+   is <= -0.10 and its one-sided 95% bootstrap upper bound is < 0. A significant
+   interaction without that negative average gap diagnoses scale mixing; it does
+   not authorize a flat discount. A nonsignificant result, an effect smaller than
+   the practical floor, or a failed power scenario authorizes no lever.
+
+The one historical look may diagnose a future registered lever but cannot itself
+ship one. Any score change still requires a separately registered, fold-trained
+candidate comparison and the existing publication/ablation safety guards. No
+manual adjustment to the seven named/current pitchers and no change to
+`PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False` are permitted by this amendment.
