@@ -1453,3 +1453,24 @@ without that relative average reduction still diagnoses scale mixing and does
 not authorize a flat discount. The look remains diagnostic only; any scoring
 lever still requires a separately registered candidate and the existing
 within-pitcher, publication, and ablation gates.
+
+### Publication veto decision — 2026-07-15
+
+The registered power study stopped underpowered: intercept-scenario power was
+0.261 and slope-scenario power was 1.000 against the frozen 0.70 floor. Because
+both scenarios had to pass, no historical role coefficient was fit or reported
+and the historical look was not authorized.
+
+Keep the existing publication limits unchanged: at most seven pitchers in the
+top 25 and at most 30% pitchers in the top 50. The frozen five-board aggregate
+computed by the repository's existing consensus logic contains four pitchers in
+its top 25 and 12 in its top 50, versus the live ValuCast board's 10 and 17. That
+consensus composition is strong external context, not ground truth; human boards
+may carry anti-pitcher bias. It nevertheless provides no support for relaxing a
+cap that is already looser than the aggregate composition.
+
+No score or rank changes are authorized. `PITCHER_STALE_PEDIGREE_DECAY_ENABLED`
+remains `False`. The public blocker is display-only and reads: `Pitcher
+representation exceeds the publication range. Rankings remain visible, but the
+current evidence cannot justify either a cross-role score adjustment or relaxing
+the publication gate.`

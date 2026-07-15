@@ -625,15 +625,15 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
     assert crowded_check["status"] == "blocked"
     assert crowded_check["metrics"]["top25_pitcher_count"] == 8
     assert (
-        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
+        "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
         in crowded_payload["blockers"]
     )
     assert (
-        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
+        "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
         not in crowded_payload["surface_blockers"]["dynasty"]
     )
     assert crowded_payload["surface_blockers"]["prospects"] == [
-        "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
+        "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
     ]
 
 
@@ -655,7 +655,7 @@ def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    blocker = "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
+    blocker = "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
     assert payload["ready_for_public_snapshot"] is False
     assert payload["ready_for_buys_promotion"] is True
     assert blocker in payload["blockers"]
@@ -692,7 +692,7 @@ def test_buy_gate_decoupled_from_prospect_board_freshness_and_shape():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    shape_blocker = "Cross-role calibration is under review. Rankings remain unchanged while additional pitcher evidence accumulates."
+    shape_blocker = "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
     freshness_blocker = "MiLB prospect-card stat freshness audit blocks public promotion."
     # Both block the prospects surface and the public snapshot ...
     assert payload["ready_for_public_snapshot"] is False
