@@ -6613,6 +6613,16 @@ def backfields():
     return render_template("backfields.html", **_build_backfields_page_context())
 
 
+@app.route("/farms")
+def farms():
+    return render_template(
+        "farms.html",
+        backfields_page=True,
+        mode="prospects",
+        **_build_farm_rankings_context(),
+    )
+
+
 @app.route("/backfields/team/<org>")
 def backfields_team(org):
     try:

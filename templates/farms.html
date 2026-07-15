@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Farm-System Rankings | ValuCast{% endblock %}
+{% block og_title %}Farm-System Rankings | ValuCast{% endblock %}
+{% block og_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
+{% block og_url %}https://valucast.app/farms{% endblock %}
+{% block twitter_title %}Farm-System Rankings | ValuCast{% endblock %}
+{% block twitter_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
+
+{% block content %}
+<article class="backfields-page">
+    <header class="bf-hero">
+        <div class="bf-hero-copy">
+            <p class="bf-eyebrow">Minor Leagues</p>
+            <h1>Farm-System Rankings</h1>
+            <p class="bf-tagline">The sum of each system's top 20 dynasty values on the current ValuCast prospect board.</p>
+        </div>
+        <a class="bf-section-link" href="/backfields">Back to Backfields</a>
+    </header>
+
+    <section class="bf-section" aria-labelledby="farm-rankings-title">
+        <div class="bf-section-head">
+            <div>
+                <h2 id="farm-rankings-title">All systems</h2>
+                <p>Top 100 and pool counts explain star power and depth; they do not change the order.</p>
+            </div>
+        </div>
+        {% if systems %}
+        <div class="bf-team-board-card">
+            <table class="rankings-table">
+                <thead>
+                    <tr>
+                        <th class="col-rank">#</th>
+                        <th>Organization</th>
+                        <th class="col-value">Top 20 value</th>
+                        <th class="col-value">Top 100</th>
+                        <th class="col-value">Pool</th>
+                        <th>Top prospects</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for system in systems %}
+                    <tr>
+                        <td class="col-rank">{{ system.rank }}</td>
+                        <td><a class="bf-player-link" href="{{ system.url }}">{{ system.name }}</a> <span class="col-team">{{ system.org }}</span></td>
+                        <td class="col-value">{{ "%.1f"|format(system.top20_value) }}</td>
+                        <td class="col-value">{{ system.top100_count }}</td>
+                        <td class="col-value">{{ system.pool_count }}</td>
+                        <td>
+                            {% for player in system.top_prospects %}
+                            <a class="bf-player-link" href="{{ player.url }}">{{ player.name }}</a>{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="bf-empty">Farm rankings will return after the next successful data build.</p>
+        {% endif %}
+    </section>
+</article>
+{% endblock %}

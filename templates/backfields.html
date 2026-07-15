@@ -325,9 +325,12 @@
                 <h2 id="bf-team-boards-title">Team Boards</h2>
                 <p>Top prospects by MLB organization</p>
             </div>
-            {% if team_boards.selected %}
-            <a class="bf-section-link" href="/backfields/team/{{ team_boards.selected.org }}/share-card">Share {{ team_boards.selected.org }} board</a>
-            {% endif %}
+            <span class="bf-team-share-actions">
+                <a class="bf-section-link" href="/farms">Farm-system rankings</a>
+                {% if team_boards.selected %}
+                <a class="bf-section-link" href="/backfields/team/{{ team_boards.selected.org }}/share-card">Share {{ team_boards.selected.org }} board</a>
+                {% endif %}
+            </span>
         </div>
         {% if team_boards.teams %}
         <div class="bf-team-picker" aria-label="Choose an MLB organization">

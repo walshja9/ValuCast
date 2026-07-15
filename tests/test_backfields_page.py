@@ -944,6 +944,54 @@ def test_backfields_exposes_team_boards_module():
     assert "/backfields/team/" in html
 
 
+def test_farm_rankings_route_renders_method_and_team_links(monkeypatch):
+    monkeypatch.setattr(app_module, "_build_farm_rankings_context", lambda: {
+        "available": True,
+        "systems": [{
+            "rank": 1,
+            "org": "MIL",
+            "name": "Milwaukee Brewers",
+            "url": "/backfields/team/MIL",
+            "top20_value": 655.6,
+            "top100_count": 8,
+            "pool_count": 101,
+            "best_rank": 1,
+            "top_prospects": [
+                {"name": "Luis Lara", "url": "/player/luis-lara?mode=prospects"},
+            ],
+        }],
+    })
+
+    response, html = _html("/farms")
+
+    assert response.status_code == 200
+    assert "Farm-System Rankings" in html
+    assert "sum of each system's top 20" in html
+    assert 'href="/backfields/team/MIL"' in html
+    assert "Luis Lara" in html
+    assert 'href="/farms"' not in _site_nav(html)
+
+
+def test_backfields_links_to_farm_rankings():
+    response, html = _html("/backfields")
+
+    assert response.status_code == 200
+    assert 'href="/farms">Farm-system rankings</a>' in html
+
+
+def test_farm_rankings_route_fails_open_when_board_is_unavailable(monkeypatch):
+    monkeypatch.setattr(
+        app_module,
+        "_build_farm_rankings_context",
+        lambda: {"available": False, "systems": []},
+    )
+
+    response, html = _html("/farms")
+
+    assert response.status_code == 200
+    assert "Farm rankings will return after the next successful data build." in html
+
+
 def test_team_board_card_offers_top_10_and_top_20_downloads():
     org = _team_board_org_from_backfields()
     response, html = _html(f"/backfields/team/{org}")
