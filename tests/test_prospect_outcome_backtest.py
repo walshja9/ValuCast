@@ -50,11 +50,25 @@ def _dynasty_backtest():
     }
 
 
-def _adapter_backtest():
+def _cross_role_shadow(*, historical="pass", power="pass"):
     return {
         "generated_at": "2026-06-14T12:00:00+00:00",
-        "promotion": {"adapter_research_gate": "active"},
-        "roles": {"hitter": _role(1090), "pitcher": _role(1070)},
+        "status": "review_ready" if historical == power == "pass" else "collecting",
+        "checks": {
+            "historical_absolute_concordance": {
+                "status": historical,
+                "value": 0.81,
+                "floor": 0.60,
+            },
+            "cross_role_change_power": {
+                "status": power,
+                "max_power": 0.75 if power == "pass" else 0.015,
+                "floor": 0.70,
+            },
+            "current_board_shape": {"status": "pass"},
+            "aaa_measured_coverage": {"status": "pass"},
+        },
+        "promotion": {"score_changes_authorized": False},
     }
 
 
@@ -80,14 +94,15 @@ def test_outcome_backtest_separates_realized_evidence_from_forward_observation()
     payload = build_outcome_backtest(
         _prospect_model(),
         _dynasty_backtest(),
-        _adapter_backtest(),
+        _cross_role_shadow(),
         _forward_validation(),
         _model_v07(),
     )
 
     assert payload["status"] == "evidence_ready"
     assert payload["evidence"]["dynasty_fixed_horizon"]["status"] == "active"
-    assert payload["evidence"]["adapter_fixed_horizon"]["status"] == "active"
+    assert payload["evidence"]["cross_role_shadow"]["status"] == "review_ready"
+    assert payload["evidence"]["cross_role_shadow"]["score_changes_authorized"] is False
     assert payload["evidence"]["forward_observation"][
         "is_realized_outcome_accuracy_evidence"
     ] is False
@@ -99,12 +114,31 @@ def test_outcome_backtest_separates_realized_evidence_from_forward_observation()
     assert payload["front_office_track"]["grade"] == "B+"
 
 
+def test_outcome_backtest_blocks_on_underpowered_cross_role_change_gate():
+    payload = build_outcome_backtest(
+        _prospect_model(),
+        _dynasty_backtest(),
+        _cross_role_shadow(power="fail"),
+        _forward_validation(),
+        _model_v07(),
+    )
+
+    assert payload["status"] == "needs_work"
+    assert payload["evidence"]["cross_role_shadow"]["historical_absolute_passed"] is True
+    assert payload["evidence"]["cross_role_shadow"]["change_power_passed"] is False
+    assert payload["validation"]["realized_evidence_ready"] is False
+    assert any(
+        gate["kind"] == "cross_role_change_power"
+        for gate in payload["validation"]["evidence_gates"]
+    )
+
+
 def test_run_and_validate_outcome_backtest(tmp_path):
     paths = {}
     payloads = {
         "model": _prospect_model(),
         "dynasty": _dynasty_backtest(),
-        "adapter": _adapter_backtest(),
+        "cross_role": _cross_role_shadow(),
         "forward": _forward_validation(),
         "v07": _model_v07(),
     }
@@ -116,7 +150,7 @@ def test_run_and_validate_outcome_backtest(tmp_path):
     result = run_outcome_backtest(
         prospect_model_path=paths["model"],
         dynasty_backtest_path=paths["dynasty"],
-        adapter_backtest_path=paths["adapter"],
+        cross_role_shadow_path=paths["cross_role"],
         forward_validation_path=paths["forward"],
         model_v07_path=paths["v07"],
         artifact_path=artifact_path,

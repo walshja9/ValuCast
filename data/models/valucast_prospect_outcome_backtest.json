@@ -1,50 +1,8 @@
 {
   "artifact": "valucast_prospect_outcome_backtest",
   "evidence": {
-    "adapter_fixed_horizon": {
-      "promotion": {
-        "adapter_research_gate": "active",
-        "feeds_live_dd_value": false,
-        "live_block_reason": "Historical adapter evidence must pass for both roles, then dated forward archives must demonstrate stability before any capped influence.",
-        "live_dd_value_influence": "blocked",
-        "next_allowed_step": "separate_dd_shadow_comparison",
-        "reason": "Both role-specific DD 7x7 adapters passed the ordering, top-quartile, and temporal-stability guards."
-      },
-      "role_gates": {
-        "hitter": "active",
-        "pitcher": "active"
-      },
-      "roles": [
-        {
-          "baseline_multiclass_brier": null,
-          "baseline_rank_concordance": 0.7248,
-          "baseline_top_quartile_precision": 0.339933,
-          "candidate_multiclass_brier": null,
-          "candidate_rank_concordance": 0.779116,
-          "candidate_top_quartile_precision": 0.373563,
-          "fold_count": 3,
-          "research_gate": "active",
-          "role": "hitter",
-          "sample_size": 1091
-        },
-        {
-          "baseline_multiclass_brier": null,
-          "baseline_rank_concordance": 0.452883,
-          "baseline_top_quartile_precision": 0.243861,
-          "candidate_multiclass_brier": null,
-          "candidate_rank_concordance": 0.469247,
-          "candidate_top_quartile_precision": 0.252939,
-          "fold_count": 3,
-          "research_gate": "active",
-          "role": "pitcher",
-          "sample_size": 1127
-        }
-      ],
-      "sample_size": 2218,
-      "status": "active"
-    },
     "bucket_cohort": {
-      "bucket_count": 12,
+      "bucket_count": 6,
       "bucket_definition": "validation_layer|role|test_cohort",
       "buckets": [
         {
@@ -142,121 +100,99 @@
           "sample_size": 365,
           "secondary_non_regression": true,
           "test_cohort": 2021
-        },
-        {
-          "bucket": "adapter|hitter|cohort_2018",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.796306,
-            "baseline_top_quartile_precision": 0.32289,
-            "candidate_rank_concordance": 0.796306,
-            "candidate_top_quartile_precision": 0.32289
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "hitter",
-          "sample_size": 345,
-          "secondary_non_regression": true,
-          "test_cohort": 2018
-        },
-        {
-          "bucket": "adapter|hitter|cohort_2019",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.730732,
-            "baseline_top_quartile_precision": 0.324324,
-            "candidate_rank_concordance": 0.730732,
-            "candidate_top_quartile_precision": 0.324324
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "hitter",
-          "sample_size": 360,
-          "secondary_non_regression": true,
-          "test_cohort": 2019
-        },
-        {
-          "bucket": "adapter|hitter|cohort_2021",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.655358,
-            "baseline_top_quartile_precision": 0.369723,
-            "candidate_rank_concordance": 0.808877,
-            "candidate_top_quartile_precision": 0.464777
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "hitter",
-          "sample_size": 386,
-          "secondary_non_regression": true,
-          "test_cohort": 2021
-        },
-        {
-          "bucket": "adapter|pitcher|cohort_2018",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.450922,
-            "baseline_top_quartile_precision": 0.248216,
-            "candidate_rank_concordance": 0.450922,
-            "candidate_top_quartile_precision": 0.248216
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "pitcher",
-          "sample_size": 352,
-          "secondary_non_regression": true,
-          "test_cohort": 2018
-        },
-        {
-          "bucket": "adapter|pitcher|cohort_2019",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.48498,
-            "baseline_top_quartile_precision": 0.246056,
-            "candidate_rank_concordance": 0.48498,
-            "candidate_top_quartile_precision": 0.246056
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "pitcher",
-          "sample_size": 410,
-          "secondary_non_regression": true,
-          "test_cohort": 2019
-        },
-        {
-          "bucket": "adapter|pitcher|cohort_2021",
-          "layer": "adapter",
-          "metrics": {
-            "baseline_rank_concordance": 0.418721,
-            "baseline_top_quartile_precision": 0.237194,
-            "candidate_rank_concordance": 0.469247,
-            "candidate_top_quartile_precision": 0.265225
-          },
-          "passed": true,
-          "primary_non_regression": true,
-          "role": "pitcher",
-          "sample_size": 365,
-          "secondary_non_regression": true,
-          "test_cohort": 2021
         }
       ],
       "by_role": {
         "hitter": {
-          "bucket_count": 6,
+          "bucket_count": 3,
           "pass_rate": 1.0,
-          "passed_count": 6
+          "passed_count": 3
         },
         "pitcher": {
-          "bucket_count": 6,
+          "bucket_count": 3,
           "pass_rate": 1.0,
-          "passed_count": 6
+          "passed_count": 3
         }
       },
-      "minimum_bucket_count": 8,
+      "minimum_bucket_count": 6,
       "minimum_pass_rate": 0.75,
       "pass_rate": 1.0,
-      "passed_count": 12,
+      "passed_count": 6,
       "status": "ready"
+    },
+    "cross_role_shadow": {
+      "change_power_passed": false,
+      "checks": {
+        "aaa_measured_coverage": {
+          "coverage_rate": 0.3,
+          "covered_top25_pitcher_count": 3,
+          "eligible_top25_pitcher_count": 10,
+          "evidence_class": "current_measured_aaa_pitch_data",
+          "floor": 0.6,
+          "status": "fail"
+        },
+        "cross_role_change_power": {
+          "evidence_class": "prospective_change_gate",
+          "floor": 0.7,
+          "max_power": 0.015,
+          "metric": "registered_cross_role_change_detection_power",
+          "status": "fail",
+          "tested_effects": [
+            {
+              "effect": 0.005,
+              "power": 0.0
+            },
+            {
+              "effect": 0.01,
+              "power": 0.0
+            },
+            {
+              "effect": 0.02,
+              "power": 0.0
+            },
+            {
+              "effect": 0.03,
+              "power": 0.015
+            }
+          ]
+        },
+        "current_board_shape": {
+          "evidence_class": "current_publication_shape",
+          "max_top25_pitchers": 7,
+          "max_top50_pitcher_rate": 0.3,
+          "status": "fail",
+          "top25_pitcher_count": 10,
+          "top50_pitcher_count": 17,
+          "top50_pitcher_rate": 0.34
+        },
+        "historical_absolute_concordance": {
+          "confirms_current_change": false,
+          "evidence_class": "retrospective_absolute_floor",
+          "floor": 0.6,
+          "fold_count": 3,
+          "folds": [
+            {
+              "test_cohort": 2018,
+              "value": 0.848651
+            },
+            {
+              "test_cohort": 2019,
+              "value": 0.813226
+            },
+            {
+              "test_cohort": 2021,
+              "value": 0.770809
+            }
+          ],
+          "gate_name": "absolute_cross_role_adapter_floor",
+          "metric": "c_cross_report_only",
+          "status": "pass",
+          "value": 0.809996
+        }
+      },
+      "historical_absolute_passed": true,
+      "score_changes_authorized": false,
+      "status": "collecting"
     },
     "dynasty_fixed_horizon": {
       "promotion": {
@@ -362,7 +298,8 @@
   },
   "front_office_track": {
     "cap_reasons": [
-      "Forward observations are not review-ready yet."
+      "Forward observations are not review-ready yet.",
+      "Cross-role change detection is underpowered."
     ],
     "forward_next_target_grade": "A-",
     "forward_supported_grade": null,
@@ -440,26 +377,24 @@
         "passed": false
       }
     },
-    "grade": "B+",
+    "grade": "B",
     "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-    "score": 87,
-    "score_cap": 87,
+    "score": 84,
+    "score_cap": 84,
     "target_grade": "A-",
-    "uncapped_score": 97
+    "uncapped_score": 87
   },
   "generated_at": "2026-07-15T00:00:00+00:00",
   "generated_dates": {
-    "adapter_backtest": "2026-07-15",
+    "cross_role_shadow": "2026-07-15",
     "dynasty_backtest": "2026-07-15",
     "forward_validation": "2026-07-15",
     "model_v07": "2026-07-15",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
-  "report_version": "0.1.0",
+  "report_version": "0.2.0",
   "source_policy": {
-    "dd_ranks_used": false,
-    "dd_values_used": false,
     "external_rankings_used": false,
     "feeds_buy_score": false,
     "feeds_model_score": false,
@@ -467,21 +402,40 @@
     "kind": "realized_outcome_and_observe_only_evidence",
     "market_values_used": false
   },
-  "status": "evidence_ready",
+  "status": "needs_work",
   "validation": {
     "blockers": [],
     "bucket_cohort_evidence_ready": true,
+    "cross_role_change_power_ready": false,
     "evidence_gates": [
+      {
+        "current": 0.015,
+        "kind": "cross_role_change_power",
+        "message": "Cross-role change detection is under the registered power floor.",
+        "required": 0.7
+      },
       {
         "current": "collecting",
         "kind": "forward_archives",
         "message": "Forward archives are still collecting; no live-outcome stability review yet.",
         "required": "review_ready"
+      },
+      {
+        "current": "fail",
+        "kind": "current_board_shape",
+        "message": "Current Board Shape has not passed.",
+        "required": "pass"
+      },
+      {
+        "current": "fail",
+        "kind": "aaa_measured_coverage",
+        "message": "Aaa Measured Coverage has not passed.",
+        "required": "pass"
       }
     ],
     "forward_evidence_ready": false,
     "minimum_realized_outcome_sample_size": 2000,
-    "realized_evidence_ready": true,
+    "realized_evidence_ready": false,
     "realized_outcome_sample_size": 2218
   }
 }

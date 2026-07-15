@@ -43,7 +43,7 @@ RECENT_SIGNAL_REPORT_PATH = (
 )
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.2.2"
+GOVERNOR_VERSION = "0.2.3"
 SURFACE_DYNASTY = "dynasty"
 SURFACE_PROSPECTS = "prospects"
 SURFACE_BUYS = "buys"
@@ -464,9 +464,9 @@ def _prospect_top_board_role_shape(
         "prospect_top_board_role_shape",
         passed,
         (
-            "Top prospect board role shape is within publication limits."
+            "Current prospect cross-role calibration is within the publication range."
             if passed
-            else "Top prospect board is too pitcher-heavy for public promotion."
+            else "Current prospect cross-role calibration is outside the publication range."
         ),
         top25_n=PROSPECT_INVESTMENT_TOP_N,
         top50_n=PROSPECT_FALLBACK_TOP_N,

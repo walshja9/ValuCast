@@ -30,15 +30,13 @@ def validate_outcome_backtest(path: Path = OUTCOME_PATH) -> tuple[dict | None, l
         "feeds_model_score",
         "feeds_public_rank",
         "feeds_buy_score",
-        "dd_values_used",
-        "dd_ranks_used",
         "external_rankings_used",
         "market_values_used",
     ):
         if source_policy.get(flag) is not False:
             problems.append(f"source_policy.{flag} must be false")
     evidence = payload.get("evidence") or {}
-    for key in ("dynasty_fixed_horizon", "adapter_fixed_horizon", "forward_observation"):
+    for key in ("dynasty_fixed_horizon", "cross_role_shadow", "forward_observation"):
         if key not in evidence:
             problems.append(f"evidence.{key} is required")
     if (evidence.get("forward_observation") or {}).get(

@@ -1,7 +1,7 @@
 {
   "artifact": "valucast_quality_governor",
   "blockers": [
-    "Top prospect board is too pitcher-heavy for public promotion."
+    "Current prospect cross-role calibration is outside the publication range."
   ],
   "buy_blockers": [],
   "checks": [
@@ -101,7 +101,7 @@
     },
     {
       "id": "prospect_top_board_role_shape",
-      "message": "Top prospect board is too pitcher-heavy for public promotion.",
+      "message": "Current prospect cross-role calibration is outside the publication range.",
       "metrics": {
         "max_top25_pitcher_count": 7,
         "max_top50_pitcher_rate": 0.3,
@@ -619,7 +619,7 @@
   },
   "generated_at": "2026-07-15T01:50:17.268162+00:00",
   "governor_name": "ValuCast Quality Governor",
-  "governor_version": "0.2.2",
+  "governor_version": "0.2.3",
   "metrics": {
     "generated_dates": {
       "buy_review": "2026-07-15",
@@ -655,7 +655,7 @@
     "dynasty": [],
     "movers": [],
     "prospects": [
-      "Top prospect board is too pitcher-heavy for public promotion."
+      "Current prospect cross-role calibration is outside the publication range."
     ]
   },
   "surface_readiness": {

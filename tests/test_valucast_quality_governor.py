@@ -606,6 +606,10 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
     )
     assert balanced_payload["ready_for_public_snapshot"] is True
     assert balanced_check["status"] == "passed"
+    assert (
+        balanced_check["message"]
+        == "Current prospect cross-role calibration is within the publication range."
+    )
     assert balanced_check["metrics"]["top25_pitcher_count"] == 5
     assert balanced_check["metrics"]["top50_pitcher_rate"] == 0.3
 
@@ -621,15 +625,15 @@ def test_quality_governor_blocks_pitcher_heavy_top_prospect_board():
     assert crowded_check["status"] == "blocked"
     assert crowded_check["metrics"]["top25_pitcher_count"] == 8
     assert (
-        "Top prospect board is too pitcher-heavy for public promotion."
+        "Current prospect cross-role calibration is outside the publication range."
         in crowded_payload["blockers"]
     )
     assert (
-        "Top prospect board is too pitcher-heavy for public promotion."
+        "Current prospect cross-role calibration is outside the publication range."
         not in crowded_payload["surface_blockers"]["dynasty"]
     )
     assert crowded_payload["surface_blockers"]["prospects"] == [
-        "Top prospect board is too pitcher-heavy for public promotion."
+        "Current prospect cross-role calibration is outside the publication range."
     ]
 
 
@@ -651,7 +655,7 @@ def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    blocker = "Top prospect board is too pitcher-heavy for public promotion."
+    blocker = "Current prospect cross-role calibration is outside the publication range."
     assert payload["ready_for_public_snapshot"] is False
     assert payload["ready_for_buys_promotion"] is True
     assert blocker in payload["blockers"]
@@ -688,7 +692,7 @@ def test_buy_gate_decoupled_from_prospect_board_freshness_and_shape():
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
-    shape_blocker = "Top prospect board is too pitcher-heavy for public promotion."
+    shape_blocker = "Current prospect cross-role calibration is outside the publication range."
     freshness_blocker = "MiLB prospect-card stat freshness audit blocks public promotion."
     # Both block the prospects surface and the public snapshot ...
     assert payload["ready_for_public_snapshot"] is False

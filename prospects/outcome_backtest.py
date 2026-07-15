@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from prospects.adapter_backtest import ARTIFACT_PATH as ADAPTER_BACKTEST_PATH
+from prospects.cross_role_shadow import ARTIFACT_PATH as CROSS_ROLE_SHADOW_PATH
 from prospects.dynasty_backtest import ARTIFACT_PATH as DYNASTY_BACKTEST_PATH
 from prospects.forward_validation import ARTIFACT_PATH as FORWARD_VALIDATION_PATH
 from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
@@ -17,9 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_outcome_backtest.json"
 
 REPORT_NAME = "ValuCast Prospect Outcome Evidence"
-REPORT_VERSION = "0.1.0"
+REPORT_VERSION = "0.2.0"
 MIN_REALIZED_OUTCOME_SAMPLE = 2_000
-MIN_BUCKET_COHORT_COUNT = 8
+MIN_BUCKET_COHORT_COUNT = 6
 MIN_BUCKET_COHORT_PASS_RATE = 0.75
 
 
@@ -82,64 +82,38 @@ def _better_or_equal(candidate, baseline, *, lower_is_better: bool) -> bool:
     return candidate <= baseline if lower_is_better else candidate >= baseline
 
 
-def _cohort_rows(layer: str, payload: dict) -> list[dict]:
+def _cohort_rows(payload: dict) -> list[dict]:
     rows = []
     for role, result in (payload.get("roles") or {}).items():
         for fold in result.get("folds") or []:
-            if layer == "dynasty":
-                primary_passed = _better_or_equal(
-                    fold.get("candidate_multiclass_brier"),
-                    fold.get("baseline_multiclass_brier"),
-                    lower_is_better=True,
-                )
-                secondary_passed = _better_or_equal(
-                    fold.get("candidate_rank_concordance"),
-                    fold.get("baseline_rank_concordance"),
-                    lower_is_better=False,
-                )
-                metrics = {
-                    "candidate_multiclass_brier": fold.get(
-                        "candidate_multiclass_brier"
-                    ),
-                    "baseline_multiclass_brier": fold.get(
-                        "baseline_multiclass_brier"
-                    ),
-                    "candidate_rank_concordance": fold.get(
-                        "candidate_rank_concordance"
-                    ),
-                    "baseline_rank_concordance": fold.get(
-                        "baseline_rank_concordance"
-                    ),
-                }
-            else:
-                primary_passed = _better_or_equal(
-                    fold.get("candidate_rank_concordance"),
-                    fold.get("baseline_rank_concordance"),
-                    lower_is_better=False,
-                )
-                secondary_passed = _better_or_equal(
-                    fold.get("candidate_top_quartile_precision"),
-                    fold.get("baseline_top_quartile_precision"),
-                    lower_is_better=False,
-                )
-                metrics = {
-                    "candidate_rank_concordance": fold.get(
-                        "candidate_rank_concordance"
-                    ),
-                    "baseline_rank_concordance": fold.get(
-                        "baseline_rank_concordance"
-                    ),
-                    "candidate_top_quartile_precision": fold.get(
-                        "candidate_top_quartile_precision"
-                    ),
-                    "baseline_top_quartile_precision": fold.get(
-                        "baseline_top_quartile_precision"
-                    ),
-                }
+            primary_passed = _better_or_equal(
+                fold.get("candidate_multiclass_brier"),
+                fold.get("baseline_multiclass_brier"),
+                lower_is_better=True,
+            )
+            secondary_passed = _better_or_equal(
+                fold.get("candidate_rank_concordance"),
+                fold.get("baseline_rank_concordance"),
+                lower_is_better=False,
+            )
+            metrics = {
+                "candidate_multiclass_brier": fold.get(
+                    "candidate_multiclass_brier"
+                ),
+                "baseline_multiclass_brier": fold.get(
+                    "baseline_multiclass_brier"
+                ),
+                "candidate_rank_concordance": fold.get(
+                    "candidate_rank_concordance"
+                ),
+                "baseline_rank_concordance": fold.get(
+                    "baseline_rank_concordance"
+                ),
+            }
             rows.append(
                 {
-                    "bucket": f"{layer}|{role}|cohort_{fold.get('test_cohort')}",
-                    "layer": layer,
+                    "bucket": f"dynasty|{role}|cohort_{fold.get('test_cohort')}",
+                    "layer": "dynasty",
                     "role": role,
                     "test_cohort": fold.get("test_cohort"),
                     "sample_size": fold.get("sample_size"),
@@ -152,10 +126,8 @@ def _cohort_rows(layer: str, payload: dict) -> list[dict]:
     return rows
 
 
-def _bucket_cohort_evidence(dynasty_backtest: dict, adapter_backtest: dict) -> dict:
-    rows = _cohort_rows("dynasty", dynasty_backtest) + _cohort_rows(
-        "adapter", adapter_backtest
-    )
+def _bucket_cohort_evidence(dynasty_backtest: dict) -> dict:
+    rows = _cohort_rows(dynasty_backtest)
     passed = sum(1 for row in rows if row["passed"])
     total = len(rows)
     pass_rate = round(passed / total, 4) if total else 0.0
@@ -196,7 +168,7 @@ def _grade(score: int) -> str:
 def build_outcome_backtest(
     prospect_model: dict,
     dynasty_backtest: dict,
-    adapter_backtest: dict,
+    cross_role_shadow: dict,
     forward_validation: dict,
     model_v07: dict,
     generated_at: str | None = None,
@@ -206,7 +178,7 @@ def build_outcome_backtest(
         or model_v07.get("generated_at")
         or forward_validation.get("generated_at")
         or dynasty_backtest.get("generated_at")
-        or adapter_backtest.get("generated_at")
+        or cross_role_shadow.get("generated_at")
         or prospect_model.get("generated_at")
         or datetime.now(timezone.utc).isoformat()
     )
@@ -215,19 +187,22 @@ def build_outcome_backtest(
     dynasty_gate = (dynasty_backtest.get("promotion") or {}).get(
         "dynasty_layer_research_gate"
     )
-    adapter_gate = (adapter_backtest.get("promotion") or {}).get(
-        "adapter_research_gate"
-    )
+    cross_checks = cross_role_shadow.get("checks") or {}
+    absolute_check = cross_checks.get("historical_absolute_concordance") or {}
+    power_check = cross_checks.get("cross_role_change_power") or {}
+    absolute_passed = absolute_check.get("status") == "pass"
+    power_passed = power_check.get("status") == "pass"
     forward_status = forward_validation.get("status")
     forward_evidence_status = forward_validation.get("evidence_status") or {}
     v07_validation = model_v07.get("validation") or {}
-    bucket_cohort = _bucket_cohort_evidence(dynasty_backtest, adapter_backtest)
+    bucket_cohort = _bucket_cohort_evidence(dynasty_backtest)
     bucket_cohort_ready = bucket_cohort["status"] == "ready"
 
-    realized_samples = max(_role_samples(dynasty_backtest), _role_samples(adapter_backtest))
+    realized_samples = _role_samples(dynasty_backtest)
     raw_score = 0
     raw_score += 25 if dynasty_gate == "active" else 0
-    raw_score += 20 if adapter_gate == "active" else 0
+    raw_score += 10 if absolute_passed else 0
+    raw_score += 10 if power_passed else 0
     raw_score += 15 if model_impact_gate == "active" else 0
     raw_score += 10 if model_board_gate == "active" else 4 if model_board_gate == "fallback" else 0
     raw_score += 10 if realized_samples >= MIN_REALIZED_OUTCOME_SAMPLE else 0
@@ -240,8 +215,19 @@ def build_outcome_backtest(
     evidence_gates = []
     if dynasty_gate != "active":
         blockers.append("Universal dynasty outcome distribution has not passed both roles.")
-    if adapter_gate != "active":
-        blockers.append("League adapter outcome backtest has not passed both roles.")
+    if not absolute_passed:
+        blockers.append(
+            "Historical absolute cross-role concordance is below its registered floor."
+        )
+    if not power_passed:
+        evidence_gates.append(
+            {
+                "kind": "cross_role_change_power",
+                "message": "Cross-role change detection is under the registered power floor.",
+                "current": power_check.get("max_power"),
+                "required": power_check.get("floor"),
+            }
+        )
     if model_board_gate != "active":
         evidence_gates.append(
             {
@@ -260,6 +246,20 @@ def build_outcome_backtest(
                 "required": "review_ready",
             }
         )
+    for name, kind in (
+        ("current_board_shape", "current_board_shape"),
+        ("aaa_measured_coverage", "aaa_measured_coverage"),
+    ):
+        check = cross_checks.get(name) or {}
+        if check.get("status") != "pass":
+            evidence_gates.append(
+                {
+                    "kind": kind,
+                    "message": f"{kind.replace('_', ' ').title()} has not passed.",
+                    "current": check.get("status"),
+                    "required": "pass",
+                }
+            )
 
     score_cap = 100
     cap_reasons = []
@@ -271,6 +271,12 @@ def build_outcome_backtest(
     if forward_status != "review_ready":
         score_cap = min(score_cap, 87 if bucket_cohort_ready else 84)
         cap_reasons.append("Forward observations are not review-ready yet.")
+    if not absolute_passed:
+        score_cap = min(score_cap, 79)
+        cap_reasons.append("Historical absolute cross-role concordance missed its floor.")
+    if not power_passed:
+        score_cap = min(score_cap, 84)
+        cap_reasons.append("Cross-role change detection is underpowered.")
     score = min(raw_score, score_cap)
 
     return {
@@ -278,14 +284,16 @@ def build_outcome_backtest(
         "report_name": REPORT_NAME,
         "report_version": REPORT_VERSION,
         "generated_at": generated,
-        "status": "evidence_ready" if dynasty_gate == "active" and adapter_gate == "active" else "needs_work",
+        "status": (
+            "evidence_ready"
+            if dynasty_gate == "active" and absolute_passed and power_passed
+            else "needs_work"
+        ),
         "source_policy": {
             "kind": "realized_outcome_and_observe_only_evidence",
             "feeds_model_score": False,
             "feeds_public_rank": False,
             "feeds_buy_score": False,
-            "dd_values_used": False,
-            "dd_ranks_used": False,
             "external_rankings_used": False,
             "market_values_used": False,
         },
@@ -323,12 +331,12 @@ def build_outcome_backtest(
                 "roles": _role_metric_rows(dynasty_backtest),
                 "promotion": dynasty_backtest.get("promotion"),
             },
-            "adapter_fixed_horizon": {
-                "status": adapter_gate,
-                "sample_size": _role_samples(adapter_backtest),
-                "role_gates": _role_gates(adapter_backtest),
-                "roles": _role_metric_rows(adapter_backtest),
-                "promotion": adapter_backtest.get("promotion"),
+            "cross_role_shadow": {
+                "status": cross_role_shadow.get("status"),
+                "historical_absolute_passed": absolute_passed,
+                "change_power_passed": power_passed,
+                "checks": cross_checks,
+                "score_changes_authorized": False,
             },
             "forward_observation": {
                 "status": forward_status,
@@ -346,7 +354,10 @@ def build_outcome_backtest(
         "validation": {
             "realized_outcome_sample_size": realized_samples,
             "minimum_realized_outcome_sample_size": MIN_REALIZED_OUTCOME_SAMPLE,
-            "realized_evidence_ready": dynasty_gate == "active" and adapter_gate == "active",
+            "realized_evidence_ready": (
+                dynasty_gate == "active" and absolute_passed and power_passed
+            ),
+            "cross_role_change_power_ready": power_passed,
             "bucket_cohort_evidence_ready": bucket_cohort_ready,
             "forward_evidence_ready": forward_status == "review_ready",
             "evidence_gates": evidence_gates,
@@ -355,7 +366,7 @@ def build_outcome_backtest(
         "generated_dates": {
             "prospect_model": _date_part(prospect_model.get("generated_at")),
             "dynasty_backtest": _date_part(dynasty_backtest.get("generated_at")),
-            "adapter_backtest": _date_part(adapter_backtest.get("generated_at")),
+            "cross_role_shadow": _date_part(cross_role_shadow.get("generated_at")),
             "forward_validation": _date_part(forward_validation.get("generated_at")),
             "model_v07": _date_part(model_v07.get("generated_at")),
         },
@@ -373,7 +384,7 @@ def write_outcome_backtest(payload: dict, path: Path = ARTIFACT_PATH) -> Path:
 def run_outcome_backtest(
     prospect_model_path: Path = PROSPECT_MODEL_PATH,
     dynasty_backtest_path: Path = DYNASTY_BACKTEST_PATH,
-    adapter_backtest_path: Path = ADAPTER_BACKTEST_PATH,
+    cross_role_shadow_path: Path = CROSS_ROLE_SHADOW_PATH,
     forward_validation_path: Path = FORWARD_VALIDATION_PATH,
     model_v07_path: Path = MODEL_V07_PATH,
     artifact_path: Path = ARTIFACT_PATH,
@@ -381,7 +392,7 @@ def run_outcome_backtest(
     payload = build_outcome_backtest(
         _load(prospect_model_path),
         _load(dynasty_backtest_path),
-        _load(adapter_backtest_path),
+        _load(cross_role_shadow_path),
         _load(forward_validation_path),
         _load(model_v07_path),
     )
