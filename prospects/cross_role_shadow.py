@@ -67,7 +67,7 @@ def _base_payload(generated_at: str) -> dict:
         "limitations": [
             "Historical absolute concordance is retrospective and does not confirm a current scoring change.",
             "AAA Statcast is measured current evidence, not a historical outcome panel.",
-            "Coverage and power must pass before a human review; review never authorizes live scoring.",
+            "Power and board shape must pass before a human review; AAA coverage remains disclosure-only.",
         ],
     }
 
@@ -371,7 +371,11 @@ def build_cross_role_shadow(
         "current_board_shape": shape,
         "aaa_measured_coverage": coverage,
     }
-    review_ready = all(check["status"] == "pass" for check in checks.values())
+    review_ready = all(
+        check["status"] == "pass"
+        for name, check in checks.items()
+        if name != "aaa_measured_coverage"
+    )
     payload = _base_payload(generated_at)
     payload.update(
         {

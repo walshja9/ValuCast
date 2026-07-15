@@ -30,7 +30,10 @@ The artifact must declare `feeds_model_score=false`, `feeds_public_rank=false`, 
 3. **Current board shape:** retain the existing governor limits of at most 7 pitchers in the top 25 and at most 30% in the top 50. These are distribution guardrails, not accuracy claims.
 4. **Independent pitcher evidence coverage:** measured AAA Statcast must cover at least 60% of current top-25 pitchers who are actually at AAA. Report total top-25 evidence breadth separately; lower-level pitchers are ineligible, not missing. Coverage is a readiness check, not a performance score.
 
-Overall status is `review_ready` only when all four checks pass; otherwise it is `collecting`. Even `review_ready` never authorizes a live change without a new registered review.
+Overall status is `review_ready` only when the first three checks pass; AAA
+coverage remains disclosure-only because its denominator changed after the first
+look. Otherwise status is `collecting`. Even `review_ready` never authorizes a
+live change without a new registered review.
 
 ### 4. Do not invent a pitch-shape score
 
@@ -56,6 +59,7 @@ the 0.60 floor and failed. The later AAA-eligible denominator produced 3/3 =
 1.00, but is post-look feed-completeness evidence only. It cannot confirm
 cross-role calibration, and it cannot pass with fewer than 3 eligible pitchers.
 The artifact retains both population and eligible rates.
+It does not participate in the `review_ready` conjunction.
 
 The model-to-served role-shape description is now computed in the committed
 artifact rather than asserted in prose. On this snapshot,

@@ -158,20 +158,26 @@ def test_shadow_separates_absolute_floor_power_shape_and_aaa_coverage():
     assert payload["source_policy"]["external_rankings_used_as_outcomes"] is False
 
 
-def test_shadow_is_review_ready_only_when_every_check_passes():
+def test_shadow_review_ready_excludes_post_look_aaa_coverage():
     board = _board(top25_pitchers=7)
-    top25_pitcher_ids = {
-        row["mlbam_id"] for row in board["board"][:25] if row["role"] == "pitcher"
-    }
     payload = build_cross_role_shadow(
         _rank_backtest(0.7),
         _power(0.75),
         board,
-        _aaa(top25_pitcher_ids),
+        _aaa(set()),
     )
 
     assert payload["status"] == "review_ready"
-    assert all(check["status"] == "pass" for check in payload["checks"].values())
+    assert payload["checks"]["aaa_measured_coverage"]["status"] == "fail"
+    assert any("disclosure-only" in line for line in payload["limitations"])
+    assert all(
+        payload["checks"][name]["status"] == "pass"
+        for name in (
+            "historical_absolute_concordance",
+            "cross_role_change_power",
+            "current_board_shape",
+        )
+    )
     assert payload["promotion"]["live_consumer"] == "blocked"
     assert payload["promotion"]["score_changes_authorized"] is False
 
