@@ -30,7 +30,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import norm
+# stdlib inverse-normal (Wichura AS241, ~1e-15 accurate) instead of scipy.stats
+# norm.ppf -- scipy is not in requirements.txt and two ppf calls don't earn a
+# 40MB nightly-install dependency (this exact gap turned the 7/16 shakedown red).
+from statistics import NormalDist
 
 from prospects.model import _walk_forward
 from prospects.universal import (
@@ -128,7 +131,9 @@ def build_gate_multiplicity(
 ) -> dict:
     family_size = len(gate_records)
     corrected_alpha = FAMILY_ALPHA / family_size if family_size else FAMILY_ALPHA
-    corrected_z = float(norm.ppf(1.0 - corrected_alpha / 2.0)) if family_size else None
+    corrected_z = (
+        float(NormalDist().inv_cdf(1.0 - corrected_alpha / 2.0)) if family_size else None
+    )
     # Significance is read off the percentile bootstrap CIs, not a symmetric Wald
     # z: the bootstrap deltas are skewed, so |point/SE| >= 1.96 can disagree with a
     # percentile CI that excludes 0 (pitcher representative_ip is exactly that
@@ -204,7 +209,9 @@ def build_gate_multiplicity(
             "family_wise_alpha": FAMILY_ALPHA,
             "bonferroni_alpha_per_gate": corrected_alpha,
             "bonferroni_two_sided_z": None if corrected_z is None else round(corrected_z, 6),
-            "nominal_two_sided_z": round(float(norm.ppf(1.0 - FAMILY_ALPHA / 2.0)), 6),
+            "nominal_two_sided_z": round(
+                float(NormalDist().inv_cdf(1.0 - FAMILY_ALPHA / 2.0)), 6
+            ),
             "served_active_gates": active,
             "nominal_significant_gates": nominal,
             "bonferroni_significant_gates": survivors,
