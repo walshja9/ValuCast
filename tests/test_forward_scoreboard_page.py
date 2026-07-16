@@ -1,0 +1,163 @@
+"""Tests for the public /scoreboard page + share card (plan 030 S4, Lane B).
+
+The page is additive and hold-gated: held (default) -> 404; unheld with the frozen
+scoreboard artifact -> 200 rendering every number from the artifact; missing artifact
+-> honest 'collecting' state. The CI-band verdict logic ('leading, not yet
+significant' when the bootstrap CI straddles zero) is exercised on both sides of zero.
+"""
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import app as app_module  # noqa: E402
+from app import app  # noqa: E402
+
+_FIXTURE = Path(__file__).parent / "fixtures" / "forward_scoreboard.json"
+
+
+@pytest.fixture
+def client():
+    app.config["TESTING"] = True
+    return app.test_client()
+
+
+def _serve(monkeypatch, artifact_path):
+    """Unhold the surface and point the loader at `artifact_path` (or a missing path
+    for the collecting-state test). Clears the artifact cache so a prior path's cache
+    entry can't leak across tests."""
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_FORWARD_SCOREBOARD_PATH", Path(artifact_path))
+    app_module._ARTIFACT_CACHE.clear()
+
+
+# --- hold gate ------------------------------------------------------------------
+
+def test_scoreboard_held_returns_404(client, monkeypatch):
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    assert client.get("/scoreboard").status_code == 404
+
+
+def test_scoreboard_share_card_png_held_returns_404(client, monkeypatch):
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    assert client.get("/scoreboard/share-card.png").status_code == 404
+
+
+def test_scoreboard_share_card_preview_held_returns_404(client, monkeypatch):
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    assert client.get("/scoreboard/share-card").status_code == 404
+
+
+def test_env_flag_held_default_and_off_values():
+    """Default (unset) = HELD; only explicit off values serve."""
+    monkeypatch = pytest.MonkeyPatch()
+    try:
+        monkeypatch.delenv("SCOREBOARD_TEST_FLAG", raising=False)
+        assert app_module._env_flag_held("SCOREBOARD_TEST_FLAG") is True
+        for off in ("0", "off", "false", "FALSE", "No"):
+            monkeypatch.setenv("SCOREBOARD_TEST_FLAG", off)
+            assert app_module._env_flag_held("SCOREBOARD_TEST_FLAG") is False
+        for on in ("1", "true", "yes", ""):
+            monkeypatch.setenv("SCOREBOARD_TEST_FLAG", on)
+            assert app_module._env_flag_held("SCOREBOARD_TEST_FLAG") is True
+    finally:
+        monkeypatch.undo()
+
+
+# --- unheld with the fixture artifact -------------------------------------------
+
+def test_scoreboard_renders_artifact_numbers(client, monkeypatch):
+    _serve(monkeypatch, _FIXTURE)
+    resp = client.get("/scoreboard")
+    assert resp.status_code == 200
+    html = resp.data.decode("utf-8")
+    # Anti-trophy-case checklist strings, all rendered from the artifact:
+    assert "THE ANTICIPATION SCORE" in html
+    # (7) registration date + protocol version in the hero
+    assert "protocol 030-v1" in html
+    assert "Registered 2026-07-16" in html
+    # (1) amber provisional banner above the fold + earliest expiry window
+    assert "sb-provisional" in html
+    assert "2026-08-23" in html
+    # (3) consensus baseline as a NAMED co-entrant strip with board count
+    assert "Aggregate public consensus" in html
+    assert "sb-co-entrant" in html
+    # (5) self-retraction rate companion stat (fixture: 44%)
+    assert "44%" in html
+    # (2) losses shown (fixture has 28 real losses) + (6) funnel counts visible
+    assert "Losses" in html
+    assert "237 claims registered" in html
+    # (4) headline CI band always present, with the artifact's own CI numbers
+    # (fixture: [-6, +13]); provisional fixture renders the provisional verdict.
+    assert "95% CI" in html
+    assert "[-6, +13]" in html
+    assert "provisional" in html.lower()
+
+
+def test_scoreboard_share_card_png_ok(client, monkeypatch):
+    _serve(monkeypatch, _FIXTURE)
+    resp = client.get("/scoreboard/share-card.png")
+    assert resp.status_code == 200
+    assert "image/png" in resp.content_type
+    assert resp.data[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_scoreboard_share_card_preview_ok(client, monkeypatch):
+    _serve(monkeypatch, _FIXTURE)
+    resp = client.get("/scoreboard/share-card")
+    assert resp.status_code == 200
+    assert b"/scoreboard/share-card.png" in resp.data
+
+
+# --- missing artifact -> honest collecting state --------------------------------
+
+def test_scoreboard_missing_artifact_collecting_state(client, monkeypatch, tmp_path):
+    _serve(monkeypatch, tmp_path / "does_not_exist.json")
+    resp = client.get("/scoreboard")
+    assert resp.status_code == 200
+    html = resp.data.decode("utf-8")
+    assert "Collecting" in html
+    # No fabricated numbers in the collecting state.
+    assert "THE ANTICIPATION SCORE" in html
+    assert "95% CI" not in html
+
+
+def test_scoreboard_share_card_png_missing_artifact_404(client, monkeypatch, tmp_path):
+    """Share PNG has no honest empty graphic — a missing artifact is a 404, not a
+    zeroed card (mirrors /ledger/share-card.png)."""
+    _serve(monkeypatch, tmp_path / "does_not_exist.json")
+    assert client.get("/scoreboard/share-card.png").status_code == 404
+
+
+# --- CI-band verdict logic on BOTH sides of zero (pure function) -----------------
+
+def test_ci_label_straddles_zero_not_significant():
+    label = app_module._scoreboard_ci_label(
+        {"ci_low": -6.0, "ci_high": 13.0, "provisional": False}
+    )
+    assert label == "leading, not yet significant"
+
+
+def test_ci_label_clear_of_zero_significant():
+    label = app_module._scoreboard_ci_label(
+        {"ci_low": 3.0, "ci_high": 13.0, "provisional": False}
+    )
+    assert label == "clear of zero"
+
+
+def test_ci_label_provisional_takes_precedence():
+    # A band clear of zero is still reported provisional while the expiry window is
+    # closed — the loss lane hasn't been able to fire yet.
+    label = app_module._scoreboard_ci_label(
+        {"ci_low": 3.0, "ci_high": 13.0, "provisional": True}
+    )
+    assert "provisional" in label
+
+
+def test_ci_label_empty_pool_collecting():
+    label = app_module._scoreboard_ci_label(
+        {"ci_low": None, "ci_high": None, "provisional": True}
+    )
+    assert "collecting" in label

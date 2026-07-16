@@ -68,6 +68,70 @@
     </div>
 
     <div class="detail-body">
+        {# Attribution panel — "How ValuCast graded him". Placed HIGH on the card,
+           3-tier disclosure. Prospect-only (dynasty_signal + prospect components).
+           NEVER renders a per-feature weight percentage: the model is not a linear
+           stack, so probabilities + qualitative drivers only. #}
+        {% if row.is_prospect and (row.outcome_mix or row.why_rank_chips or row.attribution_components or row.uncertainty_note) %}
+        <div class="detail-section attribution-panel">
+            <div class="attribution-head">
+                <span class="profile-card-kicker">How ValuCast graded him</span>
+            </div>
+            {% if row.outcome_mix %}
+            <div class="attribution-mix">
+                <div class="attribution-mix-bar" role="img" aria-label="Projected outcome mix: {% for seg in row.outcome_mix %}{{ seg.pct }}% {{ seg.label }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                    {% for seg in row.outcome_mix %}
+                    <span class="attribution-mix-seg tone-{{ seg.tone }}" style="width: {{ seg.pct }}%"></span>
+                    {% endfor %}
+                </div>
+                <div class="attribution-mix-legend">
+                    {% for seg in row.outcome_mix %}
+                    <span class="attribution-mix-key"><i class="tone-{{ seg.tone }}"></i>{{ seg.label }} <b>{{ seg.pct }}%</b></span>
+                    {% endfor %}
+                </div>
+                <p class="attribution-mix-note">Projected outcome mix, not a stat forecast &mdash; the shares add to 100%.</p>
+            </div>
+            {% endif %}
+            {% if row.why_rank_chips %}
+            <div class="attribution-drivers why-rank-chips" aria-label="What drives this grade">
+                {% for chip in row.why_rank_chips[:4] %}
+                <span class="sample-risk-badge rank-context {{ chip.kind }}" title="{{ chip.title }}">{{ chip.label }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if row.attribution_components or row.uncertainty_note %}
+            <details class="attribution-under-hood compact-context-details">
+                <summary>Under the hood</summary>
+                {% if row.attribution_components %}
+                <ul class="attribution-component-list">
+                    {% for comp in row.attribution_components %}
+                    <li class="attribution-component{{ ' is-context' if comp.context_only else '' }}">
+                        <span class="attribution-component-label">{{ comp.label }}</span>
+                        {% if comp.effect %}<span class="attribution-component-effect{{ ' context-effect' if comp.context_only else '' }}">{{ comp.effect }}</span>{% endif %}
+                        {% if comp.context_only %}<span class="attribution-context-tag">context, not a score input</span>{% endif %}
+                        {% if comp.note %}<span class="attribution-component-note">{{ comp.note }}</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {# Merged from the orphaned "Why this range?" block (net declutter). #}
+                {% if row.uncertainty_note %}
+                <div class="attribution-range">
+                    <span class="attribution-range-label">Why this range?</span>
+                    <p class="sample-context-note">{{ row.uncertainty_note }}</p>
+                    {% if row.uncertainty_driver_items %}
+                    <div class="uncertainty-driver-row">
+                        {% for item in row.uncertainty_driver_items %}
+                        <span><strong>{{ item.label }}</strong> {{ item.value }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </details>
+            {% endif %}
+        </div>
+        {% endif %}
         {% if not row.is_prospect %}
         {% include "partials/_value_spark.html" %}
         {% endif %}
@@ -447,26 +511,15 @@
                 <div class="stat-item"><span class="stat-label">Risk Adjustment</span><span class="stat-value">-{{ "%.1f%%" | format(row.availability_risk_discount * 100) }}</span></div>
                 {% endif %}
                 {% if row.bucket_calibration_label %}
-                <div class="stat-item"><span class="stat-label">Model Context</span><span class="stat-value">{{ row.bucket_calibration_label }}</span></div>
+                <div class="stat-item"><span class="stat-label">Confidence adjustment</span><span class="stat-value">{{ row.bucket_calibration_label }}</span></div>
                 {% endif %}
             </div>
             {% if row.factual_context_note and not has_skill_card %}<p class="sample-context-note">{{ row.factual_context_note }}</p>{% endif %}
             {% if row.graduation_context_note %}<p class="sample-context-note">{{ row.graduation_context_note }}</p>{% endif %}
             {% if row.availability_note and (row.availability_status_label != 'Available' or row.availability_risk_discount) %}<p class="sample-context-note">{{ row.availability_note }}</p>{% endif %}
             {% if row.bucket_calibration_context.get('reason') %}<p class="sample-context-note">{{ row.bucket_calibration_context.get('reason') }}</p>{% endif %}
-            {% if row.uncertainty_note %}
-            <details class="uncertainty-explainer compact-context-details">
-                <summary>Why this range?</summary>
-                <p class="sample-context-note">{{ row.uncertainty_note }}</p>
-                {% if row.uncertainty_driver_items %}
-                <div class="uncertainty-driver-row">
-                    {% for item in row.uncertainty_driver_items %}
-                    <span><strong>{{ item.label }}</strong> {{ item.value }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </details>
-            {% endif %}
+            {# "Why this range?" moved into the attribution panel's "Under the hood"
+               (T3) at the top of the card — one home for score-context disclosure. #}
         </div>
         {% endif %}
 

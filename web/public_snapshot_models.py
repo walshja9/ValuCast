@@ -12,7 +12,9 @@ from prospects.availability import eta_window_label
 from prospects.peak_projection import ceiling_label
 
 from .prospect_context import (
+    attribution_components,
     context_note,
+    outcome_mix,
     skill_band_label,
     stat_items,
     uncertainty_driver_items,
@@ -490,6 +492,23 @@ class PublicSnapshotRow:
     @property
     def why_rank_chips(self) -> tuple[dict[str, str], ...]:
         return why_rank_chips(self.prospect_components, self.role)
+
+    @property
+    def dynasty_signal(self) -> dict:
+        """The model's outcome-probability signal (prospect rows only). Read from
+        the snapshot record passthrough; empty dict when absent."""
+        raw = self.metadata.get("dynasty_signal") if isinstance(self.metadata, dict) else None
+        return raw if isinstance(raw, dict) else {}
+
+    @property
+    def outcome_mix(self) -> tuple[dict, ...]:
+        """T1 attribution stacked-bar segments (whole percents)."""
+        return outcome_mix(self.dynasty_signal)
+
+    @property
+    def attribution_components(self) -> tuple[dict, ...]:
+        """T3 attribution component list (real score_effect + context items)."""
+        return attribution_components(self.prospect_components)
 
     @property
     def peak_projection_context(self) -> dict:

@@ -88,6 +88,21 @@ AHEAD_OF_THE_CURVE_HOLD = False
 # times. Flip back to True (and redeploy) to re-hold the page/nav/share-card;
 # the daily build computes the artifact either way.
 RECEIPTS_HOLD = False
+
+
+def _env_flag_held(name: str) -> bool:
+    """Env-gated public hold. DEFAULT (unset/blank) = HELD (True). Only the explicit
+    off values 0/off/false/no (any case) serve the surface. Ships dark; flipped after
+    two clean nightlies by setting the env var to 0."""
+    raw = os.environ.get(name)
+    if raw is None:
+        return True
+    return raw.strip().lower() not in ("0", "off", "false", "no")
+
+
+# Forward-ledger scoreboard (plan 030 S4). Held dark by default until two clean
+# nightlies land the real artifact; set SCOREBOARD_HOLD=0 (and redeploy) to serve.
+SCOREBOARD_HOLD = _env_flag_held("SCOREBOARD_HOLD")
 _GZIP_MIN_BYTES = 1024
 _GZIP_MIMETYPES = {
     "application/javascript",
@@ -301,7 +316,11 @@ def _snapshot_staleness():
 
 @app.context_processor
 def _aotc_hold_context():
-    return {"aotc_hold": AHEAD_OF_THE_CURVE_HOLD, "receipts_hold": RECEIPTS_HOLD}
+    return {
+        "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
+        "receipts_hold": RECEIPTS_HOLD,
+        "scoreboard_hold": SCOREBOARD_HOLD,
+    }
 
 
 def _public_url(path):
@@ -5011,6 +5030,50 @@ def front_office_report():
     return render_template("front_office.html", report=report)
 
 
+_MODEL_REGISTRY_PATH = (
+    Path(__file__).parent / "data" / "models" / "valucast_model_registry.json"
+)
+
+
+@app.route("/models")
+def models_registry():
+    """Public Model Verdicts registry (plan 024): every ValuCast model/subsystem
+    with an honest four-way verdict, each row citing a committed evidence
+    artifact. The model-level accountability layer next to the call-level ledgers
+    (/ledger, /receipts). Fail-soft: a missing/corrupt registry renders an
+    unavailable state, never a 500.
+
+    Per-row EVIDENCE UNAVAILABLE distinction (plan 024 STOP condition): a row
+    whose declared evidence artifact fails to load at request time is flagged
+    ``evidence_unavailable`` so the page can render a broken-link error state
+    (clay token + distinct glyph), never a benign "no data yet" message.
+    """
+    reg = _load_artifact(_MODEL_REGISTRY_PATH) or {}
+    entries = []
+    for entry in reg.get("entries") or ():
+        evidence = entry.get("evidence")
+        art = _load_artifact(Path(__file__).parent / evidence) if evidence else None
+        entries.append({
+            **entry,
+            "as_of": (art or {}).get("generated_at"),
+            # Declared an evidence path but it did not load -> broken link, not
+            # "pending". A row with no evidence path at all is malformed and also
+            # flagged (the validator forbids it, but the page must never lie).
+            "evidence_unavailable": bool(evidence) and art is None,
+        })
+    counts: dict[str, int] = {}
+    for entry in entries:
+        counts[entry.get("verdict")] = counts.get(entry.get("verdict"), 0) + 1
+    return render_template(
+        "models.html",
+        models_page=True,
+        entries=entries,
+        verdict_counts=counts,
+        verdict_definitions=reg.get("verdict_definitions") or {},
+        as_of=reg.get("generated_at"),
+    )
+
+
 _ARTIFACT_CACHE: dict[Path, tuple[int, dict | None]] = {}
 
 
@@ -8005,6 +8068,25 @@ def _load_scorecard_payload():
     return sc if isinstance(sc, dict) else None
 
 
+# Forward-ledger scoreboard artifact (plan 030 S2 build target). Path + schema are
+# owned by scripts/build_forward_scoreboard.py / prospects.forward_scoreboard (frozen);
+# every number on /scoreboard renders from this artifact at request time.
+_FORWARD_SCOREBOARD_PATH = (
+    Path(__file__).parent / "data" / "models" / "valucast_forward_scoreboard.json"
+)
+# Earliest date an adverse-at-expiry claim can enter the loss pool (60-day expiry
+# window off the first registered claim); stated on the page while provisional so the
+# absence of expiry losses reads as "the window isn't open yet", not "we hide losses".
+_SCOREBOARD_EXPIRY_WINDOW_OPENS = "2026-08-23"
+# Registration date of the standings protocol (hero honesty line, plan 030 A1).
+_SCOREBOARD_REGISTERED_DATE = "2026-07-16"
+
+
+def _load_forward_scoreboard_payload():
+    sc = _load_artifact(_FORWARD_SCOREBOARD_PATH)
+    return sc if isinstance(sc, dict) else None
+
+
 def _load_gaps_ledger():
     """Fail-soft loader for the gaps claim lifecycle ledger (plan 017). Returns {}
     when the artifact is absent so the /gaps strip simply doesn't render."""
@@ -8474,6 +8556,259 @@ def ledger_share_card():
         image_alt="ValuCast Ledger scorecard",
         back_url="/ledger",
         back_label="Back to The Ledger",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
+# --- Forward-ledger scoreboard (plan 030 S4) --------------------------------------
+
+def _scoreboard_ci_label(headline: dict) -> str:
+    """The exact CI-band verdict the anti-trophy-case checklist mandates. When the
+    bootstrap 95% CI straddles zero the headline is NOT allowed to claim significance
+    — the label is verbatim 'leading, not yet significant'. A provisional score (no
+    claim has reached expiry) is disclosed as provisional; a band clear of zero is
+    'clear of zero'. All three are derived from the artifact's own CI, never asserted."""
+    lo, hi = headline.get("ci_low"), headline.get("ci_high")
+    if lo is None or hi is None:
+        return "collecting - no resolved claims in the pool yet"
+    if headline.get("provisional"):
+        return "provisional - no claim has reached its 60-day expiry"
+    if lo <= 0 <= hi:
+        return "leading, not yet significant"
+    return "clear of zero"
+
+
+def _scoreboard_view(sc: dict) -> dict:
+    """Derive the render context (page + PNG share one source) from the frozen
+    artifact. Reads the artifact schema verbatim — no metric is computed here that
+    the frozen scoreboard module didn't already emit; this only reshapes for display
+    and attaches the CI-band verdict + provisional-window copy."""
+    headline = sc.get("anticipation_score") or {}
+    funnel = sc.get("funnel") or {}
+    retraction = funnel.get("self_retraction_rate") or {}
+    cohorts = sc.get("cohorts") or {}
+    retract_rate = retraction.get("rate")
+    return {
+        "generated_at": sc.get("generated_at"),
+        "protocol_version": sc.get("protocol_version"),
+        "registered_date": _SCOREBOARD_REGISTERED_DATE,
+        "expiry_window_opens": _SCOREBOARD_EXPIRY_WINDOW_OPENS,
+        "median_lead_days": headline.get("median_lead_days"),
+        "ci_low": headline.get("ci_low"),
+        "ci_high": headline.get("ci_high"),
+        "pool_size": headline.get("pool_size"),
+        "provisional": bool(headline.get("provisional")),
+        "ci_label": _scoreboard_ci_label(headline),
+        "wins": funnel.get("wins"),
+        "losses": funnel.get("losses"),
+        "excluded_from_pool": funnel.get("excluded_from_pool"),
+        "unscored_or_unclassified": funnel.get("unscored_or_unclassified"),
+        "open": funnel.get("open"),
+        "total_claims": funnel.get("total_claims"),
+        "retracted": retraction.get("retracted"),
+        "retraction_rate_pct": (round(retract_rate * 100) if retract_rate is not None else None),
+        "cohort_status": cohorts.get("status"),
+        "cohort_count": cohorts.get("cohort_count"),
+        "independence_attestation": sc.get("independence_attestation"),
+    }
+
+
+@app.route("/scoreboard")
+def forward_scoreboard():
+    """Public forward-ledger standings — the Anticipation Score (plan 030 S4).
+    Held dark behind SCOREBOARD_HOLD until two clean nightlies land the artifact.
+    Every number renders from the committed scoreboard artifact at request time; a
+    missing artifact renders an honest 'collecting' state rather than a fake zero."""
+    if SCOREBOARD_HOLD:
+        abort(404)
+    sc = _load_forward_scoreboard_payload()
+    view = _scoreboard_view(sc) if sc else None
+    return render_template("forward_scoreboard.html", sc=view)
+
+
+def _forward_scoreboard_share_card_png(view):
+    """Deterministic Anticipation Score graphic (plan 030 S4). Tile-block style of the
+    ledger card; the provisional caveat + co-entrant baseline TRAVEL on the PNG. ASCII
+    hyphens only (Pillow brand font). Numbers come from the artifact view."""
+    import io as _io
+
+    from PIL import Image, ImageDraw
+
+    width, height = 1080, 1350
+    palette = _GRAPHIC_PALETTE
+    bg = palette["bg"]
+    card = palette["card"]
+    border = palette["border"]
+    green = palette["green"]
+    clay = palette.get("clay", "#c98a6a")
+    blue = palette["blue"]
+    text = palette["text"]
+    muted = palette["muted"]
+    amber = palette.get("amber", (251, 191, 36))  # --c-amber #fbbf24
+
+    v = view or {}
+    img = Image.new("RGB", (width, height), bg)
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+
+    date_label = _editorial_date(v.get("generated_at"))
+    subtitle = "The Anticipation Score - our own scoreboard, planted"
+    if date_label:
+        subtitle = f"{subtitle} - {date_label}"
+    _graphic_header(
+        img,
+        draw,
+        headline="FORWARD LEDGER",
+        subtitle=subtitle,
+        extra_line=(
+            f"Registered {v.get('registered_date')} - protocol {v.get('protocol_version') or 'pending'}"
+        ),
+        tagline="Forward Ledger",
+    )
+
+    # Provisional caveat rides the image (7/9 claims-register gap b): the PNG is the
+    # og:image + Download target, detached from the page a re-sharer never links to.
+    caveat = (
+        "PROVISIONAL - no claim has reached its 60-day expiry; the adverse-at-expiry "
+        f"loss lane opens {v.get('expiry_window_opens')}"
+        if v.get("provisional")
+        else "Losses shown as prominently as wins - adverse-at-expiry lane opens "
+        f"{v.get('expiry_window_opens')}"
+    )
+    draw.text(
+        (48, 210),
+        _graphic_fit_text(draw, caveat, _graphic_font(14), 984),
+        fill=amber if v.get("provisional") else muted,
+        font=_graphic_font(14),
+    )
+
+    # Headline block: median signed lead-days + its bootstrap 95% CI band (always
+    # shown) + the CI-band verdict. The score never renders without its band.
+    x, w = 48, 984
+    hy, hh = 242, 168
+    draw.rounded_rectangle((x, hy, x + w, hy + hh), radius=10, fill=card, outline=border, width=1)
+    draw.text((x + 22, hy + 16), "ANTICIPATION SCORE", fill=muted, font=_graphic_font(17, bold=True))
+    median = v.get("median_lead_days")
+    median_text = f"{median:+.0f}d" if isinstance(median, (int, float)) else "--"
+    draw.text((x + 22, hy + 44), median_text, fill=green, font=_graphic_font(64, bold=True, mono=True))
+    lo, hi = v.get("ci_low"), v.get("ci_high")
+    if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+        band = f"95% CI [{lo:+.0f}, {hi:+.0f}] days - n={v.get('pool_size')}"
+    else:
+        band = f"95% CI pending - n={v.get('pool_size') or 0}"
+    draw.text((x + 320, hy + 62), band, fill=text, font=_graphic_font(20, bold=True, mono=True))
+    draw.text(
+        (x + 320, hy + 96),
+        _graphic_fit_text(draw, str(v.get("ci_label") or ""), _graphic_font(17, bold=True), w - 340),
+        fill=amber if v.get("provisional") or "not yet significant" in str(v.get("ci_label") or "") else green,
+        font=_graphic_font(17, bold=True),
+    )
+
+    # Co-entrant baseline strip: the public consensus is a NAMED co-entrant, not a
+    # footnote (anti-trophy checklist #3). Board count comes from the cohort section.
+    ce_y = hy + hh + 14
+    draw.rounded_rectangle((x, ce_y, x + w, ce_y + 46), radius=8, fill=card, outline=border, width=1)
+    cohort_count = v.get("cohort_count") or 0
+    co_entrant = f"Co-entrant: Aggregate public consensus ({cohort_count} boards)"
+    draw.text((x + 18, ce_y + 13), co_entrant, fill=blue, font=_graphic_font(17, bold=True))
+
+    # Funnel tiles: wins / losses / self-retraction rate / open — losses as prominent
+    # as wins, retraction rate a mandatory companion (checklist #2, #5).
+    retract_pct = v.get("retraction_rate_pct")
+    tiles = [
+        (str(v.get("wins") if v.get("wins") is not None else "--"), "WINS", "field came to us", green),
+        (str(v.get("losses") if v.get("losses") is not None else "--"), "LOSSES", "field moved against us", clay),
+        (f"{retract_pct}%" if retract_pct is not None else "--", "SELF-RETRACTED", "calls we backed off", clay),
+        (str(v.get("open") if v.get("open") is not None else "--"), "OPEN", "not yet resolved", muted),
+    ]
+    f_tile_n = _graphic_font(50, bold=True, mono=True)
+    f_tile_label = _graphic_font(16, bold=True)
+    f_tile_sub = _graphic_font(13)
+    tile_gap = 14
+    tile_w = (w - 3 * tile_gap) // 4
+    tile_y, tile_h = ce_y + 62, 128
+    for i, (n_label, label, sub, accent) in enumerate(tiles):
+        tx = x + i * (tile_w + tile_gap)
+        draw.rounded_rectangle((tx, tile_y, tx + tile_w, tile_y + tile_h), radius=10,
+                               fill=card, outline=border, width=1)
+        draw.text((tx + 16, tile_y + 14), n_label, fill=accent, font=f_tile_n)
+        draw.text((tx + 16, tile_y + 74), label, fill=text, font=f_tile_label)
+        draw.text((tx + 16, tile_y + 98),
+                  _graphic_fit_text(draw, sub, f_tile_sub, tile_w - 30),
+                  fill=muted, font=f_tile_sub)
+
+    # Funnel accounting: every claim visible somewhere (checklist #6). Censored /
+    # rank-only / unscored counts don't vanish.
+    acct_y = tile_y + tile_h + 16
+    acct_h = 118
+    draw.rounded_rectangle((x, acct_y, x + w, acct_y + acct_h), radius=10, fill=card, outline=border, width=1)
+    draw.text((x + 20, acct_y + 14), "EVERY CLAIM ACCOUNTED FOR", fill=text, font=_graphic_font(20, bold=True))
+    acct_line = (
+        f"{v.get('total_claims') or 0} claims - {v.get('pool_size') or 0} scored - "
+        f"{v.get('excluded_from_pool') or 0} excluded (clean retractions / benign expiries / open) - "
+        f"{v.get('unscored_or_unclassified') or 0} unscored"
+    )
+    draw.text(
+        (x + 20, acct_y + 52),
+        _graphic_fit_text(draw, acct_line, _graphic_font(16), w - 40),
+        fill=muted,
+        font=_graphic_font(16),
+    )
+    draw.text(
+        (x + 20, acct_y + 80),
+        _graphic_fit_text(
+            draw,
+            "Independence: consensus is context only and never feeds the model score.",
+            _graphic_font(14),
+            w - 40,
+        ),
+        fill=muted,
+        font=_graphic_font(14),
+    )
+
+    _graphic_footer(draw, right_note="Forward ledger live at valucast.app/scoreboard")
+    # QR back to the live standings page — the receipts/ledger QR pattern.
+    _graphic_place_qr(
+        img, draw, _public_url("/scoreboard"),
+        bottom=height - 84, size=96, caption="live scoreboard", caption_side="left",
+    )
+
+    out = _io.BytesIO()
+    img.save(out, format="PNG", optimize=True)
+    return out.getvalue()
+
+
+@app.route("/scoreboard/share-card.png")
+def forward_scoreboard_share_card_png():
+    if SCOREBOARD_HOLD:
+        abort(404)
+    sc = _load_forward_scoreboard_payload()
+    if not sc:
+        abort(404)
+    png = _forward_scoreboard_share_card_png(_scoreboard_view(sc))
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-forward-ledger.png"'
+    return response
+
+
+@app.route("/scoreboard/share-card")
+def forward_scoreboard_share_card():
+    if SCOREBOARD_HOLD:
+        abort(404)
+    html = build_share_preview_html(
+        title="Forward Ledger",
+        subtitle="The Anticipation Score — our own scoreboard, planted",
+        png_url="/scoreboard/share-card.png",
+        filename="valucast-forward-ledger.png",
+        public_png_url=_public_url("/scoreboard/share-card.png"),
+        public_page_url=_public_url("/scoreboard/share-card"),
+        description="ValuCast's forward-ledger Anticipation Score — median signed lead-days over the public consensus, with its bootstrap CI, losses, and self-retraction rate.",
+        image_alt="ValuCast Forward Ledger scoreboard",
+        back_url="/scoreboard",
+        back_label="Back to the Forward Ledger",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"

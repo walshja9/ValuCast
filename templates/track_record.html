@@ -37,17 +37,23 @@
         field's number is the market price, and a call wins when the market comes to our
         number. Us moving a player up is conviction, not evidence — only the field's
         movement scores.</p>
-        <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
-        ranked instead of leaving the board — 8 already-debuted players entered tracking that week
-        under the same pre-registered rules, disclosed rather than curated. Any call currently on an
-        MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
-        chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
-        <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
-        &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
-        <p class="buys-fineprint">Field-consensus vintage: the outside boards we compare
-        against refresh on their own schedules — some fast, some weeks between updates. So
-        the field side of every call can lag reality, and a slow board slows apparent
-        movement in both directions, for us and against us.</p>
+        {# Pre-launch declutter: the hero carried 5 always-visible fineprint
+           paragraphs; keep the two that state the bet, collapse the rules/policy/
+           vintage detail behind a toggle. Every sentence is preserved. #}
+        <details class="hero-fineprint-details">
+            <summary class="buys-fineprint">Rules, board policy &amp; vintage</summary>
+            <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
+            ranked instead of leaving the board — 8 already-debuted players entered tracking that week
+            under the same pre-registered rules, disclosed rather than curated. Any call currently on an
+            MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
+            chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
+            <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
+            &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
+            <p class="buys-fineprint">Field-consensus vintage: the outside boards we compare
+            against refresh on their own schedules — some fast, some weeks between updates. So
+            the field side of every call can lag reality, and a slow board slows apparent
+            movement in both directions, for us and against us.</p>
+        </details>
     </div>
     {% if sc %}
     <div class="buys-actions">

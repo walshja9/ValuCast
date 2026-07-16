@@ -2400,3 +2400,233 @@ class TestPlateDisciplineCard(unittest.TestCase):
         base_height = struct.unpack(">I", base.data[20:24])[0]
         data_height = struct.unpack(">I", with_data.data[20:24])[0]
         self.assertGreater(data_height, base_height)
+
+
+class TestAttributionPanel(unittest.TestCase):
+    """Lane B stage 2: the 'How ValuCast graded him' attribution panel on the
+    prospect card, and the no-per-feature-weight-percent rule."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def _first_prospect_with_signal(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            return None
+        for row in dd_store.get_all():
+            if row.is_prospect and row.outcome_mix:
+                return row
+        return None
+
+    def test_panel_renders_high_on_prospect_card(self):
+        row = self._first_prospect_with_signal()
+        if row is None:
+            self.skipTest("No prospect with a dynasty_signal available")
+        resp = self.client.get(
+            "/player/" + row.id + "?mode=prospects", headers={"HX-Request": "true"}
+        )
+        self.assertEqual(resp.status_code, 200)
+        body = resp.data.decode()
+        self.assertIn("How ValuCast graded him", body)
+        self.assertIn("attribution-mix", body)
+        self.assertIn("Bust risk", body)
+        # Placed HIGH: before the deep stat sections (e.g. MiLB Stats details).
+        if "MiLB Stats" in body:
+            self.assertLess(body.index("How ValuCast graded him"), body.index("MiLB Stats"))
+
+    def test_panel_has_no_per_feature_weight_percent(self):
+        import re
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        checked = 0
+        for row in dd_store.get_all():
+            if not (row.is_prospect and row.outcome_mix):
+                continue
+            body = self.client.get(
+                "/player/" + row.id + "?mode=prospects", headers={"HX-Request": "true"}
+            ).data.decode()
+            self.assertIsNone(
+                re.search(r"weight[^<]{0,20}\d+\s*%", body, re.I),
+                "per-feature weight percent leaked on " + row.id,
+            )
+            checked += 1
+            if checked >= 25:
+                break
+        self.assertGreater(checked, 0)
+
+    def test_panel_absent_on_mlb_card(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        mlb = next((r for r in dd_store.get_all() if not r.is_prospect), None)
+        if mlb is None:
+            self.skipTest("No MLB row available")
+        body = self.client.get(
+            "/player/" + mlb.id + "?mode=dd_dynasty", headers={"HX-Request": "true"}
+        ).data.decode()
+        self.assertNotIn("How ValuCast graded him", body)
+
+    def test_model_context_relabelled_to_confidence_adjustment(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        target = next(
+            (r for r in dd_store.get_all() if r.is_prospect and r.bucket_calibration_label),
+            None,
+        )
+        if target is None:
+            self.skipTest("No prospect with a bucket-calibration label available")
+        body = self.client.get(
+            "/player/" + target.id + "?mode=prospects", headers={"HX-Request": "true"}
+        ).data.decode()
+        self.assertIn("Confidence adjustment", body)
+        self.assertNotIn(">Model Context<", body)
+
+
+class TestOutcomeMixHelper(unittest.TestCase):
+    def test_outcome_mix_partitions_to_100(self):
+        from web.prospect_context import outcome_mix
+        segs = outcome_mix({
+            "role_or_better_probability": 0.36,
+            "bust_risk": 0.64,
+            "star_ceiling_probability": 0.08,
+        })
+        self.assertEqual(sum(s["pct"] for s in segs), 100)
+        labels = [s["label"] for s in segs]
+        self.assertIn("Star ceiling", labels)
+        self.assertIn("Bust risk", labels)
+
+    def test_outcome_mix_empty_on_missing_signal(self):
+        from web.prospect_context import outcome_mix
+        self.assertEqual(outcome_mix(None), ())
+        self.assertEqual(outcome_mix({}), ())
+
+    def test_attribution_components_real_effects_and_context_flag(self):
+        from web.prospect_context import attribution_components
+        items = attribution_components({
+            "availability_risk_discount": 0.10,
+            "availability": {"note": "risk priced in", "risk_discount": 0.10},
+            "bucket_calibration": {"adjustment": -0.82, "reason": "thin sample"},
+            "sample_reliability": 44.9,
+        })
+        by_label = {i["label"]: i for i in items}
+        self.assertEqual(by_label["Availability discount"]["effect"], "-10.0%")
+        self.assertFalse(by_label["Availability discount"]["context_only"])
+        self.assertEqual(by_label["Bucket calibration"]["effect"], "-0.82 pts")
+        self.assertTrue(by_label["Sample sufficiency"]["context_only"])
+
+
+class TestModelsRegistryPage(unittest.TestCase):
+    """Plan 024 /models page: renders, mobile-stacked structure, fail-soft, and the
+    per-row EVIDENCE UNAVAILABLE broken-link state (never a benign empty state)."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def test_models_page_renders_with_verdicts(self):
+        resp = self.client.get("/models")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.data.decode()
+        self.assertIn("Model Verdicts", body)
+        self.assertIn("VALIDATED", body)
+        self.assertIn("REJECTED", body)
+        self.assertIn("/ledger", body)
+        self.assertIn("/receipts", body)
+
+    def test_models_table_is_mobile_stacked_not_scroll(self):
+        body = self.client.get("/models").data.decode()
+        for label in ("Model", "Verdict", "Why", "Evidence", "As of"):
+            self.assertIn('data-label="' + label + '"', body)
+
+    def test_models_page_fail_soft_on_missing_registry(self):
+        import app as app_mod
+        orig = app_mod._MODEL_REGISTRY_PATH
+        app_mod._MODEL_REGISTRY_PATH = Path("data/models/__does_not_exist__.json")
+        app_mod._ARTIFACT_CACHE.clear()
+        try:
+            resp = self.client.get("/models")
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(b"not available right now", resp.data)
+        finally:
+            app_mod._MODEL_REGISTRY_PATH = orig
+            app_mod._ARTIFACT_CACHE.clear()
+
+    def test_models_evidence_unavailable_is_distinct_broken_state(self):
+        import app as app_mod
+        import json
+        import tempfile
+        tmp = Path(tempfile.mkdtemp()) / "reg.json"
+        tmp.write_text(json.dumps({
+            "generated_at": "2026-07-16",
+            "entries": [{
+                "id": "x", "name": "Broken Model", "verdict": "PROVISIONAL",
+                "verdict_reason": "reason", "evidence": "data/models/__missing__.json",
+                "evidence_label": "ev", "source_module": "prospects/rank_v1.py",
+            }],
+        }), encoding="utf-8")
+        orig = app_mod._MODEL_REGISTRY_PATH
+        app_mod._MODEL_REGISTRY_PATH = tmp
+        app_mod._ARTIFACT_CACHE.clear()
+        try:
+            body = self.client.get("/models").data.decode()
+            self.assertIn("models-evidence-broken", body)
+            self.assertIn("Evidence unavailable", body)
+            self.assertNotIn(">ev</a>", body)
+        finally:
+            app_mod._MODEL_REGISTRY_PATH = orig
+            app_mod._ARTIFACT_CACHE.clear()
+
+    def test_footer_links_models_on_board_page(self):
+        self.assertIn(b"/models", self.client.get("/ledger").data)
+
+    def test_methodology_cross_links_models(self):
+        body = self.client.get("/methodology").data.decode()
+        self.assertIn('id="model-verdicts"', body)
+        self.assertIn("/models", body)
+
+
+class TestModelRegistryValidator(unittest.TestCase):
+    def test_real_registry_validates_clean(self):
+        from scripts.validate_model_registry import validate
+        self.assertEqual(validate(), [])
+
+    def test_missing_evidence_fails(self):
+        import json
+        import tempfile
+        from scripts.validate_model_registry import validate
+        tmp = Path(tempfile.mkdtemp()) / "reg.json"
+        tmp.write_text(json.dumps({"entries": [{
+            "id": "x", "verdict": "PROVISIONAL", "evidence": "data/nope.json",
+            "source_module": "prospects/rank_v1.py",
+        }]}), encoding="utf-8")
+        errs = validate(tmp)
+        self.assertTrue(any("missing evidence" in e for e in errs))
+
+    def test_bad_verdict_label_fails(self):
+        import json
+        import tempfile
+        from scripts.validate_model_registry import validate
+        tmp = Path(tempfile.mkdtemp()) / "reg.json"
+        tmp.write_text(json.dumps({"entries": [{
+            "id": "x", "verdict": "MAYBE",
+            "evidence": "data/models/valucast_prospect_comps.json",
+            "source_module": "prospects/comps.py",
+        }]}), encoding="utf-8")
+        errs = validate(tmp)
+        self.assertTrue(any("bad verdict" in e for e in errs))
+
+    def test_validated_over_not_proven_artifact_fails(self):
+        import json
+        import tempfile
+        from scripts.validate_model_registry import validate
+        tmp = Path(tempfile.mkdtemp()) / "reg.json"
+        tmp.write_text(json.dumps({"entries": [{
+            "id": "x", "verdict": "VALIDATED",
+            "evidence": "data/models/valucast_universal_prospect_index_backtest.json",
+            "source_module": "prospects/universal.py",
+        }]}), encoding="utf-8")
+        errs = validate(tmp)
+        self.assertTrue(any("not-yet-proven" in e for e in errs))

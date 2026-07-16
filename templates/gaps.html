@@ -86,7 +86,15 @@
    NEVER prints per-source board ranks (aggregate consensus only). #}
 <section class="buys-list glass gaps-claim-ledger" aria-label="Gaps claim lifecycle ledger">
     <h2>CLAIM LEDGER 🧾</h2>
+    <p class="gaps-claim-lead">Every disagreement above is logged as a dated claim and tracked until something settles it — a call-up, the field moving, us backing off, or the clock running out.</p>
     <p class="buys-fineprint">Every gap becomes a dated claim that must resolve or expire — both sides now, not just the higher one. Claims age out after {{ gaps_ledger_summary.expiry_days }} days if nothing settles them.</p>
+    <dl class="gaps-lifecycle-legend" aria-label="What each claim state means">
+        <div><dt>Open</dt><dd>still live, nothing has settled it yet</dd></div>
+        <div><dt>Resolved by call-up</dt><dd>the player reached the majors</dd></div>
+        <div><dt>Resolved by field move</dt><dd>the outside consensus came toward our rank</dd></div>
+        <div><dt>Retracted</dt><dd>we backed off the call ourselves</dd></div>
+        <div><dt>Expired</dt><dd>aged out after {{ gaps_ledger_summary.expiry_days }} days with no resolution</dd></div>
+    </dl>
     <div class="movers-grid">
         {% for side, label in [('higher', "HIGHER claims"), ('lower', "LOWER (fade) claims")] %}
         {% set s = gaps_ledger_summary[side] %}

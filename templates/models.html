@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Model Verdicts | ValuCast{% endblock %}
+{% block og_title %}Model Verdicts | ValuCast{% endblock %}
+{% block og_description %}Every ValuCast model and subsystem with an honest four-way verdict — each one linking the committed evidence behind it.{% endblock %}
+{% block og_url %}https://valucast.app/models{% endblock %}
+{% block twitter_title %}Model Verdicts | ValuCast{% endblock %}
+{% block twitter_description %}Every ValuCast model and subsystem with an honest four-way verdict — each one linking the committed evidence behind it.{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+{% set verdict_tone = {'VALIDATED': 'win', 'PROVISIONAL': 'prov', 'DEPRECATED': 'dep', 'REJECTED': 'loss'} %}
+
+<section class="buys-heading glass">
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">ACCOUNTABILITY</span>
+        <h1>MODEL VERDICTS</h1>
+        <p class="buys-heading-sub">Every model here is judged VALIDATED, PROVISIONAL, DEPRECATED, or
+        REJECTED — and every verdict links the committed evidence behind it.</p>
+        <p class="buys-fineprint">This is the model-level accountability layer. The call-level layer is
+        <a href="/ledger">The Ledger</a> and <a href="/receipts">Call-Up Receipts</a> — every individual
+        call, tracked to an outcome. Together they are two layers of accountability, not one.</p>
+        <p class="buys-fineprint">The published failures are the point, not a footnote: a model that is
+        losing or untrainable gets a first-class row, same as any win. See <a href="/methodology#model-verdicts">how the verdicts work</a>.{% if as_of %} Registry updated {{ editorial_date(as_of) }}.{% endif %}</p>
+    </div>
+</section>
+
+{% if not entries %}
+<section class="glass"><div class="notice">The model registry is not available right now —
+it will populate after the next daily build.</div></section>
+{% else %}
+<section class="ledger-funnel models-funnel" aria-label="Verdict counts">
+    {% for label, tone in [('VALIDATED', 'win'), ('PROVISIONAL', 'prov'), ('DEPRECATED', 'dep'), ('REJECTED', 'loss')] %}
+    <article class="ledger-tile glass models-tile-{{ tone }}">
+        <span class="ledger-tile-n">{{ verdict_counts.get(label, 0) }}</span>
+        <span class="ledger-tile-label">{{ label | capitalize }}</span>
+    </article>
+    {% endfor %}
+</section>
+
+<section class="glass models-table-wrap" aria-label="Model verdicts">
+    <div class="models-table-scroll">
+        <table class="provenance-table ledger models-table">
+            <thead>
+                <tr><th>Model</th><th>Verdict</th><th>Why</th><th>Evidence</th><th>As of</th></tr>
+            </thead>
+            <tbody>
+                {% for e in entries %}
+                <tr>
+                    <td data-label="Model">{{ e.name }}{% if e.feeds_value %} <span class="models-feeds" title="Feeds a served ValuCast value">feeds value</span>{% endif %}</td>
+                    <td data-label="Verdict"><span class="models-verdict tone-{{ verdict_tone.get(e.verdict, 'prov') }}">{{ e.verdict }}</span></td>
+                    <td data-label="Why">{{ e.verdict_reason }}</td>
+                    <td data-label="Evidence">
+                        {% if e.evidence_unavailable %}
+                        {# Distinct from "pending": the row DECLARED evidence that failed to load.
+                           Clay token + a broken-link glyph so a reader never mistakes a broken
+                           evidence link for "no data yet". #}
+                        <span class="models-evidence-broken" title="The committed evidence artifact for this verdict did not load — this is a broken link, not pending data">&#9888; Evidence unavailable</span>
+                        {% elif e.public_page %}
+                        <a href="{{ e.public_page }}">{{ e.evidence_label or 'Open evidence' }}</a>
+                        {% else %}
+                        <a href="/{{ e.evidence }}">{{ e.evidence_label or 'Open artifact' }}</a>
+                        {% endif %}
+                    </td>
+                    <td data-label="As of">{% if e.as_of %}{{ editorial_date(e.as_of) }}{% else %}&mdash;{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<p class="buys-fineprint models-footnote">No failure number is restated here — every verdict links the
+live artifact where the current figure renders. A verdict never outlives its evidence: the daily build
+fails if any cited artifact goes missing. Back to <a href="/methodology">how ValuCast works</a>.</p>
+{% endif %}
+{% endblock %}

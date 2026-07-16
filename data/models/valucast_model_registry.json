@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-16",
+  "verdict_definitions": {
+    "VALIDATED": "Measured or reproducible and proven on evidence we can open. Not a promise of future accuracy — a claim we can show our work on today.",
+    "PROVISIONAL": "Observed but not yet proven. In shadow, below a maturation gate, or awaiting review. We publish it here rather than wait for it to look better.",
+    "DEPRECATED": "Superseded by a better approach and no longer the shipped path. Kept on the record so the history is legible.",
+    "REJECTED": "Tried and turned down — the labels can't train it, or it failed a gate. A published failure, not a hidden one."
+  },
+  "entries": [
+    {
+      "id": "mlb_projection",
+      "name": "MLB Projection (H+P / Marcel)",
+      "subsystem_kind": "projection",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Beats internal baselines on held-out data but has not yet beaten Steamer; the live forward check is running and currently losing, below the maturation gate.",
+      "evidence": "data/models/valucast_mlb_projection_source_comparison.json",
+      "evidence_label": "Forward-gate source comparison",
+      "source_module": "projections/models/marcel_pitcher.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "prospect_rank_v1",
+      "name": "Prospect Rank v1",
+      "subsystem_kind": "model",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Calibration is under review and coverage is still candidate-stage; the board ships, the proof is not yet in.",
+      "evidence": "data/models/valucast_prospect_calibration_report.json",
+      "evidence_label": "Rank v1 calibration report",
+      "source_module": "prospects/rank_v1.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "peak_projection_v1",
+      "name": "Peak Projection v1",
+      "subsystem_kind": "model",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "A role and skill-shape projection under active calibration review, not a validated stat forecast.",
+      "evidence": "data/models/valucast_prospect_peak_projection_calibration.json",
+      "evidence_label": "Peak Projection calibration report",
+      "source_module": "prospects/peak_projection.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "universal_prospect_model",
+      "name": "Universal Prospect Model",
+      "subsystem_kind": "model",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Observed in shadow only — backtested but not promoted to a validated verdict.",
+      "evidence": "data/models/valucast_universal_prospect_index_backtest.json",
+      "evidence_label": "Universal index backtest (shadow)",
+      "source_module": "prospects/universal.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "milb_translation",
+      "name": "MiLB Translation",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "A deterministic, reproducible level-translation port — measured, observe-only, and never a value input.",
+      "evidence": "data/models/valucast_raw_data_independence_audit.json",
+      "evidence_label": "Raw-data independence audit",
+      "source_module": "prospects/milb_translation.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "shape_comps",
+      "name": "Shape Comps",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Deterministic and reproducible — the closest real MLB shapes on three translated rates, measured not modeled.",
+      "evidence": "data/models/valucast_prospect_comps.json",
+      "evidence_label": "Shape comps artifact",
+      "source_module": "prospects/comps.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "pitch_discipline_exact",
+      "name": "Pitch Discipline — exact metrics",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Swing/Whiff/SwStr counted directly from play-by-play, ProspectSavant-matched — observe-only, never a value input.",
+      "evidence": "data/models/valucast_pitch_discipline.json",
+      "evidence_label": "Pitch-discipline layer artifact",
+      "source_module": "prospects/pitch_discipline.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "pitch_discipline_estimated",
+      "name": "Pitch Discipline — estimated zone metrics",
+      "subsystem_kind": "layer",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Zone rates from a pixel-coordinate calibration, tagged \"est.\" — held-out agreement clears the bar but they are estimates, not measurements.",
+      "evidence": "data/models/valucast_pitch_discipline.json",
+      "evidence_label": "Pitch-discipline calibration metrics",
+      "source_module": "prospects/pitch_discipline.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "aotc_calls",
+      "name": "Ahead-of-the-Curve divergence calls",
+      "subsystem_kind": "audit",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "A live, pre-registered call ledger with the sample still maturing toward its published horizon — open the ledger for the current number.",
+      "evidence": "data/models/valucast_ahead_of_consensus_scorecard.json",
+      "evidence_label": "The Ledger (AOTC scorecard)",
+      "source_module": "prospects/rank_v1.py",
+      "feeds_value": false,
+      "public_page": "/ledger"
+    },
+    {
+      "id": "w_target",
+      "name": "Wins (W) target",
+      "subsystem_kind": "model",
+      "verdict": "REJECTED",
+      "verdict_reason": "There is no W in the label seasons, so a W-inclusive preset hits the partial-coverage refusal — ValuCast cannot train a W target and does not fake one.",
+      "evidence": "data/models/valucast_prospect_league_adapters.json",
+      "evidence_label": "League-adapter coverage",
+      "source_module": "prospects/adapters.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    }
+  ]
+}

@@ -175,7 +175,9 @@ def uncertainty_driver_items(context: dict | None) -> tuple[dict[str, str], ...]
     for label, key in (
         ("Source", "score_source"),
         ("Confidence", "confidence"),
-        ("Sample Reliability", "sample_reliability"),
+        # "Sample sufficiency" not "reliability": this number is a sample-SIZE
+        # proxy (how much evidence backs the read), not a model-accuracy claim.
+        ("Sample sufficiency", "sample_reliability"),
         ("Skill Band", "skill_band"),
         ("Risk Discount", "availability_risk_discount"),
     ):
@@ -211,3 +213,96 @@ def uncertainty_note(context: dict | None) -> str | None:
         f"{width:.1f} points around the current ValuCast score. It shows "
         "confidence and doesn't move the rank or value."
     )
+
+
+def outcome_mix(signal: dict | None) -> tuple[dict[str, Any], ...]:
+    """T1 attribution: the model's outcome-mix as a whole-percent stacked bar.
+
+    The model's ``dynasty_signal`` carries ``role_or_better_probability`` (which
+    already includes the star tail), its complement ``bust_risk``, and the
+    ``star_ceiling_probability`` sub-tail. A clean mutually-exclusive partition
+    that sums to ~100% is: Star ceiling / Everyday role (role-or-better minus the
+    star tail) / Bust risk. Percentages are whole numbers with the rounding
+    residual folded into the largest segment so the bar always reads 100.
+
+    Returns () when the signal is absent or malformed (template renders nothing).
+    """
+    if not isinstance(signal, dict):
+        return ()
+    role = _clean_float(signal.get("role_or_better_probability"))
+    bust = _clean_float(signal.get("bust_risk"))
+    star = _clean_float(signal.get("star_ceiling_probability")) or 0.0
+    if role is None or bust is None:
+        return ()
+    star = max(0.0, min(star, role))
+    everyday = max(0.0, role - star)
+    raw = [
+        ("star", "Star ceiling", "signal", star),
+        ("everyday", "Everyday role", "slate", everyday),
+        ("bust", "Bust risk", "clay", bust),
+    ]
+    total = sum(value for *_, value in raw) or 1.0
+    segments = [
+        {"id": sid, "label": label, "tone": tone, "pct": int(round(value / total * 100))}
+        for sid, label, tone, value in raw
+    ]
+    # Fold the rounding residual into the largest segment so the bar reads 100.
+    residual = 100 - sum(seg["pct"] for seg in segments)
+    if residual and segments:
+        segments.sort(key=lambda seg: seg["pct"], reverse=True)
+        segments[0]["pct"] += residual
+    order = {"star": 0, "everyday": 1, "bust": 2}
+    segments.sort(key=lambda seg: order[seg["id"]])
+    return tuple(seg for seg in segments if seg["pct"] > 0)
+
+
+def attribution_components(components: dict | None) -> tuple[dict[str, Any], ...]:
+    """T3 attribution: component list with REAL score_effect values where they
+    exist, plus explicitly-labelled display-only context items.
+
+    Never emits a per-feature weight percentage — the model is not a linear
+    stack, so a "weight %" would be pseudo-precision. Only real point deltas the
+    score actually applied (availability discount, bucket-calibration
+    adjustment) get an ``effect``; everything else is ``context_only`` and the
+    template labels it "context, not a score input".
+    """
+    if not isinstance(components, dict):
+        return ()
+    items: list[dict[str, Any]] = []
+
+    availability = components.get("availability")
+    availability = availability if isinstance(availability, dict) else {}
+    discount = _clean_float(components.get("availability_risk_discount")) or _clean_float(
+        availability.get("risk_discount")
+    )
+    if discount is not None and discount > 0:
+        items.append({
+            "label": "Availability discount",
+            "effect": f"-{discount * 100:.1f}%",
+            "context_only": False,
+            "note": str(availability.get("note") or "").strip()
+            or "Availability or sample risk priced into the score.",
+        })
+
+    bucket = components.get("bucket_calibration")
+    if isinstance(bucket, dict) and bucket:
+        adjustment = _clean_float(bucket.get("adjustment"))
+        items.append({
+            "label": "Bucket calibration",
+            "effect": (f"{adjustment:+.2f} pts" if adjustment is not None else None),
+            "context_only": adjustment is None,
+            "note": str(bucket.get("reason") or "").strip()
+            or "Bucket-level calibration rule applied to the score.",
+        })
+
+    reliability = _clean_float(components.get("sample_reliability"))
+    if reliability is not None:
+        items.append({
+            "label": "Sample sufficiency",
+            "effect": f"{reliability:.1f} / 100",
+            "context_only": True,
+            "note": "How much evidence backs the read (sample-size proxy), "
+            "not a point adjustment.",
+        })
+
+    return tuple(items)

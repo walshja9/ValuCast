@@ -4614,6 +4614,129 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     .ledger-tile-n { font-size: 1.6rem; }
 }
 
+/* --- Forward Ledger / Anticipation Score (plan 030 S4) --- */
+.sb-provisional {
+    margin-bottom: .9rem;
+    border-left: 3px solid var(--c-amber);
+    color: var(--c-amber);
+}
+.sb-provisional strong { color: var(--c-amber); }
+.sb-headline { display: flex; flex-direction: column; gap: .35rem; }
+.sb-score-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem; margin: 0; }
+.sb-score { font-family: var(--font-mono); font-size: 2.4rem; font-weight: 700; line-height: 1; color: var(--c-signal); }
+.sb-score-label { font-size: .85rem; color: var(--c-muted); }
+.sb-ci { margin: 0; font-family: var(--font-mono); font-size: .82rem; color: var(--c-muted); }
+.sb-ci strong { color: var(--c-text); }
+.sb-verdict { font-weight: 700; }
+.sb-verdict-soft { color: var(--c-amber); }
+.sb-verdict-clear { color: var(--c-signal); }
+.sb-co-entrant {
+    display: flex;
+    flex-direction: column;
+    gap: .12rem;
+    padding: .7rem .95rem;
+    margin-bottom: .9rem;
+    border-radius: var(--radius);
+    border-left: 3px solid var(--c-slate);
+}
+.sb-co-label { font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); }
+.sb-co-name { font-size: .95rem; }
+.sb-co-sub { font-size: .74rem; color: var(--c-muted); }
+
+/* --- Attribution panel ("How ValuCast graded him") — 3-tier disclosure --- */
+.attribution-panel { display: flex; flex-direction: column; gap: .7rem; }
+.attribution-head .profile-card-kicker { display: block; }
+/* T1: outcome-mix stacked bar */
+.attribution-mix { display: flex; flex-direction: column; gap: .4rem; }
+.attribution-mix-bar {
+    display: flex; width: 100%; height: 14px; border-radius: 999px;
+    overflow: hidden; background: var(--surface-2);
+}
+.attribution-mix-seg { height: 100%; }
+.attribution-mix-seg.tone-signal { background: var(--c-signal); }
+.attribution-mix-seg.tone-slate { background: var(--c-slate); }
+.attribution-mix-seg.tone-clay { background: var(--c-clay); }
+.attribution-mix-legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; }
+.attribution-mix-key { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; color: var(--c-muted); }
+.attribution-mix-key b { color: var(--c-text); font-family: var(--font-mono); }
+.attribution-mix-key i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.attribution-mix-key i.tone-signal { background: var(--c-signal); }
+.attribution-mix-key i.tone-slate { background: var(--c-slate); }
+.attribution-mix-key i.tone-clay { background: var(--c-clay); }
+.attribution-mix-note { margin: 0; font-size: .72rem; color: var(--c-muted); }
+/* T2: driver chips reuse the .sample-risk-badge.rank-context chip system */
+.attribution-drivers { margin-left: 0; }
+/* T3: under-the-hood component list */
+.attribution-under-hood > summary { cursor: pointer; font-size: .82rem; color: var(--c-muted); }
+.attribution-component-list { list-style: none; margin: .5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.attribution-component { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .5rem; }
+.attribution-component-label { font-weight: 600; font-size: .85rem; }
+.attribution-component-effect { font-family: var(--font-mono); font-size: .82rem; color: var(--c-text); }
+.attribution-component-effect.context-effect { color: var(--c-muted); }
+.attribution-context-tag {
+    font-size: .62rem; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--c-muted); border: 1px solid var(--c-border);
+    border-radius: 999px; padding: 1px 7px;
+}
+.attribution-component-note { flex-basis: 100%; font-size: .74rem; color: var(--c-muted); }
+.attribution-range { margin-top: .6rem; padding-top: .5rem; border-top: 1px solid var(--c-border); }
+.attribution-range-label { font-weight: 600; font-size: .82rem; }
+
+/* --- Model Verdicts registry (/models, plan 024) --- */
+.models-funnel { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.models-tile-win .ledger-tile-n { color: var(--c-signal); }
+.models-tile-prov .ledger-tile-n { color: var(--c-amber); }
+.models-tile-dep .ledger-tile-n { color: var(--c-slate); }
+.models-tile-loss .ledger-tile-n { color: var(--c-clay); }
+.models-table-wrap { margin-top: 1rem; padding: 1rem 1.1rem; }
+/* Wide table scrolls inside its OWN container only — never the page body. */
+.models-table-scroll { overflow-x: auto; }
+.models-table { min-width: 640px; }
+.models-verdict {
+    display: inline-block; font-family: var(--font-mono); font-size: .72rem;
+    font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid transparent;
+}
+.models-verdict.tone-win { color: var(--c-signal); background: rgba(52, 226, 196, .12); border-color: rgba(52, 226, 196, .32); }
+.models-verdict.tone-prov { color: var(--c-amber); background: rgba(251, 191, 36, .14); border-color: rgba(251, 191, 36, .32); }
+.models-verdict.tone-dep { color: var(--c-slate); background: rgba(94, 102, 120, .18); border-color: rgba(94, 102, 120, .4); }
+.models-verdict.tone-loss { color: var(--c-clay); background: rgba(208, 116, 92, .14); border-color: rgba(208, 116, 92, .34); }
+.models-feeds { font-size: .62rem; letter-spacing: .04em; text-transform: uppercase; color: var(--c-muted); }
+/* EVIDENCE UNAVAILABLE = broken link, NOT pending. Clay token + warning glyph so
+   it can never be mistaken for a benign "no data yet" state (gray). */
+.models-evidence-broken { color: var(--c-clay); font-weight: 600; font-size: .82rem; }
+.models-footnote { margin-top: .8rem; }
+@media (max-width: 640px) {
+    .models-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* The 5-column verdict table becomes stacked labeled cards below 640px —
+       NOT a horizontal scroll — so the reason column stays readable on a phone. */
+    .models-table-scroll { overflow-x: visible; }
+    .models-table { min-width: 0; }
+    .models-table thead { display: none; }
+    .models-table, .models-table tbody, .models-table tr, .models-table td { display: block; width: 100%; }
+    .models-table tr {
+        border: 1px solid var(--c-border); border-radius: var(--radius-sm);
+        background: var(--surface-2); padding: .7rem .8rem; margin-bottom: .6rem;
+    }
+    .models-table td { border: none; padding: .15rem 0; }
+    .models-table td::before {
+        content: attr(data-label); display: block; font-size: .62rem;
+        letter-spacing: .05em; text-transform: uppercase; color: var(--c-muted);
+    }
+    .models-table td[data-label="Model"] { font-size: 1rem; font-weight: 650; }
+    .models-table td[data-label="Model"]::before { content: none; }
+}
+
+/* Claim-ledger plain-language lead + lifecycle legend (gaps page) */
+.gaps-claim-lead { max-width: 690px; font-size: .8rem; color: var(--c-text); margin: .2rem 0 .1rem; }
+.gaps-lifecycle-legend { margin: .5rem 0 .9rem; display: grid; gap: .2rem; }
+.gaps-lifecycle-legend div { display: flex; gap: .5rem; align-items: baseline; }
+.gaps-lifecycle-legend dt {
+    font-family: var(--font-mono); font-size: .66rem; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--c-text); flex: 0 0 auto;
+}
+.gaps-lifecycle-legend dd { margin: 0; font-size: .72rem; color: var(--c-muted); }
+
 /* --- Batch 2 trust grammar + Batch 3 cards gallery (7/3 landscape review) --- */
 .prov-line { margin: 6px 2px 0; font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--c-muted); opacity: .8; }
 .prov-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
