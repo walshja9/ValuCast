@@ -17,6 +17,12 @@ from zoneinfo import ZoneInfo
 
 from prospects.gate import _round as _gate_round, decide_gate
 from prospects.input_contract import VALUCAST_INPUT_PATH, validate_factual_contract
+from prospects.pitcher_challenger import (
+    PITCHER_ROLE_SPLIT_FEATURE_NAMES,
+    PITCHER_ROLE_SPLIT_NON_SHRINK,
+    pitcher_group_reliability,
+    pitcher_role_split_extra,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUT_PATH = VALUCAST_INPUT_PATH
@@ -62,6 +68,13 @@ OUTCOME_TARGET = {"bust": 0.0, "role": 0.5, "star": 1.0}
 PEDIGREE_FRESH_YEARS = 2.0
 PEDIGREE_STALE_YEARS = 5.0
 PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False
+# E1 pitcher challenger levers (model-supremacy audit lane #1). Dark parallel
+# path: both default False and change NO served score. Flipped only by a
+# `model_flags` variant in prospects.rank_backtest's exploratory replay. Lever
+# construction lives in prospects/pitcher_challenger.py; the two hook points are
+# _outcome_feature_vector (lever a) and _regress_current_features (lever b).
+PITCHER_OUTCOME_ROLE_SPLIT_ENABLED = False
+PITCHER_PER_GROUP_SHRINK_ENABLED = False
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
 RIDGE_LAMBDA = 10.0
@@ -430,7 +443,23 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
             1.0 if bats == "S" else 0.0,
             1.0 if throws == "L" else 0.0,
         ]
-    return [float(value) for value in base + extra]
+    vector = [float(value) for value in base + extra]
+    # E1 lever (a): append SP x core-rate interactions for pitchers when enabled.
+    # Appended last so every incumbent index is untouched with the flag off; the
+    # names helper appends the matching names in the same order.
+    if role == "pitcher" and PITCHER_OUTCOME_ROLE_SPLIT_ENABLED:
+        vector += [float(value) for value in pitcher_role_split_extra(base)]
+    return vector
+
+
+def _outcome_feature_names(role: str) -> tuple[str, ...]:
+    """OUTCOME feature names, with the E1 role-split names appended when the
+    lever is on. Kept in lockstep with _outcome_feature_vector so the stored
+    feature_names, the shrink walk, and the drivers all agree on every index."""
+    names = OUTCOME_FEATURE_NAMES[role]
+    if role == "pitcher" and PITCHER_OUTCOME_ROLE_SPLIT_ENABLED:
+        return names + PITCHER_ROLE_SPLIT_FEATURE_NAMES
+    return names
 
 
 def _canonical_impact_feature_vector(base: list[float], role: str) -> list[float]:
@@ -958,7 +987,7 @@ def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> d
         "role": role,
         "model_kind": model_kind,
         "ridge_lambda": RIDGE_LAMBDA,
-        "feature_names": list(OUTCOME_FEATURE_NAMES[role]),
+        "feature_names": list(_outcome_feature_names(role)),
         "prediction_model": _rounded_prediction_model(prediction_model),
         "weights": [round(value, 8) for value in driver_model["weights"]],
         "means": [round(value, 8) for value in driver_model["means"]],
@@ -1018,7 +1047,7 @@ def train_impact_role(
         "role": role,
         "model_kind": model_kind,
         "ridge_lambda": ridge_lambda,
-        "feature_names": list(OUTCOME_FEATURE_NAMES[role]),
+        "feature_names": list(_outcome_feature_names(role)),
         "prediction_model": _rounded_prediction_model(prediction_model),
         "weights": [round(value, 8) for value in driver_model["weights"]],
         "means": [round(value, 8) for value in driver_model["means"]],
@@ -1221,13 +1250,27 @@ def _regress_current_features(
     feature_names = role_model.get("feature_names") or FEATURE_NAMES[role]
     means = role_model["means"]
     out = list(features)
+    # E1 lever (b): per-metric-group shrink for pitchers. When on, each shrunk
+    # feature uses a group-specific reliability (fast K-group regressed less, slow
+    # ERA/WHIP-group more) instead of the single reliability above. The RETURNED
+    # scalar reliability is left at the incumbent value so downstream confidence
+    # tiers and comparators are byte-identical -- only the regressed feature values
+    # move, and only when the flag is on.
+    per_group = role == "pitcher" and PITCHER_PER_GROUP_SHRINK_ENABLED
     for index, name in enumerate(feature_names):
         if index >= len(out) or index >= len(means):
             break
+        # The E1 role-split interactions (lever a) are structural role selectors:
+        # hold them fixed like starter_x_youth, unless explicitly also_shrunk.
+        if name in PITCHER_ROLE_SPLIT_NON_SHRINK and name not in also_shrink:
+            continue
         if name in NON_SHRINK_FEATURES and name not in also_shrink:
             continue
+        feature_reliability = (
+            pitcher_group_reliability(sample, name) if per_group else reliability
+        )
         center = float(means[index])
-        out[index] = center + reliability * (out[index] - center)
+        out[index] = center + feature_reliability * (out[index] - center)
     return out, reliability
 
 
@@ -1375,12 +1418,12 @@ def score_current(
                 "drivers": _prediction_drivers(
                     outcome_runtime,
                     regressed,
-                    OUTCOME_FEATURE_NAMES[role],
+                    _outcome_feature_names(role),
                 ),
                 "impact_drivers": _prediction_drivers(
                     impact_runtime,
                     impact_features,
-                    OUTCOME_FEATURE_NAMES[role],
+                    _outcome_feature_names(role),
                     IMPACT_DRIVER_GROUPS[role],
                 ),
             }
