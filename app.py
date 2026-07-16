@@ -5117,6 +5117,49 @@ MILB_SEASON_STATS_BY_MLBAM = _index_milb_season_stats(
 )
 
 
+def _pitcher_strike_pct(card_row) -> str | None:
+    """DISPLAY-ONLY raw MiLB Strike% (strikes / total pitches) for pitcher cards.
+
+    Computed at render time from the season stat feed rows the card already
+    loads (MILB_SEASON_STATS_BY_MLBAM) — never a model/score/rank input, never
+    written to a gated artifact. RAW OBSERVED MiLB rate: it is not translated,
+    so it must never sit inside an MLB-equivalent stat line (scale honesty).
+    None-safe omission: hitters, missing/zero counts, and corrupt counts
+    (strikes > pitches) all return None and the card renders no line at all.
+    """
+    role = str(getattr(card_row, "role", "") or "").strip().lower()
+    if role not in {"hitter", "pitcher"}:
+        positions = {str(pos).upper() for pos in (getattr(card_row, "positions", ()) or ())}
+        role = "pitcher" if positions and positions <= {"P", "SP", "RP"} else "hitter"
+    if role != "pitcher":
+        return None
+    mlbam_id = getattr(card_row, "mlbam_id", None)
+    if mlbam_id in (None, ""):
+        return None
+    pitches_total = 0.0
+    strikes_total = 0.0
+    for stats_row in MILB_SEASON_STATS_BY_MLBAM.get(str(mlbam_id), ()):
+        if not isinstance(stats_row, dict):
+            continue
+        if str(stats_row.get("role") or "").strip().lower() != "pitcher":
+            continue
+        pitches = stats_row.get("pitches")
+        strikes = stats_row.get("strikes")
+        if isinstance(pitches, bool) or isinstance(strikes, bool):
+            continue
+        if not isinstance(pitches, (int, float)) or not isinstance(strikes, (int, float)):
+            continue
+        if pitches <= 0 or strikes <= 0:
+            continue
+        if strikes > pitches:
+            return None  # corrupt feed counts: omit the stat entirely
+        pitches_total += pitches
+        strikes_total += strikes
+    if pitches_total <= 0:
+        return None
+    return f"{100.0 * strikes_total / pitches_total:.1f}"
+
+
 def _artifact_ready(payload: dict | None, *keys: str) -> bool:
     if not payload:
         return False
@@ -9428,6 +9471,11 @@ def _build_dynasty_player_detail_context(player_id, args):
             "vc_rank_trend": rank_history_store.trend_for(
                 getattr(dd_row, "mlbam_id", None)
             ),
+            # Raw observed MiLB Strike% (strikes / total pitches from the season
+            # stat feed), pitchers only. DISPLAY-ONLY context — never a value/
+            # rank/buy input. None (feed lacks counts / hitter / corrupt) ->
+            # the template renders no line.
+            "pitcher_strike_pct": _pitcher_strike_pct(dd_row),
         }
 
     # Same-engine category z's as the active dynasty category configuration.

@@ -205,6 +205,13 @@
             {% elif row.stat_line %}
             <p class="sample-context-note">Not enough current sample yet to rank his skill bars against the ValuCast pool.</p>
             {% endif %}
+            {# Strike% — RAW OBSERVED MiLB rate (strikes / total pitches from the
+               season stat feed). Deliberately NOT a bar and NOT in the
+               MLB-Equivalent panel: raw and translated rate scales never share
+               a line. Pitchers only; missing/zero/corrupt counts -> no line. #}
+            {% if pitcher_strike_pct is defined and pitcher_strike_pct %}
+            <p class="sample-context-note strike-pct-line"><strong>Strike%</strong> {{ pitcher_strike_pct }} &middot; raw MiLB, strikes over total pitches &mdash; observed, not MLB-translated &middot; context, not a score input</p>
+            {% endif %}
         </div>
         {% endif %}
 
