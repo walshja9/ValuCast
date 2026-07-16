@@ -58,6 +58,8 @@ def _pitcher_split():
             "gamesPitched": 12,
             "strikeoutsPer9Inn": "13.33",
             "walksPer9Inn": "6.23",
+            "numberOfPitches": 913,
+            "strikes": 601,
         },
         "team": {"id": 494, "name": "Charlotte Knights"},
         "player": {"id": 800002, "fullName": "Hagen Smith"},
@@ -104,6 +106,26 @@ def test_build_milb_season_stats_converts_official_rows(monkeypatch):
     assert pitcher["bb_per_9"] == 6.23
     assert pitcher["k_bb_pct"] == 18.1
     assert pitcher["is_starter"] is True
+    assert pitcher["pitches"] == 913
+    assert pitcher["strikes"] == 601
+
+
+def test_pitcher_pitch_counts_absent_when_api_omits_them(monkeypatch):
+    def fake_fetch(group, sport_id, season):
+        if group == "pitching" and sport_id == 11:
+            split = _pitcher_split()
+            split["stat"].pop("numberOfPitches")
+            split["stat"].pop("strikes")
+            return [split]
+        return []
+
+    monkeypatch.setattr(refresh, "_fetch_splits", fake_fetch)
+
+    payload = refresh.build_milb_season_stats(season=2026, fetched_date="2026-06-15")
+    pitcher = payload["pitchers"][0]
+    # Never zero-fill a missing count: absent upstream stays explicitly None.
+    assert pitcher["pitches"] is None
+    assert pitcher["strikes"] is None
 
 
 def test_write_refuses_tiny_refresh_against_existing_file(tmp_path):

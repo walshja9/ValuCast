@@ -164,6 +164,8 @@ def _pitcher_row(split: dict, sport_id: int, fetched_date: str) -> dict:
     walks = _int(stat.get("baseOnBalls"))
     batters_faced = _int(stat.get("battersFaced"))
     games_started = _int(stat.get("gamesStarted"))
+    pitches = _number(stat.get("numberOfPitches"))
+    strikes = _number(stat.get("strikes"))
     return {
         **_base_row(split, "pitcher", sport_id, fetched_date),
         "position": "P",
@@ -171,6 +173,8 @@ def _pitcher_row(split: dict, sport_id: int, fetched_date: str) -> dict:
         "strikeouts": strikeouts,
         "walks": walks,
         "batters_faced": batters_faced,
+        "pitches": None if pitches is None else int(pitches),
+        "strikes": None if strikes is None else int(strikes),
         "games_played": _int(stat.get("gamesPlayed") or stat.get("gamesPitched")),
         "games_started": games_started,
         "wins": _int(stat.get("wins")),
