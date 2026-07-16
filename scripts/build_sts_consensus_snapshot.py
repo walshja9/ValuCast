@@ -1,6 +1,9 @@
 """Build a network-free Scout-the-Statline Formulated-Consensus snapshot.
 
-Inputs (committed, refreshed by re-exporting from STS with "Show low-coverage" OFF):
+Inputs (committed, refreshed by re-exporting from STS; either state of the site's
+"Show low-coverage" toggle is fine -- the COVERAGE_FLOOR filter below enforces the
+source definition in code, so an export with the toggle ON cannot silently pull
+thousands of single-sub-model rows into the consensus universe):
   data/sts/sts_consensus_hitters.csv
   data/sts/sts_consensus_pitchers.csv
 
@@ -41,6 +44,13 @@ from scripts.consensus_join_util import (  # noqa: E402
 
 HIT_CSV = ROOT / "data" / "sts" / "sts_consensus_hitters.csv"
 PIT_CSV = ROOT / "data" / "sts" / "sts_consensus_pitchers.csv"
+
+# An STS row's "Coverage" = how many of its 7 sub-models rate the player. Rows
+# below 3 are one or two stat models' opinions, not a mini-consensus -- the
+# 6/24 vintage (exported with "Show low-coverage" OFF) had a floor of 3, and
+# the source definition must not drift with an export toggle (the 7/16 export
+# with the toggle ON carried ~4,000 coverage-1/2 tail rows).
+COVERAGE_FLOOR = 3
 RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 OUT_PATH = ROOT / "data" / "sts" / "sts_consensus_snapshot.json"
 
@@ -75,10 +85,18 @@ def _board_name_index() -> dict:
 
 
 def build_snapshot() -> dict:
-    rows = (
-        [r for r in _load_csv(HIT_CSV, "hitter") if _float(r.get("Avg Rank")) is not None]
-        + [r for r in _load_csv(PIT_CSV, "pitcher") if _float(r.get("Avg Rank")) is not None]
-    )
+    def _qualifies(r: dict) -> bool:
+        return (
+            _float(r.get("Avg Rank")) is not None
+            and (_float(r.get("Coverage")) or 0.0) >= COVERAGE_FLOOR
+        )
+
+    rows = [r for r in _load_csv(HIT_CSV, "hitter") if _qualifies(r)] + [
+        r for r in _load_csv(PIT_CSV, "pitcher") if _qualifies(r)
+    ]
+    # Combined ordinal is assigned AFTER the coverage filter so sts_rank stays
+    # contiguous over the qualifying universe (same ranks a toggle-OFF export
+    # would have produced).
     rows.sort(key=lambda r: _float(r.get("Avg Rank")))  # combined order, best first
     name_idx = _board_name_index()
 
@@ -121,6 +139,7 @@ def build_snapshot() -> dict:
             "feeds_buy_score": False,
             "external_consensus_used_for_divergence_display_only": True,
         },
+        "coverage_floor": COVERAGE_FLOOR,
         "counts": {
             "total_rows": len(rows),
             "matched_to_mlbam": len(by_mlbam),
