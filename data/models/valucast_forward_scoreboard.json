@@ -1,0 +1,126 @@
+{
+  "anticipation_score": {
+    "ci_high": 13.0,
+    "ci_low": -6.0,
+    "label": "provisional (no claim has reached the expiry window)",
+    "median_lead_days": 2.0,
+    "null": {
+      "null_ci_high": 10.0,
+      "null_ci_low": -10.0,
+      "null_median": 0.0
+    },
+    "pool_size": 59,
+    "provisional": true
+  },
+  "artifact": "valucast_forward_scoreboard",
+  "cohorts": {
+    "cohort_count": 1,
+    "cohorts": [
+      {
+        "archive_date": "2026-07-16",
+        "consensus_covered": 461,
+        "content_sha256": "96083617bdcae306f3cff0b0872d1c92435ca4de2055c20b13494f52624c1822",
+        "eligible_total": 515,
+        "rank_only": 54,
+        "registration_date": "2026-07-16"
+      }
+    ],
+    "status": "registered"
+  },
+  "content_sha256": "da4e840716d82db908780639cfa4751ae57cb6234e703f82a57c334f45bfe3c0",
+  "dials": {
+    "adverse_move_floor_spots": 10,
+    "ci_percentile": 95,
+    "expiry_days": 60,
+    "n_resamples": 10000,
+    "resample_seed": 29016
+  },
+  "funnel": {
+    "buckets": {
+      "adverse_at_expiry": 0,
+      "adverse_before_retraction": 28,
+      "benign_expiry": 0,
+      "callup_loss": 0,
+      "callup_unscored": 0,
+      "callup_win": 4,
+      "clean_retraction": 77,
+      "consensus_move_unscored": 0,
+      "consensus_move_win": 27,
+      "open": 102,
+      "unclassified": 0
+    },
+    "by_side": {
+      "higher": {
+        "adverse_at_expiry": 0,
+        "adverse_before_retraction": 18,
+        "benign_expiry": 0,
+        "callup_loss": 0,
+        "callup_unscored": 0,
+        "callup_win": 4,
+        "clean_retraction": 43,
+        "consensus_move_unscored": 0,
+        "consensus_move_win": 13,
+        "open": 43,
+        "unclassified": 0
+      },
+      "lower": {
+        "adverse_at_expiry": 0,
+        "adverse_before_retraction": 10,
+        "benign_expiry": 0,
+        "callup_loss": 0,
+        "callup_unscored": 0,
+        "callup_win": 0,
+        "clean_retraction": 34,
+        "consensus_move_unscored": 0,
+        "consensus_move_win": 14,
+        "open": 59,
+        "unclassified": 0
+      },
+      "other": {
+        "adverse_at_expiry": 0,
+        "adverse_before_retraction": 0,
+        "benign_expiry": 0,
+        "callup_loss": 0,
+        "callup_unscored": 0,
+        "callup_win": 0,
+        "clean_retraction": 0,
+        "consensus_move_unscored": 0,
+        "consensus_move_win": 0,
+        "open": 0,
+        "unclassified": 0
+      }
+    },
+    "excluded_from_pool": 179,
+    "losses": 28,
+    "open": 102,
+    "pool_size": 59,
+    "self_retraction_rate": {
+      "rate": 0.4411764705882353,
+      "retracted": 105,
+      "total": 238
+    },
+    "total_claims": 238,
+    "unscored_or_unclassified": 0,
+    "wins": 31
+  },
+  "generated_at": "2026-07-16T15:13:07.705775+00:00",
+  "generated_by": "valucast",
+  "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
+  "ledger_ref": {
+    "generated_at": "2026-07-16T14:07:01.243011+00:00",
+    "signal_version": "0.1.0"
+  },
+  "protocol_version": "030-v1",
+  "source_policy": {
+    "dd_ranks_used": false,
+    "dd_values_used": false,
+    "external_rankings_used": false,
+    "feeds_buy_score": false,
+    "feeds_model_score": false,
+    "feeds_public_rank": false,
+    "inputs": "valucast_gaps_claim_ledger + valucast_prospect_rank_v1_dated_archive + valucast_forward_cohort_registry",
+    "kind": "valucast_forward_scoreboard",
+    "market_values_used": false,
+    "per_source_ranks_written": false
+  }
+}
