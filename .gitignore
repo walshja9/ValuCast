@@ -23,6 +23,9 @@ projections/data/batted_balls_cache/
 .coverage
 .tmp-tests/
 tmp*/
+# atomic-write staging files (e.g. aaa_statcast_archive) -- a job timeout mid-write
+# must not leave a stray .tmp for the next night's directory git-add to sweep up
+*.json.tmp
 _qa/
 _shots*.py
 _baseline.py

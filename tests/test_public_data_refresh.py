@@ -426,6 +426,23 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert build_commands.index(
         "scripts/build_prospect_cross_role_shadow.py"
     ) < build_commands.index("scripts/build_prospect_outcome_backtest.py")
+    # 7/16 (plan 030 S3): forward-ledger scoreboard builds right after the gaps claim
+    # ledger and validates after the ledger validator; the manually-registered cohort
+    # registry is NEVER built nightly.
+    assert "scripts/build_forward_scoreboard.py" in build_commands
+    assert build_commands.index("scripts/build_gaps_claim_ledger.py") < build_commands.index(
+        "scripts/build_forward_scoreboard.py"
+    )
+    assert "scripts/validate_forward_scoreboard.py" in validate_commands
+    assert "data/models/valucast_forward_scoreboard.json" in workflow
+    assert not any("build_forward_cohort_registry.py" in cmd for cmd in build_commands)
+    assert "valucast_forward_cohort_registry.json" not in workflow
+    # AAA-Statcast season-stamped vintage archive lands right after the feature build.
+    assert "scripts/archive_aaa_statcast_features.py" in build_commands
+    assert build_commands.index("scripts/build_aaa_statcast_features.py") < build_commands.index(
+        "scripts/archive_aaa_statcast_features.py"
+    )
+    assert "data/aaa_statcast_archive/" in workflow
     assert "scripts/build_raw_data_independence_audit.py" in build_commands
     assert "scripts/build_front_office_failures.py" in build_commands
     assert "scripts/build_milb_stat_freshness_audit.py" in build_commands

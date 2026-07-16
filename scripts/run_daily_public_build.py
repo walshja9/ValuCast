@@ -77,6 +77,13 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # pitch-discipline step above. Observe-only display context (AAA only, measured).
     ("scripts/refresh_aaa_statcast.py",),
     ("scripts/build_aaa_statcast_features.py",),
+    # Season-stamped, append-only vintage archive of the AAA-Statcast features just
+    # built. Hash-skips when the substantive payload matches the latest archived
+    # vintage (no 365 identical files/yr). Enables a ~2030 new-vintage forward gate
+    # (plan 030). Observe-only: never a model/rank/value input. Runs right after the
+    # feature build so it snapshots the freshest artifact; no-ops on a cold-cache
+    # morning where the feature build produced nothing.
+    ("scripts/archive_aaa_statcast_features.py",),
     ("scripts/build_prospect_cross_role_shadow.py",),
     ("scripts/build_valucast_movers.py",),
     ("scripts/build_call_up_pulse.py",),
@@ -112,6 +119,12 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # Gaps claim lifecycle ledger reads the gap board's qualification logic over the
     # dated rank archive; must run AFTER the gap board (plan 017).
     ("scripts/build_gaps_claim_ledger.py",),
+    # Forward-ledger scoreboard (plan 030 S3): rolls the frozen cohort registry + this
+    # run's fresh gaps claim ledger + the dated rank archive into the standings
+    # artifact. Runs IMMEDIATELY after the claim-ledger build so it reads today's
+    # ledger. The cohort REGISTRY is registered manually/quarterly and is NOT built
+    # here. Additive/observe-only: never a model/rank/value input.
+    ("scripts/build_forward_scoreboard.py",),
     ("scripts/build_scouting_repository.py",),
     ("scripts/build_valucast_quality_governor.py",),
     ("scripts/build_pipeline_observability.py",),
@@ -140,6 +153,15 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_pooled_shadow.py",),
     ("scripts/validate_combined_level_shadow.py",),
     ("scripts/validate_prospect_outcome_backtest.py",),
+    # Math-provability artifacts (audit repairs R3/R4/R6). These are NOT rebuilt
+    # nightly: like the dynasty backtest they only change when the fold data
+    # changes, and their builds are run MANUALLY alongside the model program (the
+    # artifacts are committed). The nightly pipeline only re-validates the
+    # committed copies so a stale/corrupt one fails the refresh. outcome_oof is
+    # the source the other two read, so it validates first.
+    ("scripts/validate_outcome_oof_scores.py",),
+    ("scripts/validate_probability_reliability.py",),
+    ("scripts/validate_universal_gate_multiplicity.py",),
     ("scripts/validate_projection_scorecard.py",),
     ("scripts/validate_prospect_shadow_promotion.py",),
     ("scripts/validate_front_office_failures.py",),
@@ -153,6 +175,14 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     ("scripts/validate_ahead_of_consensus.py",),
     ("scripts/validate_ahead_of_consensus_scorecard.py",),
     ("scripts/validate_gaps_claim_ledger.py",),
+    # Forward-ledger scoreboard invariants (quarantine of role/pitcher/hitter/
+    # source_ranks keys, CI/null/provisional headline shape, funnel reconciliation,
+    # independence attestation). Runs after the claim-ledger validator.
+    ("scripts/validate_forward_scoreboard.py",),
+    # Model Verdicts registry (plan 024): every cited evidence artifact must exist
+    # and no VALIDATED verdict may cite a not-yet-proven artifact, else the build
+    # fails rather than shipping a verdict with broken/overclaimed evidence.
+    ("scripts/validate_model_registry.py",),
     ("scripts/validate_valucast_movers.py",),
     ("scripts/validate_valucast_buys.py",),
     ("scripts/validate_valucast_buys_monitor.py",),

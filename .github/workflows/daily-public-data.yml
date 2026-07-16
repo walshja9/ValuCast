@@ -257,6 +257,13 @@ jobs:
           if [ -f data/models/valucast_scouting_llm_cache.json ]; then
             git add data/models/valucast_scouting_llm_cache.json
           fi
+          # Forward-ledger scoreboard (plan 030 S3): guarded add — the artifact is
+          # not yet tracked and a failed build aborts the job before this step, so an
+          # unconditional pathspec would fail the whole publish on any run where the
+          # scoreboard build produced nothing. Guard it like the other new artifacts.
+          if [ -f data/models/valucast_forward_scoreboard.json ]; then
+            git add data/models/valucast_forward_scoreboard.json
+          fi
           # Plate-discipline artifact: guarded add — absent until the first full
           # backfill lands (and on any cold-cache/no-op morning at HEAD without
           # it), and an unconditional pathspec would fail the whole publish step.
@@ -268,6 +275,13 @@ jobs:
           # produces no artifact) and an unconditional pathspec would fail the publish.
           if [ -f data/models/valucast_aaa_statcast_features.json ]; then
             git add data/models/valucast_aaa_statcast_features.json
+          fi
+          # Season-stamped AAA-Statcast vintage archive: append-only, hash-skipped, so
+          # most nights add nothing. Guarded add — the directory does not exist until the
+          # first vintage lands (cold-cache CI mornings never build the features artifact
+          # to archive), and an unconditional pathspec would fail the whole publish step.
+          if [ -d data/aaa_statcast_archive ]; then
+            git add data/aaa_statcast_archive/
           fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
