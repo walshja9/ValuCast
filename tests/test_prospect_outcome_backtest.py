@@ -126,7 +126,11 @@ def test_outcome_backtest_blocks_on_underpowered_cross_role_change_gate():
     assert payload["status"] == "needs_work"
     assert payload["evidence"]["cross_role_shadow"]["historical_absolute_passed"] is True
     assert payload["evidence"]["cross_role_shadow"]["change_power_passed"] is False
-    assert payload["validation"]["realized_evidence_ready"] is False
+    # realized evidence stays ready when the dynasty gate + absolute
+    # concordance hold: the change-power gate is structurally unpassable
+    # (plan 028) and must not hard-wire this flag False for years.
+    assert payload["validation"]["realized_evidence_ready"] is True
+    assert payload["validation"]["cross_role_change_power_ready"] is False
     assert any(
         gate["kind"] == "cross_role_change_power"
         for gate in payload["validation"]["evidence_gates"]

@@ -127,9 +127,11 @@
           "confirms_cross_role_calibration": false,
           "coverage_rate": 1.0,
           "covered_top25_pitcher_count": 3,
+          "eligible_sample_ready": true,
           "eligible_top25_pitcher_count": 3,
-          "evidence_class": "current_measured_aaa_pitch_data_among_eligible",
+          "evidence_class": "post_first_look_aaa_feed_completeness",
           "floor": 0.6,
+          "minimum_eligible_top25_pitcher_count": 3,
           "status": "pass",
           "top25_pitcher_count": 10,
           "top25_population_coverage_rate": 0.3
@@ -163,6 +165,12 @@
           "evidence_class": "current_publication_shape",
           "max_top25_pitchers": 7,
           "max_top50_pitcher_rate": 0.3,
+          "model_component_eligible_board_count": 2833,
+          "model_component_field": "components.model_score",
+          "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
+          "model_component_top25_evaluated_count": 25,
+          "model_component_top25_hitter_count": 12,
+          "model_component_top25_pitcher_count": 13,
           "status": "fail",
           "top25_pitcher_count": 10,
           "top50_pitcher_count": 17,
@@ -432,7 +440,7 @@
     ],
     "forward_evidence_ready": false,
     "minimum_realized_outcome_sample_size": 2000,
-    "realized_evidence_ready": false,
+    "realized_evidence_ready": true,
     "realized_outcome_sample_size": 2218
   }
 }

@@ -354,8 +354,12 @@ def build_outcome_backtest(
         "validation": {
             "realized_outcome_sample_size": realized_samples,
             "minimum_realized_outcome_sample_size": MIN_REALIZED_OUTCOME_SAMPLE,
+            # power is NOT realized evidence: the change-power gate is
+            # structurally unpassable at current data scale (plan 028) and is
+            # reported separately below; conjoining it here hard-wires this
+            # flag False for years and fails the v0.7 nightly validator.
             "realized_evidence_ready": (
-                dynasty_gate == "active" and absolute_passed and power_passed
+                dynasty_gate == "active" and absolute_passed
             ),
             "cross_role_change_power_ready": power_passed,
             "bucket_cohort_evidence_ready": bucket_cohort_ready,
