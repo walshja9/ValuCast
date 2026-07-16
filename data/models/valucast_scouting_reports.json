@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-07-16T14:07:03.838228+00:00",
+  "generated_at": "2026-07-16T17:05:36.693016+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-07-16T14:05:32.573805+00:00",
+    "card_data_audit_generated_at": "2026-07-16T17:03:55.268470+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
-    "public_snapshot_generated_at": "2026-07-16T14:05:27.627237+00:00",
+    "public_snapshot_generated_at": "2026-07-16T17:03:50.263731+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-07-16T14:05:33.129642+00:00",
+    "recent_signal_generated_at": "2026-07-16T17:03:55.838886+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -15551,8 +15551,8 @@
         "2B"
       ],
       "prospect_rank": null,
-      "published_report": "The Statcast card is carried by plus Sprint Speed at the 87th percentile (28.8 ft/s), with well below-average BB % at the 13th percentile (5.7%) as the drag. A steady line projects to .260 AVG, .320 OBP, .775 OPS, 18 HR, 13 SB over 417 PA.",
-      "published_report_source": "deterministic",
+      "published_report": "The Statcast card tells you most of what you need to know: his chase rate ranks in the 83rd percentile, yet his walk rate sits at 5.7% and his xBA checks in at .225. He sees the zone well enough to lay off bad pitches but doesn't convert that discipline into walks, and the .289 xwOBA is the honest summary of where he is right now. The projection's .26/.32/.455 with 18 home runs and 13 stolen bases in 417 plate appearances reads like a second-division regular who contributes across the board without carrying a lineup spot. The whole profile hinges on whether that 5.7% walk rate ever catches up to what the 83rd-percentile chase numbers suggest he should be drawing.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The Statcast card is carried by plus Sprint Speed at the 87th percentile (28.8 ft/s), with well below-average BB % at the 13th percentile (5.7%) as the drag. A steady line projects to .260 AVG, .320 OBP, .775 OPS, 18 HR, 13 SB over 417 PA.",
       "report_llm": {
@@ -15567,17 +15567,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The chase rate is elite \u2014 23.9%, 83rd percentile \u2014 but the walk rate is 5.7%, and those two numbers are supposed to move together. They don't here, which tells you the contact he makes when he does swing isn't forcing pitchers to respect him enough to work around him. His xBA sits at .225 and his xwOBA at .289, both deep in the bottom fifth of the league, so the projected .260/.320/.455 line is being carried almost entirely by his 28.8 ft/s sprint speed and whatever hard contact he does barrel up. If the discipline-without-production gap closes, pitchers attack him more, or his 27.5% whiff rate bleeds into more empty at-bats, you're left with a good-speed, limited-bat second baseman who probably profiles as a low-end regular.",
-        "valid": false
+        "text": "The Statcast card tells you most of what you need to know: his chase rate ranks in the 83rd percentile, yet his walk rate sits at 5.7% and his xBA checks in at .225. He sees the zone well enough to lay off bad pitches but doesn't convert that discipline into walks, and the .289 xwOBA is the honest summary of where he is right now. The projection's .26/.32/.455 with 18 home runs and 13 stolen bases in 417 plate appearances reads like a second-division regular who contributes across the board without carrying a lineup spot. The whole profile hinges on whether that 5.7% walk rate ever catches up to what the 83rd-percentile chase numbers suggest he should be drawing.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -17898,8 +17896,8 @@
         "2B"
       ],
       "prospect_rank": 41,
-      "published_report": "He forces pitchers into the zone and takes the free pass; pitchers may challenge him more often until the damage improves. Lower-order regular ceiling; the current floor is a bench bat without more damage; the sample covers 324 PA in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "The walk rate is the loudest thing in this profile, and it's also the problem. Johnson has drawn 54 walks in 324 AAA plate appearances, a 17% clip that translates to 12.7% at the MLB level, where the average sits at 8.5% \u2014 the approach grade is the one tool projecting above average, and the percentile card confirms it at 89th. Everything else is working against it: a .193 average at AAA with a .254 BABIP that suggests the contact issues run deeper than luck, 82 strikeouts against that walk total, and a translated ISO of .11 where MLB average is .15. The whole profile hinges on whether the bat-to-ball tightens enough to let the plate discipline matter, because right now the .331 OBP at AAA is the only number keeping a regular-contributor conversation alive. If the hit tool stays where it is, the walk rate becomes a curiosity on a depth r\u00e9sum\u00e9 rather than the foundation of anything.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -17920,19 +17918,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'above the 8.5% MLB average'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate is the one thing working here, and it's working loudly. Across 324 AAA plate appearances in 2026, Termarr Johnson has drawn 54 walks, a 17% clip that translates to 12.7% at the MLB level, well above the 8.5% MLB average, but the bat hasn't followed the eye. A .193 average with a .254 BABIP suggests the contact quality isn't hiding behind bad luck, and six home runs with a .106 ISO leaves the offensive profile thin even before translation shaves it further. ValuCast has him sliding down 6.03 points in three days, which tracks with what the line is saying: a 22-year-old whose approach grades out as a 65 but whose hit and power tools are both sitting at 30, and if those don't develop, the walk rate alone won't carry him past a bench role.",
-        "valid": false
+        "text": "The walk rate is the loudest thing in this profile, and it's also the problem. Johnson has drawn 54 walks in 324 AAA plate appearances, a 17% clip that translates to 12.7% at the MLB level, where the average sits at 8.5% \u2014 the approach grade is the one tool projecting above average, and the percentile card confirms it at 89th. Everything else is working against it: a .193 average at AAA with a .254 BABIP that suggests the contact issues run deeper than luck, 82 strikeouts against that walk total, and a translated ISO of .11 where MLB average is .15. The whole profile hinges on whether the bat-to-ball tightens enough to let the plate discipline matter, because right now the .331 OBP at AAA is the only number keeping a regular-contributor conversation alive. If the hit tool stays where it is, the walk rate becomes a curiosity on a depth r\u00e9sum\u00e9 rather than the foundation of anything.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -27359,8 +27355,8 @@
         "3B"
       ],
       "prospect_rank": 101,
-      "published_report": "The current line does not identify a dependable offensive strength; the risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating; the sample covers 311 PA in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "The .302 OBP at AAA is the problem in one number. Mikey Romero has taken 24 walks in 311 AAA plate appearances this season, but his MLB-equivalent walk rate translates to 7.6%, a tick below what most big-league hitters manage, and his ISO translates to .127 while the average MLB hitter sits at .150, so the bat isn't carrying him where the approach falls short. The strikeout rate is fine, 20% at AAA shading to roughly average in translation, which keeps the hit tool grade respectable, but a 50 hit with a 40 power and a 40 approach is a combination that makes you organizational depth more often than it makes you a regular. If the ISO climbs and the walk rate gets back to average, there's a regular in here; if neither moves, ValuCast's -4.45-point score drop in three days starts to look like fair pricing.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -27383,20 +27379,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
-          "unsupported_numbers": [
-            "1",
-            "1"
-          ]
+          "unsupported_numbers": []
         },
-        "text": "The .302 OBP is the problem. Mikey Romero is putting together a 311-PA AAA season where the bat-to-ball numbers grade out fine \u2014 20 K% in the minors translates to a roughly league-average 21.5% equivalent \u2014 but the walk rate doesn't hold up the same way, coming in below the MLB mean when converted, and the .127 ISO equivalent leaves him short of average power too. Three tools grading 40, one at 50; that's an organizational depth profile with a bench floor, and the ValuCast score has slipped 4.45 points in three days. The upside is there if the approach tightens, but right now this reads as a player whose hit tool needs to carry tools that aren't pulling their weight yet.\n\nWait, the rewrite must fix the em-dash issue. Let me count: there's one em-dash in that paragraph (\"fine \u2014 20 K%\"). Actually there are two em-dashes (\"fine \u2014 20 K%\" and \"way, coming\"). No, let me recount carefully.\n\n\"grade out fine \u2014 20 K%\" = 1 em-dash\nThat appears to be the only one. But the guard flagged more than 1. Let me rewrite cleanly with at most one em-dash.\n\nThe .302 OBP is the problem. Across 311 AAA plate appearances, the bat-",
-        "valid": false
+        "text": "The .302 OBP at AAA is the problem in one number. Mikey Romero has taken 24 walks in 311 AAA plate appearances this season, but his MLB-equivalent walk rate translates to 7.6%, a tick below what most big-league hitters manage, and his ISO translates to .127 while the average MLB hitter sits at .150, so the bat isn't carrying him where the approach falls short. The strikeout rate is fine, 20% at AAA shading to roughly average in translation, which keeps the hit tool grade respectable, but a 50 hit with a 40 power and a 40 approach is a combination that makes you organizational depth more often than it makes you a regular. If the ISO climbs and the walk rate gets back to average, there's a regular in here; if neither moves, ValuCast's -4.45-point score drop in three days starts to look like fair pricing.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -29524,8 +29515,8 @@
         "P"
       ],
       "prospect_rank": 117,
-      "published_report": "He has a dependable way to finish hitters; he still gives away too many counts. Rotation lean; the strike throwing decides whether it holds. The sample covers 54.4 IP in Triple-A, Double-A, and Single-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The strikeout stuff translates well enough, with 9.2 K/9 at the MLB-equivalent level while the pool average sits at 8.6, but the walk rate is where this profile gets uncomfortable. He's issued 35 walks in 54.4 innings across AAA & AA & A, and the MLB-equivalent BB/9 of 4.9 against a pool average of 3.2 drags K-BB% below average even with the swing-and-miss volume. The ERA of 3.0 across those levels is doing work that the underlying command shape doesn't fully support, and if run prevention regresses toward what the walks suggest it should, the ceiling lands somewhere between a swingable depth option and an arm that never quite sticks.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -29548,17 +29539,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The strikeout rate is loud \u2014 11.8 K/9 across AAA & AA & A, translating to a 9.2 MLB-equivalent that clears the 8.6 MLB average \u2014 but the walk rate undercuts every good thing that number does. Thirty-five walks in 54.4 innings, and the MLB-equivalent BB/9 lands at 4.9 against a league that averages 3.2. The ERA is 3.0 across those levels, the run prevention holding up for now, but a K-BB% that translates to 12.2 at the MLB level tells you the results are outrunning the actual command profile. If the walks compress, there's a useful arm here; if they don't, the ceiling is depth.",
-        "valid": false
+        "text": "The strikeout stuff translates well enough, with 9.2 K/9 at the MLB-equivalent level while the pool average sits at 8.6, but the walk rate is where this profile gets uncomfortable. He's issued 35 walks in 54.4 innings across AAA & AA & A, and the MLB-equivalent BB/9 of 4.9 against a pool average of 3.2 drags K-BB% below average even with the swing-and-miss volume. The ERA of 3.0 across those levels is doing work that the underlying command shape doesn't fully support, and if run prevention regresses toward what the walks suggest it should, the ceiling lands somewhere between a swingable depth option and an arm that never quite sticks.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -45361,8 +45350,8 @@
         "P"
       ],
       "prospect_rank": 231,
-      "published_report": "A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; there's no repeatable way to retire hitters in the line yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 77 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The walk rate is the one thing working for him, and it isn't enough. Across 77 AA innings, Drew Beam has posted a 3.0 BB/9 that translates to just 3.3 at the MLB level, essentially league-average control, but his 7.2 K/9 at AA converts to 7.0 against big-league hitters while the MLB average sits at 8.6, and the 6.20 ERA reflects what happens when you can't miss bats. The K-BB% sits at 11% in AA, and the translated version drops to 10% against a 13.5% MLB baseline. If the command holds and the strikeout rate edges up, the ceiling here is a back-end starter who eats innings without embarrassing anyone; if the whiff rate stays at the bottom of the pitcher pool, what's left is a depth arm who fills a rotation slot until someone better arrives.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -45383,21 +45372,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'major-league starters average'",
-            "league-average scaffold variant 'majors against an MLB average'",
-            "league-average scaffold variant 'big-league norm'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate is the one thing working here, and it isn't enough. Drew Beam has held AA hitters to 3.0 BB/9 across 77 innings this season, a real skill that translates: his MLB-equivalent BB/9 projects to 3.3, almost identical to what major-league starters average. But the strikeout side doesn't hold up, 7.2 K/9 at AA becoming a projected 7.0 in the majors against an MLB average of 8.6, and a K-BB% translation of 10% trails the 13.5% big-league norm by enough to leave very little margin for contact. A 6.2 ERA and 1.3 WHIP say the command advantage isn't yet outrunning the damage. If he finds more swing-and-miss in a profile that grades a 25 on miss, there's a rotation depth piece here; if he can't, he's a relief-depth option with good enough control to stick around.",
-        "valid": false
+        "text": "The walk rate is the one thing working for him, and it isn't enough. Across 77 AA innings, Drew Beam has posted a 3.0 BB/9 that translates to just 3.3 at the MLB level, essentially league-average control, but his 7.2 K/9 at AA converts to 7.0 against big-league hitters while the MLB average sits at 8.6, and the 6.20 ERA reflects what happens when you can't miss bats. The K-BB% sits at 11% in AA, and the translated version drops to 10% against a 13.5% MLB baseline. If the command holds and the strikeout rate edges up, the ceiling here is a back-end starter who eats innings without embarrassing anyone; if the whiff rate stays at the bottom of the pitcher pool, what's left is a depth arm who fills a rotation slot until someone better arrives.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -49147,8 +49132,8 @@
         "CF"
       ],
       "prospect_rank": 260,
-      "published_report": "The sample covers 199 PA in Triple-A, High-A, and Single-A, so confidence is high. The current line does not identify a dependable offensive strength. The risk is that an ordinary offensive line leaves no path to regular playing time. The current outcome is below a regular role, with a bench path dependent on one offensive result separating.",
-      "published_report_source": "deterministic",
+      "published_report": "Twenty-four stolen bases in 199 plate appearances across AAA & A+ & A is the whole argument for Enrique Bradfield Jr., because the bat behind it is thin. His translated ISO sits at .111, well short of the MLB mean, and his strikeout rate translates to 25.6% at the big-league level. The speed is loud; everything else grades out at the bottom of the scale. If the hit tool sharpens enough to keep him on base at a viable clip, the speed plays in a complementary role, but as currently constructed he profiles as a depth piece, and ValuCast has him sliding down 2.43 points in three days.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -49169,19 +49154,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'above the MLB average'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Twenty-four stolen bases across AAA, A+, and A this season is the loudest thing in this profile, and it's almost the only loud thing. The translated K% comes out to 25.6, which sits above the MLB average of 22.0, and the power translates to an ISO of .111 when the MLB average runs closer to .150. The whole shape reads as a speed-first profile waiting for a hit tool that hasn't arrived, and at 56%, the depth-or-reserve outcome is where this lands more often than not. If contact tightens and the 11% walk rate holds, there's a bench bat here; if neither moves, the legs carry him only so far.",
-        "valid": false
+        "text": "Twenty-four stolen bases in 199 plate appearances across AAA & A+ & A is the whole argument for Enrique Bradfield Jr., because the bat behind it is thin. His translated ISO sits at .111, well short of the MLB mean, and his strikeout rate translates to 25.6% at the big-league level. The speed is loud; everything else grades out at the bottom of the scale. If the hit tool sharpens enough to keep him on base at a viable clip, the speed plays in a complementary role, but as currently constructed he profiles as a depth piece, and ValuCast has him sliding down 2.43 points in three days.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -50174,8 +50157,8 @@
         "P"
       ],
       "prospect_rank": 265,
-      "published_report": "Nothing in the profile gives him a dependable way through a lineup yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 66.7 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The ERA flatters him. Forty walks across 66.7 AA innings is the whole argument: a BB/9 of 5.4 at AA translates to 4.8 at the MLB level, and his K-BB% translates to 9.2 against a pool where 13.5 is ordinary. His 64 strikeouts aren't enough to absorb that kind of walk rate, which is why the command grade lands at 25 and the dominance grade at 30. If the walk rate tightens, you have a depth arm with a starter's workload; if it doesn't, you have a relief candidate with a limited ceiling and ValuCast cooling on him by 1.65 points in three days.",
+      "published_report_source": "llm",
       "recent_signal": {
         "buy_rank": null,
         "buy_reason": null,
@@ -50198,17 +50181,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The ERA looks fine \u2014 3.80 across 66.7 AA innings \u2014 but the walk rate is doing real damage underneath it. Forty walks in that span translate to a 4.8 BB/9 equivalent at the MLB level, well past where the average sits at 3.2, and a K-BB% that projects to 9.2% when the typical MLB arm comes in around 13.5%; the strikeout side doesn't compensate, projecting at 7.7 per nine when the average is 8.6. If the command grade (25) doesn't move, the ERA won't hold, and what's left is a depth arm absorbing innings at the back of an organizational rotation, not a starter with a future. The 52% probability that he profiles as a starter or late-inning arm leaves the door open, but it hinges entirely on whether he can bring the walks down enough to let the run prevention numbers mean something.\n\nWait, I still have the scaffold problems. Let me fix properly:\n\nThe ERA looks fine, 3.80 across 66.7 AA innings, but the walk rate is doing real damage underneath it. Forty walks in that span translate to a projected 4.8 BB/9 at the MLB level, a figure that lands well north of the 3.2 MLB average, and a K-BB% that projects to 9.2% when the typical arm clears 13.5",
-        "valid": false
+        "text": "The ERA flatters him. Forty walks across 66.7 AA innings is the whole argument: a BB/9 of 5.4 at AA translates to 4.8 at the MLB level, and his K-BB% translates to 9.2 against a pool where 13.5 is ordinary. His 64 strikeouts aren't enough to absorb that kind of walk rate, which is why the command grade lands at 25 and the dominance grade at 30. If the walk rate tightens, you have a depth arm with a starter's workload; if it doesn't, you have a relief candidate with a limited ceiling and ValuCast cooling on him by 1.65 points in three days.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -56282,33 +56263,31 @@
         "2B"
       ],
       "prospect_rank": 359,
-      "published_report": "The power keeps a regular role open, but the present floor is a one-dimensional reserve; he is producing enough game power to matter. Better pitching can leave him without a second way to contribute; the sample covers 328 PA in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "Sixteen home runs in 328 A+ plate appearances from a 20-year-old second baseman gets your attention fast. The .235 ISO at A+ translates to .156 at the MLB equivalent, right around league average power, which means the raw thump is already holding up against the level adjustment. The contact-and-discipline picture is messier: 79 strikeouts against 25 walks draws a 35 grade on approach, and the MLB-equivalent K% projects to 27% while the league sits at 22%, so if the strikeout rate doesn't tighten, the hit tool never gets to carry him. ValuCast puts 69% odds on a regular-or-better outcome, but the ceiling is capped at bench or platoon bat, which means this profile lives or dies on whether a 65-grade power tool can prop up a shape where everything else is ordinary.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The power keeps a regular role open, but the present floor is a one-dimensional reserve; he is producing enough game power to matter. Better pitching can leave him without a second way to contribute; the sample covers 328 PA in High-A, so confidence is low.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "model": "claude-sonnet-4-6",
         "problems": {
-          "banned": [
-            "against a league average"
-          ],
+          "banned": [],
           "count_role_problems": [],
           "derived_word_number_problems": [],
           "handedness_problems": [],
-          "hard_ok": false,
+          "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Sixteen home runs in 328 A+ plate appearances is the loudest thing in this profile, and the .235 ISO backs up why power grades as a 65 on the skill sheet. The problem sitting right next to it: a K% that translates to 27.0% at the MLB level against a league average of 22.0%, paired with a walk rate that comes in below average at 7.1% equivalent, leaving the approach grade at 35 and the OBP at just .320 despite the raw thump. If the strikeout rate softens as he climbs, and he'll have to show that at every level, there's a real everyday hitter in here; a 69% probability on regular-or-better says the upside is genuine, not cosmetic. If it doesn't, the power plays off the bench and that's where the ceiling and the floor converge.",
-        "valid": false
+        "text": "Sixteen home runs in 328 A+ plate appearances from a 20-year-old second baseman gets your attention fast. The .235 ISO at A+ translates to .156 at the MLB equivalent, right around league average power, which means the raw thump is already holding up against the level adjustment. The contact-and-discipline picture is messier: 79 strikeouts against 25 walks draws a 35 grade on approach, and the MLB-equivalent K% projects to 27% while the league sits at 22%, so if the strikeout rate doesn't tighten, the hit tool never gets to carry him. ValuCast puts 69% odds on a regular-or-better outcome, but the ceiling is capped at bench or platoon bat, which means this profile lives or dies on whether a 65-grade power tool can prop up a shape where everything else is ordinary.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -56933,8 +56912,8 @@
         "P"
       ],
       "prospect_rank": 370,
-      "published_report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. There's no repeatable way to retire hitters in the line yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 38 IP in Triple-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "The ERA is the one thing working in his favor, and 38 innings isn't enough to trust it. Gibson's 3.5 ERA at AAA looks clean on the surface, but the translation peels it back: his strikeout rate converts to 8.3 per nine at the MLB level, a figure that blends into the crowd, while his walk rate comes out to 3.9 against a league that averages 3.2. The K-BB% lands at 11.5% in equivalent terms, two full points short of the MLB average at 13.5%. If the ERA holds as something real over a fuller sample, there's a 41% shot at a starter or late-inning role, but right now 38 innings is the ceiling on any conviction here.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The failure point is the strikeout-to-walk result, which does not support a firm starter projection. There's no repeatable way to retire hitters in the line yet. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment. Only 38 IP in Triple-A, so confidence is low.",
       "report_llm": {
@@ -56949,17 +56928,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The ERA looks fine \u2014 3.50 over 38 AAA innings \u2014 but the translation is where the profile gets honest. Strikeouts convert to 8.3 per nine at the MLB level, right around the MLB average of 8.6, and the walks translate to 3.9 when the MLB average sits at 3.2, leaving a K-BB% that would land nearly two points short of what average MLB arms produce. Thirty-eight innings is a thin canvas, and the skill grades underneath (miss, command, dominance all at 40) suggest the ERA is carrying the profile rather than the other way around. If the command tightens and the strikeout shape firms up, there's a rotation or late-inning role in the 41% range of outcomes; if it doesn't, this is a depth arm, and that's the most likely landing spot at 34%.",
-        "valid": false
+        "text": "The ERA is the one thing working in his favor, and 38 innings isn't enough to trust it. Gibson's 3.5 ERA at AAA looks clean on the surface, but the translation peels it back: his strikeout rate converts to 8.3 per nine at the MLB level, a figure that blends into the crowd, while his walk rate comes out to 3.9 against a league that averages 3.2. The K-BB% lands at 11.5% in equivalent terms, two full points short of the MLB average at 13.5%. If the ERA holds as something real over a fuller sample, there's a 41% shot at a starter or late-inning role, but right now 38 innings is the ceiling on any conviction here.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -57171,8 +57148,8 @@
         "2B"
       ],
       "prospect_rank": 374,
-      "published_report": "The current damage limits the offensive ceiling. He consistently finishes at-bats with contact. The contact gives him an everyday path, but the current damage points to a bench floor. The sample covers 372 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The walk rate is the loudest thing in this profile, and it doesn't match anything else. Aroon Escobar has drawn 46 walks against 62 strikeouts across 372 AA plate appearances, and the MLB-equivalent translation puts his BB% at 10.1, comfortably above what the average big leaguer posts, on a bat otherwise producing .226/.331/.313 with an ISO of .087. The power grade is the problem: six home runs in 372 AA PA translates to an MLB-equivalent ISO of .095, and the average MLB hitter clears .150 by a wide margin with no signal here that the gap closes. If the approach stays and a second gear emerges in the power, he's a bench piece worth protecting; if the pop doesn't come, the discipline alone makes him organizational depth at 21.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The current damage limits the offensive ceiling. He consistently finishes at-bats with contact. The contact gives him an everyday path, but the current damage points to a bench floor. The sample covers 372 PA in Double-A, so confidence is moderate.",
       "report_llm": {
@@ -57185,19 +57162,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'league mark'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate carries this profile. At AA, Escobar has drawn 46 walks against 62 strikeouts in 372 plate appearances, and the translation puts his BB% at 10.1 against a league mark of 8.5, so the plate discipline isn't just a product of the level. The power is the problem: a .087 ISO at AA translates to .095, and that sits far below what the average big-leaguer produces, and 20 stolen bases can't compensate for a bat that generates almost nothing when it makes contact. If the approach holds and some gap power develops, he's a bench piece who earns at-bats by not giving them away; if the pop doesn't come, a .313 slugging at AA leaves him as organizational depth at 21, which is the more likely landing point right now.",
-        "valid": false
+        "text": "The walk rate is the loudest thing in this profile, and it doesn't match anything else. Aroon Escobar has drawn 46 walks against 62 strikeouts across 372 AA plate appearances, and the MLB-equivalent translation puts his BB% at 10.1, comfortably above what the average big leaguer posts, on a bat otherwise producing .226/.331/.313 with an ISO of .087. The power grade is the problem: six home runs in 372 AA PA translates to an MLB-equivalent ISO of .095, and the average MLB hitter clears .150 by a wide margin with no signal here that the gap closes. If the approach stays and a second gear emerges in the power, he's a bench piece worth protecting; if the pop doesn't come, the discipline alone makes him organizational depth at 21.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -57601,7 +57576,7 @@
           "handedness_problems": [],
           "hard_ok": true,
           "league_average_scaffold_problems": [
-            "league-average scaffold variant 'below the 8.5% MLB average'"
+            "league-average scaffold variant 'below the MLB average'"
           ],
           "level_attribution_problems": [],
           "ok": false,
@@ -57611,7 +57586,7 @@
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Twenty-two home runs in 311 A+ plate appearances is the loudest thing in this profile, and the .286 ISO translates to a .177 MLB equivalent, a figure that clears the MLB average for raw power. The approach is the drag: 19 walks against 72 strikeouts, and the MLB translation puts his walk rate below the 8.5% MLB average while his strikeout rate runs to 26.3%, well past what the league typically absorbs. If the bat-to-ball holds enough to keep the power in play, Severino projects as a regular; if the zone discipline doesn't sharpen over the next two to three years, the 70-grade power tool gets buried by the 30-grade approach, and you're left with a bench piece who swings hard at bad pitches.",
+        "text": "Twenty-two home runs in 311 A+ plate appearances from a 21-year-old third baseman is loud, and the .286 ISO sits at the 97th percentile of his hitter pool. The translation dims the edge a bit: his A+ walk rate projects to 6.4% at the MLB level, well below the MLB average of 8.5%, and his strikeout rate climbs from 23% to a projected 26.3%. If the bat-to-ball holds as competition rises, the projection puts a regular-or-better outcome at 70%; if the strikeout rate balloons and the walks stay thin, you're looking at a bench bat who runs a little and sells out for power. The approach grade is the hinge, sitting at a 30, and everything else is built on a 70 power tool.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -58709,8 +58684,8 @@
         "P"
       ],
       "prospect_rank": 400,
-      "published_report": "The sample covers 68 IP in Double-A, High-A, and Single-A, so confidence is moderate. There's no repeatable way to retire hitters in the line yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
-      "published_report_source": "deterministic",
+      "published_report": "The walk rate is doing most of the work here. Across AA & A+ & A this season, Lyon has posted a 2.8 BB/9 and a 1.1 WHIP over 68 innings, command grades that sit in the 87th-88th percentile among his peers and translate to a MLB-equivalent 3.2 BB/9, exactly where MLB hitters expect to be pitched around. The catch is that the strikeout profile doesn't back it up: 8.3 K/9 in the minors melts to a translated 7.4, and the K-BB% lands at a translated 11.5% against a pool where 13.5% is the baseline. He misses bats like a back-end arm but commands like someone with a real plan, and that gap is the whole profile \u2014 if something in the arsenal generates more swing-and-miss as he settles into AA, he becomes a useful MLB piece; if the contact rates hold where they are, the command floors him as organizational depth.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 68 IP in Double-A, High-A, and Single-A, so confidence is moderate. There's no repeatable way to retire hitters in the line yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment.",
       "report_llm": {
@@ -58723,19 +58698,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'big-league mark'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate is the real skill here, and the strikeout rate is the problem. Across AA & A+ & A this season, Lyon has posted a 2.8 BB/9 over 68 innings, and the MLB-equivalent translation lands his walk rate right at the big-league mark \u2014 genuine command for a 22-year-old. But the strikeout picture is thin: 63 punchouts in 281 batters faced, and the translated K/9 of 7.4 sits well short of what MLB starters typically need to survive without a plus weapon elsewhere. Everything hinges on whether the command can carry enough run prevention without a strikeout threat to back it up, because the floor if it can't is a depth arm who puts himself in counts but needs his defense.",
-        "valid": false
+        "text": "The walk rate is doing most of the work here. Across AA & A+ & A this season, Lyon has posted a 2.8 BB/9 and a 1.1 WHIP over 68 innings, command grades that sit in the 87th-88th percentile among his peers and translate to a MLB-equivalent 3.2 BB/9, exactly where MLB hitters expect to be pitched around. The catch is that the strikeout profile doesn't back it up: 8.3 K/9 in the minors melts to a translated 7.4, and the K-BB% lands at a translated 11.5% against a pool where 13.5% is the baseline. He misses bats like a back-end arm but commands like someone with a real plan, and that gap is the whole profile \u2014 if something in the arsenal generates more swing-and-miss as he settles into AA, he becomes a useful MLB piece; if the contact rates hold where they are, the command floors him as organizational depth.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -59492,18 +59465,18 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'major-league mark'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
           "ok": false,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [],
+          "style_problems": [
+            "more than 1 em-dash"
+          ],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Fifteen home runs in 374 A+ plate appearances from a 20-year-old is the loud part, and the .219 ISO backs the volume. The translation is the problem: that raw power flattens to a MLB-equivalent .149 ISO, essentially matching what the average major-leaguer produces, while the 30% strikeout rate at A+ translates to 32.5% against a major-league mark of 22.0%. The walk rate translates to 8.5%, right at the MLB mean, so there's no on-base cushion to absorb the strikeouts. If the hit tool and approach develop, there's a real regular in here, and the projection carries a 67% chance at that outcome; if the strikeouts stay where they are and the power translates as the numbers currently suggest, what remains is a bench or platoon bat.",
+        "text": "Fifteen home runs in 374 A+ plate appearances from a 20-year-old left-handed bat is the loud part of this profile, and the .219 ISO is what makes it credible across a real sample. The problem is everything around it: 114 strikeouts, a walk rate that translates to 8.5% at the MLB level \u2014 dead even with the MLB mean \u2014 and a K% that would balloon to 32.5% if he faced big-league pitching today. That gap between an 84th-percentile ISO grade and a 19th-percentile K% is the whole tension here, and the hit tool and approach grades (45 and 40) suggest the swing-and-miss could eat the production alive against better stuff. If the contact rates improve as he climbs, he's a legitimate everyday corner bat; if they don't, the .245/.330 surface at A+ becomes a ceiling, not a floor, and you're left with a bench piece who does damage against soft pitching and disappears against spin.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -60017,17 +59990,17 @@
       "report": "The miss rate leaves the hit tool exposed despite the walks; he extends at-bats and forces pitchers into the zone. The walks keep an everyday path open, but the contact points to a narrow reserve role today. The sample covers 272 PA in Triple-A, so confidence is high.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": true,
+        "hard_ok": false,
         "model": "claude-sonnet-4-6",
         "problems": {
-          "banned": [],
+          "banned": [
+            "against a league average"
+          ],
           "count_role_problems": [],
           "derived_word_number_problems": [],
           "handedness_problems": [],
-          "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'above the MLB average'"
-          ],
+          "hard_ok": false,
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
           "ok": false,
           "pa_consistency_problems": [],
@@ -60036,7 +60009,7 @@
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate is the loudest thing in this profile, and it's also the thing keeping it alive. Fabian has drawn 47 walks against 83 strikeouts across 272 AAA plate appearances in 2026, a 17% walk rate that translates to 12.8% at the MLB level, well above the MLB average of 8.5%, while the .195 average and a BABIP of .248 suggest the contact isn't there to carry him anywhere on its own. The approach grades out as a genuine 60, the hit tool closer to a 35, and that gap is the whole argument: elite patience attached to a bat that can't reliably put the ball in play produces a .338 OBP at AAA but a profile that stalls at the bench or depth level if the strikeout rate, already translating to 28.3% at the MLB level where the average is 22.0%, doesn't come down. If the contact tightens even modestly, there's a regular here; if it doesn't, he's a patient fourth outfielder.",
+        "text": "The walk rate is the loudest thing in this profile, and it's almost loud enough to drown out everything else. Fabian has drawn 47 walks in 272 AAA plate appearances this season, a 17% clip that translates to 12.8% at the MLB level, well above where the typical big leaguer sits. The problem is that the approach grade is 60 while the hit tool grades at 35, and that gap is the whole tension: an .195 average at AAA with a .248 BABIP isn't bad luck waiting to correct, it's a contact profile that may simply be what it is, and 83 strikeouts in the same sample translates to a 28.3% MLB-equivalent K-rate against a league average of 22.0%. If the walk rate sustains and the power ticks toward usable, he profiles as a bench or platoon piece who earns his roster spot through plate patience; if the contact floor holds, the walks become a curiosity on a depth reserve who never sticks.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -60249,8 +60222,8 @@
         "2B"
       ],
       "prospect_rank": 426,
-      "published_report": "Pitchers have little reason to avoid the zone; he consistently finishes at-bats with contact. The contact gives him an everyday path, but the current damage points to a bench floor. The sample covers 326 PA in Double-A and High-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The contact-and-walk combination here is genuinely unusual: 36 strikeouts against 58 walks across AA & A+ this season, and the MLB-equivalent translation puts his K% at 16.7 against a game where most hitters strike out at 22.0. That discipline is the whole argument for Pitre, because the power isn't carrying weight \u2014 five home runs and a .139 ISO across 326 PA paint a profile where the bat has to do almost all the work, and the MLB-translated ISO of .119 trails a league where the average sits at .150. The ceiling projection has him as a regular, which requires the gap power to develop as he ages into his physical prime, and if it stays in the 45-grade range, what's left is a useful bench piece with a genuinely elite approach but no threat to punish a mistake.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Pitchers have little reason to avoid the zone; he consistently finishes at-bats with contact. The contact gives him an everyday path, but the current damage points to a bench floor. The sample covers 326 PA in Double-A and High-A, so confidence is moderate.",
       "report_llm": {
@@ -60263,19 +60236,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'big-league mean'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Fifty-eight walks against 36 strikeouts across AA & A+ is the profile in a sentence. Pitre's translated K% sits at 16.7% where the MLB average is 22.0%, and his translated BB% comes in at 12.5% against a big-league mean of 8.5%, and the approach grades 80 because both numbers earn it. The power is another matter: a .139 ISO across AA & A+ translates to .119 at the MLB level, well short of what a lineup-holding regular needs, and five home runs in 326 plate appearances won't move that number fast enough on its own. Everything hinges on whether bat-to-ball skill plus 29 stolen bases can carry a light-impact profile to an everyday role, or whether this settles into a patient, speedy bench piece who never quite punishes a mistake enough to hold a lineup spot.",
-        "valid": false
+        "text": "The contact-and-walk combination here is genuinely unusual: 36 strikeouts against 58 walks across AA & A+ this season, and the MLB-equivalent translation puts his K% at 16.7 against a game where most hitters strike out at 22.0. That discipline is the whole argument for Pitre, because the power isn't carrying weight \u2014 five home runs and a .139 ISO across 326 PA paint a profile where the bat has to do almost all the work, and the MLB-translated ISO of .119 trails a league where the average sits at .150. The ceiling projection has him as a regular, which requires the gap power to develop as he ages into his physical prime, and if it stays in the 45-grade range, what's left is a useful bench piece with a genuinely elite approach but no threat to punish a mistake.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -60428,8 +60399,8 @@
         "P"
       ],
       "prospect_rank": 429,
-      "published_report": "Nothing in the profile gives him a dependable way through a lineup yet; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 68.7 IP in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "The walk rate is the whole argument. Across 68.7 AAA innings, Kelly has issued 33 free passes, and the MLB-equivalent translation puts that at a 4.0 BB/9 while the average MLB arm runs 3.2, a quiet but persistent drag on everything downstream. The strikeout rate does not offset it: 54 punchouts over that same stretch translate to a 7.2 K/9 at the MLB level, well short of the 8.6 average, leaving a K-BB% that sits at 8.8% where 13.5% is the baseline. If the command tightens even modestly, there is a path to a back-end starter or relief role, and the projection gives that a 45% shot; if it does not, this profile lands in the depth/relief tier that already accounts for 51% of the outcome distribution.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Nothing in the profile gives him a dependable way through a lineup yet; neither misses nor strikes separate in the strikeout-to-walk result. A rotation role is not supported by the current line; the floor is organizational depth or a low-leverage bullpen assignment; the sample covers 68.7 IP in Triple-A, so confidence is high.",
       "report_llm": {
@@ -60442,19 +60413,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'league mark'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The command has to carry this profile, and right now it isn't. Across 68.7 AAA innings in 2026, Antwone Kelly has walked 33 batters against only 54 strikeouts, and the MLB translation sharpens the concern: a 4.0 BB/9 paired with a strikeout rate that the translation pegs at 7.2, well short of what pitchers need to miss bats consistently at the highest level. The K-BB% translates to 8.8 against a league mark of 13.5, and the entire profile hinges on whether that gap closes, not narrows. If it does, there's a starter or late-inning job in the 45% outcome; if it doesn't, he's depth relief, which the projection already holds as the more likely landing at 51%.",
-        "valid": false
+        "text": "The walk rate is the whole argument. Across 68.7 AAA innings, Kelly has issued 33 free passes, and the MLB-equivalent translation puts that at a 4.0 BB/9 while the average MLB arm runs 3.2, a quiet but persistent drag on everything downstream. The strikeout rate does not offset it: 54 punchouts over that same stretch translate to a 7.2 K/9 at the MLB level, well short of the 8.6 average, leaving a K-BB% that sits at 8.8% where 13.5% is the baseline. If the command tightens even modestly, there is a path to a back-end starter or relief role, and the projection gives that a 45% shot; if it does not, this profile lands in the depth/relief tier that already accounts for 51% of the outcome distribution.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -60666,8 +60635,8 @@
         "CF"
       ],
       "prospect_rank": 433,
-      "published_report": "The current line does not identify a dependable offensive strength; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 323 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The 15 stolen bases are the loudest thing in this profile, and the .356 OBP makes them sustainable. But the translated walk rate tells you something worth sitting with: 8.3% against a pool where 8.5% is average is essentially dead even, so the approach grade isn't carrying the offensive load you'd hope from a center-field profile. At AA, he's hitting .264/.356/.428 across 323 plate appearances with 10 home runs, and the MLB-equivalent ISO comes in at .134 against a .150 mean, which means the raw power reads better in the building than it likely translates. The projection ceiling is bench or platoon bat with a 66% shot at something regular, and that gap between the ceiling label and the probability number reflects a profile that's live but unresolved: if the hit tool holds at the next level and the walk rate develops, he becomes a serviceable everyday outfielder; if it doesn't, 15 steals and gap power play fine off the bench.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The current line does not identify a dependable offensive strength; without a clear source of contact, walks or damage, better pitching has multiple ways to attack him. The current outcome is below a regular role, with a bench path dependent on one offensive result separating. The sample covers 323 PA in Double-A, so confidence is moderate.",
       "report_llm": {
@@ -60682,17 +60651,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Fifteen stolen bases and a .356 OBP at AA in 323 plate appearances is a real foundation, even if the rest of the profile makes you squint. The MLB-equivalent translation puts his strikeout rate at 24.5% and his walk rate at 8.3%, both drifting the wrong direction from league average, and the power thins considerably in translation to a .134 ISO equivalent. What Allen is selling right now is contact rate and legs; what he needs to become something more than a bench or platoon piece is for the approach grade to climb, because a 45 there is the ceiling's main ceiling. If the bat-to-ball holds and the discipline tightens, there's a regular in here \u2014 the projection puts a 66% chance on that outcome \u2014 but if the walk rate stays pinned where it is and the strikeouts tick up at the next level, you're looking at a fourth outfielder who runs well and doesn't embarrass anyone.",
-        "valid": false
+        "text": "The 15 stolen bases are the loudest thing in this profile, and the .356 OBP makes them sustainable. But the translated walk rate tells you something worth sitting with: 8.3% against a pool where 8.5% is average is essentially dead even, so the approach grade isn't carrying the offensive load you'd hope from a center-field profile. At AA, he's hitting .264/.356/.428 across 323 plate appearances with 10 home runs, and the MLB-equivalent ISO comes in at .134 against a .150 mean, which means the raw power reads better in the building than it likely translates. The projection ceiling is bench or platoon bat with a 66% shot at something regular, and that gap between the ceiling label and the probability number reflects a profile that's live but unresolved: if the hit tool holds at the next level and the walk rate develops, he becomes a serviceable everyday outfielder; if it doesn't, 15 steals and gap power play fine off the bench.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -61199,8 +61166,8 @@
         "P"
       ],
       "prospect_rank": 442,
-      "published_report": "The walks keep the starter projection from firming up; he has a dependable way to finish hitters. Rotation lean; the strike throwing decides whether it holds. The sample covers 66.6 IP in High-A and Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "The strikeout rate is loud: 92 punchouts across A+ & A in 66.6 innings, a 12.4 K/9 on the minor-league line that lands near league average when translated to MLB context at 8.7. That gap, dominant at the level and ordinary when translated, is exactly the tension in this profile. The walk rate of 4.0 BB/9 across A+ & A is the thing to watch; the K-BB% of 22% grades well in the pitcher pool, but if command doesn't sharpen, the miss tool becomes a tease rather than a foundation. If the swing-and-miss carries up the ladder and the walks come down even modestly, you're looking at a useful MLB arm; if the command stays where it is, this profile settles into multi-inning depth.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The walks keep the starter projection from firming up; he has a dependable way to finish hitters. Rotation lean; the strike throwing decides whether it holds. The sample covers 66.6 IP in High-A and Single-A, so confidence is low.",
       "report_llm": {
@@ -61213,19 +61180,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'above the 3.2 average'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The strikeout rate is loud: 92 punchouts across 66.6 innings at A+ & A, with a K/9 of 12.4 that translates to an 8.7 MLB-equivalent, right where big-league strikeout rates live. The 22% K-BB% ranks in the 90th percentile of his pitcher pool, which is the number that makes you look twice, but the walk rate is the reason you look away a little \u2014 30 walks in that same sample, and the MLB-equivalent BB/9 of 4.2 runs well above the 3.2 average. If the command grades out at 50 and stays there, the strikeout ceiling mostly gets eaten by traffic, and you've got a multi-inning reliever rather than a starter with a real future. Brown's ceiling is a depth arm with a chance to start or close a game in the back of a big-league bullpen, and the floor holds if the bat-missing translates and he tightens the zone enough to stay ahead of counts.",
-        "valid": false
+        "text": "The strikeout rate is loud: 92 punchouts across A+ & A in 66.6 innings, a 12.4 K/9 on the minor-league line that lands near league average when translated to MLB context at 8.7. That gap, dominant at the level and ordinary when translated, is exactly the tension in this profile. The walk rate of 4.0 BB/9 across A+ & A is the thing to watch; the K-BB% of 22% grades well in the pitcher pool, but if command doesn't sharpen, the miss tool becomes a tease rather than a foundation. If the swing-and-miss carries up the ladder and the walks come down even modestly, you're looking at a useful MLB arm; if the command stays where it is, this profile settles into multi-inning depth.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -61437,8 +61402,8 @@
         "1B"
       ],
       "prospect_rank": 446,
-      "published_report": "The risk is that better pitching reduces the walks without another loud offensive result replacing them; he works deep counts and gets on base. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 370 PA in Double-A and High-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "Seventeen home runs across AA & A+ in 370 plate appearances, with 48 walks against 79 strikeouts, is a bat-first first baseman profile that carries real weight at Double-A. The .218 ISO translates to .156 against MLB pitching, and the translated 10.2% walk rate clears the MLB average of 8.5%, so the approach adds something even after the level discount. A 13% walk rate and .378 OBP suggest someone who can put a lineup together rather than just feast on minor-league arms. If the contact, 21% strikeouts and .266 average, survives the jump, DePino is a low-end everyday regular at first; if it doesn't, the power alone leaves a useful bench bat.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The risk is that better pitching reduces the walks without another loud offensive result replacing them; he works deep counts and gets on base. Lower-order regular ceiling; the current floor is a bench bat without more damage. The sample covers 370 PA in Double-A and High-A, so confidence is moderate.",
       "report_llm": {
@@ -61451,19 +61416,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'big-league mean'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Seventeen home runs across AA & A+ in 370 plate appearances, with 48 walks against 79 strikeouts, is a bat-first first baseman doing exactly what you'd need him to do to force the argument. The .218 ISO and .862 OPS are the numbers that matter, and the MLB-equivalent translation puts his isolated power at .156, which is honest about what the level-adjustment does to the gaudy minor-league surface. His translated walk rate comes in at 10.2%, and the strikeout rate lands at 24.1%, both sitting close enough to the big-league mean to suggest the approach holds without being a carrying tool. The ceiling is a low-end everyday regular, the floor is a reserve, with 70% of the probability weight on regular-or-better, and the whole thing hinges on whether the contact quality survives the jump and the inevitable upper-zone challenge at a corner where the margin for defensive value is exactly zero.",
-        "valid": false
+        "text": "Seventeen home runs across AA & A+ in 370 plate appearances, with 48 walks against 79 strikeouts, is a bat-first first baseman profile that carries real weight at Double-A. The .218 ISO translates to .156 against MLB pitching, and the translated 10.2% walk rate clears the MLB average of 8.5%, so the approach adds something even after the level discount. A 13% walk rate and .378 OBP suggest someone who can put a lineup together rather than just feast on minor-league arms. If the contact, 21% strikeouts and .266 average, survives the jump, DePino is a low-end everyday regular at first; if it doesn't, the power alone leaves a useful bench bat.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -61557,33 +61520,31 @@
         "SS"
       ],
       "prospect_rank": 448,
-      "published_report": "The sample covers 276 PA in Triple-A, so confidence is high. He consistently finishes at-bats with contact. The current damage limits the offensive ceiling. Table-setter ceiling; the present floor is a light-hitting reserve.",
-      "published_report_source": "deterministic",
+      "published_report": "The contact skill is the real separator here. At AAA this year, Basabe has struck out just 32 times in 276 plate appearances, a 12% rate that translates to a projected 16.5% against big-league pitching, in a league where most hitters sit at 22.0%. The bat-to-ball is a genuine carrying tool, graded 65 by the projection, but the power hasn't followed: 5 home runs and a .134 ISO at AAA translate to a .125 equivalent at the MLB level, and if that gap never closes, you're left with a high-contact shortstop who doesn't hit the ball hard enough to punish pitchers who fill the zone. Ten stolen bases give him a secondary dimension, and at 61% he's more likely to profile as a regular than the bench/platoon ceiling the projection names, but the power grade of 40 is the ceiling's ceiling.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The sample covers 276 PA in Triple-A, so confidence is high. He consistently finishes at-bats with contact. The current damage limits the offensive ceiling. Table-setter ceiling; the present floor is a light-hitting reserve.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "model": "claude-sonnet-4-6",
         "problems": {
-          "banned": [
-            "against a league-average"
-          ],
+          "banned": [],
           "count_role_problems": [],
           "derived_word_number_problems": [],
           "handedness_problems": [],
-          "hard_ok": false,
+          "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The contact is the whole argument here. Thirty-two strikeouts in 276 AAA plate appearances, translating to a 16.5% K-rate at the MLB level against a league-average mark of 22.0%, is the kind of gap that earns a 98th-percentile K% grade in his sample pool. The power hasn't followed: five home runs, an ISO of .134 in AAA that translates to .125 against big-league pitching, and a projection ceiling that tops out as a bench or platoon bat. If the contact skill holds at the highest level, there's a 61% probability of a regular-or-better outcome in the projection, which is a real number for a player whose bat-to-ball ability is this clean. The risk is that without the power developing, his OBP and stolen bases are doing most of the work, and a glove-first shortstop with a .125 equivalent ISO has a narrow margin for error.",
-        "valid": false
+        "text": "The contact skill is the real separator here. At AAA this year, Basabe has struck out just 32 times in 276 plate appearances, a 12% rate that translates to a projected 16.5% against big-league pitching, in a league where most hitters sit at 22.0%. The bat-to-ball is a genuine carrying tool, graded 65 by the projection, but the power hasn't followed: 5 home runs and a .134 ISO at AAA translate to a .125 equivalent at the MLB level, and if that gap never closes, you're left with a high-contact shortstop who doesn't hit the ball hard enough to punish pitchers who fill the zone. Ten stolen bases give him a secondary dimension, and at 61% he's more likely to profile as a regular than the bench/platoon ceiling the projection names, but the power grade of 40 is the ceiling's ceiling.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -61747,7 +61708,9 @@
         "problems": {
           "banned": [],
           "count_role_problems": [],
-          "derived_word_number_problems": [],
+          "derived_word_number_problems": [
+            "word-form multiplier comparison 'double the MLB average'"
+          ],
           "handedness_problems": [],
           "hard_ok": true,
           "league_average_scaffold_problems": [],
@@ -61755,13 +61718,11 @@
           "ok": false,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The strikeouts are loud \u2014 82 of them across 69.7 AA innings \u2014 but the translation humbles them: that K/9 arrives at the MLB level right at league average, and everything else in the profile is below it. Fifty-five walks in the same stretch produce a translated BB/9 of 6.0, nearly double what a league-average arm allows, and the ERA sits at 7.6 with a 1.8 WHIP because free baserunners compound. The arm can miss bats; it cannot find the zone, and at AA that gap is already doing serious damage. If the command ever tightens into something functional, there's a relief role here, but right now the most likely outcome is organizational depth, with 53% of probability mass sitting in that bucket.",
+        "text": "The strikeout rate is the one thing working here: 82 punchouts across 69.7 AA innings, and the MLB-equivalent translation puts his K/9 at 8.6, exactly where the typical big-leaguer lands. Everything else is a problem. His translated BB/9 of 6.0 is nearly double the MLB average of 3.2, and the 7.6 ERA at AA with a 1.8 WHIP confirms the walks are doing real damage. If the command ever firms up, there's a useful arm somewhere in this profile; if it doesn't, the strikeout rate just buys him roster spots he can't hold.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -62092,8 +62053,8 @@
         "P"
       ],
       "prospect_rank": 457,
-      "published_report": "He limits free passes and consistently forces hitters to earn contact; the lack of misses leaves little margin when hitters square the ball. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 76 IP in Single-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "The command profile carries this one. Genao has walked 19 batters across 76 A innings in 2026, a 2.2 BB/9 that ranks at the 93rd percentile among peers, and the 1.2 WHIP and 3.7 ERA reflect what happens when a young arm consistently throws strikes. The strikeout rate is the honest gap \u2014 his 9.2 K/9 at A translates to a 7.1 against big-league hitters, while the MLB average sits at 8.6, and a 45-grade miss tool at age 20 caps the ceiling at a depth arm unless the swing-and-miss develops. If the whiff rate stays flat, he's an organizational arm who eats innings cleanly; if it ticks up even modestly, that command becomes a real foundation for a rotation-adjacent role.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "He limits free passes and consistently forces hitters to earn contact; the lack of misses leaves little margin when hitters square the ball. Back-end starter lean, with a swingman or low-leverage bullpen floor. The sample covers 76 IP in Single-A, so confidence is low.",
       "report_llm": {
@@ -62106,20 +62067,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'big-league average'",
-            "league-average scaffold variant 'big-league average'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The control is the whole argument here. Nineteen walks across 76 innings at A-ball, a BB/9 that ranks 93rd percentile among his peers, and an MLB-equivalent walk rate of 3.0 against a big-league average of 3.2. That's a real foundation for a 20-year-old. The strikeouts don't match: 78 punchouts over those same 76 innings translates to a 7.1 K/9 at the MLB-equivalent level, well short of the 8.6 big-league average, and the miss stuff grades as a 45 on the skill-shape side, which means everything downstream depends on whether the command alone is enough to suppress contact as he climbs. If it holds and the stuff takes even a modest step forward, there's a useful MLB arm in there; if the strikeout floor stays this low, he's a depth piece who needs pinpoint execution every time out.",
-        "valid": false
+        "text": "The command profile carries this one. Genao has walked 19 batters across 76 A innings in 2026, a 2.2 BB/9 that ranks at the 93rd percentile among peers, and the 1.2 WHIP and 3.7 ERA reflect what happens when a young arm consistently throws strikes. The strikeout rate is the honest gap \u2014 his 9.2 K/9 at A translates to a 7.1 against big-league hitters, while the MLB average sits at 8.6, and a 45-grade miss tool at age 20 caps the ceiling at a depth arm unless the swing-and-miss develops. If the whiff rate stays flat, he's an organizational arm who eats innings cleanly; if it ticks up even modestly, that command becomes a real foundation for a rotation-adjacent role.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -62154,8 +62112,8 @@
         "C"
       ],
       "prospect_rank": 458,
-      "published_report": "The miss rate can still make the batting average volatile. He gets into damage counts without chasing his way out of them. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor. The sample covers 203 PA in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The power at catcher carries the argument: 11 home runs and a .225 ISO across 203 AA plate appearances, with a projected MLB ISO of .161 against a pool where most hitters sit around .150. His 28 walks in those same 203 PA translate to a 10.3% MLB walk rate, so the .376 OBP at AA isn't just BABIP-driven optimism. The swing-and-miss is the real dependency: 57 strikeouts project to a 27.2% K rate in the majors, meaningfully above the 22.0% baseline, and if that number firms up rather than softens, he's a low-end everyday catcher with a real offensive floor. If the contact doesn't improve, he's a bench bat who plays because of the power and the position.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The miss rate can still make the batting average volatile. He gets into damage counts without chasing his way out of them. The likely outcome is an everyday run-producing bat, with on-base value protecting the floor. The sample covers 203 PA in Double-A, so confidence is moderate.",
       "report_llm": {
@@ -62168,19 +62126,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'major-league baseline'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "An .873 OPS at AA from a catcher is the kind of number that stops a conversation. Parker's .225 ISO and 28 walks across 203 AA plate appearances are the load-bearing pieces, and his strikeout rate, while loud at 28% at AA, translates to 27.2% against a major-league baseline that sits at 22.0% \u2014 workable, not comfortable. The hit tool and approach grade as 55s, so the risk isn't a one-trick power spike but whether the contact side holds when the strikeouts stay elevated at a position where catching value usually buys some margin. If it clicks, he projects as a low-end everyday regular with a 70% probability attached to that outcome or better; if the strikeouts don't bend, the floor shrinks to a reserve role behind someone else's name.",
-        "valid": false
+        "text": "The power at catcher carries the argument: 11 home runs and a .225 ISO across 203 AA plate appearances, with a projected MLB ISO of .161 against a pool where most hitters sit around .150. His 28 walks in those same 203 PA translate to a 10.3% MLB walk rate, so the .376 OBP at AA isn't just BABIP-driven optimism. The swing-and-miss is the real dependency: 57 strikeouts project to a 27.2% K rate in the majors, meaningfully above the 22.0% baseline, and if that number firms up rather than softens, he's a low-end everyday catcher with a real offensive floor. If the contact doesn't improve, he's a bench bat who plays because of the power and the position.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "hitter",
@@ -62702,17 +62658,19 @@
           "handedness_problems": [],
           "hard_ok": true,
           "league_average_scaffold_problems": [
-            "league-average scaffold variant 'big-league mean'"
+            "league-average scaffold variant 'above the 3.2 MLB average'"
           ],
           "level_attribution_problems": [],
           "ok": false,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [],
+          "style_problems": [
+            "more than 1 em-dash"
+          ],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The strikeout rate looks fine across AA & A+, 72 punchouts in 63.3 innings, but the walk rate is where the profile gets complicated. His 27 walks translate to a BB/9 of 4.0 against a big-league mean of 3.2, and the minors K-BB% of 16% softens to an estimated 11.7% at the MLB level. The miss grades 55, command grades 45, and that gap between the two is the whole tension in this profile. If the walks tighten, there's a starter or useful late-inning arm in here, with 62% of the projection weight landing in that bucket, but if command stays where it is, he's organizational depth, volume without margin.",
+        "text": "The strikeout rate translates \u2014 72 punchouts across AA & A+ is genuine volume \u2014 but the walk numbers are where this profile gets honest. His 27 walks across AA & A+ push the MLB-equivalent BB/9 to 4.0, well above the 3.2 MLB average, and the K-BB% converts to 11.7% where 13.5% is the floor for reliable arms. The miss grades a 55; the command grades a 45, and that gap is what the whole projection hinges on. If the walks tighten, he lands in the 62% corridor projecting as a starter or late-inning piece; if they don't, what's left is a depth arm who runs counts and gets hurt by it.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -62925,33 +62883,31 @@
         "P"
       ],
       "prospect_rank": 471,
-      "published_report": "Back-end starter lean, with a swingman or low-leverage bullpen floor; he limits free passes and consistently forces hitters to earn contact. The lack of misses leaves little margin when hitters square the ball; the sample covers 70 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "A 1.7 ERA and 0.90 WHIP in 70 A+ innings is the kind of line that makes you look for the catch, and with Kisting the catch is the strikeout rate. Ten K/9 against A+ hitters translates to 7.9 in MLB-equivalent terms, modest enough that the run prevention is riding almost entirely on elite command: 14 walks in those 70 innings, a BB/9 that translates to 2.6 while the average big-league arm gives up 3.2. The profile is a command-first arm with ordinary miss, and if the control softens as he climbs, there's not enough swing-and-miss to carry the ERA. The ceiling projection is a depth arm, the floor is multi-inning relief, and whether it's the better outcome depends entirely on how much the command holds.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Back-end starter lean, with a swingman or low-leverage bullpen floor; he limits free passes and consistently forces hitters to earn contact. The lack of misses leaves little margin when hitters square the ball; the sample covers 70 IP in High-A, so confidence is low.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "model": "claude-sonnet-4-6",
         "problems": {
-          "banned": [
-            "against a league average"
-          ],
+          "banned": [],
           "count_role_problems": [],
           "derived_word_number_problems": [],
           "handedness_problems": [],
-          "hard_ok": false,
+          "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The 1.70 ERA and 0.90 WHIP at A+ are the loud numbers, but the strikeout rate is what tells you what kind of pitcher this actually is. Across 70 innings at A+, Jacob Kisting has 78 strikeouts against just 14 walks, a 23% K-BB% that ranks 93rd percentile in his pool, yet the K/9 of 10.0 translates to a below-average 7.9 in MLB-equivalent terms, which puts the whole profile in plain view: command is the weapon, not stuff. The MLB-equivalent BB/9 comes out at 2.6, which is a tick better than the 3.2 league average, and the K-BB% translates to 14.1% against a league average of 13.5%. If the command holds as he climbs, he's a useful arm in the back of a rotation or a multi-inning piece with real value; if it doesn't, the strikeout rate alone won't carry him.",
-        "valid": false
+        "text": "A 1.7 ERA and 0.90 WHIP in 70 A+ innings is the kind of line that makes you look for the catch, and with Kisting the catch is the strikeout rate. Ten K/9 against A+ hitters translates to 7.9 in MLB-equivalent terms, modest enough that the run prevention is riding almost entirely on elite command: 14 walks in those 70 innings, a BB/9 that translates to 2.6 while the average big-league arm gives up 3.2. The profile is a command-first arm with ordinary miss, and if the control softens as he climbs, there's not enough swing-and-miss to carry the ERA. The ceiling projection is a depth arm, the floor is multi-inning relief, and whether it's the better outcome depends entirely on how much the command holds.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -63163,8 +63119,8 @@
         "P"
       ],
       "prospect_rank": 475,
-      "published_report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; there's no repeatable way to retire hitters in the line yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 76 IP in Triple-A, so confidence is high.",
-      "published_report_source": "deterministic",
+      "published_report": "The K/9 at AAA is 6.2, and the MLB-equivalent translation puts it at 6.7 while the MLB average sits at 8.6 \u2014 that's the whole problem in one number. Yu-Min Lin has made 17 starts and logged 76 innings at AAA this season, which is a real sample, and what it shows is a left-hander who misses almost no bats and walks 39 men while doing it, a K-BB% that translates to 7.1% where 13.5% is what the average MLB pitcher posts. The ERA sits at 6.00 with a 1.7 WHIP, and none of that is noise at this point. If the stuff plays up in shorter bursts, the 36% shot at some kind of roster role is reachable; if it doesn't, he's the kind of arm that fills a rotation spot in an emergency and clears waivers the same week.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; there's no repeatable way to retire hitters in the line yet. The failure point is the strikeout-to-walk result, which does not support a firm starter projection; the sample covers 76 IP in Triple-A, so confidence is high.",
       "report_llm": {
@@ -63179,17 +63135,15 @@
           "hard_ok": true,
           "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
-          "style_problems": [
-            "more than 1 em-dash"
-          ],
+          "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "A 6.2 K/9 at AAA is the kind of number that closes doors before they open. Yu-Min Lin has thrown 76 innings at AAA this season and the stuff isn't missing bats \u2014 translated to MLB context, 6.7 K/9 against a league that averages nearly two full strikeouts more per nine \u2014 and 39 walks in those same 76 innings means the command isn't picking up the slack. The profile lands him in the depth/relief bucket at 59%, and nothing in the shape argues with that: a 6.0 ERA and 1.7 WHIP against Triple-A competition leaves almost no runway to project forward. If swing-and-miss materializes from somewhere, there's a 36% shot at a rotation or late-inning role, but the current evidence asks you to believe in something that isn't showing up yet.",
-        "valid": false
+        "text": "The K/9 at AAA is 6.2, and the MLB-equivalent translation puts it at 6.7 while the MLB average sits at 8.6 \u2014 that's the whole problem in one number. Yu-Min Lin has made 17 starts and logged 76 innings at AAA this season, which is a real sample, and what it shows is a left-hander who misses almost no bats and walks 39 men while doing it, a K-BB% that translates to 7.1% where 13.5% is what the average MLB pitcher posts. The ERA sits at 6.00 with a 1.7 WHIP, and none of that is noise at this point. If the stuff plays up in shorter bursts, the 36% shot at some kind of roster role is reachable; if it doesn't, he's the kind of arm that fills a rotation spot in an emergency and clears waivers the same week.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -63991,8 +63945,8 @@
         "P"
       ],
       "prospect_rank": 489,
-      "published_report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 77.7 IP in Double-A, so confidence is moderate.",
-      "published_report_source": "deterministic",
+      "published_report": "The 5.20 ERA at AA is the number that grabs you, but it's not the whole problem \u2014 the strikeout rate is. Seventy strikeouts across 77.7 AA innings translates to a 7.4 K/9 in MLB-equivalent terms, well short of the 8.6 MLB average, and a K-BB% that comes in at 10.1% against a translated average that clears 13.5%. The command grade is his best tool, a 50, and the 3.7 BB/9 at AA does rank in the 69th percentile among comparable arms, so the control is real enough. Everything else hinges on whether the stuff underneath those numbers develops toward something that can miss bats at a rate he currently can't, and if it doesn't, a depth reliever or spot-starter role is the likely floor rather than any kind of rotation piece.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "There's no repeatable way to retire hitters in the line yet; the failure point is the strikeout-to-walk result, which does not support a firm starter projection. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve; the sample covers 77.7 IP in Double-A, so confidence is moderate.",
       "report_llm": {
@@ -64005,19 +63959,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'league mark'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The ERA is 5.2 and the strikeout rate translates to 7.4 per nine at the MLB level, where league average runs closer to a full strikeout higher \u2014 so the two numbers that matter most are both pointing the wrong direction. Across 77.7 AA innings in 2026, Yates has 32 walks against 70 strikeouts, a combination that produces a K-BB% translating to 10.1% at the MLB level against a 13.5% league mark, and the command grade at 50 is the only tool here that projects as average. If the strikeout rate doesn't climb, and at a 35 miss grade there's no projection suggesting it will, the 54% shot at a starter or late-inning role looks optimistic against the 37% probability he ends up in pure depth or relief work.",
-        "valid": false
+        "text": "The 5.20 ERA at AA is the number that grabs you, but it's not the whole problem \u2014 the strikeout rate is. Seventy strikeouts across 77.7 AA innings translates to a 7.4 K/9 in MLB-equivalent terms, well short of the 8.6 MLB average, and a K-BB% that comes in at 10.1% against a translated average that clears 13.5%. The command grade is his best tool, a 50, and the 3.7 BB/9 at AA does rank in the 69th percentile among comparable arms, so the control is real enough. Everything else hinges on whether the stuff underneath those numbers develops toward something that can miss bats at a rate he currently can't, and if it doesn't, a depth reliever or spot-starter role is the likely floor rather than any kind of rotation piece.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -64288,8 +64240,8 @@
         "P"
       ],
       "prospect_rank": 494,
-      "published_report": "Neither misses nor strikes separate in the strikeout-to-walk result. There's no repeatable way to retire hitters in the line yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 53 IP in High-A, so confidence is low.",
-      "published_report_source": "deterministic",
+      "published_report": "The 7.8 K/9 at A+ is the number that matters most, and it doesn't flatter him. Forty-six strikeouts across 53 innings translates to a projected 7.1 per nine against MLB hitters, well short of the 8.6 league average, and the K-BB% of 11 sits in the 41st percentile among his peers, meaning the command advantage isn't covering for the miss. Command grades as a genuine carrying tool, a 55, but a strikeout shape graded at 30 leaves almost no margin if that command ever slips. Projected as a depth arm with a 31% chance of landing in relief, the ceiling is limited, and two to three years from now is when we learn whether command-without-swing-and-miss holds at higher levels.",
+      "published_report_source": "llm",
       "recent_signal": null,
       "report": "Neither misses nor strikes separate in the strikeout-to-walk result. There's no repeatable way to retire hitters in the line yet. The role remains unsettled, with a bullpen outcome more likely until either strikes or misses improve. The sample covers 53 IP in High-A, so confidence is low.",
       "report_llm": {
@@ -64302,19 +64254,17 @@
           "derived_word_number_problems": [],
           "handedness_problems": [],
           "hard_ok": true,
-          "league_average_scaffold_problems": [
-            "league-average scaffold variant 'major-league average'"
-          ],
+          "league_average_scaffold_problems": [],
           "level_attribution_problems": [],
-          "ok": false,
+          "ok": true,
           "pa_consistency_problems": [],
           "role_vocab_problems": [],
           "style_problems": [],
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "The walk rate holds up fine \u2014 20 walks in 53 A+ innings, a translated 3.7 BB/9 against a major-league average of 3.2, is workable. But the strikeout side is the real problem: his 7.8 K/9 at A+ sits in the 17th percentile among comparable arms, and the translated figure comes out to 7.1 while the average big-league starter runs 8.6. Command graded 55 in the skill shape, miss graded 30, and those two numbers explain why the K-BB% lands at 41st percentile despite the decent walk control. If the swing-and-miss doesn't develop, the realistic outcome is a depth or relief role, carrying a 31% probability weight; if it does, there's a 57% shot at something resembling a rotation or late-inning role, still two to three years out.",
-        "valid": false
+        "text": "The 7.8 K/9 at A+ is the number that matters most, and it doesn't flatter him. Forty-six strikeouts across 53 innings translates to a projected 7.1 per nine against MLB hitters, well short of the 8.6 league average, and the K-BB% of 11 sits in the 41st percentile among his peers, meaning the command advantage isn't covering for the miss. Command grades as a genuine carrying tool, a 55, but a strikeout shape graded at 30 leaves almost no margin if that command ever slips. Projected as a depth arm with a 31% chance of landing in relief, the ceiling is limited, and two to three years from now is when we learn whether command-without-swing-and-miss holds at higher levels.",
+        "valid": true
       },
       "report_status": "stat_grounded",
       "role": "pitcher",
@@ -64650,17 +64600,17 @@
       "report": "Only 9.3 IP in High-A, so confidence is low. He misses enough bats to keep a rotation outcome open. The walks keep the starter projection from firming up. Keep developing him as a starter, with the bullpen as the fallback.",
       "report_llm": {
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "model": "claude-sonnet-4-6",
         "problems": {
-          "banned": [
-            "against a league average"
-          ],
+          "banned": [],
           "count_role_problems": [],
           "derived_word_number_problems": [],
           "handedness_problems": [],
-          "hard_ok": false,
-          "league_average_scaffold_problems": [],
+          "hard_ok": true,
+          "league_average_scaffold_problems": [
+            "league-average scaffold variant 'big-league mark'"
+          ],
           "level_attribution_problems": [],
           "ok": false,
           "pa_consistency_problems": [],
@@ -64669,7 +64619,7 @@
           "triple_slash_problems": [],
           "unsupported_numbers": []
         },
-        "text": "Nine innings. That's all there is, and it's loud enough to notice but not enough to trust.\n\nWhat translates across those 9 A+ IP is a K/9 of 9.2 against a league average that sits at 8.6, paired with a K-BB% of 14.9%. The miss is graded 80, the command is graded 45, and that gap is the whole tension in the profile. If the strikeout shape holds as the workload stretches and the walks stay manageable, there's a starter or late-inning arm here; if the command grade wins the argument, you're left with a multi-inning floor and a long organizational stay. ValuCast puts 47% odds on the starter or late-inning outcome, but 9.3 innings against A+ competition is not a verdict.",
+        "text": "Nine innings. That's the honest caveat up front, and everything else has to be read through it.\n\nWhat's loud across those 9.3 A+ innings is the miss rate: a K/9 that translates to 9.2 in MLB-equivalent terms, sitting just clear of the big-league mark of 8.6, paired with a K-BB% of 14.9 where the league average is 13.5. The command grade is the tension, because a BB/9 translation of 3.4 is close enough to live with, but it's the one number that decides whether he becomes a starter or a late-inning arm rather than settling into relief depth. If the command holds and the strikeout shape survives a full workload, the ceiling here is a useful MLB arm with real swing-and-miss; if it doesn't, there's still a multi-inning floor to fall back on, though not much more than that.",
         "valid": false
       },
       "report_status": "stat_grounded",
@@ -64703,18 +64653,18 @@
     "recent_signal_used_for_context": true
   },
   "summary": {
-    "deterministic_published_report_count": 29,
-    "llm_published_report_count": 697,
+    "deterministic_published_report_count": 6,
+    "llm_published_report_count": 720,
     "llm_shadow": {
       "available": true,
       "enabled": true,
       "errored": 0,
-      "flagged": 29,
-      "generated": 234,
+      "flagged": 6,
+      "generated": 29,
       "generation_limit": 300,
       "report_count": 1083,
-      "reused": 147,
-      "reused_stale": 345,
+      "reused": 697,
+      "reused_stale": 0,
       "skipped_due_to_budget": 0
     },
     "max_dynasty_rank": 500,

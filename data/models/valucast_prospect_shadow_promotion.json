@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_prospect_shadow_promotion",
-  "generated_at": "2026-07-16T14:05:26.551856+00:00",
+  "generated_at": "2026-07-16T17:03:49.081850+00:00",
   "generated_by": "valucast",
   "harness_version": "0.1.0",
   "models": [
@@ -41,7 +41,7 @@
     {
       "archive": "valucast_prospect_peak_projection_v1",
       "feeds_card": false,
-      "forecast_horizon_days": 31,
+      "forecast_horizon_days": 28,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -63,14 +63,14 @@
       },
       "key": "peak_projection_v2",
       "metric": "peak_role_outcome_brier",
-      "observation_count": 30,
-      "observed_first": "2026-06-15",
+      "observation_count": 29,
+      "observed_first": "2026-06-18",
       "observed_last": "2026-07-16",
       "promotion_target": "peak_projection.peak_v2 -> card",
       "realized_outcome_kind": "multi_year_horizon",
       "realized_sample": 0,
       "realized_status": "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
-      "span_days": 31
+      "span_days": 28
     },
     {
       "archive": "valucast_prospect_dynasty_layer",

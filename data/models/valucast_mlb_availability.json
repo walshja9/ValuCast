@@ -726,21 +726,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Milwaukee Brewers sent RHP Carlos Rodriguez on a rehab assignment to Nashville Sounds.",
-      "effective_date": "2026-07-07",
-      "list_type": null,
-      "mlbam_id": 692230,
-      "name": "Carlos Rodriguez",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Nashville Sounds",
-      "transaction_date": "2026-07-07",
-      "transaction_id": 925551,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "New York Yankees placed LHP Carlos Rod\u00f3n on the 15-day injured list retroactive to June 30, 2026. Left elbow inflammation.",
       "effective_date": "2026-06-30",
       "list_type": "15-day injured list",
@@ -3000,7 +2985,7 @@
       "status": "rehab",
       "team": "ACL Padres",
       "transaction_date": "2026-07-14",
-      "transaction_id": 927717,
+      "transaction_id": 927804,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -4201,6 +4186,21 @@
       "team": "Chicago Cubs",
       "transaction_date": "2026-05-19",
       "transaction_id": 910356,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Milwaukee Brewers activated RHP Carlos Rodriguez from the 15-day injured list.",
+      "effective_date": "2026-07-12",
+      "list_type": "15-day injured list",
+      "mlbam_id": 692230,
+      "name": "Carlos Rodriguez",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-07-12",
+      "transaction_id": 927750,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -7494,15 +7494,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 244,
+    "available_after_il_count": 245,
     "blockers": [],
     "duplicate_identity_count": 0,
     "injured_count": 203,
     "profile_count": 497,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 50,
-    "risk_profile_count": 253,
+    "rehab_count": 49,
+    "risk_profile_count": 252,
     "tracked_mlbam_count": 10631,
-    "transaction_count": 8066
+    "transaction_count": 8074
   }
 }
