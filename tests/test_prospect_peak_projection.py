@@ -294,7 +294,16 @@ def test_run_and_validate_peak_projection(tmp_path):
         encoding="utf-8",
     )
 
-    result = run_peak_projection(rank_path=rank_path, artifact_path=artifact_path)
+    # archive_dir MUST be redirected: the default writes a dated snapshot into
+    # the REAL data/prediction_archive/ trail, and this test's synthetic
+    # "Prospect 1/2" rows once leaked in as 2026-06-15.json and polluted the
+    # rank-history artifact (fake mlbam 10001/10002 at ranks 1-2).
+    result = run_peak_projection(
+        rank_path=rank_path,
+        artifact_path=artifact_path,
+        archive_dir=tmp_path / "archive",
+    )
+    assert (tmp_path / "archive" / "2026-06-15.json").exists()
     payload, problems = validate_peak_projection(artifact_path)
 
     assert result["ready_for_card_v2"] is True
