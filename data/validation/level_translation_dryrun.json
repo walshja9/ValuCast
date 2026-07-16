@@ -1,0 +1,433 @@
+{
+  "board_delta_c": {
+    "both": {
+      "hitter": {
+        "bootstrap_sd": 0.001423,
+        "lower_bound": -0.003877,
+        "n_bootstraps": 10000,
+        "point": -0.000848,
+        "seed": 31017
+      },
+      "per_fold": [
+        {
+          "delta_c_hitter": -0.000194,
+          "delta_c_pitcher": -0.001164,
+          "hitter_sample": 345,
+          "pitcher_sample": 352,
+          "test_cohort": 2018
+        },
+        {
+          "delta_c_hitter": 0.001275,
+          "delta_c_pitcher": -0.002208,
+          "hitter_sample": 360,
+          "pitcher_sample": 410,
+          "test_cohort": 2019
+        },
+        {
+          "delta_c_hitter": -0.003412,
+          "delta_c_pitcher": 0.011928,
+          "hitter_sample": 386,
+          "pitcher_sample": 365,
+          "test_cohort": 2021
+        }
+      ],
+      "pitcher": {
+        "bootstrap_sd": 0.001876,
+        "lower_bound": -0.001296,
+        "n_bootstraps": 10000,
+        "point": 0.002696,
+        "seed": 31017
+      }
+    },
+    "fitted_translation_only": {
+      "hitter": {
+        "bootstrap_sd": 0.001447,
+        "lower_bound": -0.004035,
+        "n_bootstraps": 10000,
+        "point": -0.000957,
+        "seed": 31017
+      },
+      "per_fold": [
+        {
+          "delta_c_hitter": 0.000306,
+          "delta_c_pitcher": -0.002658,
+          "hitter_sample": 345,
+          "pitcher_sample": 352,
+          "test_cohort": 2018
+        },
+        {
+          "delta_c_hitter": 0.00084,
+          "delta_c_pitcher": -0.000488,
+          "hitter_sample": 360,
+          "pitcher_sample": 410,
+          "test_cohort": 2019
+        },
+        {
+          "delta_c_hitter": -0.003761,
+          "delta_c_pitcher": -0.005185,
+          "hitter_sample": 386,
+          "pitcher_sample": 365,
+          "test_cohort": 2021
+        }
+      ],
+      "pitcher": {
+        "bootstrap_sd": 0.001078,
+        "lower_bound": -0.00498,
+        "n_bootstraps": 10000,
+        "point": -0.002687,
+        "seed": 31017
+      }
+    },
+    "strike_pct_only": {
+      "hitter": {
+        "bootstrap_sd": 0.000257,
+        "lower_bound": -0.000806,
+        "n_bootstraps": 10000,
+        "point": -0.000258,
+        "seed": 31017
+      },
+      "per_fold": [
+        {
+          "delta_c_hitter": -8.3e-05,
+          "delta_c_pitcher": -0.000202,
+          "hitter_sample": 345,
+          "pitcher_sample": 352,
+          "test_cohort": 2018
+        },
+        {
+          "delta_c_hitter": -0.000637,
+          "delta_c_pitcher": -0.001019,
+          "hitter_sample": 360,
+          "pitcher_sample": 410,
+          "test_cohort": 2019
+        },
+        {
+          "delta_c_hitter": -6.2e-05,
+          "delta_c_pitcher": 0.01887,
+          "hitter_sample": 386,
+          "pitcher_sample": 365,
+          "test_cohort": 2021
+        }
+      ],
+      "pitcher": {
+        "bootstrap_sd": 0.001891,
+        "lower_bound": 0.001653,
+        "n_bootstraps": 10000,
+        "point": 0.005677,
+        "seed": 31017
+      }
+    }
+  },
+  "bootstrap_lower_bound_z": 2.128045234184983,
+  "dynasty_brier_improvement_pct": {
+    "both": {
+      "hitter": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.115316,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.115316,
+            "n": 345,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.13453,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.13453,
+            "n": 360,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.217418,
+            "improvement_pct": -0.084,
+            "incumbent_brier": 0.217235,
+            "n": 386,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.2907,
+          "ci_high_95": 0.5234,
+          "ci_low_95": -0.6235,
+          "cluster_count": 1091,
+          "lower_bound_9833": -0.6596,
+          "n_bootstraps": 10000,
+          "point": -0.0409,
+          "seed": 31017
+        }
+      },
+      "pitcher": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.225137,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.225137,
+            "n": 352,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.208295,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.208295,
+            "n": 410,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.230382,
+            "improvement_pct": 1.4957,
+            "incumbent_brier": 0.233881,
+            "n": 365,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.4227,
+          "ci_high_95": 1.3697,
+          "ci_low_95": -0.3031,
+          "cluster_count": 1127,
+          "lower_bound_9833": -0.3889,
+          "n_bootstraps": 10000,
+          "point": 0.5107,
+          "seed": 31017
+        }
+      }
+    },
+    "fitted_translation_only": {
+      "hitter": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.115316,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.115316,
+            "n": 345,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.13453,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.13453,
+            "n": 360,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.217418,
+            "improvement_pct": -0.084,
+            "incumbent_brier": 0.217235,
+            "n": 386,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.2907,
+          "ci_high_95": 0.5234,
+          "ci_low_95": -0.6235,
+          "cluster_count": 1091,
+          "lower_bound_9833": -0.6596,
+          "n_bootstraps": 10000,
+          "point": -0.0409,
+          "seed": 31017
+        }
+      },
+      "pitcher": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.225137,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.225137,
+            "n": 352,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.208295,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.208295,
+            "n": 410,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.233425,
+            "improvement_pct": 0.1949,
+            "incumbent_brier": 0.233881,
+            "n": 365,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.2535,
+          "ci_high_95": 0.5677,
+          "ci_low_95": -0.4241,
+          "cluster_count": 1127,
+          "lower_bound_9833": -0.4728,
+          "n_bootstraps": 10000,
+          "point": 0.0666,
+          "seed": 31017
+        }
+      }
+    },
+    "strike_pct_only": {
+      "hitter": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.115316,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.115316,
+            "n": 345,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.13453,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.13453,
+            "n": 360,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.217235,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.217235,
+            "n": 386,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.0,
+          "ci_high_95": 0.0,
+          "ci_low_95": 0.0,
+          "cluster_count": 1091,
+          "lower_bound_9833": 0.0,
+          "n_bootstraps": 10000,
+          "point": 0.0,
+          "seed": 31017
+        }
+      },
+      "pitcher": {
+        "per_fold": [
+          {
+            "challenger_brier": 0.225137,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.225137,
+            "n": 352,
+            "test_cohort": 2018
+          },
+          {
+            "challenger_brier": 0.208295,
+            "improvement_pct": 0.0,
+            "incumbent_brier": 0.208295,
+            "n": 410,
+            "test_cohort": 2019
+          },
+          {
+            "challenger_brier": 0.230374,
+            "improvement_pct": 1.4994,
+            "incumbent_brier": 0.233881,
+            "n": 365,
+            "test_cohort": 2021
+          }
+        ],
+        "pooled": {
+          "bootstrap_sd": 0.3377,
+          "ci_high_95": 1.1977,
+          "ci_low_95": -0.1303,
+          "cluster_count": 1127,
+          "lower_bound_9833": -0.2066,
+          "n_bootstraps": 10000,
+          "point": 0.512,
+          "seed": 31017
+        }
+      }
+    }
+  },
+  "exploratory_seed": 31017,
+  "fold_years": [
+    2018,
+    2019,
+    2021
+  ],
+  "gate_look_spent": false,
+  "incumbent_board_per_fold": [
+    {
+      "c_hitter": 0.8754027330296633,
+      "c_pitcher": 0.8265755504935459,
+      "hitter_sample": 345,
+      "pitcher_sample": 352,
+      "test_cohort": 2018
+    },
+    {
+      "c_hitter": 0.8492091082913262,
+      "c_pitcher": 0.7777801367245553,
+      "hitter_sample": 360,
+      "pitcher_sample": 410,
+      "test_cohort": 2019
+    },
+    {
+      "c_hitter": 0.8469253535021375,
+      "c_pitcher": 0.6622938743129144,
+      "hitter_sample": 386,
+      "pitcher_sample": 365,
+      "test_cohort": 2021
+    }
+  ],
+  "kind": "exploratory_replay",
+  "n_bootstraps": 10000,
+  "note": "EXPLORATORY dry-run of the fitted level-translation challenger + pitcher strike% lever. NOT the registered look: exploratory seed 31017; the proposed registered seed 31013 has never been executed. The orchestrator decides whether to spend the one registered look based on these numbers. Within-role metrics only.",
+  "registered_seed_avoided": 28013,
+  "status": "research_only",
+  "strike_count_join": {
+    "joined": 3449,
+    "pitcher_rows": 3449
+  },
+  "strike_pct_hitter_freeze": {
+    "fold": 2018,
+    "hitter": {
+      "changed": 0,
+      "total": 345
+    },
+    "pitcher": {
+      "changed": 332,
+      "total": 352
+    }
+  },
+  "translation_table_anchor_counts": {
+    "2018": {
+      "hitter": {
+        "avg": 105,
+        "k_pct": 105,
+        "ops": 105
+      },
+      "pitcher": {
+        "era": 152,
+        "k_per_9": 152,
+        "whip": 152
+      }
+    },
+    "2019": {
+      "hitter": {
+        "avg": 144,
+        "k_pct": 144,
+        "ops": 144
+      },
+      "pitcher": {
+        "era": 196,
+        "k_per_9": 196,
+        "whip": 196
+      }
+    },
+    "2021": {
+      "hitter": {
+        "avg": 181,
+        "k_pct": 181,
+        "ops": 181
+      },
+      "pitcher": {
+        "era": 265,
+        "k_per_9": 265,
+        "whip": 265
+      }
+    }
+  },
+  "translation_table_fingerprints": {
+    "2018": "f1c1aa3885349c92cb3ca6b469691c5bf8c9237726a8e26ce8e462bfa97fb219",
+    "2019": "50c1e5c638c0c4e43fa8755e8aaf2d077a83f473517ee4c1048bfd0386da2169",
+    "2021": "58703361e743f4a697f77c76e1eaf3cbeb0e34214ecd757bf4bd833569b61b09"
+  }
+}

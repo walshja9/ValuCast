@@ -17,6 +17,12 @@ from zoneinfo import ZoneInfo
 
 from prospects.gate import _round as _gate_round, decide_gate
 from prospects.input_contract import VALUCAST_INPUT_PATH, validate_factual_contract
+from prospects.level_translation_challenger import (
+    STRIKE_PCT_FEATURE_NAMES,
+    STRIKE_PCT_NON_SHRINK,
+    maybe_translate as _maybe_level_translate,
+    strike_pct_extra,
+)
 from prospects.pitcher_challenger import (
     PITCHER_ROLE_SPLIT_FEATURE_NAMES,
     PITCHER_ROLE_SPLIT_NON_SHRINK,
@@ -75,6 +81,16 @@ PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False
 # _outcome_feature_vector (lever a) and _regress_current_features (lever b).
 PITCHER_OUTCOME_ROLE_SPLIT_ENABLED = False
 PITCHER_PER_GROUP_SHRINK_ENABLED = False
+# Level-translation challenger levers (model-supremacy lane #2). Dark parallel
+# path: both default False and change NO served score. Flipped only by a
+# `model_flags` variant in a research replay (rank_backtest._model_flags), same
+# mechanism as the E1 levers above. Lever construction lives in
+# prospects/level_translation_challenger.py. LEVEL_TRANSLATION_FITTED_ENABLED
+# additionally requires a fold-fitted table installed via
+# level_translation_challenger.active_translation — with no table active the
+# hook is an identity even when the flag is on, so serving can never translate.
+LEVEL_TRANSLATION_FITTED_ENABLED = False
+PITCHER_STRIKE_PCT_ENABLED = False
 MIN_GATE_SAMPLE = 250
 MIN_GATE_IMPROVEMENT_PCT = 2.0
 RIDGE_LAMBDA = 10.0
@@ -336,6 +352,8 @@ def _age_bucket(age) -> str:
 
 
 def _feature_vector(record: dict, role: str) -> list[float] | None:
+    if LEVEL_TRANSLATION_FITTED_ENABLED:
+        record = _maybe_level_translate(record, role)
     level = str(record.get("level") or "").upper()
     age = _num(record.get("age"))
     if role not in FEATURE_NAMES or level not in LEVEL_CODE or age is None:
@@ -365,6 +383,12 @@ def _feature_vector(record: dict, role: str) -> list[float] | None:
 
 
 def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
+    # Translate at THIS entry too: the extras below read rate stats straight off
+    # the record (avg/obp/...), not just through the base vector. The sentinel
+    # inside maybe_translate keeps the nested _feature_vector call from
+    # translating twice.
+    if LEVEL_TRANSLATION_FITTED_ENABLED:
+        record = _maybe_level_translate(record, role)
     base = _feature_vector(record, role)
     if base is None:
         return None
@@ -449,6 +473,11 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
     # names helper appends the matching names in the same order.
     if role == "pitcher" and PITCHER_OUTCOME_ROLE_SPLIT_ENABLED:
         vector += [float(value) for value in pitcher_role_split_extra(base)]
+    # Strike% lever: appended after the (optional) E1 role-split block so every
+    # incumbent index is untouched with the flag off. None-safe (absent counts
+    # -> both features exactly 0.0 with the known flag down).
+    if role == "pitcher" and PITCHER_STRIKE_PCT_ENABLED:
+        vector += [float(value) for value in strike_pct_extra(record)]
     return vector
 
 
@@ -458,7 +487,9 @@ def _outcome_feature_names(role: str) -> tuple[str, ...]:
     feature_names, the shrink walk, and the drivers all agree on every index."""
     names = OUTCOME_FEATURE_NAMES[role]
     if role == "pitcher" and PITCHER_OUTCOME_ROLE_SPLIT_ENABLED:
-        return names + PITCHER_ROLE_SPLIT_FEATURE_NAMES
+        names = names + PITCHER_ROLE_SPLIT_FEATURE_NAMES
+    if role == "pitcher" and PITCHER_STRIKE_PCT_ENABLED:
+        names = names + STRIKE_PCT_FEATURE_NAMES
     return names
 
 
@@ -1263,6 +1294,10 @@ def _regress_current_features(
         # The E1 role-split interactions (lever a) are structural role selectors:
         # hold them fixed like starter_x_youth, unless explicitly also_shrunk.
         if name in PITCHER_ROLE_SPLIT_NON_SHRINK and name not in also_shrink:
+            continue
+        # strike_pct_known is a structural missingness flag (never shrunk);
+        # strike_pct_dev stays on the shrink-by-default path like every rate.
+        if name in STRIKE_PCT_NON_SHRINK and name not in also_shrink:
             continue
         if name in NON_SHRINK_FEATURES and name not in also_shrink:
             continue

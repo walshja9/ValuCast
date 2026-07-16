@@ -14,6 +14,13 @@ from statistics import mean
 from zoneinfo import ZoneInfo
 
 from prospects.gate import decide_gate
+from prospects import model as _prospect_model_flags
+from prospects.level_translation_challenger import (
+    STRIKE_PCT_FEATURE_NAMES,
+    STRIKE_PCT_SHRINK,
+    maybe_translate as _maybe_level_translate,
+    strike_pct_extra,
+)
 from prospects.model import (
     INPUT_PATH,
     MAX_AGE,
@@ -209,6 +216,10 @@ def _draft_features(record: dict) -> list[float]:
 
 
 def _canonical_feature_vector(record: dict, role: str) -> list[float] | None:
+    # Level-translation challenger hook (flag defaults False => identity; the
+    # sentinel inside maybe_translate makes nested calls idempotent).
+    if _prospect_model_flags.LEVEL_TRANSLATION_FITTED_ENABLED:
+        record = _maybe_level_translate(record, role)
     level = str(record.get("level") or "").upper()
     age = _num(record.get("age"))
     if role not in CANONICAL_FEATURE_NAMES or level not in LEVEL_CODE or age is None:
@@ -238,6 +249,10 @@ def _canonical_feature_vector(record: dict, role: str) -> list[float] | None:
 
 
 def _feature_vector(record: dict, role: str) -> list[float] | None:
+    # Translate at THIS entry too: the extras below read rate stats straight off
+    # the record (avg/obp/...), not only through the canonical vector.
+    if _prospect_model_flags.LEVEL_TRANSLATION_FITTED_ENABLED:
+        record = _maybe_level_translate(record, role)
     canonical = _canonical_feature_vector(record, role)
     if canonical is None:
         return None
@@ -263,7 +278,23 @@ def _feature_vector(record: dict, role: str) -> list[float] | None:
             _rate_per(record, "home_runs", sample, 9.0),
             math.log1p(sample),
         ]
-    return canonical + extras + _draft_features(record)
+    out = canonical + extras + _draft_features(record)
+    # Strike% lever: appended LAST so every incumbent index is untouched with
+    # the flag off. None-safe (absent counts -> both features exactly 0.0).
+    if role == "pitcher" and _prospect_model_flags.PITCHER_STRIKE_PCT_ENABLED:
+        out += [float(value) for value in strike_pct_extra(record)]
+    return out
+
+
+def _active_feature_names(role: str) -> tuple[str, ...]:
+    """FEATURE_NAMES with the strike% names appended when the lever is on.
+
+    Kept in lockstep with _feature_vector so stored feature_names and the
+    shrink walk agree on every index (mirrors model._outcome_feature_names)."""
+    names = FEATURE_NAMES[role]
+    if role == "pitcher" and _prospect_model_flags.PITCHER_STRIKE_PCT_ENABLED:
+        return names + STRIKE_PCT_FEATURE_NAMES
+    return names
 
 
 def _eligible_current(record: dict, role: str) -> bool:
@@ -304,8 +335,10 @@ def _regress_current_features(
 ) -> tuple[list[float], float]:
     reliability = sample / (sample + SAMPLE_REGRESSION[role])
     out = list(features)
-    for index, name in enumerate(FEATURE_NAMES[role]):
-        if name in SHRINK_FEATURES[role]:
+    for index, name in enumerate(_active_feature_names(role)):
+        # strike_pct_dev is a performance rate and shrinks like the others;
+        # strike_pct_known is a structural missingness flag and never shrinks.
+        if name in SHRINK_FEATURES[role] or name in STRIKE_PCT_SHRINK:
             center = float(role_model["means"][index])
             out[index] = center + reliability * (out[index] - center)
     return out, reliability
@@ -769,7 +802,7 @@ def train_target(
             else None
         ),
         "ridge_lambda": RIDGE_LAMBDA,
-        "feature_names": list(FEATURE_NAMES[role]),
+        "feature_names": list(_active_feature_names(role)),
         "model": _rounded_ridge(model),
         "training_sample": len(rows),
         "validation_sample": len(validation["targets"]),
