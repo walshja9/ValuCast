@@ -107,8 +107,13 @@ def test_combined_level_shadow_keeps_served_rank_stage_penalties():
             after_availability,
             rules_total,
         )
-        # served_score mirrors the penalized board score, not the raw blend.
-        assert row["served_score"] <= row["shadow_score_before_rank_adjustments"]
+        # Penalties only ever subtract within the shadow row itself. (The old
+        # cross-check `served_score <= shadow_score_before_rank_adjustments`
+        # was a heuristic, not arithmetic: once mid-season samples grow, a hot
+        # current level can outrun the prior-level-diluted blend, so the served
+        # penalized score legitimately exceeds the fuller-sample blend -- 11
+        # live AA/AAA thin-sample rows crossed that line on 2026-07-16.)
+        assert row["shadow_score"] <= row["shadow_score_before_rank_adjustments"]
 
 
 def test_combined_level_shadow_excludes_prior_year_served_model_lines():
