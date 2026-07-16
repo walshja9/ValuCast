@@ -1,9 +1,79 @@
 {
   "artifact": "valucast_prospect_movers",
-  "board": [],
-  "cooling": [],
+  "board": [
+    {
+      "age": 24,
+      "current_rank": 235,
+      "current_score": 25.51,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-07-14",
+          "rank": 141,
+          "score": 28.99
+        },
+        {
+          "date": "2026-07-16",
+          "rank": 235,
+          "score": 25.51
+        }
+      ],
+      "id": "vc_mover_694371_hitter",
+      "level": "AAA",
+      "mlbam_id": 694371,
+      "movement_label": "DOWN -3.5 over 2d",
+      "name": "Tommy Troy",
+      "player_id": "vc_prospect_694371_hitter",
+      "pos": "2B",
+      "positions": [
+        "2B"
+      ],
+      "rank_delta": -94,
+      "role": "hitter",
+      "score_delta": -3.48,
+      "team": "ARI",
+      "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+      "window_days": 2
+    }
+  ],
+  "cooling": [
+    {
+      "age": 24,
+      "current_rank": 235,
+      "current_score": 25.51,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-07-14",
+          "rank": 141,
+          "score": 28.99
+        },
+        {
+          "date": "2026-07-16",
+          "rank": 235,
+          "score": 25.51
+        }
+      ],
+      "id": "vc_mover_694371_hitter",
+      "level": "AAA",
+      "mlbam_id": 694371,
+      "movement_label": "DOWN -3.5 over 2d",
+      "name": "Tommy Troy",
+      "player_id": "vc_prospect_694371_hitter",
+      "pos": "2B",
+      "positions": [
+        "2B"
+      ],
+      "rank_delta": -94,
+      "role": "hitter",
+      "score_delta": -3.48,
+      "team": "ARI",
+      "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+      "window_days": 2
+    }
+  ],
   "epoch": "2026-07-14-gate-fix-calibration-batch",
-  "generated_at": "2026-07-15T00:00:00+00:00",
+  "generated_at": "2026-07-16T00:00:00+00:00",
   "input_artifacts": {
     "prospect_rank_v1_count": 2833,
     "prospect_rank_v1_status": "candidate_ready",
@@ -41,9 +111,10 @@
       "2026-07-12",
       "2026-07-13",
       "2026-07-14",
-      "2026-07-15"
+      "2026-07-15",
+      "2026-07-16"
     ],
-    "rank_history_artifact_count": 33
+    "rank_history_artifact_count": 34
   },
   "rising": [],
   "signal_name": "ValuCast Prospect Movers",
@@ -62,18 +133,18 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "cooling_count": 0,
+    "cooling_count": 1,
     "current_rank_cap": 250,
     "current_ranked_count": 2833,
     "excluded_step_guard_count": 2833,
-    "mover_count": 0,
+    "mover_count": 1,
     "rising_count": 0,
     "score_delta_threshold": 2.0
   },
   "validation": {
-    "below_threshold_count": 2833,
+    "below_threshold_count": 2832,
     "blockers": [],
-    "cooling_count": 0,
+    "cooling_count": 1,
     "excluded_step_guard_count": 2833,
     "history_limited_count": 0,
     "ready_for_public_surface": true,
@@ -81,19 +152,159 @@
   },
   "windows": {
     "14d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 24,
+          "current_rank": 235,
+          "current_score": 25.51,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-14",
+              "rank": 141,
+              "score": 28.99
+            },
+            {
+              "date": "2026-07-16",
+              "rank": 235,
+              "score": 25.51
+            }
+          ],
+          "id": "vc_mover_694371_hitter",
+          "level": "AAA",
+          "mlbam_id": 694371,
+          "movement_label": "DOWN -3.5 over 2d",
+          "name": "Tommy Troy",
+          "player_id": "vc_prospect_694371_hitter",
+          "pos": "2B",
+          "positions": [
+            "2B"
+          ],
+          "rank_delta": -94,
+          "role": "hitter",
+          "score_delta": -3.48,
+          "team": "ARI",
+          "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+          "window_days": 2
+        }
+      ],
       "rising": []
     },
     "21d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 24,
+          "current_rank": 235,
+          "current_score": 25.51,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-14",
+              "rank": 141,
+              "score": 28.99
+            },
+            {
+              "date": "2026-07-16",
+              "rank": 235,
+              "score": 25.51
+            }
+          ],
+          "id": "vc_mover_694371_hitter",
+          "level": "AAA",
+          "mlbam_id": 694371,
+          "movement_label": "DOWN -3.5 over 2d",
+          "name": "Tommy Troy",
+          "player_id": "vc_prospect_694371_hitter",
+          "pos": "2B",
+          "positions": [
+            "2B"
+          ],
+          "rank_delta": -94,
+          "role": "hitter",
+          "score_delta": -3.48,
+          "team": "ARI",
+          "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+          "window_days": 2
+        }
+      ],
       "rising": []
     },
     "30d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 24,
+          "current_rank": 235,
+          "current_score": 25.51,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-14",
+              "rank": 141,
+              "score": 28.99
+            },
+            {
+              "date": "2026-07-16",
+              "rank": 235,
+              "score": 25.51
+            }
+          ],
+          "id": "vc_mover_694371_hitter",
+          "level": "AAA",
+          "mlbam_id": 694371,
+          "movement_label": "DOWN -3.5 over 2d",
+          "name": "Tommy Troy",
+          "player_id": "vc_prospect_694371_hitter",
+          "pos": "2B",
+          "positions": [
+            "2B"
+          ],
+          "rank_delta": -94,
+          "role": "hitter",
+          "score_delta": -3.48,
+          "team": "ARI",
+          "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+          "window_days": 2
+        }
+      ],
       "rising": []
     },
     "7d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 24,
+          "current_rank": 235,
+          "current_score": 25.51,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-14",
+              "rank": 141,
+              "score": 28.99
+            },
+            {
+              "date": "2026-07-16",
+              "rank": 235,
+              "score": 25.51
+            }
+          ],
+          "id": "vc_mover_694371_hitter",
+          "level": "AAA",
+          "mlbam_id": 694371,
+          "movement_label": "DOWN -3.5 over 2d",
+          "name": "Tommy Troy",
+          "player_id": "vc_prospect_694371_hitter",
+          "pos": "2B",
+          "positions": [
+            "2B"
+          ],
+          "rank_delta": -94,
+          "role": "hitter",
+          "score_delta": -3.48,
+          "team": "ARI",
+          "why": "AAA 205 PA, .846 OPS, .142 ISO, 24.4% K%, 12.7% BB%",
+          "window_days": 2
+        }
+      ],
       "rising": []
     }
   }

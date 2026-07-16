@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_prospect_peak_projection_v1",
-  "generated_at": "2026-07-15T00:00:00+00:00",
+  "generated_at": "2026-07-16T00:00:00+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "prospect_rank_v1_generated_at": "2026-07-15T00:00:00+00:00",
+    "prospect_rank_v1_generated_at": "2026-07-16T00:00:00+00:00",
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.8"
   },
@@ -18646,139 +18646,6 @@
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {
-      "age": 24,
-      "card_v2": {
-        "card_copy": "Ceiling is bench or platoon bat; floor is bench or depth. Medium risk, medium confidence.",
-        "ceiling_band": "bench_or_platoon_bat",
-        "confidence": "medium",
-        "current_score": 28.99,
-        "floor_band": "bench_or_depth_floor",
-        "peak_score": 39.65,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "bench_or_platoon": 0.2,
-          "depth_or_reserve": 0.1,
-          "regular_or_better": 0.7
-        },
-        "score_delta": 10.66,
-        "trajectory": "more_peak_than_current_value",
-        "visual_version": "2.0.0"
-      },
-      "ceiling_band": "bench_or_platoon_bat",
-      "confidence": "medium",
-      "eta_window": "near_term",
-      "floor_band": "bench_or_depth_floor",
-      "level": "AAA",
-      "mlbam_id": 694371,
-      "name": "Tommy Troy",
-      "peak_role": "bench_or_platoon_bat",
-      "peak_score": 39.65,
-      "peak_v2": {
-        "ceiling_band": "bench_or_platoon_bat",
-        "delta_vs_v1_peak_score": 0.0,
-        "floor_band": "bench_or_depth_floor",
-        "mlb_equivalent": {
-          "confidence": "high",
-          "level_label": "AAA",
-          "low_sample": false,
-          "rates": {
-            "bb_pct": {
-              "milb": 12.7,
-              "mlb": 10.1,
-              "mlb_avg": 8.5
-            },
-            "iso": {
-              "milb": 0.142,
-              "mlb": 0.132,
-              "mlb_avg": 0.15
-            },
-            "k_pct": {
-              "milb": 24.4,
-              "mlb": 24.2,
-              "mlb_avg": 22.0
-            }
-          },
-          "sample": 205,
-          "sample_unit": "PA",
-          "season": 2026
-        },
-        "model_version": "2.1.0",
-        "peak_role": "bench_or_platoon_bat",
-        "peak_score": 39.65,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "bust_risk": 0.721,
-          "reaches_role_or_better": 0.279,
-          "reaches_star_ceiling": 0.04
-        },
-        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
-        "role_probability_source": "model_dynasty_signal",
-        "shape": [
-          {
-            "grade": 55,
-            "label": "Hit",
-            "source": "K% / OPS"
-          },
-          {
-            "grade": 50,
-            "label": "Power",
-            "source": "ISO / OPS"
-          },
-          {
-            "grade": 55,
-            "label": "Approach",
-            "source": "BB% / BB-K"
-          },
-          {
-            "grade": 50,
-            "label": "Impact",
-            "source": "OPS / ISO"
-          }
-        ],
-        "shape_average": 52.5,
-        "shape_basis": "current",
-        "status": "shadow_observe_only"
-      },
-      "rank_v1_rank": 141,
-      "rank_v1_score": 28.99,
-      "rank_v1_score_source": "prospect_model_v0_6",
-      "risk_band": "medium",
-      "role": "hitter",
-      "sample_context": {
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "sample": 205.0,
-        "sample_reliability": 50.6,
-        "sample_unit": "PA",
-        "skill_band": "mixed"
-      },
-      "shape": [
-        {
-          "grade": 55,
-          "label": "Hit",
-          "source": "K% / OPS"
-        },
-        {
-          "grade": 50,
-          "label": "Power",
-          "source": "ISO / OPS"
-        },
-        {
-          "grade": 55,
-          "label": "Approach",
-          "source": "BB% / BB-K"
-        },
-        {
-          "grade": 50,
-          "label": "Impact",
-          "source": "OPS / ISO"
-        }
-      ],
-      "shape_average": 52.5,
-      "summary": "Peak read: bench or platoon bat with medium risk. The current bat shape is mixed over 205 AAA PA; this is a role and skill-shape projection, not a full stat forecast.",
-      "usage": "card_visual_context_not_live_rank_or_value"
-    },
-    {
       "age": 23,
       "card_v2": {
         "card_copy": "Ceiling is bench or platoon bat; floor is bench or depth. Low risk, medium confidence.",
@@ -18872,7 +18739,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 142,
+      "rank_v1_rank": 141,
       "rank_v1_score": 28.95,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -19005,7 +18872,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 143,
+      "rank_v1_rank": 142,
       "rank_v1_score": 28.95,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -19138,7 +19005,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 144,
+      "rank_v1_rank": 143,
       "rank_v1_score": 28.89,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -19271,7 +19138,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 145,
+      "rank_v1_rank": 144,
       "rank_v1_score": 28.88,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -19404,7 +19271,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 146,
+      "rank_v1_rank": 145,
       "rank_v1_score": 28.81,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "high",
@@ -19537,7 +19404,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 147,
+      "rank_v1_rank": 146,
       "rank_v1_score": 28.79,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -19670,7 +19537,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 148,
+      "rank_v1_rank": 147,
       "rank_v1_score": 28.74,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -19803,7 +19670,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 149,
+      "rank_v1_rank": 148,
       "rank_v1_score": 28.72,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -19936,7 +19803,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 150,
+      "rank_v1_rank": 149,
       "rank_v1_score": 28.7,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -20069,7 +19936,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 151,
+      "rank_v1_rank": 150,
       "rank_v1_score": 28.67,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -20202,7 +20069,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 152,
+      "rank_v1_rank": 151,
       "rank_v1_score": 28.6,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -20335,7 +20202,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 153,
+      "rank_v1_rank": 152,
       "rank_v1_score": 28.58,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -20468,7 +20335,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 154,
+      "rank_v1_rank": 153,
       "rank_v1_score": 28.56,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -20601,7 +20468,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 155,
+      "rank_v1_rank": 154,
       "rank_v1_score": 28.48,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -20734,7 +20601,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 156,
+      "rank_v1_rank": 155,
       "rank_v1_score": 28.43,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -20867,7 +20734,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 157,
+      "rank_v1_rank": 156,
       "rank_v1_score": 28.4,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -21000,7 +20867,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 158,
+      "rank_v1_rank": 157,
       "rank_v1_score": 28.39,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -21133,7 +21000,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 159,
+      "rank_v1_rank": 158,
       "rank_v1_score": 28.21,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -21266,7 +21133,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 160,
+      "rank_v1_rank": 159,
       "rank_v1_score": 28.05,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -21399,7 +21266,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 161,
+      "rank_v1_rank": 160,
       "rank_v1_score": 28.03,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -21532,7 +21399,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 162,
+      "rank_v1_rank": 161,
       "rank_v1_score": 28.0,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -21665,7 +21532,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 163,
+      "rank_v1_rank": 162,
       "rank_v1_score": 27.97,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -21798,7 +21665,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 164,
+      "rank_v1_rank": 163,
       "rank_v1_score": 27.93,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -21931,7 +21798,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 165,
+      "rank_v1_rank": 164,
       "rank_v1_score": 27.93,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22064,7 +21931,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 166,
+      "rank_v1_rank": 165,
       "rank_v1_score": 27.89,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22197,7 +22064,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 167,
+      "rank_v1_rank": 166,
       "rank_v1_score": 27.87,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22330,7 +22197,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 168,
+      "rank_v1_rank": 167,
       "rank_v1_score": 27.82,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22463,7 +22330,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 169,
+      "rank_v1_rank": 168,
       "rank_v1_score": 27.8,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -22596,7 +22463,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 170,
+      "rank_v1_rank": 169,
       "rank_v1_score": 27.76,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22729,7 +22596,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 171,
+      "rank_v1_rank": 170,
       "rank_v1_score": 27.75,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -22862,7 +22729,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 172,
+      "rank_v1_rank": 171,
       "rank_v1_score": 27.75,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -22995,7 +22862,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 173,
+      "rank_v1_rank": 172,
       "rank_v1_score": 27.74,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -23128,7 +22995,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 174,
+      "rank_v1_rank": 173,
       "rank_v1_score": 27.7,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -23261,7 +23128,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 175,
+      "rank_v1_rank": 174,
       "rank_v1_score": 27.68,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -23394,7 +23261,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 176,
+      "rank_v1_rank": 175,
       "rank_v1_score": 27.68,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -23527,7 +23394,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 177,
+      "rank_v1_rank": 176,
       "rank_v1_score": 27.64,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -23660,7 +23527,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 178,
+      "rank_v1_rank": 177,
       "rank_v1_score": 27.49,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -23793,7 +23660,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 179,
+      "rank_v1_rank": 178,
       "rank_v1_score": 27.49,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -23926,7 +23793,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 180,
+      "rank_v1_rank": 179,
       "rank_v1_score": 27.49,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -24059,7 +23926,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 181,
+      "rank_v1_rank": 180,
       "rank_v1_score": 27.47,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -24192,7 +24059,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 182,
+      "rank_v1_rank": 181,
       "rank_v1_score": 27.41,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -24325,7 +24192,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 183,
+      "rank_v1_rank": 182,
       "rank_v1_score": 27.37,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -24458,7 +24325,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 184,
+      "rank_v1_rank": 183,
       "rank_v1_score": 27.36,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -24591,7 +24458,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 185,
+      "rank_v1_rank": 184,
       "rank_v1_score": 27.25,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -24724,7 +24591,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 186,
+      "rank_v1_rank": 185,
       "rank_v1_score": 27.22,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -24857,7 +24724,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 187,
+      "rank_v1_rank": 186,
       "rank_v1_score": 27.12,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -24990,7 +24857,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 188,
+      "rank_v1_rank": 187,
       "rank_v1_score": 27.11,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -25123,7 +24990,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 189,
+      "rank_v1_rank": 188,
       "rank_v1_score": 27.1,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -25256,7 +25123,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 190,
+      "rank_v1_rank": 189,
       "rank_v1_score": 27.1,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -25389,7 +25256,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 191,
+      "rank_v1_rank": 190,
       "rank_v1_score": 27.06,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "high",
@@ -25522,7 +25389,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 192,
+      "rank_v1_rank": 191,
       "rank_v1_score": 27.02,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -25655,7 +25522,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 193,
+      "rank_v1_rank": 192,
       "rank_v1_score": 27.0,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -25788,7 +25655,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 194,
+      "rank_v1_rank": 193,
       "rank_v1_score": 26.98,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -25921,7 +25788,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 195,
+      "rank_v1_rank": 194,
       "rank_v1_score": 26.88,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26054,7 +25921,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 196,
+      "rank_v1_rank": 195,
       "rank_v1_score": 26.85,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26187,7 +26054,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 197,
+      "rank_v1_rank": 196,
       "rank_v1_score": 26.81,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26320,7 +26187,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 198,
+      "rank_v1_rank": 197,
       "rank_v1_score": 26.78,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26453,7 +26320,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 199,
+      "rank_v1_rank": 198,
       "rank_v1_score": 26.65,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26586,7 +26453,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 200,
+      "rank_v1_rank": 199,
       "rank_v1_score": 26.61,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26719,7 +26586,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 201,
+      "rank_v1_rank": 200,
       "rank_v1_score": 26.61,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -26852,7 +26719,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 202,
+      "rank_v1_rank": 201,
       "rank_v1_score": 26.57,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -26985,7 +26852,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 203,
+      "rank_v1_rank": 202,
       "rank_v1_score": 26.52,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -27118,7 +26985,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 204,
+      "rank_v1_rank": 203,
       "rank_v1_score": 26.51,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -27251,7 +27118,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 205,
+      "rank_v1_rank": 204,
       "rank_v1_score": 26.46,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -27384,7 +27251,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 206,
+      "rank_v1_rank": 205,
       "rank_v1_score": 26.43,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -27517,7 +27384,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 207,
+      "rank_v1_rank": 206,
       "rank_v1_score": 26.4,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -27650,7 +27517,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 208,
+      "rank_v1_rank": 207,
       "rank_v1_score": 26.37,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -27783,7 +27650,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 209,
+      "rank_v1_rank": 208,
       "rank_v1_score": 26.37,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -27916,7 +27783,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 210,
+      "rank_v1_rank": 209,
       "rank_v1_score": 26.35,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -28049,7 +27916,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 211,
+      "rank_v1_rank": 210,
       "rank_v1_score": 26.33,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -28182,7 +28049,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 212,
+      "rank_v1_rank": 211,
       "rank_v1_score": 26.3,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -28315,7 +28182,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 213,
+      "rank_v1_rank": 212,
       "rank_v1_score": 26.25,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -28448,7 +28315,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 214,
+      "rank_v1_rank": 213,
       "rank_v1_score": 26.21,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -28581,7 +28448,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 215,
+      "rank_v1_rank": 214,
       "rank_v1_score": 26.17,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -28714,7 +28581,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 216,
+      "rank_v1_rank": 215,
       "rank_v1_score": 26.16,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -28847,7 +28714,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 217,
+      "rank_v1_rank": 216,
       "rank_v1_score": 26.11,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -28980,7 +28847,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 218,
+      "rank_v1_rank": 217,
       "rank_v1_score": 26.1,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29113,7 +28980,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 219,
+      "rank_v1_rank": 218,
       "rank_v1_score": 26.02,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29246,7 +29113,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 220,
+      "rank_v1_rank": 219,
       "rank_v1_score": 25.99,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29379,7 +29246,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 221,
+      "rank_v1_rank": 220,
       "rank_v1_score": 25.96,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -29512,7 +29379,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 222,
+      "rank_v1_rank": 221,
       "rank_v1_score": 25.96,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29645,7 +29512,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 223,
+      "rank_v1_rank": 222,
       "rank_v1_score": 25.96,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29778,7 +29645,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 224,
+      "rank_v1_rank": 223,
       "rank_v1_score": 25.91,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -29911,7 +29778,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 225,
+      "rank_v1_rank": 224,
       "rank_v1_score": 25.88,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -30044,7 +29911,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 226,
+      "rank_v1_rank": 225,
       "rank_v1_score": 25.85,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -30177,7 +30044,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 227,
+      "rank_v1_rank": 226,
       "rank_v1_score": 25.81,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "high",
@@ -30310,7 +30177,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 228,
+      "rank_v1_rank": 227,
       "rank_v1_score": 25.79,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -30443,7 +30310,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 229,
+      "rank_v1_rank": 228,
       "rank_v1_score": 25.72,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -30576,7 +30443,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 230,
+      "rank_v1_rank": 229,
       "rank_v1_score": 25.68,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -30709,7 +30576,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 231,
+      "rank_v1_rank": 230,
       "rank_v1_score": 25.65,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -30842,7 +30709,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 232,
+      "rank_v1_rank": 231,
       "rank_v1_score": 25.62,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -30975,7 +30842,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 233,
+      "rank_v1_rank": 232,
       "rank_v1_score": 25.59,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -31108,7 +30975,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 234,
+      "rank_v1_rank": 233,
       "rank_v1_score": 25.58,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -31241,7 +31108,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 235,
+      "rank_v1_rank": 234,
       "rank_v1_score": 25.57,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -31278,6 +31145,139 @@
       ],
       "shape_average": 40.0,
       "summary": "Peak read: depth arm with medium risk. The current pitching shape is starter volume over 79.7 AAA IP; this is a role and skill-shape projection, not a full stat forecast.",
+      "usage": "card_visual_context_not_live_rank_or_value"
+    },
+    {
+      "age": 24,
+      "card_v2": {
+        "card_copy": "Ceiling is organizational depth; floor is org depth. High risk, low confidence.",
+        "ceiling_band": "organizational_depth",
+        "confidence": "low",
+        "current_score": 25.51,
+        "floor_band": "org_depth_floor",
+        "peak_score": 34.28,
+        "risk_band": "high",
+        "role_probabilities": {
+          "bench_or_platoon": 0.357,
+          "depth_or_reserve": 0.188,
+          "regular_or_better": 0.455
+        },
+        "score_delta": 8.77,
+        "trajectory": "more_peak_than_current_value",
+        "visual_version": "2.0.0"
+      },
+      "ceiling_band": "organizational_depth",
+      "confidence": "low",
+      "eta_window": "near_term",
+      "floor_band": "org_depth_floor",
+      "level": "AAA",
+      "mlbam_id": 694371,
+      "name": "Tommy Troy",
+      "peak_role": "organizational_depth",
+      "peak_score": 34.28,
+      "peak_v2": {
+        "ceiling_band": "organizational_depth",
+        "delta_vs_v1_peak_score": 0.0,
+        "floor_band": "org_depth_floor",
+        "mlb_equivalent": {
+          "confidence": "high",
+          "level_label": "AAA",
+          "low_sample": false,
+          "rates": {
+            "bb_pct": {
+              "milb": 12.7,
+              "mlb": 10.1,
+              "mlb_avg": 8.5
+            },
+            "iso": {
+              "milb": 0.142,
+              "mlb": 0.132,
+              "mlb_avg": 0.15
+            },
+            "k_pct": {
+              "milb": 24.4,
+              "mlb": 24.2,
+              "mlb_avg": 22.0
+            }
+          },
+          "sample": 205,
+          "sample_unit": "PA",
+          "season": 2026
+        },
+        "model_version": "2.1.0",
+        "peak_role": "organizational_depth",
+        "peak_score": 34.28,
+        "risk_band": "high",
+        "role_probabilities": {
+          "bust_risk": 0.721,
+          "reaches_role_or_better": 0.279,
+          "reaches_star_ceiling": 0.04
+        },
+        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
+        "role_probability_source": "model_dynasty_signal",
+        "shape": [
+          {
+            "grade": 55,
+            "label": "Hit",
+            "source": "K% / OPS"
+          },
+          {
+            "grade": 50,
+            "label": "Power",
+            "source": "ISO / OPS"
+          },
+          {
+            "grade": 55,
+            "label": "Approach",
+            "source": "BB% / BB-K"
+          },
+          {
+            "grade": 50,
+            "label": "Impact",
+            "source": "OPS / ISO"
+          }
+        ],
+        "shape_average": 52.5,
+        "shape_basis": "current",
+        "status": "shadow_observe_only"
+      },
+      "rank_v1_rank": 235,
+      "rank_v1_score": 25.51,
+      "rank_v1_score_source": "prospect_model_v0_6",
+      "risk_band": "high",
+      "role": "hitter",
+      "sample_context": {
+        "availability_risk_discount": 0.12,
+        "availability_status": "injured",
+        "sample": 205.0,
+        "sample_reliability": 50.6,
+        "sample_unit": "PA",
+        "skill_band": "mixed"
+      },
+      "shape": [
+        {
+          "grade": 55,
+          "label": "Hit",
+          "source": "K% / OPS"
+        },
+        {
+          "grade": 50,
+          "label": "Power",
+          "source": "ISO / OPS"
+        },
+        {
+          "grade": 55,
+          "label": "Approach",
+          "source": "BB% / BB-K"
+        },
+        {
+          "grade": 50,
+          "label": "Impact",
+          "source": "OPS / ISO"
+        }
+      ],
+      "shape_average": 52.5,
+      "summary": "Peak read: organizational depth with high risk. The current bat shape is mixed over 205 AAA PA; this is a role and skill-shape projection, not a full stat forecast.",
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {

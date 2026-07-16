@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 27,
+    "horizon_days": 28,
     "horizon_sufficient": false,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -3531,56 +3531,56 @@
     "scoreable_players": 320,
     "scores": {
       "marcel_mae": {
-        "BB": 5.18841,
-        "ER": 7.08409,
-        "HLD": 0.12413,
-        "HR": 2.00218,
-        "H_ALLOWED": 14.33393,
-        "K": 15.33183,
-        "R": 5.36715,
-        "RBI": 5.55911,
-        "SB": 1.37818,
-        "SV": 0.03278,
-        "W": 1.39712
+        "BB": 5.15008,
+        "ER": 7.03973,
+        "HLD": 0.12872,
+        "HR": 2.0143,
+        "H_ALLOWED": 14.16485,
+        "K": 15.29582,
+        "R": 5.35224,
+        "RBI": 5.5826,
+        "SB": 1.40571,
+        "SV": 0.0336,
+        "W": 1.40671
       },
-      "marcel_mean_ratio_vs_steamer": 2.1652,
+      "marcel_mean_ratio_vs_steamer": 2.1733,
       "per_stat_ratio": {
-        "BB": 2.3563,
-        "ER": 1.9078,
-        "HLD": 2.8495,
-        "HR": 1.351,
-        "H_ALLOWED": 3.0648,
-        "K": 2.6952,
-        "R": 1.7207,
-        "RBI": 1.5875,
-        "SB": 1.4554,
-        "SV": 3.0812,
-        "W": 1.7485
+        "BB": 2.3117,
+        "ER": 1.8854,
+        "HLD": 2.8623,
+        "HR": 1.3558,
+        "H_ALLOWED": 3.0372,
+        "K": 2.7434,
+        "R": 1.7119,
+        "RBI": 1.589,
+        "SB": 1.4702,
+        "SV": 3.1582,
+        "W": 1.7817
       },
       "steamer_mae": {
-        "BB": 2.20192,
-        "ER": 3.7133,
-        "HLD": 0.04356,
-        "HR": 1.48199,
-        "H_ALLOWED": 4.67703,
-        "K": 5.68863,
-        "R": 3.11914,
-        "RBI": 3.50188,
-        "SB": 0.94697,
+        "BB": 2.22788,
+        "ER": 3.73377,
+        "HLD": 0.04497,
+        "HR": 1.48567,
+        "H_ALLOWED": 4.66381,
+        "K": 5.57543,
+        "R": 3.12655,
+        "RBI": 3.51317,
+        "SB": 0.95615,
         "SV": 0.01064,
-        "W": 0.79903
+        "W": 0.78953
       }
     },
     "status": "scored",
-    "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
+    "steamer_ros_git_commit": "a40e3791972a8e54a2383beeb4362b033e250b6e",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 27,
-      "proration_factor": 0.2673,
+      "elapsed_days": 28,
+      "proration_factor": 0.2772,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-07-15"
+      "through": "2026-07-16"
     }
   },
   "gate": {
@@ -3591,12 +3591,12 @@
     "improvement_pct": null,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "model_score": 1.2225,
-    "reason": "forward horizon 27d < required 30d",
+    "reason": "forward horizon 28d < required 30d",
     "sample_size": 0,
     "status": "insufficient_sample",
-    "validated_through": "2026-07-15"
+    "validated_through": "2026-07-16"
   },
-  "generated_at": "2026-07-15T01:42:22.259580+00:00",
+  "generated_at": "2026-07-16T13:58:46.196753+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -3643,121 +3643,112 @@
       "value_delta": -96.89
     },
     {
-      "live_value": 96.17,
+      "live_value": 97.05,
       "marcel_value": 2.35,
       "mlbam_id": "691406",
       "name": "Junior Caminero",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -93.82
+      "value_delta": -94.7
     },
     {
-      "live_value": 85.5,
+      "live_value": 85.18,
       "marcel_value": 2.47,
       "mlbam_id": "691718",
       "name": "Pete Crow-Armstrong",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -83.03
+      "value_delta": -82.71
     },
     {
-      "live_value": 78.25,
+      "live_value": 78.03,
       "marcel_value": null,
       "mlbam_id": "670541",
       "name": "Yordan Alvarez",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -78.25
+      "value_delta": -78.03
     },
     {
-      "live_value": 28.29,
+      "live_value": 27.54,
       "marcel_value": 98.78,
       "mlbam_id": "596019",
       "name": "Francisco Lindor",
       "only_in": null,
       "role": "hitter",
-      "value_delta": 70.49
+      "value_delta": 71.24
     },
     {
-      "live_value": 70.0,
+      "live_value": 67.32,
       "marcel_value": null,
       "mlbam_id": "694819",
       "name": "Jacob Misiorowski",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -70.0
+      "value_delta": -67.32
     },
     {
-      "live_value": 63.71,
+      "live_value": 64.18,
       "marcel_value": null,
       "mlbam_id": "701398",
       "name": "Sal Stewart",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -63.71
+      "value_delta": -64.18
     },
     {
-      "live_value": 61.62,
+      "live_value": 62.0,
       "marcel_value": null,
       "mlbam_id": "700250",
       "name": "Ben Rice",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -61.62
+      "value_delta": -62.0
     },
     {
-      "live_value": 61.51,
+      "live_value": 61.34,
       "marcel_value": null,
       "mlbam_id": "701762",
       "name": "Nick Kurtz",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -61.51
+      "value_delta": -61.34
     },
     {
-      "live_value": 61.28,
+      "live_value": 61.18,
       "marcel_value": null,
       "mlbam_id": "693645",
       "name": "Cam Schlittler",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -61.28
+      "value_delta": -61.18
     },
     {
-      "live_value": 60.71,
+      "live_value": 60.96,
       "marcel_value": null,
       "mlbam_id": "691023",
       "name": "Jordan Walker",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -60.71
+      "value_delta": -60.96
     },
     {
-      "live_value": 91.99,
-      "marcel_value": 33.16,
-      "mlbam_id": "677951",
-      "name": "Bobby Witt Jr.",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -58.83
-    },
-    {
-      "live_value": 63.22,
-      "marcel_value": 4.62,
-      "mlbam_id": "682928",
-      "name": "CJ Abrams",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -58.6
-    },
-    {
-      "live_value": 10.63,
+      "live_value": 10.55,
       "marcel_value": 69.08,
       "mlbam_id": "680718",
       "name": "Addison Barger",
       "only_in": null,
       "role": "hitter",
-      "value_delta": 58.45
+      "value_delta": 58.53
+    },
+    {
+      "live_value": 91.2,
+      "marcel_value": 33.16,
+      "mlbam_id": "677951",
+      "name": "Bobby Witt Jr.",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": -58.04
     },
     {
       "live_value": null,
@@ -3769,49 +3760,58 @@
       "value_delta": 57.6
     },
     {
-      "live_value": 9.13,
+      "live_value": 62.19,
+      "marcel_value": 4.62,
+      "mlbam_id": "682928",
+      "name": "CJ Abrams",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": -57.57
+    },
+    {
+      "live_value": 8.93,
       "marcel_value": 66.18,
       "mlbam_id": "687597",
       "name": "Jordan Beck",
       "only_in": null,
       "role": "hitter",
-      "value_delta": 57.05
+      "value_delta": 57.25
     },
     {
-      "live_value": 56.72,
+      "live_value": 56.58,
       "marcel_value": null,
       "mlbam_id": "695505",
       "name": "Chase Burns",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -56.72
+      "value_delta": -56.58
     },
     {
-      "live_value": 58.55,
+      "live_value": 58.79,
       "marcel_value": 2.46,
       "mlbam_id": "681624",
       "name": "Andy Pages",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -56.09
+      "value_delta": -56.33
     },
     {
-      "live_value": 54.9,
+      "live_value": 54.72,
       "marcel_value": null,
       "mlbam_id": "808967",
       "name": "Yoshinobu Yamamoto",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -54.9
+      "value_delta": -54.72
     },
     {
-      "live_value": 77.96,
+      "live_value": 77.77,
       "marcel_value": 24.18,
       "mlbam_id": "694973",
       "name": "Paul Skenes",
       "only_in": null,
       "role": "pitcher",
-      "value_delta": -53.78
+      "value_delta": -53.59
     },
     {
       "live_value": 53.35,
@@ -3823,13 +3823,13 @@
       "value_delta": -53.35
     },
     {
-      "live_value": 53.05,
+      "live_value": 53.06,
       "marcel_value": null,
       "mlbam_id": "805808",
       "name": "Kevin McGonigle",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -53.05
+      "value_delta": -53.06
     },
     {
       "live_value": 60.21,
