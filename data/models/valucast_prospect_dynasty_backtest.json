@@ -1,8 +1,39 @@
 {
   "backtest_version": "0.1.0",
+  "combined_headline": {
+    "baseline": "historical_neighbors_25",
+    "certifies_served_gate": true,
+    "ci_high": 8.0909,
+    "ci_low": 4.5709,
+    "cluster_count": 2901,
+    "headline_baseline": "historical_neighbors_25",
+    "headline_improvement_pct": 6.3566,
+    "layer": "outcome_score",
+    "metric": "outcome_score_mae",
+    "n_bootstraps": 10000,
+    "point": 6.3566,
+    "prior_k_qualifier_applies": false,
+    "sample_size": 2901,
+    "seed": 28014,
+    "served_gate_baseline": "historical_neighbors_25",
+    "served_gate_improvement_pct": 6.3566,
+    "significance": "significant",
+    "source_artifact": "data/models/valucast_outcome_oof_scores.json",
+    "source_available": true
+  },
   "generated_at": "2026-07-16T00:00:00+00:00",
   "layer_name": "ValuCast Prospect Dynasty Ceiling/Risk Layer",
   "layer_version": "0.1.0",
+  "prior_k_diagnostic": {
+    "cell_count": 32,
+    "current": 40.0,
+    "eb_optimal_estimate": 6.696,
+    "estimator": "dersimonian_laird_intra_cell_correlation",
+    "intra_cell_correlation": 0.129935,
+    "note": "prior baseline is un-tuned; prior-relative deltas overstate edge -- cite neighbors-baseline or combined numbers",
+    "outcome": "reached_role_or_better",
+    "pooled_rate": 0.198357
+  },
   "promotion": {
     "dynasty_layer_research_gate": "active",
     "feeds_live_dd_value": false,
@@ -11,10 +42,30 @@
     "next_allowed_step": "dated_forward_shadow_observation",
     "reason": "Both role distributions beat level-age priors without aggregate or fold-level ordering/distribution regression."
   },
+  "reporting_only_statistics": {
+    "bootstrap_draws": 10000,
+    "bootstrap_seed": 28014,
+    "ci_two_sided_alpha": 0.05,
+    "cluster_unit": "player_mlbam_id",
+    "note": "combined_headline, per-role brier_delta_ci, and prior_k_diagnostic are additive reporting fields (senior-mathematician audit R1/R2/R5). They make the existing gate deltas provable and DO NOT feed any gate decision, served score, or PRIOR_K."
+  },
   "roles": {
     "hitter": {
       "baseline_multiclass_brier": 0.167698,
       "baseline_rank_concordance": 0.734378,
+      "brier_delta_ci": {
+        "baseline": "level_age_prior_distribution",
+        "ci_high": 9.2098,
+        "ci_low": 2.612,
+        "cluster_count": 1091,
+        "delta_baseline_qualifier": "vs un-tuned K=40 prior",
+        "gate_point_improvement_pct": 5.9529,
+        "metric": "dynasty_outcome_distribution_multiclass_brier",
+        "n_bootstraps": 10000,
+        "point": 5.9529,
+        "seed": 28014,
+        "significance": "significant"
+      },
       "candidate_multiclass_brier": 0.157715,
       "candidate_rank_concordance": 0.78786,
       "fold_count": 3,
@@ -98,6 +149,19 @@
     "pitcher": {
       "baseline_multiclass_brier": 0.227713,
       "baseline_rank_concordance": 0.67293,
+      "brier_delta_ci": {
+        "baseline": "level_age_prior_distribution",
+        "ci_high": 5.6015,
+        "ci_low": -0.6317,
+        "cluster_count": 1127,
+        "delta_baseline_qualifier": "vs un-tuned K=40 prior",
+        "gate_point_improvement_pct": 2.5781,
+        "metric": "dynasty_outcome_distribution_multiclass_brier",
+        "n_bootstraps": 10000,
+        "point": 2.5782,
+        "seed": 28014,
+        "significance": "directional (CI includes 0)"
+      },
       "candidate_multiclass_brier": 0.221842,
       "candidate_rank_concordance": 0.701403,
       "fold_count": 3,

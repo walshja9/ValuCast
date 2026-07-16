@@ -877,6 +877,54 @@ def _walk_forward(
     }
 
 
+def outcome_oof_rows(role: str, dataset_rows: list[dict]) -> list[dict]:
+    """Per-player, per-fold out-of-fold predictions for the outcome-score layer.
+
+    R6 (senior-mathematician audit): the ``combined_gate`` in
+    ``build_shadow_model`` pops ``_validation`` (the pooled OOF prediction lists)
+    and discards it, so the headline outcome-score MAE gate cannot be
+    cross-checked from the committed repo. This helper rebuilds the identical
+    walk-forward validation and realigns the flat prediction lists back to their
+    ``(mlbam_id, test_cohort)`` owners using the fold ``test_ids`` order (the
+    same order in which ``_walk_forward`` appends predictions), so the exact
+    pooled MAE gate is reproducible player-by-player. Reporting only: this does
+    not touch the served model, the gate, or any score.
+    """
+    rows = _historical_rows(dataset_rows, role)
+    validation = _walk_forward(
+        rows,
+        OUTCOME_MODEL_KIND[role],
+        RIDGE_LAMBDA,
+        neighbor_feature_key="baseline_features",
+    )
+    out = []
+    offset = 0
+    for fold in validation["folds"]:
+        for local, mlbam_id in enumerate(fold["test_ids"]):
+            index = offset + local
+            out.append(
+                {
+                    "mlbam_id": int(mlbam_id),
+                    "role": role,
+                    "test_cohort": int(fold["test_year"]),
+                    "train_cohort_max": int(fold["train_year_max"]),
+                    "model_prediction": float(validation["model_predictions"][index]),
+                    "prior_prediction": float(validation["prior_predictions"][index]),
+                    "neighbor_prediction": float(
+                        validation["neighbor_predictions"][index]
+                    ),
+                    "target": float(validation["targets"][index]),
+                }
+            )
+        offset += len(fold["test_ids"])
+    if offset != len(validation["targets"]):
+        raise ValueError(
+            f"{role} OOF realignment lost rows: {offset} != "
+            f"{len(validation['targets'])}"
+        )
+    return out
+
+
 def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> dict:
     rows = _historical_rows(dataset_rows, role)
     model_kind = OUTCOME_MODEL_KIND[role]

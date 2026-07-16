@@ -2,6 +2,14 @@
 
 This report is observe-only. It summarizes top-board shape and review
 watchlists, but it does not feed model scoring or public eligibility.
+
+NAMING CAVEAT (senior-mathematician audit R4): despite "calibration" in the
+name, this artifact reports BOARD COMPOSITION (top-board shape, tier mix, review
+watchlists) -- it is NOT a probability-calibration / reliability report. For
+predicted-outcome-probability reliability (per-role decile reliability curves,
+Wilson intervals, and ECE) see data/models/valucast_probability_reliability.json
+(prospects/probability_reliability.py). This artifact and its name are kept
+as-is for backward compatibility; do not repurpose it for reliability.
 """
 from __future__ import annotations
 
