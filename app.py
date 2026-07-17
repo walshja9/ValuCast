@@ -5127,6 +5127,9 @@ def board_time_machine(date=None):
             quality="unavailable",
             epoch_date=BOARD_TM_EPOCH_DATE,
         )
+    # Prev/next step through available_dates (adjacent archive ENTRIES, not
+    # calendar days) so the links are never dead; omitted at either end.
+    idx = dates.index(date)
     return render_template(
         "board_time_machine.html",
         unavailable=False,
@@ -5135,6 +5138,8 @@ def board_time_machine(date=None):
         quality=board["quality"],
         available_dates=dates,
         epoch_date=BOARD_TM_EPOCH_DATE,
+        prev_date=dates[idx - 1] if idx > 0 else None,
+        next_date=dates[idx + 1] if idx + 1 < len(dates) else None,
     )
 
 

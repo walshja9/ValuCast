@@ -4751,3 +4751,16 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .card-tile-caption { font-size: .78rem; color: var(--c-muted); }
 .card-tile-links { font-size: .78rem; }
 .cards-more { margin-top: 14px; padding: 14px 16px; }
+
+/* --- Board Time Machine touch-up (plan 026): archive stepper + numeric cells.
+   .board-tm-nav is new because no existing two-sided flex row survives mobile
+   (.scouting-section-head stacks to a column at small widths); the .num rules
+   are new because the col-* th right-align rules are .rankings-table-scoped
+   and the models-table mobile card stack must fall back to left alignment. */
+.board-tm-nav { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin: 0 0 .4rem; }
+.board-tm-nav .export-btn { margin-left: 0; }
+.board-tm-table th.num, .board-tm-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.board-tm-table td[data-label="Consensus"] { white-space: nowrap; }
+@media (max-width: 640px) {
+    .board-tm-table td.num { text-align: left; }
+}

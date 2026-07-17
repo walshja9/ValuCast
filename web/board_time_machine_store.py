@@ -24,14 +24,14 @@ from datetime import date as _date
 from pathlib import Path
 
 from prospects.availability import eta_window_label
-from prospects.buys import PROSPECT_BUYS_EPOCH  # read-only import (not frozen)
+from prospects.buys import PROSPECT_BUYS_EPOCH_DATE  # read-only import (not frozen)
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
-# The comparability boundary is the model's re-baseline epoch, derived exactly
-# as prospects/movers.py does — NEVER hardcode the date (a future re-baseline
+# The comparability boundary is the model's re-baseline epoch — imported
+# ready-made from prospects/buys.py, NEVER hardcoded (a future re-baseline
 # moves the flag automatically because this is an import, not a literal).
-EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
+EPOCH_DATE = PROSPECT_BUYS_EPOCH_DATE
 
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
@@ -101,6 +101,13 @@ def nearest_board_date(date: str | None, dates: list[str]) -> str | None:
     return before if gap_before <= gap_after else after
 
 
+def _comparability(date: str) -> str:
+    """Pre/post scoring-epoch comparability — the ONE place the boundary
+    ternary lives, so ``quality_flag`` and ``board_for`` views can never
+    disagree about which side of the epoch a date falls on."""
+    return "pre-baseline" if date < EPOCH_DATE else "clean"
+
+
 def _eta_display(row: dict) -> str | None:
     eta = row.get("eta")
     if eta not in (None, ""):
@@ -148,7 +155,7 @@ class BoardTimeMachineStore:
                 return "unavailable"
         except OSError:
             return "unavailable"
-        return "pre-baseline" if date < EPOCH_DATE else "clean"
+        return _comparability(date)
 
     def board_for(self, date: str) -> dict | None:
         """Thin card-ready view of one archived board, or ``None`` when the
@@ -199,7 +206,7 @@ class BoardTimeMachineStore:
             "date": payload.get("date") or date,
             "generated_at": payload.get("generated_at"),
             "rank_version": payload.get("rank_version"),
-            "quality": "pre-baseline" if date < EPOCH_DATE else "clean",
+            "quality": _comparability(date),
             "rows": rows,
             "total_rows": len(board),
         }

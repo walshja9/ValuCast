@@ -15,6 +15,10 @@
         <span class="buys-heading-eyebrow">TIME MACHINE</span>
         {% if board %}
         <h1>BOARD AS OF {{ editorial_date(date) }}</h1>
+        {% if quality == 'pre-baseline' %}
+        {# Pointer only — the full pre-baseline notice below stays the source of truth. #}
+        <span class="sample-risk-badge rank-context caution">PRE-BASELINE ERA</span>
+        {% endif %}
         <p class="buys-heading-sub">The ValuCast prospect board exactly as it was published on this
         date &mdash; model {{ board.rank_version or "?" }} &mdash; replayed from the committed daily
         snapshot, not re-scored. <a href="/">View today's board</a>.</p>
@@ -31,17 +35,17 @@
 </section>
 
 {% if available_dates %}
-<section class="glass models-table-wrap" aria-label="Pick an archive date">
-    <form action="/board" method="get">
-        <label for="board-tm-date" class="buys-fineprint">Replay the board from</label>
-        <select id="board-tm-date" name="date">
-            {% for d in available_dates | reverse %}
-            <option value="{{ d }}"{% if d == date or d == requested %} selected{% endif %}>{{ d }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="export-btn">View board</button>
-    </form>
-</section>
+<form class="filter-bar" action="/board" method="get" aria-label="Pick an archive date">
+    <label for="board-tm-date" class="buys-fineprint">Replay the board from</label>
+    <select id="board-tm-date" name="date" class="position-select">
+        {% for d in available_dates | reverse %}
+        <option value="{{ d }}"{% if d == date or d == requested %} selected{% endif %}>{{ editorial_date(d) }}</option>
+        {% endfor %}
+    </select>
+    <span class="buys-fineprint">{{ available_dates | length }} board{{ '' if available_dates | length == 1 else 's' }} archived,
+    {{ editorial_date(available_dates[0]) }} &rarr; {{ editorial_date(available_dates[-1]) }}</span>
+    <button type="submit" class="export-btn">View board</button>
+</form>
 {% endif %}
 
 {% if unavailable %}
@@ -72,25 +76,40 @@
 </div>
 {% endif %}
 
+{% if prev_date or next_date %}
+<nav class="board-tm-nav" aria-label="Browse adjacent archived boards">
+    {% if prev_date %}
+    <a class="export-btn secondary-action" rel="prev" href="/board/{{ prev_date }}">&larr; {{ editorial_date(prev_date) }}</a>
+    {% else %}
+    <span aria-hidden="true"></span>
+    {% endif %}
+    {% if next_date %}
+    <a class="export-btn secondary-action" rel="next" href="/board/{{ next_date }}">{{ editorial_date(next_date) }} &rarr;</a>
+    {% else %}
+    <span aria-hidden="true"></span>
+    {% endif %}
+</nav>
+{% endif %}
+
 <section class="glass models-table-wrap" aria-label="Archived prospect board">
     <div class="models-table-scroll">
-        <table class="provenance-table ledger models-table">
+        <table class="provenance-table ledger models-table board-tm-table">
             <thead>
                 <tr>
-                    <th>#</th><th>Player</th><th>Pos</th><th>Level</th><th>Team</th><th>Age</th>
-                    <th>Score</th><th>Confidence</th><th>ETA</th><th>Consensus</th>
+                    <th class="num">#</th><th>Player</th><th>Pos</th><th>Level</th><th>Team</th><th class="num">Age</th>
+                    <th class="num">Score</th><th>Confidence</th><th>ETA</th><th>Consensus</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in board.rows %}
                 <tr>
-                    <td data-label="Rank">{{ row.rank if row.rank is not none else "—" }}</td>
+                    <td class="num" data-label="Rank">{{ row.rank if row.rank is not none else "—" }}</td>
                     <td data-label="Player">{{ row.name or "—" }}</td>
                     <td data-label="Pos">{{ row.positions | join("/") if row.positions else "—" }}</td>
                     <td data-label="Level">{{ row.level or "—" }}</td>
                     <td data-label="Team">{{ row.team or "—" }}</td>
-                    <td data-label="Age">{{ row.age if row.age is not none else "—" }}</td>
-                    <td data-label="Score">{{ row.score if row.score is not none else "—" }}</td>
+                    <td class="num" data-label="Age">{{ row.age if row.age is not none else "—" }}</td>
+                    <td class="num" data-label="Score">{{ row.score if row.score is not none else "—" }}</td>
                     <td data-label="Confidence">{{ row.confidence | capitalize if row.confidence else "—" }}</td>
                     <td data-label="ETA">{{ row.eta_display or "—" }}</td>
                     <td data-label="Consensus">

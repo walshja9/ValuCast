@@ -2641,7 +2641,6 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
     re-baseline does not break them."""
 
     def setUp(self):
-        import json
         import tempfile
         from datetime import date, timedelta
 
@@ -2658,41 +2657,59 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
 
         self.pre_date = shift(-1)
         self.post_date = shift(1)
-        source_ranks = {"fg_ord": 15, "hkb": 8, "pipeline": 3, "pl": 17, "sts": 3}
         for day in (self.pre_date, self.post_date):
-            rows = [
-                {
-                    "rank": rank,
-                    "name": f"Fixture Player {rank}",
-                    "role": "hitter",
-                    "mlbam_id": str(700000 + rank),
-                    "mlb_team": "SEA",
-                    "level": "AA",
-                    "age": 20,
-                    "positions": ["SS"],
-                    "score": 60.0 - rank,
-                    "confidence": "medium",
-                    "eta": None,
-                    "eta_window": "one_to_two_years",
-                    "context_only": {"source_ranks": source_ranks},
-                }
-                for rank in (1, 2)
-            ]
-            (self.fixture_dir / f"{day}.json").write_text(
-                json.dumps({
-                    "board": rows,
-                    "candidate_count": len(rows),
-                    "date": day,
-                    "generated_at": f"{day}T08:00:00",
-                    "rank_version": "9.9.9",
-                    "ranked_count": len(rows),
-                    "validation": {},
-                }),
-                encoding="utf-8",
-            )
+            self._write_board(day)
         self._orig_store = app_module.board_time_machine_store
         app_module.board_time_machine_store = BoardTimeMachineStore(self.fixture_dir)
         self.addCleanup(self._restore_store)
+
+    def _write_board(self, day):
+        import json
+
+        source_ranks = {"fg_ord": 15, "hkb": 8, "pipeline": 3, "pl": 17, "sts": 3}
+        rows = [
+            {
+                "rank": rank,
+                "name": f"Fixture Player {rank}",
+                "role": "hitter",
+                "mlbam_id": str(700000 + rank),
+                "mlb_team": "SEA",
+                "level": "AA",
+                "age": 20,
+                "positions": ["SS"],
+                "score": 60.0 - rank,
+                "confidence": "medium",
+                "eta": None,
+                "eta_window": "one_to_two_years",
+                "context_only": {"source_ranks": source_ranks},
+            }
+            for rank in (1, 2)
+        ]
+        (self.fixture_dir / f"{day}.json").write_text(
+            json.dumps({
+                "board": rows,
+                "candidate_count": len(rows),
+                "date": day,
+                "generated_at": f"{day}T08:00:00",
+                "rank_version": "9.9.9",
+                "ranked_count": len(rows),
+                "validation": {},
+            }),
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def _editorial(iso):
+        # Mirrors the editorial_date macro ("JULY 15, 2026") without strftime's
+        # locale dependence or zero-padded days.
+        from datetime import date
+
+        months = [
+            "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY",
+            "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
+        ]
+        d = date.fromisoformat(iso)
+        return f"{months[d.month - 1]} {d.day}, {d.year}"
 
     def _restore_store(self):
         app_module.board_time_machine_store = self._orig_store
@@ -2784,6 +2801,52 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
         response, html = self._get("/board")
         self.assertEqual(response.status_code, 200)
         self.assertIn("archive is empty", html)
+
+    def test_prev_next_omitted_at_archive_ends_never_dead(self):
+        # Oldest archived date: next only — no prev link exists at all.
+        _, html = self._get(f"/board/{self.pre_date}")
+        self.assertIn(f'rel="next" href="/board/{self.post_date}"', html)
+        self.assertNotIn('rel="prev"', html)
+        # Newest archived date: prev only — no next link exists at all.
+        _, html = self._get(f"/board/{self.post_date}")
+        self.assertIn(f'rel="prev" href="/board/{self.pre_date}"', html)
+        self.assertNotIn('rel="next"', html)
+
+    def test_prev_next_step_adjacent_entries_mid_archive(self):
+        from web.board_time_machine_store import EPOCH_DATE
+
+        # EPOCH_DATE sits between the pre (-1) / post (+1) fixtures; links must
+        # step to adjacent archive ENTRIES, not calendar days.
+        self._write_board(EPOCH_DATE)
+        _, html = self._get(f"/board/{EPOCH_DATE}")
+        self.assertIn(f'rel="prev" href="/board/{self.pre_date}"', html)
+        self.assertIn(f'rel="next" href="/board/{self.post_date}"', html)
+
+    def test_era_chip_on_pre_baseline_heading_only(self):
+        _, html = self._get(f"/board/{self.pre_date}")
+        self.assertIn("PRE-BASELINE ERA", html)
+        self.assertIn("Pre-baseline date", html)   # chip points, notice remains
+        _, html = self._get(f"/board/{self.post_date}")
+        self.assertNotIn("PRE-BASELINE ERA", html)
+
+    def test_picker_options_human_text_iso_values(self):
+        _, html = self._get(f"/board/{self.post_date}")
+        self.assertIn(
+            f'<option value="{self.post_date}" selected>'
+            f"{self._editorial(self.post_date)}</option>",
+            html,
+        )
+        self.assertIn(
+            f'<option value="{self.pre_date}">{self._editorial(self.pre_date)}</option>',
+            html,
+        )
+
+    def test_archive_span_fineprint(self):
+        _, html = self._get("/board")
+        self.assertIn("2 boards archived", html)
+        self.assertIn(
+            f"{self._editorial(self.pre_date)} &rarr; {self._editorial(self.post_date)}", html
+        )
 
     def test_methodology_has_board_time_machine_section(self):
         response, html = self._get("/methodology")
