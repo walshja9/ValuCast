@@ -506,5 +506,26 @@
         are first-class rows there, not hidden. We publish what we haven't proven rather
         than wait for it to look better.</p>
     </section>
+
+    <section id="board-time-machine">
+        <h3>Board Time Machine: the committed board, replayed</h3>
+        <p>The <a href="/board">Board Time Machine</a> replays ValuCast's prospect board
+        exactly as it stood on any archived date. These are the <strong>exact daily board
+        snapshots</strong> the build commits every morning &mdash; the page is a replay of
+        the committed artifact as published that day (&ldquo;as-shown&rdquo;), never a
+        current-model re-scoring of the past (&ldquo;as-reconstructed&rdquo;). The as-of
+        date on the page is the snapshot date, and the archive runs from ValuCast's first
+        committed day to today: we do not reconstruct dates before the archive begins, and
+        a date with no readable snapshot says so plainly rather than showing a neighboring
+        date in its place.</p>
+        <p><strong>Comparability.</strong> Dates before the
+        {{ editorial_date(board_tm_epoch_date) }} scoring re-baseline are flagged
+        <em>pre-baseline</em>: they were scored on an older scale, comparable among
+        themselves but not directly to current numbers. The boundary follows the model's
+        re-baseline epoch, so it moves automatically whenever the scale is re-baselined.</p>
+        <p><strong>Consensus.</strong> The consensus column on a historical board is the
+        aggregate median rank + board count across outside boards (minimum 2 boards)
+        &mdash; never individual board ranks, the same rule the live board follows.</p>
+    </section>
 </article>
 {% endblock %}

@@ -63,6 +63,11 @@ from web.statcast_store import StatcastStore
 from web.pitch_discipline_store import PitchDisciplineStore
 from web.aaa_statcast_store import AaaStatcastStore
 from web.rank_history_store import RankHistoryStore
+from web.board_time_machine_store import (
+    EPOCH_DATE as BOARD_TM_EPOCH_DATE,
+    BoardTimeMachineStore,
+    nearest_board_date,
+)
 from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
 from web.search_fold import fold as fold_search
@@ -457,6 +462,11 @@ aaa_statcast_store = AaaStatcastStore()
 # re-baselines), so the trend proves early calls even after a re-baseline. Missing
 # artifact -> no rank-trend section. NEVER a value/rank/buy/AOTC input.
 rank_history_store = RankHistoryStore()
+
+# Board Time Machine (plan 026): fail-soft reader over the committed daily
+# rank_v1 board archive. DISPLAY-ONLY replay of an archived artifact — never a
+# value input; consensus stays aggregate median + board count only (ToS).
+board_time_machine_store = BoardTimeMachineStore()
 
 # Committed FanGraphs FV + tool-grade snapshot (The Board) for player cards.
 # Display-only scouting reference; never feeds rank/value/score (independence).
@@ -5017,6 +5027,9 @@ def methodology():
         hit_weights=",".join(str(w) for w in hp.season_weights),
         hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),
+        # Board Time Machine comparability boundary — imported epoch, never a
+        # hardcoded date (plan 026: a future re-baseline moves the copy too).
+        board_tm_epoch_date=BOARD_TM_EPOCH_DATE,
     )
 
 
@@ -5071,6 +5084,57 @@ def models_registry():
         verdict_counts=counts,
         verdict_definitions=reg.get("verdict_definitions") or {},
         as_of=reg.get("generated_at"),
+    )
+
+
+_BOARD_TM_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+@app.route("/board")
+@app.route("/board/<date>")
+def board_time_machine(date=None):
+    """Public Board Time Machine (plan 026): replay the prospect board exactly as
+    it stood on any committed archive date. Server-rendered from the daily
+    rank_v1 snapshots; reads ONE archive file per request.
+
+    Honesty edges: the as-of date is stated prominently; pre-epoch dates carry a
+    pre-baseline disclosure; an unknown/unreadable date renders an explicit
+    unavailable state listing the real archive range (200 honest body, never a
+    500, never a silently substituted neighbor). The <date> param is shape-checked
+    AND allowlisted against the actual archive listing before any file read.
+    """
+    dates = board_time_machine_store.available_dates()
+    picked = request.args.get("date")
+    if date is None and picked:
+        if picked in dates:
+            # The plain form GET (?date=...) canonicalizes to /board/<date>.
+            return redirect(f"/board/{picked}")
+        date = picked
+    if date is None and dates:
+        date = dates[-1]  # /board -> latest committed board
+    board = None
+    if date and _BOARD_TM_DATE_RE.fullmatch(date) and date in dates:
+        board = board_time_machine_store.board_for(date)
+    if board is None:
+        return render_template(
+            "board_time_machine.html",
+            unavailable=True,
+            requested=date,
+            available_dates=dates,
+            nearest=nearest_board_date(date, dates),
+            board=None,
+            date=None,
+            quality="unavailable",
+            epoch_date=BOARD_TM_EPOCH_DATE,
+        )
+    return render_template(
+        "board_time_machine.html",
+        unavailable=False,
+        board=board,
+        date=board["date"],
+        quality=board["quality"],
+        available_dates=dates,
+        epoch_date=BOARD_TM_EPOCH_DATE,
     )
 
 

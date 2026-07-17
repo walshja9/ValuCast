@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Board Time Machine | ValuCast{% endblock %}
+{% block og_title %}Board Time Machine | ValuCast{% endblock %}
+{% block og_description %}Replay ValuCast's prospect board exactly as it stood on any archived date — the committed daily snapshot, as published, never re-scored.{% endblock %}
+{% block og_url %}https://valucast.app/board{% endblock %}
+{% block twitter_title %}Board Time Machine | ValuCast{% endblock %}
+{% block twitter_description %}Replay ValuCast's prospect board exactly as it stood on any archived date — the committed daily snapshot, as published, never re-scored.{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+
+<section class="buys-heading glass">
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">TIME MACHINE</span>
+        {% if board %}
+        <h1>BOARD AS OF {{ editorial_date(date) }}</h1>
+        <p class="buys-heading-sub">The ValuCast prospect board exactly as it was published on this
+        date &mdash; model {{ board.rank_version or "?" }} &mdash; replayed from the committed daily
+        snapshot, not re-scored. <a href="/">View today's board</a>.</p>
+        {% else %}
+        <h1>BOARD TIME MACHINE</h1>
+        <p class="buys-heading-sub">Replay the ValuCast prospect board as it stood on any archived
+        date. <a href="/">View today's board</a>.</p>
+        {% endif %}
+        <p class="buys-fineprint">ValuCast commits its full board snapshot every day. This page
+        replays the committed artifact as published that day (&ldquo;as-shown&rdquo;), never a
+        current-model re-scoring of the past.
+        <a href="/methodology#board-time-machine">How the Time Machine works</a>.</p>
+    </div>
+</section>
+
+{% if available_dates %}
+<section class="glass models-table-wrap" aria-label="Pick an archive date">
+    <form action="/board" method="get">
+        <label for="board-tm-date" class="buys-fineprint">Replay the board from</label>
+        <select id="board-tm-date" name="date">
+            {% for d in available_dates | reverse %}
+            <option value="{{ d }}"{% if d == date or d == requested %} selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="export-btn">View board</button>
+    </form>
+</section>
+{% endif %}
+
+{% if unavailable %}
+<section class="glass models-table-wrap" aria-label="Board unavailable">
+    <div class="notice">
+        {% if requested %}
+        No board was published for <strong>{{ requested }}</strong>.
+        {% else %}
+        The board archive is empty right now &mdash; no snapshots are available to replay.
+        {% endif %}
+        {% if available_dates %}
+        ValuCast's committed archive runs <strong>{{ available_dates[0] }}</strong> &rarr;
+        <strong>{{ available_dates[-1] }}</strong>.
+        {% if nearest %}The nearest archived board is
+        <a href="/board/{{ nearest }}">{{ nearest }}</a> &mdash; a different date, shown as itself.{% endif %}
+        {% endif %}
+        Or head back to <a href="/">today's board</a>.
+    </div>
+</section>
+{% else %}
+
+{% if quality == 'pre-baseline' %}
+<div class="notice">
+    <strong>Pre-baseline date:</strong> this board predates the
+    {{ editorial_date(epoch_date) }} scoring re-baseline &mdash; its scores are on an older scale,
+    comparable among themselves but not directly to today's numbers.
+    <a href="/methodology#board-time-machine">Why</a>.
+</div>
+{% endif %}
+
+<section class="glass models-table-wrap" aria-label="Archived prospect board">
+    <div class="models-table-scroll">
+        <table class="provenance-table ledger models-table">
+            <thead>
+                <tr>
+                    <th>#</th><th>Player</th><th>Pos</th><th>Level</th><th>Team</th><th>Age</th>
+                    <th>Score</th><th>Confidence</th><th>ETA</th><th>Consensus</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in board.rows %}
+                <tr>
+                    <td data-label="Rank">{{ row.rank if row.rank is not none else "—" }}</td>
+                    <td data-label="Player">{{ row.name or "—" }}</td>
+                    <td data-label="Pos">{{ row.positions | join("/") if row.positions else "—" }}</td>
+                    <td data-label="Level">{{ row.level or "—" }}</td>
+                    <td data-label="Team">{{ row.team or "—" }}</td>
+                    <td data-label="Age">{{ row.age if row.age is not none else "—" }}</td>
+                    <td data-label="Score">{{ row.score if row.score is not none else "—" }}</td>
+                    <td data-label="Confidence">{{ row.confidence | capitalize if row.confidence else "—" }}</td>
+                    <td data-label="ETA">{{ row.eta_display or "—" }}</td>
+                    <td data-label="Consensus">
+                        {%- if row.consensus -%}
+                        ~P#{{ row.consensus.median }} &middot; {{ row.consensus.board_count }} boards
+                        {%- else -%}
+                        &mdash;
+                        {%- endif -%}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<p class="buys-fineprint models-footnote">Showing the top {{ board.rows | length }} of
+{{ board.total_rows }} ranked prospects in this snapshot{% if board.generated_at %} &middot;
+snapshot generated {{ editorial_date(board.generated_at) }}{% endif %}. Consensus is the aggregate
+median rank + board count across outside boards (minimum 2) &mdash; never individual board ranks,
+the same rule as the live board. Back to <a href="/">today's board</a> or
+<a href="/methodology#board-time-machine">how this page works</a>.</p>
+{% endif %}
+{% endblock %}

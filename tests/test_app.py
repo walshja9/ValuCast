@@ -2630,3 +2630,164 @@ class TestModelRegistryValidator(unittest.TestCase):
         }]}), encoding="utf-8")
         errs = validate(tmp)
         self.assertTrue(any("not-yet-proven" in e for e in errs))
+
+
+class TestBoardTimeMachineRoute(unittest.TestCase):
+    """Board Time Machine route (plan 026): as-of banner + today link, quality
+    disclosure, honest unavailable state, aggregate-only consensus (no
+    per-source leak), and the path-traversal belt. Uses a fixture archive dir
+    swapped into the app's store so the tests stay date-stable as the real
+    archive grows, and derives its dates from the imported epoch so a future
+    re-baseline does not break them."""
+
+    def setUp(self):
+        import json
+        import tempfile
+        from datetime import date, timedelta
+
+        from web.board_time_machine_store import EPOCH_DATE, BoardTimeMachineStore
+
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.fixture_dir = Path(tmp.name)
+
+        def shift(days):
+            return (date.fromisoformat(EPOCH_DATE) + timedelta(days=days)).isoformat()
+
+        self.pre_date = shift(-1)
+        self.post_date = shift(1)
+        source_ranks = {"fg_ord": 15, "hkb": 8, "pipeline": 3, "pl": 17, "sts": 3}
+        for day in (self.pre_date, self.post_date):
+            rows = [
+                {
+                    "rank": rank,
+                    "name": f"Fixture Player {rank}",
+                    "role": "hitter",
+                    "mlbam_id": str(700000 + rank),
+                    "mlb_team": "SEA",
+                    "level": "AA",
+                    "age": 20,
+                    "positions": ["SS"],
+                    "score": 60.0 - rank,
+                    "confidence": "medium",
+                    "eta": None,
+                    "eta_window": "one_to_two_years",
+                    "context_only": {"source_ranks": source_ranks},
+                }
+                for rank in (1, 2)
+            ]
+            (self.fixture_dir / f"{day}.json").write_text(
+                json.dumps({
+                    "board": rows,
+                    "candidate_count": len(rows),
+                    "date": day,
+                    "generated_at": f"{day}T08:00:00",
+                    "rank_version": "9.9.9",
+                    "ranked_count": len(rows),
+                    "validation": {},
+                }),
+                encoding="utf-8",
+            )
+        self._orig_store = app_module.board_time_machine_store
+        app_module.board_time_machine_store = BoardTimeMachineStore(self.fixture_dir)
+        self.addCleanup(self._restore_store)
+
+    def _restore_store(self):
+        app_module.board_time_machine_store = self._orig_store
+
+    def _get(self, path):
+        response = self.client.get(path)
+        return response, response.data.decode("utf-8")
+
+    def test_clean_date_renders_as_of_banner_and_today_link(self):
+        response, html = self._get(f"/board/{self.post_date}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("BOARD AS OF", html)
+        self.assertIn("View today's board", html)
+        self.assertIn('href="/"', html)
+        self.assertIn("9.9.9", html)            # the archive's own rank_version
+        self.assertIn("Fixture Player 1", html)
+
+    def test_pre_baseline_date_shows_disclosure_flag(self):
+        response, html = self._get(f"/board/{self.pre_date}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Pre-baseline date", html)
+        self.assertIn("/methodology#board-time-machine", html)
+
+    def test_clean_date_has_no_pre_baseline_notice(self):
+        _, html = self._get(f"/board/{self.post_date}")
+        self.assertNotIn("Pre-baseline date", html)
+
+    def test_unknown_date_renders_honest_unavailable_state(self):
+        response, html = self._get("/board/2019-01-01")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("No board was published", html)
+        self.assertIn(self.pre_date, html)       # real archive range disclosed
+        self.assertIn(self.post_date, html)
+        self.assertIn("today's board", html)
+        # Never a fabricated board: no fixture rows render on the unavailable page.
+        self.assertNotIn("Fixture Player", html)
+
+    def test_nearest_date_offered_as_itself_not_substituted(self):
+        _, html = self._get("/board/2019-01-01")
+        self.assertIn(f'href="/board/{self.pre_date}"', html)
+        self.assertNotIn("BOARD AS OF", html)
+
+    def test_no_per_source_ranks_in_html(self):
+        _, html = self._get(f"/board/{self.post_date}")
+        self.assertIn("~P#8", html)              # aggregate median renders
+        self.assertIn("5 boards", html)          # with the board count
+        for token in ("fg_ord", "hkb", "source_ranks"):
+            self.assertNotIn(token, html)
+
+    def test_path_traversal_and_junk_dates_fail_soft(self):
+        for path in (
+            "/board/..%2f..%2fetc",
+            "/board/....",
+            "/board/not-a-date",
+            f"/board/{self.post_date}%2F..%2Fx",
+            "/board/%2e%2e%2f%2e%2e",
+        ):
+            response = self.client.get(path)
+            self.assertIn(response.status_code, (200, 404), path)
+            if response.status_code == 200:
+                html = response.data.decode("utf-8")
+                self.assertIn("No board was published", html, path)
+                self.assertNotIn("Fixture Player", html, path)
+
+    def test_board_landing_shows_latest_available_date(self):
+        response, html = self._get("/board")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("BOARD AS OF", html)
+        self.assertIn("Fixture Player 1", html)
+
+    def test_date_form_get_redirects_to_canonical_path(self):
+        response = self.client.get(f"/board?date={self.post_date}")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/board/{self.post_date}"))
+
+    def test_invalid_form_date_is_honest_not_500(self):
+        response, html = self._get("/board?date=not-a-date")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("No board was published", html)
+
+    def test_empty_archive_renders_honest_empty_state(self):
+        import tempfile
+
+        from web.board_time_machine_store import BoardTimeMachineStore
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        app_module.board_time_machine_store = BoardTimeMachineStore(Path(tmp.name))
+        response, html = self._get("/board")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("archive is empty", html)
+
+    def test_methodology_has_board_time_machine_section(self):
+        response, html = self._get("/methodology")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="board-time-machine"', html)
+        self.assertIn("re-baseline", html)
+        self.assertIn('href="/board"', html)
