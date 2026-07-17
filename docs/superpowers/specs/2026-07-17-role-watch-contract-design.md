@@ -121,7 +121,8 @@ A pitcher profile is `blocked` from Role Watch when any of these applies:
 - `starter_probability` is present but outside `[0, 1]`.
 - projected starts or innings are negative.
 - projected starts are at least 0.5 while projected innings are zero.
-- the profile lacks a usable MLBAM identity.
+- a source row without a usable MLBAM identity is omitted before profile creation;
+  the validator never accepts an emitted profile without one.
 
 Role Watch additionally excludes, without rewriting the underlying profile:
 
