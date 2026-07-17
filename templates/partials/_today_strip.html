@@ -28,7 +28,7 @@
             <span class="tc-line tc-muted">rookie-eligible in the majors{% if today_digest.callup_top %} &middot; top-ranked: {{ today_digest.callup_top.name }}{% endif %}</span>
         </a>
         {% endif %}
-        {% if today_digest.top_buy %}
+        {% if today_digest.top_buy and not aotc_hold %}
         <a class="today-cell" href="/buys">
             <span class="tc-label">Top buy</span>
             <span class="tc-big">{{ today_digest.top_buy.score | round | int }}<small>/100</small></span>

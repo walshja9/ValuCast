@@ -28,16 +28,16 @@
     <header class="site-header">
         <h1><a href="/"><img class="site-logo" src="{{ url_for('static', filename='brand/valucast-mark-64.png') }}" alt=""><span class="brand-word">ValuCast</span></a></h1>
         <nav class="site-nav" aria-label="Primary navigation">
-            <a href="/">Board</a>
-            <a href="/board">Time Machine</a>
-            <a href="/movers">Movers</a>
-            {% if not aotc_hold %}<a href="/buys">Buys</a>{% endif %}
-            {% if not receipts_hold %}<a href="/receipts">Receipts</a>{% endif %}
-            <a href="/gaps">Gaps</a>
+            <a href="/"{% if request.path == '/' %} aria-current="page"{% endif %}>Board</a>
+            <a href="/board"{% if request.path == '/board' or request.path.startswith('/board/') %} aria-current="page"{% endif %}>Time Machine</a>
+            <a href="/movers"{% if request.path == '/movers' %} aria-current="page"{% endif %}>Movers</a>
+            {% if not aotc_hold %}<a href="/buys"{% if request.path == '/buys' %} aria-current="page"{% endif %}>Buys</a>{% endif %}
+            {% if not receipts_hold %}<a href="/receipts"{% if request.path == '/receipts' %} aria-current="page"{% endif %}>Receipts</a>{% endif %}
+            <a href="/gaps"{% if request.path == '/gaps' %} aria-current="page"{% endif %}>Gaps</a>
             <a href="/backfields"{% if backfields_page %} aria-current="page"{% endif %}>Backfields</a>
-            <a href="/map">Map</a>
+            <a href="/map"{% if request.path == '/map' %} aria-current="page"{% endif %}>Map</a>
             {# Intelligence Hub demoted to the footer (7/14 declutter) — _footer_provenance.html links /intelligence on every page. #}
-            <a href="/methodology">Methodology</a>
+            <a href="/methodology"{% if methodology_page %} aria-current="page"{% endif %}>Methodology</a>
         </nav>
     </header>
     <main>
@@ -73,6 +73,17 @@
     document.addEventListener('click', function (e) {
         document.querySelectorAll('details.graphic-menu[open]').forEach(function (d) {
             if (!d.contains(e.target)) d.removeAttribute('open');
+        });
+    });
+    // Escape closes an open Share Graphic menu and returns focus to its
+    // toggle — the native <details> element is keyboard-operable to open,
+    // but had no keyboard way to close (7/17 mobile/a11y audit P2).
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('details.graphic-menu[open]').forEach(function (d) {
+            d.removeAttribute('open');
+            const toggle = d.querySelector('summary');
+            if (toggle) toggle.focus();
         });
     });
     </script>

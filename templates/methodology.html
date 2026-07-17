@@ -496,8 +496,8 @@
     <section id="model-verdicts">
         <h3>Model verdicts: two layers of accountability</h3>
         <p>We keep two accountability layers, not one. The <strong>call-level</strong>
-        layer is <a href="/ledger">The Ledger</a> and <a href="/receipts">Call-Up
-        Receipts</a> &mdash; every individual call we make, tracked to an outcome. The
+        layer is <a href="/ledger">The Ledger</a>{% if not receipts_hold %} and <a href="/receipts">Call-Up
+        Receipts</a>{% endif %} &mdash; every individual call we make, tracked to an outcome. The
         <strong>model-level</strong> layer is the <a href="/models">Model Verdicts</a>
         page: every ValuCast model and subsystem carries an honest four-way verdict
         &mdash; VALIDATED, PROVISIONAL, DEPRECATED, or REJECTED &mdash; and every verdict

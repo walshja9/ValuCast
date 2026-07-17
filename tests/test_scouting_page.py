@@ -167,8 +167,9 @@ def test_primary_nav_links_to_intelligence_surfaces():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    # Core surfaces stay in the primary nav.
-    assert 'href="/">Board</a>' in html
+    # Core surfaces stay in the primary nav. aria-current is wired for every
+    # primary-nav entry (not just Backfields) — "/" is current on the homepage.
+    assert 'href="/" aria-current="page">Board</a>' in html
     assert 'href="/backfields"' in html and ">Backfields</a>" in html
     assert 'href="/map">Map</a>' in html
     assert 'href="/methodology">Methodology</a>' in html

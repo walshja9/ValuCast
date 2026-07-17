@@ -214,6 +214,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     border-color: rgba(52, 226, 196, .38);
     color: var(--c-prospect);
 }
+.site-nav a:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: 2px;
+}
+.site-nav a[aria-current="page"] {
+    border-color: rgba(52, 226, 196, .4);
+    background: rgba(52, 226, 196, .12);
+    color: var(--c-prospect);
+}
 
 main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 
@@ -1082,12 +1091,30 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     line-height: 1.6;
     color: var(--c-muted);
 }
+/* 7/17 nav audit P2: the footer link block was bare <a> tags with zero
+   dedicated CSS (no padding/tap-target room, cramped on mobile). Links stay
+   inline text (joined by literal " - " in the template) — this just gives
+   each one breathing room and a real tap target without restructuring markup. */
+.footer-data {
+    line-height: 2.1;
+}
+.footer-data a {
+    display: inline-block;
+    padding: .3rem .15rem;
+}
+.footer-data a:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: 2px;
+}
 
 @media (max-width: 640px) {
     main { padding: 0.75rem; }
     .site-header { padding: 0.75rem 1rem; flex-direction: column; gap: 0.25rem; }
-    .site-nav { width: 100%; margin-left: 0; gap: .28rem; }
-    .site-nav a { flex: 1 1 auto; text-align: center; font-size: .68rem; padding: .3rem .4rem; }
+    .site-nav { width: 100%; margin-left: 0; gap: .28rem; justify-content: center; }
+    /* flex: 0 1 auto (not 1 1 auto) so pills size to their own label instead of
+       stretching to fill the row unevenly — keeps wrapping predictable as entries
+       are added/removed (7/17 nav audit P1: uncapped growth had no guard rail). */
+    .site-nav a { flex: 0 1 auto; text-align: center; font-size: .68rem; padding: .3rem .4rem; }
     .welcome-strip {
         display: block;
         padding: .6rem 2rem .65rem .7rem;
@@ -1275,6 +1302,10 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     border-color: var(--c-blue);
     color: var(--c-blue);
     text-decoration: none;
+}
+.export-btn:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: 2px;
 }
 .export-btn.secondary-action {
     color: var(--c-muted);
@@ -4503,7 +4534,9 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     font-weight: 600;
     white-space: nowrap;
 }
-.graphic-menu-list a:hover { background: var(--surface-2); text-decoration: none; }
+.graphic-menu-list a:hover,
+.graphic-menu-list a:focus-visible { background: var(--surface-2); text-decoration: none; }
+.graphic-menu-list a:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
 /* Grouped share menu: view label + size links per row */
 .graphic-menu-grid {
@@ -4537,7 +4570,9 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     font-size: .78rem;
     font-weight: 600;
 }
-.graphic-menu-sizes a:hover { background: var(--surface-2); text-decoration: none; }
+.graphic-menu-sizes a:hover,
+.graphic-menu-sizes a:focus-visible { background: var(--surface-2); text-decoration: none; }
+.graphic-menu-sizes a:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
 /* --- The Ledger (/ledger) --- */
 .ledger-hero { margin-bottom: .9rem; }
@@ -4758,7 +4793,8 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
    are new because the col-* th right-align rules are .rankings-table-scoped
    and the models-table mobile card stack must fall back to left alignment. */
 .board-tm-nav { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin: 0 0 .4rem; }
-.board-tm-nav .export-btn { margin-left: 0; }
+/* 44px tap-target baseline (7/17 nav audit P2: prev/next were ~30-32px tall). */
+.board-tm-nav .export-btn { margin-left: 0; min-height: 44px; display: inline-flex; align-items: center; }
 .board-tm-table th.num, .board-tm-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .board-tm-table td[data-label="Consensus"] { white-space: nowrap; }
 @media (max-width: 640px) {

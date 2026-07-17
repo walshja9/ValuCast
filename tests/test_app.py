@@ -1943,6 +1943,24 @@ class TestTodayStrip(unittest.TestCase):
         self.assertNotIn("receipts_today", digest)
         self.assertNotIn("gaps_resolved_today", digest)
 
+    def test_top_buy_cell_hides_when_aotc_held(self):
+        # 7/17 nav audit P1: the today-strip's "Top buy" cell linked /buys
+        # unconditionally, while the primary nav + backfields.html both
+        # correctly gate the same destination on aotc_hold.
+        html = self.client.get("/").data.decode("utf-8")
+        self.assertIn('href="/buys"', html)
+        self.assertIn("Top buy", html)
+
+        original = app_module.AHEAD_OF_THE_CURVE_HOLD
+        app_module.AHEAD_OF_THE_CURVE_HOLD = True
+        try:
+            held_html = self.client.get("/").data.decode("utf-8")
+        finally:
+            app_module.AHEAD_OF_THE_CURVE_HOLD = original
+        self.assertNotIn("Top buy", held_html)
+        # The rest of the strip (movers/callups) still renders.
+        self.assertIn("Today on ValuCast", held_html)
+
 
 class TestFamiliarNameOnRamp(unittest.TestCase):
     """"Where we differ from the field" home on-ramp (3 recognizable names)."""
@@ -2587,6 +2605,27 @@ class TestModelsRegistryPage(unittest.TestCase):
         self.assertIn('id="model-verdicts"', body)
         self.assertIn("/models", body)
 
+    def test_receipts_link_hidden_on_models_and_methodology_when_held(self):
+        # 7/17 nav audit P1: /models and /methodology linked /receipts
+        # unconditionally while base.html's primary nav correctly gates it
+        # on receipts_hold. Flipping the hold must un-light both.
+        import app as app_mod
+        self.assertIn('href="/receipts"', self.client.get("/models").data.decode())
+        self.assertIn('href="/receipts"', self.client.get("/methodology").data.decode())
+
+        original = app_mod.RECEIPTS_HOLD
+        app_mod.RECEIPTS_HOLD = True
+        try:
+            models_body = self.client.get("/models").data.decode()
+            methodology_body = self.client.get("/methodology").data.decode()
+        finally:
+            app_mod.RECEIPTS_HOLD = original
+        self.assertNotIn('href="/receipts"', models_body)
+        self.assertNotIn('href="/receipts"', methodology_body)
+        # The Ledger link is a separate, unheld surface and must stay.
+        self.assertIn("/ledger", models_body)
+        self.assertIn("/ledger", methodology_body)
+
 
 class TestModelRegistryValidator(unittest.TestCase):
     def test_real_registry_validates_clean(self):
@@ -2857,4 +2896,6 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
 
     def test_site_nav_links_time_machine(self):
         _, html = self._get("/board")
-        self.assertIn('href="/board">Time Machine</a>', html)
+        # aria-current is wired for every primary-nav entry (not just Backfields) —
+        # /board is "current" while browsing the Time Machine.
+        self.assertIn('href="/board" aria-current="page">Time Machine</a>', html)

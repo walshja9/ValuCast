@@ -18,7 +18,7 @@
         <p class="buys-heading-sub">Every model here is judged VALIDATED, PROVISIONAL, DEPRECATED, or
         REJECTED — and every verdict links the committed evidence behind it.</p>
         <p class="buys-fineprint">This is the model-level accountability layer. The call-level layer is
-        <a href="/ledger">The Ledger</a> and <a href="/receipts">Call-Up Receipts</a> — every individual
+        <a href="/ledger">The Ledger</a>{% if not receipts_hold %} and <a href="/receipts">Call-Up Receipts</a>{% endif %} — every individual
         call, tracked to an outcome. Together they are two layers of accountability, not one.</p>
         <p class="buys-fineprint">The published failures are the point, not a footnote: a model that is
         losing or untrainable gets a first-class row, same as any win. See <a href="/methodology#model-verdicts">how the verdicts work</a>.{% if as_of %} Registry updated {{ editorial_date(as_of) }}.{% endif %}</p>
