@@ -130,6 +130,10 @@
                 {% endif %}
             </details>
             {% endif %}
+            {# Cross-link to the model-level accountability page: this panel explains
+               the grade; /models carries the public verdict on the model behind it
+               (same unobtrusive idiom as the methodology links, no new CSS). #}
+            <p class="market-context-note">The model behind this grade carries a public verdict &mdash; see <a href="/models">Model Verdicts</a>.</p>
         </div>
         {% endif %}
         {% if not row.is_prospect %}
@@ -672,7 +676,14 @@
                rank / consensus / spots-ahead must render that receipt's numbers, never
                the feed's prospect_rank — otherwise the card and the PNG disagree
                (register gap c: card P#53 vs PNG VC #3). No receipt = no second source,
-               so the feed rendering below is unchanged. #}
+               so the feed rendering below is unchanged.
+               The receipt itself is now backed by the AUTHORED consensus-gap artifact
+               (data/models/valucast_consensus_gap.json — the same file /gaps renders):
+               when the player has a gap row, _artifact_context_for_row overrides the
+               receipt's rank/consensus/divergence/board_count with the artifact's,
+               so this card and /gaps can never disagree — and lower-side players get
+               the same first-class number ("N spots behind the field" renders as
+               plainly as ahead). Absent from the artifact -> nothing changes here. #}
             {% set aotc = ahead_of_consensus if (ahead_of_consensus and ahead_of_consensus.valucast_rank is not none) else None %}
             <div class="source-summary">
                 {% if aotc and not row.active_mlb_callup %}

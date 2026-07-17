@@ -5446,6 +5446,36 @@ def _ahead_of_consensus_for_key(key) -> dict | None:
     }
 
 
+def _consensus_gap_for_key(key) -> dict | None:
+    """This player's row in the AUTHORED consensus-gap artifact — the SAME file
+    /gaps renders (full higher_all/lower_all populations, not just the featured
+    15 a side). DISPLAY-ONLY: it backs the card's rank/consensus/divergence copy
+    so the card and /gaps can never disagree. None (player absent, artifact
+    absent, or malformed row) -> the caller keeps today's rendering exactly —
+    a divergence is never fabricated."""
+    if not key:
+        return None
+    payload = _load_artifact(CONSENSUS_GAP_PATH)
+    if not isinstance(payload, dict):
+        return None
+    key = str(key)
+    for featured_key, all_key in (("higher", "higher_all"), ("lower", "lower_all")):
+        rows = payload.get(all_key) or payload.get(featured_key) or []
+        for gap_row in rows:
+            if not isinstance(gap_row, dict):
+                continue
+            if str(gap_row.get("identity_key") or "") != key:
+                continue
+            fields = {}
+            for field in ("valucast_rank", "consensus_rank", "divergence", "board_count"):
+                value = gap_row.get(field)
+                if not isinstance(value, int) or isinstance(value, bool):
+                    return None
+                fields[field] = value
+            return fields
+    return None
+
+
 def _ahead_of_consensus_receipt_text(receipt) -> str | None:
     if not isinstance(receipt, dict):
         return None
@@ -5587,6 +5617,21 @@ def _artifact_context_for_row(row) -> dict:
         return {}
     root = Path(__file__).parent / "data" / "models"
     ahead_of_consensus = _ahead_of_consensus_for_key(key)
+    # Consensus-gap unification: when this player has a row in the authored gap
+    # artifact (the same file /gaps renders), its rank/consensus/divergence/board
+    # numbers override the AOTC receipt's copy of those fields, so the card, the
+    # share PNG, and /gaps all render ONE set of numbers. The gap artifact reuses
+    # the AOTC consensus math verbatim (its method note), so on a normal build
+    # this is a no-op; on artifact drift the authored /gaps source wins. It also
+    # gives gap-only players (notably the LOWER side, which the AOTC artifact
+    # never carries) a first-class divergence — the template's existing negative
+    # branch renders "spots behind the field" as plainly as ahead. No gap row ->
+    # today's rendering, unchanged.
+    consensus_gap = _consensus_gap_for_key(key)
+    if consensus_gap:
+        receipt = dict(ahead_of_consensus or {})
+        receipt.update(consensus_gap)
+        ahead_of_consensus = receipt
     scouting = _indexed_artifact_rows(
         _load_artifact(root / "valucast_scouting_reports.json"), "reports"
     ).get(key)
