@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-07-16",
+  "generated_at": "2026-07-17",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -436,6 +436,21 @@
       "team": "Los Angeles Dodgers",
       "transaction_date": "2026-03-23",
       "transaction_id": 893388,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Philadelphia Phillies placed RHP Brad Keller on the 15-day injured list retroactive to July 13, 2026. Right elbow UCL tear.",
+      "effective_date": "2026-07-13",
+      "list_type": "15-day injured list",
+      "mlbam_id": 641745,
+      "name": "Brad Keller",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Philadelphia Phillies",
+      "transaction_date": "2026-07-16",
+      "transaction_id": 927831,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -2481,21 +2496,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "New York Mets sent 2B Marcus Semien on a rehab assignment to Binghamton Rumble Ponies.",
-      "effective_date": "2026-07-12",
-      "list_type": null,
-      "mlbam_id": 543760,
-      "name": "Marcus Semien",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Binghamton Rumble Ponies",
-      "transaction_date": "2026-07-12",
-      "transaction_id": 927097,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "New York Mets placed 1B Mark Vientos on the 10-day injured list. Right hand fracture.",
       "effective_date": "2026-07-10",
       "list_type": "10-day injured list",
@@ -4066,21 +4066,6 @@
       "team": "Colorado Rockies",
       "transaction_date": "2026-04-04",
       "transaction_id": 897186,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Philadelphia Phillies activated RHP Brad Keller from the 15-day injured list.",
-      "effective_date": "2026-07-08",
-      "list_type": "15-day injured list",
-      "mlbam_id": 641745,
-      "name": "Brad Keller",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Philadelphia Phillies",
-      "transaction_date": "2026-07-08",
-      "transaction_id": 926132,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6096,6 +6081,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "New York Mets activated 2B Marcus Semien from the 10-day injured list.",
+      "effective_date": "2026-07-16",
+      "list_type": "10-day injured list",
+      "mlbam_id": 543760,
+      "name": "Marcus Semien",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "New York Mets",
+      "transaction_date": "2026-07-16",
+      "transaction_id": 927823,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Athletics activated RHP Mark Leiter Jr. from the 15-day injured list.",
       "effective_date": "2026-07-03",
       "list_type": "15-day injured list",
@@ -7476,7 +7476,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-07-16",
+    "end_date": "2026-07-17",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -7497,12 +7497,12 @@
     "available_after_il_count": 245,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 203,
+    "injured_count": 204,
     "profile_count": 497,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 49,
+    "rehab_count": 48,
     "risk_profile_count": 252,
     "tracked_mlbam_count": 10631,
-    "transaction_count": 8074
+    "transaction_count": 8125
   }
 }

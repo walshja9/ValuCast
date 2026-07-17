@@ -1,15 +1,15 @@
 {
   "artifact": "valucast_prospect_model_v0_7_preview",
-  "as_of": "2026-07-16",
+  "as_of": "2026-07-17",
   "bucket_comparison": {
     "bucket_count": 8,
     "bucket_definition": "role|level_band|score_source|availability_status",
     "buckets": [
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 35.0629,
+        "avg_rank_v1_score": 35.063,
         "avg_v0_7_delta": 1.6621,
-        "avg_v0_7_shadow_score": 36.725,
+        "avg_v0_7_shadow_score": 36.7251,
         "bucket": "hitter|upper_level|prospect_model_v0_6|available",
         "count": 92,
         "factual_context_coverage": 1.0,
@@ -4341,11 +4341,11 @@
       "mlbam_id": 694230,
       "name": "Hendry Mendez",
       "rank_v1_rank": 118,
-      "rank_v1_score": 30.0,
+      "rank_v1_score": 30.01,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 0.038,
-      "v0_7_shadow_score": 30.038
+      "v0_7_shadow_score": 30.048
     },
     {
       "candidate_features": {
@@ -9271,11 +9271,11 @@
       "mlbam_id": 682995,
       "name": "Hunter Barco",
       "rank_v1_rank": 250,
-      "rank_v1_score": 24.81,
+      "rank_v1_score": 24.8,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.56,
-      "v0_7_shadow_score": 24.25
+      "v0_7_shadow_score": 24.24
     },
     {
       "candidate_features": {
@@ -58725,6 +58725,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -21.5,
+        "bucket_calibration": null,
+        "current_sample": 293.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.203,
+        "ops": 0.726,
+        "sample_reliability": 59.4
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 808297,
+      "name": "Deward Tovar",
+      "rank_v1_rank": 1436,
+      "rank_v1_score": 7.52,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.279,
+      "v0_7_shadow_score": 6.241
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -11.1,
         "bucket_calibration": {
           "adjustment": -3.56,
@@ -58768,44 +58800,12 @@
       "level": "AAA",
       "mlbam_id": 682692,
       "name": "Miguel Palma",
-      "rank_v1_rank": 1436,
+      "rank_v1_rank": 1437,
       "rank_v1_score": 7.52,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.993,
       "v0_7_shadow_score": 4.527
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -21.5,
-        "bucket_calibration": null,
-        "current_sample": 293.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.203,
-        "ops": 0.726,
-        "sample_reliability": 59.4
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 808297,
-      "name": "Deward Tovar",
-      "rank_v1_rank": 1437,
-      "rank_v1_score": 7.51,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.279,
-      "v0_7_shadow_score": 6.231
     },
     {
       "candidate_features": {
@@ -62777,62 +62777,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 6.8,
-        "bucket_calibration": {
-          "adjustment": -2.82,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -2.82,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 38.7,
-              "sample_reliability": 43.6,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 38.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": -0.6,
-        "k_per_9": 6.5,
-        "sample_reliability": 43.6,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 832044,
-      "name": "Justin Henschel",
-      "rank_v1_rank": 1524,
-      "rank_v1_score": 6.7,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -4.434,
-      "v0_7_shadow_score": 2.266
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 8.8,
         "bucket_calibration": {
           "adjustment": -4.31,
@@ -62877,12 +62821,68 @@
       "level": "AAA",
       "mlbam_id": 681432,
       "name": "Luke Little",
-      "rank_v1_rank": 1525,
+      "rank_v1_rank": 1524,
       "rank_v1_score": 6.7,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -6.415,
       "v0_7_shadow_score": 0.285
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 6.8,
+        "bucket_calibration": {
+          "adjustment": -2.82,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -2.82,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 38.7,
+              "sample_reliability": 43.6,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 38.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": -0.6,
+        "k_per_9": 6.5,
+        "sample_reliability": 43.6,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 832044,
+      "name": "Justin Henschel",
+      "rank_v1_rank": 1525,
+      "rank_v1_score": 6.69,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -4.434,
+      "v0_7_shadow_score": 2.256
     },
     {
       "candidate_features": {
@@ -65619,62 +65619,6 @@
     {
       "candidate_features": {
         "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.8,
-        "bucket_calibration": {
-          "adjustment": -0.62,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A+",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -0.62,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A+",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 47.3,
-              "sample_reliability": 48.6,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 47.3,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 12.1,
-        "k_per_9": 8.8,
-        "sample_reliability": 48.6,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 828314,
-      "name": "Kyle Roche",
-      "rank_v1_rank": 1585,
-      "rank_v1_score": 5.83,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.455,
-      "v0_7_shadow_score": 4.375
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
         "availability_risk_discount": 0.06,
         "availability_status": "thin_current_sample",
         "bb_per_9": 3.3,
@@ -65719,7 +65663,7 @@
       "level": "AAA",
       "mlbam_id": 801367,
       "name": "Matt Jachec",
-      "rank_v1_rank": 1586,
+      "rank_v1_rank": 1585,
       "rank_v1_score": 5.83,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -65775,12 +65719,68 @@
       "level": "A+",
       "mlbam_id": 802967,
       "name": "Benny Thompson",
-      "rank_v1_rank": 1587,
+      "rank_v1_rank": 1586,
       "rank_v1_score": 5.82,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.072,
       "v0_7_shadow_score": 2.748
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.8,
+        "bucket_calibration": {
+          "adjustment": -0.62,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A+",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -0.62,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A+",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 47.3,
+              "sample_reliability": 48.6,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 47.3,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 12.1,
+        "k_per_9": 8.8,
+        "sample_reliability": 48.6,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 828314,
+      "name": "Kyle Roche",
+      "rank_v1_rank": 1587,
+      "rank_v1_score": 5.81,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.455,
+      "v0_7_shadow_score": 4.355
     },
     {
       "candidate_features": {
@@ -69386,6 +69386,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -24.9,
+        "bucket_calibration": null,
+        "current_sample": 237.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.238,
+        "ops": 0.829,
+        "sample_reliability": 54.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 803290,
+      "name": "Estevan Moreno",
+      "rank_v1_rank": 1667,
+      "rank_v1_score": 5.0,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -0.659,
+      "v0_7_shadow_score": 4.341
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -11.5,
         "bucket_calibration": {
           "adjustment": -1.5,
@@ -69431,44 +69463,12 @@
       "level": "AA",
       "mlbam_id": 686541,
       "name": "Drew Compton",
-      "rank_v1_rank": 1667,
+      "rank_v1_rank": 1668,
       "rank_v1_score": 4.99,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.866,
       "v0_7_shadow_score": 0.124
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -24.9,
-        "bucket_calibration": null,
-        "current_sample": 237.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.238,
-        "ops": 0.829,
-        "sample_reliability": 54.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 803290,
-      "name": "Estevan Moreno",
-      "rank_v1_rank": 1668,
-      "rank_v1_score": 4.99,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -0.659,
-      "v0_7_shadow_score": 4.331
     },
     {
       "candidate_features": {
@@ -69851,62 +69851,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 3.8,
-        "bucket_calibration": {
-          "adjustment": -2.42,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -2.42,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": true,
-              "label": "Moderate thin sample",
-              "level": "AA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 33.3,
-              "sample_reliability": 40.0,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 33.3,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 8.5,
-        "k_per_9": 6.8,
-        "sample_reliability": 40.0,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 685481,
-      "name": "Moises Rodriguez",
-      "rank_v1_rank": 1677,
-      "rank_v1_score": 4.91,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.275,
-      "v0_7_shadow_score": 1.635
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -13.9,
         "bucket_calibration": null,
         "current_sample": 245.0,
@@ -69927,7 +69871,7 @@
       "level": "A",
       "mlbam_id": 808162,
       "name": "Joshua Liranzo",
-      "rank_v1_rank": 1678,
+      "rank_v1_rank": 1677,
       "rank_v1_score": 4.9,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
@@ -69983,7 +69927,7 @@
       "level": "AA",
       "mlbam_id": 801219,
       "name": "Alfred Morillo",
-      "rank_v1_rank": 1679,
+      "rank_v1_rank": 1678,
       "rank_v1_score": 4.9,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -70039,12 +69983,68 @@
       "level": "A+",
       "mlbam_id": 682719,
       "name": "Jose Atencio",
-      "rank_v1_rank": 1680,
+      "rank_v1_rank": 1679,
       "rank_v1_score": 4.9,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.753,
       "v0_7_shadow_score": 3.147
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.8,
+        "bucket_calibration": {
+          "adjustment": -2.42,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -2.42,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": true,
+              "label": "Moderate thin sample",
+              "level": "AA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 33.3,
+              "sample_reliability": 40.0,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 33.3,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 8.5,
+        "k_per_9": 6.8,
+        "sample_reliability": 40.0,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 685481,
+      "name": "Moises Rodriguez",
+      "rank_v1_rank": 1680,
+      "rank_v1_score": 4.9,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -3.275,
+      "v0_7_shadow_score": 1.625
     },
     {
       "candidate_features": {
@@ -70077,62 +70077,6 @@
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.817,
       "v0_7_shadow_score": 4.073
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 4.3,
-        "bucket_calibration": {
-          "adjustment": -2.99,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A+",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -2.99,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A+",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 38.0,
-              "sample_reliability": 43.2,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 38.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 7.3,
-        "k_per_9": 7.3,
-        "sample_reliability": 43.2,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 822503,
-      "name": "Jason Doktorczyk",
-      "rank_v1_rank": 1682,
-      "rank_v1_score": 4.88,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.363,
-      "v0_7_shadow_score": 2.517
     },
     {
       "candidate_features": {
@@ -70180,7 +70124,7 @@
       "level": "AA",
       "mlbam_id": 694266,
       "name": "D'Andre Smith",
-      "rank_v1_rank": 1683,
+      "rank_v1_rank": 1682,
       "rank_v1_score": 4.87,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
@@ -70235,12 +70179,68 @@
       "level": "AAA",
       "mlbam_id": 691913,
       "name": "Jesus Castillo",
-      "rank_v1_rank": 1684,
+      "rank_v1_rank": 1683,
       "rank_v1_score": 4.87,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.977,
       "v0_7_shadow_score": 0.893
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.3,
+        "bucket_calibration": {
+          "adjustment": -2.99,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A+",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -2.99,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A+",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 38.0,
+              "sample_reliability": 43.2,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 38.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 7.3,
+        "k_per_9": 7.3,
+        "sample_reliability": 43.2,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 822503,
+      "name": "Jason Doktorczyk",
+      "rank_v1_rank": 1684,
+      "rank_v1_score": 4.87,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -2.363,
+      "v0_7_shadow_score": 2.507
     },
     {
       "candidate_features": {
@@ -76708,6 +76708,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -15.1,
+        "bucket_calibration": null,
+        "current_sample": 325.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.122,
+        "ops": 0.718,
+        "sample_reliability": 61.9
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 805319,
+      "name": "Dervy Ventura",
+      "rank_v1_rank": 1822,
+      "rank_v1_score": 3.72,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.822,
+      "v0_7_shadow_score": 1.898
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -3.4,
         "bucket_calibration": {
           "adjustment": -4.69,
@@ -76751,44 +76783,12 @@
       "level": "A+",
       "mlbam_id": 814413,
       "name": "Ian Petrutz",
-      "rank_v1_rank": 1822,
+      "rank_v1_rank": 1823,
       "rank_v1_score": 3.72,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.196,
       "v0_7_shadow_score": 2.524
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -15.1,
-        "bucket_calibration": null,
-        "current_sample": 325.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.122,
-        "ops": 0.718,
-        "sample_reliability": 61.9
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 805319,
-      "name": "Dervy Ventura",
-      "rank_v1_rank": 1823,
-      "rank_v1_score": 3.71,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.822,
-      "v0_7_shadow_score": 1.888
     },
     {
       "candidate_features": {
@@ -84740,6 +84740,61 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -7.0,
+        "bucket_calibration": {
+          "adjustment": -2.6,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A+",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -2.6,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A+",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "hitter",
+              "sample": 158.0,
+              "sample_reliability": 44.1,
+              "sample_unit": "PA",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 158.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "low_impact",
+        "factual_investment_context": null,
+        "iso": 0.073,
+        "ops": 0.717,
+        "sample_reliability": 44.1
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 808665,
+      "name": "Angel Acosta",
+      "rank_v1_rank": 1986,
+      "rank_v1_score": 2.33,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -4.346,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 4.7,
         "bucket_calibration": {
           "adjustment": -3.48,
@@ -84784,67 +84839,12 @@
       "level": "A+",
       "mlbam_id": 815779,
       "name": "Cole Hillier",
-      "rank_v1_rank": 1986,
-      "rank_v1_score": 2.34,
+      "rank_v1_rank": 1987,
+      "rank_v1_score": 2.33,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.668,
-      "v0_7_shadow_score": 0.672
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -7.0,
-        "bucket_calibration": {
-          "adjustment": -2.6,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A+",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -2.6,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A+",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "hitter",
-              "sample": 158.0,
-              "sample_reliability": 44.1,
-              "sample_unit": "PA",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 158.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "low_impact",
-        "factual_investment_context": null,
-        "iso": 0.073,
-        "ops": 0.717,
-        "sample_reliability": 44.1
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 808665,
-      "name": "Angel Acosta",
-      "rank_v1_rank": 1987,
-      "rank_v1_score": 2.33,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -4.346,
-      "v0_7_shadow_score": 0.0
+      "v0_7_shadow_score": 0.662
     },
     {
       "candidate_features": {
@@ -90559,6 +90559,61 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -16.1,
+        "bucket_calibration": {
+          "adjustment": -1.89,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -1.89,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "hitter",
+              "sample": 168.0,
+              "sample_reliability": 45.7,
+              "sample_unit": "PA",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.0"
+        },
+        "current_sample": 168.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.146,
+        "ops": 0.734,
+        "sample_reliability": 45.7
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 701435,
+      "name": "Broedy Poppell",
+      "rank_v1_rank": 2092,
+      "rank_v1_score": 1.12,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -2.832,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 4.4,
         "bucket_calibration": {
           "adjustment": -4.49,
@@ -90603,67 +90658,12 @@
       "level": "A+",
       "mlbam_id": 803252,
       "name": "Eliseo Mota",
-      "rank_v1_rank": 2092,
-      "rank_v1_score": 1.13,
+      "rank_v1_rank": 2093,
+      "rank_v1_score": 1.12,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 1.658,
-      "v0_7_shadow_score": 2.788
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -16.1,
-        "bucket_calibration": {
-          "adjustment": -1.89,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -1.89,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "hitter",
-              "sample": 168.0,
-              "sample_reliability": 45.7,
-              "sample_unit": "PA",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.0"
-        },
-        "current_sample": 168.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.146,
-        "ops": 0.734,
-        "sample_reliability": 45.7
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 701435,
-      "name": "Broedy Poppell",
-      "rank_v1_rank": 2093,
-      "rank_v1_score": 1.12,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.832,
-      "v0_7_shadow_score": 0.0
+      "v0_7_shadow_score": 2.778
     },
     {
       "candidate_features": {
@@ -131878,7 +131878,7 @@
       "bucket_calibration"
     ]
   },
-  "generated_at": "2026-07-16T00:00:00+00:00",
+  "generated_at": "2026-07-17T00:00:00+00:00",
   "input_artifacts": {
     "outcome_backtest_grade": "B",
     "outcome_backtest_version": "0.2.0",

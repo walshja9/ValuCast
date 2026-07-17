@@ -1,7 +1,7 @@
 {
   "candidate_count": 2865,
   "input_contract": {
-    "generated_at": "2026-07-16T00:00:00+00:00",
+    "generated_at": "2026-07-17T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -287027,35 +287027,35 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.2548,
+          "prediction": 4.222,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.08,
+          "prediction": 2.39,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HLD/60 IP"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 107.44,
+          "prediction": 103.88,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
         "representative_k_bb": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.7172,
+          "prediction": 2.6664,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K:BB"
         },
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 8.2,
+          "prediction": 8.23,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -287090,14 +287090,14 @@
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 1.3108,
+          "prediction": 1.3132,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0572,
+          "prediction": 0.0579,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -299268,7 +299268,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-16T00:00:00+00:00",
+          "activated_at": "2026-07-17T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -302054,7 +302054,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-16T00:00:00+00:00",
+          "activated_at": "2026-07-17T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",

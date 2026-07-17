@@ -1,15 +1,15 @@
 {
   "anticipation_score": {
     "ci_high": 13.0,
-    "ci_low": -6.0,
+    "ci_low": -2.0,
     "label": "provisional (no claim has reached the expiry window)",
-    "median_lead_days": 2.0,
+    "median_lead_days": 9.0,
     "null": {
       "null_ci_high": 10.0,
       "null_ci_low": -10.0,
       "null_median": 0.0
     },
-    "pool_size": 59,
+    "pool_size": 67,
     "provisional": true
   },
   "artifact": "valucast_forward_scoreboard",
@@ -27,7 +27,7 @@
     ],
     "status": "registered"
   },
-  "content_sha256": "ad1be7b19061c3ab2ff5ff4d2bd0916317a82d3638394b195c1b38ef8bc024a3",
+  "content_sha256": "021e85476fc4398da9960d6a3360c68be41a43dc0c71df9327881a73fb931e0a",
   "dials": {
     "adverse_move_floor_spots": 10,
     "ci_percentile": 95,
@@ -45,8 +45,8 @@
       "callup_win": 4,
       "clean_retraction": 77,
       "consensus_move_unscored": 0,
-      "consensus_move_win": 27,
-      "open": 102,
+      "consensus_move_win": 35,
+      "open": 96,
       "unclassified": 0
     },
     "by_side": {
@@ -72,8 +72,8 @@
         "callup_win": 0,
         "clean_retraction": 34,
         "consensus_move_unscored": 0,
-        "consensus_move_win": 14,
-        "open": 59,
+        "consensus_move_win": 22,
+        "open": 53,
         "unclassified": 0
       },
       "other": {
@@ -90,24 +90,24 @@
         "unclassified": 0
       }
     },
-    "excluded_from_pool": 179,
+    "excluded_from_pool": 173,
     "losses": 28,
-    "open": 102,
-    "pool_size": 59,
+    "open": 96,
+    "pool_size": 67,
     "self_retraction_rate": {
-      "rate": 0.4411764705882353,
+      "rate": 0.4375,
       "retracted": 105,
-      "total": 238
+      "total": 240
     },
-    "total_claims": 238,
+    "total_claims": 240,
     "unscored_or_unclassified": 0,
-    "wins": 31
+    "wins": 39
   },
-  "generated_at": "2026-07-16T17:05:30.028282+00:00",
+  "generated_at": "2026-07-17T12:07:43.329771+00:00",
   "generated_by": "valucast",
   "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
   "ledger_ref": {
-    "generated_at": "2026-07-16T17:05:27.581299+00:00",
+    "generated_at": "2026-07-17T12:07:41.737027+00:00",
     "signal_version": "0.1.0"
   },
   "protocol_version": "030-v1",
