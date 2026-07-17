@@ -2854,3 +2854,7 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
         self.assertIn('id="board-time-machine"', html)
         self.assertIn("re-baseline", html)
         self.assertIn('href="/board"', html)
+
+    def test_site_nav_links_time_machine(self):
+        _, html = self._get("/board")
+        self.assertIn('href="/board">Time Machine</a>', html)
