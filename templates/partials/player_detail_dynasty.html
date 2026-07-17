@@ -455,7 +455,10 @@
                 <div class="stat-item"><span class="stat-label">Roster move</span><span class="stat-value stat-value-callup">Called up{% if call_up.mlb_team %} · {{ call_up.mlb_team }}{% endif %}</span></div>
                 {% endif %}
                 {% if recent_signal and recent_signal.buy_rank %}
-                <div class="stat-item"><span class="stat-label">Buy Board</span><span class="stat-value">#{{ recent_signal.buy_rank }}</span></div>
+                {# buy_reason = the buys board's one-line human "reason" (copied into
+                   the signal row by prospects/recent_signal.py); the terms dict and
+                   score history stay internal. Missing reason = chip unchanged. #}
+                <div class="stat-item"><span class="stat-label">Buy Board</span><span class="stat-value">#{{ recent_signal.buy_rank }}{% if recent_signal.buy_reason %} · {{ recent_signal.buy_reason }}{% endif %}</span></div>
                 {% endif %}
             </div>
             {% if role_profile and role_profile.role_basis %}
@@ -664,6 +667,12 @@
                     <span class="source-summary-note">{% if aotc.divergence > 0 %}{{ aotc.divergence }} spots ahead of the field{% elif aotc.divergence < 0 %}{{ -aotc.divergence }} spots behind the field{% else %}even with the field{% endif %}</span>
                     {% else %}
                     <span class="source-summary-note">ValuCast model rank</span>
+                    {% endif %}
+                    {# Lead-time receipt: omit-never-zero — no days_ahead or no dated
+                       archive start means no line ("+" = archive-start floor, same
+                       honesty convention as the backfields consensus strip). #}
+                    {% if aotc.days_ahead and aotc.ahead_since %}
+                    <span class="source-summary-note">Ahead of the field for {{ aotc.days_ahead }}{{ '+' if aotc.ahead_since_is_archive_start else '' }} day{{ '' if aotc.days_ahead == 1 else 's' }} ({{ 'tracked since' if aotc.ahead_since_is_archive_start else 'since' }} {{ aotc.ahead_since }})</span>
                     {% endif %}
                 </div>
                 {% elif row.prospect_rank is not none %}
