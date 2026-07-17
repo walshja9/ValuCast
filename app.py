@@ -8174,6 +8174,88 @@ def _neg_date(value) -> str:
     return "".join(chr(255 - ord(ch)) for ch in text)
 
 
+# Display copy for the per-player Forward Ledger claim badge reuses the /gaps
+# claim-ledger lexicon verbatim (legend + resolved strip) — no invented outcome
+# copy. An unmapped outcome renders nothing rather than guessed words.
+_FORWARD_CLAIM_OUTCOME_COPY = {
+    "open": "open",
+    "resolved_by_callup": "called up",
+    "resolved_by_consensus_move": "field moved toward us",
+    "retracted_by_model_move": "retracted (we backed off)",
+    "expired_unresolved": "expired unresolved",
+}
+
+
+def _forward_ledger_badge(mlbam_id):
+    """Per-player Forward Ledger claim chips for the prospect card (display-only).
+
+    Reads the committed gaps claim ledger — the same artifact /gaps renders and the
+    frozen scoreboard roll-up consumes — and reshapes THIS player's claims into a
+    compact chip row. Honesty rules mirrored from the /scoreboard anti-trophy-case
+    checklist:
+      - HOLD GATE: returns None while SCOREBOARD_HOLD holds /scoreboard dark, so
+        the badge ships dark and lights up with the same env flip;
+      - an open claim reads neutrally ("open"), never as a win; resolved claims
+        state the outcome plainly on both sides, retractions included;
+      - claim_date always renders (the registration / no-backdating proof);
+      - the join is strictly by mlbam id (twin-safe; names never join); a player
+        with no claim returns None so the card renders byte-identically to today;
+      - per-player status ONLY — never an aggregate or role-split readout (the
+        one-look quarantine lives on the standings surface, not here).
+    """
+    if SCOREBOARD_HOLD:
+        return None
+    key = str(mlbam_id or "").strip()
+    if not key:
+        return None
+    claims = [
+        c for c in (_load_gaps_ledger().get("claims") or [])
+        if isinstance(c, dict) and str(c.get("mlbam_id") or "").strip() == key
+    ]
+    if not claims:
+        return None
+    claims.sort(key=lambda c: (_neg_date(c.get("claim_date")), str(c.get("outcome") or "")))
+    chips = []
+    has_open = False
+    for claim in claims:
+        outcome = claim.get("outcome")
+        outcome_copy = _FORWARD_CLAIM_OUTCOME_COPY.get(outcome)
+        claim_date = str(claim.get("claim_date") or "")[:10]
+        # Omit-never-fabricate: no mapped copy or no registration date -> no chip.
+        if outcome_copy is None or not claim_date:
+            continue
+        side = claim.get("side")
+        head = f"{side} claim" if side in ("higher", "lower") else "claim"
+        parts = [f"{head} — {outcome_copy}"]
+        lead = claim.get("lead_time_days")
+        if outcome == "resolved_by_callup" and isinstance(lead, (int, float)):
+            lead = int(lead)
+            parts.append(f"{lead} day{'s' if lead != 1 else ''} early")
+        parts.append(f"claimed {claim_date}")
+        resolved_date = str(claim.get("resolved_date") or "")[:10]
+        if outcome != "open" and resolved_date:
+            parts.append(f"resolved {resolved_date}")
+        if outcome == "open":
+            has_open = True
+        vc_rank = claim.get("claim_valucast_rank")
+        field_rank = claim.get("claim_consensus_rank")
+        title = f"Registered {claim_date}"
+        if isinstance(vc_rank, int) and isinstance(field_rank, int):
+            title += f" — ValuCast #{vc_rank} vs field consensus #{field_rank}"
+        chips.append({"label": " · ".join(parts), "title": title})
+    if not chips:
+        return None
+    # Provisional context on open claims mirrors the /scoreboard loss-tile note
+    # verbatim; it renders only while the scoreboard artifact itself says the
+    # score is provisional (never asserted app-side).
+    provisional_note = None
+    if has_open:
+        sc = _load_forward_scoreboard_payload() or {}
+        if (sc.get("anticipation_score") or {}).get("provisional"):
+            provisional_note = f"expiry lane opens {_SCOREBOARD_EXPIRY_WINDOW_OPENS}"
+    return {"claims": chips, "provisional_note": provisional_note}
+
+
 @app.route("/gaps")
 def gaps():
     """Two-sided consensus-gap board — where the ValuCast board diverges most
@@ -9476,6 +9558,12 @@ def _build_dynasty_player_detail_context(player_id, args):
             # rank/buy input. None (feed lacks counts / hitter / corrupt) ->
             # the template renders no line.
             "pitcher_strike_pct": _pitcher_strike_pct(dd_row),
+            # Forward Ledger claim badge (display-only; committed claim-ledger
+            # artifact). Hold-gated with /scoreboard via SCOREBOARD_HOLD; None
+            # (held / no registered claim) -> the template renders no section.
+            "forward_ledger": _forward_ledger_badge(
+                getattr(dd_row, "mlbam_id", None)
+            ),
         }
 
     # Same-engine category z's as the active dynasty category configuration.

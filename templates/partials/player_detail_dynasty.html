@@ -146,6 +146,22 @@
             </div>
         </div>
         {% endif %}
+        {#- Forward Ledger claim badge — this player's registered claims from the same
+           committed ledger /gaps and the scoreboard roll-up read. Hold-gated with
+           /scoreboard (context is None while SCOREBOARD_HOLD holds) and
+           omit-never-fabricate: no claim -> no markup at all. Per-player status
+           only — never an aggregate or role-split ledger readout on the card. -#}
+        {%- if forward_ledger is defined and forward_ledger and forward_ledger.claims %}
+        <div class="detail-section format-ranks-section forward-ledger-claims">
+            <div class="format-ranks" aria-label="Forward Ledger claims for this player">
+                <span class="format-ranks-label"><a href="/scoreboard">Forward Ledger</a></span>
+                {% for chip in forward_ledger.claims %}
+                <span class="sample-risk-badge rank-context neutral" title="{{ chip.title }}">{{ chip.label }}</span>
+                {% endfor %}
+                {% if forward_ledger.provisional_note %}<span class="format-rank"><span class="fr-total">{{ forward_ledger.provisional_note }}</span></span>{% endif %}
+            </div>
+        </div>
+        {%- endif %}
         {% set card_context = profile_stat_context if profile_stat_context is defined else {} %}
         {% set has_skill_card = profile_bars is defined and profile_bars %}
         {% if identity or has_skill_card %}
