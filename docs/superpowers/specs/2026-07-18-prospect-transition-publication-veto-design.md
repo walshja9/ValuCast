@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-18
 
-**Status:** Proposed for implementation after written-spec review
+**Status:** Approved for implementation on 2026-07-18
 
 ## Decision
 
