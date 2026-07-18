@@ -5,6 +5,7 @@ scoreboard artifact -> 200 rendering every number from the artifact; missing art
 -> honest 'collecting' state. The CI-band verdict logic ('leading, not yet
 significant' when the bootstrap CI straddles zero) is exercised on both sides of zero.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -102,6 +103,33 @@ def test_scoreboard_share_card_png_ok(client, monkeypatch):
     assert resp.status_code == 200
     assert "image/png" in resp.content_type
     assert resp.data[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_scoreboard_view_pluralizes_cohort_count_once():
+    payload = json.loads(_FIXTURE.read_text(encoding="utf-8"))
+    payload["cohorts"]["cohort_count"] = 1
+    assert app_module._scoreboard_view(payload)["cohort_label"] == "1 board"
+
+    payload["cohorts"]["cohort_count"] = 2
+    assert app_module._scoreboard_view(payload)["cohort_label"] == "2 boards"
+
+
+def test_scoreboard_share_card_keeps_full_provisional_ci_label(monkeypatch):
+    payload = json.loads(_FIXTURE.read_text(encoding="utf-8"))
+    view = app_module._scoreboard_view(payload)
+    original = app_module._graphic_fit_text
+    rendered = {}
+
+    def track_fit(draw, text, font, max_width):
+        fitted = original(draw, text, font, max_width)
+        if text == view["ci_label"]:
+            rendered["ci_label"] = fitted
+        return fitted
+
+    monkeypatch.setattr(app_module, "_graphic_fit_text", track_fit)
+    app_module._forward_scoreboard_share_card_png(view)
+
+    assert rendered["ci_label"] == view["ci_label"]
 
 
 def test_scoreboard_share_card_preview_ok(client, monkeypatch):
