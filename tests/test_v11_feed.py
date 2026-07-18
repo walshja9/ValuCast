@@ -98,6 +98,22 @@ class TestBuildSpark(unittest.TestCase):
         spark = build_spark((("2026-05-14", 50.0), ("2026-05-15", 50.0)))
         self.assertEqual(spark["direction"], "flat")
 
+    def test_tiny_display_move_is_not_drawn_as_a_full_height_breakout(self):
+        history = (
+            ("2026-07-14", 40.74),
+            ("2026-07-15", 40.74),
+            ("2026-07-16", 40.74),
+            ("2026-07-17", 40.74),
+            ("2026-07-18", 40.79),
+        )
+
+        spark = build_spark(history, width=456, height=88)
+        ys = [float(point.split(",")[1]) for point in spark["points"].split()]
+
+        self.assertEqual(spark["delta"], 0.1)
+        self.assertEqual(spark["direction"], "up")
+        self.assertLessEqual(max(ys) - min(ys), 8.0)
+
     def test_fewer_than_two_points_is_none(self):
         self.assertIsNone(build_spark(()))
         self.assertIsNone(build_spark((("2026-05-14", 50.0),)))

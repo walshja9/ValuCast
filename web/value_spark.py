@@ -21,14 +21,18 @@ def build_spark(value_history, width: int = W, height: int = H, window_days: int
         pts = [p for p in pts if _calendar_days(p[0], last) <= window_days]
     if len(pts) < 2:
         return None
-    values = [v for _, v in pts]
+    # The card publishes values to one decimal place, so its curve and delta must
+    # use that same precision. Otherwise a hidden 0.05 move can read "+0.0" while
+    # min-max scaling draws it as a full-height breakout.
+    values = [round(v, 1) for _, v in pts]
     lo, hi = min(values), max(values)
-    span = (hi - lo) or 1.0
+    span = max(hi - lo, 1.0)
+    visual_lo = (lo + hi - span) / 2
     step = (width - 2 * PAD) / (len(pts) - 1)
     coords = [
         (round(PAD + i * step, 1),
-         round(height - PAD - ((v - lo) / span) * (height - 2 * PAD), 1))
-        for i, (_, v) in enumerate(pts)
+         round(height - PAD - ((v - visual_lo) / span) * (height - 2 * PAD), 1))
+        for i, v in enumerate(values)
     ]
     delta = round(values[-1] - values[0], 1)
     baseline = round(height - PAD, 1)
