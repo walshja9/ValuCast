@@ -221,9 +221,10 @@ def outcome_mix(signal: dict | None) -> tuple[dict[str, Any], ...]:
     The model's ``dynasty_signal`` carries ``role_or_better_probability`` (which
     already includes the star tail), its complement ``bust_risk``, and the
     ``star_ceiling_probability`` sub-tail. A clean mutually-exclusive partition
-    that sums to ~100% is: Star ceiling / Everyday role (role-or-better minus the
-    star tail) / Bust risk. Percentages are whole numbers with the rounding
-    residual folded into the largest segment so the bar always reads 100.
+    that sums to ~100% is: Impact season / Established MLB role (role-or-better
+    minus the star tail) / Not established by Year 4. Percentages are whole
+    numbers with the rounding residual folded into the largest segment so the
+    bar always reads 100.
 
     Returns () when the signal is absent or malformed (template renders nothing).
     """
@@ -237,9 +238,9 @@ def outcome_mix(signal: dict | None) -> tuple[dict[str, Any], ...]:
     star = max(0.0, min(star, role))
     everyday = max(0.0, role - star)
     raw = [
-        ("star", "Star ceiling", "signal", star),
-        ("everyday", "Everyday role", "slate", everyday),
-        ("bust", "Bust risk", "clay", bust),
+        ("star", "Impact season", "signal", star),
+        ("everyday", "Established MLB role", "slate", everyday),
+        ("bust", "Not established by Year 4", "clay", bust),
     ]
     total = sum(value for *_, value in raw) or 1.0
     segments = [

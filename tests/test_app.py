@@ -2448,7 +2448,9 @@ class TestAttributionPanel(unittest.TestCase):
         body = resp.data.decode()
         self.assertIn("How ValuCast graded him", body)
         self.assertIn("attribution-mix", body)
-        self.assertIn("Bust risk", body)
+        self.assertIn("Four-year MLB outlook", body)
+        self.assertIn("not a career verdict", body)
+        self.assertNotIn("Bust risk", body)
         # Placed HIGH: before the deep stat sections (e.g. MiLB Stats details).
         if "MiLB Stats" in body:
             self.assertLess(body.index("How ValuCast graded him"), body.index("MiLB Stats"))
@@ -2513,8 +2515,13 @@ class TestOutcomeMixHelper(unittest.TestCase):
         })
         self.assertEqual(sum(s["pct"] for s in segs), 100)
         labels = [s["label"] for s in segs]
-        self.assertIn("Star ceiling", labels)
-        self.assertIn("Bust risk", labels)
+        self.assertEqual(
+            labels,
+            ["Impact season", "Established MLB role", "Not established by Year 4"],
+        )
+        self.assertNotIn("Star ceiling", labels)
+        self.assertNotIn("Everyday role", labels)
+        self.assertNotIn("Bust risk", labels)
 
     def test_outcome_mix_empty_on_missing_signal(self):
         from web.prospect_context import outcome_mix
