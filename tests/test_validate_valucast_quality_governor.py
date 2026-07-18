@@ -63,6 +63,34 @@ def test_validate_governor_allows_prospects_only_block(tmp_path):
     assert problems == []
 
 
+def test_validate_governor_fails_blocked_transition_continuity_veto(tmp_path):
+    path = _write(
+        tmp_path,
+        status="blocked",
+        ready_for_public_snapshot=False,
+        checks=[
+            {
+                "id": "prospect_transition_continuity",
+                "status": "blocked",
+                "message": "Stable model scores produced material prospect transition calibration cliffs.",
+                "metrics": {"samples": [{"name": "Josue Briceno"}]},
+            }
+        ],
+        surface_readiness={"dynasty": True, "buys": True, "movers": True, "prospects": False},
+        surface_blockers={
+            "dynasty": [], "buys": [], "movers": [],
+            "prospects": ["Stable model scores produced material prospect transition calibration cliffs."],
+        },
+        blockers=["Stable model scores produced material prospect transition calibration cliffs."],
+    )
+
+    payload, problems = validate_governor(path)
+
+    assert payload is not None
+    assert any("prospect transition continuity veto" in problem.lower() for problem in problems)
+    assert any("Josue Briceno" in problem for problem in problems)
+
+
 def test_validate_governor_fails_when_buys_surface_blocked(tmp_path):
     path = _write(
         tmp_path,

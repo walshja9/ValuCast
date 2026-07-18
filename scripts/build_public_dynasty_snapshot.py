@@ -13,7 +13,10 @@ sys.path.insert(0, str(ROOT))
 
 from prospects.buys import PROSPECT_BUYS_EPOCH  # noqa: E402
 from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
-from quality.valucast_governor import evaluate_quality_governor  # noqa: E402
+from quality.valucast_governor import (  # noqa: E402
+    evaluate_quality_governor,
+    load_previous_prospect_rank,
+)
 from web.public_snapshot_store import required_field_problems  # noqa: E402
 
 PROSPECT_INPUTS_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
@@ -1088,6 +1091,7 @@ def _validation(
 
 def build_snapshot(
     prospect_rank: dict,
+    previous_prospect_rank: dict | None = None,
     mlb_layer: dict | None = None,
     mlb_roster_status: dict | None = None,
     mlb_track_record: dict | None = None,
@@ -1339,6 +1343,7 @@ def build_snapshot(
     quality_governor = evaluate_quality_governor(
         players,
         prospect_rank=prospect_rank,
+        previous_prospect_rank=previous_prospect_rank,
         prospect_coverage_audit=prospect_coverage_audit,
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,
@@ -1431,6 +1436,10 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
 
 def main() -> None:
     rank_payload = _load_json(PROSPECT_RANK_PATH)
+    previous_prospect_rank = load_previous_prospect_rank(
+        rank_payload,
+        PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+    )
     prospect_inputs = (
         _load_json(PROSPECT_INPUTS_PATH) if PROSPECT_INPUTS_PATH.exists() else None
     )
@@ -1458,6 +1467,7 @@ def main() -> None:
     actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
     payload = build_snapshot(
         rank_payload,
+        previous_prospect_rank=previous_prospect_rank,
         mlb_layer=mlb_layer,
         mlb_roster_status=mlb_roster_status,
         mlb_track_record=mlb_track_record,

@@ -31,6 +31,25 @@ def validate_governor(path: Path = GOVERNOR_PATH) -> tuple[dict | None, list[str
         problems.append("checks must be a non-empty list")
     if not isinstance(payload.get("surface_readiness"), dict):
         problems.append("surface_readiness must be an object")
+    transition_veto = next(
+        (
+            check
+            for check in payload.get("checks") or []
+            if check.get("id") == "prospect_transition_continuity"
+            and check.get("status") == "blocked"
+        ),
+        None,
+    )
+    if transition_veto:
+        names = ", ".join(
+            str(sample.get("name"))
+            for sample in (transition_veto.get("metrics") or {}).get("samples") or []
+            if sample.get("name")
+        )
+        problems.append(
+            "prospect transition continuity veto blocks daily publication"
+            + (f": {names}" if names else "")
+        )
     # Shape-valid but content-blocked must still fail this gate for surfaces the
     # live app actually serves gated on that flag: the daily commit is atomic
     # (actuals, dynasty, buys, movers, scouting all land in one push), and

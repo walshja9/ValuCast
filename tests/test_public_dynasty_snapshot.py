@@ -576,6 +576,42 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
     )
 
 
+def test_build_snapshot_forwards_previous_prospect_rank_to_governor(monkeypatch):
+    previous = {"generated_at": "2026-06-12T12:00:00+00:00", "board": []}
+    captured = {}
+
+    def fake_quality_governor(*args, **kwargs):
+        captured["previous"] = kwargs.get("previous_prospect_rank")
+        return {
+            "governor_version": "test",
+            "ready_for_public_snapshot": True,
+            "ready_for_buys_promotion": False,
+            "blockers": [],
+            "buy_blockers": [],
+            "surface_readiness": {
+                "dynasty": True,
+                "prospects": True,
+                "buys": False,
+            },
+            "surface_blockers": {
+                "dynasty": [],
+                "prospects": [],
+                "buys": [],
+            },
+        }
+
+    monkeypatch.setattr(snapshot_builder, "evaluate_quality_governor", fake_quality_governor)
+
+    build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        previous_prospect_rank=previous,
+    )
+
+    assert captured["previous"] is previous
+
+
 def test_public_snapshot_preserves_prospect_handedness_for_scouting():
     payload = build_snapshot(
         _rank_payload(),
