@@ -1,37 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}The Forward Ledger — Anticipation Score | ValuCast{% endblock %}
+{% block title %}Forward Ledger: Early Results | ValuCast{% endblock %}
 {% block og_title %}The Forward Ledger | ValuCast{% endblock %}
-{% block og_description %}The Anticipation Score: median signed lead-days over the public consensus, with its bootstrap CI, losses, and self-retraction rate — our own scoreboard, planted.{% endblock %}
+{% block og_description %}See whether ValuCast's prospect calls moved before or after the public board, with every result and open call counted.{% endblock %}
 {% block og_url %}https://valucast.app/scoreboard{% endblock %}
 {% block og_image %}https://valucast.app/scoreboard/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
 {% block twitter_title %}The Forward Ledger | ValuCast{% endblock %}
-{% block twitter_description %}The Anticipation Score: median signed lead-days over the public consensus, with its bootstrap CI, losses, and self-retraction rate.{% endblock %}
+{% block twitter_description %}See whether ValuCast's prospect calls moved before or after the public board, with every result and open call counted.{% endblock %}
 {% block twitter_image %}https://valucast.app/scoreboard/share-card.png{% endblock %}
 
 {% block content %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 {% from "partials/_editorial_date.html" import editorial_date %}
 {{ board_nav(active='', aria='Forward ledger navigation') }}
+{% set lead_days = (sc.median_lead_days | round | int) if sc and sc.median_lead_days is not none else none %}
 
 <section class="buys-heading glass ledger-hero">
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">FORWARD LEDGER</span>
-        <h1>THE ANTICIPATION SCORE</h1>
+        <h1>{% if lead_days is not none %}EARLY RESULTS: {% if lead_days > 0 %}{{ lead_days }} DAYS AHEAD{% elif lead_days < 0 %}{{ lead_days | abs }} DAYS BEHIND{% else %}EVEN WITH THE FIELD{% endif %}{% else %}EARLY RESULTS{% endif %}</h1>
         {% if sc %}
         <p class="buys-heading-sub">Registered {{ sc.registered_date }} &middot; protocol {{ sc.protocol_version or 'pending' }}{% if sc.generated_at %} &middot; updated {{ editorial_date(sc.generated_at) }}{% endif %}</p>
         {% endif %}
-        <p class="buys-heading-sub">How far <strong>ahead of the public field</strong> our prospect
-        calls land — the median signed lead time, in days, between our call and the field coming
-        to it. We plant our own scoreboard and register it in advance rather than grading ourselves
-        on someone else's.</p>
-        <p class="buys-fineprint">The bet: the industry eventually comes to our number. A pooled
-        call scores <strong>+days</strong> when the field moves to us (or a call-up confirms a lead)
-        and <strong>&minus;days</strong> when the field moves against us before we can retract.
-        Clean self-corrections and calls that aged out with no adverse move are excluded from the
-        pool but stay fully counted in the funnel below — nothing leaves silently.</p>
+        {% if lead_days is not none and lead_days > 0 %}
+        <p class="buys-heading-sub">Across {{ sc.pool_size }} settled calls, ValuCast moved about
+        {{ lead_days }} days before the public board. That is encouraging, but it is still
+        too early to declare a win.</p>
+        {% elif lead_days is not none and lead_days < 0 %}
+        <p class="buys-heading-sub">Across {{ sc.pool_size }} settled calls, ValuCast moved about
+        {{ lead_days | abs }} days after the public board. The early results are behind the field,
+        and it is still too early for a final verdict.</p>
+        {% elif lead_days == 0 %}
+        <p class="buys-heading-sub">Across {{ sc.pool_size }} settled calls, ValuCast and the public
+        board moved at about the same time. It is still too early for a final verdict.</p>
+        {% else %}
+        <p class="buys-heading-sub">We publish every qualifying prospect call, then track whether
+        the public board later moves the same way.</p>
+        {% endif %}
+        <p class="buys-fineprint">We timestamp each call and compare it with the public board.
+        When the board later moves our way, we count how much earlier we were. When it moves
+        against us, those days count against us. Calls we change and calls still waiting remain
+        visible below — nothing disappears.</p>
     </div>
     {% if sc %}
     <div class="buys-actions">
@@ -44,16 +55,17 @@
 {% if sc %}
 {% if sc.provisional %}
 <div class="notice sb-provisional" role="status">
-    <strong>Provisional.</strong> No claim has reached its 60-day expiry yet, so the
-    adverse-at-expiry loss lane cannot fire before <strong>{{ sc.expiry_window_opens }}</strong>.
-    The score below is real but incomplete — read it as a lead, not a verdict.
+    <strong>Too early to call this a win.</strong> No call has reached its 60-day deadline yet,
+    so unresolved calls cannot count as deadline losses before
+    <strong>{{ sc.expiry_window_opens }}</strong>. The result can still move either way.
 </div>
 {% endif %}
 
 <section class="glass ledger-headline sb-headline">
+    <span class="sb-co-label">Anticipation Score</span>
     <p class="sb-score-line">
         <span class="sb-score">{% if sc.median_lead_days is not none %}{{ '%+d' | format(sc.median_lead_days | round | int) }}d{% else %}&mdash;{% endif %}</span>
-        <span class="sb-score-label">median signed lead over the field</span>
+        <span class="sb-score-label">current median timing versus the public board</span>
     </p>
     {# The headline NEVER renders without its bootstrap 95% CI band. When the band
        includes zero the verdict is exactly "leading, not yet significant". #}
@@ -70,9 +82,9 @@
 
 {# The public consensus is a NAMED co-entrant, not a footnote. #}
 <section class="glass sb-co-entrant" aria-label="Co-entrant baseline">
-    <span class="sb-co-label">Co-entrant baseline</span>
+    <span class="sb-co-label">Compared with</span>
     <span class="sb-co-name">Aggregate public consensus <strong>({{ sc.cohort_label }})</strong></span>
-    <span class="sb-co-sub">the field we are timed against &middot; consensus is context only and never feeds the model score</span>
+    <span class="sb-co-sub">the public ranking we are measured against &middot; it never changes our model score</span>
 </section>
 
 {# Funnel: losses shown as prominently as wins; self-retraction rate is a mandatory
@@ -80,23 +92,23 @@
 <section class="ledger-funnel" aria-label="Every claim accounted for">
     <article class="ledger-tile glass ledger-tile-win">
         <span class="ledger-tile-n">{{ sc.wins if sc.wins is not none else '—' }}</span>
-        <span class="ledger-tile-label">Wins</span>
-        <span class="ledger-tile-sub">field came to us</span>
+        <span class="ledger-tile-label">Moved our way</span>
+        <span class="ledger-tile-sub">the public board later agreed</span>
     </article>
     <article class="ledger-tile glass ledger-tile-loss">
         <span class="ledger-tile-n">{{ sc.losses if sc.losses is not none else '—' }}</span>
-        <span class="ledger-tile-label">Losses</span>
-        <span class="ledger-tile-sub">field moved against us{% if sc.provisional %} &middot; expiry lane opens {{ sc.expiry_window_opens }}{% endif %}</span>
+        <span class="ledger-tile-label">Moved against us</span>
+        <span class="ledger-tile-sub">the call went the other way{% if sc.provisional %} &middot; deadline losses start {{ sc.expiry_window_opens }}{% endif %}</span>
     </article>
     <article class="ledger-tile glass ledger-tile-loss">
-        <span class="ledger-tile-n">{% if sc.retraction_rate_pct is not none %}{{ sc.retraction_rate_pct }}%{% else %}—{% endif %}</span>
-        <span class="ledger-tile-label">Self-retracted</span>
-        <span class="ledger-tile-sub">{{ sc.retracted if sc.retracted is not none else '—' }} calls we backed off</span>
+        <span class="ledger-tile-n">{{ sc.retracted if sc.retracted is not none else '—' }}</span>
+        <span class="ledger-tile-label">Calls we changed</span>
+        <span class="ledger-tile-sub">{% if sc.retraction_rate_pct is not none %}{{ sc.retraction_rate_pct }}% of all registered calls{% else %}rate unavailable{% endif %}</span>
     </article>
     <article class="ledger-tile glass ledger-tile-open">
         <span class="ledger-tile-n">{{ sc.open if sc.open is not none else '—' }}</span>
-        <span class="ledger-tile-label">Open</span>
-        <span class="ledger-tile-sub">not yet resolved</span>
+        <span class="ledger-tile-label">Still waiting</span>
+        <span class="ledger-tile-sub">not settled yet</span>
     </article>
 </section>
 

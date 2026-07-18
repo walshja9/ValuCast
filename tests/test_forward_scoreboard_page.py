@@ -81,7 +81,14 @@ def test_scoreboard_renders_artifact_numbers(client, monkeypatch):
     assert resp.status_code == 200
     html = resp.data.decode("utf-8")
     # Anti-trophy-case checklist strings, all rendered from the artifact:
-    assert "THE ANTICIPATION SCORE" in html
+    assert "EARLY RESULTS: 2 DAYS AHEAD" in html
+    assert "Across 59 settled calls" in html
+    assert "too early to declare a win" in html
+    assert "Moved our way" in html
+    assert "Moved against us" in html
+    assert "Calls we changed" in html
+    assert "Still waiting" in html
+    assert '<span class="sb-co-label">Anticipation Score</span>' in html
     # (7) registration date + protocol version in the hero
     assert "protocol 030-v1" in html
     assert "Registered 2026-07-16" in html
@@ -94,13 +101,34 @@ def test_scoreboard_renders_artifact_numbers(client, monkeypatch):
     # (5) self-retraction rate companion stat (fixture: 44%)
     assert "44%" in html
     # (2) losses shown (fixture has 28 real losses) + (6) funnel counts visible
-    assert "Losses" in html
+    assert '<span class="ledger-tile-n">28</span>' in html
     assert "237 claims registered" in html
     # (4) headline CI band always present, with the artifact's own CI numbers
     # (fixture: [-6, +13]); provisional fixture renders the provisional verdict.
     assert "95% CI" in html
     assert "[-6, +13]" in html
     assert "provisional" in html.lower()
+
+
+@pytest.mark.parametrize(
+    ("median_lead_days", "headline", "summary"),
+    [
+        (-2.0, "EARLY RESULTS: 2 DAYS BEHIND", "2 days after the public board"),
+        (0.0, "EARLY RESULTS: EVEN WITH THE FIELD", "moved at about the same time"),
+    ],
+)
+def test_scoreboard_headline_tracks_result_sign(
+    client, monkeypatch, tmp_path, median_lead_days, headline, summary
+):
+    payload = json.loads(_FIXTURE.read_text(encoding="utf-8"))
+    payload["anticipation_score"]["median_lead_days"] = median_lead_days
+    artifact = tmp_path / "forward_scoreboard.json"
+    artifact.write_text(json.dumps(payload), encoding="utf-8")
+    _serve(monkeypatch, artifact)
+
+    html = client.get("/scoreboard").data.decode("utf-8")
+    assert headline in html
+    assert summary in html
 
 
 def test_scoreboard_share_card_png_ok(client, monkeypatch):
@@ -154,7 +182,9 @@ def test_scoreboard_missing_artifact_collecting_state(client, monkeypatch, tmp_p
     html = resp.data.decode("utf-8")
     assert "Collecting" in html
     # No fabricated numbers in the collecting state.
-    assert "THE ANTICIPATION SCORE" in html
+    assert "<h1>EARLY RESULTS</h1>" in html
+    assert "DAYS AHEAD" not in html
+    assert "DAYS BEHIND" not in html
     assert "95% CI" not in html
 
 
