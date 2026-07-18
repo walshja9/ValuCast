@@ -17,12 +17,18 @@ import app as app_module  # noqa: E402
 from app import app  # noqa: E402
 
 _FIXTURE = Path(__file__).parent / "fixtures" / "forward_scoreboard.json"
+_RENDER_BLUEPRINT = Path(__file__).parent.parent / "render.yaml"
 
 
 @pytest.fixture
 def client():
     app.config["TESTING"] = True
     return app.test_client()
+
+
+def test_render_blueprint_releases_forward_scoreboard():
+    blueprint = _RENDER_BLUEPRINT.read_text(encoding="utf-8")
+    assert '- key: SCOREBOARD_HOLD\n        value: "0"' in blueprint
 
 
 def _serve(monkeypatch, artifact_path):
