@@ -1,16 +1,6 @@
 {
   "artifact": "valucast_call_up_pulse",
   "by_identity": {
-    "671936_pitcher": {
-      "mlb_team": "TOR",
-      "mlbam_id": "671936",
-      "name": "Adam Macko",
-      "position": "P",
-      "prospect_rank": 1565,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
     "678577_hitter": {
       "mlb_team": "CWS",
       "mlbam_id": "678577",
@@ -68,16 +58,6 @@
       "position": "RF",
       "prospect_rank": 627,
       "role": "hitter",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    "686560_pitcher": {
-      "mlb_team": "TEX",
-      "mlbam_id": "686560",
-      "name": "Gavin Collyer",
-      "position": "P",
-      "prospect_rank": 1591,
-      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -191,12 +171,12 @@
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
-    "693713_pitcher": {
+    "692030_pitcher": {
       "mlb_team": "TEX",
-      "mlbam_id": "693713",
-      "name": "Emiliano Teodo",
+      "mlbam_id": "692030",
+      "name": "Jose Corniell",
       "position": "P",
-      "prospect_rank": 1011,
+      "prospect_rank": 591,
       "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -208,6 +188,16 @@
       "position": "CF",
       "prospect_rank": 51,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    "694753_pitcher": {
+      "mlb_team": "PIT",
+      "mlbam_id": "694753",
+      "name": "Khristian Curtis",
+      "position": "P",
+      "prospect_rank": 648,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -485,7 +475,7 @@
       "mlb_team": "ATH",
       "mlbam_id": "811965",
       "name": "Joshua Kuroda-Grauer",
-      "position": "SS",
+      "position": "3B",
       "prospect_rank": 49,
       "role": "hitter",
       "status": "Active",
@@ -617,7 +607,7 @@
       "mlb_team": "ATH",
       "mlbam_id": "811965",
       "name": "Joshua Kuroda-Grauer",
-      "position": "SS",
+      "position": "3B",
       "prospect_rank": 49,
       "role": "hitter",
       "status": "Active",
@@ -824,12 +814,32 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
     {
+      "mlb_team": "TEX",
+      "mlbam_id": "692030",
+      "name": "Jose Corniell",
+      "position": "P",
+      "prospect_rank": 591,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
       "mlb_team": "TB",
       "mlbam_id": "683748",
       "name": "Victor Mesa Jr.",
       "position": "RF",
       "prospect_rank": 627,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
+      "mlb_team": "PIT",
+      "mlbam_id": "694753",
+      "name": "Khristian Curtis",
+      "position": "P",
+      "prospect_rank": 648,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -945,16 +955,6 @@
     },
     {
       "mlb_team": "TEX",
-      "mlbam_id": "693713",
-      "name": "Emiliano Teodo",
-      "position": "P",
-      "prospect_rank": 1011,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
-      "mlb_team": "TEX",
       "mlbam_id": "687239",
       "name": "Ben Peoples",
       "position": "P",
@@ -994,26 +994,6 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
     {
-      "mlb_team": "TOR",
-      "mlbam_id": "671936",
-      "name": "Adam Macko",
-      "position": "P",
-      "prospect_rank": 1565,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
-      "mlb_team": "TEX",
-      "mlbam_id": "686560",
-      "name": "Gavin Collyer",
-      "position": "P",
-      "prospect_rank": 1591,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
       "mlb_team": "HOU",
       "mlbam_id": "828599",
       "name": "Lucas Spence",
@@ -1044,7 +1024,7 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     }
   ],
-  "generated_at": "2026-07-18T11:58:07.973633+00:00",
+  "generated_at": "2026-07-18T20:21:55.532828+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "board_generated_at": "2026-07-18T00:00:00+00:00",
@@ -1065,7 +1045,7 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "call_up_count": 52
+    "call_up_count": 51
   },
   "validation": {
     "blockers": [],
