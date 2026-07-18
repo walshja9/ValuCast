@@ -38,6 +38,8 @@ METRIC = "rate_stat_mae_ratio_vs_forward_actuals"
 
 HITTER_RATE_KEYS = ("AVG", "OBP", "SLG", "OPS")
 PITCHER_RATE_KEYS = ("ERA", "WHIP")  # the rate stats present across all three sources
+HITTER_RATE_COMPONENT_KEYS = ("PA", "AB", "H", "1B", "2B", "3B", "HR", "BB", "HBP", "SF")
+PITCHER_RATE_COMPONENT_KEYS = ("IP", "ER", "BB", "H_ALLOWED")
 HITTER_COUNTING_KEYS = ("HR", "RBI", "R", "SB")
 PITCHER_COUNTING_KEYS = ("ER", "BB", "H_ALLOWED", "K", "W", "SV", "HLD")
 PITCHER_POOLS = {"pitcher", "starter", "reliever"}
@@ -224,6 +226,65 @@ def score_sources(frozen: dict, actual_lines: dict, ids: list[str]) -> dict:
 
 def _actual_lines(actuals_rows: list[dict]) -> dict[str, dict]:
     return _rate_lines(actuals_rows)
+
+
+def _actual_rate_component_lines(rows: list[dict]) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    for row in rows:
+        mlbam_id = _mlbam_id(row)
+        if not mlbam_id:
+            continue
+        role = _role(row)
+        stats = row.get("stats") or {}
+        keys = PITCHER_RATE_COMPONENT_KEYS if role == "pitcher" else HITTER_RATE_COMPONENT_KEYS
+        components = {key: _finite(stats.get(key)) or 0.0 for key in keys}
+        volume = components["IP" if role == "pitcher" else "PA"]
+        existing = out.get(mlbam_id)
+        if existing is None or volume > existing["volume"]:
+            out[mlbam_id] = {"role": role, "components": components, "volume": volume}
+    return out
+
+
+def _actual_rate_deltas(as_of_rows: list[dict], current_rows: list[dict]) -> dict[str, dict]:
+    starts = _actual_rate_component_lines(as_of_rows)
+    ends = _actual_rate_component_lines(current_rows)
+    out: dict[str, dict] = {}
+    for mlbam_id, end in ends.items():
+        start = starts.get(mlbam_id)
+        if not start or start["role"] != end["role"]:
+            continue
+        components = {
+            key: max(0.0, value - start["components"].get(key, 0.0))
+            for key, value in end["components"].items()
+        }
+        role = end["role"]
+        if role == "pitcher":
+            volume = components["IP"]
+            if volume <= 0:
+                continue
+            rates = {
+                "ERA": round(9 * components["ER"] / volume, 4),
+                "WHIP": round((components["BB"] + components["H_ALLOWED"]) / volume, 4),
+            }
+        else:
+            ab = components["AB"]
+            obp_denom = ab + components["BB"] + components["HBP"] + components["SF"]
+            if ab <= 0 or obp_denom <= 0:
+                continue
+            total_bases = (
+                components["1B"] + 2 * components["2B"]
+                + 3 * components["3B"] + 4 * components["HR"]
+            )
+            avg = components["H"] / ab
+            obp = (components["H"] + components["BB"] + components["HBP"]) / obp_denom
+            slg = total_bases / ab
+            rates = {
+                "AVG": round(avg, 4), "OBP": round(obp, 4),
+                "SLG": round(slg, 4), "OPS": round(obp + slg, 4),
+            }
+            volume = components["PA"]
+        out[mlbam_id] = {"role": role, "rates": rates, "volume": round(volume, 3)}
+    return out
 
 
 # -------------------------------------------------------------- counting scores
@@ -471,6 +532,7 @@ def build_comparison(
     *,
     frozen: dict | None,
     actual_lines: dict,
+    rate_actuals_method: str = "unverified",
     live_layer: dict | None,
     shadow_layer: dict | None,
     generated_at: str,
@@ -483,31 +545,56 @@ def build_comparison(
     ids = _scoreable(frozen, actual_lines) if frozen else []
     scores = score_sources(frozen, actual_lines, ids) if frozen and ids else {}
     sample = len(ids)
-    model_score = scores.get("marcel_mean_ratio_vs_steamer")
-
     horizon_ok = horizon_days is not None and horizon_days >= MIN_HORIZON_DAYS
-    # decide_gate owns sample/improvement logic; gate the horizon by withholding the sample
-    # until the frozen projection genuinely predates the actuals (honest reason set after).
-    gate = decide_gate(
-        metric=METRIC,
-        model_score=model_score,
-        baselines={"steamer_ros": 1.0},
-        sample_size=sample if horizon_ok else 0,
-        cv_method="forward_actuals_vs_oldest_frozen_pure_projection",
-        validated_through=_date_part(generated_at),
-        min_sample=MIN_SAMPLE,
-        min_improvement_pct=MIN_IMPROVEMENT_PCT,
-        lower_is_better=True,
-        now=_date_part(generated_at) if horizon_ok else None,
-    )
-    if not horizon_ok:
-        gate["reason"] = (
-            f"forward horizon {horizon_days}d < required {MIN_HORIZON_DAYS}d"
-            if horizon_days is not None
-            else "no frozen projection snapshot yet"
-        )
 
-    marcel_wins = gate["status"] == "active"
+    def rate_gate(role_scores: dict, role_sample: int) -> dict:
+        gate = decide_gate(
+            metric=METRIC,
+            model_score=role_scores.get("marcel_mean_ratio_vs_steamer"),
+            baselines={"steamer_ros": 1.0},
+            sample_size=role_sample if horizon_ok else 0,
+            cv_method="post_freeze_component_deltas_vs_oldest_frozen_pure_projection",
+            validated_through=_date_part(generated_at),
+            min_sample=MIN_SAMPLE,
+            min_improvement_pct=MIN_IMPROVEMENT_PCT,
+            lower_is_better=True,
+            now=_date_part(generated_at) if horizon_ok else None,
+        )
+        if not horizon_ok:
+            gate["reason"] = (
+                f"forward horizon {horizon_days}d < required {MIN_HORIZON_DAYS}d"
+                if horizon_days is not None
+                else "no frozen projection snapshot yet"
+            )
+        return gate
+
+    ids_by_role = {
+        "hitters": [mlbam_id for mlbam_id in ids if actual_lines[mlbam_id]["role"] == "hitter"],
+        "pitchers": [mlbam_id for mlbam_id in ids if actual_lines[mlbam_id]["role"] == "pitcher"],
+    }
+    role_scores = {
+        role: score_sources(frozen, actual_lines, role_ids) if frozen and role_ids else {}
+        for role, role_ids in ids_by_role.items()
+    }
+    gate = rate_gate(scores, sample)
+    role_gates = {
+        role: rate_gate(role_scores[role], len(role_ids))
+        for role, role_ids in ids_by_role.items()
+    }
+    method_ok = rate_actuals_method == "post_freeze_component_deltas"
+    both_roles_active = all(role_gate["status"] == "active" for role_gate in role_gates.values())
+    publication_clear = method_ok and gate["status"] == "active" and both_roles_active
+    publication_veto = {
+        "status": "clear" if publication_clear else "held",
+        "affects_live_outputs": False,
+        "reason": (
+            "all rate gates active; any live-source change remains manual"
+            if publication_clear
+            else "rate actuals are not verified post-freeze component deltas"
+            if not method_ok
+            else "hitter and pitcher gates must both be active"
+        ),
+    }
     return {
         "artifact": ARTIFACT_NAME,
         "status": "shadow_only",  # repo-wide provenance label; this layer never feeds live
@@ -523,11 +610,15 @@ def build_comparison(
         },
         "comparison_basis": {
             "metric": METRIC,
+            "rate_actuals_method": rate_actuals_method,
             "frozen_as_of": (frozen or {}).get("date"),
             "horizon_days": horizon_days,
             "min_horizon_days": MIN_HORIZON_DAYS,
             "horizon_sufficient": horizon_ok,
             "scoreable_players": sample,
+            "scoreable_players_by_role": {
+                role: len(role_ids) for role, role_ids in ids_by_role.items()
+            },
             "min_sample": MIN_SAMPLE,
             "hitter_rate_keys": list(HITTER_RATE_KEYS),
             "pitcher_rate_keys": list(PITCHER_RATE_KEYS),
@@ -540,9 +631,12 @@ def build_comparison(
             "what_would_change diff and flip manually via the env flag.",
         ],
         "scores": scores,
+        "role_scores": role_scores,
+        "role_gates": role_gates,
         "counting_stat_comparison": counting_stat_comparison or {"status": "not_requested"},
         "gate": gate,
-        "marcel_beats_steamer": marcel_wins,
+        "publication_veto": publication_veto,
+        "marcel_beats_steamer": publication_clear,
         "what_would_change": build_what_would_change(live_layer, shadow_layer),
     }
 
@@ -574,6 +668,7 @@ def run_projection_source_comparison(
     artifact_path: Path = ARTIFACT_PATH,
     freeze_archive_dir: Path = FREEZE_ARCHIVE_DIR,
     comparison_archive_dir: Path = COMPARISON_ARCHIVE_DIR,
+    actuals_snapshot_dir: Path = ACTUALS_SNAPSHOT_DIR,
     generated_at: str | None = None,
     now=None,
 ) -> dict:
@@ -587,10 +682,19 @@ def run_projection_source_comparison(
     freeze = build_freeze(marcel_rows, steamer_rows, generated_at)
     archive_freeze(freeze, date_str, freeze_archive_dir)
     oldest = load_oldest_freeze(freeze_archive_dir) or freeze
+    oldest_date = oldest.get("date")
+    as_of_actuals_path = actuals_snapshot_dir / f"{oldest_date}.json" if oldest_date else None
+    if as_of_actuals_path and as_of_actuals_path.exists():
+        actual_lines = _actual_rate_deltas(_load(as_of_actuals_path) or [], actuals_rows)
+        rate_actuals_method = "post_freeze_component_deltas"
+    else:
+        actual_lines = {}
+        rate_actuals_method = "unavailable_missing_freeze_actuals_snapshot"
 
     comparison = build_comparison(
         frozen=oldest,
-        actual_lines=_actual_lines(actuals_rows),
+        actual_lines=actual_lines,
+        rate_actuals_method=rate_actuals_method,
         live_layer=_load(live_layer_path),
         shadow_layer=_load(shadow_layer_path),
         generated_at=generated_at,
@@ -621,8 +725,19 @@ def validate_comparison(payload: dict) -> list[str]:
         problems.append("gate is not a valid gate object")
         return problems
     basis = payload.get("comparison_basis") or {}
+    publication_veto = payload.get("publication_veto") or {}
+    role_gates = payload.get("role_gates") or {}
+    if publication_veto.get("status") == "clear" and not all(
+        (role_gates.get(role) or {}).get("status") == "active"
+        for role in ("hitters", "pitchers")
+    ):
+        problems.append("publication veto cleared without both role gates active")
+    if publication_veto and publication_veto.get("affects_live_outputs") is not False:
+        problems.append("publication veto must not affect live outputs")
     # A win cannot be claimed before enough forward horizon AND sample exist.
     if payload.get("marcel_beats_steamer") and gate.get("status") == "active":
+        if basis.get("rate_actuals_method") != "post_freeze_component_deltas":
+            problems.append("claimed a win without post-freeze component-delta actuals")
         if not basis.get("horizon_sufficient"):
             problems.append("claimed a win before the forward horizon is sufficient")
         if (basis.get("scoreable_players") or 0) < MIN_SAMPLE:

@@ -411,15 +411,25 @@
         board, with a matching historical benchmark pending</strong> — not a benchmark we've
         beaten.</p>
         {% if forward_gate and forward_gate.gate %}
-        <p><strong>A live forward check is running — and currently losing.</strong> We also run a
-        day-by-day forward comparison of ValuCast H+P against the Steamer board on this season's
-        actuals. As of {{ forward_gate.gate.validated_through }}, ValuCast's rate-stat error is
-        about {{ ((forward_gate.gate.model_score - 1) * 100) | round | int }}% <em>higher</em> than
-        Steamer's ({{ forward_gate.gate.model_score }}× its error) over a
-        {{ forward_gate.comparison_basis.horizon_days }}-day window — but the sample is still below
-        our {{ forward_gate.comparison_basis.min_horizon_days }}-day gate, so it is
-        <strong>not yet decisive</strong> and does not flip the live board. We publish it here
-        rather than wait for it to look better.</p>
+            {% if forward_gate.comparison_basis.rate_actuals_method == "post_freeze_component_deltas" %}
+                {% set hitter_ratio = forward_gate.role_scores.get("hitters", {}).get("marcel_mean_ratio_vs_steamer") %}
+                {% set pitcher_ratio = forward_gate.role_scores.get("pitchers", {}).get("marcel_mean_ratio_vs_steamer") %}
+                <p><strong>Forward rate check — advisory only.</strong> The evaluator now rebuilds
+                actual rates from post-freeze counting-stat deltas rather than comparing frozen
+                projections with cumulative season rates. As of {{ forward_gate.gate.validated_through }},
+                {% if hitter_ratio is not none and pitcher_ratio is not none %}
+                Hitter rate error: <strong>{{ hitter_ratio }}x Steamer</strong>.
+                Pitcher rate error: <strong>{{ pitcher_ratio }}x Steamer</strong>.
+                {% else %}the role-separated sample is still collecting.{% endif %}
+                The hitter and pitcher checks are separate: <strong>both roles must clear independently</strong>.
+                {% if forward_gate.publication_veto.status == "held" %}<strong>Publication remains held</strong>.
+                {% else %}The advisory veto is clear, but any source change remains manual and default-off.{% endif %}</p>
+            {% else %}
+                <p><strong>The stored forward rate readout is excluded from publication decisions.</strong>
+                It used cumulative season rates rather than post-freeze component deltas, so the stored
+                magnitude is <strong>not a valid post-freeze score</strong>. The evaluator is being repaired;
+                <strong>Steamer remains the live source</strong>.</p>
+            {% endif %}
         {% endif %}
     </section>
 
@@ -502,7 +512,7 @@
         page: every ValuCast model and subsystem carries an honest four-way verdict
         &mdash; VALIDATED, PROVISIONAL, DEPRECATED, or REJECTED &mdash; and every verdict
         links the committed evidence behind it. The published failures (a forward
-        projection currently losing to Steamer, a Wins target the labels can't train)
+        rate evaluator held for repair, a Wins target the labels can't train)
         are first-class rows there, not hidden. We publish what we haven't proven rather
         than wait for it to look better.</p>
     </section>
