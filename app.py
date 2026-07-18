@@ -8861,6 +8861,7 @@ def _scoreboard_view(sc: dict) -> dict:
     funnel = sc.get("funnel") or {}
     retraction = funnel.get("self_retraction_rate") or {}
     cohorts = sc.get("cohorts") or {}
+    cohort_count = cohorts.get("cohort_count") or 0
     retract_rate = retraction.get("rate")
     return {
         "generated_at": sc.get("generated_at"),
@@ -8882,7 +8883,8 @@ def _scoreboard_view(sc: dict) -> dict:
         "retracted": retraction.get("retracted"),
         "retraction_rate_pct": (round(retract_rate * 100) if retract_rate is not None else None),
         "cohort_status": cohorts.get("status"),
-        "cohort_count": cohorts.get("cohort_count"),
+        "cohort_count": cohort_count,
+        "cohort_label": f"{cohort_count} board{'s' if cohort_count != 1 else ''}",
         "independence_attestation": sc.get("independence_attestation"),
     }
 
@@ -8982,8 +8984,7 @@ def _forward_scoreboard_share_card_png(view):
     # footnote (anti-trophy checklist #3). Board count comes from the cohort section.
     ce_y = hy + hh + 14
     draw.rounded_rectangle((x, ce_y, x + w, ce_y + 46), radius=8, fill=card, outline=border, width=1)
-    cohort_count = v.get("cohort_count") or 0
-    co_entrant = f"Co-entrant: Aggregate public consensus ({cohort_count} boards)"
+    co_entrant = f"Co-entrant: Aggregate public consensus ({v.get('cohort_label') or '0 boards'})"
     draw.text((x + 18, ce_y + 13), co_entrant, fill=blue, font=_graphic_font(17, bold=True))
 
     # Funnel tiles: wins / losses / self-retraction rate / open — losses as prominent
