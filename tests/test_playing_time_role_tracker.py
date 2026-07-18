@@ -195,3 +195,62 @@ def test_midseason_ros_volume_is_annualized_before_role_thresholds():
     assert payload_pre["profiles"][0]["projected_role"] == "part_time_or_strong_side"
     assert payload_pre["profiles"][0]["season_pace_factor"] == 1.0
 
+
+def _role_row(*, pool="reliever", ip=60.0, gs=0.0, p_sp=0.2, mlbam_id="901"):
+    return {
+        "name": "Role Test Arm",
+        "pool": pool,
+        "team": "SEA",
+        "positions": ["P"],
+        "stats": {"IP": ip, "GS": gs, "SV_HLD": 0.0},
+        "metadata": {"mlbam_id": mlbam_id, "p_sp": p_sp},
+    }
+
+
+def test_high_ip_reliever_with_zero_starts_stays_relief():
+    payload = build_playing_time_role_tracker(
+        projections=[_role_row(ip=70.0, gs=0.0)],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    profile = payload["profiles"][0]
+    assert profile["projected_role"] == "middle_relief"
+    assert profile["source_pool"] == "reliever"
+    assert profile["starter_probability"] == 0.2
+    assert profile["projected_starts_ros"] == 0.0
+    assert profile["projected_innings_ros"] == 70.0
+    assert profile["role_context_status"] == "ready"
+    assert profile["role_context_blockers"] == []
+
+
+def test_generic_pitcher_with_starter_volume_is_rotation_starter():
+    payload = build_playing_time_role_tracker(
+        projections=[_role_row(pool="pitcher", ip=60.0, gs=8.0)],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    assert payload["profiles"][0]["projected_role"] in {
+        "rotation_starter", "rotation_workhorse"
+    }
+
+
+def test_projected_starts_with_zero_innings_blocks_role_context():
+    payload = build_playing_time_role_tracker(
+        projections=[_role_row(pool="starter", ip=0.0, gs=7.0, p_sp=0.95)],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    profile = payload["profiles"][0]
+    assert profile["role_context_status"] == "blocked"
+    assert "projected_starts_without_innings" in profile["role_context_blockers"]
+
+
+def test_invalid_probability_and_negative_volume_block_role_context():
+    payload = build_playing_time_role_tracker(
+        projections=[_role_row(ip=-1.0, gs=-1.0, p_sp=1.2)],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    blockers = payload["profiles"][0]["role_context_blockers"]
+    assert blockers == [
+        "starter_probability_out_of_range",
+        "negative_projected_starts",
+        "negative_projected_innings",
+    ]
+
