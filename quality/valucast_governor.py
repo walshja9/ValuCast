@@ -65,6 +65,7 @@ BOARD_CHECK_SURFACES = {
 # block buys. Buys are gated on their own quality (corroboration + buy promotion gate).
 BUY_IRRELEVANT_BOARD_CHECK_IDS = {
     "prospect_top_board_role_shape",
+    "prospect_transition_continuity",
     "milb_stat_freshness_audit",
     "prospect_card_data_audit",
 }

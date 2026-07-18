@@ -302,6 +302,42 @@ def test_transition_continuity_replays_briceno_july_17_to_18():
     assert briceno["final_score_delta"] == -19.66
 
 
+def test_transition_continuity_does_not_change_buy_surface_readiness():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    previous_rows = json.loads(json.dumps(prospects))
+    prospects[0].update({"level": "AAA", "score": 40.0})
+    prospects[0]["components"].update(
+        {
+            "model_score": 50.0,
+            "bucket_calibration": {
+                "adjustment": -7.0,
+                "rules": [{"bucket": "thin_current_sample_confidence"}],
+            },
+        }
+    )
+    previous_rows[0]["components"]["model_score"] = 50.0
+    payload = evaluate_quality_governor(
+        [
+            _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+            _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+            *prospects,
+        ],
+        prospect_rank=_transition_rank_payload("2026-07-18", prospects),
+        previous_prospect_rank=_transition_rank_payload("2026-07-17", previous_rows),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-07-18T12:00:00+00:00",
+    )
+
+    check = next(
+        check for check in payload["checks"]
+        if check["id"] == "prospect_transition_continuity"
+    )
+    assert check["status"] == "blocked"
+    assert check["message"] not in payload["surface_blockers"]["buys"]
+
+
 def _buy_signals(
     ready=False,
     history_limited_count=0,
