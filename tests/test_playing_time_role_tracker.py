@@ -1,6 +1,7 @@
 import json
 
 from mlb.playing_time_role import build_playing_time_role_tracker
+from mlb.playing_time_role import role_watch_rows
 from mlb.playing_time_role import run_playing_time_role_tracker
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
 
@@ -281,4 +282,54 @@ def test_validator_rejects_incoherent_status_and_blockers(tmp_path):
     path.write_text(json.dumps(payload), encoding="utf-8")
     _, problems = validate_playing_time_role_tracker(path)
     assert any("ready profile has blockers" in problem for problem in problems)
+
+
+def _watch_profile(**overrides):
+    profile = {
+        "name": "Opportunity Arm",
+        "source_pool": "reliever",
+        "starter_probability": 0.42,
+        "projected_starts_ros": 2.0,
+        "projected_innings_ros": 30.0,
+        "active_mlb_roster": True,
+        "active_injury_risk": False,
+        "availability_status": "active_mlb_roster",
+        "role_context_status": "ready",
+        "role_context_blockers": [],
+    }
+    profile.update(overrides)
+    return profile
+
+
+def test_role_watch_includes_only_explainable_active_opportunity():
+    rows = role_watch_rows([_watch_profile()])
+    assert len(rows) == 1
+    assert "2.0 starts and 30.0 innings" in rows[0]["opportunity_explanation"]
+    assert "42%" in rows[0]["opportunity_explanation"]
+
+
+def test_role_watch_suppresses_injury_inactive_noise_and_blockers():
+    rows = role_watch_rows([
+        _watch_profile(name="Injured", active_injury_risk=True),
+        _watch_profile(name="Inactive", active_mlb_roster=False),
+        _watch_profile(name="Unknown", availability_status="unknown"),
+        _watch_profile(name="Fractional", projected_starts_ros=0.9),
+        _watch_profile(name="No innings", projected_innings_ros=0.0),
+        _watch_profile(name="No probability", starter_probability=None),
+        _watch_profile(name="Blocked", role_context_status="blocked",
+                       role_context_blockers=["contradiction"]),
+        _watch_profile(name="Starter pool", source_pool="starter"),
+    ])
+    assert rows == []
+
+
+def test_role_watch_orders_by_projected_starts_then_name_without_mutation():
+    profiles = [
+        _watch_profile(name="Zulu", projected_starts_ros=2.0),
+        _watch_profile(name="Alpha", projected_starts_ros=2.0),
+        _watch_profile(name="First", projected_starts_ros=3.0),
+    ]
+    rows = role_watch_rows(profiles)
+    assert [row["name"] for row in rows] == ["First", "Alpha", "Zulu"]
+    assert all("opportunity_explanation" not in row for row in profiles)
 

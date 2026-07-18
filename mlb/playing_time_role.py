@@ -30,6 +30,9 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / ARTIFACT_NAME
 ROLE_V2_VERSION = "2.0.0"
 DEFAULT_RELIABILITY = 50.0
 DEFAULT_CERTAINTY = 40.0
+ROLE_WATCH_EXCLUDED_STATUSES = {
+    "injured", "rehab", "inactive", "stale_or_inactive", "unknown", ""
+}
 
 
 def _load_json(path: Path) -> Any:
@@ -194,6 +197,41 @@ def _role_contract_fields(row: dict) -> dict:
         "role_context_status": "blocked" if blockers else "ready",
         "role_context_blockers": blockers,
     }
+
+
+def role_watch_rows(profiles: list[dict]) -> list[dict]:
+    rows = []
+    for profile in profiles:
+        status = str(profile.get("availability_status") or "").strip().lower()
+        probability = _opt_float(profile.get("starter_probability"))
+        starts = _clean_float(profile.get("projected_starts_ros"))
+        innings = _clean_float(profile.get("projected_innings_ros"))
+        if (
+            profile.get("source_pool") != "reliever"
+            or profile.get("role_context_status") != "ready"
+            or profile.get("active_mlb_roster") is not True
+            or profile.get("active_injury_risk") is True
+            or status in ROLE_WATCH_EXCLUDED_STATUSES
+            or probability is None
+            or starts < 1.0
+            or innings <= 0.0
+        ):
+            continue
+        row = dict(profile)
+        row["opportunity_explanation"] = (
+            f"Projected for {starts:.1f} starts and {innings:.1f} innings the rest "
+            f"of the season while the source role remains relief. Starter "
+            f"probability is {probability:.0%}. Roster status is "
+            f"{status.replace('_', ' ')}."
+        )
+        rows.append(row)
+    return sorted(
+        rows,
+        key=lambda row: (
+            -_clean_float(row.get("projected_starts_ros")),
+            str(row.get("name") or "").casefold(),
+        ),
+    )
 
 
 def _row_profile(
