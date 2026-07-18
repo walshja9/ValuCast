@@ -19,6 +19,7 @@ from prospects.calibration_report import (
 from prospects.calibration_report import (
     MAX_TOP50_PITCHER_RATE as MAX_TOP50_PROSPECT_PITCHER_RATE,
 )
+from web.buy_score import STEP_THRESHOLD
 from web.public_snapshot_store import DD_DERIVED_SOURCE_TOKENS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +27,9 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_quality_governor.json"
 PUBLIC_SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+PROSPECT_RANK_ARCHIVE_DIR = (
+    ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
+)
 PROSPECT_COVERAGE_AUDIT_PATH = (
     ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 )
@@ -43,7 +47,7 @@ RECENT_SIGNAL_REPORT_PATH = (
 )
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.2.3"
+GOVERNOR_VERSION = "0.2.4"
 SURFACE_DYNASTY = "dynasty"
 SURFACE_PROSPECTS = "prospects"
 SURFACE_BUYS = "buys"
@@ -110,6 +114,9 @@ CAUTION_FACTUAL_CONTEXT_BANDS = {"thin", "limited", "low_impact"}
 BEST_SINGLE_COVERED_CAUTION_BANDS = {"thin", "limited"}
 LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
+PROSPECT_TRANSITION_MODEL_DELTA_LIMIT = 1.0
+PROSPECT_TRANSITION_SAMPLE_LIMIT = 12
+PROSPECT_THIN_BUCKET = "thin_current_sample_confidence"
 
 
 def _clean_float(value: Any) -> float | None:
@@ -144,6 +151,41 @@ def _generated_at(*payloads: dict | None) -> str:
         if payload and payload.get("generated_at"):
             return str(payload["generated_at"])
     return datetime.now(timezone.utc).isoformat()
+
+
+def load_previous_prospect_rank(
+    current: dict,
+    archive_dir: Path | str = PROSPECT_RANK_ARCHIVE_DIR,
+) -> dict | None:
+    current_date = _date_part(current.get("generated_at") or current.get("date"))
+    if not current_date:
+        raise ValueError("current prospect rank is missing a valid generated date")
+    root = Path(archive_dir)
+    if not root.exists():
+        return None
+    candidates = [
+        path
+        for path in root.glob("*.json")
+        if (date_str := _date_part(path.stem)) and date_str < current_date
+    ]
+    if not candidates:
+        return None
+    path = max(candidates, key=lambda candidate: candidate.stem)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(f"malformed prospect rank baseline {path}: {exc}") from exc
+    baseline_date = _date_part(
+        payload.get("generated_at") or payload.get("date")
+    ) if isinstance(payload, dict) else None
+    if (
+        not isinstance(payload, dict)
+        or not isinstance(payload.get("board"), list)
+        or not baseline_date
+        or baseline_date >= current_date
+    ):
+        raise ValueError(f"malformed prospect rank baseline {path}")
+    return payload
 
 
 def _check(check_id: str, passed: bool, message: str, **metrics: Any) -> dict:
@@ -239,6 +281,133 @@ def _availability_component(row: dict) -> dict:
 def _factual_context_component(row: dict) -> dict:
     context = _components(row).get("factual_current_context")
     return context if isinstance(context, dict) else {}
+
+
+def _prospect_transition_continuity(
+    current: dict | None,
+    previous: dict | None,
+) -> dict:
+    current_date = _date_part((current or {}).get("generated_at") or (current or {}).get("date"))
+    previous_date = _date_part((previous or {}).get("generated_at") or (previous or {}).get("date"))
+    if previous is None:
+        return _check(
+            "prospect_transition_continuity",
+            True,
+            "Prospect transition continuity is collecting its first prior vintage.",
+            sample_ready=False,
+            baseline_date=None,
+            current_date=current_date,
+            evaluated_matched_row_count=0,
+            incident_count=0,
+            hitter_count=0,
+            pitcher_count=0,
+            model_delta_limit=PROSPECT_TRANSITION_MODEL_DELTA_LIMIT,
+            bucket_step_threshold=STEP_THRESHOLD,
+            samples=[],
+        )
+
+    prior_by_key = {
+        key: row
+        for row in _prospect_rank_rows(previous)
+        if (key := _identity_key(row))
+    }
+    matched = 0
+    incidents = []
+    for row in _prospect_rank_rows(current):
+        key = _identity_key(row)
+        prior = prior_by_key.get(key) if key else None
+        if prior is None:
+            continue
+        matched += 1
+        old_availability = _availability_component(prior).get("status")
+        new_availability = _availability_component(row).get("status")
+        old_starter = _factual_context_component(prior).get("starter_role")
+        new_starter = _factual_context_component(row).get("starter_role")
+        transitions = [
+            label
+            for label, old, new in (
+                ("level", prior.get("level"), row.get("level")),
+                ("availability_status", old_availability, new_availability),
+                ("starter_role", old_starter, new_starter),
+            )
+            if old != new
+        ]
+
+        old_components = _components(prior)
+        new_components = _components(row)
+        old_calibration = old_components.get("bucket_calibration") or {}
+        new_calibration = new_components.get("bucket_calibration") or {}
+        old_rules = sorted(
+            str(rule.get("bucket"))
+            for rule in old_calibration.get("rules") or []
+            if isinstance(rule, dict) and rule.get("bucket")
+        )
+        new_rules = sorted(
+            str(rule.get("bucket"))
+            for rule in new_calibration.get("rules") or []
+            if isinstance(rule, dict) and rule.get("bucket")
+        )
+        old_model = _clean_float(old_components.get("model_score"))
+        new_model = _clean_float(new_components.get("model_score"))
+        old_bucket = _clean_float(old_calibration.get("adjustment")) or 0.0
+        new_bucket = _clean_float(new_calibration.get("adjustment")) or 0.0
+        old_score = _clean_float(prior.get("score"))
+        new_score = _clean_float(row.get("score"))
+        if None in {old_model, new_model, old_score, new_score}:
+            continue
+        model_delta = new_model - old_model
+        bucket_delta = new_bucket - old_bucket
+        final_delta = new_score - old_score
+        if not (
+            transitions
+            and PROSPECT_THIN_BUCKET in new_rules
+            and PROSPECT_THIN_BUCKET not in old_rules
+            and abs(model_delta) <= PROSPECT_TRANSITION_MODEL_DELTA_LIMIT
+            and bucket_delta < -STEP_THRESHOLD
+            and final_delta < 0
+        ):
+            continue
+        incidents.append(
+            {
+                "mlbam_id": row.get("mlbam_id"),
+                "name": row.get("name"),
+                "role": row.get("role"),
+                "transition_signals": transitions,
+                "old_level": prior.get("level"),
+                "new_level": row.get("level"),
+                "old_availability_status": old_availability,
+                "new_availability_status": new_availability,
+                "old_starter_role": old_starter,
+                "new_starter_role": new_starter,
+                "model_score_delta": round(model_delta, 2),
+                "bucket_adjustment_delta": round(bucket_delta, 2),
+                "final_score_delta": round(final_delta, 2),
+                "old_rank": prior.get("rank"),
+                "new_rank": row.get("rank"),
+                "old_bucket_rules": old_rules,
+                "new_bucket_rules": new_rules,
+            }
+        )
+
+    return _check(
+        "prospect_transition_continuity",
+        not incidents,
+        (
+            "Prospect transition calibration is continuous across the latest vintages."
+            if not incidents
+            else "Stable model scores produced material prospect transition calibration cliffs."
+        ),
+        sample_ready=True,
+        baseline_date=previous_date,
+        current_date=current_date,
+        evaluated_matched_row_count=matched,
+        incident_count=len(incidents),
+        hitter_count=sum(row["role"] == "hitter" for row in incidents),
+        pitcher_count=sum(row["role"] == "pitcher" for row in incidents),
+        model_delta_limit=PROSPECT_TRANSITION_MODEL_DELTA_LIMIT,
+        bucket_step_threshold=STEP_THRESHOLD,
+        samples=incidents[:PROSPECT_TRANSITION_SAMPLE_LIMIT],
+    )
 
 
 def _has_best_single_level_stat_line(row: dict) -> bool:
@@ -1624,6 +1793,7 @@ def _dd_score_source_audit(players: list[dict]) -> dict:
 def evaluate_quality_governor(
     public_snapshot_or_rows: dict | list[dict] | None,
     prospect_rank: dict | None = None,
+    previous_prospect_rank: dict | None = None,
     prospect_coverage_audit: dict | None = None,
     mlb_layer: dict | None = None,
     buy_signals: dict | None = None,
@@ -1663,6 +1833,10 @@ def evaluate_quality_governor(
         _surface_check(_mlb_top_board_role_shape(players), SURFACE_DYNASTY),
         _surface_check(
             _prospect_top_board_role_shape(prospect_rank, players),
+            SURFACE_PROSPECTS,
+        ),
+        _surface_check(
+            _prospect_transition_continuity(prospect_rank, previous_prospect_rank),
             SURFACE_PROSPECTS,
         ),
         _surface_check(_two_way_policy(players), SURFACE_BOTH),
@@ -1901,6 +2075,7 @@ def run_quality_governor(
     milb_stat_freshness_audit_path: Path = MILB_STAT_FRESHNESS_AUDIT_PATH,
     prospect_card_data_audit_path: Path = PROSPECT_CARD_DATA_AUDIT_PATH,
     recent_signal_report_path: Path = RECENT_SIGNAL_REPORT_PATH,
+    prospect_rank_archive_dir: Path | str = PROSPECT_RANK_ARCHIVE_DIR,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     public_snapshot = _load_optional(public_snapshot_path)
@@ -1913,9 +2088,15 @@ def run_quality_governor(
     milb_stat_freshness_audit = _load_optional(milb_stat_freshness_audit_path)
     prospect_card_data_audit = _load_optional(prospect_card_data_audit_path)
     recent_signal_report = _load_optional(recent_signal_report_path)
+    previous_prospect_rank = (
+        load_previous_prospect_rank(prospect_rank, prospect_rank_archive_dir)
+        if prospect_rank is not None
+        else None
+    )
     payload = evaluate_quality_governor(
         public_snapshot,
         prospect_rank=prospect_rank,
+        previous_prospect_rank=previous_prospect_rank,
         prospect_coverage_audit=prospect_coverage_audit,
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,

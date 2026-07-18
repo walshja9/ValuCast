@@ -3,8 +3,14 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from prospects.rank_v1 import _model_lookup, _model_score
-from quality.valucast_governor import evaluate_quality_governor
+from quality.valucast_governor import (
+    _prospect_transition_continuity,
+    evaluate_quality_governor,
+    load_previous_prospect_rank,
+)
 
 QUALITY_GOVERNOR_PATH = Path("data/models/valucast_quality_governor.json")
 PROSPECT_TOP50_BUCKET_SHAPE_CHECK_ID = "prospect_top50_bucket_shape"
@@ -90,6 +96,210 @@ def _prospect_rank(rows):
         "generated_at": "2026-06-13T12:00:00+00:00",
         "board": rows,
     }
+
+
+def _transition_rank_row(
+    *,
+    mlbam_id=800522,
+    name="Josue Briceno",
+    role="hitter",
+    level="A",
+    status="available",
+    starter_role=False,
+    score=50.0,
+    rank=10,
+    model_score=50.0,
+    bucket=None,
+    bucket_adjustment=0.0,
+):
+    components = {
+        "availability": {"status": status},
+        "factual_current_context": {"starter_role": starter_role},
+        "model_score": model_score,
+    }
+    if bucket is not None:
+        components["bucket_calibration"] = {
+            "adjustment": bucket_adjustment,
+            "rules": [{"bucket": bucket, "adjustment": bucket_adjustment}],
+        }
+    return {
+        "mlbam_id": mlbam_id,
+        "name": name,
+        "role": role,
+        "level": level,
+        "score": score,
+        "rank": rank,
+        "components": components,
+    }
+
+
+def _transition_rank_payload(date_str, rows):
+    return {
+        "date": date_str,
+        "generated_at": f"{date_str}T12:00:00+00:00",
+        "board": rows,
+    }
+
+
+def _transition_check(current_row, prior_row=None):
+    current = _transition_rank_payload("2026-07-18", [current_row])
+    prior = (
+        _transition_rank_payload("2026-07-17", [prior_row])
+        if prior_row is not None
+        else None
+    )
+    return _prospect_transition_continuity(current, prior)
+
+
+def test_transition_continuity_blocks_new_material_thin_sample_cliff():
+    prior = _transition_rank_row()
+    current = _transition_rank_row(
+        level="AA",
+        status="thin_current_sample",
+        score=42.0,
+        model_score=49.8,
+        bucket="thin_current_sample_confidence",
+        bucket_adjustment=-7.0,
+    )
+
+    check = _transition_check(current, prior)
+
+    assert check["status"] == "blocked"
+    assert check["metrics"]["incident_count"] == 1
+    assert check["metrics"]["hitter_count"] == 1
+    assert check["metrics"]["pitcher_count"] == 0
+
+
+def test_transition_continuity_blocks_pitcher_starter_role_transition():
+    prior = _transition_rank_row(role="pitcher", starter_role=False)
+    current = _transition_rank_row(
+        role="pitcher",
+        starter_role=True,
+        score=42.0,
+        model_score=49.8,
+        bucket="thin_current_sample_confidence",
+        bucket_adjustment=-7.0,
+    )
+
+    check = _transition_check(current, prior)
+
+    assert check["status"] == "blocked"
+    assert check["metrics"]["pitcher_count"] == 1
+    assert check["metrics"]["samples"][0]["transition_signals"] == ["starter_role"]
+
+
+def test_transition_continuity_allows_transition_without_new_thin_rule():
+    check = _transition_check(
+        _transition_rank_row(level="AA", score=42.0, bucket="other", bucket_adjustment=-7.0),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "passed"
+
+
+def test_transition_continuity_allows_real_underlying_model_move():
+    check = _transition_check(
+        _transition_rank_row(
+            level="AA",
+            score=42.0,
+            model_score=48.9,
+            bucket="thin_current_sample_confidence",
+            bucket_adjustment=-7.0,
+        ),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "passed"
+
+
+def test_transition_continuity_allows_exactly_six_point_bucket_move():
+    check = _transition_check(
+        _transition_rank_row(
+            level="AA",
+            score=44.0,
+            bucket="thin_current_sample_confidence",
+            bucket_adjustment=-6.0,
+        ),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "passed"
+
+
+def test_transition_continuity_allows_continuing_thin_sample_rule():
+    prior = _transition_rank_row(
+        status="thin_current_sample",
+        bucket="thin_current_sample_confidence",
+        bucket_adjustment=-7.0,
+    )
+    current = _transition_rank_row(
+        level="AA",
+        status="thin_current_sample",
+        score=42.0,
+        bucket="thin_current_sample_confidence",
+        bucket_adjustment=-14.0,
+    )
+
+    assert _transition_check(current, prior)["status"] == "passed"
+
+
+def test_transition_continuity_allows_non_declining_final_score():
+    check = _transition_check(
+        _transition_rank_row(
+            level="AA",
+            score=50.0,
+            bucket="thin_current_sample_confidence",
+            bucket_adjustment=-7.0,
+        ),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "passed"
+
+
+def test_transition_continuity_cold_start_is_not_a_blocker():
+    check = _transition_check(_transition_rank_row(), None)
+
+    assert check["status"] == "passed"
+    assert check["metrics"]["sample_ready"] is False
+
+
+def test_load_previous_prospect_rank_ignores_same_day_archive(tmp_path):
+    previous = _transition_rank_payload("2026-07-17", [_transition_rank_row()])
+    (tmp_path / "2026-07-17.json").write_text(json.dumps(previous), encoding="utf-8")
+    (tmp_path / "2026-07-18.json").write_text("not-json", encoding="utf-8")
+
+    selected = load_previous_prospect_rank(
+        _transition_rank_payload("2026-07-18", []),
+        tmp_path,
+    )
+
+    assert selected == previous
+
+
+def test_load_previous_prospect_rank_rejects_malformed_selected_archive(tmp_path):
+    (tmp_path / "2026-07-17.json").write_text("not-json", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="2026-07-17.json"):
+        load_previous_prospect_rank(_transition_rank_payload("2026-07-18", []), tmp_path)
+
+
+def test_transition_continuity_replays_briceno_july_17_to_18():
+    archive_dir = Path("data/prediction_archive/valucast_prospect_rank_v1")
+    previous = json.loads((archive_dir / "2026-07-17.json").read_text(encoding="utf-8"))
+    current = json.loads((archive_dir / "2026-07-18.json").read_text(encoding="utf-8"))
+
+    check = _prospect_transition_continuity(current, previous)
+    briceno = next(
+        sample for sample in check["metrics"]["samples"]
+        if sample["name"] == "Josue Briceno"
+    )
+
+    assert check["status"] == "blocked"
+    assert (briceno["old_level"], briceno["new_level"]) == ("A", "AA")
+    assert briceno["model_score_delta"] == -0.09
+    assert briceno["bucket_adjustment_delta"] == -17.57
+    assert briceno["final_score_delta"] == -19.66
 
 
 def _buy_signals(
