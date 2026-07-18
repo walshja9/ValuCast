@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 0.85,
+        "gap": 0.89,
         "max_allowed_gap": 18.0,
         "second": {
-          "mlbam_id": 695578,
-          "name": "James Wood",
+          "mlbam_id": 691406,
+          "name": "Junior Caminero",
           "rank": 2,
-          "value": 99.15
+          "value": 99.11
         },
         "top": {
           "mlbam_id": 660271,
@@ -64,31 +64,31 @@
               "SP"
             ],
             "rank": 7,
-            "value": 77.77
+            "value": 78.15
           },
           {
             "name": "Jacob Misiorowski",
             "positions": [
               "SP"
             ],
-            "rank": 10,
-            "value": 67.37
+            "rank": 12,
+            "value": 67.58
           },
           {
             "name": "Cam Schlittler",
             "positions": [
               "SP"
             ],
-            "rank": 20,
-            "value": 61.18
+            "rank": 22,
+            "value": 61.2
           },
           {
             "name": "Cristopher S\u00e1nchez",
             "positions": [
               "SP"
             ],
-            "rank": 22,
-            "value": 60.63
+            "rank": 24,
+            "value": 60.69
           }
         ],
         "reliever_count": 0,
@@ -117,63 +117,63 @@
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 59.88
+            "score": 59.5
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
             "rank": 6,
             "role": "pitcher",
-            "score": 56.75
+            "score": 56.25
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
             "rank": 9,
             "role": "pitcher",
-            "score": 53.08
+            "score": 53.42
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
             "rank": 11,
             "role": "pitcher",
-            "score": 50.62
+            "score": 50.58
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
             "rank": 13,
             "role": "pitcher",
-            "score": 49.78
+            "score": 49.94
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 14,
             "role": "pitcher",
-            "score": 48.56
+            "score": 48.66
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 16,
             "role": "pitcher",
-            "score": 47.31
+            "score": 47.16
           },
           {
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 19,
+            "rank": 20,
             "role": "pitcher",
-            "score": 45.37
+            "score": 45.69
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
             "rank": 21,
             "role": "pitcher",
-            "score": 44.91
+            "score": 45.25
           }
         ],
         "top25_evaluated_count": 25,
@@ -343,13 +343,13 @@
       "message": "Top prospect board factual context shape is within publication limits.",
       "metrics": {
         "band_counts": {
-          "balanced": 5,
+          "balanced": 6,
           "bat_missing": 5,
           "impact": 21,
           "limited": 1,
           "mixed": 6,
           "starter_volume": 10,
-          "thin": 2
+          "thin": 1
         },
         "best_single_level_covered_count": 0,
         "best_single_level_samples": [],
@@ -358,7 +358,7 @@
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 3,
+        "caution_factual_context_count": 2,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
@@ -367,21 +367,11 @@
             "level": "AA",
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 19,
+            "rank": 20,
             "role": "pitcher",
             "sample": 28.7,
             "sample_unit": "IP",
             "skill_band": "limited"
-          },
-          {
-            "level": "A",
-            "mlbam_id": 800522,
-            "name": "Josue Briceno",
-            "rank": 37,
-            "role": "hitter",
-            "sample": 25.0,
-            "sample_unit": "PA",
-            "skill_band": "thin"
           },
           {
             "level": "AAA",
@@ -421,8 +411,8 @@
         "audit_status": "candidate_ready",
         "blocker_count": 0,
         "blockers": [],
-        "current_row_count": 6508,
-        "current_season_row_count": 6384,
+        "current_row_count": 6557,
+        "current_season_row_count": 6434,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 5,
@@ -451,7 +441,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 35,
+        "archive_day_span": 36,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -569,10 +559,10 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 1,
-        "generated_at": "2026-07-17T00:00:00+00:00",
+        "generated_at": "2026-07-18T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
-        "rising_count": 0
+        "rising_count": 4
       },
       "status": "passed"
     }
@@ -616,25 +606,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-07-17T12:05:55.250700+00:00",
+  "generated_at": "2026-07-18T11:58:45.650313+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.3",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-07-17",
-      "buy_signals": "2026-07-17",
-      "milb_stat_freshness_audit": "2026-07-17",
-      "mlb_layer": "2026-07-17",
-      "movers": "2026-07-17",
-      "prospect_card_data_audit": "2026-07-17",
-      "prospect_coverage_audit": "2026-07-17",
-      "prospect_rank": "2026-07-17",
-      "public_snapshot": "2026-07-17",
-      "recent_signal_report": "2026-07-17"
+      "buy_review": "2026-07-18",
+      "buy_signals": "2026-07-18",
+      "milb_stat_freshness_audit": "2026-07-18",
+      "mlb_layer": "2026-07-18",
+      "movers": "2026-07-18",
+      "prospect_card_data_audit": "2026-07-18",
+      "prospect_coverage_audit": "2026-07-18",
+      "prospect_rank": "2026-07-18",
+      "public_snapshot": "2026-07-18",
+      "recent_signal_report": "2026-07-18"
     },
-    "mlb_count": 924,
-    "prospect_count": 2833,
-    "public_row_count": 3757
+    "mlb_count": 917,
+    "prospect_count": 2837,
+    "public_row_count": 3754
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
