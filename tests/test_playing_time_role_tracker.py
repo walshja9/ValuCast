@@ -254,3 +254,31 @@ def test_invalid_probability_and_negative_volume_block_role_context():
         "negative_projected_innings",
     ]
 
+
+def test_validator_checks_profiles_after_first_200(tmp_path):
+    payload = build_playing_time_role_tracker(
+        projections=[
+            _role_row(mlbam_id=str(10_000 + index), p_sp=0.2)
+            for index in range(201)
+        ],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    payload["profiles"][200].pop("source_pool")
+    path = tmp_path / "role.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    _, problems = validate_playing_time_role_tracker(path)
+    assert any("profile 201 missing source_pool" in problem for problem in problems)
+
+
+def test_validator_rejects_incoherent_status_and_blockers(tmp_path):
+    payload = build_playing_time_role_tracker(
+        projections=[_role_row()],
+        generated_at="2026-07-17T12:00:00+00:00",
+    )
+    payload["profiles"][0]["role_context_status"] = "ready"
+    payload["profiles"][0]["role_context_blockers"] = ["contradiction"]
+    path = tmp_path / "role.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    _, problems = validate_playing_time_role_tracker(path)
+    assert any("ready profile has blockers" in problem for problem in problems)
+
