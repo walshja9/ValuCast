@@ -36,7 +36,7 @@
                 <div><dt>Projected starts</dt><dd>{{ "%.1f" | format(row.projected_starts_ros) }}</dd></div>
                 <div><dt>Projected innings</dt><dd>{{ "%.1f" | format(row.projected_innings_ros) }}</dd></div>
                 <div><dt>Starter probability</dt><dd>{{ "%.0f%%" | format(row.starter_probability * 100) }}</dd></div>
-                <div><dt>Roster context</dt><dd>{{ row.availability_status | replace("_", " ") | title }}</dd></div>
+                <div><dt>Roster context</dt><dd>{{ row.availability_status | replace("_", " ") | title | replace("Mlb", "MLB") }}</dd></div>
             </dl>
             <p>{{ row.opportunity_explanation }}</p>
         </article>

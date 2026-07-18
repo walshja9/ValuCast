@@ -97,6 +97,8 @@ def test_role_watch_renders_only_eligible_explainable_rows(client, monkeypatch, 
     assert "Projected opportunity, not a conversion grade" in body
     assert "Opportunity Arm" in body
     assert "2.0 starts and 30.0 innings" in body
+    assert "Active MLB Roster" in body
+    assert "Active Mlb Roster" not in body
     assert "Injured Arm" not in body
     assert "cannot affect rankings, values, caps, or publication decisions" in body
 

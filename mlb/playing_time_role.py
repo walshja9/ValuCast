@@ -217,12 +217,13 @@ def role_watch_rows(profiles: list[dict]) -> list[dict]:
             or innings <= 0.0
         ):
             continue
+        display_status = status.replace("_", " ").replace("mlb", "MLB")
         row = dict(profile)
         row["opportunity_explanation"] = (
             f"Projected for {starts:.1f} starts and {innings:.1f} innings the rest "
             f"of the season while the source role remains relief. Starter "
             f"probability is {probability:.0%}. Roster status is "
-            f"{status.replace('_', ' ')}."
+            f"{display_status}."
         )
         rows.append(row)
     return sorted(

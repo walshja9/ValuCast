@@ -306,6 +306,7 @@ def test_role_watch_includes_only_explainable_active_opportunity():
     assert len(rows) == 1
     assert "2.0 starts and 30.0 innings" in rows[0]["opportunity_explanation"]
     assert "42%" in rows[0]["opportunity_explanation"]
+    assert "active MLB roster" in rows[0]["opportunity_explanation"]
 
 
 def test_role_watch_suppresses_injury_inactive_noise_and_blockers():
