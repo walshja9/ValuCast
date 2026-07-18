@@ -120,6 +120,13 @@ def apply_actuals_to_remaining(rows: list[dict], actual_rows: list[dict], actual
         row2["metadata"] = dict(row.get("metadata") or {})
         row2["metadata"]["projection_scope"] = "rest_of_season"
         row2["metadata"]["actuals_as_of"] = actuals_as_of
+        opportunity_key = "IP" if role == "pitcher" else "PA"
+        row2["metadata"]["actuals_applied"] = actual is not None
+        row2["metadata"]["remaining_opportunity_clamped"] = bool(
+            actual
+            and _safe(actual.get("stats") or {}, opportunity_key)
+            > _safe(row.get("stats") or {}, opportunity_key)
+        )
         if actual:
             if role == "hitter":
                 row2["stats"] = _remaining_hitter_stats(row.get("stats") or {}, actual)
@@ -165,6 +172,27 @@ def build_valucast_hp_rows(
 def build_manifest(rows: list[dict], generated_at: str, actuals_as_of: str) -> dict:
     hitters = [row for row in rows if row.get("pool") == "hitter"]
     pitchers = [row for row in rows if row.get("pool") in PITCHER_POOLS]
+    remaining_diagnostics = {}
+    for label, role_rows, opportunity_key in (
+        ("hitters", hitters, "PA"), ("pitchers", pitchers, "IP"),
+    ):
+        remaining_diagnostics[label] = {
+            "rows": len(role_rows),
+            "actuals_matched": sum(bool((row.get("metadata") or {}).get("actuals_applied")) for row in role_rows),
+            "zero_remaining": sum(_safe(row.get("stats") or {}, opportunity_key) <= 0 for row in role_rows),
+            "clamped_to_zero": sum(bool((row.get("metadata") or {}).get("remaining_opportunity_clamped")) for row in role_rows),
+        }
+    clamped = sum(role["clamped_to_zero"] for role in remaining_diagnostics.values())
+    zero_remaining = sum(role["zero_remaining"] for role in remaining_diagnostics.values())
+    skill_gate = {
+        "status": "held" if clamped or zero_remaining else "display_only_eligible",
+        "affects_live_outputs": False,
+        "reason": (
+            "remaining-opportunity clamping is present" if clamped
+            else "zero remaining opportunity is present" if zero_remaining
+            else "remaining-opportunity inputs have positive coverage"
+        ),
+    }
     pitcher_meta = {
         "model": "valucast_pitching_marcel",
         "model_version": 1,
@@ -185,6 +213,8 @@ def build_manifest(rows: list[dict], generated_at: str, actuals_as_of: str) -> d
         "actuals_as_of": actuals_as_of,
         "hitter_count": len(hitters),
         "pitcher_count": len(pitchers),
+        "remaining_opportunity_diagnostics": remaining_diagnostics,
+        "public_skill_metric_gate": skill_gate,
         "eligibility_source": (
             "current.json (Steamer outlook) used for names/teams/positions + active-player universe; "
             "NO projection stats copied"

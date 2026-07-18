@@ -88,6 +88,69 @@ def test_apply_actuals_to_remaining_recomputes_pitcher_rates():
     assert stats["K_9"] == 10.312
 
 
+def test_apply_actuals_to_remaining_records_match_and_volume_clamp_metadata():
+    projection = _hitter({"PA": 20, "AB": 18, "1B": 4, "2B": 1, "3B": 0, "HR": 1,
+                          "BB": 2, "HBP": 0, "SF": 0})
+    actual = _hitter({"PA": 40, "AB": 35, "1B": 7, "2B": 2, "3B": 0, "HR": 1,
+                      "BB": 4, "HBP": 1, "SF": 0})
+
+    matched, unmatched = hp.apply_actuals_to_remaining(
+        [projection, _pitcher({"IP": 50})], [actual], "2026-07-18",
+    )
+
+    assert matched["metadata"]["actuals_applied"] is True
+    assert matched["metadata"]["remaining_opportunity_clamped"] is True
+    assert unmatched["metadata"]["actuals_applied"] is False
+    assert unmatched["metadata"]["remaining_opportunity_clamped"] is False
+
+
+def test_manifest_reports_remaining_opportunity_diagnostics_and_holds_clamps():
+    rows = hp.apply_actuals_to_remaining(
+        [_hitter({"PA": 20, "AB": 18}), _pitcher({"IP": 50})],
+        [_hitter({"PA": 40, "AB": 35})],
+        "2026-07-18",
+    )
+
+    manifest = hp.build_manifest(rows, "2026-07-18T12:00:00+00:00", "2026-07-18")
+
+    assert manifest["remaining_opportunity_diagnostics"] == {
+        "hitters": {"rows": 1, "actuals_matched": 1, "zero_remaining": 1, "clamped_to_zero": 1},
+        "pitchers": {"rows": 1, "actuals_matched": 0, "zero_remaining": 0, "clamped_to_zero": 0},
+    }
+    assert manifest["public_skill_metric_gate"] == {
+        "status": "held",
+        "affects_live_outputs": False,
+        "reason": "remaining-opportunity clamping is present",
+    }
+
+
+def test_manifest_skill_metric_gate_requires_positive_remaining_opportunity():
+    rows = hp.apply_actuals_to_remaining(
+        [_hitter({"PA": 0}), _pitcher({"IP": 50})], [], "2026-07-18",
+    )
+
+    manifest = hp.build_manifest(rows, "2026-07-18T12:00:00+00:00", "2026-07-18")
+
+    assert manifest["public_skill_metric_gate"]["status"] == "held"
+    assert manifest["public_skill_metric_gate"]["reason"] == "zero remaining opportunity is present"
+
+
+def test_manifest_skill_metric_gate_is_display_only_eligible_without_zero_or_clamp():
+    rows = hp.apply_actuals_to_remaining(
+        [_hitter({"PA": 100, "AB": 90}), _pitcher({"IP": 60})],
+        [_hitter({"PA": 40, "AB": 35}), _pitcher({"IP": 12})],
+        "2026-07-18",
+    )
+
+    manifest = hp.build_manifest(rows, "2026-07-18T12:00:00+00:00", "2026-07-18")
+
+    assert manifest["public_skill_metric_gate"] == {
+        "status": "display_only_eligible",
+        "affects_live_outputs": False,
+        "reason": "remaining-opportunity inputs have positive coverage",
+    }
+
+
 def test_write_live_hp_run_replaces_existing_files_atomically(tmp_path):
     run_dir = tmp_path / "valucast_hp_2026_v2"
     rows = [_hitter({"PA": 60}), _pitcher({"IP": 48})]

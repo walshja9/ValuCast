@@ -36,6 +36,9 @@ from league_values.post_processors import VolumeMultiplier
 from league_values.playing_time import filter_by_playing_time
 from league_values.models import PlayerPool, ValuationResult
 from mlb.dynasty import _percentile, _scale_value
+from mlb.playing_time_role import TRACKER_VERSION as ROLE_TRACKER_VERSION
+from mlb.playing_time_role import role_watch_rows
+from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
 
 from web.projection_catalog import ProjectionCatalog
 from web.category_registry import (
@@ -108,6 +111,10 @@ def _env_flag_held(name: str) -> bool:
 # Forward-ledger scoreboard (plan 030 S4). Held dark by default until two clean
 # nightlies land the real artifact; set SCOREBOARD_HOLD=0 (and redeploy) to serve.
 SCOREBOARD_HOLD = _env_flag_held("SCOREBOARD_HOLD")
+ROLE_WATCH_HOLD = _env_flag_held("ROLE_WATCH_HOLD")
+_ROLE_WATCH_ARTIFACT_PATH = (
+    Path(__file__).parent / "data" / "models" / "valucast_playing_time_role_tracker.json"
+)
 _GZIP_MIN_BYTES = 1024
 _GZIP_MIMETYPES = {
     "application/javascript",
@@ -5162,6 +5169,32 @@ def _load_artifact(path: Path) -> dict | None:
     payload = payload if isinstance(payload, dict) else None
     _ARTIFACT_CACHE[path] = (stamp, payload)
     return payload
+
+
+@app.route("/role-watch")
+def role_watch():
+    if ROLE_WATCH_HOLD:
+        abort(404)
+    payload, problems = validate_playing_time_role_tracker(_ROLE_WATCH_ARTIFACT_PATH)
+    if problems:
+        abort(404)
+    policy = (payload or {}).get("source_policy") or {}
+    validation = (payload or {}).get("validation") or {}
+    profiles = (payload or {}).get("profiles")
+    if (
+        (payload or {}).get("tracker_version") != ROLE_TRACKER_VERSION
+        or validation.get("ready_for_role_context") is not True
+        or policy.get("feeds_live_rank") is not False
+        or policy.get("feeds_live_value") is not False
+        or not isinstance(profiles, list)
+    ):
+        abort(404)
+    rows = role_watch_rows(profiles)
+    return render_template(
+        "role_watch.html",
+        rows=rows,
+        generated_at=payload.get("generated_at"),
+    )
 
 
 def _index_milb_season_stats(payload: dict | None) -> dict[str, list[dict]]:

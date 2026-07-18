@@ -55,7 +55,7 @@ def validate_playing_time_role_tracker(
         problems.append("profiles must be a non-empty list")
     else:
         seen = set()
-        for index, row in enumerate(profiles[:200], 1):
+        for index, row in enumerate(profiles, 1):
             mlbam_id = row.get("mlbam_id")
             key = row.get("identity_key") or f"{mlbam_id}_{row.get('pool')}"
             if not mlbam_id:
@@ -72,6 +72,32 @@ def validate_playing_time_role_tracker(
             ):
                 if row.get(field) in (None, "", []):
                     problems.append(f"profile {index} missing {field}")
+            for field in (
+                "source_pool",
+                "starter_probability",
+                "projected_starts_ros",
+                "projected_innings_ros",
+                "role_context_status",
+                "role_context_blockers",
+            ):
+                if field not in row:
+                    problems.append(f"profile {index} missing {field}")
+            probability = row.get("starter_probability")
+            if probability is not None and (
+                not isinstance(probability, (int, float))
+                or not 0.0 <= probability <= 1.0
+            ):
+                problems.append(f"profile {index} invalid starter_probability")
+            status = row.get("role_context_status")
+            blockers = row.get("role_context_blockers")
+            if status not in {"ready", "blocked"}:
+                problems.append(f"profile {index} invalid role_context_status")
+            if not isinstance(blockers, list):
+                problems.append(f"profile {index} role_context_blockers must be a list")
+            elif status == "ready" and blockers:
+                problems.append(f"profile {index} ready profile has blockers")
+            elif status == "blocked" and not blockers:
+                problems.append(f"profile {index} blocked profile has no blockers")
             if row.get("usage") != "role_context_not_live_rank_or_value":
                 problems.append(f"profile {index} invalid usage")
             role_v2 = row.get("role_v2")

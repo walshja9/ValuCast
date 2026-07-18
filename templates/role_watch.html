@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Role Watch · Private Review | ValuCast{% endblock %}
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+<article class="front-office-report">
+    <div class="topline">
+        <h2>Role Watch</h2>
+        <a href="/" class="back">&larr; Back to board</a>
+    </div>
+
+    <section class="front-office-hero glass">
+        <div>
+            <span class="eyebrow">ROLE WATCH · PRIVATE REVIEW</span>
+            <h3>Projected opportunity, not a conversion grade</h3>
+            <p>Players appear only when the current projection includes at least one
+            rest-of-season start, positive innings, and active healthy roster context.</p>
+            {% if generated_at %}<p class="front-office-status">Updated {{ editorial_date(generated_at) }}</p>{% endif %}
+        </div>
+        <div class="front-office-score">
+            <span>{{ rows | length }}</span>
+            <small>eligible pitchers</small>
+        </div>
+    </section>
+
+    {% if rows %}
+    <section class="front-office-grid" aria-label="Role Watch candidates">
+        {% for row in rows %}
+        <article class="front-office-card glass">
+            <div class="front-office-card-head">
+                <h3>{{ row.name }}</h3>
+                <span>{{ row.team or "—" }}</span>
+            </div>
+            <p class="front-office-status">Opportunity order, not player quality</p>
+            <dl>
+                <div><dt>Source role</dt><dd>Relief</dd></div>
+                <div><dt>Projected starts</dt><dd>{{ "%.1f" | format(row.projected_starts_ros) }}</dd></div>
+                <div><dt>Projected innings</dt><dd>{{ "%.1f" | format(row.projected_innings_ros) }}</dd></div>
+                <div><dt>Starter probability</dt><dd>{{ "%.0f%%" | format(row.starter_probability * 100) }}</dd></div>
+                <div><dt>Roster context</dt><dd>{{ row.availability_status | replace("_", " ") | title | replace("Mlb", "MLB") }}</dd></div>
+            </dl>
+            <p>{{ row.opportunity_explanation }}</p>
+        </article>
+        {% endfor %}
+    </section>
+    {% else %}
+    <section class="front-office-watchlist glass" role="status">
+        <strong>No pitchers meet the current evidence gate.</strong>
+        <p class="front-office-progress">Role Watch does not fill an empty list with weaker evidence.</p>
+    </section>
+    {% endif %}
+
+    <section class="front-office-watchlist glass">
+        <strong>Display-only contract.</strong>
+        <p class="front-office-progress">Role Watch cannot affect rankings, values, caps, or publication decisions.</p>
+    </section>
+</article>
+{% endblock %}

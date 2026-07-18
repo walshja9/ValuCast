@@ -20,7 +20,7 @@ DYNASTY_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_playing_time_role_tracker.json"
 
 ARTIFACT_NAME = "valucast_playing_time_role_tracker"
-TRACKER_VERSION = "0.1.0"
+TRACKER_VERSION = "0.2.0"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / ARTIFACT_NAME
 
 # Role Tracker v2 (shadow, observe-only): re-expresses the coarse v1 PA/IP bucket
@@ -30,6 +30,9 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / ARTIFACT_NAME
 ROLE_V2_VERSION = "2.0.0"
 DEFAULT_RELIABILITY = 50.0
 DEFAULT_CERTAINTY = 40.0
+ROLE_WATCH_EXCLUDED_STATUSES = {
+    "injured", "rehab", "inactive", "stale_or_inactive", "unknown", ""
+}
 
 
 def _load_json(path: Path) -> Any:
@@ -135,7 +138,7 @@ def _pitcher_role(pool: str, stats: dict, pace: float = 1.0) -> tuple[str, float
         _clean_float(stats.get("SV")) + _clean_float(stats.get("HLD"))
     )) * pace
     season_ip = ip * pace
-    if pool == "starter" or starts >= 18 or season_ip >= 125:
+    if pool == "starter" or starts >= 18:
         if season_ip >= 150 or starts >= 24:
             return "rotation_workhorse", ip, "starter volume"
         return "rotation_starter", ip, "starter-leaning volume"
@@ -158,6 +161,80 @@ def _role_profile(row: dict, pace: float = 1.0) -> tuple[str, float, str, str]:
     return role, round(volume, 1), "IP", basis
 
 
+def _role_contract_fields(row: dict) -> dict:
+    pool = str(row.get("pool") or "").lower()
+    if pool == "hitter":
+        return {
+            "source_pool": pool,
+            "starter_probability": None,
+            "projected_starts_ros": None,
+            "projected_innings_ros": None,
+            "role_context_status": "ready",
+            "role_context_blockers": [],
+        }
+    stats = row.get("stats") or {}
+    metadata = row.get("metadata") or {}
+    raw_probability = metadata.get("p_sp")
+    probability = _opt_float(raw_probability)
+    starts = _clean_float(stats.get("GS"))
+    innings = _clean_float(stats.get("IP"))
+    blockers = []
+    if raw_probability not in (None, "") and (
+        probability is None or not 0.0 <= probability <= 1.0
+    ):
+        blockers.append("starter_probability_out_of_range")
+    if starts < 0:
+        blockers.append("negative_projected_starts")
+    if innings < 0:
+        blockers.append("negative_projected_innings")
+    if starts >= 0.5 and innings == 0:
+        blockers.append("projected_starts_without_innings")
+    return {
+        "source_pool": pool,
+        "starter_probability": round(probability, 4) if probability is not None else None,
+        "projected_starts_ros": round(starts, 4),
+        "projected_innings_ros": round(innings, 1),
+        "role_context_status": "blocked" if blockers else "ready",
+        "role_context_blockers": blockers,
+    }
+
+
+def role_watch_rows(profiles: list[dict]) -> list[dict]:
+    rows = []
+    for profile in profiles:
+        status = str(profile.get("availability_status") or "").strip().lower()
+        probability = _opt_float(profile.get("starter_probability"))
+        starts = _clean_float(profile.get("projected_starts_ros"))
+        innings = _clean_float(profile.get("projected_innings_ros"))
+        if (
+            profile.get("source_pool") != "reliever"
+            or profile.get("role_context_status") != "ready"
+            or profile.get("active_mlb_roster") is not True
+            or profile.get("active_injury_risk") is True
+            or status in ROLE_WATCH_EXCLUDED_STATUSES
+            or probability is None
+            or starts < 1.0
+            or innings <= 0.0
+        ):
+            continue
+        display_status = status.replace("_", " ").replace("mlb", "MLB")
+        row = dict(profile)
+        row["opportunity_explanation"] = (
+            f"Projected for {starts:.1f} starts and {innings:.1f} innings the rest "
+            f"of the season while the source role remains relief. Starter "
+            f"probability is {probability:.0%}. Roster status is "
+            f"{display_status}."
+        )
+        rows.append(row)
+    return sorted(
+        rows,
+        key=lambda row: (
+            -_clean_float(row.get("projected_starts_ros")),
+            str(row.get("name") or "").casefold(),
+        ),
+    )
+
+
 def _row_profile(
     row: dict,
     roster_lookup: dict[str, dict],
@@ -168,6 +245,7 @@ def _row_profile(
     if not mlbam_id:
         return None
     role_label, volume, unit, basis = _role_profile(row, pace)
+    contract = _role_contract_fields(row)
     roster = roster_lookup.get(mlbam_id) or {}
     availability = availability_lookup.get(mlbam_id) or {}
     active = roster.get("active_mlb_roster")
@@ -185,6 +263,7 @@ def _row_profile(
         "projected_volume": volume,
         "projected_volume_unit": unit,
         "role_basis": basis,
+        **contract,
         "active_mlb_roster": active is True,
         "availability_status": availability_status,
         "active_injury_risk": availability.get("active_injury_risk") is True,

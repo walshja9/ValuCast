@@ -1,4 +1,7 @@
 """Tests for the advisory MLB projection-source comparison (Marcel/H+P vs Steamer/ROS)."""
+import json
+
+from mlb import projection_source_comparison as comparison
 from mlb.projection_source_comparison import (
     MIN_SAMPLE,
     build_comparison,
@@ -7,6 +10,7 @@ from mlb.projection_source_comparison import (
     build_what_would_change,
     prorate_counting_projection,
     validate_comparison,
+    _actual_rate_deltas,
     _actual_lines,
     _scoreable,
 )
@@ -23,6 +27,18 @@ def _hitter(mlbam, avg, obp, slg, ops, pa=120.0):
 
 def _cohort(n, avg, obp, slg, ops, pa=120.0):
     return [_hitter(1000 + i, avg, obp, slg, ops, pa) for i in range(n)]
+
+
+def _pitcher(mlbam, era, whip, ip=60.0):
+    return {
+        "metadata": {"mlbam_id": str(mlbam)},
+        "pool": "starter",
+        "stats": {"ERA": era, "WHIP": whip, "IP": ip},
+    }
+
+
+def _pitcher_cohort(n, era, whip, ip=60.0):
+    return [_pitcher(2000 + i, era, whip, ip) for i in range(n)]
 
 
 def _counting_hitter(mlbam, hr, rbi, runs, sb, pa=120.0):
@@ -44,6 +60,131 @@ def _counting_pitcher(mlbam, er, bb, hits, k, w, sv, hld, ip=40.0):
     }
 
 
+def _actual_hitter(mlbam, *, pa, ab, h, singles, doubles, triples, hr, bb, hbp, sf):
+    return {
+        "metadata": {"mlbam_id": str(mlbam)},
+        "pool": "hitter",
+        "stats": {
+            "PA": pa, "AB": ab, "H": h, "1B": singles, "2B": doubles,
+            "3B": triples, "HR": hr, "BB": bb, "HBP": hbp, "SF": sf,
+        },
+    }
+
+
+def _actual_pitcher(mlbam, *, ip, er, bb, hits):
+    return {
+        "metadata": {"mlbam_id": str(mlbam)},
+        "pool": "starter",
+        "stats": {"IP": ip, "ER": er, "BB": bb, "H_ALLOWED": hits},
+    }
+
+
+def test_actual_rate_deltas_rebuild_hitter_rates_from_forward_components():
+    lines = _actual_rate_deltas(
+        [_actual_hitter(1, pa=100, ab=90, h=20, singles=14, doubles=4, triples=0,
+                        hr=2, bb=8, hbp=1, sf=1)],
+        [_actual_hitter(1, pa=160, ab=140, h=40, singles=26, doubles=8, triples=1,
+                        hr=5, bb=16, hbp=2, sf=2)],
+    )
+
+    assert lines["1"] == {
+        "role": "hitter",
+        "rates": {"AVG": 0.4, "OBP": 0.4833, "SLG": 0.7, "OPS": 1.1833},
+        "volume": 60.0,
+    }
+
+
+def test_actual_rate_deltas_rebuild_pitcher_rates_from_forward_components():
+    lines = _actual_rate_deltas(
+        [_actual_pitcher(2, ip=40, er=12, bb=10, hits=35)],
+        [_actual_pitcher(2, ip=65, er=22, bb=17, hits=55)],
+    )
+
+    assert lines["2"] == {
+        "role": "pitcher",
+        "rates": {"ERA": 3.6, "WHIP": 1.08},
+        "volume": 25.0,
+    }
+
+
+def test_rate_publication_veto_requires_both_role_gates():
+    n = MIN_SAMPLE + 10
+    actuals = _cohort(n, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(5, 3.50, 1.20)
+    marcel = _cohort(n, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(5, 3.50, 1.20)
+    steamer = _cohort(n, 0.250, 0.320, 0.420, 0.740) + _pitcher_cohort(5, 4.50, 1.50)
+
+    payload = build_comparison(
+        frozen=build_freeze(marcel, steamer, "2026-05-01T00:00:00+00:00"),
+        actual_lines=_actual_lines(actuals),
+        rate_actuals_method="post_freeze_component_deltas",
+        live_layer=None,
+        shadow_layer=None,
+        generated_at="2026-06-17T00:00:00+00:00",
+        now="2026-06-17T00:00:00+00:00",
+    )
+
+    assert payload["comparison_basis"]["scoreable_players_by_role"] == {
+        "hitters": n, "pitchers": 5,
+    }
+    assert payload["role_gates"]["hitters"]["status"] == "active"
+    assert payload["role_gates"]["pitchers"]["status"] == "insufficient_sample"
+    assert payload["publication_veto"]["status"] == "held"
+    assert payload["marcel_beats_steamer"] is False
+    payload["publication_veto"]["status"] = "clear"
+    assert "publication veto cleared without both role gates active" in validate_comparison(payload)
+
+
+def test_runner_scores_rates_from_freeze_date_component_deltas(tmp_path, monkeypatch):
+    freeze_date = "2026-05-01"
+    start = _actual_hitter(
+        1, pa=100, ab=90, h=20, singles=14, doubles=4, triples=0,
+        hr=2, bb=8, hbp=1, sf=1,
+    )
+    end = _actual_hitter(
+        1, pa=140, ab=125, h=30, singles=20, doubles=6, triples=1,
+        hr=3, bb=11, hbp=2, sf=2,
+    )
+    marcel = [_hitter(1, 0.300, 0.380, 0.500, 0.880)]
+    steamer = [_hitter(1, 0.250, 0.320, 0.420, 0.740)]
+    freeze_dir = tmp_path / "freezes"
+    actuals_dir = tmp_path / "actuals"
+    freeze_dir.mkdir()
+    actuals_dir.mkdir()
+    (freeze_dir / f"{freeze_date}.json").write_text(
+        json.dumps(build_freeze(marcel, steamer, f"{freeze_date}T00:00:00+00:00")),
+        encoding="utf-8",
+    )
+    (actuals_dir / f"{freeze_date}.json").write_text(json.dumps([start]), encoding="utf-8")
+    marcel_path = tmp_path / "marcel.json"
+    steamer_path = tmp_path / "steamer.json"
+    current_path = tmp_path / "current.json"
+    marcel_path.write_text(json.dumps(marcel), encoding="utf-8")
+    steamer_path.write_text(json.dumps(steamer), encoding="utf-8")
+    current_path.write_text(json.dumps([end]), encoding="utf-8")
+    monkeypatch.setattr(
+        comparison,
+        "build_counting_stat_comparison_from_paths",
+        lambda **_: {"status": "not_requested"},
+    )
+
+    payload = comparison.run_projection_source_comparison(
+        marcel_path=marcel_path,
+        steamer_ros_path=steamer_path,
+        actuals_path=current_path,
+        live_layer_path=tmp_path / "live.json",
+        shadow_layer_path=tmp_path / "shadow.json",
+        artifact_path=tmp_path / "comparison.json",
+        freeze_archive_dir=freeze_dir,
+        comparison_archive_dir=tmp_path / "comparison-archive",
+        actuals_snapshot_dir=actuals_dir,
+        generated_at="2026-06-17T00:00:00+00:00",
+    )
+
+    assert payload["comparison_basis"]["rate_actuals_method"] == "post_freeze_component_deltas"
+    assert payload["comparison_basis"]["scoreable_players"] == 0  # 40 forward PA, not 140 season PA
+    assert payload["publication_veto"]["status"] == "held"
+
+
 def test_build_freeze_captures_rate_lines_and_coverage():
     freeze = build_freeze(
         [_hitter(1, 0.300, 0.380, 0.500, 0.880)],
@@ -58,14 +199,15 @@ def test_build_freeze_captures_rate_lines_and_coverage():
 
 def test_marcel_wins_with_enough_horizon_and_sample():
     # Marcel's frozen rates == actuals (MAE 0); Steamer is off → Marcel must win.
-    actuals = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880)
-    marcel = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880)
-    steamer = _cohort(MIN_SAMPLE + 10, 0.250, 0.320, 0.420, 0.740)
+    actuals = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(MIN_SAMPLE + 10, 3.50, 1.20)
+    marcel = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(MIN_SAMPLE + 10, 3.50, 1.20)
+    steamer = _cohort(MIN_SAMPLE + 10, 0.250, 0.320, 0.420, 0.740) + _pitcher_cohort(MIN_SAMPLE + 10, 4.50, 1.50)
     freeze = build_freeze(marcel, steamer, "2026-05-01T00:00:00+00:00")
 
     payload = build_comparison(
         frozen=freeze,
         actual_lines=_actual_lines(actuals),
+        rate_actuals_method="post_freeze_component_deltas",
         live_layer=None,
         shadow_layer=None,
         generated_at="2026-06-17T00:00:00+00:00",  # 47 days forward
@@ -73,7 +215,7 @@ def test_marcel_wins_with_enough_horizon_and_sample():
     )
 
     assert payload["comparison_basis"]["horizon_sufficient"] is True
-    assert payload["comparison_basis"]["scoreable_players"] == MIN_SAMPLE + 10
+    assert payload["comparison_basis"]["scoreable_players"] == 2 * (MIN_SAMPLE + 10)
     assert payload["gate"]["status"] == "active"
     assert payload["marcel_beats_steamer"] is True
     assert payload["scores"]["marcel_mean_ratio_vs_steamer"] == 0.0
@@ -130,12 +272,13 @@ def test_thin_actual_volume_is_not_scoreable():
 
 
 def test_validator_rejects_win_without_evidence():
-    actuals = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880)
-    marcel = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880)
-    steamer = _cohort(MIN_SAMPLE + 10, 0.250, 0.320, 0.420, 0.740)
+    actuals = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(MIN_SAMPLE + 10, 3.50, 1.20)
+    marcel = _cohort(MIN_SAMPLE + 10, 0.300, 0.380, 0.500, 0.880) + _pitcher_cohort(MIN_SAMPLE + 10, 3.50, 1.20)
+    steamer = _cohort(MIN_SAMPLE + 10, 0.250, 0.320, 0.420, 0.740) + _pitcher_cohort(MIN_SAMPLE + 10, 4.50, 1.50)
     freeze = build_freeze(marcel, steamer, "2026-05-01T00:00:00+00:00")
     payload = build_comparison(
-        frozen=freeze, actual_lines=_actual_lines(actuals), live_layer=None,
+        frozen=freeze, actual_lines=_actual_lines(actuals),
+        rate_actuals_method="post_freeze_component_deltas", live_layer=None,
         shadow_layer=None, generated_at="2026-06-17T00:00:00+00:00", now="2026-06-17T00:00:00+00:00",
     )
     # Tamper: claim a win while marking the horizon insufficient → validator must catch it.

@@ -2,6 +2,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from app import app
@@ -74,11 +75,44 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn(str(self.art["pitching"]["sample_size"]), self.html)
         self.assertIn("2020", flat)
         self.assertIn("directional, not precise", flat)
-        # gap (c): live forward loss surfaced, positive "higher" framing, still not decisive
-        self.assertIn("currently losing", low)
-        self.assertIn("higher", low)
-        self.assertIn("not yet decisive", low)
-        self.assertNotIn("-21%", self.html)  # sign must be positive
+        # gap (c): the committed legacy artifact used cumulative rates, so its
+        # magnitude cannot be presented as a valid post-freeze score.
+        self.assertIn("stored forward rate readout is excluded", low)
+        self.assertIn("not a valid post-freeze score", low)
+        self.assertIn("steamer remains the live source", low)
+        self.assertNotIn("currently losing", low)
+
+    def test_corrected_forward_readout_separates_hitters_and_pitchers(self):
+        corrected = {
+            "comparison_basis": {
+                "rate_actuals_method": "post_freeze_component_deltas",
+                "horizon_days": 30,
+            },
+            "role_scores": {
+                "hitters": {"marcel_mean_ratio_vs_steamer": 1.03},
+                "pitchers": {"marcel_mean_ratio_vs_steamer": 1.10},
+            },
+            "role_gates": {
+                "hitters": {"status": "fallback"},
+                "pitchers": {"status": "fallback"},
+            },
+            "publication_veto": {"status": "held"},
+            "gate": {"validated_through": "2026-07-18"},
+        }
+        original_read_text = Path.read_text
+
+        def read_text(path, *args, **kwargs):
+            if path.name == "valucast_mlb_projection_source_comparison.json":
+                return json.dumps(corrected)
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", read_text):
+            html = " ".join(self.client.get("/methodology").data.decode("utf-8").split())
+
+        self.assertIn("Hitter rate error: <strong>1.03x Steamer", html)
+        self.assertIn("Pitcher rate error: <strong>1.1x Steamer", html)
+        self.assertIn("both roles must clear independently", html)
+        self.assertIn("Publication remains held", html)
 
     def test_prospect_rank_v1_explains_scoring_boundary(self):
         flat = " ".join(self.html.split())
