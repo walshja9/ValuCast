@@ -72,31 +72,13 @@
             <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
         </section>
         {# Attribution panel — "How ValuCast graded him". Placed HIGH on the card,
-           3-tier disclosure. Prospect-only (dynasty_signal + prospect components).
-           NEVER renders a per-feature weight percentage: the model is not a linear
-           stack, so probabilities + qualitative drivers only. #}
-        {% if row.is_prospect and (row.outcome_mix or row.why_rank_chips or row.attribution_components or row.uncertainty_note) %}
+           3-tier disclosure. Prospect-only and limited to fields that explain the
+           live grade. NEVER renders a per-feature weight percentage. #}
+        {% if row.is_prospect and (row.why_rank_chips or row.attribution_components or row.uncertainty_note) %}
         <div class="detail-section attribution-panel">
             <div class="attribution-head">
                 <span class="profile-card-kicker">How ValuCast graded him</span>
             </div>
-            {% if row.outcome_mix %}
-            <div class="attribution-mix">
-                <div class="attribution-mix-bar" role="img" aria-label="Projected outcome mix: {% for seg in row.outcome_mix %}{{ seg.pct }}% {{ seg.label }}{% if not loop.last %}, {% endif %}{% endfor %}">
-                    {% for seg in row.outcome_mix %}
-                    <span class="attribution-mix-seg tone-{{ seg.tone }}" style="width: {{ seg.pct }}%"></span>
-                    {% endfor %}
-                </div>
-                <div class="attribution-mix-legend">
-                    {% for seg in row.outcome_mix %}
-                    <span class="attribution-mix-key"><i class="tone-{{ seg.tone }}"></i>{{ seg.label }} <b>{{ seg.pct }}%</b></span>
-                    {% endfor %}
-                </div>
-                <p class="attribution-mix-note">Four-year MLB outlook. &ldquo;Not established&rdquo;
-                means no applicable 300-PA hitter or 50-IP pitcher season within four years
-                &mdash; not a career verdict.</p>
-            </div>
-            {% endif %}
             {% if row.why_rank_chips %}
             <div class="attribution-drivers why-rank-chips" aria-label="What drives this grade">
                 {% for chip in row.why_rank_chips[:4] %}
@@ -383,31 +365,14 @@
                     <span class="profile-card-kicker">Peak Projection</span>
                     <h4>Peak Outlook</h4>
                 </div>
-                <p class="profile-note peak-projection-note">{{ row.peak_projection_note }}</p>
+                <p class="profile-note peak-projection-note">Qualitative ceiling and floor scenarios &mdash; separate from today's value.</p>
             </div>
             <div class="peak-summary-strip">
-                {% if row.peak_score_label %}<span><b>Peak</b>{{ row.peak_score_label }}</span>{% endif %}
-                {% if row.peak_delta_label %}<span><b>Upside</b>{{ row.peak_delta_label }}</span>{% endif %}
-                {% if row.peak_role_label %}<span><b>Role</b>{{ row.peak_role_label }}</span>{% endif %}
-                {% if row.peak_risk_label %}<span><b>Risk</b>{{ row.peak_risk_label }}</span>{% endif %}
-                {% if row.peak_confidence_label %}<span><b>Confidence</b>{{ row.peak_confidence_label }}</span>{% endif %}
+                {% if row.peak_role_label %}<span><b>Ceiling scenario</b>{{ row.peak_role_label }}</span>{% endif %}
+                {% if row.peak_floor_label %}<span><b>Floor scenario</b>{{ row.peak_floor_label }}</span>{% endif %}
+                {% if row.peak_confidence_label %}<span><b>Evidence strength</b>{{ row.peak_confidence_label }}</span>{% endif %}
                 {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
             </div>
-            {% if row.peak_trajectory_label %}<p class="peak-trajectory-note">{{ row.peak_trajectory_label }}</p>{% endif %}
-            {% if row.peak_role_probability_items %}
-            <div class="role-probability-bars">
-                {% for item in row.peak_role_probability_items %}
-                <div class="role-probability-row">
-                    <span>{{ item.label }}</span>
-                    <div class="role-probability-track" role="img" aria-label="{{ item.label }} {{ item.value }}">
-                        <i style="width: {{ item.pct }}%"></i>
-                    </div>
-                    <b>{{ item.value }}</b>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% if row.peak_projection_card_copy %}<p class="sample-context-note">{{ row.peak_projection_card_copy }}</p>{% endif %}
         </div>
         {% endif %}
 

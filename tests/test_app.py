@@ -198,7 +198,10 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         from app import dd_store
         if not dd_store.is_available:
             self.skipTest("DD feed not available")
-        row = next((r for r in dd_store.get_all() if r.is_prospect), None)
+        row = next(
+            (r for r in dd_store.get_all() if r.is_prospect and r.has_peak_projection),
+            None,
+        )
         if row is None:
             self.skipTest("No prospect rows available")
         response = self.client.get(
@@ -216,7 +219,18 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             "scouting reference only, never used in ValuCast rank or value",
             body,
         )
-        self.assertIn("Four-year MLB outlook.", body)
+        self.assertNotIn("Four-year MLB outlook.", body)
+        self.assertNotIn("attribution-mix", body)
+        self.assertIn("<b>Ceiling scenario</b>", body)
+        self.assertIn("<b>Floor scenario</b>", body)
+        self.assertIn("<b>Evidence strength</b>", body)
+        self.assertIn("<b>Window</b>", body)
+        self.assertNotIn("<b>Peak</b>", body)
+        self.assertNotIn("<b>Upside</b>", body)
+        self.assertNotIn("<b>Risk</b>", body)
+        self.assertNotIn("peak-trajectory-note", body)
+        for item in row.peak_role_probability_items:
+            self.assertNotIn(f"<span>{item['label']}</span>", body)
         self.assert_reading_guide(body)
 
     def test_mlb_dynasty_card_explains_the_decision_hierarchy(self):
@@ -2594,9 +2608,9 @@ class TestAttributionPanel(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         body = resp.data.decode()
         self.assertIn("How ValuCast graded him", body)
-        self.assertIn("attribution-mix", body)
-        self.assertIn("Four-year MLB outlook", body)
-        self.assertIn("not a career verdict", body)
+        self.assertNotIn("attribution-mix", body)
+        self.assertNotIn("Four-year MLB outlook", body)
+        self.assertNotIn("not a career verdict", body)
         self.assertNotIn("Bust risk", body)
         # Placed HIGH: before the deep stat sections (e.g. MiLB Stats details).
         if "MiLB Stats" in body:
