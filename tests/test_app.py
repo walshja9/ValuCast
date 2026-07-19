@@ -139,6 +139,57 @@ class TestPlayerDetail(unittest.TestCase):
         self.assertTrue(phrase.startswith("a rotation"))
 
 
+class TestPlayerCardDecisionHierarchy(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+
+    def assert_decision_hierarchy(self, body):
+        self.assertIn('aria-label="How to read this card"', body)
+        self.assertIn("Skill", body)
+        self.assertIn("Opportunity", body)
+        self.assertIn("ValuCast Value", body)
+        self.assertIn("Confidence", body)
+        self.assertIn("if it is absent, ValuCast has not rated it", body)
+        self.assertNotIn("Bust risk", body)
+
+    def test_prospect_card_explains_the_decision_hierarchy(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        row = next((r for r in dd_store.get_all() if r.is_prospect), None)
+        if row is None:
+            self.skipTest("No prospect rows available")
+        response = self.client.get(
+            f"/player/{row.id}?mode=prospects",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assert_decision_hierarchy(response.data.decode())
+
+    def test_mlb_dynasty_card_explains_the_decision_hierarchy(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        row = next((r for r in dd_store.get_all() if not r.is_prospect), None)
+        if row is None:
+            self.skipTest("No MLB dynasty rows available")
+        response = self.client.get(
+            f"/player/{row.id}?mode=dd_dynasty",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assert_decision_hierarchy(response.data.decode())
+
+    def test_redraft_card_explains_the_decision_hierarchy(self):
+        response = self.client.get(
+            "/player/19755?mode=categories",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assert_decision_hierarchy(response.data.decode())
+
+
 class TestCompareRoute(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()

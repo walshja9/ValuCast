@@ -40,7 +40,7 @@
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
-            <span class="headline-value"><span>Dynasty Value <a href="/methodology#dynasty-value-scale" class="value-explainer-link" title="What does this 0-100 number mean?">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            <span class="headline-value"><span>ValuCast Value <a href="/methodology#dynasty-value-scale" class="value-explainer-link" title="How does this dynasty 0-100 value work?">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
             {% set headline_context = namespace(parts=[]) %}
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
             {% set headline_context.parts = headline_context.parts + ["Range " ~ ("%.0f" | format(confidence_range.get('low'))) ~ "–" ~ ("%.0f" | format(confidence_range.get('high')))] %}
@@ -68,6 +68,9 @@
     </div>
 
     <div class="detail-body">
+        <div class="detail-section card-reading-guide" aria-label="How to read this card">
+            <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
+        </div>
         {# Attribution panel — "How ValuCast graded him". Placed HIGH on the card,
            3-tier disclosure. Prospect-only (dynasty_signal + prospect components).
            NEVER renders a per-feature weight percentage: the model is not a linear
@@ -174,8 +177,8 @@
         <div class="detail-section prospect-profile-card">
             <div class="prospect-profile-top">
                 <div>
-                    <span class="profile-card-kicker">The ValuCast Read</span>
-                    <h4>How His Skills Rank</h4>
+                    <span class="profile-card-kicker">Skill</span>
+                    <h4>What his performance supports</h4>
                     <p class="profile-note">
                         {{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}
                         {% if row.sample_context_label %}<br><span class="sample-scope-note">{{ row.sample_context_label }}</span>{% endif %}
@@ -452,8 +455,8 @@
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
-                    <span class="profile-card-kicker">Scouting Reports</span>
-                    <h4>Role & Read</h4>
+                    <span class="profile-card-kicker">Opportunity</span>
+                    <h4>Role, playing time &amp; availability</h4>
                 </div>
                 <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open report</a>
             </div>
@@ -515,7 +518,7 @@
 
         {% if row.availability_context or row.bucket_calibration_context or row.factual_current_context %}
         <div class="detail-section prospect-sample-context">
-            <h4>Confidence & Context</h4>
+            <h4>Confidence</h4>
             <div class="stat-grid">
                 {% if row.factual_skill_label and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Skill Read</span><span class="stat-value">{{ row.factual_skill_label }}</span></div>
@@ -849,8 +852,8 @@
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
-                    <span class="profile-card-kicker">Scouting Reports</span>
-                    <h4>Role & Read</h4>
+                    <span class="profile-card-kicker">Opportunity</span>
+                    <h4>Role, playing time &amp; availability</h4>
                 </div>
                 {# role-profile-only players have no report behind /scouting?q= #}
                 {% if scouting_report %}
