@@ -1,7 +1,7 @@
 # Prospect Player-Card / Share-Graphic Parity Design
 
 **Date:** 2026-07-18
-**Status:** Approved visual direction; awaiting written-spec review
+**Status:** Approved visual direction; probability requirements superseded by `2026-07-19-prospect-evidence-honesty-design.md`
 **Branch:** `codex/role-watch-implementation`
 
 ## Purpose
@@ -10,9 +10,9 @@ Make the existing prospect player share graphic carry every decision-relevant
 field shown on the prospect player card. Keep one player-card system: the HTML
 detail and PNG are two renderings of the same context, not separate products.
 
-The work also completes the already-approved public wording correction from
-`Bust risk` to `Not established by Year 4`. It changes labels and presentation,
-not model probabilities, ranks, values, caps, or publication decisions.
+The work follows the evidence-honesty contract: shadow outcome percentages and
+heuristic Peak percentages stay off public HTML and PNG surfaces. It changes
+presentation, not models, ranks, values, caps, or publication decisions.
 
 ## Approved Product Rule
 
@@ -32,8 +32,7 @@ reader to the complete live card.
   player-detail context builder. The prospect PNG route will reuse it instead of
   independently reassembling card data.
 - `web.public_snapshot_models.DynastyRankingRow` already exposes the value,
-  confidence, outcome mix, peak outlook, attribution, and role fields.
-- `web.prospect_context.outcome_mix` remains the only public outcome-label helper.
+  confidence, qualitative peak outlook, attribution, and role fields.
 - Existing percentile, plate-discipline, AAA Statcast, rank-history, shape-comps,
   scouting, FanGraphs, consensus, and forward-ledger readers remain unchanged.
 - The existing Pillow renderer, graphic palette, typography, QR helper, wrapping
@@ -71,11 +70,6 @@ point.
 
 ### 2. How ValuCast graded him
 
-- The exact `row.outcome_mix` partition.
-- Public labels: `Impact season`, `Established MLB role`, and
-  `Not established by Year 4`.
-- The four-year threshold note: not established means no applicable 300-PA
-  hitter or 50-IP pitcher season within four years, not a career verdict.
 - Existing `why_rank_chips`, up to the same four-chip page limit.
 - Material attribution effects and confidence drivers when present, including
   availability discounts, calibration adjustments, sample sufficiency, and the
@@ -101,8 +95,8 @@ the collapsed raw MiLB and MLB-equivalent tables remain live-card drill-downs.
 - Full ValuCast Read, using the same scouting report selected for the HTML card.
 - Recent-form and buy-board context when present.
 - The real VC rank-trend sparkline, first/current rank, and archive dates.
-- The complete Peak Outlook: peak score, upside, role, risk, confidence, window,
-  and its displayed role-probability bars.
+- The qualitative Peak Outlook: ceiling scenario, floor scenario, evidence
+  strength, and window.
 - Shape comparisons and resolved-cohort disclosure when present.
 
 ### 5. Source and confidence context
@@ -133,21 +127,19 @@ player values or player-specific logic.
 
 ## Wording Guard
 
-`bust_risk` remains an internal artifact key because changing the data contract is
-outside this work. Neither public HTML nor any share graphic may render `Bust
-risk`. Both surfaces consume `row.outcome_mix`, so the replacement wording cannot
-drift between them.
+`bust_risk` and `row.outcome_mix` remain internal research fields because changing
+the data contract is outside this work. Neither public HTML nor any share graphic
+may render them.
 
 ## Testing
 
 ### Focused behavior tests
 
 - The production PNG route builds and passes the shared detail context.
-- A prospect with outcome data renders all three replacement labels and never
-  renders `Bust risk` in the shared render data.
-- Outcome percentages on the PNG sum to 100 and match the HTML card.
-- Peak score, upside, role, risk, confidence, window, and role probabilities match
-  the HTML context.
+- A prospect with outcome data never renders outcome percentages or `Bust risk`
+  in shared public render data.
+- Peak ceiling, floor, evidence strength, and window match the HTML context;
+  Peak score, upside, generic risk, and role probabilities do not render.
 - Rank-trend, AAA Statcast, plate-discipline, shape-comps, external-context,
   FanGraphs, and ledger sections render only when present.
 - Material attribution/uncertainty fields match the HTML context.
@@ -183,8 +175,8 @@ Implementation completion is not deployment authorization. Before release:
 
 1. Full tests pass on the release commit.
 2. Desktop/native PNG and phone-preview visual checks pass for the five cases.
-3. Public HTML and PNG show identical decision fields and corrected outcome
-   wording.
+3. Public HTML and PNG show identical supported decision fields and no shadow
+   outcome or heuristic Peak percentages.
 4. Model/rank/value/publication outputs remain unchanged.
 5. Role Watch remains held unless separately authorized.
 6. Production deployment receives explicit approval.

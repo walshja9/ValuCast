@@ -1,7 +1,7 @@
 # Player Card Decision Hierarchy Design
 
 **Date:** 2026-07-19
-**Status:** Approved in conversation
+**Status:** Approved in conversation; prospect probability requirements superseded by `2026-07-19-prospect-evidence-honesty-design.md`
 
 ## Goal
 
@@ -37,9 +37,10 @@ The first occurrence of each concept uses a one-sentence layman's explanation. D
 - relabeling the existing skill card as **Skill** and explaining that its bars describe performance, not fantasy value;
 - relabeling the existing `Role & Read` block as **Opportunity**, using its current projected role, volume, roster context, and availability fields;
 - relabeling `Confidence & Context` as **Confidence**, preserving all existing sample and calibration caveats;
-- describing the outcome mix as a range of possible four-year paths. `Not established` remains explicitly defined and must never be presented as `Bust risk`.
+- keeping only live grade drivers in **How ValuCast graded him**; the shadow outcome mix does not render publicly.
+- reducing **Peak Outlook** to qualitative ceiling, floor, evidence strength, and window fields.
 
-No current percentile, Peak Outlook, scouting, rank-trend, Forward Ledger, or format-rank content is removed.
+Current percentile, scouting, rank-trend, Forward Ledger, and format-rank content remains unchanged.
 
 ### Redraft cards
 
@@ -54,7 +55,7 @@ Actual-stat and Statcast sections remain supporting evidence and keep their curr
 
 ### Presentation and accessibility
 
-Reuse the existing card typography, section containers, and responsive layout. Add CSS only if the existing classes cannot express the hierarchy clearly. Any new explanatory text must wrap at 390px without horizontal overflow. Headings remain semantic, links and controls retain keyboard focus states, and percentile/probability graphics keep their current accessible labels.
+Reuse the existing card typography, section containers, and responsive layout. Add CSS only if the existing classes cannot express the hierarchy clearly. Any new explanatory text must wrap at 390px without horizontal overflow. Headings remain semantic, links and controls retain keyboard focus states, and remaining percentile graphics keep their current accessible labels.
 
 ## Data and Model Boundaries
 
