@@ -844,6 +844,39 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("image/png", png.content_type)
         self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
 
+    def test_prospect_player_share_card_matches_qualitative_peak_outlook(self):
+        from PIL import ImageDraw
+
+        from app import dd_store
+
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        row = next((r for r in dd_store.get_all() if r.name == "Kade Anderson"), None)
+        if row is None:
+            self.skipTest("Kade Anderson not available")
+
+        rendered = []
+        original_text = ImageDraw.ImageDraw.text
+
+        def capture_text(draw, xy, value, *args, **kwargs):
+            rendered.append(str(value))
+            return original_text(draw, xy, value, *args, **kwargs)
+
+        with patch.object(ImageDraw.ImageDraw, "text", new=capture_text):
+            png = app_module._prospect_player_card_png(row)
+
+        self.assertEqual(png[:8], b"\x89PNG\r\n\x1a\n")
+        rendered_text = " ".join(rendered)
+        for label, value in (
+            ("CEILING SCENARIO", row.peak_role_label),
+            ("FLOOR SCENARIO", row.peak_floor_label),
+            ("EVIDENCE STRENGTH", row.peak_confidence_label),
+            ("WINDOW", row.peak_eta_label),
+        ):
+            self.assertIn(label, rendered_text)
+            self.assertIn(value, rendered_text)
+        self.assertNotIn("BUST RISK", rendered_text)
+
     def test_player_card_png_renders_with_qr_lib_present(self):
         # With the qrcode lib available, the Arias card PNG still returns a valid PNG
         # (the QR strip is drawn without crashing the dynamic-height renderer).
