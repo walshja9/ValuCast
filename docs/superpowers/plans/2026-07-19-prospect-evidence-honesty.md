@@ -28,7 +28,7 @@
 - Consumes: existing `DynastyRankingRow` attribution, Peak role, floor, confidence, and ETA properties.
 - Produces: public HTML with no outcome distribution, Peak score, delta, generic risk, trajectory, probability bars, or heuristic card copy.
 
-- [ ] **Step 1: Write the failing render assertions**
+- [x] **Step 1: Write the failing render assertions**
 
 Update the prospect hierarchy test to select a prospect with Peak context and assert the approved behavior:
 
@@ -61,7 +61,7 @@ self.assertNotIn("Four-year MLB outlook", body)
 self.assertNotIn("not a career verdict", body)
 ```
 
-- [ ] **Step 2: Run the focused tests and verify RED**
+- [x] **Step 2: Run the focused tests and verify RED**
 
 Run:
 
@@ -71,7 +71,7 @@ python -m pytest tests/test_app.py::TestPlayerCardDecisionHierarchy::test_prospe
 
 Expected: both tests fail because the current template still renders the outcome mix and quantitative Peak fields.
 
-- [ ] **Step 3: Apply the minimal template deletion**
+- [x] **Step 3: Apply the minimal template deletion**
 
 In the attribution panel:
 
@@ -98,13 +98,13 @@ Change the note to literal honest copy and delete the trajectory, role-probabili
 <p class="profile-note peak-projection-note">Qualitative ceiling and floor scenarios &mdash; separate from today's value.</p>
 ```
 
-- [ ] **Step 4: Run the focused tests and verify GREEN**
+- [x] **Step 4: Run the focused tests and verify GREEN**
 
 Run the command from Step 2.
 
 Expected: `2 passed`.
 
-- [ ] **Step 5: Commit the HTML correction**
+- [x] **Step 5: Commit the HTML correction**
 
 ```powershell
 git add -- tests/test_app.py templates/partials/player_detail_dynasty.html
@@ -121,7 +121,7 @@ git commit -m "fix: remove unsupported prospect probabilities"
 - Consumes: `_scouting_display_report(report: dict | None) -> dict | None`.
 - Produces: the same public scouting report mapping without `peak_summary`; committed artifacts remain unchanged.
 
-- [ ] **Step 1: Write the failing adapter test**
+- [x] **Step 1: Write the failing adapter test**
 
 Add to `TestPlayerCardDecisionHierarchy`:
 
@@ -136,7 +136,7 @@ def test_public_scouting_adapter_hides_uncalibrated_peak_summary(self):
     self.assertNotIn("peak_summary", public)
 ```
 
-- [ ] **Step 2: Run the adapter test and verify RED**
+- [x] **Step 2: Run the adapter test and verify RED**
 
 Run:
 
@@ -146,7 +146,7 @@ python -m pytest tests/test_app.py::TestPlayerCardDecisionHierarchy::test_public
 
 Expected: FAIL because `peak_summary` is still present.
 
-- [ ] **Step 3: Apply the one-line public guard**
+- [x] **Step 3: Apply the one-line public guard**
 
 In `_scouting_display_report`, after copying the artifact row:
 
@@ -157,7 +157,7 @@ item.pop("peak_summary", None)
 
 This existing adapter feeds player HTML, share PNG context, and the scouting route. Do not edit the generated scouting artifact or Pillow renderer.
 
-- [ ] **Step 4: Run the adapter and PNG checks**
+- [x] **Step 4: Run the adapter and PNG checks**
 
 Run:
 
@@ -167,7 +167,7 @@ python -m pytest tests/test_app.py::TestPlayerCardDecisionHierarchy::test_public
 
 Expected: `2 passed`.
 
-- [ ] **Step 5: Commit the adapter guard**
+- [x] **Step 5: Commit the adapter guard**
 
 ```powershell
 git add -- tests/test_app.py app.py
@@ -184,7 +184,7 @@ git commit -m "fix: suppress heuristic peak risk copy"
 - Consumes: the approved `2026-07-19-prospect-evidence-honesty-design.md` behavior.
 - Produces: no contradictory requirement to restore outcome percentages or heuristic Peak fields.
 
-- [ ] **Step 1: Amend the conflicting requirements**
+- [x] **Step 1: Amend the conflicting requirements**
 
 In both older specs:
 
@@ -193,7 +193,7 @@ In both older specs:
 - require only qualitative ceiling, floor, evidence strength, and window;
 - remove tests requiring outcome percentages, Peak score, delta, generic risk, or role probabilities on HTML/PNG.
 
-- [ ] **Step 2: Check the contract and diff**
+- [x] **Step 2: Check the contract and diff**
 
 Run:
 
@@ -204,7 +204,7 @@ git diff --check
 
 Expected: `rg` finds no contradictory requirement; `git diff --check` exits 0.
 
-- [ ] **Step 3: Run automated verification**
+- [x] **Step 3: Run automated verification**
 
 Run focused coverage:
 
@@ -220,7 +220,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 4: Verify artifact and model boundaries**
+- [x] **Step 4: Verify artifact and model boundaries**
 
 Run:
 
@@ -231,7 +231,7 @@ git diff --name-only origin/master...HEAD -- data/models data/public data/predic
 
 Expected: only intended source, test, and documentation files are pending; no model or generated data path appears.
 
-- [ ] **Step 5: Commit the contract correction**
+- [x] **Step 5: Commit the contract correction**
 
 ```powershell
 git add -- docs/superpowers/specs/2026-07-18-prospect-player-share-parity-design.md docs/superpowers/specs/2026-07-19-player-card-decision-hierarchy-design.md
@@ -239,3 +239,32 @@ git commit -m "docs: align prospect card evidence contracts"
 ```
 
 Do not push, deploy, merge, or dispatch a workflow.
+
+---
+
+### Task 4: Keep heuristic Peak claims out of prospect narratives
+
+**Files:**
+- Modify: `app.py`
+- Modify: `scouting/repository.py`
+- Modify: `scouting/voice.py`
+- Modify: `tests/test_scouting_page.py`
+- Modify: `tests/test_scouting_v2.py`
+
+- [x] Add a prospect-only public fallback for cached reads that state role
+  probabilities, generic risk bands, likely outcomes, settled role forecasts,
+  or any prospect projection language. MLB rate-projection prose remains scoped
+  out; prospect MLB-equivalent rates use `translates to` language.
+- [x] Report the fallback source honestly as deterministic.
+- [x] Route `/scouting` through the same adapter so it cannot leak Peak risk copy
+  or mislabel a rejected generated read.
+- [x] Reframe the three deterministic `likely outcome` / `profiles as` templates
+  as explicit current-performance ceiling scenarios.
+- [x] Restrict future LLM grounding to qualitative ceiling, floor, evidence
+  strength, and window context.
+- [x] Add a hard generation guard against uncalibrated outcome claims without
+  blocking supported MLB rate-projection language.
+- [x] Audit the committed repository: 209 of 356 generated prospect reads require
+  the deterministic fallback; 147 remain generated reads, with zero guarded
+  claims served. Seven legacy deterministic reads are relabeled as explicit
+  current-performance ceiling scenarios.

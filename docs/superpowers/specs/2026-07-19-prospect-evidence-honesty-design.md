@@ -1,7 +1,7 @@
 # Prospect Evidence Honesty Design
 
 **Date:** 2026-07-19
-**Status:** Approved in conversation; awaiting written-spec review
+**Status:** Approved and implemented on the feature branch; not released
 **Supersedes:** The outcome-mix and Peak Outlook probability requirements in the
 2026-07-18 share-parity design and the preservation requirement for those fields
 in the 2026-07-19 player-card hierarchy design.
@@ -57,6 +57,22 @@ Do not render:
 
 The labels are scenarios, not promised outcomes. Missing fields remain omitted.
 
+### ValuCast Read
+
+- Do not let generated prospect prose restate heuristic role percentages or
+  use projection language, generic risk bands, likely outcomes, or settled role
+  forecasts. MLB-equivalent prospect rates use `translates to` wording instead.
+- At display time, fall back to the deterministic performance read when a
+  cached generated read contains that language. Legacy deterministic templates
+  that say `likely outcome` or `profiles as` are reframed as explicit
+  current-performance ceiling scenarios.
+- Future generated reads receive only qualitative ceiling, floor, evidence
+  strength, and window context; role probabilities, numeric risk, trajectory,
+  and projected skill grades are excluded from their grounding.
+- MLB rate projections are unaffected by this prospect-only guard.
+- The player card, scouting page, team board, and share-card context all use the
+  same public display boundary.
+
 ## Share Graphics
 
 The share-parity contract follows the corrected public card:
@@ -85,6 +101,8 @@ Focused render tests must prove that prospect HTML:
   provided;
 - still exposes actual attribution effects and uncertainty context;
 - never renders `Bust risk`.
+- falls back from generated prospect prose containing heuristic outcome claims,
+  while leaving supported MLB projection-rate prose unchanged.
 
 Update share-parity contract tests or documentation assertions so they no longer
 require the removed fields. Then run focused card tests, the full automated suite,
