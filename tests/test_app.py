@@ -1915,6 +1915,21 @@ class TestTradeAnalyzer(unittest.TestCase):
         # free-forever framing is on the page copy
         self.assertIn("free, like every ValuCast number", body)
 
+    def test_trade_scope_note_on_empty_result_and_preview(self):
+        from app import dd_store
+        scope = (
+            "Player-only verdict: draft picks, FAAB, roster spots, and league "
+            "context are not included."
+        )
+        self.assertIn(scope, self.client.get("/trade").data.decode())
+
+        give, get = dd_store.get_all()[:2]
+        query = f"give={give.id}&get={get.id}"
+        result = self.client.get(f"/trade?{query}").data.decode()
+        self.assertGreaterEqual(result.count(scope), 2)
+        preview = self.client.get(f"/trade/share-card?{query}").data.decode()
+        self.assertIn(scope, preview)
+
     def test_trade_from_params_renders_verdict(self):
         from app import dd_store
         rows = dd_store.get_all()
@@ -2021,6 +2036,24 @@ class TestTradeAnalyzer(unittest.TestCase):
         png = _trade_share_card_png(ids[:1], ids[1:3])
         self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertGreater(len(png), 0)
+
+    def test_trade_scope_note_is_rendered_into_png(self):
+        import app as app_module
+        from unittest.mock import patch
+
+        give, get = app_module.dd_store.get_all()[:2]
+        with patch.object(
+            app_module,
+            "_graphic_wrap_text",
+            wraps=app_module._graphic_wrap_text,
+        ) as wrap:
+            png = app_module._trade_share_card_png([give.id], [get.id])
+
+        wrapped_text = [
+            call.args[1] for call in wrap.call_args_list if len(call.args) > 1
+        ]
+        self.assertIn(app_module._TRADE_SCOPE_NOTE, wrapped_text)
+        self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
 
     def test_trade_png_cache_key_distinguishes_trades(self):
         # THE poisoning guard: different trades MUST produce different cache keys.

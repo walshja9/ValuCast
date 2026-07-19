@@ -50,6 +50,7 @@
         You get <strong>{{ verdict.get_total }}</strong> &middot;
         Margin <strong>{{ '%+.1f' % verdict.margin }}</strong>
     </p>
+    <p class="trade-note trade-note-even">{{ trade_scope_note }}</p>
 
     {# 4a: margin inside the noise band -> "call it even", never a false winner. #}
     {% if verdict.inside_noise %}

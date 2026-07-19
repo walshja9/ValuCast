@@ -7441,6 +7441,10 @@ def value_map_players_api():
 _TRADE_NOISE_PER_PLAYER = 9.0  # a fixed tolerance (~+/-9/player). MLB rows carry no
 # per-row error bar (only prospect rows have uncertainty.lower/upper), so a uniform
 # heuristic band is the honest choice over a false per-row band. See plan 022 4a.
+_TRADE_SCOPE_NOTE = (
+    "Player-only verdict: draft picks, FAAB, roster spots, and league context "
+    "are not included."
+)
 _TRADE_MAX_PER_SIDE = 6         # guard: cap each side (matches the URL param cap)
 
 _TRADE_MOMENTUM_CACHE = (None, None)  # (generation_key, form_by_key) swapped atomically
@@ -7598,6 +7602,7 @@ def _build_trade_page_context(args):
         "give_param": ",".join(give_resolved),
         "get_param": ",".join(get_resolved),
         "verdict": verdict,
+        "trade_scope_note": _TRADE_SCOPE_NOTE,
         "map_data_url": "/api/value-map-players",   # the search payload the JS loads
         "as_of": dd_store.generated_at or store.as_of,
         "dd_generated_at": dd_store.generated_at,
@@ -7656,14 +7661,14 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
 
     # Every applicable honesty note travels with the image (page parity), not just
     # the single most salient one - the PNG is the og:image a re-sharer never links.
-    notes = []
+    notes = [(muted, _TRADE_SCOPE_NOTE)]
     if verdict["inside_noise"]:
         notes.append((muted, "Totals are within the value band (about +/-9 per player). That is a coin-flip on these numbers - call it even, not a win."))
     if verdict["count_mismatch"]:
         notes.append((clay, "The sides have different player counts. Fewer, better players usually win dynasty trades - depth sums to a big number but you still start one lineup."))
     if verdict["crosses_universes"]:
         notes.append((blue, "Mixes prospects and big-leaguers - their 0-100 values come from two separate normalizations aligned at the top. Comparable in ballpark, not to the decimal."))
-    if not notes:
+    if len(notes) == 1:
         notes.append((muted, "Verdict is the value margin - dynasty context (age, window, roster fit) is yours to weigh."))
 
     # Content-fit canvas (min square): panels + headline + notes decide the height,
@@ -7788,7 +7793,10 @@ def trade_share_card():
         filename="valucast-trade.png",
         public_png_url=_public_url(png_path),
         public_page_url=_public_url(f"/trade/share-card?{query}"),
-        description="The board's verdict on this dynasty trade, from the same 0-100 values ValuCast serves.",
+        description=(
+            f"{_TRADE_SCOPE_NOTE} The board's verdict on this dynasty trade, from "
+            "the same 0-100 values ValuCast serves."
+        ),
         image_alt="ValuCast Trade Analyzer verdict card",
         back_url=f"/trade?{query}",
         back_label="Back to the Trade Analyzer",
