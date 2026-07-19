@@ -82,8 +82,9 @@ def test_prospect_player_detail_surfaces_scouting_and_role_context():
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    assert "Scouting Reports" in html
-    assert "Role & Read" in html
+    assert '<span class="profile-card-kicker">Opportunity</span>' in html
+    assert "<h4>Role, playing time &amp; availability</h4>" in html
+    assert '<a href="/scouting?q=Franklin%20Arias" class="mini-link">Open report</a>' in html
     assert "Regular+" in html
 
 
@@ -98,9 +99,10 @@ def test_mlb_player_detail_surfaces_role_tracker_context():
 
     assert response.status_code == 200
     # 7/14 declutter: the standalone "Playing-Time Tracker" card folded into the
-    # merged Role & Read card; the tracker grid now renders under that header
+    # Opportunity card; the tracker grid now renders under that hierarchy header
     # with a "Projected Role" stat label (matching the prospect path).
-    assert "Role & Read" in html
+    assert '<span class="profile-card-kicker">Opportunity</span>' in html
+    assert "<h4>Role, playing time &amp; availability</h4>" in html
     assert "Projected Role" in html
     # Wiring test: the tracker artifact regenerates daily, so read the expected
     # role from it instead of pinning a label that drifts with the data.

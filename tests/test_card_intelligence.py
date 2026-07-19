@@ -1081,12 +1081,12 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_prospect_card_has_identity_percentiles_and_pool_label(self):
         response = self.client.get("/player/dd_prospect_top?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"The ValuCast Read", response.data)
-        self.assertIn(b"How His Skills Rank", response.data)
-        read_pos = response.data.find(b"The ValuCast Read")
+        self.assertIn(b'<span class="profile-card-kicker">Skill</span>', response.data)
+        self.assertIn(b"<h4>What his performance supports</h4>", response.data)
+        skill_pos = response.data.find(b'<span class="profile-card-kicker">Skill</span>')
         trend_pos = response.data.find(b"ValuCast Value Trend")
         if trend_pos != -1:
-            self.assertLess(read_pos, trend_pos)
+            self.assertLess(skill_pos, trend_pos)
         self.assertIn(b"100 = best in the ValuCast prospect pool", response.data)
         self.assertIn(b"Skill Shape", response.data)
         self.assertIn(b"not scouting grades", response.data)
@@ -1118,7 +1118,8 @@ class TestCardIntelligenceUI(unittest.TestCase):
     def test_pitcher_prospect_card_uses_pitcher_pool_label(self):
         response = self.client.get("/player/dd_prospect_arm?mode=prospects", headers={"HX-Request": "true"})
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"The ValuCast Read", response.data)
+        self.assertIn(b'<span class="profile-card-kicker">Skill</span>', response.data)
+        self.assertIn(b"<h4>What his performance supports</h4>", response.data)
         self.assertIn(b"pitcher pool", response.data)
         self.assertIn(b"20+ IP", response.data)
         self.assertNotIn(b"hitter pool", response.data)
