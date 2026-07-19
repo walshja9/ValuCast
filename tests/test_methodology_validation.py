@@ -75,11 +75,27 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn(str(self.art["pitching"]["sample_size"]), self.html)
         self.assertIn("2020", flat)
         self.assertIn("directional, not precise", flat)
-        # gap (c): the committed legacy artifact used cumulative rates, so its
-        # magnitude cannot be presented as a valid post-freeze score.
-        self.assertIn("stored forward rate readout is excluded", low)
-        self.assertIn("not a valid post-freeze score", low)
-        self.assertIn("steamer remains the live source", low)
+        # gap (c): the page must follow the committed evaluator contract. The
+        # daily artifact switched from the excluded cumulative-rate readout to
+        # corrected post-freeze component deltas on 7/19.
+        forward = json.loads(
+            (ROOT / "data" / "models" /
+             "valucast_mlb_projection_source_comparison.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        if (forward.get("comparison_basis") or {}).get(
+            "rate_actuals_method"
+        ) == "post_freeze_component_deltas":
+            self.assertIn("forward rate check", low)
+            self.assertIn("post-freeze counting-stat deltas", low)
+            self.assertIn("both roles must clear independently", low)
+            self.assertIn("publication remains held", low)
+            self.assertNotIn("stored forward rate readout is excluded", low)
+        else:
+            self.assertIn("stored forward rate readout is excluded", low)
+            self.assertIn("not a valid post-freeze score", low)
+            self.assertIn("steamer remains the live source", low)
         self.assertNotIn("currently losing", low)
 
     def test_corrected_forward_readout_separates_hitters_and_pitchers(self):
