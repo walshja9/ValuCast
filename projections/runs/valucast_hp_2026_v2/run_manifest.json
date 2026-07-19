@@ -1,5 +1,5 @@
 {
-  "actuals_as_of": "2026-07-18",
+  "actuals_as_of": "2026-07-19",
   "as_of_season": 2026,
   "components": {
     "hitters": {
@@ -32,10 +32,29 @@
     }
   },
   "eligibility_source": "current.json (Steamer outlook) used for names/teams/positions + active-player universe; NO projection stats copied",
-  "generated_at": "2026-07-18T11:52:10.050420+00:00",
+  "generated_at": "2026-07-19T11:52:40.414954+00:00",
   "hitter_count": 877,
   "pitcher_count": 1187,
   "projection_scope": "rest_of_season",
+  "public_skill_metric_gate": {
+    "affects_live_outputs": false,
+    "reason": "remaining-opportunity clamping is present",
+    "status": "held"
+  },
+  "remaining_opportunity_diagnostics": {
+    "hitters": {
+      "actuals_matched": 544,
+      "clamped_to_zero": 22,
+      "rows": 877,
+      "zero_remaining": 22
+    },
+    "pitchers": {
+      "actuals_matched": 624,
+      "clamped_to_zero": 174,
+      "rows": 1187,
+      "zero_remaining": 179
+    }
+  },
   "run_id": "valucast_hp_2026_v2",
   "source_name": "valucast"
 }
