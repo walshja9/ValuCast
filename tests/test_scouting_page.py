@@ -85,7 +85,10 @@ def test_prospect_player_detail_surfaces_scouting_and_role_context():
     assert '<span class="profile-card-kicker">Opportunity</span>' in html
     assert "<h4>Role, playing time &amp; availability</h4>" in html
     assert '<a href="/scouting?q=Franklin%20Arias" class="mini-link">Open report</a>' in html
-    assert "Regular+" in html
+    assert "<b>Ceiling scenario</b>" in html
+    assert "<b>Floor scenario</b>" in html
+    assert "<b>Evidence strength</b>" in html
+    assert "Regular+" not in html
 
 
 def test_mlb_player_detail_surfaces_role_tracker_context():
