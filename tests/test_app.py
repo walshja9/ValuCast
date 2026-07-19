@@ -233,6 +233,15 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             self.assertNotIn(f"<span>{item['label']}</span>", body)
         self.assert_reading_guide(body)
 
+    def test_public_scouting_adapter_hides_uncalibrated_peak_summary(self):
+        public = app_module._scouting_display_report({
+            "report": "Observed performance read.",
+            "peak_summary": "Projection: starter with low risk.",
+        })
+
+        self.assertEqual(public["display_report"], "Observed performance read.")
+        self.assertNotIn("peak_summary", public)
+
     def test_mlb_dynasty_card_explains_the_decision_hierarchy(self):
         from app import dd_store
         if not dd_store.is_available:

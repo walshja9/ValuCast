@@ -5611,6 +5611,7 @@ def _scouting_display_report(report: dict | None) -> dict | None:
     if not isinstance(report, dict):
         return None
     item = dict(report)
+    item.pop("peak_summary", None)
     item["display_report"] = _scouting_display_report_text(item)
     if str(item.get("published_report_source") or "").strip():
         item["display_report_source"] = str(item["published_report_source"]).strip()
