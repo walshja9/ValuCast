@@ -212,6 +212,11 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         self.assertIn('<span class="profile-card-kicker">Opportunity</span>', body)
         self.assertIn("<h4>Role, playing time &amp; availability</h4>", body)
         self.assertIn("<h4>Confidence</h4>", body)
+        self.assertIn(
+            "scouting reference only, never used in ValuCast rank or value",
+            body,
+        )
+        self.assertIn("Four-year MLB outlook.", body)
         self.assert_reading_guide(body)
 
     def test_mlb_dynasty_card_explains_the_decision_hierarchy(self):
@@ -240,6 +245,8 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             body,
         )
         self.assertNotIn("<h4>2026 Season Outlook</h4>", body)
+        self.assertIn("Projected production (Steamer)", body)
+        self.assertIn("via Baseball Savant", body)
         self.assert_reading_guide(body)
 
     def test_mlb_dynasty_card_rates_pa_as_opportunity_without_role_or_availability(self):
@@ -274,6 +281,8 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             "If role or availability is absent, ValuCast has not rated it.",
             body,
         )
+        self.assertIn("Rest-of-Season Projection (Steamer)", body)
+        self.assertIn("via Baseball Savant", body)
         self.assert_reading_guide(body)
 
 
