@@ -140,18 +140,59 @@ class TestPlayerDetail(unittest.TestCase):
 
 
 class TestPlayerCardDecisionHierarchy(unittest.TestCase):
+    GUIDE = (
+        "<p><strong>Skill</strong> is what the performance evidence supports. "
+        "<strong>Opportunity</strong> is projected playing time, role, and availability. "
+        "<strong>ValuCast Value</strong> turns both into the fantasy decision for this format. "
+        "<strong>Confidence</strong> shows how stable that read is; if it is absent, "
+        "ValuCast has not rated it.</p>"
+    )
+
     def setUp(self):
         self.client = app.test_client()
         app.config["TESTING"] = True
 
-    def assert_decision_hierarchy(self, body):
-        self.assertIn('aria-label="How to read this card"', body)
-        self.assertIn("Skill", body)
-        self.assertIn("Opportunity", body)
-        self.assertIn("ValuCast Value", body)
-        self.assertIn("Confidence", body)
-        self.assertIn("if it is absent, ValuCast has not rated it", body)
+    def assert_reading_guide(self, body):
+        self.assertIn(
+            '<section class="detail-section card-reading-guide" '
+            'aria-label="How to read this card">',
+            body,
+        )
+        self.assertIn(self.GUIDE, body)
         self.assertNotIn("Bust risk", body)
+
+    def render_mlb_without_role_or_availability(self):
+        from flask import render_template
+        from web.dynasty_models import DynastyRankingRow
+
+        row = DynastyRankingRow(
+            id="missing-role-mlb",
+            name="Missing Role MLB",
+            player_type="mlb",
+            positions=("OF",),
+            team="TST",
+            age=27,
+            dynasty_rank=1,
+            dynasty_value=50.0,
+            status="active",
+            mlbam_id="999999",
+            level="MLB",
+        )
+        with app.test_request_context("/player/missing-role-mlb"):
+            return render_template(
+                "partials/player_detail_dynasty.html",
+                row=row,
+                mlb_stats={"PA": 500},
+            )
+
+    def test_reading_guides_are_semantic(self):
+        redraft = self.client.get(
+            "/player/19755?mode=categories",
+            headers={"HX-Request": "true"},
+        )
+        self.assertEqual(redraft.status_code, 200)
+        for body in (redraft.data.decode(), self.render_mlb_without_role_or_availability()):
+            self.assert_reading_guide(body)
 
     def test_prospect_card_explains_the_decision_hierarchy(self):
         from app import dd_store
@@ -165,7 +206,13 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             headers={"HX-Request": "true"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assert_decision_hierarchy(response.data.decode())
+        body = response.data.decode()
+        self.assertIn('<span class="profile-card-kicker">Skill</span>', body)
+        self.assertIn("<h4>What his performance supports</h4>", body)
+        self.assertIn('<span class="profile-card-kicker">Opportunity</span>', body)
+        self.assertIn("<h4>Role, playing time &amp; availability</h4>", body)
+        self.assertIn("<h4>Confidence</h4>", body)
+        self.assert_reading_guide(body)
 
     def test_mlb_dynasty_card_explains_the_decision_hierarchy(self):
         from app import dd_store
@@ -179,7 +226,36 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             headers={"HX-Request": "true"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assert_decision_hierarchy(response.data.decode())
+        body = response.data.decode()
+        self.assertIn(
+            '<span class="headline-value"><span>ValuCast Value ',
+            body,
+        )
+        self.assertIn('<span class="headline-context">Dynasty', body)
+        self.assertIn('<span class="profile-card-kicker">Skill</span>', body)
+        self.assertIn("<h4>Projected performance</h4>", body)
+        self.assertIn(
+            "<strong>Opportunity:</strong> PA/IP show projected playing time. "
+            "If role or availability is absent, ValuCast has not rated it.",
+            body,
+        )
+        self.assertNotIn("<h4>2026 Season Outlook</h4>", body)
+        self.assert_reading_guide(body)
+
+    def test_mlb_dynasty_card_rates_pa_as_opportunity_without_role_or_availability(self):
+        body = self.render_mlb_without_role_or_availability()
+
+        self.assertIn('<span class="profile-card-kicker">Skill</span>', body)
+        self.assertIn("<h4>Projected performance</h4>", body)
+        self.assertIn(
+            "<strong>Opportunity:</strong> PA/IP show projected playing time. "
+            "If role or availability is absent, ValuCast has not rated it.",
+            body,
+        )
+        self.assertIn('<span class="stat-label">PA</span>', body)
+        self.assertRegex(body, r'<span class="stat-value">\s*500\s*</span>')
+        self.assertNotIn('<span class="stat-label">Projected Role</span>', body)
+        self.assertNotIn('<span class="stat-label">Roster Context</span>', body)
 
     def test_redraft_card_explains_the_decision_hierarchy(self):
         response = self.client.get(
@@ -187,7 +263,18 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
             headers={"HX-Request": "true"},
         )
         self.assertEqual(response.status_code, 200)
-        self.assert_decision_hierarchy(response.data.decode())
+        body = response.data.decode()
+        self.assertIn("ValuCast Value: ", body)
+        self.assertIn('<span class="profile-card-kicker">ValuCast Value</span>', body)
+        self.assertIn("<h4>What this means in your league</h4>", body)
+        self.assertIn('<span class="profile-card-kicker">Skill</span>', body)
+        self.assertIn("<h4>Projected performance</h4>", body)
+        self.assertIn(
+            "<strong>Opportunity:</strong> PA/IP show projected playing time. "
+            "If role or availability is absent, ValuCast has not rated it.",
+            body,
+        )
+        self.assert_reading_guide(body)
 
 
 class TestCompareRoute(unittest.TestCase):

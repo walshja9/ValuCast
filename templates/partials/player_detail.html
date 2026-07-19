@@ -32,9 +32,9 @@
     </div>
 
     <div class="detail-body">
-        <div class="detail-section card-reading-guide" aria-label="How to read this card">
+        <section class="detail-section card-reading-guide" aria-label="How to read this card">
             <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
-        </div>
+        </section>
         {% set read = namespace(best_label=None, best_value=None, drag_label=None, drag_value=None) %}
         {% for cat in active_categories %}
             {% set cat_value = result.category_values.get(cat.id) %}
@@ -99,7 +99,7 @@
         <div class="detail-section">
             <span class="profile-card-kicker">Skill</span>
             <h4>Projected performance</h4>
-            <p class="profile-note"><strong>Opportunity:</strong> PA/IP show projected playing time. Role and availability appear only when supported.</p>
+            <p class="profile-note"><strong>Opportunity:</strong> PA/IP show projected playing time. If role or availability is absent, ValuCast has not rated it.</p>
             {% if projection_split and projection_split.hitting and projection_split.pitching %}
             <div class="stat-group two-way-stats"><h5>Hitting</h5>{{ projection_grid(projection_split.hitting) }}</div>
             <div class="stat-group two-way-stats"><h5>Pitching</h5>{{ projection_grid(projection_split.pitching) }}</div>

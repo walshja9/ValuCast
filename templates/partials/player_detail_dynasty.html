@@ -41,7 +41,7 @@
         </div>
         <div class="dynasty-headline">
             <span class="headline-value"><span>ValuCast Value <a href="/methodology#dynasty-value-scale" class="value-explainer-link" title="How does this dynasty 0-100 value work?">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
-            {% set headline_context = namespace(parts=[]) %}
+            {% set headline_context = namespace(parts=["Dynasty"]) %}
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
             {% set headline_context.parts = headline_context.parts + ["Range " ~ ("%.0f" | format(confidence_range.get('low'))) ~ "–" ~ ("%.0f" | format(confidence_range.get('high')))] %}
             {% endif %}
@@ -68,9 +68,9 @@
     </div>
 
     <div class="detail-body">
-        <div class="detail-section card-reading-guide" aria-label="How to read this card">
+        <section class="detail-section card-reading-guide" aria-label="How to read this card">
             <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
-        </div>
+        </section>
         {# Attribution panel — "How ValuCast graded him". Placed HIGH on the card,
            3-tier disclosure. Prospect-only (dynasty_signal + prospect components).
            NEVER renders a per-feature weight percentage: the model is not a linear
@@ -926,13 +926,15 @@
 
         {% include "partials/_statcast_bars.html" %}
 
-        {# 7/14 declutter: Season Outlook stays the visible headline table; Actual Stats
+        {# 7/14 declutter: Projected performance stays the visible headline table; Actual Stats
            and the ROS projection collapse like MiLB Stats / MLB-Equivalent Rates do. #}
         {% for title, stats, split in [('2026 Season Outlook', mlb_stats, mlb_stats_split), ('2026 Actual Stats', mlb_stats_actual, mlb_stats_actual_split), ('Rest-of-Season Projection (Steamer)', mlb_stats_ros, mlb_stats_ros_split)] %}
         {% if stats %}
         {% if loop.first %}
         <div class="detail-section">
-            <h4>{{ title }}</h4>
+            <span class="profile-card-kicker">Skill</span>
+            <h4>Projected performance</h4>
+            <p class="profile-note"><strong>Opportunity:</strong> PA/IP show projected playing time. If role or availability is absent, ValuCast has not rated it.</p>
             {% if split and split.hitting and split.pitching %}
             <div class="stat-group two-way-stats"><h5>Hitting</h5>{{ outlook_grid(split.hitting) }}</div>
             <div class="stat-group two-way-stats"><h5>Pitching</h5>{{ outlook_grid(split.pitching) }}</div>
