@@ -322,6 +322,8 @@ class TestProspectPercentiles(unittest.TestCase):
             self.assertNotIn("P#", line)
             self.assertNotIn("carrying skill", line)
             self.assertNotIn("foundation", line)
+            self.assertNotIn("likely outcome", line.lower())
+            self.assertNotIn("profiles as", line.lower())
             self.assertTrue(
                 any(
                     outcome in line.lower()

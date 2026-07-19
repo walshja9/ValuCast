@@ -18,6 +18,7 @@ from scouting.voice import (
     pa_consistency_problems,
     role_vocab_problems,
     sample_context_stale,
+    uncalibrated_projection_claims,
     unsupported_numbers,
     validate_report_text,
 )
@@ -83,6 +84,54 @@ class TestVoiceGuard(unittest.TestCase):
         self.assertTrue(guard["style_problems"])
         self.assertFalse(guard["ok"])
         self.assertTrue(guard["hard_ok"])
+
+    def test_uncalibrated_peak_claims_are_a_hard_failure(self):
+        grounding = {
+            **GROUNDING,
+            "peak_projection_detail": {
+                "role_ceiling": "everyday regular",
+                "floor": "bench bat",
+            },
+        }
+        for text in (
+            "Everyday regular is the projection ceiling.",
+            "The projection puts a 70% chance on a regular outcome.",
+            "The 31% depth/relief outcome is the likeliest landing spot.",
+            "A starter role is in play at 54%.",
+            "There is a late-inning outcome here, projected at 58%.",
+            "If the bat softens, he is a low-risk bench option.",
+            "The likely outcome is an everyday regular.",
+            "The current line projects a rotation starter.",
+            "This profiles as a low-end everyday regular.",
+            "This profiles as an everyday center fielder.",
+            "He projects as a genuine bullpen weapon.",
+            "The ceiling projection is a multi-inning reliever.",
+            "The model has a projection of an everyday regular.",
+            "The projection says relief is the most likely destination.",
+            "ValuCast projects exactly that: a starter ceiling and relief floor.",
+        ):
+            self.assertTrue(uncalibrated_projection_claims(text))
+            guard = validate_report_text(text, grounding)
+            self.assertFalse(guard["ok"])
+            self.assertFalse(guard["hard_ok"])
+
+        mlb_grounding = {
+            **GROUNDING,
+            "player_type": "mlb",
+            "stat_line_stats": {"bb_pct": 12.5},
+        }
+        self.assertEqual(
+            uncalibrated_projection_claims(
+                "His 18.5% translated strikeout rate is better than most MLB regulars."
+            ),
+            [],
+        )
+        self.assertTrue(
+            validate_report_text(
+                "The projection gives him a 12.5% walk rate.",
+                mlb_grounding,
+            )["ok"]
+        )
 
     def test_derived_word_number_problems_catches_real_examples(self):
         # 7/9 claims audit: a derived numeric delta spelled as a WORD slips the
@@ -421,6 +470,11 @@ class TestVoiceGuard(unittest.TestCase):
         )
         self.assertEqual(g["peak_projection_detail"]["role_ceiling"], "everyday regular")
         self.assertEqual(g["peak_projection_detail"]["floor"], "bench bat")
+        self.assertEqual(g["player_type"], "prospect")
+        self.assertNotIn("peak_projection", g)
+        self.assertNotIn("trajectory_vs_current", g["peak_projection_detail"])
+        self.assertNotIn("skill_shape", g["peak_projection_detail"])
+        self.assertNotIn("role_probabilities", g["peak_projection_detail"])
         self.assertEqual(g["valucast_rank_movement"]["direction"], "rising")
         # absent (filtered) when there's no peak projection and no movement
         g2 = repository._llm_grounding(

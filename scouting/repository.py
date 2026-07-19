@@ -527,10 +527,8 @@ def _llm_grounding(
         peak_detail = {key: value for key, value in {
             "role_ceiling": getattr(row, "peak_role_label", None),
             "floor": getattr(row, "peak_floor_label", None),
+            "evidence_strength": getattr(row, "peak_confidence_label", None),
             "eta": getattr(row, "peak_eta_label", None),
-            "trajectory_vs_current": getattr(row, "peak_trajectory_label", None),
-            "skill_shape": getattr(row, "peak_shape_items", None),
-            "role_probabilities": getattr(row, "peak_role_probability_items", None),
         }.items() if value not in (None, {}, [], "")} or None
     rank_movement = None
     if recent_signal and recent_signal.get("movement_label"):
@@ -555,6 +553,7 @@ def _llm_grounding(
         citable_level = _pooled_level_label(card_stat_line) or row.level
     grounding = {
         "name": row.name,
+        "player_type": "prospect",
         "role": row.role,
         "bats": _hand_code(getattr(row, "bats", None) or row.context.get("bats")),
         "throws": _hand_code(getattr(row, "throws", None) or row.context.get("throws")),
@@ -571,7 +570,6 @@ def _llm_grounding(
         "mlb_equivalent_translation": _mlb_equivalent_translation_grounding(row.stat_line_translated),
         "current_skill_percentiles": percentiles or None,
         "percentile_pool": pool_label,
-        "peak_projection": row.peak_projection_summary if row.has_peak_projection else None,
         "peak_projection_detail": peak_detail,
         "valucast_rank_movement": rank_movement,
         "availability": row.availability_context or None,

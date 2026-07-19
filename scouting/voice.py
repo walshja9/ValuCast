@@ -33,7 +33,7 @@ Hard rules (these never bend):
 - Cite a count (walks, strikeouts, hits, home runs, plate appearances) ONLY as the exact number given in the data. Never state a count that is not in the data, and never derive one from a rate or reuse one stat's count for another — if the data gives a walk total but no strikeout total, do not state a strikeout total.
 - Every stat carries the exact level of the line it comes from: cite it with that line's level_label and no other. Never attribute a pooled multi-level line to a single one of its sub-levels — when a line's level_label names more than one level (e.g. "AA & A+"), a number from it is "across AA & A+", never "at AA".
 - Never invent velocity, pitch shapes, mechanics, defense, makeup, or any scouting texture not in the data. If the data does not show it, do not name it.
-- If a peak projection (role/ceiling, floor, trajectory, or skill shape) is provided, you may describe ceiling and floor in plain words, clearly as a projection — never as current production.
+- For a prospect, describe qualitative ceiling and floor only as scenarios. Never use projection language, quote an outcome probability, or state a numeric risk; use "translates to" for an MLB-equivalent rate.
 - Stay in the player's own role vocabulary. For a hitter, never reduce him to a pitcher idiom (a "depth arm", "organizational arm", "mid-rotation" anything, "swingman", "long reliever") — name his floor/ceiling as a hitter (bench bat, platoon piece, second-division regular, everyday player). For a pitcher, never grade him as a hitter ("his bat", "bat-first", "everyday regular"); referencing the hitters he faces is fine. A two-way player is the only one who gets both vocabularies.
 - If a ValuCast ranking-movement note is provided, you may note he is rising or cooling in ValuCast's rankings — as ranking movement, never as a change in his stats, using the exact figure given.
 - When a Statcast percentile card is provided (established MLB players), make it the spine of the read — what the percentile profile says about his actual skills — with the projection as context.
@@ -257,6 +257,31 @@ def role_vocab_problems(text: str, grounding: dict) -> list[str]:
                 f"hitter -- describe his floor/ceiling with a pitcher role label"
             )
     return out
+
+
+_UNCALIBRATED_PROJECTION_CLAIM_RE = re.compile(
+    r"\bproject\w*\b"
+    r"|\b(?:probabilit(?:y|ies)|odds)\b"
+    r"|\b(?:low|medium|high)[-\s]+risk\b"
+    r"|\blikely outcome\b"
+    r"|\bmost likely (?:destination|landing spot|outcome|role)\b"
+    r"|\bprofiles as\b"
+    r"|\b\d+(?:\.\d+)?%[^.!?\n]{0,120}\b(?:chance|shot|path|handle)\b"
+    r"|\b\d+(?:\.\d+)?%\s+(?:[\w/-]+\s+){0,5}(?:outcome|projection)\b"
+    r"|\b(?:role|outcome)[^.!?\n]{0,100}\b(?:in play )?(?:at|projected at)\s+\d+(?:\.\d+)?%"
+    r"|(?:\bprojection\b[^.!?\n]{0,180}\b\d+(?:\.\d+)?%"
+    r"|\b\d+(?:\.\d+)?%[^.!?\n]{0,180}\b(?:projection|projected)\b)"
+    r"[^.!?\n]{0,100}\b(?:outcome|role|regular|starter|relief|depth|bench)\b",
+    re.IGNORECASE,
+)
+
+
+def uncalibrated_projection_claims(text: str) -> list[str]:
+    """Outcome language that turns qualitative prospect scenarios into probabilities."""
+    return [
+        match.group(0).strip()
+        for match in _UNCALIBRATED_PROJECTION_CLAIM_RE.finditer(text or "")
+    ]
 
 
 # Key fragments that name a RATE metric whose grounding value may legitimately appear
@@ -639,6 +664,15 @@ def validate_report_text(text: str, grounding: dict) -> dict:
     slash = triple_slash_problems(text, grounding)
     style = style_problems(text)
     role_vocab = role_vocab_problems(text, grounding)
+    projection_claims = (
+        uncalibrated_projection_claims(text)
+        if (
+            (grounding or {}).get("player_type") == "prospect"
+            or (grounding or {}).get("peak_projection_detail")
+            or (grounding or {}).get("peak_projection")
+        )
+        else []
+    )
     level_attribution = level_attribution_problems(text, grounding)
     count_role = count_role_problems(text, grounding)
     league_scaffold = league_average_scaffold_problems(text)
@@ -651,6 +685,7 @@ def validate_report_text(text: str, grounding: dict) -> dict:
         "triple_slash_problems": slash,
         "style_problems": style,
         "role_vocab_problems": role_vocab,
+        "uncalibrated_projection_claims": projection_claims,
         "level_attribution_problems": level_attribution,
         "count_role_problems": count_role,
         "league_average_scaffold_problems": league_scaffold,
@@ -666,11 +701,13 @@ def validate_report_text(text: str, grounding: dict) -> dict:
         "ok": (
             not banned and not numbers and not derived and not handedness
             and not slash and not style and not role_vocab
+            and not projection_claims
             and not level_attribution and not count_role
             and not league_scaffold and not pa_consistency
         ),
         "hard_ok": (
             not banned and not handedness and not slash and not role_vocab
+            and not projection_claims
             and not level_attribution and not count_role
         ),
     }

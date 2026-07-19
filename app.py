@@ -39,6 +39,7 @@ from mlb.dynasty import _percentile, _scale_value
 from mlb.playing_time_role import TRACKER_VERSION as ROLE_TRACKER_VERSION
 from mlb.playing_time_role import role_watch_rows
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
+from scouting.voice import uncalibrated_projection_claims
 
 from web.projection_catalog import ProjectionCatalog
 from web.category_registry import (
@@ -5594,17 +5595,39 @@ def _valid_scouting_llm_text(report: dict | None) -> str | None:
     return text or None
 
 
+def _public_scouting_text_allowed(report: dict, text: str) -> bool:
+    return not (
+        report.get("player_type") == "prospect"
+        and uncalibrated_projection_claims(text)
+    )
+
+
+def _public_deterministic_scouting_text(report: dict) -> str:
+    text = str(report.get("report") or "").strip()
+    text = text.replace(
+        "The likely outcome is an everyday run-producing bat",
+        "The current-performance ceiling scenario is an everyday run-producing bat",
+    ).replace(
+        "The likely outcome is a low-end everyday regular",
+        "The current-performance ceiling scenario is a low-end everyday regular",
+    ).replace(
+        "This profiles as a mid-rotation starter",
+        "Current-performance ceiling scenario: mid-rotation starter",
+    )
+    return text
+
+
 def _scouting_display_report_text(report: dict | None) -> str:
     """Public scouting text, with valid LLM reports promoted and deterministic fallback."""
     if not isinstance(report, dict):
         return ""
     published = str(report.get("published_report") or "").strip()
-    if published:
+    if published and _public_scouting_text_allowed(report, published):
         return published
     llm_text = _valid_scouting_llm_text(report)
-    if llm_text:
+    if llm_text and _public_scouting_text_allowed(report, llm_text):
         return llm_text
-    return str(report.get("report") or "").strip()
+    return _public_deterministic_scouting_text(report)
 
 
 def _scouting_display_report(report: dict | None) -> dict | None:
@@ -5613,9 +5636,14 @@ def _scouting_display_report(report: dict | None) -> dict | None:
     item = dict(report)
     item.pop("peak_summary", None)
     item["display_report"] = _scouting_display_report_text(item)
-    if str(item.get("published_report_source") or "").strip():
-        item["display_report_source"] = str(item["published_report_source"]).strip()
-    elif _valid_scouting_llm_text(item):
+    published = str(item.get("published_report") or "").strip()
+    published_source = str(item.get("published_report_source") or "").strip()
+    llm_text = _valid_scouting_llm_text(item)
+    if published and _public_scouting_text_allowed(item, published):
+        item["display_report_source"] = published_source or (
+            "llm" if llm_text == published else "deterministic"
+        )
+    elif llm_text and _public_scouting_text_allowed(item, llm_text):
         item["display_report_source"] = "llm"
     else:
         item["display_report_source"] = "deterministic"
@@ -5767,12 +5795,7 @@ def scouting_reports():
         ]
     report_rows = []
     for row in reports[:60]:
-        item = dict(row)
-        item["display_report"] = _scouting_display_report_text(item)
-        item["display_report_source"] = (
-            item.get("published_report_source")
-            or ("llm" if _valid_scouting_llm_text(item) else "deterministic")
-        )
+        item = _scouting_display_report(row) or {}
         confidence = item.get("confidence")
         if isinstance(confidence, dict):
             item["confidence_label"] = _format_context_label(confidence.get("level"))

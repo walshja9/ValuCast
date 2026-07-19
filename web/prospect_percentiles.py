@@ -213,7 +213,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
             )
         role = (
             "Everyday middle-order regular. The walks give him a useful floor through a power dip.",
-            "The likely outcome is an everyday run-producing bat, with on-base value protecting the floor.",
+            "The current-performance ceiling scenario is an everyday run-producing bat, with on-base value protecting the floor.",
         )
         family = "hitter-power-patience"
     elif k_pct is not None and k_pct <= 17 and iso is not None and iso < 0.140:
@@ -360,7 +360,7 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
             "The risk is a broad but ordinary offensive line without one result that forces an everyday role.",
         )
         role = (
-            "The likely outcome is a low-end everyday regular who contributes across categories, with a useful bench-bat floor.",
+            "The current-performance ceiling scenario is a low-end everyday regular who contributes across categories, with a useful bench-bat floor.",
             "This reads as a broad-based regular outcome, with enough across-the-board value to retain a reserve floor.",
         )
         family = "hitter-balanced"
@@ -403,7 +403,7 @@ def _pitcher_parts(row, line: dict) -> tuple[str, str, str]:
         )
         role = (
             "Mid-rotation lean, with a back-end starter floor.",
-            "This profiles as a mid-rotation starter.",
+            "Current-performance ceiling scenario: mid-rotation starter.",
         )
         family = "pitcher-dominant-control"
     elif k_per_9 is not None and k_per_9 >= 12 and bb_per_9 is not None and bb_per_9 >= 4.5:

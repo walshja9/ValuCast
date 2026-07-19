@@ -29,6 +29,63 @@ def test_scouting_display_report_text_falls_back_when_llm_invalid():
     assert _scouting_display_report_text(report) == "Deterministic fallback."
 
 
+def test_public_prospect_read_rejects_uncalibrated_peak_claims():
+    from app import _scouting_display_report
+
+    for published, fallback, expected in (
+        (
+            "Mid-rotation starter is the projection floor.",
+            "This profiles as a mid-rotation starter.",
+            "Current-performance ceiling scenario: mid-rotation starter.",
+        ),
+        (
+            "The projection puts a 70% chance on a regular outcome.",
+            "The likely outcome is an everyday run-producing bat.",
+            "The current-performance ceiling scenario is an everyday run-producing bat.",
+        ),
+        (
+            "If the bat softens, he is a low-risk bench option.",
+            "Observed performance read.",
+            "Observed performance read.",
+        ),
+    ):
+        public = _scouting_display_report({
+            "player_type": "prospect",
+            "report": fallback,
+            "published_report": published,
+            "published_report_source": "llm",
+            "report_llm": {"valid": True, "text": published},
+        })
+
+        assert public["display_report"] == expected
+        assert public["display_report_source"] == "deterministic"
+
+
+def test_public_mlb_read_keeps_supported_projection_language():
+    from app import _scouting_display_report_text
+
+    report = {
+        "player_type": "mlb",
+        "report": "Deterministic fallback.",
+        "published_report": "The projection gives him a 12.5% walk rate.",
+    }
+
+    assert _scouting_display_report_text(report) == report["published_report"]
+
+
+def test_scouting_route_uses_the_public_adapter_for_kade():
+    client = app.test_client()
+
+    response = client.get("/scouting?q=Kade%20Anderson")
+    html = response.data.decode("utf-8")
+
+    assert response.status_code == 200
+    assert "Current-performance ceiling scenario: mid-rotation starter" in html
+    assert "projection floor" not in html.lower()
+    assert "with low risk" not in html.lower()
+    assert 'class="scouting-peak"' not in html
+
+
 def test_scouting_page_renders_repository_and_role_tracker():
     client = app.test_client()
 
