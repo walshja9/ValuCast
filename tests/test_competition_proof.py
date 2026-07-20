@@ -43,8 +43,10 @@ CRITERIA = {
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _RESEARCH_ALLOWLIST = {
+    Path("prospects/challenger_eval.py"),
     Path("prospects/competition_benchmark.py"),
     Path("scripts/build_competition_benchmark.py"),
+    Path("scripts/run_prospect_normalized_production_gate.py"),
 }
 _PRODUCTION_ROOTS = (
     "prospects/",

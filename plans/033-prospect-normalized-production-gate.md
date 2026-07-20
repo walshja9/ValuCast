@@ -1,6 +1,6 @@
 # Plan 033 — Normalized-Production Prospect Research Gate
 
-**Status:** REGISTERED + UNSPENT (pre-look registration-review amendment, 2026-07-20)
+**Status:** SPENT — INVALID FOR ADJUDICATION / DESCRIPTIVE ONLY (executed 2026-07-20; no public claim authorized)
 
 ## Scope
 
@@ -179,3 +179,32 @@ The final private artifact exhaustively identity-maps all possible raw `build_tr
 - Position output is omitted unless non-null, stable historical position semantics pass the pre-run audit.
 - The 2020 fold is absent by contract, not as an analyst choice.
 - Every top-level status remains `research_only` or a failure state; final statistical status follows the frozen private-artifact mapping, and `claim_authorized` remains false.
+
+## Result — 2026-07-20
+
+The registered command was invoked exactly once. Its original Python process completed without a rerun and wrote the sealed private artifact `data/validation/valucast_prospect_normalized_production_gate.json` with content SHA-256 `49116e4e7bb5773fa981fa0096a6a15fad72fd5c1c02aa2236a6dce9ad2be19a`. The run completed, the look is spent, Control/candidate score identities were exactly equal, and both `claim_authorized` and `public_claim_eligible` remain `false`.
+
+All six reference folds exercised normalized production for 100% of hitter and pitcher rows before scoring. The outcome tracks scored all and only 2018, 2019, and 2021, each with 100% outcome coverage.
+
+### Post-run implementation audit — adjudication invalid
+
+The sealed statistical outputs below are descriptive only and are **not evidence for or against normalized production**. Independent post-run review found that `normalize_rows` replaced factual rate fields with `[0,1]` quantiles, then the unchanged production scorer applied raw-unit heuristics and guards to those quantiles. For example, the pitcher bad-line guard compares `k_bb_pct <= 5.0`, which classifies every `[0,1]` normalized K-BB% as bad when its sample gate is met and can activate pedigree correction. Rank v1 likewise compares normalized K-BB%, OPS, and ISO against thresholds registered in their original raw units. The sealed MAEs therefore measure normalized inputs plus a changed heuristic/correction regime, not the isolated normalized-production representation.
+
+The look remains spent and receives no free rerun. Any future test requires a separate registration and implementation that keeps factual raw-unit guard/heuristic fields distinct from normalized model features, or explicitly preregisters percentile-aware guards before a fresh look.
+
+### Sealed raw ordinal outputs — descriptive only
+
+- **Raw hitter evaluator output — `no_significant_difference`:** normalized production MAE `0.213090` versus Control `0.214023`; Control-minus-candidate delta `+0.000933`; relative improvement `+0.435821%`; paired hierarchical 95% interval `[-0.001614, +0.003513]`; 1,091 unique players across three complete folds. Normalized production had lower error in all three folds and lower top-25 regret (`0.233333` versus `0.280000`), but the interval crossed zero and improvement was below the registered 5% floor.
+- **Raw pitcher evaluator output — `no_significant_difference`:** normalized production MAE `0.237796` versus Control `0.237255`; Control-minus-candidate delta `-0.000541`; relative improvement `-0.228228%`; paired hierarchical 95% interval `[-0.003306, +0.002068]`; 1,127 unique players across three complete folds. Normalized production had lower error only in 2019, lost 2018 and 2021, and had higher top-25 regret (`0.420000` versus `0.386667`).
+
+### Registered in-look reports
+
+- Under-19 full-season affiliated sample: 17 hitters and 9 pitchers, report-only with no independent verdict. Hitter error improved only in the nine-player 2018 fold and tied in 2019/2021; pitcher error tied in every fold.
+- Raw hitter-position semantics passed: non-null coverage was 100% in every scored fold, with no invalid labels or within-player conflicts. Raw labels were reported without coercing `DH`, `OF`, or multi-position strings and without an independent verdict.
+- Partial-category best-season impact remained secondary and not direct 7x7. Hitters favored normalized production by `+0.000813` Control-minus-candidate error; pitchers favored Control by `-0.001120`. Realized-value regret was not calculated because the registered readiness artifact remains blocked.
+- Current model-component context retained exact Control/candidate identity equality for 2,765 research ranks. Historical normalization covered 6,756/6,756 rows. Current normalization covered 6,445/6,618 rows (`97.385917%`), excluding 173 unavailable rows (72 unique MLBAM identities) from both variants.
+- AAA measured-component report: 462 current ranked AAA identities, 341 with the pinned measured artifact, and 121 missing Statcast identities excluded without zero-filling. Measured rows split into 170 hitters, 123 pitcher starters, and 48 pitcher relievers; no pitcher lacked the factual starter/reliever field. The report contains separate raw components and reliability counts only—no composite index, opportunity, health, availability, transaction-direction, or future-innings inference.
+
+This spent result is invalid for adjudication and descriptive only. It does not change the live model, Rank v1, any served artifact, or any production workflow, and it authorizes no public superiority claim.
+
+The one-shot runner received a post-run durability hardening after this audit: after all pre-score pin, readiness, coverage, and identity checks, it now atomically reserves the single output path and durably marks the look spent before invoking the scorer. A later validation, write, crash, or concurrent invocation can no longer reopen the look. This patch is post-run, did not execute the scorer, did not alter the sealed artifact, and changed no scoring math.
