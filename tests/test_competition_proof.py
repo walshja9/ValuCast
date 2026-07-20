@@ -56,9 +56,16 @@ _PRODUCTION_ROOTS = (
     "src/",
     "mlb/",
     "web/",
+    "templates/",
+    "static/",
     "scripts/",
     ".github/workflows/",
 )
+_ROOT_PRODUCTION_MANIFESTS = {
+    Path("pyproject.toml"),
+    Path("render.yaml"),
+    Path("requirements.txt"),
+}
 _PRODUCTION_EXTENSIONS = {
     ".py",
     ".ps1",
@@ -77,6 +84,8 @@ _PRODUCTION_EXTENSIONS = {
     ".cfg",
     ".conf",
     ".html",
+    ".css",
+    ".txt",
 }
 _NONPRODUCTION_DIRECTORIES = {"tests", "test", "docs", "plans", "__pycache__"}
 _PRODUCTION_SENTINELS = {
@@ -214,8 +223,10 @@ def _production_paths() -> list[Path]:
             continue
         path = Path(value)
         normalized = path.as_posix()
-        in_production = path == Path("app.py") or any(
-            normalized.startswith(root) for root in _PRODUCTION_ROOTS
+        in_production = (
+            path == Path("app.py")
+            or path in _ROOT_PRODUCTION_MANIFESTS
+            or any(normalized.startswith(root) for root in _PRODUCTION_ROOTS)
         )
         if (
             in_production
@@ -291,11 +302,25 @@ def test_normalized_production_adjudication_correction_is_sealed_and_source_boun
     ).hexdigest()
 
 
-def test_production_path_inventory_includes_engine_and_deploy_entrypoints():
+def test_production_path_inventory_includes_served_and_deploy_entrypoints():
+    production_paths = set(_production_paths())
     assert {
         Path("src/league_values/engine.py"),
         Path("scripts/deploy.ps1"),
-    }.issubset(_production_paths())
+        Path("templates/base.html"),
+        Path("templates/partials/player_detail.html"),
+        Path("static/htmx.min.js"),
+        Path("static/style.css"),
+        Path("static/robots.txt"),
+        Path("render.yaml"),
+        Path("pyproject.toml"),
+        Path("requirements.txt"),
+    }.issubset(production_paths)
+    assert {
+        Path("README.md"),
+        Path("static/favicon.ico"),
+        Path("static/brand/valucast-mark.png"),
+    }.isdisjoint(production_paths)
 
 
 def test_production_path_inventory_fails_closed_when_git_fails(monkeypatch):

@@ -284,7 +284,7 @@ jobs:
             git add data/aaa_statcast_archive/
           fi
           if [ -d data/milb_observation_archive ]; then
-            git add data/milb_observation_archive/
+            git add data/milb_observation_archive/*.json
           fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
