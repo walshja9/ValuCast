@@ -57,6 +57,19 @@ def test_sparse_level_backs_off_and_sparse_role_season_is_unavailable():
     assert blocked["unavailable"] == 2
 
 
+def test_blank_level_never_forms_a_same_level_reference_cell():
+    for level in ("", None):
+        normalized, diagnostics = normalize_rows(
+            [_row(player, level=level) for player in range(1, 27)],
+            same_level_min=25,
+            role_season_min=25,
+        )
+        assert len(normalized) == 26
+        assert diagnostics["same_level_rows"] == 0
+        assert diagnostics["backoff_rows"] == 26
+        assert diagnostics["unavailable"] == 0
+
+
 def test_current_rows_use_sample_season_and_missing_season_fails_closed():
     rows = []
     for player in range(1, 5):
@@ -117,6 +130,22 @@ def test_test_cohort_seasons_never_enter_fold_local_impact_references():
     ] == [2015]
 
 
+def test_invalid_training_row_cannot_bypass_final_horizon_clip():
+    invalid = _row(1, year=2014) | {"age": 99}
+    fold = fold_local_contract(
+        {
+            "historical": {"rows": [invalid]},
+            "historical_mlb_seasons": {
+                "1_hitter": [{"year": 2015}, {"year": 2030}],
+            },
+        },
+        test_year=2018,
+    )
+    assert [
+        season["year"] for season in fold["historical_mlb_seasons"]["1_hitter"]
+    ] == [2015]
+
+
 def test_prepare_fold_keeps_exact_available_identities_and_reports_role_coverage():
     rows = [_row(player) for player in range(1, 28)]
     rows[0].pop("iso")
@@ -149,6 +178,26 @@ def test_registered_seed_is_fresh_and_forbidden_seeds_stay_forbidden():
     assert REGISTERED_SEED == 33021
     assert REGISTERED_SEED not in FORBIDDEN_SEEDS
     assert FORBIDDEN_SEEDS == {28013, 28017, 29001, 31013, 31017}
+
+
+def test_registered_fold_keys_are_not_inferred_from_observed_years():
+    observed = (2000, 2014, 2015, 2016, 2017, 2018, 2019, 2021)
+    _, diagnostics = normalize_rows(
+        [_row(player, year=year) for player, year in enumerate(observed, 1)],
+        same_level_min=1,
+        role_season_min=1,
+    )
+    assert tuple(diagnostics["folds"]) == (
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2021",
+        "2022",
+    )
+    assert set(diagnostics["reference_years"]) == {str(year) for year in observed}
+    assert diagnostics["folds"]["2022"]["hitter"]["rows"] == 0
+    assert diagnostics["folds"]["2022"]["hitter"]["exercised_coverage"] == 0.0
 
 
 def test_real_input_exercises_challenger_without_outcome_values():

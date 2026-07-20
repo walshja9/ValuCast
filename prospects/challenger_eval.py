@@ -15,6 +15,7 @@ ROLE_SEASON_MIN_PEERS = 250
 MIN_EXERCISED_COVERAGE = 0.90
 REGISTERED_SEED = 33021
 FORBIDDEN_SEEDS = {28013, 28017, 29001, 31013, 31017}
+REGISTERED_FOLD_YEARS = (2016, 2017, 2018, 2019, 2021, 2022)
 
 _RATE_FIELDS = {
     "hitter": HITTER_RATE_FIELDS,
@@ -47,6 +48,10 @@ def _reference_season(row: dict) -> int | None:
         return int(value) if value is not None else None
     except (TypeError, ValueError):
         return None
+
+
+def _reference_level(row: dict) -> str:
+    return str(row.get("level") or "").strip()
 
 
 def _empty_diagnostics() -> dict:
@@ -100,26 +105,25 @@ def normalize_rows(
     same_level: dict[tuple, list[tuple[tuple, float]]] = {}
     role_season: dict[tuple, list[tuple[tuple, float]]] = {}
     row_facts = []
-    cohort_years = set()
     for row in rows:
         role = row.get("role")
         season = _reference_season(row)
+        level = _reference_level(row)
         mlbam_id = row.get("mlbam_id")
         identity = (season, mlbam_id, role)
         fields = _RATE_FIELDS.get(role, ())
         usable_identity = season is not None and mlbam_id not in (None, "")
         values = {field: _number(row.get(field)) for field in fields}
         row_facts.append((row, role, season, identity, fields, usable_identity, values))
-        if row.get("cohort_year") is not None and season is not None:
-            cohort_years.add(season)
         if not usable_identity:
             continue
         for field, value in values.items():
             if value is None:
                 continue
-            same_level.setdefault((role, season, row.get("level"), field), []).append(
-                (identity, value)
-            )
+            if level:
+                same_level.setdefault((role, season, level, field), []).append(
+                    (identity, value)
+                )
             role_season.setdefault((role, season, field), []).append((identity, value))
 
     fold_diagnostics: dict[str, dict[str, dict]] = {}
@@ -138,7 +142,9 @@ def normalize_rows(
             value is not None for value in values.values()
         )
         for field in fields:
-            level_entries = same_level.get((role, season, row.get("level"), field), [])
+            level_entries = same_level.get(
+                (role, season, _reference_level(row), field), []
+            )
             level_peers = [
                 value
                 for peer_identity, value in level_entries
@@ -193,9 +199,13 @@ def normalize_rows(
         year: {role: _finalize_diagnostics(values) for role, values in roles.items()}
         for year, roles in fold_diagnostics.items()
     }
-    # The first two cohorts are reference-only; retain them above for auditability.
-    fold_years = [str(year) for year in sorted(cohort_years)][2:]
-    folds = {year: reference_years[year] for year in fold_years}
+    folds = {}
+    for year in REGISTERED_FOLD_YEARS:
+        key = str(year)
+        folds[key] = reference_years.get(key) or {
+            role: _finalize_diagnostics(_empty_diagnostics())
+            for role in _RATE_FIELDS
+        }
     overall = _finalize_diagnostics(overall)
     return normalized, {
         **overall,
@@ -212,27 +222,27 @@ def fold_local_contract(contract: dict, test_year: int) -> dict:
         for row in contract["historical"]["rows"]
         if int(row.get("cohort_year") or 9999) <= train_through
     ]
-    train_keys = {f"{row['mlbam_id']}_{row['role']}" for row in training_rows}
-    # The shared helper selects feature-complete rows before clipping. This view
-    # supplies irrelevant defaults so metadata-only fixtures exercise that same clip.
-    clip_rows = [
-        {
-            "age": 20,
-            "level": "A",
-            **dict.fromkeys(_RATE_FIELDS.get(row.get("role"), ()), 0.0),
-            **row,
-        }
-        for row in training_rows
-    ]
+    cohort_by_key = {}
+    for row in training_rows:
+        key = f"{row['mlbam_id']}_{row['role']}"
+        year = int(row["cohort_year"])
+        cohort_by_key[key] = min(year, cohort_by_key.get(key, year))
     clipped = _horizon_clipped_seasons(
-        clip_rows,
+        training_rows,
         contract.get("historical_mlb_seasons") or {},
     )
+
+    def within_horizon(key: str, season: dict) -> bool:
+        try:
+            return int(season.get("year")) <= cohort_by_key[key] + OUTCOME_HORIZON_YEARS
+        except (TypeError, ValueError):
+            return False
+
     fold = deepcopy(contract)
     fold["historical_mlb_seasons"] = {
-        key: clipped[key]
+        key: [season for season in clipped[key] if within_horizon(key, season)]
         for key in clipped
-        if key in train_keys
+        if key in cohort_by_key
     }
     return fold
 
