@@ -777,6 +777,74 @@ def test_team_board_sort_places_ranked_rows_before_fallback_rows():
     assert [row.name for row in ordered] == ["Ranked Prospect", "Dynasty Only"]
 
 
+def test_team_board_system_summary_uses_top_20_value_roles_levels_and_positive_risers():
+    rows = [
+        _row(f"Boston {index}", "BOS", prospect_rank=index, value=21 - index)
+        for index in range(1, 21)
+    ]
+    levels = ("AAA", "AA", "A+", "A", "ROK")
+    for index, row in enumerate(rows):
+        row.level = levels[index % len(levels)]
+        if index % 4 == 0:
+            row.positions = ("P",)
+            row.position = "P"
+            row.role = "pitcher"
+    movements = {
+        "name:boston 2|team:BOS": {"rank_delta_7d": 4},
+        "name:boston 3|team:BOS": {"rank_delta_7d": -8},
+        "name:boston 4|team:BOS": {"rank_delta_7d": 2},
+    }
+
+    summary = app_module._team_board_system_summary(rows, movements)
+
+    assert summary["top20_value"] == 210.0
+    assert summary["top5_concentration_pct"] == 42.9
+    assert summary["top20_hitters"] == 15
+    assert summary["top20_pitchers"] == 5
+    assert summary["levels"] == [
+        {"level": "AAA", "count": 4},
+        {"level": "AA", "count": 4},
+        {"level": "A+", "count": 4},
+        {"level": "A", "count": 4},
+        {"level": "ROK", "count": 4},
+    ]
+    assert [row["name"] for row in summary["risers"]] == ["Boston 2", "Boston 4"]
+    assert [row["move"]["sort"] for row in summary["risers"]] == [4.0, 2.0]
+
+
+def test_team_board_buys_are_org_filtered_ranked_and_fail_open():
+    payload = {
+        "board": [
+            {
+                "rank": 3,
+                "team": "BOS",
+                "name": "Third Buy",
+                "player_id": "vc_prospect_3_hitter",
+                "score": 52.4,
+                "reason": "Young runway",
+                "availability_status": "available",
+            },
+            {
+                "rank": 1,
+                "team": "BOS",
+                "name": "First Buy",
+                "player_id": "vc_prospect_1_hitter",
+                "score": 61.2,
+                "reason": "Underlying skill",
+                "availability_status": "available",
+            },
+            {"rank": 2, "team": "SEA", "name": "Other Org"},
+        ]
+    }
+
+    buys = app_module._team_board_buys("BOS", payload=payload)
+
+    assert [row["name"] for row in buys] == ["First Buy", "Third Buy"]
+    assert buys[0]["url"] == "/player/vc_prospect_1_hitter?mode=prospects"
+    assert buys[0]["reason"] == "Underlying skill"
+    assert app_module._team_board_buys("BOS", payload={}) == []
+
+
 def test_team_board_context_groups_by_mlb_org_not_affiliate(monkeypatch):
     rows = [
         _row("Portland Guy", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
@@ -1018,6 +1086,21 @@ def test_team_board_card_offers_top_10_and_top_20_downloads():
     assert response.status_code == 200
     assert f'href="/backfields/team/{org}/share-card.png?n=10">Download Top 10 PNG' in html
     assert f'href="/backfields/team/{org}/share-card.png?n=20">Download Top 20 PNG' in html
+
+
+def test_team_board_page_renders_data_backed_system_snapshot():
+    org = _team_board_org_from_backfields()
+
+    response, html = _html(f"/backfields/team/{org}")
+
+    assert response.status_code == 200
+    assert "System snapshot" in html
+    assert "Top-5 value share" in html
+    assert "Top-20 balance" in html
+    assert "Level distribution" in html
+    assert "Top prospects" in html
+    assert "Risers" in html
+    assert "ValuCast buys" in html
 
 
 def test_team_board_route_serves_known_org_and_alias():

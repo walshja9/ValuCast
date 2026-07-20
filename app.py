@@ -6376,6 +6376,75 @@ def _team_board_reports(org_rows, reports_by_key, repository, *, limit=5):
     return reports
 
 
+def _team_board_system_summary(org_rows, movements):
+    top20 = list(org_rows[:20])
+    top20_value = sum((_team_board_value(row) or 0.0) for row in top20)
+    top5_value = sum((_team_board_value(row) or 0.0) for row in top20[:5])
+    level_counts = {}
+    for row in org_rows:
+        level = _team_board_level(row)
+        level_counts[level] = level_counts.get(level, 0) + 1
+
+    riser_rows = []
+    for row in org_rows:
+        move = _team_board_move_from_signal(_team_board_signal_for(row, movements))
+        if move["sort"] > 0:
+            riser_rows.append((move["sort"], row))
+    riser_rows.sort(key=lambda item: (-item[0], _team_board_prospect_sort_key(item[1])))
+
+    return {
+        "top20_value": round(top20_value, 1),
+        "top5_concentration_pct": round((top5_value / top20_value * 100.0), 1) if top20_value else 0.0,
+        "top20_hitters": sum(_team_board_role(row) != "pitcher" for row in top20),
+        "top20_pitchers": sum(_team_board_role(row) == "pitcher" for row in top20),
+        "levels": [
+            {"level": level, "count": count}
+            for level, count in sorted(
+                level_counts.items(),
+                key=lambda item: (-LEVEL_ORDER.get(item[0], 0), item[0]),
+            )
+        ],
+        "risers": [
+            _team_board_row(row, org_rows.index(row) + 1, movements, {})
+            for _, row in riser_rows[:3]
+        ],
+        "top_prospects": [
+            {
+                "name": getattr(row, "name", None) or "Unknown",
+                "url": _team_board_player_url(row),
+                "value": _team_board_fmt_value(_team_board_value(row)),
+            }
+            for row in top20[:3]
+        ],
+    }
+
+
+def _team_board_buys(org, *, payload=None, limit=3):
+    if payload is None:
+        payload = _load_artifact(VALUCAST_BUYS_PATH) or {}
+    rows = [
+        row for row in (payload or {}).get("board") or []
+        if isinstance(row, dict) and _canonical_team_board_org(row.get("team")) == org
+    ]
+    rows.sort(key=lambda row: _team_board_rank_value(row.get("rank")))
+    buys = []
+    for row in rows[:limit]:
+        player_id = str(row.get("player_id") or row.get("id") or "").strip()
+        name = str(row.get("name") or "Unknown")
+        buys.append({
+            "rank": row.get("rank"),
+            "name": name,
+            "url": (
+                f"/player/{quote(player_id, safe='')}?mode=prospects"
+                if player_id else "/?" + urlencode({"mode": "prospects", "search": name})
+            ),
+            "score": _team_board_fmt_value(row.get("score")),
+            "reason": str(row.get("reason") or "ValuCast buy signal"),
+            "availability": str(row.get("availability_status") or "unknown").replace("_", " ").title(),
+        })
+    return buys
+
+
 def _build_team_board_context(org=None, limit=20):
     rows = _team_board_prospect_rows()
     grouped = {}
@@ -6400,6 +6469,8 @@ def _build_team_board_context(org=None, limit=20):
         "rows": [],
         "callups": [],
         "reports": [],
+        "summary": None,
+        "buys": [],
         "limit": limit,
     }
     if org is None:
@@ -6427,6 +6498,8 @@ def _build_team_board_context(org=None, limit=20):
         ],
         "callups": _team_board_callups(org_rows, movements, debuted_ids, pulse_keys),
         "reports": _team_board_reports(org_rows, reports_by_key, scouting_repository),
+        "summary": _team_board_system_summary(org_rows, movements),
+        "buys": _team_board_buys(canonical),
     })
     return context
 
