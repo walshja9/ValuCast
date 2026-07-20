@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -112,15 +113,29 @@ def build_snapshot(contract: dict) -> dict:
 def write_snapshot(snapshot: dict, output_dir: Path) -> tuple[Path, str]:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{snapshot['observation_date']}.json"
-    if path.exists():
-        if json.loads(path.read_text(encoding="utf-8")) == snapshot:
-            return path, "unchanged"
-        raise ValueError("sealed date changed")
-
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
-    os.replace(tmp, path)
-    return path, "created"
+    temp = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        dir=output_dir,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        delete=False,
+    )
+    tmp = Path(temp.name)
+    try:
+        with temp:
+            temp.write(json.dumps(snapshot, indent=2, sort_keys=True))
+            temp.flush()
+            os.fsync(temp.fileno())
+        try:
+            os.link(tmp, path)
+        except FileExistsError:
+            if json.loads(path.read_text(encoding="utf-8")) == snapshot:
+                return path, "unchanged"
+            raise ValueError("sealed date changed")
+        return path, "created"
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def main() -> int:

@@ -1,4 +1,9 @@
 import copy
+import json
+import os
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from threading import Barrier, Lock
 
 import pytest
 
@@ -49,6 +54,55 @@ def _contract():
             ],
         }
     }
+
+
+def _write_concurrently(monkeypatch, output_dir, snapshots):
+    path = output_dir / "2026-07-20.json"
+    real_exists = Path.exists
+    real_fsync = os.fsync
+    real_link = os.link
+    exists_barrier = Barrier(len(snapshots))
+    publication_barrier = Barrier(len(snapshots))
+    start_barrier = Barrier(len(snapshots))
+    event_lock = Lock()
+    fsynced_files = set()
+    publication_sources = []
+
+    def synchronized_exists(candidate):
+        if candidate == path:
+            exists_barrier.wait(timeout=5)
+            return False
+        return real_exists(candidate)
+
+    def recording_fsync(fd):
+        real_fsync(fd)
+        stat = os.fstat(fd)
+        with event_lock:
+            fsynced_files.add((stat.st_dev, stat.st_ino))
+
+    def synchronized_link(source, destination):
+        source = Path(source)
+        with event_lock:
+            publication_sources.append(source)
+        publication_barrier.wait(timeout=5)
+        stat = source.stat()
+        assert (stat.st_dev, stat.st_ino) in fsynced_files
+        return real_link(source, destination)
+
+    def attempt(snapshot):
+        start_barrier.wait(timeout=5)
+        try:
+            return snapshot, write_snapshot(snapshot, output_dir)
+        except Exception as exc:
+            return snapshot, exc
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "exists", synchronized_exists)
+        patch.setattr(os, "fsync", recording_fsync)
+        patch.setattr(os, "link", synchronized_link)
+        with ThreadPoolExecutor(max_workers=len(snapshots)) as executor:
+            attempts = list(executor.map(attempt, snapshots))
+    return path, attempts, publication_sources
 
 
 def test_snapshot_contains_only_registered_factual_fields_and_a_seal():
@@ -126,14 +180,68 @@ def test_snapshot_contains_only_registered_factual_fields_and_a_seal():
 
 def test_same_date_same_content_is_noop_but_changed_content_fails(tmp_path):
     snapshot = build_snapshot(_contract())
+    expected_path = tmp_path / "expected.json"
+    expected_path.write_text(
+        json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    expected_bytes = expected_path.read_bytes()
+    expected_path.unlink()
+
     path, status = write_snapshot(snapshot, tmp_path)
     assert status == "created"
+    assert path.read_bytes() == expected_bytes
     assert write_snapshot(snapshot, tmp_path) == (path, "unchanged")
     changed_contract = _contract()
     changed_contract["current"]["hitters"][0]["iso"] = 0.999
     changed = build_snapshot(changed_contract)
     with pytest.raises(ValueError, match="sealed date"):
         write_snapshot(changed, tmp_path)
+
+
+def test_concurrent_identical_writers_create_once_without_temps(monkeypatch, tmp_path):
+    snapshot = build_snapshot(_contract())
+
+    path, attempts, publication_sources = _write_concurrently(
+        monkeypatch, tmp_path, [snapshot, copy.deepcopy(snapshot)]
+    )
+
+    assert len(set(publication_sources)) == 2
+    assert {source.parent for source in publication_sources} == {tmp_path}
+    results = [result for _, result in attempts]
+    assert all(isinstance(result, tuple) for result in results)
+    assert sorted(result[1] for result in results) == ["created", "unchanged"]
+    assert json.loads(path.read_text(encoding="utf-8")) == snapshot
+    assert not [
+        candidate for candidate in tmp_path.iterdir() if candidate.suffix == ".tmp"
+    ]
+
+
+def test_concurrent_different_writers_never_replace_winner(monkeypatch, tmp_path):
+    first = build_snapshot(_contract())
+    changed_contract = _contract()
+    changed_contract["current"]["hitters"][0]["iso"] = 0.999
+    second = build_snapshot(changed_contract)
+
+    path, attempts, publication_sources = _write_concurrently(
+        monkeypatch, tmp_path, [first, second]
+    )
+
+    assert len(set(publication_sources)) == 2
+    assert {source.parent for source in publication_sources} == {tmp_path}
+    created = [
+        snapshot
+        for snapshot, result in attempts
+        if isinstance(result, tuple) and result[1] == "created"
+    ]
+    errors = [result for _, result in attempts if isinstance(result, Exception)]
+    assert len(created) == 1
+    assert len(errors) == 1
+    assert isinstance(errors[0], ValueError)
+    assert str(errors[0]) == "sealed date changed"
+    assert json.loads(path.read_text(encoding="utf-8")) == created[0]
+    assert not [
+        candidate for candidate in tmp_path.iterdir() if candidate.suffix == ".tmp"
+    ]
 
 
 def test_unknown_organization_stays_null_not_invented():
