@@ -144,6 +144,9 @@ Registered variants are deliberately limited:
    representation of the existing component rates. For each historical cutoff,
    each rate is transformed against the leave-one-out empirical distribution
    of same-role, same-level, same-season input peers available at that cutoff.
+   For this study, the reconstructable historical cutoff is cohort-season
+   completion; the historical store does not support an earlier intra-season
+   cutoff.
    No future outcome or post-cutoff observation may enter the reference pool.
    A same-level cell requires at least 25 other peers. Sparse cells back off to
    the same-role, same-season pool, which requires at least 250 other peers. If
