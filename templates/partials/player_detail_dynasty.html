@@ -378,6 +378,26 @@
 
         {% if shape_comps is defined and shape_comps and shape_comps.twins %}
         <div class="detail-section shape-comps-card">
+            {% if shape_comps.role_pool %}
+            <div class="peak-projection-head">
+                <div>
+                    <span class="profile-card-kicker">Shape Comps</span>
+                    <h4>Pitcher Shape Comps</h4>
+                </div>
+                <p class="profile-note">Real MLB {{ shape_comps.role_pool }} seasons (2000&ndash;2025, era-adjusted) nearest the translated K-BB% {{ shape_comps.target.k_bb_pct }} / K/9 {{ shape_comps.target.k_per_9 }} / BB/9 {{ shape_comps.target.bb_per_9 }}. The {{ shape_comps.role_pool }} pool describes current usage, not a future-role forecast.</p>
+            </div>
+            <div class="shape-twin-list">
+                {% for twin in shape_comps.twins %}
+                <div class="shape-twin-row">
+                    <span class="shape-twin-name">{{ twin.name }} <b>&rsquo;{{ "%02d" | format(twin.season % 100) }}</b></span>
+                    <span class="shape-twin-meta">age {{ twin.age }} &middot; {{ twin.ip }} IP &middot; {{ twin.role }} pool</span>
+                    <span class="shape-twin-line">K-BB% {{ twin.k_bb_pct }} &middot; K/9 {{ twin.k_per_9 }} &middot; BB/9 {{ twin.bb_per_9 }}</span>
+                    <span class="shape-twin-outcome">measured distance {{ "%.3f" | format(twin.distance) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <p class="sample-context-note">These role-separated statistical matches are descriptive, not a forecast or success probability. They do not feed ValuCast Value or rank.</p>
+            {% else %}
             <div class="peak-projection-head">
                 <div>
                     <span class="profile-card-kicker">Shape Comps</span>
@@ -395,15 +415,29 @@
                 </div>
                 {% endfor %}
             </div>
+            {% if shape_comps.components %}
+            <div class="shape-twin-list shape-component-list">
+                {% for key in ["power", "contact", "approach"] %}
+                {% set component = shape_comps.components.get(key) %}
+                {% if component %}
+                <div class="shape-twin-row shape-component-row">
+                    <span class="shape-twin-name">{{ component.label }} — {{ component.metric }}</span>
+                    <span class="shape-twin-meta">{{ component.match }} <b>&rsquo;{{ "%02d" | format(component.season % 100) }}</b></span>
+                    <span class="shape-twin-line">Prospect {{ component.target }} &middot; match {{ component.value }} &middot; measured distance {{ "%.3f" | format(component.distance) }}</span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
             {% if shape_comps.cohort and shape_comps.cohort.size %}
             <div class="shape-cohort">
                 <p class="sample-context-note">How this shape aged &mdash; the {{ shape_comps.cohort.size }} nearest matches old enough to judge (matches from 2000&ndash;{{ shape_comps.cohort.resolved_through }} &mdash; the seasons with a complete 5-year outcome window, 2020 pro-rated to a full schedule), measured on playing time kept and era-relative bat over their next five years:</p>
-                <div class="role-probability-bars shape-cohort-bars">
+                <div class="shape-cohort-bars">
                     {% for tier in ["impact_regular", "everyday", "part_time", "faded"] %}
                     {% set count = shape_comps.cohort.tiers.get(tier, 0) %}
-                    <div class="role-probability-row">
+                    <div class="shape-cohort-row">
                         <span>{{ shape_comp_tier_labels.get(tier, tier) }}</span>
-                        <div class="role-probability-track" role="img" aria-label="{{ shape_comp_tier_labels.get(tier, tier) }}: {{ count }} of {{ shape_comps.cohort.size }} matched careers">
+                        <div class="shape-cohort-track" role="img" aria-label="{{ shape_comp_tier_labels.get(tier, tier) }}: {{ count }} of {{ shape_comps.cohort.size }} matched careers">
                             <i style="width: {{ (100 * count / shape_comps.cohort.size) | round(1) }}%"></i>
                         </div>
                         <b>{{ count }}</b>
@@ -412,7 +446,8 @@
                 </div>
             </div>
             {% endif %}
-            <p class="sample-context-note">A shape match on three translated rates &mdash; descriptive, not a forecast. The forecast is the model's role probabilities on the Peak Outlook card; these bars are counts of matched careers, not odds. The aging bars include only matches old enough to grade, so the closest named twin may be too recent to appear in the bars. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
+            <p class="sample-context-note">A shape match on three translated rates &mdash; descriptive, not a forecast. Peak Outlook is a separate qualitative scenario layer; these bars are counts of matched careers, not odds. The aging bars include only matches old enough to grade, so the closest named twin may be too recent to appear in the bars. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
+            {% endif %}
         </div>
         {% endif %}
 

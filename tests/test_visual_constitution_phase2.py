@@ -138,7 +138,7 @@ def test_name_links_inherit_text_not_functional_blue():
 
 def test_data_bars_use_slate_teal_clay_not_functional_blue():
     # Phase 2: blue is functional-only (links/focus), never painted on data bars or dots.
-    for selector in [".pct-rail-fill", ".spread-dot", ".role-probability-track"]:
+    for selector in [".pct-rail-fill", ".spread-dot", ".shape-cohort-track"]:
         block = _last_block(selector)
         assert "var(--c-blue)" not in block, selector
         assert "110, 161, 255" not in block, selector
@@ -164,7 +164,7 @@ def test_data_bar_tracks_share_bar_grammar_tokens():
         ".skill-compare-track",
         ".pct-rail",
         ".pct-track",
-        ".role-probability-track",
+        ".shape-cohort-track",
         ".zbar",
         ".spread-rail",
     ]

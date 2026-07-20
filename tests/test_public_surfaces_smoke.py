@@ -15,6 +15,7 @@ PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
 PNG_ROUTES = (
     "/buys/share-card.png",
+    "/farms/share-card.png",
     "/map/share-card.png",
     "/prospects/share-card.png?limit=20",
 )

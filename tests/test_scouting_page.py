@@ -61,6 +61,15 @@ def test_public_prospect_read_rejects_uncalibrated_peak_claims():
         assert public["display_report_source"] == "deterministic"
 
 
+def test_public_prospect_read_fails_closed_when_fallback_is_still_uncalibrated():
+    from app import _scouting_display_report_text
+
+    assert _scouting_display_report_text({
+        "player_type": "prospect",
+        "report": "He has a 60% chance to become an everyday regular.",
+    }) == ""
+
+
 def test_public_mlb_read_keeps_supported_projection_language():
     from app import _scouting_display_report_text
 

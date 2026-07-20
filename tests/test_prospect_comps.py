@@ -1,11 +1,16 @@
 """Tests for the measured prospect shape-comp builder."""
 from __future__ import annotations
 
+import json
+
 from prospects.comps import (
     CompPool,
+    PitcherCompPool,
     build_prospect_comps,
     comp_for_target,
     eligible_prospects,
+    pitcher_comp_for_target,
+    pitcher_target_role,
 )
 
 
@@ -64,6 +69,84 @@ def test_era_normalization_prefers_the_era_relative_match():
     d_normal = _distance(target, by_name["Era Normal"]["z"])
     d_outlier = _distance(target, by_name["Era Outlier"]["z"])
     assert d_normal < d_outlier
+
+
+def test_hitter_components_use_single_transparent_axes_and_distance():
+    pool = CompPool(_filler_pool(2025))
+
+    comp = comp_for_target(
+        pool, {"k_pct": 20.0, "bb_pct": 9.0, "iso": 0.180}
+    )
+
+    assert comp["components"]["power"]["metric"] == "ISO"
+    assert comp["components"]["contact"]["metric"] == "K%"
+    assert comp["components"]["approach"]["metric"] == "BB%"
+    assert all("distance" in item for item in comp["components"].values())
+    assert all("match_pct" not in item for item in comp["components"].values())
+
+
+def _pitcher_history():
+    rows = []
+    for season in range(2000, 2026):
+        for index in range(4):
+            rows.extend([
+                {
+                    "id": season * 100 + index,
+                    "name": f"Starter {season}-{index}",
+                    "season": season,
+                    "age": 24,
+                    "ip": 100 + index,
+                    "g": 20,
+                    "gs": 20,
+                    "bf": 420,
+                    "k": 100 + index * 5,
+                    "bb": 30 + index,
+                },
+                {
+                    "id": season * 100 + 50 + index,
+                    "name": f"Reliever {season}-{index}",
+                    "season": season,
+                    "age": 24,
+                    "ip": 50 + index,
+                    "g": 50,
+                    "gs": 0,
+                    "bf": 220,
+                    "k": 60 + index * 5,
+                    "bb": 18 + index,
+                },
+            ])
+    return rows
+
+
+def test_pitcher_role_classification_suppresses_mixed_usage():
+    assert pitcher_target_role(
+        {"starter_role": True, "games_started": 5, "sample": 50}
+    ) == "starter"
+    assert pitcher_target_role(
+        {"starter_role": False, "games_started": 0, "sample": 30}
+    ) == "reliever"
+    assert pitcher_target_role(
+        {"starter_role": True, "games_started": 3, "sample": 45}
+    ) is None
+    assert pitcher_target_role(
+        {"starter_role": False, "games_started": 2, "sample": 40}
+    ) is None
+
+
+def test_pitcher_matches_never_cross_role_or_publish_probabilities():
+    pool = PitcherCompPool(_pitcher_history())
+
+    comp = pitcher_comp_for_target(
+        pool,
+        "starter",
+        {"k_bb_pct": 20.0, "k_per_9": 10.5, "bb_per_9": 2.7},
+    )
+
+    assert pool.coverage_ready is True
+    assert comp["role_pool"] == "starter"
+    assert {row["role"] for row in comp["twins"]} == {"starter"}
+    assert "cohort" not in comp
+    assert "probability" not in json.dumps(comp).lower()
 
 
 def test_outcome_tiers_and_resolution_window():
@@ -181,6 +264,122 @@ def test_build_artifact_shape_and_policy():
         assert {"k_pct", "bb_pct", "iso"} <= set(twin)
 
 
+def test_build_artifact_keeps_pitchers_separate_and_suppresses_ambiguous_roles():
+    hitting_history = {
+        "seasons": [2010, 2025],
+        "rows": _filler_pool(2010) + _filler_pool(2025, start_pid=6000),
+    }
+
+    def pitcher(mlbam_id, starts, starter_role):
+        return {
+            "player_type": "prospect",
+            "mlbam_id": mlbam_id,
+            "name": f"Pitcher {mlbam_id}",
+            "prospect_rank": 10,
+            "components": {
+                "factual_current_context": {
+                    "starter_role": starter_role,
+                    "games_started": starts,
+                    "sample": 60,
+                }
+            },
+            "stat_line_translated": {
+                "role": "pitcher",
+                "confidence": "high",
+                "low_sample": False,
+                "stats": [
+                    {"key": "k_bb_pct", "mlb": 20.0},
+                    {"key": "k_per_9", "mlb": 10.5},
+                    {"key": "bb_per_9", "mlb": 2.7},
+                ],
+            },
+        }
+
+    snapshot = {"players": [pitcher(88, 8, True), pitcher(89, 2, True)]}
+    payload = build_prospect_comps(
+        hitting_history,
+        snapshot,
+        pitcher_history={"seasons": [2000, 2025], "rows": _pitcher_history()},
+        generated_at="2026-07-20T00:00:00+00:00",
+    )
+
+    assert payload["players"] == {}
+    assert payload["pitchers"]["88"]["role_pool"] == "starter"
+    assert "89" not in payload["pitchers"]
+
+
+def test_pitcher_history_fetcher_normalizes_comp_fields(monkeypatch):
+    from scripts import fetch_mlb_history_pitching_seasons as fetcher
+
+    monkeypatch.setattr(fetcher, "_get", lambda _url: {"stats": [{"splits": [{
+        "player": {"id": 42, "fullName": "Example Arm"},
+        "stat": {
+            "age": 24,
+            "inningsPitched": "50.2",
+            "gamesPitched": 30,
+            "gamesStarted": 0,
+            "battersFaced": 220,
+            "strikeOuts": 60,
+            "baseOnBalls": 18,
+        },
+    }]}]})
+
+    rows = fetcher.fetch_season(2025)
+
+    assert rows == [{
+        "id": 42,
+        "name": "Example Arm",
+        "season": 2025,
+        "age": 24,
+        "ip": 50.6667,
+        "g": 30,
+        "gs": 0,
+        "bf": 220,
+        "k": 60,
+        "bb": 18,
+    }]
+
+
+def test_build_script_reads_committed_pitcher_history(monkeypatch, tmp_path):
+    from scripts import build_prospect_comps as builder
+
+    hitting_path = tmp_path / "hitting.json"
+    pitching_path = tmp_path / "pitching.json"
+    snapshot_path = tmp_path / "snapshot.json"
+    output_path = tmp_path / "comps.json"
+    hitting_path.write_text(json.dumps({
+        "seasons": [2010, 2025],
+        "rows": _filler_pool(2010) + _filler_pool(2025, start_pid=9000),
+    }), encoding="utf-8")
+    pitching_path.write_text(json.dumps({
+        "seasons": [2000, 2025], "rows": _pitcher_history()
+    }), encoding="utf-8")
+    snapshot_path.write_text(json.dumps({"generated_at": "2026-07-20", "players": [{
+        "player_type": "prospect",
+        "mlbam_id": 88,
+        "name": "Pitcher 88",
+        "prospect_rank": 10,
+        "components": {"factual_current_context": {
+            "starter_role": True, "games_started": 8, "sample": 60,
+        }},
+        "stat_line_translated": {
+            "role": "pitcher", "confidence": "high", "low_sample": False,
+            "stats": [
+                {"key": "k_bb_pct", "mlb": 20.0},
+                {"key": "k_per_9", "mlb": 10.5},
+                {"key": "bb_per_9", "mlb": 2.7},
+            ],
+        },
+    }]}), encoding="utf-8")
+    monkeypatch.setattr(builder, "HISTORY_PATH", hitting_path)
+    monkeypatch.setattr(builder, "PITCHER_HISTORY_PATH", pitching_path)
+    monkeypatch.setattr(builder, "SNAPSHOT_PATH", snapshot_path)
+
+    payload = builder.run(output_path)
+
+    assert payload["pitchers"]["88"]["role_pool"] == "starter"
+
+
 def test_detail_card_renders_comps_from_the_committed_artifact():
     import json
     from pathlib import Path
@@ -216,7 +415,82 @@ def test_detail_card_renders_comps_from_the_committed_artifact():
     # forecast; cohort bars are counts, not odds; tiers measure playing time.
     assert "not a forecast" in html
     assert "counts of matched careers, not odds" in html
+    assert "role-probability" not in html
+    assert "shape-cohort-track" in html
     assert "PA/yr" in html
+
+
+def test_detail_and_share_cards_render_hitter_component_matches():
+    from pathlib import Path
+
+    import app as app_module
+
+    root = Path(__file__).parent.parent
+    artifact = json.loads(
+        (root / "data" / "models" / "valucast_prospect_comps.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    snapshot = json.loads(
+        (root / "data" / "public" / "public_dynasty_snapshot.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    mlbam_id, comp = next(iter(artifact["players"].items()))
+    row = next(
+        item for item in snapshot["players"]
+        if str(item.get("mlbam_id")) == mlbam_id and item.get("role") == "hitter"
+    )
+
+    html = app_module.app.test_client().get(
+        f"/player/{row['id']}?mode=prospects", headers={"HX-Request": "true"}
+    ).data.decode("utf-8")
+    share_text = " ".join(app_module._share_card_comp_lines(comp))
+
+    for label, metric in (("Power", "ISO"), ("Contact", "K%"), ("Approach", "BB%")):
+        assert f"{label} — {metric}" in html
+        assert comp["components"][label.lower()]["match"] in share_text
+    assert "measured distance" in html
+    assert "match percentage" not in html.lower()
+    assert "The forecast is the model's role probabilities" not in html
+    assert "Peak Outlook is a separate qualitative scenario layer" in html
+
+
+def test_detail_and_share_cards_render_role_separated_pitcher_matches():
+    from pathlib import Path
+
+    import app as app_module
+
+    root = Path(__file__).parent.parent
+    artifact = json.loads(
+        (root / "data" / "models" / "valucast_prospect_comps.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    snapshot = json.loads(
+        (root / "data" / "public" / "public_dynasty_snapshot.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    mlbam_id, comp = next(iter(artifact["pitchers"].items()))
+    row = next(
+        item for item in snapshot["players"]
+        if str(item.get("mlbam_id")) == mlbam_id and item.get("role") == "pitcher"
+    )
+
+    html = app_module.app.test_client().get(
+        f"/player/{row['id']}?mode=prospects", headers={"HX-Request": "true"}
+    ).data.decode("utf-8")
+    share_text = " ".join(app_module._share_card_comp_lines(comp))
+
+    assert "Pitcher Shape Comps" in html
+    assert f"{comp['role_pool']} pool" in html.lower()
+    assert "measured distance" in html
+    assert "success probability:" not in html.lower()
+    assert "translated target K-BB%" in share_text
+    for twin in comp["twins"]:
+        assert twin["name"] in html
+        assert twin["name"] in share_text
 
 
 def test_methodology_documents_shape_comps():
@@ -232,6 +506,15 @@ def test_methodology_documents_shape_comps():
     # points published — reproducibility is the product.
     assert "bias we can" in html  # "The bias we can't remove, named"
     assert "450+ PA/yr" in html
+    assert "Power (ISO)" in html
+    assert "Contact (K%)" in html
+    assert "Approach (BB%)" in html
+    assert "Pitcher shape comps" in html
+    assert "starter and reliever" in html
+    assert "measured distance" in html
+    assert "do not turn distance into a match percentage" in " ".join(
+        html.lower().split()
+    )
 
 
 def test_comps_wired_into_daily_build_after_snapshot():
