@@ -283,6 +283,9 @@ jobs:
           if [ -d data/aaa_statcast_archive ]; then
             git add data/aaa_statcast_archive/
           fi
+          if [ -d data/milb_observation_archive ]; then
+            git add data/milb_observation_archive/
+          fi
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
           # We synced to the latest origin/master right after checkout and built on

@@ -56,6 +56,22 @@ def test_aaa_vintage_archive_step_runs_after_feature_build():
     )
 
 
+def test_milb_observation_archive_runs_after_prospect_input_pipeline():
+    build = _build_commands()
+    assert build.index("scripts/run_prospect_shadow_pipeline.py") < build.index(
+        "scripts/archive_milb_observations.py"
+    )
+
+
+def test_allowlist_publishes_milb_observation_archive_with_guard():
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert (
+        "if [ -d data/milb_observation_archive ]; then\n"
+        "            git add data/milb_observation_archive/\n"
+        "          fi"
+    ) in workflow
+
+
 def test_no_nightly_step_builds_the_forward_cohort_registry():
     # The cohort registry is registered manually/quarterly; a nightly rebuild would
     # silently re-freeze the frozen cohort. It must appear in NEITHER stage.
