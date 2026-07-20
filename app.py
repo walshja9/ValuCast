@@ -7036,6 +7036,113 @@ def farms():
     )
 
 
+def _farm_rankings_share_card_png(context):
+    from PIL import Image, ImageDraw
+
+    systems = context.get("systems") or []
+    palette = _GRAPHIC_PALETTE
+    img = Image.new("RGB", (1080, 1350), palette["bg"])
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    date_label = _editorial_date(dd_store.generated_at)
+    _graphic_header(
+        img,
+        draw,
+        headline="Farm-System Rankings",
+        subtitle=f"All MLB farm systems - {date_label}",
+        extra_line="Top-20 ValuCast dynasty value; Top 100 breaks ties",
+        tagline="Farm-System Rankings",
+    )
+
+    label_font = _graphic_font(14, bold=True, mono=True)
+    rank_font = _graphic_font(21, bold=True, mono=True)
+    name_font = _graphic_font(20, bold=True)
+    code_font = _graphic_font(14, bold=True, mono=True)
+    value_font = _graphic_font(22, bold=True, mono=True)
+    text, muted = palette["text"], palette["muted"]
+    teal, slate = palette["teal"], palette["slate"]
+    columns = (systems[:15], systems[15:30])
+    panel_width = 476
+    row_h = 56
+    top = 246
+
+    for col_index, rows in enumerate(columns):
+        x0 = 48 + col_index * 508
+        x1 = x0 + panel_width
+        bottom = top + 42 + row_h * max(1, len(rows))
+        _graphic_glass_panel(img, draw, (x0, top, x1, bottom), radius=12, shadow=False)
+        draw.text((x0 + 16, top + 14), "#  ORGANIZATION", fill=slate, font=label_font)
+        draw.text((x1 - 152, top + 14), "TOP 20", fill=slate, font=label_font)
+        draw.text((x1 - 70, top + 14), "T100", fill=slate, font=label_font)
+        draw.line((x0, top + 40, x1, top + 40), fill=palette["border"], width=1)
+        for offset, system in enumerate(rows):
+            y = top + 42 + offset * row_h
+            if offset % 2:
+                draw.rectangle((x0 + 1, y, x1 - 1, y + row_h), fill=palette["card_2"])
+            draw.text((x0 + 16, y + 16), str(system["rank"]), fill=muted, font=rank_font)
+            name = _graphic_fit_text(draw, system["name"], name_font, 232)
+            draw.text((x0 + 62, y + 8), name, fill=text, font=name_font)
+            draw.text((x0 + 62, y + 32), system["org"], fill=slate, font=code_font)
+            value = f'{system["top20_value"]:.1f}'
+            draw.text((x1 - 92 - _graphic_text_width(draw, value, value_font), y + 14), value, fill=teal, font=value_font)
+            count = str(system["top100_count"])
+            draw.text((x1 - 22 - _graphic_text_width(draw, count, value_font), y + 14), count, fill=text, font=value_font)
+            draw.line((x0 + 12, y + row_h, x1 - 12, y + row_h), fill=palette["border"], width=1)
+
+    draw.text(
+        (48, 1164),
+        "System value = sum of each organization's top 20 current ValuCast prospect values.",
+        fill=muted,
+        font=_graphic_font(16),
+    )
+    _graphic_place_qr(
+        img,
+        draw,
+        _public_url("/farms"),
+        bottom=1270,
+        size=78,
+        caption="live rankings",
+        caption_side="left",
+    )
+    _graphic_footer(draw, right_note="Current board - all systems")
+    output = io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
+@app.route("/farms/share-card.png")
+def farms_share_card_png():
+    context = _build_farm_rankings_context()
+    if not context.get("systems"):
+        return "", 503
+    response = make_response(_farm_rankings_share_card_png(context))
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-farm-system-rankings.png"'
+    return response
+
+
+@app.route("/farms/share-card")
+def farms_share_card():
+    context = _build_farm_rankings_context()
+    if not context.get("systems"):
+        return "<!doctype html><title>Farm-system graphic unavailable</title>", 503
+    html = build_share_preview_html(
+        title="ValuCast Farm-System Rankings",
+        subtitle="All MLB systems ranked by current top-20 ValuCast prospect value",
+        png_url="/farms/share-card.png",
+        filename="valucast-farm-system-rankings.png",
+        public_png_url=_public_url("/farms/share-card.png"),
+        public_page_url=_public_url("/farms/share-card"),
+        description="All MLB farm systems ranked by the sum of their top 20 current ValuCast prospect values.",
+        image_alt="ValuCast farm-system rankings graphic",
+        back_url="/farms",
+        back_label="Back to farm-system rankings",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
 @app.route("/backfields/team/<org>")
 def backfields_team(org):
     try:
@@ -7216,7 +7323,7 @@ def _team_board_share_card_png(board, *, limit):
 
     title_font = _graphic_font(46, bold=True)
     label_font = _graphic_font(15, bold=True, mono=True)
-    name_font = _graphic_font(24 if limit == 20 else 26, bold=True)
+    name_font = _graphic_font(21 if limit == 20 else 24, bold=True)
     meta_font = _graphic_font(16, mono=True)
     value_font = _graphic_font(30, bold=True, mono=True)
     small_font = _graphic_font(15, bold=True, mono=True)
@@ -7239,7 +7346,7 @@ def _team_board_share_card_png(board, *, limit):
 
     header_y = 360
     table_x1, table_x2 = 48, 1032
-    row_h = 40 if limit == 20 else 68
+    row_h = 36 if limit == 20 else 58
     y = 392
     rows = board["rows"][:limit]
     table_bottom = y + row_h * max(1, len(rows))
@@ -7265,7 +7372,7 @@ def _team_board_share_card_png(board, *, limit):
         draw.rectangle((table_x1, y, table_x1 + 4, y + row_h), fill=slate)
         rank_text = str(idx)
         draw.text((68, y + 12), rank_text, fill=muted, font=meta_font)
-        name_y = y + (7 if limit == 20 else 10)
+        name_y = y + (5 if limit == 20 else 8)
         fitted_name = _graphic_fit_text(draw, row["name"], name_font, 470)
         draw.text((118, name_y), fitted_name, fill=text, font=name_font)
         debut_taste = _row_mlb_debut(row)
@@ -7284,8 +7391,8 @@ def _team_board_share_card_png(board, *, limit):
                 fill=muted,
                 font=meta_font,
             )
-        draw.text((666, y + 13), row["position"], fill=muted, font=meta_font)
-        draw.text((728, y + 13), row["level"], fill=amber, font=meta_font)
+        draw.text((666, y + 10), row["position"], fill=muted, font=meta_font)
+        draw.text((728, y + 10), row["level"], fill=amber, font=meta_font)
         move = row.get("move") or {}
         if move.get("direction") == "up":
             label = str(move.get("label") or "").strip()
@@ -7297,10 +7404,54 @@ def _team_board_share_card_png(board, *, limit):
             move_color = clay
         else:
             move_text, move_color = "-", muted
-        draw.text((804, y + 13), move_text, fill=move_color, font=small_font)
+        draw.text((804, y + 10), move_text, fill=move_color, font=small_font)
         val = str(row["value"])
-        draw.text((table_x2 - 20 - _graphic_text_width(draw, val, value_font), y + 8), val, fill=teal, font=value_font)
+        draw.text((table_x2 - 20 - _graphic_text_width(draw, val, value_font), y + 5), val, fill=teal, font=value_font)
         y += row_h
+
+    summary = board.get("summary") or {}
+    insight_y = 1124 if limit == 20 else 1050
+    insight_bottom = 1266
+    _graphic_glass_panel(
+        img,
+        draw,
+        (table_x1, insight_y, table_x2, insight_bottom),
+        radius=10,
+        fill=warm_card,
+        border=warm_border,
+        shadow=False,
+    )
+    columns = (
+        (table_x1 + 16, "SYSTEM SNAPSHOT"),
+        (table_x1 + 342, "RISERS"),
+        (table_x1 + 668, "VALUCAST BUYS"),
+    )
+    for x, heading in columns:
+        draw.text((x, insight_y + 14), heading, fill=slate, font=label_font)
+
+    concentration = summary.get("top5_concentration_pct", 0.0)
+    balance = f'{summary.get("top20_hitters", 0)} H / {summary.get("top20_pitchers", 0)} P'
+    draw.text((table_x1 + 16, insight_y + 43), f"Top-five share {concentration:.1f}% | {balance}", fill=text, font=small_font)
+    levels = " | ".join(
+        f'{item.get("level")} {item.get("count")}' for item in (summary.get("levels") or [])[:5]
+    ) or "Level mix unavailable"
+    draw.text((table_x1 + 16, insight_y + 70), _graphic_fit_text(draw, levels, small_font, 292), fill=muted, font=small_font)
+
+    risers = summary.get("risers") or []
+    if risers:
+        for offset, riser in enumerate(risers[:2]):
+            line = f'{riser.get("name")} +{riser.get("move", {}).get("label")}'
+            draw.text((table_x1 + 342, insight_y + 43 + offset * 27), _graphic_fit_text(draw, line, small_font, 292), fill=teal, font=small_font)
+    else:
+        draw.text((table_x1 + 342, insight_y + 43), "No positive 7-day moves", fill=muted, font=small_font)
+
+    buys = board.get("buys") or []
+    if buys:
+        for offset, buy in enumerate(buys[:2]):
+            line = f'#{buy.get("rank")} {buy.get("name")} | {buy.get("reason")}'
+            draw.text((table_x1 + 668, insight_y + 43 + offset * 27), _graphic_fit_text(draw, line, small_font, 330), fill=teal, font=small_font)
+    else:
+        draw.text((table_x1 + 668, insight_y + 43), "No current buy signal", fill=muted, font=small_font)
 
     footer = f"{selected['org']} team board · top {limit} · ValuCast order"
     _graphic_footer(draw, right_note=footer)
@@ -9286,6 +9437,30 @@ def cards_gallery():
             "generated_at": dd_gen,
         },
         {
+            "title": "Dynasty Rankings",
+            "caption": "The default dynasty board - value, age, position, and role.",
+            "page_url": "/dynasty/share-card",
+            "png_url": "/dynasty/share-card.png",
+            "board_url": "/?mode=dd_dynasty",
+            "generated_at": dd_gen,
+        },
+        {
+            "title": "Redraft Rankings",
+            "caption": "The default redraft board in the current scoring format.",
+            "page_url": "/redraft/share-card",
+            "png_url": "/redraft/share-card.png",
+            "board_url": "/",
+            "generated_at": getattr(store, "as_of", None),
+        },
+        {
+            "title": "Farm-System Rankings",
+            "caption": "Every MLB system ranked by its top-20 ValuCast prospect value.",
+            "page_url": "/farms/share-card",
+            "png_url": "/farms/share-card.png",
+            "board_url": "/farms",
+            "generated_at": dd_gen,
+        },
+        {
             "title": "Prospect Movers",
             "caption": "Real risers and fallers — nightly re-baselines filtered out.",
             "page_url": "/movers/share-card",
@@ -9310,6 +9485,16 @@ def cards_gallery():
             "generated_at": dd_gen,
         },
     ]
+    if not SCOREBOARD_HOLD:
+        forward_scoreboard = _load_forward_scoreboard_payload() or {}
+        entries.append({
+            "title": "Forward Ledger",
+            "caption": "Registered prospect calls scored forward - wins, losses, and uncertainty shown.",
+            "page_url": "/scoreboard/share-card",
+            "png_url": "/scoreboard/share-card.png",
+            "board_url": "/scoreboard",
+            "generated_at": forward_scoreboard.get("generated_at") or forward_scoreboard.get("as_of"),
+        })
     if not AHEAD_OF_THE_CURVE_HOLD:
         entries.insert(2, {
             "title": "Ahead of the Curve",
