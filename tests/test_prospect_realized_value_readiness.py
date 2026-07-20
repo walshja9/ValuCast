@@ -88,6 +88,23 @@ def test_missing_qs_blocks_realized_value_regret():
     assert "missing_pitcher_category:qs" in report["blockers"]
 
 
+def test_partial_qs_rows_are_counted_without_unblocking_qs():
+    contract = _contract()
+    contract["historical_mlb_seasons"]["20_pitcher"] = [
+        {"year": 2019, "ip": 150, "qs": 18},
+        {"year": 2020, "ip": 120},
+    ]
+
+    report = audit_realized_value_readiness(contract, _model())
+    coverage = report["category_coverage"]["pitcher"]
+
+    assert coverage["season_rows"] == 2
+    assert coverage["season_rows_with_category"]["qs"] == 1
+    assert coverage["missing"] == ["qs"]
+    assert report["status"] == "blocked"
+    assert report["replay"]["realized_value_regret_ready"] is False
+
+
 def test_conflicting_same_cohort_roles_fail_that_cohort_closed():
     contract = _contract()
     contract["historical"]["rows"].append(
