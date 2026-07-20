@@ -59,6 +59,7 @@
 <div class="league-import">
     <input type="url" name="league_url" id="league-url-input" class="league-url-input"
            aria-label="League URL"
+           onchange="event.stopPropagation()"
            placeholder="Paste your Fantrax or ESPN league URL to import settings"
            value="{{ request.args.get('league_url', '') }}">
     <button type="button" class="import-btn"

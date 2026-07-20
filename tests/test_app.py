@@ -2797,6 +2797,12 @@ class TestModelsRegistryPage(unittest.TestCase):
         self.assertIn("/ledger", body)
         self.assertIn("/receipts", body)
 
+    def test_peak_projection_does_not_claim_to_feed_value(self):
+        body = self.client.get("/models").data.decode()
+        peak_row = body[body.index("Peak Projection v1"):]
+        peak_row = peak_row[:peak_row.index("</tr>")]
+        self.assertNotIn("feeds value", peak_row)
+
     def test_models_table_is_mobile_stacked_not_scroll(self):
         body = self.client.get("/models").data.decode()
         for label in ("Model", "Verdict", "Why", "Evidence", "As of"):
@@ -2912,6 +2918,19 @@ class TestModelRegistryValidator(unittest.TestCase):
         }]}), encoding="utf-8")
         errs = validate(tmp)
         self.assertTrue(any("not-yet-proven" in e for e in errs))
+
+    def test_feeds_value_cannot_contradict_display_only_evidence(self):
+        import json
+        import tempfile
+        from scripts.validate_model_registry import validate
+        tmp = Path(tempfile.mkdtemp()) / "reg.json"
+        tmp.write_text(json.dumps({"entries": [{
+            "id": "peak", "verdict": "PROVISIONAL", "feeds_value": True,
+            "evidence": "data/models/valucast_prospect_peak_projection_calibration.json",
+            "source_module": "prospects/peak_projection.py",
+        }]}), encoding="utf-8")
+        errs = validate(tmp)
+        self.assertTrue(any("feeds_value contradicts display-only evidence" in e for e in errs))
 
 
 class TestBoardTimeMachineRoute(unittest.TestCase):

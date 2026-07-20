@@ -208,6 +208,20 @@ def test_intelligence_hub_renders_all_roadmap_lanes():
     assert "custom league settings" in html
 
 
+def test_peak_public_status_is_display_only():
+    client = app.test_client()
+
+    intelligence = client.get("/intelligence").data.decode("utf-8")
+    intelligence_peak = intelligence[intelligence.index("Prospect Peak Projection V2"):]
+    intelligence_peak = intelligence_peak[:intelligence_peak.index("</article>")]
+    assert "Display only" in intelligence_peak
+
+    scouting = client.get("/scouting").data.decode("utf-8")
+    scouting_peak = scouting[scouting.index("Peak Projection Buckets"):]
+    scouting_peak = scouting_peak[:scouting_peak.index("</article>")]
+    assert "Display only" in scouting_peak
+
+
 def test_intelligence_hub_leads_with_user_facing_surfaces():
     client = app.test_client()
 

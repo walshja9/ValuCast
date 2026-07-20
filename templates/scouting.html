@@ -174,7 +174,7 @@
                 <p class="scouting-card-note">Review focus: {{ peak_calibration.watch_items[0].role | replace("_", " ") | title }} / {{ peak_calibration.watch_items[0].level_band | replace("_", " ") | title }}.</p>
                 {% endif %}
                 <dl>
-                    <div><dt>Status</dt><dd>{{ "Live" if peak_validation.ready_for_review else "Next build" }}</dd></div>
+                    <div><dt>Status</dt><dd>{{ "Display only" if peak_validation.ready_for_review else "Next build" }}</dd></div>
                     <div><dt>Buckets</dt><dd>{{ peak_summary.bucket_count or 0 }}</dd></div>
                     <div><dt>Needs review</dt><dd>{{ peak_summary.watch_item_count or 0 }}</dd></div>
                     <div><dt>Profiles</dt><dd>{{ peak_summary.projection_count or 0 }}</dd></div>

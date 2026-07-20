@@ -28,21 +28,27 @@ def validate(registry_path: Path = REGISTRY) -> list[str]:
             errs.append(f"{eid}: bad verdict {entry.get('verdict')!r}")
         evidence = entry.get("evidence")
         ev_path = ROOT / evidence if evidence else None
+        artifact = None
         if not evidence or not ev_path.exists():
             errs.append(f"{eid}: missing evidence artifact {evidence!r}")
+        else:
+            try:
+                artifact = json.loads(ev_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                pass
         source_module = entry.get("source_module")
         if not source_module or not (ROOT / source_module).exists():
             errs.append(f"{eid}: missing source_module {source_module!r}")
         # Overclaim guard: VALIDATED must not cite a not-yet-proven artifact.
         if entry.get("verdict") == "VALIDATED" and ev_path and ev_path.exists():
-            try:
-                status = (json.loads(ev_path.read_text(encoding="utf-8")) or {}).get("status")
-            except (OSError, ValueError):
-                status = None
+            status = (artifact or {}).get("status")
             if status in NOT_PROVEN:
                 errs.append(
                     f"{eid}: VALIDATED over not-yet-proven artifact status {status!r}"
                 )
+        policy = (artifact or {}).get("source_policy") or {}
+        if entry.get("feeds_value") and policy.get("feeds_live_value") is False:
+            errs.append(f"{eid}: feeds_value contradicts display-only evidence")
     return errs
 
 

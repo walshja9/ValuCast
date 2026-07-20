@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-16",
+  "generated_at": "2026-07-19",
   "verdict_definitions": {
     "VALIDATED": "Measured or reproducible and proven on evidence we can open. Not a promise of future accuracy — a claim we can show our work on today.",
     "PROVISIONAL": "Observed but not yet proven. In shadow, below a maturation gate, or awaiting review. We publish it here rather than wait for it to look better.",
@@ -37,11 +37,11 @@
       "name": "Peak Projection v1",
       "subsystem_kind": "model",
       "verdict": "PROVISIONAL",
-      "verdict_reason": "A role and skill-shape projection under active calibration review, not a validated stat forecast.",
+      "verdict_reason": "Display-only role and skill-shape context under active calibration review. It does not feed rank or value and is not a validated stat forecast.",
       "evidence": "data/models/valucast_prospect_peak_projection_calibration.json",
       "evidence_label": "Peak Projection calibration report",
       "source_module": "prospects/peak_projection.py",
-      "feeds_value": true,
+      "feeds_value": false,
       "public_page": "/methodology"
     },
     {

@@ -5363,11 +5363,11 @@ def intelligence_hub():
         },
         {
             "name": "Prospect Peak Projection V2",
-            "status": "Ready" if _artifact_ready(peak_calibration, "validation", "ready_for_review") else "Collecting",
+            "status": "Display only" if _artifact_ready(peak_calibration, "validation", "ready_for_review") else "Collecting",
             "kicker": "role and ceiling context",
             "copy": (
                 "Current skill shape is paired with peak role, floor, risk, confidence, "
-                "and bucket watch items without moving the live rank by hand."
+                "and bucket watch items. This context does not move live rank or value."
             ),
             "metric": (
                 f"{((peak_calibration or {}).get('summary') or {}).get('bucket_count', 0)} buckets"
