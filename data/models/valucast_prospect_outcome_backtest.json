@@ -165,7 +165,7 @@
           "evidence_class": "current_publication_shape",
           "max_top25_pitchers": 7,
           "max_top50_pitcher_rate": 0.3,
-          "model_component_eligible_board_count": 2846,
+          "model_component_eligible_board_count": 2850,
           "model_component_field": "components.model_score",
           "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
           "model_component_top25_evaluated_count": 25,
@@ -173,8 +173,8 @@
           "model_component_top25_pitcher_count": 13,
           "status": "fail",
           "top25_pitcher_count": 10,
-          "top50_pitcher_count": 17,
-          "top50_pitcher_rate": 0.34
+          "top50_pitcher_count": 18,
+          "top50_pitcher_rate": 0.36
         },
         "historical_absolute_concordance": {
           "confirms_current_change": false,
@@ -250,13 +250,13 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 5,
+        "buy_comparison_count": 6,
         "latest_rank_bucket_count": 14,
-        "observation_span_days": 5,
-        "rank_comparison_count": 5
+        "observation_span_days": 6,
+        "rank_comparison_count": 6
       },
       "recommendations": [
-        "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
+        "Review top-50 availability-risk buckets before changing individual names."
       ],
       "status": "collecting"
     },
@@ -266,7 +266,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2846,
+        "candidate_count": 2850,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -278,7 +278,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-19T11:57:28.029258+00:00",
+        "activated_at": "2026-07-20T12:25:38.689308+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -290,15 +290,15 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2878,
+      "candidate_count": 2882,
       "impact_board_gate": {
-        "activated_at": "2026-07-19T11:57:28.029258+00:00",
+        "activated_at": "2026-07-20T12:25:38.689308+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.130596,
+        "baseline_score": 0.130604,
         "cv_method": "walk_forward",
-        "improvement_pct": 3.0315,
+        "improvement_pct": 3.0308,
         "metric": "category_impact_mae",
-        "model_score": 0.126637,
+        "model_score": 0.126645,
         "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
@@ -322,17 +322,17 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 5,
+            "current": 6,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -346,17 +346,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 5,
+            "current": 6,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -370,17 +370,17 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 5,
+            "current": 6,
             "metric": "rank_comparison_count",
             "required": 7
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "buy_comparison_count",
             "required": 7
           },
           {
-            "current": 5,
+            "current": 6,
             "metric": "observation_span_days",
             "required": 14
           }
@@ -395,12 +395,12 @@
     "target_grade": "A-",
     "uncapped_score": 87
   },
-  "generated_at": "2026-07-19T00:00:00+00:00",
+  "generated_at": "2026-07-20T00:00:00+00:00",
   "generated_dates": {
-    "cross_role_shadow": "2026-07-19",
-    "dynasty_backtest": "2026-07-19",
-    "forward_validation": "2026-07-19",
-    "model_v07": "2026-07-19",
+    "cross_role_shadow": "2026-07-20",
+    "dynasty_backtest": "2026-07-20",
+    "forward_validation": "2026-07-20",
+    "model_v07": "2026-07-20",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
