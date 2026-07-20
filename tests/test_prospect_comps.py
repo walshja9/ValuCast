@@ -485,6 +485,7 @@ def test_detail_and_share_cards_render_role_separated_pitcher_matches():
     assert f"{comp['role_pool']} pool" in html.lower()
     assert "measured distance" in html
     assert "success probability:" not in html.lower()
+    assert "translated target K-BB%" in share_text
     for twin in comp["twins"]:
         assert twin["name"] in html
         assert twin["name"] in share_text

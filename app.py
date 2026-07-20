@@ -2981,7 +2981,7 @@ def _share_card_comp_lines(comp):
         target = comp.get("target") or {}
         role = str(comp["role_pool"]).upper()
         target_line = (
-            f"{role} POOL - target K-BB% {target.get('k_bb_pct')} | "
+            f"{role} POOL - translated target K-BB% {target.get('k_bb_pct')} | "
             f"K/9 {target.get('k_per_9')} | BB/9 {target.get('bb_per_9')}"
         )
         twins_line = "   ".join(
