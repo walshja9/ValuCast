@@ -402,6 +402,7 @@
                         <p class="bf-empty">No positive 7-day moves in the current snapshot.</p>
                         {% endif %}
                     </div>
+                    {% if not team_boards.aotc_hold %}
                     <div class="bf-team-extra">
                         <h4>ValuCast buys</h4>
                         {% if team_boards.buys %}
@@ -417,6 +418,7 @@
                         <p class="bf-empty">No current buy signal for this system.</p>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
             </section>
             <div class="bf-table-head" role="row">

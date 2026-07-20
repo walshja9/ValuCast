@@ -6381,7 +6381,7 @@ def _team_board_system_summary(org_rows, movements):
     top20_value = sum((_team_board_value(row) or 0.0) for row in top20)
     top5_value = sum((_team_board_value(row) or 0.0) for row in top20[:5])
     level_counts = {}
-    for row in org_rows:
+    for row in top20:
         level = _team_board_level(row)
         level_counts[level] = level_counts.get(level, 0) + 1
 
@@ -6420,6 +6420,8 @@ def _team_board_system_summary(org_rows, movements):
 
 
 def _team_board_buys(org, *, payload=None, limit=3):
+    if AHEAD_OF_THE_CURVE_HOLD:
+        return []
     if payload is None:
         payload = _load_artifact(VALUCAST_BUYS_PATH) or {}
     rows = [
@@ -6471,6 +6473,7 @@ def _build_team_board_context(org=None, limit=20):
         "reports": [],
         "summary": None,
         "buys": [],
+        "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
         "limit": limit,
     }
     if org is None:

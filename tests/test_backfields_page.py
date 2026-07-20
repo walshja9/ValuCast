@@ -790,6 +790,9 @@ def test_team_board_system_summary_uses_top_20_value_roles_levels_and_positive_r
             row.positions = ("P",)
             row.position = "P"
             row.role = "pitcher"
+    outside_top20 = _row("Boston 21", "BOS", prospect_rank=21, value=0)
+    outside_top20.level = "DSL"
+    rows.append(outside_top20)
     movements = {
         "name:boston 2|team:BOS": {"rank_delta_7d": 4},
         "name:boston 3|team:BOS": {"rank_delta_7d": -8},
@@ -811,6 +814,17 @@ def test_team_board_system_summary_uses_top_20_value_roles_levels_and_positive_r
     ]
     assert [row["name"] for row in summary["risers"]] == ["Boston 2", "Boston 4"]
     assert [row["move"]["sort"] for row in summary["risers"]] == [4.0, 2.0]
+
+
+def test_team_board_buys_respect_ahead_of_curve_hold(monkeypatch):
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    payload = {
+        "board": [
+            {"rank": 1, "team": "BOS", "name": "Held Buy"},
+        ]
+    }
+
+    assert app_module._team_board_buys("BOS", payload=payload) == []
 
 
 def test_team_board_buys_are_org_filtered_ranked_and_fail_open():
@@ -1142,6 +1156,16 @@ def test_team_board_page_renders_data_backed_system_snapshot():
     assert "Top prospects" in html
     assert "Risers" in html
     assert "ValuCast buys" in html
+
+
+def test_team_board_page_hides_buy_module_when_held(monkeypatch):
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    org = _team_board_org_from_backfields()
+
+    response, html = _html(f"/backfields/team/{org}")
+
+    assert response.status_code == 200
+    assert "ValuCast buys" not in html
 
 
 def test_team_board_route_serves_known_org_and_alias():
