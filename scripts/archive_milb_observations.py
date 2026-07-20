@@ -19,22 +19,54 @@ OUTPUT_DIR = ROOT / "data" / "milb_observation_archive"
 
 HITTER_FIELDS = ("iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip")
 PITCHER_FIELDS = ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip")
+ROLE_CONFIGS = (
+    ("hitter", "hitters", "plate_appearances", "PA", HITTER_FIELDS),
+    ("pitcher", "pitchers", "innings_pitched", "IP", PITCHER_FIELDS),
+)
+
+
+def _canonical_json(payload: object) -> str:
+    return json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
 
 
 def _canonical_hash(payload: object) -> str:
-    canonical = json.dumps(
-        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
-    )
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def _project_current(current: dict) -> dict:
+    projected = {
+        "fetched_date": current["fetched_date"],
+        "season": current["season"],
+    }
+    for role, plural, sample_key, _unit, fields in ROLE_CONFIGS:
+        source_fields = (
+            "mlbam_id",
+            "team",
+            "level",
+            "source_kind",
+            "age",
+            sample_key,
+            *fields,
+        )
+        if role == "pitcher":
+            source_fields += ("games_started", "is_starter")
+        sources = [
+            {
+                field: int(source[field]) if field == "mlbam_id" else source.get(field)
+                for field in source_fields
+            }
+            for source in current.get(plural) or []
+        ]
+        projected[plural] = sorted(sources, key=_canonical_json)
+    return projected
 
 
 def build_snapshot(contract: dict) -> dict:
-    current = contract["current"]
+    current = _project_current(contract["current"])
     rows = []
-    for role, plural, sample_key, unit, fields in (
-        ("hitter", "hitters", "plate_appearances", "PA", HITTER_FIELDS),
-        ("pitcher", "pitchers", "innings_pitched", "IP", PITCHER_FIELDS),
-    ):
+    for role, plural, sample_key, unit, fields in ROLE_CONFIGS:
         for source in current.get(plural) or []:
             team = source.get("team")
             organization = MINOR_TEAM_MLB_AFFILIATES.get(team)
@@ -60,7 +92,7 @@ def build_snapshot(contract: dict) -> dict:
                 }
             rows.append(row)
 
-    rows.sort(key=lambda row: (row["role"], row["mlbam_id"]))
+    rows.sort(key=lambda row: (row["role"], row["mlbam_id"], _canonical_json(row)))
     snapshot = {
         "artifact": "valucast_milb_observation_archive",
         "schema_version": 1,

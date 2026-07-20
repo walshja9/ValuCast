@@ -1,4 +1,4 @@
-import json
+import copy
 
 import pytest
 
@@ -53,11 +53,73 @@ def _contract():
 
 def test_snapshot_contains_only_registered_factual_fields_and_a_seal():
     snapshot = build_snapshot(_contract())
+    assert set(snapshot) == {
+        "artifact",
+        "schema_version",
+        "observation_date",
+        "season",
+        "source",
+        "input_sha256",
+        "rows",
+        "content_sha256",
+    }
     assert snapshot["observation_date"] == "2026-07-20"
     assert [row["mlbam_id"] for row in snapshot["rows"]] == [10, 20]
-    assert snapshot["rows"][0]["sample_unit"] == "PA"
-    assert snapshot["rows"][1]["sample_unit"] == "IP"
-    assert "outcome" not in json.dumps(snapshot)
+    hitter, pitcher = snapshot["rows"]
+    hitter_fields = {
+        "mlbam_id",
+        "role",
+        "organization",
+        "organization_status",
+        "minor_team",
+        "level",
+        "source_kind",
+        "observation_date",
+        "season",
+        "age",
+        "sample",
+        "sample_unit",
+        "rates",
+    }
+    assert set(hitter) == hitter_fields
+    assert set(pitcher) == hitter_fields | {"role_facts"}
+    assert set(hitter["rates"]) == {
+        "iso",
+        "k_pct",
+        "bb_pct",
+        "ops",
+        "avg",
+        "obp",
+        "slg",
+        "babip",
+    }
+    assert set(pitcher["rates"]) == {
+        "k_per_9",
+        "bb_per_9",
+        "k_bb_pct",
+        "era",
+        "whip",
+    }
+    assert set(pitcher["role_facts"]) == {"games_started", "is_starter"}
+    assert hitter["sample_unit"] == "PA"
+    assert pitcher["sample_unit"] == "IP"
+    forbidden_fragments = {
+        "promotion",
+        "transaction",
+        "injur",
+        "rank",
+        "value",
+        "outcome",
+        "market",
+        "availability",
+        "external",
+        "signal",
+    }
+    keys = set(snapshot) | set(hitter) | set(hitter["rates"]) | set(pitcher)
+    keys |= set(pitcher["rates"]) | set(pitcher["role_facts"])
+    assert not {
+        key for key in keys if any(fragment in key for fragment in forbidden_fragments)
+    }
     assert len(snapshot["input_sha256"]) == 64
     assert len(snapshot["content_sha256"]) == 64
 
@@ -80,3 +142,44 @@ def test_unknown_organization_stays_null_not_invented():
     row = build_snapshot(contract)["rows"][0]
     assert row["organization"] is None
     assert row["organization_status"] == "unknown"
+
+
+def test_excluded_source_fields_do_not_change_snapshot_or_seals():
+    baseline = build_snapshot(_contract())
+    contract = _contract()
+    contract["current"]["hitters"][0].update(
+        {
+            "availability_status": "injured",
+            "availability_reason": "transaction",
+            "pick_value": 9_999_999,
+        }
+    )
+
+    changed = build_snapshot(contract)
+
+    assert changed["input_sha256"] == baseline["input_sha256"]
+    assert changed["content_sha256"] == baseline["content_sha256"]
+    assert changed == baseline
+
+
+def test_duplicate_id_multi_level_rows_are_order_independent():
+    forward = _contract()
+    second_level = copy.deepcopy(forward["current"]["hitters"][0])
+    second_level.update(
+        {
+            "team": "West Michigan Whitecaps",
+            "level": "A+",
+            "plate_appearances": 80,
+            "iso": 0.150,
+        }
+    )
+    forward["current"]["hitters"].append(second_level)
+    reversed_sources = copy.deepcopy(forward)
+    reversed_sources["current"]["hitters"].reverse()
+
+    forward_snapshot = build_snapshot(forward)
+    reversed_snapshot = build_snapshot(reversed_sources)
+
+    assert forward_snapshot["input_sha256"] == reversed_snapshot["input_sha256"]
+    assert forward_snapshot["content_sha256"] == reversed_snapshot["content_sha256"]
+    assert forward_snapshot == reversed_snapshot
