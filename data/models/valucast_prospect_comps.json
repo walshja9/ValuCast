@@ -20,6 +20,1875 @@
    "part_time": ">=150 PA/yr"
   }
  },
+ "pitcher_method": {
+  "axes": [
+   "k_bb_pct",
+   "k_per_9",
+   "bb_per_9"
+  ],
+  "coverage_ready": true,
+  "match_pool_rows": {
+   "reliever": 1294,
+   "starter": 1850
+  },
+  "role_policy": {
+   "mixed": "excluded",
+   "reliever": "GS/G <= 0.10 and IP >= 30",
+   "starter": "GS/G >= 0.50 and IP >= 50"
+  },
+  "source_policy": {
+   "display_only": true,
+   "feeds_live_valucast_rank": false,
+   "feeds_model_score": false
+  }
+ },
+ "pitchers": {
+  "677337": {
+   "name": "Pete Hansen",
+   "prospect_rank": 134,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.5,
+    "k_bb_pct": 11.8,
+    "k_per_9": 8.0
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 3.5,
+     "distance": 0.041,
+     "ip": 142.7,
+     "k_bb_pct": 11.7,
+     "k_per_9": 8.0,
+     "name": "Taj Bradley",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.4,
+     "distance": 0.042,
+     "ip": 159.0,
+     "k_bb_pct": 11.4,
+     "k_per_9": 7.8,
+     "name": "Mitch Keller",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.3,
+     "distance": 0.098,
+     "ip": 175.3,
+     "k_bb_pct": 3.8,
+     "k_per_9": 5.8,
+     "name": "Chris Carpenter",
+     "role": "starter",
+     "season": 2000
+    }
+   ]
+  },
+  "680572": {
+   "name": "Adam Kloffenstein",
+   "prospect_rank": 293,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.4,
+    "k_bb_pct": 9.2,
+    "k_per_9": 7.7
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 4.4,
+     "distance": 0.126,
+     "ip": 129.0,
+     "k_bb_pct": 8.0,
+     "k_per_9": 7.7,
+     "name": "Kris Bubic",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.4,
+     "distance": 0.183,
+     "ip": 111.7,
+     "k_bb_pct": 8.7,
+     "k_per_9": 7.8,
+     "name": "Ian Anderson",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.4,
+     "distance": 0.19,
+     "ip": 100.7,
+     "k_bb_pct": 9.1,
+     "k_per_9": 8.2,
+     "name": "Mitch Keller",
+     "role": "starter",
+     "season": 2021
+    }
+   ]
+  },
+  "687238": {
+   "name": "Trace Bright",
+   "prospect_rank": 297,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.6,
+    "k_bb_pct": 11.0,
+    "k_per_9": 8.6
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 5.0,
+     "distance": 0.216,
+     "ip": 65.3,
+     "k_bb_pct": 8.8,
+     "k_per_9": 8.5,
+     "name": "Yefry Ram\u00edrez",
+     "role": "starter",
+     "season": 2018
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.4,
+     "distance": 0.221,
+     "ip": 70.0,
+     "k_bb_pct": 10.8,
+     "k_per_9": 8.7,
+     "name": "Jeff Hoffman",
+     "role": "starter",
+     "season": 2019
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.7,
+     "distance": 0.233,
+     "ip": 70.3,
+     "k_bb_pct": 11.3,
+     "k_per_9": 9.3,
+     "name": "Taylor Widener",
+     "role": "starter",
+     "season": 2021
+    }
+   ]
+  },
+  "687273": {
+   "name": "Quinn Mathews",
+   "prospect_rank": 99,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.6,
+    "k_bb_pct": 12.6,
+    "k_per_9": 9.1
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.208,
+     "ip": 167.7,
+     "k_bb_pct": 12.8,
+     "k_per_9": 9.3,
+     "name": "Gavin Williams",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.8,
+     "distance": 0.248,
+     "ip": 211.3,
+     "k_bb_pct": 6.2,
+     "k_per_9": 7.3,
+     "name": "Ryan Dempster",
+     "role": "starter",
+     "season": 2001
+    },
+    {
+     "age": 25,
+     "bb_per_9": 5.1,
+     "distance": 0.265,
+     "ip": 208.0,
+     "k_bb_pct": 4.8,
+     "k_per_9": 7.1,
+     "name": "Brandon Webb",
+     "role": "starter",
+     "season": 2004
+    }
+   ]
+  },
+  "687547": {
+   "name": "Ryan Ramsey",
+   "prospect_rank": 486,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.2,
+    "k_bb_pct": 9.5,
+    "k_per_9": 7.7
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.107,
+     "ip": 114.0,
+     "k_bb_pct": 7.8,
+     "k_per_9": 7.5,
+     "name": "John Gant",
+     "role": "starter",
+     "season": 2018
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.3,
+     "distance": 0.115,
+     "ip": 133.7,
+     "k_bb_pct": 9.1,
+     "k_per_9": 8.1,
+     "name": "Brad Keller",
+     "role": "starter",
+     "season": 2021
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.5,
+     "distance": 0.173,
+     "ip": 194.7,
+     "k_bb_pct": 3.6,
+     "k_per_9": 6.0,
+     "name": "Jamey Wright",
+     "role": "starter",
+     "season": 2001
+    }
+   ]
+  },
+  "687931": {
+   "name": "Carson Whisenhunt",
+   "prospect_rank": 64,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.0,
+    "k_bb_pct": 11.7,
+    "k_per_9": 8.5
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.0,
+     "distance": 0.085,
+     "ip": 62.7,
+     "k_bb_pct": 12.3,
+     "k_per_9": 8.9,
+     "name": "Griffin Canning",
+     "role": "starter",
+     "season": 2021
+    },
+    {
+     "age": 23,
+     "bb_per_9": 4.0,
+     "distance": 0.089,
+     "ip": 194.0,
+     "k_bb_pct": 7.6,
+     "k_per_9": 7.0,
+     "name": "Jhoulys Chac\u00edn",
+     "role": "starter",
+     "season": 2011
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.9,
+     "distance": 0.091,
+     "ip": 51.7,
+     "k_bb_pct": 3.7,
+     "k_per_9": 6.3,
+     "name": "Jaret Wright",
+     "role": "starter",
+     "season": 2000
+    }
+   ]
+  },
+  "689275": {
+   "name": "Henry Williams",
+   "prospect_rank": 369,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.3,
+    "k_bb_pct": 8.4,
+    "k_per_9": 7.2
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 4.6,
+     "distance": 0.203,
+     "ip": 65.0,
+     "k_bb_pct": 6.0,
+     "k_per_9": 6.9,
+     "name": "Jake Faria",
+     "role": "starter",
+     "season": 2018
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.1,
+     "distance": 0.204,
+     "ip": 135.7,
+     "k_bb_pct": 7.7,
+     "k_per_9": 7.1,
+     "name": "Glenn Otto Jr.",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.6,
+     "distance": 0.217,
+     "ip": 81.7,
+     "k_bb_pct": 1.3,
+     "k_per_9": 5.2,
+     "name": "Justin Miller",
+     "role": "starter",
+     "season": 2004
+    }
+   ]
+  },
+  "691251": {
+   "name": "Andry Lara",
+   "prospect_rank": 290,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.2,
+    "k_bb_pct": 10.6,
+    "k_per_9": 7.3
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 3.5,
+     "distance": 0.05,
+     "ip": 194.0,
+     "k_bb_pct": 4.0,
+     "k_per_9": 5.1,
+     "name": "Kyle Lohse",
+     "role": "starter",
+     "season": 2004
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.2,
+     "distance": 0.054,
+     "ip": 79.7,
+     "k_bb_pct": 6.8,
+     "k_per_9": 5.8,
+     "name": "Wade LeBlanc",
+     "role": "starter",
+     "season": 2011
+    },
+    {
+     "age": 23,
+     "bb_per_9": 3.5,
+     "distance": 0.062,
+     "ip": 191.7,
+     "k_bb_pct": 4.2,
+     "k_per_9": 5.1,
+     "name": "Jon Garland",
+     "role": "starter",
+     "season": 2003
+    }
+   ]
+  },
+  "691384": {
+   "name": "Luis Perales",
+   "prospect_rank": 264,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.4,
+    "k_bb_pct": 9.0,
+    "k_per_9": 7.5
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 4.4,
+     "distance": 0.217,
+     "ip": 129.0,
+     "k_bb_pct": 8.0,
+     "k_per_9": 7.7,
+     "name": "Kris Bubic",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.237,
+     "ip": 114.0,
+     "k_bb_pct": 7.8,
+     "k_per_9": 7.5,
+     "name": "John Gant",
+     "role": "starter",
+     "season": 2018
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.2,
+     "distance": 0.244,
+     "ip": 53.7,
+     "k_bb_pct": 7.8,
+     "k_per_9": 7.4,
+     "name": "Alex Faedo",
+     "role": "starter",
+     "season": 2022
+    }
+   ]
+  },
+  "691641": {
+   "name": "Jose Acuna",
+   "prospect_rank": 204,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.0,
+    "k_bb_pct": 11.6,
+    "k_per_9": 7.9
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 3.8,
+     "distance": 0.194,
+     "ip": 54.0,
+     "k_bb_pct": 10.6,
+     "k_per_9": 7.8,
+     "name": "Bryce Elder",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.3,
+     "distance": 0.24,
+     "ip": 58.7,
+     "k_bb_pct": 9.0,
+     "k_per_9": 7.8,
+     "name": "Chris Stratton",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 22,
+     "bb_per_9": 4.0,
+     "distance": 0.274,
+     "ip": 50.0,
+     "k_bb_pct": 12.2,
+     "k_per_9": 8.8,
+     "name": "Kris Bubic",
+     "role": "starter",
+     "season": 2020
+    }
+   ]
+  },
+  "691946": {
+   "name": "George Klassen",
+   "prospect_rank": 192,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.7,
+    "k_bb_pct": 8.6,
+    "k_per_9": 7.7
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 4.7,
+     "distance": 0.091,
+     "ip": 131.3,
+     "k_bb_pct": 7.8,
+     "k_per_9": 7.9,
+     "name": "Aaron Sanchez",
+     "role": "starter",
+     "season": 2019
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.174,
+     "ip": 166.3,
+     "k_bb_pct": 5.8,
+     "k_per_9": 6.8,
+     "name": "Jeff Locke",
+     "role": "starter",
+     "season": 2013
+    },
+    {
+     "age": 23,
+     "bb_per_9": 5.6,
+     "distance": 0.299,
+     "ip": 67.7,
+     "k_bb_pct": 0.6,
+     "k_per_9": 5.9,
+     "name": "Roy Halladay",
+     "role": "starter",
+     "season": 2000
+    }
+   ]
+  },
+  "694358": {
+   "name": "Tekoah Roby",
+   "prospect_rank": 253,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 2.7,
+    "k_bb_pct": 15.1,
+    "k_per_9": 8.5
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.4,
+     "distance": 0.051,
+     "ip": 107.0,
+     "k_bb_pct": 7.2,
+     "k_per_9": 6.2,
+     "name": "Ismael Valdez",
+     "role": "starter",
+     "season": 2000
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.0,
+     "distance": 0.064,
+     "ip": 85.0,
+     "k_bb_pct": 13.2,
+     "k_per_9": 8.0,
+     "name": "Tyler Skaggs",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 24,
+     "bb_per_9": 2.6,
+     "distance": 0.074,
+     "ip": 93.0,
+     "k_bb_pct": 12.0,
+     "k_per_9": 7.4,
+     "name": "Nick Tepesch",
+     "role": "starter",
+     "season": 2013
+    }
+   ]
+  },
+  "694545": {
+   "name": "Jackson Nezuh",
+   "prospect_rank": 380,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.9,
+    "k_bb_pct": 12.8,
+    "k_per_9": 8.6
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 4.1,
+     "distance": 0.101,
+     "ip": 129.3,
+     "k_bb_pct": 11.0,
+     "k_per_9": 8.3,
+     "name": "Blake Snell",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.1,
+     "distance": 0.136,
+     "ip": 157.3,
+     "k_bb_pct": 10.3,
+     "k_per_9": 8.1,
+     "name": "Chad Kuhl",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.0,
+     "distance": 0.15,
+     "ip": 151.7,
+     "k_bb_pct": 12.5,
+     "k_per_9": 8.8,
+     "name": "Jack Leiter",
+     "role": "starter",
+     "season": 2025
+    }
+   ]
+  },
+  "694805": {
+   "name": "Kyle Carr",
+   "prospect_rank": 146,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.8,
+    "k_bb_pct": 12.9,
+    "k_per_9": 8.8
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 4.1,
+     "distance": 0.065,
+     "ip": 82.0,
+     "k_bb_pct": 12.8,
+     "k_per_9": 8.9,
+     "name": "Gavin Williams",
+     "role": "starter",
+     "season": 2023
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.1,
+     "distance": 0.073,
+     "ip": 129.3,
+     "k_bb_pct": 11.0,
+     "k_per_9": 8.3,
+     "name": "Blake Snell",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.5,
+     "distance": 0.12,
+     "ip": 163.7,
+     "k_bb_pct": 11.4,
+     "k_per_9": 7.9,
+     "name": "Roenis El\u00edas",
+     "role": "starter",
+     "season": 2014
+    }
+   ]
+  },
+  "694918": {
+   "name": "Blade Tidwell",
+   "prospect_rank": 55,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.9,
+    "k_bb_pct": 12.8,
+    "k_per_9": 8.8
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 4.1,
+     "distance": 0.085,
+     "ip": 82.0,
+     "k_bb_pct": 12.8,
+     "k_per_9": 8.9,
+     "name": "Gavin Williams",
+     "role": "starter",
+     "season": 2023
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.0,
+     "distance": 0.103,
+     "ip": 151.7,
+     "k_bb_pct": 12.5,
+     "k_per_9": 8.8,
+     "name": "Jack Leiter",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.1,
+     "distance": 0.105,
+     "ip": 129.3,
+     "k_bb_pct": 11.0,
+     "k_per_9": 8.3,
+     "name": "Blake Snell",
+     "role": "starter",
+     "season": 2017
+    }
+   ]
+  },
+  "695034": {
+   "name": "Kade Morris",
+   "prospect_rank": 162,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.4,
+    "k_bb_pct": 9.5,
+    "k_per_9": 6.9
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 3.6,
+     "distance": 0.087,
+     "ip": 91.7,
+     "k_bb_pct": 2.8,
+     "k_per_9": 4.7,
+     "name": "Runelvys Hernandez",
+     "role": "starter",
+     "season": 2003
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.6,
+     "distance": 0.091,
+     "ip": 163.7,
+     "k_bb_pct": 7.4,
+     "k_per_9": 6.5,
+     "name": "Luis Perdomo",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.4,
+     "distance": 0.094,
+     "ip": 189.0,
+     "k_bb_pct": 5.8,
+     "k_per_9": 5.6,
+     "name": "Jeremy Hellickson",
+     "role": "starter",
+     "season": 2011
+    }
+   ]
+  },
+  "695684": {
+   "name": "Elmer Rodr\u00edguez",
+   "prospect_rank": 102,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.2,
+    "k_bb_pct": 11.2,
+    "k_per_9": 8.3
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.9,
+     "distance": 0.18,
+     "ip": 67.0,
+     "k_bb_pct": 9.1,
+     "k_per_9": 7.5,
+     "name": "James Paxton",
+     "role": "starter",
+     "season": 2015
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.5,
+     "distance": 0.189,
+     "ip": 62.7,
+     "k_bb_pct": 5.5,
+     "k_per_9": 6.6,
+     "name": "Jesus Sanchez",
+     "role": "starter",
+     "season": 2001
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.5,
+     "distance": 0.194,
+     "ip": 133.0,
+     "k_bb_pct": 4.1,
+     "k_per_9": 6.2,
+     "name": "Ryan Vogelsong",
+     "role": "starter",
+     "season": 2004
+    }
+   ]
+  },
+  "695766": {
+   "name": "Mason Molina",
+   "prospect_rank": 108,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.7,
+    "k_bb_pct": 14.1,
+    "k_per_9": 9.0
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.7,
+     "distance": 0.143,
+     "ip": 63.0,
+     "k_bb_pct": 15.5,
+     "k_per_9": 9.7,
+     "name": "Jos\u00e9 Berr\u00edos",
+     "role": "starter",
+     "season": 2020
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.6,
+     "distance": 0.156,
+     "ip": 148.7,
+     "k_bb_pct": 14.3,
+     "k_per_9": 9.1,
+     "name": "Patrick Sandoval",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.6,
+     "distance": 0.165,
+     "ip": 146.3,
+     "k_bb_pct": 14.1,
+     "k_per_9": 8.9,
+     "name": "Shane Smith",
+     "role": "starter",
+     "season": 2025
+    }
+   ]
+  },
+  "695776": {
+   "name": "Josh Stephan",
+   "prospect_rank": 210,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.0,
+    "k_bb_pct": 12.9,
+    "k_per_9": 8.1
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 3.7,
+     "distance": 0.059,
+     "ip": 97.0,
+     "k_bb_pct": 5.2,
+     "k_per_9": 5.8,
+     "name": "Scott Downs",
+     "role": "starter",
+     "season": 2000
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.1,
+     "distance": 0.089,
+     "ip": 149.7,
+     "k_bb_pct": 13.4,
+     "k_per_9": 8.3,
+     "name": "Eric Lauer",
+     "role": "starter",
+     "season": 2019
+    },
+    {
+     "age": 25,
+     "bb_per_9": 2.9,
+     "distance": 0.094,
+     "ip": 154.3,
+     "k_bb_pct": 10.7,
+     "k_per_9": 7.1,
+     "name": "Nathan Eovaldi",
+     "role": "starter",
+     "season": 2015
+    }
+   ]
+  },
+  "699008": {
+   "name": "Antwone Kelly",
+   "prospect_rank": 415,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.0,
+    "k_bb_pct": 8.8,
+    "k_per_9": 7.2
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 3.7,
+     "distance": 0.134,
+     "ip": 90.0,
+     "k_bb_pct": 6.8,
+     "k_per_9": 6.4,
+     "name": "Mike Montgomery",
+     "role": "starter",
+     "season": 2015
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.8,
+     "distance": 0.153,
+     "ip": 164.7,
+     "k_bb_pct": 1.1,
+     "k_per_9": 5.2,
+     "name": "Jamey Wright",
+     "role": "starter",
+     "season": 2000
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.0,
+     "distance": 0.164,
+     "ip": 158.0,
+     "k_bb_pct": 7.0,
+     "k_per_9": 6.7,
+     "name": "Tyler Chatwood",
+     "role": "starter",
+     "season": 2016
+    }
+   ]
+  },
+  "699071": {
+   "name": "Christian Romero",
+   "prospect_rank": 289,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.1,
+    "k_bb_pct": 10.0,
+    "k_per_9": 6.9
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.9,
+     "distance": 0.043,
+     "ip": 65.3,
+     "k_bb_pct": 2.3,
+     "k_per_9": 4.8,
+     "name": "Dan Serafini",
+     "role": "starter",
+     "season": 2000
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.1,
+     "distance": 0.08,
+     "ip": 115.7,
+     "k_bb_pct": 10.1,
+     "k_per_9": 6.8,
+     "name": "Zach Plesac",
+     "role": "starter",
+     "season": 2019
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.2,
+     "distance": 0.085,
+     "ip": 82.0,
+     "k_bb_pct": 10.0,
+     "k_per_9": 7.1,
+     "name": "Griffin Jax",
+     "role": "starter",
+     "season": 2021
+    }
+   ]
+  },
+  "702566": {
+   "name": "Owen Murphy",
+   "prospect_rank": 21,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.1,
+    "k_bb_pct": 13.1,
+    "k_per_9": 8.7
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.0,
+     "distance": 0.189,
+     "ip": 151.7,
+     "k_bb_pct": 12.5,
+     "k_per_9": 8.8,
+     "name": "Jack Leiter",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.2,
+     "distance": 0.215,
+     "ip": 72.0,
+     "k_bb_pct": 10.8,
+     "k_per_9": 8.5,
+     "name": "Vince Velasquez",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.9,
+     "distance": 0.234,
+     "ip": 162.3,
+     "k_bb_pct": 9.6,
+     "k_per_9": 7.7,
+     "name": "F\u00e9lix Doubront",
+     "role": "starter",
+     "season": 2013
+    }
+   ]
+  },
+  "702650": {
+   "name": "Michael Forret",
+   "prospect_rank": 425,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.8,
+    "k_bb_pct": 12.4,
+    "k_per_9": 8.2
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.7,
+     "distance": 0.088,
+     "ip": 135.3,
+     "k_bb_pct": 12.2,
+     "k_per_9": 8.4,
+     "name": "Trevor Richards",
+     "role": "starter",
+     "season": 2019
+    },
+    {
+     "age": 22,
+     "bb_per_9": 3.7,
+     "distance": 0.135,
+     "ip": 95.0,
+     "k_bb_pct": 11.5,
+     "k_per_9": 8.1,
+     "name": "Roansy Contreras",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 22,
+     "bb_per_9": 3.4,
+     "distance": 0.144,
+     "ip": 63.0,
+     "k_bb_pct": 9.6,
+     "k_per_9": 7.1,
+     "name": "Henry Owens",
+     "role": "starter",
+     "season": 2015
+    }
+   ]
+  },
+  "702885": {
+   "name": "Cesar Perdomo",
+   "prospect_rank": 265,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.2,
+    "k_bb_pct": 14.9,
+    "k_per_9": 8.9
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 3.2,
+     "distance": 0.029,
+     "ip": 53.3,
+     "k_bb_pct": 14.8,
+     "k_per_9": 8.9,
+     "name": "David Festa",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.2,
+     "distance": 0.084,
+     "ip": 225.0,
+     "k_bb_pct": 10.7,
+     "k_per_9": 7.1,
+     "name": "Ricky Romero",
+     "role": "starter",
+     "season": 2011
+    },
+    {
+     "age": 23,
+     "bb_per_9": 3.4,
+     "distance": 0.086,
+     "ip": 188.0,
+     "k_bb_pct": 8.5,
+     "k_per_9": 6.7,
+     "name": "CC Sabathia",
+     "role": "starter",
+     "season": 2004
+    }
+   ]
+  },
+  "703596": {
+   "name": "Karson Milbrandt",
+   "prospect_rank": 113,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.5,
+    "k_bb_pct": 13.5,
+    "k_per_9": 9.2
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.155,
+     "ip": 167.7,
+     "k_bb_pct": 12.8,
+     "k_per_9": 9.3,
+     "name": "Gavin Williams",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.3,
+     "distance": 0.314,
+     "ip": 149.0,
+     "k_bb_pct": 9.9,
+     "k_per_9": 8.3,
+     "name": "H\u00e9ctor Santiago",
+     "role": "starter",
+     "season": 2013
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.8,
+     "distance": 0.315,
+     "ip": 211.3,
+     "k_bb_pct": 6.2,
+     "k_per_9": 7.3,
+     "name": "Ryan Dempster",
+     "role": "starter",
+     "season": 2001
+    }
+   ]
+  },
+  "800600": {
+   "name": "Jackson Kent",
+   "prospect_rank": 83,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.0,
+    "k_bb_pct": 15.2,
+    "k_per_9": 8.7
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 3.2,
+     "distance": 0.018,
+     "ip": 201.3,
+     "k_bb_pct": 8.5,
+     "k_per_9": 6.4,
+     "name": "Freddy Garcia",
+     "role": "starter",
+     "season": 2003
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.2,
+     "distance": 0.057,
+     "ip": 211.7,
+     "k_bb_pct": 8.4,
+     "k_per_9": 6.4,
+     "name": "Joel Pineiro",
+     "role": "starter",
+     "season": 2003
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.3,
+     "distance": 0.095,
+     "ip": 115.3,
+     "k_bb_pct": 9.2,
+     "k_per_9": 6.7,
+     "name": "Jason Bergmann",
+     "role": "starter",
+     "season": 2007
+    }
+   ]
+  },
+  "801179": {
+   "name": "Yu-Min Lin",
+   "prospect_rank": 457,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.2,
+    "k_bb_pct": 7.1,
+    "k_per_9": 6.7
+   },
+   "twins": [
+    {
+     "age": 22,
+     "bb_per_9": 4.1,
+     "distance": 0.147,
+     "ip": 118.0,
+     "k_bb_pct": 4.5,
+     "k_per_9": 5.9,
+     "name": "Jacob Turner",
+     "role": "starter",
+     "season": 2013
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.9,
+     "distance": 0.149,
+     "ip": 96.3,
+     "k_bb_pct": 5.8,
+     "k_per_9": 6.2,
+     "name": "Joe Kelly",
+     "role": "starter",
+     "season": 2014
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.1,
+     "distance": 0.166,
+     "ip": 124.3,
+     "k_bb_pct": 7.3,
+     "k_per_9": 7.0,
+     "name": "Trevor Rogers",
+     "role": "starter",
+     "season": 2024
+    }
+   ]
+  },
+  "801594": {
+   "name": "Ryan Gallagher",
+   "prospect_rank": 281,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.2,
+    "k_bb_pct": 10.7,
+    "k_per_9": 8.2
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 4.4,
+     "distance": 0.108,
+     "ip": 172.0,
+     "k_bb_pct": 8.3,
+     "k_per_9": 7.6,
+     "name": "Brandon Finnegan",
+     "role": "starter",
+     "season": 2016
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.2,
+     "distance": 0.124,
+     "ip": 169.0,
+     "k_bb_pct": 10.2,
+     "k_per_9": 8.1,
+     "name": "Jos\u00e9 Soriano",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.3,
+     "distance": 0.169,
+     "ip": 119.3,
+     "k_bb_pct": 9.7,
+     "k_per_9": 7.9,
+     "name": "Michael Kopech",
+     "role": "starter",
+     "season": 2022
+    }
+   ]
+  },
+  "801739": {
+   "name": "Carlos Lagrange",
+   "prospect_rank": 150,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.2,
+    "k_bb_pct": 13.9,
+    "k_per_9": 9.6
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 4.5,
+     "distance": 0.03,
+     "ip": 52.3,
+     "k_bb_pct": 13.6,
+     "k_per_9": 9.6,
+     "name": "Chase Silseth",
+     "role": "starter",
+     "season": 2023
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.3,
+     "distance": 0.123,
+     "ip": 88.7,
+     "k_bb_pct": 14.1,
+     "k_per_9": 9.7,
+     "name": "Luis Ortiz",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.1,
+     "distance": 0.124,
+     "ip": 71.7,
+     "k_bb_pct": 14.4,
+     "k_per_9": 9.4,
+     "name": "Edward Cabrera",
+     "role": "starter",
+     "season": 2022
+    }
+   ]
+  },
+  "802126": {
+   "name": "Joe Whitman",
+   "prospect_rank": 176,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 2.8,
+    "k_bb_pct": 14.8,
+    "k_per_9": 8.4
+   },
+   "twins": [
+    {
+     "age": 22,
+     "bb_per_9": 2.9,
+     "distance": 0.062,
+     "ip": 90.3,
+     "k_bb_pct": 8.7,
+     "k_per_9": 6.4,
+     "name": "Kyle Lohse",
+     "role": "starter",
+     "season": 2001
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.0,
+     "distance": 0.083,
+     "ip": 85.0,
+     "k_bb_pct": 13.2,
+     "k_per_9": 8.0,
+     "name": "Tyler Skaggs",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 24,
+     "bb_per_9": 2.9,
+     "distance": 0.09,
+     "ip": 152.7,
+     "k_bb_pct": 8.6,
+     "k_per_9": 6.2,
+     "name": "Micah Owings",
+     "role": "starter",
+     "season": 2007
+    }
+   ]
+  },
+  "802408": {
+   "name": "Brycen Mautz",
+   "prospect_rank": 71,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 5.3,
+    "k_bb_pct": 8.5,
+    "k_per_9": 8.2
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 5.2,
+     "distance": 0.337,
+     "ip": 50.3,
+     "k_bb_pct": 9.2,
+     "k_per_9": 8.8,
+     "name": "Justin Dunn",
+     "role": "starter",
+     "season": 2021
+    },
+    {
+     "age": 22,
+     "bb_per_9": 5.4,
+     "distance": 0.362,
+     "ip": 58.3,
+     "k_bb_pct": 5.0,
+     "k_per_9": 7.6,
+     "name": "Jos\u00e9 Berr\u00edos",
+     "role": "starter",
+     "season": 2016
+    },
+    {
+     "age": 25,
+     "bb_per_9": 5.7,
+     "distance": 0.366,
+     "ip": 95.3,
+     "k_bb_pct": 2.0,
+     "k_per_9": 6.5,
+     "name": "Robinson Tejeda",
+     "role": "starter",
+     "season": 2007
+    }
+   ]
+  },
+  "802419": {
+   "name": "Thomas Harrington",
+   "prospect_rank": 307,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.9,
+    "k_bb_pct": 10.7,
+    "k_per_9": 8.0
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 3.8,
+     "distance": 0.068,
+     "ip": 54.0,
+     "k_bb_pct": 10.6,
+     "k_per_9": 7.8,
+     "name": "Bryce Elder",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.0,
+     "distance": 0.092,
+     "ip": 70.0,
+     "k_bb_pct": 8.5,
+     "k_per_9": 7.5,
+     "name": "John Lamb",
+     "role": "starter",
+     "season": 2016
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.7,
+     "distance": 0.116,
+     "ip": 87.0,
+     "k_bb_pct": 9.0,
+     "k_per_9": 7.2,
+     "name": "Brandon Workman",
+     "role": "starter",
+     "season": 2014
+    }
+   ]
+  },
+  "803833": {
+   "name": "Garrett Baumann",
+   "prospect_rank": 471,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.1,
+    "k_bb_pct": 10.5,
+    "k_per_9": 8.0
+   },
+   "twins": [
+    {
+     "age": 26,
+     "bb_per_9": 4.2,
+     "distance": 0.101,
+     "ip": 169.0,
+     "k_bb_pct": 10.2,
+     "k_per_9": 8.1,
+     "name": "Jos\u00e9 Soriano",
+     "role": "starter",
+     "season": 2025
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.13,
+     "ip": 201.0,
+     "k_bb_pct": 3.5,
+     "k_per_9": 6.0,
+     "name": "Jason Jennings",
+     "role": "starter",
+     "season": 2004
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.5,
+     "distance": 0.161,
+     "ip": 81.3,
+     "k_bb_pct": 4.1,
+     "k_per_9": 6.1,
+     "name": "Kason Gabbard",
+     "role": "starter",
+     "season": 2007
+    }
+   ]
+  },
+  "804267": {
+   "name": "Zach Thornton",
+   "prospect_rank": 370,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.7,
+    "k_bb_pct": 12.0,
+    "k_per_9": 8.3
+   },
+   "twins": [
+    {
+     "age": 22,
+     "bb_per_9": 3.7,
+     "distance": 0.061,
+     "ip": 95.0,
+     "k_bb_pct": 11.5,
+     "k_per_9": 8.1,
+     "name": "Roansy Contreras",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.9,
+     "distance": 0.066,
+     "ip": 50.3,
+     "k_bb_pct": 11.1,
+     "k_per_9": 8.2,
+     "name": "Erick Fedde",
+     "role": "starter",
+     "season": 2018
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.2,
+     "distance": 0.067,
+     "ip": 153.0,
+     "k_bb_pct": 6.5,
+     "k_per_9": 6.7,
+     "name": "Clayton Richard",
+     "role": "starter",
+     "season": 2009
+    }
+   ]
+  },
+  "804636": {
+   "name": "Jonah Tong",
+   "prospect_rank": 182,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.6,
+    "k_bb_pct": 11.7,
+    "k_per_9": 9.1
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 5.1,
+     "distance": 0.113,
+     "ip": 208.0,
+     "k_bb_pct": 4.8,
+     "k_per_9": 7.1,
+     "name": "Brandon Webb",
+     "role": "starter",
+     "season": 2004
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.7,
+     "distance": 0.174,
+     "ip": 70.3,
+     "k_bb_pct": 11.3,
+     "k_per_9": 9.3,
+     "name": "Taylor Widener",
+     "role": "starter",
+     "season": 2021
+    },
+    {
+     "age": 25,
+     "bb_per_9": 4.9,
+     "distance": 0.204,
+     "ip": 55.0,
+     "k_bb_pct": 5.2,
+     "k_per_9": 7.0,
+     "name": "John Patterson",
+     "role": "starter",
+     "season": 2003
+    }
+   ]
+  },
+  "811307": {
+   "name": "Jack Wenninger",
+   "prospect_rank": 230,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 4.5,
+    "k_bb_pct": 9.9,
+    "k_per_9": 8.0
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 4.7,
+     "distance": 0.185,
+     "ip": 52.0,
+     "k_bb_pct": 7.4,
+     "k_per_9": 7.6,
+     "name": "A.J. Cole",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 24,
+     "bb_per_9": 4.4,
+     "distance": 0.194,
+     "ip": 111.7,
+     "k_bb_pct": 8.7,
+     "k_per_9": 7.8,
+     "name": "Ian Anderson",
+     "role": "starter",
+     "season": 2022
+    },
+    {
+     "age": 26,
+     "bb_per_9": 4.3,
+     "distance": 0.242,
+     "ip": 119.3,
+     "k_bb_pct": 9.7,
+     "k_per_9": 7.9,
+     "name": "Michael Kopech",
+     "role": "starter",
+     "season": 2022
+    }
+   ]
+  },
+  "811315": {
+   "name": "Brody Hopkins",
+   "prospect_rank": 115,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 6.8,
+    "k_bb_pct": 8.2,
+    "k_per_9": 9.3
+   },
+   "twins": [
+    {
+     "age": 21,
+     "bb_per_9": 7.2,
+     "distance": 0.975,
+     "ip": 55.3,
+     "k_bb_pct": 1.2,
+     "k_per_9": 7.6,
+     "name": "Nick Neugebauer",
+     "role": "starter",
+     "season": 2002
+    },
+    {
+     "age": 25,
+     "bb_per_9": 6.7,
+     "distance": 1.003,
+     "ip": 51.0,
+     "k_bb_pct": 2.0,
+     "k_per_9": 7.6,
+     "name": "Joel Hanrahan",
+     "role": "starter",
+     "season": 2007
+    },
+    {
+     "age": 23,
+     "bb_per_9": 6.9,
+     "distance": 1.008,
+     "ip": 77.0,
+     "k_bb_pct": 0.0,
+     "k_per_9": 6.9,
+     "name": "Carlos Marmol",
+     "role": "starter",
+     "season": 2006
+    }
+   ]
+  },
+  "814351": {
+   "name": "Lucas Braun",
+   "prospect_rank": 344,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 2.9,
+    "k_bb_pct": 11.8,
+    "k_per_9": 7.4
+   },
+   "twins": [
+    {
+     "age": 25,
+     "bb_per_9": 3.1,
+     "distance": 0.051,
+     "ip": 150.3,
+     "k_bb_pct": 10.1,
+     "k_per_9": 7.0,
+     "name": "Trevor Williams",
+     "role": "starter",
+     "season": 2017
+    },
+    {
+     "age": 22,
+     "bb_per_9": 3.1,
+     "distance": 0.065,
+     "ip": 80.0,
+     "k_bb_pct": 6.1,
+     "k_per_9": 5.6,
+     "name": "Collin Balester",
+     "role": "starter",
+     "season": 2008
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.2,
+     "distance": 0.074,
+     "ip": 194.3,
+     "k_bb_pct": 5.3,
+     "k_per_9": 5.2,
+     "name": "Josh Fogg",
+     "role": "starter",
+     "season": 2002
+    }
+   ]
+  },
+  "814490": {
+   "name": "Ethan Pecko",
+   "prospect_rank": 172,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.2,
+    "k_bb_pct": 12.3,
+    "k_per_9": 7.9
+   },
+   "twins": [
+    {
+     "age": 23,
+     "bb_per_9": 3.0,
+     "distance": 0.056,
+     "ip": 113.3,
+     "k_bb_pct": 10.5,
+     "k_per_9": 7.0,
+     "name": "Kevin Gausman",
+     "role": "starter",
+     "season": 2014
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.4,
+     "distance": 0.058,
+     "ip": 231.7,
+     "k_bb_pct": 6.1,
+     "k_per_9": 5.7,
+     "name": "Barry Zito",
+     "role": "starter",
+     "season": 2003
+    },
+    {
+     "age": 26,
+     "bb_per_9": 3.2,
+     "distance": 0.082,
+     "ip": 117.0,
+     "k_bb_pct": 10.1,
+     "k_per_9": 7.2,
+     "name": "Sonny Gray",
+     "role": "starter",
+     "season": 2016
+    }
+   ]
+  },
+  "815148": {
+   "name": "Nestor German",
+   "prospect_rank": 125,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.4,
+    "k_bb_pct": 13.5,
+    "k_per_9": 8.5
+   },
+   "twins": [
+    {
+     "age": 21,
+     "bb_per_9": 4.2,
+     "distance": 0.038,
+     "ip": 85.7,
+     "k_bb_pct": 5.5,
+     "k_per_9": 6.3,
+     "name": "Gil Meche",
+     "role": "starter",
+     "season": 2000
+    },
+    {
+     "age": 21,
+     "bb_per_9": 3.8,
+     "distance": 0.051,
+     "ip": 210.0,
+     "k_bb_pct": 6.8,
+     "k_per_9": 6.4,
+     "name": "CC Sabathia",
+     "role": "starter",
+     "season": 2002
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.6,
+     "distance": 0.061,
+     "ip": 100.0,
+     "k_bb_pct": 8.4,
+     "k_per_9": 6.8,
+     "name": "John Ely",
+     "role": "starter",
+     "season": 2010
+    }
+   ]
+  },
+  "824620": {
+   "name": "Tyson Hardin",
+   "prospect_rank": 171,
+   "role_pool": "starter",
+   "target": {
+    "bb_per_9": 3.2,
+    "k_bb_pct": 14.1,
+    "k_per_9": 8.6
+   },
+   "twins": [
+    {
+     "age": 24,
+     "bb_per_9": 3.5,
+     "distance": 0.059,
+     "ip": 129.3,
+     "k_bb_pct": 7.5,
+     "k_per_9": 6.5,
+     "name": "Brad Penny",
+     "role": "starter",
+     "season": 2002
+    },
+    {
+     "age": 25,
+     "bb_per_9": 3.3,
+     "distance": 0.061,
+     "ip": 190.0,
+     "k_bb_pct": 12.1,
+     "k_per_9": 8.0,
+     "name": "Trevor Bauer",
+     "role": "starter",
+     "season": 2016
+    },
+    {
+     "age": 24,
+     "bb_per_9": 3.3,
+     "distance": 0.065,
+     "ip": 223.3,
+     "k_bb_pct": 7.9,
+     "k_per_9": 6.4,
+     "name": "Dontrelle Willis",
+     "role": "starter",
+     "season": 2006
+    }
+   ]
+  }
+ },
  "players": {
   "672012": {
    "cohort": {
@@ -31,6 +1900,35 @@
      "faded": 4,
      "impact_regular": 6,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.004,
+     "label": "Approach",
+     "match": "Nolan Schanuel",
+     "metric": "BB%",
+     "season": 2024,
+     "target": 11.8,
+     "value": 11.2
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Ke'Bryan Hayes",
+     "metric": "K%",
+     "season": 2022,
+     "target": 21.9,
+     "value": 21.8
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Andrew Benintendi",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.138,
+     "value": 0.165
     }
    },
    "name": "Tyler Black",
@@ -112,6 +2010,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jody Gerut",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 9.3,
+     "value": 9.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Dansby Swanson",
+     "metric": "K%",
+     "season": 2017,
+     "target": 22.1,
+     "value": 21.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Brooks Lee",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.134,
+     "value": 0.134
+    }
+   },
    "name": "Jonathon Long",
    "prospect_rank": 288,
    "target": {
@@ -185,6 +2112,35 @@
      "faded": 3,
      "impact_regular": 4,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Justin Upton",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 10.4,
+     "value": 10.0
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Derrek Lee",
+     "metric": "K%",
+     "season": 2000,
+     "target": 29.1,
+     "value": 22.5
+    },
+    "power": {
+     "distance": 0.004,
+     "label": "Power",
+     "match": "Danny Espinosa",
+     "metric": "ISO",
+     "season": 2012,
+     "target": 0.159,
+     "value": 0.155
     }
    },
    "name": "Milan Tolentino",
@@ -266,6 +2222,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Nate McLouth",
+     "metric": "BB%",
+     "season": 2008,
+     "target": 9.0,
+     "value": 9.5
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Yunel Escobar",
+     "metric": "K%",
+     "season": 2008,
+     "target": 15.1,
+     "value": 10.6
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Mallex Smith",
+     "metric": "ISO",
+     "season": 2018,
+     "target": 0.1,
+     "value": 0.11
+    }
+   },
    "name": "Carlos Rodr\u00edguez",
    "prospect_rank": 441,
    "target": {
@@ -341,6 +2326,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Pablo Sandoval",
+     "metric": "BB%",
+     "season": 2013,
+     "target": 8.4,
+     "value": 8.0
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Rafael Furcal",
+     "metric": "K%",
+     "season": 2004,
+     "target": 16.6,
+     "value": 11.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Otto Lopez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.122,
+     "value": 0.122
+    }
+   },
    "name": "Osleivis Basabe",
    "prospect_rank": 447,
    "target": {
@@ -414,6 +2428,35 @@
      "faded": 7,
      "impact_regular": 2,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 8.6,
+     "value": 8.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "JaCoby Jones",
+     "metric": "K%",
+     "season": 2018,
+     "target": 30.6,
+     "value": 30.4
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Sean Casey",
+     "metric": "ISO",
+     "season": 2001,
+     "target": 0.148,
+     "value": 0.148
     }
    },
    "name": "Junior Perez",
@@ -495,6 +2538,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Addison Russell",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 8.8,
+     "value": 8.0
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Yolmer S\u00e1nchez",
+     "metric": "K%",
+     "season": 2017,
+     "target": 21.2,
+     "value": 20.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Maikel Garcia",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.163,
+     "value": 0.163
+    }
+   },
    "name": "Eddys Leonard",
    "prospect_rank": 417,
    "target": {
@@ -568,6 +2640,35 @@
      "faded": 1,
      "impact_regular": 1,
      "part_time": 7
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jason Heyward",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 9.2,
+     "value": 8.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Gregory Polanco",
+     "metric": "K%",
+     "season": 2015,
+     "target": 20.9,
+     "value": 18.6
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Gabriel Arias",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.143,
+     "value": 0.143
     }
    },
    "name": "Ramon Mendoza",
@@ -649,6 +2750,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "MJ Melendez",
+     "metric": "BB%",
+     "season": 2023,
+     "target": 10.0,
+     "value": 10.3
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Khalil Greene",
+     "metric": "K%",
+     "season": 2006,
+     "target": 25.1,
+     "value": 18.9
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Steven Souza Jr.",
+     "metric": "ISO",
+     "season": 2015,
+     "target": 0.185,
+     "value": 0.174
+    }
+   },
    "name": "Marco Luciano",
    "prospect_rank": 367,
    "target": {
@@ -718,6 +2848,35 @@
      "faded": 3,
      "impact_regular": 7,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Melky Cabrera",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 10.2,
+     "value": 10.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Nick Swisher",
+     "metric": "K%",
+     "season": 2005,
+     "target": 28.4,
+     "value": 21.1
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Tyler Soderstrom",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.198,
+     "value": 0.198
     }
    },
    "name": "Kevin Alc\u00e1ntara",
@@ -793,6 +2952,35 @@
      "faded": 2,
      "impact_regular": 3,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.004,
+     "label": "Approach",
+     "match": "Nolan Schanuel",
+     "metric": "BB%",
+     "season": 2024,
+     "target": 11.8,
+     "value": 11.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Owen Miller",
+     "metric": "K%",
+     "season": 2022,
+     "target": 19.8,
+     "value": 19.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Brooks Lee",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.134,
+     "value": 0.134
     }
    },
    "name": "Juan Brito",
@@ -874,6 +3062,35 @@
      "part_time": 10
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Desi Relaford",
+     "metric": "BB%",
+     "season": 2000,
+     "target": 12.8,
+     "value": 14.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Nick Swisher",
+     "metric": "K%",
+     "season": 2005,
+     "target": 28.4,
+     "value": 21.1
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Andrew Benintendi",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.138,
+     "value": 0.165
+    }
+   },
    "name": "Jud Fabian",
    "prospect_rank": 439,
    "target": {
@@ -947,6 +3164,35 @@
      "faded": 2,
      "impact_regular": 9,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Manny Machado",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 10.5,
+     "value": 9.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Matt McLain",
+     "metric": "K%",
+     "season": 2023,
+     "target": 27.6,
+     "value": 28.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jackson Chourio",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.193,
+     "value": 0.193
     }
    },
    "name": "Spencer Jones",
@@ -1028,6 +3274,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jody Gerut",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 9.3,
+     "value": 9.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Dayan Viciedo",
+     "metric": "K%",
+     "season": 2012,
+     "target": 24.6,
+     "value": 22.1
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Dustin Pedroia",
+     "metric": "ISO",
+     "season": 2009,
+     "target": 0.155,
+     "value": 0.151
+    }
+   },
    "name": "Matthew Lugo",
    "prospect_rank": 368,
    "target": {
@@ -1101,6 +3376,35 @@
      "faded": 2,
      "impact_regular": 3,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jody Gerut",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 9.3,
+     "value": 9.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Bobby Witt Jr.",
+     "metric": "K%",
+     "season": 2023,
+     "target": 16.9,
+     "value": 17.4
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Rocco Baldelli",
+     "metric": "ISO",
+     "season": 2003,
+     "target": 0.126,
+     "value": 0.127
     }
    },
    "name": "Jesus Rodriguez",
@@ -1182,6 +3486,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Lars Nootbaar",
+     "metric": "BB%",
+     "season": 2023,
+     "target": 13.9,
+     "value": 14.3
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Albert Pujols",
+     "metric": "K%",
+     "season": 2001,
+     "target": 18.5,
+     "value": 13.8
+    },
+    "power": {
+     "distance": 0.008,
+     "label": "Power",
+     "match": "Ronny Paulino",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.091,
+     "value": 0.084
+    }
+   },
    "name": "Christian Cairo",
    "prospect_rank": 311,
    "target": {
@@ -1259,6 +3592,35 @@
      "faded": 6,
      "impact_regular": 1,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 8.6,
+     "value": 8.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Evan Longoria",
+     "metric": "K%",
+     "season": 2008,
+     "target": 28.8,
+     "value": 24.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Victor Robles",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.137,
+     "value": 0.164
     }
    },
    "name": "Andrew Pinckney",
@@ -1340,6 +3702,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Delino DeShields",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 11.4,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Matt Chapman",
+     "metric": "K%",
+     "season": 2019,
+     "target": 21.8,
+     "value": 21.9
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Lawrence Butler",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.17,
+     "value": 0.17
+    }
+   },
    "name": "Kody Huff",
    "prospect_rank": 213,
    "target": {
@@ -1417,6 +3808,35 @@
      "faded": 0,
      "impact_regular": 11,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 8.6,
+     "value": 8.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Gleyber Torres",
+     "metric": "K%",
+     "season": 2018,
+     "target": 25.5,
+     "value": 25.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Corbin Carroll",
+     "metric": "ISO",
+     "season": 2024,
+     "target": 0.201,
+     "value": 0.197
     }
    },
    "name": "Jase Bowen",
@@ -1498,6 +3918,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Nick Castellanos",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 7.4,
+     "value": 6.6
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "K%",
+     "season": 2025,
+     "target": 26.8,
+     "value": 26.8
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Tucker Barnhart",
+     "metric": "ISO",
+     "season": 2016,
+     "target": 0.111,
+     "value": 0.122
+    }
+   },
    "name": "Gavin Cross",
    "prospect_rank": 313,
    "target": {
@@ -1577,6 +4026,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jos\u00e9 Ram\u00edrez",
+     "metric": "BB%",
+     "season": 2019,
+     "target": 9.4,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Rafael Furcal",
+     "metric": "K%",
+     "season": 2003,
+     "target": 15.4,
+     "value": 10.4
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Ram\u00f3n V\u00e1zquez",
+     "metric": "ISO",
+     "season": 2002,
+     "target": 0.097,
+     "value": 0.088
+    }
+   },
    "name": "Josh Kasevich",
    "prospect_rank": 328,
    "target": {
@@ -1652,6 +4130,35 @@
      "part_time": 15
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Justin Morneau",
+     "metric": "BB%",
+     "season": 2007,
+     "target": 9.1,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Xander Bogaerts",
+     "metric": "K%",
+     "season": 2014,
+     "target": 25.3,
+     "value": 23.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Dominic Smith",
+     "metric": "ISO",
+     "season": 2021,
+     "target": 0.109,
+     "value": 0.119
+    }
+   },
    "name": "Enrique Bradfield Jr.",
    "prospect_rank": 322,
    "target": {
@@ -1725,6 +4232,35 @@
      "faded": 0,
      "impact_regular": 1,
      "part_time": 11
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brad Miller",
+     "metric": "BB%",
+     "season": 2016,
+     "target": 8.1,
+     "value": 7.8
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "K%",
+     "season": 2008,
+     "target": 22.2,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Denard Span",
+     "metric": "ISO",
+     "season": 2008,
+     "target": 0.14,
+     "value": 0.138
     }
    },
    "name": "Petey Halpin",
@@ -1806,6 +4342,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brennan Boesch",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 7.6,
+     "value": 7.4
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Wil Myers",
+     "metric": "K%",
+     "season": 2017,
+     "target": 27.5,
+     "value": 27.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.131,
+     "value": 0.131
+    }
+   },
    "name": "Austin Hendrick",
    "prospect_rank": 437,
    "target": {
@@ -1883,6 +4448,35 @@
      "faded": 2,
      "impact_regular": 5,
      "part_time": 3
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Nate McLouth",
+     "metric": "BB%",
+     "season": 2008,
+     "target": 9.0,
+     "value": 9.5
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Rafael Devers",
+     "metric": "K%",
+     "season": 2023,
+     "target": 18.6,
+     "value": 19.2
+    },
+    "power": {
+     "distance": 0.004,
+     "label": "Power",
+     "match": "Danny Espinosa",
+     "metric": "ISO",
+     "season": 2012,
+     "target": 0.159,
+     "value": 0.155
     }
    },
    "name": "Robert Moore",
@@ -1964,6 +4558,35 @@
      "part_time": 10
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 8.6,
+     "value": 8.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Paul DeJong",
+     "metric": "K%",
+     "season": 2018,
+     "target": 25.4,
+     "value": 25.1
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Mark Vientos",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.18,
+     "value": 0.18
+    }
+   },
    "name": "Yohandy Morales",
    "prospect_rank": 106,
    "target": {
@@ -2033,6 +4656,35 @@
      "faded": 3,
      "impact_regular": 4,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Yo\u00e1n Moncada",
+     "metric": "BB%",
+     "season": 2019,
+     "target": 7.1,
+     "value": 7.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Gaby Sanchez",
+     "metric": "K%",
+     "season": 2010,
+     "target": 19.6,
+     "value": 15.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Mark Vientos",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.18,
+     "value": 0.18
     }
    },
    "name": "Cayden Wallace",
@@ -2114,6 +4766,35 @@
      "part_time": 12
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jonathan India",
+     "metric": "BB%",
+     "season": 2022,
+     "target": 7.3,
+     "value": 7.2
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Michael Massey",
+     "metric": "K%",
+     "season": 2023,
+     "target": 20.8,
+     "value": 21.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Nick Ahmed",
+     "metric": "ISO",
+     "season": 2015,
+     "target": 0.145,
+     "value": 0.133
+    }
+   },
    "name": "Deyvison De Los Santos",
    "prospect_rank": 156,
    "target": {
@@ -2193,6 +4874,35 @@
      "part_time": 13
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Wilson Ramos",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 8.9,
+     "value": 8.7
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "K%",
+     "season": 2008,
+     "target": 22.2,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Ian Desmond",
+     "metric": "ISO",
+     "season": 2011,
+     "target": 0.116,
+     "value": 0.105
+    }
+   },
    "name": "Allan Castro",
    "prospect_rank": 277,
    "target": {
@@ -2266,6 +4976,35 @@
      "faded": 1,
      "impact_regular": 2,
      "part_time": 10
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Yasiel Puig",
+     "metric": "BB%",
+     "season": 2013,
+     "target": 8.7,
+     "value": 8.3
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Alex Rios",
+     "metric": "K%",
+     "season": 2006,
+     "target": 23.9,
+     "value": 17.9
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Denard Span",
+     "metric": "ISO",
+     "season": 2008,
+     "target": 0.14,
+     "value": 0.138
     }
    },
    "name": "Jhostynxon Garcia",
@@ -2347,6 +5086,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brennan Boesch",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 7.6,
+     "value": 7.4
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Jerry Hairston Jr.",
+     "metric": "K%",
+     "season": 2002,
+     "target": 16.7,
+     "value": 11.5
+    },
+    "power": {
+     "distance": 0.004,
+     "label": "Power",
+     "match": "Nomar Mazara",
+     "metric": "ISO",
+     "season": 2018,
+     "target": 0.171,
+     "value": 0.178
+    }
+   },
    "name": "Blaze Jordan",
    "prospect_rank": 37,
    "target": {
@@ -2426,6 +5194,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Yasiel Puig",
+     "metric": "BB%",
+     "season": 2013,
+     "target": 8.7,
+     "value": 8.3
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Miguel Cabrera",
+     "metric": "K%",
+     "season": 2006,
+     "target": 21.7,
+     "value": 16.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jung Hoo Lee",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.141,
+     "value": 0.141
+    }
+   },
    "name": "Jeferson Quero",
    "prospect_rank": 181,
    "target": {
@@ -2495,6 +5292,35 @@
      "faded": 4,
      "impact_regular": 4,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jonny Gomes",
+     "metric": "BB%",
+     "season": 2005,
+     "target": 9.7,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Geoff Jenkins",
+     "metric": "K%",
+     "season": 2001,
+     "target": 33.1,
+     "value": 26.9
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Ronald Acu\u00f1a Jr.",
+     "metric": "ISO",
+     "season": 2022,
+     "target": 0.154,
+     "value": 0.147
     }
    },
    "name": "Ryan Clifford",
@@ -2576,6 +5402,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Pablo Sandoval",
+     "metric": "BB%",
+     "season": 2013,
+     "target": 8.4,
+     "value": 8.0
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Dmitri Young",
+     "metric": "K%",
+     "season": 2000,
+     "target": 18.7,
+     "value": 13.5
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Josh Smith",
+     "metric": "ISO",
+     "season": 2024,
+     "target": 0.132,
+     "value": 0.136
+    }
+   },
    "name": "Jared Serna",
    "prospect_rank": 308,
    "target": {
@@ -2647,6 +5502,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Manny Machado",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 10.5,
+     "value": 9.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Marcell Ozuna",
+     "metric": "K%",
+     "season": 2015,
+     "target": 24.7,
+     "value": 22.3
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Xander Bogaerts",
+     "metric": "ISO",
+     "season": 2014,
+     "target": 0.142,
+     "value": 0.122
+    }
+   },
    "name": "Tsung-Che Cheng",
    "prospect_rank": 301,
    "target": {
@@ -2716,6 +5600,35 @@
      "faded": 3,
      "impact_regular": 2,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Trevor Crowe",
+     "metric": "BB%",
+     "season": 2010,
+     "target": 5.9,
+     "value": 6.1
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Nathaniel Lowe",
+     "metric": "K%",
+     "season": 2022,
+     "target": 22.9,
+     "value": 22.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Paul Konerko",
+     "metric": "ISO",
+     "season": 2002,
+     "target": 0.191,
+     "value": 0.194
     }
    },
    "name": "Felix Reyes",
@@ -2793,6 +5706,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Delino DeShields",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 11.4,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Jody Gerut",
+     "metric": "K%",
+     "season": 2003,
+     "target": 19.0,
+     "value": 13.3
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Denard Span",
+     "metric": "ISO",
+     "season": 2008,
+     "target": 0.14,
+     "value": 0.138
+    }
+   },
    "name": "Angel Genao",
    "prospect_rank": 34,
    "target": {
@@ -2866,6 +5808,35 @@
      "faded": 4,
      "impact_regular": 4,
      "part_time": 2
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Maikel Franco",
+     "metric": "BB%",
+     "season": 2016,
+     "target": 6.6,
+     "value": 6.3
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Dayan Viciedo",
+     "metric": "K%",
+     "season": 2012,
+     "target": 24.6,
+     "value": 22.1
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Alex Rios",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.205,
+     "value": 0.214
     }
    },
    "name": "Manuel Pena",
@@ -2943,6 +5914,35 @@
      "part_time": 11
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brennan Boesch",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 7.6,
+     "value": 7.4
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Gregory Polanco",
+     "metric": "K%",
+     "season": 2016,
+     "target": 21.6,
+     "value": 20.3
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Victor Robles",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.137,
+     "value": 0.164
+    }
+   },
    "name": "Gabriel Gonzalez",
    "prospect_rank": 129,
    "target": {
@@ -3012,6 +6012,35 @@
      "faded": 4,
      "impact_regular": 1,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jonny Gomes",
+     "metric": "BB%",
+     "season": 2005,
+     "target": 9.7,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Michael Massey",
+     "metric": "K%",
+     "season": 2023,
+     "target": 20.8,
+     "value": 21.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.131,
+     "value": 0.131
     }
    },
    "name": "Hendry Mendez",
@@ -3089,6 +6118,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jason Heyward",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 9.2,
+     "value": 8.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Colt Keith",
+     "metric": "K%",
+     "season": 2024,
+     "target": 18.9,
+     "value": 19.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Eduardo Escobar",
+     "metric": "ISO",
+     "season": 2014,
+     "target": 0.152,
+     "value": 0.131
+    }
+   },
    "name": "Cole Carrigg",
    "prospect_rank": 50,
    "target": {
@@ -3164,6 +6222,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Jonathan Villar",
+     "metric": "BB%",
+     "season": 2016,
+     "target": 12.0,
+     "value": 11.6
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Vernon Wells",
+     "metric": "K%",
+     "season": 2002,
+     "target": 18.4,
+     "value": 13.1
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Ian Desmond",
+     "metric": "ISO",
+     "season": 2011,
+     "target": 0.116,
+     "value": 0.105
+    }
+   },
    "name": "Jacob Berry",
    "prospect_rank": 76,
    "target": {
@@ -3237,6 +6324,35 @@
      "faded": 3,
      "impact_regular": 3,
      "part_time": 10
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Blake DeWitt",
+     "metric": "BB%",
+     "season": 2008,
+     "target": 10.1,
+     "value": 10.7
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Lane Thomas",
+     "metric": "K%",
+     "season": 2022,
+     "target": 24.2,
+     "value": 24.1
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Josh Smith",
+     "metric": "ISO",
+     "season": 2024,
+     "target": 0.132,
+     "value": 0.136
     }
    },
    "name": "Tommy Troy",
@@ -3318,6 +6434,35 @@
      "part_time": 10
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Jake Lamb",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 13.0,
+     "value": 13.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Matt McLain",
+     "metric": "K%",
+     "season": 2023,
+     "target": 27.6,
+     "value": 28.5
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Denard Span",
+     "metric": "ISO",
+     "season": 2008,
+     "target": 0.14,
+     "value": 0.138
+    }
+   },
    "name": "Brock Wilken",
    "prospect_rank": 177,
    "target": {
@@ -3387,6 +6532,35 @@
      "faded": 4,
      "impact_regular": 2,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Grady Sizemore",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 11.2,
+     "value": 11.9
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Rub\u00e9n Tejada",
+     "metric": "K%",
+     "season": 2015,
+     "target": 19.5,
+     "value": 17.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Cory Spangenberg",
+     "metric": "ISO",
+     "season": 2017,
+     "target": 0.12,
+     "value": 0.137
     }
    },
    "name": "LuJames Groover",
@@ -3468,6 +6642,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Jake Lamb",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 13.0,
+     "value": 13.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jeremy Pe\u00f1a",
+     "metric": "K%",
+     "season": 2023,
+     "target": 19.7,
+     "value": 20.3
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Chris Owings",
+     "metric": "ISO",
+     "season": 2016,
+     "target": 0.129,
+     "value": 0.139
+    }
+   },
    "name": "Sterlin Thompson",
    "prospect_rank": 151,
    "target": {
@@ -3545,6 +6748,35 @@
      "faded": 5,
      "impact_regular": 3,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Larry Bigbie",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 8.2,
+     "value": 8.5
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Ryan Braun",
+     "metric": "K%",
+     "season": 2007,
+     "target": 28.3,
+     "value": 22.8
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Jhonny Peralta",
+     "metric": "ISO",
+     "season": 2007,
+     "target": 0.162,
+     "value": 0.16
     }
    },
    "name": "Kemp Alderman",
@@ -3626,6 +6858,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jos\u00e9 Ram\u00edrez",
+     "metric": "BB%",
+     "season": 2019,
+     "target": 9.4,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Yolmer S\u00e1nchez",
+     "metric": "K%",
+     "season": 2017,
+     "target": 21.2,
+     "value": 20.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Austin Kearns",
+     "metric": "ISO",
+     "season": 2002,
+     "target": 0.183,
+     "value": 0.185
+    }
+   },
    "name": "Abimelec Ortiz",
    "prospect_rank": 160,
    "target": {
@@ -3703,6 +6964,35 @@
      "faded": 2,
      "impact_regular": 8,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Bryce Harper",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 13.1,
+     "value": 13.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Dominic Smith",
+     "metric": "K%",
+     "season": 2021,
+     "target": 22.7,
+     "value": 22.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Wander Franco",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.187,
+     "value": 0.194
     }
    },
    "name": "Cooper Ingle",
@@ -3784,6 +7074,35 @@
      "part_time": 6
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.004,
+     "label": "Approach",
+     "match": "Hank Blalock",
+     "metric": "BB%",
+     "season": 2005,
+     "target": 7.5,
+     "value": 7.2
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Jimmy Rollins",
+     "metric": "K%",
+     "season": 2001,
+     "target": 19.9,
+     "value": 15.0
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Tommy Joseph",
+     "metric": "ISO",
+     "season": 2017,
+     "target": 0.173,
+     "value": 0.192
+    }
+   },
    "name": "Edwin Arroyo",
    "prospect_rank": 25,
    "target": {
@@ -3863,6 +7182,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Jimmy Rollins",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 7.7,
+     "value": 7.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jason Castro",
+     "metric": "K%",
+     "season": 2013,
+     "target": 28.7,
+     "value": 26.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Wilyer Abreu",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.222,
+     "value": 0.222
+    }
+   },
    "name": "Joshua B\u00e1ez",
    "prospect_rank": 40,
    "target": {
@@ -3936,6 +7284,35 @@
      "faded": 5,
      "impact_regular": 4,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Eric Hinske",
+     "metric": "BB%",
+     "season": 2003,
+     "target": 10.7,
+     "value": 11.5
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Dansby Swanson",
+     "metric": "K%",
+     "season": 2019,
+     "target": 22.6,
+     "value": 22.8
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Chris Owings",
+     "metric": "ISO",
+     "season": 2016,
+     "target": 0.129,
+     "value": 0.139
     }
    },
    "name": "Cam Cauley",
@@ -4017,6 +7394,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jos\u00e9 Ram\u00edrez",
+     "metric": "BB%",
+     "season": 2019,
+     "target": 9.4,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Jazz Chisholm Jr.",
+     "metric": "K%",
+     "season": 2024,
+     "target": 23.5,
+     "value": 24.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Ronald Acu\u00f1a Jr.",
+     "metric": "ISO",
+     "season": 2022,
+     "target": 0.154,
+     "value": 0.147
+    }
+   },
    "name": "Gavin Conticello",
    "prospect_rank": 436,
    "target": {
@@ -4090,6 +7496,35 @@
      "faded": 1,
      "impact_regular": 3,
      "part_time": 7
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jody Gerut",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 9.3,
+     "value": 9.9
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Jimmy Rollins",
+     "metric": "K%",
+     "season": 2001,
+     "target": 19.9,
+     "value": 15.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Nick Ahmed",
+     "metric": "ISO",
+     "season": 2015,
+     "target": 0.145,
+     "value": 0.133
     }
    },
    "name": "Noah Miller",
@@ -4167,6 +7602,35 @@
      "part_time": 11
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Desi Relaford",
+     "metric": "BB%",
+     "season": 2000,
+     "target": 12.8,
+     "value": 14.9
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Brett Baty",
+     "metric": "K%",
+     "season": 2025,
+     "target": 25.0,
+     "value": 25.0
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Ian Desmond",
+     "metric": "ISO",
+     "season": 2011,
+     "target": 0.116,
+     "value": 0.105
+    }
+   },
    "name": "Harry Ford",
    "prospect_rank": 145,
    "target": {
@@ -4242,6 +7706,35 @@
      "part_time": 10
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Wilson Ramos",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 8.9,
+     "value": 8.7
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Wil Myers",
+     "metric": "K%",
+     "season": 2017,
+     "target": 27.5,
+     "value": 27.7
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Jorge Alfaro",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.136,
+     "value": 0.163
+    }
+   },
    "name": "Cooper Kinney",
    "prospect_rank": 385,
    "target": {
@@ -4311,6 +7804,35 @@
      "faded": 3,
      "impact_regular": 4,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brian McCann",
+     "metric": "BB%",
+     "season": 2007,
+     "target": 6.4,
+     "value": 6.3
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Xander Bogaerts",
+     "metric": "K%",
+     "season": 2015,
+     "target": 17.7,
+     "value": 15.4
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Jorge Alfaro",
+     "metric": "ISO",
+     "season": 2019,
+     "target": 0.136,
+     "value": 0.163
     }
    },
    "name": "Tommy White",
@@ -4392,6 +7914,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Delino DeShields",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 11.4,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Julio Lugo",
+     "metric": "K%",
+     "season": 2001,
+     "target": 25.2,
+     "value": 19.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Matt Shaw",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.168,
+     "value": 0.168
+    }
+   },
    "name": "Braden Montgomery",
    "prospect_rank": 63,
    "target": {
@@ -4471,6 +8022,35 @@
      "part_time": 6
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Chase Headley",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 9.6,
+     "value": 10.1
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jonathan Schoop",
+     "metric": "K%",
+     "season": 2018,
+     "target": 23.3,
+     "value": 23.0
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Sean Casey",
+     "metric": "ISO",
+     "season": 2001,
+     "target": 0.148,
+     "value": 0.148
+    }
+   },
    "name": "Creed Willems",
    "prospect_rank": 140,
    "target": {
@@ -4544,6 +8124,35 @@
      "faded": 2,
      "impact_regular": 4,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Christian Yelich",
+     "metric": "BB%",
+     "season": 2014,
+     "target": 11.3,
+     "value": 10.6
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "J.D. Drew",
+     "metric": "K%",
+     "season": 2000,
+     "target": 26.6,
+     "value": 20.4
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Geraldo Perdomo",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.172,
+     "value": 0.172
     }
    },
    "name": "Kahlil Watson",
@@ -4625,6 +8234,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Jake Lamb",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 13.0,
+     "value": 13.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Julio Lugo",
+     "metric": "K%",
+     "season": 2001,
+     "target": 25.2,
+     "value": 19.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Andy Pages",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.189,
+     "value": 0.189
+    }
+   },
    "name": "James Tibbs III",
    "prospect_rank": 16,
    "target": {
@@ -4694,6 +8332,35 @@
      "faded": 3,
      "impact_regular": 8,
      "part_time": 3
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.006,
+     "label": "Approach",
+     "match": "Mike Trout",
+     "metric": "BB%",
+     "season": 2014,
+     "target": 12.5,
+     "value": 11.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Dominic Smith",
+     "metric": "K%",
+     "season": 2021,
+     "target": 22.7,
+     "value": 22.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Hanley Ramirez",
+     "metric": "ISO",
+     "season": 2010,
+     "target": 0.186,
+     "value": 0.175
     }
    },
    "name": "Esmerlyn Valdez",
@@ -4775,6 +8442,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "MJ Melendez",
+     "metric": "BB%",
+     "season": 2023,
+     "target": 10.0,
+     "value": 10.3
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Billy Hamilton",
+     "metric": "K%",
+     "season": 2017,
+     "target": 21.4,
+     "value": 21.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Dillon Dingler",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.147,
+     "value": 0.147
+    }
+   },
    "name": "Leo Bernal",
    "prospect_rank": 51,
    "target": {
@@ -4848,6 +8544,35 @@
      "faded": 3,
      "impact_regular": 2,
      "part_time": 12
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brad Miller",
+     "metric": "BB%",
+     "season": 2016,
+     "target": 8.1,
+     "value": 7.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Owen Miller",
+     "metric": "K%",
+     "season": 2022,
+     "target": 19.8,
+     "value": 19.7
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Mallex Smith",
+     "metric": "ISO",
+     "season": 2018,
+     "target": 0.1,
+     "value": 0.11
     }
    },
    "name": "Anderdson Rojas",
@@ -4929,6 +8654,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jason Heyward",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 9.2,
+     "value": 8.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Miguel Cabrera",
+     "metric": "K%",
+     "season": 2006,
+     "target": 21.7,
+     "value": 16.0
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "C.J. Cron",
+     "metric": "ISO",
+     "season": 2015,
+     "target": 0.188,
+     "value": 0.177
+    }
+   },
    "name": "H\u00e9ctor Rodr\u00edguez",
    "prospect_rank": 22,
    "target": {
@@ -5008,6 +8762,35 @@
      "part_time": 6
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jason Heyward",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 9.2,
+     "value": 8.9
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Owen Miller",
+     "metric": "K%",
+     "season": 2022,
+     "target": 19.8,
+     "value": 19.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Alec Burleson",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.169,
+     "value": 0.169
+    }
+   },
    "name": "Pedro Ram\u00edrez",
    "prospect_rank": 31,
    "target": {
@@ -5081,6 +8864,35 @@
      "faded": 1,
      "impact_regular": 3,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Larry Bigbie",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 8.2,
+     "value": 8.5
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jeremy Pe\u00f1a",
+     "metric": "K%",
+     "season": 2023,
+     "target": 19.7,
+     "value": 20.3
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Maikel Garcia",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.163,
+     "value": 0.163
     }
    },
    "name": "Bryant Betancourt",
@@ -5162,6 +8974,35 @@
      "part_time": 6
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Denard Span",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 9.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Danny Espinosa",
+     "metric": "K%",
+     "season": 2011,
+     "target": 29.5,
+     "value": 25.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Riley Greene",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.15,
+     "value": 0.159
+    }
+   },
    "name": "Carson Williams",
    "prospect_rank": 137,
    "target": {
@@ -5235,6 +9076,35 @@
      "faded": 4,
      "impact_regular": 7,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Mark Teixeira",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 11.5,
+     "value": 12.2
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Nomar Mazara",
+     "metric": "K%",
+     "season": 2018,
+     "target": 22.0,
+     "value": 21.6
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Jorge Cantu",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.153,
+     "value": 0.155
     }
    },
    "name": "Zach Ehrhard",
@@ -5316,6 +9186,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Rafael Furcal",
+     "metric": "BB%",
+     "season": 2002,
+     "target": 6.3,
+     "value": 6.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Max Kepler",
+     "metric": "K%",
+     "season": 2018,
+     "target": 16.2,
+     "value": 15.7
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Otto Lopez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.122,
+     "value": 0.122
+    }
+   },
    "name": "James Triantos",
    "prospect_rank": 82,
    "target": {
@@ -5395,6 +9294,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Wil Myers",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 10.3,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Brandon Crawford",
+     "metric": "K%",
+     "season": 2013,
+     "target": 20.0,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Nolan Gorman",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.165,
+     "value": 0.165
+    }
+   },
    "name": "Kaelen Culpepper",
    "prospect_rank": 28,
    "target": {
@@ -5468,6 +9396,35 @@
      "faded": 3,
      "impact_regular": 5,
      "part_time": 1
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Delino DeShields",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 11.4,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Franklin Gutierrez",
+     "metric": "K%",
+     "season": 2008,
+     "target": 24.5,
+     "value": 19.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Lawrence Butler",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.17,
+     "value": 0.17
     }
    },
    "name": "Drew Cavanaugh",
@@ -5549,6 +9506,35 @@
      "part_time": 11
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.006,
+     "label": "Approach",
+     "match": "Mike Trout",
+     "metric": "BB%",
+     "season": 2014,
+     "target": 12.5,
+     "value": 11.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Gleyber Torres",
+     "metric": "K%",
+     "season": 2018,
+     "target": 25.5,
+     "value": 25.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Gordon Beckham",
+     "metric": "ISO",
+     "season": 2013,
+     "target": 0.113,
+     "value": 0.105
+    }
+   },
    "name": "Termarr Johnson",
    "prospect_rank": 38,
    "target": {
@@ -5622,6 +9608,35 @@
      "faded": 4,
      "impact_regular": 7,
      "part_time": 7
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Michael Conforto",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 12.3,
+     "value": 13.0
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Blake DeWitt",
+     "metric": "K%",
+     "season": 2010,
+     "target": 21.3,
+     "value": 17.3
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Heliot Ramos",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.144,
+     "value": 0.144
     }
    },
    "name": "RJ Schreck",
@@ -5703,6 +9718,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Andrew McCutchen",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 10.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Ian Desmond",
+     "metric": "K%",
+     "season": 2010,
+     "target": 23.0,
+     "value": 19.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.131,
+     "value": 0.131
+    }
+   },
    "name": "Jett Williams",
    "prospect_rank": 44,
    "target": {
@@ -5782,6 +9826,35 @@
      "part_time": 9
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brennan Boesch",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 7.6,
+     "value": 7.4
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Miguel Cabrera",
+     "metric": "K%",
+     "season": 2006,
+     "target": 21.7,
+     "value": 16.0
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Brenton Doyle",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.13,
+     "value": 0.14
+    }
+   },
    "name": "Mikey Romero",
    "prospect_rank": 93,
    "target": {
@@ -5855,6 +9928,35 @@
      "faded": 0,
      "impact_regular": 9,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Denard Span",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 9.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Brandon Crawford",
+     "metric": "K%",
+     "season": 2013,
+     "target": 20.0,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Tyler Soderstrom",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.198,
+     "value": 0.198
     }
    },
    "name": "Luke Adams",
@@ -5932,6 +10034,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Miguel Cabrera",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 11.9,
+     "value": 12.7
+    },
+    "contact": {
+     "distance": 0.005,
+     "label": "Contact",
+     "match": "B.J. Upton",
+     "metric": "K%",
+     "season": 2010,
+     "target": 31.2,
+     "value": 26.9
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Julio Rodr\u00edguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.207,
+     "value": 0.207
+    }
+   },
    "name": "Lazaro Montes",
    "prospect_rank": 48,
    "target": {
@@ -6005,6 +10136,35 @@
      "faded": 4,
      "impact_regular": 2,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Andrew McCutchen",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 10.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Vernon Wells",
+     "metric": "K%",
+     "season": 2002,
+     "target": 18.4,
+     "value": 13.1
+    },
+    "power": {
+     "distance": 0.008,
+     "label": "Power",
+     "match": "Ronny Paulino",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.091,
+     "value": 0.084
     }
    },
    "name": "Nelson Rada",
@@ -6086,6 +10246,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brennan Boesch",
+     "metric": "BB%",
+     "season": 2011,
+     "target": 7.6,
+     "value": 7.4
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Brandon Crawford",
+     "metric": "K%",
+     "season": 2013,
+     "target": 20.0,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Heliot Ramos",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.144,
+     "value": 0.144
+    }
+   },
    "name": "Michael Arroyo",
    "prospect_rank": 132,
    "target": {
@@ -6161,6 +10350,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Blake DeWitt",
+     "metric": "BB%",
+     "season": 2008,
+     "target": 10.1,
+     "value": 10.7
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Coco Crisp",
+     "metric": "K%",
+     "season": 2004,
+     "target": 18.3,
+     "value": 12.8
+    },
+    "power": {
+     "distance": 0.004,
+     "label": "Power",
+     "match": "Danny Espinosa",
+     "metric": "ISO",
+     "season": 2012,
+     "target": 0.159,
+     "value": 0.155
+    }
+   },
    "name": "Cam Cannarella",
    "prospect_rank": 36,
    "target": {
@@ -6234,6 +10452,35 @@
      "faded": 3,
      "impact_regular": 3,
      "part_time": 9
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Wil Myers",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 10.3,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Nick Allen",
+     "metric": "K%",
+     "season": 2025,
+     "target": 23.8,
+     "value": 23.8
+    },
+    "power": {
+     "distance": 0.003,
+     "label": "Power",
+     "match": "Mark Ellis",
+     "metric": "ISO",
+     "season": 2002,
+     "target": 0.127,
+     "value": 0.122
     }
    },
    "name": "Nick Morabito",
@@ -6315,6 +10562,35 @@
      "part_time": 9
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.006,
+     "label": "Approach",
+     "match": "Brett Gardner",
+     "metric": "BB%",
+     "season": 2010,
+     "target": 13.6,
+     "value": 13.9
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Geraldo Perdomo",
+     "metric": "K%",
+     "season": 2022,
+     "target": 20.7,
+     "value": 20.6
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Tucker Barnhart",
+     "metric": "ISO",
+     "season": 2016,
+     "target": 0.111,
+     "value": 0.122
+    }
+   },
    "name": "Brett Bateman",
    "prospect_rank": 135,
    "target": {
@@ -6392,6 +10668,35 @@
      "faded": 2,
      "impact_regular": 3,
      "part_time": 4
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Jonny Gomes",
+     "metric": "BB%",
+     "season": 2005,
+     "target": 9.7,
+     "value": 9.6
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Vladimir Guerrero",
+     "metric": "K%",
+     "season": 2001,
+     "target": 17.8,
+     "value": 13.1
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Rocco Baldelli",
+     "metric": "ISO",
+     "season": 2003,
+     "target": 0.126,
+     "value": 0.127
     }
    },
    "name": "Max Clark",
@@ -6473,6 +10778,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "George Springer",
+     "metric": "BB%",
+     "season": 2016,
+     "target": 12.2,
+     "value": 11.8
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Andr\u00e9s Gim\u00e9nez",
+     "metric": "K%",
+     "season": 2023,
+     "target": 17.6,
+     "value": 18.2
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Brenton Doyle",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.13,
+     "value": 0.14
+    }
+   },
    "name": "Luis Lara",
    "prospect_rank": 10,
    "target": {
@@ -6550,6 +10884,35 @@
      "faded": 2,
      "impact_regular": 2,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Jimmy Rollins",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 7.7,
+     "value": 7.9
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Albert Pujols",
+     "metric": "K%",
+     "season": 2001,
+     "target": 18.5,
+     "value": 13.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Logan O'Hoppe",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.158,
+     "value": 0.158
     }
    },
    "name": "Max Anderson",
@@ -6631,6 +10994,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Blake DeWitt",
+     "metric": "BB%",
+     "season": 2008,
+     "target": 10.1,
+     "value": 10.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Anthony Rendon",
+     "metric": "K%",
+     "season": 2016,
+     "target": 19.4,
+     "value": 18.1
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Josh Smith",
+     "metric": "ISO",
+     "season": 2024,
+     "target": 0.132,
+     "value": 0.136
+    }
+   },
    "name": "Jared Dickey",
    "prospect_rank": 154,
    "target": {
@@ -6706,6 +11098,35 @@
      "part_time": 6
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Melky Cabrera",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 10.2,
+     "value": 10.7
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jonathan Schoop",
+     "metric": "K%",
+     "season": 2018,
+     "target": 23.3,
+     "value": 23.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.131,
+     "value": 0.131
+    }
+   },
    "name": "Andrew Pintar",
    "prospect_rank": 359,
    "target": {
@@ -6779,6 +11200,35 @@
      "faded": 3,
      "impact_regular": 2,
      "part_time": 1
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Trent Grisham",
+     "metric": "BB%",
+     "season": 2021,
+     "target": 9.9,
+     "value": 10.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Salvador Perez",
+     "metric": "K%",
+     "season": 2014,
+     "target": 16.4,
+     "value": 14.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Gordon Beckham",
+     "metric": "ISO",
+     "season": 2013,
+     "target": 0.113,
+     "value": 0.105
     }
    },
    "name": "Nate Furman",
@@ -6860,6 +11310,35 @@
      "part_time": 7
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Eric Hinske",
+     "metric": "BB%",
+     "season": 2003,
+     "target": 10.7,
+     "value": 11.5
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Brett Baty",
+     "metric": "K%",
+     "season": 2025,
+     "target": 25.0,
+     "value": 25.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Nick Ahmed",
+     "metric": "ISO",
+     "season": 2015,
+     "target": 0.145,
+     "value": 0.133
+    }
+   },
    "name": "Matthew Etzel",
    "prospect_rank": 247,
    "target": {
@@ -6935,6 +11414,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Bobby Abreu",
+     "metric": "BB%",
+     "season": 2000,
+     "target": 12.6,
+     "value": 14.7
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Alex Rios",
+     "metric": "K%",
+     "season": 2006,
+     "target": 23.9,
+     "value": 17.9
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Fernando Tatis Jr.",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.178,
+     "value": 0.178
+    }
+   },
    "name": "Ben Ross",
    "prospect_rank": 271,
    "target": {
@@ -7008,6 +11516,35 @@
      "faded": 2,
      "impact_regular": 3,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Andrew McCutchen",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 10.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Colt Keith",
+     "metric": "K%",
+     "season": 2024,
+     "target": 18.9,
+     "value": 19.8
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Brenton Doyle",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.13,
+     "value": 0.14
     }
    },
    "name": "Jim Jarvis",
@@ -7089,6 +11626,35 @@
      "part_time": 8
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Michael Conforto",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 12.3,
+     "value": 13.0
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Gleyber Torres",
+     "metric": "K%",
+     "season": 2018,
+     "target": 25.5,
+     "value": 25.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Angel Mart\u00ednez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.135,
+     "value": 0.135
+    }
+   },
    "name": "Aidan Miller",
    "prospect_rank": 122,
    "target": {
@@ -7164,6 +11730,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Manny Machado",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 10.5,
+     "value": 9.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Rougned Odor",
+     "metric": "K%",
+     "season": 2015,
+     "target": 19.1,
+     "value": 16.8
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Eduardo Escobar",
+     "metric": "ISO",
+     "season": 2014,
+     "target": 0.152,
+     "value": 0.131
+    }
+   },
    "name": "Walker Jenkins",
    "prospect_rank": 7,
    "target": {
@@ -7237,6 +11832,35 @@
      "faded": 4,
      "impact_regular": 5,
      "part_time": 5
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Michael Conforto",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 12.3,
+     "value": 13.0
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Nathaniel Lowe",
+     "metric": "K%",
+     "season": 2022,
+     "target": 22.9,
+     "value": 22.8
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Jorge Cantu",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.153,
+     "value": 0.155
     }
    },
    "name": "George Lombard Jr.",
@@ -7318,6 +11942,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Manny Machado",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 10.5,
+     "value": 9.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Bobby Witt Jr.",
+     "metric": "K%",
+     "season": 2025,
+     "target": 18.2,
+     "value": 18.2
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Jasson Dom\u00ednguez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.131,
+     "value": 0.131
+    }
+   },
    "name": "Cooper Pratt",
    "prospect_rank": 24,
    "target": {
@@ -7395,6 +12048,35 @@
      "faded": 3,
      "impact_regular": 8,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Brian McCann",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 8.5,
+     "value": 8.9
+    },
+    "contact": {
+     "distance": 0.008,
+     "label": "Contact",
+     "match": "Edouard Julien",
+     "metric": "K%",
+     "season": 2023,
+     "target": 30.3,
+     "value": 31.4
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Drake Baldwin",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.195,
+     "value": 0.195
     }
    },
    "name": "Alfonsin Rosario",
@@ -7476,6 +12158,35 @@
      "part_time": 3
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Wyatt Langford",
+     "metric": "BB%",
+     "season": 2024,
+     "target": 9.5,
+     "value": 9.2
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Matt Holliday",
+     "metric": "K%",
+     "season": 2006,
+     "target": 22.3,
+     "value": 16.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Eduardo Escobar",
+     "metric": "ISO",
+     "season": 2014,
+     "target": 0.152,
+     "value": 0.131
+    }
+   },
    "name": "Ralphy Velazquez",
    "prospect_rank": 67,
    "target": {
@@ -7549,6 +12260,35 @@
      "faded": 5,
      "impact_regular": 2,
      "part_time": 10
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Rafael Furcal",
+     "metric": "BB%",
+     "season": 2002,
+     "target": 6.3,
+     "value": 6.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Bryce Harper",
+     "metric": "K%",
+     "season": 2019,
+     "target": 25.9,
+     "value": 26.1
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Miguel Vargas",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.167,
+     "value": 0.167
     }
    },
    "name": "John Peck",
@@ -7630,6 +12370,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Andrew McCutchen",
+     "metric": "BB%",
+     "season": 2012,
+     "target": 10.8,
+     "value": 10.4
+    },
+    "contact": {
+     "distance": 0.004,
+     "label": "Contact",
+     "match": "Jazz Chisholm Jr.",
+     "metric": "K%",
+     "season": 2024,
+     "target": 23.5,
+     "value": 24.5
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Ronald Acu\u00f1a Jr.",
+     "metric": "ISO",
+     "season": 2022,
+     "target": 0.154,
+     "value": 0.147
+    }
+   },
    "name": "Charles McAdoo",
    "prospect_rank": 195,
    "target": {
@@ -7703,6 +12472,35 @@
      "faded": 7,
      "impact_regular": 0,
      "part_time": 8
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Larry Bigbie",
+     "metric": "BB%",
+     "season": 2004,
+     "target": 8.2,
+     "value": 8.5
+    },
+    "contact": {
+     "distance": 0.002,
+     "label": "Contact",
+     "match": "Jhonny Peralta",
+     "metric": "K%",
+     "season": 2005,
+     "target": 30.1,
+     "value": 22.5
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Chris Owings",
+     "metric": "ISO",
+     "season": 2016,
+     "target": 0.129,
+     "value": 0.139
     }
    },
    "name": "Colton Ledbetter",
@@ -7784,6 +12582,35 @@
      "part_time": 2
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.003,
+     "label": "Approach",
+     "match": "Mark Teixeira",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 11.5,
+     "value": 12.2
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Chris Burke",
+     "metric": "K%",
+     "season": 2006,
+     "target": 24.8,
+     "value": 18.6
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Corbin Carroll",
+     "metric": "ISO",
+     "season": 2024,
+     "target": 0.201,
+     "value": 0.197
+    }
+   },
    "name": "Charlie Condon",
    "prospect_rank": 3,
    "target": {
@@ -7863,6 +12690,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Brian McCann",
+     "metric": "BB%",
+     "season": 2007,
+     "target": 6.4,
+     "value": 6.3
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Joe Mauer",
+     "metric": "K%",
+     "season": 2006,
+     "target": 13.5,
+     "value": 8.9
+    },
+    "power": {
+     "distance": 0.001,
+     "label": "Power",
+     "match": "Brenton Doyle",
+     "metric": "ISO",
+     "season": 2023,
+     "target": 0.13,
+     "value": 0.14
+    }
+   },
    "name": "Joshua Kuroda-Grauer",
    "prospect_rank": 49,
    "target": {
@@ -7936,6 +12792,35 @@
      "faded": 4,
      "impact_regular": 1,
      "part_time": 6
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Wil Myers",
+     "metric": "BB%",
+     "season": 2017,
+     "target": 10.3,
+     "value": 10.8
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Kyle Seager",
+     "metric": "K%",
+     "season": 2013,
+     "target": 20.1,
+     "value": 17.6
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Otto Lopez",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.122,
+     "value": 0.122
     }
    },
    "name": "Scott Bandura",
@@ -8013,6 +12898,35 @@
      "part_time": 5
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.001,
+     "label": "Approach",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "BB%",
+     "season": 2006,
+     "target": 8.6,
+     "value": 8.8
+    },
+    "contact": {
+     "distance": 0.003,
+     "label": "Contact",
+     "match": "Edwin Encarnaci\u00f3n",
+     "metric": "K%",
+     "season": 2008,
+     "target": 22.2,
+     "value": 17.5
+    },
+    "power": {
+     "distance": 0.002,
+     "label": "Power",
+     "match": "Jorge Cantu",
+     "metric": "ISO",
+     "season": 2006,
+     "target": 0.153,
+     "value": 0.155
+    }
+   },
    "name": "Seaver King",
    "prospect_rank": 90,
    "target": {
@@ -8088,6 +13002,35 @@
      "part_time": 4
     }
    },
+   "components": {
+    "approach": {
+     "distance": 0.0,
+     "label": "Approach",
+     "match": "Manny Machado",
+     "metric": "BB%",
+     "season": 2015,
+     "target": 10.5,
+     "value": 9.8
+    },
+    "contact": {
+     "distance": 0.001,
+     "label": "Contact",
+     "match": "Jonathan Schoop",
+     "metric": "K%",
+     "season": 2018,
+     "target": 23.3,
+     "value": 23.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Colt Keith",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.157,
+     "value": 0.157
+    }
+   },
    "name": "Ryan Waldschmidt",
    "prospect_rank": 56,
    "target": {
@@ -8161,6 +13104,35 @@
      "faded": 3,
      "impact_regular": 6,
      "part_time": 10
+    }
+   },
+   "components": {
+    "approach": {
+     "distance": 0.002,
+     "label": "Approach",
+     "match": "Pablo Sandoval",
+     "metric": "BB%",
+     "season": 2009,
+     "target": 7.9,
+     "value": 8.2
+    },
+    "contact": {
+     "distance": 0.0,
+     "label": "Contact",
+     "match": "Brett Baty",
+     "metric": "K%",
+     "season": 2025,
+     "target": 25.0,
+     "value": 25.0
+    },
+    "power": {
+     "distance": 0.0,
+     "label": "Power",
+     "match": "Matt Shaw",
+     "metric": "ISO",
+     "season": 2025,
+     "target": 0.168,
+     "value": 0.168
     }
    },
    "name": "Bo Davidson",

@@ -102,7 +102,7 @@ git commit -m "Add transparent hitter component comps"
 
 **Interfaces:**
 - Consumes: MLB StatsAPI only in the one-time fetch script; snapshot translated pitcher rates and `components.factual_current_context` in the offline builder.
-- Produces: pitcher entries in `valucast_prospect_comps.json` with `player_type`, `role_pool`, `target`, and `twins`.
+- Produces: a separate top-level `pitchers` map in `valucast_prospect_comps.json` with `role_pool`, `target`, and `twins`; the existing hitter `players` map remains backward-compatible and two-way players cannot overwrite either role.
 
 - [ ] **Step 1: Write failing role and coverage tests**
 
@@ -176,7 +176,7 @@ def pitcher_target_role(context: dict) -> str | None:
 
 - [ ] **Step 5: Extend builder eligibility**
 
-Require `player_type == "prospect"`, translated `role == "pitcher"`, `confidence == "high"`, `low_sample == false`, all three translated metrics, and a non-ambiguous `pitcher_target_role()` result. Pass the optional pitcher-history payload into `build_prospect_comps()` and tag all existing hitter entries with `player_type: "hitter"`.
+Require `player_type == "prospect"`, translated `role == "pitcher"`, `confidence == "high"`, `low_sample == false`, all three translated metrics, and a non-ambiguous `pitcher_target_role()` result. Pass the optional pitcher-history payload into `build_prospect_comps()` and write eligible results to a new top-level `pitchers` map while leaving the existing hitter `players` schema unchanged.
 
 - [ ] **Step 6: Verify GREEN with fixtures**
 

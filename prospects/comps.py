@@ -1,8 +1,7 @@
-"""Measured MLB shape comps for hitter prospects, with historical outcomes.
+"""Measured, display-only MLB shape comps for prospects.
 
-For every eligible hitter prospect the model publishes a translated
-MLB-equivalent line (K%, BB%, ISO). This module matches that shape against
-real MLB hitting seasons (2000-2025, committed statsapi cache) and reports:
+Eligible hitters match translated K%, BB%, and ISO against real MLB hitting
+seasons (2000-2025, committed StatsAPI cache) and report:
 
 - "shape twins": the nearest young-MLB seasons by era-relative distance, and
 - an OUTCOME cohort: what the nearest RESOLVED matches (seasons old enough to
@@ -15,8 +14,9 @@ Honesty rules baked in, not bolted on:
   (the translation targets today's run environment).
 - The outcome cohort only counts matches with a complete 5-season follow-up
   window, and it dedupes by player so one career can't vote twice.
-- This is a DESCRIPTIVE lens (what similar shapes did), never a probability;
-  the model's role/star probabilities remain the only forecast on the card.
+- Eligible pitchers match translated K-BB%, K/9, and BB/9 against a separate
+  committed MLB pitching cache, with starter and reliever seasons kept apart.
+- This is a DESCRIPTIVE lens, never a probability or role forecast.
 - Display-only: nothing here feeds any ValuCast score or rank.
 """
 from __future__ import annotations
@@ -27,11 +27,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORY_PATH = ROOT / "data" / "mlb" / "mlb_history_hitting_seasons.json"
+PITCHER_HISTORY_PATH = ROOT / "data" / "mlb" / "mlb_history_pitching_seasons.json"
 SNAPSHOT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_comps.json"
 
 ARTIFACT_NAME = "valucast_prospect_comps"
 SHAPE_KEYS = ("k_pct", "bb_pct", "iso")
+PITCHER_SHAPE_KEYS = ("k_bb_pct", "k_per_9", "bb_per_9")
+PITCHER_REQUIRED_SEASONS = tuple(range(2000, 2026))
+PITCHER_MIN_MATCH_ROWS = 100
 COMPONENT_AXES = {
     "power": ("Power", "iso", "ISO"),
     "contact": ("Contact", "k_pct", "K%"),
@@ -213,6 +217,195 @@ class CompPool:
         }
 
 
+def pitcher_target_role(context: dict) -> str | None:
+    starts = context.get("games_started")
+    sample = context.get("sample")
+    if context.get("starter_role") is True and starts is not None and starts >= 5:
+        return "starter"
+    if (
+        context.get("starter_role") is False
+        and starts == 0
+        and sample is not None
+        and sample >= 30
+    ):
+        return "reliever"
+    return None
+
+
+def _historical_pitcher_role(row: dict) -> str | None:
+    try:
+        games = float(row.get("g") or 0)
+        starts = float(row.get("gs") or 0)
+        innings = float(row.get("ip") or 0)
+    except (TypeError, ValueError):
+        return None
+    if games <= 0:
+        return None
+    start_share = starts / games
+    if start_share >= 0.50 and innings >= 50:
+        return "starter"
+    if start_share <= 0.10 and innings >= 30:
+        return "reliever"
+    return None
+
+
+def _pitcher_rates(row: dict) -> dict | None:
+    try:
+        innings = float(row.get("ip") or 0)
+        batters_faced = float(row.get("bf") or 0)
+        strikeouts = float(row.get("k") or 0)
+        walks = float(row.get("bb") or 0)
+    except (TypeError, ValueError):
+        return None
+    if innings <= 0 or batters_faced <= 0:
+        return None
+    return {
+        "k_bb_pct": 100.0 * (strikeouts - walks) / batters_faced,
+        "k_per_9": 9.0 * strikeouts / innings,
+        "bb_per_9": 9.0 * walks / innings,
+    }
+
+
+class PitcherCompPool:
+    """Role-separated, era-relative MLB pitcher seasons for display-only comps."""
+
+    def __init__(self, history_rows: list[dict]):
+        self.rows = []
+        for raw in history_rows:
+            role = _historical_pitcher_role(raw)
+            rates = _pitcher_rates(raw)
+            try:
+                season = int(raw.get("season"))
+                player_id = int(raw.get("id"))
+            except (TypeError, ValueError):
+                continue
+            if role is None or rates is None:
+                continue
+            self.rows.append({
+                **raw,
+                "id": player_id,
+                "season": season,
+                "role": role,
+                "rates": rates,
+            })
+        self.latest_season = max((row["season"] for row in self.rows), default=None)
+        self._season_z = self._era_stats()
+        self.match_rows = self._match_rows()
+        self.match_counts = {
+            role: sum(row["role"] == role for row in self.match_rows)
+            for role in ("starter", "reliever")
+        }
+        seasons = {row["season"] for row in self.rows}
+        self.coverage_ready = (
+            set(PITCHER_REQUIRED_SEASONS).issubset(seasons)
+            and all(
+                (season, role) in self._season_z
+                for season in PITCHER_REQUIRED_SEASONS
+                for role in ("starter", "reliever")
+            )
+            and all(
+                count >= PITCHER_MIN_MATCH_ROWS
+                for count in self.match_counts.values()
+            )
+        )
+
+    def _era_stats(self) -> dict[tuple[int, str], dict[str, tuple[float, float]]]:
+        grouped: dict[tuple[int, str], list[dict]] = {}
+        for row in self.rows:
+            grouped.setdefault((row["season"], row["role"]), []).append(row["rates"])
+        stats = {}
+        for group, rate_rows in grouped.items():
+            group_stats = {}
+            for key in PITCHER_SHAPE_KEYS:
+                values = [rates[key] for rates in rate_rows]
+                mean = sum(values) / len(values)
+                variance = sum((value - mean) ** 2 for value in values) / len(values)
+                std = variance ** 0.5
+                if std <= 0:
+                    break
+                group_stats[key] = (mean, std)
+            if len(group_stats) == len(PITCHER_SHAPE_KEYS):
+                stats[group] = group_stats
+        return stats
+
+    def _match_rows(self) -> list[dict]:
+        rows = []
+        for row in self.rows:
+            try:
+                age = int(row.get("age"))
+            except (TypeError, ValueError):
+                continue
+            stats = self._season_z.get((row["season"], row["role"]))
+            if age > MATCH_MAX_AGE or not stats:
+                continue
+            rows.append({
+                **row,
+                "age": age,
+                "z": tuple(
+                    (row["rates"][key] - stats[key][0]) / stats[key][1]
+                    for key in PITCHER_SHAPE_KEYS
+                ),
+            })
+        return rows
+
+    def target_z(self, role: str, translated: dict) -> tuple | None:
+        stats = self._season_z.get((self.latest_season, role))
+        if not stats:
+            return None
+        try:
+            return tuple(
+                (float(translated[key]) - stats[key][0]) / stats[key][1]
+                for key in PITCHER_SHAPE_KEYS
+            )
+        except (KeyError, TypeError, ValueError):
+            return None
+
+
+def pitcher_comp_for_target(
+    pool: PitcherCompPool,
+    role: str,
+    translated: dict,
+) -> dict | None:
+    if not pool.coverage_ready:
+        return None
+    target = pool.target_z(role, translated)
+    if target is None:
+        return None
+    ranked = sorted(
+        (row for row in pool.match_rows if row["role"] == role),
+        key=lambda row: _distance(target, row["z"]),
+    )
+    twins, seen = [], set()
+    for row in ranked:
+        if row["id"] in seen:
+            continue
+        seen.add(row["id"])
+        twins.append({
+            "name": row.get("name"),
+            "season": row["season"],
+            "age": row["age"],
+            "role": row["role"],
+            "ip": round(float(row.get("ip") or 0), 1),
+            **{
+                key: round(row["rates"][key], 1)
+                for key in PITCHER_SHAPE_KEYS
+            },
+            "distance": round(_distance(target, row["z"]), 3),
+        })
+        if len(twins) >= TWIN_COUNT:
+            break
+    if not twins:
+        return None
+    return {
+        "role_pool": role,
+        "target": {
+            key: round(float(translated[key]), 1)
+            for key in PITCHER_SHAPE_KEYS
+        },
+        "twins": twins,
+    }
+
+
 def _distance(a: tuple, b: tuple) -> float:
     return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
 
@@ -338,9 +531,46 @@ def eligible_prospects(snapshot: dict) -> list[dict]:
     return out
 
 
+def _translated_pitcher_rates(row: dict) -> dict | None:
+    translated = row.get("stat_line_translated") or {}
+    if translated.get("role") != "pitcher":
+        return None
+    if translated.get("low_sample") or translated.get("confidence") != "high":
+        return None
+    rates = {}
+    for stat in translated.get("stats") or []:
+        key = stat.get("key")
+        if key in PITCHER_SHAPE_KEYS and stat.get("mlb") is not None:
+            rates[key] = stat["mlb"]
+    return rates if len(rates) == len(PITCHER_SHAPE_KEYS) else None
+
+
+def eligible_pitcher_prospects(snapshot: dict) -> list[dict]:
+    out = []
+    for row in snapshot.get("players") or []:
+        rank = row.get("prospect_rank")
+        if row.get("player_type") != "prospect" or not rank or rank > MAX_PROSPECT_RANK:
+            continue
+        rates = _translated_pitcher_rates(row)
+        role = pitcher_target_role(
+            ((row.get("components") or {}).get("factual_current_context") or {})
+        )
+        if not rates or role is None or not row.get("mlbam_id"):
+            continue
+        out.append({
+            "mlbam_id": str(row["mlbam_id"]),
+            "name": row.get("name"),
+            "prospect_rank": rank,
+            "role": role,
+            "translated": rates,
+        })
+    return out
+
+
 def build_prospect_comps(
     history: dict,
     snapshot: dict,
+    pitcher_history: dict | None = None,
     generated_at: str | None = None,
 ) -> dict:
     pool = CompPool(history.get("rows") or [])
@@ -354,6 +584,20 @@ def build_prospect_comps(
             "prospect_rank": prospect["prospect_rank"],
             **comp,
         }
+    pitcher_pool = PitcherCompPool((pitcher_history or {}).get("rows") or [])
+    pitchers = {}
+    if pitcher_pool.coverage_ready:
+        for prospect in eligible_pitcher_prospects(snapshot):
+            comp = pitcher_comp_for_target(
+                pitcher_pool, prospect["role"], prospect["translated"]
+            )
+            if comp is None:
+                continue
+            pitchers[prospect["mlbam_id"]] = {
+                "name": prospect["name"],
+                "prospect_rank": prospect["prospect_rank"],
+                **comp,
+            }
     seasons = history.get("seasons") or [None, None]
     return {
         "artifact": ARTIFACT_NAME,
@@ -385,4 +629,20 @@ def build_prospect_comps(
         },
         "tier_labels": dict(TIER_LABELS),
         "players": players,
+        "pitchers": pitchers,
+        "pitcher_method": {
+            "axes": list(PITCHER_SHAPE_KEYS),
+            "coverage_ready": pitcher_pool.coverage_ready,
+            "match_pool_rows": dict(pitcher_pool.match_counts),
+            "role_policy": {
+                "starter": "GS/G >= 0.50 and IP >= 50",
+                "reliever": "GS/G <= 0.10 and IP >= 30",
+                "mixed": "excluded",
+            },
+            "source_policy": {
+                "display_only": True,
+                "feeds_live_valucast_rank": False,
+                "feeds_model_score": False,
+            },
+        },
     }
