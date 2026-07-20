@@ -281,10 +281,19 @@ work.
 - Plan 033 was registered and amended before scoring (`cc574052`, `a41a46e9`,
   `7f407dbb`, `a5c5e92a`). Task 6 spent its single look in `a897347a`; there is
   no free rerun. The sealed result is invalid for adjudication and descriptive
-  only because normalized quantiles entered raw-unit guards and heuristics. It
-  is not evidence for or against normalized production. Any future test needs
-  a separate registration that keeps factual raw guard and heuristic fields
-  separate from normalized model features.
+  only for three independent reasons: normalized quantiles entered raw-unit
+  guards and heuristics; partial-impact references were derived globally from
+  the full outcome store instead of separately from each fold's training-only
+  seasons; and current/AAA ID-only maps collapsed two-way roles, making sealed
+  AAA missingness and role counts order-dependent. The sealed role outputs,
+  partial-impact numbers, and AAA counts are not evidence for or against
+  normalized production and remain byte-for-byte unchanged. The correction
+  record `data/validation/valucast_prospect_normalized_production_adjudication.json`
+  binds the Task 6 content and file hashes and leaves rerun and claims false.
+  Any future test needs a separate registration that fixes all three classes:
+  separate factual raw guard fields from normalized model features, freeze
+  per-fold training-only impact references, and preserve exact
+  `(mlbam_id, role)` identities with unmatched-role disclosure.
 - No public claim is authorized. The live model freeze and failed pedigree-
   decay flag remain preserved. The Combined normalized-production-plus-
   promotion variant was not built and remains blocked on prospective evidence.

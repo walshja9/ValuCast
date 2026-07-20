@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from bisect import bisect_left, bisect_right
 from copy import deepcopy
+import hashlib
+import json
 from math import isfinite
 from statistics import mean
 
@@ -591,11 +593,28 @@ def _partial_impact_report(
     seasons = contract.get("historical_mlb_seasons")
     if not seasons:
         return {"available": False, "reason": "historical_mlb_seasons_unavailable"}
-    references = _impact_references(seasons)
+    fold_references = {}
+    for year in scored_folds:
+        training_seasons = fold_local_contract(contract, year)[
+            "historical_mlb_seasons"
+        ]
+        references = _impact_references(training_seasons)
+        fold_references[year] = {
+            "references": references,
+            "reference_player_count": len(training_seasons),
+            "reference_season_count": sum(map(len, training_seasons.values())),
+            "reference_sha256": hashlib.sha256(
+                json.dumps(
+                    references, sort_keys=True, separators=(",", ":")
+                ).encode("utf-8")
+            ).hexdigest(),
+        }
     report = {}
     for role in _RATE_FIELDS:
         folds = []
         for year, fold in scored_folds.items():
+            reference_metadata = fold_references[year]
+            references = reference_metadata["references"]
             outcomes = {}
             for key, row in fold["metadata"].items():
                 if key[1] == role and key in fold["control_ranks"]:
@@ -606,6 +625,21 @@ def _partial_impact_report(
             folds.append(
                 {
                     "fold_year": year,
+                    "available_categories": list(
+                        _active_impact_categories(references, role)
+                    ),
+                    "reference_category_counts": {
+                        category: len(values)
+                        for category, values in references[role].items()
+                    },
+                    **{
+                        key: reference_metadata[key]
+                        for key in (
+                            "reference_player_count",
+                            "reference_season_count",
+                            "reference_sha256",
+                        )
+                    },
                     **_ordinal_subset(
                         fold["control_ranks"],
                         fold["candidate_ranks"],
@@ -615,8 +649,11 @@ def _partial_impact_report(
                 }
             )
         completed = [fold for fold in folds if fold["players"]]
+        category_sets = [set(fold["available_categories"]) for fold in folds]
         report[role] = {
-            "available_categories": list(_active_impact_categories(references, role)),
+            "available_categories": sorted(
+                set.intersection(*category_sets) if category_sets else set()
+            ),
             "direct_7x7": False,
             "players": sum(fold["players"] for fold in completed),
             "primary": {
@@ -849,22 +886,31 @@ def score_current_variants(contract: dict) -> tuple[dict, dict, dict]:
     control_model = build_shadow_model(control_contract, now=now)
     candidate_model = build_shadow_model(candidate_contract, now=now)
 
-    def ranks(model: dict) -> tuple[dict[tuple[int, str], int], dict[str, int]]:
-        identities = {
-            (int(row["mlbam_id"]), row["role"]): int(row["valucast_prospect_rank"])
-            for row in model["ranked"]
-        }
-        if len({mlbam_id for mlbam_id, _ in identities}) != len(identities):
-            raise ValueError("current model contains a cross-role MLBAM identity collision")
-        return identities, {str(mlbam_id): rank for (mlbam_id, _), rank in identities.items()}
+    def ranks(model: dict) -> dict[str, dict[str, int]]:
+        ranked = {role: {} for role in _RATE_FIELDS}
+        for row in model["ranked"]:
+            role = row["role"]
+            mlbam_id = str(int(row["mlbam_id"]))
+            if mlbam_id in ranked[role]:
+                raise ValueError(f"duplicate current identity: {mlbam_id} {role}")
+            ranked[role][mlbam_id] = int(row["valucast_prospect_rank"])
+        return ranked
 
-    control_identities, control = ranks(control_model)
-    candidate_identities, candidate = ranks(candidate_model)
-    if set(control_identities) != set(candidate_identities):
+    control = ranks(control_model)
+    candidate = ranks(candidate_model)
+    control_identities = {
+        (mlbam_id, role) for role, values in control.items() for mlbam_id in values
+    }
+    candidate_identities = {
+        (mlbam_id, role) for role, values in candidate.items() for mlbam_id in values
+    }
+    if control_identities != candidate_identities:
         raise ValueError("current Control/candidate identity sets differ")
-    available_ids = {str(identity[0]) for identity in current_identities if identity}
-    all_ids = {
-        str(identity[0])
+    available_identities = {
+        (str(identity[0]), identity[1]) for identity in current_identities if identity
+    }
+    all_identities = {
+        (str(identity[0]), identity[1])
         for row in current_rows
         if (identity := _current_identity(row)) is not None
     }
@@ -872,8 +918,17 @@ def score_current_variants(contract: dict) -> tuple[dict, dict, dict]:
         "historical": historical_coverage,
         "current": current_coverage,
         "identity_set_equal": True,
-        "ranked_identities": len(control),
-        "unavailable_current_identities": sorted(all_ids - available_ids, key=_mlbam_sort),
+        "ranked_identities": len(control_identities),
+        "ranked_role_counts": {
+            role: len(control[role]) for role in _RATE_FIELDS
+        },
+        "unavailable_current_identities": [
+            {"mlbam_id": int(mlbam_id), "role": role}
+            for mlbam_id, role in sorted(
+                all_identities - available_identities,
+                key=lambda identity: (_mlbam_sort(identity[0]), identity[1]),
+            )
+        ],
     }
 
 
@@ -900,23 +955,34 @@ def build_aaa_disagreement(
         name: {"rows": []}
         for name in ("hitter", "pitcher_starter", "pitcher_reliever")
     }
-    missing_ids = []
-    missing_role_context_ids = []
-    common_ids = set(control_scores) & set(candidate_scores)
-    aaa_rows = {
-        str(row["mlbam_id"]): row
+    missing_identities = []
+    missing_role_context_identities = []
+    common_identities = {
+        (mlbam_id, role)
+        for role in _RATE_FIELDS
+        for mlbam_id in set(control_scores.get(role, {}))
+        & set(candidate_scores.get(role, {}))
+    }
+    current_aaa_rows = {
+        (str(int(row["mlbam_id"])), row["role"]): row
         for row in current_rows
         if str(row.get("level") or "").upper() == "AAA"
         and row.get("mlbam_id") not in (None, "")
-        and str(row["mlbam_id"]) in common_ids
+        and row.get("role") in _RATE_FIELDS
     }
-    for mlbam_id in sorted(aaa_rows, key=_mlbam_sort):
-        current = aaa_rows[mlbam_id]
-        role = current.get("role")
+    unmatched_identities = set(current_aaa_rows) - common_identities
+    aaa_rows = {
+        identity: row
+        for identity, row in current_aaa_rows.items()
+        if identity in common_identities
+    }
+    identity_sort = lambda identity: (_mlbam_sort(identity[0]), identity[1])
+    for mlbam_id, role in sorted(aaa_rows, key=identity_sort):
+        current = aaa_rows[(mlbam_id, role)]
         measured = (aaa.get("hitters") if role == "hitter" else aaa.get("pitchers")) or {}
         features = measured.get(mlbam_id)
         if not features:
-            missing_ids.append(mlbam_id)
+            missing_identities.append((mlbam_id, role))
             continue
         if role == "hitter":
             group = "hitter"
@@ -932,7 +998,7 @@ def build_aaa_disagreement(
             }
         elif role == "pitcher":
             if current.get("is_starter") not in (True, False):
-                missing_role_context_ids.append(mlbam_id)
+                missing_role_context_identities.append((mlbam_id, role))
                 continue
             group = "pitcher_starter" if current["is_starter"] else "pitcher_reliever"
             overall = features.get("overall") or {}
@@ -962,9 +1028,11 @@ def build_aaa_disagreement(
             {
                 "mlbam_id": int(mlbam_id),
                 "name": current.get("name"),
-                "control_rank": control_scores[mlbam_id],
-                "normalized_production_rank": candidate_scores[mlbam_id],
-                "rank_delta": candidate_scores[mlbam_id] - control_scores[mlbam_id],
+                "role": role,
+                "control_rank": control_scores[role][mlbam_id],
+                "normalized_production_rank": candidate_scores[role][mlbam_id],
+                "rank_delta": candidate_scores[role][mlbam_id]
+                - control_scores[role][mlbam_id],
                 "reliability": reliability,
                 "components": components,
             }
@@ -978,10 +1046,23 @@ def build_aaa_disagreement(
         "qualification_gates": deepcopy(aaa.get("gates") or {}),
         "eligible_current_aaa_count": len(aaa_rows),
         "measured_count": sum(group["count"] for group in groups.values()),
-        "missing_statcast_count": len(missing_ids),
-        "missing_ids": missing_ids,
-        "missing_starter_reliever_context_count": len(missing_role_context_ids),
-        "missing_starter_reliever_context_ids": missing_role_context_ids,
+        "missing_statcast_count": len(missing_identities),
+        "missing_statcast_identities": [
+            {"mlbam_id": int(mlbam_id), "role": role}
+            for mlbam_id, role in missing_identities
+        ],
+        "missing_starter_reliever_context_count": len(
+            missing_role_context_identities
+        ),
+        "missing_starter_reliever_context_identities": [
+            {"mlbam_id": int(mlbam_id), "role": role}
+            for mlbam_id, role in missing_role_context_identities
+        ],
+        "unmatched_role_identity_count": len(unmatched_identities),
+        "unmatched_role_identities": [
+            {"mlbam_id": int(mlbam_id), "role": role}
+            for mlbam_id, role in sorted(unmatched_identities, key=identity_sort)
+        ],
         "groups": groups,
         "interpretation": (
             "Raw measured components and rank disagreement only. Strong pitch traits do not imply "

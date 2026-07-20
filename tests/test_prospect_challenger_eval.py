@@ -135,6 +135,49 @@ def test_test_cohort_seasons_never_enter_fold_local_impact_references():
     ] == [2015]
 
 
+def test_partial_impact_references_are_fold_local_and_outcome_mutation_invariant():
+    contract = {
+        "historical": {
+            "rows": [
+                {"mlbam_id": 1, "role": "hitter", "cohort_year": 2014},
+                {"mlbam_id": 3, "role": "hitter", "cohort_year": 2015},
+                {"mlbam_id": 2, "role": "hitter", "cohort_year": 2018},
+                {"mlbam_id": 4, "role": "hitter", "cohort_year": 2019},
+            ]
+        },
+        "historical_mlb_seasons": {
+            "1_hitter": [{"year": 2015, "pa": 500, "hr": 10}],
+            "3_hitter": [{"year": 2016, "pa": 500, "hr": 20}],
+            "2_hitter": [{"year": 2019, "pa": 500, "hr": 30}],
+            "4_hitter": [{"year": 2020, "pa": 500, "hr": 40}],
+        },
+    }
+    scored_folds = {
+        year: {
+            "metadata": {(str(player), "hitter"): contract["historical"]["rows"][index]},
+            "control_ranks": {(str(player), "hitter"): 1},
+            "candidate_ranks": {(str(player), "hitter"): 1},
+        }
+        for year, player, index in ((2018, 2, 2), (2019, 4, 3))
+    }
+
+    first = challenger_eval._partial_impact_report(contract, scored_folds)
+    mutated = json.loads(json.dumps(contract))
+    mutated["historical_mlb_seasons"]["1_hitter"].append(
+        {"year": 2030, "pa": 500, "hr": 999}
+    )
+    mutated["historical_mlb_seasons"]["2_hitter"][0]["hr"] = 999
+    second = challenger_eval._partial_impact_report(mutated, scored_folds)
+
+    first_folds = first["roles"]["hitter"]["folds"]
+    second_folds = second["roles"]["hitter"]["folds"]
+    assert [fold["reference_player_count"] for fold in first_folds] == [1, 2]
+    assert first_folds[0]["reference_sha256"] != first_folds[1]["reference_sha256"]
+    assert [fold["reference_sha256"] for fold in first_folds] == [
+        fold["reference_sha256"] for fold in second_folds
+    ]
+
+
 def test_invalid_training_row_cannot_bypass_final_horizon_clip():
     invalid = _row(1, year=2014) | {"age": 99}
     fold = fold_local_contract(
@@ -431,7 +474,11 @@ def test_registered_replay_uses_nested_criteria_and_final_status_mappings(monkey
     monkeypatch.setattr(challenger_eval, "build_track", fake_track)
     registration = _fixture_registration()
     report = challenger_eval.run_registered_replay(
-        {"historical_mlb_seasons": {"1_hitter": []}}, registration
+        {
+            "historical": {"rows": []},
+            "historical_mlb_seasons": {"1_hitter": []},
+        },
+        registration,
     )
     assert seen == [
         registration["adjudication"]["build_track_criteria"],
@@ -526,13 +573,83 @@ def test_current_variants_normalize_history_and_current_separately(monkeypatch):
     monkeypatch.setattr(challenger_eval, "build_shadow_model", build)
     control, candidate, coverage = challenger_eval.score_current_variants(contract)
     assert len(calls) == 2
-    assert control == candidate == {"10": 1}
-    assert coverage["unavailable_current_identities"] == ["11"]
+    assert control == candidate == {"hitter": {"10": 1}, "pitcher": {}}
+    assert coverage["unavailable_current_identities"] == [
+        {"mlbam_id": 11, "role": "hitter"}
+    ]
+
+
+def test_current_variant_ranks_preserve_two_way_role_identity(monkeypatch):
+    contract = {
+        "historical": {"rows": [{"mlbam_id": 1, "cohort_year": 2018, "role": "hitter"}]},
+        "current": {
+            "fetched_date": "2026-07-20",
+            "hitters": [{"mlbam_id": 10, "sample_season": 2026, "role": "hitter"}],
+            "pitchers": [{"mlbam_id": 10, "sample_season": 2026, "role": "pitcher"}],
+        },
+    }
+    monkeypatch.setattr(
+        challenger_eval,
+        "normalize_rows",
+        lambda rows: (list(rows), {"available": len(rows)}),
+    )
+    monkeypatch.setattr(
+        challenger_eval,
+        "build_shadow_model",
+        lambda *_args, **_kwargs: {
+            "ranked": [
+                {"mlbam_id": 10, "role": "hitter", "valucast_prospect_rank": 1},
+                {"mlbam_id": 10, "role": "pitcher", "valucast_prospect_rank": 2},
+            ]
+        },
+    )
+
+    control, candidate, coverage = challenger_eval.score_current_variants(contract)
+
+    assert control == candidate == {"hitter": {"10": 1}, "pitcher": {"10": 2}}
+    assert coverage["ranked_identities"] == 2
+    assert coverage["ranked_role_counts"] == {"hitter": 1, "pitcher": 1}
+
+
+def test_aaa_two_way_join_is_role_exact_and_order_invariant():
+    control = {"hitter": {"10": 1, "11": 3}, "pitcher": {"10": 2}}
+    candidate = {"hitter": {"10": 2, "11": 3}, "pitcher": {"10": 1}}
+    aaa = {
+        "hitters": {"10": {"n_pitches": 500, "n_bip": 120, "avg_ev": 90.0}},
+        "pitchers": {
+            "10": {"n_pitches": 400, "overall": {"whiff_pct": 30.0}, "pitch_types": {}}
+        },
+    }
+    current = [
+        {"mlbam_id": 10, "role": "hitter", "level": "AAA"},
+        {"mlbam_id": 10, "role": "pitcher", "level": "AAA", "is_starter": True},
+        {"mlbam_id": 11, "role": "pitcher", "level": "AAA", "is_starter": False},
+    ]
+
+    first = challenger_eval.build_aaa_disagreement(control, candidate, aaa, current)
+    second = challenger_eval.build_aaa_disagreement(
+        control, candidate, aaa, list(reversed(current))
+    )
+
+    assert first == second
+    assert first["eligible_current_aaa_count"] == 2
+    assert first["measured_count"] == 2
+    assert first["unmatched_role_identities"] == [
+        {"mlbam_id": 11, "role": "pitcher"}
+    ]
+    assert first["groups"]["hitter"]["rows"][0]["role"] == "hitter"
+    assert first["groups"]["pitcher_starter"]["rows"][0]["role"] == "pitcher"
 
 
 def _aaa_fixture():
-    control = {"10": 1, "20": 2, "30": 3, "40": 4}
-    candidate = {"10": 2, "20": 1, "30": 3, "40": 4}
+    control = {
+        "hitter": {"10": 1, "40": 4},
+        "pitcher": {"20": 2, "30": 3},
+    }
+    candidate = {
+        "hitter": {"10": 2, "40": 4},
+        "pitcher": {"20": 1, "30": 3},
+    }
     aaa = {
         "gates": {"min_pitcher_pitches": 250, "min_hitter_bip": 100},
         "hitters": {"10": {"n_pitches": 500, "n_bip": 120, "avg_ev": 90.0}},
@@ -558,7 +675,9 @@ def test_missing_aaa_players_are_excluded_never_zero_filled():
         for group in report["groups"].values()
         for row in group["rows"]
     )
-    assert report["missing_ids"] == ["40"]
+    assert report["missing_statcast_identities"] == [
+        {"mlbam_id": 40, "role": "hitter"}
+    ]
     assert '\"mlbam_id\": 40' not in json.dumps(report["groups"])
     assert "composite" not in json.dumps(report).lower()
 
@@ -648,9 +767,17 @@ def test_runner_final_artifact_forbids_raw_superiority_status():
         runner._validate_final_artifact(artifact)
 
 
-def test_runner_reservation_is_atomic_and_spent_state_is_durable(tmp_path):
+def test_runner_reservation_is_atomic_and_spent_state_is_durable(
+    tmp_path, monkeypatch
+):
     runner = _runner()
     output = tmp_path / "gate.json"
+    fsync_calls = []
+    directory_fsync_calls = []
+    monkeypatch.setattr(runner.os, "fsync", fsync_calls.append)
+    monkeypatch.setattr(
+        runner, "_fsync_directory", directory_fsync_calls.append
+    )
     reservation = runner._seal(
         {
             "status": "collecting",
@@ -662,6 +789,8 @@ def test_runner_reservation_is_atomic_and_spent_state_is_durable(tmp_path):
         }
     )
     runner._reserve_output(output, reservation)
+    assert len(fsync_calls) == 1
+    assert directory_fsync_calls == [output.parent]
     with pytest.raises(ValueError, match="already exists"):
         runner._reserve_output(output, reservation)
 
@@ -673,6 +802,8 @@ def test_runner_reservation_is_atomic_and_spent_state_is_durable(tmp_path):
         }
     )
     runner._replace_reserved(output, spent)
+    assert len(fsync_calls) == 2
+    assert directory_fsync_calls == [output.parent, output.parent]
     assert json.loads(output.read_text(encoding="utf-8"))["registered_look_spent"] is True
 
     invalid_final = spent | {"public_claim_eligible": True, "run_completed": True}

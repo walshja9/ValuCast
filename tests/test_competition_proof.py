@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -46,6 +47,7 @@ _RESEARCH_ALLOWLIST = {
     Path("prospects/challenger_eval.py"),
     Path("prospects/competition_benchmark.py"),
     Path("scripts/build_competition_benchmark.py"),
+    Path("scripts/build_prospect_realized_value_readiness.py"),
     Path("scripts/run_prospect_normalized_production_gate.py"),
 }
 _PRODUCTION_ROOTS = (
@@ -95,6 +97,10 @@ _FORBIDDEN_PRODUCTION_REFERENCES = (
     "valucast_competition_evidence",
     "data/private/competition",
     "data/models/valucast_competition_benchmark.json",
+    "prospects.challenger_eval",
+    "valucast_prospect_realized_value_readiness.json",
+    "valucast_prospect_normalized_production_gate.json",
+    "valucast_prospect_normalized_production_adjudication.json",
 )
 
 
@@ -229,6 +235,60 @@ def test_production_model_paths_do_not_import_competition_evidence():
     for path in production_paths:
         body = (_REPO_ROOT / path).read_text(encoding="utf-8")
         assert not _competition_references(path, body), path
+
+
+def test_production_scanner_binds_all_normalized_production_research_tokens():
+    tokens = {
+        "prospects.challenger_eval",
+        "valucast_prospect_realized_value_readiness.json",
+        "valucast_prospect_normalized_production_gate.json",
+        "valucast_prospect_normalized_production_adjudication.json",
+    }
+    assert tokens.issubset(_FORBIDDEN_PRODUCTION_REFERENCES)
+    for token in tokens:
+        assert _competition_references(Path("adversarial_fixture.py"), repr(token))
+    assert {
+        Path("prospects/challenger_eval.py"),
+        Path("scripts/run_prospect_normalized_production_gate.py"),
+    }.issubset(_RESEARCH_ALLOWLIST)
+    assert not _RESEARCH_ALLOWLIST & set(_production_paths())
+
+
+def test_normalized_production_adjudication_correction_is_sealed_and_source_bound():
+    correction_path = (
+        _REPO_ROOT
+        / "data/validation/valucast_prospect_normalized_production_adjudication.json"
+    )
+    source_path = (
+        _REPO_ROOT
+        / "data/validation/valucast_prospect_normalized_production_gate.json"
+    )
+    correction = json.loads(correction_path.read_text(encoding="utf-8"))
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    unsealed = {
+        key: value for key, value in correction.items() if key != "content_sha256"
+    }
+
+    assert correction["schema"] == "valucast_prospect_normalized_production_adjudication"
+    assert correction["status"] == "invalid_for_adjudication"
+    assert correction["usage"] == "descriptive_only"
+    assert correction["rerun_authorized"] is False
+    assert correction["claim_authorized"] is False
+    assert correction["public_claim_eligible"] is False
+    assert correction["source"]["content_sha256"] == source["content_sha256"] == (
+        "49116e4e7bb5773fa981fa0096a6a15fad72fd5c1c02aa2236a6dce9ad2be19a"
+    )
+    assert correction["source"]["file_sha256"] == hashlib.sha256(
+        source_path.read_bytes()
+    ).hexdigest() == "9b0f9e2ff49af88cd7e48b609788f73cba3bbc9b39860af409d7593ea496af70"
+    assert {item["code"] for item in correction["invalidations"]} == {
+        "raw_unit_guard_contamination",
+        "global_outcome_reference_leak",
+        "two_way_aaa_identity_collapse",
+    }
+    assert correction["content_sha256"] == hashlib.sha256(
+        json.dumps(unsealed, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def test_production_path_inventory_includes_engine_and_deploy_entrypoints():

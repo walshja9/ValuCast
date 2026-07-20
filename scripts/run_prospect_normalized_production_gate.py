@@ -121,14 +121,31 @@ def _write_once(path: Path, payload: dict) -> bool:
     return True
 
 
+def _fsync_directory(path: Path) -> None:
+    """Persist a directory entry where the platform permits directory fsync."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(descriptor)
+    except OSError:
+        pass
+    finally:
+        os.close(descriptor)
+
+
 def _reserve_output(path: Path, payload: dict) -> None:
     """Atomically reserve the only durable output path before scoring."""
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
         with path.open("x", encoding="utf-8") as stream:
             stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
     except FileExistsError as error:
         raise ValueError("one-shot output artifact already exists") from error
+    _fsync_directory(path.parent)
 
 
 def _replace_reserved(path: Path, payload: dict) -> None:
@@ -141,7 +158,10 @@ def _replace_reserved(path: Path, payload: dict) -> None:
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
             stream.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            stream.flush()
+            os.fsync(stream.fileno())
         os.replace(temporary, path)
+        _fsync_directory(path.parent)
     finally:
         Path(temporary).unlink(missing_ok=True)
 
