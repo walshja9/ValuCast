@@ -32,6 +32,11 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_comps.json"
 
 ARTIFACT_NAME = "valucast_prospect_comps"
 SHAPE_KEYS = ("k_pct", "bb_pct", "iso")
+COMPONENT_AXES = {
+    "power": ("Power", "iso", "ISO"),
+    "contact": ("Contact", "k_pct", "K%"),
+    "approach": ("Approach", "bb_pct", "BB%"),
+}
 MATCH_MIN_PA = 400
 MATCH_MAX_AGE = 26
 OUTCOME_HORIZON = 5  # seasons after the match season
@@ -212,6 +217,26 @@ def _distance(a: tuple, b: tuple) -> float:
     return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
 
 
+def _component_matches(pool: CompPool, target: tuple, translated: dict) -> dict:
+    matches = {}
+    for slug, (label, key, metric) in COMPONENT_AXES.items():
+        index = SHAPE_KEYS.index(key)
+        row = min(
+            pool.match_rows,
+            key=lambda item: abs(target[index] - item["z"][index]),
+        )
+        matches[slug] = {
+            "label": label,
+            "metric": metric,
+            "target": round(float(translated[key]), 3 if key == "iso" else 1),
+            "match": row["name"],
+            "season": row["season"],
+            "value": round(row["rates"][key], 3 if key == "iso" else 1),
+            "distance": round(abs(target[index] - row["z"][index]), 3),
+        }
+    return matches
+
+
 def comp_for_target(pool: CompPool, translated: dict) -> dict | None:
     target = pool.target_z(translated)
     if target is None or not pool.match_rows:
@@ -268,6 +293,7 @@ def comp_for_target(pool: CompPool, translated: dict) -> dict | None:
             "bb_pct": round(float(translated["bb_pct"]), 1),
             "iso": round(float(translated["iso"]), 3),
         },
+        "components": _component_matches(pool, target, translated),
         "twins": twins,
         "cohort": {
             "size": len(cohort_rows),

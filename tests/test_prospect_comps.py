@@ -66,6 +66,20 @@ def test_era_normalization_prefers_the_era_relative_match():
     assert d_normal < d_outlier
 
 
+def test_hitter_components_use_single_transparent_axes_and_distance():
+    pool = CompPool(_filler_pool(2025))
+
+    comp = comp_for_target(
+        pool, {"k_pct": 20.0, "bb_pct": 9.0, "iso": 0.180}
+    )
+
+    assert comp["components"]["power"]["metric"] == "ISO"
+    assert comp["components"]["contact"]["metric"] == "K%"
+    assert comp["components"]["approach"]["metric"] == "BB%"
+    assert all("distance" in item for item in comp["components"].values())
+    assert all("match_pct" not in item for item in comp["components"].values())
+
+
 def test_outcome_tiers_and_resolution_window():
     rows = _filler_pool(2010)
     # League context for the follow-up seasons, so era-relative OPS has a real
