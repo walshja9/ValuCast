@@ -681,3 +681,22 @@ def test_runner_reservation_is_atomic_and_spent_state_is_durable(tmp_path):
     persisted = json.loads(output.read_text(encoding="utf-8"))
     assert persisted["registered_look_spent"] is True
     assert persisted["phase"] == "outcome_scoring_started"
+
+
+def test_challenger_outputs_are_not_imported_by_production_decisions():
+    root = Path(__file__).resolve().parents[1]
+    forbidden = (
+        "valucast_prospect_realized_value_readiness.json",
+        "valucast_prospect_normalized_production_gate.json",
+        "prospects.challenger_eval",
+    )
+    production_paths = [
+        root / "app.py",
+        root / "prospects/rank_v1.py",
+        root / "prospects/availability.py",
+        root / "prospects/cross_role_shadow.py",
+        root / "scripts/build_valucast_buys.py",
+    ]
+    text = "\n".join(path.read_text(encoding="utf-8") for path in production_paths)
+    for token in forbidden:
+        assert token not in text

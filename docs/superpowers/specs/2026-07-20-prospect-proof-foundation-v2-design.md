@@ -267,6 +267,28 @@ The minimum sufficient automated checks prove:
 Each deliverable is a separate logical commit. No deploy is dispatched by this
 work.
 
+## Implementation record (2026-07-20)
+
+- The documentation contract shipped on this branch in `36f0fe56`. The
+  realized-value readiness audit shipped in `3541dae3`, with its partial-QS
+  contract check in `42606e58`; readiness remains blocked by all three sealed
+  blockers: missing pitcher QS, an impact target that is not direct 7x7, and
+  exact prospective replay that is not reconstructable.
+- The fold-local evaluator is research-only (`4c772736`, hardened in
+  `0c8a7e41`). The dated MiLB observation archive is wired (`e7f05795`,
+  corrected in `7c74a19e`), but its remote GitHub Actions CI shakedown remains
+  pending, so archive delivery is not yet called shipped.
+- Plan 033 was registered and amended before scoring (`cc574052`, `a41a46e9`,
+  `7f407dbb`, `a5c5e92a`). Task 6 spent its single look in `a897347a`; there is
+  no free rerun. The sealed result is invalid for adjudication and descriptive
+  only because normalized quantiles entered raw-unit guards and heuristics. It
+  is not evidence for or against normalized production. Any future test needs
+  a separate registration that keeps factual raw guard and heuristic fields
+  separate from normalized model features.
+- No public claim is authorized. The live model freeze and failed pedigree-
+  decay flag remain preserved. The Combined normalized-production-plus-
+  promotion variant was not built and remains blocked on prospective evidence.
+
 ## Non-goals
 
 - No live model retrain or rank/value change.
