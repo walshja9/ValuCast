@@ -32,3 +32,13 @@ _baseline.py
 _kbd.py
 _verify_repairs.py
 HANDOFF.md
+
+# Private competition evidence: named sources and row-level results never ship.
+data/private/competition/
+data/manual/competition_benchmark_sources.json
+data/manual/competition_benchmark_outcomes.json
+data/models/valucast_competition_benchmark.json
+data/manual/*historical_boards.json
+data/validation/competition_historical_replay.json
+scripts/build_competition_historical_replay.py
+tests/test_competition_benchmark.py
