@@ -20,32 +20,32 @@
     ],
     "top_context_band": 50
   },
-  "generated_at": "2026-07-19T00:00:00+00:00",
+  "generated_at": "2026-07-20T00:00:00+00:00",
   "input_artifacts": {
     "prospect_availability_version": "0.3.0",
     "prospect_model_version": "0.6.1",
-    "rank_generated_at": "2026-07-19T00:00:00+00:00",
+    "rank_generated_at": "2026-07-20T00:00:00+00:00",
     "rank_name": "ValuCast Prospect Rank v1",
     "rank_version": "0.2.8"
   },
   "metrics": {
-    "availability_watchlist_count_top50": 0,
+    "availability_watchlist_count_top50": 1,
     "bands": {
       "100": {
-        "availability_adjusted_count": 5,
-        "availability_adjusted_rate": 0.05,
+        "availability_adjusted_count": 4,
+        "availability_adjusted_rate": 0.04,
         "availability_status_counts": {
-          "available": 95,
-          "stale_or_inactive": 4,
-          "thin_current_sample": 1
+          "available": 96,
+          "stale_or_inactive": 2,
+          "thin_current_sample": 2
         },
         "evaluated_count": 100,
         "fallback_count": 0,
         "fallback_rate": 0.0,
         "level_counts": {
           "A": 4,
-          "A+": 14,
-          "AA": 30,
+          "A+": 15,
+          "AA": 29,
           "AAA": 52
         },
         "max_availability_risk_discount": 0.1,
@@ -57,13 +57,13 @@
           "pitcher": 39,
           "unknown": 0
         },
-        "score_average": 39.7618,
-        "score_max": 68.35,
-        "score_min": 31.12,
+        "score_average": 40.0502,
+        "score_max": 68.49,
+        "score_min": 31.19,
         "score_source_counts": {
           "prospect_model_v0_6": 100
         },
-        "thin_current_sample_count": 1,
+        "thin_current_sample_count": 2,
         "top_n": 100
       },
       "200": {
@@ -81,21 +81,21 @@
         "level_counts": {
           "A": 8,
           "A+": 31,
-          "AA": 63,
-          "AAA": 98
+          "AA": 62,
+          "AAA": 99
         },
         "max_availability_risk_discount": 0.3,
         "pedigree_count": 0,
         "pedigree_rate": 0.0,
-        "pitcher_rate": 0.425,
+        "pitcher_rate": 0.43,
         "role_counts": {
-          "hitter": 115,
-          "pitcher": 85,
+          "hitter": 114,
+          "pitcher": 86,
           "unknown": 0
         },
-        "score_average": 34.233,
-        "score_max": 68.35,
-        "score_min": 26.85,
+        "score_average": 34.4188,
+        "score_max": 68.49,
+        "score_min": 26.9,
         "score_source_counts": {
           "prospect_model_v0_6": 200
         },
@@ -125,9 +125,9 @@
           "pitcher": 10,
           "unknown": 0
         },
-        "score_average": 51.57,
-        "score_max": 68.35,
-        "score_min": 44.01,
+        "score_average": 51.8548,
+        "score_max": 68.49,
+        "score_min": 43.94,
         "score_source_counts": {
           "prospect_model_v0_6": 25
         },
@@ -135,10 +135,11 @@
         "top_n": 25
       },
       "50": {
-        "availability_adjusted_count": 0,
-        "availability_adjusted_rate": 0.0,
+        "availability_adjusted_count": 1,
+        "availability_adjusted_rate": 0.02,
         "availability_status_counts": {
-          "available": 50
+          "available": 49,
+          "thin_current_sample": 1
         },
         "evaluated_count": 50,
         "fallback_count": 0,
@@ -148,48 +149,48 @@
           "AA": 12,
           "AAA": 29
         },
-        "max_availability_risk_discount": 0.0,
+        "max_availability_risk_discount": 0.03,
         "pedigree_count": 0,
         "pedigree_rate": 0.0,
-        "pitcher_rate": 0.34,
+        "pitcher_rate": 0.36,
         "role_counts": {
-          "hitter": 33,
-          "pitcher": 17,
+          "hitter": 32,
+          "pitcher": 18,
           "unknown": 0
         },
-        "score_average": 46.0298,
-        "score_max": 68.35,
-        "score_min": 37.31,
+        "score_average": 46.3528,
+        "score_max": 68.49,
+        "score_min": 37.61,
         "score_source_counts": {
           "prospect_model_v0_6": 50
         },
-        "thin_current_sample_count": 0,
+        "thin_current_sample_count": 1,
         "top_n": 50
       }
     },
     "bucket_metrics": [
       {
-        "average_sample": 50.694,
-        "average_score": 13.3179,
+        "average_sample": 51.1251,
+        "average_score": 13.2976,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
         "level_counts": {
           "AA": 279,
-          "AAA": 173
+          "AAA": 179
         },
         "role": "pitcher",
-        "row_count": 452,
+        "row_count": 458,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 24,
-        "top200_count": 61,
+        "top100_count": 25,
+        "top200_count": 62,
         "top25_count": 7,
         "top50_count": 11,
         "top_rank": 1
       },
       {
-        "average_sample": 224.9987,
-        "average_score": 7.7062,
+        "average_sample": 227.3567,
+        "average_score": 7.7644,
         "bucket": "hitter|lower_minors|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
@@ -200,43 +201,43 @@
         "role": "hitter",
         "row_count": 757,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 7,
+        "top100_count": 8,
         "top200_count": 23,
         "top25_count": 1,
         "top50_count": 3,
         "top_rank": 2
       },
       {
-        "average_sample": 274.9622,
-        "average_score": 17.0807,
+        "average_sample": 277.8175,
+        "average_score": 17.1034,
         "bucket": "hitter|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
         "level_counts": {
           "AA": 301,
-          "AAA": 202
+          "AAA": 203
         },
         "role": "hitter",
-        "row_count": 503,
+        "row_count": 504,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 54,
-        "top200_count": 90,
+        "top100_count": 53,
+        "top200_count": 89,
         "top25_count": 14,
-        "top50_count": 30,
+        "top50_count": 29,
         "top_rank": 3
       },
       {
-        "average_sample": 43.2842,
-        "average_score": 6.5549,
+        "average_sample": 43.724,
+        "average_score": 6.6287,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
         "level_counts": {
-          "A": 372,
-          "A+": 444
+          "A": 371,
+          "A+": 442
         },
         "role": "pitcher",
-        "row_count": 816,
+        "row_count": 813,
         "score_source": "prospect_model_v0_6",
         "top100_count": 10,
         "top200_count": 15,
@@ -245,8 +246,27 @@
         "top_rank": 4
       },
       {
+        "average_sample": 30.7292,
+        "average_score": 12.4758,
+        "bucket": "pitcher|upper_level|prospect_model_v0_6|thin_current_sample",
+        "evidence_bucket": "thin_current_sample",
+        "level_band": "upper_level",
+        "level_counts": {
+          "AA": 56,
+          "AAA": 57
+        },
+        "role": "pitcher",
+        "row_count": 113,
+        "score_source": "prospect_model_v0_6",
+        "top100_count": 2,
+        "top200_count": 5,
+        "top25_count": 0,
+        "top50_count": 1,
+        "top_rank": 29
+      },
+      {
         "average_sample": 55.0583,
-        "average_score": 21.0783,
+        "average_score": 21.0275,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "upper_level",
@@ -257,34 +277,15 @@
         "role": "pitcher",
         "row_count": 12,
         "score_source": "prospect_model_v0_6",
-        "top100_count": 3,
+        "top100_count": 1,
         "top200_count": 3,
         "top25_count": 0,
         "top50_count": 0,
         "top_rank": 73
       },
       {
-        "average_sample": 30.4789,
-        "average_score": 12.3822,
-        "bucket": "pitcher|upper_level|prospect_model_v0_6|thin_current_sample",
-        "evidence_bucket": "thin_current_sample",
-        "level_band": "upper_level",
-        "level_counts": {
-          "AA": 55,
-          "AAA": 59
-        },
-        "role": "pitcher",
-        "row_count": 114,
-        "score_source": "prospect_model_v0_6",
-        "top100_count": 1,
-        "top200_count": 5,
-        "top25_count": 0,
-        "top50_count": 0,
-        "top_rank": 81
-      },
-      {
         "average_sample": 46.4833,
-        "average_score": 9.8325,
+        "average_score": 9.8475,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "lower_minors",
@@ -299,11 +300,11 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 98
+        "top_rank": 100
       },
       {
         "average_sample": 272.25,
-        "average_score": 8.9375,
+        "average_score": 9.05,
         "bucket": "hitter|upper_level|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "upper_level",
@@ -318,11 +319,11 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 122
+        "top_rank": 117
       },
       {
-        "average_sample": 158.6,
-        "average_score": 22.81,
+        "average_sample": 160.2,
+        "average_score": 22.656,
         "bucket": "hitter|upper_level|prospect_model_v0_6|injured",
         "evidence_bucket": "injured",
         "level_band": "upper_level",
@@ -337,11 +338,30 @@
         "top200_count": 1,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 131
+        "top_rank": 162
       },
       {
-        "average_sample": 19.4621,
-        "average_score": 5.5121,
+        "average_sample": 104.1471,
+        "average_score": 7.3288,
+        "bucket": "hitter|upper_level|prospect_model_v0_6|thin_current_sample",
+        "evidence_bucket": "thin_current_sample",
+        "level_band": "upper_level",
+        "level_counts": {
+          "AA": 44,
+          "AAA": 24
+        },
+        "role": "hitter",
+        "row_count": 68,
+        "score_source": "prospect_model_v0_6",
+        "top100_count": 0,
+        "top200_count": 0,
+        "top25_count": 0,
+        "top50_count": 0,
+        "top_rank": 222
+      },
+      {
+        "average_sample": 19.5034,
+        "average_score": 5.3211,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "lower_minors",
@@ -356,30 +376,11 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 211
-      },
-      {
-        "average_sample": 103.403,
-        "average_score": 7.3548,
-        "bucket": "hitter|upper_level|prospect_model_v0_6|thin_current_sample",
-        "evidence_bucket": "thin_current_sample",
-        "level_band": "upper_level",
-        "level_counts": {
-          "AA": 43,
-          "AAA": 24
-        },
-        "role": "hitter",
-        "row_count": 67,
-        "score_source": "prospect_model_v0_6",
-        "top100_count": 0,
-        "top200_count": 0,
-        "top25_count": 0,
-        "top50_count": 0,
-        "top_rank": 219
+        "top_rank": 224
       },
       {
         "average_sample": 28.2667,
-        "average_score": 14.0444,
+        "average_score": 14.0656,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|injured",
         "evidence_bucket": "injured",
         "level_band": "upper_level",
@@ -394,11 +395,11 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 330
+        "top_rank": 322
       },
       {
         "average_sample": 207.8571,
-        "average_score": 3.1471,
+        "average_score": 3.1529,
         "bucket": "hitter|lower_minors|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "lower_minors",
@@ -413,11 +414,11 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 363
+        "top_rank": 372
       },
       {
         "average_sample": 4.0,
-        "average_score": 7.06,
+        "average_score": 7.13,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|injured",
         "evidence_bucket": "injured",
         "level_band": "lower_minors",
@@ -431,14 +432,14 @@
         "top200_count": 0,
         "top25_count": 0,
         "top50_count": 0,
-        "top_rank": 1491
+        "top_rank": 1486
       }
     ],
     "bucket_tuning_flag_count": 0,
     "context_disagreement_count_top50": 0,
     "fallback_watchlist_count_top200": 0,
     "pedigree_watchlist_count_top50": 0,
-    "row_count": 2846,
+    "row_count": 2850,
     "tuning_flag_count": 2
   },
   "recommendations": [
@@ -465,7 +466,7 @@
       "threshold": 7
     },
     {
-      "actual": 0.34,
+      "actual": 0.36,
       "id": "top50_pitcher_rate",
       "message": "Top-50 prospect board is pitcher-heavy.",
       "severity": "review",
@@ -474,7 +475,40 @@
   ],
   "watchlists": {
     "top200_raw_fallback": [],
-    "top50_availability_adjusted": [],
+    "top50_availability_adjusted": [
+      {
+        "age": 23,
+        "availability_risk_discount": 0.03,
+        "availability_risk_level": "medium",
+        "availability_signals": [
+          "limited_upper_level_starter_workload_under_45_ip"
+        ],
+        "availability_status": "thin_current_sample",
+        "confidence": "medium",
+        "dd_prospect_rank_context": null,
+        "dd_rank_gap_context": null,
+        "level": "AA",
+        "mlb_team": "NYY",
+        "mlbam_id": 696292,
+        "model_score": 47.36,
+        "name": "Ben Hess",
+        "positions": [
+          "P"
+        ],
+        "rank": 29,
+        "role": "pitcher",
+        "sample": 40.3,
+        "sample_reliability": 44.6,
+        "sample_unit": "IP",
+        "score": 42.74,
+        "score_source": "prospect_model_v0_6",
+        "source_ranks_context": {
+          "hkb": 174,
+          "pl": 386,
+          "sts": 1064
+        }
+      }
+    ],
     "top50_dd_context_disagreements": [],
     "top50_pedigree_only": []
   }

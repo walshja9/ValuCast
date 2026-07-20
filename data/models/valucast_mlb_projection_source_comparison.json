@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 31,
+    "horizon_days": 32,
     "horizon_sufficient": true,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -24,10 +24,10 @@
       "WHIP"
     ],
     "rate_actuals_method": "post_freeze_component_deltas",
-    "scoreable_players": 348,
+    "scoreable_players": 360,
     "scoreable_players_by_role": {
-      "hitters": 243,
-      "pitchers": 105
+      "hitters": 250,
+      "pitchers": 110
     }
   },
   "comparison_version": "0.1.0",
@@ -36,32 +36,32 @@
       "502671": {
         "counts": {
           "HR": 4.0,
-          "R": 6.0,
+          "R": 7.0,
           "RBI": 6.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 81.0
       },
       "514888": {
         "counts": {
-          "HR": 4.0,
-          "R": 13.0,
-          "RBI": 11.0,
+          "HR": 5.0,
+          "R": 15.0,
+          "RBI": 12.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 104.0
       },
       "518692": {
         "counts": {
           "HR": 3.0,
           "R": 11.0,
-          "RBI": 9.0,
+          "RBI": 11.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 97.0
+        "volume": 106.0
       },
       "518876": {
         "counts": {
@@ -97,7 +97,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 87.0
+        "volume": 91.0
       },
       "543037": {
         "counts": {
@@ -114,29 +114,39 @@
       },
       "543135": {
         "counts": {
-          "BB": 5.0,
-          "ER": 9.0,
+          "BB": 7.0,
+          "ER": 13.0,
           "HLD": 0.0,
-          "H_ALLOWED": 24.0,
-          "K": 37.0,
+          "H_ALLOWED": 30.0,
+          "K": 39.0,
           "SV": 0.0,
           "W": 3.0
         },
         "role": "pitcher",
-        "volume": 24.0
+        "volume": 28.0
       },
       "543243": {
         "counts": {
-          "BB": 7.0,
-          "ER": 3.0,
+          "BB": 11.0,
+          "ER": 4.0,
           "HLD": 0.0,
-          "H_ALLOWED": 16.0,
-          "K": 30.0,
+          "H_ALLOWED": 21.0,
+          "K": 35.0,
           "SV": 0.0,
-          "W": 3.0
+          "W": 4.0
         },
         "role": "pitcher",
-        "volume": 26.334
+        "volume": 32.334
+      },
+      "543309": {
+        "counts": {
+          "HR": 2.0,
+          "R": 5.0,
+          "RBI": 4.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 53.0
       },
       "543807": {
         "counts": {
@@ -179,7 +189,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 106.0
+        "volume": 110.0
       },
       "553869": {
         "counts": {
@@ -194,12 +204,12 @@
       "553993": {
         "counts": {
           "HR": 5.0,
-          "R": 8.0,
+          "R": 9.0,
           "RBI": 11.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 89.0
+        "volume": 93.0
       },
       "554430": {
         "counts": {
@@ -216,13 +226,13 @@
       },
       "571448": {
         "counts": {
-          "HR": 4.0,
-          "R": 15.0,
-          "RBI": 11.0,
+          "HR": 5.0,
+          "R": 16.0,
+          "RBI": 13.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 94.0
       },
       "571510": {
         "counts": {
@@ -253,12 +263,12 @@
       "571970": {
         "counts": {
           "HR": 2.0,
-          "R": 8.0,
+          "R": 9.0,
           "RBI": 14.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 81.0
+        "volume": 89.0
       },
       "572233": {
         "counts": {
@@ -282,13 +292,13 @@
       },
       "575929": {
         "counts": {
-          "HR": 5.0,
-          "R": 13.0,
-          "RBI": 18.0,
+          "HR": 6.0,
+          "R": 15.0,
+          "RBI": 20.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 80.0
+        "volume": 84.0
       },
       "592332": {
         "counts": {
@@ -306,35 +316,35 @@
       "592518": {
         "counts": {
           "HR": 7.0,
-          "R": 13.0,
-          "RBI": 19.0,
+          "R": 14.0,
+          "RBI": 20.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 108.0
       },
       "592626": {
         "counts": {
           "HR": 7.0,
-          "R": 11.0,
+          "R": 12.0,
           "RBI": 10.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 81.0
       },
       "592662": {
         "counts": {
-          "BB": 14.0,
-          "ER": 4.0,
+          "BB": 16.0,
+          "ER": 5.0,
           "HLD": 0.0,
-          "H_ALLOWED": 15.0,
-          "K": 16.0,
+          "H_ALLOWED": 22.0,
+          "K": 22.0,
           "SV": 0.0,
           "W": 3.0
         },
         "role": "pitcher",
-        "volume": 27.0
+        "volume": 31.0
       },
       "592663": {
         "counts": {
@@ -344,40 +354,40 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 75.0
+        "volume": 79.0
       },
       "592885": {
         "counts": {
           "HR": 1.0,
           "R": 9.0,
           "RBI": 9.0,
-          "SB": 2.0
+          "SB": 3.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 103.0
       },
       "593428": {
         "counts": {
           "HR": 1.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 10.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 103.0
       },
       "593958": {
         "counts": {
-          "BB": 4.0,
-          "ER": 5.0,
+          "BB": 6.0,
+          "ER": 10.0,
           "HLD": 0.0,
-          "H_ALLOWED": 20.0,
-          "K": 14.0,
+          "H_ALLOWED": 27.0,
+          "K": 17.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 25.667
+        "volume": 28.334
       },
       "594798": {
         "counts": {
@@ -394,13 +404,23 @@
       },
       "596019": {
         "counts": {
-          "HR": 3.0,
-          "R": 8.0,
-          "RBI": 7.0,
+          "HR": 4.0,
+          "R": 9.0,
+          "RBI": 10.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 74.0
+        "volume": 79.0
+      },
+      "596146": {
+        "counts": {
+          "HR": 1.0,
+          "R": 4.0,
+          "RBI": 9.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 51.0
       },
       "605137": {
         "counts": {
@@ -410,7 +430,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 93.0
+        "volume": 97.0
       },
       "605141": {
         "counts": {
@@ -420,7 +440,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 99.0
       },
       "605170": {
         "counts": {
@@ -430,7 +450,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 68.0
+        "volume": 72.0
       },
       "605400": {
         "counts": {
@@ -448,22 +468,22 @@
       "606192": {
         "counts": {
           "HR": 1.0,
-          "R": 6.0,
-          "RBI": 5.0,
+          "R": 7.0,
+          "RBI": 6.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 50.0
+        "volume": 57.0
       },
       "606466": {
         "counts": {
           "HR": 6.0,
-          "R": 12.0,
-          "RBI": 12.0,
+          "R": 13.0,
+          "RBI": 13.0,
           "SB": 4.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 110.0
       },
       "607043": {
         "counts": {
@@ -473,7 +493,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 88.0
       },
       "607067": {
         "counts": {
@@ -509,7 +529,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 109.0
       },
       "607259": {
         "counts": {
@@ -552,23 +572,23 @@
       },
       "608324": {
         "counts": {
-          "HR": 3.0,
-          "R": 11.0,
-          "RBI": 18.0,
+          "HR": 4.0,
+          "R": 13.0,
+          "RBI": 20.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 102.0
+        "volume": 107.0
       },
       "608348": {
         "counts": {
           "HR": 3.0,
           "R": 13.0,
-          "RBI": 12.0,
+          "RBI": 13.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 62.0
+        "volume": 66.0
       },
       "608379": {
         "counts": {
@@ -586,12 +606,12 @@
       "609280": {
         "counts": {
           "HR": 0.0,
-          "R": 5.0,
+          "R": 6.0,
           "RBI": 5.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 50.0
+        "volume": 56.0
       },
       "615698": {
         "counts": {
@@ -614,7 +634,7 @@
           "SB": 6.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 95.0
       },
       "621111": {
         "counts": {
@@ -632,22 +652,22 @@
       "621493": {
         "counts": {
           "HR": 4.0,
-          "R": 13.0,
+          "R": 14.0,
           "RBI": 7.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 108.0
       },
       "621566": {
         "counts": {
           "HR": 6.0,
-          "R": 14.0,
+          "R": 15.0,
           "RBI": 8.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 110.0
       },
       "622491": {
         "counts": {
@@ -678,22 +698,32 @@
       "624413": {
         "counts": {
           "HR": 5.0,
-          "R": 15.0,
+          "R": 16.0,
           "RBI": 18.0,
-          "SB": 1.0
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 105.0
+      },
+      "624424": {
+        "counts": {
+          "HR": 4.0,
+          "R": 8.0,
+          "RBI": 9.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 50.0
       },
       "624585": {
         "counts": {
           "HR": 2.0,
           "R": 5.0,
-          "RBI": 9.0,
+          "RBI": 10.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 75.0
+        "volume": 79.0
       },
       "625643": {
         "counts": {
@@ -739,17 +769,17 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 103.0
       },
       "641355": {
         "counts": {
           "HR": 0.0,
           "R": 4.0,
-          "RBI": 2.0,
+          "RBI": 3.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 95.0
+        "volume": 102.0
       },
       "641487": {
         "counts": {
@@ -759,7 +789,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 104.0
       },
       "641680": {
         "counts": {
@@ -769,7 +799,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 76.0
+        "volume": 80.0
       },
       "641743": {
         "counts": {
@@ -818,7 +848,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 63.0
+        "volume": 66.0
       },
       "642547": {
         "counts": {
@@ -836,32 +866,32 @@
       "642715": {
         "counts": {
           "HR": 4.0,
-          "R": 11.0,
+          "R": 12.0,
           "RBI": 11.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 86.0
+        "volume": 90.0
       },
       "643217": {
         "counts": {
           "HR": 1.0,
-          "R": 9.0,
-          "RBI": 9.0,
+          "R": 10.0,
+          "RBI": 10.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 64.0
+        "volume": 68.0
       },
       "643289": {
         "counts": {
           "HR": 3.0,
-          "R": 14.0,
+          "R": 15.0,
           "RBI": 13.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 104.0
+        "volume": 109.0
       },
       "643377": {
         "counts": {
@@ -879,12 +909,12 @@
       "643446": {
         "counts": {
           "HR": 0.0,
-          "R": 6.0,
+          "R": 7.0,
           "RBI": 9.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 55.0
+        "volume": 56.0
       },
       "645261": {
         "counts": {
@@ -907,7 +937,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 106.0
+        "volume": 111.0
       },
       "645302": {
         "counts": {
@@ -927,37 +957,37 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 105.0
       },
       "647304": {
         "counts": {
           "HR": 0.0,
-          "R": 8.0,
-          "RBI": 4.0,
-          "SB": 5.0
+          "R": 9.0,
+          "RBI": 5.0,
+          "SB": 6.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "650333": {
         "counts": {
           "HR": 1.0,
           "R": 9.0,
-          "RBI": 5.0,
+          "RBI": 6.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "650489": {
         "counts": {
-          "HR": 3.0,
-          "R": 9.0,
-          "RBI": 8.0,
+          "HR": 4.0,
+          "R": 10.0,
+          "RBI": 9.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 84.0
+        "volume": 88.0
       },
       "650490": {
         "counts": {
@@ -967,7 +997,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 107.0
+        "volume": 112.0
       },
       "650633": {
         "counts": {
@@ -999,11 +1029,11 @@
         "counts": {
           "HR": 3.0,
           "R": 9.0,
-          "RBI": 5.0,
+          "RBI": 6.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 55.0
+        "volume": 59.0
       },
       "656302": {
         "counts": {
@@ -1017,6 +1047,19 @@
         },
         "role": "pitcher",
         "volume": 25.333
+      },
+      "656550": {
+        "counts": {
+          "BB": 9.0,
+          "ER": 5.0,
+          "HLD": 0.0,
+          "H_ALLOWED": 19.0,
+          "K": 17.0,
+          "SV": 0.0,
+          "W": 2.0
+        },
+        "role": "pitcher",
+        "volume": 23.666
       },
       "656555": {
         "counts": {
@@ -1049,7 +1092,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 91.0
       },
       "656775": {
         "counts": {
@@ -1059,7 +1102,7 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 81.0
       },
       "656811": {
         "counts": {
@@ -1069,7 +1112,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 102.0
+        "volume": 107.0
       },
       "656941": {
         "counts": {
@@ -1079,17 +1122,17 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 103.0
       },
       "657041": {
         "counts": {
           "HR": 4.0,
           "R": 11.0,
           "RBI": 14.0,
-          "SB": 1.0
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 98.0
       },
       "657277": {
         "counts": {
@@ -1120,22 +1163,35 @@
       "657757": {
         "counts": {
           "HR": 3.0,
-          "R": 8.0,
+          "R": 9.0,
           "RBI": 10.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 89.0
+        "volume": 90.0
       },
       "660271": {
         "counts": {
           "HR": 7.0,
-          "R": 14.0,
-          "RBI": 16.0,
+          "R": 15.0,
+          "RBI": 18.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 101.0
+      },
+      "660604": {
+        "counts": {
+          "BB": 12.0,
+          "ER": 13.0,
+          "HLD": 0.0,
+          "H_ALLOWED": 22.0,
+          "K": 21.0,
+          "SV": 0.0,
+          "W": 0.0
+        },
+        "role": "pitcher",
+        "volume": 20.333
       },
       "660688": {
         "counts": {
@@ -1149,13 +1205,13 @@
       },
       "661388": {
         "counts": {
-          "HR": 3.0,
-          "R": 7.0,
-          "RBI": 11.0,
+          "HR": 4.0,
+          "R": 8.0,
+          "RBI": 14.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 100.0
       },
       "662139": {
         "counts": {
@@ -1165,20 +1221,20 @@
           "SB": 4.0
         },
         "role": "hitter",
-        "volume": 79.0
+        "volume": 82.0
       },
       "663372": {
         "counts": {
-          "BB": 8.0,
-          "ER": 9.0,
+          "BB": 12.0,
+          "ER": 17.0,
           "HLD": 0.0,
-          "H_ALLOWED": 21.0,
-          "K": 14.0,
+          "H_ALLOWED": 28.0,
+          "K": 17.0,
           "SV": 0.0,
           "W": 1.0
         },
         "role": "pitcher",
-        "volume": 22.333
+        "volume": 24.667
       },
       "663436": {
         "counts": {
@@ -1196,35 +1252,48 @@
       "663457": {
         "counts": {
           "HR": 1.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 6.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 80.0
+        "volume": 85.0
       },
       "663538": {
         "counts": {
           "HR": 0.0,
-          "R": 11.0,
-          "RBI": 5.0,
+          "R": 12.0,
+          "RBI": 9.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 97.0
+        "volume": 102.0
       },
       "663554": {
         "counts": {
-          "BB": 5.0,
-          "ER": 9.0,
+          "BB": 6.0,
+          "ER": 10.0,
           "HLD": 0.0,
-          "H_ALLOWED": 19.0,
-          "K": 25.0,
+          "H_ALLOWED": 24.0,
+          "K": 30.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 25.0
+        "volume": 28.334
+      },
+      "663556": {
+        "counts": {
+          "BB": 4.0,
+          "ER": 6.0,
+          "HLD": 0.0,
+          "H_ALLOWED": 18.0,
+          "K": 16.0,
+          "SV": 0.0,
+          "W": 2.0
+        },
+        "role": "pitcher",
+        "volume": 23.333
       },
       "663567": {
         "counts": {
@@ -1241,13 +1310,13 @@
       },
       "663586": {
         "counts": {
-          "HR": 2.0,
-          "R": 10.0,
-          "RBI": 8.0,
+          "HR": 4.0,
+          "R": 12.0,
+          "RBI": 12.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "663616": {
         "counts": {
@@ -1262,12 +1331,12 @@
       "663656": {
         "counts": {
           "HR": 1.0,
-          "R": 10.0,
+          "R": 11.0,
           "RBI": 7.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 81.0
+        "volume": 90.0
       },
       "663728": {
         "counts": {
@@ -1277,7 +1346,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 95.0
+        "volume": 99.0
       },
       "663743": {
         "counts": {
@@ -1289,6 +1358,16 @@
         "role": "hitter",
         "volume": 51.0
       },
+      "663757": {
+        "counts": {
+          "HR": 3.0,
+          "R": 10.0,
+          "RBI": 6.0,
+          "SB": 1.0
+        },
+        "role": "hitter",
+        "volume": 52.0
+      },
       "663837": {
         "counts": {
           "HR": 1.0,
@@ -1297,27 +1376,27 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 70.0
+        "volume": 72.0
       },
       "663853": {
         "counts": {
           "HR": 1.0,
           "R": 5.0,
-          "RBI": 5.0,
+          "RBI": 6.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 51.0
+        "volume": 55.0
       },
       "663886": {
         "counts": {
-          "HR": 1.0,
-          "R": 4.0,
-          "RBI": 5.0,
+          "HR": 3.0,
+          "R": 6.0,
+          "RBI": 8.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 57.0
+        "volume": 61.0
       },
       "663903": {
         "counts": {
@@ -1336,11 +1415,11 @@
         "counts": {
           "HR": 1.0,
           "R": 15.0,
-          "RBI": 7.0,
+          "RBI": 8.0,
           "SB": 5.0
         },
         "role": "hitter",
-        "volume": 95.0
+        "volume": 100.0
       },
       "663969": {
         "counts": {
@@ -1355,25 +1434,35 @@
         "role": "pitcher",
         "volume": 22.667
       },
-      "664023": {
+      "663993": {
         "counts": {
-          "HR": 1.0,
-          "R": 12.0,
+          "HR": 2.0,
+          "R": 5.0,
           "RBI": 5.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 52.0
       },
-      "664034": {
+      "664023": {
         "counts": {
-          "HR": 6.0,
-          "R": 11.0,
-          "RBI": 15.0,
+          "HR": 1.0,
+          "R": 13.0,
+          "RBI": 5.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 96.0
+      },
+      "664034": {
+        "counts": {
+          "HR": 8.0,
+          "R": 13.0,
+          "RBI": 20.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 89.0
       },
       "664040": {
         "counts": {
@@ -1400,13 +1489,13 @@
       },
       "664761": {
         "counts": {
-          "HR": 2.0,
-          "R": 9.0,
-          "RBI": 7.0,
+          "HR": 3.0,
+          "R": 10.0,
+          "RBI": 8.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 104.0
       },
       "664770": {
         "counts": {
@@ -1416,17 +1505,17 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 87.0
       },
       "664983": {
         "counts": {
           "HR": 6.0,
-          "R": 17.0,
+          "R": 18.0,
           "RBI": 28.0,
           "SB": 6.0
         },
         "role": "hitter",
-        "volume": 109.0
+        "volume": 113.0
       },
       "665019": {
         "counts": {
@@ -1436,7 +1525,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 97.0
+        "volume": 99.0
       },
       "665052": {
         "counts": {
@@ -1446,7 +1535,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 70.0
+        "volume": 74.0
       },
       "665161": {
         "counts": {
@@ -1460,13 +1549,13 @@
       },
       "665487": {
         "counts": {
-          "HR": 4.0,
-          "R": 18.0,
-          "RBI": 11.0,
-          "SB": 6.0
+          "HR": 5.0,
+          "R": 21.0,
+          "RBI": 15.0,
+          "SB": 7.0
         },
         "role": "hitter",
-        "volume": 111.0
+        "volume": 116.0
       },
       "665489": {
         "counts": {
@@ -1476,47 +1565,47 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 95.0
+        "volume": 99.0
       },
       "665742": {
         "counts": {
           "HR": 4.0,
-          "R": 8.0,
-          "RBI": 13.0,
+          "R": 9.0,
+          "RBI": 14.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 98.0
       },
       "665750": {
         "counts": {
           "HR": 2.0,
           "R": 10.0,
-          "RBI": 6.0,
+          "RBI": 8.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 64.0
+        "volume": 69.0
       },
       "665862": {
         "counts": {
-          "HR": 3.0,
-          "R": 10.0,
-          "RBI": 7.0,
+          "HR": 4.0,
+          "R": 12.0,
+          "RBI": 8.0,
           "SB": 6.0
         },
         "role": "hitter",
-        "volume": 79.0
+        "volume": 86.0
       },
       "665877": {
         "counts": {
           "HR": 2.0,
-          "R": 8.0,
+          "R": 9.0,
           "RBI": 6.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 68.0
+        "volume": 73.0
       },
       "665926": {
         "counts": {
@@ -1526,7 +1615,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 61.0
+        "volume": 63.0
       },
       "666018": {
         "counts": {
@@ -1536,7 +1625,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 109.0
+        "volume": 114.0
       },
       "666139": {
         "counts": {
@@ -1546,7 +1635,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 54.0
+        "volume": 57.0
       },
       "666157": {
         "counts": {
@@ -1564,12 +1653,12 @@
       "666160": {
         "counts": {
           "HR": 3.0,
-          "R": 10.0,
+          "R": 11.0,
           "RBI": 12.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 71.0
+        "volume": 75.0
       },
       "666176": {
         "counts": {
@@ -1579,17 +1668,17 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 89.0
+        "volume": 93.0
       },
       "666182": {
         "counts": {
           "HR": 2.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 9.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 98.0
       },
       "666200": {
         "counts": {
@@ -1612,7 +1701,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 52.0
+        "volume": 56.0
       },
       "666971": {
         "counts": {
@@ -1640,12 +1729,12 @@
       "668227": {
         "counts": {
           "HR": 4.0,
-          "R": 13.0,
+          "R": 14.0,
           "RBI": 12.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 85.0
+        "volume": 89.0
       },
       "668678": {
         "counts": {
@@ -1663,12 +1752,12 @@
       "668709": {
         "counts": {
           "HR": 3.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 8.0,
-          "SB": 2.0
+          "SB": 3.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 101.0
       },
       "668715": {
         "counts": {
@@ -1678,7 +1767,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 87.0
+        "volume": 92.0
       },
       "668804": {
         "counts": {
@@ -1688,17 +1777,17 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 110.0
       },
       "668904": {
         "counts": {
           "HR": 4.0,
           "R": 13.0,
-          "RBI": 9.0,
+          "RBI": 10.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 98.0
       },
       "668909": {
         "counts": {
@@ -1716,12 +1805,12 @@
       "668930": {
         "counts": {
           "HR": 3.0,
-          "R": 12.0,
+          "R": 13.0,
           "RBI": 16.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 112.0
+        "volume": 116.0
       },
       "668939": {
         "counts": {
@@ -1741,7 +1830,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 67.0
+        "volume": 71.0
       },
       "669003": {
         "counts": {
@@ -1751,7 +1840,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 97.0
       },
       "669016": {
         "counts": {
@@ -1761,7 +1850,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 102.0
+        "volume": 106.0
       },
       "669022": {
         "counts": {
@@ -1784,7 +1873,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 102.0
       },
       "669127": {
         "counts": {
@@ -1794,7 +1883,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 87.0
       },
       "669224": {
         "counts": {
@@ -1804,30 +1893,30 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 53.0
+        "volume": 57.0
       },
       "669242": {
         "counts": {
-          "HR": 1.0,
-          "R": 11.0,
-          "RBI": 11.0,
+          "HR": 2.0,
+          "R": 15.0,
+          "RBI": 14.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 84.0
       },
       "669302": {
         "counts": {
-          "BB": 4.0,
-          "ER": 9.0,
+          "BB": 5.0,
+          "ER": 12.0,
           "HLD": 0.0,
-          "H_ALLOWED": 20.0,
-          "K": 27.0,
+          "H_ALLOWED": 24.0,
+          "K": 37.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 27.333
+        "volume": 33.333
       },
       "669358": {
         "counts": {
@@ -1850,7 +1939,7 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 103.0
       },
       "669372": {
         "counts": {
@@ -1892,11 +1981,11 @@
         "counts": {
           "HR": 4.0,
           "R": 9.0,
-          "RBI": 16.0,
+          "RBI": 17.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 95.0
       },
       "669432": {
         "counts": {
@@ -1939,36 +2028,36 @@
       },
       "669467": {
         "counts": {
-          "BB": 4.0,
-          "ER": 12.0,
+          "BB": 6.0,
+          "ER": 15.0,
           "HLD": 0.0,
-          "H_ALLOWED": 30.0,
-          "K": 10.0,
+          "H_ALLOWED": 35.0,
+          "K": 13.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 23.333
+        "volume": 28.666
       },
       "669477": {
         "counts": {
           "HR": 4.0,
-          "R": 10.0,
+          "R": 11.0,
           "RBI": 12.0,
-          "SB": 1.0
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 103.0
       },
       "669707": {
         "counts": {
           "HR": 1.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 9.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 82.0
       },
       "669923": {
         "counts": {
@@ -1986,32 +2075,32 @@
       "670032": {
         "counts": {
           "HR": 0.0,
-          "R": 9.0,
+          "R": 10.0,
           "RBI": 8.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 77.0
+        "volume": 81.0
       },
       "670042": {
         "counts": {
-          "HR": 0.0,
-          "R": 1.0,
-          "RBI": 1.0,
+          "HR": 1.0,
+          "R": 2.0,
+          "RBI": 2.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 55.0
+        "volume": 57.0
       },
       "670541": {
         "counts": {
           "HR": 7.0,
           "R": 15.0,
-          "RBI": 17.0,
+          "RBI": 18.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 107.0
       },
       "670623": {
         "counts": {
@@ -2021,7 +2110,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 107.0
+        "volume": 111.0
       },
       "670764": {
         "counts": {
@@ -2031,17 +2120,17 @@
           "SB": 5.0
         },
         "role": "hitter",
-        "volume": 81.0
+        "volume": 85.0
       },
       "671056": {
         "counts": {
           "HR": 2.0,
-          "R": 12.0,
+          "R": 13.0,
           "RBI": 10.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 106.0
       },
       "671096": {
         "counts": {
@@ -2060,11 +2149,11 @@
         "counts": {
           "HR": 4.0,
           "R": 13.0,
-          "RBI": 8.0,
+          "RBI": 9.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 68.0
+        "volume": 72.0
       },
       "671277": {
         "counts": {
@@ -2074,7 +2163,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 84.0
       },
       "671289": {
         "counts": {
@@ -2084,7 +2173,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 74.0
+        "volume": 78.0
       },
       "671732": {
         "counts": {
@@ -2094,7 +2183,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 80.0
+        "volume": 81.0
       },
       "671737": {
         "counts": {
@@ -2113,11 +2202,11 @@
         "counts": {
           "HR": 3.0,
           "R": 13.0,
-          "RBI": 16.0,
+          "RBI": 17.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 110.0
       },
       "671976": {
         "counts": {
@@ -2127,7 +2216,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 79.0
+        "volume": 82.0
       },
       "672275": {
         "counts": {
@@ -2137,7 +2226,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 52.0
+        "volume": 55.0
       },
       "672282": {
         "counts": {
@@ -2155,12 +2244,12 @@
       "672356": {
         "counts": {
           "HR": 3.0,
-          "R": 8.0,
+          "R": 9.0,
           "RBI": 5.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 61.0
+        "volume": 64.0
       },
       "672386": {
         "counts": {
@@ -2170,7 +2259,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 67.0
+        "volume": 68.0
       },
       "672456": {
         "counts": {
@@ -2189,11 +2278,11 @@
         "counts": {
           "HR": 0.0,
           "R": 13.0,
-          "RBI": 8.0,
+          "RBI": 9.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 96.0
       },
       "672640": {
         "counts": {
@@ -2207,13 +2296,23 @@
       },
       "672695": {
         "counts": {
-          "HR": 2.0,
-          "R": 15.0,
-          "RBI": 9.0,
+          "HR": 3.0,
+          "R": 16.0,
+          "RBI": 11.0,
           "SB": 4.0
         },
         "role": "hitter",
-        "volume": 102.0
+        "volume": 107.0
+      },
+      "672724": {
+        "counts": {
+          "HR": 0.0,
+          "R": 6.0,
+          "RBI": 3.0,
+          "SB": 3.0
+        },
+        "role": "hitter",
+        "volume": 50.0
       },
       "673237": {
         "counts": {
@@ -2223,27 +2322,27 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 69.0
+        "volume": 73.0
       },
       "673548": {
         "counts": {
           "HR": 5.0,
-          "R": 16.0,
+          "R": 18.0,
           "RBI": 19.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 107.0
       },
       "673962": {
         "counts": {
           "HR": 1.0,
           "R": 13.0,
-          "RBI": 4.0,
+          "RBI": 5.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 97.0
       },
       "674841": {
         "counts": {
@@ -2273,16 +2372,16 @@
       },
       "676282": {
         "counts": {
-          "BB": 13.0,
-          "ER": 5.0,
+          "BB": 16.0,
+          "ER": 9.0,
           "HLD": 0.0,
-          "H_ALLOWED": 21.0,
-          "K": 38.0,
+          "H_ALLOWED": 28.0,
+          "K": 45.0,
           "SV": 0.0,
           "W": 3.0
         },
         "role": "pitcher",
-        "volume": 29.0
+        "volume": 34.0
       },
       "676356": {
         "counts": {
@@ -2302,7 +2401,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 87.0
       },
       "676440": {
         "counts": {
@@ -2320,22 +2419,22 @@
       "676475": {
         "counts": {
           "HR": 2.0,
-          "R": 13.0,
-          "RBI": 13.0,
+          "R": 14.0,
+          "RBI": 15.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 96.0
       },
       "676609": {
         "counts": {
           "HR": 3.0,
           "R": 8.0,
           "RBI": 10.0,
-          "SB": 7.0
+          "SB": 8.0
         },
         "role": "hitter",
-        "volume": 79.0
+        "volume": 83.0
       },
       "676724": {
         "counts": {
@@ -2345,7 +2444,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 67.0
+        "volume": 69.0
       },
       "676917": {
         "counts": {
@@ -2381,17 +2480,17 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 97.0
+        "volume": 101.0
       },
       "677594": {
         "counts": {
           "HR": 1.0,
-          "R": 6.0,
+          "R": 7.0,
           "RBI": 6.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 54.0
+        "volume": 59.0
       },
       "677649": {
         "counts": {
@@ -2401,17 +2500,27 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "677800": {
         "counts": {
           "HR": 7.0,
-          "R": 18.0,
+          "R": 19.0,
           "RBI": 15.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 106.0
+        "volume": 110.0
+      },
+      "677870": {
+        "counts": {
+          "HR": 2.0,
+          "R": 7.0,
+          "RBI": 8.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 50.0
       },
       "677942": {
         "counts": {
@@ -2485,12 +2594,12 @@
       "678246": {
         "counts": {
           "HR": 5.0,
-          "R": 14.0,
+          "R": 15.0,
           "RBI": 15.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 107.0
       },
       "678391": {
         "counts": {
@@ -2505,12 +2614,12 @@
       "678554": {
         "counts": {
           "HR": 6.0,
-          "R": 13.0,
-          "RBI": 13.0,
-          "SB": 2.0
+          "R": 14.0,
+          "RBI": 14.0,
+          "SB": 3.0
         },
         "role": "hitter",
-        "volume": 93.0
+        "volume": 98.0
       },
       "678662": {
         "counts": {
@@ -2525,12 +2634,12 @@
       "678882": {
         "counts": {
           "HR": 1.0,
-          "R": 14.0,
+          "R": 15.0,
           "RBI": 9.0,
           "SB": 6.0
         },
         "role": "hitter",
-        "volume": 109.0
+        "volume": 113.0
       },
       "679529": {
         "counts": {
@@ -2540,7 +2649,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "679845": {
         "counts": {
@@ -2550,7 +2659,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 80.0
+        "volume": 84.0
       },
       "680694": {
         "counts": {
@@ -2570,23 +2679,23 @@
           "HR": 2.0,
           "R": 9.0,
           "RBI": 6.0,
-          "SB": 1.0
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 62.0
+        "volume": 66.0
       },
       "680732": {
         "counts": {
-          "BB": 4.0,
+          "BB": 5.0,
           "ER": 5.0,
           "HLD": 0.0,
-          "H_ALLOWED": 21.0,
-          "K": 34.0,
+          "H_ALLOWED": 23.0,
+          "K": 39.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 24.667
+        "volume": 31.333
       },
       "680736": {
         "counts": {
@@ -2605,11 +2714,11 @@
         "counts": {
           "HR": 0.0,
           "R": 10.0,
-          "RBI": 3.0,
+          "RBI": 4.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 81.0
+        "volume": 85.0
       },
       "680776": {
         "counts": {
@@ -2619,7 +2728,7 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 94.0
       },
       "681082": {
         "counts": {
@@ -2629,7 +2738,7 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 104.0
       },
       "681293": {
         "counts": {
@@ -2649,10 +2758,10 @@
           "HR": 1.0,
           "R": 5.0,
           "RBI": 4.0,
-          "SB": 2.0
+          "SB": 3.0
         },
         "role": "hitter",
-        "volume": 61.0
+        "volume": 65.0
       },
       "681351": {
         "counts": {
@@ -2672,7 +2781,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 74.0
+        "volume": 78.0
       },
       "681546": {
         "counts": {
@@ -2682,17 +2791,17 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 60.0
+        "volume": 63.0
       },
       "681624": {
         "counts": {
           "HR": 2.0,
           "R": 14.0,
-          "RBI": 10.0,
+          "RBI": 11.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 110.0
       },
       "681715": {
         "counts": {
@@ -2702,7 +2811,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 87.0
       },
       "682177": {
         "counts": {
@@ -2750,32 +2859,32 @@
       "682829": {
         "counts": {
           "HR": 4.0,
-          "R": 12.0,
+          "R": 14.0,
           "RBI": 8.0,
           "SB": 4.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 97.0
       },
       "682928": {
         "counts": {
-          "HR": 6.0,
-          "R": 10.0,
-          "RBI": 14.0,
+          "HR": 7.0,
+          "R": 11.0,
+          "RBI": 16.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 92.0
+        "volume": 97.0
       },
       "682985": {
         "counts": {
-          "HR": 5.0,
-          "R": 13.0,
-          "RBI": 13.0,
+          "HR": 6.0,
+          "R": 14.0,
+          "RBI": 14.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 102.0
       },
       "682997": {
         "counts": {
@@ -2795,17 +2904,17 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 105.0
       },
       "683002": {
         "counts": {
           "HR": 2.0,
-          "R": 16.0,
-          "RBI": 7.0,
-          "SB": 1.0
+          "R": 17.0,
+          "RBI": 8.0,
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 106.0
+        "volume": 111.0
       },
       "683003": {
         "counts": {
@@ -2824,31 +2933,31 @@
         "counts": {
           "HR": 0.0,
           "R": 3.0,
-          "RBI": 1.0,
+          "RBI": 2.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 65.0
+        "volume": 71.0
       },
       "683083": {
         "counts": {
           "HR": 1.0,
-          "R": 11.0,
+          "R": 12.0,
           "RBI": 5.0,
-          "SB": 9.0
+          "SB": 11.0
         },
         "role": "hitter",
-        "volume": 74.0
+        "volume": 78.0
       },
       "683146": {
         "counts": {
           "HR": 2.0,
-          "R": 12.0,
+          "R": 13.0,
           "RBI": 6.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 88.0
       },
       "683734": {
         "counts": {
@@ -2858,40 +2967,40 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 55.0
+        "volume": 59.0
       },
       "683737": {
         "counts": {
           "HR": 4.0,
-          "R": 11.0,
-          "RBI": 9.0,
+          "R": 13.0,
+          "RBI": 10.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 107.0
+        "volume": 112.0
       },
       "683748": {
         "counts": {
-          "HR": 4.0,
-          "R": 7.0,
-          "RBI": 8.0,
+          "HR": 5.0,
+          "R": 8.0,
+          "RBI": 9.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 57.0
+        "volume": 61.0
       },
       "684007": {
         "counts": {
-          "BB": 5.0,
+          "BB": 6.0,
           "ER": 9.0,
           "HLD": 0.0,
-          "H_ALLOWED": 24.0,
-          "K": 21.0,
+          "H_ALLOWED": 30.0,
+          "K": 25.0,
           "SV": 0.0,
-          "W": 1.0
+          "W": 2.0
         },
         "role": "pitcher",
-        "volume": 21.333
+        "volume": 28.333
       },
       "685133": {
         "counts": {
@@ -2902,6 +3011,19 @@
         },
         "role": "hitter",
         "volume": 63.0
+      },
+      "685299": {
+        "counts": {
+          "BB": 4.0,
+          "ER": 12.0,
+          "HLD": 0.0,
+          "H_ALLOWED": 26.0,
+          "K": 14.0,
+          "SV": 0.0,
+          "W": 0.0
+        },
+        "role": "pitcher",
+        "volume": 20.667
       },
       "686217": {
         "counts": {
@@ -2927,21 +3049,34 @@
         "counts": {
           "HR": 2.0,
           "R": 8.0,
-          "RBI": 9.0,
+          "RBI": 10.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 73.0
+        "volume": 77.0
       },
       "686611": {
         "counts": {
-          "HR": 2.0,
-          "R": 16.0,
-          "RBI": 5.0,
+          "HR": 3.0,
+          "R": 18.0,
+          "RBI": 6.0,
           "SB": 4.0
         },
         "role": "hitter",
-        "volume": 99.0
+        "volume": 104.0
+      },
+      "686613": {
+        "counts": {
+          "BB": 19.0,
+          "ER": 16.0,
+          "HLD": 0.0,
+          "H_ALLOWED": 22.0,
+          "K": 19.0,
+          "SV": 0.0,
+          "W": 0.0
+        },
+        "role": "pitcher",
+        "volume": 23.667
       },
       "686681": {
         "counts": {
@@ -2951,7 +3086,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 80.0
+        "volume": 81.0
       },
       "686790": {
         "counts": {
@@ -2974,60 +3109,60 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 102.0
       },
       "686948": {
         "counts": {
-          "HR": 2.0,
-          "R": 10.0,
-          "RBI": 13.0,
-          "SB": 0.0
+          "HR": 4.0,
+          "R": 13.0,
+          "RBI": 15.0,
+          "SB": 1.0
         },
         "role": "hitter",
-        "volume": 103.0
+        "volume": 108.0
       },
       "687064": {
         "counts": {
-          "BB": 8.0,
-          "ER": 10.0,
+          "BB": 9.0,
+          "ER": 11.0,
           "HLD": 0.0,
-          "H_ALLOWED": 28.0,
-          "K": 23.0,
+          "H_ALLOWED": 33.0,
+          "K": 30.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 22.0
+        "volume": 29.0
       },
       "687093": {
         "counts": {
           "HR": 1.0,
-          "R": 8.0,
-          "RBI": 9.0,
-          "SB": 0.0
-        },
-        "role": "hitter",
-        "volume": 55.0
-      },
-      "687221": {
-        "counts": {
-          "HR": 2.0,
           "R": 9.0,
           "RBI": 9.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 65.0
+        "volume": 59.0
+      },
+      "687221": {
+        "counts": {
+          "HR": 2.0,
+          "R": 10.0,
+          "RBI": 9.0,
+          "SB": 0.0
+        },
+        "role": "hitter",
+        "volume": 71.0
       },
       "687263": {
         "counts": {
           "HR": 4.0,
-          "R": 17.0,
-          "RBI": 11.0,
-          "SB": 1.0
+          "R": 18.0,
+          "RBI": 12.0,
+          "SB": 2.0
         },
         "role": "hitter",
-        "volume": 97.0
+        "volume": 102.0
       },
       "687401": {
         "counts": {
@@ -3037,7 +3172,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 76.0
+        "volume": 79.0
       },
       "687551": {
         "counts": {
@@ -3057,20 +3192,20 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 61.0
+        "volume": 65.0
       },
       "688107": {
         "counts": {
           "BB": 3.0,
-          "ER": 14.0,
+          "ER": 15.0,
           "HLD": 0.0,
-          "H_ALLOWED": 23.0,
-          "K": 19.0,
+          "H_ALLOWED": 26.0,
+          "K": 24.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 22.333
+        "volume": 27.333
       },
       "689414": {
         "counts": {
@@ -3080,7 +3215,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 67.0
+        "volume": 71.0
       },
       "690976": {
         "counts": {
@@ -3100,30 +3235,30 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 66.0
+        "volume": 68.0
       },
       "690997": {
         "counts": {
-          "BB": 7.0,
+          "BB": 9.0,
           "ER": 8.0,
           "HLD": 0.0,
-          "H_ALLOWED": 22.0,
-          "K": 28.0,
+          "H_ALLOWED": 24.0,
+          "K": 38.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 24.0
+        "volume": 30.0
       },
       "691016": {
         "counts": {
           "HR": 3.0,
           "R": 11.0,
-          "RBI": 6.0,
+          "RBI": 7.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 51.0
+        "volume": 56.0
       },
       "691019": {
         "counts": {
@@ -3138,12 +3273,12 @@
       "691023": {
         "counts": {
           "HR": 4.0,
-          "R": 16.0,
-          "RBI": 18.0,
+          "R": 17.0,
+          "RBI": 19.0,
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 100.0
       },
       "691026": {
         "counts": {
@@ -3153,7 +3288,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 85.0
+        "volume": 90.0
       },
       "691176": {
         "counts": {
@@ -3163,7 +3298,7 @@
           "SB": 6.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 102.0
       },
       "691406": {
         "counts": {
@@ -3173,20 +3308,20 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 112.0
+        "volume": 117.0
       },
       "691587": {
         "counts": {
-          "BB": 6.0,
+          "BB": 9.0,
           "ER": 4.0,
           "HLD": 0.0,
-          "H_ALLOWED": 13.0,
-          "K": 23.0,
+          "H_ALLOWED": 14.0,
+          "K": 32.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 23.0
+        "volume": 29.0
       },
       "691594": {
         "counts": {
@@ -3196,17 +3331,17 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 73.0
+        "volume": 77.0
       },
       "691718": {
         "counts": {
           "HR": 6.0,
-          "R": 19.0,
+          "R": 20.0,
           "RBI": 16.0,
           "SB": 9.0
         },
         "role": "hitter",
-        "volume": 108.0
+        "volume": 112.0
       },
       "691720": {
         "counts": {
@@ -3216,27 +3351,27 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 85.0
+        "volume": 89.0
       },
       "691723": {
         "counts": {
-          "HR": 3.0,
-          "R": 6.0,
-          "RBI": 8.0,
+          "HR": 4.0,
+          "R": 7.0,
+          "RBI": 9.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 54.0
+        "volume": 58.0
       },
       "693304": {
         "counts": {
           "HR": 3.0,
-          "R": 15.0,
+          "R": 17.0,
           "RBI": 12.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 106.0
       },
       "693307": {
         "counts": {
@@ -3246,7 +3381,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 95.0
       },
       "693433": {
         "counts": {
@@ -3264,15 +3399,15 @@
       "693645": {
         "counts": {
           "BB": 7.0,
-          "ER": 9.0,
+          "ER": 12.0,
           "HLD": 0.0,
-          "H_ALLOWED": 24.0,
-          "K": 41.0,
+          "H_ALLOWED": 30.0,
+          "K": 49.0,
           "SV": 0.0,
           "W": 2.0
         },
         "role": "pitcher",
-        "volume": 29.667
+        "volume": 34.0
       },
       "693855": {
         "counts": {
@@ -3290,12 +3425,12 @@
       "694192": {
         "counts": {
           "HR": 3.0,
-          "R": 19.0,
+          "R": 20.0,
           "RBI": 11.0,
           "SB": 5.0
         },
         "role": "hitter",
-        "volume": 115.0
+        "volume": 119.0
       },
       "694203": {
         "counts": {
@@ -3315,7 +3450,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 83.0
+        "volume": 84.0
       },
       "694297": {
         "counts": {
@@ -3338,17 +3473,17 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 96.0
       },
       "694671": {
         "counts": {
-          "HR": 5.0,
-          "R": 10.0,
-          "RBI": 14.0,
+          "HR": 6.0,
+          "R": 12.0,
+          "RBI": 16.0,
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 64.0
+        "volume": 69.0
       },
       "694738": {
         "counts": {
@@ -3378,16 +3513,16 @@
       },
       "694973": {
         "counts": {
-          "BB": 8.0,
-          "ER": 17.0,
+          "BB": 10.0,
+          "ER": 18.0,
           "HLD": 0.0,
-          "H_ALLOWED": 27.0,
-          "K": 31.0,
+          "H_ALLOWED": 34.0,
+          "K": 39.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 26.333
+        "volume": 33.333
       },
       "695076": {
         "counts": {
@@ -3417,13 +3552,13 @@
       },
       "695506": {
         "counts": {
-          "HR": 6.0,
-          "R": 14.0,
-          "RBI": 14.0,
+          "HR": 7.0,
+          "R": 16.0,
+          "RBI": 15.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 94.0
+        "volume": 98.0
       },
       "695578": {
         "counts": {
@@ -3433,7 +3568,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 115.0
+        "volume": 120.0
       },
       "695600": {
         "counts": {
@@ -3443,17 +3578,17 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 100.0
       },
       "695657": {
         "counts": {
-          "HR": 3.0,
-          "R": 11.0,
-          "RBI": 11.0,
+          "HR": 4.0,
+          "R": 12.0,
+          "RBI": 12.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 98.0
+        "volume": 102.0
       },
       "695734": {
         "counts": {
@@ -3463,7 +3598,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 90.0
+        "volume": 94.0
       },
       "696030": {
         "counts": {
@@ -3477,13 +3612,13 @@
       },
       "696100": {
         "counts": {
-          "HR": 6.0,
-          "R": 13.0,
-          "RBI": 12.0,
+          "HR": 9.0,
+          "R": 16.0,
+          "RBI": 17.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 88.0
+        "volume": 92.0
       },
       "696149": {
         "counts": {
@@ -3500,26 +3635,26 @@
       },
       "696270": {
         "counts": {
-          "BB": 5.0,
-          "ER": 6.0,
+          "BB": 8.0,
+          "ER": 7.0,
           "HLD": 0.0,
-          "H_ALLOWED": 14.0,
-          "K": 18.0,
+          "H_ALLOWED": 16.0,
+          "K": 23.0,
           "SV": 0.0,
-          "W": 1.0
+          "W": 2.0
         },
         "role": "pitcher",
-        "volume": 20.0
+        "volume": 25.0
       },
       "696285": {
         "counts": {
           "HR": 0.0,
           "R": 5.0,
           "RBI": 4.0,
-          "SB": 2.0
+          "SB": 4.0
         },
         "role": "hitter",
-        "volume": 51.0
+        "volume": 55.0
       },
       "700241": {
         "counts": {
@@ -3542,7 +3677,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 100.0
+        "volume": 108.0
       },
       "700932": {
         "counts": {
@@ -3552,7 +3687,7 @@
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 89.0
+        "volume": 92.0
       },
       "701358": {
         "counts": {
@@ -3562,27 +3697,27 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 86.0
+        "volume": 90.0
       },
       "701398": {
         "counts": {
-          "HR": 5.0,
-          "R": 12.0,
-          "RBI": 20.0,
+          "HR": 6.0,
+          "R": 13.0,
+          "RBI": 23.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 105.0
+        "volume": 110.0
       },
       "701538": {
         "counts": {
-          "HR": 2.0,
-          "R": 11.0,
-          "RBI": 8.0,
-          "SB": 7.0
+          "HR": 4.0,
+          "R": 13.0,
+          "RBI": 12.0,
+          "SB": 8.0
         },
         "role": "hitter",
-        "volume": 107.0
+        "volume": 113.0
       },
       "701542": {
         "counts": {
@@ -3605,7 +3740,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 75.0
+        "volume": 78.0
       },
       "701762": {
         "counts": {
@@ -3619,59 +3754,59 @@
       },
       "702056": {
         "counts": {
-          "BB": 14.0,
-          "ER": 8.0,
+          "BB": 16.0,
+          "ER": 11.0,
           "HLD": 0.0,
-          "H_ALLOWED": 9.0,
-          "K": 16.0,
+          "H_ALLOWED": 14.0,
+          "K": 25.0,
           "SV": 0.0,
           "W": 1.0
         },
         "role": "pitcher",
-        "volume": 20.0
+        "volume": 26.0
       },
       "702070": {
         "counts": {
-          "BB": 13.0,
-          "ER": 17.0,
+          "BB": 15.0,
+          "ER": 24.0,
           "HLD": 0.0,
-          "H_ALLOWED": 28.0,
-          "K": 21.0,
+          "H_ALLOWED": 37.0,
+          "K": 22.0,
           "SV": 0.0,
           "W": 1.0
         },
         "role": "pitcher",
-        "volume": 20.667
+        "volume": 25.667
       },
       "702284": {
         "counts": {
-          "HR": 6.0,
-          "R": 13.0,
-          "RBI": 12.0,
+          "HR": 7.0,
+          "R": 15.0,
+          "RBI": 14.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 85.0
+        "volume": 89.0
       },
       "702332": {
         "counts": {
           "HR": 5.0,
-          "R": 18.0,
-          "RBI": 13.0,
-          "SB": 5.0
+          "R": 19.0,
+          "RBI": 14.0,
+          "SB": 6.0
         },
         "role": "hitter",
-        "volume": 101.0
+        "volume": 105.0
       },
       "702616": {
         "counts": {
           "HR": 1.0,
-          "R": 4.0,
+          "R": 5.0,
           "RBI": 3.0,
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 55.0
+        "volume": 59.0
       },
       "800048": {
         "counts": {
@@ -3707,7 +3842,7 @@
           "SB": 9.0
         },
         "role": "hitter",
-        "volume": 88.0
+        "volume": 92.0
       },
       "805300": {
         "counts": {
@@ -3717,7 +3852,7 @@
           "SB": 2.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 94.0
       },
       "805367": {
         "counts": {
@@ -3731,36 +3866,36 @@
       },
       "805673": {
         "counts": {
-          "BB": 9.0,
-          "ER": 11.0,
+          "BB": 12.0,
+          "ER": 19.0,
           "HLD": 0.0,
-          "H_ALLOWED": 22.0,
-          "K": 20.0,
+          "H_ALLOWED": 31.0,
+          "K": 24.0,
           "SV": 0.0,
           "W": 1.0
         },
         "role": "pitcher",
-        "volume": 23.667
+        "volume": 26.667
       },
       "805779": {
         "counts": {
           "HR": 2.0,
           "R": 7.0,
-          "RBI": 5.0,
-          "SB": 0.0
-        },
-        "role": "hitter",
-        "volume": 53.0
-      },
-      "805811": {
-        "counts": {
-          "HR": 3.0,
-          "R": 10.0,
           "RBI": 6.0,
           "SB": 0.0
         },
         "role": "hitter",
-        "volume": 96.0
+        "volume": 58.0
+      },
+      "805811": {
+        "counts": {
+          "HR": 4.0,
+          "R": 11.0,
+          "RBI": 7.0,
+          "SB": 1.0
+        },
+        "role": "hitter",
+        "volume": 100.0
       },
       "807712": {
         "counts": {
@@ -3770,7 +3905,7 @@
           "SB": 1.0
         },
         "role": "hitter",
-        "volume": 81.0
+        "volume": 85.0
       },
       "807799": {
         "counts": {
@@ -3798,15 +3933,15 @@
       "808967": {
         "counts": {
           "BB": 10.0,
-          "ER": 11.0,
+          "ER": 13.0,
           "HLD": 0.0,
-          "H_ALLOWED": 19.0,
-          "K": 26.0,
+          "H_ALLOWED": 23.0,
+          "K": 33.0,
           "SV": 0.0,
-          "W": 2.0
+          "W": 3.0
         },
         "role": "pitcher",
-        "volume": 25.0
+        "volume": 34.0
       },
       "808982": {
         "counts": {
@@ -3816,7 +3951,7 @@
           "SB": 3.0
         },
         "role": "hitter",
-        "volume": 91.0
+        "volume": 95.0
       },
       "810938": {
         "counts": {
@@ -3846,59 +3981,59 @@
         "HLD"
       ]
     },
-    "scoreable_players": 348,
+    "scoreable_players": 360,
     "scores": {
       "marcel_mae": {
-        "BB": 5.6678,
-        "ER": 7.58115,
-        "HLD": 0.12876,
-        "HR": 2.12874,
-        "H_ALLOWED": 15.01195,
-        "K": 16.10721,
-        "R": 5.72758,
-        "RBI": 5.96392,
-        "SB": 1.5002,
-        "SV": 0.03228,
-        "W": 1.39383
+        "BB": 5.95179,
+        "ER": 7.89012,
+        "HLD": 0.12728,
+        "HR": 2.18665,
+        "H_ALLOWED": 15.81641,
+        "K": 17.02375,
+        "R": 5.93012,
+        "RBI": 6.10523,
+        "SB": 1.53935,
+        "SV": 0.03439,
+        "W": 1.46037
       },
-      "marcel_mean_ratio_vs_steamer": 2.1207,
+      "marcel_mean_ratio_vs_steamer": 2.1577,
       "per_stat_ratio": {
-        "BB": 2.2849,
-        "ER": 1.8598,
-        "HLD": 2.5229,
-        "HR": 1.3644,
-        "H_ALLOWED": 2.8678,
-        "K": 2.5665,
-        "R": 1.6882,
-        "RBI": 1.6215,
-        "SB": 1.5059,
-        "SV": 3.3895,
-        "W": 1.6563
+        "BB": 2.228,
+        "ER": 1.89,
+        "HLD": 2.3897,
+        "HR": 1.3783,
+        "H_ALLOWED": 2.9585,
+        "K": 2.554,
+        "R": 1.7509,
+        "RBI": 1.6687,
+        "SB": 1.5206,
+        "SV": 3.7833,
+        "W": 1.6128
       },
       "steamer_mae": {
-        "BB": 2.48057,
-        "ER": 4.07638,
-        "HLD": 0.05103,
-        "HR": 1.56021,
-        "H_ALLOWED": 5.23474,
-        "K": 6.27588,
-        "R": 3.3927,
-        "RBI": 3.67802,
-        "SB": 0.9962,
-        "SV": 0.00952,
-        "W": 0.84152
+        "BB": 2.67131,
+        "ER": 4.17461,
+        "HLD": 0.05326,
+        "HR": 1.58652,
+        "H_ALLOWED": 5.34616,
+        "K": 6.66565,
+        "R": 3.38681,
+        "RBI": 3.65859,
+        "SB": 1.01235,
+        "SV": 0.00909,
+        "W": 0.90548
       }
     },
     "status": "scored",
     "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 31,
-      "proration_factor": 0.3069,
+      "elapsed_days": 32,
+      "proration_factor": 0.3168,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-07-19"
+      "through": "2026-07-20"
     }
   },
   "gate": {
@@ -3906,15 +4041,15 @@
     "baseline": "steamer_ros",
     "baseline_score": 1.0,
     "cv_method": "post_freeze_component_deltas_vs_oldest_frozen_pure_projection",
-    "improvement_pct": -5.05,
+    "improvement_pct": -4.81,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
-    "model_score": 1.0505,
-    "reason": "does not beat steamer_ros: -5.05% < required 2.0%",
-    "sample_size": 348,
+    "model_score": 1.0481,
+    "reason": "does not beat steamer_ros: -4.81% < required 2.0%",
+    "sample_size": 360,
     "status": "fallback",
-    "validated_through": "2026-07-19"
+    "validated_through": "2026-07-20"
   },
-  "generated_at": "2026-07-19T11:52:51.782032+00:00",
+  "generated_at": "2026-07-20T12:20:40.519681+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -3933,319 +4068,319 @@
       "baseline": "steamer_ros",
       "baseline_score": 1.0,
       "cv_method": "post_freeze_component_deltas_vs_oldest_frozen_pure_projection",
-      "improvement_pct": -2.4,
+      "improvement_pct": -3.17,
       "metric": "rate_stat_mae_ratio_vs_forward_actuals",
-      "model_score": 1.024,
-      "reason": "does not beat steamer_ros: -2.40% < required 2.0%",
-      "sample_size": 243,
+      "model_score": 1.0317,
+      "reason": "does not beat steamer_ros: -3.17% < required 2.0%",
+      "sample_size": 250,
       "status": "fallback",
-      "validated_through": "2026-07-19"
+      "validated_through": "2026-07-20"
     },
     "pitchers": {
       "activated_at": null,
       "baseline": "steamer_ros",
       "baseline_score": 1.0,
       "cv_method": "post_freeze_component_deltas_vs_oldest_frozen_pure_projection",
-      "improvement_pct": -10.35,
+      "improvement_pct": -8.09,
       "metric": "rate_stat_mae_ratio_vs_forward_actuals",
-      "model_score": 1.1035,
-      "reason": "does not beat steamer_ros: -10.35% < required 2.0%",
-      "sample_size": 105,
+      "model_score": 1.0809,
+      "reason": "does not beat steamer_ros: -8.09% < required 2.0%",
+      "sample_size": 110,
       "status": "fallback",
-      "validated_through": "2026-07-19"
+      "validated_through": "2026-07-20"
     }
   },
   "role_scores": {
     "hitters": {
       "marcel_mae": {
-        "AVG": 0.03871,
-        "OBP": 0.04139,
-        "OPS": 0.11548,
-        "SLG": 0.08542
+        "AVG": 0.03736,
+        "OBP": 0.04041,
+        "OPS": 0.11214,
+        "SLG": 0.08367
       },
-      "marcel_mean_ratio_vs_steamer": 1.024,
+      "marcel_mean_ratio_vs_steamer": 1.0317,
       "per_stat_ratio": {
-        "AVG": 1.0259,
-        "OBP": 1.029,
-        "OPS": 1.0168,
-        "SLG": 1.0242
+        "AVG": 1.0355,
+        "OBP": 1.0438,
+        "OPS": 1.0194,
+        "SLG": 1.0282
       },
       "steamer_mae": {
-        "AVG": 0.03773,
-        "OBP": 0.04022,
-        "OPS": 0.11358,
-        "SLG": 0.0834
+        "AVG": 0.03608,
+        "OBP": 0.03872,
+        "OPS": 0.11,
+        "SLG": 0.08138
       }
     },
     "pitchers": {
       "marcel_mae": {
-        "ERA": 1.57761,
-        "WHIP": 0.23935
+        "ERA": 1.56765,
+        "WHIP": 0.23382
       },
-      "marcel_mean_ratio_vs_steamer": 1.1035,
+      "marcel_mean_ratio_vs_steamer": 1.0809,
       "per_stat_ratio": {
-        "ERA": 1.0969,
-        "WHIP": 1.1102
+        "ERA": 1.0839,
+        "WHIP": 1.0779
       },
       "steamer_mae": {
-        "ERA": 1.43826,
-        "WHIP": 0.2156
+        "ERA": 1.44636,
+        "WHIP": 0.21692
       }
     }
   },
   "scores": {
     "marcel_mae": {
-      "AVG": 0.03871,
-      "ERA": 1.57761,
-      "OBP": 0.04139,
-      "OPS": 0.11548,
-      "SLG": 0.08542,
-      "WHIP": 0.23935
+      "AVG": 0.03736,
+      "ERA": 1.56765,
+      "OBP": 0.04041,
+      "OPS": 0.11214,
+      "SLG": 0.08367,
+      "WHIP": 0.23382
     },
-    "marcel_mean_ratio_vs_steamer": 1.0505,
+    "marcel_mean_ratio_vs_steamer": 1.0481,
     "per_stat_ratio": {
-      "AVG": 1.0259,
-      "ERA": 1.0969,
-      "OBP": 1.029,
-      "OPS": 1.0168,
-      "SLG": 1.0242,
-      "WHIP": 1.1102
+      "AVG": 1.0355,
+      "ERA": 1.0839,
+      "OBP": 1.0438,
+      "OPS": 1.0194,
+      "SLG": 1.0282,
+      "WHIP": 1.0779
     },
     "steamer_mae": {
-      "AVG": 0.03773,
-      "ERA": 1.43826,
-      "OBP": 0.04022,
-      "OPS": 0.11358,
-      "SLG": 0.0834,
-      "WHIP": 0.2156
+      "AVG": 0.03608,
+      "ERA": 1.44636,
+      "OBP": 0.03872,
+      "OPS": 0.11,
+      "SLG": 0.08138,
+      "WHIP": 0.21692
     }
   },
   "status": "shadow_only",
   "what_would_change": [
     {
       "live_value": 99.11,
-      "marcel_value": 2.23,
+      "marcel_value": 2.18,
       "mlbam_id": "691406",
       "name": "Junior Caminero",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -96.88
+      "value_delta": -96.93
     },
     {
-      "live_value": 98.73,
-      "marcel_value": 2.16,
+      "live_value": 97.99,
+      "marcel_value": 2.11,
       "mlbam_id": "695578",
       "name": "James Wood",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -96.57
+      "value_delta": -95.88
     },
     {
-      "live_value": 85.21,
-      "marcel_value": 2.39,
+      "live_value": 86.36,
+      "marcel_value": 2.35,
       "mlbam_id": "691718",
       "name": "Pete Crow-Armstrong",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -82.82
+      "value_delta": -84.01
     },
     {
-      "live_value": 78.98,
+      "live_value": 79.83,
       "marcel_value": null,
       "mlbam_id": "670541",
       "name": "Yordan Alvarez",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -78.98
-    },
-    {
-      "live_value": 27.97,
-      "marcel_value": 98.76,
-      "mlbam_id": "596019",
-      "name": "Francisco Lindor",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": 70.79
+      "value_delta": -79.83
     },
     {
       "live_value": null,
-      "marcel_value": 69.02,
+      "marcel_value": 72.72,
       "mlbam_id": "680718",
       "name": "Addison Barger",
       "only_in": "shadow",
       "role": "hitter",
-      "value_delta": 69.02
+      "value_delta": 72.72
     },
     {
-      "live_value": 69.01,
+      "live_value": 28.31,
+      "marcel_value": 98.75,
+      "mlbam_id": "596019",
+      "name": "Francisco Lindor",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": 70.44
+    },
+    {
+      "live_value": 69.87,
       "marcel_value": null,
       "mlbam_id": "691023",
       "name": "Jordan Walker",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -69.01
+      "value_delta": -69.87
     },
     {
-      "live_value": 68.04,
+      "live_value": 68.37,
       "marcel_value": null,
       "mlbam_id": "694819",
       "name": "Jacob Misiorowski",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -68.04
+      "value_delta": -68.37
     },
     {
-      "live_value": 64.49,
+      "live_value": 66.23,
       "marcel_value": null,
       "mlbam_id": "701398",
       "name": "Sal Stewart",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -64.49
+      "value_delta": -66.23
     },
     {
-      "live_value": 62.34,
-      "marcel_value": null,
-      "mlbam_id": "700250",
-      "name": "Ben Rice",
-      "only_in": "live",
-      "role": "hitter",
-      "value_delta": -62.34
-    },
-    {
-      "live_value": 61.7,
+      "live_value": 64.37,
       "marcel_value": null,
       "mlbam_id": "693645",
       "name": "Cam Schlittler",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -61.7
+      "value_delta": -64.37
     },
     {
-      "live_value": 65.81,
-      "marcel_value": 4.43,
+      "live_value": 63.46,
+      "marcel_value": null,
+      "mlbam_id": "700250",
+      "name": "Ben Rice",
+      "only_in": "live",
+      "role": "hitter",
+      "value_delta": -63.46
+    },
+    {
+      "live_value": 67.58,
+      "marcel_value": 4.32,
       "mlbam_id": "682928",
       "name": "CJ Abrams",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -61.38
+      "value_delta": -63.26
     },
     {
-      "live_value": 60.77,
+      "live_value": 7.91,
+      "marcel_value": 69.66,
+      "mlbam_id": "687597",
+      "name": "Jordan Beck",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": 61.75
+    },
+    {
+      "live_value": 82.78,
+      "marcel_value": 21.42,
+      "mlbam_id": "694973",
+      "name": "Paul Skenes",
+      "only_in": null,
+      "role": "pitcher",
+      "value_delta": -61.36
+    },
+    {
+      "live_value": 61.01,
       "marcel_value": null,
       "mlbam_id": "701762",
       "name": "Nick Kurtz",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -60.77
-    },
-    {
-      "live_value": 58.77,
-      "marcel_value": null,
-      "mlbam_id": "695505",
-      "name": "Chase Burns",
-      "only_in": "live",
-      "role": "pitcher",
-      "value_delta": -58.77
-    },
-    {
-      "live_value": 8.0,
-      "marcel_value": 66.14,
-      "mlbam_id": "687597",
-      "name": "Jordan Beck",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": 58.14
+      "value_delta": -61.01
     },
     {
       "live_value": null,
-      "marcel_value": 57.51,
+      "marcel_value": 60.55,
       "mlbam_id": "676059",
       "name": "Jordan Westburg",
       "only_in": "shadow",
       "role": "hitter",
-      "value_delta": 57.51
+      "value_delta": 60.55
     },
     {
-      "live_value": 90.67,
-      "marcel_value": 33.16,
-      "mlbam_id": "677951",
-      "name": "Bobby Witt Jr.",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -57.51
-    },
-    {
-      "live_value": 59.27,
-      "marcel_value": 2.43,
-      "mlbam_id": "681624",
-      "name": "Andy Pages",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -56.84
-    },
-    {
-      "live_value": 59.77,
-      "marcel_value": 3.75,
-      "mlbam_id": "671739",
-      "name": "Michael Harris II",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -56.02
-    },
-    {
-      "live_value": 55.19,
+      "live_value": 60.32,
       "marcel_value": null,
       "mlbam_id": "808967",
       "name": "Yoshinobu Yamamoto",
       "only_in": "live",
       "role": "pitcher",
-      "value_delta": -55.19
+      "value_delta": -60.32
     },
     {
-      "live_value": 54.96,
+      "live_value": 59.32,
+      "marcel_value": null,
+      "mlbam_id": "695505",
+      "name": "Chase Burns",
+      "only_in": "live",
+      "role": "pitcher",
+      "value_delta": -59.32
+    },
+    {
+      "live_value": 59.6,
+      "marcel_value": 2.34,
+      "mlbam_id": "681624",
+      "name": "Andy Pages",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": -57.26
+    },
+    {
+      "live_value": 57.18,
       "marcel_value": null,
       "mlbam_id": "805808",
       "name": "Kevin McGonigle",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -54.96
+      "value_delta": -57.18
     },
     {
-      "live_value": 54.85,
+      "live_value": 60.17,
+      "marcel_value": 3.03,
+      "mlbam_id": "671739",
+      "name": "Michael Harris II",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": -57.14
+    },
+    {
+      "live_value": 91.19,
+      "marcel_value": 34.76,
+      "mlbam_id": "677951",
+      "name": "Bobby Witt Jr.",
+      "only_in": null,
+      "role": "hitter",
+      "value_delta": -56.43
+    },
+    {
+      "live_value": 55.47,
+      "marcel_value": null,
+      "mlbam_id": "690997",
+      "name": "Nolan McLean",
+      "only_in": "live",
+      "role": "pitcher",
+      "value_delta": -55.47
+    },
+    {
+      "live_value": 54.88,
       "marcel_value": null,
       "mlbam_id": "802139",
       "name": "JJ Wetherholt",
       "only_in": "live",
       "role": "hitter",
-      "value_delta": -54.85
+      "value_delta": -54.88
     },
     {
-      "live_value": 77.78,
-      "marcel_value": 23.95,
-      "mlbam_id": "694973",
-      "name": "Paul Skenes",
-      "only_in": null,
-      "role": "pitcher",
-      "value_delta": -53.83
-    },
-    {
-      "live_value": 62.0,
-      "marcel_value": 8.36,
-      "mlbam_id": "547180",
-      "name": "Bryce Harper",
+      "live_value": 5.39,
+      "marcel_value": 60.23,
+      "mlbam_id": "672820",
+      "name": "Lenyn Sosa",
       "only_in": null,
       "role": "hitter",
-      "value_delta": -53.64
-    },
-    {
-      "live_value": 60.21,
-      "marcel_value": 6.64,
-      "mlbam_id": "621566",
-      "name": "Matt Olson",
-      "only_in": null,
-      "role": "hitter",
-      "value_delta": -53.57
+      "value_delta": 54.84
     }
   ]
 }
