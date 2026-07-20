@@ -125,6 +125,22 @@ The future public primary endpoint is realized-value regret. It remains blocked 
     "otherwise": "no_significant_difference",
     "claim_authorized": false
   },
+  "final_artifact_status_contract": {
+    "top_level_status_mapping": {
+      "research_only": "research_only"
+    },
+    "statistical_status_mapping": {
+      "validated_superiority": "research_success",
+      "validated_underperformance": "validated_underperformance",
+      "no_significant_difference": "no_significant_difference",
+      "collecting": "collecting"
+    },
+    "raw_only_status_values": ["validated_superiority"],
+    "allowed_final_status_values": ["research_only", "research_success", "validated_underperformance", "no_significant_difference", "collecting"],
+    "forbidden_final_status_values": ["validated_superiority"],
+    "claim_authorized": false,
+    "public_claim_eligible": false
+  },
   "seed": 33021,
   "forbidden_seeds": [28013, 28017, 29001, 31013, 31017],
   "v0_7_baseline": "excluded_unstable_prediction_contract",
@@ -149,6 +165,8 @@ Within each fold and role, percentile-rank MAE weights every resolved player equ
 
 Research success requires evidence readiness, an interval lower bound above zero, at least 5% relative improvement, every cohort and role-segment regression at or below 5%, and candidate top-25 regret no worse than Control. An interval upper bound below zero is research underperformance; every other evidence-ready result is no significant difference. `claim_authorized` remains false regardless of statistical status.
 
+The final private artifact preserves a successful claim-ineligible `build_track` top-level `status` of `research_only`, but rewrites its raw `statistical_status` of `validated_superiority` to `research_success`. Raw `validated_underperformance`, `no_significant_difference`, and `collecting` statistical statuses remain unchanged. `validated_superiority` is permitted only as the pinned evaluator's raw mapping input and is forbidden as any final artifact status value. `research_success` means only that the registered ordinal research gate passed; it never means format-specific superiority, never authorizes a public claim, and never changes `claim_authorized` or `public_claim_eligible` from false.
+
 ## Adjudication rules
 
 - Input-coverage failure stops before outcome scoring and leaves the look unspent.
@@ -157,4 +175,4 @@ Research success requires evidence readiness, an interval lower bound above zero
 - Under-19, position, and AAA outputs are reports inside this look, never extra candidate-selection looks.
 - Position output is omitted unless non-null, stable historical position semantics pass the pre-run audit.
 - The 2020 fold is absent by contract, not as an analyst choice.
-- Every status remains `research_only` or a failure state, and `claim_authorized` remains false.
+- Every top-level status remains `research_only` or a failure state; final statistical status follows the frozen private-artifact mapping, and `claim_authorized` remains false.

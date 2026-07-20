@@ -134,6 +134,28 @@ EXPECTED_REGISTRATION = {
         "otherwise": "no_significant_difference",
         "claim_authorized": False,
     },
+    "final_artifact_status_contract": {
+        "top_level_status_mapping": {
+            "research_only": "research_only",
+        },
+        "statistical_status_mapping": {
+            "validated_superiority": "research_success",
+            "validated_underperformance": "validated_underperformance",
+            "no_significant_difference": "no_significant_difference",
+            "collecting": "collecting",
+        },
+        "raw_only_status_values": ["validated_superiority"],
+        "allowed_final_status_values": [
+            "research_only",
+            "research_success",
+            "validated_underperformance",
+            "no_significant_difference",
+            "collecting",
+        ],
+        "forbidden_final_status_values": ["validated_superiority"],
+        "claim_authorized": False,
+        "public_claim_eligible": False,
+    },
     "seed": 33021,
     "forbidden_seeds": [28013, 28017, 29001, 31013, 31017],
     "v0_7_baseline": "excluded_unstable_prediction_contract",
@@ -247,6 +269,28 @@ def test_registration_matches_full_immutable_contract_and_code():
         "bootstrap_seed": 33021,
         "bootstrap_resamples": 10000,
     }
+    status_contract = registration["final_artifact_status_contract"]
+    assert status_contract["top_level_status_mapping"] == {
+        "research_only": "research_only"
+    }
+    assert status_contract["statistical_status_mapping"] == {
+        "validated_superiority": "research_success",
+        "validated_underperformance": "validated_underperformance",
+        "no_significant_difference": "no_significant_difference",
+        "collecting": "collecting",
+    }
+    final_status_values = {
+        *status_contract["top_level_status_mapping"].values(),
+        *status_contract["statistical_status_mapping"].values(),
+    }
+    assert final_status_values == set(status_contract["allowed_final_status_values"])
+    assert set(status_contract["forbidden_final_status_values"]).isdisjoint(final_status_values)
+    assert status_contract["raw_only_status_values"] == ["validated_superiority"]
+    assert set(status_contract["raw_only_status_values"]) <= set(
+        status_contract["statistical_status_mapping"]
+    )
+    assert status_contract["claim_authorized"] is False
+    assert status_contract["public_claim_eligible"] is False
     assert registration["registration_status"] == "registered_unspent"
     assert registration["registration_amendment"]["outcome_look_executed_before_amendment"] is False
     assert registration["public_claim_eligible"] is False
