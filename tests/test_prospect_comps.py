@@ -415,6 +415,8 @@ def test_detail_card_renders_comps_from_the_committed_artifact():
     # forecast; cohort bars are counts, not odds; tiers measure playing time.
     assert "not a forecast" in html
     assert "counts of matched careers, not odds" in html
+    assert "role-probability" not in html
+    assert "shape-cohort-track" in html
     assert "PA/yr" in html
 
 

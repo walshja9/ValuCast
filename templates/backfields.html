@@ -395,11 +395,11 @@
                         {% if team_boards.summary.risers %}
                         <ul class="bf-team-extra-list">
                             {% for riser in team_boards.summary.risers %}
-                            <li><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a><small>Up {{ riser.move.label }} spots in 7 days</small></li>
+                            <li><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a><small>Up {{ riser.move.label }} spots over {{ riser.move.window_label }}</small></li>
                             {% endfor %}
                         </ul>
                         {% else %}
-                        <p class="bf-empty">No positive 7-day moves in the current snapshot.</p>
+                        <p class="bf-empty">No positive moves in the current snapshot.</p>
                         {% endif %}
                     </div>
                     {% if not team_boards.aotc_hold %}

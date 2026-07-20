@@ -5669,7 +5669,7 @@ def _public_deterministic_scouting_text(report: dict) -> str:
         "This profiles as a mid-rotation starter",
         "Current-performance ceiling scenario: mid-rotation starter",
     )
-    return text
+    return text if _public_scouting_text_allowed(report, text) else ""
 
 
 def _scouting_display_report_text(report: dict | None) -> str:
@@ -6167,16 +6167,21 @@ def _team_board_movements():
 
 
 def _team_board_move_from_signal(signal):
-    delta = _team_board_as_float((signal or {}).get("rank_delta_7d"))
+    signal = signal or {}
+    delta = _team_board_as_float(signal.get("rank_delta_7d"))
+    window_label = "7 days"
     if delta is None:
-        delta = _team_board_as_float((signal or {}).get("rank_delta"))
+        delta = _team_board_as_float(signal.get("rank_delta"))
+        days = _team_board_as_float(signal.get("window_days"))
+        window_label = f"{int(days)} days" if days and days > 0 else "recent snapshot"
     if delta is None or delta == 0:
-        return {"direction": "flat", "label": "-", "sort": 0.0}
+        return {"direction": "flat", "label": "-", "sort": 0.0, "window_label": window_label}
     label = str(int(abs(delta))) if float(delta).is_integer() else f"{abs(delta):.1f}"
     return {
         "direction": "up" if delta > 0 else "down",
         "label": label,
         "sort": float(delta),
+        "window_label": window_label,
     }
 
 
@@ -7446,7 +7451,7 @@ def _team_board_share_card_png(board, *, limit):
             line = f'{riser.get("name")} +{riser.get("move", {}).get("label")}'
             draw.text((table_x1 + 342, insight_y + 43 + offset * 27), _graphic_fit_text(draw, line, small_font, 292), fill=teal, font=small_font)
     else:
-        draw.text((table_x1 + 342, insight_y + 43), "No positive 7-day moves", fill=muted, font=small_font)
+        draw.text((table_x1 + 342, insight_y + 43), "No positive moves", fill=muted, font=small_font)
 
     buys = board.get("buys") or []
     if buys:

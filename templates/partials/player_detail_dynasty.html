@@ -432,12 +432,12 @@
             {% if shape_comps.cohort and shape_comps.cohort.size %}
             <div class="shape-cohort">
                 <p class="sample-context-note">How this shape aged &mdash; the {{ shape_comps.cohort.size }} nearest matches old enough to judge (matches from 2000&ndash;{{ shape_comps.cohort.resolved_through }} &mdash; the seasons with a complete 5-year outcome window, 2020 pro-rated to a full schedule), measured on playing time kept and era-relative bat over their next five years:</p>
-                <div class="role-probability-bars shape-cohort-bars">
+                <div class="shape-cohort-bars">
                     {% for tier in ["impact_regular", "everyday", "part_time", "faded"] %}
                     {% set count = shape_comps.cohort.tiers.get(tier, 0) %}
-                    <div class="role-probability-row">
+                    <div class="shape-cohort-row">
                         <span>{{ shape_comp_tier_labels.get(tier, tier) }}</span>
-                        <div class="role-probability-track" role="img" aria-label="{{ shape_comp_tier_labels.get(tier, tier) }}: {{ count }} of {{ shape_comps.cohort.size }} matched careers">
+                        <div class="shape-cohort-track" role="img" aria-label="{{ shape_comp_tier_labels.get(tier, tier) }}: {{ count }} of {{ shape_comps.cohort.size }} matched careers">
                             <i style="width: {{ (100 * count / shape_comps.cohort.size) | round(1) }}%"></i>
                         </div>
                         <b>{{ count }}</b>

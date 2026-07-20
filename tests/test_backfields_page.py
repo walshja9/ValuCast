@@ -816,6 +816,14 @@ def test_team_board_system_summary_uses_top_20_value_roles_levels_and_positive_r
     assert [row["move"]["sort"] for row in summary["risers"]] == [4.0, 2.0]
 
 
+def test_team_board_move_labels_only_claim_a_known_window():
+    known = app_module._team_board_move_from_signal({"rank_delta_7d": 3})
+    fallback = app_module._team_board_move_from_signal({"rank_delta": 3})
+
+    assert known["window_label"] == "7 days"
+    assert fallback["window_label"] == "recent snapshot"
+
+
 def test_team_board_buys_respect_ahead_of_curve_hold(monkeypatch):
     monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
     payload = {
