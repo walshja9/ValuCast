@@ -1,29 +1,53 @@
 # Plan 033 — Normalized-Production Prospect Research Gate
 
-**Status:** REGISTERED + UNSPENT (2026-07-20)
+**Status:** REGISTERED + UNSPENT (pre-look registration-review amendment, 2026-07-20)
 
 ## Scope
 
 This immutable registration permits one research-only look comparing the Control and normalized-production variants, with hitters and pitchers kept separate. The registered historical cutoff is cohort-season completion. The current primary endpoint is ordinal percentile-rank MAE and may decide only whether the challenger merits further study; it cannot prove format-specific superiority or authorize a public claim.
 
-The future public primary endpoint is realized-value regret. It remains blocked by the Task-2 readiness audit because pitcher QS is missing, and this registration does not create a production importer.
+This is a pre-look registration-review amendment to the initial registration commit. No outcome scorer, seed, or comparative result was executed before this amendment, so the look remains unspent. The amendment distinguishes six input-normalization reference/coverage folds from the three mature outcome-scoring folds and freezes the exact adjudication implementation, criteria, weighting, and decision math before any result look.
+
+The future public primary endpoint is realized-value regret. It remains blocked by every blocker in the Task-2 readiness audit: missing pitcher QS, an impact target that is not direct 7x7, and exact prospective replay that cannot be reconstructed. This registration does not create a production importer.
 
 <!-- normalized-production-registration:start -->
 ```json
 {
   "protocol": "prospect-normalized-production-v1",
   "registered_at": "2026-07-20",
+  "registration_status": "registered_unspent",
+  "registration_amendment": {
+    "reviewed_at": "2026-07-20",
+    "kind": "pre_look_registration_review",
+    "outcome_look_executed_before_amendment": false
+  },
   "base_commit": "16df0aeeb4ac11a41c9ff279240b60a055aee3bf",
   "prospect_input_git_blob": "4ce139871ae456b5289c68dad1e15d8191ff7ef5",
   "aaa_statcast_git_blob": "37533ad816d86bcf392ccce75bb15f0b745f0f74",
   "incumbent_model_git_blob": "7a9b9d12ae0866ae3b460f3f02395a0e30949844",
   "live_rank_git_blob": "4ed3f2603b93e5ecf319f501519303f6ff7c18fa",
+  "competition_benchmark_git_blob": "85a1c2ff43ee7c050da75f43ae1f3382058d1ed3",
   "historical_cutoff": "cohort_season_completion",
+  "reference_fold_years": [2016, 2017, 2018, 2019, 2021, 2022],
+  "scored_fold_years": [2018, 2019, 2021],
+  "fold_eligibility": {
+    "outcome_complete_through": 2025,
+    "outcome_horizon_years": 4,
+    "earliest_historical_cohort": 2014,
+    "maturity_rule": "cohort_year <= outcome_complete_through - outcome_horizon_years",
+    "training_history_rule": "cohort_year - outcome_horizon_years >= earliest_historical_cohort",
+    "omitted_cohorts": [2020],
+    "selection": "all_and_only_pinned_historical_cohorts_satisfying_maturity_training_and_omission_rules"
+  },
   "realized_value_readiness": {
     "artifact": "data/validation/valucast_prospect_realized_value_readiness.json",
     "required_status": "blocked",
     "required_ready": false,
-    "blocking_category": "qs"
+    "required_blockers": [
+      "missing_pitcher_category:qs",
+      "impact_target_not_direct_7x7",
+      "exact_prospective_replay_not_reconstructable"
+    ]
   },
   "identity_policy": {
     "identity_key": "integer_mlbam_id",
@@ -43,6 +67,8 @@ The future public primary endpoint is realized-value regret. It remains blocked 
   "same_level_min_other_peers": 25,
   "role_season_min_other_peers": 250,
   "minimum_exercised_coverage": 0.9,
+  "normalization_exercised_coverage_scope": "each_role_each_reference_fold",
+  "normalization_coverage_failure": "stop_before_outcome_scoring_leave_look_unspent",
   "research_primary": "ordinal_percentile_rank_mae",
   "future_public_primary": "realized_value_regret",
   "secondary_endpoints": ["partial_category_best_season_impact", "pairwise_concordance", "top_25_regret", "calibration", "coverage", "fold_stability"],
@@ -61,6 +87,44 @@ The future public primary endpoint is realized-value regret. It remains blocked 
   "bootstrap": "paired_hierarchical_cohort_then_player",
   "bootstrap_resamples": 10000,
   "bootstrap_interval": "two_sided_95_percentile",
+  "adjudication": {
+    "implementation_path": "prospects/competition_benchmark.py",
+    "function": "build_track",
+    "independent_track_per_role": true,
+    "roles": ["hitter", "pitcher"],
+    "cohort_construction": "one_cohort_per_scored_fold_and_role",
+    "build_track_criteria": {
+      "minimum_cohorts": 3,
+      "minimum_unique_players": 250,
+      "minimum_outcome_coverage": 0.9,
+      "minimum_relative_improvement_pct": 5.0,
+      "maximum_single_cohort_regression_pct": 5.0,
+      "maximum_segment_regression_pct": 5.0,
+      "top_k": 25,
+      "bootstrap_seed": 33021,
+      "bootstrap_resamples": 10000
+    }
+  },
+  "adjudication_math": {
+    "fold_role_metric": "equal_player_percentile_rank_mae",
+    "role_track_primary": "unweighted_mean_of_completed_fold_role_maes",
+    "error_delta": "control_mae_minus_candidate_mae",
+    "relative_improvement_formula": "(control_mae-candidate_mae)/control_mae*100",
+    "regression_formula": "(candidate_mae-control_mae)/control_mae*100",
+    "hierarchical_bootstrap_sampling": "completed_cohorts_then_players",
+    "bootstrap_interval": "two_sided_95_percentile",
+    "research_success_requires": [
+      "evidence_ready",
+      "error_delta_ci_low_gt_0",
+      "relative_improvement_pct_gte_5",
+      "every_cohort_regression_pct_lte_5",
+      "every_role_segment_regression_pct_lte_5",
+      "candidate_top_25_regret_lte_control"
+    ],
+    "research_underperformance": "error_delta_ci_high_lt_0",
+    "otherwise": "no_significant_difference",
+    "claim_authorized": false
+  },
   "seed": 33021,
   "forbidden_seeds": [28013, 28017, 29001, 31013, 31017],
   "v0_7_baseline": "excluded_unstable_prediction_contract",
@@ -70,6 +134,20 @@ The future public primary endpoint is realized-value regret. It remains blocked 
 }
 ```
 <!-- normalized-production-registration:end -->
+
+## Fold and coverage contract
+
+The six reference folds are `2016`, `2017`, `2018`, `2019`, `2021`, and `2022`. They exist to construct and audit the cutoff-available normalization references. Normalized production must reach at least 90% exercised coverage separately for hitters and pitchers in every one of these six reference folds before any outcome scoring begins; failure leaves the look unspent.
+
+The outcome-scored folds are all and only `2018`, `2019`, and `2021`. Starting from the pinned historical cohorts, a scored fold must satisfy both deterministic rules: `cohort_year <= 2025 - 4` for a complete four-year outcome horizon, and `cohort_year - 4 >= 2014` for prior training history. The 2020 cohort is absent by the input contract. The 2022 fold is reference-only because its four-year horizon ends in 2026, beyond the 2025 outcome-completeness pin.
+
+## Adjudication contract
+
+Adjudication is pinned to Git blob `85a1c2ff43ee7c050da75f43ae1f3382058d1ed3` of `prospects/competition_benchmark.py`, function `build_track`. Hitters and pitchers form independent tracks, with one cohort per scored fold and role. Each role track requires three completed cohorts, 250 unique players, at least 90% outcome coverage in every fold/role, at least 5% relative improvement, no cohort or role segment more than 5% worse, candidate top-25 regret no worse than Control, seed `33021`, and 10,000 bootstrap resamples.
+
+Within each fold and role, percentile-rank MAE weights every resolved player equally. Each role-track primary is the unweighted mean of its completed fold-role MAEs. Relative improvement is `(Control - candidate) / Control * 100`; regression is `(candidate - Control) / Control * 100`. The paired hierarchical bootstrap samples completed cohorts and then players and reports a two-sided 95% percentile interval for Control-minus-candidate error.
+
+Research success requires evidence readiness, an interval lower bound above zero, at least 5% relative improvement, every cohort and role-segment regression at or below 5%, and candidate top-25 regret no worse than Control. An interval upper bound below zero is research underperformance; every other evidence-ready result is no significant difference. `claim_authorized` remains false regardless of statistical status.
 
 ## Adjudication rules
 
