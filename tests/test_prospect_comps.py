@@ -418,6 +418,78 @@ def test_detail_card_renders_comps_from_the_committed_artifact():
     assert "PA/yr" in html
 
 
+def test_detail_and_share_cards_render_hitter_component_matches():
+    from pathlib import Path
+
+    import app as app_module
+
+    root = Path(__file__).parent.parent
+    artifact = json.loads(
+        (root / "data" / "models" / "valucast_prospect_comps.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    snapshot = json.loads(
+        (root / "data" / "public" / "public_dynasty_snapshot.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    mlbam_id, comp = next(iter(artifact["players"].items()))
+    row = next(
+        item for item in snapshot["players"]
+        if str(item.get("mlbam_id")) == mlbam_id and item.get("role") == "hitter"
+    )
+
+    html = app_module.app.test_client().get(
+        f"/player/{row['id']}?mode=prospects", headers={"HX-Request": "true"}
+    ).data.decode("utf-8")
+    share_text = " ".join(app_module._share_card_comp_lines(comp))
+
+    for label, metric in (("Power", "ISO"), ("Contact", "K%"), ("Approach", "BB%")):
+        assert f"{label} — {metric}" in html
+        assert comp["components"][label.lower()]["match"] in share_text
+    assert "measured distance" in html
+    assert "match percentage" not in html.lower()
+    assert "The forecast is the model's role probabilities" not in html
+    assert "Peak Outlook is a separate qualitative scenario layer" in html
+
+
+def test_detail_and_share_cards_render_role_separated_pitcher_matches():
+    from pathlib import Path
+
+    import app as app_module
+
+    root = Path(__file__).parent.parent
+    artifact = json.loads(
+        (root / "data" / "models" / "valucast_prospect_comps.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    snapshot = json.loads(
+        (root / "data" / "public" / "public_dynasty_snapshot.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    mlbam_id, comp = next(iter(artifact["pitchers"].items()))
+    row = next(
+        item for item in snapshot["players"]
+        if str(item.get("mlbam_id")) == mlbam_id and item.get("role") == "pitcher"
+    )
+
+    html = app_module.app.test_client().get(
+        f"/player/{row['id']}?mode=prospects", headers={"HX-Request": "true"}
+    ).data.decode("utf-8")
+    share_text = " ".join(app_module._share_card_comp_lines(comp))
+
+    assert "Pitcher Shape Comps" in html
+    assert f"{comp['role_pool']} pool" in html.lower()
+    assert "measured distance" in html
+    assert "success probability:" not in html.lower()
+    for twin in comp["twins"]:
+        assert twin["name"] in html
+        assert twin["name"] in share_text
+
+
 def test_methodology_documents_shape_comps():
     import app as app_module
     client = app_module.app.test_client()
@@ -431,6 +503,15 @@ def test_methodology_documents_shape_comps():
     # points published — reproducibility is the product.
     assert "bias we can" in html  # "The bias we can't remove, named"
     assert "450+ PA/yr" in html
+    assert "Power (ISO)" in html
+    assert "Contact (K%)" in html
+    assert "Approach (BB%)" in html
+    assert "Pitcher shape comps" in html
+    assert "starter and reliever" in html
+    assert "measured distance" in html
+    assert "do not turn distance into a match percentage" in " ".join(
+        html.lower().split()
+    )
 
 
 def test_comps_wired_into_daily_build_after_snapshot():

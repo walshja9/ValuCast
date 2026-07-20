@@ -2970,13 +2970,26 @@ def _prospect_player_card_read(row, stat_percentiles, context, scouting_report=N
 
 
 def _share_card_comp_lines(comp):
-    """Twins + cohort strings for the share card, or None when not comped.
+    """Compact comp strings for the share card, or None when not comped.
 
     Copy rules mirror the on-site card (7/8 review): tier words describe
     playing time, never a role verdict, and the cohort is counts, not odds.
     """
     if not comp or not comp.get("twins"):
         return None
+    if comp.get("role_pool"):
+        target = comp.get("target") or {}
+        role = str(comp["role_pool"]).upper()
+        target_line = (
+            f"{role} POOL - target K-BB% {target.get('k_bb_pct')} | "
+            f"K/9 {target.get('k_per_9')} | BB/9 {target.get('bb_per_9')}"
+        )
+        twins_line = "   ".join(
+            f"{twin['name']} '{twin['season'] % 100:02d} "
+            f"(distance {twin['distance']:.3f})"
+            for twin in comp["twins"][:3]
+        )
+        return [target_line, twins_line]
     twins = "   ".join(
         f"{twin['name']} '{twin['season'] % 100:02d} ({twin.get('pos') or '?'})"
         for twin in comp["twins"][:3]
@@ -2998,7 +3011,14 @@ def _share_card_comp_lines(comp):
         )
     else:
         cohort_line = "No matches old enough to grade a five-year outcome yet."
-    return twins, cohort_line
+    lines = [twins, cohort_line]
+    components = comp.get("components") or {}
+    if components:
+        lines.append("   ".join(
+            f"{item['label']}: {item['match']} '{item['season'] % 100:02d}"
+            for item in components.values()
+        ))
+    return lines
 
 
 # The share-PNG plate-discipline strip shows the five headline metrics per level.
@@ -3060,10 +3080,16 @@ def _prospect_player_card_png(row):
     pool_label = prospect_percentiles.pool_label(row)
     fg_scouting = fg_fv.get(getattr(row, "mlbam_id", None))
     comps_payload = _load_artifact(PROSPECT_COMPS_PATH) or {}
-    comp_lines = _share_card_comp_lines(
-        (comps_payload.get("players") or {}).get(str(getattr(row, "mlbam_id", "") or ""))
-    )
-    comps_extra = 132 if comp_lines else 0
+    comp_key = str(getattr(row, "mlbam_id", "") or "")
+    comp_map = (
+        comps_payload.get("pitchers")
+        if str(getattr(row, "role", "") or "").lower() == "pitcher"
+        else comps_payload.get("players")
+    ) or {}
+    comp = comp_map.get(comp_key)
+    comp_lines = _share_card_comp_lines(comp)
+    comps_panel_h = 58 + 27 * len(comp_lines) if comp_lines else 0
+    comps_extra = comps_panel_h + 14 if comp_lines else 0
     # Plate-discipline strip (same reader as the page card). Empty store/player ->
     # discipline_extra == 0 and the card renders pixel-identical to today.
     discipline_rows = _prospect_discipline_card_rows(
@@ -3583,18 +3609,26 @@ def _prospect_player_card_png(row):
     # between the skill shape and the FG reference; everything below shifts by
     # comps_extra so non-comped players stay pixel-identical.
     if comp_lines:
-        twins_line, cohort_line = comp_lines
         comps_y = 1356 + body_shift
-        _graphic_glass_panel(img, draw, (48, comps_y, 1032, comps_y + 118), radius=12)
+        _graphic_glass_panel(
+            img, draw, (48, comps_y, 1032, comps_y + comps_panel_h), radius=12
+        )
+        comp_title = (
+            "PITCHER SHAPE COMPS - current-usage role pool - descriptive, not a forecast"
+            if comp and comp.get("role_pool")
+            else "CLOSEST MLB SHAPES - era-adjusted translated-rate matches - descriptive, not a forecast"
+        )
         draw.text((74, comps_y + 14),
-                  "CLOSEST MLB SHAPES - era-adjusted match on translated K%/BB%/ISO - descriptive, not a forecast",
+                  comp_title,
                   fill=muted, font=_graphic_font(14, bold=True))
-        twins_font = _graphic_font(21, bold=True)
-        draw.text((74, comps_y + 42), _graphic_fit_text(draw, twins_line, twins_font, 934),
-                  fill=text, font=twins_font)
-        cohort_font = _graphic_font(15)
-        draw.text((74, comps_y + 82), _graphic_fit_text(draw, cohort_line, cohort_font, 934),
-                  fill=muted, font=cohort_font)
+        for index, line in enumerate(comp_lines):
+            line_font = _graphic_font(17, bold=index == 0)
+            draw.text(
+                (74, comps_y + 42 + index * 27),
+                _graphic_fit_text(draw, line, line_font, 934),
+                fill=text if index == 0 else muted,
+                font=line_font,
+            )
 
     # FanGraphs scouting reference -- FV + key tool grades, display-only (never in
     # ValuCast value/rank). Neutral color marks it as the scouts' read, not ours.
@@ -9717,9 +9751,12 @@ def _build_dynasty_player_detail_context(player_id, args):
         # Measured shape comps (display-only artifact; absent players/artifact
         # simply render no section).
         comps_payload = _load_artifact(PROSPECT_COMPS_PATH) or {}
-        shape_comps = (comps_payload.get("players") or {}).get(
-            str(getattr(dd_row, "mlbam_id", "") or "")
-        )
+        comp_map = (
+            comps_payload.get("pitchers")
+            if str(getattr(dd_row, "role", "") or "").lower() == "pitcher"
+            else comps_payload.get("players")
+        ) or {}
+        shape_comps = comp_map.get(str(getattr(dd_row, "mlbam_id", "") or ""))
         prospect_context = {
             "stat_percentiles": stat_percentiles,
             "stat_captions": stat_captions,
