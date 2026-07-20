@@ -137,6 +137,9 @@ EXPECTED_REGISTRATION = {
     "final_artifact_status_contract": {
         "top_level_status_mapping": {
             "research_only": "research_only",
+            "validated_underperformance": "validated_underperformance",
+            "no_significant_difference": "no_significant_difference",
+            "collecting": "collecting",
         },
         "statistical_status_mapping": {
             "validated_superiority": "research_success",
@@ -271,7 +274,16 @@ def test_registration_matches_full_immutable_contract_and_code():
     }
     status_contract = registration["final_artifact_status_contract"]
     assert status_contract["top_level_status_mapping"] == {
-        "research_only": "research_only"
+        "research_only": "research_only",
+        "validated_underperformance": "validated_underperformance",
+        "no_significant_difference": "no_significant_difference",
+        "collecting": "collecting",
+    }
+    assert set(status_contract["top_level_status_mapping"]) == {
+        "research_only",
+        "validated_underperformance",
+        "no_significant_difference",
+        "collecting",
     }
     assert status_contract["statistical_status_mapping"] == {
         "validated_superiority": "research_success",

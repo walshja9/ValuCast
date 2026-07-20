@@ -127,7 +127,10 @@ The future public primary endpoint is realized-value regret. It remains blocked 
   },
   "final_artifact_status_contract": {
     "top_level_status_mapping": {
-      "research_only": "research_only"
+      "research_only": "research_only",
+      "validated_underperformance": "validated_underperformance",
+      "no_significant_difference": "no_significant_difference",
+      "collecting": "collecting"
     },
     "statistical_status_mapping": {
       "validated_superiority": "research_success",
@@ -165,7 +168,7 @@ Within each fold and role, percentile-rank MAE weights every resolved player equ
 
 Research success requires evidence readiness, an interval lower bound above zero, at least 5% relative improvement, every cohort and role-segment regression at or below 5%, and candidate top-25 regret no worse than Control. An interval upper bound below zero is research underperformance; every other evidence-ready result is no significant difference. `claim_authorized` remains false regardless of statistical status.
 
-The final private artifact preserves a successful claim-ineligible `build_track` top-level `status` of `research_only`, but rewrites its raw `statistical_status` of `validated_superiority` to `research_success`. Raw `validated_underperformance`, `no_significant_difference`, and `collecting` statistical statuses remain unchanged. `validated_superiority` is permitted only as the pinned evaluator's raw mapping input and is forbidden as any final artifact status value. `research_success` means only that the registered ordinal research gate passed; it never means format-specific superiority, never authorizes a public claim, and never changes `claim_authorized` or `public_claim_eligible` from false.
+The final private artifact exhaustively identity-maps all possible raw `build_track.status` values: `research_only`, `validated_underperformance`, `no_significant_difference`, and `collecting`. For a successful claim-ineligible gate, it separately rewrites raw `statistical_status = validated_superiority` to `research_success`; raw `validated_underperformance`, `no_significant_difference`, and `collecting` statistical statuses remain unchanged. `validated_superiority` is permitted only as the pinned evaluator's raw statistical-status mapping input and is forbidden as any final artifact status value. `research_success` means only that the registered ordinal research gate passed; it never means format-specific superiority, never authorizes a public claim, and never changes `claim_authorized` or `public_claim_eligible` from false.
 
 ## Adjudication rules
 
