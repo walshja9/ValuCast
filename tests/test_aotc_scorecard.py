@@ -245,7 +245,7 @@ def test_ledger_page_renders_full_ledger():
     client = app.test_client()
     html = client.get("/ledger").data.decode("utf-8")
 
-    assert "THE LEDGER" in html
+    assert "TRACK RECORD" in html
     assert "We backed off" in html                      # misses are on the page
     assert "Our retreats" in html                       # ...and in the funnel tiles
     assert "/aotc-scorecard.json" in html               # raw artifact still linked
@@ -460,4 +460,59 @@ def test_track_record_context_respects_both_hold_gates(monkeypatch):
     assert context["receipt_count"] == 0
     assert context["miss_count"] == 0
     assert context["no_claim_call_up_count"] == 0
+
+
+def test_track_record_explains_three_evidence_lanes_with_denominators(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70, "provisional": True},
+        "funnel": {
+            "wins": 39,
+            "losses": 31,
+            "open": 102,
+            "total_claims": 258,
+            "excluded_from_pool": 188,
+            "unscored_or_unclassified": 0,
+            "buckets": {"clean_retraction": 86},
+            "self_retraction_rate": {"retracted": 117, "total": 258, "rate": 117 / 258},
+        },
+        "cohorts": {"cohort_count": 4},
+    })
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "receipts": [{"name": str(i)} for i in range(7)],
+        "misses": [],
+        "no_claim_rows": [{"name": str(i)} for i in range(33)],
+        "summary": {"no_claim_call_up_count": 33, "maturation": {"pending": 7}},
+    })
+
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert "TRACK RECORD" in html
+    assert "Forward Calls" in html
+    assert "39–31 across 70 scored calls (56%)" in html
+    assert "86 clean retractions" in html and "102 open" in html
+    assert "Consensus Movement" in html
+    assert "mature decisions" in html and "matched controls" in html
+    assert "Call-Up Timing" in html
+    assert "7 clearly ahead" in html and "0 clearly behind" in html
+    assert "33 without a large enough ranking gap to score" in html
+
+
+def test_track_record_discloses_exact_call_up_thresholds():
+    from app import app
+    from prospects.ahead_of_consensus import MAX_VALUCAST_RANK, MIN_BOARDS, MIN_DIVERGENCE
+    from prospects.call_up_receipts import FIELD_UNRANKED_MAX_VALUCAST_RANK
+
+    html = app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert f"at least {MIN_BOARDS} public boards" in html
+    assert "inside the top 600" in html
+    assert f"top {MAX_VALUCAST_RANK}" in html
+    assert f"{MIN_DIVERGENCE} places" in html
+    assert f"top-{FIELD_UNRANKED_MAX_VALUCAST_RANK}" in html
+    assert "no scoreable ranking gap" in html
+    assert "eligible prior call" not in html
 

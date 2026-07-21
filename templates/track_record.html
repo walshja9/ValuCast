@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}The Ledger — Ahead of the Curve Track Record | ValuCast{% endblock %}
-{% block og_title %}The Ledger | ValuCast{% endblock %}
+{% block title %}Track Record | ValuCast{% endblock %}
+{% block og_title %}Track Record | ValuCast{% endblock %}
 {% block og_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
 {% block og_url %}https://valucast.app/ledger{% endblock %}
 {% block og_image %}https://valucast.app/ledger/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
-{% block twitter_title %}The Ledger | ValuCast{% endblock %}
+{% block twitter_title %}Track Record | ValuCast{% endblock %}
 {% block twitter_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
 {% block twitter_image %}https://valucast.app/ledger/share-card.png{% endblock %}
 
@@ -20,7 +20,7 @@
 <section class="buys-heading glass ledger-hero">
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">AHEAD OF THE CURVE</span>
-        <h1>THE LEDGER</h1>
+        <h1>TRACK RECORD</h1>
         {% if sc %}
         <p class="buys-heading-sub">{{ sc.summary.ever_flagged }} calls tracked since {{ sc.summary.first_call_date }}{% if sc.generated_at %} &middot; updated {{ editorial_date(sc.generated_at) }}{% endif %}</p>
         {% endif %}
@@ -61,6 +61,47 @@
         <a class="export-btn secondary-action" href="/ledger/share-card.png" download="valucast-ledger.png">Download PNG</a>
     </div>
     {% endif %}
+</section>
+
+<section class="track-record-grid" aria-label="Track record overview">
+    <article class="ledger-tile glass">
+        <span class="ledger-tile-label">Forward Calls</span>
+        {% if forward_sc %}
+        <span class="ledger-tile-n">{{ forward_sc.wins }}–{{ forward_sc.losses }}</span>
+        <strong>{{ forward_sc.wins }}–{{ forward_sc.losses }} across {{ forward_sc.pool_size }} scored calls ({{ forward_sc.win_rate_pct }}%)</strong>
+        <span class="ledger-tile-sub">{{ forward_sc.clean_retractions }} clean retractions · {{ forward_sc.open }} open</span>
+        {% if forward_sc.provisional %}<span class="ledger-tile-sub">Provisional: the registered expiry window has not matured.</span>{% endif %}
+        <a href="/scoreboard">See every registered call</a>
+        {% else %}
+        <span class="ledger-tile-sub">Held or collecting; no metrics published.</span>
+        {% endif %}
+    </article>
+
+    <article class="ledger-tile glass">
+        <span class="ledger-tile-label">Consensus Movement</span>
+        {% if sc and sc.gate.publishable and sc.summary.decided_rate is not none and sc.summary.control_lift and sc.summary.matured_open_rates and sc.summary.control_matured_rates %}
+        <span class="ledger-tile-n">{{ sc.summary.wins }}/{{ sc.summary.decided_count }}</span>
+        <strong>{{ sc.summary.wins }} of {{ sc.summary.decided_count }} mature decisions ({{ (sc.summary.decided_rate * 100) | round | int }}%)</strong>
+        <span class="ledger-tile-sub">The public field later moved toward our different view.</span>
+        <span class="ledger-tile-sub">Separate still-open comparison: {{ sc.summary.matured_open_rates.toward }}/{{ sc.summary.matured_open_rates.n }} vs {{ sc.summary.control_matured_rates.toward }}/{{ sc.summary.control_matured_rates.n }} matched controls ({{ sc.summary.control_lift }}x).</span>
+        {% else %}
+        <span class="ledger-tile-sub">Collecting until the registered publication gate matures.</span>
+        {% endif %}
+    </article>
+
+    <article class="ledger-tile glass">
+        <span class="ledger-tile-label">Call-Up Timing</span>
+        {% if receipts_available %}
+        <span class="ledger-tile-n">{{ receipt_count }}–{{ miss_count }}</span>
+        <strong>{{ receipt_count }} clearly ahead · {{ miss_count }} clearly behind</strong>
+        <span class="ledger-tile-sub">{{ no_claim_call_up_count }} without a large enough ranking gap to score</span>
+        <span class="ledger-tile-sub">Maturation: {{ maturation.confirmed }} confirmed · {{ maturation.pending }} pending · {{ maturation.decayed }} decayed</span>
+        {% include "partials/_call_up_scoring_rules.html" %}
+        <a href="/receipts">See every call-up</a>
+        {% else %}
+        <span class="ledger-tile-sub">Held or collecting; no metrics published.</span>
+        {% endif %}
+    </article>
 </section>
 
 {% if sc %}

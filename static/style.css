@@ -4636,6 +4636,14 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 
 /* --- The Ledger (/ledger) --- */
 .ledger-hero { margin-bottom: .9rem; }
+.track-record-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: .6rem;
+    margin-bottom: .9rem;
+}
+.track-record-grid .ledger-tile { gap: .35rem; }
+.track-record-grid a { margin-top: auto; }
 .ledger-headline { padding: .9rem 1.1rem; margin-bottom: .9rem; border-radius: var(--radius); }
 .ledger-gate-note { margin-bottom: .9rem; }
 .ledger-funnel {
