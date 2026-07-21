@@ -2,7 +2,6 @@ import json
 import re
 import subprocess
 
-import pytest
 from pathlib import Path
 
 from prospects import challenger_eval
@@ -170,6 +169,12 @@ EXPECTED_REGISTRATION = {
 }
 
 
+def test_ci_checkout_contains_history_needed_for_registration_pins():
+    workflow = (ROOT / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8")
+
+    assert "fetch-depth: 0" in workflow
+
+
 def _registration() -> dict:
     text = (ROOT / "plans/033-prospect-normalized-production-gate.md").read_text(encoding="utf-8")
     match = re.search(
@@ -222,15 +227,14 @@ def test_registration_matches_full_immutable_contract_and_code():
     # Pins are anchored to the registration's base commit, not the working
     # tree: the data inputs legitimately change on every nightly refresh, and
     # the registration is an immutable historical record of what was frozen at
-    # registration time. Shallow CI clones do not carry the base commit; the
-    # pin verification only runs where history is available (any full clone).
+    # registration time. CI checks out full history so a missing base commit is
+    # a governance failure, not a skipped check.
     probe = subprocess.run(
         ["git", "cat-file", "-e", f"{registration['base_commit']}^{{commit}}"],
         cwd=ROOT,
         capture_output=True,
     )
-    if probe.returncode != 0:
-        pytest.skip("registration base_commit not present (shallow clone)")
+    assert probe.returncode == 0, "registration base_commit is unavailable"
     for key, path in {
         "prospect_input_git_blob": "data/prospects/prospect_model_inputs.json",
         "aaa_statcast_git_blob": "data/models/valucast_aaa_statcast_features.json",
