@@ -15,6 +15,38 @@ class PostProcessor(Protocol):
     ) -> list[ValuationResult]: ...
 
 
+def _apply_multipliers(
+    results: list[ValuationResult],
+    multipliers: list[float],
+) -> list[ValuationResult]:
+    """Apply per-result multiplicative factors on a non-negative scale.
+
+    ``total_value`` is a mean-centered z-sum, so it is signed. Multiplying a
+    signed value directly is not monotone: a below-average player (negative
+    value) scaled by a penalty factor (<1) moves TOWARD zero (ranks better),
+    and a young player's boost (>1) pushes a negative value MORE negative
+    (ranks worse). Both invert the intended direction.
+
+    To keep multipliers monotone we shift onto an above-replacement,
+    non-negative scale before multiplying, then shift back:
+
+        f(v) = B + m * (v - B)   where B = min(pool value)
+
+    B is the pool floor (the lowest total_value in this batch), so every
+    ``v - B`` is non-negative and rank order is preserved: a smaller factor
+    always lowers a player and a larger factor always raises him. Full-time /
+    peak players (m == 1) are unchanged, so the output scale is preserved for
+    the players that dominate downstream floors/ceilings.
+    """
+    if not results:
+        return results
+    baseline = min(r.total_value for r in results)
+    return [
+        replace(r, total_value=baseline + mult * (r.total_value - baseline))
+        for r, mult in zip(results, multipliers)
+    ]
+
+
 class ReplacementLevel:
     def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
         if not league.roster:
@@ -93,7 +125,7 @@ class VolumeMultiplier:
         self.rp_ip = rp_ip
 
     def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
-        return [replace(r, total_value=r.total_value * self._multiplier(r)) for r in results]
+        return _apply_multipliers(results, [self._multiplier(r) for r in results])
 
     def _multiplier(self, result: ValuationResult) -> float:
         player = result.player
@@ -124,17 +156,16 @@ class AgeCurve:
         self.pitcher_curve = pitcher_curve
 
     def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
-        adjusted = []
+        multipliers = []
         for r in results:
             age = r.player.metadata.get("age")
             if age is None:
-                adjusted.append(r)
+                multipliers.append(1.0)
                 continue
             age = int(age)
             curve = self.pitcher_curve if r.player.pool in (PlayerPool.PITCHER, PlayerPool.STARTER, PlayerPool.RELIEVER) else self.hitter_curve
-            mult = self._interpolate(curve, age)
-            adjusted.append(replace(r, total_value=r.total_value * mult))
-        return adjusted
+            multipliers.append(self._interpolate(curve, age))
+        return _apply_multipliers(results, multipliers)
 
     def _interpolate(self, curve: dict[int, float], age: int) -> float:
         if not curve:

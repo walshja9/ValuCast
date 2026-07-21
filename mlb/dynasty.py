@@ -237,8 +237,12 @@ def _age_multiplier(player: PlayerProjection, age: int | None) -> float | None:
 def _future_reliability_factor(reliability: float, offset: int) -> float:
     if offset <= 0:
         return 1.0
-    stability = max(FUTURE_RELIABILITY_FLOOR, min(1.0, reliability / 100.0))
-    return stability ** offset
+    # Reliability encodes sample-size uncertainty (how much we trust this
+    # season's playing time), NOT year-over-year asset decline. Compounding it
+    # per horizon year (stability ** offset, e.g. 0.55 ** 2 = 0.30) conflated
+    # the two and crushed part-time-but-good players. Apply the haircut ONCE to
+    # every future year; genuine age-based decline already lives in age_factor.
+    return max(FUTURE_RELIABILITY_FLOOR, min(1.0, reliability / 100.0))
 
 
 def _horizon_profile(

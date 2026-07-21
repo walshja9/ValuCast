@@ -2,8 +2,10 @@
 
 from league_values.models import PlayerPool, PlayerProjection
 from mlb.dynasty import (
+    FUTURE_RELIABILITY_FLOOR,
     RELIEVER_DYNASTY_SCORE_CAP,
     VALUE_SOURCE,
+    _future_reliability_factor,
     _role_adjusted_score,
     build_mlb_dynasty_layer,
 )
@@ -256,6 +258,37 @@ def test_mlb_layer_horizon_declines_for_older_player_future_years():
     assert years[1]["age_factor"] < 1.0
     assert years[2]["age_factor"] < years[1]["age_factor"]
     assert years[1]["reliability_factor"] < 1.0
+
+
+def test_future_reliability_factor_does_not_compound_across_years():
+    # Regression (Bug 2): reliability is sample-size uncertainty, not a
+    # per-year decay. It must be applied ONCE, so year-2 must NOT be the
+    # square of year-1 (which crushed part-time-but-good players).
+    reliability = 60.0  # -> stability 0.60, above the 0.55 floor
+    y0 = _future_reliability_factor(reliability, 0)
+    y1 = _future_reliability_factor(reliability, 1)
+    y2 = _future_reliability_factor(reliability, 2)
+    assert y0 == 1.0
+    assert y1 == 0.60
+    # Flat, not compounded: year-2 equals year-1, and stays well above the
+    # old compounded 0.60 ** 2 = 0.36.
+    assert y2 == y1
+    assert y2 > 0.60 ** 2
+
+
+def test_partial_time_good_player_year2_horizon_not_crushed():
+    # End-to-end (Bug 2): a good but part-time hitter's year-2 reliability
+    # haircut must equal its year-1 haircut, not the compounded square.
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1", pa=300, metadata={"age": 27})],
+        "2026-06-13",
+    )
+    years = payload["players"][0]["components"]["horizon_years"]
+    r1 = years[1]["reliability_factor"]
+    r2 = years[2]["reliability_factor"]
+    assert r1 < 1.0  # a haircut is applied to future years
+    assert r2 == r1  # but it does not compound
+    assert r2 >= FUTURE_RELIABILITY_FLOOR
 
 
 def test_mlb_layer_records_ros_stability_pull_for_current_outlier():

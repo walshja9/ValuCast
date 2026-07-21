@@ -200,7 +200,10 @@ class TestAgeCurve(unittest.TestCase):
         adjusted = curve.process(raw, league)
         pitcher_raw = next(r for r in raw if r.name == "Pitcher")
         pitcher_adj = next(r for r in adjusted if r.name == "Pitcher")
-        self.assertAlmostEqual(pitcher_adj.total_value, pitcher_raw.total_value * 1.30, places=5)
+        # New contract: multiply on the above-floor scale (floor = pool min).
+        baseline = min(r.total_value for r in raw)
+        expected = baseline + 1.30 * (pitcher_raw.total_value - baseline)
+        self.assertAlmostEqual(pitcher_adj.total_value, expected, places=5)
 
     def test_missing_age_uses_multiplier_1(self):
         curve = AgeCurve(hitter_curve={25: 1.50}, pitcher_curve={25: 1.30})
@@ -231,7 +234,10 @@ class TestAgeCurve(unittest.TestCase):
         adjusted = curve.process(raw, league)
         raw_mid = next(r for r in raw if r.name == "Mid")
         adj_mid = next(r for r in adjusted if r.name == "Mid")
-        self.assertAlmostEqual(adj_mid.total_value, raw_mid.total_value * 1.50, places=3)
+        # New contract: multiply on the above-floor scale (floor = pool min).
+        baseline = min(r.total_value for r in raw)
+        expected = baseline + 1.50 * (raw_mid.total_value - baseline)
+        self.assertAlmostEqual(adj_mid.total_value, expected, places=3)
 
 
 class TestVolumeMultiplier(unittest.TestCase):
@@ -284,7 +290,9 @@ class TestVolumeMultiplier(unittest.TestCase):
         adjusted = vol.process(raw, league)
         zero = next(r for r in adjusted if r.name == "Zero PA")
         zero_raw = next(r for r in raw if r.name == "Zero PA")
-        expected = zero_raw.total_value * 0.20
+        # New contract: floor multiplier applied on the above-floor scale.
+        baseline = min(r.total_value for r in raw)
+        expected = baseline + 0.20 * (zero_raw.total_value - baseline)
         self.assertAlmostEqual(zero.total_value, expected, places=5)
 
     def test_sp_uses_sp_baseline(self):
@@ -333,7 +341,9 @@ class TestVolumeMultiplier(unittest.TestCase):
         adjusted = vol.process(raw, league)
         noPA = next(r for r in adjusted if r.name == "No PA")
         noPA_raw = next(r for r in raw if r.name == "No PA")
-        expected = noPA_raw.total_value * 0.20
+        # New contract: floor multiplier applied on the above-floor scale.
+        baseline = min(r.total_value for r in raw)
+        expected = baseline + 0.20 * (noPA_raw.total_value - baseline)
         self.assertAlmostEqual(noPA.total_value, expected, places=5)
 
 
@@ -358,8 +368,11 @@ class TestAgeCurvePitcherPool(unittest.TestCase):
         raw_sp1 = next(r for r in results if r.name == "Young SP")
         adjusted = ac.process(results, league)
         adj_sp1 = next(r for r in adjusted if r.name == "Young SP")
-        # pitcher_curve age=35 → 0.7; hitter_curve age=35 → 0.8; values must differ
-        self.assertAlmostEqual(adj_sp1.total_value, raw_sp1.total_value * 0.7, places=3)
+        # pitcher_curve age=35 → 0.7; hitter_curve age=35 → 0.8; values must differ.
+        # New contract: multiply on the above-floor scale (floor = pool min).
+        baseline = min(r.total_value for r in results)
+        expected = baseline + 0.7 * (raw_sp1.total_value - baseline)
+        self.assertAlmostEqual(adj_sp1.total_value, expected, places=3)
 
     def test_reliever_uses_pitcher_curve(self):
         """RELIEVER pool players should use pitcher curve, not hitter curve."""
@@ -381,44 +394,120 @@ class TestAgeCurvePitcherPool(unittest.TestCase):
         raw_rp1 = next(r for r in results if r.name == "Old RP")
         adjusted = ac.process(results, league)
         adj_rp1 = next(r for r in adjusted if r.name == "Old RP")
-        # pitcher_curve age=35 → 0.7; hitter_curve age=35 → 0.8; values must differ
-        self.assertAlmostEqual(adj_rp1.total_value, raw_rp1.total_value * 0.7, places=3)
+        # pitcher_curve age=35 → 0.7; hitter_curve age=35 → 0.8; values must differ.
+        # New contract: multiply on the above-floor scale (floor = pool min).
+        baseline = min(r.total_value for r in results)
+        expected = baseline + 0.7 * (raw_rp1.total_value - baseline)
+        self.assertAlmostEqual(adj_rp1.total_value, expected, places=3)
 
 
 class TestVolumeMultiplierPools(unittest.TestCase):
     """Verify VolumeMultiplier works with STARTER and RELIEVER pool types."""
 
-    def _make_result(self, pool, positions, stats):
+    def _make_result(self, pool, positions, stats, total_value=10.0, pid="1"):
         player = PlayerProjection(
-            id="1", name="Test", pool=pool, positions=positions, stats=stats,
+            id=pid, name="Test" + pid, pool=pool, positions=positions, stats=stats,
         )
         return ValuationResult(
-            player=player, total_value=10.0, raw_values={}, z_scores={}, category_values={},
+            player=player, total_value=total_value, raw_values={}, z_scores={}, category_values={},
         )
+
+    def _floor(self, pool, positions, stats):
+        # Full-volume anchor pinned at total_value 0.0 so the pool floor is 0
+        # and f(v) = 0 + mult*(v - 0) = mult*v, isolating the multiplier.
+        return self._make_result(pool, positions, stats, total_value=0.0, pid="floor")
 
     def test_starter_pool_uses_sp_baseline(self):
         vm = VolumeMultiplier()
         result = self._make_result("starter", ("SP",), {"IP": 90.0})
-        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+        floor = self._floor("starter", ("SP",), {"IP": 180.0})
+        processed = vm.process([result, floor], LeagueConfig(name="t", scoring_mode="categories", categories=(
             CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
         )))
-        # 90/180 = 0.5, ^0.75 ≈ 0.5946
-        self.assertAlmostEqual(processed[0].total_value, 10.0 * (90 / 180) ** 0.75, places=2)
+        target = next(r for r in processed if r.player.id == "1")
+        # 90/180 = 0.5, ^0.75 ≈ 0.5946; floor at 0 → f(v)=mult*v
+        self.assertAlmostEqual(target.total_value, 10.0 * (90 / 180) ** 0.75, places=2)
 
     def test_reliever_pool_uses_rp_baseline(self):
         vm = VolumeMultiplier()
         result = self._make_result("reliever", ("RP",), {"IP": 65.0})
-        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+        floor = self._floor("reliever", ("RP",), {"IP": 65.0})
+        processed = vm.process([result, floor], LeagueConfig(name="t", scoring_mode="categories", categories=(
             CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
         )))
+        target = next(r for r in processed if r.player.id == "1")
         # 65/65 = 1.0
-        self.assertAlmostEqual(processed[0].total_value, 10.0, places=2)
+        self.assertAlmostEqual(target.total_value, 10.0, places=2)
 
     def test_reliever_pool_partial_ip(self):
         vm = VolumeMultiplier()
         result = self._make_result("reliever", ("RP",), {"IP": 30.0})
-        processed = vm.process([result], LeagueConfig(name="t", scoring_mode="categories", categories=(
+        floor = self._floor("reliever", ("RP",), {"IP": 65.0})
+        processed = vm.process([result, floor], LeagueConfig(name="t", scoring_mode="categories", categories=(
             CategorySpec(id="K", label="K", pool="pitcher", stat="K"),
         )))
-        # 30/65 ≈ 0.4615, ^0.75 ≈ 0.5329
-        self.assertAlmostEqual(processed[0].total_value, 10.0 * (30 / 65) ** 0.75, places=2)
+        target = next(r for r in processed if r.player.id == "1")
+        # 30/65 ≈ 0.4615, ^0.75 ≈ 0.5329; floor at 0 → f(v)=mult*v
+        self.assertAlmostEqual(target.total_value, 10.0 * (30 / 65) ** 0.75, places=2)
+
+
+class TestMultiplierSignCorrectness(unittest.TestCase):
+    """Regression: multiplicative processors must be monotone on SIGNED values.
+
+    These pin the two direction bugs the shift-onto-above-replacement fix
+    addresses. Multiplying a signed z-sum directly ranked below-average
+    low-volume players TOO HIGH and mediocre young players TOO LOW.
+    """
+
+    def _mk(self, name, total_value, positions=(), pool="hitter", metadata=None, stats=None):
+        player = PlayerProjection(
+            id=name, name=name, pool=pool, positions=tuple(positions),
+            stats=stats or {}, metadata=metadata or {},
+        )
+        return ValuationResult(
+            player=player, total_value=total_value,
+            raw_values={}, z_scores={}, category_values={},
+        )
+
+    def _league(self):
+        return LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
+            categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
+
+    def test_below_average_low_volume_ranks_worse_than_high_volume(self):
+        # Requirement (a): a below-average (negative value) player with LOW
+        # volume must rank WORSE than the SAME player with more volume.
+        # Anchor pins the pool floor so the below-avg player sits above it.
+        vol = VolumeMultiplier(hitter_pa=550)
+        anchor = self._mk("Floor", -5.0, stats={"PA": 550})
+        low_vol = self._mk("LowVol", -2.0, stats={"PA": 150})   # PA=150 -> heavy discount
+        high_vol = self._mk("HighVol", -2.0, stats={"PA": 500})  # PA=500 -> mild discount
+
+        out = vol.process([anchor, low_vol, high_vol], self._league())
+        low = next(r for r in out if r.name == "LowVol").total_value
+        high = next(r for r in out if r.name == "HighVol").total_value
+        self.assertLess(low, high)
+
+    def test_mediocre_young_not_ranked_below_identical_old(self):
+        # Requirement (b): a mediocre (below-average) 22yo must NOT rank below
+        # an identical-value 30yo once the youth boost is applied.
+        curve = AgeCurve(
+            hitter_curve={22: 1.65, 30: 0.97},
+            pitcher_curve={22: 1.50, 30: 0.88},
+        )
+        anchor = self._mk("Floor", -6.0, metadata={"age": 30})
+        young = self._mk("Young22", -2.0, metadata={"age": 22})
+        old = self._mk("Old30", -2.0, metadata={"age": 30})
+
+        out = curve.process([anchor, young, old], self._league())
+        y = next(r for r in out if r.name == "Young22").total_value
+        o = next(r for r in out if r.name == "Old30").total_value
+        self.assertGreater(y, o)
+
+    def test_full_volume_and_peak_age_unchanged(self):
+        # Output scale preserved: a player at multiplier 1.0 (full volume,
+        # peak-age boost of exactly 1.0) is untouched regardless of floor.
+        vol = VolumeMultiplier(hitter_pa=550)
+        anchor = self._mk("Floor", -3.0, stats={"PA": 550})
+        full = self._mk("Full", 4.0, stats={"PA": 600})
+        out = vol.process([anchor, full], self._league())
+        self.assertAlmostEqual(next(r for r in out if r.name == "Full").total_value, 4.0, places=6)
