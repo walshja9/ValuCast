@@ -18,6 +18,7 @@ ALLOWED_RISK_BASIS = {
     "sample_staleness",
     "upstream_factual_status",
     "official_mlb_il",
+    "official_mlb_rehab",
     "manual_override",
 }
 EXPECTED_STATUS_BY_BASIS = {
@@ -26,6 +27,7 @@ EXPECTED_STATUS_BY_BASIS = {
     "sample_staleness": {"stale_or_inactive"},
     "upstream_factual_status": {"injured", "inactive", "restricted", "rehab", "il"},
     "official_mlb_il": {"injured"},
+    "official_mlb_rehab": {"rehab"},
     "manual_override": {"available", "injured", "inactive", "restricted", "rehab", "il"},
 }
 
@@ -95,7 +97,13 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
         if risk_basis in ALLOWED_RISK_BASIS and isinstance(discount, (int, float)):
             risk_level = row.get("risk_level")
             status = row.get("status")
-            expected_statuses = EXPECTED_STATUS_BY_BASIS[risk_basis]
+            if row.get("active_mlb_roster") is True and status == "injured":
+                problems.append(
+                    f"profiles[{index}] cannot be injured while active on an MLB roster"
+                )
+            expected_statuses = set(EXPECTED_STATUS_BY_BASIS[risk_basis])
+            if "official_mlb_rehab_override" in (row.get("signals") or []):
+                expected_statuses.add("rehab")
             if status not in expected_statuses:
                 problems.append(f"profiles[{index}].status is inconsistent with risk_basis")
             if risk_basis == "none":

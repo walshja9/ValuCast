@@ -923,6 +923,7 @@ class TestDynastyMode(unittest.TestCase):
             return SimpleNamespace(availability_context={"status": status})
 
         self.assertEqual(_graphic_availability_badge(row("injured")), "INJURED")
+        self.assertEqual(_graphic_availability_badge(row("rehab")), "REHAB")
         self.assertEqual(
             _graphic_availability_badge(row("stale_or_inactive")), "INACTIVE"
         )
@@ -931,6 +932,35 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIsNone(
             _graphic_availability_badge(SimpleNamespace(availability_context={}))
         )
+
+    def test_graphic_read_calls_rehab_a_rehab(self):
+        from app import _graphic_read_intro
+        from types import SimpleNamespace
+
+        row = SimpleNamespace(
+            age=25,
+            availability_context={"status": "rehab"},
+            is_prospect=True,
+            level="AAA",
+            metadata={},
+        )
+
+        read = _graphic_read_intro(
+            row,
+            "Joyce",
+            "a 3.00 ERA",
+            " over 12 IP",
+            {"stat_line_source_kind": "current_season"},
+        )
+
+        self.assertIn("currently rehabbing", read)
+
+    def test_prospect_detail_lists_rehab_as_availability_state(self):
+        source = Path("templates/partials/player_detail_dynasty.html").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("('injured', 'rehab', 'stale_or_inactive')", source)
 
     def test_player_card_png_renders_for_flagged_availability_row(self):
         from app import dd_store, _graphic_availability_badge

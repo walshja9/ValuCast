@@ -533,7 +533,7 @@
                 {% endif %}
                 {# Only genuine availability states belong here (matches the share-card
                    badge); a thin sample is a sample caveat, shown via Current Level/notes. #}
-                {% if row.availability_status_label and row.availability_context is mapping and row.availability_context.get('status') in ('injured', 'stale_or_inactive') %}
+                {% if row.availability_status_label and row.availability_context is mapping and row.availability_context.get('status') in ('injured', 'rehab', 'stale_or_inactive') %}
                 <div class="stat-item"><span class="stat-label">Availability</span><span class="stat-value">{{ row.availability_status_label }}</span></div>
                 {% endif %}
                 {% if row.current_level_sample_label %}
