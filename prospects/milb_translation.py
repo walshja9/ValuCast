@@ -321,6 +321,7 @@ def _reconstructed_hitter_slash(rows: list[dict]) -> dict | None:
     """
     total_h = total_ab = total_tb = 0.0
     obp_num = obp_den = 0.0
+    complete_obp_components = True
     for row in rows:
         if _line_sample(row, "hitter") <= 0:
             continue
@@ -334,7 +335,10 @@ def _reconstructed_hitter_slash(rows: list[dict]) -> dict | None:
         triples = _numeric(row.get("triples")) or 0.0
         home_runs = _numeric(row.get("home_runs")) or 0.0
         walks = _numeric(row.get("walks")) or 0.0
-        hbp = _numeric(row.get("hit_by_pitch")) or 0.0
+        hbp = _numeric(row.get("hit_by_pitch"))
+        if hbp is None:
+            complete_obp_components = False
+            hbp = 0.0
         sac_flies = _numeric(row.get("sac_flies")) or 0.0
         total_h += hits
         total_ab += at_bats
@@ -345,15 +349,15 @@ def _reconstructed_hitter_slash(rows: list[dict]) -> dict | None:
         return None
     avg = total_h / total_ab
     slg = total_tb / total_ab
-    obp = obp_num / obp_den if obp_den > 0 else None
-    ops = obp + slg if obp is not None else None
-    return {
+    slash = {
         "avg": _round_line_value(avg),
         "slg": _round_line_value(slg),
         "iso": _round_line_value(slg - avg),
-        "obp": _round_line_value(obp),
-        "ops": _round_line_value(ops),
     }
+    if complete_obp_components and obp_den > 0:
+        obp = obp_num / obp_den
+        slash.update({"obp": _round_line_value(obp), "ops": _round_line_value(obp + slg)})
+    return slash
 
 
 def combined_season_stat_line(history_rows: list[dict], role: str, season: int) -> dict | None:
@@ -412,14 +416,24 @@ def combined_season_stat_line(history_rows: list[dict], role: str, season: int) 
             key: _weighted_rate(rows, role, key)
             for key in ("babip", "k_pct", "bb_pct")
         })
-        # AVG/OBP/SLG/OPS/ISO are per-AB and must be rebuilt from summed
-        # components; fall back to the PA-weighted rate when components are absent.
+        # AVG/SLG/ISO are rebuilt from counting components. OBP is rebuilt only
+        # when HBP is present; absence is unknown, not zero.
         slash = _reconstructed_hitter_slash(rows)
-        for key in ("avg", "obp", "slg", "ops", "iso"):
+        for key in ("avg", "slg", "iso"):
             out[key] = (
                 slash[key] if slash is not None
                 else _weighted_rate(rows, role, key)
             )
+        out["obp"] = (
+            slash["obp"]
+            if slash is not None and "obp" in slash
+            else _weighted_rate(rows, role, "obp")
+        )
+        out["ops"] = (
+            _round_line_value(out["obp"] + out["slg"])
+            if out["obp"] is not None and out["slg"] is not None
+            else _weighted_rate(rows, role, "ops")
+        )
         out.update({
             "home_runs": _sum_numeric(rows, "home_runs"),
             "stolen_bases": _sum_numeric(rows, "stolen_bases"),

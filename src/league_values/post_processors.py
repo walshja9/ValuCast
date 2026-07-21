@@ -15,6 +15,10 @@ class PostProcessor(Protocol):
     ) -> list[ValuationResult]: ...
 
 
+def _apply_multiplier(value: float, multiplier: float, baseline: float) -> float:
+    return baseline + multiplier * (value - baseline)
+
+
 def _apply_multipliers(
     results: list[ValuationResult],
     multipliers: list[float],
@@ -42,7 +46,7 @@ def _apply_multipliers(
         return results
     baseline = min(r.total_value for r in results)
     return [
-        replace(r, total_value=baseline + mult * (r.total_value - baseline))
+        replace(r, total_value=_apply_multiplier(r.total_value, mult, baseline))
         for r, mult in zip(results, multipliers)
     ]
 

@@ -202,13 +202,13 @@ class TestCombinedSeasonStatLine(unittest.TestCase):
                 "role": "hitter", "season": 2026, "level": "AA",
                 "plate_appearances": 60, "at_bats": 55, "hits": 22,
                 "doubles": 6, "triples": 1, "home_runs": 5, "walks": 4,
-                "sac_flies": 1, "k_pct": 16.7, "bb_pct": 6.7,
+                "hit_by_pitch": 0, "sac_flies": 1, "k_pct": 16.7, "bb_pct": 6.7,
             },
             {
                 "role": "hitter", "season": 2026, "level": "A+",
                 "plate_appearances": 300, "at_bats": 270, "hits": 70,
                 "doubles": 12, "triples": 2, "home_runs": 6, "walks": 25,
-                "sac_flies": 3, "k_pct": 23.3, "bb_pct": 8.3,
+                "hit_by_pitch": 0, "sac_flies": 3, "k_pct": 23.3, "bb_pct": 8.3,
             },
         ]
 
@@ -231,6 +231,19 @@ class TestCombinedSeasonStatLine(unittest.TestCase):
         self.assertAlmostEqual(
             out["k_pct"], (16.7 * 60 + 23.3 * 300) / 360, places=3
         )
+
+    def test_hitter_slash_preserves_supplied_obp_when_hbp_is_missing(self):
+        rows = [{
+            "role": "hitter", "season": 2026, "level": "AA",
+            "plate_appearances": 100, "at_bats": 90, "hits": 27,
+            "doubles": 6, "triples": 1, "home_runs": 4, "walks": 8,
+            "sac_flies": 2, "obp": 0.370,
+        }]
+
+        out = combined_season_stat_line(rows, "hitter", 2026)
+
+        self.assertEqual(out["obp"], 0.370)
+        self.assertEqual(out["ops"], round(out["obp"] + out["slg"], 3))
 
     def test_hitter_slash_falls_back_when_total_base_components_absent(self):
         # card_history-style rows: precomputed rates, no doubles/triples. The

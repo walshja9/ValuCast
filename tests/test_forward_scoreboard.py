@@ -382,6 +382,40 @@ def test_validator_rejects_funnel_total_mismatch(tmp_path):
     assert any("total_claims" in p for p in problems)
 
 
+def test_validator_rejects_an_inconsistent_sign_test_block(tmp_path):
+    sb = _scoreboard([
+        _claim("1_hitter", "higher", "resolved_by_callup", "2026-06-24", "2026-06-30"),
+    ])
+    sb["anticipation_score"]["verdict_basis"] = "wrong"
+    sb["anticipation_score"]["sign_test"] = {
+        "basis": "wrong",
+        "positives": 999,
+        "negatives": 0,
+        "zeros_excluded": 0,
+        "n_nonzero": 1,
+        "p_value": -7.0,
+        "direction": "leading",
+        "significant": True,
+    }
+
+    _, problems = validate.validate_forward_scoreboard(_write(tmp_path, sb))
+
+    assert any("verdict_basis" in problem for problem in problems)
+    assert any("sign_test" in problem for problem in problems)
+
+
+def test_validator_rejects_a_false_provisional_label(tmp_path):
+    sb = _scoreboard([
+        _claim("1_hitter", "higher", "resolved_by_callup", "2026-06-24", "2026-06-30"),
+    ])
+    assert sb["anticipation_score"]["provisional"] is True
+    sb["anticipation_score"]["label"] = "significant"
+
+    _, problems = validate.validate_forward_scoreboard(_write(tmp_path, sb))
+
+    assert any("label" in problem for problem in problems)
+
+
 # --- FIX 4: unscored/unclassified derived view + partition reconciliation ------
 
 def test_resolved_claim_missing_resolved_date_lands_in_unscored_view(tmp_path):
@@ -551,6 +585,21 @@ def test_headline_9_of_10_positive_is_significant():
     assert headline["label"] == "significant"
     assert headline["sign_test"]["significant"] is True
     assert headline["verdict_basis"] == VERDICT_BASIS
+
+
+def test_headline_even_pool_is_not_labeled_leading():
+    headline = _headline([1.0, -1.0], provisional=False)
+
+    assert headline["sign_test"]["direction"] == "even"
+    assert headline["label"] == "even, not yet significant"
+
+
+def test_zero_dominated_pool_cannot_claim_a_significant_lead():
+    headline = _headline([1.0] * 9 + [-1.0] + [0.0] * 100, provisional=False)
+
+    assert headline["median_lead_days"] == 0.0
+    assert headline["sign_test"]["significant"] is False
+    assert headline["label"] == "leading, not yet significant"
 
 
 def test_sign_test_excludes_and_discloses_zeros():

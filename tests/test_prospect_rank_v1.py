@@ -723,6 +723,11 @@ def test_rank_v1_exposes_factual_current_context_for_hitter_components():
     assert payload["rank_contract"]["factual_current_context"]["source"] == (
         "validated_prospect_input_contract_current_rows"
     )
+    assert set(payload["rank_contract"]["factual_current_context"]["hitter_fields"]) == {
+        "level", "sample", "source_kind", "sample_season", "rate_scale",
+        "iso", "k_pct", "bb_pct", "bb_minus_k_pct", "skill_band",
+        "iso_milb", "ops_milb",
+    }
     uncertainty = row["components"]["uncertainty"]
     assert uncertainty["kind"] == "display_only_score_interval"
     assert uncertainty["score_effect"] == "none"
@@ -800,6 +805,11 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
     assert context["bb_per_9"] == 3.3
     assert context["era"] == 2.81
     assert context["whip"] == 1.05
+    assert set(payload["rank_contract"]["factual_current_context"]["pitcher_fields"]) == {
+        "level", "sample", "source_kind", "sample_season", "rate_scale",
+        "starter_role", "era", "whip", "k_per_9", "bb_per_9", "k_bb_pct",
+        "skill_band",
+    }
 
 
 def test_rank_v1_reports_coverage_blockers_and_missing_top_names():

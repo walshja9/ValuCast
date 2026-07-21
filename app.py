@@ -83,6 +83,7 @@ from web.share_pages import build_share_preview_html
 from prospects.availability import LEVEL_ORDER
 from prospects.availability import eta_window as prospect_eta_window
 from prospects.availability import eta_window_label
+from prospects.forward_scoreboard import scoreboard_verdict_label
 from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 from scouting.mlb_read import build_mlb_scouting_read, stat_line_stats
 
@@ -9185,11 +9186,10 @@ def _scoreboard_ci_label(headline: dict) -> str:
     # nightly rebuild replaces them.
     sign_test = headline.get("sign_test")
     if isinstance(sign_test, dict) and sign_test.get("p_value") is not None:
-        if sign_test.get("significant"):
+        label = scoreboard_verdict_label(sign_test, headline.get("median_lead_days"))
+        if label == "significant":
             return "significant - sign test clear of coin-flip"
-        if sign_test.get("direction") == "behind":
-            return "behind, not yet significant"
-        return "leading, not yet significant"
+        return label
     if lo <= 0 <= hi:
         return "leading, not yet significant"
     return "clear of zero"

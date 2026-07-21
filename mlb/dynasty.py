@@ -17,7 +17,7 @@ from typing import Any, Iterable
 from league_values.engine import ValuationEngine
 from league_values.models import LeagueConfig, PlayerPool, PlayerProjection, ScoringMode, ValuationResult
 from league_values.playing_time import filter_by_playing_time
-from league_values.post_processors import AgeCurve, VolumeMultiplier
+from league_values.post_processors import AgeCurve, VolumeMultiplier, _apply_multiplier
 from mlb.availability import (
     ARTIFACT_PATH as MLB_AVAILABILITY_PATH,
     availability_lookup as mlb_availability_lookup,
@@ -248,6 +248,7 @@ def _future_reliability_factor(reliability: float, offset: int) -> float:
 def _horizon_profile(
     result: ValuationResult,
     start_season: int,
+    baseline: float,
 ) -> dict[str, Any]:
     player = result.player
     current_age = _coerce_age(player.metadata.get("age"))
@@ -265,7 +266,11 @@ def _horizon_profile(
         else:
             age_factor = 1.0
         reliability_factor = _future_reliability_factor(reliability, offset)
-        projected_value = result.total_value * age_factor * reliability_factor
+        projected_value = _apply_multiplier(
+            result.total_value,
+            age_factor * reliability_factor,
+            baseline,
+        )
         weighted_value += projected_value * weight
         total_weight += weight
         years.append(
@@ -927,8 +932,9 @@ def _scores_for_config(
         stability_by_player_id[adjusted.player.id] = stability
 
     deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(adjusted_results)
+    horizon_baseline = min((result.total_value for result in deduped), default=0.0)
     horizon_rows = [
-        (result, _horizon_profile(result, season))
+        (result, _horizon_profile(result, season, horizon_baseline))
         for result in deduped
     ]
     values = [horizon["value"] for _, horizon in horizon_rows]
