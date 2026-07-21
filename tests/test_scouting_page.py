@@ -82,14 +82,39 @@ def test_public_mlb_read_keeps_supported_projection_language():
     assert _scouting_display_report_text(report) == report["published_report"]
 
 
-def test_scouting_route_uses_the_public_adapter_for_kade():
+def test_scouting_route_uses_the_public_adapter_for_fallback_reports(monkeypatch):
+    # The route must render deterministic-fallback prospect reports through the
+    # public adapter (raw "profiles as" phrasing rewritten to ceiling-scenario
+    # language). A synthetic report keeps this independent of which live players
+    # happen to be on the fallback path after any given nightly refresh.
+    import app as app_module
+
+    real_load = app_module._load_artifact
+
+    def fake_load(path):
+        if str(path).endswith("valucast_scouting_reports.json"):
+            return {
+                "reports": [
+                    {
+                        "name": "Synthetic Fallback Pitcher",
+                        "player_type": "prospect",
+                        "team": "ZZZ",
+                        "role": "pitcher",
+                        "report": "This profiles as a mid-rotation starter.",
+                    }
+                ]
+            }
+        return real_load(path)
+
+    monkeypatch.setattr(app_module, "_load_artifact", fake_load)
     client = app.test_client()
 
-    response = client.get("/scouting?q=Kade%20Anderson")
+    response = client.get("/scouting?q=Synthetic%20Fallback%20Pitcher")
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
     assert "Current-performance ceiling scenario: mid-rotation starter" in html
+    assert "This profiles as a mid-rotation starter" not in html
     assert "projection floor" not in html.lower()
     assert "with low risk" not in html.lower()
     assert 'class="scouting-peak"' not in html

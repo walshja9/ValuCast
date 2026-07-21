@@ -217,6 +217,10 @@ def test_registration_matches_full_immutable_contract_and_code():
     assert registration["reference_fold_years"] == list(challenger_eval.REGISTERED_FOLD_YEARS)
     assert registration["identity_policy"] == IDENTITY_POLICY
 
+    # Pins are anchored to the registration's base commit, not the working
+    # tree: the data inputs legitimately change on every nightly refresh, and
+    # the registration is an immutable historical record of what was frozen at
+    # registration time.
     for key, path in {
         "prospect_input_git_blob": "data/prospects/prospect_model_inputs.json",
         "aaa_statcast_git_blob": "data/models/valucast_aaa_statcast_features.json",
@@ -224,7 +228,7 @@ def test_registration_matches_full_immutable_contract_and_code():
         "live_rank_git_blob": "data/models/valucast_prospect_rank_v1.json",
         "competition_benchmark_git_blob": "prospects/competition_benchmark.py",
     }.items():
-        assert registration[key] == _git_blob(path)
+        assert registration[key] == _git_blob_at(registration["base_commit"], path)
     assert registration["competition_benchmark_git_blob"] == _git_blob_at(
         registration["base_commit"], registration["adjudication"]["implementation_path"]
     )
