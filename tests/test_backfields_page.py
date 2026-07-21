@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -777,6 +778,96 @@ def test_team_board_sort_places_ranked_rows_before_fallback_rows():
     assert [row.name for row in ordered] == ["Ranked Prospect", "Dynasty Only"]
 
 
+def test_team_board_system_summary_uses_top_20_value_roles_levels_and_positive_risers():
+    rows = [
+        _row(f"Boston {index}", "BOS", prospect_rank=index, value=21 - index)
+        for index in range(1, 21)
+    ]
+    levels = ("AAA", "AA", "A+", "A", "ROK")
+    for index, row in enumerate(rows):
+        row.level = levels[index % len(levels)]
+        if index % 4 == 0:
+            row.positions = ("P",)
+            row.position = "P"
+            row.role = "pitcher"
+    outside_top20 = _row("Boston 21", "BOS", prospect_rank=21, value=0)
+    outside_top20.level = "DSL"
+    rows.append(outside_top20)
+    movements = {
+        "name:boston 2|team:BOS": {"rank_delta_7d": 4},
+        "name:boston 3|team:BOS": {"rank_delta_7d": -8},
+        "name:boston 4|team:BOS": {"rank_delta_7d": 2},
+    }
+
+    summary = app_module._team_board_system_summary(rows, movements)
+
+    assert summary["top20_value"] == 210.0
+    assert summary["top5_concentration_pct"] == 42.9
+    assert summary["top20_hitters"] == 15
+    assert summary["top20_pitchers"] == 5
+    assert summary["levels"] == [
+        {"level": "AAA", "count": 4},
+        {"level": "AA", "count": 4},
+        {"level": "A+", "count": 4},
+        {"level": "A", "count": 4},
+        {"level": "ROK", "count": 4},
+    ]
+    assert [row["name"] for row in summary["risers"]] == ["Boston 2", "Boston 4"]
+    assert [row["move"]["sort"] for row in summary["risers"]] == [4.0, 2.0]
+
+
+def test_team_board_move_labels_only_claim_a_known_window():
+    known = app_module._team_board_move_from_signal({"rank_delta_7d": 3})
+    fallback = app_module._team_board_move_from_signal({"rank_delta": 3})
+
+    assert known["window_label"] == "7 days"
+    assert fallback["window_label"] == "recent snapshot"
+
+
+def test_team_board_buys_respect_ahead_of_curve_hold(monkeypatch):
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    payload = {
+        "board": [
+            {"rank": 1, "team": "BOS", "name": "Held Buy"},
+        ]
+    }
+
+    assert app_module._team_board_buys("BOS", payload=payload) == []
+
+
+def test_team_board_buys_are_org_filtered_ranked_and_fail_open():
+    payload = {
+        "board": [
+            {
+                "rank": 3,
+                "team": "BOS",
+                "name": "Third Buy",
+                "player_id": "vc_prospect_3_hitter",
+                "score": 52.4,
+                "reason": "Young runway",
+                "availability_status": "available",
+            },
+            {
+                "rank": 1,
+                "team": "BOS",
+                "name": "First Buy",
+                "player_id": "vc_prospect_1_hitter",
+                "score": 61.2,
+                "reason": "Underlying skill",
+                "availability_status": "available",
+            },
+            {"rank": 2, "team": "SEA", "name": "Other Org"},
+        ]
+    }
+
+    buys = app_module._team_board_buys("BOS", payload=payload)
+
+    assert [row["name"] for row in buys] == ["First Buy", "Third Buy"]
+    assert buys[0]["url"] == "/player/vc_prospect_1_hitter?mode=prospects"
+    assert buys[0]["reason"] == "Underlying skill"
+    assert app_module._team_board_buys("BOS", payload={}) == []
+
+
 def test_team_board_context_groups_by_mlb_org_not_affiliate(monkeypatch):
     rows = [
         _row("Portland Guy", "BOS", prospect_rank=1, dynasty_rank=1, value=60),
@@ -1011,6 +1102,46 @@ def test_farm_rankings_route_fails_open_when_board_is_unavailable(monkeypatch):
     assert "Farm rankings will return after the next successful data build." in html
 
 
+def test_farm_share_preview_png_and_page_link():
+    from PIL import Image
+
+    preview = app.test_client().get("/farms/share-card")
+    png = app.test_client().get("/farms/share-card.png")
+    page = app.test_client().get("/farms")
+
+    assert preview.status_code == 200
+    assert png.status_code == 200
+    assert png.content_type == "image/png"
+    assert png.data.startswith(b"\x89PNG")
+    assert Image.open(io.BytesIO(png.data)).size == (1080, 1350)
+    assert b'href="/farms/share-card"' in page.data
+
+
+def test_farm_share_returns_503_when_rankings_are_unavailable(monkeypatch):
+    monkeypatch.setattr(
+        app_module,
+        "_build_farm_rankings_context",
+        lambda: {"available": False, "systems": []},
+    )
+    with app_module._PNG_CACHE_LOCK:
+        app_module._PNG_CACHE.clear()
+
+    assert app.test_client().get("/farms/share-card").status_code == 503
+    assert app.test_client().get("/farms/share-card.png").status_code == 503
+
+
+def test_cards_gallery_includes_default_boards_and_honors_forward_ledger_hold(monkeypatch):
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    held = app.test_client().get("/cards").data
+    for title in (b"Farm-System Rankings", b"Dynasty Rankings", b"Redraft Rankings"):
+        assert title in held
+    assert b"Forward Ledger" not in held
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    live = app.test_client().get("/cards").data
+    assert b"Forward Ledger" in live
+
+
 def test_team_board_card_offers_top_10_and_top_20_downloads():
     org = _team_board_org_from_backfields()
     response, html = _html(f"/backfields/team/{org}")
@@ -1018,6 +1149,31 @@ def test_team_board_card_offers_top_10_and_top_20_downloads():
     assert response.status_code == 200
     assert f'href="/backfields/team/{org}/share-card.png?n=10">Download Top 10 PNG' in html
     assert f'href="/backfields/team/{org}/share-card.png?n=20">Download Top 20 PNG' in html
+
+
+def test_team_board_page_renders_data_backed_system_snapshot():
+    org = _team_board_org_from_backfields()
+
+    response, html = _html(f"/backfields/team/{org}")
+
+    assert response.status_code == 200
+    assert "System snapshot" in html
+    assert "Top-5 value share" in html
+    assert "Top-20 balance" in html
+    assert "Level distribution" in html
+    assert "Top prospects" in html
+    assert "Risers" in html
+    assert "ValuCast buys" in html
+
+
+def test_team_board_page_hides_buy_module_when_held(monkeypatch):
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
+    org = _team_board_org_from_backfields()
+
+    response, html = _html(f"/backfields/team/{org}")
+
+    assert response.status_code == 200
+    assert "ValuCast buys" not in html
 
 
 def test_team_board_route_serves_known_org_and_alias():
@@ -1073,6 +1229,9 @@ def test_team_board_share_png_renderer_uses_compact_backfields_export_language()
     assert "ValuCast team board" in block
     assert "prospects in pool" in block
     assert "BACKFIELDS TEAM BOARD" in block
+    assert "SYSTEM SNAPSHOT" in block
+    assert "RISERS" in block
+    assert "VALUCAST BUYS" in block
     assert 'row["affiliate"]' not in block
     assert 'f"UP {move.get' not in block
     assert 'f"DOWN {move.get' not in block

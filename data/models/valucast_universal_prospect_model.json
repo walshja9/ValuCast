@@ -1,7 +1,7 @@
 {
-  "candidate_count": 2882,
+  "candidate_count": 2881,
   "input_contract": {
-    "generated_at": "2026-07-20T00:00:00+00:00",
+    "generated_at": "2026-07-21T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -7305,103 +7305,6 @@
       "sample_reliability": 0.525,
       "sample_unit": "PA",
       "team": "Sacramento River Cats"
-    },
-    {
-      "age": 24,
-      "level": "AAA",
-      "mlbam_id": 683748,
-      "name": "Victor Mesa Jr.",
-      "normalized_name": "victor mesa jr",
-      "outcome_distribution": {
-        "bust_probability": 0.76,
-        "role_probability": 0.16,
-        "star_probability": 0.08
-      },
-      "outcomes": {
-        "established_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.24,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "probability"
-        },
-        "regular_probability": {
-          "conditional_on": null,
-          "gate_status": "active",
-          "prediction": 0.2336,
-          "prediction_source": "ridge",
-          "unit": "probability"
-        },
-        "representative_avg": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.261,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "AVG"
-        },
-        "representative_hr_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 21.83,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "HR/600 PA"
-        },
-        "representative_k_pct": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 21.43,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "K%"
-        },
-        "representative_ops": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.7709,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "OPS"
-        },
-        "representative_pa": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 510.16,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "PA"
-        },
-        "representative_r_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 75.35,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "R/600 PA"
-        },
-        "representative_rbi_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 72.8,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "RBI/600 PA"
-        },
-        "representative_sb_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 12.91,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "SB/600 PA"
-        },
-        "star_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.08,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "probability"
-        }
-      },
-      "position": "RF",
-      "role": "hitter",
-      "sample": 81.0,
-      "sample_reliability": 0.288,
-      "sample_unit": "PA",
-      "team": "Durham Bulls"
     },
     {
       "age": 24,
@@ -171350,35 +171253,35 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.1692,
+          "prediction": 4.2388,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 3.82,
+          "prediction": 3.55,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HLD/60 IP"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 109.72,
+          "prediction": 111.4,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
         "representative_k_bb": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.7784,
+          "prediction": 2.6888,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K:BB"
         },
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 7.99,
+          "prediction": 8.14,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -171413,14 +171316,14 @@
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 1.3044,
+          "prediction": 1.3228,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0779,
+          "prediction": 0.0776,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -301029,7 +300932,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-20T00:00:00+00:00",
+          "activated_at": "2026-07-21T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -303815,7 +303718,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-07-20T00:00:00+00:00",
+          "activated_at": "2026-07-21T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",

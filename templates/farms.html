@@ -4,8 +4,10 @@
 {% block og_title %}Farm-System Rankings | ValuCast{% endblock %}
 {% block og_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
 {% block og_url %}https://valucast.app/farms{% endblock %}
+{% block og_image %}https://valucast.app/farms/share-card.png{% endblock %}
 {% block twitter_title %}Farm-System Rankings | ValuCast{% endblock %}
 {% block twitter_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
+{% block twitter_image %}https://valucast.app/farms/share-card.png{% endblock %}
 
 {% block content %}
 <article class="backfields-page">
@@ -15,7 +17,11 @@
             <h1>Farm-System Rankings</h1>
             <p class="bf-tagline">The sum of each system's top 20 dynasty values on the current ValuCast prospect board.</p>
         </div>
-        <a class="bf-section-link" href="/backfields">Back to Backfields</a>
+        <span class="bf-team-share-actions">
+            <a class="bf-section-link" href="/farms/share-card">Preview graphic</a>
+            <a class="bf-section-link" href="/farms/share-card.png" download="valucast-farm-system-rankings.png">Download PNG</a>
+            <a class="bf-section-link" href="/backfields">Back to Backfields</a>
+        </span>
     </header>
 
     <section class="bf-section" aria-labelledby="farm-rankings-title">

@@ -356,6 +356,71 @@
                     <a class="bf-section-link" href="/backfields/team/{{ team_boards.selected.org }}/share-card.png?n=20">Download Top 20 PNG</a>
                 </span>
             </div>
+            <section class="bf-system-snapshot" aria-labelledby="bf-system-snapshot-title">
+                <div class="bf-system-snapshot-head">
+                    <h4 id="bf-system-snapshot-title">System snapshot</h4>
+                    <span>Current ValuCast prospect pool</span>
+                </div>
+                <div class="bf-system-metrics">
+                    <div>
+                        <span>Top-20 value</span>
+                        <strong>{{ team_boards.summary.top20_value }}</strong>
+                    </div>
+                    <div>
+                        <span>Top-5 value share</span>
+                        <strong>{{ team_boards.summary.top5_concentration_pct }}%</strong>
+                    </div>
+                    <div>
+                        <span>Top-20 balance</span>
+                        <strong>{{ team_boards.summary.top20_hitters }} H / {{ team_boards.summary.top20_pitchers }} P</strong>
+                    </div>
+                    <div>
+                        <span>Level distribution</span>
+                        <strong>
+                            {% for level in team_boards.summary.levels %}{{ level.level }} {{ level.count }}{% if not loop.last %} · {% endif %}{% endfor %}
+                        </strong>
+                    </div>
+                </div>
+                <div class="bf-system-lists">
+                    <div class="bf-team-extra">
+                        <h4>Top prospects</h4>
+                        <ul class="bf-team-extra-list">
+                            {% for prospect in team_boards.summary.top_prospects %}
+                            <li><a class="bf-player-link" href="{{ prospect.url }}">{{ prospect.name }}</a><small>Val {{ prospect.value }}</small></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="bf-team-extra">
+                        <h4>Risers</h4>
+                        {% if team_boards.summary.risers %}
+                        <ul class="bf-team-extra-list">
+                            {% for riser in team_boards.summary.risers %}
+                            <li><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a><small>Up {{ riser.move.label }} spots over {{ riser.move.window_label }}</small></li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="bf-empty">No positive moves in the current snapshot.</p>
+                        {% endif %}
+                    </div>
+                    {% if not team_boards.aotc_hold %}
+                    <div class="bf-team-extra">
+                        <h4>ValuCast buys</h4>
+                        {% if team_boards.buys %}
+                        <ul class="bf-team-extra-list">
+                            {% for buy in team_boards.buys %}
+                            <li>
+                                <a class="bf-player-link" href="{{ buy.url }}">{{ buy.name }}</a>
+                                <small>#{{ buy.rank }} buy · {{ buy.reason }} · {{ buy.availability }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="bf-empty">No current buy signal for this system.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
             <div class="bf-table-head" role="row">
                 <span class="bf-sort-cell" role="columnheader" aria-sort="ascending"><button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button></span>
                 <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="player">Player</button></span>

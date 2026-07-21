@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from prospects.comps import (  # noqa: E402
     ARTIFACT_PATH,
     HISTORY_PATH,
+    PITCHER_HISTORY_PATH,
     SNAPSHOT_PATH,
     build_prospect_comps,
 )
@@ -25,9 +26,15 @@ from prospects.comps import (  # noqa: E402
 
 def run(artifact_path: Path = ARTIFACT_PATH) -> dict:
     history = json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
+    pitcher_history = json.loads(PITCHER_HISTORY_PATH.read_text(encoding="utf-8"))
     snapshot = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
     generated_at = snapshot.get("generated_at")  # pin to snapshot freshness
-    payload = build_prospect_comps(history, snapshot, generated_at=generated_at)
+    payload = build_prospect_comps(
+        history,
+        snapshot,
+        pitcher_history=pitcher_history,
+        generated_at=generated_at,
+    )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=1, sort_keys=True), encoding="utf-8")
@@ -38,7 +45,8 @@ def run(artifact_path: Path = ARTIFACT_PATH) -> dict:
 if __name__ == "__main__":
     result = run()
     players = result["players"]
-    print(f"comps built for {len(players)} prospects "
+    pitchers = result["pitchers"]
+    print(f"comps built for {len(players)} hitters and {len(pitchers)} pitchers "
           f"(pool rows: {result['method']['match_pool_rows']}, "
           f"resolved through {result['method']['resolved_through']})")
     sample = players.get("699302")

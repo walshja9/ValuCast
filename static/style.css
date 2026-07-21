@@ -1891,12 +1891,12 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-size: .8rem;
     font-weight: 750;
 }
-.role-probability-bars {
+.shape-cohort-bars {
     display: grid;
     gap: .4rem;
     margin: .45rem 0 .75rem;
 }
-.role-probability-row {
+.shape-cohort-row {
     display: grid;
     grid-template-columns: minmax(105px, 1fr) minmax(100px, 2fr) 42px;
     gap: .55rem;
@@ -1905,19 +1905,19 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     font-size: .72rem;
     font-weight: 600;
 }
-.role-probability-track {
+.shape-cohort-track {
     height: var(--bar-h-rail);
     border-radius: var(--bar-radius);
     background: var(--bar-rail);
     overflow: hidden;
 }
-.role-probability-track i {
+.shape-cohort-track i {
     display: block;
     height: 100%;
     border-radius: inherit;
     background: var(--c-prospect);
 }
-.role-probability-row b {
+.shape-cohort-row b {
     color: var(--c-text);
     font-size: .75rem;
     font-variant-numeric: tabular-nums;
@@ -1960,7 +1960,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .shape-twin-outcome.tier-everyday { color: var(--c-text); }
 /* Cohort bars are COUNTS of matched careers, not probabilities — they must
    not look like the Peak Outlook forecast bars (7/8 review). */
-.shape-cohort-bars .role-probability-track i { background: var(--c-positive-muted); }
+.shape-cohort-bars .shape-cohort-track i { background: var(--c-positive-muted); }
 .scouting-context-card {
     border-color: rgba(52, 226, 196, .20);
     background: var(--surface);
@@ -2071,7 +2071,7 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     .skill-shape-item { padding: .45rem .52rem; }
     .peak-projection-head { flex-direction: column; gap: .25rem; }
     .peak-summary-strip { gap: .28rem; margin: .4rem 0 .55rem; }
-    .role-probability-row { grid-template-columns: 92px minmax(80px, 1fr) 38px; gap: .42rem; }
+    .shape-cohort-row { grid-template-columns: 92px minmax(80px, 1fr) 38px; gap: .42rem; }
     .scouting-context-head { flex-direction: column; gap: .35rem; }
     .scouting-hero { flex-direction: column; align-items: flex-start; }
     .scouting-score { min-width: 0; text-align: left; }
@@ -3248,7 +3248,7 @@ main {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .role-probability-row {
+    .shape-cohort-row {
         grid-template-columns: 84px minmax(0, 1fr) 34px;
     }
 
@@ -3963,6 +3963,60 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     overflow: hidden;
 }
 
+.backfields-page .bf-system-snapshot {
+    padding: .85rem;
+    border-bottom: 1px solid var(--bf-line);
+    background: rgba(12, 25, 25, .38);
+}
+
+.backfields-page .bf-system-snapshot-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .7rem;
+}
+
+.backfields-page .bf-system-snapshot-head h4 {
+    margin: 0;
+    font-size: .9rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.backfields-page .bf-system-snapshot-head span,
+.backfields-page .bf-system-metrics span {
+    color: var(--bf-muted);
+    font-size: .74rem;
+}
+
+.backfields-page .bf-system-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .55rem;
+}
+
+.backfields-page .bf-system-metrics > div {
+    display: grid;
+    gap: .18rem;
+    padding: .6rem;
+    border: 1px solid var(--bf-line);
+    border-radius: var(--radius-sm);
+    background: rgba(8, 12, 16, .42);
+}
+
+.backfields-page .bf-system-metrics strong {
+    font-size: .9rem;
+    color: var(--bf-text);
+}
+
+.backfields-page .bf-system-lists {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .85rem;
+    margin-top: .85rem;
+}
+
 .backfields-page .bf-team-extras {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -4325,9 +4379,15 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 
     .backfields-page .bf-section-head,
     .backfields-page .bf-rankings-head,
-    .backfields-page .bf-team-title {
+    .backfields-page .bf-team-title,
+    .backfields-page .bf-system-snapshot-head {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .backfields-page .bf-system-metrics,
+    .backfields-page .bf-system-lists {
+        grid-template-columns: 1fr;
     }
 
     .backfields-page .bf-table-card,
