@@ -6167,10 +6167,24 @@ def _team_board_movements():
     return by_key
 
 
+# Keep the public window label tied to the delta field it describes.
+_TEAM_BOARD_MOVE_FIELD = "rank_delta_7d"
+
+
+def _team_board_move_window_days(field=_TEAM_BOARD_MOVE_FIELD):
+    match = re.search(r"(\d+)d\b", field)
+    return int(match.group(1)) if match else None
+
+
+def _team_board_move_window_label():
+    days = _team_board_move_window_days()
+    return f"{days} days" if days else "recent snapshot"
+
+
 def _team_board_move_from_signal(signal):
     signal = signal or {}
-    delta = _team_board_as_float(signal.get("rank_delta_7d"))
-    window_label = "7 days"
+    delta = _team_board_as_float(signal.get(_TEAM_BOARD_MOVE_FIELD))
+    window_label = _team_board_move_window_label()
     if delta is None:
         delta = _team_board_as_float(signal.get("rank_delta"))
         days = _team_board_as_float(signal.get("window_days"))
@@ -7027,6 +7041,8 @@ def _build_backfields_page_context():
         "ahead_of_consensus": ahead_of_consensus,
         "ahead_of_consensus_thin": ahead_of_consensus_thin,
         "aotc_scorecard": aotc_scorecard,
+        "move_window_days": _team_board_move_window_days(),
+        "move_window_label": _team_board_move_window_label(),
     }
 
 

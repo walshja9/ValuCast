@@ -1160,7 +1160,7 @@ def test_team_board_page_renders_data_backed_system_snapshot():
     assert "System snapshot" in html
     assert "Top-5 value share" in html
     assert "Top-20 balance" in html
-    assert "Level distribution" in html
+    assert "Top-20 levels" in html
     assert "Top prospects" in html
     assert "Risers" in html
     assert "ValuCast buys" in html
