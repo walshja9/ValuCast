@@ -1,11 +1,12 @@
 """Tests for the shadow ValuCast MLB dynasty layer."""
 
-from league_values.models import PlayerPool, PlayerProjection
+from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from mlb.dynasty import (
     FUTURE_RELIABILITY_FLOOR,
     RELIEVER_DYNASTY_SCORE_CAP,
     VALUE_SOURCE,
     _future_reliability_factor,
+    _horizon_profile,
     _role_adjusted_score,
     build_mlb_dynasty_layer,
 )
@@ -274,6 +275,20 @@ def test_future_reliability_factor_does_not_compound_across_years():
     # old compounded 0.60 ** 2 = 0.36.
     assert y2 == y1
     assert y2 > 0.60 ** 2
+
+
+def test_horizon_penalty_cannot_improve_a_negative_value():
+    result = ValuationResult(
+        player=_hitter(metadata={"age": 34}),
+        total_value=-5.0,
+        raw_values={},
+        z_scores={},
+        category_values={},
+    )
+
+    horizon = _horizon_profile(result, 2026, baseline=-10.0)
+
+    assert horizon["years"][1]["projected_value"] < result.total_value
 
 
 def test_partial_time_good_player_year2_horizon_not_crushed():
