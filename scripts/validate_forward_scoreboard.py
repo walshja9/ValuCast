@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT))
 from prospects.forward_scoreboard import (  # noqa: E402
     ARTIFACT_NAME,
     INDEPENDENCE_ATTESTATION,
+    PROVISIONAL_LABEL,
     PROTOCOL_VERSION,
     SIGN_TEST_ALPHA,
     VERDICT_BASIS,
@@ -123,10 +124,13 @@ def _validate_sign_test(headline: dict) -> list[str]:
             )
             if significant != expected_significant:
                 problems.append("anticipation_score.sign_test.significant does not match verdict gate")
-            if not headline.get("provisional"):
-                expected_label = scoreboard_verdict_label(sign_test, median)
-                if headline.get("label") != expected_label:
-                    problems.append("anticipation_score.label does not match sign-test verdict")
+            expected_label = (
+                PROVISIONAL_LABEL
+                if headline.get("provisional")
+                else scoreboard_verdict_label(sign_test, median)
+            )
+            if headline.get("label") != expected_label:
+                problems.append("anticipation_score.label does not match sign-test verdict")
     return problems
 
 

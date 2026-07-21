@@ -404,6 +404,18 @@ def test_validator_rejects_an_inconsistent_sign_test_block(tmp_path):
     assert any("sign_test" in problem for problem in problems)
 
 
+def test_validator_rejects_a_false_provisional_label(tmp_path):
+    sb = _scoreboard([
+        _claim("1_hitter", "higher", "resolved_by_callup", "2026-06-24", "2026-06-30"),
+    ])
+    assert sb["anticipation_score"]["provisional"] is True
+    sb["anticipation_score"]["label"] = "significant"
+
+    _, problems = validate.validate_forward_scoreboard(_write(tmp_path, sb))
+
+    assert any("label" in problem for problem in problems)
+
+
 # --- FIX 4: unscored/unclassified derived view + partition reconciliation ------
 
 def test_resolved_claim_missing_resolved_date_lands_in_unscored_view(tmp_path):

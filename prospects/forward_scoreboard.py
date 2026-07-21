@@ -45,7 +45,8 @@ open claims. The self-retraction rate is a mandatory companion stat.
 
 Headline = median of the signed pool. The VERDICT (significance) is gated by an
 exact one-sided binomial SIGN TEST on the resolved-claim direction — significant
-only when P(X >= k | n_nonzero, 0.5) < 0.025 in the LEADING (positive) direction.
+only when P(X >= k | n_nonzero, 0.5) < 0.025 in the LEADING (positive) direction
+and the headline median is positive.
 This is decision-equivalent to a 95% Clopper-Pearson interval for the win-share
 excluding 0.5 on that side, and is strictly MORE conservative than the old
 bootstrap-CI-straddles-zero rule, which under-covered on small discrete
@@ -92,6 +93,7 @@ CI_PERCENTILE = 95  # two-sided 95% percentile CI (effect-size band; descriptive
 # conservative than the retired bootstrap-CI-straddles-zero rule.
 SIGN_TEST_ALPHA = 0.025
 VERDICT_BASIS = "exact_binomial_sign_test_p025_one_sided"
+PROVISIONAL_LABEL = "provisional (no claim has reached the expiry window)"
 
 # The ledger's terminal outcomes we roll up (verbatim vocabulary; not imported).
 _TERMINAL_OUTCOMES = frozenset(
@@ -348,7 +350,15 @@ def scoreboard_verdict_label(sign_test: dict, median_lead_days: float | None) ->
     direction = sign_test.get("direction")
     p_value = sign_test.get("p_value")
     if direction == "leading":
-        return "significant" if sign_test.get("significant") else "leading, not yet significant"
+        significant = (
+            isinstance(p_value, (int, float))
+            and not isinstance(p_value, bool)
+            and math.isfinite(p_value)
+            and p_value < SIGN_TEST_ALPHA
+            and median_lead_days is not None
+            and median_lead_days > 0
+        )
+        return "significant" if significant else "leading, not yet significant"
     if direction == "behind":
         significant = (
             isinstance(p_value, (int, float))
@@ -387,7 +397,7 @@ def _headline(pool_days: list[float], provisional: bool) -> dict:
     # a significant BEHIND majority is honestly labeled a loss (never a win); every
     # inconclusive pool is "leading, not yet significant".
     if provisional:
-        label = "provisional (no claim has reached the expiry window)"
+        label = PROVISIONAL_LABEL
     else:
         label = scoreboard_verdict_label(sign_test, median)
     return {
