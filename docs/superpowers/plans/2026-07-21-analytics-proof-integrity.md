@@ -66,7 +66,6 @@
 ### Task 4: Fold-local impact evidence
 
 **Files:**
-- Modify: `prospects/model.py`
 - Create: `prospects/impact_oof.py`
 - Create: `scripts/build_impact_oof_scores.py`
 - Create: `scripts/validate_impact_oof_scores.py`
@@ -78,7 +77,7 @@
 1. Add synthetic tests proving test/future identities cannot enter a fold's reference distribution and outcome mutations outside the training reference pool cannot alter its hash.
 2. Add tests for exact `(mlbam_id, role, test_cohort)` identity preservation and deterministic cohort-then-player bootstrap intervals.
 3. Run `python -m pytest tests/test_impact_oof.py -q` and capture RED.
-4. Implement a reporting-only fold-local impact OOF helper using the incumbent features, model kind, and baselines.
+4. Implement a reporting-only fold-local impact OOF helper that imports the frozen incumbent features, model kind, and baselines without editing serving code.
 5. Emit source hashes, fold reference counts/hashes, per-player paired errors, role/combined intervals, and `claim_authorized: false`.
 6. Add a validator that recomputes metrics and rejects any serving/import flag.
 7. Build and validate the artifact without wiring it into ranks or publication.
