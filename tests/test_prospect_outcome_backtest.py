@@ -114,7 +114,7 @@ def test_outcome_backtest_separates_realized_evidence_from_forward_observation()
     assert payload["front_office_track"]["grade"] == "B+"
 
 
-def test_outcome_backtest_blocks_on_underpowered_cross_role_change_gate():
+def test_outcome_backtest_reports_underpowered_cross_role_change_without_blocking():
     payload = build_outcome_backtest(
         _prospect_model(),
         _dynasty_backtest(),
@@ -123,18 +123,46 @@ def test_outcome_backtest_blocks_on_underpowered_cross_role_change_gate():
         _model_v07(),
     )
 
-    assert payload["status"] == "needs_work"
+    # Status stays evidence_ready when the dynasty gate + absolute concordance
+    # hold: the change-power gate is structurally unpassable (plan 028) and is
+    # decoupled from evidence_ready, mirroring realized_evidence_ready.
+    assert payload["status"] == "evidence_ready"
     assert payload["evidence"]["cross_role_shadow"]["historical_absolute_passed"] is True
     assert payload["evidence"]["cross_role_shadow"]["change_power_passed"] is False
     # realized evidence stays ready when the dynasty gate + absolute
     # concordance hold: the change-power gate is structurally unpassable
     # (plan 028) and must not hard-wire this flag False for years.
     assert payload["validation"]["realized_evidence_ready"] is True
+    # power is still MEASURED and REPORTED, just no longer a gate/cap.
     assert payload["validation"]["cross_role_change_power_ready"] is False
     assert any(
         gate["kind"] == "cross_role_change_power"
         for gate in payload["validation"]["evidence_gates"]
     )
+    # power no longer caps the front-office score.
+    assert "Cross-role change detection is underpowered." not in (
+        payload["front_office_track"]["cap_reasons"]
+    )
+
+
+def test_evidence_ready_is_power_independent():
+    """evidence_ready depends only on dynasty gate + absolute concordance;
+    change power stays reported but does not gate status."""
+    payload = build_outcome_backtest(
+        _prospect_model(),
+        _dynasty_backtest(),
+        _cross_role_shadow(power="fail"),
+        _forward_validation(),
+        _model_v07(),
+    )
+
+    # power False + dynasty active + absolute passed => evidence_ready.
+    assert payload["status"] == "evidence_ready"
+    assert payload["validation"]["cross_role_change_power_ready"] is False
+    # power keeps being reported in the evidence block with its disclosure.
+    cross = payload["evidence"]["cross_role_shadow"]
+    assert cross["change_power_passed"] is False
+    assert "separately" in cross["change_power_disclosure"]
 
 
 def test_run_and_validate_outcome_backtest(tmp_path):
