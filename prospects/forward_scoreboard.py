@@ -371,6 +371,8 @@ def _headline(pool_days: list[float], provisional: bool) -> dict:
         label = "significant"
     elif sign_test["direction"] == "behind" and sign_test["p_value"] < SIGN_TEST_ALPHA:
         label = "behind, significant"
+    elif sign_test["direction"] == "behind":
+        label = "behind, not yet significant"
     else:
         label = "leading, not yet significant"
     return {

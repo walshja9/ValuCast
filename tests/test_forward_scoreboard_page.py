@@ -211,6 +211,24 @@ def test_ci_label_clear_of_zero_significant():
     assert label == "clear of zero"
 
 
+def test_ci_label_mirrors_sign_test_when_artifact_carries_it():
+    # Post-7/21 artifacts gate the verdict on the exact sign test; the page must
+    # mirror it even when the bootstrap CI would have said "clear of zero".
+    base = {"ci_low": 3.0, "ci_high": 13.0, "provisional": False}
+    label = app_module._scoreboard_ci_label(
+        {**base, "sign_test": {"p_value": 0.2, "direction": "leading", "significant": False}}
+    )
+    assert label == "leading, not yet significant"
+    label = app_module._scoreboard_ci_label(
+        {**base, "sign_test": {"p_value": 0.01, "direction": "leading", "significant": True}}
+    )
+    assert label == "significant - sign test clear of coin-flip"
+    label = app_module._scoreboard_ci_label(
+        {**base, "sign_test": {"p_value": 0.3, "direction": "behind", "significant": False}}
+    )
+    assert label == "behind, not yet significant"
+
+
 def test_ci_label_provisional_takes_precedence():
     # A band clear of zero is still reported provisional while the expiry window is
     # closed — the loss lane hasn't been able to fire yet.

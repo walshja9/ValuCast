@@ -9166,6 +9166,17 @@ def _scoreboard_ci_label(headline: dict) -> str:
         return "collecting - no resolved claims in the pool yet"
     if headline.get("provisional"):
         return "provisional - no claim has reached its 60-day expiry"
+    # Post-7/21 artifacts gate the verdict on the exact binomial sign test; the
+    # page mirrors that gate so the two surfaces can never disagree. Older
+    # artifacts (no sign_test block) keep the CI-band reading until the next
+    # nightly rebuild replaces them.
+    sign_test = headline.get("sign_test")
+    if isinstance(sign_test, dict) and sign_test.get("p_value") is not None:
+        if sign_test.get("significant"):
+            return "significant - sign test clear of coin-flip"
+        if sign_test.get("direction") == "behind":
+            return "behind, not yet significant"
+        return "leading, not yet significant"
     if lo <= 0 <= hi:
         return "leading, not yet significant"
     return "clear of zero"

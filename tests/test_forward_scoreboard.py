@@ -605,3 +605,14 @@ def test_empty_pool_headline_carries_verdict_basis_and_null_sign_test():
     headline = _headline([], provisional=False)
     assert headline["sign_test"] is None
     assert headline["verdict_basis"] == VERDICT_BASIS
+
+
+def test_behind_pool_inconclusive_label_is_direction_honest():
+    # A pool with a NEGATIVE majority that does not clear the sign test must not
+    # read as "leading": 4 wins / 6 losses -> p(X>=6|10,.5)=0.377, direction behind.
+    from prospects.forward_scoreboard import _headline
+    pool = [3.0, 2.0, 1.0, 4.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0]
+    headline = _headline(pool, provisional=False)
+    assert headline["sign_test"]["direction"] == "behind"
+    assert headline["sign_test"]["significant"] is False
+    assert headline["label"] == "behind, not yet significant"
