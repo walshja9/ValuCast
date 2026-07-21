@@ -10,7 +10,18 @@
       "null_median": 0.0
     },
     "pool_size": 70,
-    "provisional": true
+    "provisional": true,
+    "sign_test": {
+      "basis": "exact_binomial_sign_test_p025_one_sided",
+      "direction": "leading",
+      "n_nonzero": 70,
+      "negatives": 31,
+      "p_value": 0.20148153752303988,
+      "positives": 39,
+      "significant": false,
+      "zeros_excluded": 0
+    },
+    "verdict_basis": "exact_binomial_sign_test_p025_one_sided"
   },
   "artifact": "valucast_forward_scoreboard",
   "cohorts": {
@@ -27,7 +38,7 @@
     ],
     "status": "registered"
   },
-  "content_sha256": "a2acb45319edd6d5f96d0d37a8bc8c9a58f01f84a9bb24b4326062e7c6177c26",
+  "content_sha256": "a50ba2e17ab5386a3c5bbda30718885896ad2aa1a5083734493d02ee5996e0d1",
   "dials": {
     "adverse_move_floor_spots": 10,
     "ci_percentile": 95,
@@ -103,7 +114,7 @@
     "unscored_or_unclassified": 0,
     "wins": 39
   },
-  "generated_at": "2026-07-21T00:53:33.601491+00:00",
+  "generated_at": "2026-07-21T16:31:15.662804+00:00",
   "generated_by": "valucast",
   "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
   "ledger_ref": {
