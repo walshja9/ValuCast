@@ -52,14 +52,14 @@
 
 **Files:**
 - Modify: `scripts/build_valucast_hp_run.py`
-- Modify: `tests/test_valucast_hp_run.py`
+- Modify: `tests/test_build_valucast_hp_run.py`
 
 **Steps:**
 
 1. Add tests that role diagnostics include exact counts and rates for actuals matching, positive opportunity, zero opportunity, and clamping.
 2. Add reconciliation assertions that positive plus zero equals rows and every rate equals count divided by rows.
 3. Assert the public Skill+ gate remains held and `affects_live_outputs` remains false when any zero/clamp condition exists.
-4. Run `python -m pytest tests/test_valucast_hp_run.py -q` and capture RED.
+4. Run `python -m pytest tests/test_build_valucast_hp_run.py -q` and capture RED.
 5. Implement the minimal derived diagnostics and explicit blocker list.
 6. Re-run the focused tests and capture GREEN.
 
@@ -88,7 +88,7 @@
 
 1. Run the focused suite:
 
-   `python -m pytest tests/test_prospect_model.py tests/test_prospect_model_contract.py tests/test_public_dynasty_snapshot.py tests/test_valucast_hp_run.py tests/test_impact_oof.py -q`
+   `python -m pytest tests/test_prospect_model.py tests/test_prospect_model_contract.py tests/test_public_dynasty_snapshot.py tests/test_build_valucast_hp_run.py tests/test_impact_oof.py -q`
 
 2. Run `python -m pytest -q`.
 3. Run `git diff --check`.

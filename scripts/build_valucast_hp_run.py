@@ -64,7 +64,11 @@ def _safe(stats: dict, key: str) -> float:
     return float(stats.get(key, 0) or 0)
 
 
+def _rate(count: int, total: int) -> float:
+    return round(count / total, 4) if total else 0.0
+
 def _actuals_by_key(actual_rows: list[dict]) -> dict[tuple[str, str], dict]:
+
     out = {}
     for row in actual_rows:
         mlbam_id = _mlbam_id(row)
@@ -176,16 +180,43 @@ def build_manifest(rows: list[dict], generated_at: str, actuals_as_of: str) -> d
     for label, role_rows, opportunity_key in (
         ("hitters", hitters, "PA"), ("pitchers", pitchers, "IP"),
     ):
+        role_count = len(role_rows)
+        actuals_matched = sum(
+            bool((row.get("metadata") or {}).get("actuals_applied"))
+            for row in role_rows
+        )
+        zero_remaining = sum(
+            _safe(row.get("stats") or {}, opportunity_key) <= 0
+            for row in role_rows
+        )
+        clamped_to_zero = sum(
+            bool(
+                (row.get("metadata") or {}).get("remaining_opportunity_clamped")
+            )
+            for row in role_rows
+        )
+        positive_remaining = role_count - zero_remaining
         remaining_diagnostics[label] = {
-            "rows": len(role_rows),
-            "actuals_matched": sum(bool((row.get("metadata") or {}).get("actuals_applied")) for row in role_rows),
-            "zero_remaining": sum(_safe(row.get("stats") or {}, opportunity_key) <= 0 for row in role_rows),
-            "clamped_to_zero": sum(bool((row.get("metadata") or {}).get("remaining_opportunity_clamped")) for row in role_rows),
+            "rows": role_count,
+            "actuals_matched": actuals_matched,
+            "actuals_match_rate": _rate(actuals_matched, role_count),
+            "positive_remaining": positive_remaining,
+            "positive_remaining_rate": _rate(positive_remaining, role_count),
+            "zero_remaining": zero_remaining,
+            "zero_remaining_rate": _rate(zero_remaining, role_count),
+            "clamped_to_zero": clamped_to_zero,
+            "clamped_to_zero_rate": _rate(clamped_to_zero, role_count),
         }
     clamped = sum(role["clamped_to_zero"] for role in remaining_diagnostics.values())
+    blockers = []
     zero_remaining = sum(role["zero_remaining"] for role in remaining_diagnostics.values())
+    if clamped:
+        blockers.append("remaining_opportunity_clamped")
+    if zero_remaining:
+        blockers.append("zero_remaining_opportunity")
     skill_gate = {
         "status": "held" if clamped or zero_remaining else "display_only_eligible",
+        "blockers": blockers,
         "affects_live_outputs": False,
         "reason": (
             "remaining-opportunity clamping is present" if clamped
