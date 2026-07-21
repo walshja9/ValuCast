@@ -43,16 +43,24 @@ contributes a SIGNED lead time in days (`resolved_date - claim_date`):
 Excluded from the pool (always funnel-counted): clean retractions, benign expiries,
 open claims. The self-retraction rate is a mandatory companion stat.
 
-Headline = median of the signed pool, with a bootstrap 95% percentile CI and a
-sign-permutation null (both at frozen seed 29016, 10,000 resamples). The score is
-PROVISIONAL until some claim has reached EXPIRY_DAYS age (no expiry can fire before
-then, so the loss side cannot yet appear). "leading, not yet significant" when the
-CI straddles the null median.
+Headline = median of the signed pool. The VERDICT (significance) is gated by an
+exact one-sided binomial SIGN TEST on the resolved-claim direction — significant
+only when P(X >= k | n_nonzero, 0.5) < 0.025 in the LEADING (positive) direction.
+This is decision-equivalent to a 95% Clopper-Pearson interval for the win-share
+excluding 0.5 on that side, and is strictly MORE conservative than the old
+bootstrap-CI-straddles-zero rule, which under-covered on small discrete
+sign-imbalanced pools. The bootstrap 95% percentile CI (effect-size band) and the
+sign-permutation null (null band) are still computed and published at frozen seed
+29016 / 10,000 resamples, demoted to DESCRIPTIVE CONTEXT — they no longer gate the
+verdict. The score is PROVISIONAL until some claim has reached EXPIRY_DAYS age (no
+expiry can fire before then, so the loss side cannot yet appear); "leading, not yet
+significant" whenever the sign test does not clear the 0.025 leading-direction bar.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import date
 
 import numpy as np
@@ -75,7 +83,15 @@ SIDES = ("higher", "lower")
 # --- Frozen resampling constants (plan 030 A4 / invariant 7) --------------------
 RESAMPLE_SEED = 29016
 N_RESAMPLES = 10_000
-CI_PERCENTILE = 95  # two-sided 95% percentile CI
+CI_PERCENTILE = 95  # two-sided 95% percentile CI (effect-size band; descriptive)
+
+# --- Verdict gate: exact one-sided binomial sign test ---------------------------
+# The published significance decision. One-sided alpha = 0.025 in the LEADING
+# (positive/win) direction is decision-equivalent to a two-sided 95% Clopper-Pearson
+# interval for the win-share excluding 0.5 on the leading side. Strictly more
+# conservative than the retired bootstrap-CI-straddles-zero rule.
+SIGN_TEST_ALPHA = 0.025
+VERDICT_BASIS = "exact_binomial_sign_test_p025_one_sided"
 
 # The ledger's terminal outcomes we roll up (verbatim vocabulary; not imported).
 _TERMINAL_OUTCOMES = frozenset(
@@ -256,10 +272,12 @@ def _permutation_null(pool: np.ndarray) -> dict:
     distribution of the median. Reports the null median (0.0 by construction, echoed
     for transparency) and its CI interval.
 
-    NO p-value is emitted: a sign-permutation p-value is degenerate for
-    low-magnitude-variance pools (a unanimous same-sign pool yields a large,
+    NO p-value is emitted from THIS null: a sign-permutation p-value is degenerate
+    for low-magnitude-variance pools (a unanimous same-sign pool yields a large,
     uninformative p) — identified in pre-registration review and removed before
-    freeze. Significance is driven solely by the bootstrap CI straddling zero."""
+    freeze. This null is published as a context band only; the VERDICT is gated by
+    the exact binomial sign test (`_sign_test`), not by this null and not by the
+    bootstrap CI."""
     rng = np.random.default_rng(RESAMPLE_SEED)
     n = pool.shape[0]
     signs = rng.integers(0, 2, size=(N_RESAMPLES, n)) * 2 - 1  # +/-1
@@ -271,10 +289,61 @@ def _permutation_null(pool: np.ndarray) -> dict:
     }
 
 
+def _binomial_tail_ge(k: int, n: int) -> float:
+    """Exact upper binomial tail P(X >= k | n, p=0.5) = sum_{i=k}^{n} C(n,i) / 2^n.
+    Stdlib only (math.comb) — this module runs in the nightly build, no scipy."""
+    if n <= 0:
+        return 1.0
+    if k <= 0:
+        return 1.0
+    total = sum(math.comb(n, i) for i in range(k, n + 1))
+    return total / (2 ** n)
+
+
+def _sign_test(pool: np.ndarray) -> dict:
+    """Exact one-sided binomial SIGN TEST on the resolved-claim direction — the gate.
+
+    Signed lead-times split into positives (leading / wins), negatives (behind /
+    losses), and exact zeros (same-day timing). Zeros carry no directional sign and
+    are EXCLUDED from the test (disclosed via `zeros_excluded`). Over the n_nonzero
+    signed claims, under H0 the sign is a fair coin (p=0.5); the majority direction's
+    tail probability is p = P(X >= k_max | n_nonzero, 0.5).
+
+    Verdict is "significant" only when that p < SIGN_TEST_ALPHA AND the majority
+    direction is POSITIVE (leading). p < 0.025 one-sided is decision-equivalent to a
+    two-sided 95% Clopper-Pearson interval for the win-share excluding 0.5 on the
+    leading side. A significant NEGATIVE majority is reported as `direction="behind"`
+    and must NOT be labeled as a win by the caller."""
+    positives = int(np.count_nonzero(pool > 0))
+    negatives = int(np.count_nonzero(pool < 0))
+    zeros = int(np.count_nonzero(pool == 0))
+    n_nonzero = positives + negatives
+    k_max = max(positives, negatives)
+    p_value = _binomial_tail_ge(k_max, n_nonzero)
+    if positives > negatives:
+        direction = "leading"
+    elif negatives > positives:
+        direction = "behind"
+    else:
+        direction = "even"
+    significant = bool(p_value < SIGN_TEST_ALPHA and direction == "leading")
+    return {
+        "basis": VERDICT_BASIS,
+        "positives": positives,
+        "negatives": negatives,
+        "zeros_excluded": zeros,
+        "n_nonzero": n_nonzero,
+        "p_value": p_value,
+        "direction": direction,
+        "significant": significant,
+    }
+
+
 def _headline(pool_days: list[float], provisional: bool) -> dict:
-    """The Anticipation Score headline. Median of the signed pool + bootstrap CI +
-    sign-permutation null. Empty pool -> nulls, labeled explicitly (no claim has
-    resolved into the pool yet)."""
+    """The Anticipation Score headline. Median of the signed pool + bootstrap CI
+    (effect-size band) + sign-permutation null (null band), both DESCRIPTIVE. The
+    VERDICT is gated by the exact binomial sign test. Empty pool -> nulls, labeled
+    explicitly (no claim has resolved into the pool yet)."""
     if not pool_days:
         return {
             "pool_size": 0,
@@ -282,6 +351,8 @@ def _headline(pool_days: list[float], provisional: bool) -> dict:
             "ci_low": None,
             "ci_high": None,
             "null": None,
+            "sign_test": None,
+            "verdict_basis": VERDICT_BASIS,
             "provisional": provisional,
             "label": "no resolved claims in pool yet",
         }
@@ -289,21 +360,27 @@ def _headline(pool_days: list[float], provisional: bool) -> dict:
     median = float(np.median(pool))
     ci_low, ci_high = _bootstrap_ci(pool)
     null = _permutation_null(pool)
-    # Superiority is never claimed inside the band: if the CI straddles the null
-    # median (0), the standing is "leading, not yet significant".
-    straddles_null = ci_low <= null["null_median"] <= ci_high
+    sign_test = _sign_test(pool)
+    # Verdict gate = exact one-sided binomial sign test (NOT the bootstrap CI band).
+    # Provisional wins outright; then a significant LEADING majority is "significant";
+    # a significant BEHIND majority is honestly labeled a loss (never a win); every
+    # inconclusive pool is "leading, not yet significant".
     if provisional:
         label = "provisional (no claim has reached the expiry window)"
-    elif straddles_null:
-        label = "leading, not yet significant"
-    else:
+    elif sign_test["significant"]:
         label = "significant"
+    elif sign_test["direction"] == "behind" and sign_test["p_value"] < SIGN_TEST_ALPHA:
+        label = "behind, significant"
+    else:
+        label = "leading, not yet significant"
     return {
         "pool_size": int(pool.shape[0]),
         "median_lead_days": median,
         "ci_low": ci_low,
         "ci_high": ci_high,
         "null": null,
+        "sign_test": sign_test,
+        "verdict_basis": VERDICT_BASIS,
         "provisional": provisional,
         "label": label,
     }

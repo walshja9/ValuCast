@@ -67,8 +67,12 @@
         <span class="sb-score">{% if sc.median_lead_days is not none %}{{ '%+d' | format(sc.median_lead_days | round | int) }}d{% else %}&mdash;{% endif %}</span>
         <span class="sb-score-label">current median timing versus the public board</span>
     </p>
-    {# The headline NEVER renders without its bootstrap 95% CI band. When the band
-       includes zero the verdict is exactly "leading, not yet significant". #}
+    {# The headline NEVER renders without its bootstrap 95% CI band, shown as the
+       EFFECT-SIZE band. The significance VERDICT is an exact one-sided binomial sign
+       test on the direction of resolved calls (leading vs behind) — not the CI band.
+       The median is the effect size; the bootstrap CI and permutation null are
+       context. "leading, not yet significant" whenever the sign test hasn't cleared
+       the bar. #}
     <p class="sb-ci">
         {% if sc.ci_low is not none and sc.ci_high is not none %}
         95% CI <strong>[{{ '%+d' | format(sc.ci_low | round | int) }}, {{ '%+d' | format(sc.ci_high | round | int) }}]</strong> days
