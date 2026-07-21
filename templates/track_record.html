@@ -71,23 +71,35 @@
     {# The daily number re-rolls against the latest board every build, so a single
        reading swings wide. The trailing mean is the honest central tendency; the
        range is the honest noise band. #}
-    <p>Over the last <strong>{{ stab.window_days }}</strong> builds, the field has come
-    toward our matured calls <strong>{{ (stab.decided_rate.mean * 100) | round | int }}%</strong>
-    of the time — <strong>{{ stab.control_lift.mean }}x</strong> the matched-control baseline
-    (a modest edge, and a noisy one: lift has ranged
+    <p>Over the last <strong>{{ stab.window_days }}</strong> builds,
+    <strong>{{ (stab.decided_rate.mean * 100) | round | int }}%</strong> of our matured
+    decided calls ended with the field moving toward us. Separately, among still-open
+    matured calls, our toward-rate lift averaged <strong>{{ stab.control_lift.mean }}x</strong>
+    versus matched controls (a modest and noisy edge: lift ranged
     {{ stab.control_lift.min }}x&ndash;{{ stab.control_lift.max }}x day to day).
     Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
     {{ sc.targets.control_lift }}x.</p>
     <p class="buys-fineprint">Today's pre-registered daily reading (a single-day snapshot):
     <strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
-    matured decided ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %},
-    {{ sc.summary.control_lift }}x{% endif %}. We publish the daily number unchanged and
+    matured decided calls ended with the field moving toward us
+    ({{ (sc.summary.decided_rate * 100) | round | int }}%).{% if sc.summary.control_lift %}
+    Separately, among still-open matured calls, the field moved toward
+    <strong>{{ sc.summary.matured_open_rates.toward }}</strong> of
+    <strong>{{ sc.summary.matured_open_rates.n }}</strong>
+    ({{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%) versus
+    <strong>{{ sc.summary.control_matured_rates.toward }}</strong> of
+    <strong>{{ sc.summary.control_matured_rates.n }}</strong> matched controls
+    ({{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%;
+    {{ sc.summary.control_lift }}x).{% endif %} We publish the daily number unchanged and
     read it through the trailing average, so one noisy build isn't mistaken for the record.</p>
     {% else %}
     <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
     matured decided calls (14+ days tracked) ended with the field coming to us
-    ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
-    <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
+    ({{ (sc.summary.decided_rate * 100) | round | int }}%).{% if sc.summary.control_lift %}
+    Separately, among still-open matured calls, the field moved toward
+    {{ sc.summary.matured_open_rates.toward }} of {{ sc.summary.matured_open_rates.n }} versus
+    {{ sc.summary.control_matured_rates.toward }} of {{ sc.summary.control_matured_rates.n }}
+    matched controls ({{ sc.summary.control_lift }}x).{% endif %}
     Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
     {{ sc.targets.control_lift }}x.</p>
     {% endif %}

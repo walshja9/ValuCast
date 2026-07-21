@@ -271,6 +271,11 @@ def test_ledger_page_renders_full_ledger():
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
     assert 'data-ledger-filter="resolved"' in html      # resolved != undecided
     assert "conviction, not evidence" in html           # worked-example explainer
+    # The decided-rate and matched-control lift use different populations. The
+    # public sentence must not make the lift look derived from wins/decided.
+    assert "matured decided calls" in html
+    assert "Separately, among still-open matured calls" in html
+    assert "matched controls" in html
     # 7/3 retention-cohort disclosure: policy-change entries are labeled,
     # never silent — and never curated out (scoring fields stay frozen).
     assert "Board policy change 2026-07-02" in html
