@@ -1,0 +1,40 @@
+name: Tests
+
+# Runs the full pytest suite on every push (including data-only commits --
+# data changes have broken data-dependent tests before, so data-only pushes
+# are not exempt) and on every pull request.
+on:
+  push:
+  pull_request:
+
+concurrency:
+  # Keyed on ref so stacked pushes to the same branch cancel the older run
+  # instead of queueing multiple ~8-min suite runs. Prefixed distinctly from
+  # the daily-public-data workflow's "daily-public-data-refresh" group (and
+  # its roster-pulse/prospect-shadow shares of that same group) so this
+  # never collides with or cancels that publish pipeline.
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          # Matches the version pinned by the repo's other workflows
+          # (daily-public-data.yml, prospect-shadow.yml, roster-pulse.yml).
+          # Local dev runs 3.14; pyproject only requires >=3.10.
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e . pytest
+
+      - name: Run test suite
+        run: python -m pytest -q
