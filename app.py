@@ -8566,14 +8566,20 @@ def _build_receipts_page_context():
     no_claim_rows = [] if RECEIPTS_HOLD else list(payload.get("no_claim_rows") or [])
     generated_at = payload.get("generated_at")
     summary = payload.get("summary") or {}
+    no_claim_count = 0 if RECEIPTS_HOLD else summary.get("no_claim_call_up_count") or 0
+    maturation = (
+        {"pending": 0, "confirmed": 0, "decayed": 0}
+        if RECEIPTS_HOLD
+        else summary.get("maturation") or {"pending": 0, "confirmed": 0, "decayed": 0}
+    )
     return {
         "receipts": receipts,
         "receipt_count": len(receipts),
         "misses": misses,
         "miss_count": len(misses),
         "no_claim_rows": no_claim_rows,
-        "no_claim_call_up_count": summary.get("no_claim_call_up_count") or 0,
-        "maturation": summary.get("maturation") or {"pending": 0, "confirmed": 0, "decayed": 0},
+        "no_claim_call_up_count": no_claim_count,
+        "maturation": maturation,
         "receipts_marquee": _receipts_marquee(receipts),
         "receipts_available": bool(payload) and not RECEIPTS_HOLD,
         "receipts_generated_at": generated_at,
@@ -8608,6 +8614,18 @@ _SCOREBOARD_REGISTERED_DATE = "2026-07-16"
 def _load_forward_scoreboard_payload():
     sc = _load_artifact(_FORWARD_SCOREBOARD_PATH)
     return sc if isinstance(sc, dict) else None
+
+
+def _track_record_context():
+    context = {
+        "sc": _load_scorecard_payload(),
+        **_build_receipts_page_context(),
+        "forward_sc": None,
+    }
+    if not SCOREBOARD_HOLD:
+        payload = _load_forward_scoreboard_payload()
+        context["forward_sc"] = _scoreboard_view(payload) if payload else None
+    return context
 
 
 def _load_gaps_ledger():
@@ -8787,7 +8805,7 @@ def ledger():
     # mtimes), so a stale board reads as fresh. Until that derivation uses a real
     # content date (git log / committed sidecar — queued), the disclosure stays
     # qualitative rather than shipping a false date on the honesty page.
-    return render_template("track_record.html", sc=_load_scorecard_payload())
+    return render_template("track_record.html", **_track_record_context())
 
 
 @app.route("/track-record")
@@ -9202,6 +9220,14 @@ def _scoreboard_view(sc: dict) -> dict:
     and attaches the CI-band verdict + provisional-window copy."""
     headline = sc.get("anticipation_score") or {}
     funnel = sc.get("funnel") or {}
+    buckets = funnel.get("buckets") or {}
+    wins = funnel.get("wins")
+    pool_size = headline.get("pool_size")
+    win_rate_pct = (
+        round(wins / pool_size * 100)
+        if isinstance(wins, int) and isinstance(pool_size, int) and pool_size > 0
+        else None
+    )
     retraction = funnel.get("self_retraction_rate") or {}
     cohorts = sc.get("cohorts") or {}
     cohort_count = cohorts.get("cohort_count") or 0
@@ -9214,10 +9240,12 @@ def _scoreboard_view(sc: dict) -> dict:
         "median_lead_days": headline.get("median_lead_days"),
         "ci_low": headline.get("ci_low"),
         "ci_high": headline.get("ci_high"),
-        "pool_size": headline.get("pool_size"),
+        "pool_size": pool_size,
         "provisional": bool(headline.get("provisional")),
         "ci_label": _scoreboard_ci_label(headline),
-        "wins": funnel.get("wins"),
+        "wins": wins,
+        "win_rate_pct": win_rate_pct,
+        "clean_retractions": buckets.get("clean_retraction"),
         "losses": funnel.get("losses"),
         "excluded_from_pool": funnel.get("excluded_from_pool"),
         "unscored_or_unclassified": funnel.get("unscored_or_unclassified"),

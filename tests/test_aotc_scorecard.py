@@ -397,3 +397,67 @@ def test_active_mlb_rows_never_serve_as_controls(tmp_path):
     payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-08T00:00:00+00:00")
     assert payload["summary"]["control_rates"]["n"] == 1  # only the clean control
 
+
+def test_track_record_context_composes_existing_artifacts_and_rates(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: {"artifact": "consensus"})
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70, "provisional": True},
+        "funnel": {
+            "wins": 39,
+            "losses": 31,
+            "open": 102,
+            "total_claims": 258,
+            "excluded_from_pool": 188,
+            "unscored_or_unclassified": 0,
+            "buckets": {"clean_retraction": 86},
+            "self_retraction_rate": {"retracted": 117, "total": 258, "rate": 117 / 258},
+        },
+        "cohorts": {"cohort_count": 4},
+    })
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "generated_at": "2026-07-21T00:00:00+00:00",
+        "receipts": [{"name": str(i)} for i in range(7)],
+        "misses": [],
+        "no_claim_rows": [{"name": str(i)} for i in range(33)],
+        "summary": {
+            "no_claim_call_up_count": 33,
+            "maturation": {"pending": 7, "confirmed": 0, "decayed": 0},
+        },
+    })
+
+    context = app_module._track_record_context()
+
+    assert context["sc"] == {"artifact": "consensus"}
+    assert context["forward_sc"]["wins"] == 39
+    assert context["forward_sc"]["losses"] == 31
+    assert context["forward_sc"]["win_rate_pct"] == 56
+    assert context["forward_sc"]["clean_retractions"] == 86
+    assert context["receipt_count"] == 7
+    assert context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 33
+
+
+def test_track_record_context_respects_both_hold_gates(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: {"artifact": "consensus"})
+    monkeypatch.setattr(
+        app_module,
+        "_load_forward_scoreboard_payload",
+        lambda: (_ for _ in ()).throw(AssertionError("held scoreboard was loaded")),
+    )
+
+    context = app_module._track_record_context()
+
+    assert context["forward_sc"] is None
+    assert context["receipts_available"] is False
+    assert context["receipt_count"] == 0
+    assert context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 0
+
