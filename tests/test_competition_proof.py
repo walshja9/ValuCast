@@ -289,9 +289,12 @@ def test_normalized_production_adjudication_correction_is_sealed_and_source_boun
     assert correction["source"]["content_sha256"] == source["content_sha256"] == (
         "49116e4e7bb5773fa981fa0096a6a15fad72fd5c1c02aa2236a6dce9ad2be19a"
     )
+    # Hash over LF-normalized bytes: the working-tree encoding of the source
+    # artifact varies with git autocrlf (CRLF on Windows checkouts, LF on CI
+    # runners), and the seal must bind the content, not the platform.
     assert correction["source"]["file_sha256"] == hashlib.sha256(
-        source_path.read_bytes()
-    ).hexdigest() == "9b0f9e2ff49af88cd7e48b609788f73cba3bbc9b39860af409d7593ea496af70"
+        source_path.read_bytes().replace(b"\r\n", b"\n")
+    ).hexdigest() == "e52f0466a06ea0f631b0ed0774f67bc72114a80198da731e5a6a19bc5c619a9a"
     assert {item["code"] for item in correction["invalidations"]} == {
         "raw_unit_guard_contamination",
         "global_outcome_reference_leak",

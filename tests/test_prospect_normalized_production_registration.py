@@ -1,6 +1,8 @@
 import json
 import re
 import subprocess
+
+import pytest
 from pathlib import Path
 
 from prospects import challenger_eval
@@ -220,7 +222,15 @@ def test_registration_matches_full_immutable_contract_and_code():
     # Pins are anchored to the registration's base commit, not the working
     # tree: the data inputs legitimately change on every nightly refresh, and
     # the registration is an immutable historical record of what was frozen at
-    # registration time.
+    # registration time. Shallow CI clones do not carry the base commit; the
+    # pin verification only runs where history is available (any full clone).
+    probe = subprocess.run(
+        ["git", "cat-file", "-e", f"{registration['base_commit']}^{{commit}}"],
+        cwd=ROOT,
+        capture_output=True,
+    )
+    if probe.returncode != 0:
+        pytest.skip("registration base_commit not present (shallow clone)")
     for key, path in {
         "prospect_input_git_blob": "data/prospects/prospect_model_inputs.json",
         "aaa_statcast_git_blob": "data/models/valucast_aaa_statcast_features.json",
