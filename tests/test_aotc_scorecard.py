@@ -503,16 +503,56 @@ def test_track_record_explains_three_evidence_lanes_with_denominators(monkeypatc
 
 def test_track_record_discloses_exact_call_up_thresholds():
     from app import app
-    from prospects.ahead_of_consensus import MAX_VALUCAST_RANK, MIN_BOARDS, MIN_DIVERGENCE
+    from prospects.ahead_of_consensus import (
+        CONSENSUS_RANK_CAP,
+        MAX_VALUCAST_RANK,
+        MIN_BOARDS,
+        MIN_DIVERGENCE,
+    )
     from prospects.call_up_receipts import FIELD_UNRANKED_MAX_VALUCAST_RANK
 
     html = app.test_client().get("/ledger").data.decode("utf-8")
 
     assert f"at least {MIN_BOARDS} public boards" in html
-    assert "inside the top 600" in html
+    assert f"inside the top {CONSENSUS_RANK_CAP}" in html
     assert f"top {MAX_VALUCAST_RANK}" in html
     assert f"{MIN_DIVERGENCE} places" in html
     assert f"top-{FIELD_UNRANKED_MAX_VALUCAST_RANK}" in html
     assert "no scoreable ranking gap" in html
     assert "eligible prior call" not in html
+
+
+def test_track_record_publishes_decided_rate_when_control_lift_is_unavailable_or_zero(monkeypatch):
+    from copy import deepcopy
+
+    import app as app_module
+
+    base_scorecard = app_module._load_scorecard_payload()
+    assert base_scorecard
+
+    for control_lift in (None, 0):
+        scorecard = deepcopy(base_scorecard)
+        scorecard["gate"]["publishable"] = True
+        scorecard["summary"].update({
+            "wins": 6,
+            "decided_count": 10,
+            "decided_rate": 0.6,
+            "control_lift": control_lift,
+            "matured_open_rates": {"toward": 0, "n": 10, "toward_rate": 0},
+            "control_matured_rates": {"toward": 3, "n": 10, "toward_rate": 0.3},
+            "stabilized": {},
+        })
+        monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda scorecard=scorecard: scorecard)
+
+        html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+        assert "6 of 10 mature decisions (60%)" in html
+        assert "Collecting until the registered publication gate matures." not in html
+        assert "<strong>0 of 10 (0%)</strong> of the time vs" in html
+        assert "<strong>3 of 10 (30%)</strong> for matched players" in html
+        if control_lift is None:
+            assert "The separate matched-control comparison is unavailable for this build." in html
+        else:
+            assert "Separate still-open comparison: 0/10 vs 3/10 matched controls (0x)." in html
+            assert "The separate matched-control comparison is unavailable for this build." not in html
 

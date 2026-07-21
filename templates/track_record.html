@@ -79,11 +79,15 @@
 
     <article class="ledger-tile glass">
         <span class="ledger-tile-label">Consensus Movement</span>
-        {% if sc and sc.gate.publishable and sc.summary.decided_rate is not none and sc.summary.control_lift and sc.summary.matured_open_rates and sc.summary.control_matured_rates %}
+        {% if sc and sc.gate.publishable and sc.summary.decided_rate is not none %}
         <span class="ledger-tile-n">{{ sc.summary.wins }}/{{ sc.summary.decided_count }}</span>
         <strong>{{ sc.summary.wins }} of {{ sc.summary.decided_count }} mature decisions ({{ (sc.summary.decided_rate * 100) | round | int }}%)</strong>
         <span class="ledger-tile-sub">The public field later moved toward our different view.</span>
+        {% if sc.summary.control_lift is defined and sc.summary.control_lift is not none and sc.summary.matured_open_rates and sc.summary.control_matured_rates %}
         <span class="ledger-tile-sub">Separate still-open comparison: {{ sc.summary.matured_open_rates.toward }}/{{ sc.summary.matured_open_rates.n }} vs {{ sc.summary.control_matured_rates.toward }}/{{ sc.summary.control_matured_rates.n }} matched controls ({{ sc.summary.control_lift }}x).</span>
+        {% else %}
+        <span class="ledger-tile-sub">The separate matched-control comparison is unavailable for this build.</span>
+        {% endif %}
         {% else %}
         <span class="ledger-tile-sub">Collecting until the registered publication gate matures.</span>
         {% endif %}
@@ -177,8 +181,8 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
 </section>
 <p class="ledger-context">{{ sc.summary.ever_flagged }} calls flagged since {{ sc.summary.first_call_date }}
 {% if sc.gate.publishable and sc.summary.control_matured_rates and sc.summary.matured_open_rates %} &middot; the field moves toward our matured calls
-<strong>{{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
-<strong>{{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%</strong> for matched players
+<strong>{{ sc.summary.matured_open_rates.toward }} of {{ sc.summary.matured_open_rates.n }} ({{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%)</strong> of the time vs
+<strong>{{ sc.summary.control_matured_rates.toward }} of {{ sc.summary.control_matured_rates.n }} ({{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%)</strong> for matched players
 we never flagged{% else %} &middot; success rate and matched-control comparison publish with the
 30-day scorecard{% endif %}{% if sc.summary.immature_decided %} &middot;
 {{ sc.summary.immature_decided }} decided calls under 14 days old mature into the headline, not around it{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;
