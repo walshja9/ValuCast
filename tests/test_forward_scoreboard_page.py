@@ -229,6 +229,20 @@ def test_ci_label_mirrors_sign_test_when_artifact_carries_it():
     assert label == "behind, not yet significant"
 
 
+def test_ci_label_reports_significant_behind_and_even_results_honestly():
+    base = {"ci_low": -3.0, "ci_high": 3.0, "median_lead_days": -1.0, "provisional": False}
+
+    assert app_module._scoreboard_ci_label({
+        **base,
+        "sign_test": {"p_value": 0.01, "direction": "behind", "significant": False},
+    }) == "behind, significant"
+    assert app_module._scoreboard_ci_label({
+        **base,
+        "median_lead_days": 0.0,
+        "sign_test": {"p_value": 1.0, "direction": "even", "significant": False},
+    }) == "even, not yet significant"
+
+
 def test_ci_label_provisional_takes_precedence():
     # A band clear of zero is still reported provisional while the expiry window is
     # closed — the loss lane hasn't been able to fire yet.

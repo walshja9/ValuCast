@@ -29,6 +29,10 @@ from prospects.forward_scoreboard import (  # noqa: E402
     ARTIFACT_NAME,
     INDEPENDENCE_ATTESTATION,
     PROTOCOL_VERSION,
+    SIGN_TEST_ALPHA,
+    VERDICT_BASIS,
+    _binomial_tail_ge,
+    scoreboard_verdict_label,
 )
 
 DEFAULT_PATH = ROOT / "data" / "models" / "valucast_forward_scoreboard.json"
@@ -62,6 +66,70 @@ def _is_finite_number(value) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def _is_nonnegative_int(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validate_sign_test(headline: dict) -> list[str]:
+    problems: list[str] = []
+    if headline.get("verdict_basis") != VERDICT_BASIS:
+        problems.append("anticipation_score.verdict_basis missing or altered")
+
+    pool_size = headline.get("pool_size")
+    if not _is_nonnegative_int(pool_size):
+        return problems + ["anticipation_score.pool_size must be a non-negative integer"]
+    sign_test = headline.get("sign_test")
+    if pool_size == 0:
+        if sign_test is not None:
+            problems.append("anticipation_score.sign_test must be null for an empty pool")
+        return problems
+    if not isinstance(sign_test, dict):
+        return problems + ["anticipation_score.sign_test must be an object for a non-empty pool"]
+    if sign_test.get("basis") != VERDICT_BASIS:
+        problems.append("anticipation_score.sign_test.basis missing or altered")
+
+    count_fields = ("positives", "negatives", "zeros_excluded", "n_nonzero")
+    for field in count_fields:
+        if not _is_nonnegative_int(sign_test.get(field)):
+            problems.append(f"anticipation_score.sign_test.{field} must be a non-negative integer")
+    if all(_is_nonnegative_int(sign_test.get(field)) for field in count_fields):
+        positives = sign_test["positives"]
+        negatives = sign_test["negatives"]
+        zeros = sign_test["zeros_excluded"]
+        n_nonzero = sign_test["n_nonzero"]
+        if positives + negatives != n_nonzero:
+            problems.append("anticipation_score.sign_test counts do not reconcile with n_nonzero")
+        if n_nonzero + zeros != pool_size:
+            problems.append("anticipation_score.sign_test counts do not reconcile with pool_size")
+        expected_direction = "leading" if positives > negatives else "behind" if negatives > positives else "even"
+        if sign_test.get("direction") != expected_direction:
+            problems.append("anticipation_score.sign_test.direction does not match counts")
+        expected_p = _binomial_tail_ge(max(positives, negatives), n_nonzero)
+        p_value = sign_test.get("p_value")
+        if not _is_finite_number(p_value) or not 0.0 <= p_value <= 1.0:
+            problems.append("anticipation_score.sign_test.p_value must be between 0 and 1")
+        elif not math.isclose(p_value, expected_p, rel_tol=0.0, abs_tol=1e-12):
+            problems.append("anticipation_score.sign_test.p_value does not match exact binomial tail")
+        significant = sign_test.get("significant")
+        if not isinstance(significant, bool):
+            problems.append("anticipation_score.sign_test.significant must be a boolean")
+        else:
+            median = headline.get("median_lead_days")
+            expected_significant = bool(
+                expected_p < SIGN_TEST_ALPHA
+                and expected_direction == "leading"
+                and _is_finite_number(median)
+                and median > 0
+            )
+            if significant != expected_significant:
+                problems.append("anticipation_score.sign_test.significant does not match verdict gate")
+            if not headline.get("provisional"):
+                expected_label = scoreboard_verdict_label(sign_test, median)
+                if headline.get("label") != expected_label:
+                    problems.append("anticipation_score.label does not match sign-test verdict")
+    return problems
+
+
 def validate_forward_scoreboard(path: Path = DEFAULT_PATH) -> tuple[dict | None, list[str]]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -87,7 +155,10 @@ def validate_forward_scoreboard(path: Path = DEFAULT_PATH) -> tuple[dict | None,
     if not isinstance(headline, dict):
         problems.append("anticipation_score must be an object")
     else:
-        for field in ("median_lead_days", "ci_low", "ci_high", "null", "provisional", "pool_size"):
+        for field in (
+            "median_lead_days", "ci_low", "ci_high", "null", "provisional",
+            "pool_size", "sign_test", "verdict_basis", "label",
+        ):
             if field not in headline:
                 problems.append(f"anticipation_score missing {field}")
         if not isinstance(headline.get("provisional"), bool):
@@ -109,6 +180,7 @@ def validate_forward_scoreboard(path: Path = DEFAULT_PATH) -> tuple[dict | None,
                         problems.append(f"anticipation_score.null.{field} must be a finite number")
                 if "p_value" in null:
                     problems.append("anticipation_score.null must NOT carry a p_value (removed pre-freeze)")
+        problems.extend(_validate_sign_test(headline))
 
     # 3. Funnel totals reconcile with the ledger's claim count.
     funnel = payload.get("funnel")

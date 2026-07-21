@@ -326,7 +326,12 @@ def _sign_test(pool: np.ndarray) -> dict:
         direction = "behind"
     else:
         direction = "even"
-    significant = bool(p_value < SIGN_TEST_ALPHA and direction == "leading")
+    median = float(np.median(pool)) if pool.size else 0.0
+    significant = bool(
+        p_value < SIGN_TEST_ALPHA
+        and direction == "leading"
+        and median > 0
+    )
     return {
         "basis": VERDICT_BASIS,
         "positives": positives,
@@ -337,6 +342,22 @@ def _sign_test(pool: np.ndarray) -> dict:
         "direction": direction,
         "significant": significant,
     }
+
+
+def scoreboard_verdict_label(sign_test: dict, median_lead_days: float | None) -> str:
+    direction = sign_test.get("direction")
+    p_value = sign_test.get("p_value")
+    if direction == "leading":
+        return "significant" if sign_test.get("significant") else "leading, not yet significant"
+    if direction == "behind":
+        significant = (
+            isinstance(p_value, (int, float))
+            and p_value < SIGN_TEST_ALPHA
+            and median_lead_days is not None
+            and median_lead_days < 0
+        )
+        return "behind, significant" if significant else "behind, not yet significant"
+    return "even, not yet significant"
 
 
 def _headline(pool_days: list[float], provisional: bool) -> dict:
@@ -367,14 +388,8 @@ def _headline(pool_days: list[float], provisional: bool) -> dict:
     # inconclusive pool is "leading, not yet significant".
     if provisional:
         label = "provisional (no claim has reached the expiry window)"
-    elif sign_test["significant"]:
-        label = "significant"
-    elif sign_test["direction"] == "behind" and sign_test["p_value"] < SIGN_TEST_ALPHA:
-        label = "behind, significant"
-    elif sign_test["direction"] == "behind":
-        label = "behind, not yet significant"
     else:
-        label = "leading, not yet significant"
+        label = scoreboard_verdict_label(sign_test, median)
     return {
         "pool_size": int(pool.shape[0]),
         "median_lead_days": median,
