@@ -6,6 +6,7 @@ name: Tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   # Keyed on ref so stacked pushes to the same branch cancel the older run
