@@ -274,9 +274,9 @@ def build_outcome_backtest(
     if not absolute_passed:
         score_cap = min(score_cap, 79)
         cap_reasons.append("Historical absolute cross-role concordance missed its floor.")
-    if not power_passed:
-        score_cap = min(score_cap, 84)
-        cap_reasons.append("Cross-role change detection is underpowered.")
+    # Cross-role change power is deliberately NOT a score cap: it is
+    # structurally unpassable at current data scale (plan 028) and is reported
+    # separately as cross_role_change_power_ready with a data-scale disclosure.
     score = min(raw_score, score_cap)
 
     return {
@@ -285,8 +285,14 @@ def build_outcome_backtest(
         "report_version": REPORT_VERSION,
         "generated_at": generated,
         "status": (
+            # power is deliberately NOT conjoined here: the change-power gate is
+            # structurally unpassable at current data scale (plan 028; live
+            # max_power ~0.015 vs floor 0.70) and is reported separately as
+            # cross_role_change_power_ready. Conjoining it hard-wired this flag
+            # False for years even when realized evidence was ready. Mirrors the
+            # realized_evidence_ready computation below.
             "evidence_ready"
-            if dynasty_gate == "active" and absolute_passed and power_passed
+            if dynasty_gate == "active" and absolute_passed
             else "needs_work"
         ),
         "source_policy": {
@@ -335,6 +341,11 @@ def build_outcome_backtest(
                 "status": cross_role_shadow.get("status"),
                 "historical_absolute_passed": absolute_passed,
                 "change_power_passed": power_passed,
+                "change_power_disclosure": (
+                    "Cross-role change power is data-scale-limited and reported "
+                    "separately from evidence quality; it does not gate "
+                    "evidence_ready status or cap the front-office score."
+                ),
                 "checks": cross_checks,
                 "score_changes_authorized": False,
             },
