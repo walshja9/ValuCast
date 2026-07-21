@@ -24,6 +24,11 @@ from prospects.forward_scoreboard import (
     ADVERSE_MOVE_FLOOR_SPOTS,
     INDEPENDENCE_ATTESTATION,
     RESAMPLE_SEED,
+    VERDICT_BASIS,
+    _binomial_tail_ge,
+    _bootstrap_ci,
+    _headline,
+    _sign_test,
     build_scoreboard,
 )
 
@@ -470,11 +475,133 @@ def _iter_keys(obj):
             yield from _iter_keys(value)
 
 
-def test_artifact_never_carries_a_pvalue_key_anywhere():
-    # Defense in depth: no `p_value` key survives anywhere in the emitted artifact
-    # (the sign-permutation p-value is degenerate and was removed pre-freeze).
+def test_permutation_null_block_never_carries_a_pvalue():
+    # Defense in depth: no `p_value` key survives anywhere INSIDE the permutation
+    # null block (the sign-permutation p-value is degenerate and was removed
+    # pre-freeze). The verdict-gating sign test carries its OWN p_value, published
+    # under anticipation_score.sign_test — that one is exact and load-bearing, so the
+    # prohibition is scoped to the null block, not the whole artifact.
     sb = _scoreboard([
         _claim("1_hitter", "higher", "resolved_by_callup", "2026-06-24", "2026-06-30"),
         _claim("2_hitter", "lower", "resolved_by_consensus_move", "2026-06-24", "2026-07-14"),
     ])
-    assert "p_value" not in set(_iter_keys(sb))
+    null = sb["anticipation_score"]["null"]
+    assert "p_value" not in set(_iter_keys(null))
+    # The exact binomial sign test DOES carry a p_value (the gate).
+    assert "p_value" in sb["anticipation_score"]["sign_test"]
+
+
+# --- Exact binomial sign-test gate --------------------------------------------
+
+def test_binomial_tail_matches_hand_computed_values():
+    # P(X >= 9 | 10, 0.5) = (C(10,9) + C(10,10)) / 1024 = (10 + 1) / 1024 = 11/1024.
+    assert _binomial_tail_ge(9, 10) == 11 / 1024
+    # P(X >= 7 | 10, 0.5) = (120 + 45 + 10 + 1) / 1024 = 176/1024.
+    assert _binomial_tail_ge(7, 10) == 176 / 1024
+    # Degenerate guards: n<=0 or k<=0 -> the whole mass, p = 1.0.
+    assert _binomial_tail_ge(0, 10) == 1.0
+    assert _binomial_tail_ge(5, 0) == 1.0
+
+
+def test_sign_test_9_of_10_positive_is_significant():
+    # 9 leading, 1 behind -> p = 11/1024 ~ 0.0107 < 0.025 in the LEADING direction.
+    pool = np.array([1.0] * 9 + [-1.0], dtype=float)
+    st = _sign_test(pool)
+    assert st["positives"] == 9
+    assert st["negatives"] == 1
+    assert st["zeros_excluded"] == 0
+    assert st["p_value"] == 11 / 1024
+    assert st["direction"] == "leading"
+    assert st["significant"] is True
+    assert st["basis"] == VERDICT_BASIS
+
+
+def test_sign_test_7_of_10_positive_is_not_significant():
+    # 7 leading, 3 behind -> p = 176/1024 ~ 0.172, NOT < 0.025.
+    pool = np.array([1.0] * 7 + [-1.0] * 3, dtype=float)
+    st = _sign_test(pool)
+    assert st["positives"] == 7
+    assert st["negatives"] == 3
+    assert st["p_value"] == 176 / 1024
+    assert st["direction"] == "leading"
+    assert st["significant"] is False
+
+
+def test_sign_test_9_of_10_negative_is_not_a_win():
+    # A significant BEHIND majority (9 losses, 1 win) is NOT a win: same tail p, but
+    # significant=False (only LEADING majorities clear the gate) and direction=behind.
+    pool = np.array([-1.0] * 9 + [1.0], dtype=float)
+    st = _sign_test(pool)
+    assert st["p_value"] == 11 / 1024
+    assert st["direction"] == "behind"
+    assert st["significant"] is False
+
+
+def test_headline_9_of_10_negative_reads_as_a_loss_not_a_win():
+    # The honest label for a significant behind-majority: "behind, significant".
+    pool_days = [-1.0] * 9 + [1.0]
+    headline = _headline(pool_days, provisional=False)
+    assert headline["label"] == "behind, significant"
+    assert "leading" not in headline["label"]
+    assert headline["sign_test"]["direction"] == "behind"
+
+
+def test_headline_9_of_10_positive_is_significant():
+    headline = _headline([1.0] * 9 + [-1.0], provisional=False)
+    assert headline["label"] == "significant"
+    assert headline["sign_test"]["significant"] is True
+    assert headline["verdict_basis"] == VERDICT_BASIS
+
+
+def test_sign_test_excludes_and_discloses_zeros():
+    # Exact-zero lead times (same-day timing) carry no sign: excluded from the test
+    # counts, disclosed via zeros_excluded, and NOT counted toward n_nonzero.
+    pool = np.array([1.0, 1.0, 1.0, 0.0, 0.0, -1.0], dtype=float)
+    st = _sign_test(pool)
+    assert st["positives"] == 3
+    assert st["negatives"] == 1
+    assert st["zeros_excluded"] == 2
+    assert st["n_nonzero"] == 4
+    # p = P(X >= 3 | 4, 0.5) = (C(4,3)+C(4,4))/16 = 5/16, not significant.
+    assert st["p_value"] == 5 / 16
+    assert st["significant"] is False
+
+
+def test_bootstrap_ci_would_claim_significance_but_sign_test_does_not():
+    # THE motivating case: a small, sign-imbalanced pool whose bootstrap CI sits
+    # entirely ABOVE zero (old rule -> "significant"), yet the exact sign test does
+    # NOT clear the 0.025 leading bar (new, more-conservative rule -> not yet).
+    # 7 positives / 1 negative: every value positive-heavy enough that the bootstrap
+    # median CI clears zero, but P(X>=7 | 8, 0.5) = 37/256 ~ 0.145 >> 0.025.
+    pool_days = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, -1.0]
+    pool = np.asarray(pool_days, dtype=float)
+    ci_low, ci_high = _bootstrap_ci(pool)
+    # Old gate: bootstrap CI clear of zero -> would have claimed significance.
+    assert ci_low > 0, (ci_low, ci_high)
+    # New gate: exact sign test does NOT reach significance.
+    st = _sign_test(pool)
+    assert st["positives"] == 7
+    assert st["negatives"] == 1
+    assert st["p_value"] == _binomial_tail_ge(7, 8)
+    assert st["p_value"] > 0.025
+    assert st["significant"] is False
+    # And the published headline honestly reads "leading, not yet significant".
+    headline = _headline(pool_days, provisional=False)
+    assert headline["label"] == "leading, not yet significant"
+    assert headline["ci_low"] > 0  # effect-size band still shown, just not gating
+
+
+def test_headline_publishes_verdict_basis_and_sign_counts():
+    headline = _headline([1.0, 2.0, -3.0], provisional=False)
+    assert headline["verdict_basis"] == VERDICT_BASIS
+    st = headline["sign_test"]
+    assert set(st) >= {
+        "basis", "positives", "negatives", "zeros_excluded",
+        "n_nonzero", "p_value", "direction", "significant",
+    }
+
+
+def test_empty_pool_headline_carries_verdict_basis_and_null_sign_test():
+    headline = _headline([], provisional=False)
+    assert headline["sign_test"] is None
+    assert headline["verdict_basis"] == VERDICT_BASIS
