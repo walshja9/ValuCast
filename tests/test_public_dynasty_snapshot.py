@@ -447,7 +447,7 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
 
-def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys():
+def test_build_snapshot_certifies_compatibility_without_claiming_calibrated_units():
     payload = build_snapshot(
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
@@ -458,7 +458,8 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert problems == []
     assert payload["validation"]["ready_for_live_consumers"] is True
     assert payload["validation"]["ready_for_all_public_surfaces"] is False
-    assert payload["validation"]["cross_universe_value_scale_calibrated"] is True
+    assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
+    assert payload["validation"]["cross_universe_value_scale_compatibility_certified"] is True
     assert payload["validation"]["quality_governor_ready"] is True
     assert payload["validation"]["surface_readiness"] == {
         "dynasty": True,
@@ -473,12 +474,34 @@ def test_build_snapshot_calibrates_dynasty_and_prospects_without_promoting_buys(
     assert {row["value_scale"] for row in payload["players"]} == {COMMON_VALUE_SCALE}
     assert {row["status"] for row in payload["players"]} == {"candidate_ready"}
 
-    calibration = payload["validation"]["cross_universe_calibration"]
-    assert calibration["method"] == "raw_common_scale_certification_v1"
-    assert calibration["value_mutation"] == "none"
-    assert calibration["metrics"]["mlb_rows_at_or_above_top_prospect"] == 3
-    assert calibration["metrics"]["top_prospect_mlb_equivalent_rank"] == 4
-    assert payload["players"][0]["name"] == "MLB Star"
+    compatibility = payload["validation"]["cross_universe_calibration"]
+    assert compatibility["method"] == "raw_scale_compatibility_certification_v2"
+    assert compatibility["contract_kind"] == "compatibility_certification"
+    assert compatibility["compatibility_certified"] is True
+    assert compatibility["unit_mapping_applied"] is False
+    assert compatibility["value_units_calibrated"] is False
+    assert compatibility["value_mutation"] == "none"
+    assert compatibility["metrics"]["mlb_rows_at_or_above_top_prospect"] == 3
+    assert compatibility["metrics"]["top_prospect_mlb_equivalent_rank"] == 4
+
+    # Honesty metadata cannot perturb the served board.
+    assert [
+        (row["name"], row["value"], row["rank"])
+        for row in payload["players"]
+    ] == [
+        ("MLB Star", 90.0, 1),
+        ("MLB Anchor", 80.0, 2),
+        ("MLB Core", 70.0, 3),
+        ("Model Strong", 55.5, 4),
+        ("Fallback Good", 45.0, 5),
+    ]
+    for row in payload["players"]:
+        context = row["context"]["cross_universe_calibration"]
+        assert context["display_value"] == row["value"]
+        assert context["display_value_scale"] == COMMON_VALUE_SCALE
+        assert context["unit_mapping_applied"] is False
+        assert context["value_units_calibrated"] is False
+        assert "calibrated_value" not in context
 
 
 def test_build_snapshot_stamps_real_build_time_for_same_day_artifacts(monkeypatch):
@@ -569,11 +592,14 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
     assert top_prospect["combined_season_stat_line"]["level_label"] == "AA+A+"
     assert top_prospect["combined_season_stat_line"]["sample"] == 260
     assert top_prospect["context"]["graduation_context"]["status"] == "near_graduation"
-    assert top_prospect["context"]["cross_universe_calibration"]["raw_value"] == 55.5
+    compatibility = top_prospect["context"]["cross_universe_calibration"]
+    assert compatibility["raw_value"] == 55.5
+    assert compatibility["display_value"] == 55.5
     assert (
-        top_prospect["context"]["cross_universe_calibration"]["calibrated_value_scale"]
+        compatibility["display_value_scale"]
         == COMMON_VALUE_SCALE
     )
+    assert compatibility["value_units_calibrated"] is False
 
 
 def test_build_snapshot_forwards_previous_prospect_rank_to_governor(monkeypatch):
