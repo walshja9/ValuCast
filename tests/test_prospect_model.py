@@ -585,6 +585,22 @@ def test_shadow_output_is_valucast_owned_and_service_gated():
     payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
     assert payload["status"] == "shadow_only"
     assert payload["model_name"] == "ValuCast Prospect Model"
+    assert payload["release_contract"] == {
+        "artifact_status_semantics": "provenance_label_not_serving_status",
+        "consumer": "prospect_rank_v1",
+        "feeds_live_valucast_rank": True,
+        "model_score_weight": 0.76,
+        "standalone_public_board": False,
+    }
+    assert not any(
+        "never consumed by the live prospect board" in limitation
+        for limitation in payload["limitations"]
+    )
+    assert any(
+        "full-store percentile references" in limitation
+        and "fold-local replay" in limitation
+        for limitation in payload["limitations"]
+    )
     assert payload["input_contract"]["source_policy"]["external_rankings_used"] is False
     assert validate_gate(payload["board_gate"])
     assert validate_gate(payload["impact_board_gate"])
