@@ -1,0 +1,48 @@
+{
+  "claim_authorized": false,
+  "content_sha256": "b5d59890e9e0f3435f67ca007cee284e20ff207151ed047e533caad151f36f3e",
+  "corrected_at": "2026-07-20",
+  "future_requirements": [
+    "fresh_preregistration_and_fresh_seed_no_free_rerun",
+    "separate_raw_unit_guard_fields_from_normalized_model_features",
+    "derive_and_freeze_impact_references_from_each_fold_training_store_only",
+    "preserve_mlbam_id_and_role_through_current_scoring_and_aaa_join"
+  ],
+  "invalidations": [
+    {
+      "affected_outputs": [
+        "role_results"
+      ],
+      "code": "raw_unit_guard_contamination",
+      "finding": "Normalized [0,1] model features entered guards and heuristics registered for factual raw units."
+    },
+    {
+      "affected_outputs": [
+        "partial_category_best_season_impact"
+      ],
+      "code": "global_outcome_reference_leak",
+      "finding": "Partial-impact references were derived from the full outcome store instead of being frozen separately from each fold's training-only store."
+    },
+    {
+      "affected_outputs": [
+        "current_research_ranks",
+        "current_population_coverage",
+        "aaa_component_disagreement"
+      ],
+      "code": "two_way_aaa_identity_collapse",
+      "finding": "Current ranks and AAA joins collapsed (mlbam_id, role) to mlbam_id, making two-way missingness and role counts order-dependent."
+    }
+  ],
+  "public_claim_eligible": false,
+  "registered_look_spent": true,
+  "rerun_authorized": false,
+  "schema": "valucast_prospect_normalized_production_adjudication",
+  "schema_version": 1,
+  "source": {
+    "artifact": "data/validation/valucast_prospect_normalized_production_gate.json",
+    "content_sha256": "49116e4e7bb5773fa981fa0096a6a15fad72fd5c1c02aa2236a6dce9ad2be19a",
+    "file_sha256": "9b0f9e2ff49af88cd7e48b609788f73cba3bbc9b39860af409d7593ea496af70"
+  },
+  "status": "invalid_for_adjudication",
+  "usage": "descriptive_only"
+}

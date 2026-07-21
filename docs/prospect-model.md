@@ -12,8 +12,8 @@ boundary for an independent ValuCast opinion.
 
 ## Version 0.6
 
-Version 0.6 is an observe-only AA/AAA model with two independent axes. The
-first trains separate hitter and pitcher ridge models on an ordinal MLB outcome
+Version 0.6 is the incumbent AA/AAA model with two independent axes. The first
+trains separate hitter and pitcher ridge models on an ordinal MLB outcome
 bridge:
 
 - Bust: `0.0`
@@ -39,36 +39,54 @@ starters use `K/QS/ERA/WHIP/K:BB/L`, while relievers use
 `K/SV+HLD/ERA/WHIP/K:BB/L`. This avoids treating a closer's zero QS or a
 starter's zero saves-plus-holds as a failure.
 
-The June 12, 2026 historical backfill reached adequate coverage for every
-canonical category, so the artifact now reports a direct 7x7 target. The impact
-axis exists to capture fantasy-relevant outcomes and to value reliever seasons
-that the starter-heavy ordinal label misses.
+The current artifact reports a partial-category fantasy-impact target. It
+covers every canonical hitter category and all pitcher categories except `QS`,
+so direct 7x7 is not active. The impact axis exists to capture fantasy-relevant
+outcomes and to value reliever seasons that the starter-heavy ordinal label
+misses.
 
-The hitter impact model uses a two-stage hurdle architecture because the direct
-7x7 target is zero-inflated:
+The hitter impact model uses a two-stage hurdle architecture because the
+partial-category impact target is zero-inflated:
 
 1. Estimate whether the prospect produces a meaningful future MLB season.
-2. Estimate direct 7x7 impact conditional on producing one.
+2. Estimate partial-category fantasy impact conditional on producing one.
 
 Six restrained interactions model how power and discipline translate by level.
 The original interaction-space 25-neighbor model remains an explicit canonical
 baseline, preventing the new feature space from earning an easier gate by
 weakening its comparison set.
 
-Current held-out result:
+Current held-out partial-category result:
 
-- Combined direct 7x7 impact board: active, `+2.43%` versus the canonical
+- Combined impact board: active, `+3.03%` versus the canonical
   factual-neighbor baseline
-- Hitter direct 7x7 impact model: active, `+2.08%`
-- Pitcher direct 7x7 impact model: active, `+2.72%`
+- Hitter impact model: fallback, `-1.59%`
+- Pitcher impact model: active, `+5.55%`
 
-All three direct-impact gates now pass. The model remains shadow-only because
-the v0.6 hitter architecture was selected during retrospective research and
-must confirm itself in dated forward archives before live promotion.
+The incumbent artifact keeps the two opinions separate as
+`valucast_prospect_rank` (ordinal outcome bridge) and `valucast_impact_rank`
+(partial-category impact). Prospect Rank v1 consumes the incumbent v0.6 model
+score at weight `0.76` and feeds the live ValuCast rank.
 
-The artifact keeps the two opinions separate as `valucast_prospect_rank`
-(ordinal outcome bridge) and `valucast_impact_rank` (partial-category impact).
-Neither rank is consumed by the live board.
+The v0.7 artifact is a non-live feature-readiness preview. It does not replace
+v0.6 or feed the live ValuCast rank.
+
+<!-- prospect-model-contract:start -->
+```json
+{
+  "live_model_artifact": "data/models/valucast_prospect_model.json",
+  "live_rank_artifact": "data/models/valucast_prospect_rank_v1.json",
+  "model_score_consumed_by_live_rank": true,
+  "live_model_score_weight": 0.76,
+  "impact_target_kind": "partial_category_fantasy_impact",
+  "impact_target_direct_7x7": false,
+  "missing_pitcher_categories": ["qs"],
+  "v0_7_artifact": "data/models/valucast_prospect_model_v0_7.json",
+  "v0_7_status": "shadow_preview",
+  "v0_7_purpose": "Feature-readiness preview for Prospect Model v0.7."
+}
+```
+<!-- prospect-model-contract:end -->
 
 ## Input Contract
 
@@ -100,9 +118,9 @@ python generate_valucast_prospect_inputs.py --copy-to-valucast
 python scripts/build_prospect_model.py
 ```
 
-## Promotion Gates
+## Future Model Promotion Gates
 
-The model remains observe-only until:
+A future replacement for the incumbent model remains non-live until:
 
 1. It covers the intended prospect universe, including lower minors and new
    draftees through separate factual priors.
@@ -117,7 +135,7 @@ The model remains observe-only until:
 An active statistical gate is evidence worth continuing. It is not automatic
 permission to replace the live prospect board.
 
-The next research step is forward confirmation of v0.6 plus broader lower-minors
-coverage and a factual draft prior. Richer factual MiLB features remain a
-candidate only if they improve absolute held-out error against the unchanged
-canonical baseline. External rankings and projections remain prohibited inputs.
+The v0.7 shadow preview is the non-live feature-readiness step. Richer factual
+MiLB features remain a candidate only if they improve absolute held-out error
+against the unchanged canonical baseline. External rankings and projections
+remain prohibited inputs.
