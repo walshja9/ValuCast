@@ -60,6 +60,59 @@ def _pillar(name: str, score: int, status: str, evidence: dict) -> dict:
     }
 
 
+def _next_build_order(
+    *,
+    forward_progress: dict,
+    v07_ready: bool,
+    v07_bucket_ready: bool,
+) -> list[str]:
+    """Next steps derived from live report state, not a stale literal list.
+
+    The forward-archive line reads the remaining observation span off
+    front_office_failures; the v0.7 line reflects whether the challenger is
+    already trained and bucket-comparable. The last two lines are evergreen
+    operating commitments (keep uncertainty visible / stay public + fail-loud).
+    """
+    order: list[str] = []
+
+    remaining_days = forward_progress.get("remaining_span_days")
+    next_grade = forward_progress.get("next_target_grade")
+    if isinstance(remaining_days, (int, float)) and remaining_days > 0:
+        grade_clause = f" to reach {next_grade} forward support" if next_grade else ""
+        order.append(
+            f"Keep logging forward archives: ~{int(remaining_days)} more "
+            f"observation day(s) needed{grade_clause}."
+        )
+    else:
+        order.append(
+            "Sustain the forward archive so the earned grade stays supported "
+            "as new cohorts resolve."
+        )
+
+    if v07_ready and v07_bucket_ready:
+        order.append(
+            "Run the Prospect Model v0.7-vs-v0.6 bucket comparison and publish "
+            "the by-bucket verdict."
+        )
+    else:
+        order.append(
+            "Train Prospect Model v0.7 as a scored challenger, then compare "
+            "against v0.6 by bucket."
+        )
+
+    order.append(
+        "Promote the ordinal bridge only after it beats the historical-neighbor "
+        "baseline out of sample."
+    )
+    order.append(
+        "Keep uncertainty-band explanations visible on every prospect detail surface."
+    )
+    order.append(
+        "Keep the front-office report public and fail-loud when evidence regresses."
+    )
+    return order
+
+
 def build_front_office_report(
     public_snapshot: dict,
     quality_governor: dict,
@@ -369,6 +422,11 @@ def build_front_office_report(
         ),
     ]
     overall_score = round(sum(pillar["score"] for pillar in pillars) / len(pillars))
+    next_build_order = _next_build_order(
+        forward_progress=forward_progress,
+        v07_ready=v07_validation.get("ready_for_backtest") is True,
+        v07_bucket_ready=v07_bucket_ready,
+    )
     return {
         "artifact": "valucast_front_office_report",
         "report_version": REPORT_VERSION,
@@ -392,13 +450,7 @@ def build_front_office_report(
         "pillars": pillars,
         "failure_watchlist": failure_watchlist,
         "operations_watchlist": operations_watchlist,
-        "next_build_order": [
-            "Collect enough forward archives to move from B+ evidence to A- evidence.",
-            "Train Prospect Model v0.7 as a scored challenger, then compare against v0.6 by bucket.",
-            "Promote the ordinal bridge only after it beats the historical-neighbor baseline out of sample.",
-            "Keep uncertainty-band explanations visible on every prospect detail surface.",
-            "Keep the front-office report public and fail-loud when evidence regresses.",
-        ],
+        "next_build_order": next_build_order,
     }
 
 

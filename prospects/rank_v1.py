@@ -618,26 +618,56 @@ def _graduation_context(
     }
 
 
+def _mlb_equivalent_rates(row: dict, role: str) -> dict[str, float]:
+    """MLB-equivalent sticky peripherals for the current line.
+
+    translate_peripherals grades K%/BB%/ISO (hitter) and K/9/BB/9/K-BB% (pitcher)
+    onto one MLB yardstick, so a hot Low-A line reads as what it would be in the
+    majors instead of scoring like an MLB regular. OPS/ERA/WHIP are deliberately
+    NOT translated by that module (they need park + playing-time assumptions), so
+    they are dropped from the graded line rather than mixed onto the MLB scale.
+    """
+    translated = translate_peripherals([row], role)
+    if not translated:
+        return {}
+    return {
+        stat["key"]: stat["mlb"]
+        for stat in translated.get("stats") or []
+        if stat.get("mlb") is not None
+    }
+
+
 def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
     if not row or role not in {"hitter", "pitcher"}:
         return None
 
     sample = _sample_size(row, role)
     level = _level_key(row.get("level"))
+    # MLB-equivalent scale: every graded rate below is translated, so the whole
+    # displayed line stays on one scale (never raw-MiLB mixed with translated).
+    mlb_rates = _mlb_equivalent_rates(row, role)
     context: dict[str, Any] = {
         "version": FACTUAL_CURRENT_CONTEXT_VERSION,
         "role": role,
         "level": level,
         "sample": round(sample, 1),
         "sample_unit": "IP" if role == "pitcher" else "PA",
+        "rate_scale": "mlb_equivalent" if mlb_rates else "raw_milb",
         "source_kind": row.get("source_kind"),
         "sample_season": _round(_clean_float(row.get("sample_season")), 0),
     }
 
     if role == "pitcher":
-        k_per_9 = _clean_float(row.get("k_per_9"))
-        bb_per_9 = _clean_float(row.get("bb_per_9"))
-        k_bb_pct = _clean_float(row.get("k_bb_pct"))
+        # Translated when available; else fall back to the raw line (only reached
+        # for thin/limited samples, where rates don't drive the band anyway).
+        # Sticky peripherals translated to MLB-equivalent; else fall back to the
+        # raw line (only reached for thin/limited samples, where rates don't drive
+        # the band anyway).
+        k_per_9 = mlb_rates.get("k_per_9", _clean_float(row.get("k_per_9")))
+        bb_per_9 = mlb_rates.get("bb_per_9", _clean_float(row.get("bb_per_9")))
+        k_bb_pct = mlb_rates.get("k_bb_pct", _clean_float(row.get("k_bb_pct")))
+        # ERA/WHIP are not translatable; kept raw for their own disclosed "Run
+        # Prevention" grade (never blended with the translated peripherals).
         era = _clean_float(row.get("era"))
         whip = _clean_float(row.get("whip"))
         games_started = _clean_float(row.get("games_started"))
@@ -669,28 +699,40 @@ def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
             }
         )
     else:
-        ops = _clean_float(row.get("ops"))
-        iso = _clean_float(row.get("iso"))
-        k_pct = _clean_float(row.get("k_pct"))
-        bb_pct = _clean_float(row.get("bb_pct"))
+        # Raw MiLB iso/ops are retained for the score-affecting upper-level
+        # low-impact bucket rule, whose thresholds are raw-MiLB calibrated. The
+        # DISPLAYED iso is the translated (MLB-equivalent) value; raw ops never
+        # appears on the card line (it can't be translated -> would mix scales).
+        raw_iso = _clean_float(row.get("iso"))
+        raw_ops = _clean_float(row.get("ops"))
+        iso = mlb_rates.get("iso", raw_iso)
+        k_pct = mlb_rates.get("k_pct", _clean_float(row.get("k_pct")))
+        bb_pct = mlb_rates.get("bb_pct", _clean_float(row.get("bb_pct")))
         bb_minus_k_pct = (
             round(bb_pct - k_pct, 1)
             if bb_pct is not None and k_pct is not None
             else None
         )
 
+        # Graded on translated ISO + plate skill (BB-K). OPS is dropped: it can't
+        # be translated, and grading raw MiLB OPS across levels was the bug.
         if sample < 50.0:
             skill_band = "thin"
-        elif ops is not None and iso is not None and ops >= 0.850 and iso >= 0.170:
-            skill_band = "impact"
-        elif ops is not None and iso is not None and ops < 0.720 and iso < 0.100:
-            skill_band = "low_impact"
         elif (
-            ops is not None
-            and ops >= 0.760
+            iso is not None
+            and iso >= 0.170
             and bb_minus_k_pct is not None
             and bb_minus_k_pct >= -10.0
         ):
+            skill_band = "impact"
+        elif (
+            iso is not None
+            and iso < 0.100
+            and bb_minus_k_pct is not None
+            and bb_minus_k_pct < -10.0
+        ):
+            skill_band = "low_impact"
+        elif bb_minus_k_pct is not None and bb_minus_k_pct >= -10.0:
             skill_band = "balanced"
         else:
             skill_band = "mixed"
@@ -698,11 +740,16 @@ def _factual_current_context(row: dict | None, role: str | None) -> dict | None:
         context.update(
             {
                 "skill_band": skill_band,
-                "ops": _round(ops, 3),
+                # OPS omitted from the displayed line: not translatable, would mix
+                # scales. iso here is the translated (MLB-equivalent) value.
                 "iso": _round(iso, 3),
                 "k_pct": _round(k_pct, 1),
                 "bb_pct": _round(bb_pct, 1),
                 "bb_minus_k_pct": bb_minus_k_pct,
+                # Raw MiLB values consumed only by the score-affecting bucket rule
+                # (not shown on the card); keep the served score byte-identical.
+                "iso_milb": _round(raw_iso, 3),
+                "ops_milb": _round(raw_ops, 3),
             }
         )
 
@@ -1498,10 +1545,12 @@ def _bucket_calibration_adjustment(
     # INV-SELECT-2: read the impact ratios from the scored-line context, not the raw
     # display input_row, so the upper-level low-impact penalty fires off the line that
     # produced the score. factual_current_context rides the scored line via
-    # _input_row_sort_key's max-sample selection.
+    # _input_row_sort_key's max-sample selection. Use the RAW MiLB iso/ops (iso_milb/
+    # ops_milb): this rule's thresholds are raw-MiLB calibrated, and the displayed
+    # iso is now the MLB-equivalent (translated) value.
     factual = (components or {}).get("factual_current_context") or {}
-    iso = _clean_float(factual.get("iso"))
-    ops = _clean_float(factual.get("ops"))
+    iso = _clean_float(factual.get("iso_milb"))
+    ops = _clean_float(factual.get("ops_milb"))
     if (
         source == "prospect_model_v0_6"
         and role == "hitter"

@@ -5,6 +5,7 @@ templates while avoiding DD ownership language in the snapshot contract.
 """
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass, field
 
 from prospects.availability import eta_window as prospect_eta_window
@@ -147,14 +148,13 @@ class PublicSnapshotRow:
 
     @property
     def public_source_consensus(self) -> int | None:
-        ranks = sorted(self.public_source_ranks.values())
+        ranks = list(self.public_source_ranks.values())
         if len(ranks) < _MIN_CONSENSUS_BOARDS:
             # a single board is not a consensus (MIN_BOARDS)
             return None
-        midpoint = len(ranks) // 2
-        if len(ranks) % 2:
-            return round(ranks[midpoint])
-        return round((ranks[midpoint - 1] + ranks[midpoint]) / 2)
+        # statistics.median averages the two middle values for even n (same math
+        # as the prior hand-rolled midpoint average).
+        return round(statistics.median(ranks))
 
     @property
     def milb_performance_rank(self) -> int | float | None:

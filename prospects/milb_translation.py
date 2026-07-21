@@ -303,6 +303,59 @@ def _weighted_rate(rows: list[dict], role: str, key: str):
     return _round_line_value(weighted / weight)
 
 
+# The counting components a correct multi-level slash line needs. SLG/OBP/AVG are
+# per-AB (or per-PA) rates, so PA-weighting the per-level rates across levels is
+# wrong (a 60-AB AA line and a 300-AB A+ line don't share a denominator). Sum the
+# components and rebuild the rate from the totals instead. Total bases needs every
+# extra-base component: if doubles/triples are absent we cannot rebuild SLG, so
+# the caller falls back rather than understate it as HR-only.
+_HITTER_SLASH_COMPONENTS = ("hits", "at_bats", "doubles", "triples", "home_runs")
+
+
+def _reconstructed_hitter_slash(rows: list[dict]) -> dict | None:
+    """AVG/OBP/SLG/OPS/ISO rebuilt from summed counting components across levels.
+
+    Returns None when any contributing (positive-sample) row is missing the H/AB
+    or total-bases components, so the caller falls back to the legacy PA-weighted
+    rate for the whole line rather than reconstructing from a partial subset.
+    """
+    total_h = total_ab = total_tb = 0.0
+    obp_num = obp_den = 0.0
+    for row in rows:
+        if _line_sample(row, "hitter") <= 0:
+            continue
+        if any(row.get(component) is None for component in _HITTER_SLASH_COMPONENTS):
+            return None  # components absent for a contributing row -> fall back
+        hits = _numeric(row.get("hits"))
+        at_bats = _numeric(row.get("at_bats"))
+        if hits is None or at_bats is None or at_bats <= 0:
+            return None
+        doubles = _numeric(row.get("doubles")) or 0.0
+        triples = _numeric(row.get("triples")) or 0.0
+        home_runs = _numeric(row.get("home_runs")) or 0.0
+        walks = _numeric(row.get("walks")) or 0.0
+        hbp = _numeric(row.get("hit_by_pitch")) or 0.0
+        sac_flies = _numeric(row.get("sac_flies")) or 0.0
+        total_h += hits
+        total_ab += at_bats
+        total_tb += hits + doubles + (2 * triples) + (3 * home_runs)
+        obp_num += hits + walks + hbp
+        obp_den += at_bats + walks + hbp + sac_flies
+    if total_ab <= 0:
+        return None
+    avg = total_h / total_ab
+    slg = total_tb / total_ab
+    obp = obp_num / obp_den if obp_den > 0 else None
+    ops = obp + slg if obp is not None else None
+    return {
+        "avg": _round_line_value(avg),
+        "slg": _round_line_value(slg),
+        "iso": _round_line_value(slg - avg),
+        "obp": _round_line_value(obp),
+        "ops": _round_line_value(ops),
+    }
+
+
 def combined_season_stat_line(history_rows: list[dict], role: str, season: int) -> dict | None:
     """All-level same-season line for display-only card percentile reads.
 
@@ -353,10 +406,20 @@ def combined_season_stat_line(history_rows: list[dict], role: str, season: int) 
         "sample_unit": "IP" if role == "pitcher" else "PA",
     }
     if role == "hitter":
+        # k_pct/bb_pct are per-PA rates, so PA-weighting them across levels is
+        # correct; babip is left on the legacy path (out of this fix's scope).
         out.update({
             key: _weighted_rate(rows, role, key)
-            for key in ("iso", "babip", "k_pct", "bb_pct", "ops", "avg", "obp", "slg")
+            for key in ("babip", "k_pct", "bb_pct")
         })
+        # AVG/OBP/SLG/OPS/ISO are per-AB and must be rebuilt from summed
+        # components; fall back to the PA-weighted rate when components are absent.
+        slash = _reconstructed_hitter_slash(rows)
+        for key in ("avg", "obp", "slg", "ops", "iso"):
+            out[key] = (
+                slash[key] if slash is not None
+                else _weighted_rate(rows, role, key)
+            )
         out.update({
             "home_runs": _sum_numeric(rows, "home_runs"),
             "stolen_bases": _sum_numeric(rows, "stolen_bases"),

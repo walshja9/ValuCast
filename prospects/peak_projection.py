@@ -146,32 +146,34 @@ def _investment_score(row: dict) -> float | None:
 
 
 def _hitter_shape(current: dict, rank_score: float) -> list[dict]:
+    # Graded on MLB-equivalent sticky peripherals (K%/BB%/ISO) from
+    # factual_current_context. OPS is not translatable, so it is not blended in
+    # here: mixing raw-MiLB OPS with translated rates would grade two scales at
+    # once. Impact stays distinct from Power by blending ISO with contact (K%).
     fallback = _scale(rank_score, 25.0, 62.0)
-    hit = _avg([
-        _scale(current.get("k_pct"), 34.0, 11.0),
-        _scale(current.get("ops"), 0.560, 0.930),
-    ]) or fallback
-    power = _avg([
-        _scale(current.get("iso"), 0.070, 0.260),
-        _scale(current.get("ops"), 0.600, 0.960),
-    ]) or fallback
+    hit = _scale(current.get("k_pct"), 34.0, 11.0) or fallback
+    power = _scale(current.get("iso"), 0.070, 0.260) or fallback
     approach = _avg([
         _scale(current.get("bb_pct"), 4.0, 16.0),
         _scale(current.get("bb_minus_k_pct"), -24.0, 6.0),
     ]) or fallback
     impact = _avg([
-        _scale(current.get("ops"), 0.590, 0.970),
         _scale(current.get("iso"), 0.070, 0.260),
+        _scale(current.get("k_pct"), 34.0, 11.0),
     ]) or fallback
     return [
-        {"label": "Hit", "grade": _grade(hit), "source": "K% / OPS"},
-        {"label": "Power", "grade": _grade(power), "source": "ISO / OPS"},
+        {"label": "Hit", "grade": _grade(hit), "source": "K%"},
+        {"label": "Power", "grade": _grade(power), "source": "ISO"},
         {"label": "Approach", "grade": _grade(approach), "source": "BB% / BB-K"},
-        {"label": "Impact", "grade": _grade(impact), "source": "OPS / ISO"},
+        {"label": "Impact", "grade": _grade(impact), "source": "ISO / K%"},
     ]
 
 
 def _pitcher_shape(current: dict, rank_score: float) -> list[dict]:
+    # Miss/Command/Dominance grade the MLB-equivalent (translated) K/9, BB/9,
+    # K-BB% from factual_current_context. Run Prevention is its own disclosed
+    # grade off raw ERA/WHIP (both raw, so it never mixes scales within the grade)
+    # because there is no MLB-equivalent translation for run prevention.
     fallback = _scale(rank_score, 25.0, 62.0)
     miss = _scale(current.get("k_per_9"), 6.5, 13.2)
     command = _scale(current.get("bb_per_9"), 6.0, 1.2)
