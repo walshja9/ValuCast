@@ -1,7 +1,7 @@
 # Analytics Proof Integrity Design
 
-**Date:** 2026-07-21  
-**Status:** Approved direction; implementation may proceed  
+**Date:** 2026-07-21
+**Status:** Approved direction; implementation may proceed
 **Scope:** Truth contracts and research-only evaluation hardening
 
 ## Objective
@@ -139,4 +139,3 @@ The implementation must prove:
 3. H+P suitability diagnostics.
 4. Fold-local impact audit in a separate commit and review checkpoint.
 5. Register post-2026 challengers only after the impact audit is reviewed.
-

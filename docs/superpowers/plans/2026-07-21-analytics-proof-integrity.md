@@ -97,4 +97,3 @@
 ### Deferred registration: post-2026 challenger batch
 
 After Task 5 review, write one fresh registration covering ridge tuning, stronger neighbor baselines, rank-component de-correlation, investment blending, target scaling, train/serve shrinkage alignment, multiplicative confidence haircuts, uncertainty-aware regression guards, buy-momentum asymmetry, and genuine cross-universe mapping. Do not implement or score those variants in this plan.
-
