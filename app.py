@@ -8440,12 +8440,18 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
     row_h = 78
 
     def draw_section(title, rows, x, y, w, color):
-        draw.rounded_rectangle((x, y, x + w, y + 926), radius=10, fill=card, outline=border, width=1)
+        # Panel height tracks the row count: a one-entry Cooling column used to
+        # sit inside a full 926px box (mostly empty), while 12 rows overflowed
+        # past the border (70 + 12*78 > 926). Footer starts at 1282, so the
+        # 12-row maximum (y=242 + 1018 = 1260) still clears it.
+        shown = rows[:12]
+        box_h = 70 + len(shown) * row_h + 12 if shown else 150
+        draw.rounded_rectangle((x, y, x + w, y + box_h), radius=10, fill=card, outline=border, width=1)
         draw.text((x + 20, y + 18), title, fill=color, font=f_section)
         if not rows:
             draw.text((x + 20, y + 98), "Sparse board: no clean movers passed +/-2.0.", fill=muted, font=f_name)
             return
-        for idx, row in enumerate(rows[:12]):
+        for idx, row in enumerate(shown):
             top = y + 70 + idx * row_h
             fill = card_2 if idx % 2 == 0 else card
             draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
@@ -8463,7 +8469,14 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
             meta = " - ".join(str(part) for part in (row.get("team"), row.get("pos"), row.get("level")) if part)
             draw.text((x + 74, top + 39), _graphic_fit_text(draw, row.get("movement_label") or meta, f_meta, 310), fill=muted, font=f_meta)
             why = row.get("why") or meta
-            draw.text((x + 74, top + 58), _graphic_fit_text(draw, why, f_why, 370), fill=muted, font=f_why)
+            # Stat lines with three level tokens (e.g. "AAA & A+ & A ...") overflow
+            # 13px at this width and were ellipsizing mid-stat; drop to 11px before
+            # truncating so the full line survives whenever it can.
+            why_font = f_why
+            why_w = w - 74 - 18
+            if _graphic_text_width(draw, why, why_font) > why_w:
+                why_font = _graphic_font(11)
+            draw.text((x + 74, top + 58), _graphic_fit_text(draw, why, why_font, why_w), fill=muted, font=why_font)
 
     draw_section("RISING", rising, 48, 242, 480, green)
     draw_section("COOLING", cooling, 552, 242, 480, red)
