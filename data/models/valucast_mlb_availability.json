@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-07-20",
+  "generated_at": "2026-07-21",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -48,6 +48,21 @@
       "transaction_id": 926932,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "New York Yankees placed RF Aaron Judge on the 60-day injured list. Right rib stress fracture.",
+      "effective_date": "2026-07-18",
+      "list_type": "60-day injured list",
+      "mlbam_id": 592450,
+      "name": "Aaron Judge",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "New York Yankees",
+      "transaction_date": "2026-07-18",
+      "transaction_id": 929170,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -91,6 +106,21 @@
       "team": "Toronto Blue Jays",
       "transaction_date": "2026-05-11",
       "transaction_id": 907552,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Baltimore Orioles placed C Adley Rutschman on the 10-day injured list retroactive to July 19, 2026. Left wrist inflammation.",
+      "effective_date": "2026-07-19",
+      "list_type": "10-day injured list",
+      "mlbam_id": 668939,
+      "name": "Adley Rutschman",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Baltimore Orioles",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929139,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -331,21 +361,6 @@
       "team": "ACL Angels",
       "transaction_date": "2026-07-07",
       "transaction_id": 925889,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Houston Astros sent LHP Bennett Sousa on a rehab assignment to FCL Astros.",
-      "effective_date": "2026-07-13",
-      "list_type": null,
-      "mlbam_id": 656986,
-      "name": "Bennett Sousa",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "FCL Astros",
-      "transaction_date": "2026-07-13",
-      "transaction_id": 927266,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -696,21 +711,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Minnesota Twins placed CF Byron Buxton on the 10-day injured list retroactive to July 6, 2026. Right hip strain.",
-      "effective_date": "2026-07-06",
-      "list_type": "10-day injured list",
-      "mlbam_id": 621439,
-      "name": "Byron Buxton",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Minnesota Twins",
-      "transaction_date": "2026-07-07",
-      "transaction_id": 925745,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Chicago Cubs transferred RHP Cade Horton from the 15-day injured list to the 60-day injured list. Right forearm strain.",
       "effective_date": "2026-04-18",
       "list_type": "60-day injured list",
@@ -921,18 +921,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Texas Rangers placed 3B Cody Freeman on the 10-day injured list retroactive to June 22, 2026. Herniated disc.",
-      "effective_date": "2026-06-22",
-      "list_type": "10-day injured list",
+      "description": "Texas Rangers sent 3B Cody Freeman on a rehab assignment to ACL Rangers.",
+      "effective_date": "2026-07-20",
+      "list_type": null,
       "mlbam_id": 683227,
       "name": "Cody Freeman",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Texas Rangers",
-      "transaction_date": "2026-06-25",
-      "transaction_id": 922266,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "ACL Rangers",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929321,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -1230,7 +1230,7 @@
       "status": "rehab",
       "team": "ACL White Sox",
       "transaction_date": "2026-07-18",
-      "transaction_id": 928573,
+      "transaction_id": 929338,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -1443,21 +1443,6 @@
       "transaction_id": 903653,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Detroit Tigers sent 2B Gleyber Torres on a rehab assignment to Lakeland Flying Tigers.",
-      "effective_date": "2026-07-17",
-      "list_type": null,
-      "mlbam_id": 650402,
-      "name": "Gleyber Torres",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Lakeland Flying Tigers",
-      "transaction_date": "2026-07-17",
-      "transaction_id": 928424,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -1743,21 +1728,6 @@
       "transaction_id": 901696,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Chicago Cubs sent RHP Jameson Taillon on a rehab assignment to Iowa Cubs.",
-      "effective_date": "2026-07-11",
-      "list_type": null,
-      "mlbam_id": 592791,
-      "name": "Jameson Taillon",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Iowa Cubs",
-      "transaction_date": "2026-07-11",
-      "transaction_id": 927044,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2406,21 +2376,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "New York Mets sent CF Luis Robert Jr. on a rehab assignment to Syracuse Mets.",
-      "effective_date": "2026-07-17",
-      "list_type": null,
-      "mlbam_id": 673357,
-      "name": "Luis Robert Jr.",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Syracuse Mets",
-      "transaction_date": "2026-07-17",
-      "transaction_id": 928421,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Athletics transferred RHP Luis Severino from the 15-day injured list to the 60-day injured list. Right shoulder strain.",
       "effective_date": "2026-06-21",
       "list_type": "60-day injured list",
@@ -2601,6 +2556,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Miami Marlins placed RHP Max Meyer on the 15-day injured list retroactive to July 19, 2026. Neck strain.",
+      "effective_date": "2026-07-19",
+      "list_type": "15-day injured list",
+      "mlbam_id": 676974,
+      "name": "Max Meyer",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Miami Marlins",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929273,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "St. Louis Cardinals transferred RHP Max Rajcic from the 15-day injured list to the 60-day injured list. Right elbow soreness.",
       "effective_date": "2026-07-07",
       "list_type": "60-day injured list",
@@ -2686,6 +2656,21 @@
       "team": "Minnesota Twins",
       "transaction_date": "2026-07-10",
       "transaction_id": 926806,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "San Diego Padres placed DH Miguel Andujar on the 10-day injured list. Right wrist fracture.",
+      "effective_date": "2026-07-20",
+      "list_type": "10-day injured list",
+      "mlbam_id": 609280,
+      "name": "Miguel Andujar",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "San Diego Padres",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929264,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -2866,6 +2851,21 @@
       "team": "Detroit Tigers",
       "transaction_date": "2026-04-13",
       "transaction_id": 898608,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Chicago Cubs placed RHP Phil Maton on the 15-day injured list. Right knee tendinitis.",
+      "effective_date": "2026-07-20",
+      "list_type": "15-day injured list",
+      "mlbam_id": 664208,
+      "name": "Phil Maton",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Chicago Cubs",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929271,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -3136,21 +3136,6 @@
       "team": "Gwinnett Stripers",
       "transaction_date": "2026-07-17",
       "transaction_id": 928078,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Houston Astros sent RHP Ronel Blanco on a rehab assignment to Sugar Land Space Cowboys.",
-      "effective_date": "2026-07-07",
-      "list_type": null,
-      "mlbam_id": 669854,
-      "name": "Ronel Blanco",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Sugar Land Space Cowboys",
-      "transaction_date": "2026-07-07",
-      "transaction_id": 925577,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -3831,36 +3816,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "American League All-Stars activated RF Aaron Judge from the 10-day injured list.",
-      "effective_date": "2026-07-13",
-      "list_type": "10-day injured list",
-      "mlbam_id": 592450,
-      "name": "Aaron Judge",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "American League All-Stars",
-      "transaction_date": "2026-07-13",
-      "transaction_id": 925145,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Baltimore Orioles activated C Adley Rutschman from the 7-day injured list.",
-      "effective_date": "2026-06-28",
-      "list_type": "7-day injured list",
-      "mlbam_id": 668939,
-      "name": "Adley Rutschman",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Baltimore Orioles",
-      "transaction_date": "2026-06-28",
-      "transaction_id": 923172,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "Milwaukee Brewers activated LF Akil Baddoo from the 60-day injured list.",
       "effective_date": "2026-05-24",
       "list_type": "60-day injured list",
@@ -4056,6 +4011,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Houston Astros activated LHP Bennett Sousa from the 60-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "60-day injured list",
+      "mlbam_id": 656986,
+      "name": "Bennett Sousa",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Houston Astros",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929181,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Colorado Rockies activated 1B Blaine Crim from the 10-day injured list.",
       "effective_date": "2026-04-04",
       "list_type": "10-day injured list",
@@ -4111,6 +4081,21 @@
       "team": "Seattle Mariners",
       "transaction_date": "2026-05-13",
       "transaction_id": 908438,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Minnesota Twins activated CF Byron Buxton from the 10-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "10-day injured list",
+      "mlbam_id": 621439,
+      "name": "Byron Buxton",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Minnesota Twins",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929142,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -4941,6 +4926,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Detroit Tigers activated 2B Gleyber Torres from the 10-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "10-day injured list",
+      "mlbam_id": 650402,
+      "name": "Gleyber Torres",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Detroit Tigers",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929259,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Baltimore Orioles activated LHP Grant Wolfram from the 15-day injured list.",
       "effective_date": "2026-05-24",
       "list_type": "15-day injured list",
@@ -5281,6 +5281,21 @@
       "team": "Arizona Diamondbacks",
       "transaction_date": "2026-07-06",
       "transaction_id": 925410,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Chicago Cubs activated RHP Jameson Taillon from the 15-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "15-day injured list",
+      "mlbam_id": 592791,
+      "name": "Jameson Taillon",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Chicago Cubs",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929269,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6141,6 +6156,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "New York Mets activated CF Luis Robert Jr. from the 60-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "60-day injured list",
+      "mlbam_id": 673357,
+      "name": "Luis Robert Jr.",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "New York Mets",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929067,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "New York Mets activated 2B Marcus Semien from the 10-day injured list.",
       "effective_date": "2026-07-16",
       "list_type": "10-day injured list",
@@ -6361,21 +6391,6 @@
       "team": "Colorado Rockies",
       "transaction_date": "2026-06-22",
       "transaction_id": 921088,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "San Diego Padres activated DH Miguel Andujar from the 10-day injured list.",
-      "effective_date": "2026-06-21",
-      "list_type": "10-day injured list",
-      "mlbam_id": 609280,
-      "name": "Miguel Andujar",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "San Diego Padres",
-      "transaction_date": "2026-06-21",
-      "transaction_id": 920873,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6636,21 +6651,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "Chicago Cubs activated RHP Phil Maton from the 15-day injured list.",
-      "effective_date": "2026-07-11",
-      "list_type": "15-day injured list",
-      "mlbam_id": 664208,
-      "name": "Phil Maton",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Chicago Cubs",
-      "transaction_date": "2026-07-11",
-      "transaction_id": 927001,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "Cincinnati Reds activated RHP Pierce Johnson from the 15-day injured list.",
       "effective_date": "2026-06-22",
       "list_type": "15-day injured list",
@@ -6751,6 +6751,21 @@
       "team": "Boston Red Sox",
       "transaction_date": "2026-06-28",
       "transaction_id": 925930,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Houston Astros activated RHP Ronel Blanco from the 60-day injured list.",
+      "effective_date": "2026-07-20",
+      "list_type": "60-day injured list",
+      "mlbam_id": 669854,
+      "name": "Ronel Blanco",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Houston Astros",
+      "transaction_date": "2026-07-20",
+      "transaction_id": 929178,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -7551,7 +7566,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-07-20",
+    "end_date": "2026-07-21",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -7569,15 +7584,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 250,
+    "available_after_il_count": 252,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 190,
-    "profile_count": 502,
+    "injured_count": 193,
+    "profile_count": 503,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 62,
-    "risk_profile_count": 252,
+    "rehab_count": 58,
+    "risk_profile_count": 251,
     "tracked_mlbam_count": 10678,
-    "transaction_count": 8346
+    "transaction_count": 8492
   }
 }
