@@ -26,7 +26,7 @@ EXPECTED_STATUS_BY_BASIS = {
     "sample_staleness": {"stale_or_inactive"},
     "upstream_factual_status": {"injured", "inactive", "restricted", "rehab", "il"},
     "official_mlb_il": {"injured"},
-    "manual_override": {"injured", "inactive", "restricted", "rehab", "il"},
+    "manual_override": {"available", "injured", "inactive", "restricted", "rehab", "il"},
 }
 
 

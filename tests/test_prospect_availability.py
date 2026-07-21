@@ -212,6 +212,31 @@ def test_manual_override_discount_uses_il_cap():
     assert hitter["risk_basis"] == "manual_override"
 
 
+def test_manual_available_override_clears_stale_injury_and_validates(tmp_path):
+    payload = build_prospect_availability(
+        _input_contract(),
+        overrides={
+            "overrides": [
+                {
+                    "mlbam_id": 10,
+                    "role": "hitter",
+                    "status": "available",
+                    "note": "Activated after an early-season injury.",
+                    "risk_discount": 0.05,
+                }
+            ]
+        },
+    )
+    hitter = next(row for row in payload["profiles"] if row["mlbam_id"] == 10)
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert hitter["status"] == "available"
+    assert hitter["risk_basis"] == "manual_override"
+    assert hitter["risk_discount"] == 0.05
+    assert validate_prospect_availability(artifact_path)[1] == []
+
+
 def test_availability_applies_upstream_factual_roster_status():
     contract = _input_contract()
     contract["current"]["pitchers"][2]["availability_status"] = "injured"
