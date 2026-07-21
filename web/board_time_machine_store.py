@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import statistics
 from bisect import bisect_left
 from collections import OrderedDict
 from datetime import date as _date
@@ -67,12 +68,9 @@ def _consensus(source_ranks: dict | None) -> dict | None:
     if len(ranks) < _MIN_CONSENSUS_BOARDS:
         # a single board is not a consensus (MIN_BOARDS)
         return None
-    midpoint = len(ranks) // 2
-    if len(ranks) % 2:
-        median = ranks[midpoint]
-    else:
-        median = (ranks[midpoint - 1] + ranks[midpoint]) / 2
-    return {"median": round(median), "board_count": len(ranks)}
+    # statistics.median averages the two middle values for even n (same math as
+    # the prior hand-rolled midpoint average); shared across the consensus sites.
+    return {"median": round(statistics.median(ranks)), "board_count": len(ranks)}
 
 
 def nearest_board_date(date: str | None, dates: list[str]) -> str | None:

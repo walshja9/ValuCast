@@ -534,6 +534,78 @@ def test_comps_wired_into_daily_build_after_snapshot():
     assert "data/models/valucast_prospect_comps.json" in workflow
 
 
+def test_2020_scaled_pa_does_not_leak_into_the_rel_ops_weight():
+    # The 162/60 PA scale must apply ONLY to the playing-time tier, never as the
+    # weight in the era-relative OPS mean. Give the player a strong 2020 (OPS 2x
+    # league) and league-average other years, so a scaled-PA weight would over-
+    # count 2020's bat. rel_ops must equal the RAW-PA-weighted mean.
+    rows = _filler_pool(2016)
+    for season in range(2017, 2022):
+        rows.extend(_filler_pool(season, start_pid=9000 + season * 20))
+    rows.append(_season_row(1, "Weight Test", 2016, 24, 550, 20.0, 9.0, 0.180))
+    # 2020: 240 PA, ISO high enough to sit well above league OPS.
+    # Other years: 600 PA at roughly league-average OPS.
+    for season in range(2017, 2022):
+        pa = 240 if season == 2020 else 600
+        iso = 0.360 if season == 2020 else 0.150
+        rows.append(_season_row(1, "Weight Test", season, season - 1992, pa,
+                                20.0, 9.0, iso, avg=0.270))
+    rows.extend(_filler_pool(2025, start_pid=9800))
+    pool = CompPool(rows)
+
+    outcome = pool.outcome(1, 2016)
+
+    # Recompute the expected rel_ops with RAW-PA weights (the correct math).
+    seasons = pool._by_player[1]
+    raw_weighted = 0.0
+    raw_pa = 0.0
+    scaled_weighted = 0.0
+    scaled_pa = 0.0
+    for season in range(2017, 2022):
+        row = seasons[season]
+        pa = row["pa"]
+        ops = row["obp"] + row["slg"]
+        rel = ops / pool._league_ops[season]
+        scale = (162 / 60) if season == 2020 else 1.0
+        raw_weighted += pa * rel
+        raw_pa += pa
+        scaled_weighted += pa * scale * rel
+        scaled_pa += pa * scale
+    expected_raw = round(raw_weighted / raw_pa, 3)
+    expected_scaled = round(scaled_weighted / scaled_pa, 3)
+
+    assert outcome["rel_ops"] == expected_raw
+    # The two must actually differ here, or the test proves nothing.
+    assert expected_raw != expected_scaled
+
+
+def test_cohort_median_pa_averages_the_two_middle_values_for_even_n():
+    # Six resolved outcomes with distinct pa_per_year; the median of an even-count
+    # cohort must average the two middle values, not take the upper of the pair.
+    # Fillers are age 30 (> MATCH_MAX_AGE): they seed the per-season z-stats but
+    # never enter the cohort, so the cohort is exactly the six players below.
+    rows = _filler_pool(2010, age=30)
+    for season in range(2011, 2016):
+        rows.extend(_filler_pool(season, start_pid=6000 + season * 20, age=30))
+    # Six matching players, each with a flat five-year PA profile so pa_per_year
+    # equals that PA. Spread: 300, 400, 500, 600, 700, 800 -> median = (500+600)/2.
+    # Follow-up seasons are age 27+ (> MATCH_MAX_AGE) so ONLY each player's 2010
+    # match season is cohort-eligible; the outcome still counts every follow-up.
+    for idx, pa in enumerate((300, 400, 500, 600, 700, 800), start=1):
+        rows.append(_season_row(idx, f"Cohort {idx}", 2010, 23, 550, 20.0, 9.0, 0.180))
+        for offset in range(1, 6):
+            rows.append(_season_row(idx, f"Cohort {idx}", 2010 + offset,
+                                    27 + offset, pa, 20.0, 9.0, 0.180))
+    rows.extend(_filler_pool(2025, start_pid=6900, age=30))
+    pool = CompPool(rows)
+
+    comp = comp_for_target(pool, {"k_pct": 20.0, "bb_pct": 9.0, "iso": 0.180})
+    assert comp["cohort"]["size"] == 6
+    median = comp["cohort"]["median_pa_per_year"]
+    # Upper-of-pair (the old bug) would report 600.0; the true median is 550.0.
+    assert median == 550.0
+
+
 def test_2020_short_season_is_prorated_in_outcomes():
     # Match season 2016 -> follow-up window 2017-2021 includes 2020 (60 games).
     # An everyday player with ~600 PA per full year and ~230 in 2020 must still

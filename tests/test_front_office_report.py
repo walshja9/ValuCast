@@ -2,9 +2,43 @@
 import json
 
 import app as app_module
+from prospects.front_office_report import _next_build_order
 from prospects.front_office_report import build_front_office_report
 from prospects.front_office_report import run_front_office_report
 from scripts.validate_front_office_report import validate_front_office_report
+
+
+def test_next_build_order_is_computed_from_live_report_state():
+    # Collecting: days remaining -> forward line names the span + target grade;
+    # a trained+bucket-ready v0.7 -> the "run the comparison" phrasing.
+    order = _next_build_order(
+        forward_progress={"remaining_span_days": 7, "next_target_grade": "A-"},
+        v07_ready=True,
+        v07_bucket_ready=True,
+    )
+    assert isinstance(order, list) and len(order) == 5
+    # No stale "B+ evidence" literal anywhere.
+    assert not any("B+ evidence" in line for line in order)
+    assert "7 more observation day(s)" in order[0]
+    assert "A-" in order[0]
+    assert "bucket comparison" in order[1]
+    # The two evergreen operating lines are preserved verbatim.
+    assert order[3] == (
+        "Keep uncertainty-band explanations visible on every prospect detail surface."
+    )
+    assert order[4] == (
+        "Keep the front-office report public and fail-loud when evidence regresses."
+    )
+
+
+def test_next_build_order_reflects_completed_collection_and_untrained_v07():
+    order = _next_build_order(
+        forward_progress={"remaining_span_days": 0, "next_target_grade": None},
+        v07_ready=False,
+        v07_bucket_ready=False,
+    )
+    assert "Sustain the forward archive" in order[0]
+    assert order[1].startswith("Train Prospect Model v0.7")
 
 
 def _snapshot():

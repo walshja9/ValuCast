@@ -708,10 +708,15 @@ def test_rank_v1_exposes_factual_current_context_for_hitter_components():
     assert context["level"] == "AA"
     assert context["sample"] == 260
     assert context["sample_unit"] == "PA"
-    assert context["skill_band"] == "impact"
-    assert context["ops"] == 0.881
-    assert context["iso"] == 0.214
-    assert context["bb_minus_k_pct"] == -8.8
+    # Graded on MLB-equivalent peripherals: the raw AA line (.881 OPS / .214 ISO)
+    # cools to translated ISO .157 / BB-K -13.4, so it is "mixed", not "impact".
+    assert context["rate_scale"] == "mlb_equivalent"
+    assert context["skill_band"] == "mixed"
+    assert "ops" not in context  # OPS is not translatable, dropped from the line
+    assert context["iso"] == 0.157
+    assert context["k_pct"] == 23.3
+    assert context["bb_pct"] == 9.9
+    assert context["bb_minus_k_pct"] == -13.4
     assert payload["rank_contract"]["factual_current_context"]["version"] == (
         FACTUAL_CURRENT_CONTEXT_VERSION
     )
@@ -787,7 +792,14 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
     assert context["sample_unit"] == "IP"
     assert context["starter_role"] is True
     assert context["skill_band"] == "starter_volume"
-    assert context["k_bb_pct"] == 22.4
+    # Peripherals are graded on the MLB-equivalent scale, not the raw AA line
+    # (raw k_bb_pct=22.4 -> translated 14.9); ERA/WHIP stay raw for Run Prevention.
+    assert context["rate_scale"] == "mlb_equivalent"
+    assert context["k_bb_pct"] == 14.9
+    assert context["k_per_9"] == 9.1
+    assert context["bb_per_9"] == 3.3
+    assert context["era"] == 2.81
+    assert context["whip"] == 1.05
 
 
 def test_rank_v1_reports_coverage_blockers_and_missing_top_names():

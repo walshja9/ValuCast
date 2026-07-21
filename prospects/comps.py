@@ -22,6 +22,7 @@ Honesty rules baked in, not bolted on:
 from __future__ import annotations
 
 import json
+import statistics
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -191,7 +192,13 @@ class CompPool:
         if self.resolved_through is None or season > self.resolved_through:
             return None
         seasons = self._by_player.get(player_id, {})
-        pa_total = 0.0
+        # Two separate accumulators: scaled PA drives the playing-time TIER (2020's
+        # 60-game season is pro-rated to 162 so an everyday player isn't mis-tiered
+        # as part-time), while RAW PA weights the era-relative OPS mean. The 2020
+        # scale is a games-played artifact, not extra bat events, so weighting the
+        # rate by scaled PA would over-count a short 2020 line against full seasons.
+        scaled_pa_total = 0.0
+        raw_pa_total = 0.0
         weighted_rel_ops = 0.0
         for offset in range(1, OUTCOME_HORIZON + 1):
             follow_season = season + offset
@@ -205,11 +212,11 @@ class CompPool:
             except (KeyError, TypeError, ValueError):
                 continue
             if pa > 0 and league_ops:
-                pa_scaled = pa * SHORT_SEASON_PA_SCALE.get(follow_season, 1.0)
-                pa_total += pa_scaled
-                weighted_rel_ops += pa_scaled * (ops / league_ops)
-        pa_per_year = pa_total / OUTCOME_HORIZON
-        rel_ops = round(weighted_rel_ops / pa_total, 3) if pa_total else None
+                scaled_pa_total += pa * SHORT_SEASON_PA_SCALE.get(follow_season, 1.0)
+                raw_pa_total += pa
+                weighted_rel_ops += pa * (ops / league_ops)
+        pa_per_year = scaled_pa_total / OUTCOME_HORIZON
+        rel_ops = round(weighted_rel_ops / raw_pa_total, 3) if raw_pa_total else None
         return {
             "pa_per_year": round(pa_per_year, 1),
             "rel_ops": rel_ops,
@@ -477,8 +484,10 @@ def comp_for_target(pool: CompPool, translated: dict) -> dict | None:
     tiers = {tier: 0 for tier in TIER_ORDER}
     for outcome in cohort_rows:
         tiers[outcome["tier"]] += 1
-    pa_values = sorted(o["pa_per_year"] for o in cohort_rows)
-    median_pa = pa_values[len(pa_values) // 2] if pa_values else None
+    pa_values = [o["pa_per_year"] for o in cohort_rows]
+    # statistics.median averages the two middle values for even n; the old
+    # sorted[n//2] took the upper of the pair, biasing the cohort median high.
+    median_pa = round(statistics.median(pa_values), 1) if pa_values else None
 
     return {
         "target": {
