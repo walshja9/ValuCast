@@ -375,7 +375,8 @@ def build_prospect_coverage_audit(
                 "model_score_held_fixed": True,
                 "counterfactual_ranks_computed": evidence_policy.get(
                     "feeds_rank_score"
-                ) is True,
+                ) is True
+                and not resolved_scoring_gaps,
                 "maximum_context_score": MAX_INVESTMENT_CONTEXT_SCORE,
                 "top_50_missing_rows": [
                     _investment_sensitivity_entry(row) for row in top_50_missing_rows

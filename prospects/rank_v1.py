@@ -371,6 +371,9 @@ def _with_verified_investment_facts(
         or policy.get("feeds_rank_score") is not True
         or policy.get("feeds_v06_model") is not False
         or policy.get("feeds_universal_model") is not False
+        or policy.get("changes_ranks_or_values") is not True
+        or policy.get("permitted_use")
+        != "prospect_rank_v1_factual_investment_context_only"
     ):
         raise ValueError("invalid verified investment evidence policy")
 
@@ -2471,7 +2474,7 @@ def run_prospect_rank_v1(
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
     investment_evidence = (
         json.loads(investment_evidence_path.read_text(encoding="utf-8"))
-        if investment_evidence_path is not None and investment_evidence_path.exists()
+        if investment_evidence_path is not None
         else None
     )
     prospect_availability = (

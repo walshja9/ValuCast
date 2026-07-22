@@ -40,6 +40,8 @@ def _investment_evidence(**overrides):
             "feeds_rank_score": True,
             "feeds_v06_model": False,
             "feeds_universal_model": False,
+            "changes_ranks_or_values": True,
+            "permitted_use": "prospect_rank_v1_factual_investment_context_only",
         },
         "rows": [row],
     }
@@ -111,6 +113,16 @@ def test_verified_investment_overlay_changes_only_rank_input_component():
         (
             lambda: _investment_evidence(mlbam_id=1, signing_bonus=3_000_000),
             "conflict",
+        ),
+        (
+            lambda: {
+                **_investment_evidence(),
+                "source_policy": {
+                    **_investment_evidence()["source_policy"],
+                    "changes_ranks_or_values": False,
+                },
+            },
+            "policy",
         ),
     ],
 )
@@ -1598,6 +1610,19 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     investment_evidence_path.write_text(
         json.dumps(_investment_evidence()), encoding="utf-8"
     )
+
+    with pytest.raises(FileNotFoundError):
+        run_prospect_rank_v1(
+            prospect_universe_path=universe_path,
+            dynasty_layer_path=layer_path,
+            prospect_model_path=model_path,
+            input_contract_path=input_path,
+            investment_evidence_path=tmp_path / "missing-evidence.json",
+            availability_path=availability_path,
+            mlb_roster_status_path=roster_status_path,
+            artifact_path=artifact_path,
+            archive_dir=tmp_path / "archive",
+        )
 
     result = run_prospect_rank_v1(
         prospect_universe_path=universe_path,

@@ -175,6 +175,7 @@ def test_coverage_audit_reports_verified_evidence_applied_to_rank_input():
     assert verified["feeds_rank_score"] is True
     assert verified["feeds_v06_model"] is False
     assert verified["feeds_universal_model"] is False
+    assert context["direct_score_sensitivity"]["counterfactual_ranks_computed"] is True
     assert verified["bands"]["top_25"]["all"] == {
         "rows": 2,
         "covered": 2,
@@ -183,6 +184,30 @@ def test_coverage_audit_reports_verified_evidence_applied_to_rank_input():
     }
     assert verified["resolved_scoring_gaps"] == []
     assert rank_payload["board"][1]["components"]["factual_investment_context"] == 68.12
+
+
+def test_coverage_audit_does_not_claim_corrected_ranks_with_unresolved_gap():
+    payload = build_prospect_coverage_audit(
+        _rank_payload([_row(1, "prospect_model_v0_6")]),
+        _investment_evidence(
+            {
+                "mlbam_id": 10_001,
+                "name": "Prospect 1",
+                "acquisition_type": "international_amateur_free_agent",
+                "signing_bonus": 950_000,
+                "source_name": "MLB Pipeline",
+                "source_url": "https://www.mlb.com/example",
+                "source_checked_at": "2026-07-22",
+            }
+        ),
+    )
+
+    assert payload["investment_context"]["verified_evidence"][
+        "resolved_scoring_gaps"
+    ]
+    assert payload["investment_context"]["direct_score_sensitivity"][
+        "counterfactual_ranks_computed"
+    ] is False
 
 
 def test_coverage_audit_validator_requires_investment_context(tmp_path):
