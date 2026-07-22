@@ -324,6 +324,22 @@ def test_shadow_output_is_rank_free_and_independently_gated():
         assert sum(profile["outcome_distribution"].values()) == pytest.approx(1.0)
 
 
+def test_universal_output_declares_its_indirect_live_consumer():
+    payload = build_shadow_model(_contract())
+    assert payload["status"] == "shadow_only"
+    assert payload["release_contract"] == {
+        "artifact_status_semantics": "provenance_label_not_serving_status",
+        "consumer": "prospect_dynasty_layer",
+        "indirect_consumer": "prospect_rank_v1",
+        "feeds_live_valucast_rank": True,
+        "standalone_public_board": False,
+    }
+    assert not any(
+        "never consumed by the live prospect board" in text
+        for text in payload["limitations"]
+    )
+
+
 def test_v11_contract_accepts_lower_minors_and_expanded_factual_sources():
     contract = _contract()
     contract["schema_version"] = "1.1"

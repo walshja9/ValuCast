@@ -36,7 +36,7 @@
     "This is a ceiling/risk signal layer, not a complete dynasty valuation model.",
     "It contains no league, roster, trade-market, position-scarcity, or manager-preference context.",
     "The historical research gate currently has 3 eligible temporal folds per role.",
-    "Live consumers remain blocked until dated forward shadow evidence is stable."
+    "The layer feeds Prospect Rank v1 as an incumbent component; new model versions still require dated forward evidence."
   ],
   "profiles": [
     {
@@ -72217,10 +72217,17 @@
   ],
   "promotion": {
     "feeds_live_dd_value": false,
-    "feeds_live_valucast_rank": false,
-    "live_consumer": "blocked",
+    "feeds_live_valucast_rank": true,
+    "live_consumer": "prospect_rank_v1",
     "next_allowed_step": "dated_forward_shadow_observation",
     "research_gate": "active"
+  },
+  "release_contract": {
+    "artifact_status_semantics": "provenance_label_not_serving_status",
+    "consumer": "prospect_rank_v1",
+    "feeds_live_dd_value": false,
+    "feeds_live_valucast_rank": true,
+    "standalone_public_board": false
   },
   "status": "shadow_only",
   "universal_model_name": "ValuCast Universal Prospect Model",

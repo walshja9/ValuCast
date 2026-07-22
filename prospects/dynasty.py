@@ -146,6 +146,13 @@ def build_layer(universal: dict, backtest: dict | None = None) -> dict:
     evidence = _evidence_summary(backtest, universal.get("model_version"))
     return {
         "status": "shadow_only",
+        "release_contract": {
+            "artifact_status_semantics": "provenance_label_not_serving_status",
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+            "feeds_live_dd_value": False,
+            "standalone_public_board": False,
+        },
         "layer_name": LAYER_NAME,
         "layer_version": LAYER_VERSION,
         "universal_model_name": universal.get("model_name"),
@@ -177,15 +184,15 @@ def build_layer(universal: dict, backtest: dict | None = None) -> dict:
                 if evidence["research_gate"] == "active"
                 else "improve_model_or_historical_evidence"
             ),
-            "live_consumer": "blocked",
+            "live_consumer": "prospect_rank_v1",
             "feeds_live_dd_value": False,
-            "feeds_live_valucast_rank": False,
+            "feeds_live_valucast_rank": True,
         },
         "limitations": [
             "This is a ceiling/risk signal layer, not a complete dynasty valuation model.",
             "It contains no league, roster, trade-market, position-scarcity, or manager-preference context.",
             _fold_evidence_limitation(evidence),
-            "Live consumers remain blocked until dated forward shadow evidence is stable.",
+            "The layer feeds Prospect Rank v1 as an incumbent component; new model versions still require dated forward evidence.",
         ],
         "profiles": profiles,
     }
