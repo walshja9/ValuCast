@@ -1,6 +1,8 @@
 """Tests for the candidate shadow ValuCast Prospect Rank v1 artifact."""
 import json
 
+import pytest
+
 from prospects.rank_v1 import (
     BUCKET_CALIBRATION_VERSION,
     FACTUAL_CURRENT_CONTEXT_VERSION,
@@ -13,9 +15,108 @@ from prospects.rank_v1 import (
     _confidence,
     _input_lookup,
     _universal_outcome_index,
+    _with_verified_investment_facts,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
+
+
+def _investment_evidence(**overrides):
+    row = {
+        "mlbam_id": 2,
+        "name": "Fallback Good",
+        "acquisition_type": "international_amateur_free_agent",
+        "signing_bonus": 950_000,
+        "source_name": "MLB Pipeline",
+        "source_url": "https://www.mlb.com/example",
+        "source_checked_at": "2026-07-22",
+    }
+    row.update(overrides)
+    return {
+        "artifact": "valucast_international_signing_facts",
+        "as_of": "2026-07-22",
+        "source_policy": {
+            "kind": "factual_rank_input",
+            "feeds_rank_score": True,
+            "feeds_v06_model": False,
+            "feeds_universal_model": False,
+        },
+        "rows": [row],
+    }
+
+
+def test_verified_investment_overlay_fills_missing_bonus_without_mutating_contract():
+    contract = _input_contract()
+
+    corrected, audit = _with_verified_investment_facts(
+        contract, _investment_evidence()
+    )
+
+    assert corrected["current"]["hitters"][1]["signing_bonus"] == 950_000
+    assert "signing_bonus" not in contract["current"]["hitters"][1]
+    assert audit == {
+        "artifact": "valucast_international_signing_facts",
+        "as_of": "2026-07-22",
+        "applied_count": 1,
+        "idempotent_count": 0,
+    }
+
+
+def test_verified_investment_overlay_accepts_identical_existing_bonus():
+    corrected, audit = _with_verified_investment_facts(
+        _input_contract(), _investment_evidence(mlbam_id=1, signing_bonus=4_000_000)
+    )
+
+    assert corrected["current"]["hitters"][0]["signing_bonus"] == 4_000_000
+    assert audit["applied_count"] == 0
+    assert audit["idempotent_count"] == 1
+
+
+def test_verified_investment_overlay_changes_only_rank_input_component():
+    baseline = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
+    )
+    corrected = build_prospect_rank_v1(
+        _universe(),
+        _dynasty_layer(),
+        _prospect_model(),
+        _input_contract(),
+        investment_evidence=_investment_evidence(),
+    )
+
+    baseline_row = next(row for row in baseline["board"] if row["mlbam_id"] == 2)
+    corrected_row = next(row for row in corrected["board"] if row["mlbam_id"] == 2)
+    assert baseline_row["components"]["factual_investment_context"] is None
+    assert corrected_row["components"]["factual_investment_context"] == 68.12
+    assert corrected_row["score"] > baseline_row["score"]
+    assert corrected["input_artifacts"]["investment_evidence_applied_count"] == 1
+
+
+@pytest.mark.parametrize(
+    "evidence, message",
+    [
+        (
+            lambda: {
+                **_investment_evidence(),
+                "rows": _investment_evidence()["rows"] * 2,
+            },
+            "duplicate",
+        ),
+        (
+            lambda: _investment_evidence(acquisition_type="rule_4_draft"),
+            "acquisition_type",
+        ),
+        (lambda: _investment_evidence(source_url=""), "source_url"),
+        (lambda: _investment_evidence(mlbam_id=999), "unmatched"),
+        (
+            lambda: _investment_evidence(mlbam_id=1, signing_bonus=3_000_000),
+            "conflict",
+        ),
+    ],
+)
+def test_verified_investment_overlay_fails_closed(evidence, message):
+    with pytest.raises(ValueError, match=message):
+        _with_verified_investment_facts(_input_contract(), evidence())
 
 
 def test_universal_outcome_index_excludes_star_ceiling():

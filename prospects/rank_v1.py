@@ -343,6 +343,87 @@ def _layer_lookup(dynasty_layer: dict) -> dict[tuple[str, str], dict]:
     return lookup
 
 
+def _with_verified_investment_facts(
+    input_contract: dict,
+    investment_evidence: dict | None,
+) -> tuple[dict, dict]:
+    audit = {
+        "artifact": None,
+        "as_of": None,
+        "applied_count": 0,
+        "idempotent_count": 0,
+    }
+    if investment_evidence is None:
+        return input_contract, audit
+
+    audit.update(
+        artifact=investment_evidence.get("artifact"),
+        as_of=investment_evidence.get("as_of"),
+    )
+    policy = investment_evidence.get("source_policy") or {}
+    if (
+        audit["artifact"] != "valucast_international_signing_facts"
+        or not audit["as_of"]
+        or policy.get("kind") != "factual_rank_input"
+        or policy.get("feeds_rank_score") is not True
+        or policy.get("feeds_v06_model") is not False
+        or policy.get("feeds_universal_model") is not False
+    ):
+        raise ValueError("invalid verified investment evidence policy")
+
+    facts = {}
+    for row in investment_evidence.get("rows") or []:
+        try:
+            mlbam_id = int(row.get("mlbam_id"))
+        except (TypeError, ValueError):
+            raise ValueError("invalid verified investment mlbam_id") from None
+        if mlbam_id in facts:
+            raise ValueError(f"duplicate verified investment mlbam_id {mlbam_id}")
+        bonus = _clean_float(row.get("signing_bonus"))
+        if row.get("acquisition_type") != "international_amateur_free_agent":
+            raise ValueError(
+                f"invalid verified investment acquisition_type for {mlbam_id}"
+            )
+        if bonus is None or bonus <= 0:
+            raise ValueError(f"invalid verified investment signing_bonus for {mlbam_id}")
+        for field in ("source_name", "source_url", "source_checked_at"):
+            if not row.get(field):
+                raise ValueError(f"invalid verified investment {field} for {mlbam_id}")
+        facts[mlbam_id] = bonus
+
+    current = input_contract.get("current") or {}
+    hitters = [dict(row) for row in current.get("hitters") or []]
+    matched = {mlbam_id: 0 for mlbam_id in facts}
+    applied = set()
+    for row in hitters:
+        try:
+            mlbam_id = int(row.get("mlbam_id"))
+        except (TypeError, ValueError):
+            continue
+        if mlbam_id not in facts:
+            continue
+        matched[mlbam_id] += 1
+        expected = facts[mlbam_id]
+        existing = _clean_float(row.get("signing_bonus"))
+        if existing is None:
+            row["signing_bonus"] = expected
+            applied.add(mlbam_id)
+        elif existing != expected:
+            raise ValueError(
+                f"verified investment conflict for mlbam_id {mlbam_id}: {existing} != {expected}"
+            )
+
+    unmatched = [mlbam_id for mlbam_id, count in matched.items() if count == 0]
+    if unmatched:
+        raise ValueError(f"unmatched verified investment mlbam_ids: {unmatched}")
+    audit["applied_count"] = len(applied)
+    audit["idempotent_count"] = len(facts) - len(applied)
+    return {
+        **input_contract,
+        "current": {**current, "hitters": hitters},
+    }, audit
+
+
 def _input_lookup(input_contract: dict) -> dict[tuple[str, str], dict]:
     lookup: dict[tuple[str, str], dict] = {}
     for role, bucket in (("hitter", "hitters"), ("pitcher", "pitchers")):
@@ -1977,7 +2058,11 @@ def build_prospect_rank_v1(
     milb_history_by_key: dict | None = None,
     mlb_roster_status: dict | None = None,
     require_mlb_roster_status: bool = False,
+    investment_evidence: dict | None = None,
 ) -> dict:
+    input_contract, investment_evidence_audit = _with_verified_investment_facts(
+        input_contract, investment_evidence
+    )
     model_by_key = _model_lookup(prospect_model)
     layer_by_key = _layer_lookup(dynasty_layer)
     input_by_key = _input_lookup(input_contract)
@@ -2305,6 +2390,14 @@ def build_prospect_rank_v1(
             "prospect_availability_profile_count": (
                 prospect_availability or {}
             ).get("profile_count"),
+            "investment_evidence_artifact": investment_evidence_audit["artifact"],
+            "investment_evidence_as_of": investment_evidence_audit["as_of"],
+            "investment_evidence_applied_count": investment_evidence_audit[
+                "applied_count"
+            ],
+            "investment_evidence_idempotent_count": investment_evidence_audit[
+                "idempotent_count"
+            ],
         },
         "promotion": {
             "live_consumer": "candidate_ready" if not validation["blockers"] else "blocked",
