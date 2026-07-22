@@ -8666,7 +8666,10 @@ def _track_record_scorecard(sc):
                 return None
             for key in ("decided_rate", "control_lift"):
                 aggregate = stabilized.get(key)
-                if not isinstance(aggregate, dict) or type(aggregate.get("mean")) not in (int, float):
+                if not isinstance(aggregate, dict) or not all(
+                    type(aggregate.get(field)) in (int, float)
+                    for field in ("mean", "min", "max")
+                ):
                     return None
     return sc
 
@@ -9207,7 +9210,8 @@ def _ledger_share_card_png(sc, forward_sc=None, receipts_context=None):
                            fill=card, outline=border, width=1)
     draw.text((x + 20, panel_y + 14), "NEWEST CONSENSUS CALLS", fill=text, font=f_section)
     if not newest:
-        draw.text((x + 20, panel_y + 62), "No calls on the ledger yet.", fill=muted, font=f_name)
+        empty_copy = "No calls on the ledger yet." if sc is not None else "Consensus call detail unavailable"
+        draw.text((x + 20, panel_y + 62), empty_copy, fill=muted, font=f_name)
     for idx, c in enumerate(newest):
         top = panel_y + 48 + idx * row_h
         fill = card_2 if idx % 2 == 0 else card

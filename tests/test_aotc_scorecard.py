@@ -562,6 +562,42 @@ def test_track_record_fail_closes_consensus_without_hiding_other_lanes(monkeypat
     assert "0 no scoreable gap" in drawn_text
 
 
+def test_track_record_rejects_incomplete_stabilized_aggregate_without_hiding_forward(monkeypatch):
+    from copy import deepcopy
+
+    import app as app_module
+
+    scorecard = deepcopy(app_module._load_scorecard_payload())
+    scorecard["summary"]["stabilized"] = {
+        "publishable": True,
+        "window_days": 14,
+        "decided_rate": {"mean": 0.4, "min": 0.3, "max": 0.5},
+        "control_lift": {"mean": 1.2},
+    }
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: scorecard)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 2, "provisional": True},
+        "funnel": {
+            "wins": 1,
+            "losses": 1,
+            "open": 3,
+            "buckets": {"clean_retraction": 4},
+        },
+        "cohorts": {"cohort_count": 1},
+    })
+
+    context = app_module._track_record_context()
+    response = app_module.app.test_client().get("/ledger")
+    html = response.data.decode("utf-8")
+
+    assert context["sc"] is None
+    assert response.status_code == 200
+    assert "1–1 across 2 scored calls (50%)" in html
+    assert "Collecting until the registered publication gate matures." in html
+    assert "lift ranged" not in html
+
+
 def test_track_record_share_card_404s_only_when_all_lanes_are_unavailable(monkeypatch):
     import app as app_module
 
@@ -643,6 +679,8 @@ def test_track_record_umbrella_copy_metadata_and_heading_semantics(monkeypatch):
     assert "three separately scored evidence lanes" in preview.lower()
     assert "Back to Track Record" in preview
     assert "Back to The Ledger" not in preview
+    assert 'aria-label="Track Record navigation"' in html
+    assert 'aria-label="Ledger navigation"' not in html
 
 
 def test_track_record_png_footer_defines_separate_denominators(monkeypatch):
@@ -664,6 +702,45 @@ def test_track_record_png_footer_defines_separate_denominators(monkeypatch):
     assert "denominators" in notes[0].lower()
     assert "score separately" in notes[0].lower()
     assert "success rate" not in notes[0].lower()
+
+
+def test_track_record_png_distinguishes_unavailable_consensus_from_empty_ledger(monkeypatch):
+    from PIL import ImageDraw
+
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    drawn_text = []
+    original_text = ImageDraw.ImageDraw.text
+
+    def capture_text(draw, xy, value, *args, **kwargs):
+        drawn_text.append(str(value))
+        return original_text(draw, xy, value, *args, **kwargs)
+
+    monkeypatch.setattr(ImageDraw.ImageDraw, "text", capture_text)
+    forward = {
+        "wins": 1,
+        "losses": 1,
+        "pool_size": 2,
+        "win_rate_pct": 50,
+        "clean_retractions": 4,
+        "open": 3,
+        "provisional": True,
+    }
+    monkeypatch.setattr(app_module, "_track_record_context", lambda: {
+        "sc": None,
+        "forward_sc": forward,
+        "receipts_available": False,
+    })
+
+    assert app_module.app.test_client().get("/ledger/share-card.png").status_code == 200
+    assert "Consensus call detail unavailable" in drawn_text
+    assert "No calls on the ledger yet." not in drawn_text
+
+    drawn_text.clear()
+    app_module._ledger_share_card_png({"gate": {"publishable": False}, "summary": {}, "calls": []})
+    assert "No calls on the ledger yet." in drawn_text
+    assert "Consensus call detail unavailable" not in drawn_text
 
 
 def test_track_record_share_card_uses_all_three_lanes(monkeypatch):
