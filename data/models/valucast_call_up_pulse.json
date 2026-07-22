@@ -31,6 +31,16 @@
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
+    "682987_hitter": {
+      "mlb_team": "NYY",
+      "mlbam_id": "682987",
+      "name": "Spencer Jones",
+      "position": "CF",
+      "prospect_rank": 150,
+      "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
     "682989_pitcher": {
       "mlb_team": "ATL",
       "mlbam_id": "682989",
@@ -67,6 +77,16 @@
       "name": "Kohl Drake",
       "position": "P",
       "prospect_rank": 544,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    "686930_pitcher": {
+      "mlb_team": "ATH",
+      "mlbam_id": "686930",
+      "name": "Mason Barnett",
+      "position": "P",
+      "prospect_rank": 203,
       "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -271,16 +291,6 @@
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
-    "696135_hitter": {
-      "mlb_team": "CLE",
-      "mlbam_id": "696135",
-      "name": "Kahlil Watson",
-      "position": "RF",
-      "prospect_rank": 47,
-      "role": "hitter",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
     "696522_pitcher": {
       "mlb_team": "ATH",
       "mlbam_id": "696522",
@@ -465,7 +475,7 @@
       "mlb_team": "HOU",
       "mlbam_id": "828599",
       "name": "Lucas Spence",
-      "position": "OF",
+      "position": "CF",
       "prospect_rank": 1663,
       "role": "hitter",
       "status": "Active",
@@ -539,16 +549,6 @@
       "name": "Blaze Jordan",
       "position": "3B",
       "prospect_rank": 39,
-      "role": "hitter",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
-      "mlb_team": "CLE",
-      "mlbam_id": "696135",
-      "name": "Kahlil Watson",
-      "position": "RF",
-      "prospect_rank": 47,
       "role": "hitter",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -654,12 +654,32 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
     {
+      "mlb_team": "NYY",
+      "mlbam_id": "682987",
+      "name": "Spencer Jones",
+      "position": "CF",
+      "prospect_rank": 150,
+      "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
       "mlb_team": "ATL",
       "mlbam_id": "805347",
       "name": "Jim Jarvis",
       "position": "SS",
       "prospect_rank": 195,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
+      "mlb_team": "ATH",
+      "mlbam_id": "686930",
+      "name": "Mason Barnett",
+      "position": "P",
+      "prospect_rank": 203,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -917,7 +937,7 @@
       "mlb_team": "HOU",
       "mlbam_id": "828599",
       "name": "Lucas Spence",
-      "position": "OF",
+      "position": "CF",
       "prospect_rank": 1663,
       "role": "hitter",
       "status": "Active",
@@ -944,7 +964,7 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     }
   ],
-  "generated_at": "2026-07-22T12:16:57.434822+00:00",
+  "generated_at": "2026-07-22T20:31:33.023688+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "board_generated_at": "2026-07-22T00:00:00+00:00",
@@ -965,7 +985,7 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "call_up_count": 47
+    "call_up_count": 48
   },
   "validation": {
     "blockers": [],
