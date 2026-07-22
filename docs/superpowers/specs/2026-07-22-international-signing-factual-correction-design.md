@@ -1,7 +1,7 @@
 # International Signing Factual Correction
 
 **Date:** 2026-07-22
-**Status:** Approved preview; implementation and publication pending external and final review
+**Status:** Candidate implemented and verified; publication pending external and final review
 
 ## Decision
 
