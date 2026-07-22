@@ -1733,7 +1733,11 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
     )
     ranked = score_current(contract, role_models, impact_models)
     limitations = [
-        "Shadow-only; never consumed by the live prospect board.",
+        "This model-component artifact feeds Prospect Rank v1; it is not itself "
+        "the standalone public prospect board.",
+        "The partial-impact walk-forward gate used full-store percentile references; "
+        "treat it as descriptive until a fold-local replay with training-only "
+        "references is completed.",
         "AA/AAA only until lower-minors historical outcomes are built.",
         "No factual draft prior for players without credible statistics.",
         "The ordinal outcome score is a bridge target, not direct fantasy value.",
@@ -1752,6 +1756,13 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
         "status": MODEL_STATUS,
         "model_name": MODEL_NAME,
         "model_version": MODEL_VERSION,
+        "release_contract": {
+            "artifact_status_semantics": "provenance_label_not_serving_status",
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+            "model_score_weight": 0.76,
+            "standalone_public_board": False,
+        },
         "input_contract": {
             "schema_version": contract["schema_version"],
             "generated_at": contract.get("generated_at"),

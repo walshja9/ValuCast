@@ -245,7 +245,7 @@ def test_ledger_page_renders_full_ledger():
     client = app.test_client()
     html = client.get("/ledger").data.decode("utf-8")
 
-    assert "THE LEDGER" in html
+    assert "TRACK RECORD" in html
     assert "We backed off" in html                      # misses are on the page
     assert "Our retreats" in html                       # ...and in the funnel tiles
     assert "/aotc-scorecard.json" in html               # raw artifact still linked
@@ -271,6 +271,11 @@ def test_ledger_page_renders_full_ledger():
     assert 'data-ledger-filter="retreat"' in html       # outcome filter pills
     assert 'data-ledger-filter="resolved"' in html      # resolved != undecided
     assert "conviction, not evidence" in html           # worked-example explainer
+    # The decided-rate and matched-control lift use different populations. The
+    # public sentence must not make the lift look derived from wins/decided.
+    assert "matured decided calls" in html
+    assert "Separately, among still-open matured calls" in html
+    assert "matched controls" in html
     # 7/3 retention-cohort disclosure: policy-change entries are labeled,
     # never silent — and never curated out (scoring fields stay frozen).
     assert "Board policy change 2026-07-02" in html
@@ -391,4 +396,500 @@ def test_active_mlb_rows_never_serve_as_controls(tmp_path):
     )
     payload = build_scorecard(archive_dir=tmp_path, generated_at="2026-07-08T00:00:00+00:00")
     assert payload["summary"]["control_rates"]["n"] == 1  # only the clean control
+
+
+def test_track_record_context_composes_existing_artifacts_and_rates(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    scorecard = app_module._load_scorecard_payload()
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: scorecard)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70, "provisional": True},
+        "funnel": {
+            "wins": 39,
+            "losses": 31,
+            "open": 102,
+            "total_claims": 258,
+            "excluded_from_pool": 188,
+            "unscored_or_unclassified": 0,
+            "buckets": {"clean_retraction": 86},
+            "self_retraction_rate": {"retracted": 117, "total": 258, "rate": 117 / 258},
+        },
+        "cohorts": {"cohort_count": 4},
+    })
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "generated_at": "2026-07-21T00:00:00+00:00",
+        "receipts": [{"name": str(i)} for i in range(7)],
+        "misses": [],
+        "no_claim_rows": [{"name": str(i)} for i in range(33)],
+        "summary": {
+            "no_claim_call_up_count": 33,
+            "maturation": {"pending": 7, "confirmed": 0, "decayed": 0},
+        },
+    })
+
+    context = app_module._track_record_context()
+
+    assert context["sc"] == scorecard
+    assert context["forward_sc"]["wins"] == 39
+    assert context["forward_sc"]["losses"] == 31
+    assert context["forward_sc"]["win_rate_pct"] == 56
+    assert context["forward_sc"]["clean_retractions"] == 86
+    assert context["receipt_count"] == 7
+    assert context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 33
+
+
+def test_track_record_context_respects_both_hold_gates(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: {"artifact": "consensus"})
+    monkeypatch.setattr(
+        app_module,
+        "_load_forward_scoreboard_payload",
+        lambda: (_ for _ in ()).throw(AssertionError("held scoreboard was loaded")),
+    )
+
+    context = app_module._track_record_context()
+
+    assert context["forward_sc"] is None
+    assert context["receipts_available"] is False
+    assert context["receipt_count"] == 0
+    assert context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 0
+
+
+def test_track_record_context_rejects_partial_forward_artifact(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70},
+        "funnel": {"wins": 39},
+    })
+
+    context = app_module._track_record_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert context["forward_sc"] is None
+    assert "None%" not in html
+    assert "None clean retractions" not in html
+    assert "Held or collecting; no metrics published." in html
+
+
+def test_receipts_context_rejects_partial_nonempty_artifact(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "receipts": [{"name": "LEAKED RECEIPT"}],
+        "misses": [],
+        "no_claim_rows": [],
+        "summary": {"no_claim_call_up_count": 12},
+    })
+
+    context = app_module._build_receipts_page_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert context["receipts_available"] is False
+    assert context["receipts"] == []
+    assert context["misses"] == []
+    assert context["no_claim_rows"] == []
+    assert context["receipt_count"] == context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 0
+    assert context["maturation"] == {"pending": 0, "confirmed": 0, "decayed": 0}
+    assert "0–0" not in html
+    assert "12 without a large enough ranking gap" not in html
+
+
+def test_track_record_fail_closes_consensus_without_hiding_other_lanes(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    drawn_text = []
+    monkeypatch.setattr(
+        app_module,
+        "_graphic_fit_text",
+        lambda draw, value, font, max_width: drawn_text.append(str(value)) or str(value),
+    )
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 2, "provisional": True},
+        "funnel": {
+            "wins": 1,
+            "losses": 1,
+            "open": 3,
+            "buckets": {"clean_retraction": 4},
+        },
+        "cohorts": {"cohort_count": 1},
+    })
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "generated_at": "2026-07-21T00:00:00+00:00",
+        "receipts": [{"name": "Ahead"}],
+        "misses": [],
+        "no_claim_rows": [],
+        "summary": {
+            "no_claim_call_up_count": 0,
+            "maturation": {"pending": 1, "confirmed": 0, "decayed": 0},
+        },
+    })
+
+    for scorecard in ({"gate": {"publishable": True}, "summary": {"wins": 1}}, None):
+        monkeypatch.setattr(
+            app_module,
+            "_load_scorecard_payload",
+            lambda scorecard=scorecard: scorecard,
+        )
+        context = app_module._track_record_context()
+        page = app_module.app.test_client().get("/ledger")
+        png = app_module.app.test_client().get("/ledger/share-card.png")
+
+        assert context["sc"] is None
+        assert page.status_code == 200
+        assert "1–1 across 2 scored calls (50%)" in page.data.decode("utf-8")
+        assert "1 clearly ahead" in page.data.decode("utf-8")
+        assert "Collecting until the registered publication gate matures." in page.data.decode("utf-8")
+        assert png.status_code == 200
+        assert png.mimetype == "image/png"
+
+    assert "50% of 2 scored" in drawn_text
+    assert "collecting" in drawn_text
+    assert "0 no scoreable gap" in drawn_text
+
+
+def test_track_record_rejects_incomplete_stabilized_aggregate_without_hiding_forward(monkeypatch):
+    from copy import deepcopy
+
+    import app as app_module
+
+    scorecard = deepcopy(app_module._load_scorecard_payload())
+    scorecard["summary"]["stabilized"] = {
+        "publishable": True,
+        "window_days": 14,
+        "decided_rate": {"mean": 0.4, "min": 0.3, "max": 0.5},
+        "control_lift": {"mean": 1.2},
+    }
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: scorecard)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 2, "provisional": True},
+        "funnel": {
+            "wins": 1,
+            "losses": 1,
+            "open": 3,
+            "buckets": {"clean_retraction": 4},
+        },
+        "cohorts": {"cohort_count": 1},
+    })
+
+    context = app_module._track_record_context()
+    response = app_module.app.test_client().get("/ledger")
+    html = response.data.decode("utf-8")
+
+    assert context["sc"] is None
+    assert response.status_code == 200
+    assert "1–1 across 2 scored calls (50%)" in html
+    assert "Collecting until the registered publication gate matures." in html
+    assert "lift ranged" not in html
+
+
+def test_track_record_share_card_404s_only_when_all_lanes_are_unavailable(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", True)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
+    monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda: None)
+
+    assert app_module.app.test_client().get("/ledger").status_code == 200
+    assert app_module.app.test_client().get("/ledger/share-card.png").status_code == 404
+
+
+def test_track_record_rejects_mismatched_forward_denominator(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70, "provisional": True},
+        "funnel": {
+            "wins": 39,
+            "losses": 30,
+            "open": 102,
+            "buckets": {"clean_retraction": 86},
+        },
+        "cohorts": {"cohort_count": 4},
+    })
+
+    view = app_module._scoreboard_view(app_module._load_forward_scoreboard_payload())
+    context = app_module._track_record_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert view["win_rate_pct"] == 57  # 39 / (39 + 30), not 39 / artifact pool 70
+    assert context["forward_sc"] is None
+    assert "Held or collecting; no metrics published." in html
+    assert "39–30" not in html
+    assert "57%" not in html
+
+
+def test_receipts_context_requires_integer_maturation_buckets(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "receipts": [{"name": "LEAKED RECEIPT"}],
+        "misses": [],
+        "no_claim_rows": [],
+        "summary": {
+            "no_claim_call_up_count": 0,
+            "maturation": {"pending": "1", "confirmed": 0, "decayed": 0},
+        },
+    })
+
+    context = app_module._build_receipts_page_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert context["receipts_available"] is False
+    assert context["receipt_count"] == 0
+    assert "LEAKED RECEIPT" not in html
+    assert "Ahead-side maturation:" not in html
+
+
+def test_track_record_umbrella_copy_metadata_and_heading_semantics(monkeypatch):
+    import app as app_module
+
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+    preview = app_module.app.test_client().get("/ledger/share-card").data.decode("utf-8")
+
+    assert "Three separately scored evidence lanes" in html
+    assert "Consensus Movement:</strong>" in html
+    assert "calls tracked since" in html
+    assert "This is one lane, not a Track Record total." in html
+    assert "Consensus Movement details" in html
+    assert '<h2 class="ledger-tile-label">Forward Calls</h2>' in html
+    assert '<h2 class="ledger-tile-label">Consensus Movement</h2>' in html
+    assert '<h2 class="ledger-tile-label">Call-Up Timing</h2>' in html
+    assert "Ahead-side maturation:" in html
+    assert "Maturation:" not in html
+    assert 'download="valucast-track-record.png"' in html
+    assert "three separately scored evidence lanes" in preview.lower()
+    assert "Back to Track Record" in preview
+    assert "Back to The Ledger" not in preview
+    assert 'aria-label="Track Record navigation"' in html
+    assert 'aria-label="Ledger navigation"' not in html
+
+
+def test_track_record_png_footer_defines_separate_denominators(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    notes = []
+    monkeypatch.setattr(
+        app_module,
+        "_graphic_footer",
+        lambda draw, **kwargs: notes.append(kwargs.get("right_note")),
+    )
+
+    response = app_module.app.test_client().get("/ledger/share-card.png")
+
+    assert response.status_code == 200
+    assert notes
+    assert "definitions" in notes[0].lower()
+    assert "denominators" in notes[0].lower()
+    assert "score separately" in notes[0].lower()
+    assert "success rate" not in notes[0].lower()
+
+
+def test_track_record_png_distinguishes_unavailable_consensus_from_empty_ledger(monkeypatch):
+    from PIL import ImageDraw
+
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    drawn_text = []
+    original_text = ImageDraw.ImageDraw.text
+
+    def capture_text(draw, xy, value, *args, **kwargs):
+        drawn_text.append(str(value))
+        return original_text(draw, xy, value, *args, **kwargs)
+
+    monkeypatch.setattr(ImageDraw.ImageDraw, "text", capture_text)
+    forward = {
+        "wins": 1,
+        "losses": 1,
+        "pool_size": 2,
+        "win_rate_pct": 50,
+        "clean_retractions": 4,
+        "open": 3,
+        "provisional": True,
+    }
+    monkeypatch.setattr(app_module, "_track_record_context", lambda: {
+        "sc": None,
+        "forward_sc": forward,
+        "receipts_available": False,
+    })
+
+    assert app_module.app.test_client().get("/ledger/share-card.png").status_code == 200
+    assert "Consensus call detail unavailable" in drawn_text
+    assert "No calls on the ledger yet." not in drawn_text
+
+    drawn_text.clear()
+    app_module._ledger_share_card_png({"gate": {"publishable": False}, "summary": {}, "calls": []})
+    assert "No calls on the ledger yet." in drawn_text
+    assert "Consensus call detail unavailable" not in drawn_text
+
+
+def test_track_record_share_card_uses_all_three_lanes(monkeypatch):
+    import inspect
+    import app as app_module
+
+    monkeypatch.setitem(app_module.app.config, "TESTING", True)
+    drawn_text = []
+    monkeypatch.setattr(
+        app_module,
+        "_graphic_fit_text",
+        lambda draw, value, font, max_width: drawn_text.append(str(value)) or str(value),
+    )
+    monkeypatch.setattr(app_module, "_track_record_context", lambda: {
+        "sc": {
+            "gate": {"publishable": True},
+            "summary": {
+                "wins": 6,
+                "decided_count": 10,
+                "decided_rate": 0.6,
+                "matured_open_rates": {"toward": 4, "n": 8},
+                "control_matured_rates": {"toward": 3, "n": 9},
+            },
+            "calls": [],
+        },
+        "forward_sc": {
+            "wins": 39, "losses": 31, "pool_size": 70, "win_rate_pct": 56,
+            "clean_retractions": 86, "open": 102, "provisional": True,
+        },
+        "receipts_available": True,
+        "receipt_count": 7,
+        "miss_count": 0,
+        "no_claim_call_up_count": 33,
+        "maturation": {"confirmed": 0, "pending": 7, "decayed": 0},
+    })
+
+    response = app_module.app.test_client().get("/ledger/share-card.png")
+    source = inspect.getsource(app_module._ledger_share_card_png)
+
+    assert response.status_code == 200
+    assert response.mimetype == "image/png"
+    assert len(response.data) > 10_000
+    assert 'headline="TRACK RECORD"' in source
+    assert '"FORWARD CALLS"' in source
+    assert '"CONSENSUS MOVEMENT"' in source
+    assert '"CALL-UP TIMING"' in source
+    assert "NEWEST CONSENSUS CALLS" in source
+    assert "56% of 70 scored" in drawn_text
+    assert "86 clean retractions - 102 open" in drawn_text
+    assert "60% of 10 mature" in drawn_text
+    assert "still-open 4/8 vs 3/9 controls" in drawn_text
+    assert "33 no scoreable gap" in drawn_text
+    assert "arrival evidence, not career value" in drawn_text
+
+
+def test_track_record_explains_three_evidence_lanes_with_denominators(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70, "provisional": True},
+        "funnel": {
+            "wins": 39,
+            "losses": 31,
+            "open": 102,
+            "total_claims": 258,
+            "excluded_from_pool": 188,
+            "unscored_or_unclassified": 0,
+            "buckets": {"clean_retraction": 86},
+            "self_retraction_rate": {"retracted": 117, "total": 258, "rate": 117 / 258},
+        },
+        "cohorts": {"cohort_count": 4},
+    })
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "receipts": [{"name": str(i)} for i in range(7)],
+        "misses": [],
+        "no_claim_rows": [{"name": str(i)} for i in range(33)],
+        "summary": {
+            "no_claim_call_up_count": 33,
+            "maturation": {"pending": 7, "confirmed": 0, "decayed": 0},
+        },
+    })
+
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert "TRACK RECORD" in html
+    assert "Forward Calls" in html
+    assert "39–31 across 70 scored calls (56%)" in html
+    assert "86 clean retractions" in html and "102 open" in html
+    assert "Consensus Movement" in html
+    assert "mature decisions" in html and "matched controls" in html
+    assert "Call-Up Timing" in html
+    assert "7 clearly ahead" in html and "0 clearly behind" in html
+    assert "33 without a large enough ranking gap to score" in html
+
+
+def test_track_record_discloses_exact_call_up_thresholds():
+    from app import app
+    from prospects.ahead_of_consensus import (
+        CONSENSUS_RANK_CAP,
+        MAX_VALUCAST_RANK,
+        MIN_BOARDS,
+        MIN_DIVERGENCE,
+    )
+    from prospects.call_up_receipts import FIELD_UNRANKED_MAX_VALUCAST_RANK
+
+    html = app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert f"at least {MIN_BOARDS} public boards" in html
+    assert f"inside the top {CONSENSUS_RANK_CAP}" in html
+    assert f"top {MAX_VALUCAST_RANK}" in html
+    assert f"{MIN_DIVERGENCE} places" in html
+    assert f"top-{FIELD_UNRANKED_MAX_VALUCAST_RANK}" in html
+    assert "no scoreable ranking gap" in html
+    assert "eligible prior call" not in html
+
+
+def test_track_record_publishes_decided_rate_when_control_lift_is_unavailable_or_zero(monkeypatch):
+    from copy import deepcopy
+
+    import app as app_module
+
+    base_scorecard = app_module._load_scorecard_payload()
+    assert base_scorecard
+
+    for control_lift in (None, 0):
+        scorecard = deepcopy(base_scorecard)
+        scorecard["gate"]["publishable"] = True
+        scorecard["summary"].update({
+            "wins": 6,
+            "decided_count": 10,
+            "decided_rate": 0.6,
+            "control_lift": control_lift,
+            "matured_open_rates": {"toward": 0, "n": 10, "toward_rate": 0},
+            "control_matured_rates": {"toward": 3, "n": 10, "toward_rate": 0.3},
+            "stabilized": {},
+        })
+        monkeypatch.setattr(app_module, "_load_scorecard_payload", lambda scorecard=scorecard: scorecard)
+
+        html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+        assert "6 of 10 mature decisions (60%)" in html
+        assert "Collecting until the registered publication gate matures." not in html
+        assert "<strong>0 of 10 (0%)</strong> of the time vs" in html
+        assert "<strong>3 of 10 (30%)</strong> for matched players" in html
+        if control_lift is None:
+            assert "The separate matched-control comparison is unavailable for this build." in html
+        else:
+            assert "Separate still-open comparison: 0/10 vs 3/10 matched controls (0x)." in html
+            assert "The separate matched-control comparison is unavailable for this build." not in html
 

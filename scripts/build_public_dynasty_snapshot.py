@@ -46,7 +46,7 @@ ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 MLB_VALUE_HISTORY_LIMIT = 30
 PROSPECT_VALUE_HISTORY_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
-CALIBRATION_METHOD = "raw_common_scale_certification_v1"
+CALIBRATION_METHOD = "raw_scale_compatibility_certification_v2"
 TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_1"
 TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
 MLB_COLLISION_PROMOTION_MAX_RANK = 75
@@ -762,11 +762,15 @@ def _apply_common_value_scale(players: list[dict], report: dict) -> None:
         context = dict(row.get("context") or {})
         context["cross_universe_calibration"] = {
             "method": CALIBRATION_METHOD,
+            "contract_kind": "compatibility_certification",
+            "compatibility_certified": bool(report.get("applied")),
+            "unit_mapping_applied": False,
+            "value_units_calibrated": False,
             "value_mutation": "none",
             "raw_value": row.get("value"),
             "raw_value_scale": original_scale,
-            "calibrated_value": row.get("value"),
-            "calibrated_value_scale": COMMON_VALUE_SCALE,
+            "display_value": row.get("value"),
+            "display_value_scale": COMMON_VALUE_SCALE,
             "mlb_equivalent_rank_for_top_prospect": report["metrics"].get(
                 "top_prospect_mlb_equivalent_rank"
             ),
@@ -822,7 +826,7 @@ def _cross_universe_calibration_report(
     if value_contract.get("value_kind") != "multi_year_dynasty_horizon":
         blockers.append("ValuCast MLB layer is not a multi-year dynasty horizon.")
     if int(value_contract.get("horizon_years") or 0) < MIN_MLB_HORIZON_YEARS:
-        blockers.append("ValuCast MLB horizon is shorter than the calibration gate.")
+        blockers.append("ValuCast MLB horizon is shorter than the compatibility gate.")
     if mlb_validation.get("duplicate_identity_count", 0) != 0:
         blockers.append("ValuCast MLB layer has duplicate MLBAM+role identities.")
     if mlb_validation.get("missing_mlbam_count", 0) != 0:
@@ -835,7 +839,7 @@ def _cross_universe_calibration_report(
     coverage_rate = float(rank_validation.get("coverage_rate") or 0.0)
     top_unique_count = int(rank_validation.get("top_200_unique_score_count") or 0)
     if coverage_rate < MIN_PROSPECT_COVERAGE_RATE:
-        blockers.append("Prospect Rank v1 coverage is below the calibration gate.")
+        blockers.append("Prospect Rank v1 coverage is below the compatibility gate.")
     if rank_validation.get("duplicate_identity_count", 0) != 0:
         blockers.append("Prospect Rank v1 has duplicate MLBAM+role identities.")
     if rank_validation.get("missing_mlbam_count", 0) != 0:
@@ -862,7 +866,7 @@ def _cross_universe_calibration_report(
         and mlb_rows_above_top_prospect < minimum_mlb_rows_above
     ):
         blockers.append(
-            "Top prospect is calibrated above too much of the current MLB dynasty board."
+            "Top prospect is displayed above too much of the current MLB dynasty board."
         )
     if (
         top_prospect_value is not None
@@ -870,13 +874,17 @@ def _cross_universe_calibration_report(
         and mlb_rows_above_top_prospect > maximum_mlb_rows_above
     ):
         blockers.append(
-            "Top prospect is calibrated below too much of the current MLB dynasty board."
+            "Top prospect is displayed below too much of the current MLB dynasty board."
         )
 
     return {
         "method": CALIBRATION_METHOD,
-        "target_value_scale": COMMON_VALUE_SCALE,
+        "contract_kind": "compatibility_certification",
+        "display_value_scale": COMMON_VALUE_SCALE,
         "value_mutation": "none",
+        "unit_mapping_applied": False,
+        "value_units_calibrated": False,
+        "compatibility_certified": not blockers,
         "applied": not blockers,
         "metrics": metrics,
         "criteria": {
@@ -1071,7 +1079,8 @@ def _validation(
         "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
         "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
         "graduation_transition_floor_count": graduation_transition_floor_count,
-        "cross_universe_value_scale_calibrated": bool(calibration_report.get("applied")),
+        "cross_universe_value_scale_calibrated": False,
+        "cross_universe_value_scale_compatibility_certified": bool(calibration_report.get("applied")),
         "cross_universe_calibration": calibration_report,
         "quality_governor": quality_governor,
         "surface_readiness": {

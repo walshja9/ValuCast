@@ -113,15 +113,54 @@ def test_manifest_reports_remaining_opportunity_diagnostics_and_holds_clamps():
 
     manifest = hp.build_manifest(rows, "2026-07-18T12:00:00+00:00", "2026-07-18")
 
-    assert manifest["remaining_opportunity_diagnostics"] == {
-        "hitters": {"rows": 1, "actuals_matched": 1, "zero_remaining": 1, "clamped_to_zero": 1},
-        "pitchers": {"rows": 1, "actuals_matched": 0, "zero_remaining": 0, "clamped_to_zero": 0},
+    hitters = manifest["remaining_opportunity_diagnostics"]["hitters"]
+    pitchers = manifest["remaining_opportunity_diagnostics"]["pitchers"]
+    assert hitters == {
+        "rows": 1,
+        "actuals_matched": 1,
+        "actuals_match_rate": 1.0,
+        "positive_remaining": 0,
+        "positive_remaining_rate": 0.0,
+        "zero_remaining": 1,
+        "zero_remaining_rate": 1.0,
+        "clamped_to_zero": 1,
+        "clamped_to_zero_rate": 1.0,
+    }
+    assert pitchers == {
+        "rows": 1,
+        "actuals_matched": 0,
+        "actuals_match_rate": 0.0,
+        "positive_remaining": 1,
+        "positive_remaining_rate": 1.0,
+        "zero_remaining": 0,
+        "zero_remaining_rate": 0.0,
+        "clamped_to_zero": 0,
+        "clamped_to_zero_rate": 0.0,
     }
     assert manifest["public_skill_metric_gate"] == {
         "status": "held",
         "affects_live_outputs": False,
         "reason": "remaining-opportunity clamping is present",
+        "blockers": ["remaining_opportunity_clamped", "zero_remaining_opportunity"],
     }
+
+
+def test_manifest_opportunity_rates_reconcile_to_role_rows():
+    rows = [
+        _hitter({"PA": 0}),
+        _hitter({"PA": 100}),
+        _pitcher({"IP": 0}),
+        _pitcher({"IP": 50}),
+    ]
+
+    manifest = hp.build_manifest(rows, "2026-07-18T12:00:00+00:00", "2026-07-18")
+
+    for role in ("hitters", "pitchers"):
+        diagnostics = manifest["remaining_opportunity_diagnostics"][role]
+        assert diagnostics["positive_remaining"] + diagnostics["zero_remaining"] == diagnostics["rows"]
+        assert diagnostics["positive_remaining_rate"] == 0.5
+        assert diagnostics["zero_remaining_rate"] == 0.5
+        assert diagnostics["positive_remaining_rate"] + diagnostics["zero_remaining_rate"] == 1.0
 
 
 def test_manifest_skill_metric_gate_requires_positive_remaining_opportunity():
@@ -133,6 +172,9 @@ def test_manifest_skill_metric_gate_requires_positive_remaining_opportunity():
 
     assert manifest["public_skill_metric_gate"]["status"] == "held"
     assert manifest["public_skill_metric_gate"]["reason"] == "zero remaining opportunity is present"
+    assert manifest["public_skill_metric_gate"]["blockers"] == [
+        "zero_remaining_opportunity"
+    ]
 
 
 def test_manifest_skill_metric_gate_is_display_only_eligible_without_zero_or_clamp():
@@ -148,6 +190,7 @@ def test_manifest_skill_metric_gate_is_display_only_eligible_without_zero_or_cla
         "status": "display_only_eligible",
         "affects_live_outputs": False,
         "reason": "remaining-opportunity inputs have positive coverage",
+        "blockers": [],
     }
 
 

@@ -1,69 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}The Ledger — Ahead of the Curve Track Record | ValuCast{% endblock %}
-{% block og_title %}The Ledger | ValuCast{% endblock %}
-{% block og_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
+{% block title %}Track Record | ValuCast{% endblock %}
+{% block og_title %}Track Record | ValuCast{% endblock %}
+{% block og_description %}Track Record separates Forward Calls, Consensus Movement, and Call-Up Timing — each with its own rules and denominator.{% endblock %}
 {% block og_url %}https://valucast.app/ledger{% endblock %}
 {% block og_image %}https://valucast.app/ledger/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
-{% block twitter_title %}The Ledger | ValuCast{% endblock %}
-{% block twitter_description %}Every ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.{% endblock %}
+{% block twitter_title %}Track Record | ValuCast{% endblock %}
+{% block twitter_description %}Track Record separates Forward Calls, Consensus Movement, and Call-Up Timing — each with its own rules and denominator.{% endblock %}
 {% block twitter_image %}https://valucast.app/ledger/share-card.png{% endblock %}
 
 {% block content %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 {% from "partials/_editorial_date.html" import editorial_date %}
-{{ board_nav(active='ledger', aria='Ledger navigation') }}
+{{ board_nav(active='ledger', aria='Track Record navigation') }}
 {% include "partials/_stale_notice.html" %}
 
 <section class="buys-heading glass ledger-hero">
     <div class="buys-heading-copy">
         <span class="buys-heading-eyebrow">AHEAD OF THE CURVE</span>
-        <h1>THE LEDGER</h1>
+        <h1>TRACK RECORD</h1>
+        <p class="buys-heading-sub">Three separately scored evidence lanes show whether our
+        published calls held up, whether consensus moved toward a different ValuCast view, and
+        whether prospects reached MLB after we ranked them.</p>
         {% if sc %}
-        <p class="buys-heading-sub">{{ sc.summary.ever_flagged }} calls tracked since {{ sc.summary.first_call_date }}{% if sc.generated_at %} &middot; updated {{ editorial_date(sc.generated_at) }}{% endif %}</p>
+        <p class="buys-heading-sub"><strong>Consensus Movement:</strong> {{ sc.summary.ever_flagged }} calls tracked since {{ sc.summary.first_call_date }}{% if sc.generated_at %} &middot; updated {{ editorial_date(sc.generated_at) }}{% endif %}. This is one lane, not a Track Record total.</p>
         {% endif %}
-        <p class="buys-heading-sub">Every prospect we rank meaningfully ahead of the public field,
-        tracked to an outcome — including the calls <strong>we backed off ourselves</strong>.
-        No call ever leaves this page silently.</p>
-        <p class="buys-fineprint">The bet being graded: <strong>the industry eventually comes to
-        our number</strong>. Field moving toward us = win. Field moving away = against us —
-        counting only one direction would make this scorecard impossible to lose. Every status
-        is recomputed from the full archive on every build — nothing is hand-frozen. "Caught up"
-        and "we backed off" describe the latest snapshot; if the gap re-opens later, the call
-        re-opens with it and the headline moves both ways.</p>
-        <p class="buys-fineprint">Read a row like a position: our number is the thesis, the
-        field's number is the market price, and a call wins when the market comes to our
-        number. Us moving a player up is conviction, not evidence — only the field's
-        movement scores.</p>
-        {# Pre-launch declutter: the hero carried 5 always-visible fineprint
-           paragraphs; keep the two that state the bet, collapse the rules/policy/
-           vintage detail behind a toggle. Every sentence is preserved. #}
-        <details class="hero-fineprint-details">
-            <summary class="buys-fineprint">Rules, board policy &amp; vintage</summary>
-            <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
-            ranked instead of leaving the board — 8 already-debuted players entered tracking that week
-            under the same pre-registered rules, disclosed rather than curated. Any call currently on an
-            MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
-            chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
-            <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
-            &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
-            <p class="buys-fineprint">Field-consensus vintage: the outside boards we compare
-            against refresh on their own schedules — some fast, some weeks between updates. So
-            the field side of every call can lag reality, and a slow board slows apparent
-            movement in both directions, for us and against us.</p>
-        </details>
+        <p class="buys-fineprint">Each lane keeps its own cohort, clock, rules, and denominator.
+        The rates are never combined into one score.</p>
     </div>
-    {% if sc %}
+    {% if sc or forward_sc or receipts_available %}
     <div class="buys-actions">
         <a class="export-btn" href="/ledger/share-card" target="_blank" rel="noopener">Preview graphic</a>
-        <a class="export-btn secondary-action" href="/ledger/share-card.png" download="valucast-ledger.png">Download PNG</a>
+        <a class="export-btn secondary-action" href="/ledger/share-card.png" download="valucast-track-record.png">Download PNG</a>
     </div>
     {% endif %}
 </section>
 
+<section class="track-record-grid" aria-label="Track record overview">
+    <article class="ledger-tile glass">
+        <h2 class="ledger-tile-label">Forward Calls</h2>
+        {% if forward_sc %}
+        <span class="ledger-tile-n">{{ forward_sc.wins }}–{{ forward_sc.losses }}</span>
+        <strong>{{ forward_sc.wins }}–{{ forward_sc.losses }} across {{ forward_sc.pool_size }} scored calls ({{ forward_sc.win_rate_pct }}%)</strong>
+        <span class="ledger-tile-sub">{{ forward_sc.clean_retractions }} clean retractions · {{ forward_sc.open }} open</span>
+        {% if forward_sc.provisional %}<span class="ledger-tile-sub">Provisional: the registered expiry window has not matured.</span>{% endif %}
+        <a href="/scoreboard">See every registered call</a>
+        {% else %}
+        <span class="ledger-tile-sub">Held or collecting; no metrics published.</span>
+        {% endif %}
+    </article>
+
+    <article class="ledger-tile glass">
+        <h2 class="ledger-tile-label">Consensus Movement</h2>
+        {% if sc and sc.gate.publishable and sc.summary.decided_rate is not none %}
+        <span class="ledger-tile-n">{{ sc.summary.wins }}/{{ sc.summary.decided_count }}</span>
+        <strong>{{ sc.summary.wins }} of {{ sc.summary.decided_count }} mature decisions ({{ (sc.summary.decided_rate * 100) | round | int }}%)</strong>
+        <span class="ledger-tile-sub">The public field later moved toward our different view.</span>
+        {% if sc.summary.control_lift is defined and sc.summary.control_lift is not none and sc.summary.matured_open_rates and sc.summary.control_matured_rates %}
+        <span class="ledger-tile-sub">Separate still-open comparison: {{ sc.summary.matured_open_rates.toward }}/{{ sc.summary.matured_open_rates.n }} vs {{ sc.summary.control_matured_rates.toward }}/{{ sc.summary.control_matured_rates.n }} matched controls ({{ sc.summary.control_lift }}x).</span>
+        {% else %}
+        <span class="ledger-tile-sub">The separate matched-control comparison is unavailable for this build.</span>
+        {% endif %}
+        {% else %}
+        <span class="ledger-tile-sub">Collecting until the registered publication gate matures.</span>
+        {% endif %}
+    </article>
+
+    <article class="ledger-tile glass">
+        <h2 class="ledger-tile-label">Call-Up Timing</h2>
+        {% if receipts_available %}
+        <span class="ledger-tile-n">{{ receipt_count }}–{{ miss_count }}</span>
+        <strong>{{ receipt_count }} clearly ahead · {{ miss_count }} clearly behind</strong>
+        <span class="ledger-tile-sub">{{ no_claim_call_up_count }} without a large enough ranking gap to score</span>
+        <span class="ledger-tile-sub">Ahead-side maturation: {{ maturation.confirmed }} confirmed · {{ maturation.pending }} pending · {{ maturation.decayed }} decayed</span>
+        {% include "partials/_call_up_scoring_rules.html" %}
+        <a href="/receipts">See every call-up</a>
+        {% else %}
+        <span class="ledger-tile-sub">Held or collecting; no metrics published.</span>
+        {% endif %}
+    </article>
+</section>
+
 {% if sc %}
+<h2 class="ledger-section-heading">Consensus Movement details</h2>
+<section class="glass ledger-headline">
+    <p>The bet being graded: <strong>the industry eventually comes to our number</strong>.
+    Field moving toward us = win. Field moving away = against us. Every status is
+    recomputed from the full archive on every build — nothing is hand-frozen — and calls
+    can reopen as the gap changes. No call ever leaves this page silently.</p>
+    <p class="buys-fineprint">Read a row like a position: our number is the thesis, the
+    field's number is the market price, and a call wins when the market comes to our
+    number. Us moving a player up is conviction, not evidence — only the field's movement scores.</p>
+    <details class="hero-fineprint-details">
+        <summary class="buys-fineprint">Rules, board policy &amp; vintage</summary>
+        <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
+        ranked instead of leaving the board — 8 already-debuted players entered tracking that week
+        under the same pre-registered rules, disclosed rather than curated. Any call currently on an
+        MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
+        chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
+        <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
+        &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
+        <p class="buys-fineprint">Field-consensus vintage: the outside boards we compare
+        against refresh on their own schedules — some fast, some weeks between updates. So
+        the field side of every call can lag reality, and a slow board slows apparent movement
+        in both directions, for us and against us.</p>
+    </details>
+</section>
 {% if sc.gate.publishable and sc.summary.decided_rate is not none %}
 <section class="glass ledger-headline">
     {% set stab = sc.summary.stabilized %}
@@ -71,23 +115,35 @@
     {# The daily number re-rolls against the latest board every build, so a single
        reading swings wide. The trailing mean is the honest central tendency; the
        range is the honest noise band. #}
-    <p>Over the last <strong>{{ stab.window_days }}</strong> builds, the field has come
-    toward our matured calls <strong>{{ (stab.decided_rate.mean * 100) | round | int }}%</strong>
-    of the time — <strong>{{ stab.control_lift.mean }}x</strong> the matched-control baseline
-    (a modest edge, and a noisy one: lift has ranged
+    <p>Over the last <strong>{{ stab.window_days }}</strong> builds,
+    <strong>{{ (stab.decided_rate.mean * 100) | round | int }}%</strong> of our matured
+    decided calls ended with the field moving toward us. Separately, among still-open
+    matured calls, our toward-rate lift averaged <strong>{{ stab.control_lift.mean }}x</strong>
+    versus matched controls (a modest and noisy edge: lift ranged
     {{ stab.control_lift.min }}x&ndash;{{ stab.control_lift.max }}x day to day).
     Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
     {{ sc.targets.control_lift }}x.</p>
     <p class="buys-fineprint">Today's pre-registered daily reading (a single-day snapshot):
     <strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
-    matured decided ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %},
-    {{ sc.summary.control_lift }}x{% endif %}. We publish the daily number unchanged and
+    matured decided calls ended with the field moving toward us
+    ({{ (sc.summary.decided_rate * 100) | round | int }}%).{% if sc.summary.control_lift %}
+    Separately, among still-open matured calls, the field moved toward
+    <strong>{{ sc.summary.matured_open_rates.toward }}</strong> of
+    <strong>{{ sc.summary.matured_open_rates.n }}</strong>
+    ({{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%) versus
+    <strong>{{ sc.summary.control_matured_rates.toward }}</strong> of
+    <strong>{{ sc.summary.control_matured_rates.n }}</strong> matched controls
+    ({{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%;
+    {{ sc.summary.control_lift }}x).{% endif %} We publish the daily number unchanged and
     read it through the trailing average, so one noisy build isn't mistaken for the record.</p>
     {% else %}
     <p><strong>{{ sc.summary.wins }}</strong> of <strong>{{ sc.summary.decided_count }}</strong>
     matured decided calls (14+ days tracked) ended with the field coming to us
-    ({{ (sc.summary.decided_rate * 100) | round | int }}%){% if sc.summary.control_lift %} —
-    <strong>{{ sc.summary.control_lift }}x</strong> the matched-control baseline{% endif %}.
+    ({{ (sc.summary.decided_rate * 100) | round | int }}%).{% if sc.summary.control_lift %}
+    Separately, among still-open matured calls, the field moved toward
+    {{ sc.summary.matured_open_rates.toward }} of {{ sc.summary.matured_open_rates.n }} versus
+    {{ sc.summary.control_matured_rates.toward }} of {{ sc.summary.control_matured_rates.n }}
+    matched controls ({{ sc.summary.control_lift }}x).{% endif %}
     Targets on record: {{ (sc.targets.decided_rate * 100) | round | int }}% /
     {{ sc.targets.control_lift }}x.</p>
     {% endif %}
@@ -124,8 +180,8 @@ decided-rate, {{ sc.targets.control_lift }}x matched-control lift.</div>
 </section>
 <p class="ledger-context">{{ sc.summary.ever_flagged }} calls flagged since {{ sc.summary.first_call_date }}
 {% if sc.gate.publishable and sc.summary.control_matured_rates and sc.summary.matured_open_rates %} &middot; the field moves toward our matured calls
-<strong>{{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%</strong> of the time vs
-<strong>{{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%</strong> for matched players
+<strong>{{ sc.summary.matured_open_rates.toward }} of {{ sc.summary.matured_open_rates.n }} ({{ (sc.summary.matured_open_rates.toward_rate * 100) | round | int }}%)</strong> of the time vs
+<strong>{{ sc.summary.control_matured_rates.toward }} of {{ sc.summary.control_matured_rates.n }} ({{ (sc.summary.control_matured_rates.toward_rate * 100) | round | int }}%)</strong> for matched players
 we never flagged{% else %} &middot; success rate and matched-control comparison publish with the
 30-day scorecard{% endif %}{% if sc.summary.immature_decided %} &middot;
 {{ sc.summary.immature_decided }} decided calls under 14 days old mature into the headline, not around it{% endif %}{% if sc.funnel.resolved_called_up_or_graduated %} &middot;

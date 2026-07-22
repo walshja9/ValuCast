@@ -29,6 +29,19 @@ def test_documented_contract_matches_live_artifacts():
     preview = _load(documented["v0_7_artifact"])
 
     assert documented["model_score_consumed_by_live_rank"] is True
+    assert model["release_contract"]["feeds_live_valucast_rank"] is True
+    assert model["release_contract"]["consumer"] == "prospect_rank_v1"
+    assert model["release_contract"]["model_score_weight"] == 0.76
+    assert model["release_contract"]["standalone_public_board"] is False
+    assert not any(
+        "never consumed by the live prospect board" in limitation
+        for limitation in model["limitations"]
+    )
+    assert any(
+        "full-store percentile references" in limitation
+        and "fold-local replay" in limitation
+        for limitation in model["limitations"]
+    )
     assert rank["promotion"]["feeds_live_valucast_rank"] is True
     assert (
         rank["rank_contract"]["score_weights"]["prospect_model_v0_6"]["model_score"]
