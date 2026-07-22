@@ -52,6 +52,19 @@ def _rank_payload(rows):
     }
 
 
+def _investment_evidence(*rows):
+    return {
+        "artifact": "valucast_international_signing_facts",
+        "schema_version": "1.0.0",
+        "as_of": "2026-07-22",
+        "source_policy": {
+            "kind": "factual_observational_only",
+            "feeds_model_score": False,
+        },
+        "rows": list(rows),
+    }
+
+
 def test_coverage_audit_blocks_elite_factual_raw_fallback_inside_top_200():
     payload = build_prospect_coverage_audit(
         _rank_payload(
@@ -128,6 +141,44 @@ def test_coverage_audit_reports_investment_completeness_and_direct_sensitivity()
     assert rows["Prospect 2"]["score_upper_bound"] == 54.5
     assert context["direct_score_sensitivity"]["model_score_held_fixed"] is True
     assert context["direct_score_sensitivity"]["counterfactual_ranks_computed"] is False
+
+
+def test_coverage_audit_separates_verified_evidence_from_frozen_scoring_input():
+    rank_payload = _rank_payload(
+        [
+            _row(1, "prospect_model_v0_6", investment=100, score=60.0),
+            _row(2, "prospect_model_v0_6", score=50.0),
+        ]
+    )
+    evidence = _investment_evidence(
+        {
+            "mlbam_id": 10_002,
+            "name": "Prospect 2",
+            "acquisition_type": "international_amateur_free_agent",
+            "signing_bonus": 950_000,
+            "source_name": "MLB Pipeline",
+            "source_url": "https://www.mlb.com/example",
+            "source_checked_at": "2026-07-22",
+        }
+    )
+
+    payload = build_prospect_coverage_audit(rank_payload, evidence)
+
+    context = payload["investment_context"]
+    assert context["status"] == "incomplete"
+    assert context["bands"]["top_25"]["all"]["covered"] == 1
+    verified = context["verified_evidence"]
+    assert verified["status"] == "complete"
+    assert verified["feeds_model_score"] is False
+    assert verified["bands"]["top_25"]["all"] == {
+        "rows": 2,
+        "covered": 2,
+        "missing": 0,
+        "coverage_rate": 1.0,
+    }
+    assert verified["resolved_scoring_gaps"][0]["mlbam_id"] == 10_002
+    assert verified["resolved_scoring_gaps"][0]["signing_bonus"] == 950_000
+    assert rank_payload["board"][1]["components"]["factual_investment_context"] is None
 
 
 def test_coverage_audit_validator_requires_investment_context(tmp_path):

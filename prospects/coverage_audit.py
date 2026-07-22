@@ -15,9 +15,12 @@ from prospects.rank_v1 import SCORE_WEIGHTS
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
+INVESTMENT_EVIDENCE_PATH = (
+    ROOT / "data" / "prospects" / "raw" / "international_signing_facts.json"
+)
 
 AUDIT_NAME = "ValuCast Prospect Coverage Audit"
-AUDIT_VERSION = "0.2.0"
+AUDIT_VERSION = "0.3.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -151,6 +154,48 @@ def _investment_coverage(rows: list[dict]) -> dict:
     return result
 
 
+def _investment_evidence_index(payload: dict | None) -> dict[int, dict]:
+    index = {}
+    for row in (payload or {}).get("rows") or []:
+        mlbam_id = _clean_int(row.get("mlbam_id"))
+        bonus = _clean_float(row.get("signing_bonus"))
+        if (
+            mlbam_id is None
+            or bonus is None
+            or bonus <= 0
+            or not row.get("source_name")
+            or not row.get("source_url")
+            or not row.get("source_checked_at")
+        ):
+            continue
+        index[mlbam_id] = row
+    return index
+
+
+def _verified_investment_coverage(
+    rows: list[dict], evidence_by_mlbam: dict[int, dict]
+) -> dict:
+    def covered(row: dict) -> bool:
+        mlbam_id = _clean_int(row.get("mlbam_id"))
+        return _factual_investment(row) is not None or mlbam_id in evidence_by_mlbam
+
+    result = {}
+    for label, role in (("all", None), ("hitter", "hitter"), ("pitcher", "pitcher")):
+        selected = (
+            rows if role is None else [row for row in rows if row.get("role") == role]
+        )
+        covered_count = sum(covered(row) for row in selected)
+        result[label] = {
+            "rows": len(selected),
+            "covered": covered_count,
+            "missing": len(selected) - covered_count,
+            "coverage_rate": (
+                round(covered_count / len(selected), 4) if selected else None
+            ),
+        }
+    return result
+
+
 def _investment_sensitivity_entry(row: dict) -> dict:
     components = _components(row)
     source = _score_source(row)
@@ -179,8 +224,12 @@ def _investment_sensitivity_entry(row: dict) -> dict:
     }
 
 
-def build_prospect_coverage_audit(rank_payload: dict) -> dict:
+def build_prospect_coverage_audit(
+    rank_payload: dict,
+    investment_evidence: dict | None = None,
+) -> dict:
     rows = list(rank_payload.get("board") or [])
+    evidence_by_mlbam = _investment_evidence_index(investment_evidence)
     top_rows = rows[:TOP_N]
     raw_fallback_rows = [row for row in rows if _is_raw_fallback(row)]
     top_raw_fallback_rows = [row for row in top_rows if _is_raw_fallback(row)]
@@ -215,10 +264,35 @@ def build_prospect_coverage_audit(rank_payload: dict) -> dict:
         f"top_{limit}": _investment_coverage(rows[:limit])
         for limit in INVESTMENT_COVERAGE_BANDS
     }
+    verified_investment_bands = {
+        f"top_{limit}": _verified_investment_coverage(
+            rows[:limit], evidence_by_mlbam
+        )
+        for limit in INVESTMENT_COVERAGE_BANDS
+    }
     top_200_investment_missing = investment_bands["top_200"]["all"]["missing"]
     top_50_missing_rows = [
         row for row in rows[:50] if _factual_investment(row) is None
     ]
+    resolved_scoring_gaps = []
+    for row in rows:
+        mlbam_id = _clean_int(row.get("mlbam_id"))
+        evidence = evidence_by_mlbam.get(mlbam_id) if mlbam_id is not None else None
+        if _factual_investment(row) is not None or evidence is None:
+            continue
+        resolved_scoring_gaps.append(
+            {
+                "rank": row.get("rank"),
+                "name": row.get("name"),
+                "mlbam_id": mlbam_id,
+                "role": row.get("role"),
+                "signing_bonus": evidence.get("signing_bonus"),
+                "acquisition_type": evidence.get("acquisition_type"),
+                "source_name": evidence.get("source_name"),
+                "source_url": evidence.get("source_url"),
+                "source_checked_at": evidence.get("source_checked_at"),
+            }
+        )
 
     return {
         "artifact": "valucast_prospect_coverage_audit",
@@ -234,6 +308,8 @@ def build_prospect_coverage_audit(rank_payload: dict) -> dict:
             "prospect_model_version": (rank_payload.get("input_artifacts") or {}).get(
                 "prospect_model_version"
             ),
+            "investment_evidence_artifact": (investment_evidence or {}).get("artifact"),
+            "investment_evidence_as_of": (investment_evidence or {}).get("as_of"),
         },
         "source_policy": {
             "kind": "coverage_quality_audit",
@@ -275,6 +351,18 @@ def build_prospect_coverage_audit(rank_payload: dict) -> dict:
             "status": "incomplete" if top_200_investment_missing else "complete",
             "affects_root_status": False,
             "bands": investment_bands,
+            "verified_evidence": {
+                "status": (
+                    "incomplete"
+                    if verified_investment_bands["top_200"]["all"]["missing"]
+                    else "complete"
+                ),
+                "scope": "scoring_input_or_source_backed_signing_evidence",
+                "feeds_model_score": False,
+                "changes_ranks_or_values": False,
+                "bands": verified_investment_bands,
+                "resolved_scoring_gaps": resolved_scoring_gaps,
+            },
             "direct_score_sensitivity": {
                 "scope": "direct_rank_v1_investment_component_only",
                 "model_score_held_fixed": True,
@@ -317,10 +405,16 @@ def write_prospect_coverage_audit(
 
 def run_prospect_coverage_audit(
     rank_path: Path = RANK_V1_PATH,
+    investment_evidence_path: Path = INVESTMENT_EVIDENCE_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
-    payload = build_prospect_coverage_audit(rank_payload)
+    investment_evidence = (
+        json.loads(investment_evidence_path.read_text(encoding="utf-8"))
+        if investment_evidence_path.exists()
+        else None
+    )
+    payload = build_prospect_coverage_audit(rank_payload, investment_evidence)
     path = write_prospect_coverage_audit(payload, artifact_path)
     top_50_hitters = payload["investment_context"]["bands"]["top_50"]["hitter"]
     return {
@@ -334,4 +428,7 @@ def run_prospect_coverage_audit(
         "blocker_count": len(payload["blockers"]),
         "investment_top_50_hitter_missing_count": top_50_hitters["missing"],
         "investment_top_50_hitter_coverage_rate": top_50_hitters["coverage_rate"],
+        "verified_investment_top_50_hitter_coverage_rate": payload[
+            "investment_context"
+        ]["verified_evidence"]["bands"]["top_50"]["hitter"]["coverage_rate"],
     }
