@@ -21,6 +21,8 @@ def main() -> None:
         f"{result['investment_top_50_hitter_missing_count']} "
         "investment_top50_hitters_coverage="
         f"{result['investment_top_50_hitter_coverage_rate']} "
+        "verified_investment_top50_hitters_coverage="
+        f"{result['verified_investment_top_50_hitter_coverage_rate']} "
         f"blockers={result['blocker_count']} "
         f"-> {result['artifact_path']}"
     )

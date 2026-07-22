@@ -49,6 +49,30 @@ def validate_audit(path: Path = AUDIT_PATH) -> tuple[dict | None, list[str]]:
                     problems.append(f"investment_context.bands.{band} must be an object")
         if not isinstance(investment_context.get("direct_score_sensitivity"), dict):
             problems.append("investment_context.direct_score_sensitivity must be an object")
+        verified_evidence = investment_context.get("verified_evidence")
+        if not isinstance(verified_evidence, dict):
+            problems.append("investment_context.verified_evidence must be an object")
+        else:
+            if verified_evidence.get("feeds_rank_score") is not True:
+                problems.append(
+                    "investment_context.verified_evidence.feeds_rank_score must be true"
+                )
+            if verified_evidence.get("feeds_v06_model") is not False:
+                problems.append(
+                    "investment_context.verified_evidence.feeds_v06_model must be false"
+                )
+            if verified_evidence.get("feeds_universal_model") is not False:
+                problems.append(
+                    "investment_context.verified_evidence.feeds_universal_model must be false"
+                )
+            if verified_evidence.get("changes_ranks_or_values") is not True:
+                problems.append(
+                    "investment_context.verified_evidence.changes_ranks_or_values must be true"
+                )
+            if not isinstance(verified_evidence.get("bands"), dict):
+                problems.append(
+                    "investment_context.verified_evidence.bands must be an object"
+                )
     return payload, problems
 
 
@@ -71,6 +95,17 @@ def main() -> int:
         .get("top_50", {})
         .get("hitter", {})
     )
+    verified_top_50_hitters = (
+        (
+            (
+                (payload.get("investment_context") or {}).get("verified_evidence")
+                or {}
+            ).get("bands")
+            or {}
+        )
+        .get("top_50", {})
+        .get("hitter", {})
+    )
     print(
         "prospect coverage audit: "
         f"status={payload.get('status')} "
@@ -81,7 +116,9 @@ def main() -> int:
         "investment_top50_hitters_missing="
         f"{top_50_hitters.get('missing')} "
         "investment_top50_hitters_coverage="
-        f"{top_50_hitters.get('coverage_rate')}"
+        f"{top_50_hitters.get('coverage_rate')} "
+        "verified_investment_top50_hitters_coverage="
+        f"{verified_top_50_hitters.get('coverage_rate')}"
     )
     for blocker in payload.get("blockers") or []:
         print(f"  blocker: {blocker}")
