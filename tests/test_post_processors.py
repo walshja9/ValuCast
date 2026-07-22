@@ -132,11 +132,21 @@ class TestPositionScarcity(unittest.TestCase):
         scarcity = PositionScarcity(multipliers={"C": 1.15, "1B": 0.90})
         league = LeagueConfig(name="T", scoring_mode=ScoringMode.CATEGORIES,
             categories=(CategorySpec(id="HR", label="HR", pool=PlayerPool.HITTER, stat="HR"),))
-        players = [{"id": "dual", "name": "Dual Elig", "pool": "hitter", "positions": ["C", "1B"], "stats": {"HR": 25}}]
+        # Anchor pins the pool floor so the dual-eligible player sits above it and
+        # the best (C=1.15) multiplier is applied on the above-floor scale.
+        players = [
+            {"id": "dual", "name": "Dual Elig", "pool": "hitter", "positions": ["C", "1B"], "stats": {"HR": 25}},
+            {"id": "anchor", "name": "Anchor", "pool": "hitter", "positions": ["OF"], "stats": {"HR": 10}},
+        ]
         engine = ValuationEngine()
         raw = engine.value_players(players, league)
         adjusted = scarcity.process(raw, league)
-        self.assertAlmostEqual(adjusted[0].total_value, raw[0].total_value * 1.15, places=5)
+        dual_raw = next(r for r in raw if r.name == "Dual Elig")
+        dual_adj = next(r for r in adjusted if r.name == "Dual Elig")
+        # New contract: multiply on the above-floor scale (floor = pool min).
+        baseline = min(r.total_value for r in raw)
+        expected = baseline + 1.15 * (dual_raw.total_value - baseline)
+        self.assertAlmostEqual(dual_adj.total_value, expected, places=5)
 
     def test_pitcher_positions(self):
         scarcity = PositionScarcity(multipliers={"SP": 1.00, "RP": 0.55})
@@ -511,3 +521,30 @@ class TestMultiplierSignCorrectness(unittest.TestCase):
         full = self._mk("Full", 4.0, stats={"PA": 600})
         out = vol.process([anchor, full], self._league())
         self.assertAlmostEqual(next(r for r in out if r.name == "Full").total_value, 4.0, places=6)
+
+    def test_scarcity_premium_does_not_invert_negative_values(self):
+        # Requirement (c): a below-average (negative value) player at a SCARCE
+        # position (premium multiplier > 1) must rank ABOVE the identical-value
+        # player at a discounted position -- never below it. A raw signed
+        # multiply pushes the scarce player MORE negative (worse), inverting the
+        # intended premium; the above-floor shift keeps it monotone.
+        scarcity = PositionScarcity(multipliers={"C": 1.20, "1B": 0.85})
+        anchor = self._mk("Floor", -6.0, positions=("OF",))
+        scarce = self._mk("Catcher", -2.0, positions=("C",))
+        deep = self._mk("FirstBase", -2.0, positions=("1B",))
+
+        out = scarcity.process([anchor, scarce, deep], self._league())
+        c = next(r for r in out if r.name == "Catcher").total_value
+        fb = next(r for r in out if r.name == "FirstBase").total_value
+        self.assertGreater(c, fb)
+        # And the raw signed multiply WOULD have inverted it (sanity on the trap):
+        self.assertLess(-2.0 * 1.20, -2.0 * 0.85)
+
+    def test_scarcity_neutral_multiplier_unchanged(self):
+        # A multiplier of exactly 1.0 (no scarcity signal) leaves the value
+        # untouched regardless of the pool floor.
+        scarcity = PositionScarcity(multipliers={"C": 1.20})
+        anchor = self._mk("Floor", -3.0, positions=("C",))
+        neutral = self._mk("Neutral", 4.0, positions=("OF",))  # OF not in map -> 1.0
+        out = scarcity.process([anchor, neutral], self._league())
+        self.assertAlmostEqual(next(r for r in out if r.name == "Neutral").total_value, 4.0, places=6)

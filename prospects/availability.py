@@ -15,16 +15,18 @@ from pathlib import Path
 from typing import Any
 
 from mlb.availability import availability_lookup as mlb_availability_lookup
+from mlb.roster_status import active_roster_lookup
 from prospects.input_contract import VALUCAST_INPUT_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
 OVERRIDES_PATH = ROOT / "data" / "manual" / "prospect_availability_overrides.json"
 MLB_AVAILABILITY_PATH = ROOT / "data" / "models" / "valucast_mlb_availability.json"
+MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.3.0"
+ARTIFACT_VERSION = "0.4.0"
 
 MAX_RISK_DISCOUNT = 0.12
 SEVERE_IL_DISCOUNT = 0.30
@@ -361,11 +363,24 @@ def _il_severity_discount(list_type: str, description: str) -> float:
     return SHORT_IL_DISCOUNT
 
 
-def _official_il_signal(mlbam_id: str, il_lookup: dict | None) -> tuple[float, list[str], str | None, str | None]:
+def _official_availability_signal(
+    mlbam_id: str,
+    role: str,
+    il_lookup: dict | None,
+) -> tuple[float, list[str], str | None, str | None]:
     profile = (il_lookup or {}).get(str(mlbam_id)) or (il_lookup or {}).get(mlbam_id)
     if not profile:
         return 0.0, [], None, None
     status = str(profile.get("status") or "").strip().lower()
+    if status == "available":
+        return 0.0, [], status, None
+    if status == "rehab" and profile.get("active_injury_risk") is True:
+        return (
+            _status_discount(role, status),
+            ["official_mlb_rehab_override"],
+            status,
+            str(profile.get("description") or "Official MLB rehab assignment."),
+        )
     if status != "injured" or profile.get("active_injury_risk") is not True:
         return 0.0, [], None, None
     list_type = str(profile.get("list_type") or "")
@@ -440,10 +455,11 @@ def _risk_basis(
     upstream_discount: float,
     il_discount: float,
     override_discount: float,
+    il_status: str | None = None,
 ) -> str:
     discounts = {
         "manual_override": override_discount,
-        "official_mlb_il": il_discount,
+        "official_mlb_rehab" if il_status == "rehab" else "official_mlb_il": il_discount,
         "upstream_factual_status": upstream_discount,
         "sample_staleness": stale_discount,
         "current_sample_size": sample_discount,
@@ -458,8 +474,10 @@ def _profile(
     generated_at: str | None,
     override: dict | None,
     il_lookup: dict | None = None,
+    active_roster_ids: set[str] | None = None,
 ) -> dict:
     mlbam_id, role = key
+    active_mlb_roster = str(mlbam_id) in (active_roster_ids or set())
     active_rows = _active_sample_rows(rows)
     display_row = _best_display_row(active_rows, role)
     total_sample = sum(_sample_value(row, role) for row in active_rows)
@@ -479,16 +497,27 @@ def _profile(
     upstream_discount, upstream_signals, upstream_status, upstream_note = (
         _upstream_status_signal(role, active_rows)
     )
-    il_discount, il_signals, il_status, il_note = _official_il_signal(
+    il_discount, il_signals, il_status, il_note = _official_availability_signal(
         mlbam_id,
+        role,
         il_lookup,
     )
     override_discount, override_signals, override_status, override_note = _override_signal(
         role,
         override,
     )
-    if override_discount > 0.0 or override_status:
+    override_present = override_discount > 0.0 or bool(override_status)
+    if override_present or active_mlb_roster:
         il_discount, il_signals, il_status, il_note = 0.0, [], None, None
+    if override_present or active_mlb_roster or il_status:
+        upstream_discount, upstream_signals, upstream_status, upstream_note = (
+            0.0,
+            [],
+            None,
+            None,
+        )
+    if il_status == "available":
+        il_status = None
     override_age = _clean_int((override or {}).get("age"))
     signals = list(
         dict.fromkeys(
@@ -518,8 +547,9 @@ def _profile(
         upstream_discount,
         il_discount,
         override_discount,
+        il_status,
     )
-    if risk_basis == "official_mlb_il":
+    if risk_basis in {"official_mlb_il", "official_mlb_rehab"}:
         signals = il_signals
     return {
         "mlbam_id": _clean_int(mlbam_id) or mlbam_id,
@@ -545,6 +575,7 @@ def _profile(
         "row_count": len(rows),
         "active_row_count": len(active_rows),
         "present": True,
+        "active_mlb_roster": active_mlb_roster,
     }
 
 
@@ -651,6 +682,7 @@ def build_prospect_availability(
     overrides: dict | list[dict] | None = None,
     generated_at: str | None = None,
     il_lookup: dict | None = None,
+    active_roster_ids: set[str] | None = None,
 ) -> dict:
     generated_at = generated_at or input_contract.get("generated_at") or datetime.now(
         timezone.utc
@@ -663,7 +695,14 @@ def build_prospect_availability(
 
     override_by_key = _override_entries(overrides)
     profiles = [
-        _profile(key, rows, generated_at, override_by_key.get(key), il_lookup or {})
+        _profile(
+            key,
+            rows,
+            generated_at,
+            override_by_key.get(key),
+            il_lookup or {},
+            active_roster_ids or set(),
+        )
         for key, rows in sorted(
             grouped.items(),
             key=lambda item: (
@@ -744,6 +783,7 @@ def run_prospect_availability(
     input_contract_path: Path = INPUT_CONTRACT_PATH,
     overrides_path: Path | None = OVERRIDES_PATH,
     mlb_availability_path: Path | None = MLB_AVAILABILITY_PATH,
+    mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
     artifact_path: Path = ARTIFACT_PATH,
 ) -> dict:
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
@@ -757,10 +797,17 @@ def run_prospect_availability(
     il_lookup = (
         mlb_availability_lookup({"profiles": raw_profiles}) if raw_profiles else {}
     )
+    raw_roster_status = _load_optional(mlb_roster_status_path)
+    active_roster_ids = set(
+        active_roster_lookup(
+            raw_roster_status if isinstance(raw_roster_status, dict) else {}
+        )
+    )
     payload = build_prospect_availability(
         input_contract,
         overrides=overrides,
         il_lookup=il_lookup,
+        active_roster_ids=active_roster_ids,
     )
     path = write_prospect_availability(payload, artifact_path)
     return {

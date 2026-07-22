@@ -180,7 +180,7 @@
                     <span class="bf-sort-cell" role="columnheader" aria-sort="ascending"><button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button></span>
                     <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="player">Player</button></span>
                     <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="level">Level</button></span>
-                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move" title="Board-rank change vs the snapshot ~7 days back">Move (7d)</button></span>
+                    <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move" title="Board-rank change vs the snapshot ~{{ move_window_label }} back">Move ({{ move_window_days }}d)</button></span>
                     <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="value">Value</button></span>
                 </div>
                 {% if rankings %}
@@ -375,7 +375,7 @@
                         <strong>{{ team_boards.summary.top20_hitters }} H / {{ team_boards.summary.top20_pitchers }} P</strong>
                     </div>
                     <div>
-                        <span>Level distribution</span>
+                        <span>Top-20 levels</span>
                         <strong>
                             {% for level in team_boards.summary.levels %}{{ level.level }} {{ level.count }}{% if not loop.last %} · {% endif %}{% endfor %}
                         </strong>
@@ -425,7 +425,7 @@
                 <span class="bf-sort-cell" role="columnheader" aria-sort="ascending"><button type="button" data-bf-sort="rank" aria-label="Sort by rank">#</button></span>
                 <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="player">Player</button></span>
                 <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="level">Level</button></span>
-                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move" title="Board-rank change vs the snapshot ~7 days back">Move (7d)</button></span>
+                <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="move" title="Board-rank change vs the snapshot ~{{ move_window_label }} back">Move ({{ move_window_days }}d)</button></span>
                 <span class="bf-sort-cell" role="columnheader" aria-sort="none"><button type="button" data-bf-sort="value">Value</button></span>
             </div>
             {% for row in team_boards.rows %}

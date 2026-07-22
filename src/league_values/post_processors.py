@@ -99,11 +99,11 @@ class PositionScarcity:
         self.multipliers = multipliers
 
     def process(self, results: list[ValuationResult], league: LeagueConfig) -> list[ValuationResult]:
-        adjusted = []
-        for r in results:
-            mult = self._best_multiplier(r.player.positions)
-            adjusted.append(replace(r, total_value=r.total_value * mult))
-        return adjusted
+        # Apply scarcity above the pool floor so premiums stay monotone for negative values.
+        return _apply_multipliers(
+            results,
+            [self._best_multiplier(r.player.positions) for r in results],
+        )
 
     def _best_multiplier(self, positions: tuple[str, ...]) -> float:
         if not positions:

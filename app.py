@@ -2738,10 +2738,14 @@ def _graphic_availability_status(row):
 def _graphic_availability_badge(row):
     """Short caution label for genuine availability risks; None otherwise.
 
-    Only injured / inactive get a share-card badge — thin-sample is a data
+    Only injured / rehab / inactive get a share-card badge — thin-sample is a data
     caveat already shown via the sample-context line, not an availability flag.
     """
-    return {"injured": "INJURED", "stale_or_inactive": "INACTIVE"}.get(
+    return {
+        "injured": "INJURED",
+        "rehab": "REHAB",
+        "stale_or_inactive": "INACTIVE",
+    }.get(
         _graphic_availability_status(row)
     )
 
@@ -2765,10 +2769,15 @@ def _graphic_read_intro(row, last, core, sample, context):
     sample_label = f"{sample_season} MiLB sample" if sample_season else "latest MiLB sample"
     stale = _graphic_stale_stat_context(row, context)
     injured = _graphic_availability_status(row) == "injured"
+    rehab = _graphic_availability_status(row) == "rehab"
     if injured and stale:
         return f"{level_phrase}, {last} is currently injured; this read leans on the {sample_label}: {core}{sample}."
     if injured:
         return f"{level_phrase}, {last} is currently injured, so availability is a real risk; he has {core}{sample}."
+    if rehab and stale:
+        return f"{level_phrase}, {last} is on a rehab assignment; this read leans on the {sample_label}: {core}{sample}."
+    if rehab:
+        return f"{level_phrase}, {last} is currently rehabbing, so availability remains a risk; he has {core}{sample}."
     if stale:
         return f"{level_phrase}, {last} has no current stat line; this read leans on the {sample_label}: {core}{sample}."
     return f"{level_phrase}, {last} has put up {core}{sample}."
@@ -6167,10 +6176,24 @@ def _team_board_movements():
     return by_key
 
 
+# Keep the public window label tied to the delta field it describes.
+_TEAM_BOARD_MOVE_FIELD = "rank_delta_7d"
+
+
+def _team_board_move_window_days(field=_TEAM_BOARD_MOVE_FIELD):
+    match = re.search(r"(\d+)d\b", field)
+    return int(match.group(1)) if match else None
+
+
+def _team_board_move_window_label():
+    days = _team_board_move_window_days()
+    return f"{days} days" if days else "recent snapshot"
+
+
 def _team_board_move_from_signal(signal):
     signal = signal or {}
-    delta = _team_board_as_float(signal.get("rank_delta_7d"))
-    window_label = "7 days"
+    delta = _team_board_as_float(signal.get(_TEAM_BOARD_MOVE_FIELD))
+    window_label = _team_board_move_window_label()
     if delta is None:
         delta = _team_board_as_float(signal.get("rank_delta"))
         days = _team_board_as_float(signal.get("window_days"))
@@ -7027,6 +7050,8 @@ def _build_backfields_page_context():
         "ahead_of_consensus": ahead_of_consensus,
         "ahead_of_consensus_thin": ahead_of_consensus_thin,
         "aotc_scorecard": aotc_scorecard,
+        "move_window_days": _team_board_move_window_days(),
+        "move_window_label": _team_board_move_window_label(),
     }
 
 
