@@ -8569,6 +8569,7 @@ def _build_receipts_page_context():
         and isinstance(summary, dict)
         and isinstance(summary.get("no_claim_call_up_count"), int)
         and isinstance(maturation, dict)
+        and all(type(maturation.get(key)) is int for key in ("pending", "confirmed", "decayed"))
     )
     receipts = list(payload["receipts"]) if receipts_available else []
     misses = list(payload["misses"]) if receipts_available else []
@@ -8601,6 +8602,75 @@ def _load_scorecard_payload():
     return sc if isinstance(sc, dict) else None
 
 
+def _track_record_scorecard(sc):
+    """Return only a scorecard shape the Track Record page can render safely."""
+    if not isinstance(sc, dict):
+        return None
+    gate = sc.get("gate")
+    summary = sc.get("summary")
+    targets = sc.get("targets")
+    funnel = sc.get("funnel")
+    calls = sc.get("calls")
+    if not all(isinstance(block, dict) for block in (gate, summary, targets, funnel)):
+        return None
+    if not isinstance(calls, list) or not all(isinstance(call, dict) for call in calls):
+        return None
+    if not isinstance(gate.get("publishable"), bool) or type(gate.get("min_publish_horizon_days")) is not int:
+        return None
+    if not isinstance(summary.get("first_call_date"), str):
+        return None
+    if not all(
+        type(summary.get(key)) is int
+        for key in ("ever_flagged", "wins", "decided_count", "horizon_days", "immature_decided")
+    ):
+        return None
+    rate = summary.get("decided_rate")
+    if rate is not None and type(rate) not in (int, float):
+        return None
+    if gate["publishable"] and rate is None:
+        return None
+    if not all(type(targets.get(key)) in (int, float) for key in ("decided_rate", "control_lift")):
+        return None
+    required_funnel = (
+        "open_toward",
+        "open_away",
+        "open_flat",
+        "closed_caught_up",
+        "retired_we_backed_off",
+        "resolved_called_up_or_graduated",
+        "left_universe",
+    )
+    if not all(type(funnel.get(key)) is int for key in required_funnel):
+        return None
+    for key in ("matured_open_rates", "control_matured_rates"):
+        bucket = summary.get(key)
+        if bucket is not None and (
+            not isinstance(bucket, dict)
+            or not all(type(bucket.get(field)) is int for field in ("toward", "n"))
+            or type(bucket.get("toward_rate")) not in (int, float)
+        ):
+            return None
+    control_lift = summary.get("control_lift")
+    if control_lift is not None and type(control_lift) not in (int, float):
+        return None
+    if control_lift and any(summary.get(key) is None for key in ("matured_open_rates", "control_matured_rates")):
+        return None
+    stabilized = summary.get("stabilized")
+    if stabilized is not None and not isinstance(stabilized, dict):
+        return None
+    if stabilized:
+        if not isinstance(stabilized.get("publishable"), bool):
+            return None
+        if stabilized["publishable"] and stabilized.get("control_lift"):
+            if type(stabilized.get("window_days")) is not int:
+                return None
+            for key in ("decided_rate", "control_lift"):
+                aggregate = stabilized.get(key)
+                if not isinstance(aggregate, dict) or type(aggregate.get("mean")) not in (int, float):
+                    return None
+    return sc
+
+
 # Forward-ledger scoreboard artifact (plan 030 S2 build target). Path + schema are
 # owned by scripts/build_forward_scoreboard.py / prospects.forward_scoreboard (frozen);
 # every number on /scoreboard renders from this artifact at request time.
@@ -8622,7 +8692,7 @@ def _load_forward_scoreboard_payload():
 
 def _track_record_context():
     context = {
-        "sc": _load_scorecard_payload(),
+        "sc": _track_record_scorecard(_load_scorecard_payload()),
         **_build_receipts_page_context(),
         "forward_sc": None,
     }
@@ -8632,8 +8702,9 @@ def _track_record_context():
         required = ("wins", "losses", "pool_size", "win_rate_pct", "clean_retractions", "open")
         if (
             view
-            and all(isinstance(view.get(key), int) for key in required)
+            and all(type(view.get(key)) is int for key in required)
             and view["pool_size"] > 0
+            and view["pool_size"] == view["wins"] + view["losses"]
         ):
             context["forward_sc"] = view
     return context
@@ -9157,11 +9228,7 @@ def _ledger_share_card_png(sc, forward_sc=None, receipts_context=None):
 
     _graphic_footer(
         draw,
-        right_note=(
-            "Success rate live at valucast.app/ledger - rules pre-registered"
-            if ((sc or {}).get("gate") or {}).get("publishable")
-            else "Success rate publishes when the 30-day gate matures - rules pre-registered"
-        ),
+        right_note="Definitions and denominators: valucast.app/ledger - lanes score separately",
     )
 
     out = _io.BytesIO()
@@ -9172,7 +9239,7 @@ def _ledger_share_card_png(sc, forward_sc=None, receipts_context=None):
 @app.route("/ledger/share-card.png")
 def ledger_share_card_png():
     context = _track_record_context()
-    if not context["sc"]:
+    if not (context["sc"] or context["forward_sc"] or context["receipts_available"]):
         abort(404)
     png = _ledger_share_card_png(
         context["sc"],
@@ -9194,10 +9261,10 @@ def ledger_share_card():
         filename="valucast-track-record.png",
         public_png_url=_public_url("/ledger/share-card.png"),
         public_page_url=_public_url("/ledger/share-card"),
-        description="Every ValuCast ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.",
+        description="Three separately scored evidence lanes with their own cohorts and denominators.",
         image_alt="ValuCast Track Record scorecard",
         back_url="/ledger",
-        back_label="Back to The Ledger",
+        back_label="Back to Track Record",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -9234,19 +9301,17 @@ def _scoreboard_ci_label(headline: dict) -> str:
 
 def _scoreboard_view(sc: dict) -> dict:
     """Derive the render context (page + PNG share one source) from the frozen
-    artifact. Reads the artifact schema verbatim — no metric is computed here that
-    the frozen scoreboard module didn't already emit; this only reshapes for display
-    and attaches the CI-band verdict + provisional-window copy."""
+    artifact. This reshapes the artifact, derives a display-only win percentage from
+    its reconciled wins and losses, and attaches the CI-band verdict plus
+    provisional-window copy."""
     headline = sc.get("anticipation_score") or {}
     funnel = sc.get("funnel") or {}
     buckets = funnel.get("buckets") or {}
     wins = funnel.get("wins")
+    losses = funnel.get("losses")
     pool_size = headline.get("pool_size")
-    win_rate_pct = (
-        round(wins / pool_size * 100)
-        if isinstance(wins, int) and isinstance(pool_size, int) and pool_size > 0
-        else None
-    )
+    scored = wins + losses if type(wins) is int and type(losses) is int else None
+    win_rate_pct = round(wins / scored * 100) if isinstance(scored, int) and scored > 0 else None
     retraction = funnel.get("self_retraction_rate") or {}
     cohorts = sc.get("cohorts") or {}
     cohort_count = cohorts.get("cohort_count") or 0
@@ -9265,7 +9330,7 @@ def _scoreboard_view(sc: dict) -> dict:
         "wins": wins,
         "win_rate_pct": win_rate_pct,
         "clean_retractions": buckets.get("clean_retraction"),
-        "losses": funnel.get("losses"),
+        "losses": losses,
         "excluded_from_pool": funnel.get("excluded_from_pool"),
         "unscored_or_unclassified": funnel.get("unscored_or_unclassified"),
         "open": funnel.get("open"),
