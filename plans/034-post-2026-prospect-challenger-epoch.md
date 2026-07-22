@@ -1,6 +1,6 @@
-# Plan 034 ? Post-2026 Prospect Challenger Epoch
+# Plan 034 — Post-2026 Prospect Challenger Epoch
 
-**Status:** PROTOCOL REGISTERED ? WAITING FOR 2026 VINTAGE; NO LOOK AUTHORIZED
+**Status:** PROTOCOL REGISTERED — WAITING FOR 2026 VINTAGE; NO LOOK AUTHORIZED
 
 ## Purpose
 
@@ -259,6 +259,22 @@ The buy-momentum and cross-universe families have different decisions, outcomes,
 and maturities. They are reserved here to keep the roadmap coherent, but each
 requires its own exact pre-look registration before execution. Their results
 cannot rescue or condemn the prospect-model track.
+
+## Current Operating Recommendation
+
+Until the registered challenger epoch becomes executable:
+
+1. Make no live model change from the fold-local impact audit.
+2. Treat the public ahead-of-consensus Ledger as a consensus-movement
+   accountability record, not proof of fantasy-ranking or valuation accuracy.
+3. Preserve dated ranks, values, projections, roles, availability, and model
+   versions so direct outcome and decision-regret tests are reconstructable.
+4. Keep the pitcher model as the incumbent and prioritize role, workload, and
+   availability evidence.
+5. Require the hitter challenger to beat the rich-neighbor baseline and the
+   frozen incumbent before it can earn more influence.
+6. Evaluate final Prospect Rank v1 and ValuCast Value against direct,
+   format-specific outcomes before any market-superiority claim.
 
 ## Implementation Order After the Trigger
 
