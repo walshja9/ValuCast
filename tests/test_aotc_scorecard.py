@@ -462,6 +462,36 @@ def test_track_record_context_respects_both_hold_gates(monkeypatch):
     assert context["no_claim_call_up_count"] == 0
 
 
+def test_track_record_share_card_uses_all_three_lanes(monkeypatch):
+    import inspect
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "_track_record_context", lambda: {
+        "sc": app_module._load_scorecard_payload(),
+        "forward_sc": {
+            "wins": 39, "losses": 31, "pool_size": 70, "win_rate_pct": 56,
+            "clean_retractions": 86, "open": 102, "provisional": True,
+        },
+        "receipts_available": True,
+        "receipt_count": 7,
+        "miss_count": 0,
+        "no_claim_call_up_count": 33,
+        "maturation": {"confirmed": 0, "pending": 7, "decayed": 0},
+    })
+
+    response = app_module.app.test_client().get("/ledger/share-card.png")
+    source = inspect.getsource(app_module._ledger_share_card_png)
+
+    assert response.status_code == 200
+    assert response.mimetype == "image/png"
+    assert len(response.data) > 10_000
+    assert 'headline="TRACK RECORD"' in source
+    assert '"FORWARD CALLS"' in source
+    assert '"CONSENSUS MOVEMENT"' in source
+    assert '"CALL-UP TIMING"' in source
+    assert "NEWEST CONSENSUS CALLS" in source
+
+
 def test_track_record_explains_three_evidence_lanes_with_denominators(monkeypatch):
     import app as app_module
 

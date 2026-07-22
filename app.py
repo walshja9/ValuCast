@@ -9013,10 +9013,8 @@ def receipts_share_card():
     return response
 
 
-def _ledger_share_card_png(sc):
-    """Counts-only Ledger graphic. Pre-gate rule: funnel counts and call rows
-    only — the success RATE never renders anywhere until the publish gate
-    matures (scorecard freeze). The card must stay honest without it."""
+def _ledger_share_card_png(sc, forward_sc=None, receipts_context=None):
+    """Track Record graphic with separately gated evidence lanes."""
     import io as _io
     from PIL import Image, ImageDraw
 
@@ -9032,60 +9030,66 @@ def _ledger_share_card_png(sc):
     text = palette["text"]
     muted = palette["muted"]
 
-    funnel = (sc or {}).get("funnel") or {}
     summary = (sc or {}).get("summary") or {}
     calls = list((sc or {}).get("calls") or [])
-    wins = int(funnel.get("open_toward") or 0) + int(funnel.get("closed_caught_up") or 0)
-    losses = int(funnel.get("open_away") or 0)
-    retreats = int(funnel.get("retired_we_backed_off") or 0)
-    undecided = int(funnel.get("open_flat") or 0)
-    total = summary.get("ever_flagged") or 0
 
     img = Image.new("RGB", (width, height), bg)
     _graphic_fill_background(img)
     draw = ImageDraw.Draw(img)
-    subtitle = f"{total} calls tracked publicly"
-    first = summary.get("first_call_date")
-    if first:
-        subtitle = f"{subtitle} since {first}"
-    date_label = _editorial_date((sc or {}).get("generated_at"))
-    if date_label:
-        subtitle = f"{subtitle} - {date_label}"
-    # Exit lanes ride the caption the moment they fire: four tiles can't sum to
-    # the headline count once a call graduates or leaves coverage, and this
-    # card literally promises nothing leaves silently.
-    extra_line = "Wins, losses, and the calls we backed off - no call leaves this page silently"
-    resolved = int(funnel.get("resolved_called_up_or_graduated") or 0)
-    left = int(funnel.get("left_universe") or 0)
-    if resolved or left:
-        exits = [f"{resolved} resolved by call-up"] if resolved else []
-        if left:
-            exits.append(f"{left} left coverage")
-        extra_line = f"{extra_line} - plus {', '.join(exits)}"
     _graphic_header(
         img,
         draw,
-        headline="THE LEDGER",
-        subtitle=subtitle,
-        extra_line=extra_line,
-        tagline="The Ledger",
+        headline="TRACK RECORD",
+        subtitle="Three public evidence lanes - separate cohorts and denominators",
+        extra_line="Forward calls, consensus movement, and call-up timing",
+        tagline="Track Record",
     )
 
-    # Funnel tiles: the counts ARE the story pre-gate.
+    forward_sc = forward_sc or {}
+    receipts_context = receipts_context or {}
+    consensus_available = bool(((sc or {}).get("gate") or {}).get("publishable"))
+    forward_value = (
+        f"{forward_sc['wins']}-{forward_sc['losses']}"
+        if forward_sc.get("wins") is not None and forward_sc.get("losses") is not None
+        else "—"
+    )
+    consensus_value = (
+        f"{summary.get('wins')}/{summary.get('decided_count')}"
+        if consensus_available and summary.get("wins") is not None and summary.get("decided_count")
+        else "—"
+    )
+    callup_value = (
+        f"{receipts_context.get('receipt_count', 0)}-{receipts_context.get('miss_count', 0)}"
+        if receipts_context.get("receipts_available")
+        else "—"
+    )
+    control = summary.get("control_matured_rates") or {}
+    matured_open = summary.get("matured_open_rates") or {}
+    consensus_rate = summary.get("decided_rate") if consensus_available else None
+    consensus_sub = (
+        f"{round(consensus_rate * 100)}% of {summary.get('decided_count')} mature"
+        if consensus_rate is not None and summary.get("decided_count")
+        else "collecting"
+    )
+    consensus_foot = (
+        f"still-open {matured_open.get('toward')}/{matured_open.get('n')} vs "
+        f"{control.get('toward')}/{control.get('n')} controls"
+        if consensus_available and matured_open.get("n") and control.get("n")
+        else "control comparison collecting"
+    )
     tiles = [
-        (str(wins), "WINS", "field came to us", green),
-        (str(losses), "LOSSES", "field moved away", clay),
-        (str(retreats), "RETREATS", "we backed off", clay),
-        (str(undecided), "UNDECIDED", "below the noise floor", muted),
+        (forward_value, "FORWARD CALLS", f"{forward_sc.get('win_rate_pct')}% of {forward_sc.get('pool_size')} scored" if forward_sc else "held or collecting", f"{forward_sc.get('clean_retractions')} clean retractions - {forward_sc.get('open')} open" if forward_sc else "", green),
+        (consensus_value, "CONSENSUS MOVEMENT", consensus_sub, consensus_foot, blue),
+        (callup_value, "CALL-UP TIMING", f"{receipts_context.get('no_claim_call_up_count', 0)} no scoreable gap" if receipts_context.get("receipts_available") else "held or collecting", "arrival evidence, not career value" if receipts_context.get("receipts_available") else "", green),
     ]
     f_tile_n = _graphic_font(52, bold=True, mono=True)
-    f_tile_label = _graphic_font(17, bold=True)
+    f_tile_label = _graphic_font(16, bold=True)
     f_tile_sub = _graphic_font(13)
     x, w = 48, 984
     tile_gap = 14
-    tile_w = (w - 3 * tile_gap) // 4
-    tile_y, tile_h = 242, 128
-    for i, (n_label, label, sub, accent) in enumerate(tiles):
+    tile_w = (w - 2 * tile_gap) // 3
+    tile_y, tile_h = 242, 150
+    for i, (n_label, label, sub, foot, accent) in enumerate(tiles):
         tx = x + i * (tile_w + tile_gap)
         draw.rounded_rectangle((tx, tile_y, tx + tile_w, tile_y + tile_h), radius=10,
                                fill=card, outline=border, width=1)
@@ -9093,6 +9097,9 @@ def _ledger_share_card_png(sc):
         draw.text((tx + 18, tile_y + 76), label, fill=text, font=f_tile_label)
         draw.text((tx + 18, tile_y + 100),
                   _graphic_fit_text(draw, sub, f_tile_sub, tile_w - 34),
+                  fill=muted, font=f_tile_sub)
+        draw.text((tx + 18, tile_y + 124),
+                  _graphic_fit_text(draw, foot, f_tile_sub, tile_w - 34),
                   fill=muted, font=f_tile_sub)
 
     # Newest calls, statuses included — the two-sided ledger in miniature.
@@ -9116,7 +9123,7 @@ def _ledger_share_card_png(sc):
     panel_h = 50 + max(1, len(newest)) * row_h + 8
     draw.rounded_rectangle((x, panel_y, x + w, panel_y + panel_h), radius=10,
                            fill=card, outline=border, width=1)
-    draw.text((x + 20, panel_y + 14), "NEWEST CALLS", fill=text, font=f_section)
+    draw.text((x + 20, panel_y + 14), "NEWEST CONSENSUS CALLS", fill=text, font=f_section)
     if not newest:
         draw.text((x + 20, panel_y + 62), "No calls on the ledger yet.", fill=muted, font=f_name)
     for idx, c in enumerate(newest):
@@ -9153,27 +9160,31 @@ def _ledger_share_card_png(sc):
 
 @app.route("/ledger/share-card.png")
 def ledger_share_card_png():
-    sc = _load_scorecard_payload()
-    if not sc:
+    context = _track_record_context()
+    if not context["sc"]:
         abort(404)
-    png = _ledger_share_card_png(sc)
+    png = _ledger_share_card_png(
+        context["sc"],
+        context["forward_sc"],
+        context,
+    )
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
-    response.headers["Content-Disposition"] = 'inline; filename="valucast-ledger.png"'
+    response.headers["Content-Disposition"] = 'inline; filename="valucast-track-record.png"'
     return response
 
 
 @app.route("/ledger/share-card")
 def ledger_share_card():
     html = build_share_preview_html(
-        title="The Ledger",
-        subtitle="Every ahead-of-consensus call tracked to an outcome",
+        title="Track Record",
+        subtitle="Three public evidence lanes - separate cohorts and denominators",
         png_url="/ledger/share-card.png",
-        filename="valucast-ledger.png",
+        filename="valucast-track-record.png",
         public_png_url=_public_url("/ledger/share-card.png"),
         public_page_url=_public_url("/ledger/share-card"),
         description="Every ValuCast ahead-of-consensus call tracked publicly — wins, losses, and the calls we backed off.",
-        image_alt="ValuCast Ledger scorecard",
+        image_alt="ValuCast Track Record scorecard",
         back_url="/ledger",
         back_label="Back to The Ledger",
     )
