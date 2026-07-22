@@ -1728,6 +1728,34 @@ def test_rank_v1_bucket_adjusts_upper_level_low_impact_hitter_model_samples():
     )
 
 
+def test_run_rank_v1_leaves_previous_artifact_on_stage1_rejection(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    layer_path = tmp_path / "layer.json"
+    model_path = tmp_path / "model.json"
+    input_path = tmp_path / "input.json"
+    artifact_path = tmp_path / "rank.json"
+    universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
+    bad_layer = _dynasty_layer()
+    bad_layer["release_contract"]["feeds_live_valucast_rank"] = False
+    layer_path.write_text(json.dumps(bad_layer), encoding="utf-8")
+    model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
+    input_path.write_text(json.dumps(_input_contract()), encoding="utf-8")
+    artifact_path.write_text("previous promoted artifact", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="not authorized"):
+        run_prospect_rank_v1(
+            prospect_universe_path=universe_path,
+            dynasty_layer_path=layer_path,
+            prospect_model_path=model_path,
+            input_contract_path=input_path,
+            availability_path=None,
+            mlb_roster_status_path=None,
+            artifact_path=artifact_path,
+            archive_dir=tmp_path / "archive",
+        )
+    assert artifact_path.read_text(encoding="utf-8") == "previous promoted artifact"
+
+
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     universe_path = tmp_path / "universe.json"
     layer_path = tmp_path / "layer.json"
