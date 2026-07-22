@@ -4,6 +4,19 @@
 **Branch:** `codex/international-investment-evidence`
 **Publication status:** Not published; no committed rank, public snapshot, workflow dispatch, or deployment.
 
+## Review Status
+
+- Claude approval: reported by the user on 2026-07-22.
+- Final Codex review: approved after two additional fail-closed/honesty fixes.
+- Publication still requires explicit user authorization.
+
+The final Codex pass found and fixed two issues:
+
+1. the production runner now raises immediately when its configured evidence
+   file is missing instead of silently reverting to the uncorrected board; and
+2. the coverage audit cannot claim corrected ranks were computed while a
+   source-backed scoring gap remains unresolved.
+
 ## Review Question
 
 Does this branch safely apply 13 source-backed international signing bonuses
@@ -84,7 +97,11 @@ python -m pytest tests/test_prospect_rank_v1.py tests/test_prospect_coverage_aud
 93 passed
 
 python -m pytest -q
-2735 passed, 18 subtests passed in 418.39s
+2737 passed, 18 subtests passed in 421.96s
+
+post-review exact candidate assertions
+13 facts applied; exact preview true; zero unrelated value changes;
+top-50 membership unchanged; model hashes unchanged
 ```
 
 ## Files to Attack
