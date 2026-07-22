@@ -53,9 +53,21 @@ def validate_audit(path: Path = AUDIT_PATH) -> tuple[dict | None, list[str]]:
         if not isinstance(verified_evidence, dict):
             problems.append("investment_context.verified_evidence must be an object")
         else:
-            if verified_evidence.get("feeds_model_score") is not False:
+            if verified_evidence.get("feeds_rank_score") is not True:
                 problems.append(
-                    "investment_context.verified_evidence.feeds_model_score must be false"
+                    "investment_context.verified_evidence.feeds_rank_score must be true"
+                )
+            if verified_evidence.get("feeds_v06_model") is not False:
+                problems.append(
+                    "investment_context.verified_evidence.feeds_v06_model must be false"
+                )
+            if verified_evidence.get("feeds_universal_model") is not False:
+                problems.append(
+                    "investment_context.verified_evidence.feeds_universal_model must be false"
+                )
+            if verified_evidence.get("changes_ranks_or_values") is not True:
+                problems.append(
+                    "investment_context.verified_evidence.changes_ranks_or_values must be true"
                 )
             if not isinstance(verified_evidence.get("bands"), dict):
                 problems.append(

@@ -32,11 +32,14 @@ ROOT = Path(__file__).resolve().parents[1]
 MILB_SEASON_STATS_PATH = ROOT / "data" / "prospects" / "raw" / "milb_season_stats.json"
 MILB_CARD_HISTORY_PATH = ROOT / "data" / "prospects" / "raw" / "milb_card_history.json"
 INPUT_CONTRACT_PATH = VALUCAST_INPUT_PATH
+INVESTMENT_EVIDENCE_PATH = (
+    ROOT / "data" / "prospects" / "raw" / "international_signing_facts.json"
+)
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
 
 RANK_NAME = "ValuCast Prospect Rank v1"
-RANK_VERSION = "0.2.8"
+RANK_VERSION = "0.2.9"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
@@ -2456,6 +2459,7 @@ def run_prospect_rank_v1(
     dynasty_layer_path: Path = DYNASTY_LAYER_PATH,
     prospect_model_path: Path = PROSPECT_MODEL_PATH,
     input_contract_path: Path = INPUT_CONTRACT_PATH,
+    investment_evidence_path: Path | None = INVESTMENT_EVIDENCE_PATH,
     availability_path: Path | None = AVAILABILITY_PATH,
     mlb_roster_status_path: Path | None = MLB_ROSTER_STATUS_PATH,
     artifact_path: Path = ARTIFACT_PATH,
@@ -2465,6 +2469,11 @@ def run_prospect_rank_v1(
     dynasty_layer = json.loads(dynasty_layer_path.read_text(encoding="utf-8"))
     prospect_model = json.loads(prospect_model_path.read_text(encoding="utf-8"))
     input_contract = json.loads(input_contract_path.read_text(encoding="utf-8"))
+    investment_evidence = (
+        json.loads(investment_evidence_path.read_text(encoding="utf-8"))
+        if investment_evidence_path is not None and investment_evidence_path.exists()
+        else None
+    )
     prospect_availability = (
         json.loads(availability_path.read_text(encoding="utf-8"))
         if availability_path is not None and availability_path.exists()
@@ -2485,6 +2494,7 @@ def run_prospect_rank_v1(
         milb_history_by_key=milb_history_by_key,
         mlb_roster_status=mlb_roster_status,
         require_mlb_roster_status=True,
+        investment_evidence=investment_evidence,
     )
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")

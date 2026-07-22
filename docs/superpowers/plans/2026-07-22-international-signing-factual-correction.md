@@ -93,6 +93,7 @@ git commit -m "Apply verified signing facts to prospect rank"
 - Modify: `prospects/coverage_audit.py`
 - Modify: `tests/test_prospect_rank_v1.py`
 - Modify: `tests/test_prospect_coverage_audit.py`
+- Modify: `scripts/validate_prospect_coverage_audit.py`
 - Modify: `docs/audit-2026-07-22-international-investment-evidence.md`
 
 **Interfaces:**

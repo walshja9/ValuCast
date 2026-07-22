@@ -20,7 +20,7 @@ INVESTMENT_EVIDENCE_PATH = (
 )
 
 AUDIT_NAME = "ValuCast Prospect Coverage Audit"
-AUDIT_VERSION = "0.3.0"
+AUDIT_VERSION = "0.4.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -230,6 +230,7 @@ def build_prospect_coverage_audit(
 ) -> dict:
     rows = list(rank_payload.get("board") or [])
     evidence_by_mlbam = _investment_evidence_index(investment_evidence)
+    evidence_policy = (investment_evidence or {}).get("source_policy") or {}
     top_rows = rows[:TOP_N]
     raw_fallback_rows = [row for row in rows if _is_raw_fallback(row)]
     top_raw_fallback_rows = [row for row in top_rows if _is_raw_fallback(row)]
@@ -357,16 +358,24 @@ def build_prospect_coverage_audit(
                     if verified_investment_bands["top_200"]["all"]["missing"]
                     else "complete"
                 ),
-                "scope": "scoring_input_or_source_backed_signing_evidence",
-                "feeds_model_score": False,
-                "changes_ranks_or_values": False,
+                "scope": "rank_scoring_input_or_source_backed_signing_evidence",
+                "feeds_rank_score": evidence_policy.get("feeds_rank_score") is True,
+                "feeds_v06_model": evidence_policy.get("feeds_v06_model") is True,
+                "feeds_universal_model": evidence_policy.get(
+                    "feeds_universal_model"
+                ) is True,
+                "changes_ranks_or_values": evidence_policy.get(
+                    "changes_ranks_or_values"
+                ) is True,
                 "bands": verified_investment_bands,
                 "resolved_scoring_gaps": resolved_scoring_gaps,
             },
             "direct_score_sensitivity": {
                 "scope": "direct_rank_v1_investment_component_only",
                 "model_score_held_fixed": True,
-                "counterfactual_ranks_computed": False,
+                "counterfactual_ranks_computed": evidence_policy.get(
+                    "feeds_rank_score"
+                ) is True,
                 "maximum_context_score": MAX_INVESTMENT_CONTEXT_SCORE,
                 "top_50_missing_rows": [
                     _investment_sensitivity_entry(row) for row in top_50_missing_rows

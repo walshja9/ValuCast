@@ -3,10 +3,12 @@
   "schema_version": "1.0.0",
   "as_of": "2026-07-22",
   "source_policy": {
-    "kind": "factual_observational_only",
-    "feeds_model_score": false,
-    "changes_ranks_or_values": false,
-    "permitted_use": "coverage_audit_and_registered_future_challenger"
+    "kind": "factual_rank_input",
+    "feeds_rank_score": true,
+    "feeds_v06_model": false,
+    "feeds_universal_model": false,
+    "changes_ranks_or_values": true,
+    "permitted_use": "prospect_rank_v1_factual_investment_context_only"
   },
   "rows": [
     {

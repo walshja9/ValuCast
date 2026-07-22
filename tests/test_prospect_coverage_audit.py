@@ -58,8 +58,11 @@ def _investment_evidence(*rows):
         "schema_version": "1.0.0",
         "as_of": "2026-07-22",
         "source_policy": {
-            "kind": "factual_observational_only",
-            "feeds_model_score": False,
+            "kind": "factual_rank_input",
+            "feeds_rank_score": True,
+            "feeds_v06_model": False,
+            "feeds_universal_model": False,
+            "changes_ranks_or_values": True,
         },
         "rows": list(rows),
     }
@@ -143,11 +146,11 @@ def test_coverage_audit_reports_investment_completeness_and_direct_sensitivity()
     assert context["direct_score_sensitivity"]["counterfactual_ranks_computed"] is False
 
 
-def test_coverage_audit_separates_verified_evidence_from_frozen_scoring_input():
+def test_coverage_audit_reports_verified_evidence_applied_to_rank_input():
     rank_payload = _rank_payload(
         [
             _row(1, "prospect_model_v0_6", investment=100, score=60.0),
-            _row(2, "prospect_model_v0_6", score=50.0),
+            _row(2, "prospect_model_v0_6", investment=68.12, score=52.59),
         ]
     )
     evidence = _investment_evidence(
@@ -165,25 +168,37 @@ def test_coverage_audit_separates_verified_evidence_from_frozen_scoring_input():
     payload = build_prospect_coverage_audit(rank_payload, evidence)
 
     context = payload["investment_context"]
-    assert context["status"] == "incomplete"
-    assert context["bands"]["top_25"]["all"]["covered"] == 1
+    assert context["status"] == "complete"
+    assert context["bands"]["top_25"]["all"]["covered"] == 2
     verified = context["verified_evidence"]
     assert verified["status"] == "complete"
-    assert verified["feeds_model_score"] is False
+    assert verified["feeds_rank_score"] is True
+    assert verified["feeds_v06_model"] is False
+    assert verified["feeds_universal_model"] is False
     assert verified["bands"]["top_25"]["all"] == {
         "rows": 2,
         "covered": 2,
         "missing": 0,
         "coverage_rate": 1.0,
     }
-    assert verified["resolved_scoring_gaps"][0]["mlbam_id"] == 10_002
-    assert verified["resolved_scoring_gaps"][0]["signing_bonus"] == 950_000
-    assert rank_payload["board"][1]["components"]["factual_investment_context"] is None
+    assert verified["resolved_scoring_gaps"] == []
+    assert rank_payload["board"][1]["components"]["factual_investment_context"] == 68.12
 
 
 def test_coverage_audit_validator_requires_investment_context(tmp_path):
     payload = build_prospect_coverage_audit(
-        _rank_payload([_row(1, "prospect_model_v0_6")])
+        _rank_payload([_row(1, "prospect_model_v0_6", investment=68.12)]),
+        _investment_evidence(
+            {
+                "mlbam_id": 10_001,
+                "name": "Prospect 1",
+                "acquisition_type": "international_amateur_free_agent",
+                "signing_bonus": 950_000,
+                "source_name": "MLB Pipeline",
+                "source_url": "https://www.mlb.com/example",
+                "source_checked_at": "2026-07-22",
+            }
+        ),
     )
     path = tmp_path / "coverage.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
@@ -192,3 +207,20 @@ def test_coverage_audit_validator_requires_investment_context(tmp_path):
     payload.pop("investment_context")
     path.write_text(json.dumps(payload), encoding="utf-8")
     assert "investment_context must be an object" in validate_audit(path)[1]
+
+
+def test_coverage_audit_validator_rejects_universal_model_use(tmp_path):
+    payload = build_prospect_coverage_audit(
+        _rank_payload([_row(1, "prospect_model_v0_6", investment=68.12)]),
+        _investment_evidence(),
+    )
+    payload["investment_context"]["verified_evidence"][
+        "feeds_universal_model"
+    ] = True
+    path = tmp_path / "coverage.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert (
+        "investment_context.verified_evidence.feeds_universal_model must be false"
+        in validate_audit(path)[1]
+    )

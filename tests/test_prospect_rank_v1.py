@@ -1583,6 +1583,7 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     input_path = tmp_path / "input.json"
     availability_path = tmp_path / "availability.json"
     roster_status_path = tmp_path / "roster_status.json"
+    investment_evidence_path = tmp_path / "investment_evidence.json"
     artifact_path = tmp_path / "rank.json"
 
     universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
@@ -1594,12 +1595,16 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
         json.dumps(_mlb_roster_status()),
         encoding="utf-8",
     )
+    investment_evidence_path.write_text(
+        json.dumps(_investment_evidence()), encoding="utf-8"
+    )
 
     result = run_prospect_rank_v1(
         prospect_universe_path=universe_path,
         dynasty_layer_path=layer_path,
         prospect_model_path=model_path,
         input_contract_path=input_path,
+        investment_evidence_path=investment_evidence_path,
         availability_path=availability_path,
         mlb_roster_status_path=roster_status_path,
         artifact_path=artifact_path,
@@ -1612,5 +1617,6 @@ def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):
     assert result["archive_changed"] is True
     assert payload["board"][0]["rank"] == 1
     assert payload["board"][0]["components"]["availability"]["present"] is True
+    assert payload["input_artifacts"]["investment_evidence_applied_count"] == 1
     assert "dd_adapter_version" not in payload["input_artifacts"]
     assert (tmp_path / "archive" / "2026-06-13.json").exists()
