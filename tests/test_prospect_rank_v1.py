@@ -370,6 +370,10 @@ def _dynasty_layer():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [_profile(1, 0.9), _profile(2, 0.8)],
     }
 
@@ -378,6 +382,11 @@ def _prospect_model():
     return {
         "status": "shadow_only",
         "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "ranked": [
             {
                 "mlbam_id": 1,
@@ -918,6 +927,10 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [layer_profile],
     }
     input_contract = {
@@ -946,7 +959,16 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
     payload = build_prospect_rank_v1(
         universe,
         dynasty_layer,
-        {"status": "shadow_only", "model_version": "0.6.0", "ranked": []},
+        {
+            "status": "shadow_only",
+            "model_version": "0.6.0",
+            "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+            "release_contract": {
+                "consumer": "prospect_rank_v1",
+                "feeds_live_valucast_rank": True,
+            },
+            "ranked": [],
+        },
         input_contract,
     )
 
@@ -1007,6 +1029,26 @@ def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
     assert missing_layer["score_source"] == "identity_only_fallback"
     assert missing_layer["confidence"] == "low"
     assert any("coverage" in blocker for blocker in validation["blockers"])
+
+
+def test_rank_v1_reports_the_served_stage1_contract():
+    payload = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
+    )
+    assert payload["input_artifacts"]["stage1_contract_version"] == "1.0.0"
+    assert payload["input_artifacts"]["stage1_state"] == "incumbent"
+    assert payload["input_artifacts"]["stage1_profile_count"] == 2
+
+
+def test_rank_v1_rejects_a_research_stage1_state():
+    with pytest.raises(ValueError, match="Stage 1 state"):
+        build_prospect_rank_v1(
+            _universe(),
+            _dynasty_layer(),
+            _prospect_model(),
+            _input_contract(),
+            stage1_state="research",
+        )
 
 
 def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
@@ -1276,11 +1318,20 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [layer_profile],
     }
     prospect_model = {
         "status": "shadow_only",
         "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "ranked": [
             {
                 "mlbam_id": 3,
@@ -1527,9 +1578,22 @@ def _three_hitter_board(*, active_ids, graduated_ids):
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": profiles,
     }
-    prospect_model = {"status": "shadow_only", "model_version": "0.6.0", "ranked": ranked}
+    prospect_model = {
+        "status": "shadow_only",
+        "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
+        "ranked": ranked,
+    }
     input_contract = {
         "schema_version": "1.1",
         "generated_at": "2026-06-13T12:00:00+00:00",
