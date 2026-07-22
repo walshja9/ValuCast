@@ -8561,17 +8561,21 @@ def _receipts_marquee(receipts):
 
 def _build_receipts_page_context():
     payload = _load_receipts_payload()
-    receipts = [] if RECEIPTS_HOLD else list(payload.get("receipts") or [])
-    misses = [] if RECEIPTS_HOLD else list(payload.get("misses") or [])
-    no_claim_rows = [] if RECEIPTS_HOLD else list(payload.get("no_claim_rows") or [])
-    generated_at = payload.get("generated_at")
-    summary = payload.get("summary") or {}
-    no_claim_count = 0 if RECEIPTS_HOLD else summary.get("no_claim_call_up_count") or 0
-    maturation = (
-        {"pending": 0, "confirmed": 0, "decayed": 0}
-        if RECEIPTS_HOLD
-        else summary.get("maturation") or {"pending": 0, "confirmed": 0, "decayed": 0}
+    summary = payload.get("summary")
+    maturation = summary.get("maturation") if isinstance(summary, dict) else None
+    receipts_available = (
+        not RECEIPTS_HOLD
+        and all(isinstance(payload.get(key), list) for key in ("receipts", "misses", "no_claim_rows"))
+        and isinstance(summary, dict)
+        and isinstance(summary.get("no_claim_call_up_count"), int)
+        and isinstance(maturation, dict)
     )
+    receipts = list(payload["receipts"]) if receipts_available else []
+    misses = list(payload["misses"]) if receipts_available else []
+    no_claim_rows = list(payload["no_claim_rows"]) if receipts_available else []
+    generated_at = payload.get("generated_at")
+    no_claim_count = summary["no_claim_call_up_count"] if receipts_available else 0
+    maturation = maturation if receipts_available else {"pending": 0, "confirmed": 0, "decayed": 0}
     return {
         "receipts": receipts,
         "receipt_count": len(receipts),
@@ -8581,7 +8585,7 @@ def _build_receipts_page_context():
         "no_claim_call_up_count": no_claim_count,
         "maturation": maturation,
         "receipts_marquee": _receipts_marquee(receipts),
-        "receipts_available": bool(payload) and not RECEIPTS_HOLD,
+        "receipts_available": receipts_available,
         "receipts_generated_at": generated_at,
         "as_of": generated_at or store.as_of,
     }
@@ -8624,7 +8628,14 @@ def _track_record_context():
     }
     if not SCOREBOARD_HOLD:
         payload = _load_forward_scoreboard_payload()
-        context["forward_sc"] = _scoreboard_view(payload) if payload else None
+        view = _scoreboard_view(payload) if payload else None
+        required = ("wins", "losses", "pool_size", "win_rate_pct", "clean_retractions", "open")
+        if (
+            view
+            and all(isinstance(view.get(key), int) for key in required)
+            and view["pool_size"] > 0
+        ):
+            context["forward_sc"] = view
     return context
 
 

@@ -462,12 +462,71 @@ def test_track_record_context_respects_both_hold_gates(monkeypatch):
     assert context["no_claim_call_up_count"] == 0
 
 
+def test_track_record_context_rejects_partial_forward_artifact(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "SCOREBOARD_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_forward_scoreboard_payload", lambda: {
+        "anticipation_score": {"pool_size": 70},
+        "funnel": {"wins": 39},
+    })
+
+    context = app_module._track_record_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert context["forward_sc"] is None
+    assert "None%" not in html
+    assert "None clean retractions" not in html
+    assert "Held or collecting; no metrics published." in html
+
+
+def test_receipts_context_rejects_partial_nonempty_artifact(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    monkeypatch.setattr(app_module, "_load_receipts_payload", lambda: {
+        "receipts": [{"name": "LEAKED RECEIPT"}],
+        "misses": [],
+        "no_claim_rows": [],
+        "summary": {"no_claim_call_up_count": 12},
+    })
+
+    context = app_module._build_receipts_page_context()
+    html = app_module.app.test_client().get("/ledger").data.decode("utf-8")
+
+    assert context["receipts_available"] is False
+    assert context["receipts"] == []
+    assert context["misses"] == []
+    assert context["no_claim_rows"] == []
+    assert context["receipt_count"] == context["miss_count"] == 0
+    assert context["no_claim_call_up_count"] == 0
+    assert context["maturation"] == {"pending": 0, "confirmed": 0, "decayed": 0}
+    assert "0–0" not in html
+    assert "12 without a large enough ranking gap" not in html
+
+
 def test_track_record_share_card_uses_all_three_lanes(monkeypatch):
     import inspect
     import app as app_module
 
+    drawn_text = []
+    monkeypatch.setattr(
+        app_module,
+        "_graphic_fit_text",
+        lambda draw, value, font, max_width: drawn_text.append(str(value)) or str(value),
+    )
     monkeypatch.setattr(app_module, "_track_record_context", lambda: {
-        "sc": app_module._load_scorecard_payload(),
+        "sc": {
+            "gate": {"publishable": True},
+            "summary": {
+                "wins": 6,
+                "decided_count": 10,
+                "decided_rate": 0.6,
+                "matured_open_rates": {"toward": 4, "n": 8},
+                "control_matured_rates": {"toward": 3, "n": 9},
+            },
+            "calls": [],
+        },
         "forward_sc": {
             "wins": 39, "losses": 31, "pool_size": 70, "win_rate_pct": 56,
             "clean_retractions": 86, "open": 102, "provisional": True,
@@ -490,6 +549,12 @@ def test_track_record_share_card_uses_all_three_lanes(monkeypatch):
     assert '"CONSENSUS MOVEMENT"' in source
     assert '"CALL-UP TIMING"' in source
     assert "NEWEST CONSENSUS CALLS" in source
+    assert "56% of 70 scored" in drawn_text
+    assert "86 clean retractions - 102 open" in drawn_text
+    assert "60% of 10 mature" in drawn_text
+    assert "still-open 4/8 vs 3/9 controls" in drawn_text
+    assert "33 no scoreable gap" in drawn_text
+    assert "arrival evidence, not career value" in drawn_text
 
 
 def test_track_record_explains_three_evidence_lanes_with_denominators(monkeypatch):
