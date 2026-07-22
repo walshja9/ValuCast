@@ -1,7 +1,7 @@
 {
   "artifact": "valucast_prospect_coverage_audit",
   "audit_name": "ValuCast Prospect Coverage Audit",
-  "audit_version": "0.1.0",
+  "audit_version": "0.2.0",
   "blockers": [],
   "context_watchlist_raw_fallback_misses": [],
   "criteria": {
@@ -23,6 +23,256 @@
     "rank_generated_at": "2026-07-22T00:00:00+00:00",
     "rank_name": "ValuCast Prospect Rank v1",
     "rank_version": "0.2.8"
+  },
+  "investment_context": {
+    "affects_root_status": false,
+    "bands": {
+      "top_100": {
+        "all": {
+          "coverage_rate": 0.77,
+          "covered": 77,
+          "missing": 23,
+          "rows": 100
+        },
+        "hitter": {
+          "coverage_rate": 0.6885,
+          "covered": 42,
+          "missing": 19,
+          "rows": 61
+        },
+        "pitcher": {
+          "coverage_rate": 0.8974,
+          "covered": 35,
+          "missing": 4,
+          "rows": 39
+        }
+      },
+      "top_200": {
+        "all": {
+          "coverage_rate": 0.775,
+          "covered": 155,
+          "missing": 45,
+          "rows": 200
+        },
+        "hitter": {
+          "coverage_rate": 0.7018,
+          "covered": 80,
+          "missing": 34,
+          "rows": 114
+        },
+        "pitcher": {
+          "coverage_rate": 0.8721,
+          "covered": 75,
+          "missing": 11,
+          "rows": 86
+        }
+      },
+      "top_25": {
+        "all": {
+          "coverage_rate": 0.76,
+          "covered": 19,
+          "missing": 6,
+          "rows": 25
+        },
+        "hitter": {
+          "coverage_rate": 0.6,
+          "covered": 9,
+          "missing": 6,
+          "rows": 15
+        },
+        "pitcher": {
+          "coverage_rate": 1.0,
+          "covered": 10,
+          "missing": 0,
+          "rows": 10
+        }
+      },
+      "top_50": {
+        "all": {
+          "coverage_rate": 0.76,
+          "covered": 38,
+          "missing": 12,
+          "rows": 50
+        },
+        "hitter": {
+          "coverage_rate": 0.625,
+          "covered": 20,
+          "missing": 12,
+          "rows": 32
+        },
+        "pitcher": {
+          "coverage_rate": 1.0,
+          "covered": 18,
+          "missing": 0,
+          "rows": 18
+        }
+      }
+    },
+    "direct_score_sensitivity": {
+      "counterfactual_ranks_computed": false,
+      "maximum_context_score": 100.0,
+      "model_score_held_fixed": true,
+      "scope": "direct_rank_v1_investment_component_only",
+      "top_50_missing_rows": [
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 808265,
+          "name": "Franklin Arias",
+          "rank": 8,
+          "role": "hitter",
+          "score": 54.94,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 59.44
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 800325,
+          "name": "Luis Lara",
+          "rank": 10,
+          "role": "hitter",
+          "score": 51.78,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 56.28
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 800543,
+          "name": "Josue De Paula",
+          "rank": 13,
+          "role": "hitter",
+          "score": 50.01,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 54.51
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 815908,
+          "name": "Jes\u00fas Made",
+          "rank": 16,
+          "role": "hitter",
+          "score": 48.51,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 53.01
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 699013,
+          "name": "Esmerlyn Valdez",
+          "rank": 19,
+          "role": "hitter",
+          "score": 47.35,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 51.85
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 699302,
+          "name": "H\u00e9ctor Rodr\u00edguez",
+          "rank": 24,
+          "role": "hitter",
+          "score": 44.24,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 48.74
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "A+",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 821181,
+          "name": "Juneiker Caceres",
+          "rank": 27,
+          "role": "hitter",
+          "score": 43.65,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 48.15
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 699393,
+          "name": "Pedro Ram\u00edrez",
+          "rank": 30,
+          "role": "hitter",
+          "score": 42.49,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 46.99
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 815888,
+          "name": "Leo De Vries",
+          "rank": 35,
+          "role": "hitter",
+          "score": 41.64,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 46.14
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 694197,
+          "name": "Angel Genao",
+          "rank": 36,
+          "role": "hitter",
+          "score": 41.36,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 45.86
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 703185,
+          "name": "Nelson Rada",
+          "rank": 40,
+          "role": "hitter",
+          "score": 40.21,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 44.71
+        },
+        {
+          "configured_missing_score": 25.0,
+          "direct_weight": 0.06,
+          "level": "AAA",
+          "maximum_direct_score_delta": 4.5,
+          "mlbam_id": 703155,
+          "name": "Lazaro Montes",
+          "rank": 49,
+          "role": "hitter",
+          "score": 38.04,
+          "score_source": "prospect_model_v0_6",
+          "score_upper_bound": 42.54
+        }
+      ]
+    },
+    "status": "incomplete"
   },
   "metrics": {
     "context_watchlist_raw_fallback_count": 0,

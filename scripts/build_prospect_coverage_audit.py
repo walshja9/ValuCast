@@ -17,6 +17,10 @@ def main() -> None:
         f"raw_fallback_top200={result['raw_fallback_top_200_count']} "
         "elite_factual_raw_fallback_top200="
         f"{result['elite_factual_raw_fallback_top_200_count']} "
+        "investment_top50_hitters_missing="
+        f"{result['investment_top_50_hitter_missing_count']} "
+        "investment_top50_hitters_coverage="
+        f"{result['investment_top_50_hitter_coverage_rate']} "
         f"blockers={result['blocker_count']} "
         f"-> {result['artifact_path']}"
     )

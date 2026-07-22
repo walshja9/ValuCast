@@ -9,13 +9,15 @@ from pathlib import Path
 from typing import Any
 
 from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
+from prospects.rank_v1 import MISSING_INVESTMENT_CONTEXT_SCORE
 from prospects.rank_v1 import PEDIGREE_SCORE_SOURCE
+from prospects.rank_v1 import SCORE_WEIGHTS
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
 
 AUDIT_NAME = "ValuCast Prospect Coverage Audit"
-AUDIT_VERSION = "0.1.0"
+AUDIT_VERSION = "0.2.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -23,6 +25,8 @@ ELITE_FACTUAL_INVESTMENT_MIN = 90.0
 CONTEXT_TOP_PROSPECT_RANK_MAX = 30
 CONTEXT_SOURCE_RANK_MAX = 30
 TOP_N = 200
+INVESTMENT_COVERAGE_BANDS = (25, 50, 100, 200)
+MAX_INVESTMENT_CONTEXT_SCORE = 100.0
 
 
 def _clean_float(value: Any) -> float | None:
@@ -131,6 +135,50 @@ def _sort_key(row: dict) -> tuple[int, float, str]:
     return rank, -investment, str(row.get("name") or "")
 
 
+def _investment_coverage(rows: list[dict]) -> dict:
+    result = {}
+    for label, role in (("all", None), ("hitter", "hitter"), ("pitcher", "pitcher")):
+        selected = (
+            rows if role is None else [row for row in rows if row.get("role") == role]
+        )
+        covered = sum(_factual_investment(row) is not None for row in selected)
+        result[label] = {
+            "rows": len(selected),
+            "covered": covered,
+            "missing": len(selected) - covered,
+            "coverage_rate": round(covered / len(selected), 4) if selected else None,
+        }
+    return result
+
+
+def _investment_sensitivity_entry(row: dict) -> dict:
+    components = _components(row)
+    source = _score_source(row)
+    direct_weight = _clean_float(
+        (SCORE_WEIGHTS.get(source) or {}).get("factual_investment_context")
+    ) or 0.0
+    missing_score = _clean_float(components.get("factual_investment_missing_score"))
+    if missing_score is None:
+        missing_score = MISSING_INVESTMENT_CONTEXT_SCORE
+    maximum_delta = direct_weight * (MAX_INVESTMENT_CONTEXT_SCORE - missing_score)
+    score = _clean_float(row.get("score"))
+    return {
+        "rank": row.get("rank"),
+        "name": row.get("name"),
+        "mlbam_id": row.get("mlbam_id"),
+        "role": row.get("role"),
+        "level": row.get("level"),
+        "score": score,
+        "score_source": source,
+        "configured_missing_score": missing_score,
+        "direct_weight": direct_weight,
+        "maximum_direct_score_delta": round(maximum_delta, 2),
+        "score_upper_bound": (
+            round(min(100.0, score + maximum_delta), 2) if score is not None else None
+        ),
+    }
+
+
 def build_prospect_coverage_audit(rank_payload: dict) -> dict:
     rows = list(rank_payload.get("board") or [])
     top_rows = rows[:TOP_N]
@@ -163,6 +211,14 @@ def build_prospect_coverage_audit(rank_payload: dict) -> dict:
         blockers.append(
             "Elite factual draft/signing prospects remain on raw fallback scoring inside the top-200 review band."
         )
+    investment_bands = {
+        f"top_{limit}": _investment_coverage(rows[:limit])
+        for limit in INVESTMENT_COVERAGE_BANDS
+    }
+    top_200_investment_missing = investment_bands["top_200"]["all"]["missing"]
+    top_50_missing_rows = [
+        row for row in rows[:50] if _factual_investment(row) is None
+    ]
 
     return {
         "artifact": "valucast_prospect_coverage_audit",
@@ -215,6 +271,20 @@ def build_prospect_coverage_audit(rank_payload: dict) -> dict:
             "context_watchlist_raw_fallback_count": len(context_watchlist_rows),
         },
         "blockers": blockers,
+        "investment_context": {
+            "status": "incomplete" if top_200_investment_missing else "complete",
+            "affects_root_status": False,
+            "bands": investment_bands,
+            "direct_score_sensitivity": {
+                "scope": "direct_rank_v1_investment_component_only",
+                "model_score_held_fixed": True,
+                "counterfactual_ranks_computed": False,
+                "maximum_context_score": MAX_INVESTMENT_CONTEXT_SCORE,
+                "top_50_missing_rows": [
+                    _investment_sensitivity_entry(row) for row in top_50_missing_rows
+                ],
+            },
+        },
         "elite_factual_raw_fallback_misses": [
             _entry(row) for row in sorted(elite_factual_fallback_rows, key=_sort_key)[:50]
         ],
@@ -252,6 +322,7 @@ def run_prospect_coverage_audit(
     rank_payload = json.loads(rank_path.read_text(encoding="utf-8"))
     payload = build_prospect_coverage_audit(rank_payload)
     path = write_prospect_coverage_audit(payload, artifact_path)
+    top_50_hitters = payload["investment_context"]["bands"]["top_50"]["hitter"]
     return {
         "artifact_path": str(path),
         "status": payload["status"],
@@ -261,4 +332,6 @@ def run_prospect_coverage_audit(
             "elite_factual_raw_fallback_top_200_count"
         ],
         "blocker_count": len(payload["blockers"]),
+        "investment_top_50_hitter_missing_count": top_50_hitters["missing"],
+        "investment_top_50_hitter_coverage_rate": top_50_hitters["coverage_rate"],
     }
