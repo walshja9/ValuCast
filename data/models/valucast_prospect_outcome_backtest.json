@@ -121,6 +121,7 @@
       "status": "ready"
     },
     "cross_role_shadow": {
+      "change_power_disclosure": "Cross-role change power is data-scale-limited and reported separately from evidence quality; it does not gate evidence_ready status or cap the front-office score.",
       "change_power_passed": false,
       "checks": {
         "aaa_measured_coverage": {
@@ -165,7 +166,7 @@
           "evidence_class": "current_publication_shape",
           "max_top25_pitchers": 7,
           "max_top50_pitcher_rate": 0.3,
-          "model_component_eligible_board_count": 2849,
+          "model_component_eligible_board_count": 2851,
           "model_component_field": "components.model_score",
           "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
           "model_component_top25_evaluated_count": 25,
@@ -250,10 +251,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 7,
+        "buy_comparison_count": 8,
         "latest_rank_bucket_count": 14,
-        "observation_span_days": 7,
-        "rank_comparison_count": 7
+        "observation_span_days": 8,
+        "rank_comparison_count": 8
       },
       "recommendations": [
         "Review top-50 availability-risk buckets before changing individual names."
@@ -266,7 +267,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2849,
+        "candidate_count": 2851,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -278,7 +279,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-21T00:50:07.285364+00:00",
+        "activated_at": "2026-07-22T12:15:39.087862+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -290,15 +291,15 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2881,
+      "candidate_count": 2883,
       "impact_board_gate": {
-        "activated_at": "2026-07-21T00:50:07.285364+00:00",
+        "activated_at": "2026-07-22T12:15:39.087862+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.130602,
+        "baseline_score": 0.130605,
         "cv_method": "walk_forward",
         "improvement_pct": 3.0308,
         "metric": "category_impact_mae",
-        "model_score": 0.126644,
+        "model_score": 0.126646,
         "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
@@ -309,8 +310,7 @@
   },
   "front_office_track": {
     "cap_reasons": [
-      "Forward observations are not review-ready yet.",
-      "Cross-role change detection is underpowered."
+      "Forward observations are not review-ready yet."
     ],
     "forward_next_target_grade": "A-",
     "forward_supported_grade": null,
@@ -322,17 +322,17 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -346,17 +346,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -370,7 +370,7 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 7,
+            "current": 8,
             "metric": "observation_span_days",
             "required": 14
           }
@@ -378,19 +378,19 @@
         "passed": false
       }
     },
-    "grade": "B",
+    "grade": "B+",
     "interpretation": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-    "score": 84,
-    "score_cap": 84,
+    "score": 87,
+    "score_cap": 87,
     "target_grade": "A-",
     "uncapped_score": 87
   },
-  "generated_at": "2026-07-21T00:00:00+00:00",
+  "generated_at": "2026-07-22T00:00:00+00:00",
   "generated_dates": {
-    "cross_role_shadow": "2026-07-21",
-    "dynasty_backtest": "2026-07-21",
-    "forward_validation": "2026-07-21",
-    "model_v07": "2026-07-21",
+    "cross_role_shadow": "2026-07-22",
+    "dynasty_backtest": "2026-07-22",
+    "forward_validation": "2026-07-22",
+    "model_v07": "2026-07-22",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
@@ -403,7 +403,7 @@
     "kind": "realized_outcome_and_observe_only_evidence",
     "market_values_used": false
   },
-  "status": "needs_work",
+  "status": "evidence_ready",
   "validation": {
     "blockers": [],
     "bucket_cohort_evidence_ready": true,

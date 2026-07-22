@@ -1,5 +1,5 @@
 {
-  "actuals_as_of": "2026-07-21",
+  "actuals_as_of": "2026-07-22",
   "as_of_season": 2026,
   "components": {
     "hitters": {
@@ -32,27 +32,41 @@
     }
   },
   "eligibility_source": "current.json (Steamer outlook) used for names/teams/positions + active-player universe; NO projection stats copied",
-  "generated_at": "2026-07-21T00:46:03.336582+00:00",
+  "generated_at": "2026-07-22T12:10:33.634271+00:00",
   "hitter_count": 877,
-  "pitcher_count": 1187,
+  "pitcher_count": 1188,
   "projection_scope": "rest_of_season",
   "public_skill_metric_gate": {
     "affects_live_outputs": false,
+    "blockers": [
+      "remaining_opportunity_clamped",
+      "zero_remaining_opportunity"
+    ],
     "reason": "remaining-opportunity clamping is present",
     "status": "held"
   },
   "remaining_opportunity_diagnostics": {
     "hitters": {
+      "actuals_match_rate": 0.6214,
       "actuals_matched": 545,
-      "clamped_to_zero": 23,
+      "clamped_to_zero": 26,
+      "clamped_to_zero_rate": 0.0296,
+      "positive_remaining": 851,
+      "positive_remaining_rate": 0.9704,
       "rows": 877,
-      "zero_remaining": 24
+      "zero_remaining": 26,
+      "zero_remaining_rate": 0.0296
     },
     "pitchers": {
-      "actuals_matched": 625,
-      "clamped_to_zero": 177,
-      "rows": 1187,
-      "zero_remaining": 183
+      "actuals_match_rate": 0.5286,
+      "actuals_matched": 628,
+      "clamped_to_zero": 182,
+      "clamped_to_zero_rate": 0.1532,
+      "positive_remaining": 1002,
+      "positive_remaining_rate": 0.8434,
+      "rows": 1188,
+      "zero_remaining": 186,
+      "zero_remaining_rate": 0.1566
     }
   },
   "run_id": "valucast_hp_2026_v2",
