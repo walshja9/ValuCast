@@ -8929,7 +8929,7 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None, no_cla
             draw.text((x + 150, top + 7), name, fill=text, font=f_name)
             meta_parts = [row.get("team"), row.get("pos"), row.get("level")]
             if row.get("flagged_days_early"):
-                meta_parts.append(f"flagged {row['flagged_days_early']}d early")
+                meta_parts.append(f"{row['flagged_days_early']}d pre-call-up rank streak")
             meta = " - ".join(str(part) for part in meta_parts if part)
             draw.text((x + 150, top + 35), _graphic_fit_text(draw, meta, f_meta, 350), fill=muted, font=f_meta)
             consensus_rank = row.get("consensus_rank")
@@ -8960,10 +8960,7 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None, no_cla
     # no-claim count invites the cherry-picking question the counter exists to
     # answer. Mirrors the page's no-claim fineprint (the page is source of truth).
     if no_claim_count:
-        no_claim_line = (
-            f"{no_claim_count} more call-ups produced no claim - model and field were even, "
-            "or the field had no read - nothing to score either way"
-        )
+        no_claim_line = f"{no_claim_count} post-launch call-ups had no scoreable ranking gap"
         draw.text(
             (48, 1350 - 96),
             _graphic_fit_text(draw, no_claim_line, _graphic_font(14), 984),

@@ -602,8 +602,7 @@ def test_build_truncates_run_at_out_of_band_day_end_to_end():
 
 
 def test_receipts_page_renders_flagged_days_early_when_present(monkeypatch):
-    """The template emits 'flagged Nd early' when a receipt row carries the field and
-    omits it (no 'flagged' text) when the row does not."""
+    """The template emits the pre-call-up rank streak only when the row carries it."""
     import app as app_mod
 
     monkeypatch.setattr(app_mod, "RECEIPTS_HOLD", False)
@@ -637,8 +636,21 @@ def test_receipts_page_renders_flagged_days_early_when_present(monkeypatch):
 
     monkeypatch.setattr(app_mod, "_build_receipts_page_context", fake_context)
     page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
-    assert "flagged 12d early" in page  # present row rendered
-    assert page.count("flagged") == 1  # the no-lead row did NOT render a flagged suffix
+    assert "12d pre-call-up rank streak" in page
+    assert "flagged 12d early" not in page
+
+
+def test_receipts_page_reuses_exact_scoring_disclosure(monkeypatch):
+    import app as app_module
+
+    monkeypatch.setattr(app_module, "RECEIPTS_HOLD", False)
+    html = app_module.app.test_client().get("/receipts").data.decode("utf-8")
+
+    assert "at least 2 public boards" in html
+    assert "top 300" in html
+    assert "25 places" in html
+    assert "top-25 exceptions" in html
+    assert "no scoreable ranking gap" in html
 
 
 def test_receipts_marquee_selects_max_lead_time_with_consensus_rank():
@@ -701,8 +713,9 @@ def test_receipts_hero_renders_marquee_line_and_secondary_counts(monkeypatch):
 
     monkeypatch.setattr(app_mod, "_build_receipts_page_context", ctx_with_marquee)
     page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
-    assert "Called Luis Lara up 24 days before the field did" in page
-    assert "#8 here, #63 field median" in page
+    assert "Ranked Luis Lara for 24 consecutive archived days before his MLB call-up" in page
+    assert "#8 here, #63 field median at promotion" in page
+    assert "before the field did" not in page
     assert "receipts-counts" in page  # counts moved to the secondary line
     assert "1 ahead" in page and "0 behind" in page
     assert "arrival" in page.lower()  # honesty caveat preserved
@@ -1298,7 +1311,7 @@ def test_receipts_page_renders_no_claim_details_block_with_near_note(monkeypatch
     monkeypatch.setattr(app_mod, "_build_receipts_page_context", fake_context)
     page = app_mod.app.test_client().get("/receipts").data.decode("utf-8")
     assert "the 1 no-claims" in page
-    assert "Same thresholds both directions" in page
+    assert "These post-launch call-ups did not meet the fixed ahead or behind thresholds." in page
     assert "we had him #671" in page
     assert "1 board, ~#215" in page
     assert "a second board and this scores as a miss" in page
