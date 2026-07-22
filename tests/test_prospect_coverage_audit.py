@@ -1,20 +1,32 @@
 """Tests for the ValuCast Prospect Rank v1 coverage audit."""
 
+import json
+
 from prospects.coverage_audit import build_prospect_coverage_audit
+from scripts.validate_prospect_coverage_audit import validate_audit
 
 
-def _row(rank, source, investment=None, dd_rank=None, source_ranks=None):
+def _row(
+    rank,
+    source,
+    investment=None,
+    dd_rank=None,
+    source_ranks=None,
+    *,
+    role="hitter",
+    score=45.0,
+):
     return {
         "rank": rank,
         "name": f"Prospect {rank}",
         "mlbam_id": 10_000 + rank,
-        "role": "hitter",
+        "role": role,
         "positions": ["SS"],
         "mlb_team": "BOS",
         "age": 19,
         "level": "A",
         "eta": 2028,
-        "score": 45.0,
+        "score": score,
         "score_source": source,
         "confidence": "low",
         "components": {
@@ -81,3 +93,51 @@ def test_coverage_audit_keeps_public_context_as_watchlist_only():
         "dd_prospect_rank_context"
     ] == 5
     assert payload["source_policy"]["external_rankings_used_for_model_score"] is False
+
+
+def test_coverage_audit_reports_investment_completeness_and_direct_sensitivity():
+    payload = build_prospect_coverage_audit(
+        _rank_payload(
+            [
+                _row(1, "prospect_model_v0_6", investment=100, score=60.0),
+                _row(2, "prospect_model_v0_6", score=50.0),
+                _row(3, "prospect_model_v0_6", role="pitcher", score=40.0),
+            ]
+        )
+    )
+
+    assert payload["status"] == "candidate_ready"
+    context = payload["investment_context"]
+    assert context["status"] == "incomplete"
+    assert context["affects_root_status"] is False
+    assert context["bands"]["top_25"]["all"] == {
+        "rows": 3,
+        "covered": 1,
+        "missing": 2,
+        "coverage_rate": 0.3333,
+    }
+    assert context["bands"]["top_25"]["hitter"]["missing"] == 1
+    assert context["bands"]["top_25"]["pitcher"]["missing"] == 1
+
+    rows = {
+        row["name"]: row
+        for row in context["direct_score_sensitivity"]["top_50_missing_rows"]
+    }
+    assert rows["Prospect 2"]["direct_weight"] == 0.06
+    assert rows["Prospect 2"]["maximum_direct_score_delta"] == 4.5
+    assert rows["Prospect 2"]["score_upper_bound"] == 54.5
+    assert context["direct_score_sensitivity"]["model_score_held_fixed"] is True
+    assert context["direct_score_sensitivity"]["counterfactual_ranks_computed"] is False
+
+
+def test_coverage_audit_validator_requires_investment_context(tmp_path):
+    payload = build_prospect_coverage_audit(
+        _rank_payload([_row(1, "prospect_model_v0_6")])
+    )
+    path = tmp_path / "coverage.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert validate_audit(path)[1] == []
+
+    payload.pop("investment_context")
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    assert "investment_context must be an object" in validate_audit(path)[1]

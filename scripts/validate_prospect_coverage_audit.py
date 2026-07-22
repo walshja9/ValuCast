@@ -34,6 +34,21 @@ def validate_audit(path: Path = AUDIT_PATH) -> tuple[dict | None, list[str]]:
         problems.append("metrics.elite_factual_raw_fallback_top_200_count is required")
     if not isinstance(payload.get("source_policy"), dict):
         problems.append("source_policy must be an object")
+    investment_context = payload.get("investment_context")
+    if not isinstance(investment_context, dict):
+        problems.append("investment_context must be an object")
+    else:
+        if investment_context.get("status") not in {"complete", "incomplete"}:
+            problems.append("investment_context.status must be complete or incomplete")
+        bands = investment_context.get("bands")
+        if not isinstance(bands, dict):
+            problems.append("investment_context.bands must be an object")
+        else:
+            for band in ("top_25", "top_50", "top_100", "top_200"):
+                if not isinstance(bands.get(band), dict):
+                    problems.append(f"investment_context.bands.{band} must be an object")
+        if not isinstance(investment_context.get("direct_score_sensitivity"), dict):
+            problems.append("investment_context.direct_score_sensitivity must be an object")
     return payload, problems
 
 
@@ -51,13 +66,22 @@ def main() -> int:
 
     assert payload is not None
     metrics = payload.get("metrics") or {}
+    top_50_hitters = (
+        ((payload.get("investment_context") or {}).get("bands") or {})
+        .get("top_50", {})
+        .get("hitter", {})
+    )
     print(
         "prospect coverage audit: "
         f"status={payload.get('status')} "
         f"rows={metrics.get('row_count')} "
         f"raw_fallback_top200={metrics.get('raw_fallback_top_200_count')} "
         "elite_factual_raw_fallback_top200="
-        f"{metrics.get('elite_factual_raw_fallback_top_200_count')}"
+        f"{metrics.get('elite_factual_raw_fallback_top_200_count')} "
+        "investment_top50_hitters_missing="
+        f"{top_50_hitters.get('missing')} "
+        "investment_top50_hitters_coverage="
+        f"{top_50_hitters.get('coverage_rate')}"
     )
     for blocker in payload.get("blockers") or []:
         print(f"  blocker: {blocker}")
