@@ -12,13 +12,60 @@ from prospects.rank_v1 import (
     UPPER_LEVEL_HITTER_LOW_IMPACT_ISO,
     UPPER_LEVEL_HITTER_LOW_IMPACT_OPS,
     UPPER_LEVEL_HITTER_LOW_IMPACT_SAMPLE_PA,
+    _bucket_calibration_adjustment,
     _confidence,
     _input_lookup,
+    _sample_reliability_score,
     _universal_outcome_index,
     _with_verified_investment_facts,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
+
+
+def test_served_model_reliability_wins_over_different_layer_line():
+    assert _sample_reliability_score(
+        {"sample_reliability": 0.20},
+        {"sample_reliability": 0.573},
+    ) == 57.3
+
+
+def test_tiny_return_sample_cannot_penalize_prior_model_more_than_inactivity():
+    _, components = _bucket_calibration_adjustment(
+        42.25,
+        "prospect_model_v0_6",
+        None,
+        {"role": "pitcher", "level": "A", "draft_pick_number": 245},
+        {"role": "pitcher", "level": "A"},
+        {
+            "availability": {
+                "status": "thin_current_sample",
+                "sample": 3.0,
+                "sample_unit": "IP",
+            },
+            "factual_current_context": {
+                "source_kind": "current_season",
+                "sample_season": 2026,
+                "sample": 3.0,
+            },
+            "sample_reliability": 72.5,
+        },
+        {
+            "current_season": 2026,
+            "rows": [
+                {
+                    "season": 2025,
+                    "role": "pitcher",
+                    "innings_pitched": 132.0,
+                    "k_bb_pct": 15.6,
+                }
+            ],
+        },
+    )
+
+    rule = components["bucket_calibration"]["rules"][0]
+    assert rule["adjustment"] == -11.52
+    assert rule["continuity_floor_applied"] is True
 
 
 def _investment_evidence(**overrides):
@@ -1316,7 +1363,14 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     )
 
 
-def _thin_penalty(*, role, sample, status, blended_reliability=None):
+def _thin_penalty(
+    *,
+    role,
+    sample,
+    status,
+    blended_reliability=None,
+    served_sample=None,
+):
     """Item A harness: the thin + moderate-thin adjustments for one profile."""
     from prospects.rank_v1 import _bucket_calibration_adjustment
 
@@ -1326,8 +1380,11 @@ def _thin_penalty(*, role, sample, status, blended_reliability=None):
         if blended_reliability is not None
         else round(100.0 * sample / (sample + regression), 2)
     )
+    factual_context = {"source_kind": "current_season", "role": role}
+    if served_sample is not None:
+        factual_context["sample"] = served_sample
     components = {
-        "factual_current_context": {"source_kind": "current_season", "role": role},
+        "factual_current_context": factual_context,
         "availability": {
             "status": status,
             "sample": sample,
@@ -1378,6 +1435,25 @@ def test_thin_sample_penalty_has_no_boundary_cliffs():
     thin, moderate = _thin_penalty(
         role="pitcher", sample=120.0, status="available")
     assert thin == 0.0 and moderate == 0.0
+
+
+def test_thin_to_moderate_handoff_uses_the_served_line_reliability():
+    thin, _ = _thin_penalty(
+        role="hitter",
+        sample=147.0,
+        status="thin_current_sample",
+        blended_reliability=31.7,
+        served_sample=93.0,
+    )
+    _, moderate = _thin_penalty(
+        role="hitter",
+        sample=157.0,
+        status="available",
+        blended_reliability=31.7,
+        served_sample=93.0,
+    )
+
+    assert abs(moderate - thin) <= 2.6
 
 
 def test_gs_reclassification_step_is_bounded():

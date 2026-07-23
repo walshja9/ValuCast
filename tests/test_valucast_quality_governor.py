@@ -170,6 +170,22 @@ def test_transition_continuity_blocks_new_material_thin_sample_cliff():
     assert check["metrics"]["pitcher_count"] == 0
 
 
+def test_transition_continuity_blocks_new_material_moderate_thin_cliff():
+    prior = _transition_rank_row()
+    current = _transition_rank_row(
+        level="AA",
+        score=36.0,
+        model_score=49.8,
+        bucket="moderate_thin_sample_confidence",
+        bucket_adjustment=-13.2,
+    )
+
+    check = _transition_check(current, prior)
+
+    assert check["status"] == "blocked"
+    assert check["metrics"]["incident_count"] == 1
+
+
 def test_transition_continuity_blocks_pitcher_starter_role_transition():
     prior = _transition_rank_row(role="pitcher", starter_role=False)
     current = _transition_rank_row(
@@ -219,6 +235,21 @@ def test_transition_continuity_allows_exactly_six_point_bucket_move():
             score=44.0,
             bucket="thin_current_sample_confidence",
             bucket_adjustment=-6.0,
+        ),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "passed"
+
+
+def test_transition_continuity_allows_subthreshold_final_score_move():
+    check = _transition_check(
+        _transition_rank_row(
+            level="AA",
+            score=47.0,
+            model_score=49.8,
+            bucket="moderate_thin_sample_confidence",
+            bucket_adjustment=-8.0,
         ),
         _transition_rank_row(),
     )

@@ -25,7 +25,10 @@ from prospects.milb_translation import (
     combined_season_stat_line,
     translate_peripherals,
 )
-from prospects.model import ARTIFACT_PATH as PROSPECT_MODEL_PATH
+from prospects.model import (
+    ARTIFACT_PATH as PROSPECT_MODEL_PATH,
+    MIN_CURRENT_SAMPLE as MODEL_MIN_CURRENT_SAMPLE,
+)
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,7 +46,7 @@ RANK_VERSION = "0.2.9"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
-BUCKET_CALIBRATION_VERSION = "0.3.0"
+BUCKET_CALIBRATION_VERSION = "0.3.1"
 FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
 UNCERTAINTY_VERSION = "0.1.0"
 NEAR_GRADUATION_VERSION = "0.1.0"
@@ -1018,9 +1021,9 @@ def _sample_reliability_score(
     layer_profile: dict | None,
     model_profile: dict | None,
 ) -> float:
-    reliability = _clean_float((layer_profile or {}).get("sample_reliability"))
+    reliability = _clean_float((model_profile or {}).get("sample_reliability"))
     if reliability is None:
-        reliability = _clean_float((model_profile or {}).get("sample_reliability"))
+        reliability = _clean_float((layer_profile or {}).get("sample_reliability"))
     if reliability is None:
         return 45.0
     if reliability <= 1.0:
@@ -1543,14 +1546,27 @@ def _bucket_calibration_adjustment(
         and str(availability.get("status") or "") == "thin_current_sample"
         and reliability is not None
     ):
+        served_sample = _clean_float(factual.get("sample"))
+        if served_sample is None:
+            served_sample = sample
+        thin_reliability = current_reliability
+        if (
+            source == "prospect_model_v0_6"
+            and (
+                served_sample is None
+                or served_sample
+                >= MODEL_MIN_CURRENT_SAMPLE.get(str(role or ""), 0.0)
+            )
+        ):
+            thin_reliability = reliability
         # The penalty scales with how little evidence exists (1 - reliability),
         # so a 2-IP line drops far more than a near-full one, then phases out
         # linearly as reliability approaches the ramp ceiling so no single
         # IP/PA step can move a score by more than the ramp slope.
-        thinness = max(0.0, min(1.0, 1.0 - current_reliability / 100.0))
+        thinness = max(0.0, min(1.0, 1.0 - thin_reliability / 100.0))
         ramp = max(
             0.0,
-            (THIN_SAMPLE_RELIABILITY_RAMP - current_reliability)
+            (THIN_SAMPLE_RELIABILITY_RAMP - thin_reliability)
             / THIN_SAMPLE_RELIABILITY_RAMP,
         )
         penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness * ramp
@@ -1560,6 +1576,53 @@ def _bucket_calibration_adjustment(
         spare = _pedigree_spare_credit(input_row, current_season)
         if spare:
             penalty *= 1.0 - 0.25 * spare
+        continuity_floor = None
+        continuity_prior_season = None
+        if (
+            source == "prospect_model_v0_6"
+            and sample is not None
+            and sample < MODEL_MIN_CURRENT_SAMPLE.get(str(role or ""), 0.0)
+            and career_entry
+            and current_season is not None
+        ):
+            prior_rows = [
+                row
+                for row in career_entry.get("rows") or []
+                if (_clean_float(row.get("season")) or current_season) < current_season
+            ]
+            if prior_rows:
+                continuity_prior_season = max(
+                    _clean_float(row.get("season")) or 0.0 for row in prior_rows
+                )
+                prior_row = max(
+                    (
+                        row
+                        for row in prior_rows
+                        if (_clean_float(row.get("season")) or 0.0)
+                        == continuity_prior_season
+                    ),
+                    key=lambda row: _sample_size(row, str(role or "")),
+                )
+                max_soft = 0.60 if role == "pitcher" else 0.30
+                continuity_floor = -NO_CURRENT_SEASON_ACTIVITY_PENALTY * (
+                    1.0
+                    - max_soft
+                    * _prior_year_strength(
+                        {
+                            **prior_row,
+                            "sample": _sample_size(prior_row, str(role or "")),
+                        },
+                        str(role or ""),
+                    )
+                )
+                if _high_pedigree(input_row):
+                    continuity_floor *= 0.70
+                continuity_floor = round(min(0.0, continuity_floor), 2)
+        continuity_floor_applied = (
+            continuity_floor is not None and penalty < continuity_floor
+        )
+        if continuity_floor_applied:
+            penalty = continuity_floor
         penalty = round(penalty, 2)
         if penalty < 0:
             adjustments.append(
@@ -1573,10 +1636,14 @@ def _bucket_calibration_adjustment(
                     "sample_unit": sample_unit or None,
                     "sample_reliability": round(reliability, 2),
                     "adjustment": penalty,
+                    "continuity_floor_applied": continuity_floor_applied,
+                    "continuity_floor_adjustment": continuity_floor,
+                    "continuity_prior_season": continuity_prior_season,
                     "reason": (
                         "Thin current samples are ranked by a lower-confidence-bound "
                         "score so unproven profiles sort behind players with fuller "
-                        "evidence; the penalty scales with sample reliability."
+                        "evidence; the penalty scales with sample reliability without "
+                        "penalizing a tiny return sample more than inactivity."
                     ),
                 }
             )
