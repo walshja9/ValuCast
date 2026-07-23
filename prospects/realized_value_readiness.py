@@ -82,6 +82,10 @@ def _content_sha256(payload: dict) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def source_sha256(content: bytes) -> str:
+    return hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest()
+
+
 def audit_realized_value_readiness(contract: dict, model_artifact: dict) -> dict:
     rows = list((contract.get("historical") or {}).get("rows") or [])
     seasons = contract.get("historical_mlb_seasons") or {}

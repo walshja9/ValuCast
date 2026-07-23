@@ -7,6 +7,7 @@ import sys
 
 import pytest
 
+from prospects import realized_value_readiness as readiness
 from prospects.realized_value_readiness import (
     audit_realized_value_readiness,
     audit_stage2_realized_value_readiness,
@@ -373,6 +374,12 @@ def test_stage2_report_and_hash_are_deterministic():
 
     assert first == second
     assert first["content_sha256"] == _canonical_hash(first)
+
+
+def test_stage2_source_hash_is_line_ending_independent():
+    assert readiness.source_sha256(b'{"value":1}\r\n') == hashlib.sha256(
+        b'{"value":1}\n'
+    ).hexdigest()
 
 
 def test_stage2_builder_writes_only_requested_output(tmp_path):

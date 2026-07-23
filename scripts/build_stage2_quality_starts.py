@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from prospects.realized_value_readiness import source_sha256  # noqa: E402
 from scraper.mlb_actuals import derive_qs_from_games, fetch_game_logs  # noqa: E402
 
 
@@ -327,7 +328,7 @@ def build_from_files(
     delay: float = 0.075,
 ) -> dict:
     input_bytes = input_path.read_bytes()
-    input_sha256 = hashlib.sha256(input_bytes).hexdigest()
+    input_sha256 = source_sha256(input_bytes)
     if checkpoint_path is None:
         checkpoint_path = (
             Path(tempfile.gettempdir())

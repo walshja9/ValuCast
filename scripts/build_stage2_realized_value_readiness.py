@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -12,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 from prospects.realized_value_readiness import (  # noqa: E402
     audit_stage2_realized_value_readiness,
+    source_sha256,
 )
 
 
@@ -51,7 +51,7 @@ def main() -> int:
         json.loads(input_bytes),
         _load(args.model),
         _load(args.quality_starts),
-        contract_sha256=hashlib.sha256(input_bytes).hexdigest(),
+        contract_sha256=source_sha256(input_bytes),
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
