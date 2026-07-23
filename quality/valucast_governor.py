@@ -117,7 +117,10 @@ LOWER_LEVELS = {"DSL", "CPX", "ROK", "A", "A+"}
 UPPER_LEVELS = {"AA", "AAA", "MLB"}
 PROSPECT_TRANSITION_MODEL_DELTA_LIMIT = 1.0
 PROSPECT_TRANSITION_SAMPLE_LIMIT = 12
-PROSPECT_THIN_BUCKET = "thin_current_sample_confidence"
+PROSPECT_TRANSITION_CONFIDENCE_BUCKETS = {
+    "thin_current_sample_confidence",
+    "moderate_thin_sample_confidence",
+}
 
 
 def _clean_float(value: Any) -> float | None:
@@ -348,6 +351,12 @@ def _prospect_transition_continuity(
             for rule in new_calibration.get("rules") or []
             if isinstance(rule, dict) and rule.get("bucket")
         )
+        old_confidence_rules = PROSPECT_TRANSITION_CONFIDENCE_BUCKETS.intersection(
+            old_rules
+        )
+        new_confidence_rules = PROSPECT_TRANSITION_CONFIDENCE_BUCKETS.intersection(
+            new_rules
+        )
         old_model = _clean_float(old_components.get("model_score"))
         new_model = _clean_float(new_components.get("model_score"))
         old_bucket = _clean_float(old_calibration.get("adjustment")) or 0.0
@@ -361,11 +370,10 @@ def _prospect_transition_continuity(
         final_delta = new_score - old_score
         if not (
             transitions
-            and PROSPECT_THIN_BUCKET in new_rules
-            and PROSPECT_THIN_BUCKET not in old_rules
+            and new_confidence_rules - old_confidence_rules
             and abs(model_delta) <= PROSPECT_TRANSITION_MODEL_DELTA_LIMIT
             and bucket_delta < -STEP_THRESHOLD
-            and final_delta < 0
+            and final_delta < -STEP_THRESHOLD
         ):
             continue
         incidents.append(
