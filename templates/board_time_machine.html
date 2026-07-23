@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Board Time Machine | ValuCast{% endblock %}
-{% block og_title %}Board Time Machine | ValuCast{% endblock %}
+{% block title %}The Archives | ValuCast{% endblock %}
+{% block og_title %}The Archives | ValuCast{% endblock %}
 {% block og_description %}Replay ValuCast's prospect board exactly as it stood on any archived date — the committed daily snapshot, as published, never re-scored.{% endblock %}
 {% block og_url %}https://valucast.app/board{% endblock %}
-{% block twitter_title %}Board Time Machine | ValuCast{% endblock %}
+{% block twitter_title %}The Archives | ValuCast{% endblock %}
 {% block twitter_description %}Replay ValuCast's prospect board exactly as it stood on any archived date — the committed daily snapshot, as published, never re-scored.{% endblock %}
 
 {% block content %}
@@ -12,7 +12,7 @@
 
 <section class="buys-heading glass">
     <div class="buys-heading-copy">
-        <span class="buys-heading-eyebrow">TIME MACHINE</span>
+        <span class="buys-heading-eyebrow">THE ARCHIVES</span>
         {% if board %}
         <h1>BOARD AS OF {{ editorial_date(date) }}</h1>
         {% if quality == 'pre-baseline' %}
@@ -23,14 +23,14 @@
         date &mdash; model {{ board.rank_version or "?" }} &mdash; replayed from the committed daily
         snapshot, not re-scored. <a href="/">View today's board</a>.</p>
         {% else %}
-        <h1>BOARD TIME MACHINE</h1>
+        <h1>THE ARCHIVES</h1>
         <p class="buys-heading-sub">Replay the ValuCast prospect board as it stood on any archived
         date. <a href="/">View today's board</a>.</p>
         {% endif %}
         <p class="buys-fineprint">ValuCast commits its full board snapshot every day. This page
         replays the committed artifact as published that day (&ldquo;as-shown&rdquo;), never a
         current-model re-scoring of the past.
-        <a href="/methodology#board-time-machine">How the Time Machine works</a>.</p>
+        <a href="/methodology#board-time-machine">How The Archives works</a>.</p>
     </div>
 </section>
 

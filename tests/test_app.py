@@ -3183,11 +3183,14 @@ class TestBoardTimeMachineRoute(unittest.TestCase):
         response, html = self._get("/methodology")
         self.assertEqual(response.status_code, 200)
         self.assertIn('id="board-time-machine"', html)
+        self.assertIn("<h3>The Archives: committed boards, replayed</h3>", html)
+        self.assertIn('href="/board">The Archives</a>', html)
+        self.assertNotIn("Board Time Machine", html)
         self.assertIn("re-baseline", html)
-        self.assertIn('href="/board"', html)
 
     def test_site_nav_links_time_machine(self):
         _, html = self._get("/board")
-        # aria-current is wired for every primary-nav entry (not just Backfields) —
-        # /board is "current" while browsing the Time Machine.
-        self.assertIn('href="/board" aria-current="page">Time Machine</a>', html)
+        self.assertIn('href="/board" aria-current="page">The Archives</a>', html)
+        self.assertIn("<title>The Archives | ValuCast</title>", html)
+        self.assertIn("THE ARCHIVES", html)
+        self.assertNotIn("Time Machine", html)
