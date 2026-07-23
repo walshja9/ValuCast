@@ -190,6 +190,29 @@ def test_pr_ci_validates_artifacts_and_pins_first_party_actions():
     assert found == set(expected_pins)
 
 
+def test_master_writers_use_only_the_refresh_deploy_key():
+    expected_writers = {
+        "daily-public-data.yml",
+        "prospect-shadow.yml",
+        "roster-pulse.yml",
+    }
+    workflows = {
+        path.name: path.read_text(encoding="utf-8")
+        for path in Path(".github/workflows").glob("*.yml")
+    }
+    writers = {
+        name for name, workflow in workflows.items() if "git push origin master" in workflow
+    }
+    assert writers == expected_writers
+
+    key = "ssh-key: ${{ secrets.REFRESH_DEPLOY_KEY }}"
+    for name, workflow in workflows.items():
+        assert (key in workflow) == (name in expected_writers)
+        if name in expected_writers:
+            assert "permissions:\n  contents: read" in workflow
+            assert "permissions:\n  contents: write" not in workflow
+
+
 # ---------------------------------------------------------------------------
 # 2. AAA-Statcast vintage archival hash-skip logic
 # ---------------------------------------------------------------------------
