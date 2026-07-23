@@ -1,6 +1,9 @@
 from copy import deepcopy
 import hashlib
 import json
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -370,3 +373,43 @@ def test_stage2_report_and_hash_are_deterministic():
 
     assert first == second
     assert first["content_sha256"] == _canonical_hash(first)
+
+
+def test_stage2_builder_writes_only_requested_output(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    protected = [
+        root / "data/validation/valucast_prospect_realized_value_readiness.json",
+        root / "data/prospects/prospect_model_inputs.json",
+        root / "data/models/valucast_prospect_model.json",
+        root / "data/validation/valucast_stage2_quality_starts.json",
+    ]
+    before = {
+        path: hashlib.sha256(path.read_bytes()).hexdigest() for path in protected
+    }
+    output = tmp_path / "readiness.json"
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts/build_stage2_realized_value_readiness.py"),
+            "--output",
+            str(output),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert output.exists()
+    assert before == {
+        path: hashlib.sha256(path.read_bytes()).hexdigest() for path in protected
+    }
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["schema"] == "valucast_stage2_realized_value_readiness"
+    assert report["outcome_evidence"]["status"] == "ready"
+    assert report["blockers"] == [
+        "impact_target_not_direct_7x7",
+        "exact_prospective_replay_not_reconstructable",
+    ]
