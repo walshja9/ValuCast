@@ -1075,6 +1075,13 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
             model.pop("_runtime", None)
     return {
         "status": MODEL_STATUS,
+        "release_contract": {
+            "artifact_status_semantics": "provenance_label_not_serving_status",
+            "consumer": "prospect_dynasty_layer",
+            "indirect_consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+            "standalone_public_board": False,
+        },
         "research_status": "mixed_evidence",
         "model_name": MODEL_NAME,
         "model_version": MODEL_VERSION,
@@ -1090,7 +1097,7 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
         "candidate_count": len(profiles),
         "profiles": profiles,
         "limitations": [
-            "Shadow-only; never consumed by the live prospect board.",
+            "This outcome artifact feeds Prospect Rank v1 through the dynasty signal layer; it is not itself a standalone public board.",
             "Produces factual outcome profiles, not a universal rank or fantasy value.",
             "Complex-league and rookie-ball prospects remain outside the statistical scope.",
             "Draft/signing facts are Rule 4 only; international amateur investment is absent.",

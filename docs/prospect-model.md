@@ -71,6 +71,19 @@ score at weight `0.76` and feeds the live ValuCast rank.
 The v0.7 artifact is a non-live feature-readiness preview. It does not replace
 v0.6 or feed the live ValuCast rank.
 
+## Stage 1 / Stage 2 boundary
+
+Stage 1 is ValuCast's real-baseball outcome layer. It produces role-specific
+arrival, sustained-role, and representative MLB production forecasts. The
+served incumbent currently binds Prospect Model v0.6 with the universal/dynasty
+outcome profile through contract version 1.0.0.
+
+Stage 2 is the deterministic Rank v1 and downstream league-value translation.
+It consumes only an incumbent or promoted Stage 1 contract plus timestamped
+availability/opportunity and league-format rules. Research and shadow challenger
+states are rejected before scoring. The Stage 1 contract migration changed no
+board score, rank, value, cap, Role Watch, or publication decision.
+
 <!-- prospect-model-contract:start -->
 ```json
 {

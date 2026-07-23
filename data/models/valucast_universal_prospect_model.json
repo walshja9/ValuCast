@@ -20,7 +20,7 @@
     }
   },
   "limitations": [
-    "Shadow-only; never consumed by the live prospect board.",
+    "This outcome artifact feeds Prospect Rank v1 through the dynasty signal layer; it is not itself a standalone public board.",
     "Produces factual outcome profiles, not a universal rank or fantasy value.",
     "Complex-league and rookie-ball prospects remain outside the statistical scope.",
     "Draft/signing facts are Rule 4 only; international amateur investment is absent.",
@@ -301393,6 +301393,13 @@
       "team": "Kannapolis Cannon Ballers"
     }
   ],
+  "release_contract": {
+    "artifact_status_semantics": "provenance_label_not_serving_status",
+    "consumer": "prospect_dynasty_layer",
+    "feeds_live_valucast_rank": true,
+    "indirect_consumer": "prospect_rank_v1",
+    "standalone_public_board": false
+  },
   "research_status": "mixed_evidence",
   "roles": {
     "hitter": {

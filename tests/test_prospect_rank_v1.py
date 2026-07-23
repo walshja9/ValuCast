@@ -370,6 +370,10 @@ def _dynasty_layer():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [_profile(1, 0.9), _profile(2, 0.8)],
     }
 
@@ -378,6 +382,11 @@ def _prospect_model():
     return {
         "status": "shadow_only",
         "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "ranked": [
             {
                 "mlbam_id": 1,
@@ -918,6 +927,10 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [layer_profile],
     }
     input_contract = {
@@ -946,7 +959,16 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
     payload = build_prospect_rank_v1(
         universe,
         dynasty_layer,
-        {"status": "shadow_only", "model_version": "0.6.0", "ranked": []},
+        {
+            "status": "shadow_only",
+            "model_version": "0.6.0",
+            "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+            "release_contract": {
+                "consumer": "prospect_rank_v1",
+                "feeds_live_valucast_rank": True,
+            },
+            "ranked": [],
+        },
         input_contract,
     )
 
@@ -1007,6 +1029,39 @@ def test_rank_v1_reports_coverage_blockers_and_missing_top_names():
     assert missing_layer["score_source"] == "identity_only_fallback"
     assert missing_layer["confidence"] == "low"
     assert any("coverage" in blocker for blocker in validation["blockers"])
+
+
+def test_rank_v1_reports_the_served_stage1_contract():
+    payload = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
+    )
+    assert payload["input_artifacts"]["stage1_contract_version"] == "1.0.0"
+    assert payload["input_artifacts"]["stage1_state"] == "incumbent"
+    assert payload["input_artifacts"]["stage1_profile_count"] == 2
+
+
+def test_rank_v1_rejects_a_research_stage1_state():
+    with pytest.raises(ValueError, match="Stage 1 state"):
+        build_prospect_rank_v1(
+            _universe(),
+            _dynasty_layer(),
+            _prospect_model(),
+            _input_contract(),
+            stage1_state="research",
+        )
+
+
+def test_rank_v1_rejects_noncanonical_stage1_role_before_scoring():
+    prospect_model = _prospect_model()
+    prospect_model["ranked"][0]["role"] = "HITTER"
+
+    with pytest.raises(ValueError, match="role"):
+        build_prospect_rank_v1(
+            _universe(),
+            _dynasty_layer(),
+            prospect_model,
+            _input_contract(),
+        )
 
 
 def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
@@ -1276,11 +1331,20 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": [layer_profile],
     }
     prospect_model = {
         "status": "shadow_only",
         "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "ranked": [
             {
                 "mlbam_id": 3,
@@ -1527,9 +1591,22 @@ def _three_hitter_board(*, active_ids, graduated_ids):
         "status": "shadow_only",
         "generated_at": "2026-06-13T12:00:00+00:00",
         "layer_version": "0.1.0",
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
         "profiles": profiles,
     }
-    prospect_model = {"status": "shadow_only", "model_version": "0.6.0", "ranked": ranked}
+    prospect_model = {
+        "status": "shadow_only",
+        "model_version": "0.6.0",
+        "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
+        },
+        "ranked": ranked,
+    }
     input_contract = {
         "schema_version": "1.1",
         "generated_at": "2026-06-13T12:00:00+00:00",
@@ -1662,6 +1739,34 @@ def test_rank_v1_bucket_adjusts_upper_level_low_impact_hitter_model_samples():
         + UPPER_LEVEL_HITTER_LOW_IMPACT_ADJUSTMENT,
         2,
     )
+
+
+def test_run_rank_v1_leaves_previous_artifact_on_stage1_rejection(tmp_path):
+    universe_path = tmp_path / "universe.json"
+    layer_path = tmp_path / "layer.json"
+    model_path = tmp_path / "model.json"
+    input_path = tmp_path / "input.json"
+    artifact_path = tmp_path / "rank.json"
+    universe_path.write_text(json.dumps(_universe()), encoding="utf-8")
+    bad_layer = _dynasty_layer()
+    bad_layer["release_contract"]["feeds_live_valucast_rank"] = False
+    layer_path.write_text(json.dumps(bad_layer), encoding="utf-8")
+    model_path.write_text(json.dumps(_prospect_model()), encoding="utf-8")
+    input_path.write_text(json.dumps(_input_contract()), encoding="utf-8")
+    artifact_path.write_text("previous promoted artifact", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="not authorized"):
+        run_prospect_rank_v1(
+            prospect_universe_path=universe_path,
+            dynasty_layer_path=layer_path,
+            prospect_model_path=model_path,
+            input_contract_path=input_path,
+            availability_path=None,
+            mlb_roster_status_path=None,
+            artifact_path=artifact_path,
+            archive_dir=tmp_path / "archive",
+        )
+    assert artifact_path.read_text(encoding="utf-8") == "previous promoted artifact"
 
 
 def test_run_prospect_rank_v1_writes_artifact_and_archive(tmp_path):

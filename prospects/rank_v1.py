@@ -29,6 +29,7 @@ from prospects.model import (
     ARTIFACT_PATH as PROSPECT_MODEL_PATH,
     MIN_CURRENT_SAMPLE as MODEL_MIN_CURRENT_SAMPLE,
 )
+from prospects.stage1_contract import build_stage1_contract
 from prospects.universe import ARTIFACT_PATH as PROSPECT_UNIVERSE_PATH
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -2132,12 +2133,37 @@ def build_prospect_rank_v1(
     mlb_roster_status: dict | None = None,
     require_mlb_roster_status: bool = False,
     investment_evidence: dict | None = None,
+    *,
+    stage1_state: str = "incumbent",
 ) -> dict:
+    stage1 = build_stage1_contract(
+        prospect_model,
+        dynasty_layer,
+        input_contract.get("generated_at"),
+        state=stage1_state,
+    )
     input_contract, investment_evidence_audit = _with_verified_investment_facts(
         input_contract, investment_evidence
     )
-    model_by_key = _model_lookup(prospect_model)
-    layer_by_key = _layer_lookup(dynasty_layer)
+    stage1_by_key = stage1["profiles_by_key"]
+    model_by_key = _model_lookup(
+        {
+            "ranked": [
+                profile["model_profile"]
+                for profile in stage1_by_key.values()
+                if profile["model_profile"] is not None
+            ]
+        }
+    )
+    layer_by_key = _layer_lookup(
+        {
+            "profiles": [
+                profile["outcome_profile"]
+                for profile in stage1_by_key.values()
+                if profile["outcome_profile"] is not None
+            ]
+        }
+    )
     input_by_key = _input_lookup(input_contract)
     expected_current_stat_by_key = _current_stat_expectation_lookup(input_contract)
     service_by_key = _service_lookup(input_contract)
@@ -2211,6 +2237,7 @@ def build_prospect_rank_v1(
             duplicate_keys.append(key)
             continue
         seen.add(key)
+        stage1_profile = stage1_by_key.get(key) or {}
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)
@@ -2456,6 +2483,9 @@ def build_prospect_rank_v1(
             "prospect_universe_candidate_count": prospect_universe.get("candidate_count"),
             "prospect_model_version": prospect_model.get("model_version"),
             "dynasty_layer_version": dynasty_layer.get("layer_version"),
+            "stage1_contract_version": stage1["contract_version"],
+            "stage1_state": stage1["state"],
+            "stage1_profile_count": len(stage1_by_key),
             "prospect_input_schema_version": input_contract.get("schema_version"),
             "prospect_availability_version": (prospect_availability or {}).get(
                 "artifact_version"

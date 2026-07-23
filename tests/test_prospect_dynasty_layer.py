@@ -52,14 +52,18 @@ def test_decision_signal_is_math_on_factual_distribution_not_a_value():
     assert 0.0 < signal["outcome_uncertainty"] < 1.0
 
 
-def test_layer_is_rank_and_value_free_and_blocks_live_consumers():
+def test_dynasty_layer_declares_rank_v1_as_its_live_consumer():
     payload = build_layer(_universal())
     assert payload["status"] == "shadow_only"
+    assert payload["release_contract"] == {
+        "artifact_status_semantics": "provenance_label_not_serving_status",
+        "consumer": "prospect_rank_v1",
+        "feeds_live_valucast_rank": True,
+        "feeds_live_dd_value": False,
+        "standalone_public_board": False,
+    }
     assert payload["layer_contract"]["rank_free"] is True
     assert payload["layer_contract"]["value_free"] is True
-    assert payload["promotion"]["research_gate"] == "hold"
-    assert payload["promotion"]["feeds_live_dd_value"] is False
-    assert payload["promotion"]["feeds_live_valucast_rank"] is False
     assert all("rank" not in profile for profile in payload["profiles"])
     assert all("value" not in profile for profile in payload["profiles"])
 
