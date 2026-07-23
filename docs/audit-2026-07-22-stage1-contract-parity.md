@@ -35,3 +35,18 @@ Status: Stage 1 migration decision parity verified; pre-existing served-artifact
 - Model freeze preserved: true
 - Failed stale-pedigree-decay flag preserved: true
 - Live score/rank/value/cap/Role Watch/publication change: false
+
+## Post-refresh rebase verification
+
+Revalidated on 2026-07-23 after rebasing onto refreshed master
+`5e8959d9`. Fresh Rank v1 builds from master and the Stage 1 branch used the
+same July 23 inputs.
+
+- Board rows: 2,856
+- Exact matching-input board parity: true
+- Exact active-MLB-board parity: true
+- Matching-input board SHA-256: `981e609354bf8a30365cfdb5371a3ae53fb4b909276c732e6c0e237448bd5d3a`
+- Rank validation blockers on both builds: none
+- Score, rank, identity, role, and ordering differences: zero
+- Refreshed served artifact vs matching-input rebuild: four
+  `context_only.source_ranks` leaves differ; no decision field differs

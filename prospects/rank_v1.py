@@ -2136,14 +2136,14 @@ def build_prospect_rank_v1(
     *,
     stage1_state: str = "incumbent",
 ) -> dict:
-    input_contract, investment_evidence_audit = _with_verified_investment_facts(
-        input_contract, investment_evidence
-    )
     stage1 = build_stage1_contract(
         prospect_model,
         dynasty_layer,
         input_contract.get("generated_at"),
         state=stage1_state,
+    )
+    input_contract, investment_evidence_audit = _with_verified_investment_facts(
+        input_contract, investment_evidence
     )
     stage1_by_key = stage1["profiles_by_key"]
     model_by_key = _model_lookup(
