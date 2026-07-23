@@ -83,7 +83,7 @@ jobs:
     env:
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0  # MUST stay full: load_steamer_ros_from_git (mlb/projection_source_comparison.py) reads ~20d of data/projections/ros.json history; depth 1 broke the 7/9 build
 
@@ -96,7 +96,7 @@ jobs:
           git fetch origin
           git checkout -B master origin/master
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
           cache: pip

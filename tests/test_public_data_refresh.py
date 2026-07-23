@@ -14,8 +14,8 @@ def test_prospect_shadow_workflow_serializes_with_daily_refresh_and_syncs_master
 
     assert "group: daily-public-data-refresh" in workflow
     assert "cancel-in-progress: false" in workflow
-    assert "actions/checkout@v5" in workflow
-    assert "actions/setup-python@v6" in workflow
+    assert "uses: actions/checkout@" in workflow
+    assert "uses: actions/setup-python@" in workflow
     assert "git fetch origin" in workflow
     assert "git checkout -B master origin/master" in workflow
 
