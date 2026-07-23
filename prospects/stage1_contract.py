@@ -14,13 +14,13 @@ def _date(value: object) -> str | None:
     try:
         return datetime.fromisoformat(text.replace("Z", "+00:00")).date().isoformat()
     except ValueError:
-        return text[:10] if len(text) >= 10 else None
+        return None
 
 
 def _index(rows: list[dict], label: str) -> dict[tuple[str, str], dict]:
     out = {}
     for row in rows:
-        role = str(row.get("role") or "").lower()
+        role = str(row.get("role") or "")
         mlbam_id = row.get("mlbam_id")
         if role not in ROLES:
             raise ValueError(f"Stage 1 {label} profile has invalid role")

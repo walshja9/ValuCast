@@ -59,6 +59,21 @@ def test_contract_rejects_stale_or_non_serving_artifacts():
         build_stage1_contract(_model(), layer, "2026-07-22")
 
 
+@pytest.mark.parametrize("target", ["expected", "model", "layer"])
+def test_contract_rejects_malformed_generated_timestamps(target):
+    model, layer = _model(), _layer()
+    expected = "2026-07-22T00:00:00+00:00"
+    if target == "expected":
+        expected = "2026-07-22-invalid"
+    elif target == "model":
+        model["input_contract"]["generated_at"] = "2026-07-22-invalid"
+    else:
+        layer["generated_at"] = "2026-07-22-invalid"
+
+    with pytest.raises(ValueError, match="generated date"):
+        build_stage1_contract(model, layer, expected)
+
+
 @pytest.mark.parametrize("bucket", ["ranked", "profiles"])
 def test_contract_rejects_duplicate_or_invalid_identity(bucket):
     model, layer = _model(), _layer()

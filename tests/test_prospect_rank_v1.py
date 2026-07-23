@@ -1051,6 +1051,19 @@ def test_rank_v1_rejects_a_research_stage1_state():
         )
 
 
+def test_rank_v1_rejects_noncanonical_stage1_role_before_scoring():
+    prospect_model = _prospect_model()
+    prospect_model["ranked"][0]["role"] = "HITTER"
+
+    with pytest.raises(ValueError, match="role"):
+        build_prospect_rank_v1(
+            _universe(),
+            _dynasty_layer(),
+            prospect_model,
+            _input_contract(),
+        )
+
+
 def test_rank_v1_uses_contiguous_ranks_and_flags_duplicate_identities():
     duplicate = {
         "name": "Model Strong Copy",

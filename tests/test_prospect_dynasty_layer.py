@@ -64,6 +64,8 @@ def test_dynasty_layer_declares_rank_v1_as_its_live_consumer():
     }
     assert payload["layer_contract"]["rank_free"] is True
     assert payload["layer_contract"]["value_free"] is True
+    assert all("rank" not in profile for profile in payload["profiles"])
+    assert all("value" not in profile for profile in payload["profiles"])
 
 
 def test_layer_refuses_incoherent_universal_distribution():
