@@ -11,6 +11,7 @@ Two concerns:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from scripts import archive_aaa_statcast_features as arch
@@ -157,6 +158,36 @@ def test_forward_scoreboard_git_add_is_guarded():
 def test_no_duplicate_steps_after_wiring():
     # The orchestrator's own guard must still pass with the new steps added.
     run_daily_public_build.validate_steps()
+
+
+def test_pr_ci_validates_artifacts_and_pins_first_party_actions():
+    expected_pins = {
+        "checkout": "fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09",
+        "setup-python": "ece7cb06caefa5fff74198d8649806c4678c61a1",
+    }
+    tests_workflow = Path(".github/workflows/tests.yml").read_text(encoding="utf-8")
+    validate = "run: python scripts/run_daily_public_build.py --only validate"
+    pytest = "run: python -m pytest -q"
+    assert validate in tests_workflow
+    assert tests_workflow.index(validate) < tests_workflow.index(pytest)
+
+    action_ref = re.compile(
+        r"uses:\s+actions/(checkout|setup-python)@([0-9a-f]{40})\s+#\s+(v5|v6)$"
+    )
+    found: set[str] = set()
+    for workflow in Path(".github/workflows").glob("*.yml"):
+        for line in workflow.read_text(encoding="utf-8").splitlines():
+            if "uses: actions/checkout@" not in line and (
+                "uses: actions/setup-python@" not in line
+            ):
+                continue
+            match = action_ref.search(line)
+            assert match, f"{workflow}: mutable or unlabeled action reference: {line}"
+            action, sha, version = match.groups()
+            assert sha == expected_pins[action]
+            assert version == ("v5" if action == "checkout" else "v6")
+            found.add(action)
+    assert found == set(expected_pins)
 
 
 # ---------------------------------------------------------------------------
