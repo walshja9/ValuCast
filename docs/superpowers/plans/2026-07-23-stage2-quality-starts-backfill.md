@@ -44,6 +44,7 @@ The fixture must include:
 - a completed-season zero-start pitcher with missing QS;
 - a completed-season starter with an existing QS value;
 - a current-season positive-IP row; and
+- a stale, unversioned current-season existing QS value; and
 - a current-season game after the bound cutoff.
 
 Assert:
@@ -52,6 +53,7 @@ Assert:
 - maximum duplicate IP is used without summing;
 - zero-start rows do not call the fetcher;
 - current games after the cutoff do not count;
+- current-season QS drift is disclosed and superseded;
 - existing and derived QS values reconcile;
 - rows are deterministically sorted;
 - coverage reports every raw row resolved; and
@@ -115,7 +117,8 @@ For each unique player-season:
 - filter current-season games at the input cutoff;
 - count starts from the filtered log;
 - call the existing QS derivation helper;
-- reconcile completed-season starts and existing QS;
+- reconcile completed-season starts and stable existing QS;
+- disclose and supersede unversioned current-season existing QS drift;
 - record explicit blockers on failure; and
 - emit no resolved row for a failed identity.
 

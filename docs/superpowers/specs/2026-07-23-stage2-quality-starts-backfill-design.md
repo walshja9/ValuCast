@@ -41,7 +41,9 @@ current 2026 season.
 Under the approved fetch policy, the July 23 snapshot produces 3,019 game-log
 requests: 2,492 player-seasons with known starts and 527 positive-IP
 player-seasons without a completed-season workload match. That request set
-contains 1,913 existing QS values to check and 1,106 missing values to derive.
+contains 1,691 stable completed-season QS values to check, 222 unversioned
+current-season QS values to compare and disclose, and 1,106 missing values to
+derive.
 
 This drift is why the sidecar must record the exact source-input hash and
 cutoff. Counts in this document are diagnostic measurements, not permanent
@@ -120,12 +122,18 @@ For fetched completed seasons, the number of game-log starts must equal the
 aggregate `gs` value in
 `data/mlb/mlb_history_pitching_seasons.json`. A mismatch blocks the artifact.
 
-For fetched rows that already have an existing `qs`, the derived count must
-match it exactly. This checks the derivation against every existing value in
-the request set, not a hand-picked sample. A mismatch blocks the artifact.
+For fetched completed-season rows that already have an existing `qs`, the
+derived count must match it exactly. This checks the derivation against every
+stable existing value in the request set, not a hand-picked sample. A mismatch
+blocks the artifact.
 
 The current-season log is evaluated only through the bound cutoff date. It is
-not compared with the completed-season workload artifact.
+not compared with the completed-season workload artifact. Existing
+current-season QS values have no row-level source timestamp and may be older
+than the input cutoff, so they are not a valid equality reference. The
+cutoff-bound official game-log value supersedes them in this research sidecar;
+any difference is recorded under `current_season_values_superseded` and does
+not alter the production cache.
 
 Requests run serially with a fixed short inter-request delay. Existing bounded
 retry behavior remains authoritative; exhausting it records a blocker instead
@@ -165,8 +173,16 @@ The artifact has this logical shape:
     "post_join_rows_with_qs": 6296
   },
   "validation": {
-    "existing_values_checked": 1913,
+    "existing_values_checked": 1691,
     "existing_value_mismatches": [],
+    "current_season_values_superseded": [
+      {
+        "mlbam_id": 123456,
+        "season": 2026,
+        "existing": 1,
+        "derived": 3
+      }
+    ],
     "games_started_mismatches": [],
     "duplicate_value_conflicts": []
   },
@@ -203,7 +219,8 @@ reused when that hash changes.
 - every unique pitcher player-season is resolved;
 - the join gives every raw pitcher-season row a QS value;
 - every fetched completed-season start count reconciles;
-- every checked existing QS value matches;
+- every checked completed-season existing QS value matches;
+- every superseded current-season value is disclosed;
 - no duplicate identity has conflicting existing QS values; and
 - no request or parse failure remains.
 
@@ -244,7 +261,9 @@ Tests must prove:
 - started seasons use regular-season game logs;
 - current-season games after the bound cutoff are excluded;
 - derived starts reconcile with completed-season aggregate GS;
-- existing QS mismatches block;
+- completed-season existing QS mismatches block;
+- unversioned current-season QS drift is disclosed and superseded by the
+  cutoff-bound official game log;
 - a failed or missing game log blocks;
 - checkpoint data cannot cross an input hash;
 - the final rows and content hash are deterministic;
