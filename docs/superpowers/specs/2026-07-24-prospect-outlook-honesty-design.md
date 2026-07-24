@@ -15,7 +15,8 @@ members of the current top 100 receive the latter label.
 
 ## Design
 
-Remove Peak Outlook from the public prospect page and share graphic. Keep the
+Remove Peak Outlook from the public prospect page and share graphic, and remove
+public methodology/comp copy that points readers to that section. Keep the
 underlying peak artifact intact for shadow research and future validation.
 The ValuCast Read remains the public interpretation of current performance.
 For the contact/light-power template that produced the Salas conflict, replace
@@ -29,7 +30,7 @@ model freeze, or the failed-decay flag.
 
 - A prospect page does not render Peak Outlook.
 - A prospect share graphic does not render Peak Outlook.
+- Public comp disclosures no longer refer readers to Peak Outlook.
 - The contact/light-power deterministic read does not claim a ceiling or floor.
 - The peak artifact remains available on the row for shadow research.
 - Existing card and scouting tests pass.
-

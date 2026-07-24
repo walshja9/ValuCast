@@ -20,9 +20,13 @@
 
 **Files:**
 - Modify: `templates/partials/player_detail_dynasty.html`
+- Modify: `templates/methodology.html`
 - Modify: `app.py`
 - Test: `tests/test_player_card_display_additions.py`
 - Test: `tests/test_card_intelligence.py`
+- Test: `tests/test_app.py`
+- Test: `tests/test_scouting_page.py`
+- Test: `tests/test_prospect_comps.py`
 
 **Interfaces:**
 - Consumes: existing `row.has_peak_projection` and peak-label properties.
@@ -49,7 +53,8 @@ Expected: failures because both public renderers still consume Peak Outlook.
 Delete the `row.has_peak_projection` block from
 `templates/partials/player_detail_dynasty.html`. In `app.py`, remove
 `peak_outlook`, its layout reservation, and its drawing block; retain the normal
-read and projected-shape layout.
+read and projected-shape layout. Remove the now-stale Peak Outlook reference
+from the player-card comp disclosure and methodology.
 
 - [ ] **Step 4: Run the tests and verify GREEN**
 
@@ -126,4 +131,3 @@ git diff --stat origin/master...
 
 Expected: only the spec, plan, two renderers, deterministic copy, and focused
 tests differ; no model or generated data artifact changes.
-
