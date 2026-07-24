@@ -199,7 +199,7 @@ _PNG_CACHE_PARAMS = frozenset({
     # omitting it collapsed every window to one key and served the first-rendered
     # (e.g. 7d) image to a visitor asking for 21d (cross-user poisoning). Bounded
     # to 4 values by _parse_spark_window, so no unbounded-key risk.
-    "give", "get",     # plan 022: the /trade card renders from these; they MUST be
+    "league", "give", "get",  # /trade V2 opt-in + resolved player sides; all MUST be
     # in the cache key or every trade collapses to one key and the first-rendered
     # card is served to everyone (cross-user poisoning). Fixed names, not prefixed.
 })
@@ -8016,7 +8016,9 @@ def trade():
     return render_template("trade.html", **context)
 
 
-def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
+def _trade_share_card_png(
+    give_ids, get_ids, *, generated_at=None, league_args=None
+):
     """Deterministic two-sided Trade Analyzer graphic (GIVE vs GET).
 
     Models the receipts two-panel layout. Resolves ids via dd_store.get_by_id and
@@ -8043,7 +8045,10 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
     if not (give_rows and get_rows):
         return None   # one-sided "trade": no verdict, no graphic (route 404s)
-    verdict = _trade_verdict(give_rows, get_rows)
+    league_context, value_of = _trade_league_context(
+        league_args or {}, give_rows + get_rows
+    )
+    verdict = _trade_verdict(give_rows, get_rows, value_of=value_of)
 
     f_note = _graphic_font(17)
     row_h = 58
@@ -8051,7 +8056,11 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
 
     # Every applicable honesty note travels with the image (page parity), not just
     # the single most salient one - the PNG is the og:image a re-sharer never links.
-    notes = [(muted, _TRADE_SCOPE_NOTE)]
+    notes = []
+    if league_context["enabled"]:
+        notes.append((green, league_context["summary"].replace(" · ", " - ")))
+        notes.extend((green, note) for note in league_context["disclosures"])
+    notes.append((muted, league_context["scope_note"]))
     if verdict["inside_noise"]:
         notes.append((muted, "Totals are within the value band (about +/-9 per player). That is a coin-flip on these numbers - call it even, not a win."))
     if verdict["count_mismatch"]:
@@ -8090,7 +8099,11 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
         draw,
         headline="TRADE ANALYZER",
         subtitle=subtitle,
-        extra_line="Free ValuCast trade verdict - same 0-100 values, no conversion",
+        extra_line=(
+            "League-adjusted value above replacement"
+            if league_context["enabled"]
+            else "Free ValuCast trade verdict - same 0-100 values, no conversion"
+        ),
         tagline="The Second Opinion",
     )
 
@@ -8114,7 +8127,7 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
             draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
             if idx:
                 draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
-            piece = _trade_piece(row)
+            piece = _trade_piece(row, value_of(row))
             name = _graphic_fit_text(draw, piece["name"], f_name, 560)
             draw.text((x + 20, top + 7), name, fill=text, font=f_name)
             meta_parts = [piece["rank_label"], piece["team"], piece["pos"]]
@@ -8160,7 +8173,10 @@ def trade_share_card_png():
     give_ids = _parse_trade_ids(request.args.get("give"))
     get_ids = _parse_trade_ids(request.args.get("get"))
     png = _trade_share_card_png(
-        give_ids, get_ids, generated_at=dd_store.generated_at
+        give_ids,
+        get_ids,
+        generated_at=dd_store.generated_at,
+        league_args=request.args,
     )
     if png is None:
         abort(404)
@@ -8172,10 +8188,17 @@ def trade_share_card_png():
 
 @app.route("/trade/share-card")
 def trade_share_card():
-    give = ",".join(_parse_trade_ids(request.args.get("give")))
-    get = ",".join(_parse_trade_ids(request.args.get("get")))
-    query = urlencode([("give", give), ("get", get)])
+    context = _build_trade_page_context(request.args)
+    if not context.get("verdict"):
+        abort(404)
+    query = urlencode(context["trade_query_pairs"])
     png_path = f"/trade/share-card.png?{query}"
+    description = (
+        f"{context['trade_scope_note']} The board's verdict on this dynasty "
+        "trade, from the same 0-100 values ValuCast serves."
+    )
+    if context["league_context"]["enabled"]:
+        description = f"{context['league_context']['summary']}. {description}"
     html = build_share_preview_html(
         title="The Second Opinion",
         subtitle="The board's verdict on this dynasty trade",
@@ -8183,10 +8206,7 @@ def trade_share_card():
         filename="valucast-trade.png",
         public_png_url=_public_url(png_path),
         public_page_url=_public_url(f"/trade/share-card?{query}"),
-        description=(
-            f"{_TRADE_SCOPE_NOTE} The board's verdict on this dynasty trade, from "
-            "the same 0-100 values ValuCast serves."
-        ),
+        description=description,
         image_alt="ValuCast Trade Analyzer verdict card",
         back_url=f"/trade?{query}",
         back_label="Back to the Trade Analyzer",

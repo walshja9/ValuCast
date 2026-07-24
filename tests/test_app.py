@@ -2325,6 +2325,85 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertIn(app_module._TRADE_SCOPE_NOTE, wrapped_text)
         self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
 
+    def test_trade_v2_png_receives_summary_and_disclosures(self):
+        import app as app_module
+        from unittest.mock import patch
+        from werkzeug.datastructures import MultiDict
+
+        rows = app_module.dd_store.get_all()
+        mlb = next(row for row in rows if not row.is_prospect)
+        prospect = next(row for row in rows if row.is_prospect)
+        args = MultiDict([
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("pslots", "5"),
+            ("preset", "7x7_ops"),
+            ("window", "contend"),
+        ])
+        with patch.object(
+            app_module,
+            "_graphic_wrap_text",
+            wraps=app_module._graphic_wrap_text,
+        ) as wrap:
+            png = app_module._trade_share_card_png(
+                [mlb.id],
+                [prospect.id],
+                league_args=args,
+            )
+
+        wrapped = [call.args[1] for call in wrap.call_args_list]
+        self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertTrue(any("12 teams" in text for text in wrapped))
+        self.assertTrue(
+            any("Scoring preset not applied:" in text for text in wrapped)
+        )
+        self.assertTrue(
+            any("Prospect slots are roster-depth context" in text for text in wrapped)
+        )
+        self.assertTrue(
+            any("Competitive window is context only" in text for text in wrapped)
+        )
+
+    def test_trade_v2_preview_preserves_canonical_state(self):
+        from app import dd_store
+
+        give, get = dd_store.get_all()[:2]
+        query = (
+            f"league=1&teams=12&roster=26&pslots=5&preset=5x5"
+            f"&window=balanced&give={give.id}&get={get.id}"
+        )
+        body = self.client.get(f"/trade/share-card?{query}").data.decode()
+
+        for token in (
+            "league=1",
+            "teams=12",
+            "roster=26",
+            "pslots=5",
+            "preset=5x5",
+            "window=balanced",
+            f"give={give.id}",
+            f"get={get.id}",
+        ):
+            self.assertIn(token, body)
+        self.assertIn("12 teams", body)
+
+    def test_trade_v2_png_cache_key_distinguishes_league_mode(self):
+        from app import _png_cache_key
+
+        common = (
+            "teams=12&roster=26&pslots=5&preset=5x5"
+            "&window=balanced&give=a&get=b"
+        )
+        with app.test_request_context(f"/trade/share-card.png?{common}"):
+            legacy = _png_cache_key()
+        with app.test_request_context(
+            f"/trade/share-card.png?league=1&{common}"
+        ):
+            tuned = _png_cache_key()
+
+        self.assertNotEqual(legacy, tuned)
+
     def test_trade_png_cache_key_distinguishes_trades(self):
         # THE poisoning guard: different trades MUST produce different cache keys.
         # If someone drops give/get from _PNG_CACHE_PARAMS, both collapse to one key
@@ -2348,6 +2427,7 @@ class TestTradeAnalyzer(unittest.TestCase):
         from app import _PNG_CACHE_PARAMS
         self.assertIn("give", _PNG_CACHE_PARAMS)
         self.assertIn("get", _PNG_CACHE_PARAMS)
+        self.assertIn("league", _PNG_CACHE_PARAMS)
 
     def test_movers_png_cache_key_distinguishes_window(self):
         # 7/12 audit: window changes the movers card's rows/subtitle/footer, so it
