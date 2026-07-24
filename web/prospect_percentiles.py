@@ -224,11 +224,11 @@ def _hitter_parts(row, line: dict) -> tuple[str, str, str]:
         )
         risk = (
             "Pitchers have little reason to avoid the zone.",
-            "The current damage limits the offensive ceiling.",
+            "The current damage limits the profile's impact.",
         )
         role = (
-            "Table-setter ceiling. The present floor is a light-hitting reserve.",
-            "The contact gives him an everyday path, but the current damage points to a bench floor.",
+            "Contact-first table-setter shape. The present damage still resembles a light-hitting reserve.",
+            "Contact-first table-setter shape, with present damage that still looks reserve-level.",
         )
         family = "hitter-contact-light-power"
     elif k_pct is not None and k_pct <= 17:
