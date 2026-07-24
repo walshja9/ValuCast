@@ -1,6 +1,6 @@
 # League-Aware Second Opinion V2 Design
 
-**Date:** 2026-07-24  
+**Date:** 2026-07-24
 **Status:** Approved in conversation
 
 ## Goal
@@ -198,4 +198,3 @@ Tests must prove:
 - No draft-pick, FAAB, roster-import, league-import, account, payment, or
   persistence work.
 - No deployment in this slice.
-
