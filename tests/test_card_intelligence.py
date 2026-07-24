@@ -333,6 +333,27 @@ class TestProspectPercentiles(unittest.TestCase):
             self.assertIn("confidence", line.lower())
         self.assertIsNone(prospect_percentiles.identity_line(mlb, {}))
 
+    def test_contact_light_power_read_describes_shape_not_ceiling(self):
+        salas = _row(
+            "salas_shape",
+            prospect_rank=65,
+            age=20,
+            level="AA",
+            stat_line={
+                "pa": 285,
+                "ops": 0.771,
+                "iso": 0.137,
+                "k_pct": 15.1,
+                "bb_pct": 10.2,
+            },
+        )
+
+        read = prospect_percentiles.identity_line(salas, {})
+
+        self.assertIn("contact-first table-setter shape", read.lower())
+        self.assertNotIn("ceiling", read.lower())
+        self.assertNotIn("floor", read.lower())
+
     def test_identity_line_is_honest_when_no_performance_sample_exists(self):
         no_sample = prospect_percentiles.identity_line(_row("no_sample"), {})
         self.assertIn("current performance sample", no_sample)

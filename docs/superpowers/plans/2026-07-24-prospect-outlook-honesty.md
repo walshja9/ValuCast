@@ -32,13 +32,13 @@
 - Consumes: existing `row.has_peak_projection` and peak-label properties.
 - Produces: public HTML and PNG that no longer consume those fields.
 
-- [ ] **Step 1: Write failing render tests**
+- [x] **Step 1: Write failing render tests**
 
 Add assertions that a prospect with peak data retains that data on the row but
 renders neither `Peak Outlook` nor `Ceiling scenario` in HTML. Patch the PNG
 text-drawing spy and assert neither label is drawn.
 
-- [ ] **Step 2: Run the tests and verify RED**
+- [x] **Step 2: Run the tests and verify RED**
 
 Run:
 
@@ -48,7 +48,7 @@ python -m pytest -q tests/test_player_card_display_additions.py tests/test_card_
 
 Expected: failures because both public renderers still consume Peak Outlook.
 
-- [ ] **Step 3: Remove the two render blocks**
+- [x] **Step 3: Remove the two render blocks**
 
 Delete the `row.has_peak_projection` block from
 `templates/partials/player_detail_dynasty.html`. In `app.py`, remove
@@ -56,7 +56,7 @@ Delete the `row.has_peak_projection` block from
 read and projected-shape layout. Remove the now-stale Peak Outlook reference
 from the player-card comp disclosure and methodology.
 
-- [ ] **Step 4: Run the tests and verify GREEN**
+- [x] **Step 4: Run the tests and verify GREEN**
 
 Run the command from Step 2.
 
@@ -65,20 +65,22 @@ Expected: all tests pass.
 ### Task 2: Correct the deterministic contact/light-power read
 
 **Files:**
+- Modify: `app.py`
 - Modify: `web/prospect_percentiles.py`
 - Test: `tests/test_card_intelligence.py`
+- Test: `tests/test_scouting_page.py`
 
 **Interfaces:**
 - Consumes: the existing `hitter-contact-light-power` thresholds.
 - Produces: present-shape copy with no ceiling or floor claim.
 
-- [ ] **Step 1: Write the failing Salas-style regression**
+- [x] **Step 1: Write the failing Salas-style regression**
 
 Create a 285-PA hitter row with 15.1 K% and .137 ISO. Assert its deterministic
 read includes `contact-first table-setter shape` and excludes `ceiling` and
 `floor`.
 
-- [ ] **Step 2: Run the regression and verify RED**
+- [x] **Step 2: Run the regression and verify RED**
 
 Run:
 
@@ -89,12 +91,18 @@ python -m pytest -q tests/test_card_intelligence.py -k contact_light_power
 Expected: failure because the current template says `Table-setter ceiling` and
 `floor`.
 
-- [ ] **Step 3: Make the minimal copy correction**
+- [x] **Step 3: Make the minimal copy correction**
 
 Replace the two `hitter-contact-light-power` role variants with present-shape
 language. Do not change thresholds or any numeric field.
 
-- [ ] **Step 4: Run the regression and verify GREEN**
+- [x] **Step 4: Keep committed deterministic reads honest before refresh**
+
+Add a public-adapter regression using the prior Salas wording. Deterministic
+prospect reads should receive the same present-shape correction at render time;
+guarded LLM and MLB reads should remain unchanged.
+
+- [x] **Step 5: Run the regression and verify GREEN**
 
 Run the command from Step 2.
 
@@ -109,19 +117,19 @@ Expected: pass.
 - Consumes: Tasks 1 and 2.
 - Produces: evidence that the display-only fix is safe.
 
-- [ ] **Step 1: Run focused tests**
+- [x] **Step 1: Run focused tests**
 
 ```powershell
 python -m pytest -q tests/test_card_intelligence.py tests/test_scouting_repository.py tests/test_player_card_display_additions.py
 ```
 
-- [ ] **Step 2: Run the full suite**
+- [x] **Step 2: Run the full suite**
 
 ```powershell
 python -m pytest -q
 ```
 
-- [ ] **Step 3: Check scope**
+- [x] **Step 3: Check scope**
 
 ```powershell
 git diff --check

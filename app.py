@@ -3245,28 +3245,14 @@ def _prospect_player_card_png(row):
             else _hitter_total_row(season_rows)
         )
 
-    # The scouting read is the in-depth report when present. The share card carries
-    # the same qualitative Peak Outlook as the HTML card; unsupported probabilities
-    # and risk scores stay out of both surfaces.
+    # The scouting read is the in-depth report when present. Uncalibrated Peak
+    # Outlook fields stay in the shadow artifact and off public card surfaces.
     _measure = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     read_font = _graphic_font(22)
     read_lines = _graphic_wrap_read_text(_measure, identity, read_font, 890, max_lines=16)
-    peak_outlook = []
-    if getattr(row, "has_peak_projection", False):
-        peak_outlook = [
-            (label, value)
-            for label, value in (
-                ("CEILING SCENARIO", getattr(row, "peak_role_label", None)),
-                ("FLOOR SCENARIO", getattr(row, "peak_floor_label", None)),
-                ("EVIDENCE STRENGTH", getattr(row, "peak_confidence_label", None)),
-                ("WINDOW", getattr(row, "peak_eta_label", None)),
-            )
-            if value
-        ]
 
     read_body_bottom = 1120 + len(read_lines) * 31
-    peak_outlook_y = read_body_bottom + 10
-    peak_label_y = peak_outlook_y + 106 if peak_outlook else read_body_bottom + 6
+    peak_label_y = read_body_bottom + 6
     read_extra = peak_label_y - 1250  # delta applied to the shape/FG/footer below
 
     # QR back to the live card. The card packs the FanGraphs panel to ~10px above the
@@ -3585,26 +3571,6 @@ def _prospect_player_card_png(row):
     draw.text((74, 1080 + discipline_extra), "THE VALUCAST READ", fill=muted, font=_graphic_font(20, bold=True))
     for idx, line in enumerate(read_lines):
         draw.text((74, 1120 + discipline_extra + idx * 31), line, fill=text, font=read_font)
-    if peak_outlook:
-        outlook_y = peak_outlook_y + discipline_extra
-        draw.text((74, outlook_y), "PEAK OUTLOOK", fill=muted, font=_graphic_font(18, bold=True))
-        draw.text(
-            (244, outlook_y + 2),
-            "Qualitative scenarios - separate from today's value.",
-            fill=muted,
-            font=_graphic_font(14),
-        )
-        slot_w = 235
-        label_font = _graphic_font(13, bold=True)
-        value_font = _graphic_font(16, bold=True)
-        for idx, (label, value) in enumerate(peak_outlook):
-            x = 74 + idx * slot_w
-            draw.text((x, outlook_y + 30), label, fill=muted, font=label_font)
-            for line_idx, line in enumerate(
-                _graphic_wrap_text(draw, value, value_font, 205, max_lines=2)
-            ):
-                draw.text((x, outlook_y + 52 + line_idx * 20), line, fill=text, font=value_font)
-
     draw.text((74, 1250 + body_shift), shape_title, fill=muted, font=_graphic_font(18, bold=True))
     for idx, skill in enumerate(shape_items[:4]):
         x = 74 + idx * 235
@@ -5678,6 +5644,12 @@ def _public_deterministic_scouting_text(report: dict) -> str:
     ).replace(
         "This profiles as a mid-rotation starter",
         "Current-performance ceiling scenario: mid-rotation starter",
+    ).replace(
+        "Table-setter ceiling; the present floor is a light-hitting reserve",
+        "Contact-first table-setter shape, with present damage that still looks reserve-level",
+    ).replace(
+        "The current damage limits the offensive ceiling.",
+        "The current damage limits the profile's impact.",
     )
     return text if _public_scouting_text_allowed(report, text) else ""
 
@@ -5687,7 +5659,15 @@ def _scouting_display_report_text(report: dict | None) -> str:
     if not isinstance(report, dict):
         return ""
     published = str(report.get("published_report") or "").strip()
-    if published and _public_scouting_text_allowed(report, published):
+    deterministic_prospect = (
+        report.get("player_type") == "prospect"
+        and report.get("published_report_source") == "deterministic"
+    )
+    if (
+        published
+        and not deterministic_prospect
+        and _public_scouting_text_allowed(report, published)
+    ):
         return published
     llm_text = _valid_scouting_llm_text(report)
     if llm_text and _public_scouting_text_allowed(report, llm_text):

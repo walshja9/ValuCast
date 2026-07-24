@@ -29,6 +29,29 @@ def test_scouting_display_report_text_falls_back_when_llm_invalid():
     assert _scouting_display_report_text(report) == "Deterministic fallback."
 
 
+def test_public_adapter_refreshes_stale_deterministic_prospect_shape_language():
+    from app import _scouting_display_report_text
+
+    report = {
+        "player_type": "prospect",
+        "published_report_source": "deterministic",
+        "published_report": (
+            "He consistently finishes at-bats with contact. "
+            "Table-setter ceiling; the present floor is a light-hitting reserve."
+        ),
+        "report": (
+            "He consistently finishes at-bats with contact. "
+            "Table-setter ceiling; the present floor is a light-hitting reserve."
+        ),
+    }
+
+    public = _scouting_display_report_text(report)
+
+    assert "Contact-first table-setter shape" in public
+    assert "ceiling" not in public.lower()
+    assert "floor" not in public.lower()
+
+
 def test_public_prospect_read_rejects_uncalibrated_peak_claims():
     from app import _scouting_display_report
 
@@ -176,9 +199,9 @@ def test_prospect_player_detail_surfaces_scouting_and_role_context():
     assert '<span class="profile-card-kicker">Opportunity</span>' in html
     assert "<h4>Role, playing time &amp; availability</h4>" in html
     assert '<a href="/scouting?q=Franklin%20Arias" class="mini-link">Open report</a>' in html
-    assert "<b>Ceiling scenario</b>" in html
-    assert "<b>Floor scenario</b>" in html
-    assert "<b>Evidence strength</b>" in html
+    assert "Peak Outlook" not in html
+    assert "<b>Ceiling scenario</b>" not in html
+    assert "<b>Floor scenario</b>" not in html
     assert "Regular+" not in html
 
 

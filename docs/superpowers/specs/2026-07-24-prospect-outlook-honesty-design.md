@@ -21,6 +21,10 @@ underlying peak artifact intact for shadow research and future validation.
 The ValuCast Read remains the public interpretation of current performance.
 For the contact/light-power template that produced the Salas conflict, replace
 ceiling/floor language with a present statistical-shape description.
+At the public adapter, apply that same copy correction to committed
+deterministic prospect reads generated before this change. Guarded LLM reads
+remain untouched. This prevents the live card from serving stale deterministic
+wording until the next scheduled repository rebuild.
 
 This is presentation-only. It does not change ranks, values, model inputs,
 model outputs, cards' current-skill bars, pitcher publication decisions, the
@@ -32,5 +36,7 @@ model freeze, or the failed-decay flag.
 - A prospect share graphic does not render Peak Outlook.
 - Public comp disclosures no longer refer readers to Peak Outlook.
 - The contact/light-power deterministic read does not claim a ceiling or floor.
+- A stale committed deterministic read receives the same correction at render
+  time, while guarded LLM reads remain unchanged.
 - The peak artifact remains available on the row for shadow research.
 - Existing card and scouting tests pass.

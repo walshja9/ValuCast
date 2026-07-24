@@ -210,6 +210,7 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         body = response.data.decode()
+        self.assertTrue(row.has_peak_projection)
         self.assertIn('<span class="profile-card-kicker">Skill</span>', body)
         self.assertIn("<h4>What his performance supports</h4>", body)
         self.assertIn('<span class="profile-card-kicker">Opportunity</span>', body)
@@ -221,10 +222,10 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         )
         self.assertNotIn("Four-year MLB outlook.", body)
         self.assertNotIn("attribution-mix", body)
-        self.assertIn("<b>Ceiling scenario</b>", body)
-        self.assertIn("<b>Floor scenario</b>", body)
-        self.assertIn("<b>Evidence strength</b>", body)
-        self.assertIn("<b>Window</b>", body)
+        self.assertNotIn("Peak Outlook", body)
+        self.assertNotIn("<b>Ceiling scenario</b>", body)
+        self.assertNotIn("<b>Floor scenario</b>", body)
+        self.assertNotIn("<b>Evidence strength</b>", body)
         self.assertNotIn("<b>Peak</b>", body)
         self.assertNotIn("<b>Upside</b>", body)
         self.assertNotIn("<b>Risk</b>", body)
@@ -844,7 +845,7 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("image/png", png.content_type)
         self.assertIn("valucast-", png.headers.get("Content-Disposition", ""))
 
-    def test_prospect_player_share_card_matches_qualitative_peak_outlook(self):
+    def test_prospect_player_share_card_hides_uncalibrated_peak_outlook(self):
         from PIL import ImageDraw
 
         from app import dd_store
@@ -867,14 +868,9 @@ class TestDynastyMode(unittest.TestCase):
 
         self.assertEqual(png[:8], b"\x89PNG\r\n\x1a\n")
         rendered_text = " ".join(rendered)
-        for label, value in (
-            ("CEILING SCENARIO", row.peak_role_label),
-            ("FLOOR SCENARIO", row.peak_floor_label),
-            ("EVIDENCE STRENGTH", row.peak_confidence_label),
-            ("WINDOW", row.peak_eta_label),
-        ):
-            self.assertIn(label, rendered_text)
-            self.assertIn(value, rendered_text)
+        self.assertTrue(row.has_peak_projection)
+        for label in ("PEAK OUTLOOK", "CEILING SCENARIO", "FLOOR SCENARIO"):
+            self.assertNotIn(label, rendered_text)
         self.assertNotIn("BUST RISK", rendered_text)
 
     def test_player_card_png_renders_with_qr_lib_present(self):

@@ -453,7 +453,8 @@ def test_detail_and_share_cards_render_hitter_component_matches():
     assert "measured distance" in html
     assert "match percentage" not in html.lower()
     assert "The forecast is the model's role probabilities" not in html
-    assert "Peak Outlook is a separate qualitative scenario layer" in html
+    assert "Shape matches are descriptive, not a forecast" in html
+    assert "Peak Outlook" not in html
 
 
 def test_detail_and_share_cards_render_role_separated_pitcher_matches():

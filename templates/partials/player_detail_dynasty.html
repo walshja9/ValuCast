@@ -358,24 +358,6 @@
         {% include "partials/_value_spark.html" %}
         {% endif %}
 
-        {% if row.has_peak_projection %}
-        <div class="detail-section peak-projection-card">
-            <div class="peak-projection-head">
-                <div>
-                    <span class="profile-card-kicker">Peak Projection</span>
-                    <h4>Peak Outlook</h4>
-                </div>
-                <p class="profile-note peak-projection-note">Qualitative ceiling and floor scenarios &mdash; separate from today's value.</p>
-            </div>
-            <div class="peak-summary-strip">
-                {% if row.peak_role_label %}<span><b>Ceiling scenario</b>{{ row.peak_role_label }}</span>{% endif %}
-                {% if row.peak_floor_label %}<span><b>Floor scenario</b>{{ row.peak_floor_label }}</span>{% endif %}
-                {% if row.peak_confidence_label %}<span><b>Evidence strength</b>{{ row.peak_confidence_label }}</span>{% endif %}
-                {% if row.peak_eta_label %}<span><b>Window</b>{{ row.peak_eta_label }}</span>{% endif %}
-            </div>
-        </div>
-        {% endif %}
-
         {% if shape_comps is defined and shape_comps and shape_comps.twins %}
         <div class="detail-section shape-comps-card">
             {% if shape_comps.role_pool %}
@@ -446,7 +428,7 @@
                 </div>
             </div>
             {% endif %}
-            <p class="sample-context-note">A shape match on three translated rates &mdash; descriptive, not a forecast. Peak Outlook is a separate qualitative scenario layer; these bars are counts of matched careers, not odds. The aging bars include only matches old enough to grade, so the closest named twin may be too recent to appear in the bars. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
+            <p class="sample-context-note">Shape matches are descriptive, not a forecast, and do not feed ValuCast Value or rank. These bars are counts of matched careers, not odds. The aging bars include only matches old enough to grade, so the closest named twin may be too recent to appear in the bars. Tiers measure playing time (PA/yr) plus era-relative OPS only &mdash; an injury year or a catcher's workload counts against a player &mdash; and the match knows nothing about defense, speed, or the hit tool holding.</p>
             {% endif %}
         </div>
         {% endif %}
