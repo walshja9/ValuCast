@@ -7967,6 +7967,16 @@ def _build_trade_page_context(args):
     # the share card key describe the exact trade that rendered.
     give_resolved = [r.id for r in give_rows]
     get_resolved = [r.id for r in get_rows]
+    query_pairs = list(league_context["params"])
+    if give_resolved:
+        query_pairs.append(("give", ",".join(give_resolved)))
+    if get_resolved:
+        query_pairs.append(("get", ",".join(get_resolved)))
+    legacy_pairs = []
+    if give_resolved:
+        legacy_pairs.append(("give", ",".join(give_resolved)))
+    if get_resolved:
+        legacy_pairs.append(("get", ",".join(get_resolved)))
     return {
         "mode": "dd_dynasty",                 # so footer/context branches match the board
         "give_pieces": [_trade_piece(r, value_of(r)) for r in give_rows],
@@ -7978,6 +7988,13 @@ def _build_trade_page_context(args):
         "verdict": verdict,
         "league_context": league_context,
         "trade_scope_note": league_context["scope_note"],
+        "trade_query_pairs": query_pairs,
+        "trade_query_params": dict(query_pairs),
+        "legacy_trade_url": (
+            f"/trade?{urlencode(legacy_pairs)}" if legacy_pairs else "/trade"
+        ),
+        "trade_preset_options": list(_TRADE_PRESET_LABELS.items()),
+        "trade_window_options": list(_TRADE_WINDOW_LABELS.items()),
         "map_data_url": "/api/value-map-players",   # the search payload the JS loads
         "as_of": dd_store.generated_at or store.as_of,
         "dd_generated_at": dd_store.generated_at,
@@ -7992,9 +8009,7 @@ def trade():
     # og:image unfurls the share card ONLY when the trade actually resolved to a
     # verdict; a bare /trade (no players) keeps the default site card.
     if context.get("verdict") and (context["give_param"] or context["get_param"]):
-        query = urlencode(
-            [("give", context["give_param"]), ("get", context["get_param"])]
-        )
+        query = urlencode(context["trade_query_pairs"])
         context["og_share_image"] = _public_url(f"/trade/share-card.png?{query}")
         context["trade_share_png_url"] = f"/trade/share-card.png?{query}"
         context["trade_share_preview_url"] = f"/trade/share-card?{query}"

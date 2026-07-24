@@ -2107,6 +2107,99 @@ class TestTradeAnalyzer(unittest.TestCase):
         preview = self.client.get(f"/trade/share-card?{query}").data.decode()
         self.assertIn(scope, preview)
 
+    def test_trade_v2_form_renders_canonical_clamped_state(self):
+        body = self.client.get(
+            "/trade?league=1&teams=99&roster=2&pslots=999"
+            "&preset=invented&window=tomorrow"
+        ).data.decode()
+
+        self.assertIn('name="league" value="1"', body)
+        self.assertRegex(body, r'name="teams"[^>]*value="20"')
+        self.assertRegex(body, r'name="roster"[^>]*value="10"')
+        self.assertRegex(body, r'name="pslots"[^>]*value="20"')
+        self.assertRegex(body, r'<option value="balanced"[^>]*selected')
+        self.assertNotRegex(body, r'<option value="invented"[^>]*selected')
+        self.assertNotIn("League-aware version coming", body)
+
+    def test_trade_v2_result_shows_summary_and_fallback_disclosures(self):
+        from app import dd_store
+
+        rows = dd_store.get_all()
+        mlb = next(row for row in rows if not row.is_prospect)
+        prospect = next(row for row in rows if row.is_prospect)
+        body = self.client.get(
+            f"/trade?league=1&teams=12&roster=26&pslots=5"
+            f"&preset=7x7_ops&window=contend&give={mlb.id}&get={prospect.id}"
+        ).data.decode()
+
+        self.assertIn(
+            "12 teams · 26 roster spots · 5 prospect slots · "
+            "7x7 OPS · Contending",
+            body,
+        )
+        self.assertIn("Scoring preset not applied:", body)
+        self.assertIn(
+            "Prospect slots are roster-depth context only and do not change "
+            "the totals.",
+            body,
+        )
+        self.assertIn(
+            "Competitive window is context only and does not change the totals.",
+            body,
+        )
+
+    def test_trade_v2_mlb_result_labels_applied_preset(self):
+        from app import dd_store
+
+        mlb = [row for row in dd_store.get_all() if not row.is_prospect][:2]
+        body = self.client.get(
+            f"/trade?league=1&preset=5x5&give={mlb[0].id}&get={mlb[1].id}"
+        ).data.decode()
+
+        self.assertIn("Scoring preset applied to every player.", body)
+        self.assertNotIn("Scoring preset not applied:", body)
+
+    def test_trade_v2_share_links_preserve_canonical_state(self):
+        import html
+        import re
+        from urllib.parse import parse_qs, urlparse
+        from app import dd_store
+
+        give, get = dd_store.get_all()[:2]
+        body = self.client.get(
+            f"/trade?league=1&teams=12&roster=26&pslots=5"
+            f"&preset=7x7_ops&window=contend&give={give.id}&get={get.id}"
+        ).data.decode()
+        href = html.unescape(re.search(
+            r'href="([^"]*/trade/share-card\.png\?[^"]+)"',
+            body,
+        ).group(1))
+
+        self.assertEqual(
+            parse_qs(urlparse(href).query, keep_blank_values=True),
+            {
+                "league": ["1"],
+                "teams": ["12"],
+                "roster": ["26"],
+                "pslots": ["5"],
+                "preset": ["7x7_ops"],
+                "window": ["contend"],
+                "give": [give.id],
+                "get": [get.id],
+            },
+        )
+
+    def test_trade_v2_js_preserves_context_when_players_change(self):
+        body = self.client.get(
+            "/trade?league=1&teams=16&roster=30&pslots=8"
+            "&preset=5x5&window=rebuild"
+        ).data.decode()
+
+        self.assertIn("var tradeParams =", body)
+        self.assertIn('"league": "1"', body)
+        self.assertIn('"teams": "16"', body)
+        self.assertIn("new URLSearchParams(tradeParams)", body)
+
     def test_trade_from_params_renders_verdict(self):
         from app import dd_store
         rows = dd_store.get_all()

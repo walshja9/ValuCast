@@ -24,9 +24,8 @@
         <span class="buys-heading-eyebrow">TRADE VERDICTS</span>
         <h1>THE SECOND OPINION</h1>
         <p class="buys-heading-sub">The boards say one thing. Here's what ours says{% if as_of %} &middot; {{ editorial_date(as_of) }}{% endif %}</p>
-        <p class="buys-fineprint">Add players to each side and the board renders its verdict from the same 0-100 dynasty values it serves everywhere else &mdash; no new math, no conversion. <strong>The Second Opinion is free, like every ValuCast number.</strong></p>
+        <p class="buys-fineprint">Add players to each side. Standard mode uses the same 0-100 dynasty values served everywhere else; league mode subtracts your league's replacement value. <strong>The Second Opinion is free, like every ValuCast number.</strong></p>
         <p class="buys-fineprint"><strong>{{ trade_scope_note }}</strong></p>
-        <p class="buys-fineprint">The value-aware, league-aware version (your roster, your league settings, your contention window) is coming. <a href="mailto:valucast.feedback@gmail.com?subject=League-aware%20trade%20analyzer%20interest">Tell us you want it</a>.</p>
     </div>
 </section>
 
@@ -36,6 +35,54 @@
     <p>The Second Opinion will populate after the next daily build.</p>
 </section>
 {% else %}
+
+<section class="trade-settings glass" aria-labelledby="trade-settings-heading">
+    <h2 id="trade-settings-heading">League context</h2>
+    <form class="trade-settings-form" method="get" action="/trade">
+        <input type="hidden" name="league" value="1">
+        {% if give_param %}<input type="hidden" name="give" value="{{ give_param }}">{% endif %}
+        {% if get_param %}<input type="hidden" name="get" value="{{ get_param }}">{% endif %}
+        <label class="trade-setting">
+            <span>Teams</span>
+            <input class="position-select" type="number" name="teams" min="4" max="20"
+                   value="{{ league_context.teams }}">
+        </label>
+        <label class="trade-setting">
+            <span>Roster spots</span>
+            <input class="position-select" type="number" name="roster" min="10" max="50"
+                   value="{{ league_context.roster }}">
+        </label>
+        <label class="trade-setting">
+            <span>Prospect slots</span>
+            <input class="position-select" type="number" name="pslots" min="0" max="20"
+                   value="{{ league_context.pslots }}">
+        </label>
+        <label class="trade-setting">
+            <span>Scoring</span>
+            <select class="position-select" name="preset">
+                <option value=""{% if not league_context.preset %} selected{% endif %}>Base dynasty values</option>
+                {% for preset_id, preset_label in trade_preset_options %}
+                <option value="{{ preset_id }}"{% if league_context.preset == preset_id %} selected{% endif %}>{{ preset_label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label class="trade-setting">
+            <span>Competitive window</span>
+            <select class="position-select" name="window">
+                {% for window_id, window_label in trade_window_options %}
+                <option value="{{ window_id }}"{% if league_context.window == window_id %} selected{% endif %}>{{ window_label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div class="trade-settings-actions">
+            <button class="export-btn" type="submit">Apply league context</button>
+            {% if league_context.enabled %}
+            <a class="export-btn secondary-action" href="{{ legacy_trade_url }}">Use standard board</a>
+            {% endif %}
+        </div>
+    </form>
+    <p class="buys-fineprint">League depth changes the totals. Prospect slots and competitive window stay visible context only.</p>
+</section>
 
 <section class="trade-search glass" aria-label="Add players to the trade">
     <div class="movers-grid trade-search-grid">
@@ -75,6 +122,7 @@
         give: {{ give_ids | tojson }},
         get: {{ get_ids | tojson }}
     };
+    var tradeParams = {{ trade_query_params | tojson }};
     var players = [];
     var byId = {};
 
@@ -88,10 +136,13 @@
     }
 
     function currentUrl() {
-        var qs = [];
-        if (sides.give.length) qs.push('give=' + sides.give.map(encodeURIComponent).join(','));
-        if (sides.get.length) qs.push('get=' + sides.get.map(encodeURIComponent).join(','));
-        return '/trade' + (qs.length ? '?' + qs.join('&') : '');
+        var params = new URLSearchParams(tradeParams);
+        if (sides.give.length) params.set('give', sides.give.join(','));
+        else params.delete('give');
+        if (sides.get.length) params.set('get', sides.get.join(','));
+        else params.delete('get');
+        var query = params.toString();
+        return '/trade' + (query ? '?' + query : '');
     }
 
     function rerender() {

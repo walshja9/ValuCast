@@ -50,6 +50,12 @@
         You get <strong>{{ verdict.get_total }}</strong> &middot;
         Margin <strong>{{ '%+.1f' % verdict.margin }}</strong>
     </p>
+    {% if league_context.enabled %}
+    <p class="trade-note trade-note-league"><strong>League context:</strong> {{ league_context.summary }}</p>
+    {% for disclosure in league_context.disclosures %}
+    <p class="trade-note trade-note-league">{{ disclosure }}</p>
+    {% endfor %}
+    {% endif %}
     <p class="trade-note trade-note-even">{{ trade_scope_note }}</p>
 
     {# 4a: margin inside the noise band -> "call it even", never a false winner. #}
