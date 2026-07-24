@@ -2261,6 +2261,7 @@ class TestTradeAnalyzer(unittest.TestCase):
         body = r.data.decode()
         self.assertIn("Add at least one player to each side", body)
         self.assertNotIn("You give up more than you get", body)
+        self.assertNotRegex(body, r"YOU GIVE\s*&middot;\s*</h2>")
         # ...and the directly-fetchable PNG refuses to draw the same non-trade.
         png = self.client.get(f"/trade/share-card.png?give={real}")
         self.assertEqual(png.status_code, 404)
