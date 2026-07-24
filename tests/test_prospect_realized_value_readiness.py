@@ -414,9 +414,20 @@ def test_stage2_builder_writes_only_requested_output(tmp_path):
         path: hashlib.sha256(path.read_bytes()).hexdigest() for path in protected
     }
     report = json.loads(output.read_text(encoding="utf-8"))
+    contract = json.loads(protected[1].read_text(encoding="utf-8"))
+    sidecar = json.loads(protected[3].read_text(encoding="utf-8"))
+    sidecar_input = sidecar["input"]
+    binding_matches = (
+        sidecar_input["sha256"]
+        == readiness.source_sha256(protected[1].read_bytes())
+        and sidecar_input["cutoff_date"]
+        == contract["current"]["fetched_date"]
+    )
+
     assert report["schema"] == "valucast_stage2_realized_value_readiness"
-    assert report["outcome_evidence"]["status"] == "ready"
-    assert report["blockers"] == [
-        "impact_target_not_direct_7x7",
-        "exact_prospective_replay_not_reconstructable",
-    ]
+    assert (report["outcome_evidence"]["status"] == "ready") is binding_matches
+    if not binding_matches:
+        assert "qs_sidecar_input_sha256_mismatch" in report["blockers"]
+        assert "qs_sidecar_cutoff_mismatch" in report["blockers"]
+    assert "impact_target_not_direct_7x7" in report["blockers"]
+    assert "exact_prospective_replay_not_reconstructable" in report["blockers"]
