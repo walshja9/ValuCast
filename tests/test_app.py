@@ -2405,6 +2405,17 @@ class TestTradeAnalyzer(unittest.TestCase):
 
         self.assertNotEqual(legacy, tuned)
 
+    def test_trade_png_cache_ignores_inert_league_values(self):
+        from app import _png_cache_key
+
+        path = "/trade/share-card.png?give=a&get=b"
+        with app.test_request_context(path):
+            legacy = _png_cache_key()
+        with app.test_request_context(f"{path}&league=not-enabled"):
+            inert = _png_cache_key()
+
+        self.assertEqual(legacy, inert)
+
     def test_trade_png_cache_key_distinguishes_trades(self):
         # THE poisoning guard: different trades MUST produce different cache keys.
         # If someone drops give/get from _PNG_CACHE_PARAMS, both collapse to one key

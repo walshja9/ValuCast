@@ -241,6 +241,7 @@ def _png_cache_key():
         tuple(sorted(
             (k, v) for k, v in request.args.items(multi=True)
             if k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS
+            if k != "league" or v == "1"
         )),
     )
 
