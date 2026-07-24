@@ -9,19 +9,19 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 5.58,
+        "gap": 4.93,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 695578,
           "name": "James Wood",
           "rank": 2,
-          "value": 93.54
+          "value": 94.18
         },
         "top": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 1,
-          "value": 99.12
+          "value": 99.11
         }
       },
       "status": "passed",
@@ -56,23 +56,23 @@
               "SP"
             ],
             "rank": 3,
-            "value": 83.29
+            "value": 83.48
           },
           {
             "name": "Paul Skenes",
             "positions": [
               "SP"
             ],
-            "rank": 6,
-            "value": 77.59
+            "rank": 5,
+            "value": 77.29
           },
           {
             "name": "Jacob Misiorowski",
             "positions": [
               "SP"
             ],
-            "rank": 17,
-            "value": 65.65
+            "rank": 16,
+            "value": 66.38
           }
         ],
         "reliever_count": 0,
@@ -94,63 +94,63 @@
             "name": "Kade Anderson",
             "rank": 1,
             "role": "pitcher",
-            "score": 68.5
+            "score": 68.49
           },
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 59.04
+            "score": 59.18
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
-            "rank": 6,
+            "rank": 7,
             "role": "pitcher",
-            "score": 56.54
+            "score": 56.84
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
             "rank": 9,
             "role": "pitcher",
-            "score": 53.96
+            "score": 53.85
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
             "rank": 12,
             "role": "pitcher",
-            "score": 50.59
+            "score": 50.66
           },
           {
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 13,
+            "rank": 14,
             "role": "pitcher",
-            "score": 49.95
+            "score": 49.61
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 15,
             "role": "pitcher",
-            "score": 48.81
+            "score": 48.82
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
             "rank": 16,
             "role": "pitcher",
-            "score": 48.8
+            "score": 48.78
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 19,
             "role": "pitcher",
-            "score": 47.4
+            "score": 47.24
           },
           {
             "mlbam_id": 702566,
@@ -166,8 +166,8 @@
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 17,
-        "top50_pitcher_rate": 0.34,
+        "top50_pitcher_count": 18,
+        "top50_pitcher_rate": 0.36,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -177,10 +177,10 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-07-22",
+        "baseline_date": "2026-07-23",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-07-23",
-        "evaluated_matched_row_count": 2850,
+        "current_date": "2026-07-24",
+        "evaluated_matched_row_count": 2855,
         "hitter_count": 0,
         "incident_count": 0,
         "model_delta_limit": 1.0,
@@ -280,7 +280,7 @@
             {
               "level": "AA",
               "name": "Ben Hess",
-              "rank": 31,
+              "rank": 32,
               "sample": 40.3,
               "sample_unit": "IP",
               "score_source": "prospect_model_v0_6"
@@ -356,8 +356,8 @@
         "band_counts": {
           "balanced": 10,
           "impact": 4,
-          "mixed": 23,
-          "starter_volume": 11,
+          "mixed": 22,
+          "starter_volume": 12,
           "thin": 2
         },
         "best_single_level_covered_count": 0,
@@ -386,7 +386,7 @@
             "level": "AA",
             "mlbam_id": 806964,
             "name": "Sebastian Walcott",
-            "rank": 49,
+            "rank": 48,
             "role": "hitter",
             "sample": 23.0,
             "sample_unit": "PA",
@@ -420,8 +420,8 @@
         "audit_status": "candidate_ready",
         "blocker_count": 0,
         "blockers": [],
-        "current_row_count": 6687,
-        "current_season_row_count": 6565,
+        "current_row_count": 6718,
+        "current_season_row_count": 6599,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 2,
@@ -450,7 +450,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 41,
+        "archive_day_span": 42,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -559,7 +559,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 223
+        "row_count": 224
       },
       "status": "passed"
     },
@@ -567,8 +567,8 @@
       "id": "movers_surface_gate",
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
-        "cooling_count": 7,
-        "generated_at": "2026-07-23T00:00:00+00:00",
+        "cooling_count": 9,
+        "generated_at": "2026-07-24T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -615,25 +615,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-07-23T04:46:04.393949+00:00",
+  "generated_at": "2026-07-24T12:11:06.731996+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-07-23",
-      "buy_signals": "2026-07-23",
-      "milb_stat_freshness_audit": "2026-07-23",
-      "mlb_layer": "2026-07-23",
-      "movers": "2026-07-23",
-      "prospect_card_data_audit": "2026-07-23",
-      "prospect_coverage_audit": "2026-07-23",
-      "prospect_rank": "2026-07-23",
-      "public_snapshot": "2026-07-23",
-      "recent_signal_report": "2026-07-23"
+      "buy_review": "2026-07-24",
+      "buy_signals": "2026-07-24",
+      "milb_stat_freshness_audit": "2026-07-24",
+      "mlb_layer": "2026-07-24",
+      "movers": "2026-07-24",
+      "prospect_card_data_audit": "2026-07-24",
+      "prospect_coverage_audit": "2026-07-24",
+      "prospect_rank": "2026-07-24",
+      "public_snapshot": "2026-07-24",
+      "recent_signal_report": "2026-07-24"
     },
-    "mlb_count": 920,
-    "prospect_count": 2856,
-    "public_row_count": 3776
+    "mlb_count": 913,
+    "prospect_count": 2866,
+    "public_row_count": 3779
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
