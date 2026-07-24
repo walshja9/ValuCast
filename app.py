@@ -7717,20 +7717,41 @@ _TRADE_SCOPE_NOTE = (
     "Player-only verdict: draft picks, FAAB, roster spots, and league context "
     "are not included."
 )
+_TRADE_LEAGUE_SCOPE_NOTE = (
+    "Player-only verdict: draft picks, FAAB, and unlisted roster effects "
+    "are not included."
+)
+_TRADE_WINDOW_LABELS = {
+    "balanced": "Balanced",
+    "contend": "Contending",
+    "rebuild": "Rebuilding",
+}
+_TRADE_PRESET_LABELS = {
+    "5x5": "5x5",
+    "obp": "OBP",
+    "6x6": "6x6",
+    "sv_hld": "SV+HLD",
+    "7x7": "7x7",
+    "7x7_ops": "7x7 OPS",
+    "points": "Points",
+}
 _TRADE_MAX_PER_SIDE = 6         # guard: cap each side (matches the URL param cap)
 
 _TRADE_MOMENTUM_CACHE = (None, None)  # (generation_key, form_by_key) swapped atomically
 
 
-def _trade_verdict(give_rows, get_rows):
+def _trade_verdict(give_rows, get_rows, value_of=None):
     """Pure verdict: sums + margin over the served 0-100 dynasty values.
 
     No I/O, no request access, no new math. The three honesty flags below
     (inside_noise, crosses_universes, count_mismatch) are what keep the verdict
     from claiming precision the two separate normalizations do not support.
     """
+    value_of = value_of or (
+        lambda r: float(getattr(r, "dynasty_value", 0.0) or 0.0)
+    )
     def _val(r):
-        return float(getattr(r, "dynasty_value", 0.0) or 0.0)
+        return float(value_of(r) or 0.0)
     give_total = sum(_val(r) for r in give_rows)
     get_total = sum(_val(r) for r in get_rows)
     margin = get_total - give_total                     # + = you win, - = you lose
@@ -7797,7 +7818,7 @@ def _trade_momentum_label(row):
     return entry.get("momentum_label") if entry else None
 
 
-def _trade_piece(row):
+def _trade_piece(row, value=None):
     """Read an existing PublicSnapshotRow into a template-friendly dict.
     No computation -- just display fields the verdict page needs."""
     is_prospect = row.is_prospect
@@ -7819,7 +7840,7 @@ def _trade_piece(row):
         "pos": pos,
         "level": row.level if is_prospect else None,
         "is_prospect": is_prospect,
-        "value": round(float(row.dynasty_value or 0.0), 1),
+        "value": round(float(row.dynasty_value if value is None else value), 1),
         "rank_label": rank_label,
         "confidence": confidence,
         "momentum": _trade_momentum_label(row),   # None when not a prominent mover
@@ -7852,29 +7873,111 @@ def _trade_cancel_cross_side_dupes(give_rows, get_rows):
     )
 
 
+def _trade_league_context(args, trade_rows):
+    """Return canonical V2 state and its value getter without mutating rows."""
+    enabled = args.get("league") == "1"
+    settings = parse_league_settings(args)
+    raw_preset = (args.get("preset") or "").strip()
+    preset = raw_preset if enabled and raw_preset in DYNASTY_VALUE_PRESETS else None
+    raw_window = (args.get("window") or "").strip()
+    window = raw_window if enabled and raw_window in _TRADE_WINDOW_LABELS else "balanced"
+    has_prospect = any(row.is_prospect for row in trade_rows)
+    preset_applied = bool(enabled and preset and trade_rows and not has_prospect)
+    preset_fell_back = bool(enabled and preset and has_prospect)
+
+    def selected_value(row):
+        value = row.value_for(preset) if preset_applied else row.dynasty_value
+        return float(value or 0.0)
+
+    replacement = None
+    if enabled:
+        ordered = sorted(dd_store.get_all(), key=selected_value, reverse=True)
+        cutoff = min(settings.roster_cutoff, len(ordered))
+        replacement = selected_value(ordered[cutoff - 1]) if cutoff else 0.0
+
+    def value_of(row):
+        value = selected_value(row)
+        return max(0.0, value - replacement) if enabled else value
+
+    scoring_label = _TRADE_PRESET_LABELS.get(preset, "Base dynasty values")
+    disclosures = []
+    if enabled:
+        if preset_applied:
+            disclosures.append("Scoring preset applied to every player.")
+        elif preset_fell_back:
+            disclosures.append(
+                "Scoring preset not applied: prospect preset values are not "
+                "calibrated on the shared MLB/prospect value scale. Base "
+                "dynasty values were used for every player."
+            )
+        disclosures.extend([
+            "Prospect slots are roster-depth context only and do not change the totals.",
+            "Competitive window is context only and does not change the totals.",
+        ])
+    params = []
+    if enabled:
+        params = [
+            ("league", "1"),
+            ("teams", str(settings.teams)),
+            ("roster", str(settings.roster)),
+            ("pslots", str(settings.pslots)),
+            ("preset", preset or ""),
+            ("window", window),
+        ]
+    context = {
+        "enabled": enabled,
+        "teams": settings.teams,
+        "roster": settings.roster,
+        "pslots": settings.pslots,
+        "preset": preset,
+        "preset_label": scoring_label,
+        "preset_applied": preset_applied,
+        "preset_fell_back": preset_fell_back,
+        "window": window,
+        "window_label": _TRADE_WINDOW_LABELS[window],
+        "replacement_value": round(replacement, 1) if replacement is not None else None,
+        "summary": (
+            f"{settings.teams} teams · {settings.roster} roster spots · "
+            f"{settings.pslots} prospect slots · {scoring_label} · "
+            f"{_TRADE_WINDOW_LABELS[window]}"
+        ),
+        "disclosures": disclosures,
+        "params": params,
+        "scope_note": _TRADE_LEAGUE_SCOPE_NOTE if enabled else _TRADE_SCOPE_NOTE,
+    }
+    return context, value_of
+
+
 def _build_trade_page_context(args):
     give_ids = _parse_trade_ids(args.get("give"))
     get_ids = _parse_trade_ids(args.get("get"))
     give_rows = [row for pid in give_ids if (row := dd_store.get_by_id(pid))]
     get_rows = [row for pid in get_ids if (row := dd_store.get_by_id(pid))]
     give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
+    league_context, value_of = _trade_league_context(
+        args, give_rows + get_rows
+    )
     # A verdict needs BOTH sides: one-sided input renders the add-players empty
     # state, never "you give up more than you get" against nobody.
-    verdict = _trade_verdict(give_rows, get_rows) if (give_rows and get_rows) else None
+    verdict = (
+        _trade_verdict(give_rows, get_rows, value_of=value_of)
+        if (give_rows and get_rows) else None
+    )
     # Canonical, resolved id lists (unknown ids dropped) so the shareable URL and
     # the share card key describe the exact trade that rendered.
     give_resolved = [r.id for r in give_rows]
     get_resolved = [r.id for r in get_rows]
     return {
         "mode": "dd_dynasty",                 # so footer/context branches match the board
-        "give_pieces": [_trade_piece(r) for r in give_rows],
-        "get_pieces": [_trade_piece(r) for r in get_rows],
+        "give_pieces": [_trade_piece(r, value_of(r)) for r in give_rows],
+        "get_pieces": [_trade_piece(r, value_of(r)) for r in get_rows],
         "give_ids": give_resolved,
         "get_ids": get_resolved,
         "give_param": ",".join(give_resolved),
         "get_param": ",".join(get_resolved),
         "verdict": verdict,
-        "trade_scope_note": _TRADE_SCOPE_NOTE,
+        "league_context": league_context,
+        "trade_scope_note": league_context["scope_note"],
         "map_data_url": "/api/value-map-players",   # the search payload the JS loads
         "as_of": dd_store.generated_at or store.as_of,
         "dd_generated_at": dd_store.generated_at,

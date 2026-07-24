@@ -1931,6 +1931,157 @@ class TestTradeAnalyzer(unittest.TestCase):
         same = _trade_verdict([self._row(80)], [self._row(70)])
         self.assertFalse(same["crosses_universes"])
 
+    def test_verdict_can_sum_supplied_values_without_changing_default(self):
+        from app import _trade_verdict
+        give = self._row(80)
+        get = self._row(95)
+        self.assertEqual(_trade_verdict([give], [get])["margin"], 15.0)
+        custom = {id(give): 10.0, id(get): 30.0}
+        self.assertEqual(
+            _trade_verdict(
+                [give], [get], value_of=lambda row: custom[id(row)]
+            )["margin"],
+            20.0,
+        )
+
+    def test_trade_league_depth_changes_adjusted_totals(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        mlb = sorted(
+            (
+                row for row in dd_store.get_all()
+                if not row.is_prospect and row.dynasty_value
+            ),
+            key=lambda row: row.dynasty_value,
+            reverse=True,
+        )
+        common = [("league", "1"), ("give", mlb[0].id), ("get", mlb[1].id)]
+        shallow = _build_trade_page_context(
+            MultiDict(common + [("teams", "4"), ("roster", "10")])
+        )
+        deep = _build_trade_page_context(
+            MultiDict(common + [("teams", "20"), ("roster", "50")])
+        )
+
+        self.assertTrue(shallow["league_context"]["enabled"])
+        self.assertNotEqual(
+            shallow["league_context"]["replacement_value"],
+            deep["league_context"]["replacement_value"],
+        )
+        self.assertNotEqual(
+            shallow["verdict"]["give_total"], deep["verdict"]["give_total"]
+        )
+        self.assertNotEqual(
+            shallow["verdict"]["get_total"], deep["verdict"]["get_total"]
+        )
+
+    def test_trade_mlb_preset_uses_preset_values(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        candidates = [
+            row for row in dd_store.get_all()
+            if not row.is_prospect
+            and row.value_for("7x7_ops") != row.dynasty_value
+        ]
+        give, get = candidates[:2]
+        ctx = _build_trade_page_context(MultiDict([
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("preset", "7x7_ops"),
+            ("give", give.id),
+            ("get", get.id),
+        ]))
+        replacement = ctx["league_context"]["replacement_value"]
+
+        self.assertTrue(ctx["league_context"]["preset_applied"])
+        self.assertEqual(
+            ctx["give_pieces"][0]["value"],
+            round(max(0.0, give.value_for("7x7_ops") - replacement), 1),
+        )
+        self.assertEqual(
+            ctx["get_pieces"][0]["value"],
+            round(max(0.0, get.value_for("7x7_ops") - replacement), 1),
+        )
+
+    def test_trade_mixed_preset_falls_back_for_every_piece(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        rows = dd_store.get_all()
+        mlb = next(
+            row for row in rows
+            if not row.is_prospect
+            and row.value_for("7x7_ops") != row.dynasty_value
+        )
+        prospect = next(row for row in rows if row.is_prospect)
+        common = [
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("give", mlb.id),
+            ("get", prospect.id),
+        ]
+        base = _build_trade_page_context(MultiDict(common))
+        requested = _build_trade_page_context(
+            MultiDict(common + [("preset", "7x7_ops")])
+        )
+
+        self.assertFalse(requested["league_context"]["preset_applied"])
+        self.assertTrue(requested["league_context"]["preset_fell_back"])
+        self.assertEqual(requested["give_pieces"], base["give_pieces"])
+        self.assertEqual(requested["get_pieces"], base["get_pieces"])
+        self.assertEqual(requested["verdict"], base["verdict"])
+
+    def test_trade_window_and_prospect_slots_do_not_change_values(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        give, get = dd_store.get_all()[:2]
+        common = [
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("give", give.id),
+            ("get", get.id),
+        ]
+        balanced = _build_trade_page_context(
+            MultiDict(common + [("pslots", "5"), ("window", "balanced")])
+        )
+        changed = _build_trade_page_context(
+            MultiDict(common + [("pslots", "20"), ("window", "rebuild")])
+        )
+
+        self.assertEqual(balanced["give_pieces"], changed["give_pieces"])
+        self.assertEqual(balanced["get_pieces"], changed["get_pieces"])
+        self.assertEqual(balanced["verdict"], changed["verdict"])
+
+    def test_trade_invalid_league_settings_fail_closed(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        give, get = dd_store.get_all()[:2]
+        ctx = _build_trade_page_context(MultiDict([
+            ("league", "1"),
+            ("teams", "abc"),
+            ("roster", "999"),
+            ("pslots", "-3"),
+            ("preset", "invented"),
+            ("window", "tomorrow"),
+            ("give", give.id),
+            ("get", get.id),
+        ]))
+        league = ctx["league_context"]
+
+        self.assertEqual(league["teams"], 12)
+        self.assertEqual(league["roster"], 50)
+        self.assertEqual(league["pslots"], 0)
+        self.assertIsNone(league["preset"])
+        self.assertFalse(league["preset_applied"])
+        self.assertEqual(league["window"], "balanced")
+
     # --- Step 2/5: the route -------------------------------------------
     def test_trade_empty_state_renders_search(self):
         r = self.client.get("/trade")
