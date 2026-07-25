@@ -123,6 +123,7 @@
         get: {{ get_ids | tojson }}
     };
     var tradeParams = {{ trade_query_params | tojson }};
+    var searchValuePrefix = {{ ('Base value ' if league_context.enabled else '') | tojson }};
     var players = [];
     var byId = {};
 
@@ -178,7 +179,7 @@
             item.querySelector('.trade-search-name').textContent = p.name;
             item.querySelector('.trade-search-meta').textContent = meta;
             item.querySelector('.trade-search-val').textContent =
-                (Math.round(p.value * 10) / 10).toFixed(1);
+                searchValuePrefix + (Math.round(p.value * 10) / 10).toFixed(1);
             item.addEventListener('click', function () { addPlayer(side, p.id); });
             box.appendChild(item);
         });

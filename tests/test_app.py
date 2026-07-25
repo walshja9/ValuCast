@@ -2200,6 +2200,10 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertIn('"teams": "16"', body)
         self.assertIn("new URLSearchParams(tradeParams)", body)
 
+    def test_trade_v2_search_labels_picker_numbers_as_base_values(self):
+        body = self.client.get("/trade?league=1").data.decode()
+        self.assertIn('var searchValuePrefix = "Base value ";', body)
+
     def test_trade_from_params_renders_verdict(self):
         from app import dd_store
         rows = dd_store.get_all()
@@ -2415,6 +2419,20 @@ class TestTradeAnalyzer(unittest.TestCase):
             inert = _png_cache_key()
 
         self.assertEqual(legacy, inert)
+
+    def test_trade_png_cache_uses_first_league_value_for_duplicate_params(self):
+        from app import _png_cache_key
+
+        path = "/trade/share-card.png?give=a&get=b"
+        with app.test_request_context(path):
+            legacy = _png_cache_key()
+        with app.test_request_context(f"{path}&league=1"):
+            tuned = _png_cache_key()
+        with app.test_request_context(f"{path}&league=0&league=1"):
+            duplicate = _png_cache_key()
+
+        self.assertEqual(legacy, duplicate)
+        self.assertNotEqual(tuned, duplicate)
 
     def test_trade_png_cache_key_distinguishes_trades(self):
         # THE poisoning guard: different trades MUST produce different cache keys.

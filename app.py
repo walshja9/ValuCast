@@ -235,14 +235,17 @@ _PNG_CACHE_PREFIXED_KEYS = frozenset(
 def _png_cache_key():
     if request.method != "GET" or not request.path.endswith(".png"):
         return None
+    params = [
+        (k, v) for k, v in request.args.items(multi=True)
+        if (k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS)
+        and k != "league"
+    ]
+    if request.args.get("league") == "1":
+        params.append(("league", "1"))
     return (
         _png_cache_generation(),
         request.path,
-        tuple(sorted(
-            (k, v) for k, v in request.args.items(multi=True)
-            if k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS
-            if k != "league" or v == "1"
-        )),
+        tuple(sorted(params)),
     )
 
 
