@@ -37,7 +37,7 @@
 {% else %}
 
 <section class="trade-settings glass" aria-labelledby="trade-settings-heading">
-    <h2 id="trade-settings-heading">League context</h2>
+    <h2 id="trade-settings-heading">League context <a href="/glossary#league-context" class="value-explainer-link" title="How league settings affect this result.">(?)</a></h2>
     <form class="trade-settings-form" method="get" action="/trade">
         <input type="hidden" name="league" value="1">
         {% if give_param %}<input type="hidden" name="give" value="{{ give_param }}">{% endif %}

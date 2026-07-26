@@ -1,4 +1,13 @@
 {% set HIDDEN_STATS = ['TB','NSB','G','GDP','IBB','SH','SF','HBP','GS'] %}
+{% set GLOSSARY_METRICS = {
+    'avg': 'avg', 'obp': 'obp', 'slg': 'slg', 'ops': 'ops', 'iso': 'iso',
+    'k_pct': 'k-percent', 'bb_pct': 'bb-percent', 'era': 'era', 'whip': 'whip',
+    'k_per_9': 'k-per-nine', 'bb_per_9': 'bb-per-nine',
+    'k_bb_pct': 'k-minus-bb-percent', 'swing_pct': 'swing-percent',
+    'whiff_pct': 'whiff-percent', 'swstr_pct': 'swstr-percent',
+    'chase_pct': 'chase-percent', 'z_swing_pct': 'z-swing-percent',
+    'z_contact_pct': 'z-contact-percent', 'zone_pct': 'zone-percent'
+} %}
 
 {% macro stat_value(value, key='') -%}
     {% if value is number %}
@@ -40,7 +49,7 @@
             {% if row.dna %}<p class="dna-subtitle">{{ row.dna }}</p>{% endif %}
         </div>
         <div class="dynasty-headline">
-            <span class="headline-value"><span>ValuCast Value <a href="/methodology#dynasty-value-scale" class="value-explainer-link" title="How does this dynasty 0-100 value work?">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
+            <span class="headline-value"><span>ValuCast Value <a href="/glossary#dynasty-value" class="value-explainer-link" title="The format-specific 0-100 fantasy decision score.">(?)</a></span>{{ "%.1f" | format(row.dynasty_value) }}</span>
             {% set headline_context = namespace(parts=["Dynasty"]) %}
             {% if confidence_range.get('low') is not none and confidence_range.get('high') is not none %}
             {% set headline_context.parts = headline_context.parts + ["Range " ~ ("%.0f" | format(confidence_range.get('low'))) ~ "–" ~ ("%.0f" | format(confidence_range.get('high')))] %}
@@ -70,6 +79,7 @@
     <div class="detail-body">
         <section class="detail-section card-reading-guide" aria-label="How to read this card">
             <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
+            <p class="profile-note">Definitions: <a href="/glossary#skill">Skill</a> · <a href="/glossary#opportunity">Opportunity</a> · <a href="/glossary#dynasty-value">ValuCast Value</a> · <a href="/glossary#confidence">Confidence</a></p>
         </section>
         {# Attribution panel — "How ValuCast graded him". Placed HIGH on the card,
            3-tier disclosure. Prospect-only and limited to fields that explain the
@@ -159,7 +169,7 @@
         <div class="detail-section prospect-profile-card">
             <div class="prospect-profile-top">
                 <div>
-                    <span class="profile-card-kicker">Skill</span>
+                    <span class="profile-card-kicker">Skill</span> <a href="/glossary#skill" title="What the expected or projected rate evidence supports.">(?)</a>
                     <h4>What his performance supports</h4>
                     <p class="profile-note">
                         {{ profile_pool_label if profile_pool_label is defined else 'vs ValuCast prospect pool' }}
@@ -174,7 +184,7 @@
                 {% for item in profile_bars %}
                 {% set pct = item.percentile %}
                 <div class="prospect-profile-bar">
-                    <span class="profile-bar-label">{{ item.label }}</span>
+                    <span class="profile-bar-label"><a href="/glossary#{{ GLOSSARY_METRICS.get(item.key, 'percentile') }}" title="Plain-language definition">{{ item.label }}</a></span>
                     <div class="profile-bar-track" role="img" aria-label="{{ item.label }}: {{ ordinal(pct) }} percentile in the ValuCast prospect pool">
                         <span class="profile-bar-fill {{ 'elite' if pct >= 90 else ('good' if pct >= 75 else ('risk' if pct <= 25 else 'neutral')) }}" style="width: {{ pct }}%"></span>
                         <span class="profile-bar-num" style="left: {{ pct }}%">{{ pct }}</span>
@@ -241,7 +251,7 @@
                 <div class="prospect-profile-bars">
                     {% for metric in group.metrics %}
                     <div class="prospect-profile-bar">
-                        <span class="profile-bar-label">{{ metric.label }}{% if metric.estimated %} <a class="pd-est-tag" href="/methodology#plate-discipline" title="Estimated from a pixel-coordinate calibration — see methodology">est.</a>{% endif %}</span>
+                        <span class="profile-bar-label"><a href="/glossary#{{ GLOSSARY_METRICS.get(metric.key, 'percentile') }}" title="Plain-language definition">{{ metric.label }}</a>{% if metric.estimated %} <a class="pd-est-tag" href="/glossary#estimate" title="Estimated from a pixel-coordinate calibration">est.</a>{% endif %}</span>
                         {% if metric.pct is not none and metric.positional %}
                         {# Swing%, Z-Swing%, Zone% have no good/bad direction (Zone% is
                            the pitcher's choice, not his skill), so they render a NEUTRAL
@@ -337,7 +347,7 @@
         <div class="detail-section vc-rank-trend-card">
             <div class="prospect-profile-top">
                 <div>
-                    <span class="profile-card-kicker">ValuCast Rank</span>
+                    <span class="profile-card-kicker"><a href="/glossary#valucast-rank" title="Position on the current ValuCast board.">ValuCast Rank</a></span>
                     <h4>VC Rank Trend</h4>
                     <p class="profile-note">prospect-board rank over time &middot; ranks are relative (survive score re-baselines) &middot; display context</p>
                 </div>
@@ -437,7 +447,7 @@
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
-                    <span class="profile-card-kicker">Opportunity</span>
+                    <span class="profile-card-kicker">Opportunity</span> <a href="/glossary#opportunity" title="Projected playing time, role, and availability.">(?)</a>
                     <h4>Role, playing time &amp; availability</h4>
                 </div>
                 <a href="/scouting?q={{ row.name | urlencode }}" class="mini-link">Open report</a>
@@ -501,6 +511,7 @@
         {% if row.availability_context or row.bucket_calibration_context or row.factual_current_context %}
         <div class="detail-section prospect-sample-context">
             <h4>Confidence</h4>
+            <a href="/glossary#confidence" title="How stable the read is given sample and coverage.">What this means</a>
             <div class="stat-grid">
                 {% if row.factual_skill_label and not has_skill_card %}
                 <div class="stat-item"><span class="stat-label">Skill Read</span><span class="stat-value">{{ row.factual_skill_label }}</span></div>
@@ -675,7 +686,7 @@
             <div class="source-summary">
                 {% if aotc and not row.active_mlb_callup %}
                 <div class="source-summary-item dd-rank-view">
-                    <span class="stat-label">ValuCast Rank</span>
+                    <span class="stat-label"><a href="/glossary#valucast-rank">ValuCast Rank</a></span>
                     <span class="source-summary-rank">P#{{ aotc.valucast_rank }}</span>
                     {% if aotc.divergence is not none %}
                     <span class="source-summary-note">{% if aotc.divergence > 0 %}{{ aotc.divergence }} spots ahead of the field{% elif aotc.divergence < 0 %}{{ -aotc.divergence }} spots behind the field{% else %}even with the field{% endif %}</span>
@@ -691,7 +702,7 @@
                 </div>
                 {% elif row.prospect_rank is not none %}
                 <div class="source-summary-item dd-rank-view">
-                    <span class="stat-label">ValuCast Rank</span>
+                    <span class="stat-label"><a href="/glossary#valucast-rank">ValuCast Rank</a></span>
                     <span class="source-summary-rank">P#{{ row.prospect_rank }}</span>
                     {# Retained call-ups: boards delist active-MLB players, so the
                        "gap" is an eligibility artifact, not an early call — same
@@ -706,7 +717,7 @@
                 {% endif %}
                 {% if aotc and not row.active_mlb_callup and aotc.consensus_rank is not none %}
                 <div class="source-summary-item public-consensus">
-                    <span class="stat-label">Public Consensus</span>
+                    <span class="stat-label"><a href="/glossary#public-consensus">Public Consensus</a></span>
                     <span class="source-summary-rank">~P#{{ aotc.consensus_rank }}</span>
                     <span class="source-summary-note">{{ aotc.board_count if aotc.board_count is not none else (row.public_source_ranks | length) }} boards</span>
                     {# board_count >= 3 matches the feed-path chip's display floor; the
@@ -718,7 +729,7 @@
                 </div>
                 {% elif row.public_source_consensus is not none %}
                 <div class="source-summary-item public-consensus">
-                    <span class="stat-label">Public Consensus</span>
+                    <span class="stat-label"><a href="/glossary#public-consensus">Public Consensus</a></span>
                     <span class="source-summary-rank">~P#{{ row.public_source_consensus }}</span>
                     <span class="source-summary-note">{{ row.public_source_ranks | length }} boards</span>
                     {% if row.prospect_rank is not none and not row.active_mlb_callup and (row.public_source_ranks | length) >= 3 and (row.public_source_consensus - row.prospect_rank) >= 25 %}
@@ -834,7 +845,7 @@
         <div class="detail-section scouting-context-card">
             <div class="scouting-context-head">
                 <div>
-                    <span class="profile-card-kicker">Opportunity</span>
+                    <span class="profile-card-kicker">Opportunity</span> <a href="/glossary#opportunity" title="Projected playing time, role, and availability.">(?)</a>
                     <h4>Role, playing time &amp; availability</h4>
                 </div>
                 {# role-profile-only players have no report behind /scouting?q= #}
@@ -914,7 +925,7 @@
         {% if stats %}
         {% if loop.first %}
         <div class="detail-section">
-            <span class="profile-card-kicker">Skill</span>
+            <span class="profile-card-kicker">Skill</span> <a href="/glossary#skill" title="What the expected or projected rate evidence supports.">(?)</a>
             <h4>Projected performance</h4>
             <p class="profile-note"><strong>Opportunity:</strong> PA/IP show projected playing time. If role or availability is absent, ValuCast has not rated it.</p>
             {% if split and split.hitting and split.pitching %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}ValuCast Glossary{% endblock %}
+{% block content %}
+<article class="methodology glossary">
+    <div class="topline">
+        <h2>ValuCast Glossary</h2>
+        <a href="/methodology" class="back">&larr; How ValuCast works</a>
+    </div>
+    {% if as_of %}<p class="methodology-version">Definitions reviewed {{ as_of }}</p>{% endif %}
+
+    {% if terms %}
+    <div class="ataglance">
+        <span class="label">Display rule</span>
+        <p><strong>{{ principle }}</strong> A dash means the source does not support a trustworthy number; <em>est.</em> means the number was inferred and its method is disclosed.</p>
+        <p>Coverage is enforced for the core player-card, trade, and board decision metrics. <a href="/methodology">Read the full methodology</a>{% if models_page_available %} or <a href="/models">check each model's verdict</a>{% endif %}.</p>
+    </div>
+
+    <nav aria-label="Glossary index">
+        <p>{% for term in terms %}<a href="#{{ term.id }}">{{ term.term }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
+    </nav>
+
+    {% for term in terms %}
+    <section id="{{ term.id }}">
+        <h3>{{ term.term }}</h3>
+        <p>{{ term.definition }}</p>
+        {% if term.formula %}<p><strong>Formula:</strong> <code>{{ term.formula }}</code></p>{% endif %}
+        {% if term.example %}
+        <p><strong>Worked example ({{ term.example.as_of }}):</strong> {{ term.example.text }}</p>
+        {% endif %}
+        <p class="methodology-version"><strong>Origin:</strong> {{ term.origin }}</p>
+        {% if term.see_also %}
+        <p><strong>See also:</strong>
+            {% for related in term.see_also %}
+            <a href="#{{ related }}">{{ related | replace('-', ' ') | title }}</a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        {% endif %}
+    </section>
+    {% endfor %}
+    {% else %}
+    <section>
+        <h3>Glossary unavailable</h3>
+        <p>The definitions artifact is unavailable. The rest of ValuCast remains online; try again after the next deployment.</p>
+    </section>
+    {% endif %}
+</article>
+{% endblock %}

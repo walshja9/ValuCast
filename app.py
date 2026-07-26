@@ -5014,6 +5014,11 @@ def league_import():
     )
 
 
+GLOSSARY_PATH = (
+    Path(__file__).parent / "data" / "manual" / "valucast_glossary.json"
+)
+
+
 @app.route("/methodology")
 def methodology():
     """Public 'How ValuCast works' page. Renders validation numbers from the committed
@@ -5045,6 +5050,7 @@ def methodology():
         )
     except (OSError, ValueError):
         forward_gate = None
+    glossary_registry = _load_artifact(GLOSSARY_PATH) or {}
     hp, pp = MarcelParams(), PitcherMarcelParams()
 
     # Worked example computed from the REAL params (drift-proof): an age-29 hitter
@@ -5067,12 +5073,29 @@ def methodology():
     return render_template(
         "methodology.html", methodology_page=True, scorecard=scorecard,
         sensitivity=sensitivity, forward_gate=forward_gate,
+        methodology_changelog=glossary_registry.get("changelog") or [],
         hit_weights=",".join(str(w) for w in hp.season_weights),
         hit_n_reg=int(hp.n_reg), pit_n_reg=int(pp.n_reg), worked=worked,
         pct=lambda r: round((1 - r) * 100, 1),
         # Board Time Machine comparability boundary — imported epoch, never a
         # hardcoded date (plan 026: a future re-baseline moves the copy too).
         board_tm_epoch_date=BOARD_TM_EPOCH_DATE,
+    )
+
+
+@app.route("/glossary")
+def glossary():
+    """Plain-language metric definitions. Missing/corrupt copy fails soft."""
+    registry = _load_artifact(GLOSSARY_PATH) or {}
+    return render_template(
+        "glossary.html",
+        glossary_page=True,
+        terms=registry.get("terms") or [],
+        principle=registry.get("principle"),
+        as_of=registry.get("generated_at"),
+        models_page_available=any(
+            str(rule) == "/models" for rule in app.url_map.iter_rules()
+        ),
     )
 
 

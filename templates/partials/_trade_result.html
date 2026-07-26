@@ -44,11 +44,11 @@
 {% if verdict %}
 <section class="trade-verdict glass{% if verdict.inside_noise %} trade-verdict-even{% elif verdict.favored_side == 'get' %} trade-verdict-win{% else %} trade-verdict-loss{% endif %}"
          aria-label="Trade verdict">
-    <h2 class="trade-verdict-headline">{{ verdict.headline }}</h2>
+    <h2 class="trade-verdict-headline">{{ verdict.headline }} <a href="/glossary#trade-margin" class="value-explainer-link" title="How the trade verdict is calculated.">(?)</a></h2>
     <p class="trade-verdict-totals">
         You give <strong>{{ verdict.give_total }}</strong> &middot;
         You get <strong>{{ verdict.get_total }}</strong> &middot;
-        Margin <strong>{{ '%+.1f' % verdict.margin }}</strong>
+        <a href="/glossary#trade-margin">Margin</a> <strong>{{ '%+.1f' % verdict.margin }}</strong>
     </p>
     {% if league_context.enabled %}
     <p class="trade-note trade-note-league"><strong>League context:</strong> {{ league_context.summary }}</p>
@@ -60,7 +60,7 @@
 
     {# 4a: margin inside the noise band -> "call it even", never a false winner. #}
     {% if verdict.inside_noise %}
-    <p class="trade-note trade-note-even">Totals are within the value band (about &plusmn;9 per player). That is a coin-flip on these numbers &mdash; call it even, not a win.</p>
+    <p class="trade-note trade-note-even">Totals are within the <a href="/glossary#value-band">value band</a> (about &plusmn;9 per player). That is a coin-flip on these numbers &mdash; call it even, not a win.</p>
     {% endif %}
 
     {# 4b: unequal player counts -> static consolidation note (no computation). #}

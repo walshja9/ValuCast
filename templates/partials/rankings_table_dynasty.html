@@ -46,22 +46,22 @@
 <table class="rankings-table dynasty-rankings{{ ' preset-fit-hidden' if preset_value_enabled|default(false) else '' }}">
     <thead>
         <tr>
-            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}Dynasty #{% endif %}</button></th>
+            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}Dynasty #{% endif %}</button> <a href="/glossary#valucast-rank" title="Current position on the ValuCast board.">?</a></th>
             <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
             <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
-            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button></th>
-            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button></th>{% endif %}
+            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button> <a href="/glossary#dynasty-value" title="The format-specific 0-100 fantasy decision score.">?</a></th>
+            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button> <a href="/glossary#eta" title="How the displayed arrival estimate is chosen.">?</a></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
-            <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button></th>
-            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="This season only, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button></th>{% endif %}
-            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable({{ 8 if custom_cats_active else 7 }})">Category Fit</button></th>{% endif %}
+            <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button> <a href="/glossary#auction-value" title="Replacement-adjusted auction value.">?</a></th>
+            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="This season only, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button> <a href="/glossary#auction-value" title="Current-season auction value.">?</a></th>{% endif %}
+            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable({{ 8 if custom_cats_active else 7 }})">Category Fit</button> <a href="/glossary#category-fit" title="How the selected categories reorder the visible pool.">?</a></th>{% endif %}
             {% endif %}
             {% if v11 %}
-            <th class="col-confidence">Confidence</th>
+            <th class="col-confidence">Confidence <a href="/glossary#confidence" title="How stable the read is given sample and coverage.">?</a></th>
             {% endif %}
-            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank — hitters and pitchers ranked separately (H#/P#), not a value or dollar amount">Your League #</th>{% endif %}
+            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank — hitters and pitchers ranked separately (H#/P#), not a value or dollar amount">Your League # <a href="/glossary#valucast-rank">?</a></th>{% endif %}
             {% if show_stats %}{% for cat in dyn_stat_cats %}{% set _cl = (dyn_stat_labels | default({})).get(cat, cat) %}<th class="col-cat" title="Projected {{ _cl }} — full-season line">{{ _cl }}</th>{% endfor %}{% endif %}
             <th class="col-compare"></th>
         </tr>
