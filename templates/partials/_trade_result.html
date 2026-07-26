@@ -4,7 +4,7 @@
 <div class="movers-grid trade-grid">
     <section class="buys-list glass trade-side{% if verdict and verdict.favored_side == 'give' %} trade-side-fav{% endif %}"
              aria-label="Players you give">
-        <h2 class="trade-side-title">YOU GIVE{% if give_pieces %} &middot; {{ verdict.give_total if verdict else '' }}{% endif %}</h2>
+        <h2 class="trade-side-title">YOU GIVE{% if verdict %} &middot; {{ verdict.give_total }}{% endif %}</h2>
         {% if not give_pieces %}
         <p class="buys-fineprint">Search above to add players to this side.</p>
         {% endif %}
@@ -23,7 +23,7 @@
 
     <section class="buys-list glass trade-side{% if verdict and verdict.favored_side == 'get' %} trade-side-fav{% endif %}"
              aria-label="Players you get">
-        <h2 class="trade-side-title">YOU GET{% if get_pieces %} &middot; {{ verdict.get_total if verdict else '' }}{% endif %}</h2>
+        <h2 class="trade-side-title">YOU GET{% if verdict %} &middot; {{ verdict.get_total }}{% endif %}</h2>
         {% if not get_pieces %}
         <p class="buys-fineprint">Search above to add players to this side.</p>
         {% endif %}
@@ -50,6 +50,12 @@
         You get <strong>{{ verdict.get_total }}</strong> &middot;
         Margin <strong>{{ '%+.1f' % verdict.margin }}</strong>
     </p>
+    {% if league_context.enabled %}
+    <p class="trade-note trade-note-league"><strong>League context:</strong> {{ league_context.summary }}</p>
+    {% for disclosure in league_context.disclosures %}
+    <p class="trade-note trade-note-league">{{ disclosure }}</p>
+    {% endfor %}
+    {% endif %}
     <p class="trade-note trade-note-even">{{ trade_scope_note }}</p>
 
     {# 4a: margin inside the noise band -> "call it even", never a false winner. #}

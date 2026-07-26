@@ -2510,6 +2510,20 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 /* ---- Trade Analyzer (plan 022) ---- */
 /* Reuses .movers-grid (2-col -> 1-col at 640px), .buys-list, .glass, .buys-tag,
    .buys-fineprint. New rules only where those don't cover it. */
+.trade-settings { padding: var(--space-3); margin-bottom: var(--space-3); }
+.trade-settings h2 { margin: 0 0 var(--space-2); font-size: 1rem; letter-spacing: .06em; }
+.trade-settings-form {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+    gap: var(--space-2); align-items: end;
+}
+.trade-setting { display: flex; flex-direction: column; gap: var(--space-1); }
+.trade-setting span {
+    color: var(--c-muted); font-size: .74rem; font-weight: 700;
+    letter-spacing: .04em;
+}
+.trade-setting .position-select { width: 100%; min-height: 44px; }
+.trade-settings-actions { display: flex; gap: var(--space-1); align-items: stretch; }
+.trade-settings-actions .export-btn { min-height: 44px; justify-content: center; }
 .trade-search { padding: var(--space-3); margin-bottom: var(--space-3); }
 .trade-search-grid { align-items: start; }
 .trade-search-side { position: relative; display: flex; flex-direction: column; gap: var(--space-1); }
@@ -2565,8 +2579,11 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .trade-note-universe { border-left: 3px solid var(--c-blue-strong); }
 .trade-note-count { border-left: 3px solid var(--c-amber); }
 .trade-note-even { border-left: 3px solid var(--c-muted); }
+.trade-note-league { border-left: 3px solid var(--c-prospect); }
 .trade-actions { margin-top: var(--space-3); align-items: flex-start; }
 @media (max-width: 640px) {
+    .trade-settings-form { grid-template-columns: 1fr; }
+    .trade-settings-actions { flex-direction: column; }
     .trade-row { grid-template-columns: minmax(0, 1fr) auto auto; }
     .trade-search-result { grid-template-columns: minmax(0, 1fr) auto; }
     .trade-search-result .trade-search-val { grid-column: 2; }

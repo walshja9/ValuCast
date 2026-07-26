@@ -1931,6 +1931,157 @@ class TestTradeAnalyzer(unittest.TestCase):
         same = _trade_verdict([self._row(80)], [self._row(70)])
         self.assertFalse(same["crosses_universes"])
 
+    def test_verdict_can_sum_supplied_values_without_changing_default(self):
+        from app import _trade_verdict
+        give = self._row(80)
+        get = self._row(95)
+        self.assertEqual(_trade_verdict([give], [get])["margin"], 15.0)
+        custom = {id(give): 10.0, id(get): 30.0}
+        self.assertEqual(
+            _trade_verdict(
+                [give], [get], value_of=lambda row: custom[id(row)]
+            )["margin"],
+            20.0,
+        )
+
+    def test_trade_league_depth_changes_adjusted_totals(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        mlb = sorted(
+            (
+                row for row in dd_store.get_all()
+                if not row.is_prospect and row.dynasty_value
+            ),
+            key=lambda row: row.dynasty_value,
+            reverse=True,
+        )
+        common = [("league", "1"), ("give", mlb[0].id), ("get", mlb[1].id)]
+        shallow = _build_trade_page_context(
+            MultiDict(common + [("teams", "4"), ("roster", "10")])
+        )
+        deep = _build_trade_page_context(
+            MultiDict(common + [("teams", "20"), ("roster", "50")])
+        )
+
+        self.assertTrue(shallow["league_context"]["enabled"])
+        self.assertNotEqual(
+            shallow["league_context"]["replacement_value"],
+            deep["league_context"]["replacement_value"],
+        )
+        self.assertNotEqual(
+            shallow["verdict"]["give_total"], deep["verdict"]["give_total"]
+        )
+        self.assertNotEqual(
+            shallow["verdict"]["get_total"], deep["verdict"]["get_total"]
+        )
+
+    def test_trade_mlb_preset_uses_preset_values(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        candidates = [
+            row for row in dd_store.get_all()
+            if not row.is_prospect
+            and row.value_for("7x7_ops") != row.dynasty_value
+        ]
+        give, get = candidates[:2]
+        ctx = _build_trade_page_context(MultiDict([
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("preset", "7x7_ops"),
+            ("give", give.id),
+            ("get", get.id),
+        ]))
+        replacement = ctx["league_context"]["replacement_value"]
+
+        self.assertTrue(ctx["league_context"]["preset_applied"])
+        self.assertEqual(
+            ctx["give_pieces"][0]["value"],
+            round(max(0.0, give.value_for("7x7_ops") - replacement), 1),
+        )
+        self.assertEqual(
+            ctx["get_pieces"][0]["value"],
+            round(max(0.0, get.value_for("7x7_ops") - replacement), 1),
+        )
+
+    def test_trade_mixed_preset_falls_back_for_every_piece(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        rows = dd_store.get_all()
+        mlb = next(
+            row for row in rows
+            if not row.is_prospect
+            and row.value_for("7x7_ops") != row.dynasty_value
+        )
+        prospect = next(row for row in rows if row.is_prospect)
+        common = [
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("give", mlb.id),
+            ("get", prospect.id),
+        ]
+        base = _build_trade_page_context(MultiDict(common))
+        requested = _build_trade_page_context(
+            MultiDict(common + [("preset", "7x7_ops")])
+        )
+
+        self.assertFalse(requested["league_context"]["preset_applied"])
+        self.assertTrue(requested["league_context"]["preset_fell_back"])
+        self.assertEqual(requested["give_pieces"], base["give_pieces"])
+        self.assertEqual(requested["get_pieces"], base["get_pieces"])
+        self.assertEqual(requested["verdict"], base["verdict"])
+
+    def test_trade_window_and_prospect_slots_do_not_change_values(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        give, get = dd_store.get_all()[:2]
+        common = [
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("give", give.id),
+            ("get", get.id),
+        ]
+        balanced = _build_trade_page_context(
+            MultiDict(common + [("pslots", "5"), ("window", "balanced")])
+        )
+        changed = _build_trade_page_context(
+            MultiDict(common + [("pslots", "20"), ("window", "rebuild")])
+        )
+
+        self.assertEqual(balanced["give_pieces"], changed["give_pieces"])
+        self.assertEqual(balanced["get_pieces"], changed["get_pieces"])
+        self.assertEqual(balanced["verdict"], changed["verdict"])
+
+    def test_trade_invalid_league_settings_fail_closed(self):
+        from werkzeug.datastructures import MultiDict
+        from app import _build_trade_page_context, dd_store
+
+        give, get = dd_store.get_all()[:2]
+        ctx = _build_trade_page_context(MultiDict([
+            ("league", "1"),
+            ("teams", "abc"),
+            ("roster", "999"),
+            ("pslots", "-3"),
+            ("preset", "invented"),
+            ("window", "tomorrow"),
+            ("give", give.id),
+            ("get", get.id),
+        ]))
+        league = ctx["league_context"]
+
+        self.assertEqual(league["teams"], 12)
+        self.assertEqual(league["roster"], 50)
+        self.assertEqual(league["pslots"], 0)
+        self.assertIsNone(league["preset"])
+        self.assertFalse(league["preset_applied"])
+        self.assertEqual(league["window"], "balanced")
+
     # --- Step 2/5: the route -------------------------------------------
     def test_trade_empty_state_renders_search(self):
         r = self.client.get("/trade")
@@ -1955,6 +2106,103 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertGreaterEqual(result.count(scope), 2)
         preview = self.client.get(f"/trade/share-card?{query}").data.decode()
         self.assertIn(scope, preview)
+
+    def test_trade_v2_form_renders_canonical_clamped_state(self):
+        body = self.client.get(
+            "/trade?league=1&teams=99&roster=2&pslots=999"
+            "&preset=invented&window=tomorrow"
+        ).data.decode()
+
+        self.assertIn('name="league" value="1"', body)
+        self.assertRegex(body, r'name="teams"[^>]*value="20"')
+        self.assertRegex(body, r'name="roster"[^>]*value="10"')
+        self.assertRegex(body, r'name="pslots"[^>]*value="20"')
+        self.assertRegex(body, r'<option value="balanced"[^>]*selected')
+        self.assertNotRegex(body, r'<option value="invented"[^>]*selected')
+        self.assertNotIn("League-aware version coming", body)
+
+    def test_trade_v2_result_shows_summary_and_fallback_disclosures(self):
+        from app import dd_store
+
+        rows = dd_store.get_all()
+        mlb = next(row for row in rows if not row.is_prospect)
+        prospect = next(row for row in rows if row.is_prospect)
+        body = self.client.get(
+            f"/trade?league=1&teams=12&roster=26&pslots=5"
+            f"&preset=7x7_ops&window=contend&give={mlb.id}&get={prospect.id}"
+        ).data.decode()
+
+        self.assertIn(
+            "12 teams · 26 roster spots · 5 prospect slots · "
+            "7x7 OPS · Contending",
+            body,
+        )
+        self.assertIn("Scoring preset not applied:", body)
+        self.assertIn(
+            "Prospect slots are roster-depth context only and do not change "
+            "the totals.",
+            body,
+        )
+        self.assertIn(
+            "Competitive window is context only and does not change the totals.",
+            body,
+        )
+
+    def test_trade_v2_mlb_result_labels_applied_preset(self):
+        from app import dd_store
+
+        mlb = [row for row in dd_store.get_all() if not row.is_prospect][:2]
+        body = self.client.get(
+            f"/trade?league=1&preset=5x5&give={mlb[0].id}&get={mlb[1].id}"
+        ).data.decode()
+
+        self.assertIn("Scoring preset applied to every player.", body)
+        self.assertNotIn("Scoring preset not applied:", body)
+
+    def test_trade_v2_share_links_preserve_canonical_state(self):
+        import html
+        import re
+        from urllib.parse import parse_qs, urlparse
+        from app import dd_store
+
+        give, get = dd_store.get_all()[:2]
+        body = self.client.get(
+            f"/trade?league=1&teams=12&roster=26&pslots=5"
+            f"&preset=7x7_ops&window=contend&give={give.id}&get={get.id}"
+        ).data.decode()
+        href = html.unescape(re.search(
+            r'href="([^"]*/trade/share-card\.png\?[^"]+)"',
+            body,
+        ).group(1))
+
+        self.assertEqual(
+            parse_qs(urlparse(href).query, keep_blank_values=True),
+            {
+                "league": ["1"],
+                "teams": ["12"],
+                "roster": ["26"],
+                "pslots": ["5"],
+                "preset": ["7x7_ops"],
+                "window": ["contend"],
+                "give": [give.id],
+                "get": [get.id],
+            },
+        )
+
+    def test_trade_v2_js_preserves_context_when_players_change(self):
+        body = self.client.get(
+            "/trade?league=1&teams=16&roster=30&pslots=8"
+            "&preset=5x5&window=rebuild"
+        ).data.decode()
+
+        self.assertIn("var tradeParams =", body)
+        self.assertIn('"league": "1"', body)
+        self.assertIn('"teams": "16"', body)
+        self.assertIn("new URLSearchParams(tradeParams)", body)
+
+    def test_trade_v2_search_labels_picker_numbers_as_base_values(self):
+        body = self.client.get("/trade?league=1").data.decode()
+        self.assertIn('var searchValuePrefix = "Base value ";', body)
 
     def test_trade_from_params_renders_verdict(self):
         from app import dd_store
@@ -2017,6 +2265,7 @@ class TestTradeAnalyzer(unittest.TestCase):
         body = r.data.decode()
         self.assertIn("Add at least one player to each side", body)
         self.assertNotIn("You give up more than you get", body)
+        self.assertNotRegex(body, r"YOU GIVE\s*&middot;\s*</h2>")
         # ...and the directly-fetchable PNG refuses to draw the same non-trade.
         png = self.client.get(f"/trade/share-card.png?give={real}")
         self.assertEqual(png.status_code, 404)
@@ -2081,6 +2330,110 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertIn(app_module._TRADE_SCOPE_NOTE, wrapped_text)
         self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
 
+    def test_trade_v2_png_receives_summary_and_disclosures(self):
+        import app as app_module
+        from unittest.mock import patch
+        from werkzeug.datastructures import MultiDict
+
+        rows = app_module.dd_store.get_all()
+        mlb = next(row for row in rows if not row.is_prospect)
+        prospect = next(row for row in rows if row.is_prospect)
+        args = MultiDict([
+            ("league", "1"),
+            ("teams", "12"),
+            ("roster", "26"),
+            ("pslots", "5"),
+            ("preset", "7x7_ops"),
+            ("window", "contend"),
+        ])
+        with patch.object(
+            app_module,
+            "_graphic_wrap_text",
+            wraps=app_module._graphic_wrap_text,
+        ) as wrap:
+            png = app_module._trade_share_card_png(
+                [mlb.id],
+                [prospect.id],
+                league_args=args,
+            )
+
+        wrapped = [call.args[1] for call in wrap.call_args_list]
+        self.assertTrue(png.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertTrue(any("12 teams" in text for text in wrapped))
+        self.assertTrue(
+            any("Scoring preset not applied:" in text for text in wrapped)
+        )
+        self.assertTrue(
+            any("Prospect slots are roster-depth context" in text for text in wrapped)
+        )
+        self.assertTrue(
+            any("Competitive window is context only" in text for text in wrapped)
+        )
+
+    def test_trade_v2_preview_preserves_canonical_state(self):
+        from app import dd_store
+
+        give, get = dd_store.get_all()[:2]
+        query = (
+            f"league=1&teams=12&roster=26&pslots=5&preset=5x5"
+            f"&window=balanced&give={give.id}&get={get.id}"
+        )
+        body = self.client.get(f"/trade/share-card?{query}").data.decode()
+
+        for token in (
+            "league=1",
+            "teams=12",
+            "roster=26",
+            "pslots=5",
+            "preset=5x5",
+            "window=balanced",
+            f"give={give.id}",
+            f"get={get.id}",
+        ):
+            self.assertIn(token, body)
+        self.assertIn("12 teams", body)
+
+    def test_trade_v2_png_cache_key_distinguishes_league_mode(self):
+        from app import _png_cache_key
+
+        common = (
+            "teams=12&roster=26&pslots=5&preset=5x5"
+            "&window=balanced&give=a&get=b"
+        )
+        with app.test_request_context(f"/trade/share-card.png?{common}"):
+            legacy = _png_cache_key()
+        with app.test_request_context(
+            f"/trade/share-card.png?league=1&{common}"
+        ):
+            tuned = _png_cache_key()
+
+        self.assertNotEqual(legacy, tuned)
+
+    def test_trade_png_cache_ignores_inert_league_values(self):
+        from app import _png_cache_key
+
+        path = "/trade/share-card.png?give=a&get=b"
+        with app.test_request_context(path):
+            legacy = _png_cache_key()
+        with app.test_request_context(f"{path}&league=not-enabled"):
+            inert = _png_cache_key()
+
+        self.assertEqual(legacy, inert)
+
+    def test_trade_png_cache_uses_first_league_value_for_duplicate_params(self):
+        from app import _png_cache_key
+
+        path = "/trade/share-card.png?give=a&get=b"
+        with app.test_request_context(path):
+            legacy = _png_cache_key()
+        with app.test_request_context(f"{path}&league=1"):
+            tuned = _png_cache_key()
+        with app.test_request_context(f"{path}&league=0&league=1"):
+            duplicate = _png_cache_key()
+
+        self.assertEqual(legacy, duplicate)
+        self.assertNotEqual(tuned, duplicate)
+
     def test_trade_png_cache_key_distinguishes_trades(self):
         # THE poisoning guard: different trades MUST produce different cache keys.
         # If someone drops give/get from _PNG_CACHE_PARAMS, both collapse to one key
@@ -2104,6 +2457,7 @@ class TestTradeAnalyzer(unittest.TestCase):
         from app import _PNG_CACHE_PARAMS
         self.assertIn("give", _PNG_CACHE_PARAMS)
         self.assertIn("get", _PNG_CACHE_PARAMS)
+        self.assertIn("league", _PNG_CACHE_PARAMS)
 
     def test_movers_png_cache_key_distinguishes_window(self):
         # 7/12 audit: window changes the movers card's rows/subtitle/footer, so it

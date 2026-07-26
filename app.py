@@ -199,7 +199,7 @@ _PNG_CACHE_PARAMS = frozenset({
     # omitting it collapsed every window to one key and served the first-rendered
     # (e.g. 7d) image to a visitor asking for 21d (cross-user poisoning). Bounded
     # to 4 values by _parse_spark_window, so no unbounded-key risk.
-    "give", "get",     # plan 022: the /trade card renders from these; they MUST be
+    "league", "give", "get",  # /trade V2 opt-in + resolved player sides; all MUST be
     # in the cache key or every trade collapses to one key and the first-rendered
     # card is served to everyone (cross-user poisoning). Fixed names, not prefixed.
 })
@@ -235,13 +235,17 @@ _PNG_CACHE_PREFIXED_KEYS = frozenset(
 def _png_cache_key():
     if request.method != "GET" or not request.path.endswith(".png"):
         return None
+    params = [
+        (k, v) for k, v in request.args.items(multi=True)
+        if (k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS)
+        and k != "league"
+    ]
+    if request.args.get("league") == "1":
+        params.append(("league", "1"))
     return (
         _png_cache_generation(),
         request.path,
-        tuple(sorted(
-            (k, v) for k, v in request.args.items(multi=True)
-            if k in _PNG_CACHE_PARAMS or k in _PNG_CACHE_PREFIXED_KEYS
-        )),
+        tuple(sorted(params)),
     )
 
 
@@ -7717,20 +7721,41 @@ _TRADE_SCOPE_NOTE = (
     "Player-only verdict: draft picks, FAAB, roster spots, and league context "
     "are not included."
 )
+_TRADE_LEAGUE_SCOPE_NOTE = (
+    "Player-only verdict: draft picks, FAAB, and unlisted roster effects "
+    "are not included."
+)
+_TRADE_WINDOW_LABELS = {
+    "balanced": "Balanced",
+    "contend": "Contending",
+    "rebuild": "Rebuilding",
+}
+_TRADE_PRESET_LABELS = {
+    "5x5": "5x5",
+    "obp": "OBP",
+    "6x6": "6x6",
+    "sv_hld": "SV+HLD",
+    "7x7": "7x7",
+    "7x7_ops": "7x7 OPS",
+    "points": "Points",
+}
 _TRADE_MAX_PER_SIDE = 6         # guard: cap each side (matches the URL param cap)
 
 _TRADE_MOMENTUM_CACHE = (None, None)  # (generation_key, form_by_key) swapped atomically
 
 
-def _trade_verdict(give_rows, get_rows):
+def _trade_verdict(give_rows, get_rows, value_of=None):
     """Pure verdict: sums + margin over the served 0-100 dynasty values.
 
     No I/O, no request access, no new math. The three honesty flags below
     (inside_noise, crosses_universes, count_mismatch) are what keep the verdict
     from claiming precision the two separate normalizations do not support.
     """
+    value_of = value_of or (
+        lambda r: float(getattr(r, "dynasty_value", 0.0) or 0.0)
+    )
     def _val(r):
-        return float(getattr(r, "dynasty_value", 0.0) or 0.0)
+        return float(value_of(r) or 0.0)
     give_total = sum(_val(r) for r in give_rows)
     get_total = sum(_val(r) for r in get_rows)
     margin = get_total - give_total                     # + = you win, - = you lose
@@ -7797,7 +7822,7 @@ def _trade_momentum_label(row):
     return entry.get("momentum_label") if entry else None
 
 
-def _trade_piece(row):
+def _trade_piece(row, value=None):
     """Read an existing PublicSnapshotRow into a template-friendly dict.
     No computation -- just display fields the verdict page needs."""
     is_prospect = row.is_prospect
@@ -7819,7 +7844,7 @@ def _trade_piece(row):
         "pos": pos,
         "level": row.level if is_prospect else None,
         "is_prospect": is_prospect,
-        "value": round(float(row.dynasty_value or 0.0), 1),
+        "value": round(float(row.dynasty_value if value is None else value), 1),
         "rank_label": rank_label,
         "confidence": confidence,
         "momentum": _trade_momentum_label(row),   # None when not a prominent mover
@@ -7852,29 +7877,128 @@ def _trade_cancel_cross_side_dupes(give_rows, get_rows):
     )
 
 
+def _trade_league_context(args, trade_rows):
+    """Return canonical V2 state and its value getter without mutating rows."""
+    enabled = args.get("league") == "1"
+    settings = parse_league_settings(args)
+    raw_preset = (args.get("preset") or "").strip()
+    preset = raw_preset if enabled and raw_preset in DYNASTY_VALUE_PRESETS else None
+    raw_window = (args.get("window") or "").strip()
+    window = raw_window if enabled and raw_window in _TRADE_WINDOW_LABELS else "balanced"
+    has_prospect = any(row.is_prospect for row in trade_rows)
+    preset_applied = bool(enabled and preset and trade_rows and not has_prospect)
+    preset_fell_back = bool(enabled and preset and has_prospect)
+
+    def selected_value(row):
+        value = row.value_for(preset) if preset_applied else row.dynasty_value
+        return float(value or 0.0)
+
+    replacement = None
+    if enabled:
+        ordered = sorted(dd_store.get_all(), key=selected_value, reverse=True)
+        cutoff = min(settings.roster_cutoff, len(ordered))
+        replacement = selected_value(ordered[cutoff - 1]) if cutoff else 0.0
+
+    def value_of(row):
+        value = selected_value(row)
+        return max(0.0, value - replacement) if enabled else value
+
+    scoring_label = _TRADE_PRESET_LABELS.get(preset, "Base dynasty values")
+    disclosures = []
+    if enabled:
+        if preset_applied:
+            disclosures.append("Scoring preset applied to every player.")
+        elif preset_fell_back:
+            disclosures.append(
+                "Scoring preset not applied: prospect preset values are not "
+                "calibrated on the shared MLB/prospect value scale. Base "
+                "dynasty values were used for every player."
+            )
+        disclosures.extend([
+            "Prospect slots are roster-depth context only and do not change the totals.",
+            "Competitive window is context only and does not change the totals.",
+        ])
+    params = []
+    if enabled:
+        params = [
+            ("league", "1"),
+            ("teams", str(settings.teams)),
+            ("roster", str(settings.roster)),
+            ("pslots", str(settings.pslots)),
+            ("preset", preset or ""),
+            ("window", window),
+        ]
+    context = {
+        "enabled": enabled,
+        "teams": settings.teams,
+        "roster": settings.roster,
+        "pslots": settings.pslots,
+        "preset": preset,
+        "preset_label": scoring_label,
+        "preset_applied": preset_applied,
+        "preset_fell_back": preset_fell_back,
+        "window": window,
+        "window_label": _TRADE_WINDOW_LABELS[window],
+        "replacement_value": round(replacement, 1) if replacement is not None else None,
+        "summary": (
+            f"{settings.teams} teams · {settings.roster} roster spots · "
+            f"{settings.pslots} prospect slots · {scoring_label} · "
+            f"{_TRADE_WINDOW_LABELS[window]}"
+        ),
+        "disclosures": disclosures,
+        "params": params,
+        "scope_note": _TRADE_LEAGUE_SCOPE_NOTE if enabled else _TRADE_SCOPE_NOTE,
+    }
+    return context, value_of
+
+
 def _build_trade_page_context(args):
     give_ids = _parse_trade_ids(args.get("give"))
     get_ids = _parse_trade_ids(args.get("get"))
     give_rows = [row for pid in give_ids if (row := dd_store.get_by_id(pid))]
     get_rows = [row for pid in get_ids if (row := dd_store.get_by_id(pid))]
     give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
+    league_context, value_of = _trade_league_context(
+        args, give_rows + get_rows
+    )
     # A verdict needs BOTH sides: one-sided input renders the add-players empty
     # state, never "you give up more than you get" against nobody.
-    verdict = _trade_verdict(give_rows, get_rows) if (give_rows and get_rows) else None
+    verdict = (
+        _trade_verdict(give_rows, get_rows, value_of=value_of)
+        if (give_rows and get_rows) else None
+    )
     # Canonical, resolved id lists (unknown ids dropped) so the shareable URL and
     # the share card key describe the exact trade that rendered.
     give_resolved = [r.id for r in give_rows]
     get_resolved = [r.id for r in get_rows]
+    query_pairs = list(league_context["params"])
+    if give_resolved:
+        query_pairs.append(("give", ",".join(give_resolved)))
+    if get_resolved:
+        query_pairs.append(("get", ",".join(get_resolved)))
+    legacy_pairs = []
+    if give_resolved:
+        legacy_pairs.append(("give", ",".join(give_resolved)))
+    if get_resolved:
+        legacy_pairs.append(("get", ",".join(get_resolved)))
     return {
         "mode": "dd_dynasty",                 # so footer/context branches match the board
-        "give_pieces": [_trade_piece(r) for r in give_rows],
-        "get_pieces": [_trade_piece(r) for r in get_rows],
+        "give_pieces": [_trade_piece(r, value_of(r)) for r in give_rows],
+        "get_pieces": [_trade_piece(r, value_of(r)) for r in get_rows],
         "give_ids": give_resolved,
         "get_ids": get_resolved,
         "give_param": ",".join(give_resolved),
         "get_param": ",".join(get_resolved),
         "verdict": verdict,
-        "trade_scope_note": _TRADE_SCOPE_NOTE,
+        "league_context": league_context,
+        "trade_scope_note": league_context["scope_note"],
+        "trade_query_pairs": query_pairs,
+        "trade_query_params": dict(query_pairs),
+        "legacy_trade_url": (
+            f"/trade?{urlencode(legacy_pairs)}" if legacy_pairs else "/trade"
+        ),
+        "trade_preset_options": list(_TRADE_PRESET_LABELS.items()),
+        "trade_window_options": list(_TRADE_WINDOW_LABELS.items()),
         "map_data_url": "/api/value-map-players",   # the search payload the JS loads
         "as_of": dd_store.generated_at or store.as_of,
         "dd_generated_at": dd_store.generated_at,
@@ -7889,16 +8013,16 @@ def trade():
     # og:image unfurls the share card ONLY when the trade actually resolved to a
     # verdict; a bare /trade (no players) keeps the default site card.
     if context.get("verdict") and (context["give_param"] or context["get_param"]):
-        query = urlencode(
-            [("give", context["give_param"]), ("get", context["get_param"])]
-        )
+        query = urlencode(context["trade_query_pairs"])
         context["og_share_image"] = _public_url(f"/trade/share-card.png?{query}")
         context["trade_share_png_url"] = f"/trade/share-card.png?{query}"
         context["trade_share_preview_url"] = f"/trade/share-card?{query}"
     return render_template("trade.html", **context)
 
 
-def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
+def _trade_share_card_png(
+    give_ids, get_ids, *, generated_at=None, league_args=None
+):
     """Deterministic two-sided Trade Analyzer graphic (GIVE vs GET).
 
     Models the receipts two-panel layout. Resolves ids via dd_store.get_by_id and
@@ -7925,7 +8049,10 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
     give_rows, get_rows = _trade_cancel_cross_side_dupes(give_rows, get_rows)
     if not (give_rows and get_rows):
         return None   # one-sided "trade": no verdict, no graphic (route 404s)
-    verdict = _trade_verdict(give_rows, get_rows)
+    league_context, value_of = _trade_league_context(
+        league_args or {}, give_rows + get_rows
+    )
+    verdict = _trade_verdict(give_rows, get_rows, value_of=value_of)
 
     f_note = _graphic_font(17)
     row_h = 58
@@ -7933,7 +8060,11 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
 
     # Every applicable honesty note travels with the image (page parity), not just
     # the single most salient one - the PNG is the og:image a re-sharer never links.
-    notes = [(muted, _TRADE_SCOPE_NOTE)]
+    notes = []
+    if league_context["enabled"]:
+        notes.append((green, league_context["summary"].replace(" · ", " - ")))
+        notes.extend((green, note) for note in league_context["disclosures"])
+    notes.append((muted, league_context["scope_note"]))
     if verdict["inside_noise"]:
         notes.append((muted, "Totals are within the value band (about +/-9 per player). That is a coin-flip on these numbers - call it even, not a win."))
     if verdict["count_mismatch"]:
@@ -7972,7 +8103,11 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
         draw,
         headline="TRADE ANALYZER",
         subtitle=subtitle,
-        extra_line="Free ValuCast trade verdict - same 0-100 values, no conversion",
+        extra_line=(
+            "League-adjusted value above replacement"
+            if league_context["enabled"]
+            else "Free ValuCast trade verdict - same 0-100 values, no conversion"
+        ),
         tagline="The Second Opinion",
     )
 
@@ -7996,7 +8131,7 @@ def _trade_share_card_png(give_ids, get_ids, *, generated_at=None):
             draw.rectangle((x + 1, top, x + w - 1, top + row_h), fill=fill)
             if idx:
                 draw.line((x + 16, top, x + w - 16, top), fill=border, width=1)
-            piece = _trade_piece(row)
+            piece = _trade_piece(row, value_of(row))
             name = _graphic_fit_text(draw, piece["name"], f_name, 560)
             draw.text((x + 20, top + 7), name, fill=text, font=f_name)
             meta_parts = [piece["rank_label"], piece["team"], piece["pos"]]
@@ -8042,7 +8177,10 @@ def trade_share_card_png():
     give_ids = _parse_trade_ids(request.args.get("give"))
     get_ids = _parse_trade_ids(request.args.get("get"))
     png = _trade_share_card_png(
-        give_ids, get_ids, generated_at=dd_store.generated_at
+        give_ids,
+        get_ids,
+        generated_at=dd_store.generated_at,
+        league_args=request.args,
     )
     if png is None:
         abort(404)
@@ -8054,10 +8192,17 @@ def trade_share_card_png():
 
 @app.route("/trade/share-card")
 def trade_share_card():
-    give = ",".join(_parse_trade_ids(request.args.get("give")))
-    get = ",".join(_parse_trade_ids(request.args.get("get")))
-    query = urlencode([("give", give), ("get", get)])
+    context = _build_trade_page_context(request.args)
+    if not context.get("verdict"):
+        abort(404)
+    query = urlencode(context["trade_query_pairs"])
     png_path = f"/trade/share-card.png?{query}"
+    description = (
+        f"{context['trade_scope_note']} The board's verdict on this dynasty "
+        "trade, from the same 0-100 values ValuCast serves."
+    )
+    if context["league_context"]["enabled"]:
+        description = f"{context['league_context']['summary']}. {description}"
     html = build_share_preview_html(
         title="The Second Opinion",
         subtitle="The board's verdict on this dynasty trade",
@@ -8065,10 +8210,7 @@ def trade_share_card():
         filename="valucast-trade.png",
         public_png_url=_public_url(png_path),
         public_page_url=_public_url(f"/trade/share-card?{query}"),
-        description=(
-            f"{_TRADE_SCOPE_NOTE} The board's verdict on this dynasty trade, from "
-            "the same 0-100 values ValuCast serves."
-        ),
+        description=description,
         image_alt="ValuCast Trade Analyzer verdict card",
         back_url=f"/trade?{query}",
         back_label="Back to the Trade Analyzer",
