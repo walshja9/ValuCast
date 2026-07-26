@@ -127,15 +127,15 @@
         "aaa_measured_coverage": {
           "confirms_cross_role_calibration": false,
           "coverage_rate": 1.0,
-          "covered_top25_pitcher_count": 2,
-          "eligible_sample_ready": false,
-          "eligible_top25_pitcher_count": 2,
+          "covered_top25_pitcher_count": 3,
+          "eligible_sample_ready": true,
+          "eligible_top25_pitcher_count": 3,
           "evidence_class": "post_first_look_aaa_feed_completeness",
           "floor": 0.6,
           "minimum_eligible_top25_pitcher_count": 3,
-          "status": "fail",
-          "top25_pitcher_count": 9,
-          "top25_population_coverage_rate": 0.222222
+          "status": "pass",
+          "top25_pitcher_count": 10,
+          "top25_population_coverage_rate": 0.3
         },
         "cross_role_change_power": {
           "evidence_class": "prospective_change_gate",
@@ -166,14 +166,14 @@
           "evidence_class": "current_publication_shape",
           "max_top25_pitchers": 7,
           "max_top50_pitcher_rate": 0.3,
-          "model_component_eligible_board_count": 2878,
+          "model_component_eligible_board_count": 2886,
           "model_component_field": "components.model_score",
           "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
           "model_component_top25_evaluated_count": 25,
-          "model_component_top25_hitter_count": 12,
-          "model_component_top25_pitcher_count": 13,
+          "model_component_top25_hitter_count": 11,
+          "model_component_top25_pitcher_count": 14,
           "status": "fail",
-          "top25_pitcher_count": 9,
+          "top25_pitcher_count": 10,
           "top50_pitcher_count": 18,
           "top50_pitcher_rate": 0.36
         },
@@ -251,10 +251,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 11,
+        "buy_comparison_count": 12,
         "latest_rank_bucket_count": 15,
-        "observation_span_days": 11,
-        "rank_comparison_count": 11
+        "observation_span_days": 12,
+        "rank_comparison_count": 12
       },
       "recommendations": [
         "Review top-50 availability-risk buckets before changing individual names."
@@ -267,7 +267,7 @@
       "validation": {
         "blockers": [],
         "bucket_comparison_ready": true,
-        "candidate_count": 2878,
+        "candidate_count": 2886,
         "min_top200_availability_coverage": 0.95,
         "min_top200_factual_context_coverage": 0.95,
         "ready_for_backtest": true,
@@ -279,7 +279,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-07-25T12:50:57.099732+00:00",
+        "activated_at": "2026-07-26T11:58:48.291949+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -291,15 +291,15 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2908,
+      "candidate_count": 2916,
       "impact_board_gate": {
-        "activated_at": "2026-07-25T12:50:57.099732+00:00",
+        "activated_at": "2026-07-26T11:58:48.291949+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.130597,
+        "baseline_score": 0.130604,
         "cv_method": "walk_forward",
-        "improvement_pct": 3.0312,
+        "improvement_pct": 3.0313,
         "metric": "category_impact_mae",
-        "model_score": 0.126639,
+        "model_score": 0.126645,
         "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
@@ -322,17 +322,17 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 11,
+            "current": 12,
             "metric": "rank_comparison_count",
             "required": 14
           },
           {
-            "current": 11,
+            "current": 12,
             "metric": "buy_comparison_count",
             "required": 14
           },
           {
-            "current": 11,
+            "current": 12,
             "metric": "observation_span_days",
             "required": 30
           }
@@ -346,17 +346,17 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 11,
+            "current": 12,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 11,
+            "current": 12,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 11,
+            "current": 12,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -370,7 +370,7 @@
         "minimum_span_days": 14,
         "missing": [
           {
-            "current": 11,
+            "current": 12,
             "metric": "observation_span_days",
             "required": 14
           }
@@ -385,12 +385,12 @@
     "target_grade": "A-",
     "uncapped_score": 87
   },
-  "generated_at": "2026-07-25T00:00:00+00:00",
+  "generated_at": "2026-07-26T00:00:00+00:00",
   "generated_dates": {
-    "cross_role_shadow": "2026-07-25",
-    "dynasty_backtest": "2026-07-25",
-    "forward_validation": "2026-07-25",
-    "model_v07": "2026-07-25",
+    "cross_role_shadow": "2026-07-26",
+    "dynasty_backtest": "2026-07-26",
+    "forward_validation": "2026-07-26",
+    "model_v07": "2026-07-26",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
@@ -425,12 +425,6 @@
         "current": "fail",
         "kind": "current_board_shape",
         "message": "Current Board Shape has not passed.",
-        "required": "pass"
-      },
-      {
-        "current": "fail",
-        "kind": "aaa_measured_coverage",
-        "message": "Aaa Measured Coverage has not passed.",
         "required": "pass"
       }
     ],
