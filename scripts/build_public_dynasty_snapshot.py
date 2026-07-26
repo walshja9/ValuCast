@@ -33,6 +33,7 @@ PROSPECT_PEAK_PROJECTION_PATH = (
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
 ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
+IDENTITY_PATH = ROOT / "projections" / "data" / "identity.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 MLB_VALUE_HISTORY_ARCHIVE_DIR = (
     ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
@@ -92,6 +93,15 @@ def _parse_date(value: str | None):
         return datetime.fromisoformat(iso).date()
     except ValueError:
         return None
+
+
+def _age_on_date(birth_date: str | None, as_of) -> int | None:
+    birth = _parse_date(birth_date)
+    if birth is None or as_of is None:
+        return None
+    return as_of.year - birth.year - (
+        (as_of.month, as_of.day) < (birth.month, birth.day)
+    )
 
 
 def _positions(row: dict) -> list[str]:
@@ -429,14 +439,28 @@ def _apply_graduation_transition_floor(
     return applied
 
 
-def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
+def _mlb_rows(
+    mlb_layer: dict | None,
+    generated_at: str,
+    identities: dict | None = None,
+) -> list[dict]:
     rows = []
+    as_of = _parse_date(generated_at)
     for row in (mlb_layer or {}).get("players") or []:
+        model_age = row.get("age")
+        identity = (identities or {}).get(str(row.get("mlbam_id"))) or {}
+        public_age = _age_on_date(identity.get("birth_date"), as_of)
         context = {
             "kind": "valucast_mlb_projection_context",
             "source_layer_rank": row.get("rank"),
             "projection_value": row.get("projection_value"),
             "components": row.get("components"),
+            "model_age": model_age,
+            "public_age_source": (
+                "identity_birth_date_as_of_snapshot"
+                if public_age is not None
+                else "model_season_age_fallback"
+            ),
         }
         rows.append(
             {
@@ -448,7 +472,7 @@ def _mlb_rows(mlb_layer: dict | None, generated_at: str) -> list[dict]:
                 "positions": row.get("positions") or [],
                 "team": row.get("team") or row.get("mlb_team") or "",
                 "mlb_team": row.get("mlb_team") or row.get("team") or "",
-                "age": row.get("age"),
+                "age": public_age if public_age is not None else model_age,
                 "rank": row.get("rank"),
                 "value": row.get("value"),
                 "value_by_preset": row.get("value_by_preset") or {},
@@ -1111,6 +1135,7 @@ def build_snapshot(
     prospect_inputs: dict | None = None,
     milb_stat_freshness_audit: dict | None = None,
     actuals: list | None = None,
+    identities: dict | None = None,
     generated_at: str | None = None,
     mlb_value_history_archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
     prospect_value_history_archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
@@ -1125,7 +1150,9 @@ def build_snapshot(
             generated_at = build_time.isoformat()
         else:
             generated_at = inherited or build_time.isoformat()
-    mlb_rows = _merge_two_way_mlb_rows(_mlb_rows(mlb_layer, generated_at))
+    mlb_rows = _merge_two_way_mlb_rows(
+        _mlb_rows(mlb_layer, generated_at, identities)
+    )
     mlb_identity_ids = {
         mlbam_id
         for row in mlb_rows
@@ -1474,6 +1501,7 @@ def main() -> None:
     buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
     buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
     actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
+    identities = _load_json(IDENTITY_PATH) if IDENTITY_PATH.exists() else None
     payload = build_snapshot(
         rank_payload,
         previous_prospect_rank=previous_prospect_rank,
@@ -1486,6 +1514,7 @@ def main() -> None:
         buy_review=buy_review,
         prospect_inputs=prospect_inputs,
         actuals=actuals,
+        identities=identities,
     )
     path = write_snapshot(payload)
     validation = payload["validation"]

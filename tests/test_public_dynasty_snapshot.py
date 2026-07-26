@@ -33,6 +33,31 @@ def _pd(offset):
     return (_PVH_EPOCH + timedelta(days=offset)).isoformat()
 
 
+def test_mlb_public_age_uses_snapshot_date_without_changing_model_age():
+    rows = snapshot_builder._mlb_rows(
+        {
+            "players": [
+                {
+                    "id": "vc_mlb_813349_pitcher",
+                    "name": "Connelly Early",
+                    "mlbam_id": 813349,
+                    "role": "pitcher",
+                    "positions": ["SP"],
+                    "age": 23,
+                    "rank": 1,
+                    "value": 50.0,
+                }
+            ]
+        },
+        "2026-07-26T12:00:00+00:00",
+        identities={"813349": {"birth_date": "2002-04-03"}},
+    )
+
+    assert rows[0]["age"] == 24
+    assert rows[0]["context"]["model_age"] == 23
+    assert rows[0]["context"]["public_age_source"] == "identity_birth_date_as_of_snapshot"
+
+
 def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
     graduated = [
         {
