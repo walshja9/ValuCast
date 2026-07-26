@@ -9,6 +9,8 @@
     </div>
     <p class="methodology-version">As of June 2026{% if scorecard %} · {{ scorecard.version }}{% endif %}</p>
 
+    <p class="methodology-principle"><strong>Our display rule:</strong> Missing data stays missing; estimates are labeled. <a href="/glossary">Resolve a metric in the glossary</a>.</p>
+
     {% if scorecard and scorecard.generated_at %}
     <p class="methodology-version">Scorecard generated {{ editorial_date(scorecard.generated_at) }}</p>
     {% endif %}
@@ -524,6 +526,16 @@
         rate evaluator held for repair, a Wins target the labels can't train)
         are first-class rows there, not hidden. We publish what we haven't proven rather
         than wait for it to look better.</p>
+    </section>
+
+    <section id="methodology-changelog">
+        <h3>Methodology changelog</h3>
+        <p>Append-only changes to how ValuCast measures, validates, or explains the product.</p>
+        <ul>
+            {% for change in methodology_changelog %}
+            <li><strong>{{ change.date }} &mdash; {{ change.title }}.</strong> {{ change.detail }}</li>
+            {% endfor %}
+        </ul>
     </section>
 
     <section id="board-time-machine">

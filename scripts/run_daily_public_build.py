@@ -184,6 +184,8 @@ VALIDATE_STEPS: list[tuple[str, ...]] = [
     # and no VALIDATED verdict may cite a not-yet-proven artifact, else the build
     # fails rather than shipping a verdict with broken/overclaimed evidence.
     ("scripts/validate_model_registry.py",),
+    ("scripts/validate_glossary.py",),
+    ("scripts/validate_label_glossary_coverage.py",),
     ("scripts/validate_valucast_movers.py",),
     ("scripts/validate_valucast_buys.py",),
     ("scripts/validate_valucast_buys_monitor.py",),

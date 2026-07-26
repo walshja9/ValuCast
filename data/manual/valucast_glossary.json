@@ -1,0 +1,378 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-26",
+  "principle": "Missing data stays missing; estimates are labeled.",
+  "changelog": [
+    {
+      "date": "2026-07-10",
+      "title": "Plate-discipline layer",
+      "detail": "Added measured Swing%, Whiff%, and SwStr%, with estimated zone metrics labeled separately."
+    },
+    {
+      "date": "2026-07-09",
+      "title": "Methodology honesty polish",
+      "detail": "Added the live forward-gate disclosure, including when the ValuCast projection is losing."
+    },
+    {
+      "date": "2026-07-02",
+      "title": "Ahead-of-the-Curve scorecard v2",
+      "detail": "Pre-registered controlled, exit-accounted targets before scoring public divergence calls."
+    },
+    {
+      "date": "2026-07-01",
+      "title": "Saves and holds split",
+      "detail": "Separated saves and holds targets before combining them for SV+HLD formats."
+    }
+  ],
+  "label_map": {
+    "Runs": "fantasy-scoring-categories",
+    "Home Runs": "fantasy-scoring-categories",
+    "RBI": "fantasy-scoring-categories",
+    "Stolen Bases": "fantasy-scoring-categories",
+    "Batting Average": "fantasy-scoring-categories",
+    "On-Base Pct": "fantasy-scoring-categories",
+    "Slugging": "fantasy-scoring-categories",
+    "Hits": "fantasy-scoring-categories",
+    "Walks": "fantasy-scoring-categories",
+    "Strikeouts (batter)": "fantasy-scoring-categories",
+    "Total Bases": "fantasy-scoring-categories",
+    "Net Steals": "fantasy-scoring-categories",
+    "Wins": "fantasy-scoring-categories",
+    "Losses": "fantasy-scoring-categories",
+    "Strikeouts (pitcher)": "fantasy-scoring-categories",
+    "Quality Starts": "fantasy-scoring-categories",
+    "Saves": "fantasy-scoring-categories",
+    "Holds": "fantasy-scoring-categories",
+    "SV+HLD": "fantasy-scoring-categories",
+    "K/BB": "fantasy-scoring-categories",
+    "Innings Pitched": "fantasy-scoring-categories"
+  },
+  "terms": [
+    {
+      "id": "dynasty-value",
+      "term": "ValuCast Value",
+      "aliases": ["Dynasty Value"],
+      "definition": "The format-specific fantasy decision score shown on a 0-100 scale. Higher is better within the displayed board. MLB and prospect values are aligned at the top, but mixed-player trades are comparable in ballpark rather than to the decimal.",
+      "formula": "skill evidence + opportunity + league-format translation",
+      "example": {
+        "text": "On the July 26 committed board, Franklin Arias carried a 57.2 ValuCast Value.",
+        "source": "data/public/public_dynasty_snapshot.json",
+        "as_of": "2026-07-26"
+      },
+      "origin": "original to ValuCast",
+      "see_also": ["skill", "opportunity", "confidence", "value-band"]
+    },
+    {
+      "id": "valucast-rank",
+      "term": "ValuCast Rank",
+      "aliases": ["Prospect Rank", "Dynasty #", "P#", "Your League #"],
+      "definition": "A player's position after sorting the current ValuCast board. It is an ordering, not a probability or scouting grade.",
+      "origin": "original to ValuCast",
+      "see_also": ["dynasty-value", "public-consensus"]
+    },
+    {
+      "id": "public-consensus",
+      "term": "Public Consensus",
+      "aliases": ["Public boards"],
+      "definition": "The aggregate median rank across the available public boards, shown with the number of boards contributing. It is comparison context only and does not generate ValuCast rank or value.",
+      "origin": "original to ValuCast",
+      "see_also": ["valucast-rank", "ahead-of-the-curve"]
+    },
+    {
+      "id": "ahead-of-the-curve",
+      "term": "Ahead of the Curve",
+      "aliases": ["AOTC"],
+      "definition": "A tracked call where ValuCast ranks a player materially ahead of the aggregate public consensus. The Ledger records what happened next.",
+      "origin": "original to ValuCast",
+      "see_also": ["public-consensus", "aotc-verdict-states"]
+    },
+    {
+      "id": "percentile",
+      "term": "Percentile",
+      "definition": "A quality-direction rank inside the stated qualified pool. A 90th-percentile result means the metric graded better than about 90% of that pool; lower-is-better statistics are reversed before ranking.",
+      "origin": "adopted from public statistics",
+      "see_also": ["confidence"]
+    },
+    {
+      "id": "confidence",
+      "term": "Confidence",
+      "definition": "How stable the displayed read is given sample size, coverage, and uncertainty. It is not the probability that the player succeeds.",
+      "origin": "original to ValuCast",
+      "see_also": ["percentile", "estimate"]
+    },
+    {
+      "id": "skill",
+      "term": "Skill",
+      "definition": "What the trusted expected or projected rate evidence supports, kept separate from playing time and role.",
+      "origin": "original to ValuCast",
+      "see_also": ["opportunity", "dynasty-value"]
+    },
+    {
+      "id": "opportunity",
+      "term": "Opportunity",
+      "definition": "Expected plate appearances or innings plus role and availability. Opportunity can change fantasy value without changing the underlying skill read.",
+      "origin": "original to ValuCast",
+      "see_also": ["skill", "dynasty-value"]
+    },
+    {
+      "id": "category-fit",
+      "term": "Category Fit",
+      "definition": "A league-settings view that reorders the visible pool using the selected categories. It does not change the public ValuCast Value.",
+      "origin": "original to ValuCast",
+      "see_also": ["fantasy-scoring-categories", "league-context"]
+    },
+    {
+      "id": "eta",
+      "term": "ETA",
+      "definition": "Estimated MLB arrival. A year is player-specific when available; otherwise the display uses a shared level-based window, not a player-specific forecast.",
+      "origin": "adopted from public baseball terminology",
+      "see_also": ["opportunity", "estimate"]
+    },
+    {
+      "id": "league-context",
+      "term": "League context",
+      "aliases": ["Teams", "Roster spots", "Prospect slots", "Scoring", "Competitive window"],
+      "definition": "The teams, roster depth, scoring preset, prospect slots, and competitive window supplied for a league-aware decision. Only adjustments the tool explicitly says are calibrated change the totals.",
+      "origin": "original to ValuCast",
+      "see_also": ["category-fit", "auction-value", "trade-margin"]
+    },
+    {
+      "id": "trade-margin",
+      "term": "Trade verdict",
+      "aliases": ["Margin"],
+      "definition": "The difference between the value received and value given. A positive margin favors the return side; a margin inside the value band is called even.",
+      "formula": "value received - value given",
+      "origin": "original to ValuCast",
+      "see_also": ["value-band", "league-context"]
+    },
+    {
+      "id": "value-band",
+      "term": "Value band",
+      "definition": "The uncertainty tolerance used by The Second Opinion. Margins inside roughly nine points per player are treated as a coin flip, not a win.",
+      "formula": "about ±9 × players on the larger side",
+      "origin": "original to ValuCast",
+      "see_also": ["trade-margin", "dynasty-value"]
+    },
+    {
+      "id": "auction-value",
+      "term": "Auction value",
+      "aliases": ["$", "Now $"],
+      "definition": "A replacement-adjusted dollar allocation for the supplied teams, budget, and roster depth. Now $ isolates current-season projected production.",
+      "origin": "adopted from fantasy-baseball valuation",
+      "see_also": ["league-context", "dynasty-value"]
+    },
+    {
+      "id": "fantasy-scoring-categories",
+      "term": "Fantasy scoring categories",
+      "definition": "The statistics a league counts. ValuCast applies the selected hitting and pitching categories when that format has a validated translation.",
+      "origin": "adopted from fantasy-baseball scoring",
+      "see_also": ["category-fit", "league-context"]
+    },
+    {
+      "id": "estimate",
+      "term": "Estimate",
+      "aliases": ["est."],
+      "definition": "A number inferred from available evidence rather than measured directly. ValuCast labels estimates with “est.” and explains their source.",
+      "origin": "original to ValuCast",
+      "see_also": ["missing-data", "confidence"]
+    },
+    {
+      "id": "missing-data",
+      "term": "Missing data",
+      "aliases": ["—"],
+      "definition": "A dash or empty field means the source does not support a trustworthy number. ValuCast leaves it missing rather than inventing an estimate.",
+      "origin": "original to ValuCast",
+      "see_also": ["estimate"]
+    },
+    {
+      "id": "receipts-lead-time",
+      "term": "Receipts lead time",
+      "aliases": ["flagged days early"],
+      "definition": "The elapsed days between a dated ValuCast call and the later comparison event recorded by Call-Up Receipts.",
+      "origin": "original to ValuCast",
+      "see_also": ["ahead-of-the-curve"]
+    },
+    {
+      "id": "movers-score-delta",
+      "term": "Movers score delta",
+      "definition": "The change in a player's ValuCast score over the selected archived window. Small moves below the published threshold are omitted.",
+      "formula": "current score - archived score",
+      "origin": "original to ValuCast",
+      "see_also": ["dynasty-value"]
+    },
+    {
+      "id": "forward-gate",
+      "term": "Forward gate",
+      "definition": "A held-out live check that compares a challenger projection with the incumbent after a fixed freeze date. It blocks promotion when the evidence does not clear the registered standard.",
+      "origin": "original to ValuCast",
+      "see_also": ["confidence"]
+    },
+    {
+      "id": "aotc-verdict-states",
+      "term": "AOTC verdict states",
+      "definition": "The Ledger's recorded outcomes: the field moved toward ValuCast, moved away, ValuCast backed off, no decisive move occurred, or the player left the tracked universe through promotion or graduation.",
+      "origin": "original to ValuCast",
+      "see_also": ["ahead-of-the-curve"]
+    },
+    {
+      "id": "avg",
+      "term": "AVG",
+      "aliases": ["Batting Average"],
+      "definition": "Hits divided by official at-bats.",
+      "formula": "H ÷ AB",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["obp", "slg"]
+    },
+    {
+      "id": "obp",
+      "term": "OBP",
+      "aliases": ["On-Base Pct"],
+      "definition": "How often a hitter reaches base through a hit, walk, or hit-by-pitch, with sacrifice flies included in the denominator.",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["avg", "ops"]
+    },
+    {
+      "id": "slg",
+      "term": "SLG",
+      "aliases": ["Slugging"],
+      "definition": "Total bases divided by at-bats; extra-base hits count more than singles.",
+      "formula": "TB ÷ AB",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["iso", "ops"]
+    },
+    {
+      "id": "ops",
+      "term": "OPS",
+      "definition": "On-base percentage plus slugging percentage.",
+      "formula": "OBP + SLG",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["obp", "slg"]
+    },
+    {
+      "id": "iso",
+      "term": "ISO",
+      "definition": "Isolated power: extra bases per at-bat after removing singles from slugging.",
+      "formula": "SLG - AVG",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["slg"]
+    },
+    {
+      "id": "k-percent",
+      "term": "K%",
+      "definition": "Strikeouts divided by plate appearances for hitters.",
+      "formula": "K ÷ PA",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["bb-percent"]
+    },
+    {
+      "id": "bb-percent",
+      "term": "BB%",
+      "definition": "Walks divided by plate appearances.",
+      "formula": "BB ÷ PA",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["k-percent", "k-minus-bb-percent"]
+    },
+    {
+      "id": "era",
+      "term": "ERA",
+      "definition": "Earned runs allowed per nine innings.",
+      "formula": "ER × 9 ÷ IP",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["whip"]
+    },
+    {
+      "id": "whip",
+      "term": "WHIP",
+      "definition": "Walks plus hits allowed per inning pitched.",
+      "formula": "(BB + H) ÷ IP",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["era", "bb-per-nine"]
+    },
+    {
+      "id": "k-per-nine",
+      "term": "K/9",
+      "definition": "Strikeouts per nine innings pitched.",
+      "formula": "K × 9 ÷ IP",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["bb-per-nine", "k-minus-bb-percent"]
+    },
+    {
+      "id": "bb-per-nine",
+      "term": "BB/9",
+      "definition": "Walks allowed per nine innings pitched.",
+      "formula": "BB × 9 ÷ IP",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["k-per-nine", "whip"]
+    },
+    {
+      "id": "k-minus-bb-percent",
+      "term": "K-BB%",
+      "definition": "Strikeout percentage minus walk percentage; a compact pitcher dominance and command measure.",
+      "formula": "K% - BB%",
+      "origin": "adopted from public baseball statistics",
+      "see_also": ["k-per-nine", "bb-per-nine"]
+    },
+    {
+      "id": "swing-percent",
+      "term": "Swing%",
+      "definition": "The share of pitches at which the hitter swings.",
+      "formula": "swings ÷ pitches",
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["whiff-percent", "swstr-percent"]
+    },
+    {
+      "id": "whiff-percent",
+      "term": "Whiff%",
+      "definition": "The share of swings that miss.",
+      "formula": "whiffs ÷ swings",
+      "example": {
+        "text": "One committed High-A sample recorded a 12.7% Whiff% across 728 tracked pitches.",
+        "source": "data/models/valucast_pitch_discipline.json",
+        "as_of": "2026-07-10"
+      },
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["swing-percent", "swstr-percent"]
+    },
+    {
+      "id": "swstr-percent",
+      "term": "SwStr%",
+      "definition": "The share of all pitches that produce a swinging strike.",
+      "formula": "whiffs ÷ pitches",
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["swing-percent", "whiff-percent"]
+    },
+    {
+      "id": "chase-percent",
+      "term": "Chase%",
+      "definition": "The share of pitches outside the strike zone at which the hitter swings. Samples using pixel calibration are labeled est.",
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["estimate", "zone-percent"]
+    },
+    {
+      "id": "z-swing-percent",
+      "term": "Z-Swing%",
+      "definition": "The share of pitches inside the strike zone at which the hitter swings. Samples using pixel calibration are labeled est.",
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["estimate", "zone-percent"]
+    },
+    {
+      "id": "z-contact-percent",
+      "term": "Z-Contact%",
+      "definition": "The share of swings at pitches inside the strike zone that make contact. Samples using pixel calibration are labeled est.",
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["estimate", "whiff-percent"]
+    },
+    {
+      "id": "zone-percent",
+      "term": "Zone%",
+      "definition": "The share of pitches classified inside the strike zone. Samples using pixel calibration are labeled est.",
+      "example": {
+        "text": "The committed plate-discipline artifact records whether each level sample used calibrated zone locations.",
+        "source": "data/models/valucast_pitch_discipline.json",
+        "as_of": "2026-07-10"
+      },
+      "origin": "adopted from public plate-discipline statistics",
+      "see_also": ["estimate", "chase-percent", "z-swing-percent"]
+    }
+  ]
+}
