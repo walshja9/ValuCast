@@ -3036,6 +3036,191 @@ class TestPlateDisciplineCard(unittest.TestCase):
         self.assertGreater(data_height, base_height)
 
 
+class TestPlateDisciplineLeaders(unittest.TestCase):
+    """Public leaders board stays per-level, display-only, and fail-soft."""
+
+    def setUp(self):
+        self.client = app.test_client()
+        app.config["TESTING"] = True
+        if not app_module.dd_store.is_available:
+            self.skipTest("dd snapshot not available")
+        row = next(
+            (r for r in app_module.dd_store.get_all()
+             if getattr(r, "is_prospect", False) and getattr(r, "mlbam_id", None)),
+            None,
+        )
+        if row is None:
+            self.skipTest("No prospect rows with an mlbam id available")
+        self.player_id = row.id
+        self.mlbam = str(row.mlbam_id)
+
+    def _fixture_store(self, tmp):
+        import json
+        from web.pitch_discipline_store import PitchDisciplineStore
+        payload = {
+            "artifact": "valucast_pitch_discipline",
+            "as_of": "2026-07-10",
+            "metric_labels": {
+                "swing_pct": "Swing%", "whiff_pct": "Whiff%",
+                "swstr_pct": "SwStr%", "chase_pct": "Chase%",
+                "z_swing_pct": "Z-Swing%", "z_contact_pct": "Z-Contact%",
+                "zone_pct": "Zone%",
+            },
+            "estimated_metrics": [
+                "chase_pct", "z_swing_pct", "z_contact_pct", "zone_pct",
+            ],
+            "cohorts": {
+                "min_pitches": 300,
+                "cohort_sizes": {"AA": 1, "A+": 1, "A": 1, "AAA": 1},
+                "lower_is_better": ["chase_pct", "whiff_pct", "swstr_pct"],
+                "higher_is_better": ["z_contact_pct"],
+            },
+            "players": {
+                self.mlbam: {
+                    level: {
+                        "pitches": 450,
+                        "qualifies": True,
+                        "zone_estimated": level != "AAA",
+                        "rates": {
+                            "swing_pct": 39.0, "whiff_pct": 18.0,
+                            "swstr_pct": 7.0, "chase_pct": 20.0,
+                            "z_swing_pct": 62.0, "z_contact_pct": 90.0,
+                            "zone_pct": 45.0,
+                        },
+                        "percentiles": {
+                            "whiff_pct": 92, "swstr_pct": 94,
+                            "chase_pct": 96, "z_contact_pct": 91,
+                        },
+                    }
+                    for level in ("AA", "A+", "A", "AAA")
+                }
+            },
+        }
+        path = tmp / "discipline.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return PitchDisciplineStore(path=path)
+
+    def _get(self, store, query=""):
+        with patch.object(app_module, "pitch_discipline_store", store):
+            return self.client.get(f"/discipline-leaders{query}")
+
+    def test_default_board_renders_contract_and_player_link(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            response = self._get(self._fixture_store(Path(td)))
+        self.assertEqual(response.status_code, 200)
+        html = response.data.decode("utf-8", "replace")
+        self.assertIn("minimum 300 pitches", html)
+        self.assertIn("1 qualifying AA hitter", html)
+        self.assertIn("2026-07-10", html)
+        self.assertIn("Computed from MLB play-by-play feeds", html)
+        self.assertIn(f"/player/{self.player_id}?mode=prospects", html)
+        self.assertIn("rankings-table", html)
+
+    def test_slug_validation_and_a_plus_contract(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td))
+            a_plus = self._get(store, "?level=a-plus&metric=whiff")
+            junk = self._get(store, "?level=../etc&metric=%2BDROP")
+            plus_trap = self._get(store, "?level=A+&metric=chase")
+        self.assertEqual(a_plus.status_code, 200)
+        self.assertIn('data-level="A+"', a_plus.data.decode("utf-8", "replace"))
+        for response in (junk, plus_trap):
+            html = response.data.decode("utf-8", "replace")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('data-level="AA"', html)
+            self.assertNotIn("../etc", html)
+            self.assertNotIn("+DROP", html)
+
+    def test_estimated_split_matches_level(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td))
+            aa = self._get(store, "?level=aa&metric=chase").data
+            aaa = self._get(store, "?level=aaa&metric=chase").data
+        self.assertIn(b'class="pd-est-tag"', aa)
+        self.assertIn(b"/methodology#plate-discipline", aa)
+        self.assertNotIn(b'class="pd-est-tag"', aaa)
+
+    def test_contextual_metrics_and_valuation_columns_are_absent(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            html = self._get(
+                self._fixture_store(Path(td))
+            ).data.decode("utf-8", "replace")
+        self.assertNotIn("Z-Swing%", html)
+        self.assertNotIn(">Swing%<", html)
+        self.assertNotIn(">Zone%<", html)
+        self.assertNotIn("Dynasty Value", html)
+        self.assertNotIn('class="col-value"', html)
+
+    def test_missing_artifact_is_honest_empty_state(self):
+        from web.pitch_discipline_store import PitchDisciplineStore
+        empty = PitchDisciplineStore(path=Path("definitely-missing") / "no.json")
+        response = self._get(empty)
+        self.assertEqual(response.status_code, 200)
+        html = response.data.decode("utf-8", "replace")
+        self.assertIn("Leaders unavailable", html)
+        self.assertNotIn("rankings-table", html)
+
+    def test_footer_and_methodology_explain_the_board(self):
+        footer = (
+            Path(app_module.app.template_folder)
+            / "partials" / "_footer_provenance.html"
+        ).read_text(encoding="utf-8")
+        self.assertGreaterEqual(footer.count('href="/discipline-leaders"'), 4)
+        methodology = self.client.get("/methodology")
+        self.assertEqual(methodology.status_code, 200)
+        html = methodology.data.decode("utf-8", "replace")
+        self.assertIn('href="/discipline-leaders">Discipline Leaders</a>', html)
+        self.assertIn("ranks only hitters", html)
+        self.assertIn("Chase%, Whiff%, SwStr%, and Z-Contact%", html)
+
+    def test_share_card_params_are_cache_safe(self):
+        self.assertIn("level", app_module._PNG_CACHE_PARAMS)
+        self.assertIn("metric", app_module._PNG_CACHE_PARAMS)
+        with app.test_request_context(
+            "/discipline-leaders/share-card.png?level=aa&metric=chase"
+        ):
+            first = app_module._png_cache_key()
+        with app.test_request_context(
+            "/discipline-leaders/share-card.png?level=aaa&metric=whiff"
+        ):
+            second = app_module._png_cache_key()
+        with app.test_request_context(
+            "/discipline-leaders/share-card.png?metric=chase&level=aa"
+        ):
+            same = app_module._png_cache_key()
+        self.assertNotEqual(first, second)
+        self.assertEqual(first, same)
+
+    def test_share_card_png_and_page_use_the_same_defaults(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td))
+            with patch.object(app_module, "pitch_discipline_store", store):
+                default = self.client.get("/discipline-leaders/share-card.png")
+                junk = self.client.get(
+                    "/discipline-leaders/share-card.png?level=bad&metric=bad"
+                )
+                preview = self.client.get("/discipline-leaders/share-card")
+        self.assertEqual(default.status_code, 200)
+        self.assertEqual(default.data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertEqual(junk.data, default.data)
+        self.assertEqual(preview.status_code, 200)
+        self.assertIn(
+            b"/discipline-leaders/share-card.png?level=aa&amp;metric=chase",
+            preview.data,
+        )
+
+    def test_cards_gallery_lists_discipline_leaders(self):
+        response = self.client.get("/cards")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Plate-Discipline Leaders", response.data)
+        self.assertIn(b"/discipline-leaders", response.data)
+
+
 class TestAttributionPanel(unittest.TestCase):
     """Lane B stage 2: the 'How ValuCast graded him' attribution panel on the
     prospect card, and the no-per-feature-weight-percent rule."""

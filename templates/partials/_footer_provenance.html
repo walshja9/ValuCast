@@ -21,12 +21,13 @@
 </div>
 <p class="footer-data">
     {% if methodology_page or scouting_page or intelligence_page or glossary_page %}
-    <a href="/">Back to board</a> - <a href="/intelligence">Intelligence Hub</a> - <a href="/ledger">The Ledger</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %} - <a href="/models">Model Verdicts</a> - <a href="/glossary">Glossary</a> - <a href="/scouting">Scouting Reports</a> - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a> - <a href="/trade">The Second Opinion</a> - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
+    <a href="/">Back to board</a> - <a href="/intelligence">Intelligence Hub</a> - <a href="/ledger">The Ledger</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %} - <a href="/models">Model Verdicts</a> - <a href="/glossary">Glossary</a> - <a href="/scouting">Scouting Reports</a> - <a href="/discipline-leaders">Discipline Leaders</a> - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a> - <a href="/trade">The Second Opinion</a> - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
     Data: Dynasty model + prospect feed - MLB stats from FanGraphs Steamer rest-of-season + MLB Stats API{% if as_of %} - Updated {{ editorial_date(as_of) }}{% endif %}
     - <a href="/methodology">How ValuCast works</a> - <a href="/glossary">Glossary</a>
     - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Reports</a>
+    - <a href="/discipline-leaders">Discipline Leaders</a>
     - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a>
     - <a href="/models">Model Verdicts</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %}
     - <a href="/trade">The Second Opinion</a>
@@ -36,6 +37,7 @@
     - <a href="/methodology">How ValuCast works</a> - <a href="/glossary">Glossary</a>
     - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Reports</a>
+    - <a href="/discipline-leaders">Discipline Leaders</a>
     - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a>
     - <a href="/models">Model Verdicts</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %}
     - <a href="/trade">The Second Opinion</a>
@@ -45,6 +47,7 @@
     - <a href="/methodology">How ValuCast works</a> - <a href="/glossary">Glossary</a>
     - <a href="/intelligence">Intelligence Hub</a>
     - <a href="/scouting">Scouting Reports</a>
+    - <a href="/discipline-leaders">Discipline Leaders</a>
     - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a>
     - <a href="/models">Model Verdicts</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %}
     - <a href="/trade">The Second Opinion</a>
