@@ -98,3 +98,28 @@ def test_zone_estimated_must_be_bool(tmp_path):
     bad["players"]["701527"]["AA"]["zone_estimated"] = "yes"
     payload, problems, present = validate_file(_write(tmp_path, bad))
     assert any("zone_estimated must be bool" in p for p in problems)
+
+
+def test_staleness_gate_allows_bounded_lag():
+    from scripts.validate_pitch_discipline import _staleness_problem
+
+    payload = {"as_of": "2026-07-27"}
+    assert _staleness_problem(payload, "2026-07-27", 3) is None
+    assert _staleness_problem(payload, "2026-07-30", 3) is None
+
+
+def test_staleness_gate_fails_beyond_bound_and_future():
+    from scripts.validate_pitch_discipline import _staleness_problem
+
+    payload = {"as_of": "2026-07-10"}
+    stale = _staleness_problem(payload, "2026-07-27", 3)
+    assert stale is not None and "17 days old" in stale
+
+    future = _staleness_problem({"as_of": "2026-07-28"}, "2026-07-27", 3)
+    assert future is not None and "future" in future
+
+    bad = _staleness_problem({"as_of": "not-a-date"}, "2026-07-27", 3)
+    assert bad is not None and "not an ISO date" in bad
+
+    # Missing as_of is validate_file's problem, not a staleness crash.
+    assert _staleness_problem({}, "2026-07-27", 3) is None

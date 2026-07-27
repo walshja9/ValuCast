@@ -136,3 +136,42 @@ PR #22 (`f339dea`) recomputes MLB ages from birth dates as-of the snapshot date;
 | P1-5 | Prospect ages a year stale on public surfaces (8 players) | P1 | Reuse identity birth dates |
 | P1-6 | Held content readable in public repo | P1 | Repo/data privacy decision |
 | P2 1–13 | See above | P2 | Batch at convenience |
+
+---
+
+## Disposition addendum (2026-07-27, owner decisions applied)
+
+The owner independently confirmed P0-1 and P1-1 and directed remediation
+without a blind rollback. Applied on this branch:
+
+- **P0-1 — dispositioned, evaluation pending.** No revert (a revert would be a
+  second uncontrolled board-wide shift). Scoring frozen as-served at 0.3.1;
+  formal 0.3.1-vs-0.3.0 evaluation required before ratification. Incident and
+  evaluation gate recorded in
+  `docs/incident-2026-07-27-bucket-calibration-0-3-1.md`.
+- **P0-2 — resolved as ratified.** The owner confirmed the 07-22 approval was
+  intended to authorize publication; the missing in-repo record was the
+  failure. Recorded in
+  `docs/authorization-2026-07-27-international-signing-publication.md`, with a
+  standing rule against default-loading held artifacts.
+- **P1-1 — fixed.** `final_delta < 0` restored in
+  `quality/valucast_governor.py` (strengthened bucket-set expansion retained);
+  regression tests updated; restored veto replayed clean on the two most
+  recent served board pairs (0 incidents — next publication unaffected).
+- **P1-2 — held pending server-side audit.** No credential-architecture change
+  until the deploy-key/ruleset audit checklist in
+  `docs/policy-2026-07-27-held-content-and-deploy-key.md` is performed.
+- **P1-3 — fixed.** `validate_public_data_freshness.py` gains a bounded
+  `--max-age-days` (env `VALUCAST_FRESHNESS_MAX_AGE_DAYS`); `tests.yml` sets a
+  1-day lag for PR/push CI; the publish workflow keeps the exact same-day gate.
+- **P1-4 — fixed.** `validate_pitch_discipline.py` now fails when `as_of` is
+  more than 3 days old (env-overridable), turning the silent keep-stale paths
+  into a red build; runs in both PR CI and the publish gate.
+- **P1-5 — fixed.** `_prospect_rows` now computes public ages from identity
+  birth dates as-of the snapshot date, mirroring the PR #22 MLB path, with
+  `model_age`/`public_age_source` context; corrected ages flow to board, cards,
+  share PNGs, and the young-for-level badge at the next daily build.
+- **P1-6 — dispositioned.** Repo stays public; "held" formally defined as
+  surface-only; committed never-rendered LLM prose (`peak_summary`,
+  `report_llm`) to be stripped from the artifact at build time (scoped
+  follow-up). Policy in `docs/policy-2026-07-27-held-content-and-deploy-key.md`.
