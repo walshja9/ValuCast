@@ -17,12 +17,12 @@
     "v06_score_source": "prospect_model_v0_6"
   },
   "elite_factual_raw_fallback_misses": [],
-  "generated_at": "2026-07-26T00:00:00+00:00",
+  "generated_at": "2026-07-27T00:00:00+00:00",
   "input_artifacts": {
     "investment_evidence_artifact": "valucast_international_signing_facts",
     "investment_evidence_as_of": "2026-07-22",
     "prospect_model_version": "0.6.1",
-    "rank_generated_at": "2026-07-26T00:00:00+00:00",
+    "rank_generated_at": "2026-07-27T00:00:00+00:00",
     "rank_name": "ValuCast Prospect Rank v1",
     "rank_version": "0.2.9"
   },
@@ -31,15 +31,15 @@
     "bands": {
       "top_100": {
         "all": {
-          "coverage_rate": 0.9,
-          "covered": 90,
-          "missing": 10,
+          "coverage_rate": 0.89,
+          "covered": 89,
+          "missing": 11,
           "rows": 100
         },
         "hitter": {
-          "coverage_rate": 0.9016,
-          "covered": 55,
-          "missing": 6,
+          "coverage_rate": 0.8852,
+          "covered": 54,
+          "missing": 7,
           "rows": 61
         },
         "pitcher": {
@@ -51,9 +51,9 @@
       },
       "top_200": {
         "all": {
-          "coverage_rate": 0.835,
-          "covered": 167,
-          "missing": 33,
+          "coverage_rate": 0.83,
+          "covered": 166,
+          "missing": 34,
           "rows": 200
         },
         "hitter": {
@@ -63,9 +63,9 @@
           "rows": 114
         },
         "pitcher": {
-          "coverage_rate": 0.8953,
-          "covered": 77,
-          "missing": 9,
+          "coverage_rate": 0.8837,
+          "covered": 76,
+          "missing": 10,
           "rows": 86
         }
       },
@@ -78,15 +78,15 @@
         },
         "hitter": {
           "coverage_rate": 1.0,
-          "covered": 15,
+          "covered": 14,
           "missing": 0,
-          "rows": 15
+          "rows": 14
         },
         "pitcher": {
           "coverage_rate": 1.0,
-          "covered": 10,
+          "covered": 11,
           "missing": 0,
-          "rows": 10
+          "rows": 11
         }
       },
       "top_50": {
@@ -123,11 +123,11 @@
           "maximum_direct_score_delta": 4.5,
           "mlbam_id": 806964,
           "name": "Sebastian Walcott",
-          "rank": 44,
+          "rank": 49,
           "role": "hitter",
-          "score": 39.65,
+          "score": 39.06,
           "score_source": "prospect_model_v0_6",
-          "score_upper_bound": 44.15
+          "score_upper_bound": 43.56
         }
       ]
     },
@@ -136,15 +136,15 @@
       "bands": {
         "top_100": {
           "all": {
-            "coverage_rate": 0.9,
-            "covered": 90,
-            "missing": 10,
+            "coverage_rate": 0.89,
+            "covered": 89,
+            "missing": 11,
             "rows": 100
           },
           "hitter": {
-            "coverage_rate": 0.9016,
-            "covered": 55,
-            "missing": 6,
+            "coverage_rate": 0.8852,
+            "covered": 54,
+            "missing": 7,
             "rows": 61
           },
           "pitcher": {
@@ -156,9 +156,9 @@
         },
         "top_200": {
           "all": {
-            "coverage_rate": 0.835,
-            "covered": 167,
-            "missing": 33,
+            "coverage_rate": 0.83,
+            "covered": 166,
+            "missing": 34,
             "rows": 200
           },
           "hitter": {
@@ -168,9 +168,9 @@
             "rows": 114
           },
           "pitcher": {
-            "coverage_rate": 0.8953,
-            "covered": 77,
-            "missing": 9,
+            "coverage_rate": 0.8837,
+            "covered": 76,
+            "missing": 10,
             "rows": 86
           }
         },
@@ -183,15 +183,15 @@
           },
           "hitter": {
             "coverage_rate": 1.0,
-            "covered": 15,
+            "covered": 14,
             "missing": 0,
-            "rows": 15
+            "rows": 14
           },
           "pitcher": {
             "coverage_rate": 1.0,
-            "covered": 10,
+            "covered": 11,
             "missing": 0,
-            "rows": 10
+            "rows": 11
           }
         },
         "top_50": {
@@ -233,8 +233,8 @@
     "raw_fallback_count": 0,
     "raw_fallback_top_200_count": 0,
     "raw_fallback_top_50_count": 0,
-    "row_count": 2886,
-    "v06_model_score_count": 2886
+    "row_count": 2895,
+    "v06_model_score_count": 2895
   },
   "source_policy": {
     "dd_and_public_ranks_used_as_context_only": true,
