@@ -51,6 +51,8 @@ class PitchDisciplineStore:
         self._loaded = False
         self._players: dict[str, dict] = {}
         self._labels: dict[str, str] = dict(_DEFAULT_LABELS)
+        self._cohorts: dict = {}
+        self._estimated_metrics = set(_ESTIMATED_ORDER)
         self._as_of: str | None = None
 
     def _ensure_loaded(self) -> None:
@@ -68,17 +70,93 @@ class PitchDisciplineStore:
             labels = raw.get("metric_labels")
             if isinstance(labels, dict):
                 self._labels = {**_DEFAULT_LABELS, **labels}
+            cohorts = raw.get("cohorts")
+            self._cohorts = cohorts if isinstance(cohorts, dict) else {}
+            estimated = raw.get("estimated_metrics")
+            self._estimated_metrics = (
+                {key for key in estimated if isinstance(key, str)}
+                if isinstance(estimated, list)
+                else set(_ESTIMATED_ORDER)
+            )
             self._as_of = raw.get("as_of")
         except (OSError, ValueError):
             # Missing/unreadable/malformed -> empty store; the card renders without
             # a plate-discipline section.
             self._players, self._as_of = {}, None
             self._labels = dict(_DEFAULT_LABELS)
+            self._cohorts = {}
+            self._estimated_metrics = set(_ESTIMATED_ORDER)
 
     @property
     def as_of(self) -> str | None:
         self._ensure_loaded()
         return self._as_of
+
+    def cohort_meta(self) -> dict:
+        self._ensure_loaded()
+        return dict(self._cohorts)
+
+    def leaders(self, level: str, metric: str, *, limit: int = 25) -> dict | None:
+        """Rank qualifying buckets for one level and one oriented metric."""
+        self._ensure_loaded()
+        if not self._players:
+            return None
+        lower = self._cohorts.get("lower_is_better")
+        higher = self._cohorts.get("higher_is_better")
+        lower = lower if isinstance(lower, list) else []
+        higher = higher if isinstance(higher, list) else []
+        if metric not in lower and metric not in higher:
+            return None
+        cohort_sizes = self._cohorts.get("cohort_sizes")
+        cohort_sizes = cohort_sizes if isinstance(cohort_sizes, dict) else {}
+        if level not in cohort_sizes:
+            return None
+
+        rows = []
+        for mlbam_id, levels in self._players.items():
+            bucket = levels.get(level) if isinstance(levels, dict) else None
+            if not isinstance(bucket, dict) or bucket.get("qualifies") is not True:
+                continue
+            rates = bucket.get("rates")
+            raw = rates.get(metric) if isinstance(rates, dict) else None
+            if not isinstance(raw, (int, float)):
+                continue
+            pcts = bucket.get("percentiles")
+            pct = pcts.get(metric) if isinstance(pcts, dict) else None
+            pct = int(max(0, min(100, pct))) if isinstance(pct, (int, float)) else None
+            pitches = bucket.get("pitches")
+            pitches = int(pitches) if isinstance(pitches, (int, float)) else 0
+            zone_estimated = bool(bucket.get("zone_estimated", True))
+            rows.append({
+                "mlbam_id": str(mlbam_id),
+                "raw": float(raw),
+                "display": _format_pct(raw),
+                "pct": pct,
+                "pitches": pitches,
+                "zone_estimated": zone_estimated,
+                "estimated": metric in self._estimated_metrics and zone_estimated,
+            })
+
+        descending = metric in higher
+        rows.sort(key=lambda row: (
+            -row["raw"] if descending else row["raw"],
+            -row["pitches"],
+            row["mlbam_id"],
+        ))
+        total = len(rows)
+        limited = rows[:max(0, int(limit))]
+        return {
+            "level": level,
+            "metric": metric,
+            "label": self._labels.get(metric, metric),
+            "as_of": self._as_of,
+            "direction": "desc" if descending else "asc",
+            "min_pitches": self._cohorts.get("min_pitches"),
+            "cohort_size": cohort_sizes.get(level),
+            "total_qualifying": total,
+            "estimated": any(row["estimated"] for row in limited),
+            "rows": limited,
+        }
 
     def groups_for(self, mlbam_id: str | int | None) -> list[dict]:
         """Card-ready plate-discipline groups for a player, [] when unavailable.

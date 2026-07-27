@@ -4701,6 +4701,7 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     background: var(--c-signal);
     border-color: var(--c-signal);
 }
+.ledger-pills .bf-pill .pd-est-tag { margin-left: .18rem; }
 .ledger-calls { padding: .6rem .9rem .8rem; border-radius: var(--radius-lg); }
 .ledger-row { padding: .55rem .15rem; border-bottom: 1px solid rgba(148, 163, 184, .10); }
 .ledger-row:last-child { border-bottom: none; }
@@ -4886,4 +4887,25 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .board-tm-table td[data-label="Consensus"] { white-space: nowrap; }
 @media (max-width: 640px) {
     .board-tm-table td.num { text-align: left; }
+}
+
+/* The generic mobile rankings card hides category cells. Discipline Leaders is
+   itself a metric board, so keep its three evidence cells visible and labeled. */
+@media (max-width: 700px) {
+    .rankings-table.discipline-leaders-table td.discipline-stat {
+        display: inline-flex;
+        flex-direction: column;
+        width: calc(33.333% - .35rem);
+        margin: .45rem .3rem 0 0;
+        color: var(--c-text);
+        font-size: .82rem;
+        text-align: left;
+    }
+    .rankings-table.discipline-leaders-table td.discipline-stat::before {
+        content: attr(data-label);
+        color: var(--c-muted);
+        font-size: .6rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
 }

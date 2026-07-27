@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Plate-Discipline Leaders | ValuCast{% endblock %}
+{% block og_title %}Plate-Discipline Leaders | ValuCast{% endblock %}
+{% block og_description %}Who controls the strike zone at each minor-league level, counted from MLB play-by-play.{% endblock %}
+{% block og_url %}https://valucast.app/discipline-leaders{% endblock %}
+{% block og_image %}https://valucast.app/discipline-leaders/share-card.png?level={{ level_slug }}&amp;metric={{ metric_slug }}{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1350{% endblock %}
+{% block twitter_title %}Plate-Discipline Leaders | ValuCast{% endblock %}
+{% block twitter_description %}Who controls the strike zone at each minor-league level, counted from MLB play-by-play.{% endblock %}
+{% block twitter_image %}https://valucast.app/discipline-leaders/share-card.png?level={{ level_slug }}&amp;metric={{ metric_slug }}{% endblock %}
+
+{% block content %}
+<section class="buys-heading glass" data-level="{{ board.level if board else 'AA' }}">
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">PLATE DISCIPLINE</span>
+        <h1>PLATE-DISCIPLINE LEADERS</h1>
+        <p class="buys-heading-sub">Who controls the strike zone at each level &mdash; counted from MLB play-by-play.</p>
+
+        {% if leaders_available %}
+        <nav class="bf-filter-pills ledger-pills" aria-label="Select minor-league level">
+            {% for option in level_options %}
+            <a class="bf-pill{% if level_slug == option.slug %} is-active{% endif %}"
+               href="/discipline-leaders?level={{ option.slug }}&metric={{ metric_slug }}">{{ option.label }}</a>
+            {% endfor %}
+        </nav>
+        <nav class="bf-filter-pills ledger-pills" aria-label="Select plate-discipline metric">
+            {% for option in metric_options %}
+            <a class="bf-pill{% if metric_slug == option.slug %} is-active{% endif %}"
+               href="/discipline-leaders?level={{ level_slug }}&metric={{ option.slug }}">{{ option.label }}</a>
+            {% endfor %}
+        </nav>
+
+        <p class="buys-fineprint">Top {{ rows | length }} of {{ board.total_qualifying }} qualifying {{ board.level }} hitter{{ '' if board.total_qualifying == 1 else 's' }} &mdash; minimum {{ board.min_pitches }} pitches seen. Percentiles compare hitters at the same level only.</p>
+        <p class="buys-fineprint">Computed from MLB play-by-play feeds &mdash; as of {{ board.as_of }}.</p>
+        {% if board.estimated %}
+        <p class="buys-fineprint">Rows marked <span class="pd-est-tag">est.</span> use a pixel-coordinate calibration; unmarked rows are measured &mdash; <a href="/methodology#plate-discipline">see methodology</a>.</p>
+        {% endif %}
+        {% if unresolved_count %}
+        <p class="buys-fineprint">{{ unresolved_count }} of the ranked players {{ 'is' if unresolved_count == 1 else 'are' }} no longer in the served universe &mdash; shown by MLBAM id.</p>
+        {% endif %}
+        <p class="buys-fineprint"><a href="/discipline-leaders/share-card?level={{ level_slug }}&amp;metric={{ metric_slug }}">Share this board</a></p>
+        {% endif %}
+    </div>
+</section>
+
+{% if not leaders_available %}
+<section class="map-heading glass">
+    <h2>Leaders unavailable</h2>
+    <p>The board populates after the next daily build.</p>
+</section>
+{% else %}
+<section class="glass">
+    <table class="rankings-table discipline-leaders-table">
+        <thead>
+            <tr>
+                <th class="col-rank">Rank</th>
+                <th class="col-name">Player</th>
+                <th class="col-team">Team</th>
+                <th class="col-cat">{{ board.label }}</th>
+                <th class="col-cat">Cohort %ile</th>
+                <th class="col-cat">Pitches</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr class="player-row">
+                <td class="col-rank">{{ row.rank }}</td>
+                <td class="col-name">{% if row.player_url %}<a href="{{ row.player_url }}">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}</td>
+                <td class="col-team">{{ row.team or '&mdash;' | safe }}</td>
+                <td class="col-cat discipline-stat" data-label="{{ board.label }}">{{ row.display }}{% if row.estimated %} <span class="pd-est-tag">est.</span>{% endif %}</td>
+                <td class="col-cat discipline-stat" data-label="Cohort %ile">{{ row.pct if row.pct is not none else '&mdash;' | safe }}</td>
+                <td class="col-cat discipline-stat" data-label="Pitches">{{ row.pitches }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+{% endblock %}

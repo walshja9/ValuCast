@@ -190,6 +190,30 @@ def test_pr_ci_validates_artifacts_and_pins_first_party_actions():
     assert found == set(expected_pins)
 
 
+def test_daily_refresh_restores_and_saves_plate_discipline_cache():
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+    cache_path = "data/prospects/raw/pitch_discipline_pitch_cache.json"
+    ready_path = "data/prospects/raw/.pitch_discipline_cache_ready"
+
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert workflow.count(cache_path) >= 2
+    assert workflow.count(ready_path) >= 3
+    assert "python scripts/build_pitch_discipline.py --backfill" in workflow
+    assert "touch data/prospects/raw/.pitch_discipline_cache_ready" in workflow
+    assert "plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "restore-keys: |" in workflow
+    assert "plate-discipline-v1-${{ runner.os }}-" in workflow
+    assert "key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}" in workflow
+
+    restore = workflow.index("uses: actions/cache/restore@")
+    bootstrap = workflow.index("python scripts/build_pitch_discipline.py --backfill")
+    build = workflow.index("run: python scripts/run_daily_public_build.py --only build")
+    save = workflow.index("uses: actions/cache/save@")
+    assert restore < bootstrap < build < save
+
+
 def test_master_writers_use_only_the_refresh_deploy_key():
     expected_writers = {
         "daily-public-data.yml",

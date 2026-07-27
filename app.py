@@ -199,6 +199,8 @@ _PNG_CACHE_PARAMS = frozenset({
     # omitting it collapsed every window to one key and served the first-rendered
     # (e.g. 7d) image to a visitor asking for 21d (cross-user poisoning). Bounded
     # to 4 values by _parse_spark_window, so no unbounded-key risk.
+    "level", "metric",  # Plan 029: the discipline card renders from these;
+    # omitting them collapses every level x metric board to the first cached PNG.
     "league", "give", "get",  # /trade V2 opt-in + resolved player sides; all MUST be
     # in the cache key or every trade collapses to one key and the first-rendered
     # card is served to everyone (cross-user poisoning). Fixed names, not prefixed.
@@ -849,6 +851,118 @@ def _value_momentum_label(row) -> str:
 
 dd_store, dynasty_data_source = _select_dynasty_store(public_snapshot_store)
 prospect_pool = prospect_percentiles.build_pool(dd_store.get_all()) if dd_store.is_available else {}
+
+# Plan 029: URL-safe slugs for the display-only plate-discipline leaders board.
+# A literal "A+" query value decodes as "A ", so the public contract uses a-plus.
+_LEADER_LEVEL_SLUGS = {"aa": "AA", "a-plus": "A+", "a": "A", "aaa": "AAA"}
+_LEADER_METRIC_SLUGS = {
+    "chase": "chase_pct",
+    "whiff": "whiff_pct",
+    "swstr": "swstr_pct",
+    "z-contact": "z_contact_pct",
+}
+_LEADER_DEFAULT_LEVEL = "aa"
+_LEADER_DEFAULT_METRIC = "chase"
+_LEADER_LIMIT = 25
+_DISCIPLINE_NAME_CACHE = (None, None)
+
+
+def _parse_leader_level(raw) -> str | None:
+    raw_value = str(raw or "")
+    # A literal query-string A+ arrives as "A ". Reject it before stripping so
+    # it cannot silently select the A board; the public slug is "a-plus".
+    if raw_value != raw_value.strip():
+        return None
+    value = raw_value.lower()
+    return value if value in _LEADER_LEVEL_SLUGS else None
+
+
+def _parse_leader_metric(raw) -> str | None:
+    value = str(raw or "").strip().lower()
+    return value if value in _LEADER_METRIC_SLUGS else None
+
+
+def _discipline_name_map() -> dict:
+    """Slim MLBAM lookup for leader labels; rebuilt with the daily DD feed."""
+    global _DISCIPLINE_NAME_CACHE
+    key = dd_store.generated_at
+    cached_key, cached_names = _DISCIPLINE_NAME_CACHE
+    if cached_key == key and cached_names is not None:
+        return cached_names
+    names = {}
+    if dd_store.is_available:
+        for row in dd_store.get_all():
+            mlbam_id = getattr(row, "mlbam_id", None)
+            if mlbam_id in (None, ""):
+                continue
+            names[str(mlbam_id)] = {
+                "name": row.name,
+                "player_id": row.id,
+                "team": row.team,
+            }
+    _DISCIPLINE_NAME_CACHE = (key, names)
+    return names
+
+
+def _discipline_leaders_context(args) -> dict:
+    level_slug = _parse_leader_level(args.get("level")) or _LEADER_DEFAULT_LEVEL
+    metric_slug = _parse_leader_metric(args.get("metric")) or _LEADER_DEFAULT_METRIC
+    meta = pitch_discipline_store.cohort_meta()
+    rankable = set(meta.get("lower_is_better") or ()) | set(
+        meta.get("higher_is_better") or ()
+    )
+    if _LEADER_METRIC_SLUGS[metric_slug] not in rankable:
+        metric_slug = _LEADER_DEFAULT_METRIC
+    board = pitch_discipline_store.leaders(
+        _LEADER_LEVEL_SLUGS[level_slug],
+        _LEADER_METRIC_SLUGS[metric_slug],
+        limit=_LEADER_LIMIT,
+    )
+    names = _discipline_name_map()
+    rows = []
+    unresolved = 0
+    for rank, row in enumerate((board or {}).get("rows") or (), start=1):
+        info = names.get(row["mlbam_id"])
+        if info is None:
+            unresolved += 1
+        rows.append({
+            **row,
+            "rank": rank,
+            "name": (info or {}).get("name") or f"MLBAM {row['mlbam_id']}",
+            "player_url": (
+                f"/player/{quote(str(info['player_id']), safe='')}?mode=prospects"
+                if info else None
+            ),
+            "team": (info or {}).get("team"),
+        })
+    metric_options = [
+        {
+            "slug": slug,
+            "label": {
+                "chase": "Chase%",
+                "whiff": "Whiff%",
+                "swstr": "SwStr%",
+                "z-contact": "Z-Contact%",
+            }[slug],
+        }
+        for slug, key in _LEADER_METRIC_SLUGS.items()
+        if key in rankable
+    ]
+    return {
+        "leaders_available": bool(rows),
+        "board": board,
+        "rows": rows,
+        "unresolved_count": unresolved,
+        "level_slug": level_slug,
+        "metric_slug": metric_slug,
+        "level_options": [
+            {"slug": slug, "label": label}
+            for slug, label in _LEADER_LEVEL_SLUGS.items()
+        ],
+        "metric_options": metric_options,
+        "mode": "prospects",
+        "as_of": (board or {}).get("as_of"),
+    }
 _DYNASTY_SNAPSHOT_IDENTITY_INDEX_CACHE = {}
 
 
@@ -9046,6 +9160,126 @@ def gaps():
     )
 
 
+def _discipline_leaders_share_card_png(level: str, metric: str) -> bytes | None:
+    """Deterministic top-10 graphic over the same display-only board query."""
+    import io as _io
+    from PIL import Image, ImageDraw
+
+    board = pitch_discipline_store.leaders(level, metric, limit=10)
+    if not board or not board.get("rows"):
+        return None
+    names = _discipline_name_map()
+    palette = _GRAPHIC_PALETTE
+    img = Image.new("RGB", (1080, 1350), palette["bg"])
+    _graphic_fill_background(img)
+    draw = ImageDraw.Draw(img)
+    direction = "LOWEST" if board["direction"] == "asc" else "HIGHEST"
+    title = f"{direction} {board['label'].replace('%', '').upper()} - {level}"
+    subtitle = (
+        f"min {board['min_pitches']} pitches - "
+        f"{board['total_qualifying']} qualifying - as of {board['as_of']}"
+    )
+    _graphic_header(
+        img,
+        draw,
+        headline=title,
+        subtitle="Plate-discipline leaders from MLB play-by-play",
+        tagline="Discipline Leaders",
+    )
+    draw.text((48, 218), title, fill=palette["text"], font=_graphic_font(34, bold=True))
+    draw.text((48, 265), subtitle, fill=palette["muted"], font=_graphic_font(18, mono=True))
+
+    panel = (48, 310, 1032, 1115)
+    _graphic_glass_panel(img, draw, panel)
+    name_font = _graphic_font(24, bold=True)
+    meta_font = _graphic_font(15, mono=True)
+    value_font = _graphic_font(25, bold=True, mono=True)
+    for index, row in enumerate(board["rows"], start=1):
+        y = 326 + (index - 1) * 76
+        if index > 1:
+            draw.line((70, y - 8, 1010, y - 8), fill=palette["border"], width=1)
+        info = names.get(row["mlbam_id"]) or {}
+        name = info.get("name") or f"MLBAM {row['mlbam_id']}"
+        team = info.get("team") or "ORG N/A"
+        draw.text((70, y + 12), f"#{index}", fill=palette["slate"], font=value_font)
+        draw.text((142, y + 8), _graphic_fit_text(draw, name, name_font, 470),
+                  fill=palette["text"], font=name_font)
+        draw.text((144, y + 39), f"{team} - {row['pitches']} pitches",
+                  fill=palette["muted"], font=meta_font)
+        percentile = f"{row['pct']} pctile" if row["pct"] is not None else "pctile N/A"
+        draw.text((790, y + 39), percentile, fill=palette["muted"], font=meta_font)
+        display_value = f"{row['display']}{' est.' if row['estimated'] else ''}"
+        draw.text((1000 - _graphic_text_width(draw, display_value, value_font), y + 7),
+                  display_value, fill=palette["teal"], font=value_font)
+
+    if board.get("estimated"):
+        draw.text(
+            (48, 1142),
+            "Rows marked est. use pixel calibration; unmarked rows are measured",
+            fill=palette["clay"],
+            font=_graphic_font(15, bold=True),
+        )
+    draw.text(
+        (48, 1172),
+        "Same-level cohort only - display context, never a rank or value input",
+        fill=palette["muted"],
+        font=_graphic_font(15),
+    )
+    _graphic_footer(draw, right_note="valucast.app/discipline-leaders")
+    output = _io.BytesIO()
+    img.save(output, format="PNG", optimize=True)
+    return output.getvalue()
+
+
+@app.route("/discipline-leaders")
+def discipline_leaders():
+    return render_template(
+        "discipline_leaders.html",
+        **_discipline_leaders_context(request.args),
+    )
+
+
+@app.route("/discipline-leaders/share-card.png")
+def discipline_leaders_share_card_png():
+    level_slug = _parse_leader_level(request.args.get("level")) or _LEADER_DEFAULT_LEVEL
+    metric_slug = _parse_leader_metric(request.args.get("metric")) or _LEADER_DEFAULT_METRIC
+    png = _discipline_leaders_share_card_png(
+        _LEADER_LEVEL_SLUGS[level_slug],
+        _LEADER_METRIC_SLUGS[metric_slug],
+    )
+    if png is None:
+        abort(404)
+    response = make_response(png)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Content-Disposition"] = (
+        'inline; filename="valucast-discipline-leaders.png"'
+    )
+    return response
+
+
+@app.route("/discipline-leaders/share-card")
+def discipline_leaders_share_card():
+    level_slug = _parse_leader_level(request.args.get("level")) or _LEADER_DEFAULT_LEVEL
+    metric_slug = _parse_leader_metric(request.args.get("metric")) or _LEADER_DEFAULT_METRIC
+    query = urlencode({"level": level_slug, "metric": metric_slug})
+    png_path = f"/discipline-leaders/share-card.png?{query}"
+    html = build_share_preview_html(
+        title="Plate-Discipline Leaders",
+        subtitle="Same-level leaders from MLB play-by-play",
+        png_url=png_path,
+        filename="valucast-discipline-leaders.png",
+        public_png_url=_public_url(png_path),
+        public_page_url=_public_url(f"/discipline-leaders/share-card?{query}"),
+        description="ValuCast plate-discipline leaders by minor-league level.",
+        image_alt="ValuCast plate-discipline leaders",
+        back_url=f"/discipline-leaders?{query}",
+        back_label="Back to Discipline Leaders",
+    )
+    response = make_response(html)
+    response.headers["Content-Type"] = "text/html; charset=utf-8"
+    return response
+
+
 @app.route("/ledger")
 def ledger():
     """Human-readable Ahead-of-the-Curve ledger — the JSON artifact rendered for
@@ -9785,6 +10019,14 @@ def cards_gallery():
             "png_url": "/movers/share-card.png",
             "board_url": "/movers",
             "generated_at": movers_gen,
+        },
+        {
+            "title": "Plate-Discipline Leaders",
+            "caption": "Same-level leaders from MLB play-by-play - minimum 300 pitches.",
+            "page_url": "/discipline-leaders/share-card?level=aa&metric=chase",
+            "png_url": "/discipline-leaders/share-card.png?level=aa&metric=chase",
+            "board_url": "/discipline-leaders",
+            "generated_at": pitch_discipline_store.as_of,
         },
         {
             "title": "The Ledger",

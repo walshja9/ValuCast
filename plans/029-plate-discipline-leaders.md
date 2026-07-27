@@ -34,6 +34,15 @@
 
 ## Status
 
+- **Implementation update (2026-07-27)**: implemented on
+  `codex/discipline-leaders`; review is pending. Launch verification reproduced
+  an existing operational defect: the daily workflow never restored the raw
+  pitch-event cache, so the builder cold-skipped and left this board stale.
+  The branch therefore makes one explicit deviation from the original
+  "NO YAML change" constraint: a pinned `actions/cache` restore/bootstrap/save
+  sequence that preserves resumable partial backfills and marks the cache ready
+  only after a successful full build. This does not change model, rank, value,
+  or publication logic.
 - **Priority**: P3 (discretionary product/social surface — not a correctness or
   honesty leak; runs AFTER the current post-7/13 stack). Competitive origin:
   ProspectsLive shipped a generic stat-leaders view on 7/12. The generic version
@@ -845,10 +854,12 @@ git status --short
 - [ ] Only the 4 artifact-oriented metrics have boards (Chase%/Whiff%/SwStr%
       low-is-good ascending, Z-Contact% high-is-good descending); the 3
       contextual metrics have NO leaders surface of any kind.
-- [ ] est./measured carries through per bucket: AA/A+/A zone boards tagged
+- [ ] est./measured carries through per bucket: estimated zone rows are tagged
       "est." + `/methodology#plate-discipline` link (`.pd-est-tag`, same as
-      cards); AAA zone boards untagged (measured); exact metrics untagged
-      everywhere.
+      cards); measured rows stay untagged, including on a mixed-level board;
+      exact metrics are untagged everywhere. The live artifact contains a
+      small number of estimated AAA/A buckets, so disclosure must follow the
+      row's `zone_estimated` field rather than a level-wide assumption.
 - [ ] Per-level only — a multi-level player appears per level, never blended.
 - [ ] `?level=`/`?metric=` are slugged, validated against hardcoded allowlist
       maps, and junk falls back to defaults with a 200 (the `A+`-as-space trap
@@ -880,10 +891,9 @@ git status --short
   artifact carries fully-populated rates on 394 sub-floor buckets precisely
   so a naive iteration WILL leak them). STOP and restore the gate.
 - **An estimated metric would render without the est. tag** — a pixel-
-  calibrated zone metric (AA/A+/A) showing as if measured, on the page OR the
-  PNG. Either add the disclosure or cut the surface. (The inverse — tagging
-  AAA's measured zone metrics "est." — is also a violation: never over-hedge
-  a measurement.)
+  calibrated zone metric showing as if measured, on the page OR the PNG.
+  Either add the disclosure or cut the surface. The inverse — tagging a
+  measured row "est." — is also a violation: never over-hedge a measurement.
 - **A contextual metric is getting leader framing** — a board, pill, ranked
   column, or PNG for `swing_pct`/`z_swing_pct`/`zone_pct`, or any hardcoded
   orientation for them. The artifact's orientation lists are the source of

@@ -4,7 +4,18 @@ import json
 from web.pitch_discipline_store import PitchDisciplineStore
 
 
-def _write_artifact(tmp_path, players, *, zone_shipped=True):
+def _write_artifact(
+    tmp_path, players, *, zone_shipped=True, cohorts=None, estimated_metrics=None
+):
+    cohort_meta = {
+        "min_pitches": 300,
+        "zone_metrics_shipped": zone_shipped,
+        "cohort_sizes": {"AA": 3, "AAA": 1},
+        "lower_is_better": ["chase_pct", "swstr_pct", "whiff_pct"],
+        "higher_is_better": ["z_contact_pct"],
+    }
+    if cohorts is not None:
+        cohort_meta = cohorts
     payload = {
         "artifact": "valucast_pitch_discipline",
         "generated_at": "2026-07-10T00:00:00+00:00",
@@ -14,7 +25,10 @@ def _write_artifact(tmp_path, players, *, zone_shipped=True):
             "chase_pct": "Chase%", "z_swing_pct": "Z-Swing%",
             "z_contact_pct": "Z-Contact%", "zone_pct": "Zone%",
         },
-        "cohorts": {"min_pitches": 300, "zone_metrics_shipped": zone_shipped},
+        "cohorts": cohort_meta,
+        "estimated_metrics": estimated_metrics or [
+            "chase_pct", "z_swing_pct", "z_contact_pct", "zone_pct",
+        ],
         "players": players,
     }
     path = tmp_path / "disc.json"
@@ -22,16 +36,20 @@ def _write_artifact(tmp_path, players, *, zone_shipped=True):
     return path
 
 
-def _bucket(pitches, *, qualifies, zone_estimated=True, percentiles=None):
+def _bucket(
+    pitches, *, qualifies, zone_estimated=True, percentiles=None, rates=None
+):
+    bucket_rates = {
+        "swing_pct": 37.4, "whiff_pct": 24.8, "swstr_pct": 9.2,
+        "chase_pct": 15.8, "z_swing_pct": 64.3, "z_contact_pct": 80.6,
+        "zone_pct": 44.5,
+    }
+    bucket_rates.update(rates or {})
     return {
         "pitches": pitches,
         "qualifies": qualifies,
         "zone_estimated": zone_estimated,
-        "rates": {
-            "swing_pct": 37.4, "whiff_pct": 24.8, "swstr_pct": 9.2,
-            "chase_pct": 15.8, "z_swing_pct": 64.3, "z_contact_pct": 80.6,
-            "zone_pct": 44.5,
-        },
+        "rates": bucket_rates,
         "percentiles": percentiles or {},
     }
 
@@ -159,3 +177,148 @@ def test_zone_group_cut_no_zone_metrics(tmp_path):
     keys = {m["key"] for m in groups[0]["metrics"]}
     assert keys == {"swing_pct", "whiff_pct", "swstr_pct"}
     assert groups[0]["estimated"] is False
+
+
+def test_leaders_excludes_populated_below_floor_bucket(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {"AA": _bucket(
+            250, qualifies=False, rates={"chase_pct": 1.0},
+            percentiles={"chase_pct": 100},
+        )},
+        "2": {"AA": _bucket(
+            400, qualifies=True, rates={"chase_pct": 12.0},
+            percentiles={"chase_pct": 90},
+        )},
+    })
+    board = PitchDisciplineStore(path=path).leaders("AA", "chase_pct")
+    assert [row["mlbam_id"] for row in board["rows"]] == ["2"]
+    assert board["total_qualifying"] == 1
+
+
+def test_leaders_follow_artifact_orientation(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {"AA": _bucket(
+            400, qualifies=True, rates={"chase_pct": 18.0, "z_contact_pct": 88.0},
+            percentiles={"chase_pct": 70, "z_contact_pct": 95},
+        )},
+        "2": {"AA": _bucket(
+            400, qualifies=True, rates={"chase_pct": 12.0, "z_contact_pct": 82.0},
+            percentiles={"chase_pct": 95, "z_contact_pct": 70},
+        )},
+    })
+    store = PitchDisciplineStore(path=path)
+    assert [row["mlbam_id"] for row in store.leaders("AA", "chase_pct")["rows"]] == [
+        "2", "1",
+    ]
+    assert [
+        row["mlbam_id"] for row in store.leaders("AA", "z_contact_pct")["rows"]
+    ] == ["1", "2"]
+
+
+def test_leaders_refuses_contextual_unknown_and_unoriented_metrics(tmp_path):
+    players = {"1": {"AA": _bucket(400, qualifies=True)}}
+    store = PitchDisciplineStore(path=_write_artifact(tmp_path, players))
+    assert store.leaders("AA", "swing_pct") is None
+    assert store.leaders("AA", "zone_pct") is None
+    assert store.leaders("AA", "made_up") is None
+    assert store.leaders("ZZ", "chase_pct") is None
+
+    no_orientation = {"min_pitches": 300, "cohort_sizes": {"AA": 1}}
+    store = PitchDisciplineStore(
+        path=_write_artifact(tmp_path, players, cohorts=no_orientation)
+    )
+    assert store.leaders("AA", "chase_pct") is None
+
+
+def test_leaders_keep_levels_separate(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {
+            "AA": _bucket(
+                400, qualifies=True, rates={"chase_pct": 11.0},
+                percentiles={"chase_pct": 90},
+            ),
+            "AAA": _bucket(
+                500, qualifies=True, rates={"chase_pct": 22.0},
+                percentiles={"chase_pct": 40},
+            ),
+        },
+    })
+    store = PitchDisciplineStore(path=path)
+    assert store.leaders("AA", "chase_pct")["rows"][0]["raw"] == 11.0
+    assert store.leaders("AAA", "chase_pct")["rows"][0]["raw"] == 22.0
+
+
+def test_leaders_preserve_estimated_measured_split(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {
+            "AA": _bucket(
+                400, qualifies=True, zone_estimated=True,
+                percentiles={"chase_pct": 90, "whiff_pct": 80},
+            ),
+            "AAA": _bucket(
+                500, qualifies=True, zone_estimated=False,
+                percentiles={"chase_pct": 90, "whiff_pct": 80},
+            ),
+        },
+    })
+    store = PitchDisciplineStore(path=path)
+    assert store.leaders("AA", "chase_pct")["rows"][0]["estimated"] is True
+    assert store.leaders("AAA", "chase_pct")["rows"][0]["estimated"] is False
+    assert store.leaders("AA", "whiff_pct")["rows"][0]["estimated"] is False
+
+
+def test_leaders_estimated_summary_only_describes_displayed_rows(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {"AAA": _bucket(
+            500, qualifies=True, zone_estimated=False,
+            rates={"chase_pct": 10.0},
+            percentiles={"chase_pct": 99},
+        )},
+        "2": {"AAA": _bucket(
+            500, qualifies=True, zone_estimated=True,
+            rates={"chase_pct": 20.0},
+            percentiles={"chase_pct": 50},
+        )},
+    })
+    board = PitchDisciplineStore(path=path).leaders(
+        "AAA", "chase_pct", limit=1,
+    )
+    assert board["rows"][0]["estimated"] is False
+    assert board["estimated"] is False
+
+
+def test_leaders_match_card_estimate_default_when_flag_is_missing(tmp_path):
+    bucket = _bucket(
+        400, qualifies=True, percentiles={"chase_pct": 90},
+    )
+    bucket.pop("zone_estimated")
+    store = PitchDisciplineStore(
+        path=_write_artifact(tmp_path, {"1": {"AA": bucket}})
+    )
+    assert store.groups_for("1")[0]["estimated"] is True
+    assert store.leaders("AA", "chase_pct")["rows"][0]["estimated"] is True
+
+
+def test_leaders_and_cohort_meta_fail_soft(tmp_path):
+    store = PitchDisciplineStore(path=tmp_path / "missing.json")
+    assert store.leaders("AA", "chase_pct") is None
+    assert store.cohort_meta() == {}
+
+
+def test_leaders_break_rate_ties_by_larger_sample_then_id(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "2": {"AA": _bucket(
+            400, qualifies=True, rates={"chase_pct": 12.0},
+            percentiles={"chase_pct": 90},
+        )},
+        "1": {"AA": _bucket(
+            500, qualifies=True, rates={"chase_pct": 12.0},
+            percentiles={"chase_pct": 90},
+        )},
+        "3": {"AA": _bucket(
+            500, qualifies=True, rates={"chase_pct": 12.0},
+            percentiles={"chase_pct": 90},
+        )},
+    })
+    rows = PitchDisciplineStore(path=path).leaders("AA", "chase_pct")["rows"]
+    assert [row["mlbam_id"] for row in rows] == ["1", "3", "2"]
