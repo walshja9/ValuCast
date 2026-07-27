@@ -154,7 +154,7 @@ class PitchDisciplineStore:
             "min_pitches": self._cohorts.get("min_pitches"),
             "cohort_size": cohort_sizes.get(level),
             "total_qualifying": total,
-            "estimated": any(row["estimated"] for row in rows),
+            "estimated": any(row["estimated"] for row in limited),
             "rows": limited,
         }
 

@@ -267,6 +267,26 @@ def test_leaders_preserve_estimated_measured_split(tmp_path):
     assert store.leaders("AA", "whiff_pct")["rows"][0]["estimated"] is False
 
 
+def test_leaders_estimated_summary_only_describes_displayed_rows(tmp_path):
+    path = _write_artifact(tmp_path, {
+        "1": {"AAA": _bucket(
+            500, qualifies=True, zone_estimated=False,
+            rates={"chase_pct": 10.0},
+            percentiles={"chase_pct": 99},
+        )},
+        "2": {"AAA": _bucket(
+            500, qualifies=True, zone_estimated=True,
+            rates={"chase_pct": 20.0},
+            percentiles={"chase_pct": 50},
+        )},
+    })
+    board = PitchDisciplineStore(path=path).leaders(
+        "AAA", "chase_pct", limit=1,
+    )
+    assert board["rows"][0]["estimated"] is False
+    assert board["estimated"] is False
+
+
 def test_leaders_match_card_estimate_default_when_flag_is_missing(tmp_path):
     bucket = _bucket(
         400, qualifies=True, percentiles={"chase_pct": 90},
