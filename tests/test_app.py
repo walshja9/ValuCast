@@ -3143,6 +3143,39 @@ class TestPlateDisciplineLeaders(unittest.TestCase):
         self.assertIn(b"/methodology#plate-discipline", aa)
         self.assertNotIn(b'class="pd-est-tag"', aaa)
 
+    def test_mixed_level_marks_only_estimated_rows(self):
+        import json
+        import tempfile
+        from web.pitch_discipline_store import PitchDisciplineStore
+
+        with tempfile.TemporaryDirectory() as td:
+            store = self._fixture_store(Path(td))
+            payload = json.loads(store._path.read_text(encoding="utf-8"))
+            payload["players"]["999999999"] = {
+                "AAA": {
+                    "pitches": 500,
+                    "qualifies": True,
+                    "zone_estimated": True,
+                    "rates": {"chase_pct": 11.0},
+                    "percentiles": {"chase_pct": 99},
+                }
+            }
+            store._path.write_text(json.dumps(payload), encoding="utf-8")
+            mixed = PitchDisciplineStore(path=store._path)
+            html = self._get(
+                mixed, "?level=aaa&metric=chase"
+            ).data.decode("utf-8", "replace")
+
+        self.assertIn(
+            '11.0% <span class="pd-est-tag">est.</span>',
+            html,
+        )
+        self.assertNotIn(
+            '20.0% <span class="pd-est-tag">est.</span>',
+            html,
+        )
+        self.assertIn("Rows marked", html)
+
     def test_contextual_metrics_and_valuation_columns_are_absent(self):
         import tempfile
         with tempfile.TemporaryDirectory() as td:

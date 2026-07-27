@@ -9208,13 +9208,14 @@ def _discipline_leaders_share_card_png(level: str, metric: str) -> bytes | None:
                   fill=palette["muted"], font=meta_font)
         percentile = f"{row['pct']} pctile" if row["pct"] is not None else "pctile N/A"
         draw.text((790, y + 39), percentile, fill=palette["muted"], font=meta_font)
-        draw.text((1000 - _graphic_text_width(draw, row["display"], value_font), y + 7),
-                  row["display"], fill=palette["teal"], font=value_font)
+        display_value = f"{row['display']}{' est.' if row['estimated'] else ''}"
+        draw.text((1000 - _graphic_text_width(draw, display_value, value_font), y + 7),
+                  display_value, fill=palette["teal"], font=value_font)
 
     if board.get("estimated"):
         draw.text(
             (48, 1142),
-            "Zone metric estimated from pixel calibration - see valucast.app/methodology",
+            "Rows marked est. use pixel calibration; unmarked rows are measured",
             fill=palette["clay"],
             font=_graphic_font(15, bold=True),
         )
