@@ -262,7 +262,7 @@ def test_transition_continuity_blocks_any_final_score_decline():
     assert check["metrics"]["incident_count"] == 1
 
 
-def test_transition_continuity_allows_non_declining_final_score():
+def test_transition_continuity_allows_flat_final_score_on_masked_bucket_step():
     # A large masked bucket step with a flat-or-improving final public score
     # is outside condition 6 and must not block publication.
     check = _transition_check(
