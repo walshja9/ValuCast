@@ -1,6 +1,6 @@
 {
   "board_gate": {
-    "activated_at": "2026-07-27T12:45:53.208551+00:00",
+    "activated_at": "2026-07-28T15:20:33.477730+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.140745,
     "cv_method": "walk_forward",
@@ -14,13 +14,13 @@
   },
   "candidate_count": 2924,
   "impact_board_gate": {
-    "activated_at": "2026-07-27T12:45:53.208551+00:00",
+    "activated_at": "2026-07-28T15:20:33.477730+00:00",
     "baseline": "historical_neighbors_25",
-    "baseline_score": 0.130603,
+    "baseline_score": 0.130601,
     "cv_method": "walk_forward",
-    "improvement_pct": 3.031,
+    "improvement_pct": 3.0311,
     "metric": "category_impact_mae",
-    "model_score": 0.126644,
+    "model_score": 0.126643,
     "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
     "sample_size": 2901,
     "status": "active",
@@ -28,7 +28,7 @@
   },
   "impact_roles": {
     "hitter": {
-      "canonical_neighbor_mae": 0.099617,
+      "canonical_neighbor_mae": 0.099614,
       "feature_names": [
         "iso",
         "k_pct",
@@ -61,11 +61,11 @@
       "gate": {
         "activated_at": null,
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.096808,
+        "baseline_score": 0.096804,
         "cv_method": "walk_forward",
-        "improvement_pct": -1.5953,
+        "improvement_pct": -1.5952,
         "metric": "category_impact_mae",
-        "model_score": 0.098353,
+        "model_score": 0.098349,
         "reason": "does not beat historical_neighbors_25: -1.60% < required 2.0%",
         "sample_size": 1379,
         "status": "fallback",
@@ -101,8 +101,8 @@
         0.01029325
       ],
       "model_kind": "hurdle_ridge",
-      "model_mae": 0.098353,
-      "neighbor_mae": 0.096808,
+      "model_mae": 0.098349,
+      "neighbor_mae": 0.096804,
       "prediction_model": {
         "arrival_model": {
           "means": [
@@ -254,39 +254,39 @@
             0.08191811
           ],
           "weights": [
-            0.47113002,
-            0.04519927,
-            -0.02242634,
-            0.00331904,
-            0.01721692,
-            -0.02771073,
-            0.01075945,
-            -0.0194675,
-            -0.00676896,
-            0.02735188,
-            0.0227372,
-            -0.01041129,
-            0.02401736,
-            0.02230557,
-            0.00869518,
-            -0.00419729,
-            0.03496589,
-            0.03305837,
-            0.00252742,
-            -0.03803807,
-            0.00032204,
-            -0.01325172,
-            -0.04500571,
-            0.04736724,
-            -0.00441306,
-            0.01324496,
+            0.47110987,
+            0.04519815,
+            -0.02242115,
+            0.00331052,
+            0.01721555,
+            -0.02771875,
+            0.01073465,
+            -0.01946861,
+            -0.00676977,
+            0.02735045,
+            0.02274254,
+            -0.01041152,
+            0.02401626,
+            0.02229645,
+            0.00870206,
+            -0.00419897,
+            0.0349662,
+            0.03306101,
+            0.00252976,
+            -0.03802778,
+            0.00031577,
+            -0.01323232,
+            -0.0449994,
+            0.04738647,
+            -0.00441253,
+            0.01324368,
             0.0,
-            0.01386424
+            0.0138644
           ]
         },
         "model_kind": "hurdle_ridge"
       },
-      "prior_mae": 0.124273,
+      "prior_mae": 0.124267,
       "rank_concordance": 0.815726,
       "ridge_lambda": 3.0,
       "role": "hitter",
@@ -322,38 +322,38 @@
       "training_sample": 2536,
       "validation_sample": 1379,
       "weights": [
-        0.10292036,
-        0.02657855,
-        0.02417406,
-        -0.00374377,
-        0.02160979,
-        -0.01052624,
-        0.06391717,
-        0.04545574,
-        -0.02227066,
-        0.04290195,
-        -0.03960375,
-        -0.01534076,
-        0.01589448,
-        -0.02455331,
-        0.03717548,
-        0.00149614,
-        0.05941321,
-        0.05392377,
-        0.04635094,
-        0.01703139,
-        0.02411667,
-        0.02359529,
-        0.02418431,
-        -0.06658835,
-        0.00631646,
-        0.00161243,
+        0.10291596,
+        0.0265765,
+        0.02417518,
+        -0.00374714,
+        0.02160859,
+        -0.01052631,
+        0.06390302,
+        0.04545309,
+        -0.02226854,
+        0.04289907,
+        -0.0396001,
+        -0.01533984,
+        0.01589383,
+        -0.02455593,
+        0.03717654,
+        0.00149569,
+        0.05941079,
+        0.05392072,
+        0.04634895,
+        0.01703541,
+        0.02411484,
+        0.02360014,
+        0.02418287,
+        -0.06657457,
+        0.00631789,
+        0.00161178,
         0.0,
-        0.01599922
+        0.01599888
       ]
     },
     "pitcher": {
-      "canonical_neighbor_mae": 0.164498,
+      "canonical_neighbor_mae": 0.164499,
       "feature_names": [
         "k_per_9",
         "bb_per_9",
@@ -393,13 +393,13 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-07-27T12:45:53.208551+00:00",
+        "activated_at": "2026-07-28T15:20:33.477730+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.161222,
+        "baseline_score": 0.161223,
         "cv_method": "walk_forward",
         "improvement_pct": 5.548,
         "metric": "category_impact_mae",
-        "model_score": 0.152277,
+        "model_score": 0.152278,
         "reason": "beats historical_neighbors_25 by 5.55% OOS (category_impact_mae)",
         "sample_size": 1522,
         "status": "active",
@@ -444,8 +444,8 @@
         0.2458287
       ],
       "model_kind": "hurdle_ridge",
-      "model_mae": 0.152277,
-      "neighbor_mae": 0.161222,
+      "model_mae": 0.152278,
+      "neighbor_mae": 0.161223,
       "prediction_model": {
         "arrival_model": {
           "means": [
@@ -642,49 +642,49 @@
             0.43657121
           ],
           "weights": [
-            0.50875946,
-            0.02933498,
-            0.00711396,
-            -0.00260066,
-            0.02395523,
-            0.01600829,
-            -0.01521881,
-            -0.00850174,
-            0.03336172,
-            0.03272547,
-            -0.01076368,
-            0.01227576,
-            0.0061458,
-            -0.02758345,
-            0.00857557,
-            -0.0117367,
-            0.00356951,
-            0.00448505,
-            0.01202244,
-            0.0026946,
-            -0.0319808,
-            -0.00108965,
-            -0.01660546,
-            0.03256392,
-            0.01026183,
-            -0.00069598,
-            0.00699318,
+            0.50876098,
+            0.02933716,
+            0.0071134,
+            -0.00259884,
+            0.02394745,
+            0.01600859,
+            -0.01521693,
+            -0.00850154,
+            0.03336208,
+            0.03272423,
+            -0.01076204,
+            0.01227785,
+            0.00614539,
+            -0.02758043,
+            0.00857289,
+            -0.01173908,
+            0.00356912,
+            0.00448341,
+            0.01202397,
+            0.00269339,
+            -0.03197519,
+            -0.00108856,
+            -0.01660175,
+            0.03256541,
+            0.01025272,
+            -0.00069309,
+            0.00699496,
             0.0,
-            0.00304586,
-            0.00554938,
-            0.00429289,
-            -0.01747174,
-            0.00959114,
-            -0.00961716,
-            -0.0066191,
-            -0.0202766,
-            0.00565703
+            0.00304858,
+            0.00554616,
+            0.00429347,
+            -0.01747758,
+            0.00959372,
+            -0.00961556,
+            -0.00661862,
+            -0.02027929,
+            0.00565304
           ]
         },
         "model_kind": "hurdle_ridge"
       },
       "prior_mae": 0.173945,
-      "rank_concordance": 0.708821,
+      "rank_concordance": 0.708814,
       "ridge_lambda": 10.0,
       "role": "pitcher",
       "stds": [
@@ -728,43 +728,43 @@
       "training_sample": 2697,
       "validation_sample": 1522,
       "weights": [
-        0.13544282,
-        0.02425428,
-        0.01077754,
-        0.0674355,
-        -0.00900454,
-        0.01835226,
-        -0.0027131,
-        0.00672497,
-        0.01470407,
-        0.01180253,
-        -0.01475631,
-        0.00661577,
-        0.01057925,
-        0.04928232,
-        0.00979219,
-        -0.02787415,
-        0.02960647,
-        -0.0235251,
-        0.00394178,
-        0.02643185,
-        -0.00502211,
-        0.01328092,
-        0.00389848,
-        0.03865503,
-        0.00523927,
-        -0.00285973,
-        0.00646205,
+        0.13544323,
+        0.02425458,
+        0.01077781,
+        0.06743639,
+        -0.00900796,
+        0.01835194,
+        -0.00271337,
+        0.00672389,
+        0.01470394,
+        0.01180299,
+        -0.0147559,
+        0.0066165,
+        0.01057959,
+        0.04928357,
+        0.00979155,
+        -0.02787452,
+        0.02960703,
+        -0.02352463,
+        0.00394125,
+        0.02643193,
+        -0.0050197,
+        0.01328004,
+        0.00389939,
+        0.03865691,
+        0.00523562,
+        -0.00285639,
+        0.00646245,
         0.0,
-        0.01556799,
-        -0.00393078,
-        0.02590338,
-        -0.0191442,
-        -0.0013019,
-        -0.00612601,
-        -0.00264302,
-        -0.0036368,
-        -0.00207989
+        0.01556806,
+        -0.00393154,
+        0.0259036,
+        -0.01914543,
+        -0.00130123,
+        -0.00612565,
+        -0.00264288,
+        -0.0036376,
+        -0.00208081
       ]
     }
   },
@@ -847,7 +847,7 @@
     "validation": "expanding_window"
   },
   "input_contract": {
-    "generated_at": "2026-07-27T00:00:00+00:00",
+    "generated_at": "2026-07-28T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -895,7 +895,7 @@
           "feature": "inverse_draft_pick"
         }
       ],
-      "expected_category_impact_score": 0.6755,
+      "expected_category_impact_score": 0.6756,
       "expected_outcome_score": 0.998,
       "impact_drivers": [
         {
@@ -1101,7 +1101,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.5706,
+      "expected_category_impact_score": 0.5705,
       "expected_outcome_score": 0.7044,
       "impact_drivers": [
         {
@@ -1149,7 +1149,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.6117,
+      "expected_category_impact_score": 0.6116,
       "expected_outcome_score": 0.6995,
       "impact_drivers": [
         {
@@ -1197,11 +1197,11 @@
           "feature": "log_signing_bonus"
         }
       ],
-      "expected_category_impact_score": 0.4335,
+      "expected_category_impact_score": 0.4336,
       "expected_outcome_score": 0.698,
       "impact_drivers": [
         {
-          "contribution": 0.175,
+          "contribution": 0.1751,
           "feature": "pick_value"
         },
         {
@@ -1307,7 +1307,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.6018,
+      "expected_category_impact_score": 0.6017,
       "expected_outcome_score": 0.6659,
       "impact_drivers": [
         {
@@ -1451,7 +1451,7 @@
           "feature": "log_signing_bonus"
         }
       ],
-      "expected_category_impact_score": 0.5246,
+      "expected_category_impact_score": 0.5247,
       "expected_outcome_score": 0.6028,
       "impact_drivers": [
         {
@@ -1513,7 +1513,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.5721,
+      "expected_category_impact_score": 0.572,
       "expected_outcome_score": 0.5986,
       "impact_drivers": [
         {
@@ -1573,7 +1573,7 @@
           "feature": "bb_to_k_ratio"
         },
         {
-          "contribution": 0.0798,
+          "contribution": 0.0797,
           "feature": "slg"
         }
       ],
@@ -1617,7 +1617,7 @@
           "feature": "prep_drafted"
         },
         {
-          "contribution": 0.0527,
+          "contribution": 0.0528,
           "feature": "pick_value"
         },
         {
@@ -1780,7 +1780,7 @@
       "expected_outcome_score": 0.5711,
       "impact_drivers": [
         {
-          "contribution": 0.2081,
+          "contribution": 0.2082,
           "feature": "pick_value"
         },
         {
@@ -1824,7 +1824,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.5347,
+      "expected_category_impact_score": 0.5346,
       "expected_outcome_score": 0.5696,
       "impact_drivers": [
         {
@@ -1920,7 +1920,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3693,
+      "expected_category_impact_score": 0.3692,
       "expected_outcome_score": 0.5444,
       "impact_drivers": [
         {
@@ -2016,7 +2016,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.3913,
+      "expected_category_impact_score": 0.3912,
       "expected_outcome_score": 0.5358,
       "impact_drivers": [
         {
@@ -2064,11 +2064,11 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4953,
+      "expected_category_impact_score": 0.4952,
       "expected_outcome_score": 0.5303,
       "impact_drivers": [
         {
-          "contribution": 0.1856,
+          "contribution": 0.1855,
           "feature": "aaa_translation"
         },
         {
@@ -2126,7 +2126,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.5245,
+      "expected_category_impact_score": 0.5244,
       "expected_outcome_score": 0.518,
       "impact_drivers": [
         {
@@ -2186,7 +2186,7 @@
           "feature": "inverse_draft_round"
         },
         {
-          "contribution": -0.0546,
+          "contribution": -0.0547,
           "feature": "log_signing_bonus"
         }
       ],
@@ -2231,7 +2231,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.5095,
+      "expected_category_impact_score": 0.5094,
       "expected_outcome_score": 0.5061,
       "impact_drivers": [
         {
@@ -2279,11 +2279,11 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.5529,
+      "expected_category_impact_score": 0.5528,
       "expected_outcome_score": 0.5029,
       "impact_drivers": [
         {
-          "contribution": 0.1945,
+          "contribution": 0.1944,
           "feature": "aaa_translation"
         },
         {
@@ -2327,7 +2327,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.4882,
+      "expected_category_impact_score": 0.4881,
       "expected_outcome_score": 0.4971,
       "impact_drivers": [
         {
@@ -2375,11 +2375,11 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4925,
+      "expected_category_impact_score": 0.4924,
       "expected_outcome_score": 0.4929,
       "impact_drivers": [
         {
-          "contribution": 0.1713,
+          "contribution": 0.1712,
           "feature": "aaa_translation"
         },
         {
@@ -2437,7 +2437,7 @@
           "feature": "level"
         }
       ],
-      "expected_category_impact_score": 0.3964,
+      "expected_category_impact_score": 0.3963,
       "expected_outcome_score": 0.4866,
       "impact_drivers": [
         {
@@ -2445,7 +2445,7 @@
           "feature": "sb_per_600_pa"
         },
         {
-          "contribution": 0.0515,
+          "contribution": 0.0514,
           "feature": "babip"
         },
         {
@@ -2589,7 +2589,7 @@
           "feature": "prep_drafted"
         },
         {
-          "contribution": -0.0784,
+          "contribution": -0.0785,
           "feature": "log_signing_bonus"
         },
         {
@@ -2629,7 +2629,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.462,
+      "expected_category_impact_score": 0.4619,
       "expected_outcome_score": 0.4798,
       "impact_drivers": [
         {
@@ -2787,7 +2787,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3936,
+      "expected_category_impact_score": 0.3935,
       "expected_outcome_score": 0.4635,
       "impact_drivers": [
         {
@@ -2835,7 +2835,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4631,
+      "expected_category_impact_score": 0.463,
       "expected_outcome_score": 0.4566,
       "impact_drivers": [
         {
@@ -2843,7 +2843,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.1096,
+          "contribution": 0.1095,
           "feature": "iso_x_youth"
         },
         {
@@ -2883,7 +2883,7 @@
           "feature": "inverse_draft_pick"
         }
       ],
-      "expected_category_impact_score": 0.4057,
+      "expected_category_impact_score": 0.4056,
       "expected_outcome_score": 0.4557,
       "impact_drivers": [
         {
@@ -2983,7 +2983,7 @@
       "expected_outcome_score": 0.4538,
       "impact_drivers": [
         {
-          "contribution": 0.2822,
+          "contribution": 0.2823,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -3039,7 +3039,7 @@
           "feature": "inverse_draft_round"
         },
         {
-          "contribution": -0.0891,
+          "contribution": -0.0892,
           "feature": "log_signing_bonus"
         }
       ],
@@ -3075,11 +3075,11 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4704,
+      "expected_category_impact_score": 0.4703,
       "expected_outcome_score": 0.4468,
       "impact_drivers": [
         {
-          "contribution": 0.1692,
+          "contribution": 0.1691,
           "feature": "aaa_translation"
         },
         {
@@ -3185,7 +3185,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2962,
+      "expected_category_impact_score": 0.2961,
       "expected_outcome_score": 0.4439,
       "impact_drivers": [
         {
@@ -3347,7 +3347,7 @@
       "expected_outcome_score": 0.4357,
       "impact_drivers": [
         {
-          "contribution": 0.1663,
+          "contribution": 0.1662,
           "feature": "aaa_translation"
         },
         {
@@ -3439,7 +3439,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.4444,
+      "expected_category_impact_score": 0.4443,
       "expected_outcome_score": 0.4319,
       "impact_drivers": [
         {
@@ -3539,7 +3539,7 @@
       "expected_outcome_score": 0.4209,
       "impact_drivers": [
         {
-          "contribution": 0.1996,
+          "contribution": 0.1995,
           "feature": "aaa_translation"
         },
         {
@@ -3697,7 +3697,7 @@
       "expected_outcome_score": 0.4187,
       "impact_drivers": [
         {
-          "contribution": 0.1657,
+          "contribution": 0.1656,
           "feature": "aaa_translation"
         },
         {
@@ -3845,7 +3845,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0946,
+          "contribution": 0.0945,
           "feature": "aaa_translation"
         },
         {
@@ -4143,7 +4143,7 @@
       "expected_outcome_score": 0.3966,
       "impact_drivers": [
         {
-          "contribution": 0.3475,
+          "contribution": 0.3476,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -4489,7 +4489,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.332,
+      "expected_category_impact_score": 0.3319,
       "expected_outcome_score": 0.3935,
       "impact_drivers": [
         {
@@ -4661,11 +4661,11 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.4081,
+      "expected_category_impact_score": 0.408,
       "expected_outcome_score": 0.3913,
       "impact_drivers": [
         {
-          "contribution": 0.1655,
+          "contribution": 0.1654,
           "feature": "aaa_translation"
         },
         {
@@ -4775,11 +4775,11 @@
       "expected_outcome_score": 0.3892,
       "impact_drivers": [
         {
-          "contribution": 0.4244,
+          "contribution": 0.4245,
           "feature": "batters_faced_per_ip"
         },
         {
-          "contribution": -0.052,
+          "contribution": -0.0521,
           "feature": "h_per_9"
         },
         {
@@ -4819,11 +4819,11 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.3859,
+      "expected_category_impact_score": 0.3858,
       "expected_outcome_score": 0.3887,
       "impact_drivers": [
         {
-          "contribution": 0.0948,
+          "contribution": 0.0947,
           "feature": "aaa_translation"
         },
         {
@@ -4871,7 +4871,7 @@
       "expected_outcome_score": 0.3885,
       "impact_drivers": [
         {
-          "contribution": 0.3047,
+          "contribution": 0.3048,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -5023,7 +5023,7 @@
           "feature": "iso"
         },
         {
-          "contribution": 0.0983,
+          "contribution": 0.0982,
           "feature": "aaa_translation"
         }
       ],
@@ -5169,7 +5169,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.399,
+      "expected_category_impact_score": 0.3989,
       "expected_outcome_score": 0.3818,
       "impact_drivers": [
         {
@@ -5269,7 +5269,7 @@
       "expected_outcome_score": 0.3776,
       "impact_drivers": [
         {
-          "contribution": 0.4558,
+          "contribution": 0.4559,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -5313,15 +5313,15 @@
           "feature": "h_per_9"
         }
       ],
-      "expected_category_impact_score": 0.5483,
+      "expected_category_impact_score": 0.5484,
       "expected_outcome_score": 0.3727,
       "impact_drivers": [
         {
-          "contribution": 0.2629,
+          "contribution": 0.263,
           "feature": "batters_faced_per_ip"
         },
         {
-          "contribution": 0.0804,
+          "contribution": 0.0805,
           "feature": "k_per_9"
         },
         {
@@ -5729,7 +5729,7 @@
       "expected_outcome_score": 0.3631,
       "impact_drivers": [
         {
-          "contribution": 0.1926,
+          "contribution": 0.1925,
           "feature": "aaa_translation"
         },
         {
@@ -5773,7 +5773,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2918,
+      "expected_category_impact_score": 0.2917,
       "expected_outcome_score": 0.3623,
       "impact_drivers": [
         {
@@ -5835,11 +5835,11 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.4373,
+      "expected_category_impact_score": 0.4372,
       "expected_outcome_score": 0.362,
       "impact_drivers": [
         {
-          "contribution": 0.1729,
+          "contribution": 0.1728,
           "feature": "aaa_translation"
         },
         {
@@ -5945,7 +5945,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3664,
+      "expected_category_impact_score": 0.3663,
       "expected_outcome_score": 0.3611,
       "impact_drivers": [
         {
@@ -6173,7 +6173,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0593,
+          "contribution": 0.0592,
           "feature": "iso_x_youth"
         },
         {
@@ -6371,7 +6371,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.3445,
+      "expected_category_impact_score": 0.3444,
       "expected_outcome_score": 0.3486,
       "impact_drivers": [
         {
@@ -6433,7 +6433,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3424,
+      "expected_category_impact_score": 0.3423,
       "expected_outcome_score": 0.3471,
       "impact_drivers": [
         {
@@ -6495,7 +6495,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2265,
+      "expected_category_impact_score": 0.2264,
       "expected_outcome_score": 0.3459,
       "impact_drivers": [
         {
@@ -6705,7 +6705,7 @@
       "expected_outcome_score": 0.3414,
       "impact_drivers": [
         {
-          "contribution": -0.0789,
+          "contribution": -0.0788,
           "feature": "prep_drafted"
         },
         {
@@ -6743,7 +6743,7 @@
       "sample_reliability": 0.485,
       "sample_unit": "IP",
       "team": "Pensacola Blue Wahoos",
-      "valucast_impact_rank": 174,
+      "valucast_impact_rank": 173,
       "valucast_prospect_rank": 114
     },
     {
@@ -6763,11 +6763,11 @@
           "feature": "inverse_draft_pick"
         }
       ],
-      "expected_category_impact_score": 0.3387,
+      "expected_category_impact_score": 0.3386,
       "expected_outcome_score": 0.3409,
       "impact_drivers": [
         {
-          "contribution": 0.1613,
+          "contribution": 0.1612,
           "feature": "aaa_translation"
         },
         {
@@ -6863,7 +6863,7 @@
       "expected_outcome_score": 0.3404,
       "impact_drivers": [
         {
-          "contribution": 0.278,
+          "contribution": 0.2781,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -6955,7 +6955,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.3641,
+      "expected_category_impact_score": 0.364,
       "expected_outcome_score": 0.3395,
       "impact_drivers": [
         {
@@ -7099,7 +7099,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.2808,
+      "expected_category_impact_score": 0.2809,
       "expected_outcome_score": 0.3378,
       "impact_drivers": [
         {
@@ -7227,7 +7227,7 @@
       "expected_outcome_score": 0.3359,
       "impact_drivers": [
         {
-          "contribution": 0.1683,
+          "contribution": 0.1682,
           "feature": "aaa_translation"
         },
         {
@@ -7415,7 +7415,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.3109,
+      "expected_category_impact_score": 0.3108,
       "expected_outcome_score": 0.3338,
       "impact_drivers": [
         {
@@ -7457,7 +7457,7 @@
       "sample_reliability": 0.452,
       "sample_unit": "PA",
       "team": "Harrisburg Senators",
-      "valucast_impact_rank": 181,
+      "valucast_impact_rank": 182,
       "valucast_prospect_rank": 128
     },
     {
@@ -7477,7 +7477,7 @@
           "feature": "prep_drafted"
         }
       ],
-      "expected_category_impact_score": 0.5338,
+      "expected_category_impact_score": 0.5339,
       "expected_outcome_score": 0.3337,
       "impact_drivers": [
         {
@@ -7529,7 +7529,7 @@
       "expected_outcome_score": 0.3336,
       "impact_drivers": [
         {
-          "contribution": 0.0498,
+          "contribution": 0.0499,
           "feature": "bb_to_k_ratio"
         },
         {
@@ -7683,11 +7683,11 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.3502,
+      "expected_category_impact_score": 0.3501,
       "expected_outcome_score": 0.3316,
       "impact_drivers": [
         {
-          "contribution": 0.1522,
+          "contribution": 0.1521,
           "feature": "aaa_translation"
         },
         {
@@ -7807,7 +7807,7 @@
       "sample_reliability": 0.649,
       "sample_unit": "IP",
       "team": "Harrisburg Senators",
-      "valucast_impact_rank": 298,
+      "valucast_impact_rank": 297,
       "valucast_prospect_rank": 135
     },
     {
@@ -8011,7 +8011,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0451,
+          "contribution": 0.045,
           "feature": "youth"
         }
       ],
@@ -8157,11 +8157,11 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.347,
+      "expected_category_impact_score": 0.3469,
       "expected_outcome_score": 0.3262,
       "impact_drivers": [
         {
-          "contribution": 0.1675,
+          "contribution": 0.1674,
           "feature": "aaa_translation"
         },
         {
@@ -8233,7 +8233,7 @@
       "sample_reliability": 0.555,
       "sample_unit": "PA",
       "team": "Fresno Grizzlies",
-      "valucast_impact_rank": 349,
+      "valucast_impact_rank": 348,
       "valucast_prospect_rank": 143
     },
     {
@@ -8349,7 +8349,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3425,
+      "expected_category_impact_score": 0.3424,
       "expected_outcome_score": 0.3234,
       "impact_drivers": [
         {
@@ -8568,7 +8568,7 @@
       "expected_outcome_score": 0.3182,
       "impact_drivers": [
         {
-          "contribution": 0.0958,
+          "contribution": 0.0957,
           "feature": "aaa_translation"
         },
         {
@@ -8630,7 +8630,7 @@
       "expected_outcome_score": 0.3175,
       "impact_drivers": [
         {
-          "contribution": -0.0773,
+          "contribution": -0.0774,
           "feature": "log_signing_bonus"
         },
         {
@@ -8783,7 +8783,7 @@
       "expected_outcome_score": 0.3144,
       "impact_drivers": [
         {
-          "contribution": 0.1413,
+          "contribution": 0.1412,
           "feature": "aaa_translation"
         },
         {
@@ -8827,7 +8827,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2869,
+      "expected_category_impact_score": 0.2868,
       "expected_outcome_score": 0.3137,
       "impact_drivers": [
         {
@@ -8971,7 +8971,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2323,
+      "expected_category_impact_score": 0.2322,
       "expected_outcome_score": 0.3125,
       "impact_drivers": [
         {
@@ -9095,7 +9095,7 @@
       "sample_reliability": 0.587,
       "sample_unit": "IP",
       "team": "Vancouver Canadians",
-      "valucast_impact_rank": 306,
+      "valucast_impact_rank": 305,
       "valucast_prospect_rank": 160
     },
     {
@@ -9163,7 +9163,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3434,
+      "expected_category_impact_score": 0.3433,
       "expected_outcome_score": 0.3099,
       "impact_drivers": [
         {
@@ -9527,7 +9527,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3532,
+      "expected_category_impact_score": 0.3531,
       "expected_outcome_score": 0.3078,
       "impact_drivers": [
         {
@@ -9767,7 +9767,7 @@
           "feature": "babip"
         }
       ],
-      "expected_category_impact_score": 0.305,
+      "expected_category_impact_score": 0.3049,
       "expected_outcome_score": 0.3059,
       "impact_drivers": [
         {
@@ -9863,11 +9863,11 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.324,
+      "expected_category_impact_score": 0.3239,
       "expected_outcome_score": 0.3046,
       "impact_drivers": [
         {
-          "contribution": 0.1468,
+          "contribution": 0.1467,
           "feature": "aaa_translation"
         },
         {
@@ -10055,7 +10055,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2793,
+      "expected_category_impact_score": 0.2792,
       "expected_outcome_score": 0.301,
       "impact_drivers": [
         {
@@ -10151,7 +10151,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.3373,
+      "expected_category_impact_score": 0.3372,
       "expected_outcome_score": 0.2999,
       "impact_drivers": [
         {
@@ -10266,7 +10266,7 @@
       "expected_outcome_score": 0.2991,
       "impact_drivers": [
         {
-          "contribution": 0.097,
+          "contribution": 0.0969,
           "feature": "aaa_translation"
         },
         {
@@ -10372,7 +10372,7 @@
           "feature": "h_per_9"
         }
       ],
-      "expected_category_impact_score": 0.5188,
+      "expected_category_impact_score": 0.5189,
       "expected_outcome_score": 0.2988,
       "impact_drivers": [
         {
@@ -10664,7 +10664,7 @@
       "expected_outcome_score": 0.2969,
       "impact_drivers": [
         {
-          "contribution": 0.1449,
+          "contribution": 0.1448,
           "feature": "aaa_translation"
         },
         {
@@ -10708,7 +10708,7 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4895,
+      "expected_category_impact_score": 0.4896,
       "expected_outcome_score": 0.2962,
       "impact_drivers": [
         {
@@ -10756,7 +10756,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.4779,
+      "expected_category_impact_score": 0.478,
       "expected_outcome_score": 0.2962,
       "impact_drivers": [
         {
@@ -10841,7 +10841,7 @@
       "sample_reliability": 0.522,
       "sample_unit": "IP",
       "team": "Albuquerque Isotopes",
-      "valucast_impact_rank": 208,
+      "valucast_impact_rank": 207,
       "valucast_prospect_rank": 195
     },
     {
@@ -11019,11 +11019,11 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.3146,
+      "expected_category_impact_score": 0.3145,
       "expected_outcome_score": 0.2927,
       "impact_drivers": [
         {
-          "contribution": 0.1553,
+          "contribution": 0.1552,
           "feature": "aaa_translation"
         },
         {
@@ -11061,7 +11061,7 @@
       "sample_reliability": 0.557,
       "sample_unit": "PA",
       "team": "Las Vegas Aviators",
-      "valucast_impact_rank": 173,
+      "valucast_impact_rank": 174,
       "valucast_prospect_rank": 199
     },
     {
@@ -11085,7 +11085,7 @@
       "expected_outcome_score": 0.2925,
       "impact_drivers": [
         {
-          "contribution": 0.3459,
+          "contribution": 0.346,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -11229,7 +11229,7 @@
       "expected_outcome_score": 0.2913,
       "impact_drivers": [
         {
-          "contribution": -0.0701,
+          "contribution": -0.0702,
           "feature": "log_signing_bonus"
         },
         {
@@ -11277,7 +11277,7 @@
       "expected_outcome_score": 0.2909,
       "impact_drivers": [
         {
-          "contribution": 0.1768,
+          "contribution": 0.1767,
           "feature": "aaa_translation"
         },
         {
@@ -11383,7 +11383,7 @@
           "feature": "pick_value"
         }
       ],
-      "expected_category_impact_score": 0.1829,
+      "expected_category_impact_score": 0.1828,
       "expected_outcome_score": 0.2904,
       "impact_drivers": [
         {
@@ -11527,7 +11527,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3065,
+      "expected_category_impact_score": 0.3064,
       "expected_outcome_score": 0.289,
       "impact_drivers": [
         {
@@ -11555,7 +11555,7 @@
       "sample_reliability": 0.626,
       "sample_unit": "PA",
       "team": "Durham Bulls",
-      "valucast_impact_rank": 191,
+      "valucast_impact_rank": 192,
       "valucast_prospect_rank": 209
     },
     {
@@ -11651,7 +11651,7 @@
       "sample_reliability": 0.627,
       "sample_unit": "PA",
       "team": "Everett AquaSox",
-      "valucast_impact_rank": 479,
+      "valucast_impact_rank": 478,
       "valucast_prospect_rank": 211
     },
     {
@@ -11793,7 +11793,7 @@
           "feature": "avg"
         },
         {
-          "contribution": 0.0422,
+          "contribution": 0.0421,
           "feature": "aaa_translation"
         }
       ],
@@ -11847,7 +11847,7 @@
       "expected_outcome_score": 0.2868,
       "impact_drivers": [
         {
-          "contribution": -0.0726,
+          "contribution": -0.0727,
           "feature": "log_signing_bonus"
         },
         {
@@ -12179,7 +12179,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.3134,
+      "expected_category_impact_score": 0.3133,
       "expected_outcome_score": 0.284,
       "impact_drivers": [
         {
@@ -12255,7 +12255,7 @@
       "sample_reliability": 0.582,
       "sample_unit": "PA",
       "team": "Jacksonville Jumbo Shrimp",
-      "valucast_impact_rank": 192,
+      "valucast_impact_rank": 191,
       "valucast_prospect_rank": 223
     },
     {
@@ -12287,7 +12287,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": 0.0445,
+          "contribution": 0.0446,
           "feature": "start_rate"
         }
       ],
@@ -12375,7 +12375,7 @@
       "expected_outcome_score": 0.2809,
       "impact_drivers": [
         {
-          "contribution": 0.0587,
+          "contribution": 0.0586,
           "feature": "slg"
         },
         {
@@ -12489,7 +12489,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0484,
+          "contribution": 0.0483,
           "feature": "babip"
         },
         {
@@ -12509,7 +12509,7 @@
       "sample_reliability": 0.639,
       "sample_unit": "PA",
       "team": "Nashville Sounds",
-      "valucast_impact_rank": 256,
+      "valucast_impact_rank": 255,
       "valucast_prospect_rank": 228
     },
     {
@@ -12571,7 +12571,7 @@
       "sample_reliability": 0.348,
       "sample_unit": "IP",
       "team": "Wilmington Blue Rocks",
-      "valucast_impact_rank": 555,
+      "valucast_impact_rank": 556,
       "valucast_prospect_rank": 229
     },
     {
@@ -12591,11 +12591,11 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.3014,
+      "expected_category_impact_score": 0.3013,
       "expected_outcome_score": 0.2791,
       "impact_drivers": [
         {
-          "contribution": 0.1612,
+          "contribution": 0.1611,
           "feature": "aaa_translation"
         },
         {
@@ -12619,7 +12619,7 @@
       "sample_reliability": 0.479,
       "sample_unit": "PA",
       "team": "Reno Aces",
-      "valucast_impact_rank": 207,
+      "valucast_impact_rank": 208,
       "valucast_prospect_rank": 230
     },
     {
@@ -12735,7 +12735,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2473,
+      "expected_category_impact_score": 0.2472,
       "expected_outcome_score": 0.278,
       "impact_drivers": [
         {
@@ -13075,7 +13075,7 @@
       "expected_outcome_score": 0.2748,
       "impact_drivers": [
         {
-          "contribution": 0.1498,
+          "contribution": 0.1497,
           "feature": "aaa_translation"
         },
         {
@@ -13167,7 +13167,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2927,
+      "expected_category_impact_score": 0.2926,
       "expected_outcome_score": 0.2739,
       "impact_drivers": [
         {
@@ -13467,7 +13467,7 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0745,
+          "contribution": 0.0744,
           "feature": "iso"
         }
       ],
@@ -13875,7 +13875,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0427,
+          "contribution": 0.0426,
           "feature": "iso_x_youth"
         },
         {
@@ -14225,7 +14225,7 @@
           "feature": "batters_faced_per_ip"
         },
         {
-          "contribution": -0.0937,
+          "contribution": -0.0936,
           "feature": "prep_drafted"
         },
         {
@@ -14355,7 +14355,7 @@
       "sample_reliability": 0.554,
       "sample_unit": "IP",
       "team": "Nashville Sounds",
-      "valucast_impact_rank": 182,
+      "valucast_impact_rank": 181,
       "valucast_prospect_rank": 265
     },
     {
@@ -14629,7 +14629,7 @@
           "feature": "obp"
         }
       ],
-      "expected_category_impact_score": 0.2276,
+      "expected_category_impact_score": 0.2275,
       "expected_outcome_score": 0.2675,
       "impact_drivers": [
         {
@@ -14748,11 +14748,11 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4942,
+      "expected_category_impact_score": 0.4943,
       "expected_outcome_score": 0.2668,
       "impact_drivers": [
         {
-          "contribution": 0.3655,
+          "contribution": 0.3656,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -15346,7 +15346,7 @@
       "sample_reliability": 0.566,
       "sample_unit": "IP",
       "team": "Sugar Land Space Cowboys",
-      "valucast_impact_rank": 249,
+      "valucast_impact_rank": 248,
       "valucast_prospect_rank": 284
     },
     {
@@ -15480,7 +15480,7 @@
       "expected_outcome_score": 0.2584,
       "impact_drivers": [
         {
-          "contribution": -0.0683,
+          "contribution": -0.0684,
           "feature": "log_signing_bonus"
         },
         {
@@ -15542,7 +15542,7 @@
       "expected_outcome_score": 0.2583,
       "impact_drivers": [
         {
-          "contribution": -0.0641,
+          "contribution": -0.0642,
           "feature": "log_signing_bonus"
         },
         {
@@ -15634,7 +15634,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2262,
+      "expected_category_impact_score": 0.2261,
       "expected_outcome_score": 0.2572,
       "impact_drivers": [
         {
@@ -15642,7 +15642,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0477,
+          "contribution": 0.0476,
           "feature": "youth"
         },
         {
@@ -15844,7 +15844,7 @@
       "expected_outcome_score": 0.2554,
       "impact_drivers": [
         {
-          "contribution": 0.1568,
+          "contribution": 0.1567,
           "feature": "aaa_translation"
         },
         {
@@ -15888,7 +15888,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.2618,
+      "expected_category_impact_score": 0.2619,
       "expected_outcome_score": 0.2554,
       "impact_drivers": [
         {
@@ -15896,7 +15896,7 @@
           "feature": "pick_value"
         },
         {
-          "contribution": -0.0781,
+          "contribution": -0.0782,
           "feature": "log_signing_bonus"
         },
         {
@@ -16044,7 +16044,7 @@
           "feature": "sb_per_600_pa"
         },
         {
-          "contribution": 0.0428,
+          "contribution": 0.0427,
           "feature": "slg"
         }
       ],
@@ -16080,7 +16080,7 @@
           "feature": "k_bb_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.3065,
+      "expected_category_impact_score": 0.3066,
       "expected_outcome_score": 0.2548,
       "impact_drivers": [
         {
@@ -16176,15 +16176,15 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.4043,
+      "expected_category_impact_score": 0.4044,
       "expected_outcome_score": 0.2543,
       "impact_drivers": [
         {
-          "contribution": 0.2937,
+          "contribution": 0.2938,
           "feature": "batters_faced_per_ip"
         },
         {
-          "contribution": 0.0434,
+          "contribution": 0.0435,
           "feature": "start_rate"
         },
         {
@@ -16320,7 +16320,7 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.4633,
+      "expected_category_impact_score": 0.4634,
       "expected_outcome_score": 0.2532,
       "impact_drivers": [
         {
@@ -16396,7 +16396,7 @@
       "sample_reliability": 0.541,
       "sample_unit": "PA",
       "team": "Reading Fightin Phils",
-      "valucast_impact_rank": 345,
+      "valucast_impact_rank": 344,
       "valucast_prospect_rank": 305
     },
     {
@@ -16424,11 +16424,11 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0567,
+          "contribution": 0.0566,
           "feature": "iso"
         },
         {
-          "contribution": 0.0375,
+          "contribution": 0.0374,
           "feature": "ops"
         }
       ],
@@ -16752,7 +16752,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2643,
+      "expected_category_impact_score": 0.2642,
       "expected_outcome_score": 0.2503,
       "impact_drivers": [
         {
@@ -16794,7 +16794,7 @@
       "sample_reliability": 0.564,
       "sample_unit": "PA",
       "team": "Chattanooga Lookouts",
-      "valucast_impact_rank": 297,
+      "valucast_impact_rank": 299,
       "valucast_prospect_rank": 313
     },
     {
@@ -16966,7 +16966,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": -0.0437,
+          "contribution": -0.0436,
           "feature": "slg"
         },
         {
@@ -17082,7 +17082,7 @@
       "sample_reliability": 0.622,
       "sample_unit": "PA",
       "team": "Quad Cities River Bandits",
-      "valucast_impact_rank": 497,
+      "valucast_impact_rank": 496,
       "valucast_prospect_rank": 319
     },
     {
@@ -17293,7 +17293,7 @@
         "current_reliability": 0.203,
         "current_sample": 12.7,
         "pull_weight": 0.4,
-        "raw_impact": 0.6048,
+        "raw_impact": 0.6049,
         "raw_outcome": 0.3509
       },
       "team": "Vancouver Canadians",
@@ -17317,7 +17317,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2671,
+      "expected_category_impact_score": 0.267,
       "expected_outcome_score": 0.2492,
       "impact_drivers": [
         {
@@ -17605,7 +17605,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.2259,
+      "expected_category_impact_score": 0.2258,
       "expected_outcome_score": 0.2468,
       "impact_drivers": [
         {
@@ -17633,7 +17633,7 @@
       "sample_reliability": 0.42,
       "sample_unit": "PA",
       "team": "Peoria Chiefs",
-      "valucast_impact_rank": 444,
+      "valucast_impact_rank": 445,
       "valucast_prospect_rank": 330
     },
     {
@@ -17653,11 +17653,11 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2465,
+      "expected_category_impact_score": 0.2464,
       "expected_outcome_score": 0.2467,
       "impact_drivers": [
         {
-          "contribution": 0.0768,
+          "contribution": 0.0767,
           "feature": "aaa_translation"
         },
         {
@@ -17705,7 +17705,7 @@
       "expected_outcome_score": 0.2467,
       "impact_drivers": [
         {
-          "contribution": 0.1125,
+          "contribution": 0.1124,
           "feature": "aaa_translation"
         },
         {
@@ -17845,7 +17845,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2524,
+      "expected_category_impact_score": 0.2523,
       "expected_outcome_score": 0.2461,
       "impact_drivers": [
         {
@@ -18199,7 +18199,7 @@
       "expected_outcome_score": 0.2438,
       "impact_drivers": [
         {
-          "contribution": 0.1003,
+          "contribution": 0.1002,
           "feature": "aaa_translation"
         },
         {
@@ -18291,7 +18291,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1538,
+      "expected_category_impact_score": 0.1537,
       "expected_outcome_score": 0.2435,
       "impact_drivers": [
         {
@@ -18483,7 +18483,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2535,
+      "expected_category_impact_score": 0.2534,
       "expected_outcome_score": 0.2424,
       "impact_drivers": [
         {
@@ -18535,7 +18535,7 @@
       "expected_outcome_score": 0.2424,
       "impact_drivers": [
         {
-          "contribution": 0.0806,
+          "contribution": 0.0805,
           "feature": "aaa_translation"
         },
         {
@@ -18693,7 +18693,7 @@
       "expected_outcome_score": 0.2417,
       "impact_drivers": [
         {
-          "contribution": 0.0863,
+          "contribution": 0.0862,
           "feature": "aaa_translation"
         },
         {
@@ -18779,7 +18779,7 @@
       "sample_reliability": 0.549,
       "sample_unit": "PA",
       "team": "Peoria Chiefs",
-      "valucast_impact_rank": 445,
+      "valucast_impact_rank": 444,
       "valucast_prospect_rank": 353
     },
     {
@@ -19101,11 +19101,11 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2796,
+      "expected_category_impact_score": 0.2795,
       "expected_outcome_score": 0.2401,
       "impact_drivers": [
         {
-          "contribution": 0.1558,
+          "contribution": 0.1557,
           "feature": "aaa_translation"
         },
         {
@@ -19129,7 +19129,7 @@
       "sample_reliability": 0.482,
       "sample_unit": "PA",
       "team": "Sacramento River Cats",
-      "valucast_impact_rank": 255,
+      "valucast_impact_rank": 256,
       "valucast_prospect_rank": 360
     },
     {
@@ -19297,7 +19297,7 @@
       "expected_outcome_score": 0.2392,
       "impact_drivers": [
         {
-          "contribution": 0.0849,
+          "contribution": 0.0848,
           "feature": "aaa_translation"
         },
         {
@@ -19589,7 +19589,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.056,
+          "contribution": 0.0559,
           "feature": "babip"
         },
         {
@@ -19753,7 +19753,7 @@
       "sample_reliability": 0.628,
       "sample_unit": "PA",
       "team": "Fort Myers Mighty Mussels",
-      "valucast_impact_rank": 731,
+      "valucast_impact_rank": 730,
       "valucast_prospect_rank": 373
     },
     {
@@ -19911,7 +19911,7 @@
       "sample_reliability": 0.49,
       "sample_unit": "IP",
       "team": "Columbia Fireflies",
-      "valucast_impact_rank": 408,
+      "valucast_impact_rank": 407,
       "valucast_prospect_rank": 376
     },
     {
@@ -20425,7 +20425,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.2479,
+      "expected_category_impact_score": 0.2478,
       "expected_outcome_score": 0.2321,
       "impact_drivers": [
         {
@@ -20473,7 +20473,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2499,
+      "expected_category_impact_score": 0.2498,
       "expected_outcome_score": 0.2316,
       "impact_drivers": [
         {
@@ -20501,7 +20501,7 @@
       "sample_reliability": 0.459,
       "sample_unit": "PA",
       "team": "Chesapeake Baysox",
-      "valucast_impact_rank": 344,
+      "valucast_impact_rank": 345,
       "valucast_prospect_rank": 388
     },
     {
@@ -20617,7 +20617,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.1905,
+      "expected_category_impact_score": 0.1904,
       "expected_outcome_score": 0.2308,
       "impact_drivers": [
         {
@@ -20823,11 +20823,11 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2314,
+      "expected_category_impact_score": 0.2313,
       "expected_outcome_score": 0.2302,
       "impact_drivers": [
         {
-          "contribution": 0.1413,
+          "contribution": 0.1412,
           "feature": "babip"
         },
         {
@@ -21413,7 +21413,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.1884,
+      "expected_category_impact_score": 0.1885,
       "expected_outcome_score": 0.2275,
       "impact_drivers": [
         {
@@ -21421,7 +21421,7 @@
           "feature": "prep_drafted"
         },
         {
-          "contribution": -0.0573,
+          "contribution": -0.0574,
           "feature": "log_signing_bonus"
         },
         {
@@ -21455,7 +21455,7 @@
       "sample_reliability": 0.604,
       "sample_unit": "IP",
       "team": "Montgomery Biscuits",
-      "valucast_impact_rank": 626,
+      "valucast_impact_rank": 624,
       "valucast_prospect_rank": 407
     },
     {
@@ -21599,7 +21599,7 @@
       "sample_reliability": 0.488,
       "sample_unit": "PA",
       "team": "Las Vegas Aviators",
-      "valucast_impact_rank": 299,
+      "valucast_impact_rank": 298,
       "valucast_prospect_rank": 410
     },
     {
@@ -21777,7 +21777,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2622,
+      "expected_category_impact_score": 0.2621,
       "expected_outcome_score": 0.2259,
       "impact_drivers": [
         {
@@ -21819,7 +21819,7 @@
       "sample_reliability": 0.379,
       "sample_unit": "PA",
       "team": "Reno Aces",
-      "valucast_impact_rank": 305,
+      "valucast_impact_rank": 306,
       "valucast_prospect_rank": 414
     },
     {
@@ -21901,7 +21901,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.194,
+      "expected_category_impact_score": 0.1939,
       "expected_outcome_score": 0.2257,
       "impact_drivers": [
         {
@@ -22120,7 +22120,7 @@
       "expected_outcome_score": 0.2248,
       "impact_drivers": [
         {
-          "contribution": -0.0618,
+          "contribution": -0.0619,
           "feature": "log_signing_bonus"
         },
         {
@@ -22292,7 +22292,7 @@
       "expected_outcome_score": 0.2243,
       "impact_drivers": [
         {
-          "contribution": -0.0657,
+          "contribution": -0.0658,
           "feature": "log_signing_bonus"
         },
         {
@@ -22300,7 +22300,7 @@
           "feature": "hr_per_9"
         },
         {
-          "contribution": 0.0316,
+          "contribution": 0.0317,
           "feature": "start_rate"
         }
       ],
@@ -22350,7 +22350,7 @@
           "feature": "obp"
         }
       ],
-      "expected_category_impact_score": 0.2001,
+      "expected_category_impact_score": 0.2,
       "expected_outcome_score": 0.2237,
       "impact_drivers": [
         {
@@ -22410,7 +22410,7 @@
           "feature": "youth"
         },
         {
-          "contribution": -0.0279,
+          "contribution": -0.0278,
           "feature": "aaa_translation"
         }
       ],
@@ -22494,7 +22494,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.2443,
+      "expected_category_impact_score": 0.2442,
       "expected_outcome_score": 0.2232,
       "impact_drivers": [
         {
@@ -22822,7 +22822,7 @@
           "feature": "starter_x_youth"
         },
         {
-          "contribution": -0.0438,
+          "contribution": -0.0437,
           "feature": "era_x_whip"
         }
       ],
@@ -23068,7 +23068,7 @@
       "expected_outcome_score": 0.2213,
       "impact_drivers": [
         {
-          "contribution": 0.0423,
+          "contribution": 0.0424,
           "feature": "start_rate"
         },
         {
@@ -23160,7 +23160,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2826,
+      "expected_category_impact_score": 0.2825,
       "expected_outcome_score": 0.221,
       "impact_drivers": [
         {
@@ -23188,7 +23188,7 @@
       "sample_reliability": 0.317,
       "sample_unit": "PA",
       "team": "Jacksonville Jumbo Shrimp",
-      "valucast_impact_rank": 248,
+      "valucast_impact_rank": 249,
       "valucast_prospect_rank": 440
     },
     {
@@ -23398,7 +23398,7 @@
       "expected_outcome_score": 0.2199,
       "impact_drivers": [
         {
-          "contribution": 0.0823,
+          "contribution": 0.0822,
           "feature": "aaa_translation"
         },
         {
@@ -23542,7 +23542,7 @@
       "expected_outcome_score": 0.2186,
       "impact_drivers": [
         {
-          "contribution": 0.1055,
+          "contribution": 0.1054,
           "feature": "aaa_translation"
         },
         {
@@ -23739,7 +23739,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2193,
+      "expected_category_impact_score": 0.2192,
       "expected_outcome_score": 0.2177,
       "impact_drivers": [
         {
@@ -23801,11 +23801,11 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.2379,
+      "expected_category_impact_score": 0.2378,
       "expected_outcome_score": 0.2173,
       "impact_drivers": [
         {
-          "contribution": 0.0814,
+          "contribution": 0.0813,
           "feature": "aaa_translation"
         },
         {
@@ -24179,7 +24179,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2349,
+      "expected_category_impact_score": 0.2348,
       "expected_outcome_score": 0.2162,
       "impact_drivers": [
         {
@@ -24207,7 +24207,7 @@
       "sample_reliability": 0.632,
       "sample_unit": "PA",
       "team": "Pensacola Blue Wahoos",
-      "valucast_impact_rank": 407,
+      "valucast_impact_rank": 409,
       "valucast_prospect_rank": 459
     },
     {
@@ -24441,7 +24441,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": -0.0677,
+          "contribution": -0.0678,
           "feature": "log_signing_bonus"
         },
         {
@@ -24653,7 +24653,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2172,
+      "expected_category_impact_score": 0.2171,
       "expected_outcome_score": 0.2147,
       "impact_drivers": [
         {
@@ -24978,7 +24978,7 @@
           "feature": "inverse_draft_pick"
         }
       ],
-      "expected_category_impact_score": 0.2377,
+      "expected_category_impact_score": 0.2376,
       "expected_outcome_score": 0.2133,
       "impact_drivers": [
         {
@@ -25236,7 +25236,7 @@
       "expected_outcome_score": 0.2128,
       "impact_drivers": [
         {
-          "contribution": 0.1598,
+          "contribution": 0.1597,
           "feature": "aaa_translation"
         },
         {
@@ -25332,7 +25332,7 @@
       "expected_outcome_score": 0.2121,
       "impact_drivers": [
         {
-          "contribution": 0.1001,
+          "contribution": 0.1,
           "feature": "aaa_translation"
         },
         {
@@ -25376,7 +25376,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1611,
+      "expected_category_impact_score": 0.161,
       "expected_outcome_score": 0.212,
       "impact_drivers": [
         {
@@ -25404,7 +25404,7 @@
       "sample_reliability": 0.652,
       "sample_unit": "PA",
       "team": "Winston-Salem Dash",
-      "valucast_impact_rank": 802,
+      "valucast_impact_rank": 803,
       "valucast_prospect_rank": 482
     },
     {
@@ -26111,7 +26111,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0347,
+          "contribution": 0.0346,
           "feature": "youth"
         }
       ],
@@ -26323,7 +26323,7 @@
       "expected_outcome_score": 0.2062,
       "impact_drivers": [
         {
-          "contribution": 0.0903,
+          "contribution": 0.0902,
           "feature": "aaa_translation"
         },
         {
@@ -26763,7 +26763,7 @@
       "expected_outcome_score": 0.2049,
       "impact_drivers": [
         {
-          "contribution": -0.0545,
+          "contribution": -0.0544,
           "feature": "prep_drafted"
         },
         {
@@ -26811,7 +26811,7 @@
       "expected_outcome_score": 0.2044,
       "impact_drivers": [
         {
-          "contribution": 0.1492,
+          "contribution": 0.1493,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -26915,7 +26915,7 @@
           "feature": "youth"
         },
         {
-          "contribution": -0.0211,
+          "contribution": -0.021,
           "feature": "babip"
         }
       ],
@@ -27017,7 +27017,7 @@
       "expected_outcome_score": 0.2041,
       "impact_drivers": [
         {
-          "contribution": 0.0523,
+          "contribution": 0.0524,
           "feature": "bb_to_k_ratio"
         },
         {
@@ -27261,7 +27261,7 @@
       "sample_reliability": 0.455,
       "sample_unit": "PA",
       "team": "Sacramento River Cats",
-      "valucast_impact_rank": 409,
+      "valucast_impact_rank": 408,
       "valucast_prospect_rank": 517
     },
     {
@@ -27429,7 +27429,7 @@
       "expected_outcome_score": 0.2027,
       "impact_drivers": [
         {
-          "contribution": -0.0551,
+          "contribution": -0.0552,
           "feature": "log_signing_bonus"
         },
         {
@@ -27473,7 +27473,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2489,
+      "expected_category_impact_score": 0.2488,
       "expected_outcome_score": 0.2026,
       "impact_drivers": [
         {
@@ -27501,7 +27501,7 @@
       "sample_reliability": 0.585,
       "sample_unit": "PA",
       "team": "Charlotte Knights",
-      "valucast_impact_rank": 348,
+      "valucast_impact_rank": 349,
       "valucast_prospect_rank": 522
     },
     {
@@ -27583,7 +27583,7 @@
           "feature": "babip"
         }
       ],
-      "expected_category_impact_score": 0.2377,
+      "expected_category_impact_score": 0.2376,
       "expected_outcome_score": 0.2022,
       "impact_drivers": [
         {
@@ -27919,7 +27919,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2073,
+      "expected_category_impact_score": 0.2072,
       "expected_outcome_score": 0.2002,
       "impact_drivers": [
         {
@@ -28105,7 +28105,7 @@
       "sample_reliability": 0.623,
       "sample_unit": "IP",
       "team": "Syracuse Mets",
-      "valucast_impact_rank": 455,
+      "valucast_impact_rank": 454,
       "valucast_prospect_rank": 534
     },
     {
@@ -28125,7 +28125,7 @@
           "feature": "h_per_9"
         }
       ],
-      "expected_category_impact_score": 0.3254,
+      "expected_category_impact_score": 0.3255,
       "expected_outcome_score": 0.199,
       "impact_drivers": [
         {
@@ -28329,7 +28329,7 @@
           "feature": "slg"
         },
         {
-          "contribution": -0.0246,
+          "contribution": -0.0245,
           "feature": "babip"
         }
       ],
@@ -28365,7 +28365,7 @@
           "feature": "h_per_9"
         }
       ],
-      "expected_category_impact_score": 0.4107,
+      "expected_category_impact_score": 0.4108,
       "expected_outcome_score": 0.1982,
       "impact_drivers": [
         {
@@ -28623,11 +28623,11 @@
       "expected_outcome_score": 0.197,
       "impact_drivers": [
         {
-          "contribution": 0.0984,
+          "contribution": 0.0983,
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0364,
+          "contribution": 0.0363,
           "feature": "youth"
         },
         {
@@ -28675,7 +28675,7 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0393,
+          "contribution": 0.0392,
           "feature": "iso"
         },
         {
@@ -29351,7 +29351,7 @@
       "expected_outcome_score": 0.1948,
       "impact_drivers": [
         {
-          "contribution": 0.0784,
+          "contribution": 0.0783,
           "feature": "aaa_translation"
         },
         {
@@ -29605,7 +29605,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2149,
+      "expected_category_impact_score": 0.2148,
       "expected_outcome_score": 0.194,
       "impact_drivers": [
         {
@@ -29633,7 +29633,7 @@
       "sample_reliability": 0.603,
       "sample_unit": "PA",
       "team": "Norfolk Tides",
-      "valucast_impact_rank": 496,
+      "valucast_impact_rank": 497,
       "valucast_prospect_rank": 564
     },
     {
@@ -29657,7 +29657,7 @@
       "expected_outcome_score": 0.1936,
       "impact_drivers": [
         {
-          "contribution": 0.1535,
+          "contribution": 0.1534,
           "feature": "aaa_translation"
         },
         {
@@ -30015,7 +30015,7 @@
           "feature": "starter_x_youth"
         },
         {
-          "contribution": 0.05,
+          "contribution": 0.0501,
           "feature": "start_rate"
         }
       ],
@@ -30318,7 +30318,7 @@
       "expected_outcome_score": 0.1908,
       "impact_drivers": [
         {
-          "contribution": -0.0563,
+          "contribution": -0.0564,
           "feature": "log_signing_bonus"
         },
         {
@@ -30362,7 +30362,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2241,
+      "expected_category_impact_score": 0.224,
       "expected_outcome_score": 0.1907,
       "impact_drivers": [
         {
@@ -30390,7 +30390,7 @@
       "sample_reliability": 0.642,
       "sample_unit": "PA",
       "team": "Rochester Red Wings",
-      "valucast_impact_rank": 454,
+      "valucast_impact_rank": 455,
       "valucast_prospect_rank": 579
     },
     {
@@ -30422,7 +30422,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0487,
+          "contribution": 0.0488,
           "feature": "start_rate"
         }
       ],
@@ -30654,7 +30654,7 @@
       "expected_outcome_score": 0.1901,
       "impact_drivers": [
         {
-          "contribution": 0.1761,
+          "contribution": 0.176,
           "feature": "aaa_translation"
         },
         {
@@ -30726,7 +30726,7 @@
       "sample_reliability": 0.574,
       "sample_unit": "IP",
       "team": "Peoria Chiefs",
-      "valucast_impact_rank": 545,
+      "valucast_impact_rank": 546,
       "valucast_prospect_rank": 586
     },
     {
@@ -31665,7 +31665,7 @@
       "expected_outcome_score": 0.1859,
       "impact_drivers": [
         {
-          "contribution": 0.1166,
+          "contribution": 0.1165,
           "feature": "babip"
         },
         {
@@ -31819,11 +31819,11 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2176,
+      "expected_category_impact_score": 0.2175,
       "expected_outcome_score": 0.1854,
       "impact_drivers": [
         {
-          "contribution": 0.1472,
+          "contribution": 0.1471,
           "feature": "aaa_translation"
         },
         {
@@ -32279,7 +32279,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.1956,
+      "expected_category_impact_score": 0.1955,
       "expected_outcome_score": 0.1834,
       "impact_drivers": [
         {
@@ -32339,7 +32339,7 @@
           "feature": "iso"
         },
         {
-          "contribution": 0.0321,
+          "contribution": 0.032,
           "feature": "slg"
         }
       ],
@@ -32493,7 +32493,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0353,
+          "contribution": 0.0352,
           "feature": "youth"
         },
         {
@@ -32660,7 +32660,7 @@
           "feature": "obp"
         },
         {
-          "contribution": 0.0324,
+          "contribution": 0.0325,
           "feature": "bb_to_k_ratio"
         },
         {
@@ -32700,7 +32700,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1819,
+      "expected_category_impact_score": 0.1818,
       "expected_outcome_score": 0.1822,
       "impact_drivers": [
         {
@@ -32748,7 +32748,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1986,
+      "expected_category_impact_score": 0.1985,
       "expected_outcome_score": 0.1822,
       "impact_drivers": [
         {
@@ -32944,7 +32944,7 @@
       "expected_outcome_score": 0.1816,
       "impact_drivers": [
         {
-          "contribution": 0.0763,
+          "contribution": 0.0762,
           "feature": "aaa_translation"
         },
         {
@@ -33316,7 +33316,7 @@
           "feature": "slg"
         },
         {
-          "contribution": -0.0318,
+          "contribution": -0.0317,
           "feature": "avg"
         }
       ],
@@ -33364,7 +33364,7 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0454,
+          "contribution": 0.0453,
           "feature": "iso"
         }
       ],
@@ -33412,7 +33412,7 @@
           "feature": "babip"
         },
         {
-          "contribution": 0.0141,
+          "contribution": 0.014,
           "feature": "avg"
         }
       ],
@@ -33697,7 +33697,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2165,
+      "expected_category_impact_score": 0.2164,
       "expected_outcome_score": 0.1779,
       "impact_drivers": [
         {
@@ -34037,7 +34037,7 @@
       "expected_outcome_score": 0.1768,
       "impact_drivers": [
         {
-          "contribution": -0.0585,
+          "contribution": -0.0586,
           "feature": "log_signing_bonus"
         },
         {
@@ -34191,7 +34191,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.204,
+      "expected_category_impact_score": 0.2041,
       "expected_outcome_score": 0.1766,
       "impact_drivers": [
         {
@@ -34233,7 +34233,7 @@
       "sample_reliability": 0.367,
       "sample_unit": "IP",
       "team": "Clearwater Threshers",
-      "valucast_impact_rank": 546,
+      "valucast_impact_rank": 545,
       "valucast_prospect_rank": 655
     },
     {
@@ -34253,7 +34253,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.2005,
+      "expected_category_impact_score": 0.2004,
       "expected_outcome_score": 0.1765,
       "impact_drivers": [
         {
@@ -34329,7 +34329,7 @@
       "sample_reliability": 0.608,
       "sample_unit": "PA",
       "team": "Akron RubberDucks",
-      "valucast_impact_rank": 714,
+      "valucast_impact_rank": 713,
       "valucast_prospect_rank": 657
     },
     {
@@ -34726,7 +34726,7 @@
       "expected_outcome_score": 0.1757,
       "impact_drivers": [
         {
-          "contribution": 0.0793,
+          "contribution": 0.0792,
           "feature": "aaa_translation"
         },
         {
@@ -34750,7 +34750,7 @@
       "sample_reliability": 0.598,
       "sample_unit": "PA",
       "team": "Richmond Flying Squirrels",
-      "valucast_impact_rank": 625,
+      "valucast_impact_rank": 626,
       "valucast_prospect_rank": 665
     },
     {
@@ -34897,7 +34897,7 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0318,
+          "contribution": 0.0317,
           "feature": "aaa_translation"
         },
         {
@@ -35037,7 +35037,7 @@
       "expected_outcome_score": 0.1751,
       "impact_drivers": [
         {
-          "contribution": 0.038,
+          "contribution": 0.0379,
           "feature": "babip"
         },
         {
@@ -35301,7 +35301,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.2188,
+      "expected_category_impact_score": 0.2187,
       "expected_outcome_score": 0.1741,
       "impact_drivers": [
         {
@@ -35329,7 +35329,7 @@
       "sample_reliability": 0.31,
       "sample_unit": "PA",
       "team": "Salt Lake Bees",
-      "valucast_impact_rank": 478,
+      "valucast_impact_rank": 479,
       "valucast_prospect_rank": 676
     },
     {
@@ -35353,7 +35353,7 @@
       "expected_outcome_score": 0.1741,
       "impact_drivers": [
         {
-          "contribution": 0.0974,
+          "contribution": 0.0973,
           "feature": "aaa_translation"
         },
         {
@@ -35439,7 +35439,7 @@
       "sample_reliability": 0.639,
       "sample_unit": "PA",
       "team": "Biloxi Shuckers",
-      "valucast_impact_rank": 687,
+      "valucast_impact_rank": 686,
       "valucast_prospect_rank": 678
     },
     {
@@ -35463,7 +35463,7 @@
       "expected_outcome_score": 0.1737,
       "impact_drivers": [
         {
-          "contribution": -0.056,
+          "contribution": -0.0561,
           "feature": "log_signing_bonus"
         },
         {
@@ -35755,7 +35755,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.033,
+          "contribution": -0.0329,
           "feature": "log_ip"
         },
         {
@@ -35795,7 +35795,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1434,
+      "expected_category_impact_score": 0.1433,
       "expected_outcome_score": 0.1731,
       "impact_drivers": [
         {
@@ -35823,7 +35823,7 @@
       "sample_reliability": 0.62,
       "sample_unit": "PA",
       "team": "Great Lakes Loons",
-      "valucast_impact_rank": 936,
+      "valucast_impact_rank": 937,
       "valucast_prospect_rank": 686
     },
     {
@@ -36143,7 +36143,7 @@
           "feature": "youth"
         },
         {
-          "contribution": -0.0296,
+          "contribution": -0.0295,
           "feature": "aaa_translation"
         }
       ],
@@ -36407,7 +36407,7 @@
           "feature": "bb_to_k_ratio"
         },
         {
-          "contribution": -0.042,
+          "contribution": -0.0419,
           "feature": "aaa_translation"
         },
         {
@@ -36475,7 +36475,7 @@
       "sample_reliability": 0.634,
       "sample_unit": "PA",
       "team": "Tulsa Drillers",
-      "valucast_impact_rank": 682,
+      "valucast_impact_rank": 680,
       "valucast_prospect_rank": 699
     },
     {
@@ -36605,7 +36605,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.1824,
+      "expected_category_impact_score": 0.1823,
       "expected_outcome_score": 0.1717,
       "impact_drivers": [
         {
@@ -36633,7 +36633,7 @@
       "sample_reliability": 0.632,
       "sample_unit": "PA",
       "team": "Corpus Christi Hooks",
-      "valucast_impact_rank": 661,
+      "valucast_impact_rank": 662,
       "valucast_prospect_rank": 702
     },
     {
@@ -37452,7 +37452,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.1787,
+      "expected_category_impact_score": 0.1786,
       "expected_outcome_score": 0.1695,
       "impact_drivers": [
         {
@@ -37480,7 +37480,7 @@
       "sample_reliability": 0.623,
       "sample_unit": "PA",
       "team": "Springfield Cardinals",
-      "valucast_impact_rank": 681,
+      "valucast_impact_rank": 682,
       "valucast_prospect_rank": 718
     },
     {
@@ -37686,7 +37686,7 @@
       "sample_reliability": 0.597,
       "sample_unit": "PA",
       "team": "Portland Sea Dogs",
-      "valucast_impact_rank": 634,
+      "valucast_impact_rank": 633,
       "valucast_prospect_rank": 722
     },
     {
@@ -37806,7 +37806,7 @@
       "expected_outcome_score": 0.1684,
       "impact_drivers": [
         {
-          "contribution": 0.0739,
+          "contribution": 0.0738,
           "feature": "aaa_translation"
         },
         {
@@ -37902,7 +37902,7 @@
       "expected_outcome_score": 0.168,
       "impact_drivers": [
         {
-          "contribution": 0.0805,
+          "contribution": 0.0804,
           "feature": "aaa_translation"
         },
         {
@@ -38370,7 +38370,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0422,
+          "contribution": 0.0421,
           "feature": "iso"
         }
       ],
@@ -38434,7 +38434,7 @@
       "sample_reliability": 0.32,
       "sample_unit": "PA",
       "team": "Frederick Keys",
-      "valucast_impact_rank": 753,
+      "valucast_impact_rank": 752,
       "valucast_prospect_rank": 737
     },
     {
@@ -39273,7 +39273,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2022,
+      "expected_category_impact_score": 0.2021,
       "expected_outcome_score": 0.1628,
       "impact_drivers": [
         {
@@ -39306,11 +39306,11 @@
         "current_reliability": 0.048,
         "current_sample": 10.0,
         "pull_weight": 0.4,
-        "raw_impact": 0.2228,
+        "raw_impact": 0.2227,
         "raw_outcome": 0.205
       },
       "team": "Harrisburg Senators",
-      "valucast_impact_rank": 552,
+      "valucast_impact_rank": 553,
       "valucast_prospect_rank": 754
     },
     {
@@ -39798,7 +39798,7 @@
       "sample_reliability": 0.563,
       "sample_unit": "IP",
       "team": "Somerset Patriots",
-      "valucast_impact_rank": 600,
+      "valucast_impact_rank": 601,
       "valucast_prospect_rank": 763
     },
     {
@@ -40010,7 +40010,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1866,
+      "expected_category_impact_score": 0.1865,
       "expected_outcome_score": 0.1616,
       "impact_drivers": [
         {
@@ -40038,7 +40038,7 @@
       "sample_reliability": 0.469,
       "sample_unit": "PA",
       "team": "Pensacola Blue Wahoos",
-      "valucast_impact_rank": 633,
+      "valucast_impact_rank": 634,
       "valucast_prospect_rank": 768
     },
     {
@@ -40062,7 +40062,7 @@
       "expected_outcome_score": 0.1615,
       "impact_drivers": [
         {
-          "contribution": 0.0831,
+          "contribution": 0.083,
           "feature": "aaa_translation"
         },
         {
@@ -40154,7 +40154,7 @@
           "feature": "whip_x_level"
         }
       ],
-      "expected_category_impact_score": 0.2017,
+      "expected_category_impact_score": 0.2018,
       "expected_outcome_score": 0.1612,
       "impact_drivers": [
         {
@@ -40182,7 +40182,7 @@
       "sample_reliability": 0.414,
       "sample_unit": "IP",
       "team": "Round Rock Express",
-      "valucast_impact_rank": 556,
+      "valucast_impact_rank": 555,
       "valucast_prospect_rank": 771
     },
     {
@@ -40264,7 +40264,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1709,
+      "expected_category_impact_score": 0.1708,
       "expected_outcome_score": 0.1612,
       "impact_drivers": [
         {
@@ -40292,7 +40292,7 @@
       "sample_reliability": 0.471,
       "sample_unit": "PA",
       "team": "Pensacola Blue Wahoos",
-      "valucast_impact_rank": 730,
+      "valucast_impact_rank": 731,
       "valucast_prospect_rank": 773
     },
     {
@@ -40316,7 +40316,7 @@
       "expected_outcome_score": 0.161,
       "impact_drivers": [
         {
-          "contribution": 0.1486,
+          "contribution": 0.1485,
           "feature": "aaa_translation"
         },
         {
@@ -40843,7 +40843,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.1831,
+      "expected_category_impact_score": 0.183,
       "expected_outcome_score": 0.1593,
       "impact_drivers": [
         {
@@ -40947,7 +40947,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": -0.0514,
+          "contribution": -0.0513,
           "feature": "prep_drafted"
         },
         {
@@ -41179,7 +41179,7 @@
           "feature": "avg"
         }
       ],
-      "expected_category_impact_score": 0.1732,
+      "expected_category_impact_score": 0.1731,
       "expected_outcome_score": 0.1581,
       "impact_drivers": [
         {
@@ -41207,7 +41207,7 @@
       "sample_reliability": 0.623,
       "sample_unit": "PA",
       "team": "Akron RubberDucks",
-      "valucast_impact_rank": 713,
+      "valucast_impact_rank": 714,
       "valucast_prospect_rank": 791
     },
     {
@@ -41371,7 +41371,7 @@
           "feature": "level"
         }
       ],
-      "expected_category_impact_score": 0.1392,
+      "expected_category_impact_score": 0.1391,
       "expected_outcome_score": 0.1574,
       "impact_drivers": [
         {
@@ -41399,7 +41399,7 @@
       "sample_reliability": 0.631,
       "sample_unit": "PA",
       "team": "Asheville Tourists",
-      "valucast_impact_rank": 979,
+      "valucast_impact_rank": 980,
       "valucast_prospect_rank": 795
     },
     {
@@ -41519,7 +41519,7 @@
       "expected_outcome_score": 0.1571,
       "impact_drivers": [
         {
-          "contribution": -0.0446,
+          "contribution": -0.0445,
           "feature": "log_ip"
         },
         {
@@ -41735,7 +41735,7 @@
           "feature": "k_bb_pct"
         }
       ],
-      "expected_category_impact_score": 0.1383,
+      "expected_category_impact_score": 0.1384,
       "expected_outcome_score": 0.157,
       "impact_drivers": [
         {
@@ -41743,7 +41743,7 @@
           "feature": "prep_drafted"
         },
         {
-          "contribution": -0.0464,
+          "contribution": -0.0465,
           "feature": "log_signing_bonus"
         },
         {
@@ -41777,7 +41777,7 @@
       "sample_reliability": 0.38,
       "sample_unit": "IP",
       "team": "Vancouver Canadians",
-      "valucast_impact_rank": 987,
+      "valucast_impact_rank": 985,
       "valucast_prospect_rank": 802
     },
     {
@@ -42504,7 +42504,7 @@
       "sample_reliability": 0.444,
       "sample_unit": "IP",
       "team": "South Bend Cubs",
-      "valucast_impact_rank": 1109,
+      "valucast_impact_rank": 1108,
       "valucast_prospect_rank": 816
     },
     {
@@ -42586,7 +42586,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1885,
+      "expected_category_impact_score": 0.1884,
       "expected_outcome_score": 0.1538,
       "impact_drivers": [
         {
@@ -42614,7 +42614,7 @@
       "sample_reliability": 0.634,
       "sample_unit": "PA",
       "team": "Erie SeaWolves",
-      "valucast_impact_rank": 624,
+      "valucast_impact_rank": 625,
       "valucast_prospect_rank": 818
     },
     {
@@ -42690,7 +42690,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": 0.0388,
+          "contribution": 0.0387,
           "feature": "youth"
         },
         {
@@ -42782,7 +42782,7 @@
       "expected_outcome_score": 0.1528,
       "impact_drivers": [
         {
-          "contribution": 0.0827,
+          "contribution": 0.0826,
           "feature": "aaa_translation"
         },
         {
@@ -42826,7 +42826,7 @@
           "feature": "log_pa"
         }
       ],
-      "expected_category_impact_score": 0.1787,
+      "expected_category_impact_score": 0.1786,
       "expected_outcome_score": 0.1527,
       "impact_drivers": [
         {
@@ -42854,7 +42854,7 @@
       "sample_reliability": 0.338,
       "sample_unit": "PA",
       "team": "Corpus Christi Hooks",
-      "valucast_impact_rank": 680,
+      "valucast_impact_rank": 681,
       "valucast_prospect_rank": 823
     },
     {
@@ -42886,7 +42886,7 @@
           "feature": "starter_x_youth"
         },
         {
-          "contribution": -0.0237,
+          "contribution": -0.0236,
           "feature": "log_ip"
         }
       ],
@@ -43018,7 +43018,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.1781,
+      "expected_category_impact_score": 0.178,
       "expected_outcome_score": 0.1522,
       "impact_drivers": [
         {
@@ -43046,7 +43046,7 @@
       "sample_reliability": 0.496,
       "sample_unit": "PA",
       "team": "Pensacola Blue Wahoos",
-      "valucast_impact_rank": 686,
+      "valucast_impact_rank": 687,
       "valucast_prospect_rank": 827
     },
     {
@@ -43122,7 +43122,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": -0.0265,
+          "contribution": -0.0264,
           "feature": "avg"
         },
         {
@@ -43722,7 +43722,7 @@
       "expected_outcome_score": 0.1502,
       "impact_drivers": [
         {
-          "contribution": 0.0789,
+          "contribution": 0.0788,
           "feature": "aaa_translation"
         },
         {
@@ -44082,7 +44082,7 @@
           "feature": "is_starter"
         }
       ],
-      "expected_category_impact_score": 0.2629,
+      "expected_category_impact_score": 0.263,
       "expected_outcome_score": 0.1493,
       "impact_drivers": [
         {
@@ -44158,7 +44158,7 @@
       "sample_reliability": 0.598,
       "sample_unit": "PA",
       "team": "Portland Sea Dogs",
-      "valucast_impact_rank": 803,
+      "valucast_impact_rank": 802,
       "valucast_prospect_rank": 849
     },
     {
@@ -44226,7 +44226,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1278,
+      "expected_category_impact_score": 0.1277,
       "expected_outcome_score": 0.1489,
       "impact_drivers": [
         {
@@ -44274,11 +44274,11 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.1679,
+      "expected_category_impact_score": 0.1678,
       "expected_outcome_score": 0.1488,
       "impact_drivers": [
         {
-          "contribution": 0.0949,
+          "contribution": 0.0948,
           "feature": "aaa_translation"
         },
         {
@@ -44302,7 +44302,7 @@
       "sample_reliability": 0.398,
       "sample_unit": "PA",
       "team": "Birmingham Barons",
-      "valucast_impact_rank": 752,
+      "valucast_impact_rank": 753,
       "valucast_prospect_rank": 852
     },
     {
@@ -45188,7 +45188,7 @@
       "sample_reliability": 0.568,
       "sample_unit": "IP",
       "team": "Northwest Arkansas Naturals",
-      "valucast_impact_rank": 662,
+      "valucast_impact_rank": 661,
       "valucast_prospect_rank": 869
     },
     {
@@ -45820,11 +45820,11 @@
       "name": "Kiefer Lord",
       "normalized_name": "kiefer lord",
       "pedigree_shrink_correction": {
-        "impact_delta": -0.0014,
+        "impact_delta": -0.0015,
         "outcome_delta": -0.02,
         "pedigree_shrunk_impact": 0.1702,
         "pedigree_shrunk_outcome": 0.1439,
-        "raw_impact": 0.1716,
+        "raw_impact": 0.1717,
         "raw_outcome": 0.1639,
         "reliability": 0.388
       },
@@ -46031,7 +46031,7 @@
       "expected_outcome_score": 0.1432,
       "impact_drivers": [
         {
-          "contribution": 0.0761,
+          "contribution": 0.076,
           "feature": "aaa_translation"
         },
         {
@@ -46219,7 +46219,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.133,
+      "expected_category_impact_score": 0.1329,
       "expected_outcome_score": 0.1429,
       "impact_drivers": [
         {
@@ -46247,7 +46247,7 @@
       "sample_reliability": 0.652,
       "sample_unit": "PA",
       "team": "Quad Cities River Bandits",
-      "valucast_impact_rank": 1029,
+      "valucast_impact_rank": 1032,
       "valucast_prospect_rank": 890
     },
     {
@@ -46323,7 +46323,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": -0.0417,
+          "contribution": -0.0416,
           "feature": "prep_drafted"
         },
         {
@@ -46423,7 +46423,7 @@
           "feature": "avg"
         },
         {
-          "contribution": -0.0232,
+          "contribution": -0.0231,
           "feature": "babip"
         }
       ],
@@ -46507,7 +46507,7 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1257,
+      "expected_category_impact_score": 0.1258,
       "expected_outcome_score": 0.1419,
       "impact_drivers": [
         {
@@ -48268,7 +48268,7 @@
           "feature": "k_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1585,
+      "expected_category_impact_score": 0.1584,
       "expected_outcome_score": 0.1379,
       "impact_drivers": [
         {
@@ -48296,7 +48296,7 @@
       "sample_reliability": 0.576,
       "sample_unit": "PA",
       "team": "San Antonio Missions",
-      "valucast_impact_rank": 819,
+      "valucast_impact_rank": 820,
       "valucast_prospect_rank": 929
     },
     {
@@ -48382,7 +48382,7 @@
       "expected_outcome_score": 0.1375,
       "impact_drivers": [
         {
-          "contribution": -0.0317,
+          "contribution": -0.0316,
           "feature": "aaa_translation"
         },
         {
@@ -49105,7 +49105,7 @@
       "expected_outcome_score": 0.1352,
       "impact_drivers": [
         {
-          "contribution": -0.0531,
+          "contribution": -0.0532,
           "feature": "log_signing_bonus"
         },
         {
@@ -49939,7 +49939,7 @@
       "sample_reliability": 0.353,
       "sample_unit": "IP",
       "team": "Frisco RoughRiders",
-      "valucast_impact_rank": 553,
+      "valucast_impact_rank": 552,
       "valucast_prospect_rank": 961
     },
     {
@@ -50165,7 +50165,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.1153,
+      "expected_category_impact_score": 0.1152,
       "expected_outcome_score": 0.1324,
       "impact_drivers": [
         {
@@ -50193,7 +50193,7 @@
       "sample_reliability": 0.646,
       "sample_unit": "PA",
       "team": "Tri-City Dust Devils",
-      "valucast_impact_rank": 1195,
+      "valucast_impact_rank": 1196,
       "valucast_prospect_rank": 966
     },
     {
@@ -50261,7 +50261,7 @@
           "feature": "youth"
         }
       ],
-      "expected_category_impact_score": 0.1109,
+      "expected_category_impact_score": 0.1108,
       "expected_outcome_score": 0.1322,
       "impact_drivers": [
         {
@@ -50289,7 +50289,7 @@
       "sample_reliability": 0.206,
       "sample_unit": "PA",
       "team": "Palm Beach Cardinals",
-      "valucast_impact_rank": 1233,
+      "valucast_impact_rank": 1234,
       "valucast_prospect_rank": 968
     },
     {
@@ -50558,7 +50558,7 @@
           "feature": "is_starter"
         }
       ],
-      "expected_category_impact_score": 0.2266,
+      "expected_category_impact_score": 0.2267,
       "expected_outcome_score": 0.1319,
       "impact_drivers": [
         {
@@ -50706,7 +50706,7 @@
       "expected_outcome_score": 0.1317,
       "impact_drivers": [
         {
-          "contribution": 0.0886,
+          "contribution": 0.0885,
           "feature": "aaa_translation"
         },
         {
@@ -50765,7 +50765,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1173,
+      "expected_category_impact_score": 0.1172,
       "expected_outcome_score": 0.1315,
       "impact_drivers": [
         {
@@ -50793,7 +50793,7 @@
       "sample_reliability": 0.605,
       "sample_unit": "PA",
       "team": "South Bend Cubs",
-      "valucast_impact_rank": 1180,
+      "valucast_impact_rank": 1181,
       "valucast_prospect_rank": 978
     },
     {
@@ -51031,7 +51031,7 @@
           "feature": "babip"
         },
         {
-          "contribution": -0.021,
+          "contribution": -0.0209,
           "feature": "avg"
         }
       ],
@@ -51881,7 +51881,7 @@
       "expected_outcome_score": 0.1288,
       "impact_drivers": [
         {
-          "contribution": -0.0472,
+          "contribution": -0.0473,
           "feature": "log_signing_bonus"
         },
         {
@@ -51929,7 +51929,7 @@
       "expected_outcome_score": 0.1288,
       "impact_drivers": [
         {
-          "contribution": 0.077,
+          "contribution": 0.0769,
           "feature": "aaa_translation"
         },
         {
@@ -52221,7 +52221,7 @@
       "sample_reliability": 0.593,
       "sample_unit": "IP",
       "team": "Augusta GreenJackets",
-      "valucast_impact_rank": 820,
+      "valucast_impact_rank": 819,
       "valucast_prospect_rank": 1006
     },
     {
@@ -52241,7 +52241,7 @@
           "feature": "k_bb_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1943,
+      "expected_category_impact_score": 0.1944,
       "expected_outcome_score": 0.1275,
       "impact_drivers": [
         {
@@ -52269,7 +52269,7 @@
       "sample_reliability": 0.449,
       "sample_unit": "IP",
       "team": "Memphis Redbirds",
-      "valucast_impact_rank": 601,
+      "valucast_impact_rank": 600,
       "valucast_prospect_rank": 1007
     },
     {
@@ -53088,7 +53088,7 @@
       "sample_reliability": 0.446,
       "sample_unit": "IP",
       "team": "Cedar Rapids Kernels",
-      "valucast_impact_rank": 1032,
+      "valucast_impact_rank": 1031,
       "valucast_prospect_rank": 1023
     },
     {
@@ -53280,7 +53280,7 @@
       "sample_reliability": 0.265,
       "sample_unit": "PA",
       "team": "Reading Fightin Phils",
-      "valucast_impact_rank": 980,
+      "valucast_impact_rank": 979,
       "valucast_prospect_rank": 1027
     },
     {
@@ -53356,7 +53356,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0394,
+          "contribution": 0.0395,
           "feature": "start_rate"
         },
         {
@@ -53715,7 +53715,7 @@
       "sample_reliability": 0.599,
       "sample_unit": "IP",
       "team": "Eugene Emeralds",
-      "valucast_impact_rank": 937,
+      "valucast_impact_rank": 936,
       "valucast_prospect_rank": 1035
     },
     {
@@ -54007,7 +54007,7 @@
       "expected_outcome_score": 0.1231,
       "impact_drivers": [
         {
-          "contribution": 0.0953,
+          "contribution": 0.0952,
           "feature": "babip"
         },
         {
@@ -54111,7 +54111,7 @@
           "feature": "slg"
         },
         {
-          "contribution": 0.0191,
+          "contribution": 0.019,
           "feature": "aaa_translation"
         }
       ],
@@ -54543,7 +54543,7 @@
           "feature": "sb_per_600_pa"
         },
         {
-          "contribution": -0.0239,
+          "contribution": -0.0238,
           "feature": "youth"
         }
       ],
@@ -54933,7 +54933,7 @@
       "expected_outcome_score": 0.1211,
       "impact_drivers": [
         {
-          "contribution": 0.0692,
+          "contribution": 0.0691,
           "feature": "aaa_translation"
         },
         {
@@ -55025,7 +55025,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.1218,
+      "expected_category_impact_score": 0.1217,
       "expected_outcome_score": 0.1209,
       "impact_drivers": [
         {
@@ -55183,7 +55183,7 @@
           "feature": "bb_to_k_ratio"
         }
       ],
-      "expected_category_impact_score": 0.1108,
+      "expected_category_impact_score": 0.1107,
       "expected_outcome_score": 0.1204,
       "impact_drivers": [
         {
@@ -55211,7 +55211,7 @@
       "sample_reliability": 0.598,
       "sample_unit": "PA",
       "team": "Dayton Dragons",
-      "valucast_impact_rank": 1234,
+      "valucast_impact_rank": 1235,
       "valucast_prospect_rank": 1065
     },
     {
@@ -56323,7 +56323,7 @@
       "sample_reliability": 0.455,
       "sample_unit": "IP",
       "team": "St. Paul Saints",
-      "valucast_impact_rank": 1108,
+      "valucast_impact_rank": 1107,
       "valucast_prospect_rank": 1087
     },
     {
@@ -56932,7 +56932,7 @@
       "expected_outcome_score": 0.1178,
       "impact_drivers": [
         {
-          "contribution": 0.0494,
+          "contribution": 0.0495,
           "feature": "start_rate"
         },
         {
@@ -57896,7 +57896,7 @@
           "feature": "ops_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.0882,
+      "expected_category_impact_score": 0.0881,
       "expected_outcome_score": 0.1158,
       "impact_drivers": [
         {
@@ -58024,7 +58024,7 @@
       "expected_outcome_score": 0.1156,
       "impact_drivers": [
         {
-          "contribution": -0.0664,
+          "contribution": -0.0665,
           "feature": "bats_switch"
         },
         {
@@ -58220,7 +58220,7 @@
       "sample_reliability": 0.534,
       "sample_unit": "PA",
       "team": "Rome Emperors",
-      "valucast_impact_rank": 1181,
+      "valucast_impact_rank": 1180,
       "valucast_prospect_rank": 1124
     },
     {
@@ -58432,7 +58432,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.1222,
+      "expected_category_impact_score": 0.1221,
       "expected_outcome_score": 0.1151,
       "impact_drivers": [
         {
@@ -58645,7 +58645,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": -0.0271,
+          "contribution": -0.027,
           "feature": "babip"
         }
       ],
@@ -58737,7 +58737,7 @@
           "feature": "youth"
         },
         {
-          "contribution": 0.0256,
+          "contribution": 0.0255,
           "feature": "babip"
         },
         {
@@ -58839,7 +58839,7 @@
           "feature": "iso"
         }
       ],
-      "expected_category_impact_score": 0.0698,
+      "expected_category_impact_score": 0.0697,
       "expected_outcome_score": 0.1143,
       "impact_drivers": [
         {
@@ -60635,7 +60635,7 @@
       "sample_reliability": 0.532,
       "sample_unit": "PA",
       "team": "Columbus Clingstones",
-      "valucast_impact_rank": 1030,
+      "valucast_impact_rank": 1029,
       "valucast_prospect_rank": 1172
     },
     {
@@ -60951,7 +60951,7 @@
           "feature": "pick_value"
         },
         {
-          "contribution": -0.0631,
+          "contribution": -0.0632,
           "feature": "log_signing_bonus"
         },
         {
@@ -60965,11 +60965,11 @@
       "name": "JB Middleton",
       "normalized_name": "jb middleton",
       "pedigree_shrink_correction": {
-        "impact_delta": -0.0462,
+        "impact_delta": -0.0463,
         "outcome_delta": -0.0759,
         "pedigree_shrunk_impact": 0.1023,
         "pedigree_shrunk_outcome": 0.1091,
-        "raw_impact": 0.1485,
+        "raw_impact": 0.1486,
         "raw_outcome": 0.185,
         "reliability": 0.286
       },
@@ -62268,7 +62268,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": -0.02,
+          "contribution": -0.0201,
           "feature": "obp"
         }
       ],
@@ -62414,7 +62414,7 @@
           "feature": "log_pa"
         }
       ],
-      "expected_category_impact_score": 0.1312,
+      "expected_category_impact_score": 0.1311,
       "expected_outcome_score": 0.1064,
       "impact_drivers": [
         {
@@ -62488,7 +62488,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": 0.0403,
+          "contribution": 0.0402,
           "feature": "babip"
         }
       ],
@@ -62620,7 +62620,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.0891,
+      "expected_category_impact_score": 0.089,
       "expected_outcome_score": 0.1061,
       "impact_drivers": [
         {
@@ -62826,7 +62826,7 @@
           "feature": "discipline_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.1228,
+      "expected_category_impact_score": 0.1227,
       "expected_outcome_score": 0.1055,
       "impact_drivers": [
         {
@@ -62854,7 +62854,7 @@
       "sample_reliability": 0.624,
       "sample_unit": "PA",
       "team": "Knoxville Smokies",
-      "valucast_impact_rank": 1107,
+      "valucast_impact_rank": 1109,
       "valucast_prospect_rank": 1216
     },
     {
@@ -62926,7 +62926,7 @@
       "expected_outcome_score": 0.1053,
       "impact_drivers": [
         {
-          "contribution": 0.1042,
+          "contribution": 0.1041,
           "feature": "aaa_translation"
         },
         {
@@ -63149,7 +63149,7 @@
           "feature": "log_ip"
         },
         {
-          "contribution": 0.032,
+          "contribution": 0.0321,
           "feature": "start_rate"
         }
       ],
@@ -64239,7 +64239,7 @@
       "expected_outcome_score": 0.102,
       "impact_drivers": [
         {
-          "contribution": 0.0692,
+          "contribution": 0.0691,
           "feature": "aaa_translation"
         },
         {
@@ -64527,7 +64527,7 @@
       "expected_outcome_score": 0.1016,
       "impact_drivers": [
         {
-          "contribution": -0.0566,
+          "contribution": -0.0567,
           "feature": "log_signing_bonus"
         },
         {
@@ -64628,7 +64628,7 @@
           "feature": "era_x_whip"
         }
       ],
-      "expected_category_impact_score": 0.1275,
+      "expected_category_impact_score": 0.1276,
       "expected_outcome_score": 0.1013,
       "impact_drivers": [
         {
@@ -64894,7 +64894,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0277,
+          "contribution": -0.0276,
           "feature": "era_x_whip"
         }
       ],
@@ -66227,7 +66227,7 @@
       "expected_outcome_score": 0.0981,
       "impact_drivers": [
         {
-          "contribution": -0.0612,
+          "contribution": -0.0613,
           "feature": "log_signing_bonus"
         },
         {
@@ -66323,7 +66323,7 @@
       "expected_outcome_score": 0.098,
       "impact_drivers": [
         {
-          "contribution": -0.051,
+          "contribution": -0.0511,
           "feature": "log_signing_bonus"
         },
         {
@@ -66331,7 +66331,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0261,
+          "contribution": -0.026,
           "feature": "hr_per_9"
         }
       ],
@@ -67344,7 +67344,7 @@
       "sample_reliability": 0.546,
       "sample_unit": "PA",
       "team": "New Hampshire Fisher Cats",
-      "valucast_impact_rank": 1235,
+      "valucast_impact_rank": 1233,
       "valucast_prospect_rank": 1305
     },
     {
@@ -68030,7 +68030,7 @@
       "sample_reliability": 0.369,
       "sample_unit": "PA",
       "team": "Columbus Clingstones",
-      "valucast_impact_rank": 985,
+      "valucast_impact_rank": 986,
       "valucast_prospect_rank": 1319
     },
     {
@@ -69776,7 +69776,7 @@
           "feature": "hr_per_9"
         }
       ],
-      "expected_category_impact_score": 0.0987,
+      "expected_category_impact_score": 0.0988,
       "expected_outcome_score": 0.0921,
       "impact_drivers": [
         {
@@ -70556,7 +70556,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": -0.0234,
+          "contribution": -0.0233,
           "feature": "avg"
         }
       ],
@@ -71104,7 +71104,7 @@
       "expected_outcome_score": 0.0886,
       "impact_drivers": [
         {
-          "contribution": 0.0711,
+          "contribution": 0.071,
           "feature": "aaa_translation"
         },
         {
@@ -71402,7 +71402,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.0944,
+      "expected_category_impact_score": 0.0943,
       "expected_outcome_score": 0.088,
       "impact_drivers": [
         {
@@ -71444,7 +71444,7 @@
       "sample_reliability": 0.379,
       "sample_unit": "PA",
       "team": "Bowling Green Hot Rods",
-      "valucast_impact_rank": 1390,
+      "valucast_impact_rank": 1391,
       "valucast_prospect_rank": 1388
     },
     {
@@ -71866,7 +71866,7 @@
       "expected_outcome_score": 0.087,
       "impact_drivers": [
         {
-          "contribution": 0.0661,
+          "contribution": 0.066,
           "feature": "aaa_translation"
         },
         {
@@ -72610,7 +72610,7 @@
           "feature": "iso_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.0803,
+      "expected_category_impact_score": 0.0802,
       "expected_outcome_score": 0.0855,
       "impact_drivers": [
         {
@@ -72658,7 +72658,7 @@
           "feature": "ops_x_level"
         }
       ],
-      "expected_category_impact_score": 0.0834,
+      "expected_category_impact_score": 0.0833,
       "expected_outcome_score": 0.0853,
       "impact_drivers": [
         {
@@ -72686,7 +72686,7 @@
       "sample_reliability": 0.591,
       "sample_unit": "PA",
       "team": "Brooklyn Cyclones",
-      "valucast_impact_rank": 1502,
+      "valucast_impact_rank": 1505,
       "valucast_prospect_rank": 1413
     },
     {
@@ -72906,7 +72906,7 @@
       "sample_reliability": 0.429,
       "sample_unit": "PA",
       "team": "Asheville Tourists",
-      "valucast_impact_rank": 1499,
+      "valucast_impact_rank": 1498,
       "valucast_prospect_rank": 1417
     },
     {
@@ -73347,7 +73347,7 @@
       "sample_reliability": 0.459,
       "sample_unit": "PA",
       "team": "San Antonio Missions",
-      "valucast_impact_rank": 1253,
+      "valucast_impact_rank": 1254,
       "valucast_prospect_rank": 1426
     },
     {
@@ -73927,7 +73927,7 @@
       "expected_outcome_score": 0.083,
       "impact_drivers": [
         {
-          "contribution": 0.0545,
+          "contribution": 0.0544,
           "feature": "youth"
         },
         {
@@ -76450,7 +76450,7 @@
       "sample_reliability": 0.4,
       "sample_unit": "IP",
       "team": "Durham Bulls",
-      "valucast_impact_rank": 986,
+      "valucast_impact_rank": 987,
       "valucast_prospect_rank": 1489
     },
     {
@@ -76530,7 +76530,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0435,
+          "contribution": -0.0436,
           "feature": "log_signing_bonus"
         }
       ],
@@ -76566,7 +76566,7 @@
           "feature": "slg"
         }
       ],
-      "expected_category_impact_score": 0.0655,
+      "expected_category_impact_score": 0.0654,
       "expected_outcome_score": 0.0755,
       "impact_drivers": [
         {
@@ -76594,7 +76594,7 @@
       "sample_reliability": 0.61,
       "sample_unit": "PA",
       "team": "Vancouver Canadians",
-      "valucast_impact_rank": 1680,
+      "valucast_impact_rank": 1682,
       "valucast_prospect_rank": 1492
     },
     {
@@ -77116,7 +77116,7 @@
           "feature": "babip"
         },
         {
-          "contribution": -0.0236,
+          "contribution": -0.0235,
           "feature": "aaa_translation"
         },
         {
@@ -77426,7 +77426,7 @@
           "feature": "avg"
         },
         {
-          "contribution": -0.0358,
+          "contribution": -0.0357,
           "feature": "slg"
         }
       ],
@@ -78106,7 +78106,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": -0.0187,
+          "contribution": -0.0186,
           "feature": "avg"
         }
       ],
@@ -78563,7 +78563,7 @@
         "raw_outcome": 0.1158
       },
       "team": "Hillsboro Hops",
-      "valucast_impact_rank": 1031,
+      "valucast_impact_rank": 1030,
       "valucast_prospect_rank": 1531
     },
     {
@@ -78625,7 +78625,7 @@
       "sample_reliability": 0.458,
       "sample_unit": "IP",
       "team": "Reading Fightin Phils",
-      "valucast_impact_rank": 1196,
+      "valucast_impact_rank": 1195,
       "valucast_prospect_rank": 1532
     },
     {
@@ -79946,7 +79946,7 @@
           "feature": "bb_to_k_ratio"
         },
         {
-          "contribution": -0.0197,
+          "contribution": -0.0196,
           "feature": "obp"
         }
       ],
@@ -80441,7 +80441,7 @@
       "expected_outcome_score": 0.0665,
       "impact_drivers": [
         {
-          "contribution": -0.0496,
+          "contribution": -0.0497,
           "feature": "log_signing_bonus"
         },
         {
@@ -81529,7 +81529,7 @@
           "feature": "era_x_whip"
         }
       ],
-      "expected_category_impact_score": 0.1089,
+      "expected_category_impact_score": 0.109,
       "expected_outcome_score": 0.0646,
       "impact_drivers": [
         {
@@ -81557,7 +81557,7 @@
       "sample_reliability": 0.283,
       "sample_unit": "IP",
       "team": "Buffalo Bisons",
-      "valucast_impact_rank": 1255,
+      "valucast_impact_rank": 1253,
       "valucast_prospect_rank": 1590
     },
     {
@@ -82429,7 +82429,7 @@
           "feature": "starter_x_youth"
         },
         {
-          "contribution": -0.0499,
+          "contribution": -0.05,
           "feature": "log_signing_bonus"
         },
         {
@@ -83343,7 +83343,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": 0.0324,
+          "contribution": 0.0325,
           "feature": "k_per_9"
         }
       ],
@@ -84189,7 +84189,7 @@
       "sample_reliability": 0.651,
       "sample_unit": "PA",
       "team": "Fort Wayne TinCaps",
-      "valucast_impact_rank": 1682,
+      "valucast_impact_rank": 1681,
       "valucast_prospect_rank": 1642
     },
     {
@@ -85415,7 +85415,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0181,
+          "contribution": -0.0182,
           "feature": "batters_faced_per_ip"
         }
       ],
@@ -86185,7 +86185,7 @@
           "feature": "walks_per_9_raw"
         }
       ],
-      "expected_category_impact_score": 0.0938,
+      "expected_category_impact_score": 0.0937,
       "expected_outcome_score": 0.0559,
       "impact_drivers": [
         {
@@ -86233,7 +86233,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.0833,
+      "expected_category_impact_score": 0.0834,
       "expected_outcome_score": 0.0559,
       "impact_drivers": [
         {
@@ -86266,11 +86266,11 @@
         "current_reliability": 0.203,
         "current_sample": 12.7,
         "pull_weight": 0.4,
-        "raw_impact": 0.1287,
+        "raw_impact": 0.1288,
         "raw_outcome": 0.0932
       },
       "team": "Down East Wood Ducks",
-      "valucast_impact_rank": 1505,
+      "valucast_impact_rank": 1502,
       "valucast_prospect_rank": 1684
     },
     {
@@ -86438,7 +86438,7 @@
       "expected_outcome_score": 0.0555,
       "impact_drivers": [
         {
-          "contribution": -0.0498,
+          "contribution": -0.0499,
           "feature": "start_rate"
         },
         {
@@ -87525,7 +87525,7 @@
       "expected_outcome_score": 0.0532,
       "impact_drivers": [
         {
-          "contribution": -0.0436,
+          "contribution": -0.0435,
           "feature": "aaa_translation"
         },
         {
@@ -88513,7 +88513,7 @@
       "expected_outcome_score": 0.0501,
       "impact_drivers": [
         {
-          "contribution": -0.0426,
+          "contribution": -0.0427,
           "feature": "log_signing_bonus"
         },
         {
@@ -89361,7 +89361,7 @@
       "sample_reliability": 0.427,
       "sample_unit": "IP",
       "team": "Corpus Christi Hooks",
-      "valucast_impact_rank": 1254,
+      "valucast_impact_rank": 1255,
       "valucast_prospect_rank": 1745
     },
     {
@@ -91341,7 +91341,7 @@
       "expected_outcome_score": 0.0436,
       "impact_drivers": [
         {
-          "contribution": -0.0406,
+          "contribution": -0.0407,
           "feature": "log_signing_bonus"
         },
         {
@@ -91953,7 +91953,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0398,
+          "contribution": -0.0399,
           "feature": "log_signing_bonus"
         }
       ],
@@ -94511,7 +94511,7 @@
           "feature": "babip"
         },
         {
-          "contribution": -0.0388,
+          "contribution": -0.0389,
           "feature": "aaa_translation"
         },
         {
@@ -96994,7 +96994,7 @@
       "expected_outcome_score": 0.0324,
       "impact_drivers": [
         {
-          "contribution": -0.0341,
+          "contribution": -0.034,
           "feature": "youth"
         },
         {
@@ -97066,7 +97066,7 @@
       "sample_reliability": 0.423,
       "sample_unit": "IP",
       "team": "San Antonio Missions",
-      "valucast_impact_rank": 1391,
+      "valucast_impact_rank": 1390,
       "valucast_prospect_rank": 1899
     },
     {
@@ -98361,7 +98361,7 @@
       "expected_outcome_score": 0.0297,
       "impact_drivers": [
         {
-          "contribution": -0.0487,
+          "contribution": -0.0486,
           "feature": "aaa_translation"
         },
         {
@@ -98632,7 +98632,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": -0.0338,
+          "contribution": -0.0337,
           "feature": "log_ip"
         }
       ],
@@ -99210,7 +99210,7 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.0836,
+      "expected_category_impact_score": 0.0835,
       "expected_outcome_score": 0.028,
       "impact_drivers": [
         {
@@ -99238,7 +99238,7 @@
       "sample_reliability": 0.584,
       "sample_unit": "IP",
       "team": "Hillsboro Hops",
-      "valucast_impact_rank": 1497,
+      "valucast_impact_rank": 1499,
       "valucast_prospect_rank": 1943
     },
     {
@@ -101259,7 +101259,7 @@
       "expected_outcome_score": 0.025,
       "impact_drivers": [
         {
-          "contribution": -0.0536,
+          "contribution": -0.0537,
           "feature": "start_rate"
         },
         {
@@ -101267,7 +101267,7 @@
           "feature": "log_ip"
         },
         {
-          "contribution": 0.0366,
+          "contribution": 0.0367,
           "feature": "k_bb_pct"
         }
       ],
@@ -101283,7 +101283,7 @@
       "sample_reliability": 0.239,
       "sample_unit": "IP",
       "team": "Richmond Flying Squirrels",
-      "valucast_impact_rank": 1498,
+      "valucast_impact_rank": 1497,
       "valucast_prospect_rank": 1983
     },
     {
@@ -104003,7 +104003,7 @@
       "expected_outcome_score": 0.0202,
       "impact_drivers": [
         {
-          "contribution": -0.0599,
+          "contribution": -0.06,
           "feature": "start_rate"
         },
         {
@@ -104879,7 +104879,7 @@
       "sample_reliability": 0.417,
       "sample_unit": "IP",
       "team": "St. Paul Saints",
-      "valucast_impact_rank": 1681,
+      "valucast_impact_rank": 1680,
       "valucast_prospect_rank": 2055
     },
     {
@@ -105473,7 +105473,7 @@
       "expected_outcome_score": 0.018,
       "impact_drivers": [
         {
-          "contribution": -0.0702,
+          "contribution": -0.0703,
           "feature": "start_rate"
         },
         {
@@ -109307,7 +109307,7 @@
           "feature": "aaa_translation"
         },
         {
-          "contribution": -0.0262,
+          "contribution": -0.0261,
           "feature": "avg"
         },
         {
@@ -111446,7 +111446,7 @@
       "expected_outcome_score": 0.0079,
       "impact_drivers": [
         {
-          "contribution": -0.0492,
+          "contribution": -0.0493,
           "feature": "start_rate"
         },
         {
@@ -113652,7 +113652,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0358,
+          "contribution": -0.0357,
           "feature": "log_ip"
         },
         {
@@ -113920,7 +113920,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0426,
+          "contribution": -0.0425,
           "feature": "log_ip"
         },
         {
@@ -118619,7 +118619,7 @@
           "feature": "iso_x_youth"
         },
         {
-          "contribution": -0.0457,
+          "contribution": -0.0456,
           "feature": "youth"
         },
         {
@@ -121557,7 +121557,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0307,
+          "contribution": -0.0306,
           "feature": "youth"
         },
         {
@@ -121815,7 +121815,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0262,
+          "contribution": -0.0263,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -123288,7 +123288,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0746,
+          "contribution": -0.0745,
           "feature": "starter_x_youth"
         },
         {
@@ -127081,7 +127081,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": -0.0543,
+          "contribution": -0.0544,
           "feature": "start_rate"
         },
         {
@@ -127317,7 +127317,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0308,
+          "contribution": -0.0307,
           "feature": "aaa_translation"
         },
         {
@@ -127413,7 +127413,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0362,
+          "contribution": -0.0361,
           "feature": "aaa_translation"
         },
         {
@@ -127845,7 +127845,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0757,
+          "contribution": -0.0756,
           "feature": "start_rate"
         },
         {
@@ -129619,11 +129619,11 @@
       "confidence": "low",
       "drivers": [
         {
-          "contribution": -0.0317,
+          "contribution": -0.0311,
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0061,
+          "contribution": -0.0057,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -129635,11 +129635,11 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0438,
+          "contribution": -0.0436,
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0189,
+          "contribution": -0.0188,
           "feature": "k_bb_pct"
         },
         {
@@ -130849,7 +130849,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0592,
+          "contribution": -0.0593,
           "feature": "start_rate"
         },
         {
@@ -131571,7 +131571,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": -0.0365,
+          "contribution": -0.0364,
           "feature": "log_ip"
         }
       ],
@@ -140987,15 +140987,15 @@
       "confidence": "moderate",
       "drivers": [
         {
-          "contribution": -0.0576,
+          "contribution": -0.0577,
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0162,
+          "contribution": -0.0159,
           "feature": "log_ip"
         },
         {
-          "contribution": -0.0118,
+          "contribution": -0.0115,
           "feature": "inverse_draft_round"
         }
       ],
@@ -141003,11 +141003,11 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.065,
+          "contribution": -0.0652,
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0258,
+          "contribution": -0.0259,
           "feature": "log_ip"
         },
         {
@@ -147704,7 +147704,7 @@
         "inverse_draft_pick"
       ],
       "gate": {
-        "activated_at": "2026-07-27T12:45:53.208551+00:00",
+        "activated_at": "2026-07-28T15:20:33.477730+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.131269,
         "cv_method": "walk_forward",
@@ -148037,7 +148037,7 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-07-27T12:45:53.208551+00:00",
+        "activated_at": "2026-07-28T15:20:33.477730+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.14933,
         "cv_method": "walk_forward",

@@ -1,15 +1,15 @@
 {
   "artifact": "valucast_prospect_model_v0_7_preview",
-  "as_of": "2026-07-27",
+  "as_of": "2026-07-28",
   "bucket_comparison": {
     "bucket_count": 11,
     "bucket_definition": "role|level_band|score_source|availability_status",
     "buckets": [
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 35.8341,
+        "avg_rank_v1_score": 35.835,
         "avg_v0_7_delta": -0.6304,
-        "avg_v0_7_shadow_score": 35.2037,
+        "avg_v0_7_shadow_score": 35.2046,
         "bucket": "hitter|upper_level|prospect_model_v0_6|available",
         "count": 92,
         "factual_context_coverage": 1.0,
@@ -19,9 +19,9 @@
       },
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 34.35,
+        "avg_rank_v1_score": 34.3502,
         "avg_v0_7_delta": 2.1301,
-        "avg_v0_7_shadow_score": 36.4801,
+        "avg_v0_7_shadow_score": 36.4803,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|available",
         "count": 60,
         "factual_context_coverage": 1.0,
@@ -31,9 +31,9 @@
       },
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 33.457,
+        "avg_rank_v1_score": 33.4575,
         "avg_v0_7_delta": -0.8111,
-        "avg_v0_7_shadow_score": 32.6459,
+        "avg_v0_7_shadow_score": 32.6464,
         "bucket": "hitter|lower_minors|prospect_model_v0_6|available",
         "count": 20,
         "factual_context_coverage": 1.0,
@@ -55,9 +55,9 @@
       },
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 30.235,
+        "avg_rank_v1_score": 30.2375,
         "avg_v0_7_delta": -2.718,
-        "avg_v0_7_shadow_score": 27.517,
+        "avg_v0_7_shadow_score": 27.5195,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|thin_current_sample",
         "count": 4,
         "factual_context_coverage": 1.0,
@@ -79,9 +79,9 @@
       },
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 29.37,
+        "avg_rank_v1_score": 29.365,
         "avg_v0_7_delta": -0.221,
-        "avg_v0_7_shadow_score": 29.149,
+        "avg_v0_7_shadow_score": 29.144,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|stale_or_inactive",
         "count": 2,
         "factual_context_coverage": 1.0,
@@ -367,11 +367,11 @@
       "mlbam_id": 696146,
       "name": "Hagen Smith",
       "rank_v1_rank": 7,
-      "rank_v1_score": 57.09,
+      "rank_v1_score": 57.1,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.835,
-      "v0_7_shadow_score": 59.925
+      "v0_7_shadow_score": 59.935
     },
     {
       "candidate_features": {
@@ -1038,11 +1038,11 @@
       "mlbam_id": 815888,
       "name": "Leo De Vries",
       "rank_v1_rank": 27,
-      "rank_v1_score": 44.79,
+      "rank_v1_score": 44.78,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.971,
-      "v0_7_shadow_score": 43.819
+      "v0_7_shadow_score": 43.809
     },
     {
       "candidate_features": {
@@ -1070,11 +1070,11 @@
       "mlbam_id": 695490,
       "name": "Edwin Arroyo",
       "rank_v1_rank": 28,
-      "rank_v1_score": 44.23,
+      "rank_v1_score": 44.24,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.217,
-      "v0_7_shadow_score": 43.013
+      "v0_7_shadow_score": 43.023
     },
     {
       "candidate_features": {
@@ -1514,11 +1514,11 @@
       "mlbam_id": 691458,
       "name": "Blaze Jordan",
       "rank_v1_rank": 41,
-      "rank_v1_score": 40.78,
+      "rank_v1_score": 40.85,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.145,
-      "v0_7_shadow_score": 42.925
+      "v0_7_shadow_score": 42.995
     },
     {
       "candidate_features": {
@@ -2629,11 +2629,11 @@
       "mlbam_id": 800600,
       "name": "Jackson Kent",
       "rank_v1_rank": 74,
-      "rank_v1_score": 33.57,
+      "rank_v1_score": 33.56,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.864,
-      "v0_7_shadow_score": 36.434
+      "v0_7_shadow_score": 36.424
     },
     {
       "candidate_features": {
@@ -3030,11 +3030,11 @@
       "mlbam_id": 694351,
       "name": "Jacob Berry",
       "rank_v1_rank": 85,
-      "rank_v1_score": 33.2,
+      "rank_v1_score": 33.17,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 0.407,
-      "v0_7_shadow_score": 33.607
+      "v0_7_shadow_score": 33.577
     },
     {
       "candidate_features": {
@@ -3160,11 +3160,11 @@
       "mlbam_id": 804858,
       "name": "Bryan Rincon",
       "rank_v1_rank": 89,
-      "rank_v1_score": 32.94,
+      "rank_v1_score": 32.93,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.513,
-      "v0_7_shadow_score": 32.427
+      "v0_7_shadow_score": 32.417
     },
     {
       "candidate_features": {
@@ -3377,11 +3377,11 @@
       "mlbam_id": 815792,
       "name": "Chase Harlan",
       "rank_v1_rank": 95,
-      "rank_v1_score": 32.43,
+      "rank_v1_score": 32.44,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.475,
-      "v0_7_shadow_score": 30.955
+      "v0_7_shadow_score": 30.965
     },
     {
       "candidate_features": {
@@ -3865,6 +3865,38 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -8.6,
+        "bucket_calibration": null,
+        "current_sample": 389.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "balanced",
+        "factual_investment_context": null,
+        "iso": 0.127,
+        "ops": null,
+        "sample_reliability": 66.0
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 800198,
+      "name": "Cristofer Torin",
+      "rank_v1_rank": 110,
+      "rank_v1_score": 31.22,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 0.805,
+      "v0_7_shadow_score": 32.025
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.06,
         "availability_status": "thin_current_sample",
         "bb_per_9": 3.8,
@@ -3912,12 +3944,12 @@
       "level": "AAA",
       "mlbam_id": 695667,
       "name": "Ben Kudrna",
-      "rank_v1_rank": 110,
-      "rank_v1_score": 31.21,
+      "rank_v1_rank": 111,
+      "rank_v1_score": 31.22,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.553,
-      "v0_7_shadow_score": 28.657
+      "v0_7_shadow_score": 28.667
     },
     {
       "candidate_features": {
@@ -3944,44 +3976,12 @@
       "level": "AA",
       "mlbam_id": 804109,
       "name": "Aiva Arquette",
-      "rank_v1_rank": 111,
+      "rank_v1_rank": 112,
       "rank_v1_score": 31.19,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.923,
       "v0_7_shadow_score": 28.267
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -8.6,
-        "bucket_calibration": null,
-        "current_sample": 389.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "balanced",
-        "factual_investment_context": null,
-        "iso": 0.127,
-        "ops": null,
-        "sample_reliability": 66.0
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 800198,
-      "name": "Cristofer Torin",
-      "rank_v1_rank": 112,
-      "rank_v1_score": 31.17,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 0.805,
-      "v0_7_shadow_score": 31.975
     },
     {
       "candidate_features": {
@@ -4163,11 +4163,11 @@
       "mlbam_id": 695766,
       "name": "Mason Molina",
       "rank_v1_rank": 117,
-      "rank_v1_score": 30.72,
+      "rank_v1_score": 30.71,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.283,
-      "v0_7_shadow_score": 34.003
+      "v0_7_shadow_score": 33.993
     },
     {
       "candidate_features": {
@@ -4905,11 +4905,11 @@
       "mlbam_id": 691765,
       "name": "Jackson Baumeister",
       "rank_v1_rank": 137,
-      "rank_v1_score": 29.69,
+      "rank_v1_score": 29.68,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.975,
-      "v0_7_shadow_score": 32.665
+      "v0_7_shadow_score": 32.655
     },
     {
       "candidate_features": {
@@ -5221,11 +5221,11 @@
       "mlbam_id": 804981,
       "name": "Riley Quick",
       "rank_v1_rank": 146,
-      "rank_v1_score": 29.27,
+      "rank_v1_score": 29.3,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.876,
-      "v0_7_shadow_score": 28.394
+      "v0_7_shadow_score": 28.424
     },
     {
       "candidate_features": {
@@ -5507,6 +5507,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -20.7,
+        "bucket_calibration": null,
+        "current_sample": 279.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.16,
+        "ops": null,
+        "sample_reliability": 58.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 694580,
+      "name": "Kemp Alderman",
+      "rank_v1_rank": 154,
+      "rank_v1_score": 28.87,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.384,
+      "v0_7_shadow_score": 27.486
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 2.9,
         "bucket_calibration": null,
         "current_sample": 50.3,
@@ -5528,44 +5560,12 @@
       "level": "AAA",
       "mlbam_id": 802126,
       "name": "Joe Whitman",
-      "rank_v1_rank": 154,
+      "rank_v1_rank": 155,
       "rank_v1_score": 28.87,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.289,
       "v0_7_shadow_score": 32.159
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -20.7,
-        "bucket_calibration": null,
-        "current_sample": 279.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.16,
-        "ops": null,
-        "sample_reliability": 58.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 694580,
-      "name": "Kemp Alderman",
-      "rank_v1_rank": 155,
-      "rank_v1_score": 28.86,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.384,
-      "v0_7_shadow_score": 27.476
     },
     {
       "candidate_features": {
@@ -5626,11 +5626,11 @@
       "mlbam_id": 691277,
       "name": "Deyvison De Los Santos",
       "rank_v1_rank": 157,
-      "rank_v1_score": 28.72,
+      "rank_v1_score": 28.71,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.027,
-      "v0_7_shadow_score": 27.693
+      "v0_7_shadow_score": 27.683
     },
     {
       "candidate_features": {
@@ -5726,11 +5726,11 @@
       "mlbam_id": 703186,
       "name": "Jarlin Susana",
       "rank_v1_rank": 159,
-      "rank_v1_score": 28.66,
+      "rank_v1_score": 28.65,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.691,
-      "v0_7_shadow_score": 26.969
+      "v0_7_shadow_score": 26.959
     },
     {
       "candidate_features": {
@@ -5984,11 +5984,11 @@
       "mlbam_id": 700246,
       "name": "Carson Williams",
       "rank_v1_rank": 167,
-      "rank_v1_score": 28.45,
+      "rank_v1_score": 28.44,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.167,
-      "v0_7_shadow_score": 27.283
+      "v0_7_shadow_score": 27.273
     },
     {
       "candidate_features": {
@@ -6595,6 +6595,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -15.0,
+        "bucket_calibration": null,
+        "current_sample": 354.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.142,
+        "ops": null,
+        "sample_reliability": 63.9
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 694385,
+      "name": "Brock Wilken",
+      "rank_v1_rank": 185,
+      "rank_v1_score": 27.71,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.04,
+      "v0_7_shadow_score": 26.67
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 2.5,
         "bucket_calibration": null,
         "current_sample": 93.0,
@@ -6616,7 +6648,7 @@
       "level": "AA",
       "mlbam_id": 804973,
       "name": "Manuel Rodriguez",
-      "rank_v1_rank": 185,
+      "rank_v1_rank": 186,
       "rank_v1_score": 27.71,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -6648,44 +6680,12 @@
       "level": "AA",
       "mlbam_id": 800406,
       "name": "Aron Estrada",
-      "rank_v1_rank": 186,
+      "rank_v1_rank": 187,
       "rank_v1_score": 27.7,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.027,
       "v0_7_shadow_score": 26.673
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -15.0,
-        "bucket_calibration": null,
-        "current_sample": 354.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.142,
-        "ops": null,
-        "sample_reliability": 63.9
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 694385,
-      "name": "Brock Wilken",
-      "rank_v1_rank": 187,
-      "rank_v1_score": 27.7,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.04,
-      "v0_7_shadow_score": 26.66
     },
     {
       "candidate_features": {
@@ -7355,11 +7355,11 @@
       "mlbam_id": 803244,
       "name": "Eliazar Dishmey",
       "rank_v1_rank": 205,
-      "rank_v1_score": 26.97,
+      "rank_v1_score": 26.96,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.996,
-      "v0_7_shadow_score": 25.974
+      "v0_7_shadow_score": 25.964
     },
     {
       "candidate_features": {
@@ -8216,11 +8216,11 @@
       "mlbam_id": 682982,
       "name": "Daniel Espino",
       "rank_v1_rank": 228,
-      "rank_v1_score": 26.31,
+      "rank_v1_score": 26.3,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.128,
-      "v0_7_shadow_score": 22.182
+      "v0_7_shadow_score": 22.172
     },
     {
       "candidate_features": {
@@ -8738,11 +8738,11 @@
       "mlbam_id": 694371,
       "name": "Tommy Troy",
       "rank_v1_rank": 242,
-      "rank_v1_score": 25.95,
+      "rank_v1_score": 25.97,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.922,
-      "v0_7_shadow_score": 22.028
+      "v0_7_shadow_score": 22.048
     },
     {
       "candidate_features": {
@@ -9066,38 +9066,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -15.4,
-        "bucket_calibration": null,
-        "current_sample": 378.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.122,
-        "ops": null,
-        "sample_reliability": 65.4
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 821041,
-      "name": "Roldy Brito",
-      "rank_v1_rank": 252,
-      "rank_v1_score": 25.61,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.132,
-      "v0_7_shadow_score": 24.478
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -20.8,
         "bucket_calibration": {
           "adjustment": -0.47,
@@ -9141,12 +9109,44 @@
       "level": "A+",
       "mlbam_id": 806191,
       "name": "Tai Peete",
-      "rank_v1_rank": 253,
+      "rank_v1_rank": 252,
       "rank_v1_score": 25.61,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.17,
       "v0_7_shadow_score": 23.44
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -15.4,
+        "bucket_calibration": null,
+        "current_sample": 378.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.122,
+        "ops": null,
+        "sample_reliability": 65.4
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 821041,
+      "name": "Roldy Brito",
+      "rank_v1_rank": 253,
+      "rank_v1_score": 25.6,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.132,
+      "v0_7_shadow_score": 24.468
     },
     {
       "candidate_features": {
@@ -9175,11 +9175,11 @@
       "mlbam_id": 802412,
       "name": "Malachi Witherspoon",
       "rank_v1_rank": 254,
-      "rank_v1_score": 25.58,
+      "rank_v1_score": 25.57,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.371,
-      "v0_7_shadow_score": 27.951
+      "v0_7_shadow_score": 27.941
     },
     {
       "candidate_features": {
@@ -9514,11 +9514,11 @@
       "mlbam_id": 815071,
       "name": "Marcus Phillips",
       "rank_v1_rank": 263,
-      "rank_v1_score": 25.31,
+      "rank_v1_score": 25.3,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.967,
-      "v0_7_shadow_score": 23.343
+      "v0_7_shadow_score": 23.333
     },
     {
       "candidate_features": {
@@ -10048,11 +10048,11 @@
       "mlbam_id": 815119,
       "name": "Tanner Franklin",
       "rank_v1_rank": 278,
-      "rank_v1_score": 24.87,
+      "rank_v1_score": 24.86,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.646,
-      "v0_7_shadow_score": 27.516
+      "v0_7_shadow_score": 27.506
     },
     {
       "candidate_features": {
@@ -10401,11 +10401,11 @@
       "mlbam_id": 815195,
       "name": "Wilder Dalis",
       "rank_v1_rank": 286,
-      "rank_v1_score": 24.58,
+      "rank_v1_score": 24.59,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.681,
-      "v0_7_shadow_score": 22.899
+      "v0_7_shadow_score": 22.909
     },
     {
       "candidate_features": {
@@ -10728,11 +10728,11 @@
       "mlbam_id": 702885,
       "name": "Cesar Perdomo",
       "rank_v1_rank": 296,
-      "rank_v1_score": 24.35,
+      "rank_v1_score": 24.33,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.725,
-      "v0_7_shadow_score": 28.075
+      "v0_7_shadow_score": 28.055
     },
     {
       "candidate_features": {
@@ -11175,6 +11175,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -23.2,
+        "bucket_calibration": null,
+        "current_sample": 292.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.135,
+        "ops": null,
+        "sample_reliability": 59.3
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 800614,
+      "name": "Bryce Rainer",
+      "rank_v1_rank": 309,
+      "rank_v1_score": 23.98,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.521,
+      "v0_7_shadow_score": 22.459
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 4.1,
         "bucket_calibration": null,
         "current_sample": 97.0,
@@ -11196,44 +11228,12 @@
       "level": "AA",
       "mlbam_id": 690981,
       "name": "Lucas Gordon",
-      "rank_v1_rank": 309,
-      "rank_v1_score": 23.99,
+      "rank_v1_rank": 310,
+      "rank_v1_score": 23.98,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.262,
-      "v0_7_shadow_score": 27.252
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -23.2,
-        "bucket_calibration": null,
-        "current_sample": 292.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.135,
-        "ops": null,
-        "sample_reliability": 59.3
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 800614,
-      "name": "Bryce Rainer",
-      "rank_v1_rank": 310,
-      "rank_v1_score": 23.98,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.521,
-      "v0_7_shadow_score": 22.459
+      "v0_7_shadow_score": 27.242
     },
     {
       "candidate_features": {
@@ -12844,38 +12844,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -8.9,
-        "bucket_calibration": null,
-        "current_sample": 194.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "balanced",
-        "factual_investment_context": null,
-        "iso": 0.093,
-        "ops": null,
-        "sample_reliability": 49.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 807257,
-      "name": "Ty Southisene",
-      "rank_v1_rank": 352,
-      "rank_v1_score": 22.91,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -0.869,
-      "v0_7_shadow_score": 22.041
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 6.8,
         "bucket_calibration": null,
         "current_sample": 45.3,
@@ -12897,12 +12865,44 @@
       "level": "A",
       "mlbam_id": 815841,
       "name": "Joey Oakie",
-      "rank_v1_rank": 353,
+      "rank_v1_rank": 352,
       "rank_v1_score": 22.91,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.481,
       "v0_7_shadow_score": 20.429
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -8.9,
+        "bucket_calibration": null,
+        "current_sample": 194.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "balanced",
+        "factual_investment_context": null,
+        "iso": 0.093,
+        "ops": null,
+        "sample_reliability": 49.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 807257,
+      "name": "Ty Southisene",
+      "rank_v1_rank": 353,
+      "rank_v1_score": 22.9,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -0.869,
+      "v0_7_shadow_score": 22.031
     },
     {
       "candidate_features": {
@@ -13032,11 +13032,11 @@
       "mlbam_id": 688867,
       "name": "Braxton Bragg",
       "rank_v1_rank": 356,
-      "rank_v1_score": 22.85,
+      "rank_v1_score": 22.84,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.408,
-      "v0_7_shadow_score": 21.442
+      "v0_7_shadow_score": 21.432
     },
     {
       "candidate_features": {
@@ -13098,11 +13098,11 @@
       "mlbam_id": 703469,
       "name": "Jackson Humphries",
       "rank_v1_rank": 358,
-      "rank_v1_score": 22.79,
+      "rank_v1_score": 22.78,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 1.807,
-      "v0_7_shadow_score": 24.597
+      "v0_7_shadow_score": 24.587
     },
     {
       "candidate_features": {
@@ -15275,11 +15275,11 @@
       "mlbam_id": 701411,
       "name": "Jack Cebert",
       "rank_v1_rank": 415,
-      "rank_v1_score": 21.77,
+      "rank_v1_score": 21.76,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.252,
-      "v0_7_shadow_score": 25.022
+      "v0_7_shadow_score": 25.012
     },
     {
       "candidate_features": {
@@ -15613,11 +15613,11 @@
       "mlbam_id": 686551,
       "name": "Christian Cairo",
       "rank_v1_rank": 424,
-      "rank_v1_score": 21.64,
+      "rank_v1_score": 21.63,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 0.927,
-      "v0_7_shadow_score": 22.567
+      "v0_7_shadow_score": 22.557
     },
     {
       "candidate_features": {
@@ -15897,11 +15897,11 @@
       "mlbam_id": 695761,
       "name": "Kenya Huggins",
       "rank_v1_rank": 432,
-      "rank_v1_score": 21.45,
+      "rank_v1_score": 21.44,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.064,
-      "v0_7_shadow_score": 23.514
+      "v0_7_shadow_score": 23.504
     },
     {
       "candidate_features": {
@@ -16545,11 +16545,43 @@
       "mlbam_id": 700321,
       "name": "Andy Perez",
       "rank_v1_rank": 449,
-      "rank_v1_score": 21.03,
+      "rank_v1_score": 21.02,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.924,
-      "v0_7_shadow_score": 20.106
+      "v0_7_shadow_score": 20.096
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -19.4,
+        "bucket_calibration": null,
+        "current_sample": 256.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.162,
+        "ops": null,
+        "sample_reliability": 56.1
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 807726,
+      "name": "John Peck",
+      "rank_v1_rank": 450,
+      "rank_v1_score": 21.0,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.534,
+      "v0_7_shadow_score": 19.466
     },
     {
       "candidate_features": {
@@ -16577,7 +16609,7 @@
       "level": "AAA",
       "mlbam_id": 699008,
       "name": "Antwone Kelly",
-      "rank_v1_rank": 450,
+      "rank_v1_rank": 451,
       "rank_v1_score": 21.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -16609,44 +16641,12 @@
       "level": "AA",
       "mlbam_id": 827719,
       "name": "Jake Munroe",
-      "rank_v1_rank": 451,
+      "rank_v1_rank": 452,
       "rank_v1_score": 20.99,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.35,
       "v0_7_shadow_score": 19.64
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -19.4,
-        "bucket_calibration": null,
-        "current_sample": 256.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.162,
-        "ops": null,
-        "sample_reliability": 56.1
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 807726,
-      "name": "John Peck",
-      "rank_v1_rank": 452,
-      "rank_v1_score": 20.99,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.534,
-      "v0_7_shadow_score": 19.456
     },
     {
       "candidate_features": {
@@ -16834,66 +16834,11 @@
       "mlbam_id": 800281,
       "name": "Roynier Hernandez",
       "rank_v1_rank": 458,
-      "rank_v1_score": 20.81,
+      "rank_v1_score": 20.8,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 0.399,
-      "v0_7_shadow_score": 21.209
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.12,
-        "availability_status": "injured",
-        "bb_minus_k_pct": -12.7,
-        "bucket_calibration": {
-          "adjustment": -0.97,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -0.97,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "AA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "hitter",
-              "sample": 183.0,
-              "sample_reliability": 47.8,
-              "sample_unit": "PA",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 183.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.167,
-        "ops": null,
-        "sample_reliability": 47.8
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 813841,
-      "name": "Jonah Cox",
-      "rank_v1_rank": 459,
-      "rank_v1_score": 20.76,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.719,
-      "v0_7_shadow_score": 17.041
+      "v0_7_shadow_score": 21.199
     },
     {
       "candidate_features": {
@@ -16956,12 +16901,67 @@
       "level": "AAA",
       "mlbam_id": 691441,
       "name": "Cristian Mena",
-      "rank_v1_rank": 460,
+      "rank_v1_rank": 459,
       "rank_v1_score": 20.76,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.305,
       "v0_7_shadow_score": 17.455
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.12,
+        "availability_status": "injured",
+        "bb_minus_k_pct": -12.7,
+        "bucket_calibration": {
+          "adjustment": -0.97,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -0.97,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "AA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "hitter",
+              "sample": 183.0,
+              "sample_reliability": 47.8,
+              "sample_unit": "PA",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 183.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.167,
+        "ops": null,
+        "sample_reliability": 47.8
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 813841,
+      "name": "Jonah Cox",
+      "rank_v1_rank": 460,
+      "rank_v1_score": 20.75,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -3.719,
+      "v0_7_shadow_score": 17.031
     },
     {
       "candidate_features": {
@@ -17185,11 +17185,11 @@
       "mlbam_id": 701906,
       "name": "Trevor Cohen",
       "rank_v1_rank": 467,
-      "rank_v1_score": 20.68,
+      "rank_v1_score": 20.67,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 0.527,
-      "v0_7_shadow_score": 21.207
+      "v0_7_shadow_score": 21.197
     },
     {
       "candidate_features": {
@@ -17403,11 +17403,11 @@
       "mlbam_id": 696143,
       "name": "Anthony Solometo",
       "rank_v1_rank": 473,
-      "rank_v1_score": 20.52,
+      "rank_v1_score": 20.51,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.933,
-      "v0_7_shadow_score": 16.587
+      "v0_7_shadow_score": 16.577
     },
     {
       "candidate_features": {
@@ -17973,6 +17973,71 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -9.2,
+        "bucket_calibration": null,
+        "current_sample": 274.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "balanced",
+        "factual_investment_context": null,
+        "iso": 0.142,
+        "ops": null,
+        "sample_reliability": 57.8
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 811289,
+      "name": "Spencer Nivens",
+      "rank_v1_rank": 487,
+      "rank_v1_score": 20.28,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 0.236,
+      "v0_7_shadow_score": 20.516
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.3,
+        "bucket_calibration": null,
+        "current_sample": 53.3,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 10.0,
+        "k_per_9": 7.3,
+        "sample_reliability": 51.6,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 827448,
+      "name": "Emilio Obispo",
+      "rank_v1_rank": 488,
+      "rank_v1_score": 20.28,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.533,
+      "v0_7_shadow_score": 21.813
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.03,
         "availability_status": "thin_current_sample",
         "bb_per_9": 3.6,
@@ -18020,77 +18085,12 @@
       "level": "AA",
       "mlbam_id": 703610,
       "name": "Justin Lamkin",
-      "rank_v1_rank": 487,
-      "rank_v1_score": 20.29,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.318,
-      "v0_7_shadow_score": 16.972
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -9.2,
-        "bucket_calibration": null,
-        "current_sample": 274.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "balanced",
-        "factual_investment_context": null,
-        "iso": 0.142,
-        "ops": null,
-        "sample_reliability": 57.8
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 811289,
-      "name": "Spencer Nivens",
-      "rank_v1_rank": 488,
-      "rank_v1_score": 20.28,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 0.236,
-      "v0_7_shadow_score": 20.516
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 4.3,
-        "bucket_calibration": null,
-        "current_sample": 53.3,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 10.0,
-        "k_per_9": 7.3,
-        "sample_reliability": 51.6,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 827448,
-      "name": "Emilio Obispo",
       "rank_v1_rank": 489,
       "rank_v1_score": 20.28,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.533,
-      "v0_7_shadow_score": 21.813
+      "v0_7_delta_vs_rank_v1": -3.318,
+      "v0_7_shadow_score": 16.962
     },
     {
       "candidate_features": {
@@ -18656,11 +18656,11 @@
       "mlbam_id": 678577,
       "name": "Junior Perez",
       "rank_v1_rank": 504,
-      "rank_v1_score": 20.03,
+      "rank_v1_score": 20.02,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.78,
-      "v0_7_shadow_score": 18.25
+      "v0_7_shadow_score": 18.24
     },
     {
       "candidate_features": {
@@ -19421,11 +19421,11 @@
       "mlbam_id": 682983,
       "name": "Jud Fabian",
       "rank_v1_rank": 524,
-      "rank_v1_score": 19.81,
+      "rank_v1_score": 19.8,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.477,
-      "v0_7_shadow_score": 18.333
+      "v0_7_shadow_score": 18.323
     },
     {
       "candidate_features": {
@@ -19756,6 +19756,63 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.06,
+        "availability_status": "thin_current_sample",
+        "bb_per_9": 4.5,
+        "bucket_calibration": {
+          "adjustment": -5.06,
+          "bucket": "thin_current_sample_confidence",
+          "label": "Thin current sample",
+          "level": "A+",
+          "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
+          "rules": [
+            {
+              "adjustment": -5.06,
+              "bucket": "thin_current_sample_confidence",
+              "continuity_floor_adjustment": null,
+              "continuity_floor_applied": false,
+              "continuity_prior_season": null,
+              "label": "Thin current sample",
+              "level": "A+",
+              "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
+              "role": "pitcher",
+              "sample": 21.0,
+              "sample_reliability": 29.6,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 21.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "limited",
+        "factual_investment_context": null,
+        "k_bb_pct": 11.5,
+        "k_per_9": 8.4,
+        "sample_reliability": 29.6,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 702505,
+      "name": "J.D. Thompson",
+      "rank_v1_rank": 535,
+      "rank_v1_score": 19.61,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -5.032,
+      "v0_7_shadow_score": 14.578
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
         "bb_minus_k_pct": -20.4,
@@ -19778,12 +19835,44 @@
       "level": "AAA",
       "mlbam_id": 687605,
       "name": "Andrew Pinckney",
-      "rank_v1_rank": 535,
-      "rank_v1_score": 19.61,
+      "rank_v1_rank": 536,
+      "rank_v1_score": 19.6,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.102,
-      "v0_7_shadow_score": 18.508
+      "v0_7_shadow_score": 18.498
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -14.7,
+        "bucket_calibration": null,
+        "current_sample": 403.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.122,
+        "ops": null,
+        "sample_reliability": 66.8
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 802018,
+      "name": "Ryan Burrowes",
+      "rank_v1_rank": 537,
+      "rank_v1_score": 19.6,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -0.964,
+      "v0_7_shadow_score": 18.636
     },
     {
       "candidate_features": {
@@ -19846,101 +19935,12 @@
       "level": "AAA",
       "mlbam_id": 682607,
       "name": "Antonio Jimenez",
-      "rank_v1_rank": 536,
-      "rank_v1_score": 19.61,
+      "rank_v1_rank": 538,
+      "rank_v1_score": 19.6,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.736,
-      "v0_7_shadow_score": 16.874
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.06,
-        "availability_status": "thin_current_sample",
-        "bb_per_9": 4.5,
-        "bucket_calibration": {
-          "adjustment": -5.06,
-          "bucket": "thin_current_sample_confidence",
-          "label": "Thin current sample",
-          "level": "A+",
-          "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
-          "rules": [
-            {
-              "adjustment": -5.06,
-              "bucket": "thin_current_sample_confidence",
-              "continuity_floor_adjustment": null,
-              "continuity_floor_applied": false,
-              "continuity_prior_season": null,
-              "label": "Thin current sample",
-              "level": "A+",
-              "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
-              "role": "pitcher",
-              "sample": 21.0,
-              "sample_reliability": 29.6,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 21.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "limited",
-        "factual_investment_context": null,
-        "k_bb_pct": 11.5,
-        "k_per_9": 8.4,
-        "sample_reliability": 29.6,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 702505,
-      "name": "J.D. Thompson",
-      "rank_v1_rank": 537,
-      "rank_v1_score": 19.61,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -5.032,
-      "v0_7_shadow_score": 14.578
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -14.7,
-        "bucket_calibration": null,
-        "current_sample": 403.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.122,
-        "ops": null,
-        "sample_reliability": 66.8
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 802018,
-      "name": "Ryan Burrowes",
-      "rank_v1_rank": 538,
-      "rank_v1_score": 19.6,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -0.964,
-      "v0_7_shadow_score": 18.636
+      "v0_7_shadow_score": 16.864
     },
     {
       "candidate_features": {
@@ -20337,38 +20337,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -10.3,
-        "bucket_calibration": null,
-        "current_sample": 282.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.117,
-        "ops": null,
-        "sample_reliability": 58.5
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 804645,
-      "name": "Caden Connor",
-      "rank_v1_rank": 548,
-      "rank_v1_score": 19.41,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.321,
-      "v0_7_shadow_score": 18.089
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -13.3,
         "bucket_calibration": null,
         "current_sample": 318.0,
@@ -20389,12 +20357,44 @@
       "level": "AA",
       "mlbam_id": 809944,
       "name": "Elijah Hainline",
-      "rank_v1_rank": 549,
+      "rank_v1_rank": 548,
       "rank_v1_score": 19.41,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.167,
       "v0_7_shadow_score": 18.243
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -10.3,
+        "bucket_calibration": null,
+        "current_sample": 282.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.117,
+        "ops": null,
+        "sample_reliability": 58.5
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 804645,
+      "name": "Caden Connor",
+      "rank_v1_rank": 549,
+      "rank_v1_score": 19.4,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.321,
+      "v0_7_shadow_score": 18.079
     },
     {
       "candidate_features": {
@@ -20807,11 +20807,11 @@
       "mlbam_id": 822578,
       "name": "Brandon Butterworth",
       "rank_v1_rank": 559,
-      "rank_v1_score": 19.22,
+      "rank_v1_score": 19.2,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.254,
-      "v0_7_shadow_score": 16.966
+      "v0_7_shadow_score": 16.946
     },
     {
       "candidate_features": {
@@ -20939,6 +20939,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -16.5,
+        "bucket_calibration": null,
+        "current_sample": 329.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.143,
+        "ops": null,
+        "sample_reliability": 62.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 808675,
+      "name": "Ramon Ramirez",
+      "rank_v1_rank": 563,
+      "rank_v1_score": 19.16,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.217,
+      "v0_7_shadow_score": 17.943
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 5.2,
         "bucket_calibration": null,
         "current_sample": 69.0,
@@ -20960,7 +20992,7 @@
       "level": "A+",
       "mlbam_id": 811600,
       "name": "Abraham Parra",
-      "rank_v1_rank": 563,
+      "rank_v1_rank": 564,
       "rank_v1_score": 19.16,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -20993,44 +21025,12 @@
       "level": "A+",
       "mlbam_id": 805793,
       "name": "Landen Maroudis",
-      "rank_v1_rank": 564,
+      "rank_v1_rank": 565,
       "rank_v1_score": 19.16,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 1.299,
       "v0_7_shadow_score": 20.459
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -16.5,
-        "bucket_calibration": null,
-        "current_sample": 329.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.143,
-        "ops": null,
-        "sample_reliability": 62.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 808675,
-      "name": "Ramon Ramirez",
-      "rank_v1_rank": 565,
-      "rank_v1_score": 19.15,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.217,
-      "v0_7_shadow_score": 17.933
     },
     {
       "candidate_features": {
@@ -21155,11 +21155,11 @@
       "mlbam_id": 806263,
       "name": "Brandon Winokur",
       "rank_v1_rank": 569,
-      "rank_v1_score": 19.07,
+      "rank_v1_score": 19.06,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.344,
-      "v0_7_shadow_score": 17.726
+      "v0_7_shadow_score": 17.716
     },
     {
       "candidate_features": {
@@ -23617,11 +23617,11 @@
       "mlbam_id": 807751,
       "name": "Ethan O'Donnell",
       "rank_v1_rank": 631,
-      "rank_v1_score": 18.14,
+      "rank_v1_score": 18.15,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.144,
-      "v0_7_shadow_score": 15.996
+      "v0_7_shadow_score": 16.006
     },
     {
       "candidate_features": {
@@ -24210,38 +24210,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -6.4,
-        "bucket_calibration": null,
-        "current_sample": 341.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "balanced",
-        "factual_investment_context": null,
-        "iso": 0.11,
-        "ops": null,
-        "sample_reliability": 63.0
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 701373,
-      "name": "Isaiah Barkett",
-      "rank_v1_rank": 647,
-      "rank_v1_score": 17.96,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 0.588,
-      "v0_7_shadow_score": 18.548
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -18.7,
         "bucket_calibration": null,
         "current_sample": 346.0,
@@ -24262,12 +24230,44 @@
       "level": "AA",
       "mlbam_id": 695372,
       "name": "Jake Gelof",
+      "rank_v1_rank": 647,
+      "rank_v1_score": 17.97,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -0.923,
+      "v0_7_shadow_score": 17.047
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -6.4,
+        "bucket_calibration": null,
+        "current_sample": 341.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "balanced",
+        "factual_investment_context": null,
+        "iso": 0.11,
+        "ops": null,
+        "sample_reliability": 63.0
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 701373,
+      "name": "Isaiah Barkett",
       "rank_v1_rank": 648,
       "rank_v1_score": 17.96,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -0.923,
-      "v0_7_shadow_score": 17.037
+      "v0_7_delta_vs_rank_v1": 0.588,
+      "v0_7_shadow_score": 18.548
     },
     {
       "candidate_features": {
@@ -25412,6 +25412,39 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_per_9": 3.8,
+        "bucket_calibration": null,
+        "current_sample": 59.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 10.5,
+        "k_per_9": 7.3,
+        "sample_reliability": 54.1,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 701836,
+      "name": "Kyle Robinson",
+      "rank_v1_rank": 679,
+      "rank_v1_score": 17.48,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.968,
+      "v0_7_shadow_score": 19.448
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -11.3,
         "bucket_calibration": {
           "adjustment": -3.52,
@@ -25455,45 +25488,12 @@
       "level": "A+",
       "mlbam_id": 803679,
       "name": "Sammy Hernandez",
-      "rank_v1_rank": 679,
-      "rank_v1_score": 17.48,
+      "rank_v1_rank": 680,
+      "rank_v1_score": 17.47,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.307,
-      "v0_7_shadow_score": 15.173
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.8,
-        "bucket_calibration": null,
-        "current_sample": 59.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 10.5,
-        "k_per_9": 7.3,
-        "sample_reliability": 54.1,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 701836,
-      "name": "Kyle Robinson",
-      "rank_v1_rank": 680,
-      "rank_v1_score": 17.48,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.968,
-      "v0_7_shadow_score": 19.448
+      "v0_7_shadow_score": 15.163
     },
     {
       "candidate_features": {
@@ -25905,38 +25905,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -10.5,
-        "bucket_calibration": null,
-        "current_sample": 375.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "low_impact",
-        "factual_investment_context": null,
-        "iso": 0.09,
-        "ops": null,
-        "sample_reliability": 65.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 836058,
-      "name": "Ely Brown",
-      "rank_v1_rank": 692,
-      "rank_v1_score": 17.28,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.344,
-      "v0_7_shadow_score": 14.936
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -16.0,
         "bucket_calibration": null,
         "current_sample": 359.0,
@@ -25957,7 +25925,7 @@
       "level": "A+",
       "mlbam_id": 827517,
       "name": "Kyle Lodise",
-      "rank_v1_rank": 693,
+      "rank_v1_rank": 692,
       "rank_v1_score": 17.28,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
@@ -25989,12 +25957,44 @@
       "level": "AAA",
       "mlbam_id": 807747,
       "name": "Rikuu Nishida",
-      "rank_v1_rank": 694,
+      "rank_v1_rank": 693,
       "rank_v1_score": 17.28,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.107,
       "v0_7_shadow_score": 17.173
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -10.5,
+        "bucket_calibration": null,
+        "current_sample": 375.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "low_impact",
+        "factual_investment_context": null,
+        "iso": 0.09,
+        "ops": null,
+        "sample_reliability": 65.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 836058,
+      "name": "Ely Brown",
+      "rank_v1_rank": 694,
+      "rank_v1_score": 17.27,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -2.344,
+      "v0_7_shadow_score": 14.926
     },
     {
       "candidate_features": {
@@ -26264,11 +26264,11 @@
       "mlbam_id": 829643,
       "name": "Jacob McCombs",
       "rank_v1_rank": 701,
-      "rank_v1_score": 17.18,
+      "rank_v1_score": 17.19,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.107,
-      "v0_7_shadow_score": 15.073
+      "v0_7_shadow_score": 15.083
     },
     {
       "candidate_features": {
@@ -27512,11 +27512,11 @@
       "mlbam_id": 827408,
       "name": "Ramon Marquez",
       "rank_v1_rank": 733,
-      "rank_v1_score": 16.66,
+      "rank_v1_score": 16.67,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.632,
-      "v0_7_shadow_score": 14.028
+      "v0_7_shadow_score": 14.038
     },
     {
       "candidate_features": {
@@ -29621,38 +29621,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -7.5,
-        "bucket_calibration": null,
-        "current_sample": 330.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "balanced",
-        "factual_investment_context": null,
-        "iso": 0.111,
-        "ops": null,
-        "sample_reliability": 62.3
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 822501,
-      "name": "Jon Jon Gazdar",
-      "rank_v1_rank": 787,
-      "rank_v1_score": 15.97,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 0.453,
-      "v0_7_shadow_score": 16.423
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -15.9,
         "bucket_calibration": null,
         "current_sample": 364.0,
@@ -29673,12 +29641,44 @@
       "level": "A+",
       "mlbam_id": 800440,
       "name": "Narciso Polanco",
-      "rank_v1_rank": 788,
+      "rank_v1_rank": 787,
       "rank_v1_score": 15.97,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.276,
       "v0_7_shadow_score": 14.694
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -7.5,
+        "bucket_calibration": null,
+        "current_sample": 330.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "balanced",
+        "factual_investment_context": null,
+        "iso": 0.111,
+        "ops": null,
+        "sample_reliability": 62.3
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 822501,
+      "name": "Jon Jon Gazdar",
+      "rank_v1_rank": 788,
+      "rank_v1_score": 15.96,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 0.453,
+      "v0_7_shadow_score": 16.413
     },
     {
       "candidate_features": {
@@ -29729,11 +29729,11 @@
       "mlbam_id": 805117,
       "name": "Jean Carlos Sio",
       "rank_v1_rank": 789,
-      "rank_v1_score": 15.94,
+      "rank_v1_score": 15.93,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.501,
-      "v0_7_shadow_score": 13.439
+      "v0_7_shadow_score": 13.429
     },
     {
       "candidate_features": {
@@ -30221,11 +30221,11 @@
       "mlbam_id": 692030,
       "name": "Jose Corniell",
       "rank_v1_rank": 802,
-      "rank_v1_score": 15.8,
+      "rank_v1_score": 15.79,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.691,
-      "v0_7_shadow_score": 12.109
+      "v0_7_shadow_score": 12.099
     },
     {
       "candidate_features": {
@@ -30665,11 +30665,11 @@
       "mlbam_id": 806988,
       "name": "Welbyn Francisca",
       "rank_v1_rank": 812,
-      "rank_v1_score": 15.61,
+      "rank_v1_score": 15.6,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.76,
-      "v0_7_shadow_score": 12.85
+      "v0_7_shadow_score": 12.84
     },
     {
       "candidate_features": {
@@ -30763,38 +30763,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -18.4,
-        "bucket_calibration": null,
-        "current_sample": 347.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.123,
-        "ops": null,
-        "sample_reliability": 63.4
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 807643,
-      "name": "Alfredo Alcantara",
-      "rank_v1_rank": 815,
-      "rank_v1_score": 15.56,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.301,
-      "v0_7_shadow_score": 14.259
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -19.4,
         "bucket_calibration": null,
         "current_sample": 296.0,
@@ -30815,12 +30783,44 @@
       "level": "AA",
       "mlbam_id": 694194,
       "name": "Miguel Bleis",
+      "rank_v1_rank": 815,
+      "rank_v1_score": 15.57,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.579,
+      "v0_7_shadow_score": 13.991
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -18.4,
+        "bucket_calibration": null,
+        "current_sample": 347.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.123,
+        "ops": null,
+        "sample_reliability": 63.4
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 807643,
+      "name": "Alfredo Alcantara",
       "rank_v1_rank": 816,
       "rank_v1_score": 15.56,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.579,
-      "v0_7_shadow_score": 13.981
+      "v0_7_delta_vs_rank_v1": -1.301,
+      "v0_7_shadow_score": 14.259
     },
     {
       "candidate_features": {
@@ -30970,11 +30970,11 @@
       "mlbam_id": 703766,
       "name": "Dakota Harris",
       "rank_v1_rank": 820,
-      "rank_v1_score": 15.49,
+      "rank_v1_score": 15.48,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.193,
-      "v0_7_shadow_score": 14.297
+      "v0_7_shadow_score": 14.287
     },
     {
       "candidate_features": {
@@ -31323,11 +31323,11 @@
       "mlbam_id": 700842,
       "name": "Eduardo Rivera",
       "rank_v1_rank": 828,
-      "rank_v1_score": 15.36,
+      "rank_v1_score": 15.35,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.014,
-      "v0_7_shadow_score": 14.346
+      "v0_7_shadow_score": 14.336
     },
     {
       "candidate_features": {
@@ -31519,6 +31519,39 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_per_9": 3.9,
+        "bucket_calibration": null,
+        "current_sample": 75.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 8.3,
+        "k_per_9": 6.7,
+        "sample_reliability": 60.0,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 686470,
+      "name": "Ryan Hawks",
+      "rank_v1_rank": 834,
+      "rank_v1_score": 15.25,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.931,
+      "v0_7_shadow_score": 17.181
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -18.6,
         "bucket_calibration": {
           "adjustment": -1.36,
@@ -31562,45 +31595,12 @@
       "level": "AA",
       "mlbam_id": 702708,
       "name": "Emaarion Boyd",
-      "rank_v1_rank": 834,
-      "rank_v1_score": 15.25,
+      "rank_v1_rank": 835,
+      "rank_v1_score": 15.24,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.684,
-      "v0_7_shadow_score": 12.566
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.9,
-        "bucket_calibration": null,
-        "current_sample": 75.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 8.3,
-        "k_per_9": 6.7,
-        "sample_reliability": 60.0,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 686470,
-      "name": "Ryan Hawks",
-      "rank_v1_rank": 835,
-      "rank_v1_score": 15.25,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.931,
-      "v0_7_shadow_score": 17.181
+      "v0_7_shadow_score": 12.556
     },
     {
       "candidate_features": {
@@ -32765,11 +32765,11 @@
       "mlbam_id": 823804,
       "name": "Ryan Dromboski",
       "rank_v1_rank": 863,
-      "rank_v1_score": 14.85,
+      "rank_v1_score": 14.84,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 1.666,
-      "v0_7_shadow_score": 16.516
+      "v0_7_shadow_score": 16.506
     },
     {
       "candidate_features": {
@@ -33158,6 +33158,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -14.2,
+        "bucket_calibration": null,
+        "current_sample": 216.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.181,
+        "ops": null,
+        "sample_reliability": 51.9
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 695722,
+      "name": "Boston Smith",
+      "rank_v1_rank": 875,
+      "rank_v1_score": 14.65,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.585,
+      "v0_7_shadow_score": 13.065
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 4.7,
         "bucket_calibration": null,
         "current_sample": 72.7,
@@ -33179,7 +33211,7 @@
       "level": "AA",
       "mlbam_id": 687226,
       "name": "Chris McElvain",
-      "rank_v1_rank": 875,
+      "rank_v1_rank": 876,
       "rank_v1_score": 14.65,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -33212,44 +33244,12 @@
       "level": "AA",
       "mlbam_id": 695769,
       "name": "D.J. McCarty",
-      "rank_v1_rank": 876,
-      "rank_v1_score": 14.65,
+      "rank_v1_rank": 877,
+      "rank_v1_score": 14.64,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.451,
-      "v0_7_shadow_score": 17.101
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -14.2,
-        "bucket_calibration": null,
-        "current_sample": 216.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.181,
-        "ops": null,
-        "sample_reliability": 51.9
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 695722,
-      "name": "Boston Smith",
-      "rank_v1_rank": 877,
-      "rank_v1_score": 14.64,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.585,
-      "v0_7_shadow_score": 13.055
+      "v0_7_shadow_score": 17.091
     },
     {
       "candidate_features": {
@@ -33288,38 +33288,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -14.2,
-        "bucket_calibration": null,
-        "current_sample": 362.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.128,
-        "ops": null,
-        "sample_reliability": 64.4
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 702630,
-      "name": "Luke Hanson",
-      "rank_v1_rank": 879,
-      "rank_v1_score": 14.62,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.062,
-      "v0_7_shadow_score": 13.558
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -16.1,
         "bucket_calibration": null,
         "current_sample": 298.0,
@@ -33340,12 +33308,44 @@
       "level": "AAA",
       "mlbam_id": 692238,
       "name": "Parks Harber",
+      "rank_v1_rank": 879,
+      "rank_v1_score": 14.63,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.229,
+      "v0_7_shadow_score": 13.401
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -14.2,
+        "bucket_calibration": null,
+        "current_sample": 362.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.128,
+        "ops": null,
+        "sample_reliability": 64.4
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 702630,
+      "name": "Luke Hanson",
       "rank_v1_rank": 880,
       "rank_v1_score": 14.62,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.229,
-      "v0_7_shadow_score": 13.391
+      "v0_7_delta_vs_rank_v1": -1.062,
+      "v0_7_shadow_score": 13.558
     },
     {
       "candidate_features": {
@@ -35102,11 +35102,11 @@
       "mlbam_id": 702607,
       "name": "Dakota Jordan",
       "rank_v1_rank": 922,
-      "rank_v1_score": 14.13,
+      "rank_v1_score": 14.14,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.92,
-      "v0_7_shadow_score": 13.21
+      "v0_7_shadow_score": 13.22
     },
     {
       "candidate_features": {
@@ -35392,127 +35392,6 @@
     {
       "candidate_features": {
         "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 4.7,
-        "bucket_calibration": {
-          "adjustment": -0.82,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -0.82,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": true,
-              "label": "Moderate thin sample",
-              "level": "AA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 43.7,
-              "sample_reliability": 46.6,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 43.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 13.9,
-        "k_per_9": 9.8,
-        "sample_reliability": 46.6,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 682855,
-      "name": "Luis Vargas",
-      "rank_v1_rank": 929,
-      "rank_v1_score": 14.08,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.364,
-      "v0_7_shadow_score": 12.716
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 5.8,
-        "bucket_calibration": null,
-        "current_sample": 88.3,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 8.4,
-        "k_per_9": 7.7,
-        "sample_reliability": 63.8,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 801801,
-      "name": "Noah Hall",
-      "rank_v1_rank": 930,
-      "rank_v1_score": 14.08,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.932,
-      "v0_7_shadow_score": 16.012
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -12.5,
-        "bucket_calibration": null,
-        "current_sample": 338.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.132,
-        "ops": null,
-        "sample_reliability": 62.8
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 805880,
-      "name": "Tanner Thach",
-      "rank_v1_rank": 931,
-      "rank_v1_score": 14.07,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.018,
-      "v0_7_shadow_score": 13.052
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
         "availability_risk_discount": 0.03,
         "availability_status": "thin_current_sample",
         "bb_minus_k_pct": -14.8,
@@ -35559,12 +35438,133 @@
       "level": "AAA",
       "mlbam_id": 687210,
       "name": "Nathan Martorella",
-      "rank_v1_rank": 932,
-      "rank_v1_score": 14.06,
+      "rank_v1_rank": 929,
+      "rank_v1_score": 14.08,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.908,
-      "v0_7_shadow_score": 10.152
+      "v0_7_shadow_score": 10.172
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.7,
+        "bucket_calibration": {
+          "adjustment": -0.82,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -0.82,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": true,
+              "label": "Moderate thin sample",
+              "level": "AA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 43.7,
+              "sample_reliability": 46.6,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 43.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 13.9,
+        "k_per_9": 9.8,
+        "sample_reliability": 46.6,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 682855,
+      "name": "Luis Vargas",
+      "rank_v1_rank": 930,
+      "rank_v1_score": 14.08,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.364,
+      "v0_7_shadow_score": 12.716
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 5.8,
+        "bucket_calibration": null,
+        "current_sample": 88.3,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 8.4,
+        "k_per_9": 7.7,
+        "sample_reliability": 63.8,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 801801,
+      "name": "Noah Hall",
+      "rank_v1_rank": 931,
+      "rank_v1_score": 14.08,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.932,
+      "v0_7_shadow_score": 16.012
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -12.5,
+        "bucket_calibration": null,
+        "current_sample": 338.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.132,
+        "ops": null,
+        "sample_reliability": 62.8
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 805880,
+      "name": "Tanner Thach",
+      "rank_v1_rank": 932,
+      "rank_v1_score": 14.07,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.018,
+      "v0_7_shadow_score": 13.052
     },
     {
       "candidate_features": {
@@ -38611,11 +38611,11 @@
       "mlbam_id": 801075,
       "name": "Walker Janek",
       "rank_v1_rank": 1007,
-      "rank_v1_score": 13.15,
+      "rank_v1_score": 13.14,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.011,
-      "v0_7_shadow_score": 9.139
+      "v0_7_shadow_score": 9.129
     },
     {
       "candidate_features": {
@@ -39637,11 +39637,11 @@
       "mlbam_id": 686953,
       "name": "Nick Dean",
       "rank_v1_rank": 1030,
-      "rank_v1_score": 12.84,
+      "rank_v1_score": 12.85,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.193,
-      "v0_7_shadow_score": 12.647
+      "v0_7_shadow_score": 12.657
     },
     {
       "candidate_features": {
@@ -39991,11 +39991,11 @@
       "mlbam_id": 816014,
       "name": "Ryan McDonagh",
       "rank_v1_rank": 1038,
-      "rank_v1_score": 12.76,
+      "rank_v1_score": 12.75,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.47,
-      "v0_7_shadow_score": 8.29
+      "v0_7_shadow_score": 8.28
     },
     {
       "candidate_features": {
@@ -41259,11 +41259,11 @@
       "mlbam_id": 688540,
       "name": "Kade Bragg",
       "rank_v1_rank": 1066,
-      "rank_v1_score": 12.37,
+      "rank_v1_score": 12.38,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.358,
-      "v0_7_shadow_score": 11.012
+      "v0_7_shadow_score": 11.022
     },
     {
       "candidate_features": {
@@ -41600,6 +41600,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -12.0,
+        "bucket_calibration": null,
+        "current_sample": 279.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.102,
+        "ops": null,
+        "sample_reliability": 58.2
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 814748,
+      "name": "Dariel Ramon",
+      "rank_v1_rank": 1075,
+      "rank_v1_score": 12.3,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.616,
+      "v0_7_shadow_score": 10.684
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -16.0,
         "bucket_calibration": {
           "adjustment": -1.85,
@@ -41643,44 +41675,12 @@
       "level": "AAA",
       "mlbam_id": 690985,
       "name": "Colby Halter",
-      "rank_v1_rank": 1075,
-      "rank_v1_score": 12.3,
+      "rank_v1_rank": 1076,
+      "rank_v1_score": 12.29,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.565,
-      "v0_7_shadow_score": 9.735
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -12.0,
-        "bucket_calibration": null,
-        "current_sample": 279.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.102,
-        "ops": null,
-        "sample_reliability": 58.2
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 814748,
-      "name": "Dariel Ramon",
-      "rank_v1_rank": 1076,
-      "rank_v1_score": 12.3,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.616,
-      "v0_7_shadow_score": 10.684
+      "v0_7_shadow_score": 9.725
     },
     {
       "candidate_features": {
@@ -42259,11 +42259,11 @@
       "mlbam_id": 694833,
       "name": "Rio Britton",
       "rank_v1_rank": 1090,
-      "rank_v1_score": 12.18,
+      "rank_v1_score": 12.17,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.066,
-      "v0_7_shadow_score": 14.246
+      "v0_7_shadow_score": 14.236
     },
     {
       "candidate_features": {
@@ -43095,11 +43095,11 @@
       "mlbam_id": 814410,
       "name": "Jacob Humphrey",
       "rank_v1_rank": 1111,
-      "rank_v1_score": 11.93,
+      "rank_v1_score": 11.92,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.594,
-      "v0_7_shadow_score": 10.336
+      "v0_7_shadow_score": 10.326
     },
     {
       "candidate_features": {
@@ -43127,11 +43127,11 @@
       "mlbam_id": 703153,
       "name": "Samuel Munoz",
       "rank_v1_rank": 1112,
-      "rank_v1_score": 11.93,
+      "rank_v1_score": 11.92,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.874,
-      "v0_7_shadow_score": 10.056
+      "v0_7_shadow_score": 10.046
     },
     {
       "candidate_features": {
@@ -44631,6 +44631,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -22.2,
+        "bucket_calibration": null,
+        "current_sample": 350.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.122,
+        "ops": null,
+        "sample_reliability": 63.6
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 800193,
+      "name": "Kelvin Hidalgo",
+      "rank_v1_rank": 1148,
+      "rank_v1_score": 11.51,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.294,
+      "v0_7_shadow_score": 10.216
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_per_9": 3.6,
         "bucket_calibration": null,
         "current_sample": 88.0,
@@ -44652,44 +44684,12 @@
       "level": "A",
       "mlbam_id": 805073,
       "name": "Jose Gutierrez",
-      "rank_v1_rank": 1148,
+      "rank_v1_rank": 1149,
       "rank_v1_score": 11.51,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.449,
       "v0_7_shadow_score": 13.959
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -22.2,
-        "bucket_calibration": null,
-        "current_sample": 350.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.122,
-        "ops": null,
-        "sample_reliability": 63.6
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 800193,
-      "name": "Kelvin Hidalgo",
-      "rank_v1_rank": 1149,
-      "rank_v1_score": 11.5,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.294,
-      "v0_7_shadow_score": 10.206
     },
     {
       "candidate_features": {
@@ -46361,43 +46361,11 @@
       "mlbam_id": 686445,
       "name": "Sammy Siani",
       "rank_v1_rank": 1188,
-      "rank_v1_score": 11.03,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.67,
-      "v0_7_shadow_score": 7.36
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -15.4,
-        "bucket_calibration": null,
-        "current_sample": 249.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.122,
-        "ops": null,
-        "sample_reliability": 55.5
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 702906,
-      "name": "Wilfredo Lara",
-      "rank_v1_rank": 1189,
       "rank_v1_score": 11.02,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.924,
-      "v0_7_shadow_score": 9.096
+      "v0_7_delta_vs_rank_v1": -3.67,
+      "v0_7_shadow_score": 7.35
     },
     {
       "candidate_features": {
@@ -46424,12 +46392,44 @@
       "level": "A",
       "mlbam_id": 806959,
       "name": "Joendry Vargas",
-      "rank_v1_rank": 1190,
+      "rank_v1_rank": 1189,
       "rank_v1_score": 11.01,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.149,
       "v0_7_shadow_score": 9.861
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -15.4,
+        "bucket_calibration": null,
+        "current_sample": 249.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.122,
+        "ops": null,
+        "sample_reliability": 55.5
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 702906,
+      "name": "Wilfredo Lara",
+      "rank_v1_rank": 1190,
+      "rank_v1_score": 11.01,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.924,
+      "v0_7_shadow_score": 9.086
     },
     {
       "candidate_features": {
@@ -47776,6 +47776,38 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -28.1,
+        "bucket_calibration": null,
+        "current_sample": 312.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.129,
+        "ops": null,
+        "sample_reliability": 60.9
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 699027,
+      "name": "Jos\u00e9 Su\u00e1rez",
+      "rank_v1_rank": 1223,
+      "rank_v1_score": 10.69,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.447,
+      "v0_7_shadow_score": 9.243
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.06,
         "availability_status": "thin_current_sample",
         "bb_per_9": 4.2,
@@ -47823,7 +47855,7 @@
       "level": "AA",
       "mlbam_id": 810830,
       "name": "Jake Knapp",
-      "rank_v1_rank": 1223,
+      "rank_v1_rank": 1224,
       "rank_v1_score": 10.69,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -47879,44 +47911,12 @@
       "level": "AA",
       "mlbam_id": 690992,
       "name": "Ed Howard",
-      "rank_v1_rank": 1224,
+      "rank_v1_rank": 1225,
       "rank_v1_score": 10.68,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.997,
       "v0_7_shadow_score": 6.683
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -28.1,
-        "bucket_calibration": null,
-        "current_sample": 312.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.129,
-        "ops": null,
-        "sample_reliability": 60.9
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 699027,
-      "name": "Jos\u00e9 Su\u00e1rez",
-      "rank_v1_rank": 1225,
-      "rank_v1_score": 10.68,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.447,
-      "v0_7_shadow_score": 9.233
     },
     {
       "candidate_features": {
@@ -48181,6 +48181,38 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_minus_k_pct": -25.4,
+        "bucket_calibration": null,
+        "current_sample": 385.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.117,
+        "ops": null,
+        "sample_reliability": 65.8
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 808516,
+      "name": "Andres Valor",
+      "rank_v1_rank": 1231,
+      "rank_v1_score": 10.55,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.163,
+      "v0_7_shadow_score": 9.387
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -15.2,
         "bucket_calibration": {
           "adjustment": -1.5,
@@ -48226,12 +48258,99 @@
       "level": "AA",
       "mlbam_id": 694552,
       "name": "Jack Payton",
-      "rank_v1_rank": 1231,
-      "rank_v1_score": 10.56,
+      "rank_v1_rank": 1232,
+      "rank_v1_score": 10.55,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.368,
-      "v0_7_shadow_score": 8.192
+      "v0_7_shadow_score": 8.182
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -20.5,
+        "bucket_calibration": {
+          "adjustment": -0.62,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -0.62,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "AA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "hitter",
+              "sample": 189.0,
+              "sample_reliability": 48.6,
+              "sample_unit": "PA",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 189.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.155,
+        "ops": null,
+        "sample_reliability": 48.6
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 681377,
+      "name": "Josh Hood",
+      "rank_v1_rank": 1233,
+      "rank_v1_score": 10.55,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -2.197,
+      "v0_7_shadow_score": 8.353
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -30.3,
+        "bucket_calibration": null,
+        "current_sample": 248.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.129,
+        "ops": null,
+        "sample_reliability": 55.4
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 701689,
+      "name": "Vance Honeycutt",
+      "rank_v1_rank": 1234,
+      "rank_v1_score": 10.55,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.887,
+      "v0_7_shadow_score": 8.663
     },
     {
       "candidate_features": {
@@ -48282,163 +48401,12 @@
       "level": "AA",
       "mlbam_id": 702847,
       "name": "Amilcar Chirinos",
-      "rank_v1_rank": 1232,
-      "rank_v1_score": 10.56,
+      "rank_v1_rank": 1235,
+      "rank_v1_score": 10.55,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.077,
-      "v0_7_shadow_score": 8.483
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -25.4,
-        "bucket_calibration": null,
-        "current_sample": 385.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.117,
-        "ops": null,
-        "sample_reliability": 65.8
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 808516,
-      "name": "Andres Valor",
-      "rank_v1_rank": 1233,
-      "rank_v1_score": 10.55,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.163,
-      "v0_7_shadow_score": 9.387
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -13.8,
-        "bucket_calibration": null,
-        "current_sample": 306.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.11,
-        "ops": null,
-        "sample_reliability": 60.5
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 700840,
-      "name": "Christian Olivo",
-      "rank_v1_rank": 1234,
-      "rank_v1_score": 10.55,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.504,
-      "v0_7_shadow_score": 9.046
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -20.5,
-        "bucket_calibration": {
-          "adjustment": -0.62,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -0.62,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "AA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "hitter",
-              "sample": 189.0,
-              "sample_reliability": 48.6,
-              "sample_unit": "PA",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 189.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.155,
-        "ops": null,
-        "sample_reliability": 48.6
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 681377,
-      "name": "Josh Hood",
-      "rank_v1_rank": 1235,
-      "rank_v1_score": 10.55,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.197,
-      "v0_7_shadow_score": 8.353
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -30.3,
-        "bucket_calibration": null,
-        "current_sample": 248.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.129,
-        "ops": null,
-        "sample_reliability": 55.4
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 701689,
-      "name": "Vance Honeycutt",
-      "rank_v1_rank": 1236,
-      "rank_v1_score": 10.55,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.887,
-      "v0_7_shadow_score": 8.663
+      "v0_7_shadow_score": 8.473
     },
     {
       "candidate_features": {
@@ -48466,12 +48434,44 @@
       "level": "A+",
       "mlbam_id": 694555,
       "name": "Chase Centala",
-      "rank_v1_rank": 1237,
+      "rank_v1_rank": 1236,
       "rank_v1_score": 10.55,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.484,
       "v0_7_shadow_score": 13.034
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -13.8,
+        "bucket_calibration": null,
+        "current_sample": 306.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.11,
+        "ops": null,
+        "sample_reliability": 60.5
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 700840,
+      "name": "Christian Olivo",
+      "rank_v1_rank": 1237,
+      "rank_v1_score": 10.54,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.504,
+      "v0_7_shadow_score": 9.036
     },
     {
       "candidate_features": {
@@ -48903,11 +48903,11 @@
       "mlbam_id": 677601,
       "name": "Keyber Rodriguez",
       "rank_v1_rank": 1247,
-      "rank_v1_score": 10.4,
+      "rank_v1_score": 10.39,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.287,
-      "v0_7_shadow_score": 8.113
+      "v0_7_shadow_score": 8.103
     },
     {
       "candidate_features": {
@@ -50177,11 +50177,11 @@
       "mlbam_id": 682692,
       "name": "Miguel Palma",
       "rank_v1_rank": 1277,
-      "rank_v1_score": 10.12,
+      "rank_v1_score": 10.13,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.444,
-      "v0_7_shadow_score": 7.676
+      "v0_7_shadow_score": 7.686
     },
     {
       "candidate_features": {
@@ -50894,39 +50894,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 3.6,
-        "bucket_calibration": null,
-        "current_sample": 52.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 12.5,
-        "k_per_9": 8.1,
-        "sample_reliability": 51.3,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 701368,
-      "name": "Kolten Smith",
-      "rank_v1_rank": 1294,
-      "rank_v1_score": 9.89,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 2.334,
-      "v0_7_shadow_score": 12.224
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 5.4,
         "bucket_calibration": null,
         "current_sample": 57.0,
@@ -50948,12 +50915,45 @@
       "level": "A+",
       "mlbam_id": 822636,
       "name": "Cole Reynolds",
-      "rank_v1_rank": 1295,
-      "rank_v1_score": 9.88,
+      "rank_v1_rank": 1294,
+      "rank_v1_score": 9.89,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 1.221,
-      "v0_7_shadow_score": 11.101
+      "v0_7_shadow_score": 11.111
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.6,
+        "bucket_calibration": null,
+        "current_sample": 52.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 12.5,
+        "k_per_9": 8.1,
+        "sample_reliability": 51.3,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 701368,
+      "name": "Kolten Smith",
+      "rank_v1_rank": 1295,
+      "rank_v1_score": 9.89,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 2.334,
+      "v0_7_shadow_score": 12.224
     },
     {
       "candidate_features": {
@@ -55210,38 +55210,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -18.0,
-        "bucket_calibration": null,
-        "current_sample": 404.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.168,
-        "ops": null,
-        "sample_reliability": 66.9
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 813860,
-      "name": "Charlie Pagliarini",
-      "rank_v1_rank": 1394,
-      "rank_v1_score": 8.76,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -0.616,
-      "v0_7_shadow_score": 8.144
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 2.6,
         "bucket_calibration": {
           "adjustment": -0.53,
@@ -55286,7 +55254,7 @@
       "level": "A+",
       "mlbam_id": 822498,
       "name": "Reid Easterly",
-      "rank_v1_rank": 1395,
+      "rank_v1_rank": 1394,
       "rank_v1_score": 8.76,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -55318,12 +55286,44 @@
       "level": "A+",
       "mlbam_id": 801629,
       "name": "Cade McGee",
-      "rank_v1_rank": 1396,
+      "rank_v1_rank": 1395,
       "rank_v1_score": 8.75,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.447,
       "v0_7_shadow_score": 7.303
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -18.0,
+        "bucket_calibration": null,
+        "current_sample": 404.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.168,
+        "ops": null,
+        "sample_reliability": 66.9
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 813860,
+      "name": "Charlie Pagliarini",
+      "rank_v1_rank": 1396,
+      "rank_v1_score": 8.75,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -0.616,
+      "v0_7_shadow_score": 8.134
     },
     {
       "candidate_features": {
@@ -55584,11 +55584,11 @@
       "mlbam_id": 691186,
       "name": "Arol Vera",
       "rank_v1_rank": 1402,
-      "rank_v1_score": 8.68,
+      "rank_v1_score": 8.67,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.415,
-      "v0_7_shadow_score": 4.265
+      "v0_7_shadow_score": 4.255
     },
     {
       "candidate_features": {
@@ -58419,11 +58419,11 @@
       "mlbam_id": 692243,
       "name": "Jaden Woods",
       "rank_v1_rank": 1464,
-      "rank_v1_score": 8.18,
+      "rank_v1_score": 8.17,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.988,
-      "v0_7_shadow_score": 4.192
+      "v0_7_shadow_score": 4.182
     },
     {
       "candidate_features": {
@@ -60598,6 +60598,94 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.7,
+        "bucket_calibration": {
+          "adjustment": -4.94,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AAA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -4.94,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": true,
+              "label": "Moderate thin sample",
+              "level": "AAA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 21.0,
+              "sample_reliability": 29.6,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 21.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "limited",
+        "factual_investment_context": null,
+        "k_bb_pct": 15.6,
+        "k_per_9": 10.0,
+        "sample_reliability": 29.6,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 805427,
+      "name": "Drew Sommers",
+      "rank_v1_rank": 1512,
+      "rank_v1_score": 7.71,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -3.6,
+      "v0_7_shadow_score": 4.11
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -20.6,
+        "bucket_calibration": null,
+        "current_sample": 265.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.133,
+        "ops": null,
+        "sample_reliability": 57.0
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 694974,
+      "name": "Colby Shade",
+      "rank_v1_rank": 1513,
+      "rank_v1_score": 7.7,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.723,
+      "v0_7_shadow_score": 5.977
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.1,
         "availability_status": "stale_or_inactive",
         "bb_per_9": 4.1,
@@ -60656,100 +60744,12 @@
       "level": "A",
       "mlbam_id": 696280,
       "name": "Alonzo Tredwell",
-      "rank_v1_rank": 1512,
-      "rank_v1_score": 7.71,
+      "rank_v1_rank": 1514,
+      "rank_v1_score": 7.7,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.827,
-      "v0_7_shadow_score": 4.883
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.7,
-        "bucket_calibration": {
-          "adjustment": -4.94,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AAA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -4.94,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": true,
-              "label": "Moderate thin sample",
-              "level": "AAA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 21.0,
-              "sample_reliability": 29.6,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 21.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "limited",
-        "factual_investment_context": null,
-        "k_bb_pct": 15.6,
-        "k_per_9": 10.0,
-        "sample_reliability": 29.6,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 805427,
-      "name": "Drew Sommers",
-      "rank_v1_rank": 1513,
-      "rank_v1_score": 7.71,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.6,
-      "v0_7_shadow_score": 4.11
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -20.6,
-        "bucket_calibration": null,
-        "current_sample": 265.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.133,
-        "ops": null,
-        "sample_reliability": 57.0
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 694974,
-      "name": "Colby Shade",
-      "rank_v1_rank": 1514,
-      "rank_v1_score": 7.7,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.723,
-      "v0_7_shadow_score": 5.977
+      "v0_7_shadow_score": 4.873
     },
     {
       "candidate_features": {
@@ -65960,11 +65960,11 @@
       "mlbam_id": 806441,
       "name": "Nehomar Ochoa Jr.",
       "rank_v1_rank": 1624,
-      "rank_v1_score": 6.63,
+      "rank_v1_score": 6.64,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.961,
-      "v0_7_shadow_score": 3.669
+      "v0_7_shadow_score": 3.679
     },
     {
       "candidate_features": {
@@ -66192,11 +66192,11 @@
       "mlbam_id": 800257,
       "name": "Yonatan Henriquez",
       "rank_v1_rank": 1629,
-      "rank_v1_score": 6.59,
+      "rank_v1_score": 6.58,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.816,
-      "v0_7_shadow_score": 4.774
+      "v0_7_shadow_score": 4.764
     },
     {
       "candidate_features": {
@@ -66522,38 +66522,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_minus_k_pct": -15.6,
-        "bucket_calibration": null,
-        "current_sample": 262.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "iso": 0.109,
-        "ops": null,
-        "sample_reliability": 56.7
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 686540,
-      "name": "Owen Cobb",
-      "rank_v1_rank": 1637,
-      "rank_v1_score": 6.52,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.961,
-      "v0_7_shadow_score": 4.559
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 4.7,
         "bucket_calibration": {
           "adjustment": -3.75,
@@ -66598,7 +66566,7 @@
       "level": "AA",
       "mlbam_id": 702046,
       "name": "Matt Keating",
-      "rank_v1_rank": 1638,
+      "rank_v1_rank": 1637,
       "rank_v1_score": 6.52,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -66630,12 +66598,44 @@
       "level": "AA",
       "mlbam_id": 823295,
       "name": "Jay Thomason",
-      "rank_v1_rank": 1639,
+      "rank_v1_rank": 1638,
       "rank_v1_score": 6.51,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.161,
       "v0_7_shadow_score": 4.349
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -15.6,
+        "bucket_calibration": null,
+        "current_sample": 262.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "iso": 0.109,
+        "ops": null,
+        "sample_reliability": 56.7
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 686540,
+      "name": "Owen Cobb",
+      "rank_v1_rank": 1639,
+      "rank_v1_score": 6.51,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -1.961,
+      "v0_7_shadow_score": 4.549
     },
     {
       "candidate_features": {
@@ -68393,6 +68393,71 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.4,
+        "bucket_calibration": null,
+        "current_sample": 64.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 10.1,
+        "k_per_9": 7.0,
+        "sample_reliability": 56.1,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 695486,
+      "name": "Kyle Ayers",
+      "rank_v1_rank": 1680,
+      "rank_v1_score": 6.09,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 2.115,
+      "v0_7_shadow_score": 8.205
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_minus_k_pct": -19.0,
+        "bucket_calibration": null,
+        "current_sample": 217.0,
+        "current_sample_unit": "PA",
+        "current_skill_band": "low_impact",
+        "factual_investment_context": null,
+        "iso": 0.098,
+        "ops": null,
+        "sample_reliability": 52.0
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A",
+      "mlbam_id": 834404,
+      "name": "Jake Cook",
+      "rank_v1_rank": 1681,
+      "rank_v1_score": 6.08,
+      "role": "hitter",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -3.738,
+      "v0_7_shadow_score": 2.342
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.08,
         "availability_status": "stale_or_inactive",
         "bb_minus_k_pct": -17.7,
@@ -68436,77 +68501,12 @@
       "level": "AAA",
       "mlbam_id": 682619,
       "name": "Orelvis Martinez",
-      "rank_v1_rank": 1680,
-      "rank_v1_score": 6.09,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.098,
-      "v0_7_shadow_score": 3.992
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.4,
-        "bucket_calibration": null,
-        "current_sample": 64.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 10.1,
-        "k_per_9": 7.0,
-        "sample_reliability": 56.1,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 695486,
-      "name": "Kyle Ayers",
-      "rank_v1_rank": 1681,
-      "rank_v1_score": 6.09,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 2.115,
-      "v0_7_shadow_score": 8.205
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_minus_k_pct": -19.0,
-        "bucket_calibration": null,
-        "current_sample": 217.0,
-        "current_sample_unit": "PA",
-        "current_skill_band": "low_impact",
-        "factual_investment_context": null,
-        "iso": 0.098,
-        "ops": null,
-        "sample_reliability": 52.0
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A",
-      "mlbam_id": 834404,
-      "name": "Jake Cook",
       "rank_v1_rank": 1682,
       "rank_v1_score": 6.08,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.738,
-      "v0_7_shadow_score": 2.342
+      "v0_7_delta_vs_rank_v1": -2.098,
+      "v0_7_shadow_score": 3.982
     },
     {
       "candidate_features": {
@@ -78958,62 +78958,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 4.0,
-        "bucket_calibration": {
-          "adjustment": -5.59,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A+",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -5.59,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A+",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 45.7,
-              "sample_reliability": 37.3,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 29.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "limited",
-        "factual_investment_context": null,
-        "k_bb_pct": 13.7,
-        "k_per_9": 9.1,
-        "sample_reliability": 37.3,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 809784,
-      "name": "Garrett Stratton",
-      "rank_v1_rank": 1909,
-      "rank_v1_score": 4.0,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -3.632,
-      "v0_7_shadow_score": 0.368
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_minus_k_pct": -27.9,
         "bucket_calibration": null,
         "current_sample": 322.0,
@@ -79034,7 +78978,7 @@
       "level": "A",
       "mlbam_id": 815911,
       "name": "Edgar Montero",
-      "rank_v1_rank": 1910,
+      "rank_v1_rank": 1909,
       "rank_v1_score": 3.99,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
@@ -79090,12 +79034,68 @@
       "level": "A",
       "mlbam_id": 801921,
       "name": "Carter Lovasz",
-      "rank_v1_rank": 1911,
+      "rank_v1_rank": 1910,
       "rank_v1_score": 3.99,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.341,
       "v0_7_shadow_score": 1.649
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.0,
+        "bucket_calibration": {
+          "adjustment": -5.59,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A+",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -5.59,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A+",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 45.7,
+              "sample_reliability": 37.3,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 29.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "limited",
+        "factual_investment_context": null,
+        "k_bb_pct": 13.7,
+        "k_per_9": 9.1,
+        "sample_reliability": 37.3,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 809784,
+      "name": "Garrett Stratton",
+      "rank_v1_rank": 1911,
+      "rank_v1_score": 3.99,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -3.632,
+      "v0_7_shadow_score": 0.358
     },
     {
       "candidate_features": {
@@ -83710,6 +83710,39 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
+        "bb_per_9": 3.4,
+        "bucket_calibration": null,
+        "current_sample": 50.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 10.3,
+        "k_per_9": 7.0,
+        "sample_reliability": 50.0,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 806652,
+      "name": "Jacob Edwards",
+      "rank_v1_rank": 2012,
+      "rank_v1_score": 3.3,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.651,
+      "v0_7_shadow_score": 4.951
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
         "bb_minus_k_pct": -14.1,
         "bucket_calibration": {
           "adjustment": -8.36,
@@ -83753,45 +83786,12 @@
       "level": "AA",
       "mlbam_id": 814194,
       "name": "Quinn McDaniel",
-      "rank_v1_rank": 2012,
-      "rank_v1_score": 3.3,
+      "rank_v1_rank": 2013,
+      "rank_v1_score": 3.29,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -3.537,
       "v0_7_shadow_score": 0.0
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.4,
-        "bucket_calibration": null,
-        "current_sample": 50.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 10.3,
-        "k_per_9": 7.0,
-        "sample_reliability": 50.0,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 806652,
-      "name": "Jacob Edwards",
-      "rank_v1_rank": 2013,
-      "rank_v1_score": 3.3,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.651,
-      "v0_7_shadow_score": 4.951
     },
     {
       "candidate_features": {
@@ -91200,62 +91200,6 @@
     {
       "candidate_features": {
         "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 4.3,
-        "bucket_calibration": {
-          "adjustment": -3.9,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "AAA",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -3.9,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": true,
-              "label": "Moderate thin sample",
-              "level": "AAA",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 44.4,
-              "sample_reliability": 33.9,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 25.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "limited",
-        "factual_investment_context": null,
-        "k_bb_pct": 8.9,
-        "k_per_9": 7.5,
-        "sample_reliability": 33.9,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 805272,
-      "name": "Luke Young",
-      "rank_v1_rank": 2159,
-      "rank_v1_score": 2.0,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -5.145,
-      "v0_7_shadow_score": 0.0
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
         "availability_risk_discount": 0.03,
         "availability_status": "thin_current_sample",
         "bb_minus_k_pct": -22.9,
@@ -91302,11 +91246,67 @@
       "level": "AAA",
       "mlbam_id": 681495,
       "name": "Cade Fergus",
-      "rank_v1_rank": 2160,
-      "rank_v1_score": 1.99,
+      "rank_v1_rank": 2159,
+      "rank_v1_score": 2.01,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -4.793,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.3,
+        "bucket_calibration": {
+          "adjustment": -3.9,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "AAA",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -3.9,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": true,
+              "label": "Moderate thin sample",
+              "level": "AAA",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 44.4,
+              "sample_reliability": 33.9,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 25.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "limited",
+        "factual_investment_context": null,
+        "k_bb_pct": 8.9,
+        "k_per_9": 7.5,
+        "sample_reliability": 33.9,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 805272,
+      "name": "Luke Young",
+      "rank_v1_rank": 2160,
+      "rank_v1_score": 2.0,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -5.145,
       "v0_7_shadow_score": 0.0
     },
     {
@@ -92456,6 +92456,62 @@
     {
       "candidate_features": {
         "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.9,
+        "bucket_calibration": {
+          "adjustment": -2.24,
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
+          "level": "A+",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+          "rules": [
+            {
+              "adjustment": -2.24,
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
+              "level": "A+",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
+              "role": "pitcher",
+              "sample": 40.7,
+              "sample_reliability": 44.9,
+              "sample_unit": "IP",
+              "score_source": "prospect_model_v0_6"
+            }
+          ],
+          "version": "0.3.1"
+        },
+        "current_sample": 40.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 8.9,
+        "k_per_9": 6.8,
+        "sample_reliability": 44.9,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": true,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 800883,
+      "name": "Andres Galan",
+      "rank_v1_rank": 2182,
+      "rank_v1_score": 1.73,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -2.07,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
         "availability_risk_discount": 0.04,
         "availability_status": "thin_current_sample",
         "bb_per_9": 5.9,
@@ -92503,67 +92559,11 @@
       "level": "A",
       "mlbam_id": 800277,
       "name": "Yordy Herrera",
-      "rank_v1_rank": 2182,
-      "rank_v1_score": 1.74,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -4.979,
-      "v0_7_shadow_score": 0.0
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "bb_per_9": 3.9,
-        "bucket_calibration": {
-          "adjustment": -2.24,
-          "bucket": "moderate_thin_sample_confidence",
-          "label": "Moderate thin sample",
-          "level": "A+",
-          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-          "rules": [
-            {
-              "adjustment": -2.24,
-              "bucket": "moderate_thin_sample_confidence",
-              "career_validated": false,
-              "label": "Moderate thin sample",
-              "level": "A+",
-              "pedigree_spare_credit": 0.0,
-              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
-              "role": "pitcher",
-              "sample": 40.7,
-              "sample_reliability": 44.9,
-              "sample_unit": "IP",
-              "score_source": "prospect_model_v0_6"
-            }
-          ],
-          "version": "0.3.1"
-        },
-        "current_sample": 40.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 8.9,
-        "k_per_9": 6.8,
-        "sample_reliability": 44.9,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": true,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 800883,
-      "name": "Andres Galan",
       "rank_v1_rank": 2183,
       "rank_v1_score": 1.73,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -2.07,
+      "v0_7_delta_vs_rank_v1": -4.979,
       "v0_7_shadow_score": 0.0
     },
     {
@@ -132355,7 +132355,7 @@
       "bucket_calibration"
     ]
   },
-  "generated_at": "2026-07-27T00:00:00+00:00",
+  "generated_at": "2026-07-28T00:00:00+00:00",
   "input_artifacts": {
     "outcome_backtest_grade": "B+",
     "outcome_backtest_version": "0.2.0",
@@ -132389,17 +132389,17 @@
           "minimum_span_days": 30,
           "missing": [
             {
-              "current": 12,
+              "current": 13,
               "metric": "rank_comparison_count",
               "required": 14
             },
             {
-              "current": 12,
+              "current": 13,
               "metric": "buy_comparison_count",
               "required": 14
             },
             {
-              "current": 12,
+              "current": 13,
               "metric": "observation_span_days",
               "required": 30
             }
@@ -132413,17 +132413,17 @@
           "minimum_span_days": 60,
           "missing": [
             {
-              "current": 12,
+              "current": 13,
               "metric": "rank_comparison_count",
               "required": 30
             },
             {
-              "current": 12,
+              "current": 13,
               "metric": "buy_comparison_count",
               "required": 30
             },
             {
-              "current": 12,
+              "current": 13,
               "metric": "observation_span_days",
               "required": 60
             }
@@ -132437,7 +132437,7 @@
           "minimum_span_days": 14,
           "missing": [
             {
-              "current": 12,
+              "current": 13,
               "metric": "observation_span_days",
               "required": 14
             }

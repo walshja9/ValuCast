@@ -3,19 +3,13 @@
   "failure_watchlist": {
     "blocking_finding_count": 0,
     "blocking_findings": [],
-    "evidence_gate_count": 3,
+    "evidence_gate_count": 2,
     "evidence_gates": [
       {
         "current": 0.015,
         "kind": "cross_role_change_power",
         "message": "Cross-role change detection is under the registered power floor.",
         "required": 0.7
-      },
-      {
-        "current": "collecting",
-        "kind": "forward_archives",
-        "message": "Forward archives are still collecting; no live-outcome stability review yet.",
-        "required": "review_ready"
       },
       {
         "current": "fail",
@@ -25,35 +19,35 @@
       }
     ],
     "forward_archive_progress": {
-      "buy_comparison_count": 13,
-      "current_supported_grade": null,
-      "minimum_buy_comparisons": 7,
-      "minimum_rank_comparisons": 7,
-      "minimum_span_days": 14,
+      "buy_comparison_count": 14,
+      "current_supported_grade": "A-",
+      "minimum_buy_comparisons": 14,
+      "minimum_rank_comparisons": 14,
+      "minimum_span_days": 30,
       "missing": [
         {
-          "current": 13,
+          "current": 14,
           "metric": "observation_span_days",
-          "required": 14
+          "required": 30
         }
       ],
-      "next_target_grade": "A-",
-      "observation_span_days": 13,
-      "rank_comparison_count": 13,
+      "next_target_grade": "A",
+      "observation_span_days": 14,
+      "rank_comparison_count": 14,
       "remaining_buy_comparisons": 0,
       "remaining_rank_comparisons": 0,
-      "remaining_span_days": 1,
-      "status": "collecting"
+      "remaining_span_days": 16,
+      "status": "review_ready"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.925,
+    "latest_buy_retention_rate": 1.0,
     "latest_rank_bucket_count": 16,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-07-27T12:48:14.666550+00:00",
+  "generated_at": "2026-07-28T15:42:35.784876+00:00",
   "next_build_order": [
-    "Keep logging forward archives: ~1 more observation day(s) needed to reach A- forward support.",
+    "Keep logging forward archives: ~16 more observation day(s) needed to reach A forward support.",
     "Run the Prospect Model v0.7-vs-v0.6 bucket comparison and publish the by-bucket verdict.",
     "Promote the ordinal bridge only after it beats the historical-neighbor baseline out of sample.",
     "Keep uncertainty-band explanations visible on every prospect detail surface.",
@@ -70,7 +64,7 @@
     },
     "pipeline_observability": {
       "date_mismatch_count": 0,
-      "expected_date": "2026-07-27",
+      "expected_date": "2026-07-28",
       "missing_or_unreadable_count": 0,
       "ready_for_daily_publication": true,
       "status": "candidate_ready",
@@ -92,7 +86,7 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "row_count": 3814,
+        "row_count": 3811,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,
@@ -144,8 +138,8 @@
     {
       "evidence": {
         "bucket_cohort_evidence_ready": true,
-        "outcome_grade": "B+",
-        "outcome_score": 87,
+        "outcome_grade": "A-",
+        "outcome_score": 90,
         "v07_bucket_comparison_ready": true,
         "v07_ready_for_backtest": true,
         "v07_top200_availability_coverage": 1.0,
@@ -158,13 +152,11 @@
     },
     {
       "evidence": {
-        "buy_comparison_count": 13,
+        "buy_comparison_count": 14,
         "buy_comparisons_needed": 0,
-        "buys_monitor_status": "collecting",
-        "cap_reasons": [
-          "Forward observations are not review-ready yet."
-        ],
-        "current_grade": "B+",
+        "buys_monitor_status": "review_ready",
+        "cap_reasons": [],
+        "current_grade": "A-",
         "evidence_gates": [
           {
             "current": 0.015,
@@ -173,20 +165,14 @@
             "required": 0.7
           },
           {
-            "current": "collecting",
-            "kind": "forward_archives",
-            "message": "Forward archives are still collecting; no live-outcome stability review yet.",
-            "required": "review_ready"
-          },
-          {
             "current": "fail",
             "kind": "current_board_shape",
             "message": "Current Board Shape has not passed.",
             "required": "pass"
           }
         ],
-        "forward_next_target_grade": "A-",
-        "forward_supported_grade": null,
+        "forward_next_target_grade": "A",
+        "forward_supported_grade": "A-",
         "forward_thresholds": {
           "A": {
             "minimum_buy_comparisons": 14,
@@ -195,17 +181,7 @@
             "minimum_span_days": 30,
             "missing": [
               {
-                "current": 13,
-                "metric": "rank_comparison_count",
-                "required": 14
-              },
-              {
-                "current": 13,
-                "metric": "buy_comparison_count",
-                "required": 14
-              },
-              {
-                "current": 13,
+                "current": 14,
                 "metric": "observation_span_days",
                 "required": 30
               }
@@ -219,17 +195,17 @@
             "minimum_span_days": 60,
             "missing": [
               {
-                "current": 13,
+                "current": 14,
                 "metric": "rank_comparison_count",
                 "required": 30
               },
               {
-                "current": 13,
+                "current": 14,
                 "metric": "buy_comparison_count",
                 "required": 30
               },
               {
-                "current": 13,
+                "current": 14,
                 "metric": "observation_span_days",
                 "required": 60
               }
@@ -241,27 +217,21 @@
             "minimum_buy_retention_rate": 0.45,
             "minimum_rank_comparisons": 7,
             "minimum_span_days": 14,
-            "missing": [
-              {
-                "current": 13,
-                "metric": "observation_span_days",
-                "required": 14
-              }
-            ],
-            "passed": false
+            "missing": [],
+            "passed": true
           }
         },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-        "observation_days_needed": 1,
-        "observation_span_days": 13,
+        "observation_days_needed": 16,
+        "observation_span_days": 14,
         "rank_comparisons_needed": 0,
-        "score_cap": 87,
+        "score_cap": null,
         "target_grade": "A-",
-        "uncapped_score": 87
+        "uncapped_score": 90
       },
-      "grade": "B+",
+      "grade": "A-",
       "name": "MLB front-office track",
-      "score": 87,
+      "score": 90,
       "status": "in_progress"
     }
   ],
