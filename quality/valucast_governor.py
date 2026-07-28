@@ -373,7 +373,12 @@ def _prospect_transition_continuity(
             and new_confidence_rules - old_confidence_rules
             and abs(model_delta) <= PROSPECT_TRANSITION_MODEL_DELTA_LIMIT
             and bucket_delta < -STEP_THRESHOLD
-            and final_delta < -STEP_THRESHOLD
+            # Spec condition 6 (2026-07-18 transition-veto design): ANY final
+            # public-score decline qualifies, because the 0-point score floor
+            # can hide part of a large calibration step. Restored 2026-07-27
+            # after 0bfe5a0 weakened this to -STEP_THRESHOLD without a spec
+            # amendment (see docs/review-2026-07-27-baseline-to-master-commit-audit.md P1-1).
+            and final_delta < 0
         ):
             continue
         incidents.append(

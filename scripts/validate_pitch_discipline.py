@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +22,35 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_pitch_discipline.json"
 
 EXACT = {"swing_pct", "whiff_pct", "swstr_pct"}
 ESTIMATED = {"chase_pct", "z_swing_pct", "z_contact_pct", "zone_pct"}
+
+# Bounded staleness gate. The builder deliberately keeps the last artifact on
+# transient failures (cold cache, fetch budget, tiny refresh) and exits 0, so
+# without a bound the artifact can stay stale indefinitely with every gate
+# green — it served as_of 2026-07-10 through 2026-07-27 (17 days) before a
+# manual rebuild. as_of is the last covered game day and legitimately lags one
+# day behind the build; 3 days tolerates a weekend hiccup or one budget-exceeded
+# day while turning multi-day silent staleness into a red build.
+DEFAULT_MAX_AGE_DAYS = 3
+
+
+def _staleness_problem(payload: dict, today: str, max_age_days: int) -> str | None:
+    as_of = str(payload.get("as_of") or "")[:10]
+    if not as_of:
+        return None  # "as_of is required" already reported by validate_file
+    try:
+        age = (date.fromisoformat(today) - date.fromisoformat(as_of)).days
+    except ValueError:
+        return f"as_of={as_of!r} is not an ISO date"
+    if age < 0:
+        return f"as_of={as_of} is in the future (today {today})"
+    if age > max_age_days:
+        return (
+            f"as_of={as_of} is {age} days old (today {today}, allowed "
+            f"{max_age_days}) -- the keep-stale builder paths have been "
+            "masking a broken refresh; run build_pitch_discipline.py "
+            "(--backfill if the incremental budget was exceeded)"
+        )
+    return None
 
 
 def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str], bool]:
@@ -105,9 +136,23 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str], b
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", type=Path, default=ARTIFACT_PATH)
+    parser.add_argument("--date", default=date.today().isoformat())
+    parser.add_argument(
+        "--max-age-days",
+        type=int,
+        default=int(
+            os.environ.get(
+                "VALUCAST_PITCH_DISCIPLINE_MAX_AGE_DAYS", str(DEFAULT_MAX_AGE_DAYS)
+            )
+        ),
+    )
     args = parser.parse_args()
 
     payload, problems, present = validate_file(args.path)
+    if payload is not None:
+        stale = _staleness_problem(payload, args.date, args.max_age_days)
+        if stale:
+            problems.append(stale)
     if not present:
         print(f"plate-discipline artifact absent ({args.path}); OK (fail-soft)")
         return 0

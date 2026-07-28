@@ -242,11 +242,33 @@ def test_transition_continuity_allows_exactly_six_point_bucket_move():
     assert check["status"] == "passed"
 
 
-def test_transition_continuity_allows_subthreshold_final_score_move():
+def test_transition_continuity_blocks_any_final_score_decline():
+    # Spec condition 6: any final public-score decline qualifies when the
+    # other transition conditions hold — the veto must not require the final
+    # score to fall by a full step, because the 0-point floor can hide part
+    # of a large calibration cliff.
     check = _transition_check(
         _transition_rank_row(
             level="AA",
             score=47.0,
+            model_score=49.8,
+            bucket="moderate_thin_sample_confidence",
+            bucket_adjustment=-8.0,
+        ),
+        _transition_rank_row(),
+    )
+
+    assert check["status"] == "blocked"
+    assert check["metrics"]["incident_count"] == 1
+
+
+def test_transition_continuity_allows_flat_final_score_on_masked_bucket_step():
+    # A large masked bucket step with a flat-or-improving final public score
+    # is outside condition 6 and must not block publication.
+    check = _transition_check(
+        _transition_rank_row(
+            level="AA",
+            score=50.0,
             model_score=49.8,
             bucket="moderate_thin_sample_confidence",
             bucket_adjustment=-8.0,

@@ -643,12 +643,22 @@ def _prospect_rows(
     generated_at: str,
     peak_projection: dict | None = None,
     mlb_stat_line_by_id: dict | None = None,
+    identities: dict | None = None,
 ) -> list[dict]:
     peak_lookup = _prospect_peak_projection_lookup(peak_projection)
     rows = []
+    as_of = _parse_date(generated_at)
     for row in rank_payload.get("board") or []:
         context = row.get("context_only") or {}
         peak = peak_lookup.get(_identity_key(row))
+        # Same convention as _mlb_rows: the public age is computed from the
+        # identity birth date as of the snapshot date. The rank feed's age is
+        # a season age that never crosses a mid-season birthday (it read a
+        # year low for 8 prospects on 2026-07-27); the model's input age is
+        # preserved as model_age context.
+        model_age = row.get("age")
+        identity = (identities or {}).get(str(row.get("mlbam_id"))) or {}
+        public_age = _age_on_date(identity.get("birth_date"), as_of)
         rows.append(
             {
                 "id": _snapshot_id(row),
@@ -661,7 +671,7 @@ def _prospect_rows(
                 "positions": _positions(row),
                 "team": row.get("mlb_team") or "",
                 "mlb_team": row.get("mlb_team") or "",
-                "age": row.get("age"),
+                "age": public_age if public_age is not None else model_age,
                 "rank": row.get("rank"),
                 "value": row.get("score"),
                 "value_scale": "0_100_valucast_prospect_score",
@@ -686,6 +696,12 @@ def _prospect_rows(
                 "context": {
                     "kind": "optional_display_context",
                     "usage": "display_only_not_used_for_valucast_score",
+                    "model_age": model_age,
+                    "public_age_source": (
+                        "identity_birth_date_as_of_snapshot"
+                        if public_age is not None
+                        else "model_season_age_fallback"
+                    ),
                     "valucast_rank_v1": row.get("rank"),
                     # External-board comparison context (CFR/HKB/Pipeline): kept,
                     # labeled, never feeds a ValuCast score.
@@ -1168,6 +1184,7 @@ def build_snapshot(
         generated_at,
         peak_projection=prospect_peak_projection,
         mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+        identities=identities,
     )
     # Rookie-rule retention (7/2): an active-roster call-up who has NOT crossed the
     # rookie line stays a ranked prospect (the Hughes case — called up at 0 MLB IP,
@@ -1242,6 +1259,7 @@ def build_snapshot(
         generated_at,
         peak_projection=prospect_peak_projection,
         mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+        identities=identities,
     )
     graduated_callup_bridge_rows = [
         _active_callup_bridge_row(row)

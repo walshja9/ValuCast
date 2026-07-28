@@ -58,6 +58,45 @@ def test_mlb_public_age_uses_snapshot_date_without_changing_model_age():
     assert rows[0]["context"]["public_age_source"] == "identity_birth_date_as_of_snapshot"
 
 
+def test_prospect_public_age_uses_snapshot_date_without_changing_model_age():
+    # Same convention as the MLB rows: a prospect whose birthday has passed
+    # this season must show the current age (the rank feed's season age read
+    # a year low for 8 prospects on 2026-07-27), with the model input age
+    # preserved as context and a fallback when no identity exists.
+    rows = snapshot_builder._prospect_rows(
+        {
+            "board": [
+                {
+                    "mlbam_id": 682634,
+                    "name": "Kevin Alcantara",
+                    "role": "hitter",
+                    "level": "AAA",
+                    "age": 23,
+                    "rank": 1,
+                    "score": 40.0,
+                },
+                {
+                    "mlbam_id": 999999,
+                    "name": "No Identity",
+                    "role": "hitter",
+                    "level": "A",
+                    "age": 19,
+                    "rank": 2,
+                    "score": 30.0,
+                },
+            ]
+        },
+        "2026-07-27T12:00:00+00:00",
+        identities={"682634": {"birth_date": "2002-07-12"}},
+    )
+
+    assert rows[0]["age"] == 24
+    assert rows[0]["context"]["model_age"] == 23
+    assert rows[0]["context"]["public_age_source"] == "identity_birth_date_as_of_snapshot"
+    assert rows[1]["age"] == 19
+    assert rows[1]["context"]["public_age_source"] == "model_season_age_fallback"
+
+
 def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
     graduated = [
         {

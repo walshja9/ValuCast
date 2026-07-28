@@ -106,7 +106,24 @@ def _display_path(path: Path) -> str:
         return str(path)
 
 
-def validate_public_data(expected_date: str) -> list[str]:
+def _within_allowed_age(actual: str, expected_date: str, max_age_days: int) -> bool:
+    """True when actual is expected_date or at most max_age_days behind it.
+
+    Future-dated artifacts always fail. Unparseable dates fail.
+    """
+    if actual == expected_date:
+        return True
+    if max_age_days <= 0:
+        return False
+    try:
+        actual_d = date.fromisoformat(actual)
+        expected_d = date.fromisoformat(expected_date)
+    except ValueError:
+        return False
+    return 0 <= (expected_d - actual_d).days <= max_age_days
+
+
+def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]:
     problems: list[str] = []
 
     dated_artifacts = [
@@ -170,10 +187,11 @@ def validate_public_data(expected_date: str) -> list[str]:
             problems.append(f"{_display_path(path)} unreadable: {exc}")
             continue
         actual = _iso_date(payload.get(field))
-        if actual != expected_date:
+        if not _within_allowed_age(actual, expected_date, max_age_days):
             problems.append(
                 f"{_display_path(path)} {field}={actual or 'missing'}, "
                 f"expected {expected_date}"
+                + (f" (allowed lag {max_age_days}d)" if max_age_days else "")
             )
         for key, floor in min_rows.get(path, ()):
             n = len(payload.get(key) or [])
@@ -220,10 +238,11 @@ def validate_public_data(expected_date: str) -> list[str]:
             problems.append(f"{_display_path(ACTUALS)} has no player rows")
         else:
             actual = _iso_date((actuals[0].get("metadata") or {}).get("as_of"))
-            if actual != expected_date:
+            if not _within_allowed_age(actual, expected_date, max_age_days):
                 problems.append(
                     f"{_display_path(ACTUALS)} metadata.as_of={actual or 'missing'}, "
                     f"expected {expected_date}"
+                    + (f" (allowed lag {max_age_days}d)" if max_age_days else "")
                 )
 
     return problems
@@ -232,9 +251,18 @@ def validate_public_data(expected_date: str) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--date", default=date.today().isoformat())
+    # PR/push CI runs between UTC midnight and the morning refresh with
+    # yesterday's committed artifacts; a bounded lag keeps that check green
+    # without letting genuinely stale data through. The publish path leaves
+    # this unset (0 = exact same-day, unchanged behavior).
+    parser.add_argument(
+        "--max-age-days",
+        type=int,
+        default=int(os.environ.get("VALUCAST_FRESHNESS_MAX_AGE_DAYS", "0")),
+    )
     args = parser.parse_args()
 
-    problems = validate_public_data(args.date)
+    problems = validate_public_data(args.date, max_age_days=args.max_age_days)
     if problems:
         print("PUBLIC DATA FRESHNESS FAILED:")
         for problem in problems:
