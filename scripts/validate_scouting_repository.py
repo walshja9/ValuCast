@@ -79,6 +79,13 @@ def validate_scouting_repository(
             for field in ("mlbam_id", "name", "role", "report", "published_report", "usage"):
                 if row.get(field) in (None, "", []):
                     problems.append(f"report {index} missing {field}")
+            # Held-prose boundary: peak_summary is never rendered (every display
+            # path strips it), so the committed artifact must not carry the key
+            # at all (docs/policy-2026-07-27-held-content-and-deploy-key.md).
+            if "peak_summary" in row:
+                problems.append(
+                    f"report {index} carries never-rendered peak_summary prose"
+                )
             source = row.get("published_report_source")
             if source not in {"deterministic", "llm"}:
                 problems.append(f"report {index} invalid published_report_source")

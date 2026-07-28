@@ -818,6 +818,13 @@ def build_scouting_repository(
         and row["prospect_rank"] <= 100
     )
     no_sample_contradictions = _no_sample_contradictions(rows, reports)
+    # Held-prose boundary (docs/policy-2026-07-27-held-content-and-deploy-key.md):
+    # peak_summary is never rendered — every display path strips it — so the
+    # committed artifact must not carry it. It stays available in-process above
+    # (LLM grounding and the read/peak contradiction checks run before this
+    # line); only the serialized payload drops it. The validator forbids the key.
+    for row in reports:
+        row.pop("peak_summary", None)
     blockers = []
     if not reports:
         blockers.append("Scouting repository has no reports.")

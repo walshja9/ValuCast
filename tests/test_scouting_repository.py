@@ -1244,3 +1244,24 @@ def test_scouting_repository_reuse_branch_revalidates_against_current_guard(
     saved = json.loads(cache_path.read_text(encoding="utf-8"))["entries"]["1_hitter"]
     assert saved["valid"] is False
     assert saved["problems"]["count_role_problems"]
+
+
+def test_scouting_repository_payload_carries_no_peak_summary(tmp_path):
+    # Held-prose boundary: peak_summary is never rendered (every display path
+    # strips it), so neither the built payload nor the committed artifact may
+    # carry the key; the validator enforces the same contract.
+    snapshot_path = _write_snapshot(tmp_path)
+    payload = build_scouting_repository(
+        snapshot_path=snapshot_path,
+        generated_at="2026-06-16T00:00:00+00:00",
+    )
+
+    assert all("peak_summary" not in report for report in payload["reports"])
+
+    payload["reports"][0]["peak_summary"] = "Projection: starter with low risk."
+    artifact_path = tmp_path / "reports.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_scouting_repository(artifact_path)
+
+    assert any("peak_summary" in problem for problem in problems)
