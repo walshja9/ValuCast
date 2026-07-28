@@ -55,6 +55,11 @@ from prospects.pitch_discipline import (  # noqa: E402
 UNIVERSE_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 CACHE_PATH = ROOT / "data" / "prospects" / "raw" / "pitch_discipline_pitch_cache.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_pitch_discipline.json"
+# Written by the bootstrap workflow ONLY after a complete --backfill succeeds.
+# Incremental runs refuse to rebuild the artifact without it: a partial cache
+# (e.g. saved by a timed-out bootstrap's if:always() checkpoint) would
+# otherwise produce a deceptively fresh artifact from incomplete season data.
+READY_MARKER_PATH = ROOT / "data" / "prospects" / "raw" / ".pitch_discipline_cache_ready"
 
 # --- StatsAPI ---------------------------------------------------------------
 SPORT_LEVELS = {11: "AAA", 12: "AA", 13: "A+", 14: "A"}
@@ -634,6 +639,19 @@ def main(argv: list[str] | None = None) -> int:
         prune_cache(cache, keep)
 
     incremental = not args.backfill
+    if incremental and not READY_MARKER_PATH.exists():
+        # Readiness guard: without the marker the cache is absent OR a partial
+        # checkpoint from an interrupted bootstrap. Either way an incremental
+        # rebuild would emit a deceptively fresh artifact from incomplete data —
+        # preserve the prior artifact instead. If bootstrap recovery takes more
+        # than 3 days, validate_pitch_discipline.py fails the build closed.
+        print(
+            "pitch-discipline cache not marked ready; skipping incremental "
+            "refresh, keeping prior artifact (bootstrap workflow owns --backfill "
+            "and writes the marker on completion)",
+            flush=True,
+        )
+        return 0
     if incremental and not (cache.get("games") or {}):
         # Cold-cache guard: GitHub runners are ephemeral and the cache is
         # uncommitted, so an empty cache in incremental mode means the "increment"

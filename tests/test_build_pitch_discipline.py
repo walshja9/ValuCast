@@ -107,3 +107,56 @@ def test_zone_estimated_derived_per_pitch_not_per_game():
     out = assemble_player_levels(hitters, cache, calib)
     assert out["1"]["AAA"]["zone_estimated"] is True    # a pixel call happened
     assert out["2"]["AAA"]["zone_estimated"] is False   # all zone calls measured
+
+
+def test_incremental_without_ready_marker_keeps_prior_artifact(tmp_path, monkeypatch, capsys):
+    # Readiness guard: a missing marker means the cache is absent or a partial
+    # bootstrap checkpoint; an incremental run must preserve the prior artifact
+    # (exit 0, no fetch, no artifact write) rather than build a deceptively
+    # fresh one from incomplete data.
+    from scripts import build_pitch_discipline as bpd
+
+    monkeypatch.setattr(bpd, "READY_MARKER_PATH", tmp_path / ".ready-missing")
+    monkeypatch.setattr(
+        bpd, "load_tracked_hitters", lambda: [{"mlbam_id": 1, "name": "X", "level": "AA"}]
+    )
+    monkeypatch.setattr(
+        bpd, "load_cache", lambda *a, **k: {"games": {"1": {}}}
+    )
+
+    def _boom(*a, **k):  # any fetch or write attempt is a guard failure
+        raise AssertionError("guard must prevent fetch/build without marker")
+
+    monkeypatch.setattr(bpd, "gather_games", _boom)
+    monkeypatch.setattr(bpd, "build_artifact", _boom)
+    monkeypatch.setattr(bpd, "write_artifact", _boom)
+
+    assert bpd.main([]) == 0
+    out = capsys.readouterr().out
+    assert "not marked ready" in out
+    assert "keeping prior artifact" in out
+
+
+def test_incremental_with_ready_marker_proceeds(tmp_path, monkeypatch):
+    from scripts import build_pitch_discipline as bpd
+
+    marker = tmp_path / ".ready"
+    marker.write_text("", encoding="utf-8")
+    monkeypatch.setattr(bpd, "READY_MARKER_PATH", marker)
+    monkeypatch.setattr(
+        bpd, "load_tracked_hitters", lambda: [{"mlbam_id": 1, "name": "X", "level": "AA"}]
+    )
+    monkeypatch.setattr(bpd, "load_cache", lambda *a, **k: {"games": {"1": {}}})
+
+    calls = {}
+
+    def _gather(*a, **k):
+        calls["gather"] = True
+        raise RuntimeError("stop after reaching the fetch stage")
+
+    monkeypatch.setattr(bpd, "gather_games", _gather)
+
+    # The incremental error backstop keeps the prior artifact and exits 0 —
+    # what matters here is the guard let execution REACH the fetch stage.
+    assert bpd.main([]) == 0
+    assert calls.get("gather") is True

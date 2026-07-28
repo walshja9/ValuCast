@@ -1,0 +1,77 @@
+name: Plate-Discipline Cache Bootstrap
+
+# Owns the season-wide pitch-cache backfill so it never runs inside the daily
+# publish job's 90-minute window (2026-07-28: the first in-job bootstrap cost
+# two publish-run timeouts and a 3.5-hour late refresh). The daily job runs
+# ONLY the fast incremental, and build_pitch_discipline.py refuses to rebuild
+# the artifact unless the readiness marker written here is present — a partial
+# checkpoint cache can never produce a deceptively fresh artifact. If recovery
+# from a cache eviction takes more than 3 days, validate_pitch_discipline.py
+# fails the publish closed rather than serving silently stale data.
+on:
+  schedule:
+    # Weekly warm-keep: a no-op while the marker is in the restored cache, a
+    # full rebuild after an eviction. Sunday 02:00 UTC — clear of the daily
+    # refresh crons (11:30/12:20/13:30 UTC) and the 20:00 UTC roster pulse.
+    - cron: "0 2 * * 0"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  # Serializes with the daily refresh (shared group, no cancellation) so the
+  # backfill and the publish pipeline never race on the shared cache keys.
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    # A cold season backfill is hours of rate-limited feed fetches; the
+    # checkpointed cache (flushed periodically + saved on if:always) makes a
+    # timeout resumable on the next run rather than wasted.
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 1  # no build step reads git history; nothing is pushed
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Restore plate-discipline event cache
+        id: plate-discipline-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            plate-discipline-v1-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e .
+
+      - name: Backfill plate-discipline event cache
+        run: |
+          if [ ! -f data/prospects/raw/.pitch_discipline_cache_ready ]; then
+            python scripts/build_pitch_discipline.py --backfill
+            touch data/prospects/raw/.pitch_discipline_cache_ready
+          else
+            echo "cache marked ready; nothing to bootstrap"
+          fi
+
+      - name: Save plate-discipline event cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}
