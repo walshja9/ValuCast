@@ -136,13 +136,6 @@ jobs:
       - name: Build ValuCast canonical prospect input contract
         run: python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
 
-      - name: Bootstrap plate-discipline event cache
-        run: |
-          if [ ! -f data/prospects/raw/.pitch_discipline_cache_ready ]; then
-            python scripts/build_pitch_discipline.py --backfill
-            touch data/prospects/raw/.pitch_discipline_cache_ready
-          fi
-
       - name: Build ValuCast public snapshot gate
         env:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) && '1' || '0' }}

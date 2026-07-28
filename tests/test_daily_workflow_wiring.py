@@ -199,19 +199,51 @@ def test_daily_refresh_restores_and_saves_plate_discipline_cache():
     assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
     assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
     assert workflow.count(cache_path) >= 2
-    assert workflow.count(ready_path) >= 3
-    assert "python scripts/build_pitch_discipline.py --backfill" in workflow
-    assert "touch data/prospects/raw/.pitch_discipline_cache_ready" in workflow
+    assert workflow.count(ready_path) >= 2
+    # The season backfill must NEVER run inside the publish job: the first
+    # in-job bootstrap (2026-07-28) cost two 90-minute publish-run timeouts.
+    # The bootstrap workflow owns --backfill and the readiness marker.
+    assert "--backfill" not in workflow
+    assert "touch data/prospects/raw/.pitch_discipline_cache_ready" not in workflow
     assert "plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
     assert "restore-keys: |" in workflow
     assert "plate-discipline-v1-${{ runner.os }}-" in workflow
     assert "key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}" in workflow
 
     restore = workflow.index("uses: actions/cache/restore@")
-    bootstrap = workflow.index("python scripts/build_pitch_discipline.py --backfill")
     build = workflow.index("run: python scripts/run_daily_public_build.py --only build")
     save = workflow.index("uses: actions/cache/save@")
-    assert restore < bootstrap < build < save
+    assert restore < build < save
+
+
+def test_bootstrap_workflow_owns_plate_discipline_backfill():
+    bootstrap_path = Path(".github/workflows/plate-discipline-bootstrap.yml")
+    workflow = bootstrap_path.read_text(encoding="utf-8")
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+
+    # Keyless and read-only: the bootstrap only warms the Actions cache — it
+    # must never hold the deploy key or push anything.
+    assert "REFRESH_DEPLOY_KEY" not in workflow
+    assert "contents: read" in workflow
+    assert "git push" not in workflow
+
+    # Same cache keys as the daily refresh, marker written only after a
+    # successful complete --backfill, save checkpointed on if: always().
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert "plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "plate-discipline-v1-${{ runner.os }}-" in workflow
+    assert "key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}" in workflow
+    assert "python scripts/build_pitch_discipline.py --backfill" in workflow
+    assert "touch data/prospects/raw/.pitch_discipline_cache_ready" in workflow
+    backfill = workflow.index("python scripts/build_pitch_discipline.py --backfill")
+    touch = workflow.index("touch data/prospects/raw/.pitch_discipline_cache_ready")
+    assert backfill < touch
+    assert "if: always()" in workflow
+
+    # Serializes with the publish pipeline on the shared concurrency group.
+    assert "group: daily-public-data-refresh" in workflow
+    assert "cancel-in-progress: false" in workflow
 
 
 def test_master_writers_use_only_the_refresh_deploy_key():
