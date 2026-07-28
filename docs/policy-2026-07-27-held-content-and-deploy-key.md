@@ -52,3 +52,24 @@ commit-audit report: `persist-credentials: false` with the key scoped to the
 push step only, a hash-pinned lockfile for the build environment, and
 scheduled key rotation. Any such change gets its own design doc per the
 existing workflow-contract test discipline.
+
+### Audit record — 2026-07-27
+
+- [x] Exactly one deploy key exists: `ValuCast scheduled refresh writer`
+      (ID `158148733`), verified and write-enabled. It was created by
+      `walshja9` on 2026-07-23. The design doc does not prescribe a literal
+      title; this observed title is the approved expected title going forward.
+- [x] The `REFRESH_DEPLOY_KEY` Actions secret exists; its value was not read.
+- [x] Ruleset `Protect default branch` (ID `19627275`) is active on the
+      default branch. It requires pull requests, requires the `pytest` status
+      from GitHub Actions app ID `15368` with the branch up to date, and blocks
+      deletion and non-fast-forward pushes.
+- [x] The ruleset's only bypass actor is `DeployKey`.
+- [x] Rotation owner: `walshja9`. Next manual rotation due 2026-10-21
+      (90 days after key creation).
+- [x] Attribution checked. Repository push events identify the account
+      (`walshja9`), not the deploy key. Automated data commits identify
+      `github-actions[bot]` in commit metadata, but that identity is not proof
+      of which credential authenticated the push. Treat an unexpected direct
+      automated push as a rotate-and-investigate event; GitHub's repository
+      audit surface does not provide key-level attribution here.
