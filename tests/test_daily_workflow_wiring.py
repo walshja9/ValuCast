@@ -190,6 +190,16 @@ def test_pr_ci_validates_artifacts_and_pins_first_party_actions():
     assert found == set(expected_pins)
 
 
+def test_daily_refresh_job_timeout_has_llm_headroom():
+    # 90 min was cancelled mid-validate on 2026-07-29 (run 30450687341): the
+    # daily 300-generation LLM scouting pass alone runs ~53 min and the whole
+    # build ~85+. 120 keeps headroom without returning to the 180-min pileup
+    # regime documented in the workflow comment.
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert "timeout-minutes: 120" in workflow
+    assert "timeout-minutes: 90" not in workflow
+
+
 def test_daily_refresh_restores_and_saves_plate_discipline_cache():
     workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
     cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
