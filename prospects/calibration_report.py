@@ -28,13 +28,20 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 
 REPORT_NAME = "ValuCast Prospect Rank v1 Calibration Report"
-REPORT_VERSION = "0.2.0"
+REPORT_VERSION = "0.3.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 TOP_BANDS = (25, 50, 100, 200)
 TOP_CONTEXT_BAND = 50
 CONTEXT_DISAGREEMENT_MIN_RANK_GAP = 30
+# Consensus-elite watchlist (2026-07-29 Sirota review, owner item 3): the
+# top-50-scoped DD-context watchlist above structurally cannot see a player
+# the PUBLIC boards rank elite while ValuCast ranks deep (Sirota: consensus
+# 22, VC 177 — invisible to every top-50 list). Scan the whole board for
+# public-consensus rank <= this bound with a large VC gap. Display-only
+# observability; feeds nothing.
+CONSENSUS_ELITE_MAX_RANK = 50
 
 MAX_TOP25_PITCHER_COUNT = 7
 MAX_TOP50_PITCHER_RATE = 0.30
@@ -335,6 +342,71 @@ def _context_disagreements(rows: list[dict]) -> list[dict]:
     return disagreements
 
 
+def _consensus_elite_disagreements(rank_payload: dict) -> list[dict]:
+    """Full-board scan for consensus-elite / ValuCast-deep rows.
+
+    Reuses the AOTC divergence math (same public-board filter, same rounded
+    median) so 'consensus' means the same thing everywhere. Per the standing
+    ToS rule (consensus_gap._display_row), per-board ranks are never
+    republished — only the median, count, and min/max dispersion.
+    """
+    from prospects.ahead_of_consensus import (
+        FEATURED_MIN_BOARDS,
+        _board_rows,
+        _divergence_row,
+    )
+
+    out = []
+    for board_row in _board_rows(rank_payload):
+        d = _divergence_row(board_row)
+        if d is None or d.get("in_mlb"):
+            continue
+        consensus = d.get("consensus_rank")
+        valucast_rank = d.get("valucast_rank")
+        if consensus is None or valucast_rank is None:
+            continue
+        # Same featured-claim bar as the AOTC ledger/gaps page: a 2-board
+        # "consensus" is dispersion noise or an identity-match artifact, not
+        # an elite field view.
+        if (d.get("board_count") or 0) < FEATURED_MIN_BOARDS:
+            continue
+        if consensus > CONSENSUS_ELITE_MAX_RANK:
+            continue
+        # Established AOTC/consensus-gap sign contract: divergence =
+        # consensus_rank - valucast_rank (negative when ValuCast is deeper).
+        divergence = consensus - valucast_rank
+        if divergence > -CONTEXT_DISAGREEMENT_MIN_RANK_GAP:
+            continue
+        board_ranks = [
+            r for r in (d.get("boards") or {}).values()
+            if isinstance(r, (int, float))
+        ]
+        out.append(
+            {
+                "identity_key": d.get("identity_key"),
+                "mlbam_id": d.get("mlbam_id"),
+                "name": d.get("name"),
+                "team": d.get("team"),
+                "role": d.get("role"),
+                "valucast_rank": valucast_rank,
+                "consensus_rank": consensus,
+                "board_count": d.get("board_count"),
+                "board_rank_min": min(board_ranks) if board_ranks else None,
+                "board_rank_max": max(board_ranks) if board_ranks else None,
+                "divergence": divergence,
+                "usage": "calibration_watchlist_context_not_live_rank_or_value",
+            }
+        )
+    out.sort(
+        key=lambda row: (
+            int(row.get("divergence") or 0),
+            row.get("consensus_rank") or 999999,
+            str(row.get("name") or ""),
+        )
+    )
+    return out
+
+
 def _tuning_flags(bands: dict[int, dict]) -> list[dict]:
     flags = []
     top25 = bands[25]
@@ -517,6 +589,7 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
     bucket_flags = _bucket_tuning_flags(rows)
     flags = shape_flags + bucket_flags
     disagreements = _context_disagreements(rows)
+    consensus_elite = _consensus_elite_disagreements(rank_payload)
     top50 = rows[:50]
     availability_watchlist = [
         _entry(row)
@@ -565,6 +638,7 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "top_bands": list(TOP_BANDS),
             "top_context_band": TOP_CONTEXT_BAND,
             "context_disagreement_min_rank_gap": CONTEXT_DISAGREEMENT_MIN_RANK_GAP,
+            "consensus_elite_max_rank": CONSENSUS_ELITE_MAX_RANK,
             "max_top25_pitcher_count": MAX_TOP25_PITCHER_COUNT,
             "max_top50_pitcher_rate": MAX_TOP50_PITCHER_RATE,
             "max_top25_pedigree_count": MAX_TOP25_PEDIGREE_COUNT,
@@ -583,6 +657,7 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "tuning_flag_count": len(flags),
             "bucket_tuning_flag_count": len(bucket_flags),
             "context_disagreement_count_top50": len(disagreements),
+            "consensus_elite_disagreement_count": len(consensus_elite),
             "availability_watchlist_count_top50": len(availability_watchlist),
             "pedigree_watchlist_count_top50": len(pedigree_watchlist),
             "fallback_watchlist_count_top200": len(fallback_watchlist),
@@ -594,6 +669,7 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "top50_pedigree_only": pedigree_watchlist[:25],
             "top200_raw_fallback": fallback_watchlist[:50],
             "top50_dd_context_disagreements": disagreements[:25],
+            "consensus_elite_valucast_deep": consensus_elite[:25],
         },
     }
 

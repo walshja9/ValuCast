@@ -6,6 +6,11 @@ import json
 import sys
 from pathlib import Path
 
+_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_ROOT))
+
+from prospects.calibration_report import REPORT_VERSION  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -21,8 +26,8 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
     problems = []
     if payload.get("artifact") != "valucast_prospect_calibration_report":
         problems.append("artifact must be valucast_prospect_calibration_report")
-    if not payload.get("report_version"):
-        problems.append("report_version is required")
+    if payload.get("report_version") != REPORT_VERSION:
+        problems.append(f"report_version must be {REPORT_VERSION}")
     if not payload.get("generated_at"):
         problems.append("generated_at is required")
     if payload.get("status") not in {"review_ready", "needs_review"}:
@@ -40,6 +45,8 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
             problems.append("metrics.tuning_flag_count is required")
         if "bucket_tuning_flag_count" not in metrics:
             problems.append("metrics.bucket_tuning_flag_count is required")
+        if "consensus_elite_disagreement_count" not in metrics:
+            problems.append("metrics.consensus_elite_disagreement_count is required")
     source_policy = payload.get("source_policy")
     if not isinstance(source_policy, dict):
         problems.append("source_policy must be an object")
@@ -50,6 +57,8 @@ def validate_report(path: Path = REPORT_PATH) -> tuple[dict | None, list[str]]:
         problems.append("watchlists must be an object")
     elif "top50_dd_context_disagreements" not in watchlists:
         problems.append("watchlists.top50_dd_context_disagreements is required")
+    elif not isinstance(watchlists.get("consensus_elite_valucast_deep"), list):
+        problems.append("watchlists.consensus_elite_valucast_deep is required")
     return payload, problems
 
 
