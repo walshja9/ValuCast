@@ -152,6 +152,7 @@ def build_layer(universal: dict, backtest: dict | None = None) -> dict:
             "feeds_live_valucast_rank": True,
             "feeds_live_dd_value": False,
             "standalone_public_board": False,
+            "dynasty_signal_probabilities": "uncalibrated_shadow_evidence_do_not_publish",
         },
         "layer_name": LAYER_NAME,
         "layer_version": LAYER_VERSION,
@@ -193,6 +194,10 @@ def build_layer(universal: dict, backtest: dict | None = None) -> dict:
             "It contains no league, roster, trade-market, position-scarcity, or manager-preference context.",
             _fold_evidence_limitation(evidence),
             "The layer feeds Prospect Rank v1 as an incumbent component; new model versions still require dated forward evidence.",
+            "dynasty_signal probabilities are UNCALIBRATED shadow evidence "
+            "(gate-failed universal heads / coherence-clamped ridge heads; "
+            "no value-vs-frequency reliability check exists). They must not "
+            "be published on any app surface (owner disposition 2026-07-29).",
         ],
         "profiles": profiles,
     }

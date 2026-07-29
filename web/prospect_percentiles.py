@@ -748,18 +748,14 @@ def value_suppressor_note(row, percentiles, exposure=None) -> str | None:
         else:
             reasons.append("the sample is still thin")
 
-    peak_v2 = peak.get("peak_v2")
-    role_probabilities = (
-        peak_v2.get("role_probabilities")
-        if isinstance(peak_v2, dict) and isinstance(peak_v2.get("role_probabilities"), dict)
-        else {}
-    )
-    bust_risk = _float_value(role_probabilities.get("bust_risk"))
+    # bust_risk deliberately no longer drives card copy: it is an
+    # uncalibrated universal-model probability (owner disposition
+    # 2026-07-29); only the qualitative peak-role read gates this sentence.
     modest_ceiling = peak_role in {
         "depth_arm",
         "organizational_depth",
         "multi_inning_or_setup_arm",
-    } or (bust_risk is not None and bust_risk >= 0.70)
+    }
     role_from_context = str(factual_current.get("role") or "")
     is_pitcher = role_from_context == "pitcher" or (
         not role_from_context and _is_pitcher(row, getattr(row, "stat_line", None) or {})

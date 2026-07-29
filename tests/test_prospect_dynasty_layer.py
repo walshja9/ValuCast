@@ -61,6 +61,9 @@ def test_dynasty_layer_declares_rank_v1_as_its_live_consumer():
         "feeds_live_valucast_rank": True,
         "feeds_live_dd_value": False,
         "standalone_public_board": False,
+        # Owner disposition 2026-07-29: the probability heads stay internal
+        # as explicitly uncalibrated shadow evidence, never published.
+        "dynasty_signal_probabilities": "uncalibrated_shadow_evidence_do_not_publish",
     }
     assert payload["layer_contract"]["rank_free"] is True
     assert payload["layer_contract"]["value_free"] is True
