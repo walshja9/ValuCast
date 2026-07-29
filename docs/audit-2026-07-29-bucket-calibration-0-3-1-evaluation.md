@@ -82,3 +82,28 @@ No branch, code, or artifact change accompanies this document. Options:
 Raw measurements, per-day tables, subgroup breakdowns, and saved boards are
 preserved in the study scratchpad (`eval031/`) and summarized in this
 document's source study report.
+
+## Owner decision (2026-07-29)
+
+**Accepted: SPLIT-REMEDIATE.** Ratification rejected (93.4% of score movement
+unintended, five unintended top-100 crossings); full reversion rejected (it
+would discard the cleanly isolated continuity floor that prevented the
+documented Henderson cliff). R3 adjudicated as an operational composition
+non-regression, not evidence of calibration quality; its weakness does not
+void the decision because R1 and R2 already strongly support the conservative
+split.
+
+**Approval scope: design and validation only — NOT publication.** Before
+0.3.2 ships, all of the following are required:
+
+1. Every non-floor player's score exactly matches 0.3.0 across the frozen
+   study builds.
+2. Every floor-protected player retains the intended 0.3.1 treatment.
+3. The restored continuity veto reports zero incidents.
+4. A current-board preview identifies every score and top-100 change.
+5. Full CI, governor, and refresh checks pass.
+6. Raw per-day study tables are committed or made reproducibly regenerable.
+7. The re-baseline is scheduled and disclosed, with final owner approval
+   after reviewing the preview.
+
+Design document: `docs/superpowers/specs/2026-07-29-bucket-calibration-0-3-2-design.md`.
