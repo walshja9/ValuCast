@@ -47,7 +47,7 @@ RANK_VERSION = "0.2.9"
 
 PITCHER_POSITIONS = {"P", "SP", "RP"}
 PEDIGREE_SCORE_SOURCE = "prospect_pedigree_v0_7"
-BUCKET_CALIBRATION_VERSION = "0.3.1"
+BUCKET_CALIBRATION_VERSION = "0.3.2"
 FACTUAL_CURRENT_CONTEXT_VERSION = "0.1.0"
 UNCERTAINTY_VERSION = "0.1.0"
 NEAR_GRADUATION_VERSION = "0.1.0"
@@ -1022,9 +1022,13 @@ def _sample_reliability_score(
     layer_profile: dict | None,
     model_profile: dict | None,
 ) -> float:
-    reliability = _clean_float((model_profile or {}).get("sample_reliability"))
+    # 0.3.2: layer-profile precedence restored (0.3.0 order). The 0.3.1 swap to
+    # model-first was part of the unintended reliability rebasing reverted by
+    # the registered study's SPLIT-REMEDIATE verdict
+    # (docs/superpowers/specs/2026-07-29-bucket-calibration-0-3-2-design.md).
+    reliability = _clean_float((layer_profile or {}).get("sample_reliability"))
     if reliability is None:
-        reliability = _clean_float((layer_profile or {}).get("sample_reliability"))
+        reliability = _clean_float((model_profile or {}).get("sample_reliability"))
     if reliability is None:
         return 45.0
     if reliability <= 1.0:
@@ -1547,27 +1551,19 @@ def _bucket_calibration_adjustment(
         and str(availability.get("status") or "") == "thin_current_sample"
         and reliability is not None
     ):
-        served_sample = _clean_float(factual.get("sample"))
-        if served_sample is None:
-            served_sample = sample
-        thin_reliability = current_reliability
-        if (
-            source == "prospect_model_v0_6"
-            and (
-                served_sample is None
-                or served_sample
-                >= MODEL_MIN_CURRENT_SAMPLE.get(str(role or ""), 0.0)
-            )
-        ):
-            thin_reliability = reliability
         # The penalty scales with how little evidence exists (1 - reliability),
         # so a 2-IP line drops far more than a near-full one, then phases out
         # linearly as reliability approaches the ramp ceiling so no single
         # IP/PA step can move a score by more than the ramp slope.
-        thinness = max(0.0, min(1.0, 1.0 - thin_reliability / 100.0))
+        # 0.3.2: always current_reliability (0.3.0 behavior). The 0.3.1
+        # rebasing to full-history reliability for at-sample rows zeroed
+        # -11.5..-13.2 penalties board-wide and was reverted by the registered
+        # study's SPLIT-REMEDIATE verdict; the continuity floor below is the
+        # part of 0.3.1 that stays.
+        thinness = max(0.0, min(1.0, 1.0 - current_reliability / 100.0))
         ramp = max(
             0.0,
-            (THIN_SAMPLE_RELIABILITY_RAMP - thin_reliability)
+            (THIN_SAMPLE_RELIABILITY_RAMP - current_reliability)
             / THIN_SAMPLE_RELIABILITY_RAMP,
         )
         penalty = -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX * thinness * ramp

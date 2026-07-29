@@ -23,9 +23,16 @@ from prospects.rank_v1 import (
 )
 
 
-def test_served_model_reliability_wins_over_different_layer_line():
+def test_layer_reliability_wins_over_model_profile():
+    # 0.3.2: layer-profile precedence restored (0.3.0 order). The 0.3.1
+    # model-first swap was reverted by the registered study's SPLIT-REMEDIATE
+    # verdict (2026-07-29 design doc); model profile is fallback only.
     assert _sample_reliability_score(
         {"sample_reliability": 0.20},
+        {"sample_reliability": 0.573},
+    ) == 20.0
+    assert _sample_reliability_score(
+        {},
         {"sample_reliability": 0.573},
     ) == 57.3
 
@@ -1501,23 +1508,39 @@ def test_thin_sample_penalty_has_no_boundary_cliffs():
     assert thin == 0.0 and moderate == 0.0
 
 
-def test_thin_to_moderate_handoff_uses_the_served_line_reliability():
-    thin, _ = _thin_penalty(
+def test_thin_penalty_ignores_blended_reliability_at_served_sample():
+    # 0.3.2: the thin penalty is always based on current_reliability (0.3.0
+    # behavior). The 0.3.1 rebasing to full-history/blended reliability for
+    # rows at/above the served-sample floor zeroed -11.5..-13.2 penalties
+    # board-wide and was reverted by the registered study's SPLIT-REMEDIATE
+    # verdict. Guard: wildly different blended reliabilities must produce the
+    # identical thin adjustment for the same current sample.
+    low_blend, _ = _thin_penalty(
         role="hitter",
         sample=147.0,
         status="thin_current_sample",
         blended_reliability=31.7,
         served_sample=93.0,
     )
-    _, moderate = _thin_penalty(
+    high_blend, _ = _thin_penalty(
         role="hitter",
-        sample=157.0,
-        status="available",
-        blended_reliability=31.7,
+        sample=147.0,
+        status="thin_current_sample",
+        blended_reliability=95.0,
         served_sample=93.0,
     )
+    current_only, _ = _thin_penalty(
+        role="hitter",
+        sample=147.0,
+        status="thin_current_sample",
+    )
 
-    assert abs(moderate - thin) <= 2.6
+    assert low_blend == high_blend
+    assert low_blend < 0.0
+    # blended_reliability also feeds the branch gate (`reliability is not
+    # None`), so equality with the no-blend case proves the magnitude comes
+    # from current_reliability alone.
+    assert low_blend == current_only
 
 
 def test_gs_reclassification_step_is_bounded():

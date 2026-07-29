@@ -1,0 +1,81 @@
+== Q1 ==
+armA 2026-07-22->2026-07-23: incidents=1 matched=2850 Ixan Henderson (pitcher, AA->A, final_delta=-11.35)
+armA 2026-07-23->2026-07-24: incidents=0 matched=2855 
+armA 2026-07-24->2026-07-25: incidents=0 matched=2865 
+armA 2026-07-25->2026-07-26: incidents=0 matched=2878 
+armA 2026-07-26->2026-07-27: incidents=0 matched=2886 
+armA 2026-07-27->2026-07-28: incidents=0 matched=2895 
+armB 2026-07-22->2026-07-23: incidents=0 matched=2850 
+armB 2026-07-23->2026-07-24: incidents=0 matched=2855 
+armB 2026-07-24->2026-07-25: incidents=0 matched=2865 
+armB 2026-07-25->2026-07-26: incidents=0 matched=2878 
+armB 2026-07-26->2026-07-27: incidents=0 matched=2886 
+armB 2026-07-27->2026-07-28: incidents=0 matched=2895 
+
+== Q2 ==
+2026-07-23: matched=2856 onlyA=0 onlyB=0 affected=312 intended=15 unintended=297 sum|d|_int=80.82 sum|d|_unint=1047.91 share_int=7.2% unint_med=2.52 unint_p95=11.21 unint_top100_moves=4
+    T100 Karson Milbrandt (703596,pitcher) rankA=109 rankB=63 dScore=+4.33 buckets=['moderate_thin_sample_confidence']
+    T100 Chase Harlan (815792,hitter) rankA=101 rankB=95 dScore=+0.86 buckets=[]
+    T100 Manuel Pena (694211,hitter) rankA=210 rankB=78 dScore=+7.06 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=130 rankB=75 dScore=+4.26 buckets=[]
+2026-07-24: matched=2866 onlyA=0 onlyB=0 affected=313 intended=14 unintended=299 sum|d|_int=75.71 sum|d|_unint=1040.37 share_int=6.8% unint_med=2.56 unint_p95=10.83 unint_top100_moves=3
+    T100 Karson Milbrandt (703596,pitcher) rankA=112 rankB=64 dScore=+4.33 buckets=['moderate_thin_sample_confidence']
+    T100 Manuel Pena (694211,hitter) rankA=195 rankB=87 dScore=+6.12 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=130 rankB=69 dScore=+4.26 buckets=[]
+2026-07-25: matched=2878 onlyA=0 onlyB=0 affected=322 intended=14 unintended=308 sum|d|_int=75.68 sum|d|_unint=1067.24 share_int=6.6% unint_med=2.45 unint_p95=10.84 unint_top100_moves=3
+    T100 Karson Milbrandt (703596,pitcher) rankA=112 rankB=62 dScore=+4.33 buckets=['moderate_thin_sample_confidence']
+    T100 Manuel Pena (694211,hitter) rankA=190 rankB=89 dScore=+5.74 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=119 rankB=66 dScore=+3.93 buckets=[]
+2026-07-26: matched=2886 onlyA=0 onlyB=0 affected=330 intended=14 unintended=316 sum|d|_int=70.42 sum|d|_unint=1082.03 share_int=6.1% unint_med=2.52 unint_p95=10.71 unint_top100_moves=4
+    T100 Karson Milbrandt (703596,pitcher) rankA=103 rankB=60 dScore=+3.30 buckets=['moderate_thin_sample_confidence']
+    T100 Seaver King (814409,hitter) rankA=97 rankB=101 dScore=+0.09 buckets=[]
+    T100 Manuel Pena (694211,hitter) rankA=161 rankB=72 dScore=+5.32 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=109 rankB=63 dScore=+3.56 buckets=[]
+2026-07-27: matched=2895 onlyA=0 onlyB=0 affected=335 intended=15 unintended=320 sum|d|_int=76.42 sum|d|_unint=1100.36 share_int=6.5% unint_med=2.52 unint_p95=10.87 unint_top100_moves=5
+    T100 Karson Milbrandt (703596,pitcher) rankA=103 rankB=60 dScore=+3.30 buckets=['moderate_thin_sample_confidence']
+    T100 Chase Harlan (815792,hitter) rankA=101 rankB=95 dScore=+0.76 buckets=[]
+    T100 Seaver King (814409,hitter) rankA=99 rankB=103 dScore=+0.10 buckets=[]
+    T100 Manuel Pena (694211,hitter) rankA=160 rankB=79 dScore=+4.99 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=115 rankB=69 dScore=+3.28 buckets=[]
+2026-07-28: matched=2895 onlyA=0 onlyB=0 affected=335 intended=15 unintended=320 sum|d|_int=76.42 sum|d|_unint=1100.36 share_int=6.5% unint_med=2.52 unint_p95=10.87 unint_top100_moves=5
+    T100 Karson Milbrandt (703596,pitcher) rankA=103 rankB=60 dScore=+3.30 buckets=['moderate_thin_sample_confidence']
+    T100 Chase Harlan (815792,hitter) rankA=101 rankB=95 dScore=+0.76 buckets=[]
+    T100 Seaver King (814409,hitter) rankA=99 rankB=103 dScore=+0.10 buckets=[]
+    T100 Manuel Pena (694211,hitter) rankA=160 rankB=79 dScore=+4.99 buckets=[]
+    T100 Devin Fitz-Gerald (803849,hitter) rankA=115 rankB=69 dScore=+3.28 buckets=[]
+POOLED: affected=1947 intended=87 unintended=1860 sum|d|_int=455.47 sum|d|_unint=6438.27 share_int=6.6% unint_med=2.52 unint_p95=10.93
+pooled intended top100 moves: 6; pooled unintended top100 moves: 24
+
+== top10 unintended by |dScore| (pooled) ==
+2026-07-23 Bryant Betancourt (700164,hitter,AAA) A=14.70(r820) B=29.02(r147) d=+14.32 rel=57.3 bucketsB=[] adjA=-13.2 adjB=None floor=False lvl_trans=False
+2026-07-25 Bryant Betancourt (700164,hitter,AAA) A=14.86(r817) B=29.18(r149) d=+14.32 rel=57.3 bucketsB=[] adjA=-13.2 adjB=None floor=False lvl_trans=False
+2026-07-24 Bryant Betancourt (700164,hitter,AAA) A=14.76(r828) B=29.08(r150) d=+14.32 rel=57.3 bucketsB=[] adjA=-13.2 adjB=None floor=False lvl_trans=False
+2026-07-23 Michael Arroyo (703197,hitter,AAA) A=15.12(r785) B=29.37(r138) d=+14.25 rel=59.8 bucketsB=[] adjA=-13.07 adjB=None floor=False lvl_trans=False
+2026-07-26 Bryant Betancourt (700164,hitter,AAA) A=15.29(r797) B=29.18(r147) d=+13.89 rel=57.3 bucketsB=[] adjA=-12.8 adjB=None floor=False lvl_trans=False
+2026-07-23 Alfredo Duno (806957,hitter,AA) A=14.87(r803) B=28.51(r162) d=+13.64 rel=59.6 bucketsB=[] adjA=-12.5 adjB=None floor=False lvl_trans=False
+2026-07-24 Alfredo Duno (806957,hitter,AA) A=14.97(r807) B=28.61(r162) d=+13.64 rel=59.6 bucketsB=[] adjA=-12.5 adjB=None floor=False lvl_trans=False
+2026-07-27 Bryant Betancourt (700164,hitter,AAA) A=15.82(r769) B=29.24(r147) d=+13.42 rel=57.3 bucketsB=[] adjA=-12.36 adjB=None floor=False lvl_trans=False
+2026-07-28 Bryant Betancourt (700164,hitter,AAA) A=15.82(r769) B=29.24(r147) d=+13.42 rel=57.3 bucketsB=[] adjA=-12.36 adjB=None floor=False lvl_trans=False
+2026-07-23 Kien Vu (809844,hitter,AA) A=4.60(r1751) B=17.74(r640) d=+13.14 rel=61.5 bucketsB=[] adjA=-11.97 adjB=None floor=False lvl_trans=False
+
+== subgroups (pooled) ==
+-- by role --
+hitter: affected=930 intended=0 unintended=930 sum_int=0.00 sum_unint=3839.15 share_int=0.0 unint_med=3.42 unint_p95=11.16
+pitcher: affected=1017 intended=87 unintended=930 sum_int=455.47 sum_unint=2599.12 share_int=14.9 unint_med=1.66 unint_p95=9.88
+-- by level --
+A: affected=157 intended=30 unintended=127 sum_int=164.68 sum_unint=2.39 share_int=98.6 unint_med=0.02 unint_p95=0.03
+A+: affected=436 intended=26 unintended=410 sum_int=82.60 sum_unint=1673.98 share_int=4.7 unint_med=3.53 unint_p95=10.29
+AA: affected=707 intended=19 unintended=688 sum_int=89.81 sum_unint=2450.70 share_int=3.5 unint_med=2.27 unint_p95=11.33
+AAA: affected=647 intended=12 unintended=635 sum_int=118.38 sum_unint=2311.20 share_int=4.9 unint_med=3.08 unint_p95=10.97
+-- by bucket membership (arm B rules) --
+moderate_thin_sample_confidence: affected=555 intended=0 unintended=555 sum_int=0.00 sum_unint=2151.84 share_int=0.0 unint_med=3.43 unint_p95=10.1
+moderate_thin_sample_confidence,upper_level_low_impact_hitter_model_sample: affected=17 intended=0 unintended=17 sum_int=0.00 sum_unint=123.18 share_int=0.0 unint_med=8.02 unint_p95=8.79
+none: affected=553 intended=0 unintended=553 sum_int=0.00 sum_unint=3250.82 share_int=0.0 unint_med=5.91 unint_p95=12.33
+thin_current_sample_confidence: affected=822 intended=87 unintended=735 sum_int=455.47 sum_unint=912.43 share_int=33.3 unint_med=0.34 unint_p95=4.91
+-- by continuity_floor_applied (arm B) --
+False: affected=1860 intended=0 unintended=1860 sum_int=0.00 sum_unint=6438.27 share_int=0.0 unint_med=2.52 unint_p95=10.93
+True: affected=87 intended=87 unintended=0 sum_int=455.47 sum_unint=0.00 share_int=100.0 unint_med=None unint_p95=None
+-- by rank band (arm A rank) --
+101-500: affected=184 intended=13 unintended=171 sum_int=45.72 sum_unint=331.04 share_int=12.1 unint_med=1.51 unint_p95=5.35
+rest: affected=1725 intended=74 unintended=1651 sum_int=409.75 sum_unint=6083.67 share_int=6.3 unint_med=2.78 unint_p95=11.03
+top-100: affected=38 intended=0 unintended=38 sum_int=0.00 sum_unint=23.56 share_int=0.0 unint_med=0.69 unint_p95=1.13
