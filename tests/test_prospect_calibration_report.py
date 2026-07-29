@@ -94,6 +94,34 @@ def test_calibration_report_passes_clean_board_and_keeps_context_observe_only():
     assert payload["tuning_flags"] == []
 
 
+def test_calibration_report_surfaces_consensus_elite_valucast_deep_disagreements():
+    rows = [_row(rank) for rank in range(1, 221)]
+    rows[176]["name"] = "Mike Sirota"
+    rows[176]["context_only"]["source_ranks"] = {
+        "hkb": 31,
+        "pipeline": 12,
+        "pl": 13,
+        "sts": 43,
+    }
+
+    payload = build_prospect_calibration_report(_rank_payload(rows))
+
+    assert (
+        payload["metrics"][
+            "consensus_elite_valucast_deep_context_disagreement_count"
+        ]
+        == 1
+    )
+    disagreement = payload["watchlists"][
+        "consensus_elite_valucast_deep_context_disagreements"
+    ][0]
+    assert disagreement["name"] == "Mike Sirota"
+    assert disagreement["public_consensus_rank_context"] == 22
+    assert disagreement["public_board_count_context"] == 4
+    assert disagreement["public_consensus_rank_gap_context"] == -155
+    assert disagreement["disagreement_direction"] == "public_consensus_higher"
+
+
 def test_calibration_report_flags_broad_top_board_shape_problems():
     rows = []
     for rank in range(1, 61):

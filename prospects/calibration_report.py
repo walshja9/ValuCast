@@ -21,6 +21,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.ahead_of_consensus import FEATURED_MIN_BOARDS
+from prospects.ahead_of_consensus import _divergence_row
 from prospects.rank_v1 import ARTIFACT_PATH as RANK_V1_PATH
 from prospects.rank_v1 import PEDIGREE_SCORE_SOURCE
 
@@ -28,13 +30,14 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 
 REPORT_NAME = "ValuCast Prospect Rank v1 Calibration Report"
-REPORT_VERSION = "0.2.0"
+REPORT_VERSION = "0.2.1"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
 TOP_BANDS = (25, 50, 100, 200)
 TOP_CONTEXT_BAND = 50
 CONTEXT_DISAGREEMENT_MIN_RANK_GAP = 30
+PUBLIC_CONSENSUS_ELITE_MAX_RANK = 50
 
 MAX_TOP25_PITCHER_COUNT = 7
 MAX_TOP50_PITCHER_RATE = 0.30
@@ -335,6 +338,41 @@ def _context_disagreements(rows: list[dict]) -> list[dict]:
     return disagreements
 
 
+def _consensus_elite_valucast_deep_disagreements(rows: list[dict]) -> list[dict]:
+    disagreements = []
+    for row in rows:
+        context = _divergence_row(row)
+        if not context:
+            continue
+        consensus_rank = _clean_int(context.get("consensus_rank"))
+        valucast_rank = _clean_int(context.get("valucast_rank"))
+        board_count = _clean_int(context.get("board_count")) or 0
+        if (
+            consensus_rank is None
+            or valucast_rank is None
+            or board_count < FEATURED_MIN_BOARDS
+            or consensus_rank > PUBLIC_CONSENSUS_ELITE_MAX_RANK
+            or valucast_rank <= TOP_CONTEXT_BAND
+            or valucast_rank - consensus_rank
+            < CONTEXT_DISAGREEMENT_MIN_RANK_GAP
+        ):
+            continue
+        entry = _entry(row)
+        entry["public_consensus_rank_context"] = consensus_rank
+        entry["public_board_count_context"] = board_count
+        entry["public_consensus_rank_gap_context"] = consensus_rank - valucast_rank
+        entry["disagreement_direction"] = "public_consensus_higher"
+        disagreements.append(entry)
+    disagreements.sort(
+        key=lambda row: (
+            int(row.get("public_consensus_rank_gap_context") or 0),
+            _clean_int(row.get("rank")) or 999999,
+            str(row.get("name") or ""),
+        )
+    )
+    return disagreements
+
+
 def _tuning_flags(bands: dict[int, dict]) -> list[dict]:
     flags = []
     top25 = bands[25]
@@ -517,6 +555,7 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
     bucket_flags = _bucket_tuning_flags(rows)
     flags = shape_flags + bucket_flags
     disagreements = _context_disagreements(rows)
+    consensus_elite_deep = _consensus_elite_valucast_deep_disagreements(rows)
     top50 = rows[:50]
     availability_watchlist = [
         _entry(row)
@@ -565,6 +604,8 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "top_bands": list(TOP_BANDS),
             "top_context_band": TOP_CONTEXT_BAND,
             "context_disagreement_min_rank_gap": CONTEXT_DISAGREEMENT_MIN_RANK_GAP,
+            "public_consensus_elite_max_rank": PUBLIC_CONSENSUS_ELITE_MAX_RANK,
+            "public_consensus_min_board_count": FEATURED_MIN_BOARDS,
             "max_top25_pitcher_count": MAX_TOP25_PITCHER_COUNT,
             "max_top50_pitcher_rate": MAX_TOP50_PITCHER_RATE,
             "max_top25_pedigree_count": MAX_TOP25_PEDIGREE_COUNT,
@@ -583,6 +624,9 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "tuning_flag_count": len(flags),
             "bucket_tuning_flag_count": len(bucket_flags),
             "context_disagreement_count_top50": len(disagreements),
+            "consensus_elite_valucast_deep_context_disagreement_count": len(
+                consensus_elite_deep
+            ),
             "availability_watchlist_count_top50": len(availability_watchlist),
             "pedigree_watchlist_count_top50": len(pedigree_watchlist),
             "fallback_watchlist_count_top200": len(fallback_watchlist),
@@ -594,6 +638,9 @@ def build_prospect_calibration_report(rank_payload: dict) -> dict:
             "top50_pedigree_only": pedigree_watchlist[:25],
             "top200_raw_fallback": fallback_watchlist[:50],
             "top50_dd_context_disagreements": disagreements[:25],
+            "consensus_elite_valucast_deep_context_disagreements": (
+                consensus_elite_deep[:25]
+            ),
         },
     }
 

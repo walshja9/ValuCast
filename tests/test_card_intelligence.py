@@ -694,6 +694,71 @@ class TestProspectPercentiles(unittest.TestCase):
 
         self.assertIsNone(prospect_percentiles.value_suppressor_note(row, {"ops": 55}))
 
+    def test_value_suppressor_note_does_not_treat_uncalibrated_bust_risk_as_role(self):
+        row = _row(
+            "uncalibrated_bust_probability",
+            positions=["SS"],
+            level="AA",
+            age=23,
+            prospect_rank=300,
+            dynasty_value=2.0,
+            stat_line={
+                "pa": 220,
+                "avg": 0.310,
+                "obp": 0.410,
+                "slg": 0.530,
+                "ops": 0.940,
+                "iso": 0.220,
+                "k_pct": 16.0,
+                "bb_pct": 15.0,
+            },
+            peak_projection={
+                "peak_role": "everyday_regular",
+                "risk_band": "high",
+                "peak_v2": {"role_probabilities": {"bust_risk": 0.80}},
+            },
+        )
+
+        note = prospect_percentiles.value_suppressor_note(
+            row,
+            {"ops": 95, "obp": 95},
+        )
+
+        self.assertIsNotNone(note)
+        self.assertNotIn("projection caps at a bench/depth role", note)
+
+    def test_value_suppressor_note_uses_qualitative_bench_role_without_probability(self):
+        row = _row(
+            "qualitative_bench_role",
+            positions=["SS"],
+            level="AA",
+            age=23,
+            prospect_rank=300,
+            dynasty_value=2.0,
+            stat_line={
+                "pa": 220,
+                "avg": 0.310,
+                "obp": 0.410,
+                "slg": 0.530,
+                "ops": 0.940,
+                "iso": 0.220,
+                "k_pct": 16.0,
+                "bb_pct": 15.0,
+            },
+            peak_projection={
+                "peak_role": "bench_or_platoon_bat",
+                "risk_band": "medium",
+            },
+        )
+
+        note = prospect_percentiles.value_suppressor_note(
+            row,
+            {"ops": 95, "obp": 95},
+        )
+
+        self.assertIsNotNone(note)
+        self.assertIn("projection caps at a bench/depth role", note)
+
     def test_value_suppressor_reason_priority(self):
         row = _row(
             "priority_gap",
