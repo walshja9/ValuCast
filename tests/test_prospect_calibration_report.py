@@ -166,3 +166,36 @@ def test_run_and_validate_calibration_report(tmp_path):
     assert payload is not None
     assert payload["artifact"] == "valucast_prospect_calibration_report"
     assert problems == []
+
+
+def test_consensus_elite_valucast_deep_watchlist_sees_deep_rows():
+    # 2026-07-29 Sirota review, owner item 3: the top-50-scoped watchlists
+    # structurally cannot see a player the public boards rank elite while
+    # ValuCast ranks deep. This watchlist scans the whole board. Display-only.
+    board = [_row(rank=rank) for rank in range(1, 61)]
+    deep = _row(rank=180)
+    deep["name"] = "Consensus Elite Deep"
+    deep["context_only"] = {
+        "source_ranks": {"pipeline": 12, "pl": 13, "hkb": 31, "sts": 43}
+    }
+    board.append(deep)
+    two_board = _row(rank=400)
+    two_board["name"] = "Two Board Artifact"
+    two_board["context_only"] = {"source_ranks": {"pipeline": 20, "hkb": 25}}
+    board.append(two_board)
+
+    report = build_prospect_calibration_report({"board": board})
+
+    watchlist = report["watchlists"]["consensus_elite_valucast_deep"]
+    names = [row["name"] for row in watchlist]
+    assert "Consensus Elite Deep" in names
+    # Featured-claim bar: a 2-board consensus does not qualify.
+    assert "Two Board Artifact" not in names
+    entry = next(row for row in watchlist if row["name"] == "Consensus Elite Deep")
+    assert entry["valucast_rank"] == 180
+    assert entry["consensus_gap"] >= 30
+    # ToS rule: never republish per-board ranks — only median, count, min/max.
+    assert "boards" not in entry
+    assert entry["board_count"] == 4
+    assert entry["board_rank_min"] == 12 and entry["board_rank_max"] == 43
+    assert report["metrics"]["consensus_elite_disagreement_count"] >= 1
