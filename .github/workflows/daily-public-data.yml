@@ -74,9 +74,12 @@ jobs:
     # caused a same-day pileup: every scheduled trigger ran ~1.5-2hrs, so multiple
     # cron slots queued up behind each other and collided (see commit history for
     # the day this was 180/970 -- do not go back to those numbers without a real
-    # reason). 90 min comfortably covers a 300-generation scouting run based on
-    # observed timing (a 970-attempt run completed in as little as 42 min once).
-    timeout-minutes: 90
+    # reason). 90 min was set when the LLM step ran ~25-30 min; by 2026-07-29 the
+    # daily 300-generation scouting pass alone took ~53 min and the full build
+    # 86+ min, so the 12:13 run was cancelled DURING validate, ~2 min short
+    # (run 30450687341). 120 keeps real headroom over the observed ~85-min
+    # baseline while staying far from the 180-min pileup regime above.
+    timeout-minutes: 120
     # Hoisted to job level so the deploy step's `if` guard can actually read it.
     # A step-level env is NOT visible to that same step's `if`, which silently
     # skipped the old deploy step and left the live app a day behind.
