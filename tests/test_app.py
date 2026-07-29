@@ -3263,11 +3263,14 @@ class TestAttributionPanel(unittest.TestCase):
         app.config["TESTING"] = True
 
     def _first_prospect_with_signal(self):
+        # outcome_mix is intentionally empty since the 2026-07-29 probability
+        # disposition stripped dynasty_signal from the serving plane; any
+        # prospect row exercises the attribution panel.
         from app import dd_store
         if not dd_store.is_available:
             return None
         for row in dd_store.get_all():
-            if row.is_prospect and row.outcome_mix:
+            if row.is_prospect:
                 return row
         return None
 
@@ -3296,7 +3299,7 @@ class TestAttributionPanel(unittest.TestCase):
             self.skipTest("DD feed not available")
         checked = 0
         for row in dd_store.get_all():
-            if not (row.is_prospect and row.outcome_mix):
+            if not row.is_prospect:
                 continue
             body = self.client.get(
                 "/player/" + row.id + "?mode=prospects", headers={"HX-Request": "true"}
