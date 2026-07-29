@@ -23,13 +23,41 @@ harmful) are recorded in the review doc and those axes are NOT registered.
 
 ## Frozen challenger definitions (no further variant search permitted)
 
-- **C1 — development_density:** hitters: `pa_per_game` and
-  `games_played / 132.0` appended to the outcome feature vector; pitchers:
-  `ip_per_game`. Exactly the exploratory definition; no re-tuning.
-- **C2 — position_value_x:** the exploratory `pos_value` scalar plus its
-  `×youth` and `×level` interactions, exactly as swept. Hitters only.
+Exact computations, reproduced verbatim from the exploratory runner and
+frozen here so no implementation choice remains open after results are
+seen. Inputs are the committed historical-row fields of
+`data/prospects/prospect_model_inputs.json`; `_num(x)` means float(x) if
+finite else None; every missing-value rule below is part of the frozen
+definition. Features are appended to the model's rich vector (baselines
+untouched), in exactly the listed order.
 
-Any deviation from these definitions voids this registration and requires
+- **C1 — development_density** (append after the current last feature):
+  - hitters, two features:
+    `pa_per_game = plate_appearances / games_played` if
+    `games_played > 0` else `0.0`, with `plate_appearances`/`games_played`
+    read as `_num(...) or 0.0`; and
+    `season_share = min(1.0, games_played / 132.0)`.
+  - pitchers, one feature:
+    `ip_per_game = innings_pitched / games_played` if `games_played > 0`
+    else `0.0`, same missing rule.
+- **C2 — position_value_x** (hitters only; three features):
+  - Position-value table (single committed `position` string, uppercased;
+    the committed field carries exactly one primary position — there is no
+    multi-position input; any value not in the table, and missing/empty,
+    maps to `0.5`):
+    `C 1.0, SS 0.95, CF 0.80, 2B 0.65, 3B 0.55, RF 0.40, LF 0.30, 1B 0.15,
+    DH 0.0`.
+  - `p = table[position]`;
+    `level = LEVEL_CODE.get(level_string_upper, 0.0)` (the model's own
+    committed level coding);
+    `age = _num(age) or 0.0`;
+    `youth = EXPECTED_AGE.get(level_string_upper, age) - age` (the model's
+    own committed expected-age table; unknown level therefore gives
+    `youth = 0.0`).
+  - Emit `[p, p * youth, p * level]` in that order.
+
+Any deviation from these definitions — table values, missing rules,
+ordering, or interaction forms — voids this registration and requires
 re-registration.
 
 ## Confirmation protocol and multiplicity controls

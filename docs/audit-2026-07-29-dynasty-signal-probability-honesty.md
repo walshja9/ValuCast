@@ -6,15 +6,23 @@
 immediate honesty problem"). Read-only measurement against committed
 artifacts at `931c916`; no fix is implemented in this document's commit.
 
-## Finding
+## Finding (reframed per the 2026-07-29 senior review on PR #32)
 
-**The displayed `dynasty_signal` probabilities are not consistent with the
-repo's own out-of-sample evidence anywhere the board's attention
-concentrates.** They are compressed toward the base rate with a hard
-board-wide ceiling of 0.56, understating realized role-or-better rates by
-roughly 2× across v0.6 scores 0.15–0.40 and up to ~2.7× above 0.40. Sirota
-(displayed 27.7% vs OOF-implied 54.7% [43.4, 65.4] for his bin) is a
-representative instance, not an outlier.
+**The two probability heads are mutually inconsistent, and only one of them
+has committed value-level reliability evidence — the one NOT being
+published.** The displayed `dynasty_signal` values are compressed toward
+the base rate with a hard board-wide ceiling of 0.56; when the board is
+binned by the v0.6 outcome score, the v0.6 head's committed OOF evidence
+implies realized role-or-better rates roughly 2× the displayed figures
+across scores 0.15–0.40 and up to ~2.7× above 0.40. Strictly, this
+measures **cross-head inconsistency**: the displayed universal-head values
+and the v0.6 head cannot both be right, and the repo's only
+value-vs-frequency reliability evidence (v0.6 OOF, n=2,901, ECE
+0.017/0.021) sides against the displayed numbers. **Direct miscalibration
+of the universal head is not established** — no universal-head OOF
+reliability data exists in the repo to test it, which is itself disposition
+option 3. Sirota (displayed 27.7% vs 54.7% [43.4, 65.4] OOF-implied for his
+v0.6 bin) is a representative instance.
 
 ## Provenance (the chain that produces the number)
 
@@ -26,15 +34,30 @@ representative instance, not an outlier.
 `rank_v1.py:2324` verbatim copy onto every board row →
 `build_public_dynasty_snapshot.py:689` verbatim into the public snapshot.
 
-**The served values are gate-failure fallbacks.** The universal model's
-`established_probability` gate is `fallback` in BOTH roles (all 2,924
-profiles served from a 25-neighbor empirical vote at ~0.04 resolution),
-and `star_probability` likewise failed both roles — the same reason
-`rank_v1.py:997-1008` already excludes star from the live score. The repo's
-own comment says it plainly: "UNCALIBRATED universal-model outcome
-frequencies… observe-only" (`peak_projection.py:531`).
+**The served values are a hybrid of gate-failed fallbacks and active ridge
+heads.** The universal model's `established_probability` gate is `fallback`
+in BOTH roles (a 25-neighbor empirical vote at ~0.04 resolution), and
+`star_probability` likewise failed both roles — the same reason
+`rank_v1.py:997-1008` already excludes star from the live score. However,
+`_coherent_outcome_distribution` (`prospects/universal.py`) clamps the
+served established value up to the ACTIVE `regular_probability` /
+`rotation_probability` ridge heads and writes it back: against the cited
+`931c916` layer, **1,305 of 2,924 profiles (967 hitters, 338 pitchers)
+serve a value off the 0.04 neighbor grid** — i.e. the ridge side of the
+max — including Sirota's own 0.2768 (his ridge `regular_probability`). So
+the published number is max(gate-failed vote, active-but-different-target
+ridge head); neither branch has value-level reliability evidence. The
+repo's own comment on the derived peak fields still applies:
+"UNCALIBRATED universal-model outcome frequencies… observe-only"
+(`peak_projection.py:531`).
 
-## Board-wide divergence (displayed vs OOF-realized, by v0.6 score bin)
+## Board-wide cross-head divergence (displayed vs v0.6-OOF-realized, by v0.6 score bin)
+
+Read this table as a two-head consistency check, not a direct reliability
+curve for the universal head: rows are binned by the v0.6 score, so the
+universal head could in principle differ per-bin if it carried independent
+information — though no independent signal can explain a 0.56 ceiling
+against 87–93% realized top-bin rates.
 
 Hitters (board n=1,363; OOF n=1,379, cohorts 2016–2019):
 

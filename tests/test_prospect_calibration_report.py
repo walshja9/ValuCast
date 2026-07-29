@@ -193,7 +193,9 @@ def test_consensus_elite_valucast_deep_watchlist_sees_deep_rows():
     assert "Two Board Artifact" not in names
     entry = next(row for row in watchlist if row["name"] == "Consensus Elite Deep")
     assert entry["valucast_rank"] == 180
-    assert entry["consensus_gap"] >= 30
+    # Established sign contract: divergence = consensus - valucast (negative
+    # when ValuCast is deeper), matching AOTC/consensus-gap semantics.
+    assert entry["divergence"] <= -30
     # ToS rule: never republish per-board ranks — only median, count, min/max.
     assert "boards" not in entry
     assert entry["board_count"] == 4

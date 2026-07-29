@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_calibration_report.json"
 
 REPORT_NAME = "ValuCast Prospect Rank v1 Calibration Report"
-REPORT_VERSION = "0.2.0"
+REPORT_VERSION = "0.3.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -372,8 +372,10 @@ def _consensus_elite_disagreements(rank_payload: dict) -> list[dict]:
             continue
         if consensus > CONSENSUS_ELITE_MAX_RANK:
             continue
-        gap = valucast_rank - consensus
-        if gap < CONTEXT_DISAGREEMENT_MIN_RANK_GAP:
+        # Established AOTC/consensus-gap sign contract: divergence =
+        # consensus_rank - valucast_rank (negative when ValuCast is deeper).
+        divergence = consensus - valucast_rank
+        if divergence > -CONTEXT_DISAGREEMENT_MIN_RANK_GAP:
             continue
         board_ranks = [
             r for r in (d.get("boards") or {}).values()
@@ -391,13 +393,13 @@ def _consensus_elite_disagreements(rank_payload: dict) -> list[dict]:
                 "board_count": d.get("board_count"),
                 "board_rank_min": min(board_ranks) if board_ranks else None,
                 "board_rank_max": max(board_ranks) if board_ranks else None,
-                "consensus_gap": gap,
+                "divergence": divergence,
                 "usage": "calibration_watchlist_context_not_live_rank_or_value",
             }
         )
     out.sort(
         key=lambda row: (
-            -int(row.get("consensus_gap") or 0),
+            int(row.get("divergence") or 0),
             row.get("consensus_rank") or 999999,
             str(row.get("name") or ""),
         )
