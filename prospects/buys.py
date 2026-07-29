@@ -33,7 +33,12 @@ SIGNAL_VERSION = "1.0.0"
 # label-leak fixes (retrains the served shadow model), thin-sample cliff
 # taper, board-pool renorm parity, consensus identity joins, honest peak
 # counters. ZERO scoring levers (C1 cut on evidence, C2/C3 cut on power).
-PROSPECT_BUYS_EPOCH = "2026-07-14-gate-fix-calibration-batch"
+# 2026-07-30 epoch: bucket-calibration 0.3.2 split-remediation re-baseline
+# (registered study + owner decision, docs/audit-2026-07-29-bucket-calibration-
+# 0-3-1-evaluation.md): ~320 thin-sample players return to 0.3.0 discounting
+# while the transition-continuity floor stays. Without the bump the re-score
+# would print as genuine mover/buy momentum.
+PROSPECT_BUYS_EPOCH = "2026-07-30-bucket-calibration-0-3-2"
 # Buys momentum must not read history across a scoring epoch: movers already
 # floor every window at the epoch date (movers.py), but momentum_score's only
 # guard is the 6-pt step filter, so a fix-day re-baseline UNDER 6 pts printed

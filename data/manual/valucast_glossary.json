@@ -4,6 +4,11 @@
   "principle": "Missing data stays missing; estimates are labeled.",
   "changelog": [
     {
+      "date": "2026-07-30",
+      "title": "Prospect confidence re-baseline",
+      "detail": "Corrected how thin minor-league samples are discounted, reversing an unintended broad re-score while retaining protection against abrupt transition cliffs. Ranking changes on this date reflect the re-baseline, not new player performance."
+    },
+    {
       "date": "2026-07-10",
       "title": "Plate-discipline layer",
       "detail": "Added measured Swing%, Whiff%, and SwStr%, with estimated zone metrics labeled separately."

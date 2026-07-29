@@ -228,7 +228,9 @@ def test_movers_empty_state_distinguishes_epoch_drought_from_genuine_sparse(monk
     }
     monkeypatch.setattr(app_module, "_load_movers_payload", lambda: drought)
     html = client.get("/movers").data.decode("utf-8")
-    assert "Score history restarted July 14" in html
+    assert (
+        f"Score history restarted {_EPOCH.strftime('%B')} {_EPOCH.day}" in html
+    )
     assert "history refills" in html
     # The countdown quotes the served window and a build estimate (epoch == today
     # here, so the 14d default view needs ~14 more builds).
