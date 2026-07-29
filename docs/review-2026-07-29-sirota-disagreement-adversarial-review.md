@@ -99,7 +99,7 @@ Both positive deltas carry a best-of-ten multiple-comparison caveat.
 1. This evidence report committed (this document).
 2. **Immediate honesty item:** audit the displayed 26.8% role probability vs
    the outcome head's ~54.7% OOF implication →
-   `docs/audit-2026-07-30-dynasty-signal-probability-honesty.md`.
+   `docs/audit-2026-07-29-dynasty-signal-probability-honesty.md`.
 3. Expand the disagreement watchlist to consensus-elite/ValuCast-deep
    players. Display-only; no scoring change.
 4. **Freeze preserved; no Sirota adjustment.** (Standing non-action.)
