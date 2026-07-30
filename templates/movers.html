@@ -50,7 +50,7 @@
     {% set _wq = ('?window=' ~ movers_window) if movers_window else '' %}
     <div class="buys-actions">
         <a class="export-btn" href="/movers/share-card{{ _wq }}" target="_blank" rel="noopener">Preview graphic</a>
-        <a class="export-btn secondary-action" href="/movers/share-card.png{{ _wq }}" download="valucast-prospect-movers.png">Download PNG</a>
+        <a class="export-btn secondary-action" data-metric="share_card" href="/movers/share-card.png{{ _wq }}" download="valucast-prospect-movers.png">Download PNG</a>
     </div>
 </section>
 

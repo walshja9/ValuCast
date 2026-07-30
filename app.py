@@ -17,7 +17,8 @@ from functools import lru_cache
 from html import escape
 from pathlib import Path
 from types import SimpleNamespace
-from urllib.parse import quote, urlencode
+import secrets
+from urllib.parse import quote, urlencode, urlparse
 
 from flask import Flask, abort, render_template, request, make_response, jsonify, redirect
 
@@ -53,6 +54,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.public_snapshot_store import PublicSnapshotStore
+from web.site_metrics import SiteMetricsStore
 from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import parse_league_settings
 from web.league_import import import_league, ImportError_
@@ -324,6 +326,132 @@ def _security_headers(response):
     response.headers.setdefault("Content-Security-Policy", _CSP_POLICY)
     response = _maybe_cache_png(response)
     return _maybe_gzip(response)
+
+
+# --- First-party site metrics (owner-scoped, 2026-07-30) ---------------------
+# Narrow by design: pageviews by route pattern, anonymous unique/returning
+# visitors (random first-party vc_vid cookie), referrer domain + UTM, X-visit
+# classification, and three named click events. No raw IP, no stored user
+# agent, no fingerprinting; the CSP is untouched (same-origin script + beacon).
+# Disabled entirely (no cookie, no writes) unless VALUCAST_ANALYTICS_DB points
+# at the persistent disk — without durable storage "returning visitor" would
+# be knowingly false after every deploy.
+site_metrics = SiteMetricsStore(os.environ.get("VALUCAST_ANALYTICS_DB"))
+
+_METRICS_COOKIE = "vc_vid"
+_METRICS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
+_METRICS_CLICK_ALLOWED = frozenset({"share_card", "trade_analyzer", "outbound"})
+_METRICS_VID_RE = re.compile(r"^[0-9a-f]{32}$")
+# UA substrings that mark automated traffic; the UA is inspected, never stored.
+_METRICS_BOT_UA = (
+    "bot", "crawl", "spider", "preview", "headless", "python-requests", "curl",
+)
+_X_REFERRER_DOMAINS = frozenset({
+    "t.co", "x.com", "www.x.com", "twitter.com", "www.twitter.com",
+    "mobile.twitter.com",
+})
+_X_UTM_SOURCES = frozenset({"x", "twitter", "x.com", "twitter.com"})
+
+
+def _metrics_referrer_domain():
+    """Cross-site referrer domain only — same-site navigation is not a
+    referral, and anything beyond the domain is more than we track."""
+    ref = request.referrer
+    if not ref:
+        return None
+    domain = urlparse(ref).netloc.lower().split(":")[0]
+    if not domain or domain == request.host.split(":")[0].lower():
+        return None
+    return domain
+
+
+@app.after_request
+def _record_site_metrics(response):
+    try:
+        if not site_metrics.enabled:
+            return response
+        if request.method != "GET" or response.status_code != 200:
+            return response
+        if response.mimetype != "text/html":
+            return response
+        rule = request.url_rule
+        if (
+            rule is None
+            or request.endpoint == "static"
+            or rule.rule.startswith("/metrics")
+            or rule.rule.startswith("/health")
+        ):
+            return response
+        ua = (request.user_agent.string or "").lower()
+        if any(token in ua for token in _METRICS_BOT_UA):
+            return response
+        vid = request.cookies.get(_METRICS_COOKIE)
+        is_new = not (vid and _METRICS_VID_RE.match(vid))
+        if is_new:
+            vid = secrets.token_hex(16)
+            response.set_cookie(
+                _METRICS_COOKIE, vid,
+                max_age=_METRICS_COOKIE_MAX_AGE,
+                secure=request.is_secure,
+                httponly=True,
+                samesite="Lax",
+            )
+        referrer_domain = _metrics_referrer_domain()
+        utm_source = request.args.get("utm_source") or None
+        from_x = (
+            referrer_domain in _X_REFERRER_DOMAINS
+            or (utm_source or "").lower() in _X_UTM_SOURCES
+        )
+        site_metrics.record_pageview(
+            route=rule.rule,
+            vid=vid,
+            is_new_visitor=is_new,
+            referrer_domain=referrer_domain,
+            utm_source=utm_source,
+            utm_medium=request.args.get("utm_medium") or None,
+            utm_campaign=request.args.get("utm_campaign") or None,
+            from_x=from_x,
+        )
+    except Exception:
+        pass   # metrics must never break a page
+    return response
+
+
+@app.route("/metrics/event", methods=["POST"])
+def metrics_event():
+    """Beacon target for the three named click events. Always 204 — the
+    endpoint is not an oracle for probing the allowlist, and a metrics
+    failure must never surface client-side."""
+    try:
+        if site_metrics.enabled:
+            payload = request.get_json(silent=True) or {}
+            metric = payload.get("metric")
+            if metric in _METRICS_CLICK_ALLOWED:
+                target = payload.get("target")
+                target_domain = None
+                if isinstance(target, str) and target:
+                    target_domain = (
+                        target.lower().split("/")[0].split(":")[0] or None
+                    )
+                vid = request.cookies.get(_METRICS_COOKIE)
+                if not (vid and _METRICS_VID_RE.match(vid)):
+                    vid = None
+                site_metrics.record_click(
+                    metric=metric, target_domain=target_domain, vid=vid,
+                )
+    except Exception:
+        pass
+    return "", 204
+
+
+@app.route("/metrics/summary")
+def metrics_summary():
+    """Public, aggregates-only summary — never event rows or visitor ids."""
+    days = request.args.get("days", type=int) or 30
+    days = min(max(days, 1), 90)
+    response = jsonify(site_metrics.summary(days=days))
+    response.headers["Cache-Control"] = "public, max-age=300"
+    return response
 
 
 @app.context_processor

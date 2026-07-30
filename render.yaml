@@ -14,9 +14,20 @@ services:
     # stays light, and recycle the worker periodically to bound memory creep.
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 --max-requests 300 --max-requests-jitter 60
     healthCheckPath: /health/ready
+    # Persistent disk for the first-party metrics SQLite store: without durable
+    # storage, "returning visitor" is knowingly false after every deploy.
+    # NOTE: attaching a disk disables zero-downtime deploys (Render restarts
+    # the instance), and if the live service was not created from this
+    # Blueprint the disk must be added once in the Render dashboard.
+    disk:
+      name: valucast-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
+      - key: VALUCAST_ANALYTICS_DB
+        value: /var/data/valucast_analytics.sqlite3
       - key: VALUCAST_USE_PUBLIC_SNAPSHOT
         value: "1"
       - key: SCOREBOARD_HOLD
