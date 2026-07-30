@@ -229,6 +229,33 @@ def test_foul_tip_counts_as_whiff():
     assert r["csw_pct"] == 20.0
 
 
+def test_bunt_foul_tip_counts_as_whiff():
+    # The bunt member of the foul-tip family follows the same Savant rule as
+    # foul_tip: swing + whiff (owner decision on audit F1's related P2).
+    pitches = []
+    pitches += [_pitch(description="bunt_foul_tip") for _ in range(10)]
+    pitches += [_pitch(description="foul") for _ in range(10)]
+    pitches += [_pitch(description="ball") for _ in range(180)]
+    oc = _accum_outcome(pitches)
+    r = b._pitcher_rates(oc)
+    # swings = 10 bunt tips + 10 fouls = 20; whiffs = 10 -> 50.0.
+    assert r["whiff_pct"] == 50.0
+
+
+def test_foul_pitchout_counts_as_swing_contact_not_whiff():
+    # A foul off a pitchout is ordinary foul contact: in the swing set, out of
+    # the whiff set (only swinging_pitchout whiffs).
+    pitches = []
+    pitches += [_pitch(description="foul_pitchout") for _ in range(10)]
+    pitches += [_pitch(description="swinging_strike") for _ in range(10)]
+    pitches += [_pitch(description="ball") for _ in range(180)]
+    oc = _accum_outcome(pitches)
+    r = b._pitcher_rates(oc)
+    # swings = 10 foul pitchouts + 10 swinging strikes = 20; whiffs = 10
+    # (100.0 if foul_pitchout were left out of the swing set).
+    assert r["whiff_pct"] == 50.0
+
+
 # --- gates + scoping --------------------------------------------------------
 def test_pitcher_below_gate_omitted():
     pitches = [_pitch(pitcher="P1", description="ball") for _ in range(b.MIN_PITCHER_PITCHES - 1)]

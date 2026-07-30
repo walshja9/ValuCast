@@ -456,7 +456,13 @@
             strike, ball in play), so they are deterministic and reproducible. We
             validated them against a public reference to the decimal &mdash; for one
             Double-A hitter over 41 games our Swing% and SwStr% matched the outside
-            source exactly. No estimation is involved.</li>
+            source exactly. No estimation is involved. One convention worth stating:
+            a caught foul tip counts as a whiff (the Savant rule &mdash; by rule a foul
+            tip is a swinging strike), and the same rule applies in the AAA Statcast
+            section below, so &ldquo;Whiff%&rdquo; means the same thing everywhere on
+            the site. We unified this on 2026-07-30; Whiff%, SwStr%, and Z-Contact%
+            display values shifted slightly on that date, with no effect on any
+            value, rank, or projection.</li>
             <li><strong>Estimated: Chase%, Z-Swing%, Z-Contact%, Zone%.</strong> These
             depend on <em>where</em> each pitch crossed the zone. Modern tracked
             coordinates are common at Triple-A and rare below it &mdash; but coverage
@@ -469,6 +475,19 @@
             samples carry the tag and some lower-level samples measured on real
             coordinates do not. The flag follows the data, not the level.</li>
         </ul>
+        <p><strong>What the calibration's accuracy number does &mdash; and does not
+        &mdash; cover.</strong> The pixel calibration's held-out agreement can only be
+        <em>measured</em> where a pitch carries both coordinate systems at once,
+        which in practice means Triple-A. At the pixel-only levels the calibration
+        actually serves (Double-A and below) there is no tracked ground truth to
+        score it against, so the quoted agreement is an extrapolation there, not a
+        measurement &mdash; and agreement is weakest exactly where it matters most,
+        on borderline pitches near the zone edge. The build now records both the
+        measurement scope and edge-banded agreement (within 3 inches and 1 inch of
+        the zone boundary) in the artifact's calibration metadata, so that claim can
+        be checked rather than taken on faith. This is one more reason zone metrics
+        carry the <span class="pd-est-inline">est.</span> tag: treat them as
+        directional context, not measured fact.</p>
         <p><strong>Why there is no exit velocity or contact-quality data.</strong>
         Public minor-league play-by-play carries no batted-ball tracking, so ValuCast
         does not show &mdash; and will not estimate &mdash; exit velocity, launch
