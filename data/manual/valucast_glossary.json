@@ -5,6 +5,11 @@
   "changelog": [
     {
       "date": "2026-07-30",
+      "title": "Foul-tip convention unified (display only)",
+      "detail": "A caught foul tip now counts as a whiff in the play-by-play plate-discipline layer, matching the Savant convention the AAA Statcast layer already used. Whiff%, SwStr%, and Z-Contact% display values shift slightly from this date; no value, rank, or projection input changed."
+    },
+    {
+      "date": "2026-07-30",
       "title": "Prospect confidence re-baseline",
       "detail": "Corrected how thin minor-league samples are discounted, reversing an unintended broad re-score while retaining protection against abrupt transition cliffs. Ranking changes on this date reflect the re-baseline, not new player performance."
     },
@@ -328,7 +333,7 @@
     {
       "id": "whiff-percent",
       "term": "Whiff%",
-      "definition": "The share of swings that miss.",
+      "definition": "The share of swings that miss. A caught foul tip counts as a miss (the Savant convention, used in both the play-by-play and AAA Statcast layers); any other foul counts as contact.",
       "formula": "whiffs ÷ swings",
       "example": {
         "text": "One committed High-A sample recorded a 12.7% Whiff% across 728 tracked pitches.",
@@ -341,7 +346,7 @@
     {
       "id": "swstr-percent",
       "term": "SwStr%",
-      "definition": "The share of all pitches that produce a swinging strike.",
+      "definition": "The share of all pitches that produce a swinging strike. A caught foul tip counts as a swinging strike (the Savant convention, used in both the play-by-play and AAA Statcast layers).",
       "formula": "whiffs ÷ pitches",
       "origin": "adopted from public plate-discipline statistics",
       "see_also": ["swing-percent", "whiff-percent"]

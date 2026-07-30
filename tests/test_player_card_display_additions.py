@@ -203,3 +203,49 @@ def test_real_card_renders_both_features_via_test_client(monkeypatch):
     html = resp.get_data(as_text=True)
     assert "Ahead of the field for 17 days (since 2026-06-29)" in html
     assert "#12 · Young runway" in html
+
+
+# ---------------------------------------------------------------------------
+# AAA-Statcast card: honest sample labels + visible as_of (F4 / P2-6,
+# audit 2026-07-30). ev_n is absent on artifacts built before 2026-07-30, so
+# the template must fail soft to the n_bip-only wording until a fresh rebuild.
+# ---------------------------------------------------------------------------
+
+def _contact_quality(**overrides):
+    section = {
+        "as_of": "2026-07-14",
+        "n_pitches": 700,
+        "n_bip": 120,
+        "ev_n": None,  # legacy default: pre-fix artifacts lack ev_n
+        "rows": [{"key": "avg_ev", "label": "Avg Exit Velo", "value": "90.4 mph"}],
+    }
+    section.update(overrides)
+    return section
+
+
+def test_aaa_sample_line_legacy_artifact_without_ev_n():
+    html = _render_detail(_prospect_row(), aaa_contact_quality=_contact_quality())
+    # n_bip counts ALL balls in play — never labeled "tracked".
+    assert "120 balls in play" in html
+    assert "tracked balls in play" not in html
+    assert "with tracked EV" not in html
+
+
+def test_aaa_sample_line_shows_ev_sample_when_present():
+    html = _render_detail(
+        _prospect_row(), aaa_contact_quality=_contact_quality(ev_n=110)
+    )
+    assert "120 balls in play" in html
+    assert "110 with tracked EV" in html
+
+
+def test_aaa_card_shows_artifact_as_of():
+    html = _render_detail(_prospect_row(), aaa_contact_quality=_contact_quality())
+    assert "through 2026-07-14" in html
+
+
+def test_aaa_card_omits_as_of_when_absent():
+    html = _render_detail(
+        _prospect_row(), aaa_contact_quality=_contact_quality(as_of=None)
+    )
+    assert "through" not in html.split("AAA Statcast")[1].split("</p>")[0]

@@ -1997,13 +1997,22 @@ class TestTradeAnalyzer(unittest.TestCase):
         replacement = ctx["league_context"]["replacement_value"]
 
         self.assertTrue(ctx["league_context"]["preset_applied"])
-        self.assertEqual(
+        # The app subtracts the UNROUNDED replacement (app.py `value_of`) but
+        # exposes replacement_value rounded to 1dp, and rounds each piece
+        # value to 1dp as well — so recomputing from the exposed replacement
+        # can differ by up to 0.05 (replacement rounding) + 0.05 (piece
+        # rounding) = 0.10 on rounding-boundary days (first tripped by the
+        # 2026-07-30 refresh data). Assert within that combined
+        # display-rounding bound instead of exact equality.
+        self.assertAlmostEqual(
             ctx["give_pieces"][0]["value"],
-            round(max(0.0, give.value_for("7x7_ops") - replacement), 1),
+            max(0.0, give.value_for("7x7_ops") - replacement),
+            delta=0.101,
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             ctx["get_pieces"][0]["value"],
-            round(max(0.0, get.value_for("7x7_ops") - replacement), 1),
+            max(0.0, get.value_for("7x7_ops") - replacement),
+            delta=0.101,
         )
 
     def test_trade_mixed_preset_falls_back_for_every_piece(self):
@@ -2874,7 +2883,9 @@ class TestPlateDisciplineCardRows(unittest.TestCase):
         return {
             "level": level, "pitches": 811, "estimated": True,
             "metrics": [
-                {"key": "swing_pct", "label": "Swing%", "display": "37.4%", "pct": None, "estimated": False},
+                # Swing% mirrors the store's contextual shape: a cohort POSITION
+                # (positional=True), not a quality grade.
+                {"key": "swing_pct", "label": "Swing%", "display": "37.4%", "pct": 55, "positional": True, "estimated": False},
                 {"key": "whiff_pct", "label": "Whiff%", "display": "24.8%", "pct": 60, "estimated": False},
                 {"key": "swstr_pct", "label": "SwStr%", "display": "9.2%", "pct": 83, "estimated": False},
                 {"key": "chase_pct", "label": "Chase%", "display": "15.8%", "pct": 99, "estimated": True},
@@ -2898,10 +2909,46 @@ class TestPlateDisciplineCardRows(unittest.TestCase):
         self.assertTrue(row["any_est"])
 
     def test_pct_none_passes_through_for_contextual_metric(self):
-        rows = app_module._prospect_discipline_card_rows([self._group()])
+        group = self._group()
+        group["metrics"][0] = {  # a Swing% bucket the reader gave no pct at all
+            "key": "swing_pct", "label": "Swing%", "display": "37.4%",
+            "pct": None, "estimated": False,
+        }
+        rows = app_module._prospect_discipline_card_rows([group])
         by_key = {m["key"]: m for m in rows[0]["metrics"]}
         self.assertIsNone(by_key["swing_pct"]["pct"])   # renderer draws no chip
         self.assertEqual(by_key["swstr_pct"]["pct"], 83)
+
+    def test_positional_flag_carries_through_to_png_rows(self):
+        # Audit F2: the store marks contextual metrics positional (a cohort
+        # position, not a grade) and the web card renders them neutral. The PNG
+        # rows must carry that flag so the renderer can refuse to grade them too.
+        rows = app_module._prospect_discipline_card_rows([self._group()])
+        by_key = {m["key"]: m for m in rows[0]["metrics"]}
+        self.assertTrue(by_key["swing_pct"]["positional"])
+        self.assertFalse(by_key["whiff_pct"]["positional"])
+        self.assertFalse(by_key["chase_pct"]["positional"])
+
+    def test_positional_chip_renders_neutral_not_graded(self):
+        # The chip-color rule the PNG renderer uses: positional percentiles get
+        # the neutral color regardless of magnitude; graded ones tier by pct.
+        elite, mid, low, neutral = "E", "M", "L", "N"
+        self.assertEqual(
+            app_module._discipline_chip_color(99, True, elite, mid, low, neutral),
+            neutral,
+        )
+        self.assertEqual(
+            app_module._discipline_chip_color(99, False, elite, mid, low, neutral),
+            elite,
+        )
+        self.assertEqual(
+            app_module._discipline_chip_color(50, False, elite, mid, low, neutral),
+            mid,
+        )
+        self.assertEqual(
+            app_module._discipline_chip_color(10, False, elite, mid, low, neutral),
+            low,
+        )
 
     def test_max_two_levels(self):
         rows = app_module._prospect_discipline_card_rows(

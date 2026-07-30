@@ -16,10 +16,13 @@ EXACT vs ESTIMATED split:
 
 The counting DEFINITIONS are the contract (they matched ProspectSavant on 7/10):
   swing = ball in play OR swinging/foul (+ bunt specials); whiff = swinging strike
-  OR missed bunt. Changing them re-baselines every number — the fixture test is the
-  regression lock.
+  OR missed bunt OR caught foul tip (Savant convention, unified with the AAA
+  Statcast layer 2026-07-30 — a documented display-only re-baseline). Changing
+  them re-baselines every number — the fixture test is the regression lock.
 """
 from __future__ import annotations
+
+import math
 
 # Plate half-width in feet (rulebook zone ~17in plate + ball radius); used only when
 # REAL tracked coords (pX/pZ) exist. Pixel coords go through PixelCalibration instead.
@@ -54,11 +57,18 @@ def _is_swing(desc: str, is_in_play: bool) -> bool:
 
 def _is_whiff(desc: str) -> bool:
     """A whiff = swing that missed: "swinging strike" (incl. "...blocked"), a
-    swinging pitchout, or a missed bunt. NOT a foul (a foul is contact)."""
+    swinging pitchout, a missed bunt, or a caught foul tip (incl. the bunt
+    variant — the substring covers the family). NOT an ordinary foul (contact).
+
+    The foul-tip rule is the Savant convention (a foul tip is by rule a
+    swinging strike), adopted 2026-07-30 so this layer and the AAA Statcast
+    layer put the same events behind the one "Whiff%" label. Display-only
+    re-baseline: Whiff%/SwStr%/Z-Contact% shift slightly at that date."""
     return (
         "swinging strike" in desc
         or "swinging pitchout" in desc
         or "missed bunt" in desc
+        or "foul tip" in desc
     )
 
 
@@ -336,3 +346,60 @@ def calibration_agreement(pairs: list[tuple],
         if real == est:
             agree += 1
     return round(100.0 * agree / total, 1) if total else None
+
+
+def _edge_distance_in(px: float, pz: float, top: float, bottom: float) -> float:
+    """Distance (inches) from the REAL pitch location to the strike-zone
+    RECTANGLE's boundary — small values are the borderline calls where a
+    calibration's overall agreement number can hide its worst behavior.
+
+    Inside the zone this is the distance to the nearest edge; outside it is
+    the Euclidean distance to the nearest point of the rectangle (diagonal
+    past a corner). Never the distance to a boundary LINE's infinite
+    extension — a pitch far outside can align with the top line's height
+    while being nowhere near the zone."""
+    dx = abs(px) - _ZONE_HALF_WIDTH_FT
+    dz = max(bottom - pz, pz - top)
+    if dx <= 0 and dz <= 0:
+        return min(-dx, -dz) * 12.0
+    return math.hypot(max(dx, 0.0), max(dz, 0.0)) * 12.0
+
+
+def calibration_agreement_bands(
+    pairs: list[tuple],
+    calib: "PixelCalibration",
+    edge_bands_in: tuple[float, ...] = (3.0, 1.0),
+) -> dict:
+    """Agreement overall AND on borderline subsets (audit F3).
+
+    Same held-out (x, y, pX, pZ, szTop, szBottom) pairs and per-pair-zone
+    scoring as calibration_agreement, but also scored on the subsets whose
+    real location lies within each edge band (inches from the zone boundary).
+    Returns {"overall": {"n", "agreement_pct"}, "within_<band>in": {...}} with
+    agreement_pct None when a subset is empty — a thin borderline sample must
+    read as unmeasured, never as perfect.
+    """
+    buckets: dict[str, list[int]] = {
+        "overall": [0, 0],
+        **{f"within_{band:g}in": [0, 0] for band in edge_bands_in},
+    }
+    for x, y, px, pz, szt, szb in pairs:
+        top = szt if isinstance(szt, (int, float)) else _DEFAULT_SZ_TOP_FT
+        bottom = szb if isinstance(szb, (int, float)) else _DEFAULT_SZ_BOTTOM_FT
+        real = abs(px) <= _ZONE_HALF_WIDTH_FT and bottom <= pz <= top
+        agreed = calib.classify(x, y, szt, szb) == real
+        dist = _edge_distance_in(px, pz, top, bottom)
+        keys = ["overall"] + [
+            f"within_{band:g}in" for band in edge_bands_in if dist <= band
+        ]
+        for key in keys:
+            buckets[key][0] += 1
+            if agreed:
+                buckets[key][1] += 1
+    return {
+        key: {
+            "n": n,
+            "agreement_pct": round(100.0 * agree / n, 1) if n else None,
+        }
+        for key, (n, agree) in buckets.items()
+    }

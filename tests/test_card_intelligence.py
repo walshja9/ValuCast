@@ -1087,15 +1087,26 @@ class TestCardIntelligenceUI(unittest.TestCase):
         app_module.prospect_pool = cls.original_pool
 
     def test_prospects_board_eta_cutoff_and_movers(self):
-        response = self.client.get("/?mode=prospects&teams=4&pslots=1")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'class="col-eta sortable"', response.data)
-        self.assertIn(b">2027</td>", response.data)
-        self.assertIn(b'colspan="9"', response.data)  # confidence + compare columns
-        self.assertIn(b'class="movers-strip"', response.data)
+        # The strip renders only when movers exist; on an epoch re-baseline
+        # day the committed movers board is legitimately empty (drought), so
+        # inject a strip instead of depending on the day's data (first
+        # tripped by the 2026-07-30 epoch; precedent: f0bae88 unpinned the
+        # same class of data-brittle test).
+        from unittest.mock import patch
 
-        htmx = self.client.get("/rankings?mode=prospects&teams=4&pslots=1")
-        self.assertIn(b'class="movers-strip"', htmx.data)
+        fake_strip = [{"id": "dd_prospect_top", "name": "Test Mover", "change": 4}]
+        with patch.object(
+            app_module, "_native_prospect_movers_strip", return_value=fake_strip
+        ):
+            response = self.client.get("/?mode=prospects&teams=4&pslots=1")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'class="col-eta sortable"', response.data)
+            self.assertIn(b">2027</td>", response.data)
+            self.assertIn(b'colspan="9"', response.data)  # confidence + compare columns
+            self.assertIn(b'class="movers-strip"', response.data)
+
+            htmx = self.client.get("/rankings?mode=prospects&teams=4&pslots=1")
+            self.assertIn(b'class="movers-strip"', htmx.data)
 
     def test_movers_hidden_when_search_is_active(self):
         response = self.client.get("/?mode=prospects&search=Top")
