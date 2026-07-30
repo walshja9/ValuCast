@@ -24,6 +24,7 @@
     <link rel="preload" href="{{ url_for('static', filename='fonts/Archivo[wght].woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='install-app.js') }}" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -48,7 +49,17 @@
         <div id="footer-provenance">
             {% include "partials/_footer_provenance.html" %}
         </div>
+        <button type="button" id="install-app-button" class="footer-install" hidden>Install ValuCast</button>
     </footer>
+    <dialog id="install-app-dialog" class="install-app-dialog" aria-labelledby="install-app-title">
+        <form method="dialog">
+            <h2 id="install-app-title">Install ValuCast</h2>
+            <p>Open the Share menu, then choose <strong>Add to Home Screen</strong>.</p>
+            <div class="install-app-dialog-actions">
+                <button type="submit">Close</button>
+            </div>
+        </form>
+    </dialog>
     <script>
     /* sendError/timeout too: a dropped connection (deploy restart, cold start)
        otherwise fails SILENTLY — filter pills highlight but the board keeps the
