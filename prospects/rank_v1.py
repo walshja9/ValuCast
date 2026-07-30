@@ -1874,10 +1874,11 @@ def _drivers(model_profile: dict | None, layer_profile: dict) -> list[str]:
             values.append(current)
     if values:
         return values[:6]
-    signal = layer_profile.get("dynasty_signal") or {}
+    # No numeric probabilities in display strings: the universal model's
+    # probability heads are uncalibrated shadow evidence (owner disposition
+    # 2026-07-29); the driver names the evidence source without quoting it.
     return [
-        f"role+ probability {signal.get('role_or_better_probability')}",
-        f"star probability {signal.get('star_ceiling_probability')}",
+        "universal model outlook (uncalibrated shadow evidence)",
     ]
 
 

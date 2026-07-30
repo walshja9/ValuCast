@@ -2114,3 +2114,21 @@ def test_name_search_is_accent_insensitive():
     # accented QUERY against the accented name folds too
     assert store.filter(search="Héctor") == store._rows
     assert store.filter(search="hcetor") == []
+
+
+def test_prospect_rows_carry_no_uncalibrated_probability_numerics():
+    # Owner disposition 2026-07-29: dynasty_signal and peak role_probabilities
+    # are uncalibrated shadow evidence; the serving plane must not carry them.
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    for row in payload["players"]:
+        assert "dynasty_signal" not in row
+        peak = row.get("peak_projection")
+        if isinstance(peak, dict):
+            for block_key in ("peak_v2", "card_v2"):
+                block = peak.get(block_key)
+                if isinstance(block, dict):
+                    assert "role_probabilities" not in block

@@ -686,7 +686,13 @@ def _prospect_rows(
                 "score_source": row.get("score_source"),
                 "components": row.get("components") or {},
                 "drivers": row.get("drivers") or [],
-                "dynasty_signal": row.get("dynasty_signal"),
+                # dynasty_signal numerics are deliberately NOT copied: the
+                # universal model's probability heads are gate-failed /
+                # uncalibrated (docs/audit-2026-07-29-dynasty-signal-
+                # probability-honesty.md, owner disposition 2026-07-29). They
+                # stay in the internal dynasty-layer artifact as explicitly
+                # uncalibrated shadow evidence; no numeric probability ships
+                # on the serving plane.
                 "stat_line": context.get("stat_line"),
                 "stat_line_translated": context.get("stat_line_translated"),
                 "best_single_level_stat_line": context.get("best_single_level_stat_line"),
@@ -732,8 +738,28 @@ def _prospect_peak_projection_lookup(peak_projection: dict | None) -> dict[str, 
     for row in peak_projection.get("projections") or []:
         key = _identity_key(row)
         if key and key not in lookup:
-            lookup[key] = row
+            lookup[key] = _strip_uncalibrated_probabilities(row)
     return lookup
+
+
+def _strip_uncalibrated_probabilities(peak_row: dict) -> dict:
+    """Drop numeric probability blocks from the served peak copy.
+
+    peak_v2/card_v2 role_probabilities derive from the universal model's
+    gate-failed probability heads (uncalibrated shadow evidence, owner
+    disposition 2026-07-29). They remain in the internal peak artifact;
+    the serving plane carries no numeric probability.
+    """
+    out = dict(peak_row)
+    for block_key in ("peak_v2", "card_v2"):
+        block = out.get(block_key)
+        if isinstance(block, dict) and "role_probabilities" in block:
+            block = dict(block)
+            block.pop("role_probabilities", None)
+            block.pop("role_probability_source", None)
+            block.pop("role_probability_basis", None)
+            out[block_key] = block
+    return out
 
 
 def _assign_visible_prospect_ranks(rows: list[dict]) -> list[dict]:
