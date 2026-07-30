@@ -54,7 +54,12 @@
     <dialog id="install-app-dialog" class="install-app-dialog" aria-labelledby="install-app-title">
         <form method="dialog">
             <h2 id="install-app-title">Install ValuCast</h2>
-            <p>Open the Share menu, then choose <strong>Add to Home Screen</strong>.</p>
+            {# Many arrivals are X's in-app browser, where the Share menu has no
+               Add to Home Screen — the instructions must route those users out
+               to a real browser first (review P2, 7/30). #}
+            <p>If you opened ValuCast inside X or another app, first open it in
+            Safari or Chrome. Then open Share and choose
+            <strong>Add to Home Screen</strong>.</p>
             <div class="install-app-dialog-actions">
                 <button type="submit">Close</button>
             </div>

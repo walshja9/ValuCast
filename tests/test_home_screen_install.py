@@ -71,6 +71,10 @@ def test_install_control_is_accessible_and_hidden_by_default():
     assert b'aria-labelledby="install-app-title"' in html
     assert b"Share" in html
     assert b"Add to Home Screen" in html
+    # Embedded-browser guidance (review P2): X's in-app browser has no Add to
+    # Home Screen — the dialog must route those users to a real browser first.
+    assert b"inside X or another app" in html
+    assert b"Safari or Chrome" in html
     assert b'src="/static/install-app.js"' in html
 
 
