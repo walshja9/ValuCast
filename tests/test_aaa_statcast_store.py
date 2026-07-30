@@ -130,6 +130,25 @@ def test_contact_quality_section(tmp_path):
     assert rows["Whiff%"] == "24.0%"
 
 
+def test_contact_quality_ev_n_passthrough(tmp_path):
+    rec = _hitter()
+    rec["ev_n"] = 110
+    path = _write_artifact(tmp_path, hitters={"699024": rec})
+    store = AaaStatcastStore(path=path)
+    assert store.contact_quality_for("699024")["ev_n"] == 110
+
+
+def test_contact_quality_ev_n_fail_soft_when_absent(tmp_path):
+    # Legacy artifacts (built before 2026-07-30) lack ev_n: the section must
+    # still render (ev_n None -> template falls back to n_bip-only wording).
+    path = _write_artifact(tmp_path, hitters={"699024": _hitter()})
+    store = AaaStatcastStore(path=path)
+    section = store.contact_quality_for("699024")
+    assert section["ev_n"] is None
+    assert section["n_bip"] == 120
+    assert section["rows"]
+
+
 def test_unknown_player_returns_empty(tmp_path):
     path = _write_artifact(tmp_path, pitchers={"1": _pitcher()})
     store = AaaStatcastStore(path=path)

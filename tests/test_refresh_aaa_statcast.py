@@ -3,7 +3,7 @@ import csv
 import io
 import json
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -154,6 +154,73 @@ def test_load_cache_wrong_shape(tmp_path):
     p = tmp_path / "list.json"
     p.write_text(json.dumps([1, 2, 3]), encoding="utf-8")
     assert r.load_cache(p) == {"games": {}}
+
+
+# --- readiness-marker guard (mirrors test_build_pitch_discipline's guard tests) ---
+def test_incremental_without_ready_marker_keeps_prior_artifact(tmp_path, monkeypatch, capsys):
+    # Readiness guard: a missing marker means the cache is absent or a partial
+    # bootstrap checkpoint; an incremental run must keep the prior artifact
+    # (exit 0, no network, no cache write) rather than let downstream build a
+    # deceptively fresh artifact from incomplete data.
+    monkeypatch.setattr(r, "READY_MARKER_PATH", tmp_path / ".ready-missing")
+    monkeypatch.setattr(r, "load_cache", lambda *a, **k: {"games": {"1": {"game_date": "2026-07-10"}}})
+
+    def _boom(*a, **k):  # any network or cache-write attempt is a guard failure
+        raise AssertionError("guard must prevent any fetch/write without marker")
+
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", _boom)
+    monkeypatch.setattr(r, "gather_days", _boom)
+    monkeypatch.setattr(r, "flush_cache", _boom)
+
+    assert r.main([]) == 0
+    out = capsys.readouterr().out
+    assert "not marked ready" in out
+    assert "keeping prior artifact" in out
+
+
+def test_incremental_with_ready_marker_proceeds(tmp_path, monkeypatch):
+    marker = tmp_path / ".ready"
+    marker.write_text("", encoding="utf-8")
+    monkeypatch.setattr(r, "READY_MARKER_PATH", marker)
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    monkeypatch.setattr(
+        r, "load_cache", lambda *a, **k: {"games": {"1": {"game_date": yesterday}}}
+    )
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", lambda season: {"BUF"})
+    monkeypatch.setattr(r, "flush_cache", lambda *a, **k: None)
+
+    calls = {}
+
+    def _gather(*a, **k):
+        calls["gather"] = True
+        raise RuntimeError("stop after reaching the fetch stage")
+
+    monkeypatch.setattr(r, "gather_days", _gather)
+
+    # The incremental error backstop keeps the prior artifact and exits 0 —
+    # what matters here is the guard let execution REACH the fetch stage.
+    assert r.main([]) == 0
+    assert calls.get("gather") is True
+
+
+def test_backfill_ignores_ready_marker(tmp_path, monkeypatch):
+    # --backfill is the bootstrap's own entry point: it must run WITHOUT the
+    # marker (it is what creates the conditions for the marker to be written).
+    monkeypatch.setattr(r, "READY_MARKER_PATH", tmp_path / ".ready-missing")
+    monkeypatch.setattr(r, "load_cache", lambda *a, **k: {"games": {}})
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", lambda season: {"BUF"})
+    monkeypatch.setattr(r, "flush_cache", lambda *a, **k: None)
+
+    calls = {}
+
+    def _gather(days, season, cache, abbrevs, **k):
+        calls["days"] = days
+        return {"days_fetched": 0, "days_empty": 0, "new_games": 0,
+                "skipped_games": 0, "pitches_added": 0, "cached_total": 0}
+
+    monkeypatch.setattr(r, "gather_days", _gather)
+    assert r.main(["--backfill", "--through", "2026-03-22", "--season", "2026"]) == 0
+    assert calls["days"] == ["2026-03-20", "2026-03-21", "2026-03-22"]
 
 
 def test_fetch_aaa_abbreviations_parses(monkeypatch):

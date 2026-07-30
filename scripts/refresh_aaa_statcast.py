@@ -48,6 +48,12 @@ sys.path.insert(0, str(ROOT))
 
 # --- Paths -----------------------------------------------------------------
 CACHE_PATH = ROOT / "data" / "prospects" / "raw" / "aaa_statcast_pitch_cache.json"
+# Written by the aaa-statcast-bootstrap workflow ONLY after a complete --backfill
+# succeeds (mirrors build_pitch_discipline.READY_MARKER_PATH). Incremental runs
+# refuse to fetch without it: a partial cache (e.g. saved by a timed-out
+# bootstrap's if:always() checkpoint) would otherwise let the downstream feature
+# build emit a deceptively fresh artifact from incomplete season data.
+READY_MARKER_PATH = ROOT / "data" / "prospects" / "raw" / ".aaa_statcast_cache_ready"
 
 # --- Savant / StatsAPI ------------------------------------------------------
 _SAVANT_CSV = (
@@ -331,6 +337,21 @@ def main(argv: list[str] | None = None) -> int:
     through = date.fromisoformat(args.through) if args.through else None
     cache = load_cache()
     incremental = not args.backfill and not args.date
+
+    if incremental and not READY_MARKER_PATH.exists():
+        # Readiness guard (mirrors build_pitch_discipline.py): without the marker
+        # the cache is absent OR a partial checkpoint from an interrupted
+        # bootstrap. Either way an incremental fetch + downstream rebuild would
+        # produce a deceptively fresh artifact from incomplete season data —
+        # keep the prior artifact instead. If bootstrap recovery stalls,
+        # validate_aaa_statcast_features.py fails the publish closed.
+        print(
+            "AAA statcast cache not marked ready; skipping incremental fetch, "
+            "keeping prior artifact (aaa-statcast-bootstrap workflow owns "
+            "--backfill and writes the marker on completion)",
+            flush=True,
+        )
+        return 0
 
     # AAA abbreviations are a StatsAPI fetch; a failure to obtain them means we cannot
     # safely filter, so fail-soft (keep stale cache/artifact) in incremental mode.

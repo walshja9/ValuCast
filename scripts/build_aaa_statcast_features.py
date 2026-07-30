@@ -8,7 +8,8 @@ PURE aggregation: ZERO network, ZERO Savant fetch. Reads the compact game cache
                        avg extension, usage share, n}
     overall        -> {whiff%, csw%, chase%, zone%, gb%} + n_pitches
   Per HITTER (contact quality):
-    {avg_ev, hardhit% (EV>=95), max_ev, avg_la, whiff%, chase%, gb%, n_bip, n_pitches}
+    {avg_ev, hardhit% (EV>=95), max_ev, avg_la, whiff%, chase%, gb%, n_bip,
+     ev_n (BBE with tracked launch_speed -- the EV/hard-hit denominator), n_pitches}
 
 Everything is keyed by mlbam id as str (pitcher/batter columns ARE mlbam ids). Output
 is scoped to the tracked prospect universe to bound size (~400KB). Hard minimum-sample
@@ -295,7 +296,12 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
     for bid, h in acc.items():
         if h["n"] < MIN_HITTER_PITCHES:
             continue
-        player: dict = {"n_pitches": h["n"], "n_bip": h["bip"]}
+        # ev_n = balls in play that actually carried a tracked launch_speed —
+        # the REAL denominator for avg_ev / hardhit_pct (n_bip counts ALL balls
+        # in play, tracked or not). Emitted alongside n_bip so the card can label
+        # the EV sample honestly. NOTE: artifacts built before 2026-07-30 lack
+        # ev_n; the store/template fail soft until the first fresh rebuild.
+        player: dict = {"n_pitches": h["n"], "n_bip": h["bip"], "ev_n": h["ev_n"]}
         # Plate outcomes gate on pitches seen.
         if h["swings"]:
             player["whiff_pct"] = round(100.0 * h["whiffs"] / h["swings"], 1)
@@ -310,8 +316,9 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
             player["hardhit_pct"] = round(100.0 * h["hardhit"] / h["ev_n"], 1)
         if h["la_n"] >= MIN_HITTER_BIP:
             player["avg_la"] = round(h["la_sum"] / h["la_n"], 1)
-        # Keep a player only if some metric beyond the counts survived the gate.
-        if len(player) > 2:
+        # Keep a player only if some metric beyond the counts survived the gate
+        # (counts = n_pitches, n_bip, ev_n).
+        if len(player) > 3:
             out[bid] = player
     return out
 
@@ -328,6 +335,15 @@ def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "as_of": date.today().isoformat(),
+        # Freshness stamp for the validator's SELF-ARMING staleness gate: any
+        # artifact carrying this regime was built AFTER the cache-persistence fix
+        # (Actions cache steps + aaa-statcast-bootstrap workflow, 2026-07-30) and
+        # is held to the tight staleness bound. The legacy committed artifact
+        # lacks the stamp and is held only to the 30-day hard bound until the
+        # first fresh rebuild replaces it — so CI does not go red on the stale
+        # pre-fix artifact, arms at the first fresh build, and a never-recovering
+        # pipeline still fails closed. See validate_aaa_statcast_features.py.
+        "freshness_regime": "cache_bootstrap_v1",
         "season": season,
         "source": "baseball_savant_statcast_minors_aaa",
         "source_policy": {

@@ -155,6 +155,26 @@ def test_hitter_ev_rollups():
     assert rec["hardhit_pct"] == 50.0        # 15/30 >= 95
     assert rec["avg_la"] == 20.0
     assert rec["n_bip"] == 30
+    assert rec["ev_n"] == 30                 # every BIP here carried launch_speed
+
+
+def test_ev_n_counts_only_tracked_bbe():
+    # ev_n is the REAL Hard-Hit%/avg-EV denominator: balls in play whose
+    # launch_speed was tracked. Untracked BIP raise n_bip but not ev_n.
+    pitches = []
+    for _ in range(b.MIN_HITTER_BIP + 5):     # tracked BBE
+        pitches.append(_pitch(batter="H1", description="hit_into_play",
+                              bb_type="fly_ball", launch_speed=96.0))
+    for _ in range(10):                        # untracked BBE (no launch_speed)
+        pitches.append(_pitch(batter="H1", description="hit_into_play",
+                              bb_type="ground_ball"))
+    for _ in range(b.MIN_HITTER_PITCHES):
+        pitches.append(_pitch(batter="H1", description="ball"))
+    rec = b.aggregate_hitters(_cache(pitches), {"H1"})["H1"]
+    assert rec["n_bip"] == b.MIN_HITTER_BIP + 15
+    assert rec["ev_n"] == b.MIN_HITTER_BIP + 5
+    # Hard-hit% denominates on ev_n, not n_bip.
+    assert rec["hardhit_pct"] == 100.0
 
 
 def test_hitter_ev_gated_below_min_bip():
@@ -276,6 +296,9 @@ def test_build_artifact_envelope(tmp_path):
     art = b.build_artifact(_cache(pitches), 2026, universe_path=universe)
     assert art["artifact"] == "valucast_aaa_statcast_features"
     assert art["schema_version"] == 1
+    # Self-arming staleness stamp: every fresh build carries the regime marker
+    # that arms the validator's tight bound (legacy artifacts lack it).
+    assert art["freshness_regime"] == "cache_bootstrap_v1"
     assert art["source_policy"]["observe_only"] is True
     assert art["source_policy"]["measured"] is True
     assert art["source_policy"]["feeds_value"] is False

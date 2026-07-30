@@ -291,11 +291,15 @@
         {% set has_aaa_contact_quality = aaa_contact_quality is defined and aaa_contact_quality and aaa_contact_quality.rows %}
         {% if has_aaa_pitch_shape or has_aaa_contact_quality %}
         <div class="detail-section aaa-statcast-card">
+            {# Visible freshness: surface the artifact's as_of so a stale AAA-Statcast
+               layer is obvious on the card (F4, audit 2026-07-30), matching the
+               "through <date>" style of the actual-stats header. #}
+            {% set aaa_statcast_as_of = aaa_pitch_shape.as_of if has_aaa_pitch_shape else aaa_contact_quality.as_of %}
             <div class="prospect-profile-top">
                 <div>
                     <span class="profile-card-kicker">AAA Statcast</span>
                     <h4>{% if has_aaa_pitch_shape and has_aaa_contact_quality %}Pitch Shape & Contact Quality{% elif has_aaa_pitch_shape %}Pitch Shape{% else %}Contact Quality{% endif %}</h4>
-                    <p class="profile-note">measured AAA Statcast (Savant) &middot; AAA only &middot; display context &mdash; not a model input</p>
+                    <p class="profile-note">measured AAA Statcast (Savant) &middot; AAA only{% if aaa_statcast_as_of %} &middot; through {{ aaa_statcast_as_of }}{% endif %} &middot; display context &mdash; not a model input</p>
                     <p class="profile-percentile-legend">Statcast-tracked AAA. <a href="/methodology#aaa-statcast">How this is measured</a>.</p>
                 </div>
             </div>
@@ -337,7 +341,12 @@
                     <span class="aaa-statcast-outcome"><b>{{ r.label }}</b> {{ r.value }}</span>
                     {% endfor %}
                 </div>
-                {% if aaa_contact_quality.n_bip %}<p class="aaa-statcast-sample">{{ aaa_contact_quality.n_bip }} tracked balls in play &middot; {{ aaa_contact_quality.n_pitches }} pitches</p>{% endif %}
+                {# n_bip counts ALL balls in play (the old "tracked balls in play" label
+                   overstated it); ev_n is the EV-tracked BBE count that actually
+                   denominates Avg EV / Hard-Hit%. ev_n is absent on artifacts built
+                   before 2026-07-30 (arrives at the first fresh rebuild) — fail soft
+                   to the n_bip-only wording until then. #}
+                {% if aaa_contact_quality.n_bip %}<p class="aaa-statcast-sample">{{ aaa_contact_quality.n_bip }} balls in play{% if aaa_contact_quality.ev_n %} &middot; {{ aaa_contact_quality.ev_n }} with tracked EV{% endif %} &middot; {{ aaa_contact_quality.n_pitches }} pitches</p>{% endif %}
             </div>
             {% endif %}
         </div>

@@ -9,6 +9,8 @@ data/prospects/raw/.pitch_discipline_cache_ready
 # AAA-Statcast compact per-pitch cache: rebuildable from Baseball Savant, large at
 # full-season scale, so it stays uncommitted. Never commit raw pitch rows.
 data/prospects/raw/aaa_statcast_pitch_cache.json
+# Its bootstrap-completion marker travels with the Actions cache, never the repo.
+data/prospects/raw/.aaa_statcast_cache_ready
 __pycache__/
 *.py[cod]
 .pytest_cache/
