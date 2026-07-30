@@ -20,6 +20,7 @@ from prospects.pitch_discipline import (
     classify_zone,
     fit_pixel_calibration,
     calibration_agreement,
+    calibration_agreement_bands,
     PixelCalibration,
 )
 
@@ -42,6 +43,47 @@ def test_foul_is_swing_but_not_whiff():
     ]}]
     c = count_player_pitches(play, PID)
     assert c["swings"] == 1 and c["whiffs"] == 0 and c["contact"] == 1
+
+
+def test_foul_tip_is_whiff():
+    # Savant convention (owner decision on audit F1): a caught foul tip is by
+    # rule a swinging strike — swing + whiff, never contact. This matches the
+    # AAA Statcast layer so the one "Whiff%" label carries one numerator.
+    play = [{"matchup": {"batter": {"id": PID}}, "playEvents": [
+        {"isPitch": True, "details": {"description": "Foul Tip"}},
+    ]}]
+    c = count_player_pitches(play, PID)
+    assert c["swings"] == 1 and c["whiffs"] == 1 and c["contact"] == 0
+
+
+def test_bunt_foul_tip_is_whiff():
+    # The bunt member of the foul-tip family follows the same rule.
+    play = [{"matchup": {"batter": {"id": PID}}, "playEvents": [
+        {"isPitch": True, "details": {"description": "Foul Tip Bunt"}},
+    ]}]
+    c = count_player_pitches(play, PID)
+    assert c["swings"] == 1 and c["whiffs"] == 1 and c["contact"] == 0
+
+
+def test_foul_pitchout_is_contact_not_whiff():
+    # A foul off a pitchout is ordinary foul contact; only a SWINGING pitchout
+    # is a whiff.
+    play = [{"matchup": {"batter": {"id": PID}}, "playEvents": [
+        {"isPitch": True, "details": {"description": "Foul Pitchout"}},
+    ]}]
+    c = count_player_pitches(play, PID)
+    assert c["swings"] == 1 and c["whiffs"] == 0 and c["contact"] == 1
+
+
+def test_foul_tip_is_not_zone_contact():
+    # An in-zone foul tip counts z_swings but NOT z_contact (whiff branch).
+    play = [{"matchup": {"batter": {"id": PID}}, "playEvents": [
+        {"isPitch": True, "details": {"description": "Foul Tip"},
+         "pitchData": {"coordinates": {"pX": 0.1, "pZ": 2.5},
+                       "strikeZoneTop": 3.4, "strikeZoneBottom": 1.6}},
+    ]}]
+    c = count_player_pitches(play, PID)
+    assert c["z_swings"] == 1 and c["z_contact"] == 0
 
 
 def test_called_ball_and_strike_are_not_swings():
@@ -192,6 +234,47 @@ def test_calibration_agreement_high_on_consistent_pairs():
     calib, _ = fit_pixel_calibration(pairs)
     agree = calibration_agreement(pairs, calib)
     assert agree is not None and agree >= 80.0
+
+
+def test_calibration_agreement_bands_partition_by_edge_distance():
+    # Banded agreement (audit F3): borderline pitches are where the pixel
+    # calibration is weakest, so agreement is also scored on the subsets of
+    # held-out pairs whose REAL location is within 3in / 1in of the zone edge.
+    # Identity calibration: pixel coords == feet, so every call agrees.
+    calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
+    pairs = [
+        (0.0, 2.5, 0.0, 2.5, 3.4, 1.6),    # dead center: > 3in from any edge
+        (0.80, 2.5, 0.80, 2.5, 3.4, 1.6),  # 0.03 ft = 0.36in from the side edge
+        (0.0, 3.25, 0.0, 3.25, 3.4, 1.6),  # 0.15 ft = 1.8in from the top edge
+    ]
+    bands = calibration_agreement_bands(pairs, calib)
+    assert bands["overall"]["n"] == 3
+    assert bands["overall"]["agreement_pct"] == 100.0
+    assert bands["within_3in"]["n"] == 2
+    assert bands["within_3in"]["agreement_pct"] == 100.0
+    assert bands["within_1in"]["n"] == 1
+    assert bands["within_1in"]["agreement_pct"] == 100.0
+
+
+def test_calibration_agreement_bands_catch_edge_disagreement():
+    # A calibration shifted +0.1 ft in pX flips only the near-edge call: the
+    # overall number stays presentable while the 1-inch band exposes the miss.
+    calib = PixelCalibration(a=1.0, b=0.1, c=1.0, d=0.0)
+    pairs = [
+        (0.0, 2.5, 0.0, 2.5, 3.4, 1.6),    # est 0.10, real 0.0 -> both in: agree
+        (0.80, 2.5, 0.80, 2.5, 3.4, 1.6),  # est 0.90 out, real 0.80 in: disagree
+    ]
+    bands = calibration_agreement_bands(pairs, calib)
+    assert bands["overall"]["agreement_pct"] == 50.0
+    assert bands["within_1in"]["n"] == 1
+    assert bands["within_1in"]["agreement_pct"] == 0.0
+
+
+def test_calibration_agreement_bands_empty_pairs():
+    calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
+    bands = calibration_agreement_bands([], calib)
+    assert bands["overall"] == {"n": 0, "agreement_pct": None}
+    assert bands["within_1in"]["agreement_pct"] is None
 
 
 def test_calibration_agreement_uses_per_pair_strike_zone():

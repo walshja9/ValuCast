@@ -63,15 +63,18 @@ _ZONE_HALF_WIDTH_FT = 0.83
 _INCHES_PER_FOOT = 12.0
 
 # Whiff = swinging strike (incl. blocked), swinging pitchout, missed bunt, or a
-# caught foul tip — by rule a foul tip is a swinging strike, and Savant's own CSW
-# definition includes it (fouls excluded, foul tips included).
+# caught foul tip (incl. the bunt variant) — by rule a foul tip is a swinging
+# strike, and Savant's own CSW definition includes it (fouls excluded, foul tips
+# included). The same convention holds in prospects/pitch_discipline.py so the
+# one "Whiff%" label carries one numerator across layers (audit F1).
 _WHIFF_DESCS = frozenset({
     "swinging_strike", "swinging_strike_blocked", "swinging_pitchout", "missed_bunt",
-    "foul_tip",
+    "foul_tip", "bunt_foul_tip",
 })
-# A swing = ball in play OR a swing-and-miss OR a foul (contact) + bunt specials.
+# A swing = ball in play OR a swing-and-miss OR a foul (contact, incl. a foul off
+# a pitchout) + bunt specials.
 _SWING_DESCS = frozenset({
-    "hit_into_play", "foul", "foul_bunt",
+    "hit_into_play", "foul", "foul_bunt", "foul_pitchout",
 }) | _WHIFF_DESCS
 # CSW = called strike + whiff (the "called-strikes-plus-whiffs" rate).
 _CALLED_STRIKE_DESCS = frozenset({"called_strike"})

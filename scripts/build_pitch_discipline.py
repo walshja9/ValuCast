@@ -45,6 +45,7 @@ from prospects.pitch_discipline import (  # noqa: E402
     ESTIMATED_METRICS,
     PixelCalibration,
     calibration_agreement,
+    calibration_agreement_bands,
     count_player_pitches,
     fit_pixel_calibration,
     merge_counts,
@@ -385,6 +386,7 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
     (an in-sample number scored on a default band overstates quality).
     Returns (calib, metadata)."""
     pairs = []
+    pair_levels: set[str] = set()
     for game in (cache.get("games") or {}).values():
         for cp in game.get("plays") or ():
             for p in cp.get("pitches") or ():
@@ -394,6 +396,8 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
                         float(x), float(y), float(px), float(pz),
                         p.get("szTop"), p.get("szBottom"),
                     ))
+                    if isinstance(game.get("level"), str):
+                        pair_levels.add(game["level"])
     train, held = _split_pairs(pairs)
     calib, quality = fit_pixel_calibration(train)
     agreement = calibration_agreement(held, calib) if calib is not None else None
@@ -406,6 +410,14 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
         "fit_r2_y": quality.get("fit_r2_y"),
         "held_out_agreement_pct": agreement,
         "agreement_floor_pct": _CALIBRATION_AGREEMENT_FLOOR,
+        # Measurement scope (audit F3): agreement can only be scored where a
+        # pitch carries BOTH pixel and tracked coords — record which levels
+        # those pairs actually came from, so the number is never quoted as if
+        # it were measured at the pixel-only levels the calibration serves.
+        "agreement_measured_at_levels": sorted(pair_levels),
+        "agreement_bands": (
+            calibration_agreement_bands(held, calib) if calib is not None else None
+        ),
         "fitted_at": datetime.now(timezone.utc).isoformat(),
     }
     if calib is not None:

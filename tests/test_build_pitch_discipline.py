@@ -88,6 +88,35 @@ def _pitch(desc, **kw):
     return p
 
 
+def test_build_calibration_records_scope_and_banded_agreement():
+    # Audit F3: the held-out agreement is only ever MEASURED at levels where
+    # both coordinate systems exist on the same pitches (AAA in practice). The
+    # meta must record that scope, and must carry banded agreement so edge
+    # degradation is visible rather than averaged away.
+    from scripts.build_pitch_discipline import build_calibration
+    aaa_pitches = []
+    for i in range(25):
+        px = -1.2 + i * 0.1              # spread across in and out of zone
+        pz = 1.4 + (i % 7) * 0.3
+        aaa_pitches.append({
+            "x": 118.0 + px * 50.0, "y": 200.0 - pz * 40.0,   # exact affine map
+            "pX": px, "pZ": pz, "szTop": 3.4, "szBottom": 1.6,
+        })
+    cache = {"games": {
+        "1": {"level": "AAA", "plays": [{"pitches": aaa_pitches}]},
+        # An AA game with pixel-only pitches contributes NO pairs, so AA must
+        # NOT appear in the measurement scope.
+        "2": {"level": "AA", "plays": [{"pitches": [{"x": 100.0, "y": 150.0}]}]},
+    }}
+    calib, meta = build_calibration(cache)
+    assert calib is not None
+    assert meta["agreement_measured_at_levels"] == ["AAA"]
+    bands = meta["agreement_bands"]
+    assert set(bands) == {"overall", "within_3in", "within_1in"}
+    assert bands["overall"]["n"] == 5          # the deterministic 20% held split
+    assert bands["overall"]["agreement_pct"] == 100.0
+
+
 def test_zone_estimated_derived_per_pitch_not_per_game():
     # One game whose plays MIX real-coords and pixel-only pitches for player 1,
     # while player 2 sees only real-coords pitches in the same game. The old

@@ -3158,11 +3158,14 @@ def _prospect_discipline_card_rows(groups):
     """Share-PNG rows for the plate-discipline strip (max 2 levels).
 
     Pure reshaping of pitch_discipline_store.groups_for output: per level, the
-    five headline metrics with label/value/pct/est. pct stays None where the
-    reader gave no percentile (contextual metric, e.g. Swing%) - the renderer
-    draws the value with NO chip. The estimated flag passes through untouched so
-    the PNG carries the same "est." honesty marker as the page (the PNG travels
-    detached from the page, so the disclosure must travel with it).
+    five headline metrics with label/value/pct/positional/est. pct stays None
+    where the reader gave no percentile at all - the renderer draws the value
+    with NO chip. positional marks a contextual cohort POSITION (e.g. Swing%)
+    that the web card renders neutral - the flag must travel so the PNG never
+    grades what the page refuses to. The estimated flag passes through
+    untouched so the PNG carries the same "est." honesty marker as the page
+    (the PNG travels detached from the page, so the disclosure must travel
+    with it).
     """
     rows = []
     for group in (groups or [])[:2]:
@@ -3182,6 +3185,7 @@ def _prospect_discipline_card_rows(groups):
                 "label": str(metric.get("label") or key),
                 "value": str(metric.get("display")),
                 "pct": int(pct) if isinstance(pct, (int, float)) else None,
+                "positional": bool(metric.get("positional")),
                 "est": bool(metric.get("estimated")),
             })
         if not metrics:
@@ -3193,6 +3197,18 @@ def _prospect_discipline_card_rows(groups):
             "any_est": any(m["est"] for m in metrics),
         })
     return rows
+
+
+def _discipline_chip_color(pct, positional, elite, mid, low, neutral):
+    """Chip color for a discipline percentile chip on the share PNG.
+
+    A positional percentile is a cohort POSITION, not a quality grade — the web
+    card renders it neutral, and the PNG must not grade what the page refuses
+    to (audit F2). Graded percentiles tier elite/mid/low as before.
+    """
+    if positional:
+        return neutral
+    return elite if pct >= 75 else mid if pct > 25 else low
 
 
 def _prospect_player_card_png(row):
@@ -3564,7 +3580,9 @@ def _prospect_player_card_png(row):
                     pct = metric["pct"]
                     chip_x = tx + _graphic_text_width(draw, metric["label"], pd_label_font) + 8
                     draw.rounded_rectangle((chip_x, pd_row_y - 2, chip_x + 32, pd_row_y + 14), radius=4, fill=(10, 11, 15))
-                    chip_color = bar_elite if pct >= 75 else bar_mid if pct > 25 else bar_low
+                    chip_color = _discipline_chip_color(
+                        pct, metric.get("positional"), bar_elite, bar_mid, bar_low, muted,
+                    )
                     pct_text = str(pct)
                     draw.text(
                         (chip_x + 16 - _graphic_text_width(draw, pct_text, pd_chip_font) // 2, pd_row_y),
