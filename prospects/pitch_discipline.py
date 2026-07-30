@@ -22,6 +22,8 @@ The counting DEFINITIONS are the contract (they matched ProspectSavant on 7/10):
 """
 from __future__ import annotations
 
+import math
+
 # Plate half-width in feet (rulebook zone ~17in plate + ball radius); used only when
 # REAL tracked coords (pX/pZ) exist. Pixel coords go through PixelCalibration instead.
 _ZONE_HALF_WIDTH_FT = 0.83
@@ -347,13 +349,20 @@ def calibration_agreement(pairs: list[tuple],
 
 
 def _edge_distance_in(px: float, pz: float, top: float, bottom: float) -> float:
-    """Distance (inches) from the REAL pitch location to the nearest zone
-    boundary — small values are the borderline calls where a calibration's
-    overall agreement number can hide its worst behavior."""
-    d_side = abs(_ZONE_HALF_WIDTH_FT - abs(px))
-    d_top = abs(top - pz)
-    d_bottom = abs(pz - bottom)
-    return min(d_side, d_top, d_bottom) * 12.0
+    """Distance (inches) from the REAL pitch location to the strike-zone
+    RECTANGLE's boundary — small values are the borderline calls where a
+    calibration's overall agreement number can hide its worst behavior.
+
+    Inside the zone this is the distance to the nearest edge; outside it is
+    the Euclidean distance to the nearest point of the rectangle (diagonal
+    past a corner). Never the distance to a boundary LINE's infinite
+    extension — a pitch far outside can align with the top line's height
+    while being nowhere near the zone."""
+    dx = abs(px) - _ZONE_HALF_WIDTH_FT
+    dz = max(bottom - pz, pz - top)
+    if dx <= 0 and dz <= 0:
+        return min(-dx, -dz) * 12.0
+    return math.hypot(max(dx, 0.0), max(dz, 0.0)) * 12.0
 
 
 def calibration_agreement_bands(

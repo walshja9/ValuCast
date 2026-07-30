@@ -386,7 +386,7 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
     (an in-sample number scored on a default band overstates quality).
     Returns (calib, metadata)."""
     pairs = []
-    pair_levels: set[str] = set()
+    pair_levels: list[str | None] = []
     for game in (cache.get("games") or {}).values():
         for cp in game.get("plays") or ():
             for p in cp.get("pitches") or ():
@@ -396,9 +396,14 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
                         float(x), float(y), float(px), float(pz),
                         p.get("szTop"), p.get("szBottom"),
                     ))
-                    if isinstance(game.get("level"), str):
-                        pair_levels.add(game["level"])
+                    level = game.get("level")
+                    pair_levels.append(level if isinstance(level, str) else None)
     train, held = _split_pairs(pairs)
+    # Split the level tags with the SAME rule so the scope describes exactly
+    # the held-out pairs the agreement is scored on — a level that only ever
+    # landed in the train split contributed to the fit, not the measurement,
+    # and must not be claimed (review P2 on the F3 fix).
+    _, held_levels = _split_pairs(pair_levels)
     calib, quality = fit_pixel_calibration(train)
     agreement = calibration_agreement(held, calib) if calib is not None else None
     meta = {
@@ -412,9 +417,12 @@ def build_calibration(cache: dict) -> tuple[PixelCalibration | None, dict]:
         "agreement_floor_pct": _CALIBRATION_AGREEMENT_FLOOR,
         # Measurement scope (audit F3): agreement can only be scored where a
         # pitch carries BOTH pixel and tracked coords — record which levels
-        # those pairs actually came from, so the number is never quoted as if
-        # it were measured at the pixel-only levels the calibration serves.
-        "agreement_measured_at_levels": sorted(pair_levels),
+        # the HELD-OUT pairs actually came from, so the number is never quoted
+        # as if it were measured at the pixel-only levels the calibration
+        # serves, nor at a level that only ever fed the train split.
+        "agreement_measured_at_levels": sorted(
+            {lvl for lvl in held_levels if lvl is not None}
+        ),
         "agreement_bands": (
             calibration_agreement_bands(held, calib) if calib is not None else None
         ),

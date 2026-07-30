@@ -117,6 +117,31 @@ def test_build_calibration_records_scope_and_banded_agreement():
     assert bands["overall"]["agreement_pct"] == 100.0
 
 
+def test_calibration_scope_excludes_training_only_levels():
+    # Review P2 regression: agreement_measured_at_levels must describe the
+    # HELD-OUT pairs the agreement was actually scored on, not every paired
+    # observation. Here the AA pairs sit at indices 1-4 (i%5!=0 -> train
+    # only), so AA contributed to the fit but never to the measurement and
+    # must NOT be claimed.
+    from scripts.build_pitch_discipline import build_calibration
+    def _paired(px, pz):
+        return {"x": 118.0 + px * 50.0, "y": 200.0 - pz * 40.0,
+                "pX": px, "pZ": pz, "szTop": 3.4, "szBottom": 1.6}
+    aaa_first = [_paired(-1.2, 1.4)]
+    aa_pitches = [_paired(-1.1 + i * 0.1, 1.7 + i * 0.3) for i in range(4)]
+    aaa_rest = [_paired(-0.8 + i * 0.1, 1.4 + (i % 7) * 0.3) for i in range(20)]
+    cache = {"games": {
+        # Dict order drives pair order: 1 AAA pair, then 4 AA pairs, then 20
+        # AAA pairs -> held indices 0,5,10,15,20 are all AAA.
+        "1": {"level": "AAA", "plays": [{"pitches": aaa_first}]},
+        "2": {"level": "AA", "plays": [{"pitches": aa_pitches}]},
+        "3": {"level": "AAA", "plays": [{"pitches": aaa_rest}]},
+    }}
+    calib, meta = build_calibration(cache)
+    assert calib is not None
+    assert meta["agreement_measured_at_levels"] == ["AAA"]
+
+
 def test_zone_estimated_derived_per_pitch_not_per_game():
     # One game whose plays MIX real-coords and pixel-only pitches for player 1,
     # while player 2 sees only real-coords pitches in the same game. The old

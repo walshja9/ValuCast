@@ -270,6 +270,36 @@ def test_calibration_agreement_bands_catch_edge_disagreement():
     assert bands["within_1in"]["agreement_pct"] == 0.0
 
 
+def test_calibration_agreement_bands_use_rectangle_not_boundary_lines():
+    # Review P1 regression: edge distance is to the strike-zone RECTANGLE, not
+    # to the boundary lines' infinite extensions. A pitch far outside that
+    # happens to align with the top line's height (px=3.0, pz=3.39 vs top 3.4)
+    # is ~26in from the zone and must land in NO borderline band.
+    calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
+    pairs = [
+        (3.0, 3.39, 3.0, 3.39, 3.4, 1.6),
+    ]
+    bands = calibration_agreement_bands(pairs, calib)
+    assert bands["overall"]["n"] == 1
+    assert bands["within_3in"]["n"] == 0
+    assert bands["within_1in"]["n"] == 0
+
+
+def test_calibration_agreement_bands_diagonal_outside_distance():
+    # Review P1 regression, diagonal case: outside both edges at once, the
+    # distance is Euclidean to the corner — dx=0.05 ft, dz=0.12 ft gives
+    # hypot=0.13 ft = 1.56in (within 3in, NOT within 1in). The old
+    # min-of-line-distances bug would read 0.05 ft = 0.6in and wrongly put it
+    # in the 1-inch band.
+    calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
+    pairs = [
+        (0.88, 3.52, 0.88, 3.52, 3.4, 1.6),
+    ]
+    bands = calibration_agreement_bands(pairs, calib)
+    assert bands["within_3in"]["n"] == 1
+    assert bands["within_1in"]["n"] == 0
+
+
 def test_calibration_agreement_bands_empty_pairs():
     calib = PixelCalibration(a=1.0, b=0.0, c=1.0, d=0.0)
     bands = calibration_agreement_bands([], calib)
