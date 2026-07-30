@@ -226,6 +226,92 @@ def test_daily_refresh_restores_and_saves_plate_discipline_cache():
     assert restore < build < save
 
 
+def test_daily_refresh_restores_and_saves_aaa_statcast_cache():
+    # F4 (audit 2026-07-30): without persisting the AAA pitch cache across runs,
+    # refresh_aaa_statcast.py cold-cache no-ops every morning and the committed
+    # artifact silently stales (served as_of 2026-07-14 for 16 days).
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+    cache_path = "data/prospects/raw/aaa_statcast_pitch_cache.json"
+    ready_path = "data/prospects/raw/.aaa_statcast_cache_ready"
+
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert workflow.count(cache_path) >= 2
+    assert workflow.count(ready_path) >= 2
+    # The season backfill must NEVER run inside the publish job; the bootstrap
+    # workflow owns --backfill and the readiness marker.
+    assert "--backfill" not in workflow
+    assert "touch data/prospects/raw/.aaa_statcast_cache_ready" not in workflow
+    assert "aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "aaa-statcast-v1-${{ runner.os }}-" in workflow
+    assert "key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}" in workflow
+
+    # Restore before the build step, save after it (mirrors plate-discipline).
+    restore = workflow.index("aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}")
+    build = workflow.index("run: python scripts/run_daily_public_build.py --only build")
+    save = workflow.index("key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}")
+    assert restore < build < save
+
+    # SEPARATE key prefixes: the AAA-Statcast and plate-discipline recoveries
+    # must be independent — one layer's eviction/bootstrap can never clobber or
+    # restore the other's cache entry. Both distinct prefixes coexist in the
+    # daily workflow, and neither cache path list mixes the two layers' files.
+    assert "plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}" in workflow
+    for step in workflow.split("- name:"):
+        if "aaa-statcast-v1-" in step or "steps.aaa-statcast-cache" in step:
+            assert "pitch_discipline_pitch_cache.json" not in step
+        if "plate-discipline-v1-" in step or "steps.plate-discipline-cache" in step:
+            assert "aaa_statcast_pitch_cache.json" not in step
+
+
+def test_bootstrap_workflow_owns_aaa_statcast_backfill():
+    bootstrap_path = Path(".github/workflows/aaa-statcast-bootstrap.yml")
+    workflow = bootstrap_path.read_text(encoding="utf-8")
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+
+    # Keyless and read-only: the bootstrap only warms the Actions cache — it
+    # must never hold the deploy key or push anything.
+    assert "REFRESH_DEPLOY_KEY" not in workflow
+    assert "contents: read" in workflow
+    assert "git push" not in workflow
+
+    # Same cache keys as the daily refresh, marker written only after a
+    # successful complete --backfill, save checkpointed on if: always().
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert "aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "aaa-statcast-v1-${{ runner.os }}-" in workflow
+    assert "key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}" in workflow
+    assert "python scripts/refresh_aaa_statcast.py --backfill" in workflow
+    assert "touch data/prospects/raw/.aaa_statcast_cache_ready" in workflow
+    backfill = workflow.index("python scripts/refresh_aaa_statcast.py --backfill")
+    touch = workflow.index("touch data/prospects/raw/.aaa_statcast_cache_ready")
+    assert backfill < touch
+    assert "if: always()" in workflow
+
+    # Serializes with the publish pipeline on the shared concurrency group.
+    assert "group: daily-public-data-refresh" in workflow
+    assert "cancel-in-progress: false" in workflow
+
+    # Independence from the plate-discipline recovery: neither bootstrap touches
+    # the other's cache keys or files, and each has a DIFFERENT weekly quiet
+    # slot (Saturday 02:00 UTC here vs plate's Sunday 02:00) so the two
+    # bootstraps never queue on the shared concurrency group at the same hour.
+    assert "plate-discipline-v1-" not in workflow
+    assert "pitch_discipline_pitch_cache.json" not in workflow
+    assert ".pitch_discipline_cache_ready" not in workflow
+    assert 'cron: "0 2 * * 6"' in workflow
+    plate = Path(".github/workflows/plate-discipline-bootstrap.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "aaa-statcast-v1-" not in plate
+    assert "aaa_statcast_pitch_cache.json" not in plate
+    assert ".aaa_statcast_cache_ready" not in plate
+    assert 'cron: "0 2 * * 6"' not in plate
+
+
 def test_bootstrap_workflow_owns_plate_discipline_backfill():
     bootstrap_path = Path(".github/workflows/plate-discipline-bootstrap.yml")
     workflow = bootstrap_path.read_text(encoding="utf-8")

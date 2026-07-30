@@ -7,19 +7,76 @@ artifact fails (exit 1).
 
 Checks the envelope (artifact/schema_version/generated_at/as_of/source), the
 observe-only source policy (measured=True, feeds_value/feeds_rank=False), the sample
-gates block, and the per-player structure of the pitchers/hitters tables.
+gates block, the per-player structure of the pitchers/hitters tables, and a bounded
+self-arming staleness gate on as_of (see the transition comment below).
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_aaa_statcast_features.json"
+
+# --- Bounded staleness gate (self-arming; F4 remediation 2026-07-30) --------
+# The refresh/build pair deliberately keeps the last artifact on transient
+# failures (cold cache, missing readiness marker, budget exceeded, tiny-refresh
+# guard) and exits 0, so without a bound the artifact can stay stale
+# indefinitely with every gate green — it served as_of 2026-07-14 for 16 days
+# before this gate landed. Mirrors validate_pitch_discipline._staleness_problem.
+#
+# SELF-ARMING TRANSITION: the committed artifact predates the cache-persistence
+# fix and cannot be rebuilt locally (the pitch cache is uncommitted and needs a
+# bulk network backfill), so a tight bound applied unconditionally would turn CI
+# red TODAY. Instead build_aaa_statcast_features.py stamps
+# "freshness_regime": "cache_bootstrap_v1" into every artifact built after the
+# fix, and this validator:
+#   * applies the TIGHT bound (default 3 days; VALUCAST_AAA_STATCAST_MAX_AGE_DAYS
+#     env or --max-age-days override) ONLY when that stamp is present — the gate
+#     arms itself at the first fresh rebuild and stays armed from then on;
+#   * applies an unconditional HARD bound of 30 days regardless of the stamp, so
+#     a pipeline that never recovers (bootstrap never runs, stamp never appears)
+#     still fails closed instead of serving arbitrarily old data forever.
+DEFAULT_MAX_AGE_DAYS = 3
+HARD_MAX_AGE_DAYS = 30
+FRESHNESS_REGIME = "cache_bootstrap_v1"
+
+
+def _staleness_problem(payload: dict, today: str, max_age_days: int) -> str | None:
+    as_of = str(payload.get("as_of") or "")[:10]
+    if not as_of:
+        return None  # "as_of is required" already reported by validate_file
+    try:
+        age = (date.fromisoformat(today) - date.fromisoformat(as_of)).days
+    except ValueError:
+        return f"as_of={as_of!r} is not an ISO date"
+    if age < 0:
+        return f"as_of={as_of} is in the future (today {today})"
+    armed = payload.get("freshness_regime") == FRESHNESS_REGIME
+    if armed and age > max_age_days:
+        return (
+            f"as_of={as_of} is {age} days old (today {today}, allowed "
+            f"{max_age_days}) -- the keep-stale refresh/build paths have been "
+            "masking a broken refresh; check the daily AAA-Statcast cache "
+            "restore/save steps, or dispatch the aaa-statcast-bootstrap "
+            "workflow (scripts/refresh_aaa_statcast.py --backfill) and rerun "
+            "scripts/build_aaa_statcast_features.py"
+        )
+    if age > HARD_MAX_AGE_DAYS:
+        return (
+            f"as_of={as_of} is {age} days old (today {today}, hard limit "
+            f"{HARD_MAX_AGE_DAYS} even for legacy pre-cache-bootstrap "
+            "artifacts) -- the pipeline never recovered; dispatch the "
+            "aaa-statcast-bootstrap workflow (scripts/refresh_aaa_statcast.py "
+            "--backfill) and rerun scripts/build_aaa_statcast_features.py"
+        )
+    return None
 
 _PITCHER_OUTCOMES = {"whiff_pct", "csw_pct", "chase_pct", "zone_pct", "gb_pct"}
 _PITCH_SHAPE_KEYS = {"velo", "ivb", "hb", "spin", "ext"}
@@ -113,6 +170,10 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str], b
             continue
         if not isinstance(record.get("n_pitches"), int):
             problems.append(f"hitters[{bid}].n_pitches must be an int")
+        # ev_n (EV-tracked BBE count) is optional: legacy artifacts built before
+        # 2026-07-30 lack it. When present it must be an int.
+        if "ev_n" in record and not isinstance(record.get("ev_n"), int):
+            problems.append(f"hitters[{bid}].ev_n must be an int")
         for k in _HITTER_KEYS:
             if k in record and not _num_ok(record.get(k)):
                 problems.append(f"hitters[{bid}].{k} must be numeric or null")
@@ -123,9 +184,23 @@ def validate_file(path: Path = ARTIFACT_PATH) -> tuple[dict | None, list[str], b
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", type=Path, default=ARTIFACT_PATH)
+    parser.add_argument("--date", default=date.today().isoformat())
+    parser.add_argument(
+        "--max-age-days",
+        type=int,
+        default=int(
+            os.environ.get(
+                "VALUCAST_AAA_STATCAST_MAX_AGE_DAYS", str(DEFAULT_MAX_AGE_DAYS)
+            )
+        ),
+    )
     args = parser.parse_args()
 
     payload, problems, present = validate_file(args.path)
+    if payload is not None:
+        stale = _staleness_problem(payload, args.date, args.max_age_days)
+        if stale:
+            problems.append(stale)
     if not present:
         print(f"AAA-statcast artifact absent ({args.path}); OK (fail-soft)")
         return 0

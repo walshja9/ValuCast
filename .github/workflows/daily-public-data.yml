@@ -116,6 +116,22 @@ jobs:
           restore-keys: |
             plate-discipline-v1-${{ runner.os }}-
 
+      # AAA-Statcast pitch cache: SEPARATE key prefix from plate-discipline so an
+      # eviction/recovery of one layer can never disrupt the other. Without this
+      # restore the runner starts cold every morning, refresh_aaa_statcast.py hits
+      # its cold-cache no-op, and the committed artifact silently stales (F4:
+      # served as_of 2026-07-14 for 16 days).
+      - name: Restore AAA-Statcast pitch cache
+        id: aaa-statcast-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            aaa-statcast-v1-${{ runner.os }}-
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -167,6 +183,15 @@ jobs:
             data/prospects/raw/pitch_discipline_pitch_cache.json
             data/prospects/raw/.pitch_discipline_cache_ready
           key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}
+
+      - name: Save AAA-Statcast pitch cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}
 
       # Rolls the dated peak-projection rank archive (written by the build step above,
       # which archives today's rank_v1_rank into

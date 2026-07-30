@@ -128,7 +128,9 @@ class AaaStatcastStore:
     def contact_quality_for(self, mlbam_id: str | int | None) -> dict:
         """Card-ready contact-quality section for a hitter, {} when unavailable.
 
-        {"as_of","n_pitches","n_bip","rows":[{key,label,value}]} -- pre-formatted.
+        {"as_of","n_pitches","n_bip","ev_n","rows":[{key,label,value}]} --
+        pre-formatted. n_bip counts ALL balls in play; ev_n counts only the BBE
+        with a tracked launch_speed (the real avg-EV / Hard-Hit% denominator).
         """
         record = self._lookup("hitters", mlbam_id)
         if not isinstance(record, dict):
@@ -140,6 +142,10 @@ class AaaStatcastStore:
             "as_of": self._as_of,
             "n_pitches": record.get("n_pitches"),
             "n_bip": record.get("n_bip"),
+            # Fail-soft: artifacts built before 2026-07-30 lack ev_n (it arrives
+            # at the first fresh rebuild); None here makes the template render
+            # the n_bip-only wording rather than a blank EV-sample fragment.
+            "ev_n": record.get("ev_n"),
             "rows": rows,
         }
 

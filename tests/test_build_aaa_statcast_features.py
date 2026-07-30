@@ -155,6 +155,26 @@ def test_hitter_ev_rollups():
     assert rec["hardhit_pct"] == 50.0        # 15/30 >= 95
     assert rec["avg_la"] == 20.0
     assert rec["n_bip"] == 30
+    assert rec["ev_n"] == 30                 # every BIP here carried launch_speed
+
+
+def test_ev_n_counts_only_tracked_bbe():
+    # ev_n is the REAL Hard-Hit%/avg-EV denominator: balls in play whose
+    # launch_speed was tracked. Untracked BIP raise n_bip but not ev_n.
+    pitches = []
+    for _ in range(b.MIN_HITTER_BIP + 5):     # tracked BBE
+        pitches.append(_pitch(batter="H1", description="hit_into_play",
+                              bb_type="fly_ball", launch_speed=96.0))
+    for _ in range(10):                        # untracked BBE (no launch_speed)
+        pitches.append(_pitch(batter="H1", description="hit_into_play",
+                              bb_type="ground_ball"))
+    for _ in range(b.MIN_HITTER_PITCHES):
+        pitches.append(_pitch(batter="H1", description="ball"))
+    rec = b.aggregate_hitters(_cache(pitches), {"H1"})["H1"]
+    assert rec["n_bip"] == b.MIN_HITTER_BIP + 15
+    assert rec["ev_n"] == b.MIN_HITTER_BIP + 5
+    # Hard-hit% denominates on ev_n, not n_bip.
+    assert rec["hardhit_pct"] == 100.0
 
 
 def test_hitter_ev_gated_below_min_bip():
@@ -276,6 +296,9 @@ def test_build_artifact_envelope(tmp_path):
     art = b.build_artifact(_cache(pitches), 2026, universe_path=universe)
     assert art["artifact"] == "valucast_aaa_statcast_features"
     assert art["schema_version"] == 1
+    # Self-arming staleness stamp: every fresh build carries the regime marker
+    # that arms the validator's tight bound (legacy artifacts lack it).
+    assert art["freshness_regime"] == "cache_bootstrap_v1"
     assert art["source_policy"]["observe_only"] is True
     assert art["source_policy"]["measured"] is True
     assert art["source_policy"]["feeds_value"] is False
@@ -283,3 +306,67 @@ def test_build_artifact_envelope(tmp_path):
     assert art["source_policy"]["level"] == "AAA"
     assert "1001" in art["pitchers"]
     assert art["counts"]["pitchers"] == 1
+
+
+# ---------------------------------------------------------------------------
+# as_of honesty + no-advance rebuild refusal (freshness-bypass fix)
+# ---------------------------------------------------------------------------
+def _coverage_cache(day="2026-07-20"):
+    return {
+        "checked_through": day,
+        "games": {"pk1": {"game_date": day, "home_team": "LHV", "season": 2026,
+                          "pitches": []}},
+    }
+
+
+def test_artifact_as_of_is_cache_coverage_not_build_date():
+    from scripts.build_aaa_statcast_features import build_artifact
+
+    payload = build_artifact(_coverage_cache("2026-07-20"), 2026)
+    # A rebuild from an old cache must carry the old coverage date, never
+    # today's date — otherwise the staleness gate is bypassed (2026-07-30
+    # owner review of PR #34).
+    assert payload["as_of"] == "2026-07-20"
+
+
+def test_builder_refuses_rebuild_when_coverage_did_not_advance(tmp_path, monkeypatch):
+    import scripts.build_aaa_statcast_features as b
+
+    out = tmp_path / "art.json"
+    out.write_text(json.dumps({
+        "artifact": "valucast_aaa_statcast_features",
+        "freshness_regime": "cache_bootstrap_v1",
+        "as_of": "2026-07-20",
+        "pitchers": {}, "hitters": {"h": {"n_pitches": 1}},
+    }), encoding="utf-8")
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(json.dumps(_coverage_cache("2026-07-20")), encoding="utf-8")
+
+    rc = b.main(["--cache-path", str(cache_path), "--out", str(out)])
+
+    assert rc == 0
+    kept = json.loads(out.read_text(encoding="utf-8"))
+    assert kept["as_of"] == "2026-07-20"
+    assert "generated_at" not in kept or kept.get("hitters") == {"h": {"n_pitches": 1}}
+
+
+def test_builder_allows_equal_coverage_rebuild_when_schema_stamp_missing(tmp_path):
+    import scripts.build_aaa_statcast_features as b
+
+    out = tmp_path / "art.json"
+    out.write_text(json.dumps({
+        "artifact": "valucast_aaa_statcast_features",
+        "as_of": "2026-07-20",  # legacy: no freshness_regime stamp
+        "pitchers": {}, "hitters": {},
+    }), encoding="utf-8")
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(json.dumps(_coverage_cache("2026-07-20")), encoding="utf-8")
+
+    rc = b.main(["--cache-path", str(cache_path), "--out", str(out)])
+
+    assert rc == 0
+    rebuilt = json.loads(out.read_text(encoding="utf-8"))
+    # Schema-upgrade exception: equal coverage may rebuild ONCE to gain the
+    # stamp (and ev_n fields); afterwards the no-advance refusal applies.
+    assert rebuilt.get("freshness_regime") == "cache_bootstrap_v1"
+    assert rebuilt["as_of"] == "2026-07-20"

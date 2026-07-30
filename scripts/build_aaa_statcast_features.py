@@ -8,7 +8,8 @@ PURE aggregation: ZERO network, ZERO Savant fetch. Reads the compact game cache
                        avg extension, usage share, n}
     overall        -> {whiff%, csw%, chase%, zone%, gb%} + n_pitches
   Per HITTER (contact quality):
-    {avg_ev, hardhit% (EV>=95), max_ev, avg_la, whiff%, chase%, gb%, n_bip, n_pitches}
+    {avg_ev, hardhit% (EV>=95), max_ev, avg_la, whiff%, chase%, gb%, n_bip,
+     ev_n (BBE with tracked launch_speed -- the EV/hard-hit denominator), n_pitches}
 
 Everything is keyed by mlbam id as str (pitcher/batter columns ARE mlbam ids). Output
 is scoped to the tracked prospect universe to bound size (~400KB). Hard minimum-sample
@@ -40,6 +41,7 @@ from scripts.refresh_aaa_statcast import CACHE_PATH, load_cache  # noqa: E402
 # --- Paths -----------------------------------------------------------------
 UNIVERSE_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_aaa_statcast_features.json"
+FRESHNESS_REGIME = "cache_bootstrap_v1"
 
 # --- Sample gates (small-sample honesty; analogous to MIN_PITCHES=300) ------
 # A pitcher needs this many pitches overall before any plate-outcome rate renders;
@@ -295,7 +297,12 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
     for bid, h in acc.items():
         if h["n"] < MIN_HITTER_PITCHES:
             continue
-        player: dict = {"n_pitches": h["n"], "n_bip": h["bip"]}
+        # ev_n = balls in play that actually carried a tracked launch_speed —
+        # the REAL denominator for avg_ev / hardhit_pct (n_bip counts ALL balls
+        # in play, tracked or not). Emitted alongside n_bip so the card can label
+        # the EV sample honestly. NOTE: artifacts built before 2026-07-30 lack
+        # ev_n; the store/template fail soft until the first fresh rebuild.
+        player: dict = {"n_pitches": h["n"], "n_bip": h["bip"], "ev_n": h["ev_n"]}
         # Plate outcomes gate on pitches seen.
         if h["swings"]:
             player["whiff_pct"] = round(100.0 * h["whiffs"] / h["swings"], 1)
@@ -310,8 +317,9 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
             player["hardhit_pct"] = round(100.0 * h["hardhit"] / h["ev_n"], 1)
         if h["la_n"] >= MIN_HITTER_BIP:
             player["avg_la"] = round(h["la_sum"] / h["la_n"], 1)
-        # Keep a player only if some metric beyond the counts survived the gate.
-        if len(player) > 2:
+        # Keep a player only if some metric beyond the counts survived the gate
+        # (counts = n_pitches, n_bip, ev_n).
+        if len(player) > 3:
             out[bid] = player
     return out
 
@@ -319,6 +327,19 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
 # ---------------------------------------------------------------------------
 # Artifact assembly + write
 # ---------------------------------------------------------------------------
+def cache_coverage(cache: dict) -> str | None:
+    """Verified coverage date: checked_through, else max cached game_date."""
+    cov = cache.get("checked_through")
+    if isinstance(cov, str) and cov:
+        return cov
+    dates = [
+        g.get("game_date")
+        for g in (cache.get("games") or {}).values()
+        if isinstance(g.get("game_date"), str) and g.get("game_date")
+    ]
+    return max(dates) if dates else None
+
+
 def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH) -> dict:
     pitcher_ids, hitter_ids = load_universe_ids(universe_path)
     pitchers = aggregate_pitchers(cache, pitcher_ids)
@@ -327,7 +348,22 @@ def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH
         "artifact": "valucast_aaa_statcast_features",
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "as_of": date.today().isoformat(),
+        # as_of = VERIFIED DATA COVERAGE, never the build date. Stamping
+        # date.today() let a rebuild from a stale cache masquerade as fresh and
+        # bypass the staleness gate entirely (owner review of PR #34,
+        # 2026-07-30). cache_coverage prefers the refresher's checked_through
+        # (advanced only through fully-fetched days); legacy caches fall back
+        # to the max cached game_date — still data-derived, never today.
+        "as_of": cache_coverage(cache),
+        # Freshness stamp for the validator's SELF-ARMING staleness gate: any
+        # artifact carrying this regime was built AFTER the cache-persistence fix
+        # (Actions cache steps + aaa-statcast-bootstrap workflow, 2026-07-30) and
+        # is held to the tight staleness bound. The legacy committed artifact
+        # lacks the stamp and is held only to the 30-day hard bound until the
+        # first fresh rebuild replaces it — so CI does not go red on the stale
+        # pre-fix artifact, arms at the first fresh build, and a never-recovering
+        # pipeline still fails closed. See validate_aaa_statcast_features.py.
+        "freshness_regime": FRESHNESS_REGIME,
         "season": season,
         "source": "baseball_savant_statcast_minors_aaa",
         "source_policy": {
@@ -408,6 +444,33 @@ def main(argv: list[str] | None = None) -> int:
             flush=True,
         )
         return 0
+
+    # No-advance refusal (freshness-bypass fix, 2026-07-30): when verified
+    # coverage has not moved past the served artifact's as_of, rebuilding
+    # would only re-stamp the same data — keep the prior artifact so as_of
+    # keeps telling the truth and the staleness gate can bite. Exception: an
+    # artifact WITHOUT the current freshness_regime stamp may rebuild once at
+    # equal coverage (schema upgrade — gains the stamp and ev_n fields);
+    # afterwards this refusal applies.
+    new_coverage = cache_coverage(cache)
+    if args.out.exists():
+        try:
+            existing = json.loads(args.out.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        existing_as_of = existing.get("as_of")
+        if (
+            existing.get("freshness_regime") == FRESHNESS_REGIME
+            and isinstance(existing_as_of, str)
+            and isinstance(new_coverage, str)
+            and new_coverage <= existing_as_of
+        ):
+            print(
+                f"AAA statcast coverage unchanged (checked through {new_coverage}, "
+                f"artifact as_of {existing_as_of}); keeping prior artifact",
+                flush=True,
+            )
+            return 0
 
     payload = build_artifact(cache, args.season)
     try:

@@ -1997,13 +1997,22 @@ class TestTradeAnalyzer(unittest.TestCase):
         replacement = ctx["league_context"]["replacement_value"]
 
         self.assertTrue(ctx["league_context"]["preset_applied"])
-        self.assertEqual(
+        # The app subtracts the UNROUNDED replacement (app.py `value_of`) but
+        # exposes replacement_value rounded to 1dp, and rounds each piece
+        # value to 1dp as well — so recomputing from the exposed replacement
+        # can differ by up to 0.05 (replacement rounding) + 0.05 (piece
+        # rounding) = 0.10 on rounding-boundary days (first tripped by the
+        # 2026-07-30 refresh data). Assert within that combined
+        # display-rounding bound instead of exact equality.
+        self.assertAlmostEqual(
             ctx["give_pieces"][0]["value"],
-            round(max(0.0, give.value_for("7x7_ops") - replacement), 1),
+            max(0.0, give.value_for("7x7_ops") - replacement),
+            delta=0.101,
         )
-        self.assertEqual(
+        self.assertAlmostEqual(
             ctx["get_pieces"][0]["value"],
-            round(max(0.0, get.value_for("7x7_ops") - replacement), 1),
+            max(0.0, get.value_for("7x7_ops") - replacement),
+            delta=0.101,
         )
 
     def test_trade_mixed_preset_falls_back_for_every_piece(self):
