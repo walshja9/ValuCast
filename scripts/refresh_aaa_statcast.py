@@ -243,13 +243,34 @@ def season_dates(season: int, *, through: date | None = None) -> list[str]:
     return out
 
 
-def incremental_dates(cache: dict, season: int, *, through: date | None = None) -> list[str]:
-    """Game_dates strictly AFTER the cache's max date, through today.
+def _advance_checked_through(cache: dict, day: str, advance_coverage: bool) -> None:
+    """Record verified coverage through `day` (freshness-bypass fix, 2026-07-30).
 
-    Cold cache (no dates) returns [] -- an empty cache in incremental mode must not
-    become a full backfill inside the daily job (the caller no-ops on that).
+    checked_through means: every game_date up to and including this day was
+    fully fetched (or verified empty) by a systematic ascending pass. It is the
+    ONLY value the feature builder may use for as_of — never the build date —
+    and it advances per completed day, so an interruption leaves it at the last
+    day actually covered (gap-safe: a failed day stops advancement). Dev
+    --date fetches pass advance_coverage=False because an isolated date proves
+    nothing about the days before it.
     """
-    max_date = cache_max_date(cache)
+    if not advance_coverage:
+        return
+    current = cache.get("checked_through")
+    if not isinstance(current, str) or day > current:
+        cache["checked_through"] = day
+
+
+def incremental_dates(cache: dict, season: int, *, through: date | None = None) -> list[str]:
+    """Game_dates strictly AFTER verified coverage, through today.
+
+    Coverage = checked_through when present (a day after it may have FAILED on
+    a previous pass even though later game_dates are cached, so max-date alone
+    over-skips); legacy caches without the key fall back to the max cached
+    game_date. Cold cache (no dates) returns [] -- an empty cache in
+    incremental mode must not become a full backfill inside the daily job.
+    """
+    max_date = cache.get("checked_through") or cache_max_date(cache)
     if not max_date:
         return []
     try:
@@ -275,6 +296,7 @@ def gather_days(
     aaa_abbrevs: set[str],
     *,
     limit_days: int | None = None,
+    advance_coverage: bool = False,
 ) -> dict:
     """Fetch each game_date, caching any NEW game_pks it contains. Returns stats.
 
@@ -297,6 +319,7 @@ def gather_days(
         stats["days_fetched"] += 1
         if not day_rows:
             stats["days_empty"] += 1
+            _advance_checked_through(cache, day, advance_coverage)
             continue
         for pk, game in rows_to_games(day_rows).items():
             if pk in games:
@@ -307,6 +330,7 @@ def gather_days(
             games[pk] = game
             stats["new_games"] += 1
             stats["pitches_added"] += len(game.get("pitches") or ())
+        _advance_checked_through(cache, day, advance_coverage)
         if (idx + 1) % _FLUSH_EVERY == 0:
             flush_cache(cache)
             print(
@@ -373,6 +397,13 @@ def main(argv: list[str] | None = None) -> int:
         days = list(dict.fromkeys(args.date))
     elif args.backfill:
         days = season_dates(args.season, through=through)
+        already = cache.get("checked_through")
+        if isinstance(already, str):
+            before = len(days)
+            days = [d for d in days if d > already]
+            if before != len(days):
+                print(f"backfill resuming after verified coverage {already} "
+                      f"({before - len(days)} day(s) skipped)", flush=True)
     else:
         days = incremental_dates(cache, args.season, through=through)
         if not days and not cache_max_date(cache):
@@ -397,7 +428,11 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         stats = gather_days(
-            days, args.season, cache, aaa_abbrevs, limit_days=args.limit_days
+            days, args.season, cache, aaa_abbrevs, limit_days=args.limit_days,
+            # Coverage advances only for systematic ascending passes
+            # (incremental/backfill); isolated --date fetches prove nothing
+            # about the days before them.
+            advance_coverage=not args.date,
         )
     except Exception as exc:  # noqa: BLE001
         if not incremental:

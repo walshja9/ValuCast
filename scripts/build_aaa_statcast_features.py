@@ -41,6 +41,7 @@ from scripts.refresh_aaa_statcast import CACHE_PATH, load_cache  # noqa: E402
 # --- Paths -----------------------------------------------------------------
 UNIVERSE_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_aaa_statcast_features.json"
+FRESHNESS_REGIME = "cache_bootstrap_v1"
 
 # --- Sample gates (small-sample honesty; analogous to MIN_PITCHES=300) ------
 # A pitcher needs this many pitches overall before any plate-outcome rate renders;
@@ -326,6 +327,19 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
 # ---------------------------------------------------------------------------
 # Artifact assembly + write
 # ---------------------------------------------------------------------------
+def cache_coverage(cache: dict) -> str | None:
+    """Verified coverage date: checked_through, else max cached game_date."""
+    cov = cache.get("checked_through")
+    if isinstance(cov, str) and cov:
+        return cov
+    dates = [
+        g.get("game_date")
+        for g in (cache.get("games") or {}).values()
+        if isinstance(g.get("game_date"), str) and g.get("game_date")
+    ]
+    return max(dates) if dates else None
+
+
 def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH) -> dict:
     pitcher_ids, hitter_ids = load_universe_ids(universe_path)
     pitchers = aggregate_pitchers(cache, pitcher_ids)
@@ -334,7 +348,13 @@ def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH
         "artifact": "valucast_aaa_statcast_features",
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "as_of": date.today().isoformat(),
+        # as_of = VERIFIED DATA COVERAGE, never the build date. Stamping
+        # date.today() let a rebuild from a stale cache masquerade as fresh and
+        # bypass the staleness gate entirely (owner review of PR #34,
+        # 2026-07-30). cache_coverage prefers the refresher's checked_through
+        # (advanced only through fully-fetched days); legacy caches fall back
+        # to the max cached game_date — still data-derived, never today.
+        "as_of": cache_coverage(cache),
         # Freshness stamp for the validator's SELF-ARMING staleness gate: any
         # artifact carrying this regime was built AFTER the cache-persistence fix
         # (Actions cache steps + aaa-statcast-bootstrap workflow, 2026-07-30) and
@@ -343,7 +363,7 @@ def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH
         # first fresh rebuild replaces it — so CI does not go red on the stale
         # pre-fix artifact, arms at the first fresh build, and a never-recovering
         # pipeline still fails closed. See validate_aaa_statcast_features.py.
-        "freshness_regime": "cache_bootstrap_v1",
+        "freshness_regime": FRESHNESS_REGIME,
         "season": season,
         "source": "baseball_savant_statcast_minors_aaa",
         "source_policy": {
@@ -424,6 +444,33 @@ def main(argv: list[str] | None = None) -> int:
             flush=True,
         )
         return 0
+
+    # No-advance refusal (freshness-bypass fix, 2026-07-30): when verified
+    # coverage has not moved past the served artifact's as_of, rebuilding
+    # would only re-stamp the same data — keep the prior artifact so as_of
+    # keeps telling the truth and the staleness gate can bite. Exception: an
+    # artifact WITHOUT the current freshness_regime stamp may rebuild once at
+    # equal coverage (schema upgrade — gains the stamp and ev_n fields);
+    # afterwards this refusal applies.
+    new_coverage = cache_coverage(cache)
+    if args.out.exists():
+        try:
+            existing = json.loads(args.out.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        existing_as_of = existing.get("as_of")
+        if (
+            existing.get("freshness_regime") == FRESHNESS_REGIME
+            and isinstance(existing_as_of, str)
+            and isinstance(new_coverage, str)
+            and new_coverage <= existing_as_of
+        ):
+            print(
+                f"AAA statcast coverage unchanged (checked through {new_coverage}, "
+                f"artifact as_of {existing_as_of}); keeping prior artifact",
+                flush=True,
+            )
+            return 0
 
     payload = build_artifact(cache, args.season)
     try:

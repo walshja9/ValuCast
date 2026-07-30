@@ -231,3 +231,68 @@ def test_fetch_aaa_abbreviations_parses(monkeypatch):
     monkeypatch.setattr(r, "_read_with_retry", lambda url, attempts=3: json.dumps(payload))
     abbrevs = r.fetch_aaa_abbreviations(2026)
     assert abbrevs == {"BUF", "CLT"}
+
+
+# ---------------------------------------------------------------------------
+# checked_through coverage tracking (freshness-bypass fix, 2026-07-30 review)
+# ---------------------------------------------------------------------------
+def _fake_day_rows(day, abbrevs):
+    return [{
+        "game_pk": f"pk-{day}", "game_date": day, "home_team": "LHV",
+        "batter": "1", "pitcher": "2", "description": "foul",
+        "plate_x": "0.1", "plate_z": "2.5", "sz_top": "3.4", "sz_bot": "1.6",
+    }]
+
+
+def test_gather_days_advances_checked_through_per_completed_day(monkeypatch):
+    monkeypatch.setattr(r, "fetch_day_rows", _fake_day_rows)
+    monkeypatch.setattr(r.time, "sleep", lambda *_: None)
+    cache = {"games": {}}
+    r.gather_days(["2026-07-01", "2026-07-02"], 2026, cache, {"LHV"},
+                  advance_coverage=True)
+    assert cache["checked_through"] == "2026-07-02"
+
+
+def test_gather_days_empty_day_still_counts_as_checked(monkeypatch):
+    monkeypatch.setattr(r, "fetch_day_rows", lambda d, a: [])
+    monkeypatch.setattr(r.time, "sleep", lambda *_: None)
+    cache = {"games": {}}
+    r.gather_days(["2026-07-01"], 2026, cache, {"LHV"}, advance_coverage=True)
+    assert cache["checked_through"] == "2026-07-01"
+
+
+def test_gather_days_stops_coverage_at_first_failed_day(monkeypatch):
+    def _flaky(day, abbrevs):
+        if day == "2026-07-02":
+            raise RuntimeError("savant 500")
+        return _fake_day_rows(day, abbrevs)
+
+    monkeypatch.setattr(r, "fetch_day_rows", _flaky)
+    monkeypatch.setattr(r.time, "sleep", lambda *_: None)
+    cache = {"games": {}}
+    try:
+        r.gather_days(["2026-07-01", "2026-07-02", "2026-07-03"], 2026, cache,
+                      {"LHV"}, advance_coverage=True)
+    except RuntimeError:
+        pass
+    # Gap safety: coverage must not jump past the failed day.
+    assert cache["checked_through"] == "2026-07-01"
+
+
+def test_gather_days_dev_date_mode_never_advances_coverage(monkeypatch):
+    monkeypatch.setattr(r, "fetch_day_rows", _fake_day_rows)
+    monkeypatch.setattr(r.time, "sleep", lambda *_: None)
+    cache = {"games": {}, "checked_through": "2026-07-01"}
+    r.gather_days(["2026-07-20"], 2026, cache, {"LHV"}, advance_coverage=False)
+    assert cache["checked_through"] == "2026-07-01"
+
+
+def test_incremental_dates_resume_from_checked_through():
+    cache = {
+        "games": {"pk": {"game_date": "2026-07-10"}},
+        "checked_through": "2026-07-05",
+    }
+    days = r.incremental_dates(cache, 2026, through=date(2026, 7, 8))
+    # Resumes from coverage (07-05), not the max cached game date (07-10):
+    # a failed day after a cached later game must be re-checked.
+    assert days == ["2026-07-06", "2026-07-07", "2026-07-08"]

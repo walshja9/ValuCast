@@ -306,3 +306,67 @@ def test_build_artifact_envelope(tmp_path):
     assert art["source_policy"]["level"] == "AAA"
     assert "1001" in art["pitchers"]
     assert art["counts"]["pitchers"] == 1
+
+
+# ---------------------------------------------------------------------------
+# as_of honesty + no-advance rebuild refusal (freshness-bypass fix)
+# ---------------------------------------------------------------------------
+def _coverage_cache(day="2026-07-20"):
+    return {
+        "checked_through": day,
+        "games": {"pk1": {"game_date": day, "home_team": "LHV", "season": 2026,
+                          "pitches": []}},
+    }
+
+
+def test_artifact_as_of_is_cache_coverage_not_build_date():
+    from scripts.build_aaa_statcast_features import build_artifact
+
+    payload = build_artifact(_coverage_cache("2026-07-20"), 2026)
+    # A rebuild from an old cache must carry the old coverage date, never
+    # today's date — otherwise the staleness gate is bypassed (2026-07-30
+    # owner review of PR #34).
+    assert payload["as_of"] == "2026-07-20"
+
+
+def test_builder_refuses_rebuild_when_coverage_did_not_advance(tmp_path, monkeypatch):
+    import scripts.build_aaa_statcast_features as b
+
+    out = tmp_path / "art.json"
+    out.write_text(json.dumps({
+        "artifact": "valucast_aaa_statcast_features",
+        "freshness_regime": "cache_bootstrap_v1",
+        "as_of": "2026-07-20",
+        "pitchers": {}, "hitters": {"h": {"n_pitches": 1}},
+    }), encoding="utf-8")
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(json.dumps(_coverage_cache("2026-07-20")), encoding="utf-8")
+
+    rc = b.main(["--cache-path", str(cache_path), "--out", str(out)])
+
+    assert rc == 0
+    kept = json.loads(out.read_text(encoding="utf-8"))
+    assert kept["as_of"] == "2026-07-20"
+    assert "generated_at" not in kept or kept.get("hitters") == {"h": {"n_pitches": 1}}
+
+
+def test_builder_allows_equal_coverage_rebuild_when_schema_stamp_missing(tmp_path):
+    import scripts.build_aaa_statcast_features as b
+
+    out = tmp_path / "art.json"
+    out.write_text(json.dumps({
+        "artifact": "valucast_aaa_statcast_features",
+        "as_of": "2026-07-20",  # legacy: no freshness_regime stamp
+        "pitchers": {}, "hitters": {},
+    }), encoding="utf-8")
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(json.dumps(_coverage_cache("2026-07-20")), encoding="utf-8")
+
+    rc = b.main(["--cache-path", str(cache_path), "--out", str(out)])
+
+    assert rc == 0
+    rebuilt = json.loads(out.read_text(encoding="utf-8"))
+    # Schema-upgrade exception: equal coverage may rebuild ONCE to gain the
+    # stamp (and ev_n fields); afterwards the no-advance refusal applies.
+    assert rebuilt.get("freshness_regime") == "cache_bootstrap_v1"
+    assert rebuilt["as_of"] == "2026-07-20"
