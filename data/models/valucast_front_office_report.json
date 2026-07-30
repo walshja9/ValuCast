@@ -3,7 +3,7 @@
   "failure_watchlist": {
     "blocking_finding_count": 0,
     "blocking_findings": [],
-    "evidence_gate_count": 2,
+    "evidence_gate_count": 4,
     "evidence_gates": [
       {
         "current": 0.015,
@@ -12,42 +12,69 @@
         "required": 0.7
       },
       {
+        "current": "collecting",
+        "kind": "forward_archives",
+        "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+        "required": "review_ready"
+      },
+      {
         "current": "fail",
         "kind": "current_board_shape",
         "message": "Current Board Shape has not passed.",
         "required": "pass"
+      },
+      {
+        "current": 0,
+        "kind": "forward_history",
+        "message": "Fewer than seven rank archive comparisons are available.",
+        "required": 7
       }
     ],
     "forward_archive_progress": {
-      "buy_comparison_count": 15,
-      "current_supported_grade": "A-",
-      "minimum_buy_comparisons": 14,
-      "minimum_rank_comparisons": 14,
-      "minimum_span_days": 30,
+      "buy_comparison_count": 0,
+      "current_supported_grade": null,
+      "minimum_buy_comparisons": 7,
+      "minimum_rank_comparisons": 7,
+      "minimum_span_days": 14,
       "missing": [
         {
-          "current": 15,
+          "current": 0,
+          "metric": "rank_comparison_count",
+          "required": 7
+        },
+        {
+          "current": 0,
+          "metric": "buy_comparison_count",
+          "required": 7
+        },
+        {
+          "current": 0,
           "metric": "observation_span_days",
-          "required": 30
+          "required": 14
+        },
+        {
+          "current": null,
+          "metric": "latest_top40_buy_retention_rate",
+          "required": 0.45
         }
       ],
-      "next_target_grade": "A",
-      "observation_span_days": 15,
-      "rank_comparison_count": 15,
-      "remaining_buy_comparisons": 0,
-      "remaining_rank_comparisons": 0,
-      "remaining_span_days": 15,
-      "status": "review_ready"
+      "next_target_grade": "A-",
+      "observation_span_days": 0,
+      "rank_comparison_count": 0,
+      "remaining_buy_comparisons": 7,
+      "remaining_rank_comparisons": 7,
+      "remaining_span_days": 14,
+      "status": "collecting"
     },
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.95,
-    "latest_rank_bucket_count": 16,
+    "latest_buy_retention_rate": null,
+    "latest_rank_bucket_count": null,
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-07-29T14:15:56.871093+00:00",
+  "generated_at": "2026-07-30T12:45:31.200268+00:00",
   "next_build_order": [
-    "Keep logging forward archives: ~15 more observation day(s) needed to reach A forward support.",
+    "Keep logging forward archives: ~14 more observation day(s) needed to reach A- forward support.",
     "Run the Prospect Model v0.7-vs-v0.6 bucket comparison and publish the by-bucket verdict.",
     "Promote the ordinal bridge only after it beats the historical-neighbor baseline out of sample.",
     "Keep uncertainty-band explanations visible on every prospect detail surface.",
@@ -58,13 +85,13 @@
       "blockers": [],
       "status": "candidate_ready",
       "targeted_row_refresh_count": 0,
-      "top200_history_fallback_count": 2,
+      "top200_history_fallback_count": 3,
       "top50_history_fallback_count": 0,
       "top50_stat_context_mismatch_count": 0
     },
     "pipeline_observability": {
       "date_mismatch_count": 0,
-      "expected_date": "2026-07-29",
+      "expected_date": "2026-07-30",
       "missing_or_unreadable_count": 0,
       "ready_for_daily_publication": true,
       "status": "candidate_ready",
@@ -86,7 +113,7 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "row_count": 3806,
+        "row_count": 3816,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,
@@ -138,8 +165,8 @@
     {
       "evidence": {
         "bucket_cohort_evidence_ready": true,
-        "outcome_grade": "A-",
-        "outcome_score": 90,
+        "outcome_grade": "B+",
+        "outcome_score": 87,
         "v07_bucket_comparison_ready": true,
         "v07_ready_for_backtest": true,
         "v07_top200_availability_coverage": 1.0,
@@ -152,11 +179,13 @@
     },
     {
       "evidence": {
-        "buy_comparison_count": 15,
-        "buy_comparisons_needed": 0,
-        "buys_monitor_status": "review_ready",
-        "cap_reasons": [],
-        "current_grade": "A-",
+        "buy_comparison_count": 0,
+        "buy_comparisons_needed": 7,
+        "buys_monitor_status": "collecting",
+        "cap_reasons": [
+          "Forward observations are not review-ready yet."
+        ],
+        "current_grade": "B+",
         "evidence_gates": [
           {
             "current": 0.015,
@@ -165,14 +194,26 @@
             "required": 0.7
           },
           {
+            "current": "collecting",
+            "kind": "forward_archives",
+            "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+            "required": "review_ready"
+          },
+          {
             "current": "fail",
             "kind": "current_board_shape",
             "message": "Current Board Shape has not passed.",
             "required": "pass"
+          },
+          {
+            "current": 0,
+            "kind": "forward_history",
+            "message": "Fewer than seven rank archive comparisons are available.",
+            "required": 7
           }
         ],
-        "forward_next_target_grade": "A",
-        "forward_supported_grade": "A-",
+        "forward_next_target_grade": "A-",
+        "forward_supported_grade": null,
         "forward_thresholds": {
           "A": {
             "minimum_buy_comparisons": 14,
@@ -181,9 +222,24 @@
             "minimum_span_days": 30,
             "missing": [
               {
-                "current": 15,
+                "current": 0,
+                "metric": "rank_comparison_count",
+                "required": 14
+              },
+              {
+                "current": 0,
+                "metric": "buy_comparison_count",
+                "required": 14
+              },
+              {
+                "current": 0,
                 "metric": "observation_span_days",
                 "required": 30
+              },
+              {
+                "current": null,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.55
               }
             ],
             "passed": false
@@ -195,19 +251,24 @@
             "minimum_span_days": 60,
             "missing": [
               {
-                "current": 15,
+                "current": 0,
                 "metric": "rank_comparison_count",
                 "required": 30
               },
               {
-                "current": 15,
+                "current": 0,
                 "metric": "buy_comparison_count",
                 "required": 30
               },
               {
-                "current": 15,
+                "current": 0,
                 "metric": "observation_span_days",
                 "required": 60
+              },
+              {
+                "current": null,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.6
               }
             ],
             "passed": false
@@ -217,21 +278,42 @@
             "minimum_buy_retention_rate": 0.45,
             "minimum_rank_comparisons": 7,
             "minimum_span_days": 14,
-            "missing": [],
-            "passed": true
+            "missing": [
+              {
+                "current": 0,
+                "metric": "rank_comparison_count",
+                "required": 7
+              },
+              {
+                "current": 0,
+                "metric": "buy_comparison_count",
+                "required": 7
+              },
+              {
+                "current": 0,
+                "metric": "observation_span_days",
+                "required": 14
+              },
+              {
+                "current": null,
+                "metric": "latest_top40_buy_retention_rate",
+                "required": 0.45
+              }
+            ],
+            "passed": false
           }
         },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-        "observation_days_needed": 15,
-        "observation_span_days": 15,
-        "rank_comparisons_needed": 0,
-        "score_cap": null,
+        "observation_days_needed": 14,
+        "observation_span_days": 0,
+        "rank_comparisons_needed": 7,
+        "score_cap": 87,
         "target_grade": "A-",
-        "uncapped_score": 90
+        "uncapped_score": 87
       },
-      "grade": "A-",
+      "grade": "B+",
       "name": "MLB front-office track",
-      "score": 90,
+      "score": 87,
       "status": "in_progress"
     }
   ],

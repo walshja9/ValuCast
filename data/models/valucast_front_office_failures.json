@@ -9,37 +9,64 @@
       "required": 0.7
     },
     {
+      "current": "collecting",
+      "kind": "forward_archives",
+      "message": "Forward archives are still collecting; no live-outcome stability review yet.",
+      "required": "review_ready"
+    },
+    {
       "current": "fail",
       "kind": "current_board_shape",
       "message": "Current Board Shape has not passed.",
       "required": "pass"
+    },
+    {
+      "current": 0,
+      "kind": "forward_history",
+      "message": "Fewer than seven rank archive comparisons are available.",
+      "required": 7
     }
   ],
   "forward_archive_progress": {
-    "buy_comparison_count": 15,
-    "current_supported_grade": "A-",
-    "minimum_buy_comparisons": 14,
-    "minimum_rank_comparisons": 14,
-    "minimum_span_days": 30,
+    "buy_comparison_count": 0,
+    "current_supported_grade": null,
+    "minimum_buy_comparisons": 7,
+    "minimum_rank_comparisons": 7,
+    "minimum_span_days": 14,
     "missing": [
       {
-        "current": 15,
+        "current": 0,
+        "metric": "rank_comparison_count",
+        "required": 7
+      },
+      {
+        "current": 0,
+        "metric": "buy_comparison_count",
+        "required": 7
+      },
+      {
+        "current": 0,
         "metric": "observation_span_days",
-        "required": 30
+        "required": 14
+      },
+      {
+        "current": null,
+        "metric": "latest_top40_buy_retention_rate",
+        "required": 0.45
       }
     ],
-    "next_target_grade": "A",
-    "observation_span_days": 15,
-    "rank_comparison_count": 15,
-    "remaining_buy_comparisons": 0,
-    "remaining_rank_comparisons": 0,
-    "remaining_span_days": 15,
-    "status": "review_ready"
+    "next_target_grade": "A-",
+    "observation_span_days": 0,
+    "rank_comparison_count": 0,
+    "remaining_buy_comparisons": 7,
+    "remaining_rank_comparisons": 7,
+    "remaining_span_days": 14,
+    "status": "collecting"
   },
   "forward_archive_thresholds": {
-    "current_supported_grade": "A-",
-    "next_target_grade": "A",
-    "status": "review_ready",
+    "current_supported_grade": null,
+    "next_target_grade": "A-",
+    "status": "collecting",
     "thresholds": {
       "A": {
         "minimum_buy_comparisons": 14,
@@ -48,9 +75,24 @@
         "minimum_span_days": 30,
         "missing": [
           {
-            "current": 15,
+            "current": 0,
+            "metric": "rank_comparison_count",
+            "required": 14
+          },
+          {
+            "current": 0,
+            "metric": "buy_comparison_count",
+            "required": 14
+          },
+          {
+            "current": 0,
             "metric": "observation_span_days",
             "required": 30
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.55
           }
         ],
         "passed": false
@@ -62,19 +104,24 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 15,
+            "current": 0,
             "metric": "rank_comparison_count",
             "required": 30
           },
           {
-            "current": 15,
+            "current": 0,
             "metric": "buy_comparison_count",
             "required": 30
           },
           {
-            "current": 15,
+            "current": 0,
             "metric": "observation_span_days",
             "required": 60
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.6
           }
         ],
         "passed": false
@@ -84,17 +131,53 @@
         "minimum_buy_retention_rate": 0.45,
         "minimum_rank_comparisons": 7,
         "minimum_span_days": 14,
-        "missing": [],
-        "passed": true
+        "missing": [
+          {
+            "current": 0,
+            "metric": "rank_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
+            "metric": "buy_comparison_count",
+            "required": 7
+          },
+          {
+            "current": 0,
+            "metric": "observation_span_days",
+            "required": 14
+          },
+          {
+            "current": null,
+            "metric": "latest_top40_buy_retention_rate",
+            "required": 0.45
+          }
+        ],
+        "passed": false
       }
     }
   },
   "front_office_risks": [
     {
+      "level": "A",
+      "mlbam_id": 694357,
+      "name": "Ricky Tiedemann",
+      "rank": 95,
+      "reasons": [
+        "availability=injured",
+        "risk_discount=0.120",
+        "uncertainty=wide",
+        "skill_band=thin"
+      ],
+      "risk_score": 11.4,
+      "role": "pitcher",
+      "score": 31.99
+    },
+    {
       "level": "AAA",
       "mlbam_id": 702281,
       "name": "Robby Snelling",
-      "rank": 374,
+      "rank": 353,
       "reasons": [
         "availability=injured",
         "risk_discount=0.300",
@@ -103,13 +186,13 @@
       ],
       "risk_score": 11.0,
       "role": "pitcher",
-      "score": 22.61
+      "score": 22.67
     },
     {
       "level": "AAA",
       "mlbam_id": 691945,
       "name": "Carter Baumler",
-      "rank": 1264,
+      "rank": 1235,
       "reasons": [
         "availability=injured",
         "risk_discount=0.300",
@@ -124,7 +207,7 @@
       "level": "AAA",
       "mlbam_id": 700327,
       "name": "Welinton Herrera",
-      "rank": 1440,
+      "rank": 1407,
       "reasons": [
         "availability=injured",
         "risk_discount=0.300",
@@ -133,28 +216,13 @@
       ],
       "risk_score": 11.0,
       "role": "pitcher",
-      "score": 8.46
-    },
-    {
-      "level": "A",
-      "mlbam_id": 694357,
-      "name": "Ricky Tiedemann",
-      "rank": 105,
-      "reasons": [
-        "availability=injured",
-        "risk_discount=0.120",
-        "uncertainty=wide",
-        "skill_band=thin"
-      ],
-      "risk_score": 10.4,
-      "role": "pitcher",
-      "score": 31.7
+      "score": 8.48
     },
     {
       "level": "A+",
       "mlbam_id": 805809,
       "name": "Travis Sykora",
-      "rank": 273,
+      "rank": 256,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -163,13 +231,13 @@
       ],
       "risk_score": 10.0,
       "role": "pitcher",
-      "score": 24.94
+      "score": 25.18
     },
     {
       "level": "AA",
       "mlbam_id": 691330,
       "name": "Moises Chace",
-      "rank": 2237,
+      "rank": 2200,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -178,13 +246,13 @@
       ],
       "risk_score": 10.0,
       "role": "pitcher",
-      "score": 1.16
+      "score": 1.1
     },
     {
       "level": "A",
       "mlbam_id": 806010,
       "name": "Barrett Kent",
-      "rank": 2313,
+      "rank": 2289,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -193,13 +261,13 @@
       ],
       "risk_score": 10.0,
       "role": "pitcher",
-      "score": 0.21
+      "score": 0.15
     },
     {
       "level": "A",
       "mlbam_id": 803424,
       "name": "Juan Sanchez",
-      "rank": 2754,
+      "rank": 2752,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -214,7 +282,7 @@
       "level": "A",
       "mlbam_id": 823801,
       "name": "Tanner Smith",
-      "rank": 2856,
+      "rank": 2859,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -229,7 +297,7 @@
       "level": "A+",
       "mlbam_id": 689672,
       "name": "Drew Thorpe",
-      "rank": 100,
+      "rank": 96,
       "reasons": [
         "availability=rehab",
         "risk_discount=0.080",
@@ -238,13 +306,13 @@
       ],
       "risk_score": 9.6,
       "role": "pitcher",
-      "score": 32.24
+      "score": 31.98
     },
     {
       "level": "AAA",
       "mlbam_id": 690829,
       "name": "Ben Joyce",
-      "rank": 1491,
+      "rank": 1463,
       "reasons": [
         "availability=rehab",
         "risk_discount=0.080",
@@ -253,13 +321,13 @@
       ],
       "risk_score": 9.6,
       "role": "pitcher",
-      "score": 7.9
+      "score": 7.87
     },
     {
       "level": "AAA",
       "mlbam_id": 694795,
       "name": "Josh Ekness",
-      "rank": 1559,
+      "rank": 1536,
       "reasons": [
         "availability=rehab",
         "risk_discount=0.080",
@@ -268,13 +336,13 @@
       ],
       "risk_score": 9.6,
       "role": "pitcher",
-      "score": 7.25
+      "score": 7.24
     },
     {
       "level": "A",
       "mlbam_id": 800611,
       "name": "Noble Meyer",
-      "rank": 79,
+      "rank": 78,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -283,13 +351,13 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 33.32
+      "score": 33.23
     },
     {
       "level": "AAA",
       "mlbam_id": 682982,
       "name": "Daniel Espino",
-      "rank": 225,
+      "rank": 218,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -298,13 +366,13 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 26.48
+      "score": 26.45
     },
     {
       "level": "AAA",
       "mlbam_id": 806258,
       "name": "Thomas White",
-      "rank": 392,
+      "rank": 271,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -313,28 +381,13 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 22.2
-    },
-    {
-      "level": "A+",
-      "mlbam_id": 813536,
-      "name": "Juan Valera",
-      "rank": 482,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=thin"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 20.33
+      "score": 24.79
     },
     {
       "level": "A+",
       "mlbam_id": 702505,
       "name": "J.D. Thompson",
-      "rank": 527,
+      "rank": 379,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -343,58 +396,13 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 19.69
-    },
-    {
-      "level": "AAA",
-      "mlbam_id": 691414,
-      "name": "Yorman G\u00f3mez",
-      "rank": 651,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=limited"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 17.95
+      "score": 22.03
     },
     {
       "level": "A+",
-      "mlbam_id": 701679,
-      "name": "Brody Brecht",
-      "rank": 684,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=limited"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 17.49
-    },
-    {
-      "level": "AA",
-      "mlbam_id": 807485,
-      "name": "Davian Garcia",
-      "rank": 710,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=limited"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 17.02
-    },
-    {
-      "level": "A",
-      "mlbam_id": 808383,
-      "name": "Kelvis Salcedo",
-      "rank": 719,
+      "mlbam_id": 813536,
+      "name": "Juan Valera",
+      "rank": 460,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -403,13 +411,13 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 16.87
+      "score": 20.4
     },
     {
-      "level": "A",
-      "mlbam_id": 702965,
-      "name": "Hiro Wyatt",
-      "rank": 785,
+      "level": "AAA",
+      "mlbam_id": 694393,
+      "name": "Jaxon Wiggins",
+      "rank": 588,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -418,13 +426,103 @@
       ],
       "risk_score": 9.2,
       "role": "pitcher",
-      "score": 16.02
+      "score": 18.31
+    },
+    {
+      "level": "AAA",
+      "mlbam_id": 691414,
+      "name": "Yorman G\u00f3mez",
+      "rank": 616,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=limited"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 18.01
+    },
+    {
+      "level": "A+",
+      "mlbam_id": 701679,
+      "name": "Brody Brecht",
+      "rank": 658,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=limited"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 17.5
+    },
+    {
+      "level": "AA",
+      "mlbam_id": 807485,
+      "name": "Davian Garcia",
+      "rank": 686,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=limited"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 17.0
+    },
+    {
+      "level": "A",
+      "mlbam_id": 808383,
+      "name": "Kelvis Salcedo",
+      "rank": 699,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=thin"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 16.81
+    },
+    {
+      "level": "A",
+      "mlbam_id": 702965,
+      "name": "Hiro Wyatt",
+      "rank": 756,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=limited"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 16.01
+    },
+    {
+      "level": "AAA",
+      "mlbam_id": 696062,
+      "name": "Wilber Dotel",
+      "rank": 840,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.060",
+        "uncertainty=wide",
+        "skill_band=limited"
+      ],
+      "risk_score": 9.2,
+      "role": "pitcher",
+      "score": 14.81
     },
     {
       "level": "A+",
       "mlbam_id": 815501,
       "name": "Bryce Meccage",
-      "rank": 900,
+      "rank": 865,
       "reasons": [
         "availability=thin_current_sample",
         "risk_discount=0.060",
@@ -434,1323 +532,11 @@
       "risk_score": 9.2,
       "role": "pitcher",
       "score": 14.4
-    },
-    {
-      "level": "AA",
-      "mlbam_id": 805725,
-      "name": "Jake Miller",
-      "rank": 918,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=thin"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 14.22
-    },
-    {
-      "level": "AAA",
-      "mlbam_id": 696062,
-      "name": "Wilber Dotel",
-      "rank": 964,
-      "reasons": [
-        "availability=thin_current_sample",
-        "risk_discount=0.060",
-        "uncertainty=wide",
-        "skill_band=limited"
-      ],
-      "risk_score": 9.2,
-      "role": "pitcher",
-      "score": 13.68
     }
   ],
-  "generated_at": "2026-07-29T00:00:00+00:00",
-  "latest_buy_largest_movers": [
-    {
-      "availability_status": "missing",
-      "current_rank": 37,
-      "current_score": 57.9,
-      "level": "AA",
-      "mlbam_id": 816111,
-      "name": "Tate Southisene",
-      "previous_rank": 21,
-      "previous_score": 60.7,
-      "rank_change": 16,
-      "role": "hitter",
-      "score_change": -2.8,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 24,
-      "current_score": 60.0,
-      "level": "AAA",
-      "mlbam_id": 694197,
-      "name": "Angel Genao",
-      "previous_rank": 33,
-      "previous_score": 58.9,
-      "rank_change": -9,
-      "role": "hitter",
-      "score_change": 1.1,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 18,
-      "current_score": 61.6,
-      "level": "A+",
-      "mlbam_id": 806230,
-      "name": "Sammy Stafura",
-      "previous_rank": 25,
-      "previous_score": 59.7,
-      "rank_change": -7,
-      "role": "hitter",
-      "score_change": 1.9,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 33,
-      "current_score": 58.7,
-      "level": "AA",
-      "mlbam_id": 806958,
-      "name": "Felnin Celesten",
-      "previous_rank": 26,
-      "previous_score": 59.5,
-      "rank_change": 7,
-      "role": "hitter",
-      "score_change": -0.8,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 7,
-      "current_score": 65.2,
-      "level": "A+",
-      "mlbam_id": 821273,
-      "name": "Edward Florentino",
-      "previous_rank": 13,
-      "previous_score": 62.5,
-      "rank_change": -6,
-      "role": "hitter",
-      "score_change": 2.7,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 11,
-      "current_score": 62.9,
-      "level": "A+",
-      "mlbam_id": 815896,
-      "name": "Emil Morales",
-      "previous_rank": 16,
-      "previous_score": 61.7,
-      "rank_change": -5,
-      "role": "hitter",
-      "score_change": 1.2,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 14,
-      "current_score": 62.6,
-      "level": "AA",
-      "mlbam_id": 815908,
-      "name": "Jes\u00fas Made",
-      "previous_rank": 9,
-      "previous_score": 62.8,
-      "rank_change": 5,
-      "role": "hitter",
-      "score_change": -0.2,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 9,
-      "current_score": 63.4,
-      "level": "AAA",
-      "mlbam_id": 703185,
-      "name": "Nelson Rada",
-      "previous_rank": 6,
-      "previous_score": 64.1,
-      "rank_change": 3,
-      "role": "hitter",
-      "score_change": -0.7,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 22,
-      "current_score": 60.5,
-      "level": "A+",
-      "mlbam_id": 815792,
-      "name": "Chase Harlan",
-      "previous_rank": 19,
-      "previous_score": 60.9,
-      "rank_change": 3,
-      "role": "hitter",
-      "score_change": -0.4,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 32,
-      "current_score": 59.0,
-      "level": "A+",
-      "mlbam_id": 815929,
-      "name": "Jhonny Level",
-      "previous_rank": 35,
-      "previous_score": 58.6,
-      "rank_change": -3,
-      "role": "hitter",
-      "score_change": 0.4,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 35,
-      "current_score": 58.4,
-      "level": "AA",
-      "mlbam_id": 815549,
-      "name": "Ryan Sloan",
-      "previous_rank": 32,
-      "previous_score": 58.9,
-      "rank_change": 3,
-      "role": "pitcher",
-      "score_change": -0.5,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 39,
-      "current_score": 57.9,
-      "level": "A+",
-      "mlbam_id": 821150,
-      "name": "Enddy Azocar",
-      "previous_rank": 36,
-      "previous_score": 57.9,
-      "rank_change": 3,
-      "role": "hitter",
-      "score_change": 0.0,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 5,
-      "current_score": 66.1,
-      "level": "AA",
-      "mlbam_id": 823787,
-      "name": "Rainiel Rodriguez",
-      "previous_rank": 7,
-      "previous_score": 63.2,
-      "rank_change": -2,
-      "role": "hitter",
-      "score_change": 2.9,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 13,
-      "current_score": 62.7,
-      "level": "A+",
-      "mlbam_id": 806191,
-      "name": "Tai Peete",
-      "previous_rank": 11,
-      "previous_score": 62.6,
-      "rank_change": 2,
-      "role": "hitter",
-      "score_change": 0.1,
-      "score_source": "prospect_model_v0_6"
-    },
-    {
-      "availability_status": "missing",
-      "current_rank": 21,
-      "current_score": 60.9,
-      "level": "AAA",
-      "mlbam_id": 703155,
-      "name": "Lazaro Montes",
-      "previous_rank": 23,
-      "previous_score": 60.1,
-      "rank_change": -2,
-      "role": "hitter",
-      "score_change": 0.8,
-      "score_source": "prospect_model_v0_6"
-    }
-  ],
-  "latest_rank_bucket_watchlist": [
-    {
-      "average_absolute_rank_change": 10.8352,
-      "average_rank_change": 1.8087,
-      "average_score_change": 0.0021,
-      "bucket": "hitter|upper_level|prospect_model_v0_6|active_sample",
-      "current_count": 528,
-      "current_top50_count": 29,
-      "evidence_bucket": "active_sample",
-      "largest_movers": [
-        {
-          "availability_status": "available",
-          "current_rank": 2454,
-          "current_score": 0.0,
-          "level": "AA",
-          "mlbam_id": 703198,
-          "name": "Kenni Gomez",
-          "previous_rank": 2257,
-          "previous_score": 0.79,
-          "rank_change": 197,
-          "role": "hitter",
-          "score_change": -0.79,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1217,
-          "current_score": 10.78,
-          "level": "AA",
-          "mlbam_id": 691941,
-          "name": "Calvin Harris",
-          "previous_rank": 1033,
-          "previous_score": 12.79,
-          "rank_change": 184,
-          "role": "hitter",
-          "score_change": -2.01,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 573,
-          "current_score": 18.9,
-          "level": "AA",
-          "mlbam_id": 701333,
-          "name": "Colby Shelton",
-          "previous_rank": 736,
-          "previous_score": 16.62,
-          "rank_change": -163,
-          "role": "hitter",
-          "score_change": 2.28,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1697,
-          "current_score": 5.84,
-          "level": "AA",
-          "mlbam_id": 815299,
-          "name": "Will Verdung",
-          "previous_rank": 1567,
-          "previous_score": 7.12,
-          "rank_change": 130,
-          "role": "hitter",
-          "score_change": -1.28,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1375,
-          "current_score": 9.05,
-          "level": "AA",
-          "mlbam_id": 813883,
-          "name": "Ryan Ignoffo",
-          "previous_rank": 1246,
-          "previous_score": 10.44,
-          "rank_change": 129,
-          "role": "hitter",
-          "score_change": -1.39,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1270,
-          "current_score": 10.15,
-          "level": "AA",
-          "mlbam_id": 684491,
-          "name": "Frank Rodriguez",
-          "previous_rank": 1375,
-          "previous_score": 8.98,
-          "rank_change": -105,
-          "role": "hitter",
-          "score_change": 1.17,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 466,
-          "current_score": 20.65,
-          "level": "AAA",
-          "mlbam_id": 683454,
-          "name": "Brayan Buelvas",
-          "previous_rank": 547,
-          "previous_score": 19.43,
-          "rank_change": -81,
-          "role": "hitter",
-          "score_change": 1.22,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2177,
-          "current_score": 1.79,
-          "level": "AAA",
-          "mlbam_id": 691408,
-          "name": "Maick Collado",
-          "previous_rank": 2247,
-          "previous_score": 0.91,
-          "rank_change": -70,
-          "role": "hitter",
-          "score_change": 0.88,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1368,
-          "current_score": 9.13,
-          "level": "AAA",
-          "mlbam_id": 811948,
-          "name": "Tony Santa Maria",
-          "previous_rank": 1437,
-          "previous_score": 8.42,
-          "rank_change": -69,
-          "role": "hitter",
-          "score_change": 0.71,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 449,
-          "current_score": 21.11,
-          "level": "AA",
-          "mlbam_id": 696145,
-          "name": "Lonnie White Jr.",
-          "previous_rank": 512,
-          "previous_score": 19.94,
-          "rank_change": -63,
-          "role": "hitter",
-          "score_change": 1.17,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "upper_level",
-      "median_rank_change": 3.0,
-      "median_score_change": -0.01,
-      "moved_down_count": 328,
-      "moved_up_count": 158,
-      "overlap_count": 528,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 42
-    },
-    {
-      "average_absolute_rank_change": 10.3791,
-      "average_rank_change": -4.9529,
-      "average_score_change": 0.0719,
-      "bucket": "pitcher|upper_level|prospect_model_v0_6|active_sample",
-      "current_count": 488,
-      "current_top50_count": 12,
-      "evidence_bucket": "active_sample",
-      "largest_movers": [
-        {
-          "availability_status": "available",
-          "current_rank": 2199,
-          "current_score": 1.57,
-          "level": "AAA",
-          "mlbam_id": 808865,
-          "name": "Jack Young",
-          "previous_rank": 2685,
-          "previous_score": 0.0,
-          "rank_change": -486,
-          "role": "pitcher",
-          "score_change": 1.57,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2320,
-          "current_score": 0.13,
-          "level": "AA",
-          "mlbam_id": 702910,
-          "name": "Jhancarlos Lara",
-          "previous_rank": 2719,
-          "previous_score": 0.0,
-          "rank_change": -399,
-          "role": "pitcher",
-          "score_change": 0.13,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1365,
-          "current_score": 9.15,
-          "level": "AA",
-          "mlbam_id": 814481,
-          "name": "Carson Hobbs",
-          "previous_rank": 1657,
-          "previous_score": 6.3,
-          "rank_change": -292,
-          "role": "pitcher",
-          "score_change": 2.85,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1767,
-          "current_score": 5.2,
-          "level": "AAA",
-          "mlbam_id": 822483,
-          "name": "Sean Matson",
-          "previous_rank": 1950,
-          "previous_score": 3.68,
-          "rank_change": -183,
-          "role": "pitcher",
-          "score_change": 1.52,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1896,
-          "current_score": 4.13,
-          "level": "AA",
-          "mlbam_id": 691315,
-          "name": "Yehizon Sanchez",
-          "previous_rank": 2043,
-          "previous_score": 3.15,
-          "rank_change": -147,
-          "role": "pitcher",
-          "score_change": 0.98,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1243,
-          "current_score": 10.52,
-          "level": "AA",
-          "mlbam_id": 823793,
-          "name": "Eric Loomis",
-          "previous_rank": 1364,
-          "previous_score": 9.14,
-          "rank_change": -121,
-          "role": "pitcher",
-          "score_change": 1.38,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 643,
-          "current_score": 18.02,
-          "level": "AA",
-          "mlbam_id": 702373,
-          "name": "Felix Arronde",
-          "previous_rank": 529,
-          "previous_score": 19.68,
-          "rank_change": 114,
-          "role": "pitcher",
-          "score_change": -1.66,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 786,
-          "current_score": 16.01,
-          "level": "AA",
-          "mlbam_id": 678789,
-          "name": "Julio Robaina",
-          "previous_rank": 891,
-          "previous_score": 14.53,
-          "rank_change": -105,
-          "role": "pitcher",
-          "score_change": 1.48,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 695,
-          "current_score": 17.31,
-          "level": "AAA",
-          "mlbam_id": 699314,
-          "name": "David Davalillo",
-          "previous_rank": 794,
-          "previous_score": 15.87,
-          "rank_change": -99,
-          "role": "pitcher",
-          "score_change": 1.44,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1989,
-          "current_score": 3.48,
-          "level": "AAA",
-          "mlbam_id": 686857,
-          "name": "James Gonzalez",
-          "previous_rank": 2087,
-          "previous_score": 2.84,
-          "rank_change": -98,
-          "role": "pitcher",
-          "score_change": 0.64,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "upper_level",
-      "median_rank_change": 1.0,
-      "median_score_change": 0.01,
-      "moved_down_count": 255,
-      "moved_up_count": 195,
-      "overlap_count": 488,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 38
-    },
-    {
-      "average_absolute_rank_change": 11.6073,
-      "average_rank_change": -2.978,
-      "average_score_change": 0.0434,
-      "bucket": "pitcher|lower_minors|prospect_model_v0_6|active_sample",
-      "current_count": 821,
-      "current_top50_count": 6,
-      "evidence_bucket": "active_sample",
-      "largest_movers": [
-        {
-          "availability_status": "available",
-          "current_rank": 2227,
-          "current_score": 1.22,
-          "level": "A+",
-          "mlbam_id": 834882,
-          "name": "Reece Wissinger",
-          "previous_rank": 2824,
-          "previous_score": 0.0,
-          "rank_change": -597,
-          "role": "pitcher",
-          "score_change": 1.22,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2298,
-          "current_score": 0.37,
-          "level": "A+",
-          "mlbam_id": 687006,
-          "name": "Will Armbruester",
-          "previous_rank": 2881,
-          "previous_score": 0.0,
-          "rank_change": -583,
-          "role": "pitcher",
-          "score_change": 0.37,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2875,
-          "current_score": 0.0,
-          "level": "A+",
-          "mlbam_id": 812407,
-          "name": "Tyler Hampu",
-          "previous_rank": 2300,
-          "previous_score": 0.25,
-          "rank_change": 575,
-          "role": "pitcher",
-          "score_change": -0.25,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2340,
-          "current_score": 0.01,
-          "level": "A",
-          "mlbam_id": 838328,
-          "name": "Ray Cebulski",
-          "previous_rank": 2823,
-          "previous_score": 0.0,
-          "rank_change": -483,
-          "role": "pitcher",
-          "score_change": 0.01,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2310,
-          "current_score": 0.23,
-          "level": "A+",
-          "mlbam_id": 698785,
-          "name": "Kai Wynyard",
-          "previous_rank": 2756,
-          "previous_score": 0.0,
-          "rank_change": -446,
-          "role": "pitcher",
-          "score_change": 0.23,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2289,
-          "current_score": 0.44,
-          "level": "A+",
-          "mlbam_id": 688636,
-          "name": "Adam Stone",
-          "previous_rank": 2526,
-          "previous_score": 0.0,
-          "rank_change": -237,
-          "role": "pitcher",
-          "score_change": 0.44,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2053,
-          "current_score": 3.12,
-          "level": "A",
-          "mlbam_id": 692663,
-          "name": "Jean Munoz",
-          "previous_rank": 2262,
-          "previous_score": 0.76,
-          "rank_change": -209,
-          "role": "pitcher",
-          "score_change": 2.36,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1477,
-          "current_score": 8.06,
-          "level": "A+",
-          "mlbam_id": 695486,
-          "name": "Kyle Ayers",
-          "previous_rank": 1680,
-          "previous_score": 6.09,
-          "rank_change": -203,
-          "role": "pitcher",
-          "score_change": 1.97,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 952,
-          "current_score": 13.82,
-          "level": "A",
-          "mlbam_id": 830004,
-          "name": "Juan Fraide",
-          "previous_rank": 1152,
-          "previous_score": 11.48,
-          "rank_change": -200,
-          "role": "pitcher",
-          "score_change": 2.34,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1237,
-          "current_score": 10.58,
-          "level": "A",
-          "mlbam_id": 816014,
-          "name": "Ryan McDonagh",
-          "previous_rank": 1038,
-          "previous_score": 12.75,
-          "rank_change": 199,
-          "role": "pitcher",
-          "score_change": -2.17,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "lower_minors",
-      "median_rank_change": 3.0,
-      "median_score_change": 0.0,
-      "moved_down_count": 554,
-      "moved_up_count": 184,
-      "overlap_count": 820,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 82
-    },
-    {
-      "average_absolute_rank_change": 15.8124,
-      "average_rank_change": -1.3052,
-      "average_score_change": 0.0491,
-      "bucket": "hitter|lower_minors|prospect_model_v0_6|active_sample",
-      "current_count": 757,
-      "current_top50_count": 3,
-      "evidence_bucket": "active_sample",
-      "largest_movers": [
-        {
-          "availability_status": "available",
-          "current_rank": 2146,
-          "current_score": 2.16,
-          "level": "A+",
-          "mlbam_id": 800354,
-          "name": "Esteban Mejia",
-          "previous_rank": 2389,
-          "previous_score": 0.0,
-          "rank_change": -243,
-          "role": "hitter",
-          "score_change": 2.16,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2265,
-          "current_score": 0.78,
-          "level": "A",
-          "mlbam_id": 808282,
-          "name": "Victor Cardoza",
-          "previous_rank": 2508,
-          "previous_score": 0.0,
-          "rank_change": -243,
-          "role": "hitter",
-          "score_change": 0.78,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 296,
-          "current_score": 24.32,
-          "level": "A",
-          "mlbam_id": 828148,
-          "name": "Conor Essenburg",
-          "previous_rank": 523,
-          "previous_score": 19.81,
-          "rank_change": -227,
-          "role": "hitter",
-          "score_change": 4.51,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2330,
-          "current_score": 0.05,
-          "level": "A",
-          "mlbam_id": 811602,
-          "name": "Yimy Tovar",
-          "previous_rank": 2517,
-          "previous_score": 0.0,
-          "rank_change": -187,
-          "role": "hitter",
-          "score_change": 0.05,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1970,
-          "current_score": 3.62,
-          "level": "A",
-          "mlbam_id": 807277,
-          "name": "Nick Montgomery",
-          "previous_rank": 2139,
-          "previous_score": 2.26,
-          "rank_change": -169,
-          "role": "hitter",
-          "score_change": 1.36,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 197,
-          "current_score": 27.38,
-          "level": "A+",
-          "mlbam_id": 826928,
-          "name": "Owen Carey",
-          "previous_rank": 342,
-          "previous_score": 23.13,
-          "rank_change": -145,
-          "role": "hitter",
-          "score_change": 4.25,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1079,
-          "current_score": 12.28,
-          "level": "A",
-          "mlbam_id": 829210,
-          "name": "Ty Harvey",
-          "previous_rank": 1216,
-          "previous_score": 10.75,
-          "rank_change": -137,
-          "role": "hitter",
-          "score_change": 1.53,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 1459,
-          "current_score": 8.31,
-          "level": "A",
-          "mlbam_id": 804859,
-          "name": "Robert Phelps",
-          "previous_rank": 1593,
-          "previous_score": 6.85,
-          "rank_change": -134,
-          "role": "hitter",
-          "score_change": 1.46,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2241,
-          "current_score": 1.08,
-          "level": "A",
-          "mlbam_id": 829704,
-          "name": "Fredderick Ovalle",
-          "previous_rank": 2109,
-          "previous_score": 2.65,
-          "rank_change": 132,
-          "role": "hitter",
-          "score_change": -1.57,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "available",
-          "current_rank": 2339,
-          "current_score": 0.01,
-          "level": "A",
-          "mlbam_id": 806999,
-          "name": "Manuel Cabrera",
-          "previous_rank": 2464,
-          "previous_score": 0.0,
-          "rank_change": -125,
-          "role": "hitter",
-          "score_change": 0.01,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "lower_minors",
-      "median_rank_change": 6.0,
-      "median_score_change": 0.0,
-      "moved_down_count": 541,
-      "moved_up_count": 198,
-      "overlap_count": 757,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 18
-    },
-    {
-      "average_absolute_rank_change": 7.3333,
-      "average_rank_change": 7.3333,
-      "average_score_change": -0.025,
-      "bucket": "hitter|lower_minors|prospect_model_v0_6|stale_or_inactive",
-      "current_count": 6,
-      "current_top50_count": 0,
-      "evidence_bucket": "stale_or_inactive",
-      "largest_movers": [
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2356,
-          "current_score": 0.0,
-          "level": "A+",
-          "mlbam_id": 805951,
-          "name": "Boston Baro",
-          "previous_rank": 2348,
-          "previous_score": 0.0,
-          "rank_change": 8,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2465,
-          "current_score": 0.0,
-          "level": "A",
-          "mlbam_id": 808287,
-          "name": "Luis Guevara",
-          "previous_rank": 2457,
-          "previous_score": 0.0,
-          "rank_change": 8,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 616,
-          "current_score": 18.33,
-          "level": "A+",
-          "mlbam_id": 703606,
-          "name": "Jared Thomas",
-          "previous_rank": 609,
-          "previous_score": 18.48,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": -0.15,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2440,
-          "current_score": 0.0,
-          "level": "A+",
-          "mlbam_id": 681275,
-          "name": "Jose Gonzalez",
-          "previous_rank": 2433,
-          "previous_score": 0.0,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2446,
-          "current_score": 0.0,
-          "level": "A",
-          "mlbam_id": 800412,
-          "name": "Jose Rodriguez",
-          "previous_rank": 2439,
-          "previous_score": 0.0,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2502,
-          "current_score": 0.0,
-          "level": "A+",
-          "mlbam_id": 826141,
-          "name": "Sean Barnett",
-          "previous_rank": 2495,
-          "previous_score": 0.0,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "lower_minors",
-      "median_rank_change": 7.0,
-      "median_score_change": 0.0,
-      "moved_down_count": 6,
-      "moved_up_count": 0,
-      "overlap_count": 6,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 0
-    },
-    {
-      "average_absolute_rank_change": 2.0,
-      "average_rank_change": 0.8,
-      "average_score_change": -0.016,
-      "bucket": "hitter|upper_level|prospect_model_v0_6|injured",
-      "current_count": 5,
-      "current_top50_count": 0,
-      "evidence_bucket": "injured",
-      "largest_movers": [
-        {
-          "availability_status": "injured",
-          "current_rank": 956,
-          "current_score": 13.8,
-          "level": "AAA",
-          "mlbam_id": 804668,
-          "name": "Rafael Flores Jr.",
-          "previous_rank": 951,
-          "previous_score": 13.8,
-          "rank_change": 5,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "injured",
-          "current_rank": 228,
-          "current_score": 26.3,
-          "level": "AAA",
-          "mlbam_id": 811965,
-          "name": "Joshua Kuroda-Grauer",
-          "previous_rank": 230,
-          "previous_score": 26.24,
-          "rank_change": -2,
-          "role": "hitter",
-          "score_change": 0.06,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "injured",
-          "current_rank": 646,
-          "current_score": 17.96,
-          "level": "AAA",
-          "mlbam_id": 682674,
-          "name": "Victor Bericoto",
-          "previous_rank": 644,
-          "previous_score": 18.02,
-          "rank_change": 2,
-          "role": "hitter",
-          "score_change": -0.06,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "injured",
-          "current_rank": 459,
-          "current_score": 20.73,
-          "level": "AA",
-          "mlbam_id": 813841,
-          "name": "Jonah Cox",
-          "previous_rank": 460,
-          "previous_score": 20.75,
-          "rank_change": -1,
-          "role": "hitter",
-          "score_change": -0.02,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "injured",
-          "current_rank": 242,
-          "current_score": 25.91,
-          "level": "AAA",
-          "mlbam_id": 694371,
-          "name": "Tommy Troy",
-          "previous_rank": 242,
-          "previous_score": 25.97,
-          "rank_change": 0,
-          "role": "hitter",
-          "score_change": -0.06,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "upper_level",
-      "median_rank_change": 0.0,
-      "median_score_change": -0.02,
-      "moved_down_count": 2,
-      "moved_up_count": 2,
-      "overlap_count": 5,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 1
-    },
-    {
-      "average_absolute_rank_change": 5.5,
-      "average_rank_change": 5.5,
-      "average_score_change": -0.0325,
-      "bucket": "hitter|upper_level|prospect_model_v0_6|stale_or_inactive",
-      "current_count": 4,
-      "current_top50_count": 0,
-      "evidence_bucket": "stale_or_inactive",
-      "largest_movers": [
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2445,
-          "current_score": 0.0,
-          "level": "AA",
-          "mlbam_id": 679563,
-          "name": "Jose Rodriguez",
-          "previous_rank": 2438,
-          "previous_score": 0.0,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 2500,
-          "current_score": 0.0,
-          "level": "AA",
-          "mlbam_id": 802459,
-          "name": "Ryan Johnson",
-          "previous_rank": 2493,
-          "previous_score": 0.0,
-          "rank_change": 7,
-          "role": "hitter",
-          "score_change": 0.0,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 205,
-          "current_score": 27.11,
-          "level": "AA",
-          "mlbam_id": 805795,
-          "name": "Aidan Miller",
-          "previous_rank": 199,
-          "previous_score": 27.17,
-          "rank_change": 6,
-          "role": "hitter",
-          "score_change": -0.06,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "stale_or_inactive",
-          "current_rank": 1684,
-          "current_score": 6.01,
-          "level": "AAA",
-          "mlbam_id": 682619,
-          "name": "Orelvis Martinez",
-          "previous_rank": 1682,
-          "previous_score": 6.08,
-          "rank_change": 2,
-          "role": "hitter",
-          "score_change": -0.07,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "upper_level",
-      "median_rank_change": 6.5,
-      "median_score_change": -0.03,
-      "moved_down_count": 4,
-      "moved_up_count": 0,
-      "overlap_count": 4,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 0
-    },
-    {
-      "average_absolute_rank_change": 9.4286,
-      "average_rank_change": 3.5238,
-      "average_score_change": 0.024,
-      "bucket": "hitter|upper_level|prospect_model_v0_6|thin_current_sample",
-      "current_count": 63,
-      "current_top50_count": 0,
-      "evidence_bucket": "thin_current_sample",
-      "largest_movers": [
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 671,
-          "current_score": 17.66,
-          "level": "AA",
-          "mlbam_id": 811765,
-          "name": "Deniel Ortiz",
-          "previous_rank": 784,
-          "previous_score": 15.99,
-          "rank_change": -113,
-          "role": "hitter",
-          "score_change": 1.67,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 891,
-          "current_score": 14.53,
-          "level": "AA",
-          "mlbam_id": 691616,
-          "name": "Hedbert Perez",
-          "previous_rank": 923,
-          "previous_score": 14.13,
-          "rank_change": -32,
-          "role": "hitter",
-          "score_change": 0.4,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 1015,
-          "current_score": 13.03,
-          "level": "AAA",
-          "mlbam_id": 691185,
-          "name": "Maximo Acosta",
-          "previous_rank": 991,
-          "previous_score": 13.36,
-          "rank_change": 24,
-          "role": "hitter",
-          "score_change": -0.33,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 176,
-          "current_score": 28.06,
-          "level": "AA",
-          "mlbam_id": 800522,
-          "name": "Josue Briceno",
-          "previous_rank": 197,
-          "previous_score": 27.29,
-          "rank_change": -21,
-          "role": "hitter",
-          "score_change": 0.77,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 1605,
-          "current_score": 6.8,
-          "level": "AA",
-          "mlbam_id": 805301,
-          "name": "Jordan Dissin",
-          "previous_rank": 1588,
-          "previous_score": 6.87,
-          "rank_change": 17,
-          "role": "hitter",
-          "score_change": -0.07,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 1430,
-          "current_score": 8.54,
-          "level": "AAA",
-          "mlbam_id": 691621,
-          "name": "Jheremy Vargas",
-          "previous_rank": 1416,
-          "previous_score": 8.57,
-          "rank_change": 14,
-          "role": "hitter",
-          "score_change": -0.03,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 1848,
-          "current_score": 4.54,
-          "level": "AA",
-          "mlbam_id": 695000,
-          "name": "Poncho Ruiz",
-          "previous_rank": 1835,
-          "previous_score": 4.59,
-          "rank_change": 13,
-          "role": "hitter",
-          "score_change": -0.05,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 1996,
-          "current_score": 3.43,
-          "level": "AA",
-          "mlbam_id": 686981,
-          "name": "Brenden Dixon",
-          "previous_rank": 1983,
-          "previous_score": 3.46,
-          "rank_change": 13,
-          "role": "hitter",
-          "score_change": -0.03,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 291,
-          "current_score": 24.55,
-          "level": "AAA",
-          "mlbam_id": 689200,
-          "name": "Jacob Melton",
-          "previous_rank": 279,
-          "previous_score": 24.82,
-          "rank_change": 12,
-          "role": "hitter",
-          "score_change": -0.27,
-          "score_source": "prospect_model_v0_6"
-        },
-        {
-          "availability_status": "thin_current_sample",
-          "current_rank": 995,
-          "current_score": 13.27,
-          "level": "AA",
-          "mlbam_id": 801075,
-          "name": "Walker Janek",
-          "previous_rank": 1007,
-          "previous_score": 13.14,
-          "rank_change": -12,
-          "role": "hitter",
-          "score_change": 0.13,
-          "score_source": "prospect_model_v0_6"
-        }
-      ],
-      "level_band": "upper_level",
-      "median_rank_change": 7.0,
-      "median_score_change": 0.0,
-      "moved_down_count": 56,
-      "moved_up_count": 7,
-      "overlap_count": 63,
-      "role": "hitter",
-      "score_source": "prospect_model_v0_6",
-      "stable_rank_count": 0
-    }
-  ],
+  "generated_at": "2026-07-30T00:00:00+00:00",
+  "latest_buy_largest_movers": [],
+  "latest_rank_bucket_watchlist": [],
   "report_version": "0.1.0",
   "source_policy": {
     "dd_ranks_used": false,
@@ -1765,10 +551,10 @@
   "status": "watchlist_active",
   "summary": {
     "blocking_finding_count": 0,
-    "evidence_gate_count": 2,
+    "evidence_gate_count": 4,
     "front_office_risk_count": 25,
-    "latest_buy_retention_rate": 0.95,
-    "latest_rank_bucket_count": 16,
+    "latest_buy_retention_rate": null,
+    "latest_rank_bucket_count": null,
     "v0_7_disagreement_count": 25
   },
   "v0_7_disagreements": [
@@ -1777,7 +563,7 @@
       "level": "AAA",
       "mlbam_id": 691945,
       "name": "Carter Baumler",
-      "rank_v1_rank": 1264,
+      "rank_v1_rank": 1235,
       "rank_v1_score": 10.22,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1787,9 +573,21 @@
     {
       "availability_status": "thin_current_sample",
       "level": "A",
+      "mlbam_id": 801573,
+      "name": "Ryan Forcucci",
+      "rank_v1_rank": 2841,
+      "rank_v1_score": 0.0,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -7.266,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "availability_status": "thin_current_sample",
+      "level": "A",
       "mlbam_id": 808323,
       "name": "Keeler Morfe",
-      "rank_v1_rank": 2760,
+      "rank_v1_rank": 2758,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1801,7 +599,7 @@
       "level": "A+",
       "mlbam_id": 703148,
       "name": "Raimon Gomez",
-      "rank_v1_rank": 2823,
+      "rank_v1_rank": 2824,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1813,7 +611,7 @@
       "level": "A",
       "mlbam_id": 808515,
       "name": "Cristobal Abreu",
-      "rank_v1_rank": 2611,
+      "rank_v1_rank": 2607,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1825,7 +623,7 @@
       "level": "A",
       "mlbam_id": 805110,
       "name": "Ricardo Montero",
-      "rank_v1_rank": 2826,
+      "rank_v1_rank": 2827,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1837,7 +635,7 @@
       "level": "A",
       "mlbam_id": 803424,
       "name": "Juan Sanchez",
-      "rank_v1_rank": 2754,
+      "rank_v1_rank": 2752,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1849,7 +647,7 @@
       "level": "A",
       "mlbam_id": 801619,
       "name": "Jake Faherty",
-      "rank_v1_rank": 2700,
+      "rank_v1_rank": 2698,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1861,31 +659,31 @@
       "level": "AA",
       "mlbam_id": 803291,
       "name": "Christian Oppor",
-      "rank_v1_rank": 1196,
-      "rank_v1_score": 10.99,
+      "rank_v1_rank": 1143,
+      "rank_v1_score": 11.19,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -6.638,
-      "v0_7_shadow_score": 4.352
+      "v0_7_shadow_score": 4.552
     },
     {
       "availability_status": "thin_current_sample",
       "level": "A",
       "mlbam_id": 821023,
       "name": "Marlon De La Cruz",
-      "rank_v1_rank": 1604,
-      "rank_v1_score": 6.81,
+      "rank_v1_rank": 1570,
+      "rank_v1_score": 6.84,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -6.594,
-      "v0_7_shadow_score": 0.216
+      "v0_7_shadow_score": 0.246
     },
     {
       "availability_status": "available",
       "level": "A+",
       "mlbam_id": 691480,
       "name": "Eurys Martich",
-      "rank_v1_rank": 2649,
+      "rank_v1_rank": 2646,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1897,19 +695,19 @@
       "level": "AAA",
       "mlbam_id": 690829,
       "name": "Ben Joyce",
-      "rank_v1_rank": 1491,
-      "rank_v1_score": 7.9,
+      "rank_v1_rank": 1463,
+      "rank_v1_score": 7.87,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -6.582,
-      "v0_7_shadow_score": 1.318
+      "v0_7_shadow_score": 1.288
     },
     {
       "availability_status": "available",
       "level": "A",
       "mlbam_id": 831683,
       "name": "Daichi Moriki",
-      "rank_v1_rank": 2612,
+      "rank_v1_rank": 2608,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1921,7 +719,7 @@
       "level": "AA",
       "mlbam_id": 691772,
       "name": "Maddux Bruns",
-      "rank_v1_rank": 2787,
+      "rank_v1_rank": 2788,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1933,7 +731,7 @@
       "level": "A",
       "mlbam_id": 694491,
       "name": "Grayson Hitt",
-      "rank_v1_rank": 2668,
+      "rank_v1_rank": 2666,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1945,7 +743,7 @@
       "level": "A",
       "mlbam_id": 702268,
       "name": "Aiden Moffett",
-      "rank_v1_rank": 2534,
+      "rank_v1_rank": 2529,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1957,7 +755,7 @@
       "level": "A",
       "mlbam_id": 808003,
       "name": "Rafael Gonzalez",
-      "rank_v1_rank": 2822,
+      "rank_v1_rank": 2823,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1969,7 +767,7 @@
       "level": "A",
       "mlbam_id": 823801,
       "name": "Tanner Smith",
-      "rank_v1_rank": 2856,
+      "rank_v1_rank": 2859,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1981,7 +779,7 @@
       "level": "A",
       "mlbam_id": 827603,
       "name": "Jayden Voelker",
-      "rank_v1_rank": 2716,
+      "rank_v1_rank": 2714,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -1993,7 +791,7 @@
       "level": "A",
       "mlbam_id": 702280,
       "name": "Tristan Smith",
-      "rank_v1_rank": 2871,
+      "rank_v1_rank": 2875,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -2005,7 +803,7 @@
       "level": "A",
       "mlbam_id": 802084,
       "name": "Xiomer Guacache",
-      "rank_v1_rank": 2888,
+      "rank_v1_rank": 2893,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -2017,7 +815,7 @@
       "level": "A",
       "mlbam_id": 811138,
       "name": "Jairon Digon",
-      "rank_v1_rank": 2698,
+      "rank_v1_rank": 2696,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -2026,34 +824,10 @@
     },
     {
       "availability_status": "available",
-      "level": "A+",
-      "mlbam_id": 702516,
-      "name": "JP Wheat",
-      "rank_v1_rank": 2685,
-      "rank_v1_score": 0.0,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -6.256,
-      "v0_7_shadow_score": 0.0
-    },
-    {
-      "availability_status": "available",
-      "level": "A",
-      "mlbam_id": 807968,
-      "name": "David Matoma",
-      "rank_v1_rank": 2619,
-      "rank_v1_score": 0.0,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -6.243,
-      "v0_7_shadow_score": 0.0
-    },
-    {
-      "availability_status": "available",
       "level": "AA",
       "mlbam_id": 693176,
       "name": "Elison Joseph",
-      "rank_v1_rank": 2635,
+      "rank_v1_rank": 2632,
       "rank_v1_score": 0.0,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
@@ -2070,6 +844,18 @@
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -6.228,
+      "v0_7_shadow_score": 0.0
+    },
+    {
+      "availability_status": "available",
+      "level": "A+",
+      "mlbam_id": 702516,
+      "name": "JP Wheat",
+      "rank_v1_rank": 2683,
+      "rank_v1_score": 0.0,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": -6.208,
       "v0_7_shadow_score": 0.0
     }
   ]
