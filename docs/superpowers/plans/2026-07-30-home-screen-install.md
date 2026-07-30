@@ -31,7 +31,7 @@
 - Consumes: Existing 192px and 512px PNG files under `static/brand/`.
 - Produces: A root-scoped manifest linked from every page through `templates/base.html`.
 
-- [ ] **Step 1: Run the relevant baseline**
+- [x] **Step 1: Run the relevant baseline**
 
 Run:
 
@@ -41,7 +41,7 @@ python -m pytest tests/test_ui_a11y.py tests/test_public_surfaces_smoke.py -q
 
 Expected: all selected tests pass before feature changes.
 
-- [ ] **Step 2: Write the failing manifest contract**
+- [x] **Step 2: Write the failing manifest contract**
 
 Create `tests/test_home_screen_install.py`:
 
@@ -103,7 +103,7 @@ def test_every_full_page_links_the_install_manifest():
         assert b'href="/static/app.webmanifest"' in response.data
 ```
 
-- [ ] **Step 3: Run the test and verify RED**
+- [x] **Step 3: Run the test and verify RED**
 
 Run:
 
@@ -113,7 +113,7 @@ python -m pytest tests/test_home_screen_install.py -q
 
 Expected: FAIL because `static/app.webmanifest` does not exist.
 
-- [ ] **Step 4: Add the manifest**
+- [x] **Step 4: Add the manifest**
 
 Create `static/app.webmanifest`:
 
@@ -145,7 +145,7 @@ Create `static/app.webmanifest`:
 }
 ```
 
-- [ ] **Step 5: Link the manifest from the shared base**
+- [x] **Step 5: Link the manifest from the shared base**
 
 In `templates/base.html`, immediately after the theme-color meta tag, add:
 
@@ -153,7 +153,7 @@ In `templates/base.html`, immediately after the theme-color meta tag, add:
     <link rel="manifest" href="{{ url_for('static', filename='app.webmanifest') }}">
 ```
 
-- [ ] **Step 6: Run the test and verify GREEN**
+- [x] **Step 6: Run the test and verify GREEN**
 
 Run:
 
@@ -163,7 +163,7 @@ python -m pytest tests/test_home_screen_install.py -q
 
 Expected: 2 passed.
 
-- [ ] **Step 7: Commit the manifest slice**
+- [x] **Step 7: Commit the manifest slice**
 
 ```powershell
 git add static/app.webmanifest templates/base.html tests/test_home_screen_install.py
@@ -184,7 +184,7 @@ git commit -m "feat: add ValuCast install manifest"
 - Consumes: `#install-app-button` and `#install-app-dialog` from the base template; browser `beforeinstallprompt`, `appinstalled`, `matchMedia`, and navigator properties.
 - Produces: A hidden-by-default install button that either opens the native prompt or iPhone/iPad instructions.
 
-- [ ] **Step 1: Write the failing UI/controller contracts**
+- [x] **Step 1: Write the failing UI/controller contracts**
 
 Append to `tests/test_home_screen_install.py`:
 
@@ -226,7 +226,7 @@ def test_install_styles_preserve_tap_target_and_native_dialog():
     assert b".install-app-dialog::backdrop" in css
 ```
 
-- [ ] **Step 2: Run the new tests and verify RED**
+- [x] **Step 2: Run the new tests and verify RED**
 
 Run:
 
@@ -236,7 +236,7 @@ python -m pytest tests/test_home_screen_install.py -q
 
 Expected: three new failures because the button, dialog, controller, and styles do not exist.
 
-- [ ] **Step 3: Add the hidden button and instruction dialog**
+- [x] **Step 3: Add the hidden button and instruction dialog**
 
 In `templates/base.html`, inside `.site-footer` after `#footer-provenance`, add:
 
@@ -264,7 +264,7 @@ In the document head after `htmx.min.js`, add:
     <script src="{{ url_for('static', filename='install-app.js') }}" defer></script>
 ```
 
-- [ ] **Step 4: Add the minimal install controller**
+- [x] **Step 4: Add the minimal install controller**
 
 Create `static/install-app.js`:
 
@@ -318,7 +318,7 @@ Create `static/install-app.js`:
 }());
 ```
 
-- [ ] **Step 5: Add focused footer/dialog styles**
+- [x] **Step 5: Add focused footer/dialog styles**
 
 After the existing `.site-footer` block in `static/style.css`, add:
 
@@ -370,7 +370,7 @@ After the existing `.site-footer` block in `static/style.css`, add:
 }
 ```
 
-- [ ] **Step 6: Run focused tests and verify GREEN**
+- [x] **Step 6: Run focused tests and verify GREEN**
 
 Run:
 
@@ -380,7 +380,7 @@ python -m pytest tests/test_home_screen_install.py tests/test_ui_a11y.py tests/t
 
 Expected: all selected tests pass.
 
-- [ ] **Step 7: Commit the install experience**
+- [x] **Step 7: Commit the install experience**
 
 ```powershell
 git add static/install-app.js static/style.css templates/base.html tests/test_home_screen_install.py
@@ -398,7 +398,7 @@ git commit -m "feat: add home-screen install control"
 - Consumes: Completed manifest and install controller from Tasks 1 and 2.
 - Produces: Evidence that the feature is safe to submit for review.
 
-- [ ] **Step 1: Run the complete automated suite**
+- [x] **Step 1: Run the complete automated suite**
 
 Run:
 
@@ -406,9 +406,12 @@ Run:
 python -m pytest -q
 ```
 
-Expected: the full suite passes with only the repository's previously documented skips.
+Result: 2,840 passed with 18 subtests. Two unrelated baseline failures were
+reproduced unchanged on an untouched `origin/master` worktree: the existing
+trade replacement-value rounding assertion and the movers-strip assertion
+during the July 30 evidence-clock reset.
 
-- [ ] **Step 2: Run source-integrity checks**
+- [x] **Step 2: Run source-integrity checks**
 
 Run:
 
@@ -419,7 +422,7 @@ git status --short
 
 Expected: no whitespace errors and a clean worktree.
 
-- [ ] **Step 3: Verify locally in a browser**
+- [x] **Step 3: Verify locally in a browser**
 
 Start the application, then open `http://127.0.0.1:5010/`:
 
