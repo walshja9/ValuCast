@@ -72,7 +72,7 @@ The following dimensions are fixed before any result is inspected:
 | Claim-time consensus rank | 1-50; 51-100; 101-250; 251+ |
 | External-board coverage | 2; 3-4; 5+ |
 | Availability | available; limited; unavailable; other/missing |
-| Score source | exact claim-time value, with uncommon values grouped as other |
+| Score source | exact claim-time value when present on at least 10 decisions; otherwise other/missing |
 
 Availability is mapped without interpretation: `available` remains available;
 thin/current-limited states map to limited; injury, inactive, stale, or absent
