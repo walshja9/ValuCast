@@ -1,11 +1,46 @@
 {
   "artifact": "valucast_prospect_movers",
-  "board": [],
+  "board": [
+    {
+      "age": 19,
+      "current_rank": 48,
+      "current_score": 38.99,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-07-30",
+          "rank": 52,
+          "score": 36.49
+        },
+        {
+          "date": "2026-07-31",
+          "rank": 48,
+          "score": 38.99
+        }
+      ],
+      "id": "vc_mover_815824_hitter",
+      "level": "A+",
+      "mlbam_id": 815824,
+      "movement_label": "UP +2.5 over 1d",
+      "name": "Josiah Hartshorn",
+      "player_id": "vc_prospect_815824_hitter",
+      "pos": "1B",
+      "positions": [
+        "1B"
+      ],
+      "rank_delta": 4,
+      "role": "hitter",
+      "score_delta": 2.5,
+      "team": "CHC",
+      "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+      "window_days": 1
+    }
+  ],
   "cooling": [],
   "epoch": "2026-07-30-bucket-calibration-0-3-2",
-  "generated_at": "2026-07-30T00:00:00+00:00",
+  "generated_at": "2026-07-31T00:00:00+00:00",
   "input_artifacts": {
-    "prospect_rank_v1_count": 2900,
+    "prospect_rank_v1_count": 2906,
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.9",
     "rank_archive_dates": [
@@ -56,11 +91,47 @@
       "2026-07-27",
       "2026-07-28",
       "2026-07-29",
-      "2026-07-30"
+      "2026-07-30",
+      "2026-07-31"
     ],
-    "rank_history_artifact_count": 48
+    "rank_history_artifact_count": 49
   },
-  "rising": [],
+  "rising": [
+    {
+      "age": 19,
+      "current_rank": 48,
+      "current_score": 38.99,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-07-30",
+          "rank": 52,
+          "score": 36.49
+        },
+        {
+          "date": "2026-07-31",
+          "rank": 48,
+          "score": 38.99
+        }
+      ],
+      "id": "vc_mover_815824_hitter",
+      "level": "A+",
+      "mlbam_id": 815824,
+      "movement_label": "UP +2.5 over 1d",
+      "name": "Josiah Hartshorn",
+      "player_id": "vc_prospect_815824_hitter",
+      "pos": "1B",
+      "positions": [
+        "1B"
+      ],
+      "rank_delta": 4,
+      "role": "hitter",
+      "score_delta": 2.5,
+      "team": "CHC",
+      "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+      "window_days": 1
+    }
+  ],
   "signal_name": "ValuCast Prospect Movers",
   "signal_version": "0.1.0",
   "source_policy": {
@@ -79,37 +150,177 @@
   "summary": {
     "cooling_count": 0,
     "current_rank_cap": 250,
-    "current_ranked_count": 2900,
-    "excluded_step_guard_count": 2893,
-    "mover_count": 0,
-    "rising_count": 0,
+    "current_ranked_count": 2906,
+    "excluded_step_guard_count": 2899,
+    "mover_count": 1,
+    "rising_count": 1,
     "score_delta_threshold": 2.0
   },
   "validation": {
-    "below_threshold_count": 0,
+    "below_threshold_count": 2866,
     "blockers": [],
     "cooling_count": 0,
-    "excluded_step_guard_count": 2893,
-    "history_limited_count": 2900,
+    "excluded_step_guard_count": 2899,
+    "history_limited_count": 14,
     "ready_for_public_surface": true,
-    "rising_count": 0
+    "rising_count": 1
   },
   "windows": {
     "14d": {
       "cooling": [],
-      "rising": []
+      "rising": [
+        {
+          "age": 19,
+          "current_rank": 48,
+          "current_score": 38.99,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-30",
+              "rank": 52,
+              "score": 36.49
+            },
+            {
+              "date": "2026-07-31",
+              "rank": 48,
+              "score": 38.99
+            }
+          ],
+          "id": "vc_mover_815824_hitter",
+          "level": "A+",
+          "mlbam_id": 815824,
+          "movement_label": "UP +2.5 over 1d",
+          "name": "Josiah Hartshorn",
+          "player_id": "vc_prospect_815824_hitter",
+          "pos": "1B",
+          "positions": [
+            "1B"
+          ],
+          "rank_delta": 4,
+          "role": "hitter",
+          "score_delta": 2.5,
+          "team": "CHC",
+          "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+          "window_days": 1
+        }
+      ]
     },
     "21d": {
       "cooling": [],
-      "rising": []
+      "rising": [
+        {
+          "age": 19,
+          "current_rank": 48,
+          "current_score": 38.99,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-30",
+              "rank": 52,
+              "score": 36.49
+            },
+            {
+              "date": "2026-07-31",
+              "rank": 48,
+              "score": 38.99
+            }
+          ],
+          "id": "vc_mover_815824_hitter",
+          "level": "A+",
+          "mlbam_id": 815824,
+          "movement_label": "UP +2.5 over 1d",
+          "name": "Josiah Hartshorn",
+          "player_id": "vc_prospect_815824_hitter",
+          "pos": "1B",
+          "positions": [
+            "1B"
+          ],
+          "rank_delta": 4,
+          "role": "hitter",
+          "score_delta": 2.5,
+          "team": "CHC",
+          "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+          "window_days": 1
+        }
+      ]
     },
     "30d": {
       "cooling": [],
-      "rising": []
+      "rising": [
+        {
+          "age": 19,
+          "current_rank": 48,
+          "current_score": 38.99,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-30",
+              "rank": 52,
+              "score": 36.49
+            },
+            {
+              "date": "2026-07-31",
+              "rank": 48,
+              "score": 38.99
+            }
+          ],
+          "id": "vc_mover_815824_hitter",
+          "level": "A+",
+          "mlbam_id": 815824,
+          "movement_label": "UP +2.5 over 1d",
+          "name": "Josiah Hartshorn",
+          "player_id": "vc_prospect_815824_hitter",
+          "pos": "1B",
+          "positions": [
+            "1B"
+          ],
+          "rank_delta": 4,
+          "role": "hitter",
+          "score_delta": 2.5,
+          "team": "CHC",
+          "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+          "window_days": 1
+        }
+      ]
     },
     "7d": {
       "cooling": [],
-      "rising": []
+      "rising": [
+        {
+          "age": 19,
+          "current_rank": 48,
+          "current_score": 38.99,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-07-30",
+              "rank": 52,
+              "score": 36.49
+            },
+            {
+              "date": "2026-07-31",
+              "rank": 48,
+              "score": 38.99
+            }
+          ],
+          "id": "vc_mover_815824_hitter",
+          "level": "A+",
+          "mlbam_id": 815824,
+          "movement_label": "UP +2.5 over 1d",
+          "name": "Josiah Hartshorn",
+          "player_id": "vc_prospect_815824_hitter",
+          "pos": "1B",
+          "positions": [
+            "1B"
+          ],
+          "rank_delta": 4,
+          "role": "hitter",
+          "score_delta": 2.5,
+          "team": "CHC",
+          "why": "A+ & A 411 PA, .913 OPS, .230 ISO, 18.5% K%, 15.3% BB%",
+          "window_days": 1
+        }
+      ]
     }
   }
 }

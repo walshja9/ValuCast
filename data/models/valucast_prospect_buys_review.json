@@ -2,48 +2,49 @@
   "artifact": "valucast_prospect_buys_review",
   "blockers": [],
   "dd_top": [],
-  "generated_at": "2026-07-30T00:00:00+00:00",
+  "generated_at": "2026-07-31T00:00:00+00:00",
   "metrics": {
     "dd_age_distribution": {},
     "dd_level_distribution": {},
     "dd_overlap_context_only": true,
     "dd_top40_count": 0,
-    "history_limited_count": 221,
-    "history_limited_rate": 1.0,
+    "history_limited_count": 0,
+    "history_limited_rate": 0.0,
     "max_history_limited_rate": 0.5,
     "top40_name_overlap_count": 0,
     "top40_name_overlap_rate": 0.0,
     "valucast_age_distribution": {
-      "18": 5,
-      "19": 19,
-      "20": 9,
-      "21": 4,
+      "18": 4,
+      "19": 17,
+      "20": 10,
+      "21": 6,
       "22": 2,
       "23": 1
     },
     "valucast_level_distribution": {
-      "A": 8,
-      "A+": 19,
-      "AA": 13
+      "A": 6,
+      "A+": 18,
+      "AA": 15,
+      "AAA": 1
     },
     "valucast_top40_count": 40
   },
   "overlap": [],
   "promotion_decision": {
     "dd_overlap_is_context_only": true,
-    "history_limited_rate": 1.0,
-    "neutral_momentum_launch_approved": true,
+    "history_limited_rate": 0.0,
+    "neutral_momentum_launch_approved": false,
     "requires_route_gate": true,
     "status": "candidate_ready"
   },
   "review_status": "candidate_ready",
   "source_policy": {
-    "approval_kind": "neutral_momentum_launch",
+    "approval_kind": "human_review",
     "dd_overlap_required_for_candidate_ready": false,
     "dd_ranks_used_for_valucast_score": false,
     "dd_values_used_for_valucast_score": false,
     "feeds_buy_score": false,
-    "history_launch_approved": true,
+    "history_launch_approved": false,
     "kind": "comparison_only",
     "manual_approval_recorded": true,
     "manual_approval_required_for_candidate_ready": true,
@@ -53,96 +54,104 @@
     {
       "age": 19,
       "level": "A+",
-      "name": "Cam Caminiti",
+      "name": "Josiah Hartshorn",
       "rank": 1,
       "reason": "Still in the buy window",
-      "score": 61.6
-    },
-    {
-      "age": 18,
-      "level": "A+",
-      "name": "Eli Willits",
-      "rank": 2,
-      "reason": "Young runway",
-      "score": 61.1
-    },
-    {
-      "age": 18,
-      "level": "A",
-      "name": "Brady Ebel",
-      "rank": 3,
-      "reason": "Young runway",
-      "score": 60.9
+      "score": 64.8
     },
     {
       "age": 19,
       "level": "A+",
       "name": "Braylon Payne",
-      "rank": 4,
+      "rank": 2,
       "reason": "Still in the buy window",
-      "score": 60.2
-    },
-    {
-      "age": 19,
-      "level": "A+",
-      "name": "Johnny King",
-      "rank": 5,
-      "reason": "Still in the buy window",
-      "score": 59.7
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "JoJo Parker",
-      "rank": 6,
-      "reason": "Still in the buy window",
-      "score": 59.5
-    },
-    {
-      "age": 19,
-      "level": "A",
-      "name": "Ethan Holliday",
-      "rank": 7,
-      "reason": "Still in the buy window",
-      "score": 59.4
-    },
-    {
-      "age": 19,
-      "level": "A+",
-      "name": "David Shields",
-      "rank": 8,
-      "reason": "Still in the buy window",
-      "score": 59.2
-    },
-    {
-      "age": 19,
-      "level": "AA",
-      "name": "Leo De Vries",
-      "rank": 9,
-      "reason": "Still in the buy window",
-      "score": 59.2
-    },
-    {
-      "age": 19,
-      "level": "A+",
-      "name": "Justin Gonzales",
-      "rank": 10,
-      "reason": "Still in the buy window",
-      "score": 59.0
+      "score": 62.9
     },
     {
       "age": 19,
       "level": "A+",
       "name": "Nathan Flewelling",
-      "rank": 11,
+      "rank": 3,
       "reason": "Still in the buy window",
-      "score": 58.8
+      "score": 62.3
     },
     {
       "age": 19,
       "level": "A+",
-      "name": "Josiah Hartshorn",
+      "name": "Cam Caminiti",
+      "rank": 4,
+      "reason": "Still in the buy window",
+      "score": 61.7
+    },
+    {
+      "age": 18,
+      "level": "A",
+      "name": "Brady Ebel",
+      "rank": 5,
+      "reason": "Young runway",
+      "score": 61.1
+    },
+    {
+      "age": 18,
+      "level": "A+",
+      "name": "Eli Willits",
+      "rank": 6,
+      "reason": "Young runway",
+      "score": 60.7
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Hayden Alvarez",
+      "rank": 7,
+      "reason": "Young runway",
+      "score": 60.5
+    },
+    {
+      "age": 19,
+      "level": "A+",
+      "name": "Johnny King",
+      "rank": 8,
+      "reason": "Still in the buy window",
+      "score": 59.5
+    },
+    {
+      "age": 19,
+      "level": "A+",
+      "name": "Justin Gonzales",
+      "rank": 9,
+      "reason": "Still in the buy window",
+      "score": 59.3
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "JoJo Parker",
+      "rank": 10,
+      "reason": "Still in the buy window",
+      "score": 58.9
+    },
+    {
+      "age": 19,
+      "level": "A",
+      "name": "Ethan Holliday",
+      "rank": 11,
+      "reason": "Still in the buy window",
+      "score": 58.9
+    },
+    {
+      "age": 19,
+      "level": "A+",
+      "name": "David Shields",
       "rank": 12,
+      "reason": "Still in the buy window",
+      "score": 58.8
+    },
+    {
+      "age": 20,
+      "level": "A+",
+      "name": "Boston Bateman",
+      "rank": 13,
       "reason": "Still in the buy window",
       "score": 58.4
     },
@@ -150,25 +159,17 @@
       "age": 20,
       "level": "AA",
       "name": "Ryan Sloan",
-      "rank": 13,
-      "reason": "Still in the buy window",
-      "score": 57.7
-    },
-    {
-      "age": 19,
-      "level": "A+",
-      "name": "Chase Harlan",
       "rank": 14,
       "reason": "Still in the buy window",
-      "score": 57.4
+      "score": 58.3
     },
     {
-      "age": 21,
-      "level": "A+",
-      "name": "Kash Mayfield",
+      "age": 18,
+      "level": "A",
+      "name": "Kevin Alvarez",
       "rank": 15,
-      "reason": "Still in the buy window",
-      "score": 57.0
+      "reason": "Young runway",
+      "score": 57.6
     }
   ]
 }
